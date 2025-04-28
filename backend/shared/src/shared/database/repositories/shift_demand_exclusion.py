@@ -109,6 +109,15 @@ class ShiftDemandExclusionRepository(BaseRepository[ShiftDemandExclusionSchema])
         """Delete all shift demand exclusions by shift demand ID."""
         self.collection.delete_many({"shift_demand_id": shift_demand_id})
 
+    def delete_shift_demand_exclusions_by_shift_demand_ids(
+        self, shift_demand_ids: List[str]
+    ) -> None:
+        """Delete all shift demand exclusions by a list of shift demand IDs."""
+        if not shift_demand_ids:
+            return
+
+        self.collection.delete_many({"shift_demand_id": {"$in": shift_demand_ids}})
+
     def delete_shift_demand_exclusions_by_schedule_id(self, schedule_id: str) -> None:
         """Delete all shift demand exclusions by schedule ID."""
         self.collection.delete_many({"schedule_id": schedule_id})

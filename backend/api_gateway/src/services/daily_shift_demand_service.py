@@ -20,6 +20,7 @@ class DailyShiftDemandService(BaseService):
         schedule: Schedule,
         coverage_selectors: list[CoverageSelector],
         shift_demands: list[ShiftDemand],
+        sd_exclusions: List[ShiftDemandExclusion],
     ) -> tuple[list[DailyShiftDemand], dict]:
         update_info = {
             "schedule": False,
@@ -36,6 +37,7 @@ class DailyShiftDemandService(BaseService):
                     schedule=schedule,
                     coverage_selectors=coverage_selectors,
                     shift_demands=shift_demands,
+                    sd_exclusions=sd_exclusions,
                     shift_demand_ids=None,
                 ),
                 update_info,
@@ -50,6 +52,7 @@ class DailyShiftDemandService(BaseService):
                         schedule=schedule,
                         coverage_selectors=[selector],
                         shift_demands=shift_demands,
+                        sd_exclusions=sd_exclusions,
                         shift_demand_ids=None,
                     )
                 )
@@ -67,6 +70,7 @@ class DailyShiftDemandService(BaseService):
                             schedule=schedule,
                             coverage_selectors=[selector],
                             shift_demands=shift_demands,
+                            sd_exclusions=sd_exclusions,
                             shift_demand_ids=modified_shift_demand_ids,
                         )
                     )
@@ -77,15 +81,22 @@ class DailyShiftDemandService(BaseService):
                     )
         return daily_shift_demands, update_info
 
+    # pylint: disable=too-many-arguments
     def generate_daily_shift_demands(
         self,
         schedule: Schedule,
         coverage_selectors: list[CoverageSelector],
         shift_demands: list[ShiftDemand],
+        sd_exclusions: List[ShiftDemandExclusion],
         shift_demand_ids: Optional[list[str]] = None,
     ) -> list[DailyShiftDemand]:
         daily_shift_demands = []
 
+        sd_excl_map = {
+            (excl.shift_demand_id, excl.date): excl for excl in sd_exclusions
+        }
+
+        # pylint: disable=too-many-nested-blocks
         for selector in coverage_selectors:
             current_date = selector.start_date
             while current_date <= selector.end_date:
@@ -100,6 +111,8 @@ class DailyShiftDemandService(BaseService):
                                 or demand.id in shift_demand_ids
                             )
                         ):
+                            if (demand.id, current_date) in sd_excl_map:
+                                continue
                             daily_shift_demand = DailyShiftDemand(
                                 id=f"{demand.id}_{current_date}",
                                 team_id=schedule.team_id,
@@ -116,6 +129,7 @@ class DailyShiftDemandService(BaseService):
 
         return daily_shift_demands
 
+    # pylint: disable=too-many-locals
     def get_daily_shift_demands(self, team_id: str) -> List[DailyShiftDemand]:
         # Get data from database
         schedule_campaign = self.collection.schedule_db.get_schedule_campaign(team_id)
@@ -137,6 +151,12 @@ class DailyShiftDemandService(BaseService):
                     coverage_ids
                 )
             )
+            # fmt: off
+            sd_exclusions = self.collection.shift_demand_exclusion_db\
+                .get_shift_demand_exclusions_by_schedule_id(
+                    schedule_id=schedule_campaign.id
+                )
+            # fmt: on
             shift_demands_shift_not_deleted = [
                 sd for sd in shift_demands if sd.shift_id in shift_work_not_deleted_ids
             ]
@@ -144,6 +164,7 @@ class DailyShiftDemandService(BaseService):
                 schedule_campaign,
                 coverage_selectors,
                 shift_demands_shift_not_deleted,
+                sd_exclusions,
             )
 
             if update_info.get("schedule", None):

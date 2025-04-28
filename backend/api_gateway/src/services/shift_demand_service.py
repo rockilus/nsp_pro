@@ -16,5 +16,9 @@ class ShiftDemandService(BaseService):
             .delete_daily_shift_demands_by_shift_demand_id(
                 shift_demand_id
             )
+        self.collection.shift_demand_exclusion_db\
+            .delete_shift_demand_exclusions_by_shift_demand_id(
+                shift_demand_id=shift_demand_id
+            )
         # fmt: on
         self.collection.shift_demand_db.delete_shift_demand(shift_demand_id)

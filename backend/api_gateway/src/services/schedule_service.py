@@ -333,6 +333,12 @@ class ScheduleService(BaseService):
         self.collection.daily_shift_demand_db.delete_daily_shift_demands_by_schedule_id(
             schedule_id
         )
+        # fmt: off
+        self.collection.shift_demand_exclusion_db\
+            .delete_shift_demand_exclusions_by_schedule_id(
+                schedule_id=schedule_id
+            )
+        # fmt: on
         self.collection.schedule_db.delete_schedule(schedule_id)
 
     def export_schedule_to_excel(

@@ -77,9 +77,12 @@ class ShiftDemandRepository(BaseRepository[ShiftDemandSchema]):
                 f"Shift demand with id {shift_demand_id} not found or already deleted"
             )
 
-    def delete_shift_demands_by_coverage_id(self, coverage_id: str) -> None:
-        """Delete shift demands by coverage ID."""
+    def delete_shift_demands_by_coverage_id(self, coverage_id: str) -> List[str]:
+        """Delete shift demands by coverage ID and return their IDs."""
+        shift_demands = self.find_all({"coverage": coverage_id})
+        shift_demand_ids = [sd.id for sd in shift_demands if sd.id is not None]
         self.collection.delete_many({"coverage": coverage_id})
+        return shift_demand_ids
 
     def delete_shift_demands_by_shift_id(self, shift_id: str) -> None:
         """Delete shift demands by shift ID."""

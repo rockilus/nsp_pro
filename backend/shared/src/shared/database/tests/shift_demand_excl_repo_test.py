@@ -303,3 +303,30 @@ class TestShiftDemandExclusionRepository:
             {"schedule_id": "schedule1"}
         )
         assert remaining_count == 0
+
+    def test_delete_shift_demand_exclusions_by_shift_demand_ids(self):
+        """Test deleting shift demand exclusions by a list of shift demand IDs."""
+        exclusions = [
+            ShiftDemandExclusionSchema(
+                schedule_id="schedule1",
+                coverage_selector_id="coverage1",
+                shift_demand_id="demand1",
+                date=datetime(2025, 4, 28, tzinfo=timezone.utc).timestamp(),
+            ),
+            ShiftDemandExclusionSchema(
+                schedule_id="schedule1",
+                coverage_selector_id="coverage2",
+                shift_demand_id="demand2",
+                date=datetime(2025, 4, 29, tzinfo=timezone.utc).timestamp(),
+            ),
+        ]
+        self.repo.create_many(exclusions)
+
+        self.repo.delete_shift_demand_exclusions_by_shift_demand_ids(
+            ["demand1", "demand2"]
+        )
+
+        remaining_count = self.repo.collection.count_documents(
+            {"shift_demand_id": {"$in": ["demand1", "demand2"]}}
+        )
+        assert remaining_count == 0
