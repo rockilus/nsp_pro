@@ -3,7 +3,10 @@ from shared.schemas.dto.assignment import (
     AssignmentsRecurrencesResultDTO,
 )
 from shared.schemas.dto.breach import BreachDTO
-from shared.schemas.dto.daily_shift_demand import DailyShiftDemandDTO
+from shared.schemas.dto.daily_shift_demand import (
+    DailyShiftDemandDTO,
+    DeleteDailyShiftDemandRequestDTO,
+)
 from shared.schemas.dto.recurrence import OccurrenceInfoDTO, RecurrenceRuleDTO
 from shared.schemas.dto.request import RequestDTO
 from shared.schemas.dto.schedule import (
@@ -19,6 +22,7 @@ __all__ = [
     "AssignmentsRecurrencesResultDTO",
     "BreachDTO",
     "DailyShiftDemandDTO",
+    "DeleteDailyShiftDemandRequestDTO",
     "OccurrenceInfoDTO",
     "RecurrenceRuleDTO",
     "RequestDTO",

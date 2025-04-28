@@ -39,6 +39,7 @@ from shared.schemas.core.coverage import Coverage
 from shared.schemas.core.coverage_selector import CoverageSelector
 from shared.schemas.core.daily_shift_demand import (
     DailyShiftDemand,
+    DeleteDailyShiftDemandRequest,
     DSDSourceType,
 )
 from shared.schemas.core.dim_entry import DimEntry
@@ -103,6 +104,7 @@ from shared.schemas.core.shift import (
     Staffing,
 )
 from shared.schemas.core.shift_demand import ShiftDemand
+from shared.schemas.core.shift_demand_exclusion import ShiftDemandExclusion
 from shared.schemas.core.specialty import Specialty
 from shared.schemas.core.stats import (
     HeaderUnitOptions,
@@ -162,8 +164,10 @@ __all__ = [
     "Coverage",
     "CoverageSelector",
     "DailyShiftDemand",
+    "DeleteDailyShiftDemandRequest",
     "DSDSourceType",
     "ShiftDemand",
+    "ShiftDemandExclusion",
     "Dimension",
     "DimensionEntryType",
     "DimensionType",

@@ -11,3 +11,9 @@ class DailyShiftDemandDTO(BaseModel):
     date: float
     shiftId: str
     count: int
+
+
+class DeleteDailyShiftDemandRequestDTO(BaseModel):
+    teamId: str
+    shiftId: str
+    date: float

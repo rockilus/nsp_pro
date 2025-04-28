@@ -1,4 +1,5 @@
 import React from "react";
+import dayjs from "dayjs";
 import { useTranslation } from "../../../app/i18n/client";
 // Components
 import AssignmentSelection from "./assignment-selection";
@@ -34,6 +35,7 @@ export default function CurrentSelectionLHSTab({
   handleDeleteAssignment,
   handleCreateDSD,
   handleUpdateDSD,
+  handleDeleteDSDs,
 }: {
   lng: string;
   teamId: string;
@@ -57,6 +59,11 @@ export default function CurrentSelectionLHSTab({
   ) => void;
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
+  handleDeleteDSDs: (
+    teamId: string,
+    shiftId: string,
+    date: dayjs.Dayjs
+  ) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -83,6 +90,7 @@ export default function CurrentSelectionLHSTab({
           specialties={specialties}
           handleCreateDSD={handleCreateDSD}
           handleUpdateDSD={handleUpdateDSD}
+          handleDeleteDSDs={handleDeleteDSDs}
         />
       )}
     </div>

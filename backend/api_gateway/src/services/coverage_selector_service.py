@@ -30,6 +30,10 @@ class CoverageSelectorService(BaseService):
             .delete_daily_shift_demands_by_coverage_selector_ids(
                 [coverage_selector_id]
             )
+        self.collection.shift_demand_exclusion_db\
+            .delete_shift_demand_exclusions_by_coverage_selector_id(
+                coverage_selector_id=coverage_selector_id
+            )
         # fmt: on
         self.collection.coverage_selector_db.delete_coverage_selector(
             coverage_selector_id

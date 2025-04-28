@@ -2,12 +2,7 @@ import React, { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
-import Box from "@mui/material/Box";
-import Chip from "@mui/material/Chip";
-import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
-import LockOpenIcon from "@mui/icons-material/LockOpen";
-import LockOutlineIcon from "@mui/icons-material/LockOutlined";
-import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
 // Styles
 import "./demand-selection.css";
 // Types
@@ -24,6 +19,7 @@ export default function DemandSelection({
   specialties,
   handleCreateDSD,
   handleUpdateDSD,
+  handleDeleteDSDs,
 }: {
   lng: string;
   teamId: string;
@@ -32,6 +28,11 @@ export default function DemandSelection({
   specialties: SpecialtyT[];
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
+  handleDeleteDSDs: (
+    teamId: string,
+    shiftId: string,
+    date: dayjs.Dayjs
+  ) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -139,6 +140,21 @@ export default function DemandSelection({
     }
   };
 
+  const handleDeleteDemands = () => {
+    if (
+      !date ||
+      !selectedDemand.dailyShiftDemandsData ||
+      !selectedDemand.dailyShiftDemandsData.dailyShiftDemands
+    ) {
+      return;
+    }
+    handleDeleteDSDs(
+      teamId,
+      selectedDemand.dailyShiftDemandsData.shift.id,
+      date
+    );
+  };
+
   const AdjustStaffingButtons = () => {
     return (
       <div className="demand-selection-adjust-buttons-container">
@@ -235,6 +251,19 @@ export default function DemandSelection({
             </div>
           </div>
         )}
+      <div className="demand-selection-buttons-container">
+        <Button
+          variant="outlined"
+          color="error"
+          onClick={handleDeleteDemands}
+          className="delete-button"
+          sx={{
+            textTransform: "none",
+          }}
+        >
+          {t("delete")}
+        </Button>
+      </div>
     </div>
   );
 }

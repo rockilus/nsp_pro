@@ -4,7 +4,17 @@ from src.services.base_service import BaseService
 # pylint: disable=too-few-public-methods
 class CoverageService(BaseService):
     def delete_coverage(self, coverage_id: str) -> None:
-        self.collection.shift_demand_db.delete_shift_demands_by_coverage_id(coverage_id)
+        sd_deleted_ids = (
+            self.collection.shift_demand_db.delete_shift_demands_by_coverage_id(
+                coverage_id
+            )
+        )
+        # fmt: off
+        self.collection.shift_demand_exclusion_db\
+            .delete_shift_demand_exclusions_by_shift_demand_ids(
+                shift_demand_ids=sd_deleted_ids
+            )
+        # fmt: on
         cs_coverage = (
             self.collection.coverage_selector_db.get_coverage_selectors_by_coverage_id(
                 coverage_id
