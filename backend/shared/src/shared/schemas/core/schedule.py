@@ -6,12 +6,17 @@ from typing import Dict, List
 import humps
 from pydantic import TypeAdapter
 
-from shared.schemas.core.assignment import Assignment
+from shared.schemas.core.assignment import (
+    Assignment,
+    AssignmentsRecurrencesResult,
+)
 from shared.schemas.core.breach import Breach
-from shared.schemas.core.recurrence import OccurrenceType
+from shared.schemas.core.daily_shift_demand import DemandsResult
 from shared.schemas.core.request import RequestAugmented
 from shared.schemas.dto.schedule import (
+    DuplicateOptionsDTO,
     DuplicateRequestDTO,
+    DuplicateResultDTO,
     QuickStaffingDTO,
     ScheduleDTO,
     SolutionDTO,
@@ -298,10 +303,22 @@ class Period:
 
 @dataclass
 class DuplicateOptions:
-    occurrence_type: OccurrenceType
+    copy_assignments: bool
+    copy_demands: bool
     # copy_tasks: bool
     # copy_notes: bool
     # overwrite_existing: bool
+
+    def to_dto(self) -> DuplicateOptionsDTO:
+        data = asdict(self)
+        as_dict = humps.camelize(data)
+        validator = TypeAdapter(DuplicateOptionsDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, data: DuplicateOptionsDTO) -> "DuplicateOptions":
+        data_snake = humps.decamelize(data.model_dump())
+        return DuplicateOptions(**data_snake)
 
 
 @dataclass
@@ -328,9 +345,7 @@ class DuplicateRequest:
                 self.target_period.end_date, time.min, tzinfo=timezone.utc
             ).timestamp(),
         }
-        data["options"] = {
-            "occurrence_type": self.options.occurrence_type.value,
-        }
+        data["options"] = self.options.to_dto()
         as_dict = humps.camelize(data)
         validator = TypeAdapter(DuplicateRequestDTO)
         return validator.validate_python(as_dict)
@@ -354,7 +369,34 @@ class DuplicateRequest:
                 data_dict["target_period"]["end_date"], tz=timezone.utc
             ).date(),
         )
-        data_dict["options"] = DuplicateOptions(
-            occurrence_type=OccurrenceType(data_dict["options"]["occurrence_type"])
+        data_dict["options"] = DuplicateOptions.from_dto(data.options)
+        return cls(**data_dict)
+
+
+@dataclass
+class DuplicateResult:
+    assignments: AssignmentsRecurrencesResult | None
+    demands: DemandsResult | None
+
+    def to_dto(self) -> DuplicateResultDTO:
+        data = asdict(self)
+        data["assignments"] = self.assignments.to_dto() if self.assignments else None
+        data["demands"] = self.demands.to_dto() if self.demands else None
+        as_dict = humps.camelize(data)
+        validator = TypeAdapter(DuplicateResultDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, data: DuplicateResultDTO) -> "DuplicateResult":
+        data_dict = humps.decamelize(data.model_dump())
+        data_dict["assignments"] = (
+            AssignmentsRecurrencesResult.from_dto(data_dict["assignments"])
+            if data_dict.get("assignments", None) is not None
+            else None
+        )
+        data_dict["demands"] = (
+            DemandsResult.from_dto(data_dict["demands"])
+            if data_dict.get("demands", None) is not None
+            else None
         )
         return cls(**data_dict)

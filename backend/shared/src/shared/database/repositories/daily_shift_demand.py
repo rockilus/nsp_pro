@@ -11,6 +11,7 @@ from shared.schemas.core.daily_shift_demand import (
 )
 
 
+# pylint: disable=too-many-public-methods
 class DailyShiftDemandRepository(BaseRepository[DailyShiftDemandSchema]):
     """Repository for daily shift demand documents using PyMongo."""
 
@@ -101,6 +102,25 @@ class DailyShiftDemandRepository(BaseRepository[DailyShiftDemandSchema]):
             }
         )
         return [dsd.to_core() for dsd in dsds]
+
+    def get_daily_shift_demands_by_dates(
+        self, team_id: str, start_date: date, end_date: date
+    ) -> List[DailyShiftDemand]:
+        """Get all daily shift demands for a team within a date range."""
+        demands = self.find_all(
+            {
+                "team": team_id,
+                "date": {
+                    "$gte": datetime.combine(
+                        start_date, datetime.min.time(), timezone.utc
+                    ).timestamp(),
+                    "$lte": datetime.combine(
+                        end_date, datetime.max.time(), timezone.utc
+                    ).timestamp(),
+                },
+            }
+        )
+        return [demand.to_core() for demand in demands]
 
     def update_daily_shift_demand(
         self, daily_shift_demand: DailyShiftDemand

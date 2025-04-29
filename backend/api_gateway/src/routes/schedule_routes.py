@@ -14,8 +14,8 @@ from shared.schemas.core import (
     WorkTimeTable,
 )
 from shared.schemas.dto import (
-    AssignmentsRecurrencesResultDTO,
     DuplicateRequestDTO,
+    DuplicateResultDTO,
     ScheduleDTO,
 )
 
@@ -160,7 +160,7 @@ async def duplicate_period(
     schedule_service: ScheduleService = Depends(
         get_schedule_service,
     ),
-) -> AssignmentsRecurrencesResultDTO:
+) -> DuplicateResultDTO:
     try:
         if not await authz_check(
             # session.get_user_id(), "duplicate-period", "team", team_id
@@ -173,10 +173,10 @@ async def duplicate_period(
                 "You do not have permission to duplicate a period",
             )
         duplicate_data = DuplicateRequest.from_dto(duplicate_request)
-        ar_result = schedule_service.duplicate_period(
+        duplicate_result = schedule_service.duplicate_period(
             schedule_id=schedule_id, duplicate=duplicate_data
         )
-        response = ar_result.to_dto()
+        response = duplicate_result.to_dto()
     except Exception as e:
         log_info("Failed to duplicate period")
         handle_routes_errors(e)

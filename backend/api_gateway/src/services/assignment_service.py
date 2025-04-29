@@ -17,6 +17,10 @@ from shared.schemas.core import (
 
 from src.services.base_service import BaseService
 from src.utils.date_utils import build_dates_list
+from src.utils.duplicate_utils import (
+    build_duplicate_date_mapping,
+    validate_duplicate_lists,
+)
 from src.utils.recurrence_utils import generate_recurring_dates
 
 
@@ -789,7 +793,7 @@ class AssignmentService(BaseService):
     def duplicate_period(
         self, campaign: Schedule, duplicate: DuplicateRequest
     ) -> AssignmentsRecurrencesResult:
-        date_mapping = self._build_duplicate_date_mapping(duplicate=duplicate)
+        date_mapping = build_duplicate_date_mapping(duplicate=duplicate)
         source_period = list(date_mapping.keys())
         target_period = list(date_mapping.values())
 
@@ -811,12 +815,12 @@ class AssignmentService(BaseService):
             assignments_target=assignments_target,
         )
 
-        self._validate_lists(
-            assignments_source=assignments_source,
-            assignments_target=assignments_target,
-            a_source_duplicate_ids=a_source_duplicate_ids,
-            a_target_keep_ids=a_target_keep_ids,
-            a_target_delete_ids=a_target_delete_ids,
+        validate_duplicate_lists(
+            source_ids=[a.id for a in assignments_source],
+            target_ids=[a.id for a in assignments_target],
+            source_duplicate_ids=a_source_duplicate_ids,
+            target_keep_ids=a_target_keep_ids,
+            target_delete_ids=a_target_delete_ids,
         )
 
         a_to_create = self._build_duplicate_assignments(
@@ -845,36 +849,6 @@ class AssignmentService(BaseService):
             )
             ar_result.assignments_created.extend(assignments_recup_saved)
         return ar_result
-
-    @staticmethod
-    def _build_duplicate_date_mapping(
-        duplicate: DuplicateRequest,
-    ) -> Dict[date, date]:
-        source_dates = build_dates_list(
-            duplicate.source_period.start_date,
-            duplicate.source_period.end_date,
-        )
-        target_dates = build_dates_list(
-            duplicate.target_period.start_date,
-            duplicate.target_period.end_date,
-        )
-
-        # Map source and target dates to their weekdays
-        source_date_map = {
-            source_date.weekday(): source_date for source_date in source_dates
-        }
-        target_date_map = {
-            target_date.weekday(): target_date for target_date in target_dates
-        }
-
-        # Build the mapping by iterating through the target date map
-        date_mapping = {
-            source_date_map[weekday]: target_date
-            for weekday, target_date in target_date_map.items()
-            if weekday in source_date_map
-        }
-
-        return date_mapping
 
     def _get_assignments_for_periods(
         self,
@@ -957,34 +931,6 @@ class AssignmentService(BaseService):
             a_target_delete_ids,
             exclusions_target_create,
         )
-
-    @staticmethod
-    def _validate_lists(
-        assignments_source: List[Assignment],
-        assignments_target: List[Assignment],
-        a_source_duplicate_ids: List[str],
-        a_target_keep_ids: List[str],
-        a_target_delete_ids: List[str],
-    ) -> None:
-        source_ids = {a.id for a in assignments_source if not a.reference_assignment_id}
-        target_ids = {a.id for a in assignments_target}
-
-        assert len(set(a_source_duplicate_ids)) == len(
-            a_source_duplicate_ids
-        ), "Duplicate IDs in list of assignments to duplicate"
-        assert len(set(a_target_keep_ids)) == len(
-            a_target_keep_ids
-        ), "Duplicate IDs in list of assignments to keep"
-        assert len(set(a_target_delete_ids)) == len(
-            a_target_delete_ids
-        ), "Duplicate IDs in list of assignments to delete"
-
-        assert len(a_source_duplicate_ids) + len(a_target_keep_ids) == len(
-            source_ids
-        ), "Mismatch in number of assignments to duplicate+keep and source"
-        assert sorted(list(set(a_target_keep_ids + a_target_delete_ids))) == sorted(
-            target_ids
-        ), "Mismatch in target assignments to keep+delete and target"
 
     @staticmethod
     def _build_duplicate_assignments(

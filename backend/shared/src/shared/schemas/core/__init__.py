@@ -40,6 +40,7 @@ from shared.schemas.core.coverage_selector import CoverageSelector
 from shared.schemas.core.daily_shift_demand import (
     DailyShiftDemand,
     DeleteDailyShiftDemandRequest,
+    DemandsResult,
     DSDSourceType,
 )
 from shared.schemas.core.dim_entry import DimEntry
@@ -85,6 +86,7 @@ from shared.schemas.core.request import (
 from shared.schemas.core.schedule import (
     DuplicateOptions,
     DuplicateRequest,
+    DuplicateResult,
     Period,
     QuickStaffing,
     Schedule,
@@ -165,6 +167,7 @@ __all__ = [
     "CoverageSelector",
     "DailyShiftDemand",
     "DeleteDailyShiftDemandRequest",
+    "DemandsResult",
     "DSDSourceType",
     "ShiftDemand",
     "ShiftDemandExclusion",
@@ -202,6 +205,7 @@ __all__ = [
     "ObjectiveCategory",
     "DuplicateOptions",
     "DuplicateRequest",
+    "DuplicateResult",
     "Period",
     "QuickStaffing",
     "Schedule",

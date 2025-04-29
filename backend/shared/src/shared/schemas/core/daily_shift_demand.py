@@ -1,7 +1,7 @@
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, time, timezone
 from enum import Enum
-from typing import Dict
+from typing import Dict, List
 
 import humps
 from pydantic import TypeAdapter
@@ -9,6 +9,7 @@ from pydantic import TypeAdapter
 from shared.schemas.dto.daily_shift_demand import (
     DailyShiftDemandDTO,
     DeleteDailyShiftDemandRequestDTO,
+    DemandsResultDTO,
 )
 
 
@@ -96,4 +97,35 @@ class DeleteDailyShiftDemandRequest:
             data_dict["date"], tz=timezone.utc
         ).date()
         data_dict = humps.decamelize(data_dict)
+        return cls(**data_dict)
+
+
+@dataclass
+class DemandsResult:
+    demands_created: List[DailyShiftDemand]
+    demands_read: List[DailyShiftDemand]
+    demands_updated: List[DailyShiftDemand]
+    demands_deleted_ids: List[str]
+
+    def to_dto(self) -> DemandsResultDTO:
+        data = asdict(self)
+        data["demands_created"] = [demand.to_dto() for demand in self.demands_created]
+        data["demands_read"] = [demand.to_dto() for demand in self.demands_read]
+        data["demands_updated"] = [demand.to_dto() for demand in self.demands_updated]
+        as_dict = humps.camelize(data)
+        validator = TypeAdapter(DemandsResultDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, data: DemandsResultDTO) -> "DemandsResult":
+        data_dict = humps.decamelize(data.model_dump())
+        data_dict["demands_created"] = [
+            DailyShiftDemand.from_dto(demand) for demand in data_dict["demands_created"]
+        ]
+        data_dict["demands_read"] = [
+            DailyShiftDemand.from_dto(demand) for demand in data_dict["demands_read"]
+        ]
+        data_dict["demands_updated"] = [
+            DailyShiftDemand.from_dto(demand) for demand in data_dict["demands_updated"]
+        ]
         return cls(**data_dict)
