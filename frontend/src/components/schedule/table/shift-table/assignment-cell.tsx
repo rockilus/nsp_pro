@@ -9,6 +9,8 @@ import {
   AssignmentDataT,
   ScheduleViewSettingsT,
 } from "../../../../types/schedule";
+// Constants
+import { ShiftColorMappings } from "../../../../constants/constants";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -22,10 +24,23 @@ export default function AssignmentCell({
   scheduleViewSettings: ScheduleViewSettingsT;
   handleAssignmentSelection: (seletedCell: AssignmentDataT) => void;
 }) {
+  const { background, text } = ShiftColorMappings[
+    assignmentData.shift.color
+  ] || {
+    background: "#f5f5f5",
+    text: "#212121",
+  };
+
   return (
     <div
       className="assignment-cell-container"
       onClick={() => handleAssignmentSelection(assignmentData)}
+      style={
+        {
+          "--bg-color": background,
+          "--text-color": text,
+        } as React.CSSProperties
+      }
     >
       <span className="a-cell-title">
         {scheduleViewSettings.groupBy === "worker"

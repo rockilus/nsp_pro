@@ -49,7 +49,6 @@ export default function EventDivContent({
             variant="caption"
             display="block"
             sx={{
-              color: "white",
               fontWeight: "bold",
               width: "100%",
               overflow: "hidden",
@@ -62,7 +61,6 @@ export default function EventDivContent({
             variant="caption"
             display="block"
             sx={{
-              color: "white",
               padding: 0,
               whiteSpace: "nowrap",
               width: "100%",
@@ -79,7 +77,6 @@ export default function EventDivContent({
             variant="caption"
             display="block"
             sx={{
-              color: "white",
               width: "100%",
               whiteSpace: "nowrap",
               overflow: "hidden",
