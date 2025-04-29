@@ -1,3 +1,5 @@
+from typing import List
+
 from pydantic import BaseModel
 
 
@@ -17,3 +19,10 @@ class DeleteDailyShiftDemandRequestDTO(BaseModel):
     teamId: str
     shiftId: str
     date: float
+
+
+class DemandsResultDTO(BaseModel):
+    demandsCreated: List[DailyShiftDemandDTO]
+    demandsRead: List[DailyShiftDemandDTO]
+    demandsUpdated: List[DailyShiftDemandDTO]
+    demandsDeletedIds: List[str]

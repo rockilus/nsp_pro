@@ -24,7 +24,7 @@
     "demand": "Demand",
     "display": "Display",
     "duplicate": "Duplicate",
-    "duplicate_warning_part_1": "Assignments in the target week",
+    "duplicate_warning_part_1": "Assignments and/or demands in the target week",
     "duplicate_warning_part_2": "will be deleted. Do you want to proceed?",
     "duplicate_week": "Duplicate week",
     "duties_per_month": "Duties per month",

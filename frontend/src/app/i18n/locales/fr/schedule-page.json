@@ -22,7 +22,7 @@
     "demand": "Demande",
     "display": "Affichage",
     "duplicate": "Dupliquer",
-    "duplicate_warning_part_1": "Les affectations dans la semaine cible",
+    "duplicate_warning_part_1": "Les affectations et/ou demandes dans la semaine cible",
     "duplicate_warning_part_2": "seront supprimées. Voulez-vous continuer?",
     "duplicate_week": "Dupliquer la semaine",
     "duties_per_month": "Gardes par mois",

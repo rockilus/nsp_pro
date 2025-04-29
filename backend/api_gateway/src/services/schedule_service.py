@@ -6,13 +6,12 @@ from celery.result import AsyncResult  # type: ignore
 from openpyxl import Workbook
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
-    AssignmentsRecurrencesResult,
     CoverageSelector,
     DSDSourceType,
     DuplicateRequest,
+    DuplicateResult,
     ExportOptions,
     ExportPeriodOptions,
-    OccurrenceType,
     Schedule,
     ScheduleSolveStatus,
     ScheduleStatus,
@@ -26,21 +25,25 @@ from shared.schemas.core import (
 from src.config import config
 from src.services.assignment_service import AssignmentService
 from src.services.base_service import BaseService
+from src.services.daily_shift_demand_service import DailyShiftDemandService
 from src.utils.excel_utils import core_to_excel_schedule
 
 
 class ScheduleService(BaseService):
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(
         self,
         collection: DatabaseCollections,
         celery_app: Celery,
         submit_solve_problem_task: Callable[[Schedule], str],
         assignment_service: AssignmentService,
+        daily_shift_demand_service: DailyShiftDemandService,
     ) -> None:
         super().__init__(collection)
         self.celery_app = celery_app
         self.submit_solve_problem_task = submit_solve_problem_task
         self.assignment_service = assignment_service
+        self.daily_shift_demand_service = daily_shift_demand_service
 
     def get_schedule_campaign(self, team_id: str) -> Schedule:
         schedules = self.collection.schedule_db.get_schedules(team_id)
@@ -403,7 +406,7 @@ class ScheduleService(BaseService):
 
     def duplicate_period(
         self, schedule_id: str, duplicate: DuplicateRequest
-    ) -> AssignmentsRecurrencesResult:
+    ) -> DuplicateResult:
         schedule = self.collection.schedule_db.get_schedule_by_id(schedule_id)
         if not schedule:
             raise ValueError(f"Schedule with id {schedule_id} not found")
@@ -412,10 +415,15 @@ class ScheduleService(BaseService):
                 f"Schedule with id {schedule_id} is not in campaign status"
             )
         self._validate_duplicate(duplicate=duplicate, campaign=schedule)
-        if duplicate.options.occurrence_type == OccurrenceType.ASSIGNMENT:
-            return self.assignment_service.duplicate_period(
+        duplicate_result = DuplicateResult(assignments=None, demands=None)
+        if duplicate.options.copy_assignments:
+            ar_result = self.assignment_service.duplicate_period(
                 campaign=schedule, duplicate=duplicate
             )
-        raise ValueError(
-            f"Occurrence type {duplicate.options.occurrence_type} not supported"
-        )
+            duplicate_result.assignments = ar_result
+        if duplicate.options.copy_demands:
+            d_result = self.daily_shift_demand_service.duplicate_period(
+                campaign=schedule, duplicate=duplicate
+            )
+            duplicate_result.demands = d_result
+        return duplicate_result

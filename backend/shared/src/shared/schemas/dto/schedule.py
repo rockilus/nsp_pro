@@ -2,8 +2,12 @@ from typing import Dict, List
 
 from pydantic import BaseModel
 
-from shared.schemas.dto.assignment import AssignmentDTO
+from shared.schemas.dto.assignment import (
+    AssignmentDTO,
+    AssignmentsRecurrencesResultDTO,
+)
 from shared.schemas.dto.breach import BreachDTO
+from shared.schemas.dto.daily_shift_demand import DemandsResultDTO
 from shared.schemas.dto.request import RequestDTO
 
 
@@ -48,7 +52,8 @@ class PeriodDTO(BaseModel):
 
 
 class DuplicateOptionsDTO(BaseModel):
-    occurrenceType: int
+    copyAssignments: bool
+    copyDemands: bool
 
 
 #     copyTasks: bool
@@ -60,3 +65,8 @@ class DuplicateRequestDTO(BaseModel):
     sourcePeriod: PeriodDTO
     targetPeriod: PeriodDTO
     options: DuplicateOptionsDTO
+
+
+class DuplicateResultDTO(BaseModel):
+    assignments: AssignmentsRecurrencesResultDTO | None
+    demands: DemandsResultDTO | None

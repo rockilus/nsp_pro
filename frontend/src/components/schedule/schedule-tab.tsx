@@ -64,9 +64,10 @@ import {
   AssignmentDataT,
   ScheduleCellDataT,
   ScheduleViewSettingsT,
+  DuplicateResultT,
 } from "../../types/schedule";
 import { BreachT } from "@/types/breach";
-import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { DailyShiftDemandT, DemandsResultT } from "@/types/daily-shift-demand";
 import {
   AssignmentT,
   AssignmentsRecurrencesResultT,
@@ -273,6 +274,15 @@ export default function ScheduleTab({
     setBreaches([]);
   };
 
+  const handleDuplicateResult = (duplicateResult: DuplicateResultT) => {
+    if (duplicateResult.assignments) {
+      updateAssignmentsAndRecurrencesStates(duplicateResult.assignments);
+    }
+    if (duplicateResult.demands) {
+      updateDemandsStates(duplicateResult.demands);
+    }
+  };
+
   const handleSendDuplicateRequest = async (
     request: DuplicateRequestT,
     campaignId: string,
@@ -281,8 +291,8 @@ export default function ScheduleTab({
     if (!selectedTeamId) {
       throw new Error("No team selected");
     }
-    const ARResult = await duplicatePeriod(request, campaignId, teamId);
-    updateAssignmentsAndRecurrencesStates(ARResult);
+    const duplicateResult = await duplicatePeriod(request, campaignId, teamId);
+    handleDuplicateResult(duplicateResult);
     const newPeriodStart = request.targetPeriod.startDate.startOf("isoWeek");
     const newPeriodEnd = request.targetPeriod.startDate.endOf("isoWeek");
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
@@ -291,6 +301,28 @@ export default function ScheduleTab({
   //////////////////////////
   // Daily Shift Demand Actions
   //////////////////////////
+
+  const updateDemandsStates = (DemandsResult: DemandsResultT) => {
+    setDailyShiftDemands((prev) => {
+      let updatedDemands = prev.map(
+        (d) =>
+          DemandsResult.demandsUpdated.find((updated) => updated.id === d.id) ||
+          d
+      );
+
+      if (DemandsResult.demandsCreated.length > 0) {
+        updatedDemands = [...updatedDemands, ...DemandsResult.demandsCreated];
+      }
+
+      if (DemandsResult.demandsDeletedIds.length > 0) {
+        updatedDemands = updatedDemands.filter(
+          (d) => !DemandsResult.demandsDeletedIds.includes(d.id)
+        );
+      }
+
+      return updatedDemands;
+    });
+  };
 
   const handleCreateDSD = async (dailyShiftDemand: DailyShiftDemandT) => {
     if (!selectedTeamId) {

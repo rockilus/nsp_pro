@@ -1,17 +1,23 @@
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from shared.schemas.core import (
     CoverageSelector,
     DailyShiftDemand,
+    DemandsResult,
     DSDSourceType,
+    DuplicateRequest,
     Schedule,
     ShiftDemand,
     ShiftDemandExclusion,
 )
 
 from src.services.base_service import BaseService
+from src.utils.duplicate_utils import (
+    build_duplicate_date_mapping,
+    validate_duplicate_lists,
+)
 
 
 class DailyShiftDemandService(BaseService):
@@ -257,3 +263,193 @@ class DailyShiftDemandService(BaseService):
             )
         # fmt: on
         return dsd_deleted_ids
+
+    def duplicate_period(
+        self, campaign: Schedule, duplicate: DuplicateRequest
+    ) -> DemandsResult:
+        date_mapping = build_duplicate_date_mapping(duplicate=duplicate)
+        source_period = list(date_mapping.keys())
+        target_period = list(date_mapping.values())
+
+        demands_source, demands_target = self._get_demands_for_periods(
+            source_period=source_period,
+            target_period=target_period,
+            team_id=campaign.team_id,
+        )
+        (
+            source_duplicate_ids,
+            target_keep_ids,
+            target_delete_ids,
+            exclusions_target_create,
+        ) = self._build_demand_and_exclusion_lists(
+            source_period=source_period,
+            target_period=target_period,
+            date_mapping=date_mapping,
+            demands_source=demands_source,
+            demands_target=demands_target,
+        )
+
+        validate_duplicate_lists(
+            source_ids=[d.id for d in demands_source],
+            target_ids=[d.id for d in demands_target],
+            source_duplicate_ids=source_duplicate_ids,
+            target_keep_ids=target_keep_ids,
+            target_delete_ids=target_delete_ids,
+        )
+
+        d_to_create = self._build_duplicate_demands(
+            demands_source=demands_source,
+            date_mapping=date_mapping,
+            source_duplicate_ids=source_duplicate_ids,
+            campaign_id=campaign.id,
+        )
+
+        d_result = self._apply_changes_to_database(
+            d_to_create=d_to_create,
+            target_delete_ids=target_delete_ids,
+            exclusions_target_create=exclusions_target_create,
+        )
+
+        return d_result
+
+    def _get_demands_for_periods(
+        self,
+        source_period: List[date],
+        target_period: List[date],
+        team_id: str,
+    ) -> Tuple[List[DailyShiftDemand], List[DailyShiftDemand]]:
+        demands_source = (
+            self.collection.daily_shift_demand_db.get_daily_shift_demands_by_dates(
+                team_id=team_id,
+                start_date=min(source_period),
+                end_date=max(source_period),
+            )
+        )
+        demands_target = (
+            self.collection.daily_shift_demand_db.get_daily_shift_demands_by_dates(
+                team_id=team_id,
+                start_date=min(target_period),
+                end_date=max(target_period),
+            )
+        )
+        return demands_source, demands_target
+
+    @staticmethod
+    def _build_demand_and_exclusion_lists(
+        source_period: List[date],
+        target_period: List[date],
+        date_mapping: Dict[date, date],
+        demands_source: List[DailyShiftDemand],
+        demands_target: List[DailyShiftDemand],
+    ) -> Tuple[
+        List[str],
+        List[str],
+        List[str],
+        List[ShiftDemandExclusion],
+    ]:
+        source_duplicate_ids = []
+        target_keep_ids = []
+        target_delete_ids = []
+        exclusions_target_create = []
+
+        for d_source in demands_source:
+            if d_source.date not in source_period:
+                continue
+
+            if d_source.source_type == DSDSourceType.SHIFT_DEMAND:
+                matching_target_demand = next(
+                    (
+                        d
+                        for d in demands_target
+                        if d.date == date_mapping[d_source.date]
+                        and d.shift_id == d_source.shift_id
+                        and d.source_type == DSDSourceType.SHIFT_DEMAND
+                        and d.shift_demand_id == d_source.shift_demand_id
+                    ),
+                    None,
+                )
+                if matching_target_demand:
+                    target_keep_ids.append(matching_target_demand.id)
+                    continue
+            source_duplicate_ids.append(d_source.id)
+
+        for d_target in demands_target:
+            if d_target.date not in target_period:
+                continue
+            if d_target.id in target_keep_ids:
+                continue
+
+            if (
+                d_target.source_type == DSDSourceType.SHIFT_DEMAND
+                and d_target.coverage_selector_id is not None
+                and d_target.shift_demand_id is not None
+            ):
+                exclusions_target_create.append(
+                    ShiftDemandExclusion(
+                        id="",
+                        schedule_id=d_target.schedule_id,
+                        coverage_selector_id=d_target.coverage_selector_id,
+                        shift_demand_id=d_target.shift_demand_id,
+                        date=d_target.date,
+                    )
+                )
+            target_delete_ids.append(d_target.id)
+
+        return (
+            source_duplicate_ids,
+            target_keep_ids,
+            target_delete_ids,
+            exclusions_target_create,
+        )
+
+    @staticmethod
+    def _build_duplicate_demands(
+        demands_source: List[DailyShiftDemand],
+        date_mapping: Dict[date, date],
+        source_duplicate_ids: List[str],
+        campaign_id: str,
+    ) -> List[DailyShiftDemand]:
+        d_to_create = []
+
+        for d_source in demands_source:
+            if d_source.id not in source_duplicate_ids:
+                continue
+            d_to_create.append(
+                DailyShiftDemand(
+                    id="",
+                    team_id=d_source.team_id,
+                    schedule_id=campaign_id,
+                    shift_demand_id=None,
+                    coverage_selector_id=None,
+                    source_type=DSDSourceType.DIRECT_REQUIREMENT,
+                    date=date_mapping[d_source.date],
+                    shift_id=d_source.shift_id,
+                    count=d_source.count,
+                )
+            )
+
+        return d_to_create
+
+    def _apply_changes_to_database(
+        self,
+        d_to_create: List[DailyShiftDemand],
+        target_delete_ids: List[str],
+        exclusions_target_create: List[ShiftDemandExclusion],
+    ) -> DemandsResult:
+        d_created = self.collection.daily_shift_demand_db.create_daily_shift_demands(
+            daily_shift_demands=d_to_create
+        )
+        d_deleted_ids = (
+            self.collection.daily_shift_demand_db.delete_daily_shift_demands(
+                daily_shift_demand_ids=target_delete_ids
+            )
+        )
+        self.collection.shift_demand_exclusion_db.create_shift_demand_exclusions(
+            exclusions=exclusions_target_create
+        )
+        return DemandsResult(
+            demands_created=d_created,
+            demands_read=[],
+            demands_updated=[],
+            demands_deleted_ids=d_deleted_ids,
+        )

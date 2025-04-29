@@ -21,6 +21,8 @@ import {
   fromScheduleT,
   fromExportOptionsT,
   fromDuplicateRequestT,
+  DuplicateResultT,
+  toDuplicateResultT,
 } from "../../types/schedule";
 import {
   AssignmentT,
@@ -360,7 +362,7 @@ export async function duplicatePeriod(
   duplicateRequest: DuplicateRequestT,
   campaignId: string,
   teamId: string
-): Promise<AssignmentsRecurrencesResultT> {
+): Promise<DuplicateResultT> {
   const options: RequestInit = {
     method: "POST",
     headers: {
@@ -377,9 +379,7 @@ export async function duplicatePeriod(
     if (!response.ok) {
       throw new Error("Failed to duplicate period: " + responseData.detail);
     }
-    return toAssignmentsRecurrencesResultT(
-      responseData
-    ) as AssignmentsRecurrencesResultT;
+    return toDuplicateResultT(responseData) as DuplicateResultT;
   } catch (error) {
     console.error("Failed to duplicate period:", error);
     throw new Error("Failed to duplicate period, please try again later");

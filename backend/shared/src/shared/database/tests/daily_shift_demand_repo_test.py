@@ -724,3 +724,51 @@ class TestDailyShiftDemandRepository:
             self.repo.collection.find({"team": "team1", "shift": "shift1"})
         )
         assert len(remaining_docs) == 0
+
+    def test_get_daily_shift_demands_by_dates(self):
+        """Test getting daily shift demands by team ID within a date range."""
+        demands = [
+            DailyShiftDemandSchema(
+                team="team1",
+                schedule="schedule1",
+                shift_demand="shift_demand1",
+                coverage_selector="coverage_selector1",
+                source_type=DSDSourceType.SHIFT_DEMAND.value,
+                date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                shift="shift1",
+                count=5,
+            ),
+            DailyShiftDemandSchema(
+                team="team1",
+                schedule="schedule1",
+                shift_demand="shift_demand2",
+                coverage_selector="coverage_selector2",
+                source_type=DSDSourceType.SHIFT_DEMAND.value,
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
+                shift="shift2",
+                count=3,
+            ),
+            DailyShiftDemandSchema(
+                team="team1",
+                schedule="schedule1",
+                shift_demand="shift_demand3",
+                coverage_selector="coverage_selector3",
+                source_type=DSDSourceType.SHIFT_DEMAND.value,
+                date=datetime(2023, 1, 3, tzinfo=timezone.utc).timestamp(),
+                shift="shift3",
+                count=4,
+            ),
+        ]
+        self.repo.create_many(demands)
+
+        results = self.repo.get_daily_shift_demands_by_dates(
+            "team1",
+            datetime(2023, 1, 1, tzinfo=timezone.utc).date(),
+            datetime(2023, 1, 2, tzinfo=timezone.utc).date(),
+        )
+
+        assert len(results) == 2
+        assert results[0].team_id == "team1"
+        assert results[1].team_id == "team1"
+        assert results[0].date == datetime(2023, 1, 1, tzinfo=timezone.utc).date()
+        assert results[1].date == datetime(2023, 1, 2, tzinfo=timezone.utc).date()
