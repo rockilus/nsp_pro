@@ -3,10 +3,18 @@ import dayjs from "dayjs";
 // Types
 import { ShiftT } from "./shift";
 import { RequestT } from "./request";
-import { AssignmentT } from "./assignment";
+import {
+  AssignmentT,
+  AssignmentsRecurrencesResultT,
+  toAssignmentsRecurrencesResultT,
+} from "./assignment";
 import { BreachT } from "./breach";
 import { OccurrenceType } from "./recurrence";
-import { DailyShiftDemandT } from "./daily-shift-demand";
+import {
+  DailyShiftDemandT,
+  DemandsResultT,
+  toDemandsResultT,
+} from "./daily-shift-demand";
 import { WorkerT } from "./worker";
 import { RecurrenceRuleT } from "./recurrence";
 
@@ -119,7 +127,8 @@ export type PeriodT = {
 };
 
 export type DuplicateOptionsT = {
-  occurrenceType: OccurrenceType;
+  copyAssignments: boolean;
+  copyDemands: boolean;
 };
 
 export type DuplicateRequestT = {
@@ -167,6 +176,11 @@ export type ScheduleViewSettingsT = {
   showAssignments: boolean;
   showDailyShiftDemands: boolean;
   showRequests: boolean;
+};
+
+export type DuplicateResultT = {
+  assignments: AssignmentsRecurrencesResultT | null;
+  demands: DemandsResultT | null;
 };
 
 export const toSolveDetailsT = (data: any): SolveDetailsT => {
@@ -230,5 +244,14 @@ export const fromDuplicateRequestT = (data: DuplicateRequestT): any => {
     ...data,
     sourcePeriod: fromPeriodT(data.sourcePeriod),
     targetPeriod: fromPeriodT(data.targetPeriod),
+  };
+};
+
+export const toDuplicateResultT = (data: any): DuplicateResultT => {
+  return {
+    assignments: data.assignments
+      ? toAssignmentsRecurrencesResultT(data.assignments)
+      : null,
+    demands: data.demands ? toDemandsResultT(data.demands) : null,
   };
 };

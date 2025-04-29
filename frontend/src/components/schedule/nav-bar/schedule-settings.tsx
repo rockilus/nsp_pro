@@ -14,9 +14,8 @@ import {
   Select,
   FormControl,
   InputLabel,
-  RadioGroup,
+  Checkbox,
   FormControlLabel,
-  Radio,
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 // Components
@@ -69,6 +68,10 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
   const [occurrenceType, setOccurrenceType] = useState<OccurrenceType>(
     OccurrenceType.ASSIGNMENT
   );
+  const [copyAssignments, setCopyAssignments] = useState(false);
+  const [copyDemands, setCopyDemands] = useState(false);
+  const [copyAssignmentsError, setCopyAssignmentsError] = useState(false);
+  const [copyDemandsError, setCopyDemandsError] = useState(false);
 
   const handleOpenPopover = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -96,9 +99,22 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
         endDate: targetWeek.endDate,
       },
       options: {
-        occurrenceType,
+        copyAssignments: copyAssignments,
+        copyDemands: copyDemands,
       },
     };
+
+    // Validation: At least one checkbox should be selected
+    if (!copyAssignments && !copyDemands) {
+      // Raise an error to the user in the checkbox components
+      setCopyAssignmentsError(!copyAssignments);
+      setCopyDemandsError(!copyDemands);
+      return;
+    }
+
+    // Reset errors if validation passes
+    setCopyAssignmentsError(false);
+    setCopyDemandsError(false);
 
     await handleSendDuplicateRequest(
       duplicateRequest,
@@ -216,29 +232,44 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
               ))}
             </Select>
           </FormControl>
-          <RadioGroup
-            value={occurrenceType}
-            onChange={(e) => setOccurrenceType(Number(e.target.value))}
-            style={{ marginTop: "16px" }}
-          >
-            <FormControlLabel
-              value={OccurrenceType.ASSIGNMENT}
-              control={<Radio size="small" />}
-              label={
-                <span style={{ fontSize: "0.875rem" }}>{t("assignment")}</span>
-              }
-            />
-            <FormControlLabel
-              value={OccurrenceType.DAILY_SHIFT_DEMAND}
-              control={<Radio size="small" />}
-              label={
-                <span style={{ fontSize: "0.875rem" }}>
-                  {t("shift_demand")}
-                </span>
-              }
-              disabled={true}
-            />
-          </RadioGroup>
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={copyAssignments}
+                onChange={(e) => setCopyAssignments(e.target.checked)}
+              />
+            }
+            label={
+              <span
+                style={{
+                  fontSize: "0.875rem",
+                  color: copyAssignmentsError ? "red" : "inherit",
+                }}
+              >
+                {t("assignment")}
+              </span>
+            }
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={copyDemands}
+                onChange={(e) => setCopyDemands(e.target.checked)}
+              />
+            }
+            label={
+              <span
+                style={{
+                  fontSize: "0.875rem",
+                  color: copyDemandsError ? "red" : "inherit",
+                }}
+              >
+                {t("demand")}
+              </span>
+            }
+          />
         </DialogContent>
         <DialogActions>
           <Button
@@ -258,7 +289,7 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
             }}
             color="primary"
             variant="contained"
-            disabled={!targetWeek}
+            disabled={!targetWeek || (!copyAssignments && !copyDemands)}
             sx={{ textTransform: "none" }}
           >
             {t("duplicate")}
