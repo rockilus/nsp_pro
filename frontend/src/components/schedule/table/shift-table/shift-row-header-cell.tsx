@@ -10,6 +10,8 @@ import { ShiftT, ShiftType } from "../../../../types/shift";
 import { ScheduleT } from "../../../../types/schedule";
 import { DailyShiftDemandT } from "@/types/daily-shift-demand";
 import { AssignmentT } from "@/types/assignment";
+// Constants
+import { ShiftColorMappings } from "../../../../constants/constants";
 
 export default function ShiftRowHeaderCell({
   shift,
@@ -22,6 +24,12 @@ export default function ShiftRowHeaderCell({
   dailyShiftDemands: DailyShiftDemandT[];
   scheduleCampaign: ScheduleT | null;
 }) {
+  const { background, sample, text } = ShiftColorMappings[shift.color] || {
+    background: "#f5f5f5",
+    sample: "#9e9e9e",
+    text: "#212121",
+  };
+
   const { countActual: shiftCountActual, countTarget: shiftCountTarget } =
     scheduleCampaign
       ? countShiftsTotalPeriod(
@@ -48,6 +56,7 @@ export default function ShiftRowHeaderCell({
           className={`shift-type-marker ${
             shift.shiftType === ShiftType.DUTY ? "duty" : "other"
           }`}
+          style={{ "--bg-color": sample } as React.CSSProperties}
         ></div>
         <div className="shift-row-header-cell-left">
           <span className="shift-name">{`${shift.name} (${shift.acronym})`}</span>

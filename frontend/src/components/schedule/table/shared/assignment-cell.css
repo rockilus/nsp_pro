@@ -30,3 +30,13 @@
   font-weight: 300;
   /* color: #616161; */
 }
+
+.a-cell-shift-type-marker {
+  /* width: 60px; */
+  height: 3px;
+}
+
+.a-cell-shift-type-marker.duty {
+  /* background-color: #0000ff70; */
+  background-color: var(--bg-color, #212121);
+}

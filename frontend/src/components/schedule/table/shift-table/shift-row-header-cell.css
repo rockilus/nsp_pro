@@ -10,7 +10,8 @@
 }
 
 .shift-type-marker.duty {
-  background-color: #0000ff70;
+  /* background-color: #0000ff70; */
+  background-color: var(--bg-color, #212121);
 }
 
 .shift-row-header-cell-left {

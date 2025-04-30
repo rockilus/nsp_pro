@@ -6,6 +6,7 @@ import {
   AssignmentDataT,
   ScheduleViewSettingsT,
 } from "../../../../types/schedule";
+import { ShiftType } from "@/types/shift";
 // Constants
 import { ShiftColorMappings } from "../../../../constants/constants";
 
@@ -18,10 +19,11 @@ export default function AssignmentCell({
   scheduleViewSettings: ScheduleViewSettingsT;
   handleAssignmentSelection: (seletedCell: AssignmentDataT) => void;
 }) {
-  const { background, text } = ShiftColorMappings[
+  const { background, sample, text } = ShiftColorMappings[
     assignmentData.shift.color
   ] || {
     background: "#f5f5f5",
+    sample: "#9e9e9e",
     text: "#212121",
   };
 
@@ -63,6 +65,14 @@ export default function AssignmentCell({
             </span>
           </div>
         )}
+      {scheduleViewSettings.groupBy === "worker" && (
+        <div
+          className={`a-cell-shift-type-marker ${
+            assignmentData.shift.shiftType === ShiftType.DUTY ? "duty" : "other"
+          }`}
+          style={{ "--bg-color": sample } as React.CSSProperties}
+        ></div>
+      )}
     </div>
   );
 }
