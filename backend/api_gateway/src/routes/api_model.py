@@ -2,16 +2,7 @@ from datetime import date, datetime
 from typing import Dict, List
 
 from pydantic import BaseModel
-
-
-# Attribute
-class AttributeMessage(BaseModel):
-    id: str
-    value: str | int | bool
-    ownerType: int
-    ownerId: str
-    dimensionId: str
-    dimEntryIds: List[str]
+from shared.schemas.dto import AttributeDTO
 
 
 # Dimension
@@ -39,52 +30,10 @@ class DimensionsAndDimEntriesMessage(BaseModel):
 class NewDimensionMessage(BaseModel):
     newDimension: DimensionMessage
     newDimEntries: List[DimEntryMessage]
-    newAttributes: List[AttributeMessage]
-
-
-# Worker
-class WorkerMessage(BaseModel):
-    id: str
-    teamId: str
-    name: str
-    acronym: str
-    acronymCustom: bool
-    employmentStartDate: float
-    employmentEndDate: float | None
-    weeklyHours: int
-    weeklyHoursDesired: int
-    dutiesPerMonth: int
-    annualLeave: int
-    deleted: bool
-    specialtyIds: List[str]
-    attributes: List[AttributeMessage]
+    newAttributes: List[AttributeDTO]
 
 
 # Shift
-class StaffingMessage(BaseModel):
-    specialtyId: str | None
-    staffing: int
-
-
-class ShiftMessage(BaseModel):
-    id: str
-    teamId: str
-    name: str
-    acronym: str
-    acronymCustom: bool
-    startTime: float
-    endTime: float
-    staffing: List[StaffingMessage]
-    color: str
-    shiftType: int
-    restType: int
-    leaveType: int
-    recuperationTime: int
-    recuperationDutyId: str | None
-    deleted: bool
-    attributes: List[AttributeMessage]
-
-
 class LinkShiftMessage(BaseModel):
     id: str
     teamId: str

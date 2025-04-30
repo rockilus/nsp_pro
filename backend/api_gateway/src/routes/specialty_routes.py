@@ -7,6 +7,7 @@ from pydantic import TypeAdapter
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas.core import Specialty
+from shared.schemas.dto import WorkerDTO
 from shared.schemas.errors import handle_create_schema_object_error
 
 from src.dependencies import (
@@ -24,8 +25,7 @@ from src.integrations.authentication import (
     authn_verify_session,
 )
 from src.integrations.authorization import authz_check
-from src.routes.api_model import SpecialtyMessage, WorkerMessage
-from src.routes.worker_routes import core_to_msg_worker_and_attributes
+from src.routes.api_model import SpecialtyMessage
 from src.services.specialty_service import SpecialtyService
 
 router = APIRouter()
@@ -100,7 +100,7 @@ async def delete_specialty(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
     specialty_service: SpecialtyService = Depends(get_specialty_service),
-) -> List[WorkerMessage]:
+) -> List[WorkerDTO]:
     # pylint: disable=R0801
     try:
         if not await authz_check(
@@ -111,10 +111,7 @@ async def delete_specialty(
                 detail="You do not have permission to delete a specialty",
             )
         workers_updated, attributes = specialty_service.delete_specialty(specialty_id)
-        response = [
-            core_to_msg_worker_and_attributes(w, wp)
-            for w, wp in zip(workers_updated, attributes)
-        ]
+        response = [w.to_dto(attr) for w, attr in zip(workers_updated, attributes)]
     except Exception as e:
         log_info("Failed to delete specialty")
         handle_routes_errors(e)
