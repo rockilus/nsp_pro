@@ -54,6 +54,12 @@ class BaseRepository(Generic[T]):
         doc = self.collection.find_one({"_id": doc_id})
         return self.schema_cls.from_mongo(doc) if doc else None
 
+    def find_one(self, doc_filter: Optional[Dict[str, Any]] = None) -> Optional[T]:
+        """Find a single document matching the filter."""
+        doc_filter = doc_filter or {}
+        doc = self.collection.find_one(doc_filter)
+        return self.schema_cls.from_mongo(doc) if doc else None
+
     def find_all(
         self,
         doc_filter: Optional[Dict[str, Any]] = None,
