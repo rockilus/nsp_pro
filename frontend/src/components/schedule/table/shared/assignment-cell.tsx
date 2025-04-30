@@ -1,7 +1,4 @@
 import React from "react";
-import dayjs from "dayjs";
-import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
-import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 // Styles
 import "./assignment-cell.css";
 // Types
@@ -11,9 +8,6 @@ import {
 } from "../../../../types/schedule";
 // Constants
 import { ShiftColorMappings } from "../../../../constants/constants";
-
-dayjs.extend(isSameOrAfter);
-dayjs.extend(isSameOrBefore);
 
 export default function AssignmentCell({
   assignmentData,

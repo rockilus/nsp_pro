@@ -4,7 +4,7 @@ import { useTranslation } from "../../../../app/i18n/client";
 import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
 // Components
-import DailyShiftDemandCell from "./daily-shift-demand-cell";
+import DemandsHeaderCell from "./demands-header-cell";
 import { countShifts, countStaffings } from "./assignment-count-methods";
 // Styles
 import "./daily-shift-demand-row.css";
@@ -103,7 +103,7 @@ export default function DailyShiftDemandRow({
           dsd.date.isSame(pDate.date, "day")
         );
         return (
-          <DailyShiftDemandCell
+          <DemandsHeaderCell
             key={dateIndex}
             lng={lng}
             teamId={teamId}
