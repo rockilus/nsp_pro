@@ -47,6 +47,22 @@ export default function AssignmentCell({
             : assignmentData.worker.acronym
           : null}
       </span>
+      {scheduleViewSettings.groupBy === "worker" &&
+        scheduleViewSettings.timeFrame === "week" && (
+          <div className="a-cell-shift-times-container">
+            <span className="a-cell-shift-times-text">
+              {assignmentData.shift.startTime.format("HH:mm")}
+            </span>
+            <span className="a-cell-shift-times-text">{" - "}</span>
+            <span className="a-cell-shift-times-text">
+              {assignmentData.shift.endTime.format("HH:mm")}
+              {!assignmentData.shift.endTime.isSame(
+                assignmentData.shift.startTime,
+                "day"
+              ) && <sup>+1</sup>}
+            </span>
+          </div>
+        )}
     </div>
   );
 }

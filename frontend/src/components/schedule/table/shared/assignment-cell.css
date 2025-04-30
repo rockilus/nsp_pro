@@ -19,3 +19,14 @@
   overflow: hidden;
   text-overflow: ellipsis; /* Adds ... if the text overflows */
 }
+
+.a-cell-shift-times-container {
+  display: flex;
+  flex-direction: row;
+}
+
+.a-cell-shift-times-text {
+  font-size: 0.7rem;
+  font-weight: 300;
+  /* color: #616161; */
+}

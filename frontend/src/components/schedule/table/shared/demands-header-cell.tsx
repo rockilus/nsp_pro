@@ -6,7 +6,7 @@ import { useTranslation } from "../../../../app/i18n/client";
 import Popover from "@mui/material/Popover";
 import TableCell from "@mui/material/TableCell";
 // Styles
-import "./daily-shift-demand-cell.css";
+import "./demands-header-cell.css";
 import "../../../../styles/text-styles.css";
 // Types
 import {
