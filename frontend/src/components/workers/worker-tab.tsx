@@ -93,6 +93,7 @@ export default function WorkerTab({
       annualLeave: 25,
       specialtyIds: [],
       deleted: false,
+      userId: null,
       attributes: [],
     });
     setWorkers([...workers, addedWorker]);

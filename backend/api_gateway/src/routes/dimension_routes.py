@@ -37,7 +37,6 @@ from src.routes.dim_entry_routes import (
     core_to_msg_dim_entry,
     msg_to_core_dim_entry,
 )
-from src.routes.shift_routes import core_to_msg_attribute
 from src.services.dimension_service import DimensionService
 
 router = APIRouter()
@@ -182,9 +181,7 @@ def core_to_msg_new_dimension(
         as_dict = {
             "newDimension": core_to_msg_dimension(dimension),
             "newDimEntries": [core_to_msg_dim_entry(de) for de in dim_entries],
-            "newAttributes": [
-                core_to_msg_attribute(sp) for sp in attributes  # type: ignore
-            ],
+            "newAttributes": [attr.to_dto() for attr in attributes],  # type: ignore
         }
     except Exception as e:
         log_info(

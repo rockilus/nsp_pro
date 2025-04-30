@@ -16,5 +16,6 @@ export type WorkerT = {
   annualLeave: number;
   specialtyIds: string[];
   deleted: boolean;
+  userId: string | null;
   attributes: AttributeT[];
 };

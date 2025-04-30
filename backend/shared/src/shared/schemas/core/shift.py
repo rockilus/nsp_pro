@@ -3,6 +3,12 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Dict, List
 
+import humps
+from pydantic import TypeAdapter
+
+from shared.schemas.core.attribute import Attribute
+from shared.schemas.dto.shift import ShiftDTO, StaffingDTO
+
 
 class ShiftType(Enum):
     NORMAL = 0
@@ -43,6 +49,17 @@ class ShiftLeaveType(Enum):
 class Staffing:
     specialty_id: str | None
     staffing: int
+
+    def to_dto(self) -> StaffingDTO:
+        data = asdict(self)
+        as_dict = humps.camelize(data)
+        validator = TypeAdapter(StaffingDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, data: StaffingDTO) -> "Staffing":
+        data_dict = humps.decamelize(data.model_dump())
+        return cls(**data_dict)
 
 
 # pylint: disable=too-many-instance-attributes, R0801
@@ -94,3 +111,32 @@ class Shift:
             recuperation_duty_id=data["recuperation_duty_id"],
             deleted=data["deleted"],
         )
+
+    def to_dto(self, attributes: List[Attribute]) -> ShiftDTO:
+        data = asdict(self)
+        data["start_time"] = self.start_time.timestamp()
+        data["end_time"] = self.end_time.timestamp()
+        data["staffing"] = [s.to_dto() for s in self.staffing]
+        data["shift_type"] = self.shift_type.value
+        data["rest_type"] = self.rest_type.value
+        data["leave_type"] = self.leave_type.value
+        data["attributes"] = [attr.to_dict() for attr in attributes]
+        as_dict = humps.camelize(data)
+        validator = TypeAdapter(ShiftDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, data: ShiftDTO) -> "Shift":
+        data_dict = humps.decamelize(data.model_dump())
+        data_dict["start_time"] = datetime.fromtimestamp(
+            data_dict["start_time"], tz=timezone.utc
+        )
+        data_dict["end_time"] = datetime.fromtimestamp(
+            data_dict["end_time"], tz=timezone.utc
+        )
+        data_dict["staffing"] = [Staffing.from_dto(s) for s in data_dict["staffing"]]
+        data_dict["shift_type"] = ShiftType(data_dict["shift_type"])
+        data_dict["rest_type"] = ShiftRestType(data_dict["rest_type"])
+        data_dict["leave_type"] = ShiftLeaveType(data_dict["leave_type"])
+        data_dict.pop("attributes", None)
+        return cls(**data_dict)

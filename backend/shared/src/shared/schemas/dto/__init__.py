@@ -2,6 +2,7 @@ from shared.schemas.dto.assignment import (
     AssignmentDTO,
     AssignmentsRecurrencesResultDTO,
 )
+from shared.schemas.dto.attribute import AttributeDTO
 from shared.schemas.dto.breach import BreachDTO
 from shared.schemas.dto.daily_shift_demand import (
     DailyShiftDemandDTO,
@@ -18,10 +19,13 @@ from shared.schemas.dto.schedule import (
     ScheduleDTO,
     SolutionDTO,
 )
+from shared.schemas.dto.shift import ShiftDTO
+from shared.schemas.dto.worker import WorkerDTO
 
 __all__ = [
     "AssignmentDTO",
     "AssignmentsRecurrencesResultDTO",
+    "AttributeDTO",
     "BreachDTO",
     "DailyShiftDemandDTO",
     "DeleteDailyShiftDemandRequestDTO",
@@ -35,4 +39,6 @@ __all__ = [
     "PeriodDTO",
     "ScheduleDTO",
     "SolutionDTO",
+    "ShiftDTO",
+    "WorkerDTO",
 ]

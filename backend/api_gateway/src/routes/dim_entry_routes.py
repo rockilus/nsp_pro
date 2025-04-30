@@ -7,6 +7,7 @@ from pydantic import TypeAdapter
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas.core import DimEntry
+from shared.schemas.dto import AttributeDTO
 from shared.schemas.errors import handle_create_schema_object_error
 
 from src.dependencies import get_db_collections, get_dim_entry_service
@@ -21,8 +22,7 @@ from src.integrations.authentication import (
     authn_verify_session,
 )
 from src.integrations.authorization import authz_check
-from src.routes.api_model import AttributeMessage, DimEntryMessage
-from src.routes.attribute_routes import core_to_msg_attribute
+from src.routes.api_model import DimEntryMessage
 from src.services.dim_entry_service import DimEntryService
 
 router = APIRouter()
@@ -79,7 +79,7 @@ async def delete_dim_entry(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
     dim_entry_service: DimEntryService = Depends(get_dim_entry_service),
-) -> List[AttributeMessage]:
+) -> List[AttributeDTO]:
     # pylint: disable=R0801
     try:
         if not await authz_check(
@@ -89,11 +89,11 @@ async def delete_dim_entry(
                 status_code=403,
                 detail="You do not have permission to delete a dim entry",
             )
-        sp_updated = dim_entry_service.delete_dim_entry(dim_entry_id)
+        attr_updated = dim_entry_service.delete_dim_entry(dim_entry_id)
     except Exception as e:
         log_info("Failed to delete dim entry")
         handle_routes_errors(e)
-    return [core_to_msg_attribute(sp) for sp in sp_updated]
+    return [attr.to_dto() for attr in attr_updated]
 
 
 # Mappers

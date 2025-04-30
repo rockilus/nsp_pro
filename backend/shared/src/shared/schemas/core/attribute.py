@@ -2,6 +2,11 @@ from dataclasses import asdict, dataclass
 from enum import Enum
 from typing import Dict, List
 
+import humps
+from pydantic import TypeAdapter
+
+from shared.schemas.dto.attribute import AttributeDTO
+
 
 class AttributeOwnerType(Enum):
     SHIFT = 0
@@ -32,3 +37,16 @@ class Attribute:
             dimension_id=data["dimension_id"],
             dim_entry_ids=data["dim_entry_ids"],
         )
+
+    def to_dto(self) -> AttributeDTO:
+        data = asdict(self)
+        data["owner_type"] = self.owner_type.value
+        as_dict = humps.camelize(data)
+        validator = TypeAdapter(AttributeDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, data: AttributeDTO) -> "Attribute":
+        data_dict = humps.decamelize(data.model_dump())
+        data_dict["owner_type"] = AttributeOwnerType(data_dict["owner_type"])
+        return cls(**data_dict)
