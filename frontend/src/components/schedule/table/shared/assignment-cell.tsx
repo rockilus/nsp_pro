@@ -1,7 +1,4 @@
 import React from "react";
-import dayjs from "dayjs";
-import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
-import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 // Styles
 import "./assignment-cell.css";
 // Types
@@ -9,9 +6,9 @@ import {
   AssignmentDataT,
   ScheduleViewSettingsT,
 } from "../../../../types/schedule";
-
-dayjs.extend(isSameOrAfter);
-dayjs.extend(isSameOrBefore);
+import { ShiftType } from "@/types/shift";
+// Constants
+import { ShiftColorMappings } from "../../../../constants/constants";
 
 export default function AssignmentCell({
   assignmentData,
@@ -22,10 +19,24 @@ export default function AssignmentCell({
   scheduleViewSettings: ScheduleViewSettingsT;
   handleAssignmentSelection: (seletedCell: AssignmentDataT) => void;
 }) {
+  const { background, sample, text } = ShiftColorMappings[
+    assignmentData.shift.color
+  ] || {
+    background: "#f5f5f5",
+    sample: "#9e9e9e",
+    text: "#212121",
+  };
+
   return (
     <div
       className="assignment-cell-container"
       onClick={() => handleAssignmentSelection(assignmentData)}
+      style={
+        {
+          "--bg-color": background,
+          "--text-color": text,
+        } as React.CSSProperties
+      }
     >
       <span className="a-cell-title">
         {scheduleViewSettings.groupBy === "worker"
@@ -38,6 +49,30 @@ export default function AssignmentCell({
             : assignmentData.worker.acronym
           : null}
       </span>
+      {scheduleViewSettings.groupBy === "worker" &&
+        scheduleViewSettings.timeFrame === "week" && (
+          <div className="a-cell-shift-times-container">
+            <span className="a-cell-shift-times-text">
+              {assignmentData.shift.startTime.format("HH:mm")}
+            </span>
+            <span className="a-cell-shift-times-text">{" - "}</span>
+            <span className="a-cell-shift-times-text">
+              {assignmentData.shift.endTime.format("HH:mm")}
+              {!assignmentData.shift.endTime.isSame(
+                assignmentData.shift.startTime,
+                "day"
+              ) && <sup>+1</sup>}
+            </span>
+          </div>
+        )}
+      {scheduleViewSettings.groupBy === "worker" && (
+        <div
+          className={`a-cell-shift-type-marker ${
+            assignmentData.shift.shiftType === ShiftType.DUTY ? "duty" : "other"
+          }`}
+          style={{ "--bg-color": sample } as React.CSSProperties}
+        ></div>
+      )}
     </div>
   );
 }

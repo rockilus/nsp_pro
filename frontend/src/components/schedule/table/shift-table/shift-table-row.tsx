@@ -1,5 +1,4 @@
 import React from "react";
-import dayjs from "dayjs";
 // MUI
 import TableRow from "@mui/material/TableRow";
 // Components
@@ -11,7 +10,6 @@ import { ShiftT } from "../../../../types/shift";
 import {
   ScheduleT,
   periodDateT,
-  AssignmentsDictT,
   AssignmentDataT,
   ScheduleCellDataT,
   ScheduleCellsDictT,
@@ -27,7 +25,6 @@ export default function ShiftTableRow({
   dailyShiftDemands,
   periodDates,
   scheduleCampaign,
-  shiftIdDateToAssignData,
   scheduleCellsDict,
   scheduleViewSettings,
   handleAssignmentSelection,
@@ -39,7 +36,6 @@ export default function ShiftTableRow({
   dailyShiftDemands: DailyShiftDemandT[];
   periodDates: periodDateT[];
   scheduleCampaign: ScheduleT | null;
-  shiftIdDateToAssignData: AssignmentsDictT;
   scheduleCellsDict: ScheduleCellsDictT;
   scheduleViewSettings: ScheduleViewSettingsT;
   handleAssignmentSelection: (selectedAssignment: AssignmentDataT) => void;
@@ -64,9 +60,7 @@ export default function ShiftTableRow({
           <ShiftCell
             key={dateIndex}
             periodDate={pDate}
-            scheduleCampaign={scheduleCampaign}
             shift={shift}
-            shiftIdDateToAssignData={shiftIdDateToAssignData}
             scheduleCellData={scheduleCellData}
             scheduleViewSettings={scheduleViewSettings}
             handleAssignmentSelection={handleAssignmentSelection}

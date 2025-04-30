@@ -1,6 +1,4 @@
 import dayjs from "dayjs";
-import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
-import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import ToggleButton from "@mui/material/ToggleButton";
@@ -19,9 +17,6 @@ import {
   StatsUnitOptions,
   HeaderUnitOptions,
 } from "../../../types/stats";
-
-dayjs.extend(isSameOrAfter);
-dayjs.extend(isSameOrBefore);
 
 export default function QuickStatsTable({
   lng,

@@ -1,6 +1,4 @@
-import dayjs from "dayjs";
-import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
-import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import React from "react";
 // MUI
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
@@ -11,7 +9,7 @@ import TableHead from "@mui/material/TableHead";
 import DatesHeaderRow from "../shared/dates-header-row";
 import DailyShiftDemandRow from "../shared/daily-shift-demand-row";
 import WorkerTableRow from "./worker-table-row";
-import { buildAssignmentsDataByOwnerAndDate } from "../shared/assignment-utils";
+import { buildScheduleCellDict } from "../shared/assignment-utils";
 import { getRelevantWorkers } from "./worker-table-utils";
 // Types
 import { ShiftT } from "../../../../types/shift";
@@ -30,9 +28,6 @@ import { AssignmentT } from "@/types/assignment";
 import { RequestT } from "../../../../types/request";
 import { AttributeOwnerType } from "../../../../types/attribute";
 import { RecurrenceRuleT } from "@/types/recurrence";
-
-dayjs.extend(isSameOrAfter);
-dayjs.extend(isSameOrBefore);
 
 export default function ScheduleTableWorker({
   lng,
@@ -77,14 +72,15 @@ export default function ScheduleTableWorker({
     scheduleCampaign
   );
 
-  const workerIdDateToAssignData = buildAssignmentsDataByOwnerAndDate(
+  const scheduleCellDict = buildScheduleCellDict(
     AttributeOwnerType.WORKER,
     assignments,
+    dailyShiftDemands,
     recurrences,
+    requests,
     workers,
     shifts,
-    breaches,
-    requests
+    breaches
   );
 
   return (
@@ -128,9 +124,9 @@ export default function ScheduleTableWorker({
               shifts={shifts}
               worker={worker}
               assignments={assignments}
-              workerIdDateToAssignData={workerIdDateToAssignData}
               scheduleCampaign={scheduleCampaign}
               periodDates={periodDates}
+              scheduleCellsDict={scheduleCellDict}
               scheduleViewSettings={scheduleViewSettings}
               handleAssignmentSelection={handleAssignmentSelection}
               handleOpenCreateAssignment={handleOpenCreateAssignment}

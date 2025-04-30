@@ -186,6 +186,7 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
               checked={scheduleViewSettings.showRequests}
               onChange={handleShowRequestsToggle}
               size="small"
+              disabled={true}
             />
           }
           label={

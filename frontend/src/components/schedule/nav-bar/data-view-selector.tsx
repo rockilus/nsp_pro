@@ -67,24 +67,6 @@ export default function DataViewSelector({
           {t("worker")}
         </ToggleButton>
       </ToggleButtonGroup>
-      <ToggleButton
-        value="breaches"
-        sx={{
-          textTransform: "none",
-          height: "35px",
-          fontSize: "0.9rem",
-          marginLeft: "8px",
-        }}
-        selected={scheduleViewSettings.showBreaches}
-        onClick={() => {
-          updateScheduleViewSettings({
-            ...scheduleViewSettings,
-            showBreaches: !scheduleViewSettings.showBreaches,
-          });
-        }}
-      >
-        {t("breaches")}
-      </ToggleButton>
     </div>
   );
 }

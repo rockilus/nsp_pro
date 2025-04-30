@@ -1,277 +1,44 @@
-import React, { useEffect, useState } from "react";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { useTranslation } from "../../../../app/i18n/client";
-// MUI
-import Popover from "@mui/material/Popover";
-import TableCell from "@mui/material/TableCell";
+import React from "react";
 // Styles
 import "./daily-shift-demand-cell.css";
-import "../../../../styles/text-styles.css";
 // Types
-import {
-  ScheduleT,
-  ScheduleStatus,
-  periodDateT,
-  ScheduleViewSettingsT,
-} from "../../../../types/schedule";
-import { DSDSourceType } from "@/types/daily-shift-demand";
-import { DailyShiftDemandT } from "@/types/daily-shift-demand";
-import { ShiftT, ShiftType } from "../../../../types/shift";
-
-dayjs.extend(utc);
+import { ScheduleCellDataT } from "../../../../types/schedule";
+// Constants
+import { TrafficLightColorMappings } from "../../../../constants/constants";
 
 export default function DailyShiftDemandCell({
-  lng,
-  teamId,
-  scheduleCampaign,
-  periodDate,
-  dailyShiftDemands,
-  shifts,
-  counts,
-  scheduleViewSettings,
-  handleCreateDSD,
-  handleUpdateDSD,
+  scheduleCellData,
+  handleDemandSelection,
 }: {
-  lng: string;
-  teamId: string;
-  scheduleCampaign: ScheduleT | null;
-  periodDate: periodDateT;
-  dailyShiftDemands: DailyShiftDemandT[];
-  shifts: ShiftT[];
-  counts: {
-    [id: string]: {
-      actual: number;
-      target: number;
-      staffingTotal: number;
-    };
-    total: {
-      actual: number;
-      target: number;
-      staffingTotal: number;
-    };
-  };
-  scheduleViewSettings: ScheduleViewSettingsT;
-  handleCreateDSD: (dsd: DailyShiftDemandT) => void;
-  handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
+  scheduleCellData: ScheduleCellDataT;
+  handleDemandSelection: (scheduleCellData: ScheduleCellDataT) => void;
 }) {
-  const { t } = useTranslation(lng, "schedule-page");
+  const countActual = scheduleCellData.assignmentsData.length;
+  const countTarget =
+    scheduleCellData.dailyShiftDemandsData?.dailyShiftDemands.reduce(
+      (sum, demand) => sum + demand.count,
+      0
+    ) || 0;
 
-  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
-    null
-  );
-  const [shiftsWorkNotDeleted, setShiftWorkNotDeleted] = useState<ShiftT[]>([]);
-
-  const open = Boolean(anchorEl);
-  const id = open ? "simple-popover" : undefined;
-
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleDecreaseDSD = (shift: ShiftT) => {
-    if (
-      !scheduleCampaign ||
-      periodDate.scheduleStatus !== ScheduleStatus.CAMPAIGN
-    ) {
-      return;
-    }
-    const dsdShiftDemand = dailyShiftDemands.find(
-      (dsd) =>
-        dsd.shiftId === shift.id &&
-        dsd.sourceType === DSDSourceType.SHIFT_DEMAND &&
-        dsd.count > 0
-    );
-    const dsdDirectReq = dailyShiftDemands.find(
-      (dsd) =>
-        dsd.shiftId === shift.id &&
-        dsd.sourceType === DSDSourceType.DIRECT_REQUIREMENT
-    );
-    const dsdIsGreaterThanZero =
-      (dsdShiftDemand ? dsdShiftDemand.count : 0) +
-        (dsdDirectReq ? dsdDirectReq.count : 0) >
-      0;
-    if (!dsdIsGreaterThanZero) {
-      return;
-    }
-    if (dsdDirectReq) {
-      handleUpdateDSD({
-        ...dsdDirectReq,
-        count: dsdDirectReq.count - 1,
-      });
-    } else {
-      const newDsd: DailyShiftDemandT = {
-        id: "",
-        teamId: teamId,
-        scheduleId: scheduleCampaign.id,
-        shiftDemandId: null,
-        coverageSelectorId: null,
-        sourceType: DSDSourceType.DIRECT_REQUIREMENT,
-        date: periodDate.date,
-        shiftId: shift.id,
-        count: -1,
-      };
-      handleCreateDSD(newDsd);
-    }
-  };
-
-  const handleIncreaseDSD = (shift: ShiftT) => {
-    if (
-      !scheduleCampaign ||
-      periodDate.scheduleStatus !== ScheduleStatus.CAMPAIGN
-    ) {
-      return;
-    }
-    const dsdDirectReq = dailyShiftDemands.find(
-      (dsd) =>
-        dsd.shiftId === shift.id &&
-        dsd.sourceType === DSDSourceType.DIRECT_REQUIREMENT
-    );
-    if (dsdDirectReq) {
-      handleUpdateDSD({
-        ...dsdDirectReq,
-        count: dsdDirectReq.count + 1,
-      });
-    } else {
-      const newDsd: DailyShiftDemandT = {
-        id: "",
-        teamId: teamId,
-        scheduleId: scheduleCampaign.id,
-        shiftDemandId: null,
-        coverageSelectorId: null,
-        sourceType: DSDSourceType.DIRECT_REQUIREMENT,
-        date: periodDate.date,
-        shiftId: shift.id,
-        count: 1,
-      };
-      handleCreateDSD(newDsd);
-    }
-  };
-
-  const AdjustStaffingButtons = ({ shift }: { shift: ShiftT }) => {
-    return (
-      <div className="adjust-dsd-buttons">
-        <button
-          className="adjust-button adjust-button-left"
-          onClick={() => handleDecreaseDSD(shift)}
-        >
-          –
-        </button>
-        <button
-          className="adjust-button adjust-button-right"
-          onClick={() => handleIncreaseDSD(shift)}
-        >
-          +
-        </button>
-      </div>
-    );
-  };
-
-  const DSDPopoverButton = () => {
-    return (
-      <span
-        className={`dsd-stats-total ${
-          counts.total.actual !== counts.total.target && "breach"
-        }`}
-      >
-        {`${counts.total.actual} / ${counts.total.target}`}
-      </span>
-    );
-  };
-
-  const PopoverContent = () => {
-    return (
-      <div>
-        <span className="subtitle">
-          {scheduleViewSettings.groupBy === "shift"
-            ? t("shift_count")
-            : t("worker_count")}
-        </span>
-        <div className="divider-popover" />
-        {shiftsWorkNotDeleted.map((shift) => {
-          return (
-            <div key={shift.id} className="container-dsd-item">
-              <div
-                className={`container-dsd-item-text ${
-                  counts[shift.id].actual !== counts[shift.id].target &&
-                  "breach"
-                }`}
-              >
-                <div className="shift-name">{shift.name}</div>
-                {scheduleViewSettings.groupBy === "worker" && (
-                  <span className="dsd-stats staffing-count">{`(${
-                    counts[shift.id].staffingTotal
-                  })`}</span>
-                )}
-                <div className="container-dsd-stats">
-                  <span className="dsd-stats dsd-stats-actual">
-                    {counts[shift.id].actual}
-                  </span>
-                  <span className="dsd-stats dsd-stats-slash">/</span>
-                  <span className="dsd-stats dsd-stats-target">
-                    {counts[shift.id].target}
-                  </span>
-                </div>
-              </div>
-              {periodDate.scheduleStatus === ScheduleStatus.CAMPAIGN && (
-                <div className="container-dsd-adjust-buttons">
-                  <AdjustStaffingButtons shift={shift} />
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  useEffect(() => {
-    const shiftWorkNotDeleted = shifts.filter(
-      (s) =>
-        [ShiftType.NORMAL, ShiftType.DUTY].includes(s.shiftType) && !s.deleted
-    );
-    setShiftWorkNotDeleted(shiftWorkNotDeleted);
-  }, [shifts]);
+  const { background, text } =
+    countActual === countTarget
+      ? TrafficLightColorMappings.green
+      : TrafficLightColorMappings.red;
 
   return (
-    <TableCell
-      sx={{
-        padding: 0,
-        borderRight: "1px solid #e0e0e07d",
-      }}
+    <div
+      className="dsd-cell-container"
+      onClick={() => handleDemandSelection(scheduleCellData)}
+      style={{
+        "--bg-color": background,
+        "--text-color": text,
+      } as React.CSSProperties}
     >
-      {periodDate.scheduleStatus !== null && (
-        <div className="container-dsd-cell">
-          <button onClick={handleClick}>
-            <DSDPopoverButton />
-          </button>
-          <Popover
-            id={id}
-            open={open}
-            anchorEl={anchorEl}
-            onClose={handleClose}
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "left",
-            }}
-            slotProps={{
-              paper: {
-                style: {
-                  boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
-                  padding: 20,
-                  width: 300,
-                },
-              },
-            }}
-          >
-            <PopoverContent />
-          </Popover>
-        </div>
-      )}
-    </TableCell>
+      <div className="dsd-cell-stats">
+        <span className="dsd-stats dsd-stats-actual">{countActual}</span>
+        <span className="dsd-stats dsd-stats-slash">/</span>
+        <span className="dsd-stats dsd-stats-target">{countTarget}</span>
+      </div>
+    </div>
   );
 }

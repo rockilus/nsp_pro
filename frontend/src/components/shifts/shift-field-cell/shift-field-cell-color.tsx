@@ -1,14 +1,15 @@
 import React, { useState } from "react";
-import { CirclePicker, ColorResult } from "react-color";
 // MUI
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import Menu from "@mui/material/Menu";
 import TableCell from "@mui/material/TableCell";
+import Popover from "@mui/material/Popover";
+import Button from "@mui/material/Button";
 // Types
 import { ShiftT, ShiftLeaveType, ShiftRestType } from "../../../types/shift";
 // Constants
-import { ShiftColors } from "../../../constants/constants";
+import { ShiftColorMappings } from "../../../constants/constants";
 
 export default function ShiftFieldCellColor({
   shift,
@@ -31,9 +32,9 @@ export default function ShiftFieldCellColor({
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const handleColorChange = (newColor: ColorResult) => {
-    if (newColor.hex !== shift.color) {
-      handleUpdateShift({ ...shift, color: newColor.hex });
+  const handleColorChange = (colorKey: string) => {
+    if (colorKey !== shift.color) {
+      handleUpdateShift({ ...shift, color: colorKey });
     }
     handleClose();
   };
@@ -58,32 +59,42 @@ export default function ShiftFieldCellColor({
             style={{
               width: "30px",
               height: "22px",
-              backgroundColor: shift.color,
+              backgroundColor:
+                ShiftColorMappings[shift.color]?.sample || "#ccc",
             }}
           />
         </Box>
-        <Menu
-          id="basic-menu"
-          anchorEl={anchorEl}
+        <Popover
+          id="color-popover"
           open={open}
+          anchorEl={anchorEl}
           onClose={handleClose}
-          MenuListProps={{
-            "aria-labelledby": "basic-button",
-          }}
-          slotProps={{
-            paper: {
-              style: {
-                width: 260,
-              },
-            },
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "left",
           }}
         >
-          <CirclePicker
-            color={shift.color}
-            onChange={handleColorChange}
-            colors={ShiftColors}
-          />
-        </Menu>
+          <Box sx={{ display: "flex", flexWrap: "wrap", padding: 1 }}>
+            {Object.keys(ShiftColorMappings).map((colorKey) => (
+              <Button
+                key={colorKey}
+                onClick={() => handleColorChange(colorKey)}
+                sx={{
+                  backgroundColor: ShiftColorMappings[colorKey].sample,
+                  width: 30,
+                  height: 30,
+                  minWidth: 0,
+                  margin: 0.5,
+                  borderRadius: "50%",
+                  // border: "1px solid #ccc",
+                  "&:hover": {
+                    backgroundColor: ShiftColorMappings[colorKey].text,
+                  },
+                }}
+              />
+            ))}
+          </Box>
+        </Popover>
       </Box>
     </TableCell>
   );

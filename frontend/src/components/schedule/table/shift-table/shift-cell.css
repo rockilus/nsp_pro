@@ -1,39 +1,3 @@
-.cell-content-container {
-  height: 100%;
-  width: 100%;
-}
-
-.assignment-div-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 45px;
-  width: 100%;
-  cursor: pointer;
-  border-bottom: 1px solid #e0e0e07d;
-}
-
-.assignment-div-container.last {
-  border-bottom: none;
-}
-
-.assignment-div-container.hard-breach {
-  background-color: #ff00001e;
-}
-
-.assignment-div-container.soft-breach {
-  background-color: #ffa5001e;
-}
-
-.worker-name-cell {
-  font-size: 0.85rem;
-  font-weight: 350;
-}
-
-.worker-name-cell.fix {
-  font-weight: 550;
-}
-
 .cell-hover-container:hover .add-icon-button,
 .add-icon-button:hover {
   opacity: 0.5;

@@ -6,6 +6,8 @@ import { EventT } from "@/types/shift-demand";
 import { ShiftDemandT } from "@/types/shift-demand";
 import { ShiftT } from "../../../types/shift";
 import { SpecialtyT } from "@/types/specialty";
+// Constants
+import { ShiftColorMappings } from "../../../constants/constants";
 
 export default function EventToDiv({
   lng,
@@ -43,6 +45,12 @@ export default function EventToDiv({
     spaceBetween * (event.widthNumerator - 1);
   const height = rowHeight * event.durationHour;
   const textBottomMargin = -0.75;
+
+  const { background, text } = ShiftColorMappings[event.shift.color] || {
+    background: "#f5f5f5",
+    text: "#212121",
+  };
+
   return (
     <div
       key={event.shiftDemand.id}
@@ -51,9 +59,8 @@ export default function EventToDiv({
         left: startX,
         width: width,
         height: height,
-        backgroundColor: event.shift.color,
-        opacity: 0.8,
-        color: "white",
+        backgroundColor: background,
+        color: text,
         borderBottom: "1px solid #ffffff",
         borderTopLeftRadius: event.borderTopRadius ? "4px" : "0px",
         borderTopRightRadius: event.borderTopRadius ? "4px" : "0px",

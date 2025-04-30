@@ -1,7 +1,4 @@
 import React from "react";
-import dayjs from "dayjs";
-import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
-import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 // MUI
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
@@ -12,10 +9,7 @@ import TableHead from "@mui/material/TableHead";
 import DatesHeaderRow from "../shared/dates-header-row";
 import DailyShiftDemandRow from "../shared/daily-shift-demand-row";
 import ShiftTableRow from "./shift-table-row";
-import {
-  buildAssignmentsDataByOwnerAndDate,
-  buildScheduleCellDict,
-} from "../shared/assignment-utils";
+import { buildScheduleCellDict } from "../shared/assignment-utils";
 import { getRelevantShifts } from "./shift-table-utils";
 // Types
 import { ShiftT } from "../../../../types/shift";
@@ -34,9 +28,6 @@ import { AssignmentT, CreateAssignmentT } from "@/types/assignment";
 import { RequestT } from "../../../../types/request";
 import { AttributeOwnerType } from "../../../../types/attribute";
 import { RecurrenceRuleT } from "@/types/recurrence";
-
-dayjs.extend(isSameOrAfter);
-dayjs.extend(isSameOrBefore);
 
 export default function ScheduleTableShift({
   lng,
@@ -79,15 +70,6 @@ export default function ScheduleTableShift({
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
   const shiftsForHeader = getRelevantShifts(shifts, assignments);
-  const shiftIdDateToAssignData = buildAssignmentsDataByOwnerAndDate(
-    AttributeOwnerType.SHIFT,
-    assignments,
-    recurrences,
-    workers,
-    shifts,
-    breaches,
-    requests
-  );
   const scheduleCellDict = buildScheduleCellDict(
     AttributeOwnerType.SHIFT,
     assignments,
@@ -141,7 +123,6 @@ export default function ScheduleTableShift({
               dailyShiftDemands={dailyShiftDemands}
               periodDates={periodDates}
               scheduleCampaign={scheduleCampaign}
-              shiftIdDateToAssignData={shiftIdDateToAssignData}
               scheduleCellsDict={scheduleCellDict}
               scheduleViewSettings={scheduleViewSettings}
               handleAssignmentSelection={handleAssignmentSelection}
