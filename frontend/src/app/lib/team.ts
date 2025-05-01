@@ -1,4 +1,6 @@
 import { unstable_noStore as noStore } from "next/cache";
+// Types
+import { TeamT, toTeamtT } from "../../types/team";
 // Env Vars
 import { API_URL } from "./env";
 
