@@ -1,7 +1,7 @@
 import time
 from typing import List
 
-from shared.schemas.core import Team
+from shared.schemas.core import Team, TeamMembership, TeamMembershipRole
 
 from src.integrations.authorization import (
     authz_role_assignment_get_user_team_ids,
@@ -9,17 +9,31 @@ from src.integrations.authorization import (
 )
 from src.services.base_service import BaseService
 from src.services.shift_service import ShiftService
+from src.services.team_membership_service import TeamMembershipService
 
 
 class TeamService(BaseService):
-    def __init__(self, collection, shift_service: ShiftService):
+    def __init__(
+        self,
+        collection,
+        shift_service: ShiftService,
+        team_membership_service: TeamMembershipService,
+    ):
         super().__init__(collection)
         self.shift_service = shift_service
+        self.team_membership_service = team_membership_service
 
-    async def create_team(self, team: Team) -> Team:
+    async def create_team(self, team: Team, owner_id: str) -> Team:
         new_team = self.collection.team_db.create_team(team)
-        self.shift_service.create_default_shifts(new_team.id)
         await authz_team_resource_instance_create(new_team)
+        membership = TeamMembership(
+            id="",
+            user_id=owner_id,
+            team_id=new_team.id,
+            roles=[TeamMembershipRole.OWNER],
+        )
+        await self.team_membership_service.create_team_membership(membership)
+        self.shift_service.create_default_shifts(new_team.id)
         return new_team
 
     async def get_user_teams(self, user_id: str) -> List[Team]:
