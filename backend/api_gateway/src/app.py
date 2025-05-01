@@ -37,6 +37,7 @@ from src.routes import (
     router_sse,
     router_stats,
     router_team,
+    router_team_invitation,
     router_user,
     router_worker,
 )
@@ -81,6 +82,7 @@ def create_app(db_collections: DatabaseCollections) -> FastAPI:
     app.include_router(router_sse)
     app.include_router(router_stats)
     app.include_router(router_team)
+    app.include_router(router_team_invitation)
     app.include_router(router_user)
     app.include_router(router_worker)
 
