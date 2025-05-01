@@ -19,6 +19,7 @@ from src.routes.shift_routes import router as router_shift
 from src.routes.specialty_routes import router as router_specialty
 from src.routes.sse import router as router_sse
 from src.routes.stats_routes import router as router_stats
+from src.routes.team_invitation_routes import router as router_team_invitation
 from src.routes.team_routes import router as router_team
 from src.routes.user_routes import router as router_user
 from src.routes.worker_routes import router as router_worker
@@ -45,6 +46,7 @@ __all__ = [
     "router_specialty",
     "router_sse",
     "router_stats",
+    "router_team_invitation",
     "router_team",
     "router_user",
     "router_worker",

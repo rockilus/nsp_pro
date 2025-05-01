@@ -10,6 +10,7 @@ from shared.database.schemas.team_invitation import TeamInvitationSchema
 from shared.schemas.core.team_invitation import (
     TeamInvitation,
     TeamInvitationStatus,
+    TeamInvitationType,
 )
 
 
@@ -37,6 +38,7 @@ class TestTeamInvitationRepository:
             id=None,
             team_id="team1",
             email="test@example.com",
+            type=TeamInvitationType.MEMBER,
             worker_id="worker1",
             token="token123",
             status=TeamInvitationStatus.PENDING,
@@ -59,6 +61,7 @@ class TestTeamInvitationRepository:
         invitation = TeamInvitationSchema(
             team_id="team1",
             email="test@example.com",
+            type=TeamInvitationType.MEMBER.value,
             worker_id="worker1",
             token="token123",
             status=TeamInvitationStatus.PENDING.value,
@@ -78,6 +81,7 @@ class TestTeamInvitationRepository:
         invitation = TeamInvitationSchema(
             team_id="team1",
             email="test@example.com",
+            type=TeamInvitationType.MEMBER.value,
             worker_id="worker1",
             token="token123",
             status=TeamInvitationStatus.PENDING.value,
@@ -90,6 +94,7 @@ class TestTeamInvitationRepository:
             id=created.id,
             team_id="team1",
             email="updated@example.com",
+            type=TeamInvitationType.MEMBER,
             worker_id="worker1",
             token="token123",
             status=TeamInvitationStatus.ACCEPTED,
@@ -111,6 +116,7 @@ class TestTeamInvitationRepository:
         invitation = TeamInvitationSchema(
             team_id="team1",
             email="test@example.com",
+            type=TeamInvitationType.MEMBER.value,
             worker_id="worker1",
             token="token123",
             status=TeamInvitationStatus.PENDING.value,
@@ -128,6 +134,7 @@ class TestTeamInvitationRepository:
         invitation = TeamInvitationSchema(
             team_id="team1",
             email="test@example.com",
+            type=TeamInvitationType.MEMBER.value,
             worker_id="worker1",
             token="token123",
             status=TeamInvitationStatus.PENDING.value,
@@ -139,3 +146,44 @@ class TestTeamInvitationRepository:
         invitations = self.repo.get_invitations_by_team_id("team1")
         assert len(invitations) == 1
         assert invitations[0].email == "test@example.com"
+
+    def test_get_pending_invitations_by_email(self):
+        """Test retrieving pending invitations by email."""
+        invitation = TeamInvitationSchema(
+            team_id="team1",
+            email="test@example.com",
+            type=TeamInvitationType.MEMBER.value,
+            worker_id="worker1",
+            token="token123",
+            status=TeamInvitationStatus.PENDING.value,
+            created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+            expires_at=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
+        )
+        self.repo.create(invitation)
+
+        invitations = self.repo.get_pending_invitations_by_email("test@example.com")
+        assert len(invitations) == 1
+        assert invitations[0].email == "test@example.com"
+        assert invitations[0].status == TeamInvitationStatus.PENDING
+
+    def test_get_invitation_by_token(self):
+        """Test retrieving an invitation by token."""
+        invitation = TeamInvitationSchema(
+            team_id="team1",
+            email="test@example.com",
+            type=TeamInvitationType.MEMBER.value,
+            worker_id="worker1",
+            token="token123",
+            status=TeamInvitationStatus.PENDING.value,
+            created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+            expires_at=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
+        )
+        self.repo.create(invitation)
+
+        found_invitation = self.repo.get_invitation_by_token("token123")
+        assert found_invitation is not None
+        assert found_invitation.token == "token123"
+        assert found_invitation.email == "test@example.com"
+
+        not_found_invitation = self.repo.get_invitation_by_token("invalid_token")
+        assert not_found_invitation is None

@@ -122,8 +122,11 @@ from shared.schemas.core.team import Team
 from shared.schemas.core.team_invitation import (
     TeamInvitation,
     TeamInvitationStatus,
+    TeamInvitationType,
 )
 from shared.schemas.core.team_membership import (
+    INVITE_TYPE_ROLE_MAP,
+    TEAM_ROLE_TO_AUTHZ_ROLE,
     TeamMembership,
     TeamMembershipRole,
 )
@@ -243,6 +246,9 @@ __all__ = [
     "Team",
     "TeamInvitation",
     "TeamInvitationStatus",
+    "TeamInvitationType",
+    "INVITE_TYPE_ROLE_MAP",
+    "TEAM_ROLE_TO_AUTHZ_ROLE",
     "TeamMembership",
     "TeamMembershipRole",
     "Language",

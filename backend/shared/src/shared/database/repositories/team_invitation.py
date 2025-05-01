@@ -1,6 +1,9 @@
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.team_invitation import TeamInvitationSchema
-from shared.schemas.core.team_invitation import TeamInvitation
+from shared.schemas.core.team_invitation import (
+    TeamInvitation,
+    TeamInvitationStatus,
+)
 
 
 class TeamInvitationRepository(BaseRepository[TeamInvitationSchema]):
@@ -26,6 +29,20 @@ class TeamInvitationRepository(BaseRepository[TeamInvitationSchema]):
         """Get all team invitations for a specific team."""
         invitations = self.find_all({"team_id": team_id})
         return [invitation.to_core() for invitation in invitations]
+
+    def get_pending_invitations_by_email(self, email: str) -> list[TeamInvitation]:
+        """Get all pending team invitations for a specific email."""
+        invitations = self.find_all(
+            {"email": email, "status": TeamInvitationStatus.PENDING.value}
+        )
+        return [invitation.to_core() for invitation in invitations]
+
+    def get_invitation_by_token(self, token: str) -> TeamInvitation | None:
+        """Get a team invitation by its token."""
+        invitation = self.find_one({"token": token})
+        if not invitation:
+            return None
+        return invitation.to_core()
 
     def update_invitation(self, invitation: TeamInvitation) -> TeamInvitation:
         """Update a team invitation."""

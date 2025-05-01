@@ -5,7 +5,8 @@ class TeamInvitationDTO(BaseModel):
     id: str
     teamId: str
     email: str
-    workerId: str
+    type: str
+    workerId: str | None
     token: str
     status: str
     createdAt: float
