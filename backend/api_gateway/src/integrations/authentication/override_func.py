@@ -136,7 +136,12 @@ def override_emailpassword_apis(original_implementation: APIInterface):
                     )
                 )
                 await team_service.create_team(
-                    team=Team(id="", team_members=[user_id], team_leaders=[user_id]),
+                    team=Team(
+                        id="",
+                        name="New team",
+                        created_by_user_id=user_id,
+                        created_at=datetime.now(timezone.utc),
+                    ),
                     owner_id=user_id,
                 )
 

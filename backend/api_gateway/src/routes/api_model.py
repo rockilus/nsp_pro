@@ -207,12 +207,6 @@ class SpecialtyMessage(BaseModel):
     deleted: bool
 
 
-class TeamMessage(BaseModel):
-    id: str
-    # team_members: List[str]
-    # team_leaders: List[str]
-
-
 # Export
 class ExportOptionsMessage(BaseModel):
     periodOption: int
