@@ -21,6 +21,7 @@ from shared.schemas.dto.schedule import (
 )
 from shared.schemas.dto.shift import ShiftDTO
 from shared.schemas.dto.team import TeamDTO
+from shared.schemas.dto.team_invitation import TeamInvitationDTO
 from shared.schemas.dto.worker import WorkerDTO
 
 __all__ = [
@@ -42,5 +43,6 @@ __all__ = [
     "SolutionDTO",
     "ShiftDTO",
     "TeamDTO",
+    "TeamInvitationDTO",
     "WorkerDTO",
 ]

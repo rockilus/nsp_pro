@@ -33,6 +33,9 @@ from shared.database.repositories.shift_demand_exclusion import (
 from shared.database.repositories.specialty import SpecialtyRepository
 from shared.database.repositories.stats_header import StatsHeaderRepository
 from shared.database.repositories.team import TeamRepository
+from shared.database.repositories.team_invitation import (
+    TeamInvitationRepository,
+)
 from shared.database.repositories.team_membership import (
     TeamMembershipRepository,
 )
@@ -65,6 +68,7 @@ class DatabaseCollections:
     specialty_db: SpecialtyRepository
     stats_header_db: StatsHeaderRepository
     team_db: TeamRepository
+    team_invitation_db: TeamInvitationRepository
     team_membership_db: TeamMembershipRepository
     user_db: UserRepository
     worker_db: WorkerRepository
@@ -94,6 +98,7 @@ class DatabaseCollections:
         self.specialty_db = SpecialtyRepository()
         self.stats_header_db = StatsHeaderRepository()
         self.team_db = TeamRepository()
+        self.team_invitation_db = TeamInvitationRepository()
         self.team_membership_db = TeamMembershipRepository()
         self.user_db = UserRepository()
         self.worker_db = WorkerRepository()
