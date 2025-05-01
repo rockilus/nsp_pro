@@ -191,3 +191,25 @@ class TestBaseRepository:
         # Test count with filter
         assert self.repo.count({"age": {"$lt": 30}}) == 1
         assert self.repo.count({"age": {"$gte": 30}}) == 2
+
+    def test_find_one(self):
+        """Test finding a single document by filter."""
+        # Create test users
+        users = [
+            TestUserSchema(name="John Doe", email="john@example.com", age=30),
+            TestUserSchema(name="Jane Smith", email="jane@example.com", age=25),
+        ]
+        self.repo.create_many(users)
+
+        # Find one document by filter
+        found = self.repo.find_one({"email": "john@example.com"})
+
+        # Verify result
+        assert found is not None
+        assert found.name == "John Doe"
+        assert found.email == "john@example.com"
+        assert found.age == 30
+
+        # Test non-existent filter
+        not_found = self.repo.find_one({"email": "nonexistent@example.com"})
+        assert not_found is None

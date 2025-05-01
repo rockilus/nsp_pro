@@ -135,12 +135,13 @@ def override_emailpassword_apis(original_implementation: APIInterface):
                         impersonating_user_id=None,
                     )
                 )
-                team = await team_service.create_team(
-                    Team(id="", team_members=[user_id], team_leaders=[user_id])
+                await team_service.create_team(
+                    team=Team(id="", team_members=[user_id], team_leaders=[user_id]),
+                    owner_id=user_id,
                 )
+
                 print("user and team created in mongodb:", email)
                 print("assigning user as leader of team in permit.io:", email)
-                await authz_role_assignment_assign(user_id, "team", team.id, "leader")
                 await authz_role_assignment_assign(user_id, "user", user_id, "owner")
                 print("user assigned as leader of team in permit.io:", email)
 
