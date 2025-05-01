@@ -11,9 +11,7 @@ class TeamMembershipRepository(BaseRepository[TeamMembershipSchema]):
     def __init__(self):
         super().__init__("team_memberships", TeamMembershipSchema)
 
-    def create_team_membership(
-        self, membership: TeamMembership
-    ) -> TeamMembership:
+    def create_team_membership(self, membership: TeamMembership) -> TeamMembership:
         """Create a new team membership."""
         membership_schema = TeamMembershipSchema.from_core(membership)
         result = self.create(membership_schema)
@@ -27,31 +25,24 @@ class TeamMembershipRepository(BaseRepository[TeamMembershipSchema]):
             return []
 
         membership_schemas = [
-            TeamMembershipSchema.from_core(membership)
-            for membership in memberships
+            TeamMembershipSchema.from_core(membership) for membership in memberships
         ]
         result = self.create_many(membership_schemas)
         return [membership.to_core() for membership in result]
 
-    def get_team_membership_by_id(
-        self, membership_id: str
-    ) -> TeamMembership | None:
+    def get_team_membership_by_id(self, membership_id: str) -> TeamMembership | None:
         """Get a team membership by its ID."""
         membership = self.find_by_id(membership_id)
         if not membership:
             return None
         return membership.to_core()
 
-    def get_team_memberships_by_team_id(
-        self, team_id: str
-    ) -> List[TeamMembership]:
+    def get_team_memberships_by_team_id(self, team_id: str) -> List[TeamMembership]:
         """Get all team memberships for a team."""
         memberships = self.find_all({"team_id": team_id})
         return [membership.to_core() for membership in memberships]
 
-    def get_team_memberships_by_user_id(
-        self, user_id: str
-    ) -> List[TeamMembership]:
+    def get_team_memberships_by_user_id(self, user_id: str) -> List[TeamMembership]:
         """Get all team memberships for a user."""
         memberships = self.find_all({"user_id": user_id})
         return [membership.to_core() for membership in memberships]
@@ -65,9 +56,7 @@ class TeamMembershipRepository(BaseRepository[TeamMembershipSchema]):
             return None
         return membership.to_core()
 
-    def update_team_membership(
-        self, membership: TeamMembership
-    ) -> TeamMembership:
+    def update_team_membership(self, membership: TeamMembership) -> TeamMembership:
         """Update a team membership."""
         membership_schema = TeamMembershipSchema.from_core(membership)
         updated_membership = self.update(membership_schema)
