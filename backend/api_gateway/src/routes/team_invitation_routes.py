@@ -74,6 +74,23 @@ def reject_team_invitation(
     return {"message": "Invitation rejected successfully."}
 
 
+@router.post("/team-invitations/{invitation_id}/resend")
+def resend_team_invitation_email(
+    invitation_id: str,
+    service: TeamInvitationService = Depends(get_team_invitation_service),
+):
+    invitation = service.collection.team_invitation_db.get_invitation_by_id(
+        invitation_id=invitation_id
+    )
+    if not invitation:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Invitation not found.",
+        )
+    service.send_invitation_email(invitation)
+    return {"message": "Invitation email resent successfully."}
+
+
 @router.delete("/team-invitations/{invitation_id}")
 def delete_team_invitation(
     invitation_id: str,
