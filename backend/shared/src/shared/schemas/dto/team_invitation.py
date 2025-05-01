@@ -11,3 +11,4 @@ class TeamInvitationDTO(BaseModel):
     status: str
     createdAt: float
     expiresAt: float
+    lastSentAt: float | None
