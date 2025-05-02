@@ -1,7 +1,7 @@
 "use client";
 
 // Components
-import UserProfileTab from "../../../../../components/user-profile/user-profile-tab";
+import TeamsTab from "../../../../../components/teams/teams-tab";
 // Styles
 import "../../../../../styles/page.css";
 
@@ -12,5 +12,9 @@ export default function Page({
     lng: string;
   };
 }) {
-  return <div className="page-layout">To come</div>;
+  return (
+    <div className="page-layout">
+      <TeamsTab lng={lng} />
+    </div>
+  );
 }

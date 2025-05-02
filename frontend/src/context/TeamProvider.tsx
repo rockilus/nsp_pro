@@ -1,11 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { TeamContext } from "./TeamContext";
 import { useTeamSelector } from "@/hooks/useTeamSelector";
-import { TeamWithMembership } from "@/types/team";
-import { TeamSelector } from "../components/teams/TeamSelector";
-import { getUserTeamsWithMemberships } from "@/app/lib/team";
 
 export function TeamProvider({
   children,
