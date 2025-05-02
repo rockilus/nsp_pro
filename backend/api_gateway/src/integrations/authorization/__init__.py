@@ -7,6 +7,7 @@ from src.integrations.authorization.authz_services import (
     authz_health_check,
     authz_role_assignment_assign,
     authz_role_assignment_get_user_team_ids,
+    authz_role_assignment_unassign,
     authz_team_resource_instance_create,
     authz_user_sync,
 )
@@ -20,6 +21,7 @@ __all__ = [
     "authz_health_check",
     "authz_role_assignment_assign",
     "authz_role_assignment_get_user_team_ids",
+    "authz_role_assignment_unassign",
     "authz_team_resource_instance_create",
     "authz_user_sync",
 ]

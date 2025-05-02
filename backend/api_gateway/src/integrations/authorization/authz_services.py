@@ -66,6 +66,23 @@ async def authz_role_assignment_assign(
         handle_permit_errors(e)
 
 
+async def authz_role_assignment_unassign(
+    user_id: str, resource: str, resource_instance_key: str, role: str
+) -> None:
+    try:
+        await permit.api.role_assignments.unassign(
+            {
+                "role": role,
+                "resource_instance": f"{resource}:{resource_instance_key}",
+                "user": user_id,
+                "tenant": "default",
+            }
+        )
+    except Exception as e:
+        log_info("Permit role assignment revoke error")
+        handle_permit_errors(e)
+
+
 async def authz_role_assignment_get_user_team_ids(user_id: str, role: str) -> List[str]:
     try:
         team_permit = await permit.api.role_assignments.list(

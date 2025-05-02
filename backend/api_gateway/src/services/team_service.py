@@ -1,4 +1,5 @@
 import time
+from datetime import datetime, timezone
 from typing import List
 
 from shared.schemas.core import (
@@ -29,8 +30,14 @@ class TeamService(BaseService):
         self.shift_service = shift_service
         self.team_membership_service = team_membership_service
 
-    async def create_team(self, team: Team, owner_id: str) -> Team:
-        new_team = self.collection.team_db.create_team(team)
+    async def create_team(self, team_name: str, owner_id: str) -> Team:
+        new_team = Team(
+            id="",
+            name=team_name,
+            created_by_user_id=owner_id,
+            created_at=datetime.now(timezone.utc),
+        )
+        new_team = self.collection.team_db.create_team(new_team)
         await authz_team_resource_instance_create(new_team)
         membership = TeamMembership(
             id="",
@@ -79,3 +86,17 @@ class TeamService(BaseService):
         print(f"Total time to get user teams:    {total_time_get_user_teams}")
         print(f"Total time to get teams from db: {total_time_get_teams_from_db}")
         return teams
+
+    async def leave_team(self, user_id: str, team_id: str) -> None:
+        membership = (
+            self.collection.team_membership_db.get_team_membership_by_user_and_team_id(
+                user_id=user_id, team_id=team_id
+            )
+        )
+        if membership is None:
+            # pylint: disable=broad-exception-raised
+            raise Exception("Membership not found")
+        if TeamMembershipRole.OWNER in membership.roles:
+            # pylint: disable=broad-exception-raised
+            raise Exception("Cannot leave team as owner")
+        await self.team_membership_service.delete_team_membership(membership.id)

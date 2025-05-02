@@ -1,7 +1,7 @@
 import time
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas.core import Team
@@ -20,13 +20,25 @@ from src.services.team_service import TeamService
 router = APIRouter()
 
 
-# @router.post("/teams")
-# async def create_team(
-#     team: TeamMessage, session: SessionContainer = Depends(verify_session())
-# ) -> TeamMessage:
-#     t_data = api_msg_to_team(team)
-#     new_team = await create_team_service(t_data)
-#     return team_to_api_msg(new_team)
+@router.post("/teams")
+async def create_team(
+    team_name: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+    team_service: TeamService = Depends(get_team_service),
+) -> TeamDTO:
+    try:
+        if not team_name.strip():
+            raise HTTPException(status_code=400, detail="Team name cannot be empty")
+
+        owner_id = session.get_user_id()
+        new_team = await team_service.create_team(
+            team_name=team_name, owner_id=owner_id
+        )
+        response = new_team.to_dto()
+    except Exception as e:
+        log_info("Failed to create team")
+        handle_routes_errors(e)
+    return response
 
 
 @router.get("/teams")
@@ -89,6 +101,21 @@ def update_team(
         log_info("Failed to update team")
         handle_routes_errors(e)
     return response
+
+
+@router.delete("/teams/{team_id}/leave")
+async def leave_team(
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+    team_service: TeamService = Depends(get_team_service),
+):
+    try:
+        user_id = session.get_user_id()
+        await team_service.leave_team(user_id=user_id, team_id=team_id)
+        return {"message": "Successfully left the team"}
+    except Exception as e:
+        log_info("Failed to leave team")
+        handle_routes_errors(e)
 
 
 # @router.delete("/teams/{team_id}")

@@ -1,12 +1,15 @@
 import React, { ReactElement, useEffect, useState } from "react";
 import { useTranslation } from "../../app/i18n/client";
-// MUI
-import Button from "@mui/material/Button";
 // Components
 import TeamsList from "./teams-list";
+import NewTeamDialog from "./new-team-dialog";
 // Skeletons
 // Actions
-import { getUserTeamsWithMemberships } from "@/app/lib/team";
+import {
+  createTeam,
+  getUserTeamsWithMemberships,
+  leaveTeam,
+} from "@/app/lib/team";
 // Styles
 import "../../styles/text-styles.css";
 import "../../styles/tab-container-styles.css";
@@ -21,14 +24,27 @@ export default function TeamsTab({ lng }: { lng: string }) {
   const [teams, setTeams] = useState<TeamWithMembership[]>([]);
 
   //////////////////////////
-  // User Actions
+  // Team Actions
   //////////////////////////
+
+  const handleCreateTeam = async (teamName: string) => {
+    const newTeam = await createTeam(teamName);
+  };
 
   const handleGetUserTeams = async () => {
     setIsLoading(true);
     const teams = await getUserTeamsWithMemberships();
     setTeams(teams);
     setIsLoading(false);
+  };
+
+  const handleLeaveTeam = async (teamId: string) => {
+    const success = await leaveTeam(teamId);
+    if (success) {
+      setTeams((prevTeams) =>
+        prevTeams.filter((team) => team.team.id !== teamId)
+      );
+    }
   };
 
   useEffect(() => {
@@ -39,22 +55,15 @@ export default function TeamsTab({ lng }: { lng: string }) {
     <div className="tab-container-wide">
       <div className="teams-tab-header">
         <span className="title">{t("teams")}</span>
-        <Button
-          variant="contained"
-          //   onClick={() => handleGetUserTeams()}
-          //   className="refresh-button"
-          sx={{
-            textTransform: "none",
-            fontSize: "12px",
-            padding: "3px 12px",
-          }}
-        >
-          {t("new_team")}
-        </Button>
+        <NewTeamDialog lng={lng} handleCreateTeam={handleCreateTeam} />
       </div>
       {!isLoading &&
         (teams.length > 0 ? (
-          <TeamsList lng={lng} teams={teams} />
+          <TeamsList
+            lng={lng}
+            teams={teams}
+            handleLeaveTeam={handleLeaveTeam}
+          />
         ) : (
           <div>{t("no_team_message")}</div>
         ))}

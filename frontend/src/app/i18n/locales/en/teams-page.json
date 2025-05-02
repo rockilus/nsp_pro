@@ -1,7 +1,14 @@
 {
+    "cancel": "Cancel",
+    "create": "Create",
     "leave": "Leave",
+    "leave_team": "Leave team",
+    "leave_team_message_1": "To leave the team, please type ",
+    "leave_team_message_2": " to confirm.",
     "new_team": "New team",
     "no_team_message": "Start now by creating a new team",
     "settings": "Settings",
+    "team_name": "Team name",
+    "team_name_required": "Name can't be empty",
     "teams": "Teams"
 }

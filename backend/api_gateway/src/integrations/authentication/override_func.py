@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Any, Coroutine, Dict, List
 
-from shared.schemas.core import Team, User
+from shared.schemas.core import User
 from supertokens_python.recipe.emailpassword.constants import (
     FORM_FIELD_EMAIL_ID,
 )
@@ -135,15 +135,7 @@ def override_emailpassword_apis(original_implementation: APIInterface):
                         impersonating_user_id=None,
                     )
                 )
-                await team_service.create_team(
-                    team=Team(
-                        id="",
-                        name="New team",
-                        created_by_user_id=user_id,
-                        created_at=datetime.now(timezone.utc),
-                    ),
-                    owner_id=user_id,
-                )
+                await team_service.create_team(team_name="New team", owner_id=user_id)
 
                 print("user and team created in mongodb:", email)
                 print("assigning user as leader of team in permit.io:", email)

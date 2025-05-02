@@ -6,7 +6,10 @@ from shared.schemas.core import (
     TeamMembershipRole,
 )
 
-from src.integrations.authorization import authz_role_assignment_assign
+from src.integrations.authorization import (
+    authz_role_assignment_assign,
+    authz_role_assignment_unassign,
+)
 from src.services.base_service import BaseService
 
 
@@ -46,6 +49,27 @@ class TeamMembershipService(BaseService):
 
         return membership
 
+    async def delete_team_membership(self, membership_id: str) -> None:
+        existing_membership = (
+            self.collection.team_membership_db.get_team_membership_by_id(
+                membership_id=membership_id,
+            )
+        )
+        if not existing_membership:
+            return
+        if TeamMembershipRole.OWNER in existing_membership.roles:
+            # pylint: disable=broad-exception-raised
+            raise Exception("Cannot leave team as owner")
+
+        await self.remove_roles_authz(
+            membership=existing_membership,
+            roles=existing_membership.roles,
+        )
+
+        self.collection.team_membership_db.delete_team_membership(
+            membership_id=membership_id
+        )
+
     @staticmethod
     async def add_roles_authz(
         membership: TeamMembership, roles: List[TeamMembershipRole]
@@ -57,6 +81,23 @@ class TeamMembershipService(BaseService):
                     f"Role {role} is not a valid role for authz assignment."
                 )
             await authz_role_assignment_assign(
+                user_id=membership.user_id,
+                resource="team",
+                resource_instance_key=membership.team_id,
+                role=authz_role,
+            )
+
+    @staticmethod
+    async def remove_roles_authz(
+        membership: TeamMembership, roles: List[TeamMembershipRole]
+    ) -> None:
+        for role in roles:
+            authz_role = TEAM_ROLE_TO_AUTHZ_ROLE.get(role.value, None)
+            if authz_role is None:
+                raise ValueError(
+                    f"Role {role} is not a valid role for authz assignment."
+                )
+            await authz_role_assignment_unassign(
                 user_id=membership.user_id,
                 resource="team",
                 resource_instance_key=membership.team_id,

@@ -3,8 +3,7 @@ import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Button from "@mui/material/Button";
 // Components
-// Skeletons
-// Actions
+import LeaveTeamDialog from "./leave-team-dialog";
 // Styles
 import "./teams-list.css";
 // Types
@@ -13,9 +12,11 @@ import { TeamWithMembership } from "@/types/team";
 export default function TeamsList({
   lng,
   teams,
+  handleLeaveTeam,
 }: {
   lng: string;
   teams: TeamWithMembership[];
+  handleLeaveTeam: (teamId: string) => void;
 }) {
   const { t } = useTranslation(lng, "teams-page");
 
@@ -33,7 +34,9 @@ export default function TeamsList({
       >
         <div className="team-list-item-description">
           <strong className="teams-list-item-name">
-            <a href={`/${lng}/plan/teams/${teamWithMembership.team.id}`}>
+            <a
+            // href={`/${lng}/plan/teams/${teamWithMembership.team.id}`}
+            >
               {teamWithMembership.team.name}
             </a>
           </strong>
@@ -58,17 +61,11 @@ export default function TeamsList({
           >
             {t("settings")}
           </Button>
-          <Button
-            variant="outlined"
-            color="error"
-            sx={{
-              textTransform: "none",
-              fontSize: "12px",
-              padding: "3px 12px",
-            }}
-          >
-            {t("leave")}
-          </Button>
+          <LeaveTeamDialog
+            lng={lng}
+            teamWithMembership={teamWithMembership}
+            handleLeaveTeam={handleLeaveTeam}
+          />
         </div>
       </div>
     );
