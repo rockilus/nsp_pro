@@ -1,12 +1,11 @@
 import time
-from typing import Dict, List
+from typing import List
 
 from fastapi import APIRouter, Depends
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas.core import Team
-from shared.schemas.dto import TeamDTO
-from shared.schemas.dto import TeamWithMembershipDTO
+from shared.schemas.dto import TeamDTO, TeamWithMembershipDTO
 
 from src.dependencies import get_db_collections, get_team_service
 from src.errors import NotAuthorizedError  # MessageTypeError,
@@ -56,45 +55,6 @@ async def get_teams(
     return response
 
 
-@router.get("/teams/selected-team-id")
-async def get_selected_team_id(
-    session: SessionContainerType = Depends(authn_verify_session()),
-    team_service: TeamService = Depends(get_team_service),
-) -> Dict[str, str]:
-    try:
-        user_id = session.get_user_id()
-        teams = await team_service.get_user_teams(user_id)
-        team_id = teams[0].id
-        response = {"selectedTeamId": team_id}
-    except Exception as e:
-        log_info("Failed to get selected team id")
-        handle_routes_errors(e)
-    return response
-
-
-@router.put("/teams/{team_id}")
-def update_team(
-    team_id: str,
-    team: TeamDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
-    db_collections: DatabaseCollections = Depends(get_db_collections),
-) -> TeamDTO:
-    try:
-        if not authz_check(
-            session.get_user_id(), "update-team", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to update a team"
-            )
-        team_data = Team.from_dto(team)
-        updated_team = db_collections.team_db.update_team(team_data)
-        response = updated_team.to_dto()
-    except Exception as e:
-        log_info("Failed to update team")
-        handle_routes_errors(e)
-    return response
-
-
 @router.get("/teams/with-memberships")
 async def get_user_teams_with_memberships(
     session: SessionContainerType = Depends(authn_verify_session()),
@@ -108,6 +68,25 @@ async def get_user_teams_with_memberships(
         response = [t.to_dto() for t in teams_with_memberships]
     except Exception as e:
         log_info("Failed to get user teams with memberships")
+        handle_routes_errors(e)
+    return response
+
+
+@router.put("/teams/{team_id}")
+def update_team(
+    team_id: str,
+    team: TeamDTO,
+    session: SessionContainerType = Depends(authn_verify_session()),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
+) -> TeamDTO:
+    try:
+        if not authz_check(session.get_user_id(), "update-team", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to update a team")
+        team_data = Team.from_dto(team)
+        updated_team = db_collections.team_db.update_team(team_data)
+        response = updated_team.to_dto()
+    except Exception as e:
+        log_info("Failed to update team")
         handle_routes_errors(e)
     return response
 

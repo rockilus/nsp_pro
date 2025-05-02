@@ -20,7 +20,12 @@ export default function AccountMenu({ lng }: { lng: string }) {
     {
       name: "profile",
       label: t("profile"),
-      href: `/${lng}/plan/profile`,
+      href: `/${lng}/plan/settings/profile`,
+    },
+    {
+      name: "teams",
+      label: t("teams"),
+      href: `/${lng}/plan/settings/teams`,
     },
   ];
 
@@ -54,7 +59,7 @@ export default function AccountMenu({ lng }: { lng: string }) {
         id="menu-appbar"
         anchorEl={anchorEl}
         anchorOrigin={{
-          vertical: "top",
+          vertical: "bottom",
           horizontal: "right",
         }}
         keepMounted
@@ -69,10 +74,9 @@ export default function AccountMenu({ lng }: { lng: string }) {
           return (
             <MenuItem
               key={link.name}
-              // onClick={() => {
-              //   handleSelectTab(tab.id);
-              //   handleClose();
-              // }}
+              // LinkComponent={Link}
+              // href={link.href}
+              onClick={handleClose}
             >
               <Link key={link.name} href={link.href}>
                 {link.label}
@@ -80,7 +84,6 @@ export default function AccountMenu({ lng }: { lng: string }) {
             </MenuItem>
           );
         })}
-        {/* <MenuItem onClick={handleClose}>My account</MenuItem> */}
         <MenuItem onClick={handleLogout}>{t("sign_out")}</MenuItem>
       </Menu>
     </div>
