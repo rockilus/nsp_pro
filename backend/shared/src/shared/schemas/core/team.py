@@ -1,10 +1,16 @@
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
+from typing import List
 
 import humps
 from pydantic import TypeAdapter
 
-from shared.schemas.dto.team import TeamDTO
+from shared.schemas.core.team_membership import TeamMembershipRole
+from shared.schemas.dto.team import (
+    MembershipForTeamWithMembershipDTO,
+    TeamDTO,
+    TeamWithMembershipDTO,
+)
 
 
 @dataclass
@@ -26,5 +32,48 @@ class Team:
         data_dict = humps.decamelize(data.model_dump())
         data_dict["created_at"] = datetime.fromtimestamp(
             data_dict["created_at"], tz=timezone.utc
+        )
+        return cls(**data_dict)
+
+
+@dataclass
+class MembershipForTeamWithMembership:
+    roles: List[TeamMembershipRole]
+
+    def to_dto(self) -> MembershipForTeamWithMembershipDTO:
+        data = asdict(self)
+        data["roles"] = [role.value for role in self.roles]
+        as_dict = humps.camelize(data)
+        validator = TypeAdapter(MembershipForTeamWithMembershipDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(
+        cls, data: MembershipForTeamWithMembershipDTO
+    ) -> "MembershipForTeamWithMembership":
+        data_dict = humps.decamelize(data.model_dump())
+        data_dict["roles"] = [TeamMembershipRole(role) for role in data_dict["roles"]]
+        return cls(**data_dict)
+
+
+@dataclass
+class TeamWithMembership:
+    team: Team
+    membership: MembershipForTeamWithMembership
+
+    def to_dto(self) -> TeamWithMembershipDTO:
+        data = asdict(self)
+        data["team"] = self.team.to_dto()
+        data["membership"] = self.membership.to_dto()
+        as_dict = humps.camelize(data)
+        validator = TypeAdapter(TeamWithMembershipDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, data: TeamWithMembershipDTO) -> "TeamWithMembership":
+        data_dict = humps.decamelize(data.model_dump())
+        data_dict["team"] = Team.from_dto(data_dict["team"])
+        data_dict["membership"] = MembershipForTeamWithMembership.from_dto(
+            data_dict["membership"]
         )
         return cls(**data_dict)

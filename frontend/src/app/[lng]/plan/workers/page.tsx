@@ -1,17 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import "dayjs/locale/en-gb";
 import "dayjs/locale/fr";
 import "dayjs/locale/es";
-// Stores
-import { useTeamStore } from "../../../../providers/team-store-provider";
-// Actions
-import { getSelectedTeamId } from "../../../lib/team";
 // Components
 import WorkerTab from "../../../../components/workers/worker-tab";
+// Context
+import { useTeam } from "@/context/TeamContext";
 // Styles
 import "../../../../styles/page.css";
 
@@ -22,19 +19,7 @@ export default function Page({
     lng: string;
   };
 }) {
-  const selectedTeamId = useTeamStore((state) => state.selectedTeamId);
-  const setSelectedTeamId = useTeamStore((state) => state.setSelectedTeamId);
-
-  useEffect(() => {
-    const fetchTeamId = async () => {
-      if (!selectedTeamId) {
-        const teamId = await getSelectedTeamId();
-        setSelectedTeamId(teamId);
-      }
-    };
-
-    fetchTeamId();
-  }, [selectedTeamId, setSelectedTeamId]);
+  const { selectedTeam } = useTeam();
 
   return (
     <div className="page-layout">
@@ -42,7 +27,7 @@ export default function Page({
         dateAdapter={AdapterDayjs}
         adapterLocale={lng === "en" ? "en-gb" : lng === "es" ? "es" : "fr"}
       >
-        <WorkerTab lng={lng} selectedTeamId={selectedTeamId} />
+        <WorkerTab lng={lng} selectedTeamId={selectedTeam?.team.id || null} />
       </LocalizationProvider>
     </div>
   );

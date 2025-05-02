@@ -7,6 +7,19 @@ export type TeamT = {
   createdAt: dayjs.Dayjs;
 };
 
+export enum TeamMembershipRole {
+  OWNER = "owner",
+  MEMBER = "member",
+}
+export type MembershipForTeamWithMembershipDTO = {
+  roles: TeamMembershipRole[];
+};
+
+export type TeamWithMembership = {
+  team: TeamT;
+  membership: MembershipForTeamWithMembershipDTO;
+};
+
 export const toTeamtT = (data: any): TeamT => {
   return {
     ...data,
@@ -18,5 +31,18 @@ export const fromTeamT = (data: TeamT): any => {
   return {
     ...data,
     createdAt: data.createdAt.unix(),
+  };
+};
+
+export const toTeamWithMembership = (data: any): TeamWithMembership => {
+  return {
+    ...data,
+    team: toTeamtT(data.team),
+  };
+};
+export const fromTeamWithMembership = (data: TeamWithMembership): any => {
+  return {
+    ...data,
+    team: fromTeamT(data.team),
   };
 };

@@ -1,28 +1,24 @@
-import { unstable_noStore as noStore } from "next/cache";
+import axios from "axios";
 // Types
-import { TeamT, toTeamtT } from "../../types/team";
+import { TeamWithMembership, toTeamWithMembership } from "@/types/team";
+
 // Env Vars
 import { API_URL } from "./env";
 
-const apiUrlTeam = API_URL + "/teams";
+const API_BASE_URL = API_URL;
 
-export async function getSelectedTeamId() {
-  noStore();
-  const options: RequestInit = {
-    method: "GET",
-    credentials: "include",
-  };
+/**
+ * Fetches the user's teams with memberships.
+ * @returns {Promise<TeamWithMembership[]>} A promise resolving to the list of teams with memberships.
+ */
+export const getUserTeamsWithMemberships = async (): Promise<
+  TeamWithMembership[]
+> => {
   try {
-    const response = await fetch(`${apiUrlTeam}/selected-team-id`, options);
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error(
-        "Failed to fetch selected team id: " + responseData.detail
-      );
-    }
-    return responseData.selectedTeamId as string;
+    const response = await axios.get(`${API_BASE_URL}/teams/with-memberships`);
+    return response.data.map((team: any) => toTeamWithMembership(team));
   } catch (error) {
-    console.error("Failed to fetch teams:", error);
-    throw new Error("Failed to fetch selected team id, please try again later");
+    console.error("Error fetching user teams with memberships:", error);
+    throw error;
   }
-}
+};

@@ -1,12 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
-// Stores
-import { useTeamStore } from "../../../../providers/team-store-provider";
-// Actions
-import { getSelectedTeamId } from "../../../lib/team";
 // Components
 import ShiftTab from "../../../../components/shifts/shift-tab";
+// Context
+import { useTeam } from "@/context/TeamContext";
 // Styles
 import "../../../../styles/page.css";
 
@@ -17,23 +14,11 @@ export default function Page({
     lng: string;
   };
 }) {
-  const selectedTeamId = useTeamStore((state) => state.selectedTeamId);
-  const setSelectedTeamId = useTeamStore((state) => state.setSelectedTeamId);
-
-  useEffect(() => {
-    const fetchTeamId = async () => {
-      if (!selectedTeamId) {
-        const teamId = await getSelectedTeamId();
-        setSelectedTeamId(teamId);
-      }
-    };
-
-    fetchTeamId();
-  }, [selectedTeamId, setSelectedTeamId]);
+  const { selectedTeam } = useTeam();
 
   return (
     <div className="page-layout">
-      <ShiftTab lng={lng} selectedTeamId={selectedTeamId} />
+      <ShiftTab lng={lng} selectedTeamId={selectedTeam?.team.id || null} />
     </div>
   );
 }
