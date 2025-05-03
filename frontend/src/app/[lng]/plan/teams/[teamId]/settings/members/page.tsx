@@ -1,9 +1,9 @@
 "use client";
 
 // Components
-import UserProfileTab from "../../../../../components/settings/profile/user-profile-tab";
+import UserProfileTab from "../../../../../../../components/settings/profile/user-profile-tab";
 // Styles
-import "../../../../../styles/page.css";
+import "../../../../../../../styles/page.css";
 
 export default function Page({
   params: { lng },

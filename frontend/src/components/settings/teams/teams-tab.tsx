@@ -1,5 +1,5 @@
 import React, { ReactElement, useEffect, useState } from "react";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../app/i18n/client";
 // Components
 import TeamsList from "./teams-list";
 import NewTeamDialog from "./new-team-dialog";
@@ -11,8 +11,8 @@ import {
   leaveTeam,
 } from "@/app/lib/team";
 // Styles
-import "../../styles/text-styles.css";
-import "../../styles/tab-container-styles.css";
+import "../../../styles/text-styles.css";
+import "../../../styles/tab-container-styles.css";
 import "./teams-tab.css";
 // Types
 import { TeamWithMembership } from "@/types/team";

@@ -49,6 +49,9 @@ class TeamService(BaseService):
         self.shift_service.create_default_shifts(new_team.id)
         return new_team
 
+    def get_team_by_id(self, team_id: str) -> Team | None:
+        return self.collection.team_db.get_team_by_id(team_id=team_id)
+
     def get_user_teams_with_memberships(self, user_id: str) -> List[TeamWithMembership]:
         memberships = (
             self.collection.team_membership_db.get_team_memberships_by_user_id(
@@ -86,6 +89,20 @@ class TeamService(BaseService):
         print(f"Total time to get user teams:    {total_time_get_user_teams}")
         print(f"Total time to get teams from db: {total_time_get_teams_from_db}")
         return teams
+
+    def update_team(self, team: Team) -> Team:
+        existing_team = self.collection.team_db.get_team_by_id(team_id=team.id)
+        if existing_team is None:
+            # pylint: disable=broad-exception-raised
+            raise Exception("Team not found")
+        if (
+            existing_team.created_by_user_id != team.created_by_user_id
+            or existing_team.created_at != team.created_at
+        ):
+            # pylint: disable=broad-exception-raised
+            raise Exception("Cannot update team")
+        updated_team = self.collection.team_db.update_team(team)
+        return updated_team
 
     async def leave_team(self, user_id: str, team_id: str) -> None:
         membership = (

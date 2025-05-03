@@ -30,6 +30,21 @@ export const createTeam = async (teamName: string): Promise<TeamT> => {
 };
 
 /**
+ * Fetches a team by its ID.
+ * @param {string} teamId - The ID of the team to fetch.
+ * @returns {Promise<TeamT>} A promise resolving to the fetched team.
+ */
+export const getTeamById = async (teamId: string): Promise<TeamT> => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/teams/${teamId}`);
+    return toTeamtT(response.data);
+  } catch (error) {
+    console.error("Error fetching team by ID:", error);
+    throw error;
+  }
+};
+
+/**
  * Fetches the user's teams with memberships.
  * @returns {Promise<TeamWithMembership[]>} A promise resolving to the list of teams with memberships.
  */
@@ -41,6 +56,28 @@ export const getUserTeamsWithMemberships = async (): Promise<
     return response.data.map((team: any) => toTeamWithMembership(team));
   } catch (error) {
     console.error("Error fetching user teams with memberships:", error);
+    throw error;
+  }
+};
+
+/**
+ * Updates a team by its ID.
+ * @param {string} teamId - The ID of the team to update.
+ * @param {TeamT} teamData - The updated team data.
+ * @returns {Promise<TeamT>} A promise resolving to the updated team.
+ */
+export const updateTeamById = async (
+  teamId: string,
+  teamData: TeamT
+): Promise<TeamT> => {
+  try {
+    const response = await axios.put(
+      `${API_BASE_URL}/teams/${teamId}`,
+      teamData
+    );
+    return toTeamtT(response.data);
+  } catch (error) {
+    console.error("Error updating team by ID:", error);
     throw error;
   }
 };

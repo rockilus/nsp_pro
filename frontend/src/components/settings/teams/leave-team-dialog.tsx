@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../app/i18n/client";
 // // MUI
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";

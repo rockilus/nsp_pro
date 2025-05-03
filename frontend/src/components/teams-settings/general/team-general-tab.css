@@ -1,0 +1,12 @@
+.team-general-container {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
+  width: 100%;
+}
+
+.team-general-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}

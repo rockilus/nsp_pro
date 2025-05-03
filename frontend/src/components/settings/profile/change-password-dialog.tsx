@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";

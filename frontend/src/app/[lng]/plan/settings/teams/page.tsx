@@ -1,7 +1,7 @@
 "use client";
 
 // Components
-import TeamsTab from "../../../../../components/teams/teams-tab";
+import TeamsTab from "../../../../../components/settings/teams/teams-tab";
 // Styles
 import "../../../../../styles/page.css";
 

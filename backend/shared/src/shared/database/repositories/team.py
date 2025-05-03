@@ -22,11 +22,11 @@ class TeamRepository(BaseRepository[TeamSchema]):
         teams = self.find_all()
         return [team.to_core() for team in teams]
 
-    def get_team_by_id(self, team_id: str) -> Team:
+    def get_team_by_id(self, team_id: str) -> Team | None:
         """Get a team by its ID."""
         team = self.find_by_id(team_id)
-        if not team:
-            raise Exception(f"Team with id {team_id} not found")
+        if team is None:
+            return None
         return team.to_core()
 
     def get_teams_by_ids(self, team_ids: List[str]) -> List[Team]:
@@ -45,4 +45,6 @@ class TeamRepository(BaseRepository[TeamSchema]):
         """Delete a team by its ID."""
         result = self.delete(team_id)
         if result is False:
-            raise Exception(f"Team with id {team_id} not found or already deleted")
+            raise Exception(
+                f"Team with id {team_id} not found or already deleted"
+            )

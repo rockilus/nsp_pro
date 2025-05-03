@@ -1,5 +1,6 @@
 import React, { ReactElement, useEffect, useState } from "react";
-import { useTranslation } from "../../app/i18n/client";
+import Link from "next/link";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Button from "@mui/material/Button";
 // Components
@@ -52,6 +53,8 @@ export default function TeamsList({
         <div className="team-list-item-actions">
           <Button
             variant="outlined"
+            component={Link}
+            href={`/${lng}/plan/teams/${teamWithMembership.team.id}/settings/general`}
             sx={{
               textTransform: "none",
               marginRight: "8px",

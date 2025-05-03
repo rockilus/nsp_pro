@@ -2,12 +2,11 @@ import time
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
-from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas.core import Team
 from shared.schemas.dto import TeamDTO, TeamWithMembershipDTO
 
-from src.dependencies import get_db_collections, get_team_service
+from src.dependencies import get_team_service
 from src.errors import NotAuthorizedError  # MessageTypeError,
 from src.errors import handle_routes_errors
 from src.integrations.authentication import (
@@ -84,18 +83,37 @@ async def get_user_teams_with_memberships(
     return response
 
 
+@router.get("/teams/{team_id}")
+async def get_team(
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+    team_service: TeamService = Depends(get_team_service),
+) -> TeamDTO:
+    try:
+        if not authz_check(session.get_user_id(), "update-team", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to update a team")
+        team = team_service.get_team_by_id(team_id=team_id)
+        if not team:
+            raise HTTPException(status_code=404, detail="Team not found")
+        response = team.to_dto()
+    except Exception as e:
+        log_info("Failed to get team")
+        handle_routes_errors(e)
+    return response
+
+
 @router.put("/teams/{team_id}")
 def update_team(
     team_id: str,
     team: TeamDTO,
     session: SessionContainerType = Depends(authn_verify_session()),
-    db_collections: DatabaseCollections = Depends(get_db_collections),
+    team_service: TeamService = Depends(get_team_service),
 ) -> TeamDTO:
     try:
         if not authz_check(session.get_user_id(), "update-team", "team", team_id):
             raise NotAuthorizedError("You do not have permission to update a team")
         team_data = Team.from_dto(team)
-        updated_team = db_collections.team_db.update_team(team_data)
+        updated_team = team_service.update_team(team_data)
         response = updated_team.to_dto()
     except Exception as e:
         log_info("Failed to update team")

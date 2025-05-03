@@ -1,5 +1,5 @@
 import React, { ReactElement, useEffect, useState } from "react";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import EditIcon from "@mui/icons-material/Edit";
@@ -12,17 +12,17 @@ import TextField from "@mui/material/TextField";
 import ChangePasswordDialog from "./change-password-dialog";
 import UserProfileRow from "./user-profile-row";
 // Skeletons
-import TablesSkeleton from "../skeletons/tables-skeleton";
+import TablesSkeleton from "../../skeletons/tables-skeleton";
 // Actions
-import { getUser, updateUser, updatePassword } from "../../app/lib/user";
+import { getUser, updateUser, updatePassword } from "../../../app/lib/user";
 // Styles
 import "./user-profile-tab.css";
-import "../../styles/text-styles.css";
-import "../../styles/tab-container-styles.css";
+import "../../../styles/text-styles.css";
+import "../../../styles/tab-container-styles.css";
 // Types
-import { UserT } from "../../types/user";
+import { UserT } from "../../../types/user";
 // Constants
-import { languages } from "../../constants/constants";
+import { languages } from "../../../constants/constants";
 
 export default function UserProfileTab({ lng }: { lng: string }) {
   const { t } = useTranslation(lng, "profile-page");
