@@ -140,6 +140,7 @@ from shared.schemas.core.user import (
     User,
     UserAuth,
     UserDashboard,
+    UserWithMembership,
 )
 from shared.schemas.core.worker import Worker, WorkerDates
 
@@ -262,6 +263,7 @@ __all__ = [
     "User",
     "UserAuth",
     "UserDashboard",
+    "UserWithMembership",
     "Worker",
     "WorkerDates",
 ]

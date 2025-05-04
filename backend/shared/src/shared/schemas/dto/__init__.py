@@ -26,6 +26,13 @@ from shared.schemas.dto.team import (
     TeamWithMembershipDTO,
 )
 from shared.schemas.dto.team_invitation import TeamInvitationDTO
+from shared.schemas.dto.user import (
+    PasswordDataDTO,
+    UserAuthDTO,
+    UserDashboardDTO,
+    UserDTO,
+    UserWithMembershipDTO,
+)
 from shared.schemas.dto.worker import WorkerDTO
 
 __all__ = [
@@ -50,5 +57,10 @@ __all__ = [
     "TeamDTO",
     "TeamWithMembershipDTO",
     "TeamInvitationDTO",
+    "PasswordDataDTO",
+    "UserAuthDTO",
+    "UserDashboardDTO",
+    "UserDTO",
+    "UserWithMembershipDTO",
     "WorkerDTO",
 ]

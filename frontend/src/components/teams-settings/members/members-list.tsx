@@ -4,33 +4,33 @@ import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Button from "@mui/material/Button";
 // Components
-import LeaveTeamDialog from "./leave-team-dialog";
+// import LeaveTeamDialog from "./leave-team-dialog";
 // Styles
 import "./teams-list.css";
 // Types
-import { TeamWithMembership } from "@/types/team";
+import { UserWithMembership } from "@/types/user";
 
-export default function TeamsList({
+export default function MembersList({
   lng,
-  teams,
-  handleLeaveTeam,
-}: {
+  users,
+}: // handleLeaveTeam,
+{
   lng: string;
-  teams: TeamWithMembership[];
-  handleLeaveTeam: (teamId: string) => void;
+  users: UserWithMembership[];
+  // handleLeaveTeam: (teamId: string) => void;
 }) {
   const { t } = useTranslation(lng, "teams-page");
 
-  const TeamsListItem = ({
-    teamWithMembership,
+  const MembersListItem = ({
+    userWithMembership,
     isFirstItem,
   }: {
-    teamWithMembership: TeamWithMembership;
+    userWithMembership: UserWithMembership;
     isFirstItem?: boolean;
   }) => {
     return (
       <div
-        key={teamWithMembership.team.id}
+        key={userWithMembership.user.id}
         className={`teams-list-item ${isFirstItem ? "first-item" : ""}`}
       >
         <div className="team-list-item-description">
@@ -38,12 +38,12 @@ export default function TeamsList({
             <a
             // href={`/${lng}/plan/teams/${teamWithMembership.team.id}`}
             >
-              {teamWithMembership.team.name}
+              {userWithMembership.user.firstName}
             </a>
           </strong>
-          {teamWithMembership.membership.roles.map((role, index) => (
+          {userWithMembership.membership.roles.map((role, index) => (
             <span
-              key={`${teamWithMembership.team.id}-${role}-${index}`}
+              key={`${userWithMembership.user.id}-${role}-${index}`}
               className="teams-list-item-role"
             >
               {role.valueOf()}
@@ -54,7 +54,7 @@ export default function TeamsList({
           <Button
             variant="outlined"
             component={Link}
-            href={`/${lng}/plan/teams/${teamWithMembership.team.id}/settings/general`}
+            href={`/${lng}/plan/teams/${userWithMembership.user.id}/settings/general`}
             sx={{
               textTransform: "none",
               marginRight: "8px",
@@ -64,11 +64,11 @@ export default function TeamsList({
           >
             {t("settings")}
           </Button>
-          <LeaveTeamDialog
+          {/* <LeaveTeamDialog
             lng={lng}
-            teamWithMembership={teamWithMembership}
+            teamWithMembership={userWithMembership}
             handleLeaveTeam={handleLeaveTeam}
-          />
+          /> */}
         </div>
       </div>
     );
@@ -76,10 +76,10 @@ export default function TeamsList({
 
   return (
     <div className="teams-list-container">
-      {teams.map((teamWithMembership, index) => (
-        <TeamsListItem
-          key={teamWithMembership.team.id}
-          teamWithMembership={teamWithMembership}
+      {users.map((teamWithMembership, index) => (
+        <MembersListItem
+          key={teamWithMembership.user.id}
+          userWithMembership={teamWithMembership}
           isFirstItem={index === 0}
         />
       ))}

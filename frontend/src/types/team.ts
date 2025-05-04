@@ -11,6 +11,7 @@ export enum TeamMembershipRole {
   OWNER = "owner",
   MEMBER = "member",
 }
+
 export type MembershipForTeamWithMembershipDTO = {
   roles: TeamMembershipRole[];
 };

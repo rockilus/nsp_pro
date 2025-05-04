@@ -1,19 +1,15 @@
-from dataclasses import asdict
 from typing import Dict, List
 
-import humps
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
-from pydantic import TypeAdapter
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
-from shared.schemas.core import UserAuth, UserDashboard
+from shared.schemas.core import UserDashboard
+from shared.schemas.dto.user import UserDashboardDTO
 
 from src.dependencies import get_db_collections, get_user_service
 from src.errors import (
-    MessageTypeError,
     NotAuthorizedError,
-    handle_message_errors,
     handle_routes_errors,
 )
 from src.integrations.authentication import (
@@ -31,8 +27,6 @@ from src.integrations.authorization import (
     authz_get_all_users,
     authz_get_user,
 )
-from src.routes.api_model import UserAuthMessage, UserDashboardMessage
-from src.routes.user_routes import core_to_msg_user
 from src.services.user_service import UserService
 from src.utils.user_utils import build_user_dashboard
 
@@ -53,7 +47,7 @@ async def check_dashboard_authz(
 async def get_users(
     session: SessionContainerType = Depends(authn_verify_session()),
     db_collections: DatabaseCollections = Depends(get_db_collections),
-) -> List[UserDashboardMessage]:
+) -> List[UserDashboardDTO]:
     try:
         user_id = session.get_user_id()
         if not await authz_check(user_id, "read-users", "admin"):
@@ -62,7 +56,7 @@ async def get_users(
         users_authn = await authn_get_all_users()
         users_authz = await authz_get_all_users()
         users_dashboard = build_user_dashboard(users, users_authn, users_authz)
-        response = [core_to_msg_user_dashboard(ud) for ud in users_dashboard]
+        response = [ud.to_dto() for ud in users_dashboard]
     except Exception as e:
         log_info("Failed to get users dashboard")
         handle_routes_errors(e)
@@ -74,7 +68,7 @@ async def get_user(
     target_user_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
     db_collections: DatabaseCollections = Depends(get_db_collections),
-) -> UserDashboardMessage:
+) -> UserDashboardDTO:
     try:
         user_id = session.get_user_id()
         if not await authz_check(user_id, "read-user", "admin"):
@@ -85,7 +79,7 @@ async def get_user(
         user_dashboard = UserDashboard(
             user=user, user_authn=user_authn, user_authz=user_authz
         )
-        response = core_to_msg_user_dashboard(user_dashboard)
+        response = user_dashboard.to_dto()
     except Exception as e:
         log_info("Failed to get user dashboard")
         handle_routes_errors(e)
@@ -97,7 +91,7 @@ async def impersonate(
     request: Request,
     session: SessionContainerType = Depends(authn_verify_session()),
     user_service: UserService = Depends(get_user_service),
-):
+) -> JSONResponse:
     user_id = session.get_user_id()
     if not await authz_check(user_id, "create-impersonation", "admin"):
         raise NotAuthorizedError("You do not have permission to impersonate users")
@@ -117,7 +111,7 @@ async def restore_admin_session(
     session: SessionContainerType = Depends(authn_verify_session()),
     db_collections: DatabaseCollections = Depends(get_db_collections),
     user_service: UserService = Depends(get_user_service),
-):
+) -> Dict:
     user_id = session.get_user_id()
     access_token_payload = session.get_access_token_payload()
     # Check if this is an impersonated session
@@ -175,52 +169,3 @@ async def delete_user(
         log_info("Failed to get users dashboard")
         handle_routes_errors(e)
     return {"message": "User deleted"}
-
-
-# # Mappers
-# # core to message
-def core_to_msg_user_auth(user_auth: UserAuth) -> UserAuthMessage:
-    try:
-        data = asdict(user_auth)
-    except Exception as e:
-        log_info("Failed to convert UserAuth to dictionary")
-        raise MessageTypeError(str(e)) from e
-    as_dict = humps.camelize(data)
-    validator = TypeAdapter(UserAuthMessage)
-    try:
-        ua_msg = validator.validate_python(as_dict)
-    except Exception as e:
-        log_info("Failed to convert UserAuth to UserAuthMessage")
-        handle_message_errors(e)
-    return ua_msg
-
-
-def core_to_msg_user_dashboard(
-    user_dashboard: UserDashboard,
-) -> UserDashboardMessage:
-    try:
-        data = asdict(user_dashboard)
-    except Exception as e:
-        log_info("Failed to convert UserDashboard to dictionary")
-        raise MessageTypeError(str(e)) from e
-    data["user"] = (
-        core_to_msg_user(user_dashboard.user) if user_dashboard.user else None
-    )
-    data["user_authn"] = (
-        core_to_msg_user_auth(user_dashboard.user_authn)
-        if user_dashboard.user_authn
-        else None
-    )
-    data["user_authz"] = (
-        core_to_msg_user_auth(user_dashboard.user_authz)
-        if user_dashboard.user_authz
-        else None
-    )
-    as_dict = humps.camelize(data)
-    validator = TypeAdapter(UserDashboardMessage)
-    try:
-        ud_msg = validator.validate_python(as_dict)
-    except Exception as e:
-        log_info("Failed to convert UserDashboard to UserDashboardMessage")
-        handle_message_errors(e)
-    return ud_msg

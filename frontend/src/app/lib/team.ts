@@ -6,6 +6,7 @@ import {
   toTeamtT,
   toTeamWithMembership,
 } from "@/types/team";
+import { UserWithMembership, toUserWithMembership } from "@/types/user";
 
 // Env Vars
 import { API_URL } from "./env";
@@ -56,6 +57,23 @@ export const getUserTeamsWithMemberships = async (): Promise<
     return response.data.map((team: any) => toTeamWithMembership(team));
   } catch (error) {
     console.error("Error fetching user teams with memberships:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches the users of a team with their memberships.
+ * @param {string} teamId - The ID of the team to fetch users for.
+ * @returns {Promise<UserWithMembership[]>} A promise resolving to the list of users with memberships.
+ */
+export const getTeamUsersWithMemberships = async (
+  teamId: string
+): Promise<UserWithMembership[]> => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/teams/${teamId}/users`);
+    return response.data.map((user: any) => toUserWithMembership(user));
+  } catch (error) {
+    console.error("Error fetching team users with memberships:", error);
     throw error;
   }
 };

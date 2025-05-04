@@ -32,6 +32,11 @@ class UserRepository(BaseRepository[UserSchema]):
         users = self.find_all({"email": email})
         return users[0].to_core() if users else None
 
+    def get_users_by_ids(self, user_ids: List[str]) -> List[User]:
+        """Get users by a list of IDs."""
+        users = self.find_all({"_id": {"$in": user_ids}})
+        return [user.to_core() for user in users]
+
     def update_user(self, user: User) -> User:
         """Update a user."""
         user_schema = UserSchema.from_core(user)

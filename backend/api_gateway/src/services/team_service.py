@@ -8,6 +8,7 @@ from shared.schemas.core import (
     TeamMembership,
     TeamMembershipRole,
     TeamWithMembership,
+    UserWithMembership,
 )
 
 from src.integrations.authorization import (
@@ -52,7 +53,9 @@ class TeamService(BaseService):
     def get_team_by_id(self, team_id: str) -> Team | None:
         return self.collection.team_db.get_team_by_id(team_id=team_id)
 
-    def get_user_teams_with_memberships(self, user_id: str) -> List[TeamWithMembership]:
+    def get_user_teams_with_memberships(
+        self, user_id: str
+    ) -> List[TeamWithMembership]:
         memberships = (
             self.collection.team_membership_db.get_team_memberships_by_user_id(
                 user_id=user_id
@@ -75,19 +78,50 @@ class TeamService(BaseService):
             for team in teams
         ]
 
+    def get_team_users_with_memberships(
+        self, team_id: str
+    ) -> List[UserWithMembership]:
+        memberships = (
+            self.collection.team_membership_db.get_team_memberships_by_team_id(
+                team_id=team_id
+            )
+        )
+        user_ids = list(set(membership.user_id for membership in memberships))
+        users = self.collection.user_db.get_users_by_ids(user_ids=user_ids)
+        return [
+            UserWithMembership(
+                user=user,
+                membership=MembershipForTeamWithMembership(
+                    roles=[
+                        role
+                        for membership in memberships
+                        if membership.user_id == user.id
+                        for role in membership.roles
+                    ],
+                ),
+            )
+            for user in users
+        ]
+
     async def get_user_teams(self, user_id: str) -> List[Team]:
         start_time_get_user_teams = time.time()
-        team_ids = await authz_role_assignment_get_user_team_ids(user_id, "leader")
+        team_ids = await authz_role_assignment_get_user_team_ids(
+            user_id, "leader"
+        )
         end_time_get_user_teams = time.time()
         start_time_get_teams_from_db = time.time()
         teams = self.collection.team_db.get_teams_by_ids(team_ids)
         end_time_get_teams_from_db = time.time()
-        total_time_get_user_teams = end_time_get_user_teams - start_time_get_user_teams
+        total_time_get_user_teams = (
+            end_time_get_user_teams - start_time_get_user_teams
+        )
         total_time_get_teams_from_db = (
             end_time_get_teams_from_db - start_time_get_teams_from_db
         )
         print(f"Total time to get user teams:    {total_time_get_user_teams}")
-        print(f"Total time to get teams from db: {total_time_get_teams_from_db}")
+        print(
+            f"Total time to get teams from db: {total_time_get_teams_from_db}"
+        )
         return teams
 
     def update_team(self, team: Team) -> Team:
@@ -105,10 +139,8 @@ class TeamService(BaseService):
         return updated_team
 
     async def leave_team(self, user_id: str, team_id: str) -> None:
-        membership = (
-            self.collection.team_membership_db.get_team_membership_by_user_and_team_id(
-                user_id=user_id, team_id=team_id
-            )
+        membership = self.collection.team_membership_db.get_team_membership_by_user_and_team_id(
+            user_id=user_id, team_id=team_id
         )
         if membership is None:
             # pylint: disable=broad-exception-raised
@@ -116,4 +148,6 @@ class TeamService(BaseService):
         if TeamMembershipRole.OWNER in membership.roles:
             # pylint: disable=broad-exception-raised
             raise Exception("Cannot leave team as owner")
-        await self.team_membership_service.delete_team_membership(membership.id)
+        await self.team_membership_service.delete_team_membership(
+            membership.id
+        )

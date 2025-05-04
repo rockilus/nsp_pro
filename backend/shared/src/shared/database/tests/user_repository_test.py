@@ -164,3 +164,35 @@ class TestUserRepository:
         assert len(users) == 2
         assert users[0].email in ["john@example.com", "jane@example.com"]
         assert users[1].email in ["john@example.com", "jane@example.com"]
+
+    def test_get_users_by_ids(self):
+        """Test getting users by a list of IDs."""
+        user1 = UserSchema(
+            email="john@example.com",
+            first_name="John",
+            last_name="Doe",
+            workers=[],
+            language="en",
+            sign_up_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
+            impersonating_user=None,
+        )
+        user2 = UserSchema(
+            email="jane@example.com",
+            first_name="Jane",
+            last_name="Doe",
+            workers=[],
+            language="en",
+            sign_up_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
+            impersonating_user=None,
+        )
+        created_user1 = self.repo.create(user1)
+        created_user2 = self.repo.create(user2)
+
+        user_ids = [created_user1.id, created_user2.id]
+        users = self.repo.get_users_by_ids(user_ids)
+
+        assert len(users) == 2
+        assert users[0].id in user_ids
+        assert users[1].id in user_ids
+        assert users[0].email in ["john@example.com", "jane@example.com"]
+        assert users[1].email in ["john@example.com", "jane@example.com"]

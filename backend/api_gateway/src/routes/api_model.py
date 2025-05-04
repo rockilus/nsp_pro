@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 from typing import Dict, List
 
 from pydantic import BaseModel
@@ -169,34 +169,6 @@ class StatsOptionsMessage(BaseModel):
     headerUnit: int
     selectedShifts: List[ShiftWorkerOptionMessage]
     showFavorites: bool
-
-
-# User
-class UserMessage(BaseModel):
-    id: str
-    firstName: str
-    lastName: str
-    email: str
-    workers: List[str]
-    language: str
-    signUpAt: datetime
-
-
-class PasswordDataMessage(BaseModel):
-    currentPassword: str
-    newPassword: str
-    newPasswordConfirm: str
-
-
-class UserAuthMessage(BaseModel):
-    id: str
-    email: str
-
-
-class UserDashboardMessage(BaseModel):
-    user: UserMessage | None
-    userAuthn: UserAuthMessage | None
-    userAuthz: UserAuthMessage | None
 
 
 # Team

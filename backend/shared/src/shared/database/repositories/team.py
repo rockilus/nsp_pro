@@ -45,6 +45,4 @@ class TeamRepository(BaseRepository[TeamSchema]):
         """Delete a team by its ID."""
         result = self.delete(team_id)
         if result is False:
-            raise Exception(
-                f"Team with id {team_id} not found or already deleted"
-            )
+            raise Exception(f"Team with id {team_id} not found or already deleted")
