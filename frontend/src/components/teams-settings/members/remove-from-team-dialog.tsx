@@ -8,17 +8,21 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+import DeleteIcon from "@mui/icons-material/Delete";
 // Types
-import { TeamWithMembership, TeamMembershipRole } from "@/types/team";
+import { TeamMembershipRole } from "@/types/team";
+import { UserWithMembership } from "@/types/user";
 
-export default function LeaveTeamDialog({
+export default function RemoveFromTeamDialog({
   lng,
-  teamWithMembership,
-  handleLeaveTeam,
+  teamId,
+  userWithMembership,
+  handleRemoveFromTeam,
 }: {
   lng: string;
-  teamWithMembership: TeamWithMembership;
-  handleLeaveTeam: (teamId: string) => void;
+  teamId: string;
+  userWithMembership: UserWithMembership;
+  handleRemoveFromTeam: (teamId: string, userId: string) => void;
 }) {
   const { t } = useTranslation(lng, "teams-page");
 
@@ -29,7 +33,7 @@ export default function LeaveTeamDialog({
 
   const isDisabled =
     confirmationName.trim() !==
-    teamWithMembership.team.name.toLocaleLowerCase();
+    `${userWithMembership.user.firstName.toLocaleLowerCase()} ${userWithMembership.user.lastName.toLocaleLowerCase()}`;
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -43,14 +47,14 @@ export default function LeaveTeamDialog({
     event.preventDefault();
     if (
       confirmationName.trim() !==
-      teamWithMembership.team.name.toLocaleLowerCase()
+      `${userWithMembership.user.firstName.toLocaleLowerCase()} ${userWithMembership.user.lastName.toLocaleLowerCase()}`
     ) {
       setError(true);
-      setHelperText(t("team_name_mismatch"));
+      setHelperText(t("user_name_mismatch"));
       return;
     }
 
-    handleLeaveTeam(teamWithMembership.team.id);
+    handleRemoveFromTeam(teamId, userWithMembership.user.id);
     handleClose();
   };
 
@@ -61,15 +65,16 @@ export default function LeaveTeamDialog({
         onClick={handleClickOpen}
         color="error"
         disabled={
-          teamWithMembership.membership.role === TeamMembershipRole.OWNER
+          userWithMembership.membership.role === TeamMembershipRole.OWNER
         }
         sx={{
           textTransform: "none",
           fontSize: "12px",
-          padding: "3px 12px",
+          padding: "3px 0",
+          height: "100%",
         }}
       >
-        {t("leave")}
+        <DeleteIcon fontSize="small" />
       </Button>
       <Dialog
         open={open}
@@ -85,14 +90,14 @@ export default function LeaveTeamDialog({
           },
         }}
       >
-        <DialogTitle>{`${t("leave_team")} ${
-          teamWithMembership.team.name
-        }`}</DialogTitle>
+        <DialogTitle>{`${t("remove_from_team")} ${
+          userWithMembership.user.firstName
+        } ${userWithMembership.user.lastName}`}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            {t("leave_team_message_1")}
-            <strong>{teamWithMembership.team.name.toLocaleLowerCase()}</strong>
-            {t("leave_team_message_2")}
+            {t("remove_from_team_message_1")}
+            <strong>{`${userWithMembership.user.firstName.toLocaleLowerCase()} ${userWithMembership.user.lastName.toLocaleLowerCase()}`}</strong>
+            {t("remove_from_team_message_2")}
           </DialogContentText>
           <TextField
             autoFocus
@@ -100,7 +105,7 @@ export default function LeaveTeamDialog({
             margin="dense"
             id="name"
             name="email"
-            placeholder={teamWithMembership.team.name.toLocaleLowerCase()}
+            placeholder={`${userWithMembership.user.firstName.toLocaleLowerCase()} ${userWithMembership.user.lastName.toLocaleLowerCase()}`}
             type="text"
             fullWidth
             variant="standard"
@@ -128,7 +133,7 @@ export default function LeaveTeamDialog({
               textTransform: "none",
             }}
           >
-            {t("leave")}
+            {t("remove")}
           </Button>
         </DialogActions>
       </Dialog>

@@ -13,7 +13,7 @@ module.exports = {
         _id: String(new ObjectId()),
         user_id: userId,
         team_id: teamId,
-        roles: ["owner"],
+        roles: "owner",
       });
     }
   }
@@ -29,7 +29,7 @@ module.exports = {
         await db.collection('team_memberships').deleteMany({
           user_id: userId,
           team_id: teamId,
-          roles: ["owner"],
+          roles: "owner",
         });
       }
     }

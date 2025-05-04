@@ -85,7 +85,7 @@ class TeamInvitationService(BaseService):
             id="",
             user_id=user.id,
             team_id=invitation.team_id,
-            roles=[membership_role],
+            role=membership_role,
         )
         await self.team_membership_service.create_team_membership(membership)
         if invitation.type == TeamInvitationType.MEMBER and invitation.worker_id:

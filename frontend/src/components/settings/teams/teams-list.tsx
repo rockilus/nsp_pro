@@ -41,14 +41,9 @@ export default function TeamsList({
               {teamWithMembership.team.name}
             </a>
           </strong>
-          {teamWithMembership.membership.roles.map((role, index) => (
-            <span
-              key={`${teamWithMembership.team.id}-${role}-${index}`}
-              className="teams-list-item-role"
-            >
-              {role.valueOf()}
-            </span>
-          ))}
+          <span className="teams-list-item-role">
+            {teamWithMembership.membership.role.valueOf()}
+          </span>
         </div>
         <div className="team-list-item-actions">
           <Button

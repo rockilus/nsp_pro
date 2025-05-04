@@ -1,5 +1,3 @@
-from typing import List
-
 from pydantic import BaseModel
 
 
@@ -11,7 +9,7 @@ class TeamDTO(BaseModel):
 
 
 class MembershipForTeamWithMembershipDTO(BaseModel):
-    roles: List[str]
+    role: str
 
 
 class TeamWithMembershipDTO(BaseModel):

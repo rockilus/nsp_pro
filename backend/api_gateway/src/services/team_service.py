@@ -44,7 +44,7 @@ class TeamService(BaseService):
             id="",
             user_id=owner_id,
             team_id=new_team.id,
-            roles=[TeamMembershipRole.OWNER],
+            role=TeamMembershipRole.OWNER,
         )
         await self.team_membership_service.create_team_membership(membership)
         self.shift_service.create_default_shifts(new_team.id)
@@ -63,20 +63,27 @@ class TeamService(BaseService):
         )
         team_ids = list(set(membership.team_id for membership in memberships))
         teams = self.collection.team_db.get_teams_by_ids(team_ids=team_ids)
-        return [
-            TeamWithMembership(
-                team=team,
-                membership=MembershipForTeamWithMembership(
-                    roles=[
-                        role
-                        for membership in memberships
-                        if membership.team_id == team.id
-                        for role in membership.roles
-                    ],
+
+        out: List[TeamWithMembership] = []
+        for team in teams:
+            membership = next(
+                (
+                    membership
+                    for membership in memberships
+                    if membership.team_id == team.id
                 ),
+                None,
             )
-            for team in teams
-        ]
+            if membership is not None:
+                out.append(
+                    TeamWithMembership(
+                        team=team,
+                        membership=MembershipForTeamWithMembership(
+                            role=membership.role,
+                        ),
+                    )
+                )
+        return out
 
     def get_team_users_with_memberships(
         self, team_id: str
@@ -88,20 +95,27 @@ class TeamService(BaseService):
         )
         user_ids = list(set(membership.user_id for membership in memberships))
         users = self.collection.user_db.get_users_by_ids(user_ids=user_ids)
-        return [
-            UserWithMembership(
-                user=user,
-                membership=MembershipForTeamWithMembership(
-                    roles=[
-                        role
-                        for membership in memberships
-                        if membership.user_id == user.id
-                        for role in membership.roles
-                    ],
+
+        out: List[UserWithMembership] = []
+        for user in users:
+            membership = next(
+                (
+                    membership
+                    for membership in memberships
+                    if membership.user_id == user.id
                 ),
+                None,
             )
-            for user in users
-        ]
+            if membership is not None:
+                out.append(
+                    UserWithMembership(
+                        user=user,
+                        membership=MembershipForTeamWithMembership(
+                            role=membership.role,
+                        ),
+                    )
+                )
+        return out
 
     async def get_user_teams(self, user_id: str) -> List[Team]:
         start_time_get_user_teams = time.time()
@@ -138,14 +152,14 @@ class TeamService(BaseService):
         updated_team = self.collection.team_db.update_team(team)
         return updated_team
 
-    async def leave_team(self, user_id: str, team_id: str) -> None:
+    async def remove_user_from_team(self, user_id: str, team_id: str) -> None:
         membership = self.collection.team_membership_db.get_team_membership_by_user_and_team_id(
             user_id=user_id, team_id=team_id
         )
         if membership is None:
             # pylint: disable=broad-exception-raised
             raise Exception("Membership not found")
-        if TeamMembershipRole.OWNER in membership.roles:
+        if membership.role == TeamMembershipRole.OWNER:
             # pylint: disable=broad-exception-raised
             raise Exception("Cannot leave team as owner")
         await self.team_membership_service.delete_team_membership(

@@ -13,7 +13,7 @@ import { getWorkers } from "@/app/lib/worker";
 // Styles
 import "../../../styles/text-styles.css";
 import "../../../styles/tab-container-styles.css";
-import "./teams-tab.css";
+import "./members-tab.css";
 // Types
 import { UserWithMembership } from "@/types/user";
 import { WorkerT } from "@/types/worker";
@@ -48,14 +48,14 @@ export default function MembersTab({
     setIsLoading(false);
   };
 
-  // const handleLeaveTeam = async (teamId: string) => {
-  //   const success = await leaveTeam(teamId);
-  //   if (success) {
-  //     setUsers((prevTeams) =>
-  //       prevTeams.filter((team) => team.team.id !== teamId)
-  //     );
-  //   }
-  // };
+  const handleRemoveFromTeam = async (teamId: string, userId: string) => {
+    const success = await leaveTeam(teamId);
+    if (success) {
+      setUsers((prevUsers) =>
+        prevUsers.filter((user) => user.user.id !== userId)
+      );
+    }
+  };
 
   useEffect(() => {
     handleGetTeamUsersAndWorkers();
@@ -64,15 +64,17 @@ export default function MembersTab({
   return (
     <div className="tab-container-wide">
       <div className="members-tab-header">
-        <span className="title">{t("teams")}</span>
+        <span className="title">{t("members")}</span>
         {/* <NewTeamDialog lng={lng} handleCreateTeam={handleCreateTeam} /> */}
       </div>
       {!isLoading &&
         (users.length > 0 ? (
           <MembersList
             lng={lng}
+            teamId={teamId}
             users={users}
-            // handleLeaveTeam={handleLeaveTeam}
+            workers={workers}
+            handleRemoveFromTeam={handleRemoveFromTeam}
           />
         ) : (
           <div>{t("no_member_message")}</div>

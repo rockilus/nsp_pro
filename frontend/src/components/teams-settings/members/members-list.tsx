@@ -4,20 +4,26 @@ import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Button from "@mui/material/Button";
 // Components
-// import LeaveTeamDialog from "./leave-team-dialog";
+import RemoveFromTeamDialog from "./remove-from-team-dialog";
+import EditWorkerPopover from "./edit-worker";
 // Styles
-import "./teams-list.css";
+import "./members-list.css";
 // Types
 import { UserWithMembership } from "@/types/user";
+import { WorkerT } from "@/types/worker";
 
 export default function MembersList({
   lng,
+  teamId,
   users,
-}: // handleLeaveTeam,
-{
+  workers,
+  handleRemoveFromTeam,
+}: {
   lng: string;
+  teamId: string;
   users: UserWithMembership[];
-  // handleLeaveTeam: (teamId: string) => void;
+  workers: WorkerT[];
+  handleRemoveFromTeam: (teamId: string, userId: string) => void;
 }) {
   const { t } = useTranslation(lng, "teams-page");
 
@@ -38,37 +44,25 @@ export default function MembersList({
             <a
             // href={`/${lng}/plan/teams/${teamWithMembership.team.id}`}
             >
-              {userWithMembership.user.firstName}
+              {`${userWithMembership.user.firstName} ${userWithMembership.user.lastName}`}
             </a>
           </strong>
-          {userWithMembership.membership.roles.map((role, index) => (
-            <span
-              key={`${userWithMembership.user.id}-${role}-${index}`}
-              className="teams-list-item-role"
-            >
-              {role.valueOf()}
-            </span>
-          ))}
+          <span className="teams-list-item-role">
+            {userWithMembership.membership.role.valueOf()}
+          </span>
         </div>
-        <div className="team-list-item-actions">
-          <Button
-            variant="outlined"
-            component={Link}
-            href={`/${lng}/plan/teams/${userWithMembership.user.id}/settings/general`}
-            sx={{
-              textTransform: "none",
-              marginRight: "8px",
-              fontSize: "12px",
-              padding: "3px 12px",
-            }}
-          >
-            {t("settings")}
-          </Button>
-          {/* <LeaveTeamDialog
+        <div className="members-list-item-actions">
+          <EditWorkerPopover
             lng={lng}
-            teamWithMembership={userWithMembership}
-            handleLeaveTeam={handleLeaveTeam}
-          /> */}
+            userId={userWithMembership.user.id}
+            workers={workers}
+          />
+          <RemoveFromTeamDialog
+            lng={lng}
+            teamId={teamId}
+            userWithMembership={userWithMembership}
+            handleRemoveFromTeam={handleRemoveFromTeam}
+          />
         </div>
       </div>
     );

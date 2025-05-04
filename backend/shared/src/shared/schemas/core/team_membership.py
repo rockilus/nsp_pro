@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import List
 
 INVITE_TYPE_ROLE_MAP = {
     # "admin": {
@@ -35,4 +34,4 @@ class TeamMembership:
     id: str
     user_id: str
     team_id: str
-    roles: List[TeamMembershipRole]
+    role: TeamMembershipRole

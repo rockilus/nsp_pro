@@ -3,7 +3,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from shared.logger import log_info
-from shared.schemas.core import Team, UserWithMembership
+from shared.schemas.core import Team
 from shared.schemas.dto import (
     TeamDTO,
     TeamWithMembershipDTO,
@@ -72,6 +72,23 @@ async def get_teams(
     return response
 
 
+@router.get("/teams/with-memberships")
+async def get_user_teams_with_memberships(
+    session: SessionContainerType = Depends(authn_verify_session()),
+    team_service: TeamService = Depends(get_team_service),
+) -> List[TeamWithMembershipDTO]:
+    try:
+        user_id = session.get_user_id()
+        teams_with_memberships = team_service.get_user_teams_with_memberships(
+            user_id=user_id
+        )
+        response = [t.to_dto() for t in teams_with_memberships]
+    except Exception as e:
+        log_info("Failed to get user teams with memberships")
+        handle_routes_errors(e)
+    return response
+
+
 @router.get("/teams/{team_id}")
 async def get_team(
     team_id: str,
@@ -91,23 +108,6 @@ async def get_team(
         response = team.to_dto()
     except Exception as e:
         log_info("Failed to get team")
-        handle_routes_errors(e)
-    return response
-
-
-@router.get("/teams/with-memberships")
-async def get_user_teams_with_memberships(
-    session: SessionContainerType = Depends(authn_verify_session()),
-    team_service: TeamService = Depends(get_team_service),
-) -> List[TeamWithMembershipDTO]:
-    try:
-        user_id = session.get_user_id()
-        teams_with_memberships = team_service.get_user_teams_with_memberships(
-            user_id=user_id
-        )
-        response = [t.to_dto() for t in teams_with_memberships]
-    except Exception as e:
-        log_info("Failed to get user teams with memberships")
         handle_routes_errors(e)
     return response
 
@@ -166,10 +166,35 @@ async def leave_team(
 ):
     try:
         user_id = session.get_user_id()
-        await team_service.leave_team(user_id=user_id, team_id=team_id)
+        await team_service.remove_user_from_team(
+            user_id=user_id, team_id=team_id
+        )
         return {"message": "Successfully left the team"}
     except Exception as e:
         log_info("Failed to leave team")
+        handle_routes_errors(e)
+
+
+@router.delete("/teams/{team_id}/users/{user_id}")
+async def remove_user_from_team(
+    team_id: str,
+    user_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+    team_service: TeamService = Depends(get_team_service),
+):
+    try:
+        if not authz_check(
+            session.get_user_id(), "remove-user", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to remove a user from the team"
+            )
+        await team_service.remove_user_from_team(
+            user_id=user_id, team_id=team_id
+        )
+        return {"message": "User successfully removed from the team"}
+    except Exception as e:
+        log_info("Failed to remove user from team")
         handle_routes_errors(e)
 
 

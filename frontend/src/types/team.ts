@@ -13,7 +13,7 @@ export enum TeamMembershipRole {
 }
 
 export type MembershipForTeamWithMembershipDTO = {
-  roles: TeamMembershipRole[];
+  role: TeamMembershipRole;
 };
 
 export type TeamWithMembership = {

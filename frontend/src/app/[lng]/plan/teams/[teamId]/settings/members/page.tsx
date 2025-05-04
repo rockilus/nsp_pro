@@ -1,20 +1,21 @@
 "use client";
 
 // Components
-import UserProfileTab from "../../../../../../../components/settings/profile/user-profile-tab";
+import MembersTab from "../../../../../../../components/teams-settings/members/members-tab";
 // Styles
 import "../../../../../../../styles/page.css";
 
 export default function Page({
-  params: { lng },
+  params: { lng, teamId },
 }: {
   params: {
     lng: string;
+    teamId: string;
   };
 }) {
   return (
     <div className="page-layout">
-      <UserProfileTab lng={lng} />
+      <MembersTab lng={lng} teamId={teamId} />
     </div>
   );
 }

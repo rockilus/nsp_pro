@@ -1,6 +1,5 @@
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
-from typing import List
 
 import humps
 from pydantic import TypeAdapter
@@ -38,11 +37,11 @@ class Team:
 
 @dataclass
 class MembershipForTeamWithMembership:
-    roles: List[TeamMembershipRole]
+    role: TeamMembershipRole
 
     def to_dto(self) -> MembershipForTeamWithMembershipDTO:
         data = asdict(self)
-        data["roles"] = [role.value for role in self.roles]
+        data["role"] = self.role.value
         as_dict = humps.camelize(data)
         validator = TypeAdapter(MembershipForTeamWithMembershipDTO)
         return validator.validate_python(as_dict)
@@ -52,7 +51,7 @@ class MembershipForTeamWithMembership:
         cls, data: MembershipForTeamWithMembershipDTO
     ) -> "MembershipForTeamWithMembership":
         data_dict = humps.decamelize(data.model_dump())
-        data_dict["roles"] = [TeamMembershipRole(role) for role in data_dict["roles"]]
+        data_dict["role"] = TeamMembershipRole(data_dict["role"])
         return cls(**data_dict)
 
 
