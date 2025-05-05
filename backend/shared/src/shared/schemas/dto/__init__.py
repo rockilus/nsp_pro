@@ -20,8 +20,19 @@ from shared.schemas.dto.schedule import (
     SolutionDTO,
 )
 from shared.schemas.dto.shift import ShiftDTO
-from shared.schemas.dto.team import TeamDTO
+from shared.schemas.dto.team import (
+    MembershipForTeamWithMembershipDTO,
+    TeamDTO,
+    TeamWithMembershipDTO,
+)
 from shared.schemas.dto.team_invitation import TeamInvitationDTO
+from shared.schemas.dto.user import (
+    PasswordDataDTO,
+    UserAuthDTO,
+    UserDashboardDTO,
+    UserDTO,
+    UserWithMembershipDTO,
+)
 from shared.schemas.dto.worker import WorkerDTO
 
 __all__ = [
@@ -42,7 +53,14 @@ __all__ = [
     "ScheduleDTO",
     "SolutionDTO",
     "ShiftDTO",
+    "MembershipForTeamWithMembershipDTO",
     "TeamDTO",
+    "TeamWithMembershipDTO",
     "TeamInvitationDTO",
+    "PasswordDataDTO",
+    "UserAuthDTO",
+    "UserDashboardDTO",
+    "UserDTO",
+    "UserWithMembershipDTO",
     "WorkerDTO",
 ]

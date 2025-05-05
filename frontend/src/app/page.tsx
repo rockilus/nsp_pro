@@ -1,14 +1,10 @@
 // Components
 import { HomePage } from "../components/home";
-// Providers
-import { TeamStoreProvider } from "../providers/team-store-provider";
 
-export default function Home() {
+export default async function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <TeamStoreProvider>
-        <HomePage />
-      </TeamStoreProvider>
+      <HomePage />
     </main>
   );
 }

@@ -41,6 +41,8 @@ class WorkerService(BaseService):
 
     def update_worker(self, worker_updated: Worker) -> Worker:
         worker_exsiting = self.collection.worker_db.get_worker_by_id(worker_updated.id)
+        if not worker_exsiting:
+            raise ValueError(f"Worker with id {worker_updated.id} not found")
         if worker_updated.acronym != worker_exsiting.acronym:
             worker_updated.acronym_custom = True
         if (
@@ -54,6 +56,46 @@ class WorkerService(BaseService):
             worker_updated.acronym = generate_acronym(worker_updated.name, acronyms)
         worker_saved = self.collection.worker_db.update_worker(worker_updated)
         return worker_saved
+
+    def attach_user_to_worker(
+        self, worker_id: str, user_id: str, team_id: str
+    ) -> List[Worker]:
+        # Validate worker existence and user assignment
+        worker = self._get_worker_or_raise(worker_id)
+        if worker.user_id and worker.user_id != user_id:
+            raise ValueError(f"Worker {worker_id} already has a user assigned")
+
+        # Update other workers in the team
+        workers_with_user = self.collection.worker_db.get_workers_by_team_and_user(
+            team_id=team_id, user_id=user_id
+        )
+        workers_to_update = self._detach_user_from_other_workers(
+            workers_with_user, worker_id
+        )
+
+        # Assign user to the target worker
+        worker.user_id = user_id
+        workers_to_update.append(worker)
+
+        # Save updates to the database
+        return self.collection.worker_db.update_workers(workers_to_update)
+
+    def _get_worker_or_raise(self, worker_id: str) -> Worker:
+        worker = self.collection.worker_db.get_worker_by_id(worker_id)
+        if not worker:
+            raise ValueError(f"Worker with id {worker_id} not found")
+        return worker
+
+    @staticmethod
+    def _detach_user_from_other_workers(
+        workers: List[Worker], target_worker_id: str
+    ) -> List[Worker]:
+        workers_to_update = []
+        for worker in workers:
+            if worker.id != target_worker_id:
+                worker.user_id = None
+                workers_to_update.append(worker)
+        return workers_to_update
 
     def delete_worker(self, worker_id: str) -> None:
         self.delete_worker_from_schedule_quick_staffing(worker_id)

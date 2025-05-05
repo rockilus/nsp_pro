@@ -4,8 +4,10 @@ import {
   toTeamInvitationT,
   fromTeamInvitationT,
 } from "../../types/team-invitation";
+// Env Vars
+import { API_URL } from "./env";
 
-const API_BASE_URL = "/api/team-invitations";
+const API_BASE_URL = API_URL + "/team-invitations";
 
 export const createTeamInvitation = async (
   invitation: TeamInvitationT
@@ -57,9 +59,9 @@ export const rejectTeamInvitation = async (
 
 export const resendTeamInvitationEmail = async (
   invitationId: string
-): Promise<{ message: string }> => {
+): Promise<TeamInvitationT> => {
   const response = await axios.post(`${API_BASE_URL}/${invitationId}/resend`);
-  return response.data;
+  return toTeamInvitationT(response.data) as TeamInvitationT;
 };
 
 export const deleteTeamInvitation = async (

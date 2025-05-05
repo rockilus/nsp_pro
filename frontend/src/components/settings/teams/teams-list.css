@@ -1,0 +1,37 @@
+.teams-list-container {
+  display: flex;
+  flex-direction: column;
+  border: 0.0625rem solid #e5e7eb;
+  border-radius: 0.375rem;
+}
+
+.teams-list-item {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 0.0625rem solid #e5e7eb;
+  padding: 1rem;
+}
+
+.teams-list-item.first-item {
+  border-top: none;
+}
+
+.teams-list-item-name {
+  color: #1976d2;
+  cursor: pointer;
+}
+.teams-list-item-name:hover {
+  text-decoration: underline;
+}
+
+.teams-list-item-role {
+  border: 0.0625rem solid #e5e7eb;
+  border-radius: 625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #374151;
+  padding: 0 0.375rem;
+  margin-left: 0.5rem;
+}

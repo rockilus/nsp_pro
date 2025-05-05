@@ -61,6 +61,19 @@ class TeamInvitationService(BaseService):
             email=email,
         )
 
+    def resend_invite(self, invitation_id: str) -> TeamInvitation | None:
+        invitation = self.collection.team_invitation_db.get_invitation_by_id(
+            invitation_id=invitation_id,
+        )
+        if not invitation:
+            return None
+        if not self.can_resend_invite(invitation):
+            return None
+        self.send_invitation_email(invitation)
+        invitation.last_sent_at = datetime.now(tz=timezone.utc)
+        self.collection.team_invitation_db.update_invitation(invitation)
+        return invitation
+
     # pylint: disable=too-many-return-statements
     async def accept_team_invitation(self, user_id: str, token: str) -> bool:
         invitation = self.collection.team_invitation_db.get_invitation_by_token(
@@ -85,7 +98,7 @@ class TeamInvitationService(BaseService):
             id="",
             user_id=user.id,
             team_id=invitation.team_id,
-            roles=[membership_role],
+            role=membership_role,
         )
         await self.team_membership_service.create_team_membership(membership)
         if invitation.type == TeamInvitationType.MEMBER and invitation.worker_id:

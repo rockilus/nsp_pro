@@ -118,7 +118,11 @@ from shared.schemas.core.stats import (
     StatsValue,
 )
 from shared.schemas.core.task import TaskServices
-from shared.schemas.core.team import Team
+from shared.schemas.core.team import (
+    MembershipForTeamWithMembership,
+    Team,
+    TeamWithMembership,
+)
 from shared.schemas.core.team_invitation import (
     TeamInvitation,
     TeamInvitationStatus,
@@ -136,6 +140,7 @@ from shared.schemas.core.user import (
     User,
     UserAuth,
     UserDashboard,
+    UserWithMembership,
 )
 from shared.schemas.core.worker import Worker, WorkerDates
 
@@ -243,7 +248,9 @@ __all__ = [
     "StatsValue",
     "TaskServices",
     "Specialty",
+    "TeamWithMembership",
     "Team",
+    "MembershipForTeamWithMembership",
     "TeamInvitation",
     "TeamInvitationStatus",
     "TeamInvitationType",
@@ -256,6 +263,7 @@ __all__ = [
     "User",
     "UserAuth",
     "UserDashboard",
+    "UserWithMembership",
     "Worker",
     "WorkerDates",
 ]

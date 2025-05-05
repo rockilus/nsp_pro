@@ -1,9 +1,14 @@
 import pytest
 
 from shared.database.database import MongoDB
-from shared.database.repositories.team_membership import TeamMembershipRepository
+from shared.database.repositories.team_membership import (
+    TeamMembershipRepository,
+)
 from shared.database.schemas.team_membership import TeamMembershipSchema
-from shared.schemas.core.team_membership import TeamMembership, TeamMembershipRole
+from shared.schemas.core.team_membership import (
+    TeamMembership,
+    TeamMembershipRole,
+)
 
 
 class TestTeamMembershipRepository:
@@ -30,7 +35,7 @@ class TestTeamMembershipRepository:
             id=None,
             user_id="user1",
             team_id="team1",
-            roles=[TeamMembershipRole.MEMBER],
+            role=TeamMembershipRole.MEMBER,
         )
 
         result = self.repo.create_team_membership(membership)
@@ -38,7 +43,7 @@ class TestTeamMembershipRepository:
         assert result.id is not None
         assert result.user_id == "user1"
         assert result.team_id == "team1"
-        assert result.roles == [TeamMembershipRole.MEMBER]
+        assert result.role == TeamMembershipRole.MEMBER
 
         saved_doc = self.repo.collection.find_one({"_id": result.id})
         assert saved_doc is not None
@@ -50,7 +55,7 @@ class TestTeamMembershipRepository:
         membership = TeamMembershipSchema(
             user_id="user1",
             team_id="team1",
-            roles=[TeamMembershipRole.MEMBER.value],
+            role=TeamMembershipRole.MEMBER.value,
         )
         created = self.repo.create(membership)
 
@@ -65,7 +70,7 @@ class TestTeamMembershipRepository:
         membership = TeamMembershipSchema(
             user_id="user1",
             team_id="team1",
-            roles=[TeamMembershipRole.MEMBER.value],
+            role=TeamMembershipRole.MEMBER.value,
         )
         created = self.repo.create(membership)
 
@@ -73,22 +78,22 @@ class TestTeamMembershipRepository:
             id=created.id,
             user_id="user1",
             team_id="team1",
-            roles=[TeamMembershipRole.OWNER],
+            role=TeamMembershipRole.OWNER,
         )
 
         result = self.repo.update_team_membership(updated_membership)
 
-        assert result.roles == [TeamMembershipRole.OWNER]
+        assert result.role == TeamMembershipRole.OWNER
 
         from_db = self.repo.collection.find_one({"_id": created.id})
-        assert from_db["roles"] == [TeamMembershipRole.OWNER.value]
+        assert from_db["role"] == TeamMembershipRole.OWNER.value
 
     def test_delete_team_membership(self):
         """Test deleting a team membership."""
         membership = TeamMembershipSchema(
             user_id="user1",
             team_id="team1",
-            roles=[TeamMembershipRole.MEMBER.value],
+            role=TeamMembershipRole.MEMBER.value,
         )
         created = self.repo.create(membership)
 
@@ -103,13 +108,13 @@ class TestTeamMembershipRepository:
                 id=None,
                 user_id="user1",
                 team_id="team1",
-                roles=[TeamMembershipRole.MEMBER],
+                role=TeamMembershipRole.MEMBER,
             ),
             TeamMembership(
                 id=None,
                 user_id="user2",
                 team_id="team1",
-                roles=[TeamMembershipRole.OWNER],
+                role=TeamMembershipRole.OWNER,
             ),
         ]
 
@@ -124,7 +129,7 @@ class TestTeamMembershipRepository:
         membership = TeamMembershipSchema(
             user_id="user1",
             team_id="team1",
-            roles=[TeamMembershipRole.MEMBER.value],
+            role=TeamMembershipRole.MEMBER.value,
         )
         self.repo.create(membership)
 
@@ -137,7 +142,7 @@ class TestTeamMembershipRepository:
         membership = TeamMembershipSchema(
             user_id="user1",
             team_id="team1",
-            roles=[TeamMembershipRole.MEMBER.value],
+            role=TeamMembershipRole.MEMBER.value,
         )
         self.repo.create(membership)
 
@@ -151,7 +156,7 @@ class TestTeamMembershipRepository:
         membership = TeamMembershipSchema(
             user_id="user1",
             team_id="team1",
-            roles=[TeamMembershipRole.MEMBER.value],
+            role=TeamMembershipRole.MEMBER.value,
         )
         self.repo.create(membership)
 
@@ -162,4 +167,4 @@ class TestTeamMembershipRepository:
         assert found_membership is not None
         assert found_membership.user_id == "user1"
         assert found_membership.team_id == "team1"
-        assert found_membership.roles == [TeamMembershipRole.MEMBER]
+        assert found_membership.role == TeamMembershipRole.MEMBER

@@ -1,29 +1,20 @@
 import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-// Actions
-import { toUserT } from "./user";
 // Env Vars
 import { API_URL } from "./env";
 // Types
-import { UserDashboardT } from "../../types/user";
+import { UserDashboardT, toUserDashboardT } from "../../types/user";
 
 dayjs.extend(utc);
 
 const apiUrlDashboard = API_URL + "/admin-dashboard";
 
-const toUserDashboardT = (data: any): UserDashboardT => {
-  return {
-    ...data,
-    user: data.user ? toUserT(data.user) : null,
-  };
-};
-
 //////////////////////////
 // Users Dashboard //
 //////////////////////////
 
-export const checkUserAuthz = async () => {
+export const checkUserAuthz = async (): Promise<boolean> => {
   noStore();
   const options: RequestInit = {
     method: "GET",
@@ -47,7 +38,7 @@ export const checkUserAuthz = async () => {
   }
 };
 
-export async function getUsersDashboard() {
+export async function getUsersDashboard(): Promise<UserDashboardT[]> {
   noStore();
   const options: RequestInit = {
     method: "GET",
@@ -72,7 +63,9 @@ export async function getUsersDashboard() {
   }
 }
 
-export async function getUserDashboard(userId: string) {
+export async function getUserDashboard(
+  userId: string
+): Promise<UserDashboardT> {
   noStore();
   const options: RequestInit = {
     method: "GET",
@@ -97,7 +90,7 @@ export async function getUserDashboard(userId: string) {
   }
 }
 
-export async function impersonateUser(userId: string) {
+export async function impersonateUser(userId: string): Promise<boolean> {
   noStore();
   const options: RequestInit = {
     method: "POST",
@@ -121,7 +114,7 @@ export async function impersonateUser(userId: string) {
   }
 }
 
-export const stopImpersonation = async () => {
+export const stopImpersonation = async (): Promise<boolean> => {
   try {
     const options: RequestInit = {
       method: "POST",
@@ -143,7 +136,7 @@ export const stopImpersonation = async () => {
   }
 };
 
-export async function deleteUser(userId: string) {
+export async function deleteUser(userId: string): Promise<boolean> {
   noStore();
   const options: RequestInit = {
     method: "DELETE",

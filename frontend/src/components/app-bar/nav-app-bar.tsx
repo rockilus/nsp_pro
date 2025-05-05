@@ -1,12 +1,13 @@
 import * as React from "react";
 // MUI
 import AppBar from "@mui/material/AppBar";
-import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import Image from "next/image";
 //Components
 import AccountMenu from "./account-menu";
 import NavLinks from "./nav-links";
+// Styles
+import "./nav-app-bar.css";
 
 const logoWidthOriginal = 753;
 const logoHeightOriginal = 98;
@@ -24,13 +25,13 @@ const NavAppBar = ({ lng }: { lng: string }) => {
         borderBottom: "1px solid lightgray",
       }}
     >
-      <Toolbar>
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          width="100%"
-          alignItems="center"
-        >
+      <Toolbar
+        sx={{
+          height: "64px",
+          padding: "0 24px",
+        }}
+      >
+        <div className="app-bar-content-container">
           <Image
             src="/rockilus_logo_blue.jpg"
             alt="logo"
@@ -40,7 +41,7 @@ const NavAppBar = ({ lng }: { lng: string }) => {
           />
           <NavLinks lng={lng} />
           <AccountMenu lng={lng} />
-        </Box>
+        </div>
       </Toolbar>
     </AppBar>
   );

@@ -72,6 +72,10 @@
   text-align: left;
 }
 
+.recurrence-button:hover {
+  text-decoration: underline;
+}
+
 .separator {
   width: 100%;
   height: 1px;
