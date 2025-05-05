@@ -20,6 +20,7 @@
 
 .teams-list-item-name {
   color: #1976d2;
+  cursor: pointer;
 }
 .teams-list-item-name:hover {
   text-decoration: underline;

@@ -1,6 +1,9 @@
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslation } from "../../../app/i18n/client";
+// Context
+import { useTeam } from "@/context/TeamContext";
 // MUI
 import Button from "@mui/material/Button";
 // Components
@@ -21,6 +24,9 @@ export default function TeamsList({
 }) {
   const { t } = useTranslation(lng, "teams-page");
 
+  const router = useRouter();
+  const { setSelectedTeamId } = useTeam();
+
   const TeamsListItem = ({
     teamWithMembership,
     isFirstItem,
@@ -28,18 +34,19 @@ export default function TeamsList({
     teamWithMembership: TeamWithMembership;
     isFirstItem?: boolean;
   }) => {
+    const handleTeamClick = () => {
+      setSelectedTeamId(teamWithMembership.team.id);
+      router.push(`/${lng}/plan/workers`);
+    };
+
     return (
       <div
         key={teamWithMembership.team.id}
         className={`teams-list-item ${isFirstItem ? "first-item" : ""}`}
       >
         <div className="team-list-item-description">
-          <strong className="teams-list-item-name">
-            <a
-            // href={`/${lng}/plan/teams/${teamWithMembership.team.id}`}
-            >
-              {teamWithMembership.team.name}
-            </a>
+          <strong className="teams-list-item-name" onClick={handleTeamClick}>
+            {teamWithMembership.team.name}
           </strong>
           <span className="teams-list-item-role">
             {teamWithMembership.membership.role.valueOf()}
