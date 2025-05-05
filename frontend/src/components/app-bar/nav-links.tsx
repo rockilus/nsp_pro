@@ -38,11 +38,12 @@ export default function NavLinks({ lng }: { lng: string }) {
       {links.map((link) => {
         return (
           <div
+            key={link.name}
             className={`nav-link-container ${
               pathname === link.href ? "active" : ""
             }`}
           >
-            <Link className="nav-link-link" key={link.name} href={link.href}>
+            <Link className="nav-link-link" href={link.href}>
               <span
                 className={`nav-link-label ${
                   pathname === link.href ? "active" : ""
