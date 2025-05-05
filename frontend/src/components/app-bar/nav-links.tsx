@@ -6,6 +6,8 @@ import { useTranslation } from "@/app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+// Styles
+import "./nav-links.css";
 
 export default function NavLinks({ lng }: { lng: string }) {
   const { t } = useTranslation(lng, "app-bar");
@@ -32,24 +34,26 @@ export default function NavLinks({ lng }: { lng: string }) {
   ];
 
   return (
-    <Box display="flex" justifyContent="center" alignItems="center">
+    <div className="nav-links-container">
       {links.map((link) => {
         return (
-          <Link key={link.name} href={link.href}>
-            <Button
-              sx={{
-                borderRadius: 4,
-                textTransform: "none",
-                border: pathname === link.href ? "1px solid" : "none",
-                height: "30px",
-                color: "grey.700",
-              }}
-            >
-              {link.label}
-            </Button>
-          </Link>
+          <div
+            className={`nav-link-container ${
+              pathname === link.href ? "active" : ""
+            }`}
+          >
+            <Link className="nav-link-link" key={link.name} href={link.href}>
+              <span
+                className={`nav-link-label ${
+                  pathname === link.href ? "active" : ""
+                }`}
+              >
+                {link.label}
+              </span>
+            </Link>
+          </div>
         );
       })}
-    </Box>
+    </div>
   );
 }
