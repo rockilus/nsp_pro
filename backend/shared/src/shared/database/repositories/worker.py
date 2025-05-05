@@ -36,16 +36,21 @@ class WorkerRepository(BaseRepository[WorkerSchema]):
         workers = self.find_all({"team": team_id, "deleted": False})
         return [worker.to_core() for worker in workers]
 
-    def get_worker_by_id(self, worker_id: str) -> Worker:
+    def get_worker_by_id(self, worker_id: str) -> Worker | None:
         """Get a worker by its ID."""
         worker = self.find_by_id(worker_id)
         if not worker:
-            raise Exception(f"Worker with id {worker_id} not found")
+            return None
         return worker.to_core()
 
     def get_workers_by_specialty_id(self, specialty_id: str) -> List[Worker]:
         """Get multiple workers by their specialty ID."""
         workers = self.find_all({"specialties": {"$in": [specialty_id]}})
+        return [worker.to_core() for worker in workers]
+
+    def get_workers_by_team_and_user(self, team_id: str, user_id: str) -> List[Worker]:
+        """Get all workers for a specific team and user."""
+        workers = self.find_all({"team": team_id, "user_id": user_id})
         return [worker.to_core() for worker in workers]
 
     def update_worker(self, worker: Worker) -> Worker:

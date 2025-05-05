@@ -31,9 +31,7 @@ async def create_team(
 ) -> TeamDTO:
     try:
         if not team_name.strip():
-            raise HTTPException(
-                status_code=400, detail="Team name cannot be empty"
-            )
+            raise HTTPException(status_code=400, detail="Team name cannot be empty")
 
         owner_id = session.get_user_id()
         new_team = await team_service.create_team(
@@ -96,12 +94,8 @@ async def get_team(
     team_service: TeamService = Depends(get_team_service),
 ) -> TeamDTO:
     try:
-        if not authz_check(
-            session.get_user_id(), "update-team", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to update a team"
-            )
+        if not authz_check(session.get_user_id(), "update-team", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to update a team")
         team = team_service.get_team_by_id(team_id=team_id)
         if not team:
             raise HTTPException(status_code=404, detail="Team not found")
@@ -119,12 +113,8 @@ async def get_team_users_with_memberships(
     team_service: TeamService = Depends(get_team_service),
 ) -> List[UserWithMembershipDTO]:
     try:
-        if not authz_check(
-            session.get_user_id(), "view-team-users", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to view team users"
-            )
+        if not authz_check(session.get_user_id(), "view-team-users", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to view team users")
         users_with_memberships = team_service.get_team_users_with_memberships(
             team_id=team_id
         )
@@ -143,12 +133,8 @@ def update_team(
     team_service: TeamService = Depends(get_team_service),
 ) -> TeamDTO:
     try:
-        if not authz_check(
-            session.get_user_id(), "update-team", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to update a team"
-            )
+        if not authz_check(session.get_user_id(), "update-team", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to update a team")
         team_data = Team.from_dto(team)
         updated_team = team_service.update_team(team_data)
         response = updated_team.to_dto()
@@ -166,9 +152,7 @@ async def leave_team(
 ):
     try:
         user_id = session.get_user_id()
-        await team_service.remove_user_from_team(
-            user_id=user_id, team_id=team_id
-        )
+        await team_service.remove_user_from_team(user_id=user_id, team_id=team_id)
         return {"message": "Successfully left the team"}
     except Exception as e:
         log_info("Failed to leave team")
@@ -183,15 +167,11 @@ async def remove_user_from_team(
     team_service: TeamService = Depends(get_team_service),
 ):
     try:
-        if not authz_check(
-            session.get_user_id(), "remove-user", "team", team_id
-        ):
+        if not authz_check(session.get_user_id(), "remove-user", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to remove a user from the team"
             )
-        await team_service.remove_user_from_team(
-            user_id=user_id, team_id=team_id
-        )
+        await team_service.remove_user_from_team(user_id=user_id, team_id=team_id)
         return {"message": "User successfully removed from the team"}
     except Exception as e:
         log_info("Failed to remove user from team")

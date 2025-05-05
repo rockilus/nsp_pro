@@ -14,12 +14,20 @@ import { WorkerT } from "@/types/worker";
 
 export default function EditWorkerPopover({
   lng,
+  teamId,
   userId,
   workers,
+  handleAttachUserToWorker,
 }: {
   lng: string;
+  teamId: string;
   userId: string;
   workers: WorkerT[];
+  handleAttachUserToWorker: (
+    workerId: string,
+    userId: string,
+    teamId: string
+  ) => Promise<void>;
 }) {
   const { t } = useTranslation(lng, "teams-page");
 
@@ -39,6 +47,16 @@ export default function EditWorkerPopover({
 
   const handleChange = (event: SelectChangeEvent) => {
     setWorkerIdState(event.target.value as string);
+  };
+
+  const handleSave = async () => {
+    if (!workerIdState) return;
+
+    const targetWorker = workers.find((worker) => worker.id === workerIdState);
+    if (!targetWorker || targetWorker.userId !== null) return;
+
+    await handleAttachUserToWorker(workerIdState, userId, teamId);
+    setAnchorEl(null);
   };
 
   const open = Boolean(anchorEl);
@@ -96,7 +114,11 @@ export default function EditWorkerPopover({
             onChange={handleChange}
           >
             {workers.map((worker) => (
-              <MenuItem key={worker.id} value={worker.id}>
+              <MenuItem
+                key={worker.id}
+                value={worker.id}
+                disabled={worker.userId !== null}
+              >
                 {worker.name}
               </MenuItem>
             ))}
@@ -107,6 +129,7 @@ export default function EditWorkerPopover({
             variant="contained"
             type="submit"
             disabled={!workerIdState}
+            onClick={handleSave}
             sx={{
               textTransform: "none",
             }}

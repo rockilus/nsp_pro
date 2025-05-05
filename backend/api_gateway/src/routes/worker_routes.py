@@ -115,6 +115,37 @@ async def update_worker(
     return response
 
 
+# pylint: disable=too-many-arguments, too-many-positional-arguments
+@router.post("/workers/{worker_id}/attach_user")
+async def attach_user_to_worker(
+    worker_id: str,
+    user_id: str,
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+    worker_service: WorkerService = Depends(get_worker_service),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
+) -> List[WorkerDTO]:
+    try:
+        if not await authz_check(
+            session.get_user_id(), "add-user-to-worker", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to add a user to this worker"
+            )
+        updated_workers = worker_service.attach_user_to_worker(
+            worker_id, user_id, team_id
+        )
+        attributes = [
+            db_collections.attribute_db.get_attributes_by_owner_id(owner_id=w.id)
+            for w in updated_workers
+        ]
+        response = [w.to_dto(attr) for w, attr in zip(updated_workers, attributes)]
+    except Exception as e:
+        log_info("Failed to add user to worker")
+        handle_routes_errors(e)
+    return response
+
+
 @router.delete("/workers/{worker_id}/teams/{team_id}")
 async def delete_worker(
     worker_id: str,

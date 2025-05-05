@@ -7,7 +7,6 @@ import {
   toTeamWithMembership,
 } from "@/types/team";
 import { UserWithMembership, toUserWithMembership } from "@/types/user";
-
 // Env Vars
 import { API_URL } from "./env";
 
@@ -111,6 +110,25 @@ export const leaveTeam = async (teamId: string): Promise<boolean> => {
     return true;
   } catch (error) {
     console.error("Error leaving team:", error);
+    return false;
+  }
+};
+
+/**
+ * Sends a request to remove a user from a team.
+ * @param {string} teamId - The ID of the team.
+ * @param {string} userId - The ID of the user to remove.
+ * @returns {Promise<boolean>} A promise resolving to true if the request was successful.
+ */
+export const removeUserFromTeam = async (
+  teamId: string,
+  userId: string
+): Promise<boolean> => {
+  try {
+    await axios.delete(`${API_BASE_URL}/teams/${teamId}/users/${userId}`);
+    return true;
+  } catch (error) {
+    console.error("Error removing user from team:", error);
     return false;
   }
 };

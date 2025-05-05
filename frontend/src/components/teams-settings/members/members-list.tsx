@@ -18,12 +18,18 @@ export default function MembersList({
   users,
   workers,
   handleRemoveFromTeam,
+  handleAttachUserToWorker,
 }: {
   lng: string;
   teamId: string;
   users: UserWithMembership[];
   workers: WorkerT[];
   handleRemoveFromTeam: (teamId: string, userId: string) => void;
+  handleAttachUserToWorker: (
+    workerId: string,
+    userId: string,
+    teamId: string
+  ) => Promise<void>;
 }) {
   const { t } = useTranslation(lng, "teams-page");
 
@@ -54,8 +60,10 @@ export default function MembersList({
         <div className="members-list-item-actions">
           <EditWorkerPopover
             lng={lng}
+            teamId={teamId}
             userId={userWithMembership.user.id}
             workers={workers}
+            handleAttachUserToWorker={handleAttachUserToWorker}
           />
           <RemoveFromTeamDialog
             lng={lng}

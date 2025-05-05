@@ -1,3 +1,4 @@
+import axios from "axios";
 import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
@@ -131,6 +132,33 @@ export async function updateWorker(updatedWorker: WorkerT) {
     throw new Error("Failed to update worker, please try again later");
   }
 }
+
+/**
+ * Sends a request to add a user to a worker.
+ * @param {string} workerId - The ID of the worker.
+ * @param {string} userId - The ID of the user to add.
+ * @param {string} teamId - The ID of the team the worker belongs to.
+ * @returns {Promise<WorkerDTO>} A promise resolving to the updated worker.
+ */
+export const attachUserToWorker = async (
+  workerId: string,
+  userId: string,
+  teamId: string
+): Promise<WorkerT> => {
+  try {
+    const response = await axios.post(
+      `${apiUrlWorkers}/workers/${workerId}/attach_user`,
+      {
+        user_id: userId,
+        team_id: teamId,
+      }
+    );
+    return response.data.map(toWorkerT);
+  } catch (error) {
+    console.error("Error adding user to worker:", error);
+    throw error;
+  }
+};
 
 export async function deleteWorker(workerId: string, teamId: string) {
   const options: RequestInit = {

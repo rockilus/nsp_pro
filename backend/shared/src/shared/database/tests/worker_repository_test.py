@@ -519,3 +519,72 @@ class TestWorkerRepository:
 
         spec2_workers = self.repo.get_workers_by_specialty_id("spec2")
         assert len(spec2_workers) == 1
+
+    def test_get_workers_by_team_and_user(self):
+        """Test getting workers by team and user ID."""
+        workers = [
+            WorkerSchema(
+                name="John Doe",
+                team="team1",
+                acronym="JD",
+                acronym_custom=False,
+                employment_start_date=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
+                employment_end_date=None,
+                weekly_hours=40,
+                weekly_hours_desired=40,
+                duties_per_month=5,
+                annual_leave=20,
+                specialties=["spec1"],
+                deleted=False,
+                user_id="user1",
+            ),
+            WorkerSchema(
+                name="Jane Smith",
+                team="team1",
+                acronym="JS",
+                acronym_custom=False,
+                employment_start_date=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
+                employment_end_date=None,
+                weekly_hours=40,
+                weekly_hours_desired=40,
+                duties_per_month=5,
+                annual_leave=20,
+                specialties=["spec2"],
+                deleted=False,
+                user_id="user2",
+            ),
+            WorkerSchema(
+                name="Bob Johnson",
+                team="team2",
+                acronym="BJ",
+                acronym_custom=False,
+                employment_start_date=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
+                employment_end_date=None,
+                weekly_hours=40,
+                weekly_hours_desired=40,
+                duties_per_month=5,
+                annual_leave=20,
+                specialties=["spec1"],
+                deleted=False,
+                user_id="user1",
+            ),
+        ]
+        self.repo.create_many(workers)
+
+        team1_user1_workers = self.repo.get_workers_by_team_and_user("team1", "user1")
+        assert len(team1_user1_workers) == 1
+        assert team1_user1_workers[0].name == "John Doe"
+
+        team1_user2_workers = self.repo.get_workers_by_team_and_user("team1", "user2")
+        assert len(team1_user2_workers) == 1
+        assert team1_user2_workers[0].name == "Jane Smith"
+
+        team2_user1_workers = self.repo.get_workers_by_team_and_user("team2", "user1")
+        assert len(team2_user1_workers) == 1
+        assert team2_user1_workers[0].name == "Bob Johnson"
