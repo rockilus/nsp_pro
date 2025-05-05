@@ -41,6 +41,8 @@ class WorkerService(BaseService):
 
     def update_worker(self, worker_updated: Worker) -> Worker:
         worker_exsiting = self.collection.worker_db.get_worker_by_id(worker_updated.id)
+        if not worker_exsiting:
+            raise ValueError(f"Worker with id {worker_updated.id} not found")
         if worker_updated.acronym != worker_exsiting.acronym:
             worker_updated.acronym_custom = True
         if (
