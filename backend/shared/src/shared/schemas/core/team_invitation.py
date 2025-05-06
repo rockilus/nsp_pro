@@ -20,6 +20,7 @@ class TeamInvitationType(Enum):
     MEMBER = "member"
 
 
+# pylint: disable=too-many-instance-attributes
 @dataclass
 class TeamInvitation:
     id: str
@@ -32,6 +33,9 @@ class TeamInvitation:
     created_at: datetime
     expires_at: datetime
     last_sent_at: Optional[datetime] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    created_by: Optional[str] = None
 
     def to_dto(self) -> TeamInvitationDTO:
         data = asdict(self)

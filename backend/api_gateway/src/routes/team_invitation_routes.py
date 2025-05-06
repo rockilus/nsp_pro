@@ -6,6 +6,10 @@ from shared.schemas.core.team_invitation import TeamInvitation
 from shared.schemas.dto.team_invitation import TeamInvitationDTO
 
 from src.dependencies import get_team_invitation_service
+from src.integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from src.services.team_invitation_service import TeamInvitationService
 
 router = APIRouter()
@@ -14,10 +18,14 @@ router = APIRouter()
 @router.post("/team-invitations", response_model=TeamInvitationDTO)
 async def create_team_invitation(
     invitation: TeamInvitationDTO,
+    session: SessionContainerType = Depends(authn_verify_session()),
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ):
+    user_id = session.get_user_id()
     invitation_data = TeamInvitation.from_dto(invitation)
-    created_invitation = await service.create_team_invitation(invitation_data)
+    created_invitation = await service.create_team_invitation(
+        invitation=invitation_data, sender_id=user_id
+    )
     if not created_invitation:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

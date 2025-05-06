@@ -12,11 +12,14 @@ export enum TeamInvitationType {
 export type TeamInvitationT = {
   id: string;
   teamId: string;
+  firstName: string | null;
+  lastName: string | null;
   email: string;
   type: TeamInvitationType;
   workerId: string | null;
   token: string;
   status: TeamInvitationStatus;
+  createdBy: string | null;
   createdAt: dayjs.Dayjs;
   expiresAt: dayjs.Dayjs;
   lastSentAt: dayjs.Dayjs | null;

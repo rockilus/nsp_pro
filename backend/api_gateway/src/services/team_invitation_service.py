@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 from shared.schemas.core import (
     INVITE_TYPE_ROLE_MAP,
+    Team,
     TeamInvitation,
     TeamInvitationStatus,
     TeamInvitationType,
@@ -11,6 +12,7 @@ from shared.schemas.core import (
     User,
 )
 
+from src.integrations.email_sender import EmailSender
 from src.services.base_service import BaseService
 from src.services.team_membership_service import TeamMembershipService
 
@@ -25,7 +27,7 @@ class TeamInvitationService(BaseService):
         self.team_membership_service = team_membership_service
 
     async def create_team_invitation(
-        self, invitation: TeamInvitation
+        self, invitation: TeamInvitation, sender_id: str
     ) -> TeamInvitation | None:
         existing_invitations = (
             self.collection.team_invitation_db.get_invitations_by_team_id(
@@ -42,9 +44,16 @@ class TeamInvitationService(BaseService):
             return None
         invitation.token = secrets.token_urlsafe(32)
         invitation.status = TeamInvitationStatus.PENDING
+        invitation.created_by = sender_id
         invitation.created_at = datetime.now(tz=timezone.utc)
         invitation.expires_at = datetime.now(tz=timezone.utc) + timedelta(days=7)
-        self.send_invitation_email(invitation)
+        sender = self.collection.user_db.get_user_by_id(user_id=sender_id)
+        if not sender:
+            raise ValueError("Sender not found")
+        team = self.collection.team_db.get_team_by_id(team_id=invitation.team_id)
+        if not team:
+            raise ValueError("Team not found")
+        self.send_invitation_email(invitation=invitation, sender=sender, team=team)
         invitation.last_sent_at = datetime.now(tz=timezone.utc)
         invitation = self.collection.team_invitation_db.create_invitation(
             invitation=invitation
@@ -69,7 +78,17 @@ class TeamInvitationService(BaseService):
             return None
         if not self.can_resend_invite(invitation):
             return None
-        self.send_invitation_email(invitation)
+        if invitation.created_by is None:
+            raise ValueError("Sender not found")
+        sender = self.collection.user_db.get_user_by_id(
+            user_id=invitation.created_by,
+        )
+        if not sender:
+            raise ValueError("Sender not found")
+        team = self.collection.team_db.get_team_by_id(team_id=invitation.team_id)
+        if not team:
+            raise ValueError("Team not found")
+        self.send_invitation_email(invitation=invitation, sender=sender, team=team)
         invitation.last_sent_at = datetime.now(tz=timezone.utc)
         self.collection.team_invitation_db.update_invitation(invitation)
         return invitation
@@ -125,10 +144,25 @@ class TeamInvitationService(BaseService):
         self.collection.team_invitation_db.update_invitation(invitation)
         return True
 
-    def send_invitation_email(self, invitation: TeamInvitation) -> None:
+    def send_invitation_email(
+        self, invitation: TeamInvitation, sender: User, team: Team
+    ) -> None:
         if not self.can_resend_invite(invitation):
             return
-        # TO COME
+        email_sender = EmailSender()
+        email_sender.send_template_email(
+            to_address=invitation.email,
+            template_name="team_invitation_email",
+            context={
+                "subject": "Your invitation to join a team on Rockilus",
+                "recipient_name": "",
+                "sender_name": sender.first_name + " " + sender.last_name,
+                "team_name": team.name,
+                "invitation_link": f"{invitation.team_id}"
+                + f"?token={invitation.token}",
+            },
+            language="en",
+        )
         return
 
     def delete_team_invitation(self, invitation_id: str) -> None:
