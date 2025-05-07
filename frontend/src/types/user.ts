@@ -1,6 +1,9 @@
 import dayjs from "dayjs";
 // Types
-import { MembershipForTeamWithMembershipDTO } from "@/types/team";
+import {
+  MembershipForTeamWithMembership,
+  TeamMembershipRole,
+} from "@/types/team";
 
 export type UserT = {
   id: string;
@@ -25,7 +28,7 @@ export type UserDashboardT = {
 
 export type UserWithMembership = {
   user: UserT;
-  membership: MembershipForTeamWithMembershipDTO;
+  membership: MembershipForTeamWithMembership;
 };
 
 export const toUserT = (data: any): UserT => {
@@ -61,4 +64,16 @@ export const toUserDashboardT = (data: any): UserDashboardT => {
     ...data,
     user: data.user ? toUserT(data.user) : null,
   };
+};
+
+export const PageRolePermissions = {
+  workers: [TeamMembershipRole.OWNER],
+  shifts: [TeamMembershipRole.OWNER],
+  coverages: [TeamMembershipRole.OWNER],
+  constraints: [TeamMembershipRole.OWNER],
+  requests: [TeamMembershipRole.OWNER, TeamMembershipRole.MEMBER],
+  campaign: [TeamMembershipRole.OWNER],
+  schedule: [TeamMembershipRole.OWNER, TeamMembershipRole.MEMBER],
+  stats: [TeamMembershipRole.OWNER],
+  teams: [TeamMembershipRole.OWNER],
 };

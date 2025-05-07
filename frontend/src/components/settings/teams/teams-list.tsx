@@ -11,7 +11,7 @@ import LeaveTeamDialog from "./leave-team-dialog";
 // Styles
 import "./teams-list.css";
 // Types
-import { TeamWithMembership } from "@/types/team";
+import { TeamWithMembership, TeamMembershipRole } from "@/types/team";
 
 export default function TeamsList({
   lng,
@@ -56,6 +56,9 @@ export default function TeamsList({
           <Button
             variant="outlined"
             component={Link}
+            // disabled={
+            //   teamWithMembership.membership.role !== TeamMembershipRole.OWNER
+            // }
             href={`/${lng}/plan/teams/${teamWithMembership.team.id}/settings/general`}
             sx={{
               textTransform: "none",

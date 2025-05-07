@@ -5,6 +5,7 @@ import {
   TeamWithMembership,
   toTeamtT,
   toTeamWithMembership,
+  fromTeamT,
 } from "@/types/team";
 import { UserWithMembership, toUserWithMembership } from "@/types/user";
 // Env Vars
@@ -90,7 +91,7 @@ export const updateTeamById = async (
   try {
     const response = await axios.put(
       `${API_BASE_URL}/teams/${teamId}`,
-      teamData
+      fromTeamT(teamData)
     );
     return toTeamtT(response.data);
   } catch (error) {
