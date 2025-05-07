@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.team_invitation import TeamInvitationSchema
 from shared.schemas.core.team_invitation import (
@@ -30,10 +32,41 @@ class TeamInvitationRepository(BaseRepository[TeamInvitationSchema]):
         invitations = self.find_all({"team_id": team_id})
         return [invitation.to_core() for invitation in invitations]
 
+    def get_pending_invitations_by_team_id(self, team_id: str) -> list[TeamInvitation]:
+        """Get all pending team invitations for a specific team that are not expired."""
+        current_time = datetime.now(timezone.utc).timestamp()
+        invitations = self.find_all(
+            {
+                "team_id": team_id,
+                "status": TeamInvitationStatus.PENDING.value,
+                "expires_at": {"$gt": current_time},
+            }
+        )
+        return [invitation.to_core() for invitation in invitations]
+
     def get_pending_invitations_by_email(self, email: str) -> list[TeamInvitation]:
         """Get all pending team invitations for a specific email."""
+        current_time = datetime.now(timezone.utc).timestamp()
         invitations = self.find_all(
-            {"email": email, "status": TeamInvitationStatus.PENDING.value}
+            {
+                "email": email,
+                "status": TeamInvitationStatus.PENDING.value,
+                "expires_at": {"$gt": current_time},
+            }
+        )
+        return [invitation.to_core() for invitation in invitations]
+
+    def get_pending_invitations_by_team_and_email(
+        self, team_id: str, email: str
+    ) -> list[TeamInvitation]:
+        current_time = datetime.now(timezone.utc).timestamp()
+        invitations = self.find_all(
+            {
+                "team_id": team_id,
+                "email": email,
+                "status": TeamInvitationStatus.PENDING.value,
+                "expires_at": {"$gt": current_time},
+            }
         )
         return [invitation.to_core() for invitation in invitations]
 

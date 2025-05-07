@@ -41,14 +41,3 @@
   flex-direction: row;
   align-items: center;
 }
-
-.resend-invitation-container {
-  display: flex;
-  flex-direction: column;
-}
-
-.resend-countdown {
-  color: #616161;
-  font-size: 0.65rem;
-  font-weight: 500;
-}

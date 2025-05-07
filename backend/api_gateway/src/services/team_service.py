@@ -155,3 +155,10 @@ class TeamService(BaseService):
             # pylint: disable=broad-exception-raised
             raise Exception("Cannot leave team as owner")
         await self.team_membership_service.delete_team_membership(membership.id)
+        worker = self.collection.worker_db.get_workers_by_team_and_user(
+            team_id=team_id, user_id=user_id
+        )
+        if worker:
+            for w in worker:
+                w.user_id = None
+            self.collection.worker_db.update_workers(worker)

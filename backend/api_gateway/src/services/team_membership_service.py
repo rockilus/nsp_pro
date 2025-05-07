@@ -25,11 +25,10 @@ class TeamMembershipService(BaseService):
         if existing_membership:
             return existing_membership
 
+        await self.add_role_authz(membership=membership)
         membership = self.collection.team_membership_db.create_team_membership(
             membership=membership
         )
-
-        await self.add_role_authz(membership=membership)
 
         return membership
 

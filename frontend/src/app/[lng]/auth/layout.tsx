@@ -1,10 +1,8 @@
 import { languages } from "../../i18n/settings";
 // Components
 import NavAppBarAuth from "../../../components/user-authentication/nav-app-bar-auth";
-
-export async function generateStaticParams() {
-  return languages.map((lng) => ({ lng }));
-}
+// Styles
+import "../../../styles/page.css";
 
 export default function Layout({
   children,
@@ -16,11 +14,11 @@ export default function Layout({
   };
 }) {
   return (
-    <>
+    <div style={{ overflow: "hidden", height: "100vh", background: "white" }}>
       <header>
         <NavAppBarAuth lng={lng} />
       </header>
       <main>{children}</main>
-    </>
+    </div>
   );
 }

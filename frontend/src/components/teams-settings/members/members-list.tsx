@@ -40,6 +40,11 @@ export default function MembersList({
     userWithMembership: UserWithMembership;
     isFirstItem?: boolean;
   }) => {
+    const displayName =
+      userWithMembership.user.firstName || userWithMembership.user.lastName
+        ? `${userWithMembership.user.firstName} ${userWithMembership.user.lastName}`
+        : userWithMembership.user.email;
+
     return (
       <div
         key={userWithMembership.user.id}
@@ -50,7 +55,7 @@ export default function MembersList({
             <a
             // href={`/${lng}/plan/teams/${teamWithMembership.team.id}`}
             >
-              {`${userWithMembership.user.firstName} ${userWithMembership.user.lastName}`}
+              {displayName}
             </a>
           </strong>
           <span className="teams-list-item-role">

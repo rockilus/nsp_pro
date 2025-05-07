@@ -17,12 +17,9 @@ from supertokens_python.recipe.emailpassword.types import FormField
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.utils import find_first_occurrence_in_list
 
-from src.factories import get_database, get_team_service, get_user_service
+from src.factories import get_user_service
 from src.integrations.authorization.authz_services import (
     authz_role_assignment_assign,
-)
-from src.integrations.email_sender.verification_email import (
-    send_signup_attempt_email,
 )
 from src.utils.constants import SUPPORTED_LANGUAGES_LIST
 
@@ -59,9 +56,9 @@ def override_emailpassword_apis(original_implementation: APIInterface):
         #     | SignUpPostNotAllowedResponse
         #     | GeneralErrorResponse,
         # ]:
-        team_service = get_team_service()
+        # team_service = get_team_service()
         user_service = get_user_service()
-        db_collections = get_database()
+        # db_collections = get_database()
 
         email_form_field = find_first_occurrence_in_list(
             lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields
@@ -80,25 +77,25 @@ def override_emailpassword_apis(original_implementation: APIInterface):
         if language not in SUPPORTED_LANGUAGES_LIST:
             # pylint: disable=broad-exception-raised
             raise Exception(f"Language {language} not supported")
-        config = db_collections.config_db.get_config()
-        if config is None:
-            # pylint: disable=broad-exception-raised
-            raise Exception("Config not found in database")
-        if config.signup_emails_whitelist_enabled:
-            if email not in config.signup_emails_whitelist:
-                if email not in config.signup_emails_attempt:
-                    config = db_collections.config_db.add_signup_email_attempt(email)
-                    send_signup_attempt_email(email)
-                print("SENDING CUSTOM RESPONSE")
-                api_options.response.set_status_code(200)
-                # json_dict = {'detail': 'email_not_on_whitelist'}
-                json_dict = {
-                    "status": "SIGN_UP_NOT_ALLOWED",
-                    "reason": "EMAIL_NOT_IN_WHITELIST",
-                    "fetchResponse": None,
-                }
-                api_options.response.set_json_content(json_dict)
-                return GeneralErrorResponse("email_not_on_whitelist")  # type: ignore
+        # config = db_collections.config_db.get_config()
+        # if config is None:
+        #     # pylint: disable=broad-exception-raised
+        #     raise Exception("Config not found in database")
+        # if config.signup_emails_whitelist_enabled:
+        #     if email not in config.signup_emails_whitelist:
+        #         if email not in config.signup_emails_attempt:
+        #             config = db_collections.config_db.add_signup_email_attempt(email)
+        #             send_signup_attempt_email(email)
+        #         print("SENDING CUSTOM RESPONSE")
+        #         api_options.response.set_status_code(200)
+        #         # json_dict = {'detail': 'email_not_on_whitelist'}
+        #         json_dict = {
+        #             "status": "SIGN_UP_NOT_ALLOWED",
+        #             "reason": "EMAIL_NOT_IN_WHITELIST",
+        #             "fetchResponse": None,
+        #         }
+        #         api_options.response.set_json_content(json_dict)
+        #         return GeneralErrorResponse("email_not_on_whitelist")  # type: ignore
 
         # result = await original_sign_up_post(
         #     form_fields, tenant_id, api_options, user_context
@@ -135,11 +132,16 @@ def override_emailpassword_apis(original_implementation: APIInterface):
                         impersonating_user_id=None,
                     )
                 )
-                await team_service.create_team(team_name="New team", owner_id=user_id)
+                # await team_service.create_team(team_name="New team", owner_id=user_id)
 
                 print("user and team created in mongodb:", email)
                 print("assigning user as leader of team in permit.io:", email)
-                await authz_role_assignment_assign(user_id, "user", user_id, "owner")
+                await authz_role_assignment_assign(
+                    user_id=user_id,
+                    resource="user",
+                    resource_instance_key=user_id,
+                    role="owner",
+                )
                 print("user assigned as leader of team in permit.io:", email)
 
         return result  # type: ignore

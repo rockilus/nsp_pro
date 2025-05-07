@@ -6,7 +6,7 @@ import duration from "dayjs/plugin/duration";
 import Button from "@mui/material/Button";
 import DeleteIcon from "@mui/icons-material/Delete";
 // Styles
-import "./members-list.css";
+import "./invitations-list.css";
 // Types
 import { WorkerT } from "@/types/worker";
 import { TeamInvitationT } from "@/types/team-invitation";
@@ -79,42 +79,54 @@ export default function InvitationsList({
       await handleResendTeamInvitationEmail(invitation.id);
     };
 
+    const worker =
+      invitation.workerId &&
+      workers.find((worker) => worker.id === invitation.workerId);
+
     return (
       <div
         key={invitation.id}
-        className={`teams-list-item ${isFirstItem ? "first-item" : ""}`}
+        className={`invites-list-item ${isFirstItem ? "first-item" : ""}`}
       >
         <div className="team-list-item-description">
-          <strong className="teams-list-item-name">{invitation.email}</strong>
-          <span className="teams-list-item-worker">
-            {invitation.workerId
-              ? workers.find((worker) => worker.id === invitation.workerId)
-                  ?.name || ""
-              : ""}
-          </span>
-          <span className="teams-list-item-expiration">
+          <strong className="invites-list-item-name">{`${invitation.firstName} ${invitation.lastName}`}</strong>
+        </div>
+        <div className="invites-list-item-info-container">
+          <span className="invites-list-item-info">{invitation.email}</span>
+          <span className="invites-list-item-info-divider">|</span>
+          {worker && (
+            <>
+              <span className="invites-list-item-info">
+                {worker.name || ""}
+              </span>
+              <span className="invites-list-item-info-divider">|</span>
+            </>
+          )}
+          <span className="invites-list-item-info">
             {getExpirationStatus(invitation.expiresAt)}
           </span>
         </div>
         <div className="members-list-item-actions">
-          <Button
-            variant="outlined"
-            onClick={handleResendInvitation}
-            disabled={isResendDisabled}
-            sx={{
-              textTransform: "none",
-              marginRight: "8px",
-              fontSize: "12px",
-              padding: "3px 12px",
-            }}
-          >
-            {t("resend_invitate")}
-          </Button>
-          {countdown && (
-            <span className="resend-countdown">
-              {t("available_in")}: {countdown}
-            </span>
-          )}
+          <div className="resend-invitation-container">
+            <Button
+              variant="outlined"
+              onClick={handleResendInvitation}
+              disabled={isResendDisabled}
+              sx={{
+                textTransform: "none",
+                marginRight: "8px",
+                fontSize: "12px",
+                padding: "3px 12px",
+              }}
+            >
+              {t("resend_invite")}
+            </Button>
+            {countdown && (
+              <span className="resend-countdown">
+                {t("available_in")}: {countdown}
+              </span>
+            )}
+          </div>
           <Button
             variant="outlined"
             onClick={() => handleDeleteTeamInvitation(invitation.id)}
@@ -134,7 +146,7 @@ export default function InvitationsList({
   };
 
   return (
-    <div className="teams-list-container">
+    <div className="invites-list-container">
       {invitations.map((invitation, index) => (
         <InvitationsListItem
           key={invitation.id}

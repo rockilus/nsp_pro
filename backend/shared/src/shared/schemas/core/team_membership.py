@@ -19,7 +19,7 @@ INVITE_TYPE_ROLE_MAP = {
 TEAM_ROLE_TO_AUTHZ_ROLE = {
     "owner": "leader",
     # "admin": "team_admin",
-    "member": "team_member",
+    "member": "member",
     # "viewer": "team_viewer",
 }
 

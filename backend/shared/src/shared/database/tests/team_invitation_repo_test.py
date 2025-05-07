@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -157,7 +157,7 @@ class TestTeamInvitationRepository:
             token="token123",
             status=TeamInvitationStatus.PENDING.value,
             created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
-            expires_at=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
+            expires_at=(datetime.now(timezone.utc) + timedelta(days=1)).timestamp(),
         )
         self.repo.create(invitation)
 
@@ -187,3 +187,90 @@ class TestTeamInvitationRepository:
 
         not_found_invitation = self.repo.get_invitation_by_token("invalid_token")
         assert not_found_invitation is None
+
+    def test_get_pending_invitations_by_team_id(self):
+        """Test retrieving pending invitations by team ID."""
+        # Create a pending invitation that is not expired
+        invitation = TeamInvitationSchema(
+            team_id="team1",
+            email="test@example.com",
+            type=TeamInvitationType.MEMBER.value,
+            worker_id="worker1",
+            token="token123",
+            status=TeamInvitationStatus.PENDING.value,
+            created_at=datetime(2025, 5, 6, tzinfo=timezone.utc).timestamp(),
+            expires_at=(datetime.now(timezone.utc) + timedelta(days=1)).timestamp(),
+        )
+        self.repo.create(invitation)
+
+        # Create an expired invitation
+        expired_invitation = TeamInvitationSchema(
+            team_id="team1",
+            email="expired@example.com",
+            type=TeamInvitationType.MEMBER.value,
+            worker_id="worker2",
+            token="token456",
+            status=TeamInvitationStatus.PENDING.value,
+            created_at=datetime(2025, 5, 5, tzinfo=timezone.utc).timestamp(),
+            expires_at=datetime(2025, 5, 6, tzinfo=timezone.utc).timestamp(),
+        )
+        self.repo.create(expired_invitation)
+
+        # Retrieve pending invitations by team ID
+        invitations = self.repo.get_pending_invitations_by_team_id("team1")
+
+        # Assert only the non-expired invitation is returned
+        assert len(invitations) == 1
+        assert invitations[0].email == "test@example.com"
+        assert invitations[0].status == TeamInvitationStatus.PENDING
+
+    def test_get_pending_invitations_by_team_and_email(self):
+        """Test retrieving pending invitations by team ID and email."""
+        # Create a pending invitation that is not expired
+        invitation = TeamInvitationSchema(
+            team_id="team1",
+            email="test@example.com",
+            type=TeamInvitationType.MEMBER.value,
+            worker_id="worker1",
+            token="token123",
+            status=TeamInvitationStatus.PENDING.value,
+            created_at=datetime(2025, 5, 6, tzinfo=timezone.utc).timestamp(),
+            expires_at=(datetime.now(timezone.utc) + timedelta(days=1)).timestamp(),
+        )
+        self.repo.create(invitation)
+
+        # Create an expired invitation
+        expired_invitation = TeamInvitationSchema(
+            team_id="team1",
+            email="test@example.com",
+            type=TeamInvitationType.MEMBER.value,
+            worker_id="worker2",
+            token="token456",
+            status=TeamInvitationStatus.PENDING.value,
+            created_at=datetime(2025, 5, 5, tzinfo=timezone.utc).timestamp(),
+            expires_at=datetime(2025, 5, 6, tzinfo=timezone.utc).timestamp(),
+        )
+        self.repo.create(expired_invitation)
+
+        # Create a pending invitation for a different email
+        different_email_invitation = TeamInvitationSchema(
+            team_id="team1",
+            email="different@example.com",
+            type=TeamInvitationType.MEMBER.value,
+            worker_id="worker3",
+            token="token789",
+            status=TeamInvitationStatus.PENDING.value,
+            created_at=datetime(2025, 5, 6, tzinfo=timezone.utc).timestamp(),
+            expires_at=(datetime.now(timezone.utc) + timedelta(days=1)).timestamp(),
+        )
+        self.repo.create(different_email_invitation)
+
+        # Retrieve pending invitations by team ID and email
+        invitations = self.repo.get_pending_invitations_by_team_and_email(
+            "team1", "test@example.com"
+        )
+
+        # Assert only the non-expired invitation for the specified email is returned
+        assert len(invitations) == 1
+        assert invitations[0].email == "test@example.com"
+        assert invitations[0].status == TeamInvitationStatus.PENDING

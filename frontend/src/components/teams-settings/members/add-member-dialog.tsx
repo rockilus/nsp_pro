@@ -26,10 +26,12 @@ import { WorkerT } from "@/types/worker";
 
 export default function AddMemberDialog({
   lng,
+  teamId,
   workers,
   handleCreateTeamInvitation,
 }: {
   lng: string;
+  teamId: string;
   workers: WorkerT[];
   handleCreateTeamInvitation: (
     teamInvitation: TeamInvitationT
@@ -44,6 +46,8 @@ export default function AddMemberDialog({
   const [selectedWorkerId, setSelectedWorkerId] = React.useState<string | null>(
     null
   );
+  const [firstName, setFirstName] = React.useState("");
+  const [lastName, setLastName] = React.useState("");
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -66,6 +70,16 @@ export default function AddMemberDialog({
     setSelectedWorkerId(event.target.value as string);
   };
 
+  const handleFirstNameChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setFirstName(event.target.value);
+  };
+
+  const handleLastNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setLastName(event.target.value);
+  };
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -86,14 +100,23 @@ export default function AddMemberDialog({
       return;
     }
 
+    if (!firstName.trim() || !lastName.trim()) {
+      setError(true);
+      setHelperText(t("first_last_name_required"));
+      return;
+    }
+
     const teamInvitation: TeamInvitationT = {
       id: "",
-      teamId: "",
+      teamId,
+      firstName,
+      lastName,
       email,
       type: TeamInvitationType.MEMBER,
       workerId: selectedWorkerId,
       token: "",
       status: TeamInvitationStatus.PENDING,
+      createdBy: null,
       createdAt: dayjs(),
       expiresAt: dayjs().add(7, "day"),
       lastSentAt: null,
@@ -168,6 +191,32 @@ export default function AddMemberDialog({
       >
         <DialogTitle>{t("add_member")}</DialogTitle>
         <DialogContent>
+          <div className="add-member-dialog-name">
+            <TextField
+              required
+              margin="dense"
+              id="firstName"
+              name="firstName"
+              label={t("first_name")}
+              type="text"
+              fullWidth
+              variant="standard"
+              value={firstName}
+              onChange={handleFirstNameChange}
+            />
+            <TextField
+              required
+              margin="dense"
+              id="lastName"
+              name="lastName"
+              label={t("last_name")}
+              type="text"
+              fullWidth
+              variant="standard"
+              value={lastName}
+              onChange={handleLastNameChange}
+            />
+          </div>
           <TextField
             autoFocus
             required
