@@ -31,9 +31,14 @@ export default function RemoveFromTeamDialog({
   const [helperText, setHelperText] = React.useState("");
   const [confirmationName, setConfirmationName] = React.useState("");
 
-  const isDisabled =
-    confirmationName.trim() !==
-    `${userWithMembership.user.firstName.toLocaleLowerCase()} ${userWithMembership.user.lastName.toLocaleLowerCase()}`;
+  // Define a variable to store the confirmation string based on the user's name or email
+  const confirmationString =
+    userWithMembership.user.firstName.trim() &&
+    userWithMembership.user.lastName.trim()
+      ? `${userWithMembership.user.firstName.toLocaleLowerCase()} ${userWithMembership.user.lastName.toLocaleLowerCase()}`
+      : userWithMembership.user.email.toLocaleLowerCase();
+
+  const isDisabled = confirmationName.trim() !== confirmationString;
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -45,10 +50,7 @@ export default function RemoveFromTeamDialog({
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (
-      confirmationName.trim() !==
-      `${userWithMembership.user.firstName.toLocaleLowerCase()} ${userWithMembership.user.lastName.toLocaleLowerCase()}`
-    ) {
+    if (confirmationName.trim() !== confirmationString) {
       setError(true);
       setHelperText(t("user_name_mismatch"));
       return;
@@ -96,7 +98,7 @@ export default function RemoveFromTeamDialog({
         <DialogContent>
           <DialogContentText>
             {t("remove_from_team_message_1")}
-            <strong>{`${userWithMembership.user.firstName.toLocaleLowerCase()} ${userWithMembership.user.lastName.toLocaleLowerCase()}`}</strong>
+            <strong>{confirmationString}</strong>
             {t("remove_from_team_message_2")}
           </DialogContentText>
           <TextField
@@ -105,7 +107,7 @@ export default function RemoveFromTeamDialog({
             margin="dense"
             id="name"
             name="email"
-            placeholder={`${userWithMembership.user.firstName.toLocaleLowerCase()} ${userWithMembership.user.lastName.toLocaleLowerCase()}`}
+            placeholder={confirmationString}
             type="text"
             fullWidth
             variant="standard"

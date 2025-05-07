@@ -15,3 +15,8 @@ class TeamInvitationDTO(BaseModel):
     createdAt: float
     expiresAt: float
     lastSentAt: float | None
+
+
+class EnrichedTeamInvitationDTO(TeamInvitationDTO):
+    teamName: str
+    creatorName: str | None

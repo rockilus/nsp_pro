@@ -64,10 +64,6 @@ export default function MembersTab({
     }
   };
 
-  const handleCreateTeam = async (teamName: string) => {
-    console.log("Creating team:", teamName);
-  };
-
   //////////////////////////
   // Worker Actions
   //////////////////////////
@@ -122,6 +118,7 @@ export default function MembersTab({
         <span className="title">{t("members")}</span>
         <AddMemberDialog
           lng={lng}
+          teamId={teamId}
           workers={workers}
           handleCreateTeamInvitation={handleCreateTeamInvitation}
         />
@@ -141,13 +138,18 @@ export default function MembersTab({
             <div>{t("no_member_message")}</div>
           )}
           {invitations.length > 0 && (
-            <InvitationsList
-              lng={lng}
-              invitations={invitations}
-              workers={workers}
-              handleResendTeamInvitationEmail={handleResendTeamInvitationEmail}
-              handleDeleteTeamInvitation={handleDeleteTeamInvitation}
-            />
+            <div className="invitations-container">
+              <span className="subtitle">{t("invitations")}</span>
+              <InvitationsList
+                lng={lng}
+                invitations={invitations}
+                workers={workers}
+                handleResendTeamInvitationEmail={
+                  handleResendTeamInvitationEmail
+                }
+                handleDeleteTeamInvitation={handleDeleteTeamInvitation}
+              />
+            </div>
           )}
         </div>
       )}

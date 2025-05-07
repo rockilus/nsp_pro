@@ -3,7 +3,10 @@ import {
   TeamInvitationT,
   toTeamInvitationT,
   fromTeamInvitationT,
+  EnrichedTeamInvitationT,
+  toEnrichedTeamInvitationT,
 } from "../../types/team-invitation";
+import { TeamWithMembership, toTeamWithMembership } from "@/types/team";
 // Env Vars
 import { API_URL } from "./env";
 
@@ -26,35 +29,27 @@ export const getTeamInvitations = async (
   return response.data.map(toTeamInvitationT);
 };
 
-export const getPendingInvitationsByEmail = async (
-  email: string
-): Promise<TeamInvitationT[]> => {
-  const response = await axios.get(`${API_BASE_URL}/pending`, {
-    params: { email },
-  });
-  return response.data.map(toTeamInvitationT);
+export const getUserPendingInvitations = async (): Promise<
+  EnrichedTeamInvitationT[]
+> => {
+  const response = await axios.get(`${API_BASE_URL}/pending`);
+  return response.data.map(toEnrichedTeamInvitationT);
 };
 
 export const acceptTeamInvitation = async (
-  userId: string,
   token: string
-): Promise<{ message: string }> => {
+): Promise<TeamWithMembership> => {
   const response = await axios.post(`${API_BASE_URL}/accept`, {
-    userId,
     token,
   });
-  return response.data;
+  return toTeamWithMembership(response.data);
 };
 
-export const rejectTeamInvitation = async (
-  userId: string,
-  token: string
-): Promise<{ message: string }> => {
+export const rejectTeamInvitation = async (token: string): Promise<boolean> => {
   const response = await axios.post(`${API_BASE_URL}/reject`, {
-    userId,
     token,
   });
-  return response.data;
+  return response.status === 200;
 };
 
 export const resendTeamInvitationEmail = async (

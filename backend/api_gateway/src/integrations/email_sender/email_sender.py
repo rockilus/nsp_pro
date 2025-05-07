@@ -1,7 +1,10 @@
 import logging
+import os
+from typing import Dict, List
 
 import boto3  # type: ignore
 from botocore.exceptions import BotoCoreError, ClientError  # type: ignore
+from shared.schemas.core import Language
 
 from src.config import config
 
@@ -31,7 +34,13 @@ class EmailSender:
             logger.error("Failed to initialize AWS SES client: %s", e)
             raise
 
-    def send_email(self, to_addresses, subject, html_body, cc_addresses=None):
+    def send_email(
+        self,
+        to_addresses: List[str],
+        subject: str,
+        html_body: str,
+        cc_addresses: List[str] | None = None,
+    ):
         """Send an email using AWS SES."""
         try:
             response = self.client.send_email(
@@ -55,17 +64,27 @@ class EmailSender:
             logger.error("An unexpected error occurred while sending email: %s", e)
             raise
 
-    def send_template_email(self, to_address, template_name, context, language="en"):
+    def send_template_email(
+        self,
+        to_address: str,
+        template_name: str,
+        context: Dict,
+        language: Language = Language.EN,
+    ):
         """Send an email using a template."""
-        subject, html_body = self._render_template(template_name, context, language)
-        self.send_email([to_address], subject, html_body)
+        subject, html_body = self._render_template(
+            template_name=template_name, context=context, language=language
+        )
+        self.send_email(to_addresses=[to_address], subject=subject, html_body=html_body)
 
-    def _render_template(self, template_name, context, language):
+    def _render_template(self, template_name: str, context: Dict, language: Language):
         """Render the email template based on the template name and language."""
         try:
             # Load the template file based on the name and language
-            template_path = f"templates/{language}/{template_name}.html"
-            with open(file=template_path, mode="r", encoding="utf-8") as template_file:
+            current_folder = os.path.dirname(__file__)
+            template_path = f"templates/{language.value}/{template_name}.html"
+            file_path = os.path.join(current_folder, template_path)
+            with open(file=file_path, mode="r", encoding="utf-8") as template_file:
                 template = template_file.read()
 
             # Replace placeholders in the template with context values

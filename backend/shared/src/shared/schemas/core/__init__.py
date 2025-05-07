@@ -124,6 +124,7 @@ from shared.schemas.core.team import (
     TeamWithMembership,
 )
 from shared.schemas.core.team_invitation import (
+    EnrichedTeamInvitation,
     TeamInvitation,
     TeamInvitationStatus,
     TeamInvitationType,
@@ -251,6 +252,7 @@ __all__ = [
     "TeamWithMembership",
     "Team",
     "MembershipForTeamWithMembership",
+    "EnrichedTeamInvitation",
     "TeamInvitation",
     "TeamInvitationStatus",
     "TeamInvitationType",

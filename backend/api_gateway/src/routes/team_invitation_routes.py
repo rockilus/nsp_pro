@@ -1,9 +1,13 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import EmailStr
-from shared.schemas.core.team_invitation import TeamInvitation
-from shared.schemas.dto.team_invitation import TeamInvitationDTO
+from pydantic import BaseModel
+from shared.schemas.core import TeamInvitation
+from shared.schemas.dto import (
+    EnrichedTeamInvitationDTO,
+    TeamInvitationDTO,
+    TeamWithMembershipDTO,
+)
 
 from src.dependencies import get_team_invitation_service
 from src.integrations.authentication import (
@@ -34,6 +38,17 @@ async def create_team_invitation(
     return created_invitation.to_dto()
 
 
+@router.get("/team-invitations/pending", response_model=List[EnrichedTeamInvitationDTO])
+def get_user_pending_invitations(
+    session: SessionContainerType = Depends(authn_verify_session()),
+    service: TeamInvitationService = Depends(get_team_invitation_service),
+):
+    print("calling get_user_pending_invitations")
+    user_id = session.get_user_id()
+    invitations = service.get_user_pending_invitations(user_id=user_id)
+    return [invitation.to_dto() for invitation in invitations]
+
+
 @router.get("/team-invitations/{team_id}", response_model=List[TeamInvitationDTO])
 def get_team_invitations(
     team_id: str,
@@ -43,36 +58,47 @@ def get_team_invitations(
     return [invitation.to_dto() for invitation in invitations]
 
 
-@router.get("/team-invitations/pending", response_model=List[TeamInvitationDTO])
-def get_pending_invitations_by_email(
-    email: EmailStr,
-    service: TeamInvitationService = Depends(get_team_invitation_service),
-):
-    invitations = service.get_pending_invitations_by_email(email)
-    return [invitation.to_dto() for invitation in invitations]
+class TeamInvitationResponseRequest(BaseModel):
+    token: str
 
 
 @router.post("/team-invitations/accept")
 async def accept_team_invitation(
-    user_id: str,
-    token: str,
+    request: TeamInvitationResponseRequest,
+    session: SessionContainerType = Depends(authn_verify_session()),
     service: TeamInvitationService = Depends(get_team_invitation_service),
-):
-    success = await service.accept_team_invitation(user_id, token)
-    if not success:
+) -> TeamWithMembershipDTO:
+    try:
+        user_id = session.get_user_id()
+        token = request.token
+        if not token:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Token is required.",
+            )
+        team = await service.accept_team_invitation(user_id, token)
+        response = team.to_dto()
+    except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid or expired invitation.",
-        )
-    return {"message": "Invitation accepted successfully."}
+            detail=str(e),
+        ) from e
+    return response
 
 
 @router.post("/team-invitations/reject")
 def reject_team_invitation(
-    user_id: str,
-    token: str,
+    request: TeamInvitationResponseRequest,
+    session: SessionContainerType = Depends(authn_verify_session()),
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ):
+    user_id = session.get_user_id()
+    token = request.token
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Token is required.",
+        )
     success = service.reject_team_invitation(user_id, token)
     if not success:
         raise HTTPException(

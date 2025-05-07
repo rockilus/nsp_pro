@@ -26,10 +26,12 @@ import { WorkerT } from "@/types/worker";
 
 export default function AddMemberDialog({
   lng,
+  teamId,
   workers,
   handleCreateTeamInvitation,
 }: {
   lng: string;
+  teamId: string;
   workers: WorkerT[];
   handleCreateTeamInvitation: (
     teamInvitation: TeamInvitationT
@@ -106,7 +108,7 @@ export default function AddMemberDialog({
 
     const teamInvitation: TeamInvitationT = {
       id: "",
-      teamId: "",
+      teamId,
       firstName,
       lastName,
       email,
