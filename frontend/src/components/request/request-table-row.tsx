@@ -25,6 +25,7 @@ import "./request-table-row.css";
 import { RequestT, RequestStatus } from "../../types/request";
 import { ShiftT } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
+import { TeamMembershipRole } from "@/types/team";
 
 export default function RequestTableRow({
   lng,
@@ -32,6 +33,8 @@ export default function RequestTableRow({
   workers,
   shifts,
   requestTableFields,
+  userWorkerId,
+  userTeamRole,
   handleUpdateRequest,
   handleDeleteRequest,
 }: {
@@ -40,6 +43,8 @@ export default function RequestTableRow({
   workers: WorkerT[];
   shifts: ShiftT[];
   requestTableFields: Record<string, string>[];
+  userWorkerId: string | null;
+  userTeamRole: TeamMembershipRole;
   handleUpdateRequest: (request: RequestT) => void;
   handleDeleteRequest: (requestId: string) => void;
 }) {
@@ -174,33 +179,28 @@ export default function RequestTableRow({
           </TableCell>
         ))}
       <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
-        <Box sx={{ display: "flex" }}>
-          <PopoverAnchorElBelow
-            buttonContent={
-              <IconButton edge="end" aria-label="delete">
-                <EditIcon />
-              </IconButton>
-            }
-            content={
-              <RequestPanel
-                lng={lng}
-                request={request}
-                workers={workers.filter((worker) => !worker.deleted)}
-                shifts={shifts.filter((shift) => !shift.deleted)}
-                handleClose={() => {
-                  setOpen(false);
-                }}
-                handleAddRequest={handleUpdateRequest}
-                handleUpdateRequest={handleUpdateRequest}
-              />
-            }
-            open={open}
-            setOpen={setOpen}
+        <div className="request-row-buttons">
+          <RequestPanel
+            lng={lng}
+            isEdit={true}
+            request={request}
+            workers={workers.filter((worker) => !worker.deleted)}
+            shifts={shifts.filter((shift) => !shift.deleted)}
+            userWorkerId={userWorkerId}
+            userTeamRole={userTeamRole}
+            handleAddRequest={handleUpdateRequest}
+            handleUpdateRequest={handleUpdateRequest}
           />
-          <Button onClick={() => handleDeleteRequest(request.id)}>
+          <IconButton
+            disabled={
+              userTeamRole === TeamMembershipRole.MEMBER &&
+              (!userWorkerId || request.workerId !== userWorkerId)
+            }
+            onClick={() => handleDeleteRequest(request.id)}
+          >
             <DeleteIcon />
-          </Button>
-        </Box>
+          </IconButton>
+        </div>
       </TableCell>
     </TableRow>
   );

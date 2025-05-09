@@ -2,6 +2,7 @@ import time as time_module
 from typing import Dict, List
 
 from fastapi import APIRouter, Depends
+from pydantic import BaseModel
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas.core import Worker
@@ -115,11 +116,17 @@ async def update_worker(
     return response
 
 
+class WorkerAttachRequest(BaseModel):
+    user_id: str
+    # team_id: str
+
+
 # pylint: disable=too-many-arguments, too-many-positional-arguments
-@router.post("/workers/{worker_id}/attach_user")
+@router.post("/workers/{worker_id}/attach_user/teams/{team_id}")
 async def attach_user_to_worker(
     worker_id: str,
-    user_id: str,
+    request: WorkerAttachRequest,
+    # user_id: str,
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
     worker_service: WorkerService = Depends(get_worker_service),
@@ -127,11 +134,16 @@ async def attach_user_to_worker(
 ) -> List[WorkerDTO]:
     try:
         if not await authz_check(
-            session.get_user_id(), "add-user-to-worker", "team", team_id
+            # session.get_user_id(), "add-user-to-worker", "team", team_id
+            user_id=session.get_user_id(),
+            action="update-worker",
+            resource="team",
+            resource_id=team_id,
         ):
             raise NotAuthorizedError(
                 "You do not have permission to add a user to this worker"
             )
+        user_id = request.user_id
         updated_workers = worker_service.attach_user_to_worker(
             worker_id, user_id, team_id
         )

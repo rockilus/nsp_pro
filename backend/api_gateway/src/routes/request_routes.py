@@ -2,12 +2,11 @@ import time as time_module
 from typing import List
 
 from fastapi import APIRouter, Depends
-from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas.core import Request
 from shared.schemas.dto import RequestDTO
 
-from src.dependencies import get_db_collections, get_request_service
+from src.dependencies import get_request_service
 from src.errors import (
     NotAuthorizedError,
     handle_routes_errors,
@@ -16,7 +15,10 @@ from src.integrations.authentication import (
     SessionContainerType,
     authn_verify_session,
 )
-from src.integrations.authorization import authz_check
+from src.integrations.authorization import (
+    authz_check,
+    authz_role_assignments_list,
+)
 from src.services.request_service import RequestService
 
 router = APIRouter()
@@ -30,12 +32,28 @@ async def create_request(
     request_service: RequestService = Depends(get_request_service),
 ) -> RequestDTO:
     try:
+        user_id = session.get_user_id()
         if not await authz_check(
-            session.get_user_id(), "create-request", "team", team_id
+            user_id=user_id,
+            action="create-request",
+            resource="team",
+            resource_id=team_id,
         ):
             raise NotAuthorizedError("You do not have permission to create a request")
+
+        roles = await authz_role_assignments_list(
+            user_id=user_id,
+            resource="team",
+            resource_instance_key=team_id,
+        )
+        if len(roles) != 1:
+            raise NotAuthorizedError("You do not have permission to create a request")
         r_data = Request.from_dto(req)
-        request = request_service.create_request(r_data)
+        request = request_service.create_request(
+            request=r_data,
+            author_id=user_id,
+            team_role=roles[0],
+        )
         response = request.to_dto()
     except Exception as e:
         log_info("Failed to create request")
@@ -74,12 +92,27 @@ async def update_request(
     request_service: RequestService = Depends(get_request_service),
 ):
     try:
+        user_id = session.get_user_id()
         if not await authz_check(
-            session.get_user_id(), "update-request", "team", team_id
+            user_id=user_id,
+            action="update-request",
+            resource="team",
+            resource_id=team_id,
         ):
             raise NotAuthorizedError("You do not have permission to update a request")
+        roles = await authz_role_assignments_list(
+            user_id=user_id,
+            resource="team",
+            resource_instance_key=team_id,
+        )
+        if len(roles) != 1:
+            raise NotAuthorizedError("You do not have permission to create a request")
         r_data = Request.from_dto(updated_request)
-        request = request_service.update_request(r_data)
+        request = request_service.update_request(
+            request=r_data,
+            author_id=user_id,
+            team_role=roles[0],
+        )
         response = request.to_dto()
     except Exception as e:
         log_info("Failed to update request")
@@ -92,16 +125,29 @@ async def delete_request(
     request_id: str,
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
-    db_collections: DatabaseCollections = Depends(
-        get_db_collections,
-    ),
+    request_service: RequestService = Depends(get_request_service),
 ):
     try:
+        user_id = session.get_user_id()
         if not await authz_check(
-            session.get_user_id(), "delete-request", "team", team_id
+            user_id=user_id,
+            action="delete-request",
+            resource="team",
+            resource_id=team_id,
         ):
             raise NotAuthorizedError("You do not have permission to delete a request")
-        db_collections.request_db.delete_request(request_id)
+        roles = await authz_role_assignments_list(
+            user_id=user_id,
+            resource="team",
+            resource_instance_key=team_id,
+        )
+        if len(roles) != 1:
+            raise NotAuthorizedError("You do not have permission to create a request")
+        request_service.delete_request(
+            request_id=request_id,
+            author_id=user_id,
+            team_role=roles[0],
+        )
     except Exception as e:
         log_info("Failed to delete request")
         handle_routes_errors(e)

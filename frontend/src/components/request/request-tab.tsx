@@ -3,10 +3,8 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
 // Components
-import PopoverRHS from "../inputs/popover-rhs";
 import RequestPanel from "./request-panel";
 import RequestTable from "./request-table";
-import TableAddButton from "../buttons/table-add-button";
 // Skeletons
 import TablesSkeleton from "../skeletons/tables-skeleton";
 // Actions
@@ -23,15 +21,20 @@ import "../../styles/text-styles.css";
 import { RequestT, RequestStatus } from "../../types/request";
 import { ShiftT } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
+import { TeamMembershipRole } from "@/types/team";
 
 dayjs.extend(utc);
 
 export default function RequestTab({
   lng,
-  selectedTeamId,
+  teamId,
+  userId,
+  userTeamRole,
 }: {
   lng: string;
-  selectedTeamId: string | null;
+  teamId: string;
+  userId: string;
+  userTeamRole: TeamMembershipRole;
 }) {
   const { t } = useTranslation(lng, "request-page");
 
@@ -39,46 +42,34 @@ export default function RequestTab({
   const [requests, setRequests] = useState<RequestT[]>([]);
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
-  const [popoverRhsOpen, setPopoverRhsOpen] = useState<boolean>(false);
 
-  const handleClosePopoverRhs = () => {
-    setPopoverRhsOpen(false);
-  };
+  const userWorker = workers.find((w) => w.userId === userId);
 
   //////////////////////////
   // Request Actions
   //////////////////////////
 
   const handleAddRequest = async (request: RequestT) => {
-    if (!selectedTeamId) {
-      throw new Error("Team not selected");
-    }
-    const newRequest = await addRequest(request, selectedTeamId);
+    const newRequest = await addRequest(request, teamId);
     setRequests([...requests, newRequest]);
   };
 
   const handleUpdateRequest = async (request: RequestT) => {
-    if (!selectedTeamId) {
-      throw new Error("Team not selected");
-    }
-    const updatedRequest = await updateRequest(request, selectedTeamId);
+    const updatedRequest = await updateRequest(request, teamId);
     setRequests(
       requests.map((r) => (r.id === updatedRequest.id ? updatedRequest : r))
     );
   };
 
   const handleDeleteRequest = async (requestId: string) => {
-    if (!selectedTeamId) {
-      throw new Error("Team not selected");
-    }
-    await deleteRequest(requestId, selectedTeamId);
+    await deleteRequest(requestId, teamId);
     setRequests(requests.filter((r) => r.id !== requestId));
   };
 
   useEffect(() => {
     const fetchRequestsTabData = async () => {
       setIsLoading(true);
-      if (selectedTeamId) {
+      if (teamId) {
         const {
           workers: fetchedWorkers,
           shifts: fetchedShifts,
@@ -87,7 +78,7 @@ export default function RequestTab({
           workers: WorkerT[];
           shifts: ShiftT[];
           requests: RequestT[];
-        } = await getRequestsTabData(selectedTeamId);
+        } = await getRequestsTabData(teamId);
         setWorkers(fetchedWorkers);
         setShifts(fetchedShifts);
         setRequests(fetchedRequests);
@@ -95,7 +86,7 @@ export default function RequestTab({
       }
     };
     fetchRequestsTabData();
-  }, [selectedTeamId]);
+  }, [teamId]);
 
   return (
     <div className="tab-container">
@@ -105,42 +96,36 @@ export default function RequestTab({
         <div>
           <div className="title-container">
             <span className="title">{t("requests")}</span>
-            {selectedTeamId && (
-              <PopoverRHS
-                title={t("new_request")}
-                buttonContent={<TableAddButton text={t("request")} />}
-                content={
-                  <RequestPanel
-                    lng={lng}
-                    request={{
-                      id: "",
-                      teamId: selectedTeamId,
-                      workerId: "",
-                      startDate: dayjs.utc().startOf("day"),
-                      endDate: dayjs.utc().startOf("day"),
-                      shiftId: "",
-                      negative: false,
-                      hard: true,
-                      status: RequestStatus.PENDING,
-                      active: true,
-                    }}
-                    workers={workers.filter((w) => !w.deleted)}
-                    shifts={shifts.filter((s) => !s.deleted)}
-                    handleClose={handleClosePopoverRhs}
-                    handleAddRequest={handleAddRequest}
-                    handleUpdateRequest={handleUpdateRequest}
-                  />
-                }
-                open={popoverRhsOpen}
-                setOpen={setPopoverRhsOpen}
-              />
-            )}
+            <RequestPanel
+              lng={lng}
+              isEdit={false}
+              request={{
+                id: "",
+                teamId: teamId,
+                workerId: userWorker?.id || "",
+                startDate: dayjs.utc().startOf("day"),
+                endDate: dayjs.utc().startOf("day"),
+                shiftId: "",
+                negative: false,
+                hard: true,
+                status: RequestStatus.PENDING,
+                active: true,
+              }}
+              workers={workers.filter((w) => !w.deleted)}
+              shifts={shifts.filter((s) => !s.deleted)}
+              userWorkerId={userWorker?.id || null}
+              userTeamRole={userTeamRole}
+              handleAddRequest={handleAddRequest}
+              handleUpdateRequest={handleUpdateRequest}
+            />
           </div>
           <RequestTable
             lng={lng}
             requests={requests}
             workers={workers}
             shifts={shifts}
+            userWorkerId={userWorker?.id || null}
+            userTeamRole={userTeamRole}
             handleUpdateRequest={handleUpdateRequest}
             handleDeleteRequest={handleDeleteRequest}
           />

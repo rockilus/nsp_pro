@@ -1,7 +1,17 @@
 .request-panel-container {
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: 350px;
+  padding: 16px;
+}
+
+.request-panel-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  /* width: 100%; */
 }
 
 .variable-input-container {
