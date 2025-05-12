@@ -7,10 +7,13 @@ import "dayjs/locale/fr";
 import "dayjs/locale/es";
 // Components
 import StatsTab from "../../../../components/stats/stats-tab";
+import { RoleBased } from "@/components/role-based/role-based";
 // Context
 import { useTeam } from "@/context/TeamContext";
 // Styles
 import "../../../../styles/page.css";
+// Types
+import { PageRolePermissions } from "@/types/user";
 
 export default function Page({
   params: { lng },
@@ -22,13 +25,18 @@ export default function Page({
   const { selectedTeam } = useTeam();
 
   return (
-    <div className="page-layout">
-      <LocalizationProvider
-        dateAdapter={AdapterDayjs}
-        adapterLocale={lng === "en" ? "en-gb" : lng === "es" ? "es" : "fr"}
-      >
-        <StatsTab lng={lng} selectedTeamId={selectedTeam?.team.id || null} />
-      </LocalizationProvider>
-    </div>
+    <RoleBased
+      role={selectedTeam?.membership.role || null}
+      allowedRoles={PageRolePermissions.stats}
+    >
+      <div className="page-layout">
+        <LocalizationProvider
+          dateAdapter={AdapterDayjs}
+          adapterLocale={lng === "en" ? "en-gb" : lng === "es" ? "es" : "fr"}
+        >
+          <StatsTab lng={lng} selectedTeamId={selectedTeam?.team.id || null} />
+        </LocalizationProvider>
+      </div>
+    </RoleBased>
   );
 }

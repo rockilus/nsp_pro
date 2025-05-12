@@ -65,6 +65,7 @@ class Request:
             data_snake["end_date"], timezone.utc
         ).date()
         data_snake["status"] = RequestStatus(data_snake["status"])
+        data_snake.pop("active", None)
         return cls(**data_snake)
 
 

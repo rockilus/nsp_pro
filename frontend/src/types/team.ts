@@ -12,13 +12,13 @@ export enum TeamMembershipRole {
   MEMBER = "member",
 }
 
-export type MembershipForTeamWithMembershipDTO = {
+export type MembershipForTeamWithMembership = {
   role: TeamMembershipRole;
 };
 
 export type TeamWithMembership = {
   team: TeamT;
-  membership: MembershipForTeamWithMembershipDTO;
+  membership: MembershipForTeamWithMembership;
 };
 
 export const toTeamtT = (data: any): TeamT => {

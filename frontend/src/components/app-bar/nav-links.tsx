@@ -3,18 +3,23 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "@/app/i18n/client";
-// MUI
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 // Styles
 import "./nav-links.css";
+// Types
+import { TeamMembershipRole } from "@/types/team";
 
-export default function NavLinks({ lng }: { lng: string }) {
+export default function NavLinks({
+  lng,
+  userTeamRole,
+}: {
+  lng: string;
+  userTeamRole: TeamMembershipRole | null;
+}) {
   const { t } = useTranslation(lng, "app-bar");
 
   const pathname = usePathname();
 
-  const links: { name: string; label: string; href: string }[] = [
+  const allLinks: { name: string; label: string; href: string }[] = [
     { name: "workers", label: t("workers"), href: `/${lng}/plan/workers` },
     { name: "shifts", label: t("shifts"), href: `/${lng}/plan/shifts` },
     {
@@ -32,6 +37,11 @@ export default function NavLinks({ lng }: { lng: string }) {
     { name: "schedule", label: t("schedule"), href: `/${lng}/plan/schedule` },
     { name: "stats", label: t("stats"), href: `/${lng}/plan/stats` },
   ];
+
+  const links =
+    userTeamRole === TeamMembershipRole.OWNER
+      ? allLinks
+      : allLinks.filter((link) => ["requests", "schedule"].includes(link.name));
 
   return (
     <div className="nav-links-container">

@@ -28,10 +28,12 @@ import { AssignmentT, CreateAssignmentT } from "@/types/assignment";
 import { RequestT } from "../../../../types/request";
 import { AttributeOwnerType } from "../../../../types/attribute";
 import { RecurrenceRuleT } from "@/types/recurrence";
+import { TeamMembershipRole } from "@/types/team";
 
 export default function ScheduleTableShift({
   lng,
   teamId,
+  userTeamRole,
   shifts,
   workers,
   requests,
@@ -52,6 +54,7 @@ export default function ScheduleTableShift({
 }: {
   lng: string;
   teamId: string;
+  userTeamRole: TeamMembershipRole;
   shifts: ShiftT[];
   workers: WorkerT[];
   requests: RequestT[];
@@ -101,18 +104,20 @@ export default function ScheduleTableShift({
             scheduleCampaign={scheduleCampaign}
             handleExportSchedule={handleExportSchedule}
           />
-          <DailyShiftDemandRow
-            lng={lng}
-            teamId={teamId}
-            shifts={shifts}
-            assignments={assignments}
-            dailyShiftDemands={dailyShiftDemands}
-            scheduleCampaign={scheduleCampaign}
-            periodDates={periodDates}
-            scheduleViewSettings={scheduleViewSettings}
-            handleCreateDSD={handleCreateDSD}
-            handleUpdateDSD={handleUpdateDSD}
-          />
+          {userTeamRole === TeamMembershipRole.OWNER && (
+            <DailyShiftDemandRow
+              lng={lng}
+              teamId={teamId}
+              shifts={shifts}
+              assignments={assignments}
+              dailyShiftDemands={dailyShiftDemands}
+              scheduleCampaign={scheduleCampaign}
+              periodDates={periodDates}
+              scheduleViewSettings={scheduleViewSettings}
+              handleCreateDSD={handleCreateDSD}
+              handleUpdateDSD={handleUpdateDSD}
+            />
+          )}
         </TableHead>
         <TableBody>
           {shiftsForHeader.map((shift, shiftIndex) => (

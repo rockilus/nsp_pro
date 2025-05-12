@@ -29,9 +29,11 @@ import {
   ScheduleViewSettingsT,
 } from "../../../types/schedule";
 import { OccurrenceType } from "@/types/recurrence";
+import { TeamMembershipRole } from "../../../types/team";
 
 interface ScheduleSettingsProps {
   lng: string;
+  userTeamRole: TeamMembershipRole;
   campaign: ScheduleT | null;
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
@@ -47,6 +49,7 @@ interface ScheduleSettingsProps {
 
 const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
   lng,
+  userTeamRole,
   campaign,
   startDate,
   endDate,
@@ -177,32 +180,35 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
         <div style={{ padding: "16px", minWidth: "300px" }}>
           <ScheduleSettingsView
             lng={lng}
+            userTeamRole={userTeamRole}
             scheduleViewSettings={scheduleViewSettings}
             updateScheduleViewSettings={updateScheduleViewSettings}
             handleChangeTimeFrame={handleChangeTimeFrame}
           />
 
           {/* Tools Section */}
-          <div>
-            <h4
-              className="subtitle settings-view-title"
-              style={{ margin: "0 0 8px 0" }}
-            >
-              {t("tools")}
-            </h4>
-            <MenuItem
-              onClick={handleDuplicateWeek}
-              disabled={
-                !campaign ||
-                scheduleViewSettings.timeFrame !== "week" ||
-                endDate.diff(startDate, "day") + 1 !== 7 ||
-                startDate.day() !== 1
-              }
-              sx={{ fontSize: "0.8rem" }}
-            >
-              {t("duplicate_week")}
-            </MenuItem>
-          </div>
+          {userTeamRole === TeamMembershipRole.OWNER && (
+            <div>
+              <h4
+                className="subtitle settings-view-title"
+                style={{ margin: "0 0 8px 0" }}
+              >
+                {t("tools")}
+              </h4>
+              <MenuItem
+                onClick={handleDuplicateWeek}
+                disabled={
+                  !campaign ||
+                  scheduleViewSettings.timeFrame !== "week" ||
+                  endDate.diff(startDate, "day") + 1 !== 7 ||
+                  startDate.day() !== 1
+                }
+                sx={{ fontSize: "0.8rem" }}
+              >
+                {t("duplicate_week")}
+              </MenuItem>
+            </div>
+          )}
         </div>
       </Popover>
 

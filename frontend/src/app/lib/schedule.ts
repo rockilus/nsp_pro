@@ -2,7 +2,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Actions
-import { getAssignmentsByDates } from "./assignment";
+import { getAssignmentsByDates, getValidatedAssignments } from "./assignment";
 import { getBreaches } from "./breach";
 import { getRequests } from "./request";
 import { getAllWorkers } from "./worker";
@@ -297,15 +297,6 @@ export async function getScheduleAssignmentsData(teamId: string): Promise<{
   dailyShiftDemands: DailyShiftDemandT[];
 }> {
   try {
-    const statsOptions: StatsOptionsT = {
-      timeFrame: StatsTimeFrameOptions.CAMPAING,
-      startDate: dayjs.utc().startOf("day").subtract(1, "year"),
-      endDate: dayjs.utc().startOf("day"),
-      statsUnit: StatsUnitOptions.NB_DAYS_WORKED,
-      headerUnit: HeaderUnitOptions.WEEK,
-      selectedShifts: [],
-      showFavorites: true,
-    };
     const campaignTabData = await Promise.all([
       getAssignmentsByDates(teamId),
       getAllShifts(teamId),
@@ -318,6 +309,32 @@ export async function getScheduleAssignmentsData(teamId: string): Promise<{
       shifts: campaignTabData[1],
       workers: campaignTabData[2],
       dailyShiftDemands: campaignTabData[3],
+    };
+  } catch (error) {
+    console.error("Failed to fetch schedule assignments data:", error);
+    throw new Error(
+      "Failed to fetch schedule assignments data, please try again later"
+    );
+  }
+}
+
+export async function getScheduleAssignmentsDataMember(
+  teamId: string
+): Promise<{
+  assignments: AssignmentT[];
+  shifts: ShiftT[];
+  workers: WorkerT[];
+}> {
+  try {
+    const campaignTabData = await Promise.all([
+      getValidatedAssignments(teamId),
+      getAllShifts(teamId),
+      getAllWorkers(teamId),
+    ]);
+    return {
+      assignments: campaignTabData[0],
+      shifts: campaignTabData[1],
+      workers: campaignTabData[2],
     };
   } catch (error) {
     console.error("Failed to fetch schedule assignments data:", error);

@@ -133,12 +133,8 @@ class TeamService(BaseService):
         if existing_team is None:
             # pylint: disable=broad-exception-raised
             raise Exception("Team not found")
-        if (
-            existing_team.created_by_user_id != team.created_by_user_id
-            or existing_team.created_at != team.created_at
-        ):
-            # pylint: disable=broad-exception-raised
-            raise Exception("Cannot update team")
+        team.created_at = existing_team.created_at
+        team.created_by_user_id = existing_team.created_by_user_id
         updated_team = self.collection.team_db.update_team(team)
         return updated_team
 

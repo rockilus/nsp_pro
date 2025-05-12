@@ -147,10 +147,10 @@ export const attachUserToWorker = async (
 ): Promise<WorkerT> => {
   try {
     const response = await axios.post(
-      `${apiUrlWorkers}/workers/${workerId}/attach_user`,
+      `${apiUrlWorkers}/${workerId}/attach_user/teams/${teamId}`,
       {
         user_id: userId,
-        team_id: teamId,
+        // team_id: teamId,
       }
     );
     return response.data.map(toWorkerT);

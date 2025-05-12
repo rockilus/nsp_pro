@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import dayjs from "dayjs";
 import { useTranslation } from "../../app/i18n/client";
 // MUI
+import Popover from "@mui/material/Popover";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import Button from "@mui/material/Button";
 import Checkbox from "@mui/material/Checkbox";
@@ -13,6 +14,9 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Typography from "@mui/material/Typography";
 import WorkIcon from "@mui/icons-material/Work";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
+import EditIcon from "@mui/icons-material/Edit";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Styles
 import "./request-panel.css";
@@ -20,33 +24,52 @@ import "./request-panel.css";
 import { RequestT, RequestStatus } from "../../types/request";
 import { ShiftT } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
+import { TeamMembershipRole } from "@/types/team";
 
 export default function RequestPanel({
   lng,
+  isEdit,
   request,
   workers,
   shifts,
-  handleClose,
+  userWorkerId,
+  userTeamRole,
   handleAddRequest,
   handleUpdateRequest,
 }: {
   lng: string;
+  isEdit: boolean;
   request: RequestT;
   workers: WorkerT[];
   shifts: ShiftT[];
-  handleClose: () => void;
+  userWorkerId: string | null;
+  userTeamRole: TeamMembershipRole;
   handleAddRequest: (request: RequestT) => void;
   handleUpdateRequest: (request: RequestT) => void;
 }) {
   const { t } = useTranslation(lng, "request-page");
 
+  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
+    null
+  );
   const [requestState, setRequestState] = useState<RequestT>(request);
   const [dateRange, setDateRange] = useState<boolean>(
     !request.startDate.isSame(request.endDate, "day")
   );
 
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+  const id = open ? "simple-popover" : undefined;
+
   const handleSaveRequest = async () => {
-    if (requestState.id === "") {
+    if (!isEdit) {
       await handleAddRequest(requestState);
     } else {
       if (
@@ -90,6 +113,7 @@ export default function RequestPanel({
         <FormControl fullWidth>
           <Select
             value={requestState.workerId}
+            disabled={userTeamRole === TeamMembershipRole.MEMBER}
             label="Worker"
             onChange={(e) =>
               setRequestState({
@@ -134,112 +158,158 @@ export default function RequestPanel({
   };
 
   return (
-    <div className="request-panel-container">
-      <div className="variable-input-container">
-        <PeopleAltIcon sx={{ marginLeft: 2, marginRight: 1 }} />
-        {selectWorker()}
-      </div>
-      <div className="variable-input-param-container">
-        <Checkbox
-          checked={dateRange}
-          onChange={handleSelectDateRange}
-          size="small"
-          sx={{ marginLeft: "49px", height: "30px", width: "30px" }}
-        />
-        <Typography sx={{ fontSize: "0.8rem" }}>{t("date_range")}</Typography>
-      </div>
-      <div className="variable-input-container">
-        <AccessTimeIcon sx={{ marginLeft: 2, marginRight: 1 }} />
-        <div className="date-pickers-container">
-          <DatePicker
-            minDate={dayjs.utc().startOf("day")}
-            sx={{ marginLeft: 1, marginRight: 2, width: "100%" }}
-            value={dayjs(requestState.startDate)}
-            onChange={(newValue) =>
-              setRequestState({
-                ...requestState,
-                startDate:
-                  newValue?.startOf("day") || dayjs.utc().startOf("day"),
-                endDate: !dateRange
-                  ? newValue?.startOf("day") || dayjs.utc().startOf("day")
-                  : requestState.endDate,
-              })
-            }
-          />
-          {dateRange && (
-            <DatePicker
-              minDate={requestState.startDate}
-              sx={{
-                marginLeft: 1,
-                marginTop: "1px",
-                marginRight: 2,
-                width: "100%",
-              }}
-              value={dayjs(requestState.endDate)}
-              onChange={(newValue) =>
-                setRequestState({
-                  ...requestState,
-                  endDate:
-                    newValue?.startOf("day") || dayjs.utc().startOf("day"),
-                })
-              }
-            />
-          )}
-        </div>
-      </div>
-      <div className="variable-input-param-container">
-        <ToggleButtonGroup
-          color="primary"
-          value={requestState.negative}
-          exclusive
-          onChange={(event, value) =>
-            setRequestState({ ...requestState, negative: value })
+    <div>
+      {isEdit ? (
+        <IconButton
+          edge="end"
+          aria-label="delete"
+          disabled={
+            userTeamRole === TeamMembershipRole.MEMBER &&
+            (!userWorkerId || request.workerId !== userWorkerId)
           }
-          aria-label="Platform"
+          onClick={handleClick}
         >
-          <ToggleButton
-            value={false}
-            sx={{
-              marginTop: "5px",
-              marginBottom: "5px",
-              marginLeft: "56px",
-              textTransform: "none",
-              height: "30px",
-              width: "105px",
-              fontSize: "0.8rem",
-            }}
-          >
-            {t("work")}
-          </ToggleButton>
-          <ToggleButton
-            value={true}
-            sx={{
-              marginTop: "5px",
-              marginBottom: "5px",
-              textTransform: "none",
-              height: "30px",
-              width: "105px",
-              fontSize: "0.8rem",
-            }}
-          >
-            {t("doesnt_work")}
-          </ToggleButton>
-        </ToggleButtonGroup>
-      </div>
-      <div className="variable-input-container">
-        <WorkIcon sx={{ marginLeft: 2, marginRight: 1 }} />
-        {selectShift()}
-      </div>
-      <div className="save-button-container">
+          <EditIcon />
+        </IconButton>
+      ) : (
         <Button
+          aria-describedby={id}
           variant="contained"
-          color="primary"
-          sx={{ marginRight: 2 }}
-          onClick={handleSaveRequest}
+          disabled={userTeamRole === TeamMembershipRole.MEMBER && !userWorkerId}
+          onClick={handleClick}
+          sx={{
+            textTransform: "none",
+          }}
         >
-          {t("save")}
+          {t("new_request")}
         </Button>
-      </div>
+      )}
+      <Popover
+        id={id}
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+      >
+        <div className="request-panel-container">
+          <div className="request-panel-header">
+            <Typography variant="h6">{t("new_request")}</Typography>
+            <IconButton onClick={handleClose} sx={{ padding: 0 }}>
+              <CloseIcon />
+            </IconButton>
+          </div>
+          <div className="variable-input-container">
+            <PeopleAltIcon sx={{ marginLeft: 2, marginRight: 1 }} />
+            {selectWorker()}
+          </div>
+          <div className="variable-input-param-container">
+            <Checkbox
+              checked={dateRange}
+              onChange={handleSelectDateRange}
+              size="small"
+              sx={{ marginLeft: "49px", height: "30px", width: "30px" }}
+            />
+            <Typography sx={{ fontSize: "0.8rem" }}>
+              {t("date_range")}
+            </Typography>
+          </div>
+          <div className="variable-input-container">
+            <AccessTimeIcon sx={{ marginLeft: 2, marginRight: 1 }} />
+            <div className="date-pickers-container">
+              <DatePicker
+                minDate={dayjs.utc().startOf("day")}
+                sx={{ marginLeft: 1, marginRight: 2 }}
+                value={dayjs(requestState.startDate)}
+                onChange={(newValue) =>
+                  setRequestState({
+                    ...requestState,
+                    startDate:
+                      newValue?.startOf("day") || dayjs.utc().startOf("day"),
+                    endDate: !dateRange
+                      ? newValue?.startOf("day") || dayjs.utc().startOf("day")
+                      : requestState.endDate,
+                  })
+                }
+              />
+              {dateRange && (
+                <DatePicker
+                  minDate={requestState.startDate}
+                  sx={{
+                    marginLeft: 1,
+                    marginTop: "1px",
+                    marginRight: 2,
+                    width: "100%",
+                  }}
+                  value={dayjs(requestState.endDate)}
+                  onChange={(newValue) =>
+                    setRequestState({
+                      ...requestState,
+                      endDate:
+                        newValue?.startOf("day") || dayjs.utc().startOf("day"),
+                    })
+                  }
+                />
+              )}
+            </div>
+          </div>
+          <div className="variable-input-param-container">
+            <ToggleButtonGroup
+              color="primary"
+              value={requestState.negative}
+              exclusive
+              onChange={(event, value) =>
+                setRequestState({ ...requestState, negative: value })
+              }
+              aria-label="Platform"
+            >
+              <ToggleButton
+                value={false}
+                sx={{
+                  marginTop: "5px",
+                  marginBottom: "5px",
+                  marginLeft: "56px",
+                  textTransform: "none",
+                  height: "30px",
+                  width: "105px",
+                  fontSize: "0.8rem",
+                }}
+              >
+                {t("work")}
+              </ToggleButton>
+              <ToggleButton
+                value={true}
+                sx={{
+                  marginTop: "5px",
+                  marginBottom: "5px",
+                  textTransform: "none",
+                  height: "30px",
+                  width: "105px",
+                  fontSize: "0.8rem",
+                }}
+              >
+                {t("doesnt_work")}
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </div>
+          <div className="variable-input-container">
+            <WorkIcon sx={{ marginLeft: 2, marginRight: 1 }} />
+            {selectShift()}
+          </div>
+          <div className="save-button-container">
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ marginRight: 2 }}
+              onClick={handleSaveRequest}
+            >
+              {t("save")}
+            </Button>
+          </div>
+        </div>
+      </Popover>
     </div>
   );
 }

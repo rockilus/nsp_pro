@@ -20,12 +20,14 @@ import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
 import { RequestT } from "../../../types/request";
 import { RecurrenceRuleT } from "@/types/recurrence";
+import { TeamMembershipRole } from "@/types/team";
 
 dayjs.extend(utc);
 
 export default function ScheduleDisplay({
   lng,
   teamId,
+  userTeamRole,
   scheduleCampaign,
   periodDates,
   assignments,
@@ -45,6 +47,7 @@ export default function ScheduleDisplay({
 }: {
   lng: string;
   teamId: string;
+  userTeamRole: TeamMembershipRole;
   scheduleCampaign: ScheduleT | null;
   periodDates: periodDateT[];
   assignments: AssignmentT[];
@@ -67,6 +70,7 @@ export default function ScheduleDisplay({
       <ScheduleTableShift
         lng={lng}
         teamId={teamId}
+        userTeamRole={userTeamRole}
         shifts={shifts}
         workers={workers}
         requests={requests}
@@ -89,6 +93,7 @@ export default function ScheduleDisplay({
       <ScheduleTableWorker
         lng={lng}
         teamId={teamId}
+        userTeamRole={userTeamRole}
         shifts={shifts}
         workers={workers}
         requests={requests}

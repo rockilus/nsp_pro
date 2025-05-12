@@ -101,6 +101,35 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         assignments = self.find_all({"fixed": True, "schedule": {"$in": schedule_ids}})
         return [a.to_core() for a in assignments]
 
+    def get_assignments_by_schedule_ids_and_date_range(
+        self, schedule_ids: List[str], start_date: date, end_date: date
+    ) -> List[Assignment]:
+        """Get assignments by a list of schedule IDs and a date range."""
+        if not schedule_ids or not start_date or not end_date:
+            return []
+
+        # Convert start and end dates to datetime objects
+        start_datetime = datetime(
+            start_date.year,
+            start_date.month,
+            start_date.day,
+            tzinfo=timezone.utc,
+        )
+        end_datetime = datetime(
+            end_date.year,
+            end_date.month,
+            end_date.day,
+            tzinfo=timezone.utc,
+        )
+
+        assignments = self.find_all(
+            {
+                "schedule": {"$in": schedule_ids},
+                "date": {"$gte": start_datetime, "$lte": end_datetime},
+            }
+        )
+        return [a.to_core() for a in assignments]
+
     def get_assignments_by_team_and_shifts_today_onward(
         self, team_id: str, shift_ids: List[str]
     ) -> List[Assignment]:

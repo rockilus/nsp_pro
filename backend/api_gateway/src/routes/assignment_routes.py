@@ -1,6 +1,6 @@
 import time as time_module
 from datetime import date
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query
 from shared.logger import log_info
@@ -16,10 +16,7 @@ from shared.schemas.dto import (
 )
 
 from src.dependencies import get_assignment_service
-from src.errors import (
-    NotAuthorizedError,
-    handle_routes_errors,
-)
+from src.errors import NotAuthorizedError, handle_routes_errors
 from src.integrations.authentication import (
     SessionContainerType,
     authn_verify_session,
@@ -84,6 +81,35 @@ async def get_assignments(
         end_time = time_module.time()
         time_taken = round(end_time - start_time)
         print(f"Time taken to get assignments: {time_taken} seconds")
+    except Exception as e:
+        log_info("Failed to get assignments")
+        handle_routes_errors(e)
+    return response
+
+
+@router.get("/assignments/validated/teams/{team_id}")
+async def get_assignments_validated(
+    team_id: str,
+    start_date: Optional[date] = Query(None, alias="start_date"),
+    end_date: Optional[date] = Query(None, alias="end_date"),
+    session: SessionContainerType = Depends(authn_verify_session()),
+    assignment_service: AssignmentService = Depends(
+        get_assignment_service,
+    ),
+) -> List[AssignmentDTO]:
+    try:
+        if not await authz_check(
+            session.get_user_id(), "read-assignments", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to get assignments",
+            )
+        assignments = assignment_service.get_assignments_validated(
+            team_id=team_id,
+            start_date=start_date,
+            end_date=end_date,
+        )
+        response = [a.to_dto() for a in assignments]
     except Exception as e:
         log_info("Failed to get assignments")
         handle_routes_errors(e)

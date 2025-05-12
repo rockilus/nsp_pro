@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 // MUI
 import AppBar from "@mui/material/AppBar";
@@ -6,8 +8,11 @@ import Image from "next/image";
 //Components
 import AccountMenu from "./account-menu";
 import NavLinks from "./nav-links";
+// Context
+import { useTeam } from "@/context/TeamContext";
 // Styles
 import "./nav-app-bar.css";
+// Types
 
 const logoWidthOriginal = 753;
 const logoHeightOriginal = 98;
@@ -16,6 +21,7 @@ const logoWidth = logoWidthOriginal * logoAdjustFactor;
 const logoHeight = logoHeightOriginal * logoAdjustFactor;
 
 const NavAppBar = ({ lng }: { lng: string }) => {
+  const { selectedTeam } = useTeam();
   return (
     <AppBar
       position="static"
@@ -39,7 +45,10 @@ const NavAppBar = ({ lng }: { lng: string }) => {
             height={logoHeight}
             priority
           />
-          <NavLinks lng={lng} />
+          <NavLinks
+            lng={lng}
+            userTeamRole={selectedTeam?.membership.role || null}
+          />
           <AccountMenu lng={lng} />
         </div>
       </Toolbar>

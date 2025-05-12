@@ -11,6 +11,7 @@ from shared.schemas.core import (
     RecurrenceRule,
     RecurrenceUpdateScope,
     Schedule,
+    ScheduleStatus,
     Shift,
     ShiftType,
 )
@@ -380,6 +381,31 @@ class AssignmentService(BaseService):
             recurrence_updated=None,
             recurrences_deleted_ids=[],
         )
+
+    def get_assignments_validated(
+        self,
+        team_id: str,
+        start_date: Optional[date] = None,
+        end_date: Optional[date] = None,
+    ) -> List[Assignment]:
+        schedules = self.collection.schedule_db.get_schedules(team_id=team_id)
+        schedule_valid_ids = [
+            s.id for s in schedules if s.status == ScheduleStatus.VALIDATED
+        ]
+        if not schedule_valid_ids:
+            return []
+        if start_date is None or end_date is None:
+            return self.collection.assignment_db.get_assignments_by_schedule_ids(
+                schedule_ids=schedule_valid_ids
+            )
+        # fmt: off
+        return self.collection.assignment_db\
+            .get_assignments_by_schedule_ids_and_date_range(
+                schedule_ids=schedule_valid_ids,
+                start_date=start_date,
+                end_date=end_date,
+            )
+        # fmt: on
 
     def update_assignment_and_recurrence(
         self,

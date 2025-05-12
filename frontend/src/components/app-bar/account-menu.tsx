@@ -72,16 +72,16 @@ export default function AccountMenu({ lng }: { lng: string }) {
       >
         {links.map((link) => {
           return (
-            <MenuItem
-              key={link.name}
-              // LinkComponent={Link}
-              // href={link.href}
-              onClick={handleClose}
-            >
-              <Link key={link.name} href={link.href}>
+            <Link key={link.name} href={link.href}>
+              <MenuItem
+                key={link.name}
+                // LinkComponent={Link}
+                // href={link.href}
+                onClick={handleClose}
+              >
                 {link.label}
-              </Link>
-            </MenuItem>
+              </MenuItem>
+            </Link>
           );
         })}
         <MenuItem onClick={handleLogout}>{t("sign_out")}</MenuItem>

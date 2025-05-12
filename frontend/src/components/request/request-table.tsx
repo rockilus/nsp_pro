@@ -15,12 +15,15 @@ import "../../styles/table-styles.css";
 import { WorkerT } from "../../types/worker";
 import { RequestT } from "../../types/request";
 import { ShiftT } from "../../types/shift";
+import { TeamMembershipRole } from "@/types/team";
 
 export default function RequestTable({
   lng,
   requests,
   workers,
   shifts,
+  userWorkerId,
+  userTeamRole,
   handleUpdateRequest,
   handleDeleteRequest,
 }: {
@@ -28,6 +31,8 @@ export default function RequestTable({
   requests: RequestT[];
   workers: WorkerT[];
   shifts: ShiftT[];
+  userWorkerId: string | null;
+  userTeamRole: TeamMembershipRole;
   handleUpdateRequest: (request: RequestT) => void;
   handleDeleteRequest: (requestId: string) => void;
 }) {
@@ -64,6 +69,8 @@ export default function RequestTable({
               workers={workers}
               shifts={shifts}
               requestTableFields={requestTableFields}
+              userWorkerId={userWorkerId}
+              userTeamRole={userTeamRole}
               handleUpdateRequest={handleUpdateRequest}
               handleDeleteRequest={handleDeleteRequest}
             />

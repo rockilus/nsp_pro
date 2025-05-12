@@ -49,6 +49,7 @@ async def authz_team_resource_instance_create(team: Team) -> None:
         handle_permit_errors(e)
 
 
+# Role assignments
 async def authz_role_assignment_assign(
     user_id: str, resource: str, resource_instance_key: str, role: str
 ) -> None:
@@ -64,6 +65,21 @@ async def authz_role_assignment_assign(
     except Exception as e:
         log_info("Permit role assignment assign error")
         handle_permit_errors(e)
+
+
+async def authz_role_assignments_list(
+    user_id: str, resource: str, resource_instance_key: str
+) -> List[str]:
+    try:
+        role_assignments = await permit.api.role_assignments.list(
+            user_key=user_id,
+            resource_instance_key=f"{resource}:{resource_instance_key}",
+            tenant_key="default",
+        )
+    except Exception as e:
+        log_info("Permit role assignment get error")
+        handle_permit_errors(e)
+    return [r.role for r in role_assignments]
 
 
 async def authz_role_assignment_unassign(
