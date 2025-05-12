@@ -24,7 +24,13 @@ import "./teams-tab.css";
 import { TeamWithMembership } from "@/types/team";
 import { EnrichedTeamInvitationT } from "@/types/team-invitation";
 
-export default function TeamsTab({ lng }: { lng: string }) {
+export default function TeamsTab({
+  lng,
+  teamId,
+}: {
+  lng: string;
+  teamId: string | null;
+}) {
   const { t } = useTranslation(lng, "teams-page");
 
   const [isLoading, setIsLoading] = useState(true);
@@ -93,6 +99,7 @@ export default function TeamsTab({ lng }: { lng: string }) {
           {teams.length > 0 ? (
             <TeamsList
               lng={lng}
+              teamId={teamId}
               teams={teams}
               handleLeaveTeam={handleLeaveTeam}
             />

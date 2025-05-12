@@ -18,7 +18,8 @@ export default function Layout({
     teamId: string;
   };
 }) {
-  const { selectedTeam } = useTeam();
+  const { teams } = useTeam();
+  const selectedTeam = teams.find((team) => team.team.id === params.teamId);
 
   return (
     <RoleBased

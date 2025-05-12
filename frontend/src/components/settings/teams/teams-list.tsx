@@ -15,10 +15,12 @@ import { TeamWithMembership, TeamMembershipRole } from "@/types/team";
 
 export default function TeamsList({
   lng,
+  teamId,
   teams,
   handleLeaveTeam,
 }: {
   lng: string;
+  teamId: string | null;
   teams: TeamWithMembership[];
   handleLeaveTeam: (teamId: string) => void;
 }) {
@@ -36,13 +38,15 @@ export default function TeamsList({
   }) => {
     const handleTeamClick = () => {
       setSelectedTeamId(teamWithMembership.team.id);
-      router.push(`/${lng}/plan/workers`);
+      router.push(`/${lng}/plan/schedule`);
     };
 
     return (
       <div
         key={teamWithMembership.team.id}
-        className={`teams-list-item ${isFirstItem ? "first-item" : ""}`}
+        className={`teams-list-item ${
+          teamWithMembership.team.id === teamId ? "active" : ""
+        } ${isFirstItem ? "first-item" : ""}`}
       >
         <div className="team-list-item-description">
           <strong className="teams-list-item-name" onClick={handleTeamClick}>
@@ -56,9 +60,9 @@ export default function TeamsList({
           <Button
             variant="outlined"
             component={Link}
-            // disabled={
-            //   teamWithMembership.membership.role !== TeamMembershipRole.OWNER
-            // }
+            disabled={
+              teamWithMembership.membership.role !== TeamMembershipRole.OWNER
+            }
             href={`/${lng}/plan/teams/${teamWithMembership.team.id}/settings/general`}
             sx={{
               textTransform: "none",

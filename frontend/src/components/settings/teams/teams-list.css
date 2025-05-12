@@ -14,6 +14,10 @@
   padding: 1rem;
 }
 
+.teams-list-item.active {
+  background-color: #1976d214;
+}
+
 .teams-list-item.first-item {
   border-top: none;
 }
