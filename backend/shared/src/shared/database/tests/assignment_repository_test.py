@@ -10,6 +10,7 @@ from shared.database.schemas.assignment import AssignmentSchema
 from shared.schemas.core.assignment import Assignment
 
 
+# pylint: disable=too-many-public-methods
 class TestAssignmentRepository:
     repo: AssignmentRepository
 
@@ -757,3 +758,45 @@ class TestAssignmentRepository:
 
         remaining = list(self.repo.collection.find({"_id": {"$in": assignment_ids}}))
         assert len(remaining) == 0
+
+    def test_get_assignments_by_schedule_ids_and_date_range(self):
+        """Test getting assignments by schedule IDs and a date range."""
+        schedule_ids = ["schedule1", "schedule2"]
+        assignments = [
+            AssignmentSchema(
+                team="team1",
+                worker="worker1",
+                schedule="schedule1",
+                date=datetime(2023, 1, 1, tzinfo=timezone.utc),
+                shift="shift1",
+                fixed=False,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker2",
+                schedule="schedule2",
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc),
+                shift="shift2",
+                fixed=True,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker3",
+                schedule="schedule1",
+                date=datetime(2023, 1, 3, tzinfo=timezone.utc),
+                shift="shift3",
+                fixed=False,
+            ),
+        ]
+        self.repo.create_many(assignments)
+
+        start_date = date(2023, 1, 1)
+        end_date = date(2023, 1, 2)
+
+        results = self.repo.get_assignments_by_schedule_ids_and_date_range(
+            schedule_ids, start_date, end_date
+        )
+
+        assert len(results) == 2
+        assert all(result.schedule_id in schedule_ids for result in results)
+        assert all(start_date <= result.date <= end_date for result in results)

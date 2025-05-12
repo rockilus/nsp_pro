@@ -7,13 +7,16 @@ import "dayjs/locale/fr";
 import "dayjs/locale/es";
 // Components
 import ScheduleTab from "../../../../components/schedule/schedule-tab";
+import ScheduleTabMember from "@/components/schedule/schedule-tab-member";
 import { RoleBased } from "@/components/role-based/role-based";
 // Context
 import { useTeam } from "@/context/TeamContext";
+import { useUser } from "@/context/UserContext";
 // Styles
 import "../../../../styles/page.css";
 // Types
 import { PageRolePermissions } from "@/types/user";
+import { TeamMembershipRole } from "@/types/team";
 
 export default function Page({
   params: { lng },
@@ -23,23 +26,36 @@ export default function Page({
   };
 }) {
   const { selectedTeam } = useTeam();
+  const { user } = useUser();
 
   return (
-    <RoleBased
-      role={selectedTeam?.membership.role || null}
-      allowedRoles={PageRolePermissions.schedule}
-    >
-      <div className="page-layout">
-        <LocalizationProvider
-          dateAdapter={AdapterDayjs}
-          adapterLocale={lng === "en" ? "en-gb" : lng === "es" ? "es" : "fr"}
-        >
-          <ScheduleTab
-            lng={lng}
-            selectedTeamId={selectedTeam?.team.id || null}
-          />
-        </LocalizationProvider>
-      </div>
-    </RoleBased>
+    selectedTeam &&
+    user && (
+      <RoleBased
+        role={selectedTeam?.membership.role || null}
+        allowedRoles={PageRolePermissions.schedule}
+      >
+        <div className="page-layout">
+          <LocalizationProvider
+            dateAdapter={AdapterDayjs}
+            adapterLocale={lng === "en" ? "en-gb" : lng === "es" ? "es" : "fr"}
+          >
+            {selectedTeam.membership.role === TeamMembershipRole.OWNER ? (
+              <ScheduleTab
+                lng={lng}
+                teamId={selectedTeam.team.id}
+                userTeamRole={selectedTeam.membership.role}
+              />
+            ) : (
+              <ScheduleTabMember
+                lng={lng}
+                teamId={selectedTeam.team.id}
+                userTeamRole={selectedTeam.membership.role}
+              />
+            )}
+          </LocalizationProvider>
+        </div>
+      </RoleBased>
+    )
   );
 }

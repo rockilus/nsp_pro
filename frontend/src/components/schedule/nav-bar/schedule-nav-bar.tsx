@@ -14,9 +14,11 @@ import {
   DuplicateRequestT,
   ScheduleViewSettingsT,
 } from "../../../types/schedule";
+import { TeamMembershipRole } from "../../../types/team";
 
 export default function ScheduleNavBar({
   lng,
+  userTeamRole,
   currentPeriodStart,
   currentPeriodEnd,
   scheduleCampaign,
@@ -32,6 +34,7 @@ export default function ScheduleNavBar({
   handleChangeTimeFrame,
 }: {
   lng: string;
+  userTeamRole: TeamMembershipRole;
   currentPeriodStart: dayjs.Dayjs;
   currentPeriodEnd: dayjs.Dayjs;
   scheduleCampaign: ScheduleT | null;
@@ -89,43 +92,46 @@ export default function ScheduleNavBar({
         updateScheduleViewSettings={updateScheduleViewSettings}
         handleChangeTimeFrame={handleChangeTimeFrame}
       />
-      {scheduleCampaign ? (
-        <CampaignInfo
-          lng={lng}
-          scheduleCampaign={scheduleCampaign}
-          solveStatus={solveStatus}
-          handleSolveSchedule={handleSolveSchedule}
-          handleValidateSchedule={handleValidateSchedule}
-        />
-      ) : (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-end",
-            width: "470px",
-          }}
-        >
-          <Link href={`/${lng}/plan/campaign`}>
-            <button
-              style={{
-                borderRadius: "4px",
-                border: "1px solid #e5e7eb",
-                height: "35px",
-                padding: "0 15px",
-                fontSize: "0.9rem",
-                fontWeight: 550,
-                color: "#616161",
-                backgroundColor: isHoveredCreateCampaign ? "#f0f0f0" : "white",
-              }}
-              onMouseEnter={() => setIsHoveredCreateCampaign(true)}
-              onMouseLeave={() => setIsHoveredCreateCampaign(false)}
-            >
-              {t("create_campaign")}
-            </button>
-          </Link>
-        </div>
-      )}
+      {userTeamRole === TeamMembershipRole.OWNER &&
+        (scheduleCampaign ? (
+          <CampaignInfo
+            lng={lng}
+            scheduleCampaign={scheduleCampaign}
+            solveStatus={solveStatus}
+            handleSolveSchedule={handleSolveSchedule}
+            handleValidateSchedule={handleValidateSchedule}
+          />
+        ) : (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              width: "470px",
+            }}
+          >
+            <Link href={`/${lng}/plan/campaign`}>
+              <button
+                style={{
+                  borderRadius: "4px",
+                  border: "1px solid #e5e7eb",
+                  height: "35px",
+                  padding: "0 15px",
+                  fontSize: "0.9rem",
+                  fontWeight: 550,
+                  color: "#616161",
+                  backgroundColor: isHoveredCreateCampaign
+                    ? "#f0f0f0"
+                    : "white",
+                }}
+                onMouseEnter={() => setIsHoveredCreateCampaign(true)}
+                onMouseLeave={() => setIsHoveredCreateCampaign(false)}
+              >
+                {t("create_campaign")}
+              </button>
+            </Link>
+          </div>
+        ))}
     </div>
   );
 }

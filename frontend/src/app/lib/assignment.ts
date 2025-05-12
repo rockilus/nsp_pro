@@ -13,10 +13,10 @@ import {
   fromRecurrenceRuleT,
   RecurrenceRuleT,
   RecurrenceUpdateScope,
-  toRecurrenceRuleT,
 } from "../../types/recurrence";
 // Env Vars
 import { API_URL } from "./env";
+import axios from "axios";
 
 dayjs.extend(utc);
 
@@ -86,6 +86,35 @@ export async function getAssignmentsByDates(
   } catch (error) {
     console.error("Failed to fetch assignments:", error);
     throw new Error("Failed to fetch assignments, please try again later");
+  }
+}
+
+export async function getValidatedAssignments(
+  teamId: string,
+  startDate?: dayjs.Dayjs,
+  endDate?: dayjs.Dayjs
+): Promise<AssignmentT[]> {
+  const startDateStr = startDate ? startDate.format("YYYY-MM-DD") : undefined;
+  const endDateStr = endDate ? endDate.format("YYYY-MM-DD") : undefined;
+
+  try {
+    const response = await axios.get<AssignmentT[]>(
+      `${apiUrlAssignment}/validated/teams/${teamId}`,
+      {
+        params: {
+          start_date: startDateStr,
+          end_date: endDateStr,
+        },
+        withCredentials: true,
+      }
+    );
+
+    return response.data.map(toAssignmentT);
+  } catch (error) {
+    console.error("Failed to fetch validated assignments:", error);
+    throw new Error(
+      "Failed to fetch validated assignments, please try again later"
+    );
   }
 }
 
