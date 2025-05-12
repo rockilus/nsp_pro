@@ -13,9 +13,11 @@ import "./schedule-settings-view.css";
 import "../../../styles/text-styles.css";
 // Types
 import { ScheduleViewSettingsT } from "../../../types/schedule";
+import { TeamMembershipRole } from "../../../types/team";
 
 interface ScheduleSettingsViewProps {
   lng: string;
+  userTeamRole: TeamMembershipRole;
   scheduleViewSettings: ScheduleViewSettingsT;
   updateScheduleViewSettings: (newSettings: ScheduleViewSettingsT) => void;
   handleChangeTimeFrame: (newTimeFrame: "week" | "month") => void;
@@ -23,6 +25,7 @@ interface ScheduleSettingsViewProps {
 
 const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
   lng,
+  userTeamRole,
   scheduleViewSettings,
   updateScheduleViewSettings,
   handleChangeTimeFrame,
@@ -155,45 +158,49 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
           </ToggleButton>
         </ToggleButtonGroup>
       </div>
-      <FormGroup>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={scheduleViewSettings.showAssignments}
-              onChange={handleShowAssignmentsToggle}
-              size="small"
-            />
-          }
-          label={
-            <span className="settings-view-line-label">{t("assignment")}</span>
-          }
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={scheduleViewSettings.showDailyShiftDemands}
-              onChange={handleShowDailyShiftDemandsToggle}
-              size="small"
-            />
-          }
-          label={
-            <span className="settings-view-line-label">{t("demand")}</span>
-          }
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={scheduleViewSettings.showRequests}
-              onChange={handleShowRequestsToggle}
-              size="small"
-              disabled={true}
-            />
-          }
-          label={
-            <span className="settings-view-line-label">{t("request")}</span>
-          }
-        />
-      </FormGroup>
+      {userTeamRole === TeamMembershipRole.OWNER && (
+        <FormGroup>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={scheduleViewSettings.showAssignments}
+                onChange={handleShowAssignmentsToggle}
+                size="small"
+              />
+            }
+            label={
+              <span className="settings-view-line-label">
+                {t("assignment")}
+              </span>
+            }
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={scheduleViewSettings.showDailyShiftDemands}
+                onChange={handleShowDailyShiftDemandsToggle}
+                size="small"
+              />
+            }
+            label={
+              <span className="settings-view-line-label">{t("demand")}</span>
+            }
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={scheduleViewSettings.showRequests}
+                onChange={handleShowRequestsToggle}
+                size="small"
+                disabled={true}
+              />
+            }
+            label={
+              <span className="settings-view-line-label">{t("request")}</span>
+            }
+          />
+        </FormGroup>
+      )}
     </div>
   );
 };

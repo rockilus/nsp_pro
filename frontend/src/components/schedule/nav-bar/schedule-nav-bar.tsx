@@ -84,6 +84,7 @@ export default function ScheduleNavBar({
       />
       <ScheduleSettings
         lng={lng}
+        userTeamRole={userTeamRole}
         campaign={scheduleCampaign}
         startDate={currentPeriodStart}
         endDate={currentPeriodEnd}
