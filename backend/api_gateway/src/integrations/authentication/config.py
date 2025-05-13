@@ -45,7 +45,11 @@ recipe_list = [
         ),
         email_delivery=EmailDeliveryConfig(override=custom_email_deliver),
         sign_up_feature=emailpassword.InputSignUpFeature(
-            form_fields=[InputFormField(id="language")]
+            form_fields=[
+                InputFormField(id="language"),
+                InputFormField(id="firstName"),
+                InputFormField(id="lastName"),
+            ]
         ),
     ),
     dashboard.init(

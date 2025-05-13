@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Any, Coroutine, Dict, List
 
-from shared.schemas.core import User
+from shared.schemas.core import Language, User
 from supertokens_python.recipe.emailpassword.constants import (
     FORM_FIELD_EMAIL_ID,
 )
@@ -18,10 +18,6 @@ from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.utils import find_first_occurrence_in_list
 
 from src.factories import get_user_service
-from src.integrations.authorization.authz_services import (
-    authz_role_assignment_assign,
-)
-from src.utils.constants import SUPPORTED_LANGUAGES_LIST
 
 
 def override_emailpassword_apis(original_implementation: APIInterface):
@@ -43,22 +39,7 @@ def override_emailpassword_apis(original_implementation: APIInterface):
         | SignUpPostNotAllowedResponse
         | GeneralErrorResponse,
     ]:
-        # async def sign_up_post(
-        #     form_fields: List[FormField],
-        #     tenant_id: str,
-        #     session: SessionContainer,
-        #     user_context: Dict[str, Any],
-        # ) -> Coroutine[
-        #     Any,
-        #     Any,
-        #     SignUpPostOkResult
-        #     | EmailAlreadyExistsError
-        #     | SignUpPostNotAllowedResponse
-        #     | GeneralErrorResponse,
-        # ]:
-        # team_service = get_team_service()
-        user_service = get_user_service()
-        # db_collections = get_database()
+        user_service = get_user_service(request=api_options.request.request)
 
         email_form_field = find_first_occurrence_in_list(
             lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields
@@ -74,9 +55,27 @@ def override_emailpassword_apis(original_implementation: APIInterface):
             # pylint: disable=broad-exception-raised
             raise Exception("Should never come here")
         language = language_form_field.value
-        if language not in SUPPORTED_LANGUAGES_LIST:
+        try:
+            language = Language(language)
+        except ValueError as exc:
             # pylint: disable=broad-exception-raised
-            raise Exception(f"Language {language} not supported")
+            raise Exception(f"Language {language} not supported") from exc
+
+        first_name_form_field = find_first_occurrence_in_list(
+            lambda x: x.id == "firstName", form_fields
+        )
+        if first_name_form_field is None:
+            # pylint: disable=broad-exception-raised
+            raise Exception("First name is missing")
+        first_name = first_name_form_field.value
+
+        last_name_form_field = find_first_occurrence_in_list(
+            lambda x: x.id == "lastName", form_fields
+        )
+        if last_name_form_field is None:
+            # pylint: disable=broad-exception-raised
+            raise Exception("Last name is missing")
+        last_name = last_name_form_field.value
         # config = db_collections.config_db.get_config()
         # if config is None:
         #     # pylint: disable=broad-exception-raised
@@ -97,9 +96,6 @@ def override_emailpassword_apis(original_implementation: APIInterface):
         #         api_options.response.set_json_content(json_dict)
         #         return GeneralErrorResponse("email_not_on_whitelist")  # type: ignore
 
-        # result = await original_sign_up_post(
-        #     form_fields, tenant_id, api_options, user_context
-        # )
         result = await original_sign_up_post(
             form_fields,
             tenant_id,
@@ -119,29 +115,17 @@ def override_emailpassword_apis(original_implementation: APIInterface):
             user_id = result.user.id
             email = result.user.emails[0]
             if result.user:
-                print("creating user and team in mongodb:", email)
                 await user_service.create_user(
                     User(
                         id=user_id,
                         email=email,
-                        first_name="",
-                        last_name="",
+                        first_name=first_name,
+                        last_name=last_name,
                         language=language,  # type: ignore
                         sign_up_at=datetime.now(timezone.utc),
                         impersonating_user_id=None,
                     )
                 )
-                # await team_service.create_team(team_name="New team", owner_id=user_id)
-
-                print("user and team created in mongodb:", email)
-                print("assigning user as leader of team in permit.io:", email)
-                await authz_role_assignment_assign(
-                    user_id=user_id,
-                    resource="user",
-                    resource_instance_key=user_id,
-                    role="owner",
-                )
-                print("user assigned as leader of team in permit.io:", email)
 
         return result  # type: ignore
 

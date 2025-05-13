@@ -14,8 +14,9 @@ class UserRepository(BaseRepository[UserSchema]):
     def create_user(self, user: User) -> User:
         """Create a new user."""
         user_schema = UserSchema.from_core(user)
-        result = self.create(user_schema)
-        return result.to_core()
+        doc = user_schema.to_mongo()
+        self.collection.insert_one(doc)
+        return user
 
     def get_users(self) -> List[User]:
         """Get all users."""
