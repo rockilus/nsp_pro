@@ -87,6 +87,7 @@ async def get_assignments(
     return response
 
 
+# pylint: disable=R0801
 @router.get("/assignments/validated/teams/{team_id}")
 async def get_assignments_validated(
     team_id: str,
@@ -99,7 +100,10 @@ async def get_assignments_validated(
 ) -> List[AssignmentDTO]:
     try:
         if not await authz_check(
-            session.get_user_id(), "read-assignments", "team", team_id
+            session.get_user_id(),
+            "read-assignments-validated",
+            "team",
+            team_id,
         ):
             raise NotAuthorizedError(
                 "You do not have permission to get assignments",

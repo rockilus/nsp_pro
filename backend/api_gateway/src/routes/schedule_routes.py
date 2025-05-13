@@ -8,9 +8,7 @@ from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas.core import (
     DuplicateRequest,
-    EngineOutputsAugmented,
     Schedule,
-    Solution,
     WorkTimeTable,
 )
 from shared.schemas.dto import (
@@ -34,7 +32,6 @@ from src.integrations.authorization import authz_check
 from src.routes.api_model import CoverageSelectorMessage, WorkTimeTableMessage
 from src.routes.coverage_selector_routes import core_to_msg_coverage_selector
 from src.services.schedule_service import ScheduleService
-from src.utils import event_manager
 
 router = APIRouter()
 
@@ -92,7 +89,7 @@ async def get_work_time_table(
 ) -> WorkTimeTableMessage:
     try:
         if not await authz_check(
-            session.get_user_id(), "read-schedules", "team", team_id
+            session.get_user_id(), "read-schedule-work-times", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to read a work time table",
@@ -130,25 +127,25 @@ async def solve_schedule(
     return response
 
 
-@router.post("/schedules/{schedule_id}/notifify-solved/teams/{team_id}")
-async def notify_solved_schedule(schedule_id: str, team_id: str, data: Dict) -> str:
-    try:
-        if "eo_augmented" not in data:
-            raise MessageTypeError("eo_augmented not in data")
-        eo_augmented = EngineOutputsAugmented.from_dict(data["eo_augmented"])
-        solution = Solution(
-            schedule=eo_augmented.schedule,
-            assignments=eo_augmented.assignments,
-            breaches=eo_augmented.breaches,
-            requests=eo_augmented.requests,
-        )
-        # Broadcast the data to all SSE clients
-        event_manager.broadcast(solution.to_dto().model_dump())
-        print(f"schedule_id notified as solved: {schedule_id}, {team_id}")
-    except Exception as e:
-        log_info("Failed to notify solved schedule")
-        handle_routes_errors(e)
-    return "Task ID"
+# @router.post("/schedules/{schedule_id}/notifify-solved/teams/{team_id}")
+# async def notify_solved_schedule(schedule_id: str, team_id: str, data: Dict) -> str:
+#     try:
+#         if "eo_augmented" not in data:
+#             raise MessageTypeError("eo_augmented not in data")
+#         eo_augmented = EngineOutputsAugmented.from_dict(data["eo_augmented"])
+#         solution = Solution(
+#             schedule=eo_augmented.schedule,
+#             assignments=eo_augmented.assignments,
+#             breaches=eo_augmented.breaches,
+#             requests=eo_augmented.requests,
+#         )
+#         # Broadcast the data to all SSE clients
+#         event_manager.broadcast(solution.to_dto().model_dump())
+#         print(f"schedule_id notified as solved: {schedule_id}, {team_id}")
+#     except Exception as e:
+#         log_info("Failed to notify solved schedule")
+#         handle_routes_errors(e)
+#     return "Task ID"
 
 
 @router.post("/schedules/{schedule_id}/duplicate-period/teams/{team_id}")
@@ -165,7 +162,7 @@ async def duplicate_period(
         if not await authz_check(
             # session.get_user_id(), "duplicate-period", "team", team_id
             session.get_user_id(),
-            "update-schedule",
+            "duplicate-period",
             "team",
             team_id,
         ):

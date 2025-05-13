@@ -13,10 +13,11 @@ import { API_URL } from "./env";
 const API_BASE_URL = API_URL + "/team-invitations";
 
 export const createTeamInvitation = async (
-  invitation: TeamInvitationT
+  invitation: TeamInvitationT,
+  teamId: string
 ): Promise<TeamInvitationT> => {
   const response = await axios.post(
-    API_BASE_URL,
+    API_BASE_URL + `/teams/${teamId}`,
     fromTeamInvitationT(invitation)
   );
   return toTeamInvitationT(response.data);
@@ -25,7 +26,7 @@ export const createTeamInvitation = async (
 export const getTeamInvitations = async (
   teamId: string
 ): Promise<TeamInvitationT[]> => {
-  const response = await axios.get(`${API_BASE_URL}/${teamId}`);
+  const response = await axios.get(`${API_BASE_URL}/teams/${teamId}`);
   return response.data.map(toTeamInvitationT);
 };
 
@@ -53,15 +54,21 @@ export const rejectTeamInvitation = async (token: string): Promise<boolean> => {
 };
 
 export const resendTeamInvitationEmail = async (
-  invitationId: string
+  invitationId: string,
+  teamId: string
 ): Promise<TeamInvitationT> => {
-  const response = await axios.post(`${API_BASE_URL}/${invitationId}/resend`);
+  const response = await axios.post(
+    `${API_BASE_URL}/${invitationId}/resend/teams/${teamId}`
+  );
   return toTeamInvitationT(response.data) as TeamInvitationT;
 };
 
 export const deleteTeamInvitation = async (
-  invitationId: string
+  invitationId: string,
+  teamId: string
 ): Promise<{ message: string }> => {
-  const response = await axios.delete(`${API_BASE_URL}/${invitationId}`);
+  const response = await axios.delete(
+    `${API_BASE_URL}/${invitationId}/teams/${teamId}`
+  );
   return response.data;
 };

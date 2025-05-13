@@ -29,7 +29,7 @@ async def get_objective_breaches(
 ) -> List[BreachDTO]:
     try:
         if not await authz_check(
-            session.get_user_id(), "read-objective-breaches", "team", team_id
+            session.get_user_id(), "read-breaches", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to get objective breaches",
@@ -60,7 +60,7 @@ async def update_objective_breach(
 ) -> BreachDTO:
     try:
         if not await authz_check(
-            session.get_user_id(), "update-objective-breach", "team", team_id
+            session.get_user_id(), "update-breach", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to update objective breaches",
@@ -83,7 +83,7 @@ async def delete_objective_breach(
 ) -> Dict:
     try:
         if not await authz_check(
-            session.get_user_id(), "delete-objective-breach", "team", team_id
+            session.get_user_id(), "delete-breach", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to delete objective breaches",

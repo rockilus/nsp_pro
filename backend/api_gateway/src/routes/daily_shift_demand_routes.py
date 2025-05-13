@@ -35,7 +35,7 @@ async def create_daily_shift_demand(
 ) -> DailyShiftDemandDTO:
     try:
         if not await authz_check(
-            session.get_user_id(), "create-schedule", "team", team_id
+            session.get_user_id(), "create-demand", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to create an daily_shift_demand",
@@ -62,7 +62,7 @@ async def get_daily_shift_demands(
 ) -> List[DailyShiftDemandDTO]:
     try:
         if not await authz_check(
-            session.get_user_id(), "read-schedules", "team", team_id
+            session.get_user_id(), "read-demands", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to get daily_shift_demands",
@@ -88,7 +88,7 @@ async def update_daily_shift_demand(
 ) -> DailyShiftDemandDTO:
     try:
         if not await authz_check(
-            session.get_user_id(), "update-schedule", "team", team_id
+            session.get_user_id(), "update-demand", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to update an daily_shift_demand",
@@ -116,7 +116,7 @@ async def delete_daily_shift_demands(
 ) -> List[str]:
     try:
         if not await authz_check(
-            session.get_user_id(), "delete-schedule", "team", team_id
+            session.get_user_id(), "delete-demand", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to delete an daily_shift_demand",

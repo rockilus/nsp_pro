@@ -14,48 +14,87 @@ from src.integrations.authentication import (
     SessionContainerType,
     authn_verify_session,
 )
+from src.integrations.authorization import authz_check
 from src.services.team_invitation_service import TeamInvitationService
 
 router = APIRouter()
 
 
-@router.post("/team-invitations", response_model=TeamInvitationDTO)
+@router.post("/team-invitations/teams/{team_id}", response_model=TeamInvitationDTO)
 async def create_team_invitation(
+    team_id: str,
     invitation: TeamInvitationDTO,
     session: SessionContainerType = Depends(authn_verify_session()),
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ):
-    user_id = session.get_user_id()
-    invitation_data = TeamInvitation.from_dto(invitation)
-    created_invitation = await service.create_team_invitation(
-        invitation=invitation_data, sender_id=user_id
-    )
-    if not created_invitation:
+    try:
+        user_id = session.get_user_id()
+        if not await authz_check(user_id, "create-team-invitation", "team", team_id):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to create a team invitation.",
+            )
+        invitation_data = TeamInvitation.from_dto(invitation)
+        created_invitation = await service.create_team_invitation(
+            invitation=invitation_data, sender_id=user_id
+        )
+        if not created_invitation:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="An invitation with the same email and type already exists.",
+            )
+        response = created_invitation.to_dto()
+    except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="An invitation with the same email and type already exists.",
-        )
-    return created_invitation.to_dto()
+            detail=str(e),
+        ) from e
+    return response
 
 
 @router.get("/team-invitations/pending", response_model=List[EnrichedTeamInvitationDTO])
-def get_user_pending_invitations(
+async def get_user_pending_invitations(
     session: SessionContainerType = Depends(authn_verify_session()),
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ):
-    print("calling get_user_pending_invitations")
-    user_id = session.get_user_id()
-    invitations = service.get_user_pending_invitations(user_id=user_id)
-    return [invitation.to_dto() for invitation in invitations]
+    try:
+        user_id = session.get_user_id()
+        if not await authz_check(user_id, "read-team-invitations", "user", user_id):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to read your pending invitations.",
+            )
+        invitations = service.get_user_pending_invitations(user_id=user_id)
+        response = [invitation.to_dto() for invitation in invitations]
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        ) from e
+    return response
 
 
-@router.get("/team-invitations/{team_id}", response_model=List[TeamInvitationDTO])
-def get_team_invitations(
+@router.get("/team-invitations/teams/{team_id}", response_model=List[TeamInvitationDTO])
+async def get_team_invitations(
     team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ):
-    invitations = service.get_team_invitations(team_id)
-    return [invitation.to_dto() for invitation in invitations]
+    try:
+        user_id = session.get_user_id()
+        if not await authz_check(user_id, "read-team-invitations", "team", team_id):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to read team invitations.",
+            )
+        invitations = service.get_team_invitations(team_id)
+        response = [invitation.to_dto() for invitation in invitations]
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        ) from e
+    return response
 
 
 class TeamInvitationResponseRequest(BaseModel):
@@ -70,6 +109,11 @@ async def accept_team_invitation(
 ) -> TeamWithMembershipDTO:
     try:
         user_id = session.get_user_id()
+        if not await authz_check(user_id, "accept-team-invitation", "user", user_id):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to accept team invitations.",
+            )
         token = request.token
         if not token:
             raise HTTPException(
@@ -87,45 +131,86 @@ async def accept_team_invitation(
 
 
 @router.post("/team-invitations/reject")
-def reject_team_invitation(
+async def reject_team_invitation(
     request: TeamInvitationResponseRequest,
     session: SessionContainerType = Depends(authn_verify_session()),
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ):
-    user_id = session.get_user_id()
-    token = request.token
-    if not token:
+    try:
+        user_id = session.get_user_id()
+        if not await authz_check(user_id, "reject-team-invitation", "user", user_id):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to reject team invitations.",
+            )
+        token = request.token
+        if not token:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Token is required.",
+            )
+        success = service.reject_team_invitation(user_id, token)
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid or expired invitation.",
+            )
+    except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Token is required.",
-        )
-    success = service.reject_team_invitation(user_id, token)
-    if not success:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid or expired invitation.",
-        )
+            detail=str(e),
+        ) from e
     return {"message": "Invitation rejected successfully."}
 
 
-@router.post("/team-invitations/{invitation_id}/resend")
-def resend_team_invitation_email(
+@router.post("/team-invitations/{invitation_id}/resend/teams/{team_id}")
+async def resend_team_invitation_email(
+    team_id: str,
     invitation_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ) -> TeamInvitationDTO:
-    invitation = service.resend_invite(invitation_id=invitation_id)
-    if not invitation:
+    try:
+        user_id = session.get_user_id()
+        if not await authz_check(user_id, "resend-team-invitation", "team", team_id):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to resend the team invitation.",
+            )
+        invitation = service.resend_invite(invitation_id=invitation_id)
+        if not invitation:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Invitation not found or cannot be resent.",
+            )
+        response = invitation.to_dto()
+    except ValueError as e:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Invitation not found or cannot be resent.",
-        )
-    return invitation.to_dto()
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        ) from e
+    return response
 
 
-@router.delete("/team-invitations/{invitation_id}")
-def delete_team_invitation(
+@router.delete("/team-invitations/{invitation_id}/teams/{team_id}")
+async def delete_team_invitation(
     invitation_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ):
-    service.delete_team_invitation(invitation_id)
+    try:
+        user_id = session.get_user_id()
+        if not await authz_check(
+            user_id, "delete-team-invitation", "team", invitation_id
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to delete the team invitation.",
+            )
+        service.delete_team_invitation(invitation_id)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        ) from e
     return {"message": "Invitation deleted successfully."}

@@ -27,6 +27,7 @@ from src.services.link_shift_service import LinkShiftService
 router = APIRouter()
 
 
+# pylint: disable=R0801
 @router.post("/link-shifts/teams/{team_id}")
 async def create_link_shift(
     team_id: str,
@@ -40,7 +41,7 @@ async def create_link_shift(
         if not await authz_check(
             # session.get_user_id(), "create-link-shift", "team", team_id
             session.get_user_id(),
-            "create-shift",
+            "create-link-shift",
             "team",
             team_id,
         ):
@@ -68,7 +69,7 @@ async def get_link_shifts(
         if not await authz_check(
             # session.get_user_id(), "read-link-shifts", "team", team_id
             session.get_user_id(),
-            "read-shifts",
+            "read-link-shifts",
             "team",
             team_id,
         ):
@@ -94,7 +95,7 @@ async def update_link_shift(
         if not await authz_check(
             # session.get_user_id(), "update-link-shift", "team", team_id
             session.get_user_id(),
-            "update-shift",
+            "update-link-shift",
             "team",
             team_id,
         ):
@@ -123,7 +124,7 @@ async def delete_link_shift(
         if not await authz_check(
             # session.get_user_id(), "delete-link-shift", "team", team_id
             session.get_user_id(),
-            "delete-shift",
+            "delete-link-shift",
             "team",
             team_id,
         ):

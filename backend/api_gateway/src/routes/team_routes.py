@@ -30,13 +30,19 @@ async def create_team(
     team_service: TeamService = Depends(get_team_service),
 ) -> TeamDTO:
     try:
+        user_id = session.get_user_id()
+        if not authz_check(
+            user_id=user_id,
+            action="create-team",
+            resource="user",
+            resource_id=user_id,
+        ):
+            raise NotAuthorizedError("You do not have permission to create a team")
+
         if not team_name.strip():
             raise HTTPException(status_code=400, detail="Team name cannot be empty")
 
-        owner_id = session.get_user_id()
-        new_team = await team_service.create_team(
-            team_name=team_name, owner_id=owner_id
-        )
+        new_team = await team_service.create_team(team_name=team_name, owner_id=user_id)
         response = new_team.to_dto()
     except Exception as e:
         log_info("Failed to create team")
@@ -51,8 +57,16 @@ async def get_teams(
 ) -> List[TeamDTO]:
     start_time = time.time()
     try:
+        user_id = session.get_user_id()
+        if not authz_check(
+            user_id=user_id,
+            action="read-teams",
+            resource="user",
+            resource_id=user_id,
+        ):
+            raise NotAuthorizedError("You do not have permission to read teams")
         start_time_get_teams = time.time()
-        teams = await team_service.get_user_teams(session.get_user_id())
+        teams = await team_service.get_user_teams(user_id=user_id)
         end_time_get_teams = time.time()
         start_time_convert = time.time()
         response = [t.to_dto() for t in teams]
@@ -77,6 +91,13 @@ async def get_user_teams_with_memberships(
 ) -> List[TeamWithMembershipDTO]:
     try:
         user_id = session.get_user_id()
+        if not authz_check(
+            user_id=user_id,
+            action="read-teams",
+            resource="user",
+            resource_id=user_id,
+        ):
+            raise NotAuthorizedError("You do not have permission to read teams")
         teams_with_memberships = team_service.get_user_teams_with_memberships(
             user_id=user_id
         )
@@ -94,7 +115,7 @@ async def get_team(
     team_service: TeamService = Depends(get_team_service),
 ) -> TeamDTO:
     try:
-        if not authz_check(session.get_user_id(), "update-team", "team", team_id):
+        if not authz_check(session.get_user_id(), "read-teams", "team", team_id):
             raise NotAuthorizedError("You do not have permission to update a team")
         team = team_service.get_team_by_id(team_id=team_id)
         if not team:
@@ -113,7 +134,7 @@ async def get_team_users_with_memberships(
     team_service: TeamService = Depends(get_team_service),
 ) -> List[UserWithMembershipDTO]:
     try:
-        if not authz_check(session.get_user_id(), "view-team-users", "team", team_id):
+        if not authz_check(session.get_user_id(), "read-team-users", "team", team_id):
             raise NotAuthorizedError("You do not have permission to view team users")
         users_with_memberships = team_service.get_team_users_with_memberships(
             team_id=team_id
@@ -152,6 +173,13 @@ async def leave_team(
 ):
     try:
         user_id = session.get_user_id()
+        if not authz_check(
+            user_id=user_id,
+            action="leave-team",
+            resource="user",
+            resource_id=user_id,
+        ):
+            raise NotAuthorizedError("You do not have permission to leave the team")
         await team_service.remove_user_from_team(user_id=user_id, team_id=team_id)
         return {"message": "Successfully left the team"}
     except Exception as e:
