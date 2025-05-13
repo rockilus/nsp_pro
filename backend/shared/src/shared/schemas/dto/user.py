@@ -1,5 +1,3 @@
-from typing import List
-
 from pydantic import BaseModel
 
 from shared.schemas.dto.team import MembershipForTeamWithMembershipDTO
@@ -10,7 +8,6 @@ class UserDTO(BaseModel):
     firstName: str
     lastName: str
     email: str
-    workers: List[str]
     language: str
     signUpAt: float
 

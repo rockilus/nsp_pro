@@ -1,7 +1,7 @@
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from enum import Enum
-from typing import List, Literal
+from typing import Literal
 
 import humps
 from pydantic import TypeAdapter
@@ -30,7 +30,6 @@ class User:
     email: str
     first_name: str
     last_name: str
-    workers: List[str]
     language: Language
     sign_up_at: datetime
     impersonating_user_id: str | None
