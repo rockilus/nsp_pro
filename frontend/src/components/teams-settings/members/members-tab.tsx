@@ -86,12 +86,12 @@ export default function MembersTab({
   //////////////////////////
 
   const handleCreateTeamInvitation = async (invitation: TeamInvitationT) => {
-    const newInvitation = await createTeamInvitation(invitation);
+    const newInvitation = await createTeamInvitation(invitation, teamId);
     setInvitations((prevInvitations) => [...prevInvitations, newInvitation]);
   };
 
   const handleResendTeamInvitationEmail = async (invitationId: string) => {
-    const newInvitation = await resendTeamInvitationEmail(invitationId);
+    const newInvitation = await resendTeamInvitationEmail(invitationId, teamId);
     setInvitations((prevInvitations) =>
       prevInvitations.map((invitation) =>
         invitation.id === newInvitation.id ? newInvitation : invitation
@@ -100,7 +100,7 @@ export default function MembersTab({
   };
 
   const handleDeleteTeamInvitation = async (invitationId: string) => {
-    const success = await deleteTeamInvitation(invitationId);
+    const success = await deleteTeamInvitation(invitationId, teamId);
     if (success) {
       setInvitations((prevInvitations) =>
         prevInvitations.filter((invitation) => invitation.id !== invitationId)

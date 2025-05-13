@@ -54,7 +54,7 @@ async def create_dimension(
 ) -> NewDimensionMessage:
     try:
         if not await authz_check(
-            session.get_user_id(), "create-shift-dimension", "team", team_id
+            session.get_user_id(), "create-dimension", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to create a dimension")
         d_data = msg_to_core_dimension(dimension)
@@ -80,7 +80,7 @@ async def get_dimensions(
 ) -> DimensionsAndDimEntriesMessage:
     try:
         if not await authz_check(
-            session.get_user_id(), "read-shift-dimensions", "team", team_id
+            session.get_user_id(), "read-dimensions", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to read shift dimensions"
@@ -118,7 +118,7 @@ async def update_dimension(
 ) -> DimensionMessage:
     try:
         if not await authz_check(
-            session.get_user_id(), "update-shift-dimension", "team", team_id
+            session.get_user_id(), "update-dimension", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to update a dimension")
         d_data = msg_to_core_dimension(dimension)
@@ -141,7 +141,7 @@ async def delete_dimension(
 ) -> Dict:
     try:
         if not await authz_check(
-            session.get_user_id(), "delete-shift-dimension", "team", team_id
+            session.get_user_id(), "delete-dimension", "team", team_id
         ):
             raise HTTPException(
                 status_code=403,

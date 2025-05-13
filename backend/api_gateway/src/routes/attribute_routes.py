@@ -24,7 +24,7 @@ async def update_attribute(
 ) -> AttributeDTO:
     try:
         if not await authz_check(
-            session.get_user_id(), "update-shift-property", "team", team_id
+            session.get_user_id(), "update-attribute", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to update attributes")
         sp_data = Attribute.from_dto(attribute)

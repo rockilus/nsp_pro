@@ -40,7 +40,7 @@ async def create_specialty(
 ) -> SpecialtyMessage:
     try:
         if not await authz_check(
-            session.get_user_id(), "create-shift-dimension", "team", team_id
+            session.get_user_id(), "create-specialty", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to create a specialty")
         s_data = msg_to_core_specialty(specialty)
@@ -61,7 +61,7 @@ async def get_specialties(
 ) -> List[SpecialtyMessage]:
     try:
         if not await authz_check(
-            session.get_user_id(), "read-workers", "team", team_id
+            session.get_user_id(), "read-specialties", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to read specialties")
         specialties = db_collections.specialty_db.get_specialties_by_team_id(team_id)
@@ -82,7 +82,7 @@ async def update_specialty(
     # pylint: disable=R0801
     try:
         if not await authz_check(
-            session.get_user_id(), "update-shift-dimension", "team", team_id
+            session.get_user_id(), "update-specialty", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to update a specialty")
         de_data = msg_to_core_specialty(specialty)
@@ -104,7 +104,7 @@ async def delete_specialty(
     # pylint: disable=R0801
     try:
         if not await authz_check(
-            session.get_user_id(), "delete-shift-dimension", "team", team_id
+            session.get_user_id(), "delete-specialty", "team", team_id
         ):
             raise HTTPException(
                 status_code=403,

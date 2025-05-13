@@ -37,7 +37,7 @@ async def create_dim_entry(
 ) -> DimEntryMessage:
     try:
         if not await authz_check(
-            session.get_user_id(), "create-shift-dimension", "team", team_id
+            session.get_user_id(), "create-dim-entry", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to create a dim entry")
         de_data = msg_to_core_dim_entry(dim_entry)
@@ -61,7 +61,7 @@ async def update_dim_entry(
     # pylint: disable=R0801
     try:
         if not await authz_check(
-            session.get_user_id(), "update-shift-dimension", "team", team_id
+            session.get_user_id(), "update-dim-entry", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to update a dim_entry")
         de_data = msg_to_core_dim_entry(dim_entry)
@@ -83,7 +83,7 @@ async def delete_dim_entry(
     # pylint: disable=R0801
     try:
         if not await authz_check(
-            session.get_user_id(), "delete-shift-dimension", "team", team_id
+            session.get_user_id(), "delete-dim-entry", "team", team_id
         ):
             raise HTTPException(
                 status_code=403,

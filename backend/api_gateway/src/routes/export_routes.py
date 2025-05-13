@@ -31,7 +31,7 @@ async def export_schedule(
 ) -> StreamingResponse:
     try:
         if not await authz_check(
-            session.get_user_id(), "create-schedule", "team", team_id
+            session.get_user_id(), "create-schedule-export", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to export a schedule",

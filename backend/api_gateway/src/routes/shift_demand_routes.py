@@ -59,7 +59,7 @@ async def get_shift_demands(
 ) -> List[ShiftDemandMessage]:
     try:
         if not await authz_check(
-            session.get_user_id(), "read-coverages", "team", team_id
+            session.get_user_id(), "read-shift-demands", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to get shift demands")
         coverages = db_collections.coverage_db.get_coverages(team_id)
