@@ -10,7 +10,6 @@ export type UserT = {
   email: string;
   firstName: string;
   lastName: string;
-  workers: string[];
   language: string;
   signUpAt: dayjs.Dayjs;
 };

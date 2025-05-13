@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import field_validator
 
@@ -13,7 +13,6 @@ class UserSchema(DocumentBaseSchema):
     email: str
     first_name: str
     last_name: str
-    workers: List[str] = []
     language: str
     sign_up_at: datetime
     impersonating_user: Optional[str] = None
@@ -32,7 +31,6 @@ class UserSchema(DocumentBaseSchema):
             email=self.email,
             first_name=self.first_name,
             last_name=self.last_name,
-            workers=self.workers,
             language=Language(self.language),
             sign_up_at=self.sign_up_at,
             impersonating_user_id=self.impersonating_user,
@@ -45,7 +43,6 @@ class UserSchema(DocumentBaseSchema):
             email=user.email,
             first_name=user.first_name,
             last_name=user.last_name,
-            workers=user.workers,
             language=user.language.value,
             sign_up_at=user.sign_up_at,
             impersonating_user=user.impersonating_user_id,
