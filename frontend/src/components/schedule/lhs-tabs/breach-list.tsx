@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useTranslation } from "../../../app/i18n/client";
 // Components
 import BreachItem from "./breach-item";
+import LHSHEader from "./lhs-header";
 // Styles
 import "../../../styles/text-styles.css";
 import "./breach-list.css";
@@ -12,9 +13,11 @@ import { ObjectiveCategory } from "@/types/breach";
 export default function BreachList({
   lng,
   breaches,
+  onClose,
 }: {
   lng: string;
   breaches: BreachT[];
+  onClose: () => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -67,7 +70,7 @@ export default function BreachList({
 
   return (
     <div className="breach-lhs-tab-container">
-      <span className="title">{t("breaches")}</span>
+      <LHSHEader lhsHeaderTitle={t("breaches")} onClose={onClose} />
       <div>
         {categoryMap.map((c) => (
           <button

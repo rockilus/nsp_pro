@@ -166,10 +166,16 @@ export default function ScheduleTab({
 
   const buildDates = useCallback(
     (startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) => {
+      console.log("startDate", startDate.toISOString());
+      console.log("endDate", endDate.toISOString());
+
       const dates: periodDateT[] = [];
       let currentDate = startDate;
 
-      while (currentDate.isBefore(endDate)) {
+      while (
+        currentDate.isBefore(endDate) ||
+        currentDate.isSame(endDate, "day")
+      ) {
         const schedule = getScheduleFromDate(currentDate);
         dates.push({
           date: currentDate,
@@ -550,26 +556,23 @@ export default function ScheduleTab({
   };
 
   const handlePreviousPeriod = async () => {
+    const isMonth = scheduleViewSettings.timeFrame === "month";
     const newPeriodStart = periodStartDate.subtract(
       1,
-      scheduleViewSettings.timeFrame === "month" ? "month" : "week"
+      isMonth ? "month" : "week"
     );
-    const newPeriodEnd = periodEndDate.subtract(
-      1,
-      scheduleViewSettings.timeFrame === "month" ? "month" : "week"
-    );
+    const newPeriodEnd = isMonth
+      ? newPeriodStart.endOf("month")
+      : periodEndDate.subtract(1, "week");
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
 
   const handleNextPeriod = async () => {
-    const newPeriodStart = periodStartDate.add(
-      1,
-      scheduleViewSettings.timeFrame === "month" ? "month" : "week"
-    );
-    const newPeriodEnd = periodEndDate.add(
-      1,
-      scheduleViewSettings.timeFrame === "month" ? "month" : "week"
-    );
+    const isMonth = scheduleViewSettings.timeFrame === "month";
+    const newPeriodStart = periodStartDate.add(1, isMonth ? "month" : "week");
+    const newPeriodEnd = isMonth
+      ? newPeriodStart.endOf("month")
+      : periodEndDate.add(1, "week");
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
 
@@ -810,7 +813,9 @@ export default function ScheduleTab({
     {
       name: "breaches",
       label: t("breaches"),
-      content: <BreachList lng={lng} breaches={breaches} />,
+      content: (
+        <BreachList lng={lng} breaches={breaches} onClose={handleCloseLHS} />
+      ),
     },
     {
       name: "quick_staffing",
@@ -917,6 +922,7 @@ export default function ScheduleTab({
             handleSendDuplicateRequest={handleSendDuplicateRequest}
             updateScheduleViewSettings={updateScheduleViewSettings}
             handleChangeTimeFrame={handleChangeTimeFrame}
+            handleOpenLHS={setSelectedTab}
           />
         )}
         <div style={{ display: "flex", flexDirection: "row" }}>

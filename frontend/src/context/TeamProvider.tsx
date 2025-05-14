@@ -12,24 +12,22 @@ export function TeamProvider({
   children: React.ReactNode;
   fallback?: React.ReactNode;
 }) {
-  const { teams, selectedTeam, setSelectedTeamId } = useTeamSelector();
+  const { teams, selectedTeam, setSelectedTeamId, loading } = useTeamSelector();
   const pathname = usePathname();
   const isTeamsPage = pathname.endsWith("/plan/settings/teams");
   const isProfilePage = pathname.endsWith("/plan/settings/profile");
   const router = useRouter();
 
   React.useEffect(() => {
-    if (!selectedTeam && !isTeamsPage && !isProfilePage) {
+    if (!loading && !selectedTeam && !isTeamsPage && !isProfilePage) {
       router.replace("/plan/settings/teams");
     }
-  }, [selectedTeam, isTeamsPage, isProfilePage, router]);
-
-  // if (!teams.length) {
-  //   return <div>You are not part of any teams.</div>;
-  // }
+  }, [selectedTeam, isTeamsPage, isProfilePage, router, loading]);
 
   return (
-    <TeamContext.Provider value={{ teams, selectedTeam, setSelectedTeamId }}>
+    <TeamContext.Provider
+      value={{ teams, selectedTeam, setSelectedTeamId, loading }}
+    >
       {children}
     </TeamContext.Provider>
   );

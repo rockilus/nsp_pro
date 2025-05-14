@@ -112,7 +112,9 @@ export default function UserProfileTab({ lng }: { lng: string }) {
         <TablesSkeleton numTables={1} numInternalRows={5} />
       ) : (
         <div className="user-profile-container">
-          <span className="title">{t("user_profile")}</span>
+          <div>
+            <span className="title">{t("user_profile")}</span>
+          </div>
           {user && userState ? (
             <div className="user-profile">
               <UserProfileRow

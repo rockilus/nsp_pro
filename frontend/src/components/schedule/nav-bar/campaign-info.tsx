@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
@@ -23,12 +23,14 @@ export default function CampaignInfo({
   solveStatus,
   handleSolveSchedule,
   handleValidateSchedule,
+  handleOpenLHS,
 }: {
   lng: string;
   scheduleCampaign: ScheduleT;
   solveStatus: SolveDetailsStatus | null | "error";
   handleSolveSchedule: (scheduleId: string) => void;
   handleValidateSchedule: (scheduleId: string) => void;
+  handleOpenLHS: (tabName: string) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -50,6 +52,34 @@ export default function CampaignInfo({
       return start.format("D MMM YYYY") + " - " + end.format("D MMM YYYY");
     }
   }
+
+  // Animated solve button text state
+  const solveText = `${t("solving")}...`;
+  const [animatedSolve, setAnimatedSolve] = useState(solveText);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    if (!solveText) return;
+    const interval = setInterval(() => {
+      setAnimatedSolve((prev) => {
+        if (!prev) return prev;
+        const chars = solveText.split("");
+        const i = activeIndex;
+        chars[i] =
+          chars[i] === chars[i].toUpperCase()
+            ? chars[i].toLowerCase()
+            : chars[i].toUpperCase();
+        return chars.join("");
+      });
+      setActiveIndex((prev) => (prev + 1) % solveText.length);
+    }, 200); // Adjust interval as desired
+    return () => clearInterval(interval);
+  }, [solveText, activeIndex]);
+
+  const isSolving =
+    solveStatus === SolveDetailsStatus.PENDING ||
+    solveStatus === SolveDetailsStatus.STARTED ||
+    solveStatus === SolveDetailsStatus.RETRY;
 
   return (
     <div
@@ -97,6 +127,7 @@ export default function CampaignInfo({
       </div>
       <Chip
         label={GetStatusLabel(lng, scheduleCampaign.solveStatus)}
+        onClick={() => handleOpenLHS("breaches")}
         color={
           (SolveStatusColors[scheduleCampaign.solveStatus] as
             | "default"
@@ -112,41 +143,23 @@ export default function CampaignInfo({
           fontWeight: 550,
         }}
       />
-      {solveStatus === SolveDetailsStatus.PENDING ||
-      solveStatus === SolveDetailsStatus.STARTED ||
-      solveStatus === SolveDetailsStatus.RETRY ? (
-        <Box
-          sx={{
-            backgroundColor: "#1976d2",
-            height: "35px",
-            width: "65px",
-            borderRadius: "4px",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            marginLeft: spaceBetween,
-            marginRight: spaceBetween,
-          }}
-        >
-          <CircularProgress size={20} sx={{ color: "white" }} />
-        </Box>
-      ) : (
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleSolve}
-          sx={{
-            paddingLeft: 0.2,
-            paddingRight: 0.2,
-            marginLeft: spaceBetween,
-            marginRight: spaceBetween,
-            height: "35px",
-            width: "65px",
-          }}
-        >
-          {t("solve")}
-        </Button>
-      )}
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleSolve}
+        disabled={isSolving}
+        sx={{
+          textTransform: "none",
+          paddingLeft: 0.2,
+          paddingRight: 0.2,
+          marginLeft: spaceBetween,
+          marginRight: spaceBetween,
+          height: "35px",
+          width: "65px",
+        }}
+      >
+        {isSolving ? animatedSolve : t("solve")}
+      </Button>
       <ScheduleDialogValidate
         lng={lng}
         scheduleCampaign={scheduleCampaign}

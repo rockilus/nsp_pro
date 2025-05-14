@@ -7,6 +7,7 @@ type TeamContextType = {
   teams: TeamWithMembership[];
   selectedTeam: TeamWithMembership | null;
   setSelectedTeamId: (teamId: string) => void;
+  loading: boolean; // Indicates if the team context is loading
 };
 
 export const TeamContext = createContext<TeamContextType | undefined>(

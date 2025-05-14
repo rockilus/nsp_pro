@@ -1,3 +1,4 @@
+import time
 from typing import Dict
 
 import redis
@@ -21,6 +22,7 @@ redis_client = redis.StrictRedis.from_url(config.redis_url)
 )
 def solve_campaign_task(self, data: dict) -> Dict:
     try:
+        start_time = time.time()
         if "schedule" not in data:
             raise ValueError("schedule not found in data")
         schedule = Schedule.from_dict(data["schedule"])
@@ -31,6 +33,9 @@ def solve_campaign_task(self, data: dict) -> Dict:
             engine_inputs, engine_outputs, self.request.id, collections
         )
         out = {"eo_augmented": eo_augmented.to_dict()}
+        end_time = time.time()
+        total_time = end_time - start_time
+        print("solve campaign time:  " + f"{total_time:.2f}s")
         print("TASK COMPLETE - SOLVE CAMPAIGN: ", self.request.id)
         return out
     except redis.ConnectionError as exc:

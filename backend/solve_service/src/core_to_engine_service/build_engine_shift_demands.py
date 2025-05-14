@@ -16,7 +16,7 @@ from engine import ShiftDemand as ShiftDemandEngine
 # pylint: disable=too-many-locals, too-many-arguments
 def build_engine_shift_demands(
     workers_not_deleted: List[Worker],
-    dates_campaing: List[date],
+    dates_campaign: List[date],
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shifts_not_deleted: List[Shift],
     daily_shift_demands: List[DailyShiftDemand],
@@ -27,7 +27,7 @@ def build_engine_shift_demands(
         dsds_shift = [
             dsd
             for dsd in daily_shift_demands
-            if dsd.shift_id == shift.id and dsd.date in dates_campaing
+            if dsd.shift_id == shift.id and dsd.date in dates_campaign
         ]
         dates_dsds = list(set(dsd.date for dsd in dsds_shift))
         for d in dates_dsds:

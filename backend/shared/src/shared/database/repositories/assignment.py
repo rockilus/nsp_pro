@@ -98,7 +98,13 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         self, schedule_ids: List[str]
     ) -> List[Assignment]:
         """Get all fixed assignments for a list of schedule IDs."""
-        assignments = self.find_all({"fixed": True, "schedule": {"$in": schedule_ids}})
+        assignments = self.find_all(
+            {
+                "fixed": True,
+                "schedule": {"$in": schedule_ids},
+                "deleted": False,
+            }
+        )
         return [a.to_core() for a in assignments]
 
     def get_assignments_by_schedule_ids_and_date_range(
