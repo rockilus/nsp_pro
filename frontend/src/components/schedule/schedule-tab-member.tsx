@@ -254,6 +254,7 @@ export default function ScheduleTabMember({
           handleSendDuplicateRequest={handleSendDuplicateRequest}
           updateScheduleViewSettings={updateScheduleViewSettings}
           handleChangeTimeFrame={handleChangeTimeFrame}
+          handleOpenLHS={() => {}}
         />
         <div style={{ display: "flex", flexDirection: "row" }}>
           {isLoadingAssignments ? (
