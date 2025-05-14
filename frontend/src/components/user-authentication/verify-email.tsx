@@ -14,6 +14,7 @@ import Container from "@mui/material/Container";
 import SnackBarComponent from "../feedback/snack-bar";
 // Actions
 import { sendEmail } from "../../app/lib/authentication";
+import { shouldLoadRoute } from "../sessionAuthForNextJS";
 
 export default function VerifyEmail({ lng }: { lng: string }) {
   const { t } = useTranslation(lng, "auth-page");
@@ -33,8 +34,20 @@ export default function VerifyEmail({ lng }: { lng: string }) {
   };
 
   useEffect(() => {
-    console.log("about to send verification email");
-    handleSendEmail();
+    const checkEmailVerification = async () => {
+      try {
+        const status = await shouldLoadRoute(); // Fetch email verification status
+        if (status) {
+          // If email is verified, redirect to the desired page
+          window.location.assign("/en/plan/workers");
+        }
+      } catch (error) {
+        console.error("Error fetching email verification status:", error);
+        // Handle error, maybe redirect to an error page
+      }
+    };
+
+    checkEmailVerification();
   }, []);
 
   return (

@@ -2,10 +2,9 @@ import uvicorn
 
 from src.app import create_app
 from src.config import config
-from src.database_manager.setup_database import setup_database
+from src.db import db_collections
 
-# Initialize the database and create the app
-db_collections = setup_database()
+# Create the FastAPI app with the database dependency
 app = create_app(db_collections)  # Expose the app at the module level
 
 

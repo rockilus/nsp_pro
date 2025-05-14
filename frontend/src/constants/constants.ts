@@ -33,6 +33,7 @@ export const WeekDays = [
 export const NumHoursInDay = 24;
 export const NumQuarterHoursInHour = 4;
 export const PostSignInRoute = "/plan/workers";
+export const PostSignUpRoute = "/auth/verify-email";
 
 export const TrafficLightColorMappings: Record<
   string,

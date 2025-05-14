@@ -66,6 +66,7 @@ export const toUserDashboardT = (data: any): UserDashboardT => {
 };
 
 export const PageRolePermissions = {
+  welcome: [TeamMembershipRole.OWNER, TeamMembershipRole.MEMBER],
   workers: [TeamMembershipRole.OWNER],
   shifts: [TeamMembershipRole.OWNER],
   coverages: [TeamMembershipRole.OWNER],

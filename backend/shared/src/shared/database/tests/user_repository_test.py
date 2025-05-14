@@ -29,7 +29,7 @@ class TestUserRepository:
     def test_create_user(self):
         """Test creating a user."""
         user = User(
-            id=None,
+            id="user_0",
             email="john@example.com",
             first_name="John",
             last_name="Doe",
@@ -40,7 +40,7 @@ class TestUserRepository:
 
         result = self.repo.create_user(user)
 
-        assert result.id is not None
+        assert result.id == "user_0"
         assert result.email == "john@example.com"
         assert result.first_name == "John"
 

@@ -11,7 +11,7 @@ import {
 import Session from "supertokens-web-js/recipe/session";
 import z from "zod";
 // Constants
-import { PostSignInRoute } from "../../constants/constants";
+import { PostSignInRoute, PostSignUpRoute } from "../../constants/constants";
 import { languages } from "../i18n/settings";
 
 const passwordValidator = z
@@ -32,6 +32,8 @@ const FormSchemaSignUp = z.object({
   }),
   password: passwordValidator,
   language: z.string(),
+  firstName: z.string().min(1, { message: "First name is required." }),
+  lastName: z.string().min(1, { message: "Last name is required." }),
 });
 
 export type State = {
@@ -73,6 +75,8 @@ export async function signUpClicked(
         email: formData.get("email"),
         password: formData.get("password"),
         language: formData.get("language"),
+        firstName: formData.get("firstName"),
+        lastName: formData.get("lastName"),
       });
 
       if (!validatedFields.success) {
@@ -82,9 +86,8 @@ export async function signUpClicked(
         };
       }
 
-      console.log("validationField.data", validatedFields.data);
-
-      const { email, password, language } = validatedFields.data;
+      const { email, password, language, firstName, lastName } =
+        validatedFields.data;
 
       try {
         let response = await signUp({
@@ -100,6 +103,14 @@ export async function signUpClicked(
             {
               id: "language",
               value: language,
+            },
+            {
+              id: "firstName",
+              value: firstName,
+            },
+            {
+              id: "lastName",
+              value: lastName,
             },
           ],
         });
@@ -155,7 +166,8 @@ export async function signUpClicked(
         } else {
           // sign up successful. The session tokens are automatically handled by
           // the frontend SDK.
-          window.location.href = `${language}${PostSignInRoute}`;
+          // window.location.href = `${language}/auth/verify-email`;
+          window.location.href = `/auth/verify-email`;
         }
       } catch (err: any) {
         if (err.isSuperTokensGeneralError === true) {
