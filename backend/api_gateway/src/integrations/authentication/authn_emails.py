@@ -18,11 +18,8 @@ from supertokens_python.recipe.emailverification.types import (
     EmailTemplateVars as EVEmailTemplateVars,
 )
 
-from src.factories import get_database
-from src.integrations.email_sender.verification_email import (
-    send_reset_password_email,
-    send_verification_email,
-)
+from src.db import db_collections
+from src.integrations.email_sender import EmailSender
 
 
 def custom_email_deliver(
@@ -34,13 +31,22 @@ def custom_email_deliver(
     async def send_email(
         template_vars: EmailTemplateVars, user_context: Dict[str, Any]
     ) -> None:
-        db_collections = get_database()
         user = db_collections.user_db.get_user_by_id(template_vars.user.id)
         if user is None:
             raise UserNotFoundError(f"User with id {template_vars.user.id} not found")
-        send_reset_password_email(
-            user=user,
-            reset_password_link=template_vars.password_reset_link,
+
+        email_sender = EmailSender()
+        email_sender.send_template_email(
+            to_address=user.email,
+            template_name="reset_password_email",
+            context={
+                "subject": "Your password reset link",
+                "recipient_name": f"{user.first_name or ''}".strip()
+                + " "
+                + f"{user.last_name or ''}".strip(),
+                "reset_password_link": template_vars.password_reset_link,
+            },
+            language=user.language,
         )
 
     original_implementation.send_email = send_email  # type: ignore
@@ -56,13 +62,22 @@ def custom_email_verification_delivery(
     async def send_email(
         template_vars: EVEmailTemplateVars, user_context: Dict[str, Any]
     ) -> None:
-        db_collections = get_database()
         user = db_collections.user_db.get_user_by_id(template_vars.user.id)
         if user is None:
             raise UserNotFoundError(f"User with id {template_vars.user.id} not found")
-        send_verification_email(
-            user=user,
-            email_verify_link=template_vars.email_verify_link,
+
+        email_sender = EmailSender()
+        email_sender.send_template_email(
+            to_address=user.email,
+            template_name="verification_email",
+            context={
+                "subject": "Please verify your email address",
+                "recipient_name": f"{user.first_name or ''}".strip()
+                + " "
+                + f"{user.last_name or ''}".strip(),
+                "verification_link": template_vars.email_verify_link,
+            },
+            language=user.language,
         )
 
     original_implementation.send_email = send_email  # type: ignore
