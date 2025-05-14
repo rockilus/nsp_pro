@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "../../app/i18n/client";
+import { usePathname, useRouter } from "next/navigation";
 // MUI
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
@@ -25,18 +26,21 @@ export default function ConsumeEmailVerification({ lng }: { lng: string }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSession, setIsSession] = useState(false);
   const [openError, setOpenError] = useState(false);
+  const router = useRouter();
 
   const handleConsumeVerificationEmail = async () => {
     const out = await consumeVerificationCode();
-    console.log("out", out);
+    router.replace(`/${lng}/plan/settings/teams`);
 
-    if (out === "success") {
-      window.location.assign("/en/plan/workers");
-    } else if (out === "invalidToken") {
-      window.location.assign("/auth/verify-email");
-    } else if (out === "error") {
-      setOpenError(true);
-    }
+    // console.log("out", out);
+
+    // if (out === "success") {
+    //   window.location.assign("/en/plan/workers");
+    // } else if (out === "invalidToken") {
+    //   window.location.assign("/auth/verify-email");
+    // } else if (out === "error") {
+    //   setOpenError(true);
+    // }
   };
 
   useEffect(() => {

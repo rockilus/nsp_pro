@@ -39,7 +39,9 @@ export default function NavLinks({
   ];
 
   const links =
-    userTeamRole === TeamMembershipRole.OWNER
+    userTeamRole === null
+      ? []
+      : userTeamRole === TeamMembershipRole.OWNER
       ? allLinks
       : allLinks.filter((link) => ["requests", "schedule"].includes(link.name));
 
