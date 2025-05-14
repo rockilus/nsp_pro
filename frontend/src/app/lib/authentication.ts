@@ -11,7 +11,7 @@ import {
 import Session from "supertokens-web-js/recipe/session";
 import z from "zod";
 // Constants
-import { PostSignInRoute } from "../../constants/constants";
+import { PostSignInRoute, PostSignUpRoute } from "../../constants/constants";
 import { languages } from "../i18n/settings";
 
 const passwordValidator = z
@@ -166,7 +166,8 @@ export async function signUpClicked(
         } else {
           // sign up successful. The session tokens are automatically handled by
           // the frontend SDK.
-          window.location.href = `${language}${PostSignInRoute}`;
+          // window.location.href = `${language}/auth/verify-email`;
+          window.location.href = `/auth/verify-email`;
         }
       } catch (err: any) {
         if (err.isSuperTokensGeneralError === true) {

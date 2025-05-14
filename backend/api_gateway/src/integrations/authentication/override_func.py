@@ -18,6 +18,8 @@ from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.utils import find_first_occurrence_in_list
 
 from src.factories import get_user_service
+from src.integrations.authentication.authn_emails import create_link
+from src.integrations.email_sender import EmailSender
 
 
 def override_emailpassword_apis(original_implementation: APIInterface):
@@ -115,7 +117,7 @@ def override_emailpassword_apis(original_implementation: APIInterface):
             user_id = result.user.id
             email = result.user.emails[0]
             if result.user:
-                await user_service.create_user(
+                user = await user_service.create_user(
                     User(
                         id=user_id,
                         email=email,
@@ -125,6 +127,26 @@ def override_emailpassword_apis(original_implementation: APIInterface):
                         sign_up_at=datetime.now(timezone.utc),
                         impersonating_user_id=None,
                     )
+                )
+                email_verify_link = await create_link(
+                    user_id=user.id,
+                    email=email,
+                )
+                if email_verify_link is None:
+                    # pylint: disable=broad-exception-raised
+                    raise Exception("Email verification link is None")
+                email_sender = EmailSender()
+                email_sender.send_template_email(
+                    to_address=user.email,
+                    template_name="verification_email",
+                    context={
+                        "subject": "Please verify your email address",
+                        "recipient_name": f"{user.first_name or ''}".strip()
+                        + " "
+                        + f"{user.last_name or ''}".strip(),
+                        "verification_link": email_verify_link,
+                    },
+                    language=user.language,
                 )
 
         return result  # type: ignore
