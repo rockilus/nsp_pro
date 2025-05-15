@@ -39,7 +39,14 @@ export default function DemandSelection({
   const date =
     selectedDemand.dailyShiftDemandsData?.dailyShiftDemands[0].date || null;
 
-  const countActual = selectedDemand.assignmentsData.length;
+  const assignmentsCount = selectedDemand.assignmentsData.length;
+  const shiftStaffingTotal =
+    selectedDemand.dailyShiftDemandsData?.shift.staffing.reduce(
+      (sum, staffing) => sum + staffing.staffing,
+      0
+    ) || 0;
+
+  const countActual = Math.floor(assignmentsCount / shiftStaffingTotal);
   const countTarget =
     selectedDemand.dailyShiftDemandsData?.dailyShiftDemands.reduce(
       (sum, demand) => sum + demand.count,

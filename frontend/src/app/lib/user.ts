@@ -2,7 +2,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Types
-import { UserT, toUserT } from "../../types/user";
+import { UserT, toUserT, fromUserT } from "../../types/user";
 // Env Vars
 import { API_URL } from "./env";
 
@@ -42,7 +42,7 @@ export async function updateUser(user: UserT) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(user),
+    body: JSON.stringify(fromUserT(user)),
   };
   try {
     const response = await fetch(`${apiUrlUsers}/${user.id}`, options);

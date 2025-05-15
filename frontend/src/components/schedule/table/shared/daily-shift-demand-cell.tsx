@@ -13,7 +13,14 @@ export default function DailyShiftDemandCell({
   scheduleCellData: ScheduleCellDataT;
   handleDemandSelection: (scheduleCellData: ScheduleCellDataT) => void;
 }) {
-  const countActual = scheduleCellData.assignmentsData.length;
+  const assignmentsCount = scheduleCellData.assignmentsData.length;
+  const shiftStaffingTotal =
+    scheduleCellData.dailyShiftDemandsData?.shift.staffing.reduce(
+      (sum, staffing) => sum + staffing.staffing,
+      0
+    ) || 0;
+
+  const countActual = Math.floor(assignmentsCount / shiftStaffingTotal);
   const countTarget =
     scheduleCellData.dailyShiftDemandsData?.dailyShiftDemands.reduce(
       (sum, demand) => sum + demand.count,
@@ -29,10 +36,12 @@ export default function DailyShiftDemandCell({
     <div
       className="dsd-cell-container"
       onClick={() => handleDemandSelection(scheduleCellData)}
-      style={{
-        "--bg-color": background,
-        "--text-color": text,
-      } as React.CSSProperties}
+      style={
+        {
+          "--bg-color": background,
+          "--text-color": text,
+        } as React.CSSProperties
+      }
     >
       <div className="dsd-cell-stats">
         <span className="dsd-stats dsd-stats-actual">{countActual}</span>

@@ -34,7 +34,7 @@ class AppConfig(BaseSettings):
     )
     redis_url: str = Field(..., description="Redis connection URL")
     result_backend: str = Field(..., description="Redis URL for result backend")
-    task_expiration: int = Field(60, description="Task expiration time in seconds")
+    task_expiration: int = Field(..., description="Task expiration time in seconds")
 
     # pylint: disable=too-few-public-methods
     class Config:

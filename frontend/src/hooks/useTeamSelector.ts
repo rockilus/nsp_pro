@@ -7,9 +7,11 @@ export function useTeamSelector() {
   //   const router = useRouter();
   const [teams, setTeams] = useState<TeamWithMembership[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadTeams = async () => {
+      setLoading(true);
       const fetchedTeams = await getUserTeamsWithMemberships();
       setTeams(fetchedTeams);
 
@@ -22,6 +24,7 @@ export function useTeamSelector() {
       if (fallbackTeamId) {
         setSelectedTeamId(fallbackTeamId);
       }
+      setLoading(false);
     };
 
     loadTeams();
@@ -48,6 +51,6 @@ export function useTeamSelector() {
 
   const selectedTeam = teams.find((t) => t.team.id === selectedTeamId) ?? null;
 
-  return { teams, selectedTeam, setSelectedTeamId };
+  return { teams, selectedTeam, setSelectedTeamId, loading };
   // return { selectedTeam, setSelectedTeamId };
 }

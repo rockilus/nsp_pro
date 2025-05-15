@@ -15,6 +15,10 @@ import Box from "@mui/material/Box";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
+import IconButton from "@mui/material/IconButton";
+import InputAdornment from "@mui/material/InputAdornment";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 // Lib
 import { signInClicked, State } from "../../app/lib/authentication";
 
@@ -39,6 +43,11 @@ export default function SignIn({ lng }: { lng: string }) {
 
   const handleClearPasswordErrors = () => {
     dispatch("CLEAR_PASSWORD_ERROR");
+  };
+
+  const [showPassword, setShowPassword] = React.useState(false);
+  const handleTogglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
   };
 
   return (
@@ -79,11 +88,24 @@ export default function SignIn({ lng }: { lng: string }) {
             fullWidth
             name="password"
             label={t("password")}
-            type="password"
+            type={showPassword ? "text" : "password"}
             id="password"
             autoComplete="current-password"
             helperText={state?.errors?.password?.join(", ")}
             onChange={handleClearPasswordErrors}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={handleTogglePasswordVisibility}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
           <Button
             type="submit"

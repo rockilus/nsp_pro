@@ -32,6 +32,7 @@ export default function ScheduleNavBar({
   handleSendDuplicateRequest,
   updateScheduleViewSettings,
   handleChangeTimeFrame,
+  handleOpenLHS,
 }: {
   lng: string;
   userTeamRole: TeamMembershipRole;
@@ -52,6 +53,7 @@ export default function ScheduleNavBar({
   ) => void;
   updateScheduleViewSettings: (newSettings: ScheduleViewSettingsT) => void;
   handleChangeTimeFrame: (newTimeFrame: "week" | "month") => void;
+  handleOpenLHS: (tabName: string) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -101,6 +103,7 @@ export default function ScheduleNavBar({
             solveStatus={solveStatus}
             handleSolveSchedule={handleSolveSchedule}
             handleValidateSchedule={handleValidateSchedule}
+            handleOpenLHS={handleOpenLHS}
           />
         ) : (
           <div

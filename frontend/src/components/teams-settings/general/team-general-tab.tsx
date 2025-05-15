@@ -93,7 +93,9 @@ export default function TeamGeneralTab({
         <TablesSkeleton numTables={1} numInternalRows={5} />
       ) : (
         <div className="team-general-container">
-          <span className="title">{t("general")}</span>
+          <div>
+            <span className="title">{t("general")}</span>
+          </div>
           {team && teamState ? (
             <div className="team-general-content">
               <UserProfileRow
