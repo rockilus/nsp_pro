@@ -10,3 +10,46 @@
   flex-direction: column;
   width: 100%;
 }
+
+.team-settings-row {
+  display: flex;
+  flex-direction: row;
+  padding: 2px 0;
+}
+
+.team-settings-row-label-container {
+  display: flex;
+  align-items: center;
+  width: 150px;
+}
+
+.team-settings-row-label {
+  color: #3c4043;
+  font-size: 0.9rem;
+}
+
+.team-settings-row-value-container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.team-settings-checkbox-label-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.team-settings-checkbox-label {
+}
+
+.team-settings-checkbox-description {
+  color: #3c4043;
+  font-size: 0.75rem;
+}
+
+.separator {
+  width: 100%;
+  height: 1px;
+  background-color: #0000001f;
+  margin: 10px 0;
+}

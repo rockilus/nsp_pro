@@ -32,5 +32,8 @@
     "team_name": "Team name",
     "team_name_required": "Name can't be empty",
     "teams": "Teams",
+    "use_solver": "Use solver",
+    "use_solver_label": "Use Rockilus algorithm to generate schedules [BETA]",
+    "use_solver_description": "Configure your target work program and your constraints, and let Rockilus' powerful AI algorithm generate a planning for your team.",
     "worker": "Worker"
 }
