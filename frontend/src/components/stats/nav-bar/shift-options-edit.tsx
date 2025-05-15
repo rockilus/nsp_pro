@@ -56,7 +56,7 @@ export default function ShiftOptionsEdit({
                 .includes(searchQuery.toLowerCase())
           );
     },
-    []
+    [t]
   );
 
   const filterOptions = useCallback(

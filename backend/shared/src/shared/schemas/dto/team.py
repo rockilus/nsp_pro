@@ -6,6 +6,7 @@ class TeamDTO(BaseModel):
     name: str
     createdByUserId: str
     createdAt: float
+    useSolver: bool
 
 
 class MembershipForTeamWithMembershipDTO(BaseModel):

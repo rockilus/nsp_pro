@@ -1,10 +1,11 @@
-import React, { ReactElement, useEffect, useState } from "react";
+import React, { ReactElement, useEffect, useState, useCallback } from "react";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import EditIcon from "@mui/icons-material/Edit";
 import IconButton from "@mui/material/IconButton";
 import TextField from "@mui/material/TextField";
+import Checkbox from "@mui/material/Checkbox";
 // Components
 import UserProfileRow from "@/components/settings/profile/user-profile-row";
 // Skeletons
@@ -42,21 +43,32 @@ export default function TeamGeneralTab({
   // Team Actions
   //////////////////////////
 
-  const handleGetTeam = async () => {
+  const handleGetTeam = useCallback(async () => {
     setIsLoading(true);
     const fetchedTeam = await getTeamById(teamId);
     setTeam(fetchedTeam);
     setIsLoading(false);
-  };
+  }, [teamId]);
 
   const handleUpdateTeam = async (updatedTeam: TeamT) => {
     const newTeam = await updateTeamById(teamId, updatedTeam);
     setTeam(newTeam);
   };
 
+  const handleChangeUseSolver = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!teamState) return;
+    const newTeamState = {
+      ...teamState,
+      useSolver: e.target.checked,
+    };
+    setTeamState(newTeamState);
+    handleUpdateTeam(newTeamState);
+  };
+
   const handleEditConfirm = () => {
     if (teamState && team) {
       const userKeys = Object.keys(team);
+
       for (let key of userKeys) {
         if (
           team[key as keyof typeof team] !==
@@ -79,7 +91,7 @@ export default function TeamGeneralTab({
 
   useEffect(() => {
     handleGetTeam();
-  }, []);
+  }, [handleGetTeam]);
 
   useEffect(() => {
     if (team) {
@@ -129,6 +141,35 @@ export default function TeamGeneralTab({
                 handleEditConfirm={handleEditConfirm}
                 handleEditCancel={handleEditCancel}
               />
+              <hr className="separator" />
+              <div className="team-settings-row">
+                <div className="team-settings-row-label-container">
+                  <span className="team-settings-row-label">
+                    {t("use_solver")}
+                  </span>
+                </div>
+                <div className="team-settings-row-value-container">
+                  <Checkbox
+                    id="use-solver-checkbox"
+                    size="small"
+                    checked={teamState.useSolver}
+                    onChange={handleChangeUseSolver}
+                    sx={{ marginTop: "-7px" }}
+                    autoFocus
+                  />
+                  <div className="team-settings-checkbox-label-container">
+                    <label
+                      className="team-settings-checkbox-label"
+                      htmlFor="use-solver-checkbox"
+                    >
+                      {t("use_solver_label")}
+                    </label>
+                    <span className="team-settings-checkbox-description">
+                      {t("use_solver_description")}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           ) : (
             <Box sx={{ padding: 2 }}>{t("no_team_message")}</Box>

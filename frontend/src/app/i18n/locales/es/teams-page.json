@@ -32,5 +32,8 @@
     "team_name": "Nombre del equipo",
     "team_name_required": "El nombre no puede estar vacío",
     "teams": "Equipos",
+    "use_solver": "Usar solucionador",
+    "use_solver_label": "Usar el algoritmo Rockilus para generar horarios [BETA]",
+    "use_solver_description": "Configura tu programa de trabajo objetivo y tus restricciones, y deja que el potente algoritmo de IA de Rockilus genere una planificación para tu equipo.",
     "worker": "Trabajador"
 }

@@ -10,6 +10,7 @@ class TeamSchema(DocumentBaseSchema):
     name: str
     created_by_user_id: str
     created_at: float
+    use_solver: bool
 
     def to_core(self) -> Team:
         return Team(
@@ -17,6 +18,7 @@ class TeamSchema(DocumentBaseSchema):
             name=self.name,
             created_by_user_id=self.created_by_user_id,
             created_at=datetime.fromtimestamp(self.created_at, tz=timezone.utc),
+            use_solver=self.use_solver,
         )
 
     @classmethod
@@ -26,4 +28,5 @@ class TeamSchema(DocumentBaseSchema):
             name=team.name,
             created_by_user_id=team.created_by_user_id,
             created_at=team.created_at.timestamp(),
+            use_solver=team.use_solver,
         )
