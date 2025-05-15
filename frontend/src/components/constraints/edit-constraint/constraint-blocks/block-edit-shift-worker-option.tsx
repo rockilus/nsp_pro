@@ -143,7 +143,7 @@ export default function BlockEditShiftWorkerOption({
                 .includes(searchQuery.toLowerCase())
           );
     },
-    []
+    [swoDisplayString, t]
   );
 
   const filterOptions = useCallback(

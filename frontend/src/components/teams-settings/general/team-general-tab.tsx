@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from "react";
+import React, { ReactElement, useEffect, useState, useCallback } from "react";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
@@ -43,12 +43,12 @@ export default function TeamGeneralTab({
   // Team Actions
   //////////////////////////
 
-  const handleGetTeam = async () => {
+  const handleGetTeam = useCallback(async () => {
     setIsLoading(true);
     const fetchedTeam = await getTeamById(teamId);
     setTeam(fetchedTeam);
     setIsLoading(false);
-  };
+  }, [teamId]);
 
   const handleUpdateTeam = async (updatedTeam: TeamT) => {
     const newTeam = await updateTeamById(teamId, updatedTeam);
@@ -91,7 +91,7 @@ export default function TeamGeneralTab({
 
   useEffect(() => {
     handleGetTeam();
-  }, []);
+  }, [handleGetTeam]);
 
   useEffect(() => {
     if (team) {
@@ -162,12 +162,10 @@ export default function TeamGeneralTab({
                       className="team-settings-checkbox-label"
                       htmlFor="use-solver-checkbox"
                     >
-                      {"Use Rockilus algorithm to generate schedules [BETA]"}
+                      {t("use_solver_label")}
                     </label>
                     <span className="team-settings-checkbox-description">
-                      Configure your target work program and your constraints,
-                      and let Rockilus' powerful AI algorithm generate a
-                      planning for your team.
+                      {t("use_solver_description")}
                     </span>
                   </div>
                 </div>

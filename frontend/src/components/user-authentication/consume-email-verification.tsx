@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "../../app/i18n/client";
 import { usePathname, useRouter } from "next/navigation";
 // MUI
@@ -28,7 +28,7 @@ export default function ConsumeEmailVerification({ lng }: { lng: string }) {
   const [openError, setOpenError] = useState(false);
   const router = useRouter();
 
-  const handleConsumeVerificationEmail = async () => {
+  const handleConsumeVerificationEmail = useCallback(async () => {
     const out = await consumeVerificationCode();
     router.replace(`/${lng}/plan/settings/teams`);
 
@@ -41,7 +41,7 @@ export default function ConsumeEmailVerification({ lng }: { lng: string }) {
     // } else if (out === "error") {
     //   setOpenError(true);
     // }
-  };
+  }, [lng, router]);
 
   useEffect(() => {
     const consumeEmailEffect = async () => {
@@ -55,7 +55,7 @@ export default function ConsumeEmailVerification({ lng }: { lng: string }) {
       setIsLoading(false);
     };
     consumeEmailEffect();
-  }, []);
+  }, [handleConsumeVerificationEmail]);
 
   return (
     <Container component="main" maxWidth="xs">

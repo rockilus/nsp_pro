@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "../../../app/i18n/client";
 // Components
 import MembersList from "./members-list";
@@ -44,7 +44,7 @@ export default function MembersTab({
   // Team Actions
   //////////////////////////
 
-  const handleGetTeamUsersInvitationsAndWorkers = async () => {
+  const handleGetTeamUsersInvitationsAndWorkers = useCallback(async () => {
     setIsLoading(true);
     const users = await getTeamUsersWithMemberships(teamId);
     const workers = await getWorkers(teamId);
@@ -53,7 +53,7 @@ export default function MembersTab({
     setWorkers(workers);
     setInvitations(invitations);
     setIsLoading(false);
-  };
+  }, [teamId]);
 
   const handleRemoveFromTeam = async (teamId: string, userId: string) => {
     const success = await removeUserFromTeam(teamId, userId);
@@ -110,7 +110,7 @@ export default function MembersTab({
 
   useEffect(() => {
     handleGetTeamUsersInvitationsAndWorkers();
-  }, []);
+  }, [handleGetTeamUsersInvitationsAndWorkers]);
 
   return (
     <div className="tab-container-wide">
