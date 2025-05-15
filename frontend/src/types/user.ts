@@ -12,6 +12,7 @@ export type UserT = {
   lastName: string;
   language: string;
   signUpAt: dayjs.Dayjs;
+  impersonatingUserId: string | null;
 };
 
 export type UserAuthT = {

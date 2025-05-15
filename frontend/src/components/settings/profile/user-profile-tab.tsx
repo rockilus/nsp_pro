@@ -72,7 +72,7 @@ export default function UserProfileTab({ lng }: { lng: string }) {
         }
       }
       if (userState.language !== lng) {
-        window.location.href = `/${userState.language}/plan/profile`;
+        window.location.href = `/${userState.language}/plan/settings/profile`;
       }
     }
     setFieldEditing(null);

@@ -10,6 +10,7 @@ class UserDTO(BaseModel):
     email: str
     language: str
     signUpAt: float
+    impersonatingUserId: str | None
 
 
 class UserWithMembershipDTO(BaseModel):
