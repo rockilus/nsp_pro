@@ -33,6 +33,7 @@ class TestTeamRepository:
             name="Test Team",
             created_by_user_id="user123",
             created_at=datetime.now(timezone.utc),
+            use_solver=False,
         )
 
         result = self.repo.create_team(team)
@@ -53,6 +54,7 @@ class TestTeamRepository:
             name="Test Team",
             created_by_user_id="user123",
             created_at=datetime.now(timezone.utc).timestamp(),
+            use_solver=False,
         )
         created = self.repo.create(team)
 
@@ -70,6 +72,7 @@ class TestTeamRepository:
             name="Test Team",
             created_by_user_id="user123",
             created_at=datetime.now(timezone.utc).timestamp(),
+            use_solver=False,
         )
         created = self.repo.create(team)
 
@@ -78,6 +81,7 @@ class TestTeamRepository:
             name="Updated Team",
             created_by_user_id="user456",
             created_at=datetime.fromtimestamp(created.created_at),
+            use_solver=True,
         )
 
         result = self.repo.update_team(updated_team)
@@ -96,6 +100,7 @@ class TestTeamRepository:
             name="Test Team",
             created_by_user_id="user123",
             created_at=datetime.now(timezone.utc).timestamp(),
+            use_solver=False,
         )
         created = self.repo.create(team)
 
@@ -111,12 +116,14 @@ class TestTeamRepository:
                 name="Team 1",
                 created_by_user_id="user1",
                 created_at=datetime.now(timezone.utc).timestamp(),
+                use_solver=False,
             ),
             TeamSchema(
                 id="",
                 name="Team 2",
                 created_by_user_id="user2",
                 created_at=datetime.now(timezone.utc).timestamp(),
+                use_solver=True,
             ),
         ]
         self.repo.create_many(teams)
@@ -132,12 +139,14 @@ class TestTeamRepository:
                 name="Team 1",
                 created_by_user_id="user1",
                 created_at=datetime.now(timezone.utc).timestamp(),
+                use_solver=False,
             ),
             TeamSchema(
                 id="",
                 name="Team 2",
                 created_by_user_id="user2",
                 created_at=datetime.now(timezone.utc).timestamp(),
+                use_solver=True,
             ),
         ]
         created_teams = self.repo.create_many(teams)

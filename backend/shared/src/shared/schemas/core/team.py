@@ -18,6 +18,7 @@ class Team:
     name: str
     created_by_user_id: str
     created_at: datetime
+    use_solver: bool
 
     def to_dto(self) -> TeamDTO:
         data = asdict(self)

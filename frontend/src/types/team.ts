@@ -5,6 +5,7 @@ export type TeamT = {
   name: string;
   createdByUserId: string;
   createdAt: dayjs.Dayjs;
+  useSolver: boolean;
 };
 
 export enum TeamMembershipRole {
