@@ -902,7 +902,7 @@ export default function ScheduleTab({
       content: createAssignmentData ? (
         <CreateAssignment
           lng={lng}
-          teamId={teamWithMembership.team.id}
+          teamWithMembership={teamWithMembership}
           scheduleId={createAssignmentData.scheduleId}
           workerSelectedId={createAssignmentData.workerId}
           shiftSelectedId={createAssignmentData.shiftId}

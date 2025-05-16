@@ -17,12 +17,13 @@ import { ShiftT } from "../../../types/shift";
 import { AssignmentT } from "@/types/assignment";
 import { RecurrenceRuleT } from "@/types/recurrence";
 import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { TeamWithMembership } from "@/types/team";
 
 dayjs.extend(utc);
 
 interface CreateAssignmentProps {
   lng: string;
-  teamId: string;
+  teamWithMembership: TeamWithMembership;
   scheduleId: string | null;
   workerSelectedId: string | null;
   shiftSelectedId: string | null;
@@ -40,7 +41,7 @@ interface CreateAssignmentProps {
 
 const CreateAssignment: React.FC<CreateAssignmentProps> = ({
   lng,
-  teamId,
+  teamWithMembership,
   scheduleId,
   workerSelectedId,
   shiftSelectedId,
@@ -75,7 +76,7 @@ const CreateAssignment: React.FC<CreateAssignmentProps> = ({
       dateSelected ? (
         <CreateDemand
           lng={lng}
-          teamId={teamId}
+          teamId={teamWithMembership.team.id}
           scheduleId={scheduleId}
           shift={shift}
           dateSelected={dateSelected}
@@ -85,24 +86,28 @@ const CreateAssignment: React.FC<CreateAssignmentProps> = ({
         />
       ) : (
         <div>
-          {addDemandActive && scheduleId && shift && dateSelected && (
-            <Button
-              variant="contained"
-              color="info"
-              onClick={handleSetIsCreatingDemand}
-              sx={{
-                height: "20px",
-                width: "130px",
-                fontSize: "0.8rem",
-                textTransform: "none",
-              }}
-            >
-              {t("create_demand")}
-            </Button>
-          )}
+          {teamWithMembership.team.useSolver &&
+            addDemandActive &&
+            scheduleId &&
+            shift &&
+            dateSelected && (
+              <Button
+                variant="contained"
+                color="info"
+                onClick={handleSetIsCreatingDemand}
+                sx={{
+                  height: "20px",
+                  width: "130px",
+                  fontSize: "0.8rem",
+                  textTransform: "none",
+                }}
+              >
+                {t("create_demand")}
+              </Button>
+            )}
           <EditAssignment
             lng={lng}
-            teamId={teamId}
+            teamId={teamWithMembership.team.id}
             scheduleId={scheduleId}
             workerSelectedId={workerSelectedId}
             shiftSelectedId={shiftSelectedId}
