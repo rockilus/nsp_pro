@@ -3,12 +3,15 @@ import React, { useState } from "react";
 import "./lhs-tab.css";
 // Types
 import { LHSTabContentT } from "../../../types/schedule";
+import { TeamWithMembership } from "@/types/team";
 
 const LHSTab = ({
+  teamWithMembership,
   tabContent,
   selectedTab,
   toggleTab,
 }: {
+  teamWithMembership: TeamWithMembership;
   tabContent: LHSTabContentT[];
   selectedTab: string | null;
   toggleTab: (tabName: string) => void;
@@ -25,9 +28,15 @@ const LHSTab = ({
       <div className="main-content">
         <div className={`buttons-container ${selectedTab ? "open" : "closed"}`}>
           {tabContent
-            .filter(
-              (lhsTabContent) => lhsTabContent.name !== "create_assignment"
-            )
+            .filter((lhsTabContent) => {
+              if (
+                ["breaches", "quick_staffing"].includes(lhsTabContent.name) &&
+                teamWithMembership.team.useSolver === false
+              ) {
+                return false;
+              }
+              return lhsTabContent.name !== "create_assignment";
+            })
             .map((lhsTabContent) => (
               <button
                 key={lhsTabContent.name}

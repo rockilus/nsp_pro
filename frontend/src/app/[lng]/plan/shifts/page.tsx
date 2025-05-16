@@ -2,7 +2,7 @@
 
 // Components
 import ShiftTab from "../../../../components/shifts/shift-tab";
-import { RoleBased } from "@/components/role-based/role-based";
+import { RoleBased } from "@/components/access/role-based";
 // Context
 import { useTeam } from "@/context/TeamContext";
 // Styles

@@ -18,8 +18,10 @@ import {
 import { DailyShiftDemandT } from "@/types/daily-shift-demand";
 import { CreateAssignmentT } from "@/types/assignment";
 import { AssignmentT } from "@/types/assignment";
+import { TeamWithMembership } from "@/types/team";
 
 export default function ShiftTableRow({
+  teamWithMembership,
   shift,
   assignments,
   dailyShiftDemands,
@@ -31,6 +33,7 @@ export default function ShiftTableRow({
   handleDemandSelection,
   handleOpenCreateAssignment,
 }: {
+  teamWithMembership: TeamWithMembership;
   shift: ShiftT;
   assignments: AssignmentT[];
   dailyShiftDemands: DailyShiftDemandT[];
@@ -45,6 +48,7 @@ export default function ShiftTableRow({
   return (
     <TableRow>
       <ShiftRowHeaderCell
+        teamWithMembership={teamWithMembership}
         shift={shift}
         assignments={assignments}
         dailyShiftDemands={dailyShiftDemands}

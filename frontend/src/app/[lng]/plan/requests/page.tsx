@@ -8,7 +8,7 @@ import "dayjs/locale/fr";
 import "dayjs/locale/es";
 // Components
 import RequestTab from "../../../../components/request/request-tab";
-import { RoleBased } from "@/components/role-based/role-based";
+import { RoleBased } from "@/components/access/role-based";
 // Context
 import { useTeam } from "@/context/TeamContext";
 import { useUser } from "@/context/UserContext";

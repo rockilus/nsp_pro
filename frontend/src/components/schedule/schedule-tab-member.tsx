@@ -31,19 +31,17 @@ import {
 } from "../../types/schedule";
 import { DailyShiftDemandT } from "@/types/daily-shift-demand";
 import { AssignmentT, CreateAssignmentT } from "@/types/assignment";
-import { TeamMembershipRole } from "@/types/team";
+import { TeamWithMembership } from "@/types/team";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
 
 export default function ScheduleTabMember({
   lng,
-  teamId,
-  userTeamRole,
+  teamWithMembership,
 }: {
   lng: string;
-  teamId: string;
-  userTeamRole: TeamMembershipRole;
+  teamWithMembership: TeamWithMembership;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -202,7 +200,7 @@ export default function ScheduleTabMember({
   //////////////////////////
 
   const handleExportSchedule = async (exportOptions: ExportOptionsT) => {
-    await exportSchedule(teamId, exportOptions);
+    await exportSchedule(teamWithMembership.team.id, exportOptions);
   };
 
   useEffect(() => {
@@ -215,7 +213,7 @@ export default function ScheduleTabMember({
           assignments: fetchedAssignments,
           workers: fetchedWorkers,
           shifts: fetchedShifts,
-        } = await getScheduleAssignmentsDataMember(teamId);
+        } = await getScheduleAssignmentsDataMember(teamWithMembership.team.id);
         setAssignments(fetchedAssignments);
         setWorkers(fetchedWorkers);
         setShifts(fetchedShifts);
@@ -229,7 +227,7 @@ export default function ScheduleTabMember({
     };
 
     fetchData();
-  }, [teamId]);
+  }, [teamWithMembership]);
 
   useEffect(() => {
     setPeriodDates(buildDates(periodStartDate, periodEndDate));
@@ -240,7 +238,7 @@ export default function ScheduleTabMember({
       <div>
         <ScheduleNavBar
           lng={lng}
-          userTeamRole={userTeamRole}
+          teamWithMembership={teamWithMembership}
           currentPeriodStart={periodStartDate}
           currentPeriodEnd={periodEndDate}
           scheduleCampaign={null}
@@ -280,8 +278,7 @@ export default function ScheduleTabMember({
           ) : (
             <ScheduleDisplay
               lng={lng}
-              teamId={teamId}
-              userTeamRole={userTeamRole}
+              teamWithMembership={teamWithMembership}
               scheduleCampaign={null}
               periodDates={periodDates}
               assignments={assignments}

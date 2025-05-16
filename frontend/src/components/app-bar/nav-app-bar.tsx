@@ -45,10 +45,7 @@ const NavAppBar = ({ lng }: { lng: string }) => {
             height={logoHeight}
             priority
           />
-          <NavLinks
-            lng={lng}
-            userTeamRole={selectedTeam?.membership.role || null}
-          />
+          <NavLinks lng={lng} selectedTeam={selectedTeam} />
           <AccountMenu lng={lng} />
         </div>
       </Toolbar>

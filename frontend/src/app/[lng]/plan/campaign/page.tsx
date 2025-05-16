@@ -7,7 +7,9 @@ import "dayjs/locale/fr";
 import "dayjs/locale/es";
 // Components
 import CampaignTab from "../../../../components/campaign/campaign-tab";
-import { RoleBased } from "@/components/role-based/role-based";
+import { RoleBased } from "@/components/access/role-based";
+import { AccessGuard } from "@/components/access/access-guard";
+
 // Context
 import { useTeam } from "@/context/TeamContext";
 // Styles
@@ -25,21 +27,17 @@ export default function Page({
   const { selectedTeam } = useTeam();
 
   return (
-    <RoleBased
-      role={selectedTeam?.membership.role || null}
-      allowedRoles={PageRolePermissions.campaign}
-    >
-      <div className="page-layout">
-        <LocalizationProvider
-          dateAdapter={AdapterDayjs}
-          adapterLocale={lng === "en" ? "en-gb" : lng === "es" ? "es" : "fr"}
-        >
-          <CampaignTab
-            lng={lng}
-            selectedTeamId={selectedTeam?.team.id || null}
-          />
-        </LocalizationProvider>
-      </div>
-    </RoleBased>
+    selectedTeam && (
+      <AccessGuard route="/campaign" teamWithMembership={selectedTeam}>
+        <div className="page-layout">
+          <LocalizationProvider
+            dateAdapter={AdapterDayjs}
+            adapterLocale={lng === "en" ? "en-gb" : lng === "es" ? "es" : "fr"}
+          >
+            <CampaignTab lng={lng} teamWithMembership={selectedTeam} />
+          </LocalizationProvider>
+        </div>
+      </AccessGuard>
+    )
   );
 }

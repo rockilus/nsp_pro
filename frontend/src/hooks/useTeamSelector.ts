@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 // import { useRouter } from "next/navigation";
-import { TeamWithMembership } from "@/types/team";
+import { TeamWithMembership, TeamT } from "@/types/team";
 import { getUserTeamsWithMemberships } from "@/app/lib/team";
 
 export function useTeamSelector() {
@@ -8,6 +8,14 @@ export function useTeamSelector() {
   const [teams, setTeams] = useState<TeamWithMembership[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const updateTeamInContext = (updatedTeam: TeamT) => {
+    setTeams((prevTeams) =>
+      prevTeams.map((t) =>
+        t.team.id === updatedTeam.id ? { ...t, team: updatedTeam } : t
+      )
+    );
+  };
 
   useEffect(() => {
     const loadTeams = async () => {
@@ -51,6 +59,12 @@ export function useTeamSelector() {
 
   const selectedTeam = teams.find((t) => t.team.id === selectedTeamId) ?? null;
 
-  return { teams, selectedTeam, setSelectedTeamId, loading };
+  return {
+    teams,
+    selectedTeam,
+    setSelectedTeamId,
+    loading,
+    updateTeamInContext,
+  };
   // return { selectedTeam, setSelectedTeamId };
 }
