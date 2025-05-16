@@ -1,13 +1,14 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import { TeamWithMembership } from "@/types/team";
+import { TeamWithMembership, TeamT } from "@/types/team";
 
 type TeamContextType = {
   teams: TeamWithMembership[];
   selectedTeam: TeamWithMembership | null;
   setSelectedTeamId: (teamId: string) => void;
   loading: boolean; // Indicates if the team context is loading
+  updateTeamInContext: (team: TeamT) => void;
 };
 
 export const TeamContext = createContext<TeamContextType | undefined>(

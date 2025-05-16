@@ -8,6 +8,8 @@ import TextField from "@mui/material/TextField";
 import Checkbox from "@mui/material/Checkbox";
 // Components
 import UserProfileRow from "@/components/settings/profile/user-profile-row";
+// Context
+import { useTeam } from "@/context/TeamContext";
 // Skeletons
 import TablesSkeleton from "../../skeletons/tables-skeleton";
 // Actions
@@ -22,11 +24,15 @@ import { TeamT } from "@/types/team";
 export default function TeamGeneralTab({
   lng,
   teamId,
+  selectedTeamId,
 }: {
   lng: string;
   teamId: string;
+  selectedTeamId: string | null;
 }) {
   const { t } = useTranslation(lng, "teams-page");
+
+  const { updateTeamInContext } = useTeam();
 
   const [isLoading, setIsLoading] = useState(true);
   const [team, setTeam] = useState<TeamT | null>(null);
@@ -53,6 +59,7 @@ export default function TeamGeneralTab({
   const handleUpdateTeam = async (updatedTeam: TeamT) => {
     const newTeam = await updateTeamById(teamId, updatedTeam);
     setTeam(newTeam);
+    updateTeamInContext(newTeam);
   };
 
   const handleChangeUseSolver = (e: React.ChangeEvent<HTMLInputElement>) => {

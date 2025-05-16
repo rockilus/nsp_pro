@@ -14,11 +14,11 @@ import {
   DuplicateRequestT,
   ScheduleViewSettingsT,
 } from "../../../types/schedule";
-import { TeamMembershipRole } from "../../../types/team";
+import { TeamMembershipRole, TeamWithMembership } from "../../../types/team";
 
 export default function ScheduleNavBar({
   lng,
-  userTeamRole,
+  teamWithMembership,
   currentPeriodStart,
   currentPeriodEnd,
   scheduleCampaign,
@@ -35,7 +35,7 @@ export default function ScheduleNavBar({
   handleOpenLHS,
 }: {
   lng: string;
-  userTeamRole: TeamMembershipRole;
+  teamWithMembership: TeamWithMembership;
   currentPeriodStart: dayjs.Dayjs;
   currentPeriodEnd: dayjs.Dayjs;
   scheduleCampaign: ScheduleT | null;
@@ -86,7 +86,7 @@ export default function ScheduleNavBar({
       />
       <ScheduleSettings
         lng={lng}
-        userTeamRole={userTeamRole}
+        teamWithMembership={teamWithMembership}
         campaign={scheduleCampaign}
         startDate={currentPeriodStart}
         endDate={currentPeriodEnd}
@@ -95,10 +95,11 @@ export default function ScheduleNavBar({
         updateScheduleViewSettings={updateScheduleViewSettings}
         handleChangeTimeFrame={handleChangeTimeFrame}
       />
-      {userTeamRole === TeamMembershipRole.OWNER &&
+      {teamWithMembership.membership.role === TeamMembershipRole.OWNER &&
         (scheduleCampaign ? (
           <CampaignInfo
             lng={lng}
+            teamWithMembership={teamWithMembership}
             scheduleCampaign={scheduleCampaign}
             solveStatus={solveStatus}
             handleSolveSchedule={handleSolveSchedule}

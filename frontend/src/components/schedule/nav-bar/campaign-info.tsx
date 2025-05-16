@@ -2,23 +2,20 @@ import React, { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
-import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
-import CircularProgress from "@mui/material/CircularProgress";
 // Components
 import ScheduleDialogValidate from "../schedule-options/schedule-dialog-validate";
 import { GetStatusLabel } from "../../data-display/get-status-label";
 // Types
 import { ScheduleT, SolveDetailsStatus } from "../../../types/schedule";
 //Constants
-import {
-  SolveStatusList,
-  SolveStatusColors,
-} from "../../../constants/constants";
+import { SolveStatusColors } from "../../../constants/constants";
+import { TeamWithMembership } from "@/types/team";
 
 export default function CampaignInfo({
   lng,
+  teamWithMembership,
   scheduleCampaign,
   solveStatus,
   handleSolveSchedule,
@@ -26,6 +23,7 @@ export default function CampaignInfo({
   handleOpenLHS,
 }: {
   lng: string;
+  teamWithMembership: TeamWithMembership;
   scheduleCampaign: ScheduleT;
   solveStatus: SolveDetailsStatus | null | "error";
   handleSolveSchedule: (scheduleId: string) => void;
@@ -108,7 +106,7 @@ export default function CampaignInfo({
             fontSize: "0.8rem",
           }}
         >
-          Campaign:
+          {`${t("campaign")}:`}
         </span>
         <span
           style={{
@@ -125,41 +123,45 @@ export default function CampaignInfo({
           )}
         </span>
       </div>
-      <Chip
-        label={GetStatusLabel(lng, scheduleCampaign.solveStatus)}
-        onClick={() => handleOpenLHS("breaches")}
-        color={
-          (SolveStatusColors[scheduleCampaign.solveStatus] as
-            | "default"
-            | "success"
-            | "error"
-            | "warning") || "default"
-        }
-        sx={{
-          height: "35px",
-          width: "120px",
-          fontSize: "0.9rem",
-          marginLeft: spaceBetween,
-          fontWeight: 550,
-        }}
-      />
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleSolve}
-        disabled={isSolving}
-        sx={{
-          textTransform: "none",
-          paddingLeft: 0.2,
-          paddingRight: 0.2,
-          marginLeft: spaceBetween,
-          marginRight: spaceBetween,
-          height: "35px",
-          width: "65px",
-        }}
-      >
-        {isSolving ? animatedSolve : t("solve")}
-      </Button>
+      {teamWithMembership.team.useSolver && (
+        <>
+          <Chip
+            label={GetStatusLabel(lng, scheduleCampaign.solveStatus)}
+            onClick={() => handleOpenLHS("breaches")}
+            color={
+              (SolveStatusColors[scheduleCampaign.solveStatus] as
+                | "default"
+                | "success"
+                | "error"
+                | "warning") || "default"
+            }
+            sx={{
+              height: "35px",
+              width: "120px",
+              fontSize: "0.9rem",
+              marginLeft: spaceBetween,
+              fontWeight: 550,
+            }}
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSolve}
+            disabled={isSolving}
+            sx={{
+              textTransform: "none",
+              paddingLeft: 0.2,
+              paddingRight: 0.2,
+              marginLeft: spaceBetween,
+              marginRight: spaceBetween,
+              height: "35px",
+              width: "65px",
+            }}
+          >
+            {isSolving ? animatedSolve : t("solve")}
+          </Button>
+        </>
+      )}
       <ScheduleDialogValidate
         lng={lng}
         scheduleCampaign={scheduleCampaign}

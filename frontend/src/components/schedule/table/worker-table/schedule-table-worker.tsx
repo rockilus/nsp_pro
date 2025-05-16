@@ -28,12 +28,11 @@ import { AssignmentT } from "@/types/assignment";
 import { RequestT } from "../../../../types/request";
 import { AttributeOwnerType } from "../../../../types/attribute";
 import { RecurrenceRuleT } from "@/types/recurrence";
-import { TeamMembershipRole } from "@/types/team";
+import { TeamMembershipRole, TeamWithMembership } from "@/types/team";
 
 export default function ScheduleTableWorker({
   lng,
-  teamId,
-  userTeamRole,
+  teamWithMembership,
   shifts,
   workers,
   requests,
@@ -51,8 +50,7 @@ export default function ScheduleTableWorker({
   handleOpenCreateAssignment,
 }: {
   lng: string;
-  teamId: string;
-  userTeamRole: TeamMembershipRole;
+  teamWithMembership: TeamWithMembership;
   shifts: ShiftT[];
   workers: WorkerT[];
   requests: RequestT[];
@@ -106,20 +104,21 @@ export default function ScheduleTableWorker({
             scheduleCampaign={scheduleCampaign}
             handleExportSchedule={handleExportSchedule}
           />
-          {userTeamRole === TeamMembershipRole.OWNER && (
-            <DailyShiftDemandRow
-              lng={lng}
-              teamId={teamId}
-              shifts={shifts}
-              assignments={assignments}
-              dailyShiftDemands={dailyShiftDemands}
-              scheduleCampaign={scheduleCampaign}
-              periodDates={periodDates}
-              scheduleViewSettings={scheduleViewSettings}
-              handleCreateDSD={handleCreateDSD}
-              handleUpdateDSD={handleUpdateDSD}
-            />
-          )}
+          {teamWithMembership.membership.role === TeamMembershipRole.OWNER &&
+            teamWithMembership.team.useSolver && (
+              <DailyShiftDemandRow
+                lng={lng}
+                teamId={teamWithMembership.team.id}
+                shifts={shifts}
+                assignments={assignments}
+                dailyShiftDemands={dailyShiftDemands}
+                scheduleCampaign={scheduleCampaign}
+                periodDates={periodDates}
+                scheduleViewSettings={scheduleViewSettings}
+                handleCreateDSD={handleCreateDSD}
+                handleUpdateDSD={handleUpdateDSD}
+              />
+            )}
         </TableHead>
         <TableBody>
           {workersForHeader.map((worker, workerIndex) => (

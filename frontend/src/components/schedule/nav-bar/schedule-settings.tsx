@@ -29,11 +29,11 @@ import {
   ScheduleViewSettingsT,
 } from "../../../types/schedule";
 import { OccurrenceType } from "@/types/recurrence";
-import { TeamMembershipRole } from "../../../types/team";
+import { TeamMembershipRole, TeamWithMembership } from "../../../types/team";
 
 interface ScheduleSettingsProps {
   lng: string;
-  userTeamRole: TeamMembershipRole;
+  teamWithMembership: TeamWithMembership;
   campaign: ScheduleT | null;
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
@@ -49,7 +49,7 @@ interface ScheduleSettingsProps {
 
 const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
   lng,
-  userTeamRole,
+  teamWithMembership,
   campaign,
   startDate,
   endDate,
@@ -71,7 +71,9 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
   const [occurrenceType, setOccurrenceType] = useState<OccurrenceType>(
     OccurrenceType.ASSIGNMENT
   );
-  const [copyAssignments, setCopyAssignments] = useState(false);
+  const [copyAssignments, setCopyAssignments] = useState(
+    !teamWithMembership.team.useSolver
+  );
   const [copyDemands, setCopyDemands] = useState(false);
   const [copyAssignmentsError, setCopyAssignmentsError] = useState(false);
   const [copyDemandsError, setCopyDemandsError] = useState(false);
@@ -180,14 +182,14 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
         <div style={{ padding: "16px", minWidth: "300px" }}>
           <ScheduleSettingsView
             lng={lng}
-            userTeamRole={userTeamRole}
+            teamWithMembership={teamWithMembership}
             scheduleViewSettings={scheduleViewSettings}
             updateScheduleViewSettings={updateScheduleViewSettings}
             handleChangeTimeFrame={handleChangeTimeFrame}
           />
 
           {/* Tools Section */}
-          {userTeamRole === TeamMembershipRole.OWNER && (
+          {teamWithMembership.membership.role === TeamMembershipRole.OWNER && (
             <div>
               <h4
                 className="subtitle settings-view-title"
@@ -238,44 +240,49 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
               ))}
             </Select>
           </FormControl>
-          <FormControlLabel
-            control={
-              <Checkbox
-                size="small"
-                checked={copyAssignments}
-                onChange={(e) => setCopyAssignments(e.target.checked)}
+          {teamWithMembership.team.useSolver && (
+            <>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    size="small"
+                    checked={copyAssignments}
+                    onChange={(e) => setCopyAssignments(e.target.checked)}
+                  />
+                }
+                label={
+                  <span
+                    style={{
+                      fontSize: "0.875rem",
+                      color: copyAssignmentsError ? "red" : "inherit",
+                    }}
+                  >
+                    {t("assignment")}
+                  </span>
+                }
               />
-            }
-            label={
-              <span
-                style={{
-                  fontSize: "0.875rem",
-                  color: copyAssignmentsError ? "red" : "inherit",
-                }}
-              >
-                {t("assignment")}
-              </span>
-            }
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                size="small"
-                checked={copyDemands}
-                onChange={(e) => setCopyDemands(e.target.checked)}
+
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    size="small"
+                    checked={copyDemands}
+                    onChange={(e) => setCopyDemands(e.target.checked)}
+                  />
+                }
+                label={
+                  <span
+                    style={{
+                      fontSize: "0.875rem",
+                      color: copyDemandsError ? "red" : "inherit",
+                    }}
+                  >
+                    {t("demand")}
+                  </span>
+                }
               />
-            }
-            label={
-              <span
-                style={{
-                  fontSize: "0.875rem",
-                  color: copyDemandsError ? "red" : "inherit",
-                }}
-              >
-                {t("demand")}
-              </span>
-            }
-          />
+            </>
+          )}
         </DialogContent>
         <DialogActions>
           <Button

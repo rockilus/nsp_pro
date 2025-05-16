@@ -318,6 +318,34 @@ export async function getScheduleAssignmentsData(teamId: string): Promise<{
   }
 }
 
+export async function getScheduleAssignmentsDataNoSolver(
+  teamId: string
+): Promise<{
+  assignments: AssignmentT[];
+  recurrences: RecurrenceRuleT[];
+  shifts: ShiftT[];
+  workers: WorkerT[];
+}> {
+  try {
+    const campaignTabData = await Promise.all([
+      getAssignmentsByDates(teamId),
+      getAllShifts(teamId),
+      getAllWorkers(teamId),
+    ]);
+    return {
+      assignments: campaignTabData[0].assignmentsRead,
+      recurrences: campaignTabData[0].recurrencesRead,
+      shifts: campaignTabData[1],
+      workers: campaignTabData[2],
+    };
+  } catch (error) {
+    console.error("Failed to fetch schedule assignments data:", error);
+    throw new Error(
+      "Failed to fetch schedule assignments data, please try again later"
+    );
+  }
+}
+
 export async function getScheduleAssignmentsDataMember(
   teamId: string
 ): Promise<{

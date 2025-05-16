@@ -7,7 +7,7 @@ import "dayjs/locale/fr";
 import "dayjs/locale/es";
 // Components
 import WorkerTab from "../../../../components/workers/worker-tab";
-import { RoleBased } from "@/components/role-based/role-based";
+import { RoleBased } from "@/components/access/role-based";
 // Context
 import { useTeam } from "@/context/TeamContext";
 // Styles

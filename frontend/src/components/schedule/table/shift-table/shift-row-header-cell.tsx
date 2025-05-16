@@ -12,13 +12,16 @@ import { DailyShiftDemandT } from "@/types/daily-shift-demand";
 import { AssignmentT } from "@/types/assignment";
 // Constants
 import { ShiftColorMappings } from "../../../../constants/constants";
+import { TeamWithMembership } from "@/types/team";
 
 export default function ShiftRowHeaderCell({
+  teamWithMembership,
   shift,
   assignments,
   dailyShiftDemands,
   scheduleCampaign: scheduleCampaign,
 }: {
+  teamWithMembership: TeamWithMembership;
   shift: ShiftT;
   assignments: AssignmentT[];
   dailyShiftDemands: DailyShiftDemandT[];
@@ -60,7 +63,7 @@ export default function ShiftRowHeaderCell({
         ></div>
         <div className="shift-row-header-cell-left">
           <span className="shift-name">{`${shift.name} (${shift.acronym})`}</span>
-          {scheduleCampaign && (
+          {teamWithMembership.team.useSolver && scheduleCampaign && (
             <span
               className={`shift-stats-total ${
                 shiftCountActual !== shiftCountTarget && "breach"

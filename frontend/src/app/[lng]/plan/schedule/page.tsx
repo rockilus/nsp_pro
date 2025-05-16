@@ -8,7 +8,7 @@ import "dayjs/locale/es";
 // Components
 import ScheduleTab from "../../../../components/schedule/schedule-tab";
 import ScheduleTabMember from "@/components/schedule/schedule-tab-member";
-import { RoleBased } from "@/components/role-based/role-based";
+import { RoleBased } from "@/components/access/role-based";
 // Context
 import { useTeam } from "@/context/TeamContext";
 import { useUser } from "@/context/UserContext";
@@ -41,17 +41,9 @@ export default function Page({
             adapterLocale={lng === "en" ? "en-gb" : lng === "es" ? "es" : "fr"}
           >
             {selectedTeam.membership.role === TeamMembershipRole.OWNER ? (
-              <ScheduleTab
-                lng={lng}
-                teamId={selectedTeam.team.id}
-                userTeamRole={selectedTeam.membership.role}
-              />
+              <ScheduleTab lng={lng} teamWithMembership={selectedTeam} />
             ) : (
-              <ScheduleTabMember
-                lng={lng}
-                teamId={selectedTeam.team.id}
-                userTeamRole={selectedTeam.membership.role}
-              />
+              <ScheduleTabMember lng={lng} teamWithMembership={selectedTeam} />
             )}
           </LocalizationProvider>
         </div>

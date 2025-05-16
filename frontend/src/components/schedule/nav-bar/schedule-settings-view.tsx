@@ -13,11 +13,11 @@ import "./schedule-settings-view.css";
 import "../../../styles/text-styles.css";
 // Types
 import { ScheduleViewSettingsT } from "../../../types/schedule";
-import { TeamMembershipRole } from "../../../types/team";
+import { TeamMembershipRole, TeamWithMembership } from "../../../types/team";
 
 interface ScheduleSettingsViewProps {
   lng: string;
-  userTeamRole: TeamMembershipRole;
+  teamWithMembership: TeamWithMembership;
   scheduleViewSettings: ScheduleViewSettingsT;
   updateScheduleViewSettings: (newSettings: ScheduleViewSettingsT) => void;
   handleChangeTimeFrame: (newTimeFrame: "week" | "month") => void;
@@ -25,7 +25,7 @@ interface ScheduleSettingsViewProps {
 
 const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
   lng,
-  userTeamRole,
+  teamWithMembership,
   scheduleViewSettings,
   updateScheduleViewSettings,
   handleChangeTimeFrame,
@@ -158,7 +158,7 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
           </ToggleButton>
         </ToggleButtonGroup>
       </div>
-      {userTeamRole === TeamMembershipRole.OWNER && (
+      {teamWithMembership.membership.role === TeamMembershipRole.OWNER && (
         <FormGroup>
           <FormControlLabel
             control={
@@ -174,18 +174,20 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
               </span>
             }
           />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={scheduleViewSettings.showDailyShiftDemands}
-                onChange={handleShowDailyShiftDemandsToggle}
-                size="small"
-              />
-            }
-            label={
-              <span className="settings-view-line-label">{t("demand")}</span>
-            }
-          />
+          {teamWithMembership.team.useSolver && (
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={scheduleViewSettings.showDailyShiftDemands}
+                  onChange={handleShowDailyShiftDemandsToggle}
+                  size="small"
+                />
+              }
+              label={
+                <span className="settings-view-line-label">{t("demand")}</span>
+              }
+            />
+          )}
           <FormControlLabel
             control={
               <Checkbox

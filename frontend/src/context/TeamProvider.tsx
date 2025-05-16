@@ -12,7 +12,13 @@ export function TeamProvider({
   children: React.ReactNode;
   fallback?: React.ReactNode;
 }) {
-  const { teams, selectedTeam, setSelectedTeamId, loading } = useTeamSelector();
+  const {
+    teams,
+    selectedTeam,
+    setSelectedTeamId,
+    loading,
+    updateTeamInContext,
+  } = useTeamSelector();
   const pathname = usePathname();
   const isTeamsPage = pathname.endsWith("/plan/settings/teams");
   const isProfilePage = pathname.endsWith("/plan/settings/profile");
@@ -26,7 +32,13 @@ export function TeamProvider({
 
   return (
     <TeamContext.Provider
-      value={{ teams, selectedTeam, setSelectedTeamId, loading }}
+      value={{
+        teams,
+        selectedTeam,
+        setSelectedTeamId,
+        loading,
+        updateTeamInContext,
+      }}
     >
       {children}
     </TeamContext.Provider>

@@ -180,3 +180,25 @@ export async function getCampaignTabData(teamId: string) {
     );
   }
 }
+
+export async function getCampaignTabDataNoSolver(teamId: string) {
+  try {
+    const schedules = await getSchedules(teamId);
+    const scheduleCampaign =
+      schedules.find(
+        (schedule) => schedule.status === ScheduleStatus.CAMPAIGN
+      ) || null;
+    const schedulesValidated = schedules.filter(
+      (schedule) => schedule.status === ScheduleStatus.VALIDATED
+    );
+    return {
+      scheduleCampaign: scheduleCampaign,
+      schedulesValidated: schedulesValidated,
+    };
+  } catch (error) {
+    console.error("Failed to fetch campaign tab data:", error);
+    throw new Error(
+      "Failed to fetch campaign tab data, please try again later"
+    );
+  }
+}
