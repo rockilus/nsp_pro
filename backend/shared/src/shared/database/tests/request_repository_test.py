@@ -49,6 +49,7 @@ class TestRequestRepository:
             request_type=RequestType.WORK_DEMAND,
             fulfillment=FulfillmentStatus.NOT_PROCESSED,
             comment="test comment",
+            created_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
         )
 
         result = self.repo.create_request(request)
@@ -76,6 +77,7 @@ class TestRequestRepository:
             request_type=RequestType.WORK_DEMAND.value,
             fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
             comment="test comment",
+            created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
         )
         created = self.repo.create(request)
 
@@ -99,6 +101,7 @@ class TestRequestRepository:
             request_type=RequestType.WORK_DEMAND.value,
             fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
             comment="test comment",
+            created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
         )
         created = self.repo.create(request)
 
@@ -115,6 +118,7 @@ class TestRequestRepository:
             request_type=RequestType.WORK_DEMAND,
             fulfillment=FulfillmentStatus.FULFILLED,
             comment="updated comment",
+            created_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
         )
 
         result = self.repo.update_request(updated_request)
@@ -141,6 +145,7 @@ class TestRequestRepository:
             request_type=RequestType.WORK_DEMAND.value,
             fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
             comment="test comment",
+            created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
         )
         created = self.repo.create(request)
 
@@ -163,6 +168,7 @@ class TestRequestRepository:
                 request_type=RequestType.WORK_DEMAND.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="test comment",
+                created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
             ),
             RequestSchema(
                 team="team1",
@@ -176,6 +182,7 @@ class TestRequestRepository:
                 request_type=RequestType.WORK_DEMAND.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="test comment",
+                created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
             ),
         ]
         self.repo.create_many(requests)
@@ -198,6 +205,7 @@ class TestRequestRepository:
                 request_type=RequestType.WORK_DEMAND.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="test comment",
+                created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
             ),
             RequestSchema(
                 team="team1",
@@ -211,6 +219,7 @@ class TestRequestRepository:
                 request_type=RequestType.WORK_DEMAND.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="test comment",
+                created_at=datetime(2023, 1, 3, tzinfo=timezone.utc).timestamp(),
             ),
         ]
         self.repo.create_many(requests)
@@ -237,6 +246,7 @@ class TestRequestRepository:
                 request_type=RequestType.WORK_DEMAND.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="test comment",
+                created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
             ),
             RequestSchema(
                 team="team1",
@@ -250,6 +260,7 @@ class TestRequestRepository:
                 request_type=RequestType.WORK_DEMAND.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="test comment",
+                created_at=datetime(2023, 1, 3, tzinfo=timezone.utc).timestamp(),
             ),
         ]
         created_requests = self.repo.create_many(requests)
@@ -268,6 +279,7 @@ class TestRequestRepository:
                 request_type=RequestType.WORK_DEMAND,
                 fulfillment=FulfillmentStatus.FULFILLED,
                 comment="updated comment",
+                created_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
             ),
             Request(
                 id=created_requests[1].id,
@@ -282,6 +294,7 @@ class TestRequestRepository:
                 request_type=RequestType.WORK_DEMAND,
                 fulfillment=FulfillmentStatus.FULFILLED,
                 comment="updated comment",
+                created_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
             ),
         ]
 
@@ -310,6 +323,7 @@ class TestRequestRepository:
                 request_type=RequestType.WORK_DEMAND.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="test comment",
+                created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
             ),
             RequestSchema(
                 team="team1",
@@ -323,6 +337,7 @@ class TestRequestRepository:
                 request_type=RequestType.WORK_DEMAND.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="test comment",
+                created_at=datetime(2023, 1, 3, tzinfo=timezone.utc).timestamp(),
             ),
         ]
         self.repo.create_many(requests)
@@ -346,6 +361,7 @@ class TestRequestRepository:
                 request_type=RequestType.WORK_DEMAND.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="test comment",
+                created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
             ),
             RequestSchema(
                 team="team1",
@@ -359,6 +375,7 @@ class TestRequestRepository:
                 request_type=RequestType.WORK_DEMAND.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="test comment",
+                created_at=datetime(2023, 1, 3, tzinfo=timezone.utc).timestamp(),
             ),
         ]
         self.repo.create_many(requests)

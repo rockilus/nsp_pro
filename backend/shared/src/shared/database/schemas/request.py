@@ -24,7 +24,8 @@ class RequestSchema(DocumentBaseSchema):
     hard: bool
     status: str
     fulfillment: str
-    comment: str = ""
+    comment: str
+    created_at: float
 
     @field_validator("status")
     @classmethod
@@ -48,6 +49,7 @@ class RequestSchema(DocumentBaseSchema):
             status=RequestStatus(self.status),
             fulfillment=FulfillmentStatus(self.fulfillment),
             comment=self.comment,
+            created_at=datetime.fromtimestamp(self.created_at, tz=timezone.utc),
         )
 
     @classmethod
@@ -69,4 +71,5 @@ class RequestSchema(DocumentBaseSchema):
             status=request.status.value,
             fulfillment=request.fulfillment.value,
             comment=request.comment,
+            created_at=request.created_at.timestamp(),
         )

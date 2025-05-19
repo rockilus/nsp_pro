@@ -20,5 +20,6 @@ def r_to_r_augmented(
         status=request.status,
         fulfillment=request.fulfillment,
         comment=request.comment,
+        created_at=request.created_at,
         active=active,
     )

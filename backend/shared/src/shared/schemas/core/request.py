@@ -48,6 +48,7 @@ class Request:
     status: RequestStatus
     fulfillment: FulfillmentStatus
     comment: str
+    created_at: datetime
 
     def to_dict(self) -> Dict:
         out = asdict(self)
@@ -60,6 +61,7 @@ class Request:
         ).timestamp()
         out["status"] = self.status.value
         out["fulfillment"] = self.fulfillment.value
+        out["created_at"] = self.created_at.timestamp()
         return out
 
     @classmethod
@@ -79,11 +81,13 @@ class Request:
             status=RequestStatus(data["status"]),
             fulfillment=FulfillmentStatus(data["fulfillment"]),
             comment=data.get("comment", ""),
+            created_at=datetime.fromtimestamp(data["created_at"], tz=timezone.utc),
         )
 
     @classmethod
     def from_dto(cls, data: RequestDTO) -> "Request":
         data_snake = humps.decamelize(data.model_dump())
+        data_snake["request_type"] = RequestType(data_snake["request_type"])
         data_snake["start_date"] = datetime.fromtimestamp(
             data_snake["start_date"], timezone.utc
         ).date()
@@ -91,6 +95,10 @@ class Request:
             data_snake["end_date"], timezone.utc
         ).date()
         data_snake["status"] = RequestStatus(data_snake["status"])
+        data_snake["fulfillment"] = FulfillmentStatus(data_snake["fulfillment"])
+        data_snake["created_at"] = datetime.fromtimestamp(
+            data_snake["created_at"], timezone.utc
+        )
         data_snake.pop("active", None)
         return cls(**data_snake)
 
@@ -121,6 +129,7 @@ class RequestAugmented(Request):
             status=RequestStatus(data["status"]),
             fulfillment=FulfillmentStatus(data["fulfillment"]),
             comment=data.get("comment", ""),
+            created_at=datetime.fromtimestamp(data["created_at"], tz=timezone.utc),
             active=data["active"],
         )
 
@@ -135,6 +144,7 @@ class RequestAugmented(Request):
         ).timestamp()
         data["status"] = self.status.value
         data["fulfillment"] = self.fulfillment.value
+        data["created_at"] = self.created_at.timestamp()
         as_dict = humps.camelize(data)
         validator = TypeAdapter(RequestDTO)
         return validator.validate_python(as_dict)

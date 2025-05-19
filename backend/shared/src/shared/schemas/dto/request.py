@@ -13,5 +13,6 @@ class RequestDTO(BaseModel):
     hard: bool
     status: str
     fulfillment: str
-    comment: str = ""
+    comment: str
+    createdAt: float
     active: bool

@@ -18,7 +18,12 @@ import {
 import "../../styles/tab-container-styles.css";
 import "../../styles/text-styles.css";
 // Types
-import { RequestT, RequestStatus } from "../../types/request";
+import {
+  RequestT,
+  RequestStatus,
+  RequestType,
+  FulfillmentStatus,
+} from "../../types/request";
 import { ShiftT } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
 import { TeamMembershipRole } from "@/types/team";
@@ -102,6 +107,7 @@ export default function RequestTab({
               request={{
                 id: "",
                 teamId: teamId,
+                requestType: RequestType.WORK_DEMAND,
                 workerId: userWorker?.id || "",
                 startDate: dayjs.utc().startOf("day"),
                 endDate: dayjs.utc().startOf("day"),
@@ -109,6 +115,9 @@ export default function RequestTab({
                 negative: false,
                 hard: true,
                 status: RequestStatus.PENDING,
+                fulfillmentStatus: FulfillmentStatus.NOT_PROCESSED,
+                comment: "",
+                createdAt: dayjs.utc(),
                 active: true,
               }}
               workers={workers.filter((w) => !w.deleted)}

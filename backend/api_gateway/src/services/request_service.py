@@ -1,6 +1,12 @@
+from datetime import datetime, timezone
 from typing import List
 
-from shared.schemas.core import Request, RequestAugmented, Shift, Worker
+from shared.schemas.core import (
+    Request,
+    RequestAugmented,
+    Shift,
+    Worker,
+)
 
 from src.services.base_service import BaseService
 
@@ -18,6 +24,7 @@ class RequestService(BaseService):
             raise ValueError(
                 "You are not allowed to create a request for another worker"
             )
+        request.created_at = datetime.now(tz=timezone.utc)
         new_request = self.collection.request_db.create_request(request)
         worker = self.collection.worker_db.get_worker_by_id(new_request.worker_id)
         shift = self.collection.shift_db.get_shift_by_id(new_request.shift_id)
@@ -63,6 +70,7 @@ class RequestService(BaseService):
             raise ValueError(
                 "You are not allowed to create a request for another worker"
             )
+        request.created_at = old_request.created_at
         new_request = self.collection.request_db.update_request(request)
         worker = self.collection.worker_db.get_worker_by_id(new_request.worker_id)
         shift = self.collection.shift_db.get_shift_by_id(new_request.shift_id)
@@ -114,6 +122,7 @@ class RequestService(BaseService):
         return RequestAugmented(
             id=request.id,
             team_id=request.team_id,
+            request_type=request.request_type,
             worker_id=request.worker_id,
             start_date=request.start_date,
             end_date=request.end_date,
@@ -121,5 +130,8 @@ class RequestService(BaseService):
             negative=request.negative,
             hard=request.hard,
             status=request.status,
+            fulfillment=request.fulfillment,
+            comment=request.comment,
+            created_at=request.created_at,
             active=active,
         )
