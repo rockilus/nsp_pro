@@ -1,5 +1,5 @@
 import random
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Callable, List, Tuple
 
 import pytest
@@ -8,8 +8,10 @@ from shared.schemas.core import (
     DailyShiftDemand,
     DSDSourceType,
     EngineInputsAugmented,
+    FulfillmentStatus,
     Request,
     RequestStatus,
+    RequestType,
     Schedule,
     Shift,
     ShiftLeaveType,
@@ -60,6 +62,10 @@ class TestRequest:
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING,
+                request_type=RequestType.WORK_DEMAND,
+                fulfillment=FulfillmentStatus.NOT_PROCESSED,
+                comment="",
+                created_at=datetime.now(tz=timezone.utc),
             )
         ]
 
@@ -104,6 +110,10 @@ class TestRequest:
                 negative=False,
                 hard=False,
                 status=RequestStatus.PENDING,
+                request_type=RequestType.WORK_DEMAND,
+                fulfillment=FulfillmentStatus.NOT_PROCESSED,
+                comment="",
+                created_at=datetime.now(tz=timezone.utc),
             )
         ]
 
@@ -148,6 +158,10 @@ class TestRequest:
                 negative=True,
                 hard=True,
                 status=RequestStatus.PENDING,
+                request_type=RequestType.WORK_DEMAND,
+                fulfillment=FulfillmentStatus.NOT_PROCESSED,
+                comment="",
+                created_at=datetime.now(tz=timezone.utc),
             )
         ]
 
@@ -228,6 +242,10 @@ class TestRequest:
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING,
+                request_type=RequestType.WORK_DEMAND,
+                fulfillment=FulfillmentStatus.NOT_PROCESSED,
+                comment="",
+                created_at=datetime.now(tz=timezone.utc),
             )
         ]
 
@@ -306,6 +324,10 @@ class TestRequest:
             negative=False,
             hard=True,
             status=RequestStatus.PENDING,
+            request_type=RequestType.WORK_DEMAND,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED,
+            comment="",
+            created_at=datetime.now(tz=timezone.utc),
         )
         request_soft = Request(
             id="req_soft",
@@ -317,6 +339,10 @@ class TestRequest:
             negative=True,
             hard=False,
             status=RequestStatus.PENDING,
+            request_type=RequestType.WORK_DEMAND,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED,
+            comment="",
+            created_at=datetime.now(tz=timezone.utc),
         )
         engine_inputs.requests = [request_hard, request_soft]
 
@@ -399,6 +425,10 @@ class TestRequest:
             negative=False,
             hard=True,
             status=RequestStatus.PENDING,
+            request_type=RequestType.WORK_DEMAND,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED,
+            comment="",
+            created_at=datetime.now(tz=timezone.utc),
         )
         request_hard_2 = Request(
             id="req_hard_2",
@@ -410,6 +440,10 @@ class TestRequest:
             negative=True,
             hard=True,
             status=RequestStatus.PENDING,
+            request_type=RequestType.WORK_DEMAND,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED,
+            comment="",
+            created_at=datetime.now(tz=timezone.utc),
         )
         engine_inputs.requests = [request_hard_1, request_hard_2]
 

@@ -1,5 +1,5 @@
 from copy import deepcopy
-from datetime import date
+from datetime import date, datetime, timezone
 from typing import Callable, Tuple
 
 from shared.schemas.core import (
@@ -14,6 +14,7 @@ from shared.schemas.core import (
     Request,
     RequestStatus,
 )
+from shared.schemas.core.request import FulfillmentStatus, RequestType
 
 from engine import Inputs as InputsEngine
 from engine import Outputs, ProcessingCache
@@ -49,6 +50,10 @@ class TestConstraintOrd:
             negative=False,
             hard=True,
             status=RequestStatus.PENDING,
+            request_type=RequestType.WORK_DEMAND,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED,
+            comment="",
+            created_at=datetime.now(tz=timezone.utc),
         )
         engine_inputs.requests = [request]
 
@@ -129,6 +134,10 @@ class TestConstraintOrd:
             negative=False,
             hard=True,
             status=RequestStatus.PENDING,
+            request_type=RequestType.WORK_DEMAND,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED,
+            comment="",
+            created_at=datetime.now(tz=timezone.utc),
         )
         engine_inputs.requests = [request]
 
@@ -211,6 +220,10 @@ class TestConstraintOrd:
             negative=False,
             hard=True,
             status=RequestStatus.PENDING,
+            request_type=RequestType.WORK_DEMAND,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED,
+            comment="",
+            created_at=datetime.now(tz=timezone.utc),
         )
         engine_inputs.requests = [request]
 
@@ -327,6 +340,10 @@ class TestConstraintOrd:
             negative=False,
             hard=True,
             status=RequestStatus.PENDING,
+            request_type=RequestType.WORK_DEMAND,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED,
+            comment="",
+            created_at=datetime.now(tz=timezone.utc),
         )
         engine_inputs.requests = [request]
 

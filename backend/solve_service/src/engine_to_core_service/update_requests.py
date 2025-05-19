@@ -22,12 +22,12 @@ def update_requests_and_build_request_breaches(
         ]
         if r.negative:
             if len(a_filtered) > 0:
-                r.status = RequestStatus.REJECTED
+                r.status = RequestStatus.DENIED
             else:
                 r.status = RequestStatus.APPROVED
         else:
             if len(a_filtered) < len(dates):
-                r.status = RequestStatus.REJECTED
+                r.status = RequestStatus.DENIED
             else:
                 r.status = RequestStatus.APPROVED
         out.append(r)
