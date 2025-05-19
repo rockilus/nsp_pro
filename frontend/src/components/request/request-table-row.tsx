@@ -55,7 +55,7 @@ export default function RequestTableRow({
   const requestStatus: { name: RequestStatus; label: string }[] = [
     { name: RequestStatus.PENDING, label: t("pending") },
     { name: RequestStatus.APPROVED, label: t("approved") },
-    { name: RequestStatus.REJECTED, label: t("rejected") },
+    { name: RequestStatus.DENIED, label: t("rejected") },
   ];
 
   const handleToggleNegative = async () => {
@@ -116,9 +116,9 @@ export default function RequestTableRow({
             color:
               request.status === RequestStatus.APPROVED
                 ? "green"
-                : request.status === RequestStatus.REJECTED && request.hard
+                : request.status === RequestStatus.DENIED && request.hard
                 ? "red"
-                : request.status === RequestStatus.REJECTED && !request.hard
+                : request.status === RequestStatus.DENIED && !request.hard
                 ? "orange"
                 : request.status === RequestStatus.PENDING
                 ? "grey"

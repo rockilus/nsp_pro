@@ -3,20 +3,29 @@ from datetime import datetime, time, timezone
 from pydantic import field_validator
 
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.core.request import Request, RequestStatus
+from shared.schemas.core.request import (
+    FulfillmentStatus,
+    Request,
+    RequestStatus,
+    RequestType,
+)
 
 
 class RequestSchema(DocumentBaseSchema):
     """Request schema for validation."""
 
-    team: str  # Store team ID instead of reference
-    worker: str  # Store worker ID instead of reference
+    team: str
+    request_type: str
+    worker: str
     start_date: float
     end_date: float
-    shift: str  # Store shift ID instead of reference
+    shift: str
     negative: bool
     hard: bool
-    status: int
+    status: str
+    fulfillment: str
+    comment: str
+    created_at: float
 
     @field_validator("status")
     @classmethod
@@ -30,6 +39,7 @@ class RequestSchema(DocumentBaseSchema):
         return Request(
             id=self.id or "",
             team_id=self.team,
+            request_type=RequestType(self.request_type),
             worker_id=self.worker,
             start_date=datetime.fromtimestamp(self.start_date, tz=timezone.utc).date(),
             end_date=datetime.fromtimestamp(self.end_date, tz=timezone.utc).date(),
@@ -37,6 +47,9 @@ class RequestSchema(DocumentBaseSchema):
             negative=self.negative,
             hard=self.hard,
             status=RequestStatus(self.status),
+            fulfillment=FulfillmentStatus(self.fulfillment),
+            comment=self.comment,
+            created_at=datetime.fromtimestamp(self.created_at, tz=timezone.utc),
         )
 
     @classmethod
@@ -44,6 +57,7 @@ class RequestSchema(DocumentBaseSchema):
         return cls(
             id=request.id,
             team=request.team_id,
+            request_type=request.request_type.value,
             worker=request.worker_id,
             start_date=datetime.combine(
                 request.start_date, time.min, timezone.utc
@@ -55,4 +69,7 @@ class RequestSchema(DocumentBaseSchema):
             negative=request.negative,
             hard=request.hard,
             status=request.status.value,
+            fulfillment=request.fulfillment.value,
+            comment=request.comment,
+            created_at=request.created_at.timestamp(),
         )

@@ -215,7 +215,7 @@ export default function AssignmentSelection({
                       color:
                         request.status === RequestStatus.APPROVED
                           ? "green"
-                          : request.status === RequestStatus.REJECTED
+                          : request.status === RequestStatus.DENIED
                           ? "red"
                           : request.status === RequestStatus.PENDING
                           ? "grey"

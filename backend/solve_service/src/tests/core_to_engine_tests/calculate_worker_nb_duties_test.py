@@ -4,8 +4,10 @@ from typing import Dict, List
 
 from shared.schemas.core import (
     EngineInputsAugmented,
+    FulfillmentStatus,
     Request,
     RequestStatus,
+    RequestType,
     Shift,
     ShiftLeaveType,
     ShiftRestType,
@@ -223,6 +225,10 @@ class TestCalculateWorkerNbDuties:
             negative=False,
             hard=True,
             status=RequestStatus.PENDING,
+            request_type=RequestType.WORK_DEMAND,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED,
+            comment="",
+            created_at=datetime.now(tz=timezone.utc),
         )
         engine_inputs.requests.append(request_leave)
 

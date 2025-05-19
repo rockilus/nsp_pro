@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List
 
 import pytest
@@ -6,8 +6,10 @@ from shared.schemas.core import (
     DailyShiftDemand,
     DSDSourceType,
     EngineInputsAugmented,
+    FulfillmentStatus,
     Request,
     RequestStatus,
+    RequestType,
     Schedule,
     Shift,
     ShiftLeaveType,
@@ -58,6 +60,10 @@ class TestBuildRequests:
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING,
+                request_type=RequestType.WORK_DEMAND,
+                fulfillment=FulfillmentStatus.NOT_PROCESSED,
+                comment="",
+                created_at=datetime.now(tz=timezone.utc),
             )
         ]
 
@@ -119,6 +125,10 @@ class TestBuildRequests:
                 negative=False,
                 hard=False,
                 status=RequestStatus.PENDING,
+                request_type=RequestType.WORK_DEMAND,
+                fulfillment=FulfillmentStatus.NOT_PROCESSED,
+                comment="",
+                created_at=datetime.now(tz=timezone.utc),
             )
         ]
 
@@ -179,6 +189,10 @@ class TestBuildRequests:
                 negative=True,
                 hard=True,
                 status=RequestStatus.PENDING,
+                request_type=RequestType.WORK_DEMAND,
+                fulfillment=FulfillmentStatus.NOT_PROCESSED,
+                comment="",
+                created_at=datetime.now(tz=timezone.utc),
             )
         ]
 
@@ -270,6 +284,10 @@ class TestBuildRequests:
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING,
+                request_type=RequestType.WORK_DEMAND,
+                fulfillment=FulfillmentStatus.NOT_PROCESSED,
+                comment="",
+                created_at=datetime.now(tz=timezone.utc),
             )
         ]
 

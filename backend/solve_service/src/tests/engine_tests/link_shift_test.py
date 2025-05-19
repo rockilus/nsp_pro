@@ -1,13 +1,15 @@
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List
 
 from shared.schemas.core import (
     Breach,
     EngineInputsAugmented,
+    FulfillmentStatus,
     LinkShift,
     ObjectiveCategory,
     Request,
     RequestStatus,
+    RequestType,
     Variable,
 )
 
@@ -105,6 +107,10 @@ class TestDutyRecupConstraint:
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING,
+                request_type=RequestType.WORK_DEMAND,
+                fulfillment=FulfillmentStatus.NOT_PROCESSED,
+                comment="",
+                created_at=datetime.now(tz=timezone.utc),
             ),
             Request(
                 id="r0",
@@ -116,6 +122,10 @@ class TestDutyRecupConstraint:
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING,
+                request_type=RequestType.WORK_DEMAND,
+                fulfillment=FulfillmentStatus.NOT_PROCESSED,
+                comment="",
+                created_at=datetime.now(tz=timezone.utc),
             ),
         ]
         sample_data_fixture.requests = requests

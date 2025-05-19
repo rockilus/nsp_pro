@@ -79,9 +79,11 @@ from shared.schemas.core.recurrence import (
     RecurrenceUpdateScope,
 )
 from shared.schemas.core.request import (
+    FulfillmentStatus,
     Request,
     RequestAugmented,
     RequestStatus,
+    RequestType,
 )
 from shared.schemas.core.schedule import (
     DuplicateOptions,
@@ -215,9 +217,11 @@ __all__ = [
     "RecurrenceRule",
     "OccurrenceType",
     "RecurrenceUpdateScope",
+    "FulfillmentStatus",
     "Request",
     "RequestAugmented",
     "RequestStatus",
+    "RequestType",
     "Breach",
     "ObjectiveCategory",
     "DuplicateOptions",

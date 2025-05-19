@@ -1,5 +1,5 @@
 from copy import deepcopy
-from datetime import date
+from datetime import date, datetime, timezone
 from typing import Callable, Tuple
 
 from shared.schemas.core import (
@@ -11,8 +11,10 @@ from shared.schemas.core import (
     ConstraintSeq,
     ConstraintSum,
     EngineInputsAugmented,
+    FulfillmentStatus,
     Request,
     RequestStatus,
+    RequestType,
 )
 
 from engine import Inputs as InputsEngine
@@ -49,6 +51,10 @@ class TestConstraintSeq:
             negative=False,
             hard=True,
             status=RequestStatus.PENDING,
+            request_type=RequestType.WORK_DEMAND,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED,
+            comment="",
+            created_at=datetime.now(tz=timezone.utc),
         )
         engine_inputs.requests = [request]
 
@@ -168,6 +174,10 @@ class TestConstraintSeq:
             negative=False,
             hard=True,
             status=RequestStatus.PENDING,
+            request_type=RequestType.WORK_DEMAND,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED,
+            comment="",
+            created_at=datetime.now(tz=timezone.utc),
         )
         engine_inputs.requests = [request]
 
@@ -289,6 +299,10 @@ class TestConstraintSeq:
             negative=False,
             hard=True,
             status=RequestStatus.PENDING,
+            request_type=RequestType.WORK_DEMAND,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED,
+            comment="",
+            created_at=datetime.now(tz=timezone.utc),
         )
         engine_inputs.requests = [request]
 
@@ -480,6 +494,10 @@ class TestConstraintSeq:
             negative=False,
             hard=True,
             status=RequestStatus.PENDING,
+            request_type=RequestType.WORK_DEMAND,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED,
+            comment="",
+            created_at=datetime.now(tz=timezone.utc),
         )
         engine_inputs.requests = [request]
 
