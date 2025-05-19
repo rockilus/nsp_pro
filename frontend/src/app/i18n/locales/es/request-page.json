@@ -2,6 +2,8 @@
     "approved": "Aprobado",
     "date": "Fecha",
     "date_range": "Rango de fechas",
+    "doesnt_work": "No trabaja",
+    "leave": "Permiso",
     "new_request": "Nueva solicitud",
     "no": "No",
     "no_requests": "No hay solicitudes",
@@ -13,5 +15,6 @@
     "shift": "Turno",
     "status": "Estado",
     "type": "Tipo",
+    "work": "Trabajo",
     "worker": "Trabajador"
 }
