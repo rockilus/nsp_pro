@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
+// MUI
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 // Components
 import RequestPanel from "./request-panel";
 import RequestTable from "./request-table";
@@ -93,6 +96,11 @@ export default function RequestTab({
     fetchRequestsTabData();
   }, [teamId]);
 
+  // ToggleButton state for request type
+  const [requestType, setRequestType] = useState<RequestType>(
+    RequestType.WORK_DEMAND
+  );
+
   return (
     <div className="tab-container">
       {isLoading ? (
@@ -101,13 +109,50 @@ export default function RequestTab({
         <div>
           <div className="title-container">
             <span className="title">{t("requests")}</span>
+            <ToggleButtonGroup
+              color="primary"
+              value={requestType}
+              exclusive
+              onChange={(_event, value) => {
+                if (value !== null) setRequestType(value);
+              }}
+              aria-label="Request Type"
+            >
+              <ToggleButton
+                value={RequestType.WORK_DEMAND}
+                sx={{
+                  marginTop: "5px",
+                  marginBottom: "5px",
+                  marginLeft: "56px",
+                  textTransform: "none",
+                  height: "30px",
+                  width: "105px",
+                  fontSize: "0.8rem",
+                }}
+              >
+                {t("work")}
+              </ToggleButton>
+              <ToggleButton
+                value={RequestType.LEAVE}
+                sx={{
+                  marginTop: "5px",
+                  marginBottom: "5px",
+                  textTransform: "none",
+                  height: "30px",
+                  width: "105px",
+                  fontSize: "0.8rem",
+                }}
+              >
+                {t("leave")}
+              </ToggleButton>
+            </ToggleButtonGroup>
             <RequestPanel
               lng={lng}
               isEdit={false}
               request={{
                 id: "",
                 teamId: teamId,
-                requestType: RequestType.WORK_DEMAND,
+                requestType: requestType,
                 workerId: userWorker?.id || "",
                 startDate: dayjs.utc().startOf("day"),
                 endDate: dayjs.utc().startOf("day"),
@@ -130,7 +175,7 @@ export default function RequestTab({
           </div>
           <RequestTable
             lng={lng}
-            requests={requests}
+            requests={requests.filter((r) => r.requestType === requestType)}
             workers={workers}
             shifts={shifts}
             userWorkerId={userWorker?.id || null}
