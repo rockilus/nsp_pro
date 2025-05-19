@@ -27,7 +27,27 @@ import {
   RequestType,
   FulfillmentStatus,
 } from "../../types/request";
-import { ShiftT } from "../../types/shift";
+import { ShiftT, ShiftType, ShiftRestType } from "../../types/shift";
+// Helper to filter shifts by request type
+function filterShiftsByRequestType(
+  shifts: ShiftT[],
+  requestType: RequestType
+): ShiftT[] {
+  return shifts.filter((s) => {
+    if (requestType === RequestType.WORK_DEMAND) {
+      return (
+        !s.deleted &&
+        (s.shiftType === ShiftType.NORMAL || s.shiftType === ShiftType.DUTY)
+      );
+    } else {
+      return (
+        !s.deleted &&
+        (s.shiftType === ShiftType.REST || s.shiftType === ShiftType.LEAVE) &&
+        (s.restType === ShiftRestType.OFF || s.restType === ShiftRestType.NONE)
+      );
+    }
+  });
+}
 import { WorkerT } from "../../types/worker";
 import { TeamMembershipRole } from "@/types/team";
 
@@ -148,6 +168,7 @@ export default function RequestTab({
             </ToggleButtonGroup>
             <RequestPanel
               lng={lng}
+              requestType={requestType}
               isEdit={false}
               request={{
                 id: "",
@@ -166,7 +187,7 @@ export default function RequestTab({
                 active: true,
               }}
               workers={workers.filter((w) => !w.deleted)}
-              shifts={shifts.filter((s) => !s.deleted)}
+              shifts={filterShiftsByRequestType(shifts, requestType)}
               userWorkerId={userWorker?.id || null}
               userTeamRole={userTeamRole}
               handleAddRequest={handleAddRequest}

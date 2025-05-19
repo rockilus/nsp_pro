@@ -21,13 +21,14 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Styles
 import "./request-panel.css";
 // Types
-import { RequestT, RequestStatus } from "../../types/request";
+import { RequestT, RequestStatus, RequestType } from "../../types/request";
 import { ShiftT } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
 import { TeamMembershipRole } from "@/types/team";
 
 export default function RequestPanel({
   lng,
+  requestType,
   isEdit,
   request,
   workers,
@@ -38,6 +39,7 @@ export default function RequestPanel({
   handleUpdateRequest,
 }: {
   lng: string;
+  requestType: RequestType;
   isEdit: boolean;
   request: RequestT;
   workers: WorkerT[];
@@ -255,45 +257,47 @@ export default function RequestPanel({
               )}
             </div>
           </div>
-          <div className="variable-input-param-container">
-            <ToggleButtonGroup
-              color="primary"
-              value={requestState.negative}
-              exclusive
-              onChange={(event, value) =>
-                setRequestState({ ...requestState, negative: value })
-              }
-              aria-label="Platform"
-            >
-              <ToggleButton
-                value={false}
-                sx={{
-                  marginTop: "5px",
-                  marginBottom: "5px",
-                  marginLeft: "56px",
-                  textTransform: "none",
-                  height: "30px",
-                  width: "105px",
-                  fontSize: "0.8rem",
-                }}
+          {requestType === RequestType.WORK_DEMAND && (
+            <div className="variable-input-param-container">
+              <ToggleButtonGroup
+                color="primary"
+                value={requestState.negative}
+                exclusive
+                onChange={(event, value) =>
+                  setRequestState({ ...requestState, negative: value })
+                }
+                aria-label="Platform"
               >
-                {t("work")}
-              </ToggleButton>
-              <ToggleButton
-                value={true}
-                sx={{
-                  marginTop: "5px",
-                  marginBottom: "5px",
-                  textTransform: "none",
-                  height: "30px",
-                  width: "105px",
-                  fontSize: "0.8rem",
-                }}
-              >
-                {t("doesnt_work")}
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </div>
+                <ToggleButton
+                  value={false}
+                  sx={{
+                    marginTop: "5px",
+                    marginBottom: "5px",
+                    marginLeft: "56px",
+                    textTransform: "none",
+                    height: "30px",
+                    width: "105px",
+                    fontSize: "0.8rem",
+                  }}
+                >
+                  {t("do")}
+                </ToggleButton>
+                <ToggleButton
+                  value={true}
+                  sx={{
+                    marginTop: "5px",
+                    marginBottom: "5px",
+                    textTransform: "none",
+                    height: "30px",
+                    width: "105px",
+                    fontSize: "0.8rem",
+                  }}
+                >
+                  {t("dont")}
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </div>
+          )}
           <div className="variable-input-container">
             <WorkIcon sx={{ marginLeft: 2, marginRight: 1 }} />
             {selectShift()}
