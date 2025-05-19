@@ -7,7 +7,12 @@ from shared.database.repositories.request import (
     RequestRepository,
 )
 from shared.database.schemas.request import RequestSchema
-from shared.schemas.core.request import Request, RequestStatus
+from shared.schemas.core.request import (
+    FulfillmentStatus,
+    Request,
+    RequestStatus,
+    RequestType,
+)
 
 
 # pylint: disable=R0801
@@ -41,6 +46,9 @@ class TestRequestRepository:
             negative=False,
             hard=True,
             status=RequestStatus.PENDING,
+            request_type=RequestType.WORK_DEMAND,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED,
+            comment="test comment",
         )
 
         result = self.repo.create_request(request)
@@ -65,6 +73,9 @@ class TestRequestRepository:
             negative=False,
             hard=True,
             status=RequestStatus.PENDING.value,
+            request_type=RequestType.WORK_DEMAND.value,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
+            comment="test comment",
         )
         created = self.repo.create(request)
 
@@ -85,6 +96,9 @@ class TestRequestRepository:
             negative=False,
             hard=True,
             status=RequestStatus.PENDING.value,
+            request_type=RequestType.WORK_DEMAND.value,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
+            comment="test comment",
         )
         created = self.repo.create(request)
 
@@ -98,6 +112,9 @@ class TestRequestRepository:
             negative=True,
             hard=False,
             status=RequestStatus.APPROVED,
+            request_type=RequestType.WORK_DEMAND,
+            fulfillment=FulfillmentStatus.FULFILLED,
+            comment="updated comment",
         )
 
         result = self.repo.update_request(updated_request)
@@ -121,6 +138,9 @@ class TestRequestRepository:
             negative=False,
             hard=True,
             status=RequestStatus.PENDING.value,
+            request_type=RequestType.WORK_DEMAND.value,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
+            comment="test comment",
         )
         created = self.repo.create(request)
 
@@ -140,6 +160,9 @@ class TestRequestRepository:
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING.value,
+                request_type=RequestType.WORK_DEMAND.value,
+                fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
+                comment="test comment",
             ),
             RequestSchema(
                 team="team1",
@@ -150,6 +173,9 @@ class TestRequestRepository:
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING.value,
+                request_type=RequestType.WORK_DEMAND.value,
+                fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
+                comment="test comment",
             ),
         ]
         self.repo.create_many(requests)
@@ -169,6 +195,9 @@ class TestRequestRepository:
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING.value,
+                request_type=RequestType.WORK_DEMAND.value,
+                fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
+                comment="test comment",
             ),
             RequestSchema(
                 team="team1",
@@ -179,6 +208,9 @@ class TestRequestRepository:
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING.value,
+                request_type=RequestType.WORK_DEMAND.value,
+                fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
+                comment="test comment",
             ),
         ]
         self.repo.create_many(requests)
@@ -202,6 +234,9 @@ class TestRequestRepository:
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING.value,
+                request_type=RequestType.WORK_DEMAND.value,
+                fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
+                comment="test comment",
             ),
             RequestSchema(
                 team="team1",
@@ -212,6 +247,9 @@ class TestRequestRepository:
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING.value,
+                request_type=RequestType.WORK_DEMAND.value,
+                fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
+                comment="test comment",
             ),
         ]
         created_requests = self.repo.create_many(requests)
@@ -227,6 +265,9 @@ class TestRequestRepository:
                 negative=True,
                 hard=False,
                 status=RequestStatus.APPROVED,
+                request_type=RequestType.WORK_DEMAND,
+                fulfillment=FulfillmentStatus.FULFILLED,
+                comment="updated comment",
             ),
             Request(
                 id=created_requests[1].id,
@@ -238,6 +279,9 @@ class TestRequestRepository:
                 negative=True,
                 hard=False,
                 status=RequestStatus.APPROVED,
+                request_type=RequestType.WORK_DEMAND,
+                fulfillment=FulfillmentStatus.FULFILLED,
+                comment="updated comment",
             ),
         ]
 
@@ -263,6 +307,9 @@ class TestRequestRepository:
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING.value,
+                request_type=RequestType.WORK_DEMAND.value,
+                fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
+                comment="test comment",
             ),
             RequestSchema(
                 team="team1",
@@ -273,6 +320,9 @@ class TestRequestRepository:
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING.value,
+                request_type=RequestType.WORK_DEMAND.value,
+                fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
+                comment="test comment",
             ),
         ]
         self.repo.create_many(requests)
@@ -293,6 +343,9 @@ class TestRequestRepository:
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING.value,
+                request_type=RequestType.WORK_DEMAND.value,
+                fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
+                comment="test comment",
             ),
             RequestSchema(
                 team="team1",
@@ -303,6 +356,9 @@ class TestRequestRepository:
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING.value,
+                request_type=RequestType.WORK_DEMAND.value,
+                fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
+                comment="test comment",
             ),
         ]
         self.repo.create_many(requests)
