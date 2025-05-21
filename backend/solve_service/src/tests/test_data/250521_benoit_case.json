@@ -35821,21 +35821,6 @@
     ],
     "requests": [
         {
-            "id": "681e40369035981d9978ccf1",
-            "team_id": "667d626f02d5723648a0f1fc",
-            "request_type": "work_demand",
-            "worker_id": "679ba9eb8730c4e8db9d724d",
-            "start_date": 1746748800.0,
-            "end_date": 1746748800.0,
-            "shift_id": "66b63331cad3bb739b082fa2",
-            "negative": false,
-            "hard": true,
-            "status": "denied",
-            "fulfillment": "unfulfilled",
-            "comment": "",
-            "created_at": 1747654952.706
-        },
-        {
             "id": "681e44099035981d9978ccf2",
             "team_id": "667d626f02d5723648a0f1fc",
             "request_type": "work_demand",
