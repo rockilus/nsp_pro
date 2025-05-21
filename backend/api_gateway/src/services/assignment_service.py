@@ -3,6 +3,7 @@ from typing import Dict, List, Optional, Set, Tuple
 
 from shared.schemas.core import (
     Assignment,
+    AssignmentSource,
     AssignmentsRecurrencesResult,
     DuplicateRequest,
     OccurrenceInfo,
@@ -91,6 +92,7 @@ class AssignmentService(BaseService):
                         date=assignment.date,
                         shift_id=duty_to_recup_map[assignment.shift_id],
                         fixed=assignment.fixed,
+                        source=assignment.source,
                         reference_assignment_id=assignment.id,
                         recurrence_rule_id=assignment.recurrence_rule_id,
                     )
@@ -221,6 +223,7 @@ class AssignmentService(BaseService):
                 date=date,
                 shift_id=recurrence.occurrence_info.shift_id,
                 fixed=True,
+                source=AssignmentSource.RECURRENCE,
                 reference_assignment_id=None,
                 recurrence_rule_id=recurrence.id,
             )
@@ -264,6 +267,7 @@ class AssignmentService(BaseService):
                     date=duty_assignment.date,  # Adjust date if needed
                     shift_id=shift_recup_id,
                     fixed=duty_assignment.fixed,
+                    source=duty_assignment.source,
                     reference_assignment_id=duty_assignment.id,
                 )
                 new_assignments.append(new_assignment)
@@ -531,6 +535,7 @@ class AssignmentService(BaseService):
                     date=assignment_new.date,
                     shift_id=shift_recup_new.id,
                     fixed=assignment_new.fixed,
+                    source=assignment_new.source,
                     reference_assignment_id=assignment_new.id,
                 )
                 assignments_recup_created.append(
@@ -981,6 +986,7 @@ class AssignmentService(BaseService):
                     date=date_mapping[a_source.date],
                     shift_id=a_source.shift_id,
                     fixed=a_source.fixed,
+                    source=AssignmentSource.DUPLICATE,
                     reference_assignment_id=None,
                     recurrence_rule_id=None,
                 )

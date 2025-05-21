@@ -684,7 +684,7 @@ def load_engine_inputs_from_file(filename: str) -> EngineInputsAugmented:
 
 @pytest.fixture
 def sample_data_benoit_case_fixture() -> EngineInputsAugmented:
-    engine_inputs = load_engine_inputs_from_file("test_data/250324_benoit_case.json")
+    engine_inputs = load_engine_inputs_from_file("test_data/250521_benoit_case.json")
     # engine_inputs.requests = [
     #     r for r in engine_inputs.requests if r.id != "67893e204c7443695ec41f2b"
     # ]

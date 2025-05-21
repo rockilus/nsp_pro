@@ -13,7 +13,7 @@ import "./edit-assignment.css";
 // Types
 import { WorkerT } from "../../../types/worker";
 import { ShiftT } from "../../../types/shift";
-import { AssignmentT } from "@/types/assignment";
+import { AssignmentT, AssignmentSource } from "@/types/assignment";
 import {
   RecurrenceRuleT,
   OccurrenceType,
@@ -230,6 +230,7 @@ const EditDemand: React.FC<EditDemandProps> = ({
       date: date,
       shiftId: shiftId,
       fixed: true,
+      source: AssignmentSource.MANUAL,
       referenceAssignmentId: null,
       recurrenceRuleId: recurrenceState ? recurrenceState.id : null,
     };

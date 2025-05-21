@@ -4,6 +4,7 @@ from datetime import date, datetime, timedelta, timezone
 import pytest
 from shared.schemas.core import (
     Assignment,
+    AssignmentSource,
     DailyShiftDemand,
     DSDSourceType,
     EngineInputsAugmented,
@@ -676,6 +677,7 @@ class TestCalculateWorkerSpecialDays:
                 date=d,
                 shift_id=shift_target_id,
                 fixed=False,
+                source=AssignmentSource.MANUAL,
             )
             for i, d in enumerate(dates_target)
         ]
@@ -806,6 +808,7 @@ class TestCalculateWorkerSpecialDays:
                 date=d,
                 shift_id=shift_target_id,
                 fixed=False,
+                source=AssignmentSource.MANUAL,
             )
             for i, d in enumerate(dates_target[:2])
         ] + [
@@ -817,6 +820,7 @@ class TestCalculateWorkerSpecialDays:
                 date=d,
                 shift_id=shift_leave_id,
                 fixed=False,
+                source=AssignmentSource.MANUAL,
             )
             for i, d in enumerate(dates_target[2:])
         ]

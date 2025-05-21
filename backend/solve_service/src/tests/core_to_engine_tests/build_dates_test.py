@@ -3,6 +3,7 @@ from datetime import date, datetime, timedelta, timezone
 import pytest
 from shared.schemas.core import (
     Assignment,
+    AssignmentSource,
     EngineInputsAugmented,
     Schedule,
     ScheduleSolveStatus,
@@ -51,6 +52,7 @@ class TestBuildDates:
                 shift_id="s0",
                 date=date_a_0,
                 fixed=True,
+                source=AssignmentSource.MANUAL,
             ),
             Assignment(
                 id="a1",
@@ -60,6 +62,7 @@ class TestBuildDates:
                 shift_id="s1",
                 date=date_a_1,
                 fixed=True,
+                source=AssignmentSource.MANUAL,
             ),
         ]
 
@@ -146,6 +149,7 @@ class TestBuildWorkerIdsToWorkerDates:
                 shift_id="s0",
                 date=date(2024, 12, 31),
                 fixed=True,
+                source=AssignmentSource.MANUAL,
             ),
             Assignment(
                 id="a1",
@@ -155,6 +159,7 @@ class TestBuildWorkerIdsToWorkerDates:
                 shift_id="s0",
                 date=date(2024, 12, 30),
                 fixed=True,
+                source=AssignmentSource.MANUAL,
             ),
         ]
         dates_campaign = [

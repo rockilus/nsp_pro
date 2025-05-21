@@ -1,5 +1,6 @@
 from shared.schemas.core.assignment import (
     Assignment,
+    AssignmentSource,
     AssignmentsRecurrencesResult,
 )
 from shared.schemas.core.attribute import Attribute, AttributeOwnerType
@@ -150,6 +151,7 @@ from shared.schemas.core.worker import Worker, WorkerDates
 # pylint: disable=R0801
 __all__ = [
     "Attribute",
+    "AssignmentSource",
     "AssignmentsRecurrencesResult",
     "AttributeOwnerType",
     "Config",

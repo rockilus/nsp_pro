@@ -5,6 +5,21 @@ import { ShiftT } from "./shift";
 import { WorkerT } from "./worker";
 import { RecurrenceRuleT, toRecurrenceRuleT } from "./recurrence";
 
+// class AssignmentSource(Enum):
+//     MANUAL = "manual"
+//     SOLVER = "solver"
+//     DUPLICATE = "duplicate"
+//     RECURRENCE = "recurrence"
+//     REQUEST = "request"
+
+export enum AssignmentSource {
+  MANUAL = "manual",
+  SOLVER = "solver",
+  DUPLICATE = "duplicate",
+  RECURRENCE = "recurrence",
+  REQUEST = "request",
+}
+
 export type AssignmentT = {
   id: string;
   teamId: string;
@@ -13,6 +28,7 @@ export type AssignmentT = {
   date: dayjs.Dayjs;
   shiftId: string;
   fixed: boolean;
+  source: AssignmentSource;
   referenceAssignmentId: string | null;
   recurrenceRuleId: string | null;
 };

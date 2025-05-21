@@ -22,14 +22,15 @@ def test_engine_solve_smoke(
         pytest.fail(f"engine_solve raised an exception: {e}")
 
 
+# pylint: disable=redefined-outer-name
 def test_engine_solve_smoke_benoit_case_250301(
-    benoit_case_250301: EngineInputsAugmented,
+    sample_data_benoit_case_fixture: EngineInputsAugmented,  # noqa: F811
     run_core_to_engine_inputs: Callable[
         [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
     ],
     run_engine_solve: Callable[[InputsEngine], Outputs],
 ) -> None:
-    inputs, _ = run_core_to_engine_inputs(benoit_case_250301)
+    inputs, _ = run_core_to_engine_inputs(sample_data_benoit_case_fixture)
 
     inputs.model_config.solver_params.max_time_in_seconds = 30
     inputs.model_config.solver_params.log_search_progress = True
