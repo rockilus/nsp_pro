@@ -13,6 +13,7 @@ class AssignmentDTO(BaseModel):
     date: float
     shiftId: str
     fixed: bool
+    source: str
     referenceAssignmentId: str | None
     recurrenceRuleId: str | None
 

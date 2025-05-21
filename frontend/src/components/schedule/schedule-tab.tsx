@@ -165,9 +165,6 @@ export default function ScheduleTab({
 
   const buildDates = useCallback(
     (startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) => {
-      console.log("startDate", startDate.toISOString());
-      console.log("endDate", endDate.toISOString());
-
       const dates: periodDateT[] = [];
       let currentDate = startDate;
 

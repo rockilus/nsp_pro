@@ -2137,10 +2137,10 @@ def run_engine_solve() -> Callable[[InputsEngine], Outputs]:
 
 
 @pytest.fixture
-def benoit_case_250301(
+def sample_data_benoit_case_fixture(
     penalties_fix: Penalties, model_config_fix: ModelConfig
 ) -> EngineInputsAugmented:
-    ei_dict = load_json_from_file("test_data/250324_benoit_case.json")
+    ei_dict = load_json_from_file("test_data/250521_benoit_case.json")
     engine_inputs = EngineInputs.from_dict(ei_dict)
 
     model_config_copy = deepcopy(model_config_fix)

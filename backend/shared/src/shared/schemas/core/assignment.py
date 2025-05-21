@@ -1,5 +1,6 @@
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, time, timezone
+from enum import Enum
 from typing import Dict, List
 
 import humps
@@ -12,6 +13,14 @@ from shared.schemas.dto.assignment import (
 )
 
 
+class AssignmentSource(Enum):
+    MANUAL = "manual"
+    SOLVER = "solver"
+    DUPLICATE = "duplicate"
+    RECURRENCE = "recurrence"
+    REQUEST = "request"
+
+
 @dataclass
 class Assignment:
     id: str
@@ -21,6 +30,7 @@ class Assignment:
     date: date
     shift_id: str
     fixed: bool
+    source: AssignmentSource
     reference_assignment_id: str | None = None
     recurrence_rule_id: str | None = None
 
@@ -29,6 +39,7 @@ class Assignment:
         out["date"] = datetime.combine(
             self.date, time.min, tzinfo=timezone.utc
         ).timestamp()
+        out["source"] = self.source.value
         return out
 
     @classmethod
@@ -42,6 +53,7 @@ class Assignment:
             shift_id=data["shift_id"],
             reference_assignment_id=data.get("reference_assignment_id", None),
             fixed=data["fixed"],
+            source=AssignmentSource(data["source"]),
             recurrence_rule_id=data.get("recurrence_rule_id", None),
         )
 
@@ -50,6 +62,7 @@ class Assignment:
         data["date"] = datetime.combine(
             self.date, time.min, tzinfo=timezone.utc
         ).timestamp()
+        data["source"] = self.source.value
         as_dict = humps.camelize(data)
         validator = TypeAdapter(AssignmentDTO)
         return validator.validate_python(as_dict)
@@ -60,6 +73,7 @@ class Assignment:
         data_dict["date"] = datetime.fromtimestamp(
             data_dict["date"], tz=timezone.utc
         ).date()
+        data_dict["source"] = AssignmentSource(data.source)
         data_dict = humps.decamelize(data_dict)
         return cls(**data_dict)
 

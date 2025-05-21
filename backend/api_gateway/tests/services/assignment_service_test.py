@@ -3,7 +3,7 @@ from typing import List, Tuple
 from unittest.mock import MagicMock
 
 import pytest
-from shared.schemas.core import Assignment, ShiftType
+from shared.schemas.core import Assignment, AssignmentSource, ShiftType
 
 from src.services.assignment_service import AssignmentService
 
@@ -53,6 +53,7 @@ def test_existing_recuperation_assignments(
             date=date.today(),
             shift_id="shift_duty_id",
             fixed=False,
+            source=AssignmentSource.MANUAL,
         ),
         Assignment(
             id="1",
@@ -62,6 +63,7 @@ def test_existing_recuperation_assignments(
             date=date.today(),
             shift_id="shift_recup_id",
             fixed=False,
+            source=AssignmentSource.MANUAL,
         ),
     ]
     # fmt: off
@@ -94,6 +96,7 @@ def test_create_new_recuperation_assignments(
         date=date.today(),
         shift_id="shift_duty_id",
         fixed=False,
+        source=AssignmentSource.MANUAL,
     )
     # fmt: off
     mock_collection.assignment_db\
@@ -136,6 +139,7 @@ def test_create_assignment_with_valid_shift(
         date=date.today(),
         shift_id="shift_id",
         fixed=False,
+        source=AssignmentSource.MANUAL,
     )
 
     # Call the method
@@ -171,6 +175,7 @@ def test_create_assignment_with_duty_shift(
         date=date.today(),
         shift_id="shift_id",
         fixed=False,
+        source=AssignmentSource.MANUAL,
     )
 
     # Mock the database response for saving assignments
@@ -185,6 +190,7 @@ def test_create_assignment_with_duty_shift(
             shift_id=shift_recup.id,
             fixed=assignment_new.fixed,
             reference_assignment_id=assignment_new.id,
+            source=assignment_new.source,
         ),
     ]
 
@@ -217,6 +223,7 @@ def test_create_assignment_with_invalid_shift(
         date=date.today(),
         shift_id="invalid_shift_id",
         fixed=False,
+        source=AssignmentSource.MANUAL,
     )
 
     # Call the method and assert it raises a ValueError

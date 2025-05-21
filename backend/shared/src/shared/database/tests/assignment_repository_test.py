@@ -7,7 +7,7 @@ from shared.database.repositories.assignment import (
     AssignmentRepository,
 )
 from shared.database.schemas.assignment import AssignmentSchema
-from shared.schemas.core.assignment import Assignment
+from shared.schemas.core.assignment import Assignment, AssignmentSource
 
 
 # pylint: disable=too-many-public-methods
@@ -39,6 +39,7 @@ class TestAssignmentRepository:
             date=date(2023, 1, 1),
             shift_id="shift1",
             fixed=False,
+            source=AssignmentSource.MANUAL,
         )
 
         result = self.repo.create_assignment(assignment)
@@ -61,6 +62,7 @@ class TestAssignmentRepository:
             date=datetime(2023, 1, 1, tzinfo=timezone.utc),
             shift="shift1",
             fixed=False,
+            source=AssignmentSource.MANUAL.value,
         )
         created = self.repo.create(assignment)
 
@@ -79,6 +81,7 @@ class TestAssignmentRepository:
             date=datetime(2023, 1, 1, tzinfo=timezone.utc),
             shift="shift1",
             fixed=False,
+            source=AssignmentSource.MANUAL,
         )
         created = self.repo.create(assignment)
 
@@ -90,6 +93,7 @@ class TestAssignmentRepository:
             date=date(2023, 1, 2),
             shift_id="shift2",
             fixed=True,
+            source=AssignmentSource.MANUAL,
         )
 
         result = self.repo.update_assignment(updated_assignment)
@@ -111,6 +115,7 @@ class TestAssignmentRepository:
             date=datetime(2023, 1, 1, tzinfo=timezone.utc),
             shift="shift1",
             fixed=False,
+            source=AssignmentSource.MANUAL.value,
         )
         created = self.repo.create(assignment)
 
@@ -128,6 +133,7 @@ class TestAssignmentRepository:
                 date=datetime(2023, 1, 1, tzinfo=timezone.utc),
                 shift="shift1",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
             ),
             AssignmentSchema(
                 team="team1",
@@ -136,6 +142,7 @@ class TestAssignmentRepository:
                 date=datetime(2023, 1, 2, tzinfo=timezone.utc),
                 shift="shift2",
                 fixed=True,
+                source=AssignmentSource.MANUAL.value,
             ),
         ]
         self.repo.create_many(assignments)
@@ -157,6 +164,7 @@ class TestAssignmentRepository:
                 date=datetime(2023, 1, 1, tzinfo=timezone.utc),
                 shift="shift1",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
             ),
             AssignmentSchema(
                 team="team1",
@@ -165,6 +173,7 @@ class TestAssignmentRepository:
                 date=datetime(2023, 1, 2, tzinfo=timezone.utc),
                 shift="shift2",
                 fixed=True,
+                source=AssignmentSource.MANUAL.value,
             ),
         ]
         self.repo.create_many(assignments)
@@ -184,6 +193,7 @@ class TestAssignmentRepository:
             date=datetime(2023, 1, 1, tzinfo=timezone.utc),
             shift="shift1",
             fixed=False,
+            source=AssignmentSource.MANUAL.value,
         )
         self.repo.create(assignment)
 
@@ -207,6 +217,7 @@ class TestAssignmentRepository:
                 date=datetime(2023, 1, 1, tzinfo=timezone.utc),
                 shift="shift1",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
             ),
             AssignmentSchema(
                 team="team1",
@@ -215,6 +226,7 @@ class TestAssignmentRepository:
                 date=datetime(2023, 1, 2, tzinfo=timezone.utc),
                 shift="shift2",
                 fixed=True,
+                source=AssignmentSource.MANUAL.value,
             ),
         ]
         self.repo.create_many(assignments)
@@ -237,6 +249,7 @@ class TestAssignmentRepository:
                 date=datetime(2023, 1, 1, tzinfo=timezone.utc),
                 shift="shift1",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
             ),
             AssignmentSchema(
                 team="team1",
@@ -245,6 +258,7 @@ class TestAssignmentRepository:
                 date=datetime(2023, 1, 2, tzinfo=timezone.utc),
                 shift="shift2",
                 fixed=True,
+                source=AssignmentSource.MANUAL.value,
             ),
         ]
         self.repo.create_many(assignments)
@@ -265,6 +279,7 @@ class TestAssignmentRepository:
                 date=datetime(today.year, today.month, today.day, tzinfo=timezone.utc),
                 shift="shift1",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
             ),
             AssignmentSchema(
                 team="team1",
@@ -274,6 +289,7 @@ class TestAssignmentRepository:
                 + timedelta(days=1),
                 shift="shift2",
                 fixed=True,
+                source=AssignmentSource.MANUAL.value,
             ),
             AssignmentSchema(
                 team="team1",
@@ -283,6 +299,7 @@ class TestAssignmentRepository:
                 + timedelta(days=-1),
                 shift="shift2",
                 fixed=True,
+                source=AssignmentSource.MANUAL.value,
             ),
             AssignmentSchema(
                 team="team2",
@@ -291,6 +308,7 @@ class TestAssignmentRepository:
                 date=datetime(today.year, today.month, today.day, tzinfo=timezone.utc),
                 shift="shift3",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
             ),
         ]
         self.repo.create_many(assignments)
@@ -316,6 +334,7 @@ class TestAssignmentRepository:
                 date=today,
                 shift="shift1",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
             ),
             AssignmentSchema(
                 team="team1",
@@ -324,6 +343,7 @@ class TestAssignmentRepository:
                 date=today + timedelta(days=1),
                 shift="shift1",
                 fixed=True,
+                source=AssignmentSource.MANUAL.value,
             ),
             AssignmentSchema(
                 team="team1",
@@ -332,6 +352,7 @@ class TestAssignmentRepository:
                 date=today - timedelta(days=1),
                 shift="shift1",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
             ),
             AssignmentSchema(
                 team="team2",
@@ -340,6 +361,7 @@ class TestAssignmentRepository:
                 date=today,
                 shift="shift1",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
             ),
         ]
         self.repo.create_many(assignments)
@@ -364,6 +386,7 @@ class TestAssignmentRepository:
                 date=today,
                 shift="shift1",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
             ),
             AssignmentSchema(
                 team="team1",
@@ -372,6 +395,7 @@ class TestAssignmentRepository:
                 date=today + timedelta(days=1),
                 shift="shift1",
                 fixed=True,
+                source=AssignmentSource.MANUAL.value,
             ),
             AssignmentSchema(
                 team="team1",
@@ -380,6 +404,7 @@ class TestAssignmentRepository:
                 date=today,
                 shift="shift1",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
             ),
             AssignmentSchema(
                 team="team2",
@@ -388,6 +413,7 @@ class TestAssignmentRepository:
                 date=today,
                 shift="shift1",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
             ),
         ]
         a_created = self.repo.create_many(assignments)
@@ -490,6 +516,7 @@ class TestAssignmentRepository:
             date=datetime(2023, 1, 1, tzinfo=timezone.utc),
             shift="shift1",
             fixed=False,
+            source=AssignmentSource.MANUAL.value,
         )
         self.repo.create(assignment)
 
@@ -525,6 +552,7 @@ class TestAssignmentRepository:
                 date=datetime(2023, 1, 1, tzinfo=timezone.utc),
                 shift="shift1",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
                 reference_assignment_id=reference_id,
             ),
             AssignmentSchema(
@@ -534,6 +562,7 @@ class TestAssignmentRepository:
                 date=datetime(2023, 1, 2, tzinfo=timezone.utc),
                 shift="shift2",
                 fixed=True,
+                source=AssignmentSource.MANUAL.value,
                 reference_assignment_id=reference_id,
             ),
         ]
@@ -555,6 +584,7 @@ class TestAssignmentRepository:
                 date=datetime(2023, 1, 1, tzinfo=timezone.utc),
                 shift="shift1",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
                 reference_assignment_id=reference_id,
             ),
             AssignmentSchema(
@@ -564,6 +594,7 @@ class TestAssignmentRepository:
                 date=datetime(2023, 1, 2, tzinfo=timezone.utc),
                 shift="shift2",
                 fixed=True,
+                source=AssignmentSource.MANUAL.value,
                 reference_assignment_id=reference_id,
             ),
         ]
@@ -591,6 +622,7 @@ class TestAssignmentRepository:
                 date=today,
                 shift="shift1",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
                 recurrence_rule_id=recurrence_rule_id,
             ),
             AssignmentSchema(
@@ -600,6 +632,7 @@ class TestAssignmentRepository:
                 date=today + timedelta(days=1),
                 shift="shift2",
                 fixed=True,
+                source=AssignmentSource.MANUAL.value,
                 recurrence_rule_id=recurrence_rule_id,
             ),
             AssignmentSchema(
@@ -609,6 +642,7 @@ class TestAssignmentRepository:
                 date=today - timedelta(days=1),
                 shift="shift3",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
                 recurrence_rule_id=recurrence_rule_id,
             ),
             AssignmentSchema(
@@ -618,6 +652,7 @@ class TestAssignmentRepository:
                 date=today,
                 shift="shift4",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
                 recurrence_rule_id="rule456",
             ),
         ]
@@ -647,6 +682,7 @@ class TestAssignmentRepository:
                 date=datetime(2023, 1, 1, tzinfo=timezone.utc),
                 shift="shift1",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
                 recurrence_rule_id=recurrence_rule_id,
             ),
             AssignmentSchema(
@@ -656,6 +692,7 @@ class TestAssignmentRepository:
                 date=datetime(2023, 1, 2, tzinfo=timezone.utc),
                 shift="shift2",
                 fixed=True,
+                source=AssignmentSource.MANUAL.value,
                 recurrence_rule_id=recurrence_rule_id,
             ),
             AssignmentSchema(
@@ -665,6 +702,7 @@ class TestAssignmentRepository:
                 date=datetime(2023, 1, 3, tzinfo=timezone.utc),
                 shift="shift3",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
                 recurrence_rule_id="rule456",
             ),
         ]
@@ -700,6 +738,7 @@ class TestAssignmentRepository:
                 date=datetime(2023, 1, 1, tzinfo=timezone.utc),
                 shift="shift1",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
             ),
             AssignmentSchema(
                 team="team1",
@@ -708,6 +747,7 @@ class TestAssignmentRepository:
                 date=datetime(2023, 1, 2, tzinfo=timezone.utc),
                 shift="shift2",
                 fixed=True,
+                source=AssignmentSource.MANUAL.value,
             ),
             AssignmentSchema(
                 team="team1",
@@ -716,6 +756,7 @@ class TestAssignmentRepository:
                 date=datetime(2023, 1, 3, tzinfo=timezone.utc),
                 shift="shift3",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
             ),
         ]
         self.repo.create_many(assignments)
@@ -737,6 +778,7 @@ class TestAssignmentRepository:
                 date=datetime(2023, 1, 1, tzinfo=timezone.utc),
                 shift="shift1",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
             ),
             AssignmentSchema(
                 team="team1",
@@ -745,6 +787,7 @@ class TestAssignmentRepository:
                 date=datetime(2023, 1, 2, tzinfo=timezone.utc),
                 shift="shift2",
                 fixed=True,
+                source=AssignmentSource.MANUAL.value,
             ),
         ]
         created_assignments = self.repo.create_many(assignments)
@@ -770,6 +813,7 @@ class TestAssignmentRepository:
                 date=datetime(2023, 1, 1, tzinfo=timezone.utc),
                 shift="shift1",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
             ),
             AssignmentSchema(
                 team="team1",
@@ -778,6 +822,7 @@ class TestAssignmentRepository:
                 date=datetime(2023, 1, 2, tzinfo=timezone.utc),
                 shift="shift2",
                 fixed=True,
+                source=AssignmentSource.MANUAL.value,
             ),
             AssignmentSchema(
                 team="team1",
@@ -786,6 +831,7 @@ class TestAssignmentRepository:
                 date=datetime(2023, 1, 3, tzinfo=timezone.utc),
                 shift="shift3",
                 fixed=False,
+                source=AssignmentSource.MANUAL.value,
             ),
         ]
         self.repo.create_many(assignments)
