@@ -30,7 +30,7 @@ export type AssignmentT = {
   fixed: boolean;
   source: AssignmentSource;
   referenceAssignmentId: string | null;
-  recurrenceRuleId: string | null;
+  sourceId: string | null;
 };
 
 export type AssignmentDataDictT = {
