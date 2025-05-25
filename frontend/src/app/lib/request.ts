@@ -1,31 +1,15 @@
+import axios from "axios";
 import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 // Actions
 import { getAllShifts } from "./shift";
 import { getAllWorkers } from "./worker";
 // Types
-import { RequestT } from "../../types/request";
+import { RequestT, toRequestT, fromRequestT } from "../../types/request";
 // Env Vars
 import { API_URL } from "./env";
 
 const apiUrlRequests = API_URL + "/requests";
-
-export const toRequestT = (data: any) => {
-  const r: RequestT = {
-    ...data,
-    startDate: dayjs.unix(data.startDate).utc(),
-    endDate: dayjs.unix(data.endDate).utc(),
-  };
-  return r;
-};
-
-export const fromRequestT = (data: RequestT) => {
-  return {
-    ...data,
-    startDate: data.startDate.unix(),
-    endDate: data.endDate.unix(),
-  };
-};
 
 //////////////////////////
 // Request //
@@ -95,6 +79,48 @@ export async function updateRequest(updatedRequest: RequestT, teamId: string) {
   } catch (error) {
     console.error("Failed to update request:", error);
     throw new Error("Failed to update request, please try again later");
+  }
+}
+
+// Accept a request
+export async function acceptRequest(requestId: string, teamId: string) {
+  try {
+    const response = await axios.post(
+      `${apiUrlRequests}/${requestId}/teams/${teamId}/accept`,
+      {},
+      {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      }
+    );
+    return toRequestT(response.data);
+  } catch (error: any) {
+    if (error.response && error.response.data && error.response.data.detail) {
+      throw new Error(
+        "Failed to accept request: " + error.response.data.detail
+      );
+    }
+    throw new Error("Failed to accept request, please try again later");
+  }
+}
+
+// Deny a request
+export async function denyRequest(requestId: string, teamId: string) {
+  try {
+    const response = await axios.post(
+      `${apiUrlRequests}/${requestId}/teams/${teamId}/deny`,
+      {},
+      {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      }
+    );
+    return toRequestT(response.data);
+  } catch (error: any) {
+    if (error.response && error.response.data && error.response.data.detail) {
+      throw new Error("Failed to deny request: " + error.response.data.detail);
+    }
+    throw new Error("Failed to deny request, please try again later");
   }
 }
 

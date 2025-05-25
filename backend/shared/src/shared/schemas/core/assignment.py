@@ -31,8 +31,8 @@ class Assignment:
     shift_id: str
     fixed: bool
     source: AssignmentSource
+    source_id: str | None = None
     reference_assignment_id: str | None = None
-    recurrence_rule_id: str | None = None
 
     def to_dict(self) -> Dict:
         out = asdict(self)
@@ -54,7 +54,7 @@ class Assignment:
             reference_assignment_id=data.get("reference_assignment_id", None),
             fixed=data["fixed"],
             source=AssignmentSource(data["source"]),
-            recurrence_rule_id=data.get("recurrence_rule_id", None),
+            source_id=data.get("source_id", None),
         )
 
     def to_dto(self) -> AssignmentDTO:

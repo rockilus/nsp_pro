@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Tuple
 
+from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
     Attribute,
     AttributeOwnerType,
@@ -23,7 +24,7 @@ from src.utils.string_utils import generate_acronym
 class ShiftService(BaseService):
     def __init__(
         self,
-        collection,
+        collection: DatabaseCollections,
         assignment_service: AssignmentService,
         link_shift_service: LinkShiftService,
     ):

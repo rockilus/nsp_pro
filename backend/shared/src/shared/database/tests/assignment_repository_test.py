@@ -610,9 +610,9 @@ class TestAssignmentRepository:
         )
         assert len(remaining) == 0
 
-    def test_delete_assignments_by_recurrence_rule_id_from_date(self):
+    def test_delete_assignments_by_source_id_from_date(self):
         """Test deleting assignments by recurrence rule ID from a specific date."""
-        recurrence_rule_id = "rule123"
+        source_id = "rule123"
         today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
         assignments = [
             AssignmentSchema(
@@ -623,7 +623,7 @@ class TestAssignmentRepository:
                 shift="shift1",
                 fixed=False,
                 source=AssignmentSource.MANUAL.value,
-                recurrence_rule_id=recurrence_rule_id,
+                source_id=source_id,
             ),
             AssignmentSchema(
                 team="team1",
@@ -633,7 +633,7 @@ class TestAssignmentRepository:
                 shift="shift2",
                 fixed=True,
                 source=AssignmentSource.MANUAL.value,
-                recurrence_rule_id=recurrence_rule_id,
+                source_id=source_id,
             ),
             AssignmentSchema(
                 team="team1",
@@ -643,7 +643,7 @@ class TestAssignmentRepository:
                 shift="shift3",
                 fixed=False,
                 source=AssignmentSource.MANUAL.value,
-                recurrence_rule_id=recurrence_rule_id,
+                source_id=source_id,
             ),
             AssignmentSchema(
                 team="team2",
@@ -653,27 +653,25 @@ class TestAssignmentRepository:
                 shift="shift4",
                 fixed=False,
                 source=AssignmentSource.MANUAL.value,
-                recurrence_rule_id="rule456",
+                source_id="rule456",
             ),
         ]
         self.repo.create_many(assignments)
 
-        deleted_ids = self.repo.delete_assignments_by_recurrence_rule_id_from_date(
-            recurrence_rule_id, today.date()
+        deleted_ids = self.repo.delete_assignments_by_source_id_from_date(
+            source_id, today.date()
         )
 
         assert len(deleted_ids) == 2
         assert all(isinstance(id, str) for id in deleted_ids)
 
-        remaining = list(
-            self.repo.collection.find({"recurrence_rule_id": recurrence_rule_id})
-        )
+        remaining = list(self.repo.collection.find({"source_id": source_id}))
         assert len(remaining) == 1
         assert remaining[0]["date"] < today
 
-    def test_delete_assignments_by_recurrence_rule_id(self):
+    def test_delete_assignments_by_source_id(self):
         """Test deleting assignments by recurrence rule ID."""
-        recurrence_rule_id = "rule123"
+        source_id = "rule123"
         assignments = [
             AssignmentSchema(
                 team="team1",
@@ -683,7 +681,7 @@ class TestAssignmentRepository:
                 shift="shift1",
                 fixed=False,
                 source=AssignmentSource.MANUAL.value,
-                recurrence_rule_id=recurrence_rule_id,
+                source_id=source_id,
             ),
             AssignmentSchema(
                 team="team1",
@@ -693,7 +691,7 @@ class TestAssignmentRepository:
                 shift="shift2",
                 fixed=True,
                 source=AssignmentSource.MANUAL.value,
-                recurrence_rule_id=recurrence_rule_id,
+                source_id=source_id,
             ),
             AssignmentSchema(
                 team="team2",
@@ -703,24 +701,20 @@ class TestAssignmentRepository:
                 shift="shift3",
                 fixed=False,
                 source=AssignmentSource.MANUAL.value,
-                recurrence_rule_id="rule456",
+                source_id="rule456",
             ),
         ]
         self.repo.create_many(assignments)
 
-        deleted_ids = self.repo.delete_assignments_by_recurrence_rule_id(
-            recurrence_rule_id
-        )
+        deleted_ids = self.repo.delete_assignments_by_source_id(source_id)
 
         assert len(deleted_ids) == 2
         assert all(isinstance(id, str) for id in deleted_ids)
 
-        remaining = list(
-            self.repo.collection.find({"recurrence_rule_id": recurrence_rule_id})
-        )
+        remaining = list(self.repo.collection.find({"source_id": source_id}))
         assert len(remaining) == 0
 
-        unrelated = list(self.repo.collection.find({"recurrence_rule_id": "rule456"}))
+        unrelated = list(self.repo.collection.find({"source_id": "rule456"}))
         assert len(unrelated) == 1
 
     def test_delete_assignments_by_schedule_id_and_dates(self):

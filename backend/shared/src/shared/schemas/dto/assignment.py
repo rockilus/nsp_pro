@@ -15,7 +15,7 @@ class AssignmentDTO(BaseModel):
     fixed: bool
     source: str
     referenceAssignmentId: str | None
-    recurrenceRuleId: str | None
+    sourceId: str | None
 
 
 class AssignmentsRecurrencesResultDTO(BaseModel):

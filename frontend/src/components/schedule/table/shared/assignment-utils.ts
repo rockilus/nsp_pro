@@ -70,8 +70,8 @@ export const buildAssignmentsDataByOwnerAndDate = (
     const ownerDateKey = generateOwnerIdDateKey(ownerId, assignment.date);
 
     // Get the recurrence for the assignment
-    const recurrence = assignment.recurrenceRuleId
-      ? recurrenceMap.get(assignment.recurrenceRuleId) || null
+    const recurrence = assignment.sourceId
+      ? recurrenceMap.get(assignment.sourceId) || null
       : null;
 
     // Get associated breaches using the precomputed map

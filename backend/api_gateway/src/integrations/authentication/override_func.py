@@ -17,7 +17,7 @@ from supertokens_python.recipe.emailpassword.types import FormField
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.utils import find_first_occurrence_in_list
 
-from src.factories import get_user_service
+from src.factories import get_database, get_user_service
 from src.integrations.authentication.authn_emails import create_link
 from src.integrations.email_sender import EmailSender
 
@@ -42,6 +42,7 @@ def override_emailpassword_apis(original_implementation: APIInterface):
         | GeneralErrorResponse,
     ]:
         user_service = get_user_service(request=api_options.request.request)
+        db_collections = get_database(request=api_options.request.request)
 
         email_form_field = find_first_occurrence_in_list(
             lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields
@@ -78,25 +79,41 @@ def override_emailpassword_apis(original_implementation: APIInterface):
             # pylint: disable=broad-exception-raised
             raise Exception("Last name is missing")
         last_name = last_name_form_field.value
-        # config = db_collections.config_db.get_config()
-        # if config is None:
-        #     # pylint: disable=broad-exception-raised
-        #     raise Exception("Config not found in database")
-        # if config.signup_emails_whitelist_enabled:
-        #     if email not in config.signup_emails_whitelist:
-        #         if email not in config.signup_emails_attempt:
-        #             config = db_collections.config_db.add_signup_email_attempt(email)
-        #             send_signup_attempt_email(email)
-        #         print("SENDING CUSTOM RESPONSE")
-        #         api_options.response.set_status_code(200)
-        #         # json_dict = {'detail': 'email_not_on_whitelist'}
-        #         json_dict = {
-        #             "status": "SIGN_UP_NOT_ALLOWED",
-        #             "reason": "EMAIL_NOT_IN_WHITELIST",
-        #             "fetchResponse": None,
-        #         }
-        #         api_options.response.set_json_content(json_dict)
-        #         return GeneralErrorResponse("email_not_on_whitelist")  # type: ignore
+        config = db_collections.config_db.get_config()
+        if config is None:
+            # pylint: disable=broad-exception-raised
+            raise Exception("Config not found in database")
+        email_sender = EmailSender()
+        if config.signup_emails_whitelist_enabled:
+            if email not in config.signup_emails_whitelist:
+                if email not in config.signup_emails_attempt:
+                    config = db_collections.config_db.add_signup_email_attempt(email)
+                    email_sender.send_email(
+                        to_addresses=["felipe.kharaba@rockilus.com"],
+                        subject="New signup attempt",
+                        html_body=f"""
+                        <html>
+                            <body>
+                                <h1>New signup attempt</h1>
+                                <p>Email: {email}</p>
+                                <p>First name: {first_name}</p>
+                                <p>Last name: {last_name}</p>
+                                <p>Language: {language}</p>
+                            </body>
+                        </html>
+                        """,
+                        cc_addresses=None,
+                    )
+                print("SENDING CUSTOM RESPONSE")
+                api_options.response.set_status_code(200)
+                # json_dict = {'detail': 'email_not_on_whitelist'}
+                json_dict = {
+                    "status": "SIGN_UP_NOT_ALLOWED",
+                    "reason": "EMAIL_NOT_IN_WHITELIST",
+                    "fetchResponse": None,
+                }
+                api_options.response.set_json_content(json_dict)
+                return GeneralErrorResponse("email_not_on_whitelist")  # type: ignore
 
         result = await original_sign_up_post(
             form_fields,
@@ -135,7 +152,7 @@ def override_emailpassword_apis(original_implementation: APIInterface):
                 if email_verify_link is None:
                     # pylint: disable=broad-exception-raised
                     raise Exception("Email verification link is None")
-                email_sender = EmailSender()
+                # email_sender = EmailSender()
                 email_sender.send_template_email(
                     to_address=user.email,
                     template_name="verification_email",

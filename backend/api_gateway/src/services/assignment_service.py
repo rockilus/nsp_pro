@@ -94,7 +94,7 @@ class AssignmentService(BaseService):
                         fixed=assignment.fixed,
                         source=assignment.source,
                         reference_assignment_id=assignment.id,
-                        recurrence_rule_id=assignment.recurrence_rule_id,
+                        source_id=assignment.source_id,
                     )
                 )
         return assignments_recup
@@ -225,7 +225,7 @@ class AssignmentService(BaseService):
                 fixed=True,
                 source=AssignmentSource.RECURRENCE,
                 reference_assignment_id=None,
-                recurrence_rule_id=recurrence.id,
+                source_id=recurrence.id,
             )
             for date in dates_recurring
         ]
@@ -434,17 +434,13 @@ class AssignmentService(BaseService):
                 assignment=assignment_updated,
             )
             if ar_result_rec_update.recurrence_created:
-                assignment_updated.recurrence_rule_id = (
+                assignment_updated.source_id = (
                     ar_result_rec_update.recurrence_created.id
                 )
                 for ar_created in assignments_recup_created:
-                    ar_created.recurrence_rule_id = (
-                        ar_result_rec_update.recurrence_created.id
-                    )
+                    ar_created.source_id = ar_result_rec_update.recurrence_created.id
                 for ar_updated in assignments_recup_updated:
-                    ar_updated.recurrence_rule_id = (
-                        ar_result_rec_update.recurrence_created.id
-                    )
+                    ar_updated.source_id = ar_result_rec_update.recurrence_created.id
                 self.collection.assignment_db.update_assignments(
                     assignments=[assignment_updated]
                     + assignments_recup_created
@@ -648,8 +644,8 @@ class AssignmentService(BaseService):
             # Delete all future assignments for this recurrence
             # fmt: off
             deleted_assignments_ids = self.collection.assignment_db\
-                .delete_assignments_by_recurrence_rule_id_from_date(
-                    recurrence_rule_id=recurrence_new.id,
+                .delete_assignments_by_source_id_from_date(
+                    source_id=recurrence_new.id,
                     from_date=assignment.date + timedelta(days=1),
                 )
             # fmt: on
@@ -680,8 +676,8 @@ class AssignmentService(BaseService):
             )
             # Update all assignments for this recurrence (delete and create)
             assignments_deleted_ids = (
-                self.collection.assignment_db.delete_assignments_by_recurrence_rule_id(
-                    recurrence_rule_id=recurrence_updated.id
+                self.collection.assignment_db.delete_assignments_by_source_id(
+                    source_id=recurrence_updated.id
                 )
             )
             shift = self.collection.shift_db.get_shift_by_id(assignment.shift_id)
@@ -778,8 +774,8 @@ class AssignmentService(BaseService):
             # Delete all future assignments for this recurrence
             # fmt: off
             deleted_assignments_ids = self.collection.assignment_db\
-                .delete_assignments_by_recurrence_rule_id_from_date(
-                    recurrence_rule_id=recurrence.id,
+                .delete_assignments_by_source_id_from_date(
+                    source_id=recurrence.id,
                     from_date=assignment.date,
                 )
             # fmt: on
@@ -796,8 +792,8 @@ class AssignmentService(BaseService):
         if recurrence_update_scope == RecurrenceUpdateScope.ALL:
             # Delete all assignments for this recurrence
             assignments_deleted_ids = (
-                self.collection.assignment_db.delete_assignments_by_recurrence_rule_id(
-                    recurrence_rule_id=recurrence_rule_id
+                self.collection.assignment_db.delete_assignments_by_source_id(
+                    source_id=recurrence_rule_id
                 )
             )
             # Delete the exclusions for this recurrence
@@ -923,7 +919,7 @@ class AssignmentService(BaseService):
             if a_source.reference_assignment_id:
                 continue
 
-            if a_source.recurrence_rule_id:
+            if a_source.source_id:
                 matching_target_assignment = next(
                     (
                         a
@@ -931,7 +927,7 @@ class AssignmentService(BaseService):
                         if a.date == date_mapping[a_source.date]
                         and a.worker_id == a_source.worker_id
                         and a.shift_id == a_source.shift_id
-                        and a.recurrence_rule_id == a_source.recurrence_rule_id
+                        and a.source_id == a_source.source_id
                     ),
                     None,
                 )
@@ -946,11 +942,11 @@ class AssignmentService(BaseService):
             if a_target.id in a_target_keep_ids:
                 continue
 
-            if a_target.recurrence_rule_id:
+            if a_target.source_id:
                 exclusions_target_create.append(
                     RecurrenceExclusion(
                         id="",
-                        recurrence_rule_id=a_target.recurrence_rule_id,
+                        recurrence_rule_id=a_target.source_id,
                         excluded_date=a_target.date,
                     )
                 )
@@ -988,7 +984,7 @@ class AssignmentService(BaseService):
                     fixed=a_source.fixed,
                     source=AssignmentSource.DUPLICATE,
                     reference_assignment_id=None,
-                    recurrence_rule_id=None,
+                    source_id=None,
                 )
             )
 

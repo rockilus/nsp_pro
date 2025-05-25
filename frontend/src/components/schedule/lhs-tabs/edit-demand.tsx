@@ -205,7 +205,7 @@ const EditDemand: React.FC<EditDemandProps> = ({
   };
 
   const handleDeleteClick = () => {
-    if (assignment && assignment.recurrenceRuleId) {
+    if (assignment && assignment.sourceId) {
       setDialogAction("delete");
       setIsDialogOpen(true);
     } else if (assignment && handleDeleteAssignment) {
@@ -232,10 +232,10 @@ const EditDemand: React.FC<EditDemandProps> = ({
       fixed: true,
       source: AssignmentSource.MANUAL,
       referenceAssignmentId: null,
-      recurrenceRuleId: recurrenceState ? recurrenceState.id : null,
+      sourceId: recurrenceState ? recurrenceState.id : null,
     };
 
-    if (isEditing && assignment && assignment.recurrenceRuleId) {
+    if (isEditing && assignment && assignment.sourceId) {
       setDialogAction("update");
       setIsDialogOpen(true);
     } else {
@@ -257,7 +257,7 @@ const EditDemand: React.FC<EditDemandProps> = ({
 
   const handleDialogConfirm = (scope: RecurrenceUpdateScope) => {
     if (dialogAction === "delete" && assignment && handleDeleteAssignment) {
-      handleDeleteAssignment(assignment.id, assignment.recurrenceRuleId, scope);
+      handleDeleteAssignment(assignment.id, assignment.sourceId, scope);
     } else if (
       dialogAction === "update" &&
       assignment &&

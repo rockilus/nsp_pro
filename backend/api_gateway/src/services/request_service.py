@@ -1,17 +1,31 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import List
 
+from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
+    Assignment,
+    AssignmentSource,
+    FulfillmentStatus,
     Request,
     RequestAugmented,
+    RequestStatus,
     Shift,
     Worker,
 )
 
+from src.services.assignment_service import AssignmentService
 from src.services.base_service import BaseService
 
 
 class RequestService(BaseService):
+    def __init__(
+        self,
+        collection: DatabaseCollections,
+        assignment_service: AssignmentService,
+    ):
+        super().__init__(collection)
+        self.assignment_service = assignment_service
+
     def create_request(
         self, request: Request, author_id: str, team_role: str
     ) -> RequestAugmented:
@@ -25,6 +39,8 @@ class RequestService(BaseService):
                 "You are not allowed to create a request for another worker"
             )
         request.created_at = datetime.now(tz=timezone.utc)
+        request.status = RequestStatus.PENDING
+        request.fulfillment = FulfillmentStatus.UNFULFILLED
         new_request = self.collection.request_db.create_request(request)
         worker = self.collection.worker_db.get_worker_by_id(new_request.worker_id)
         shift = self.collection.shift_db.get_shift_by_id(new_request.shift_id)
@@ -60,6 +76,11 @@ class RequestService(BaseService):
         )
         if not old_request:
             raise ValueError(f"Request with id {request.id} not found")
+        if (
+            old_request.status != request.status
+            or old_request.fulfillment != request.fulfillment
+        ):
+            raise ValueError("You cannot change the status or fulfillment of a request")
         if not self.authz_request_team_member(
             new_request_worker_id=request.worker_id,
             author_id=author_id,
@@ -75,6 +96,71 @@ class RequestService(BaseService):
         worker = self.collection.worker_db.get_worker_by_id(new_request.worker_id)
         shift = self.collection.shift_db.get_shift_by_id(new_request.shift_id)
         return self.r_to_r_augmented(new_request, worker, shift)
+
+    def approve_request(self, request_id: str) -> RequestAugmented:
+        request = self.collection.request_db.get_request_by_id(request_id=request_id)
+        if not request:
+            raise ValueError(f"Request with id {request_id} not found")
+        if request.status != RequestStatus.PENDING:
+            raise ValueError(f"Request with id {request_id} is not in pending status")
+        dates = [
+            request.start_date + timedelta(days=i)
+            for i in range((request.end_date - request.start_date).days + 1)
+        ]
+        for date in dates:
+            # Create an assignment for each date in the range
+            if date < datetime.now(tz=timezone.utc).date():
+                continue
+            # fmt: off
+            assignment_existing = self.collection.assignment_db\
+                .get_assignment_by_worker_shift_team_and_date(
+                    worker_id=request.worker_id,
+                    shift_id=request.shift_id,
+                    team_id=request.team_id,
+                    a_date=date,
+                )
+            # fmt: on
+            if assignment_existing:
+                assignment_existing.source = AssignmentSource.REQUEST
+                assignment_existing.source_id = request.id
+                self.collection.assignment_db.update_assignment(
+                    assignment=assignment_existing
+                )
+            else:
+                assignment_new = Assignment(
+                    id="",
+                    team_id=request.team_id,
+                    schedule_id=None,
+                    worker_id=request.worker_id,
+                    date=date,
+                    shift_id=request.shift_id,
+                    fixed=True,
+                    source=AssignmentSource.REQUEST,
+                    source_id=request.id,
+                    reference_assignment_id=None,
+                )
+                self.assignment_service.create_assignment_and_recurrence(
+                    assignment_new=assignment_new, recurrence_new=None
+                )
+        request.status = RequestStatus.APPROVED
+        request.fulfillment = FulfillmentStatus.FULFILLED
+        updated_request = self.collection.request_db.update_request(request)
+        worker = self.collection.worker_db.get_worker_by_id(updated_request.worker_id)
+        shift = self.collection.shift_db.get_shift_by_id(updated_request.shift_id)
+        return self.r_to_r_augmented(updated_request, worker, shift)
+
+    def deny_request(self, request_id: str) -> RequestAugmented:
+        request = self.collection.request_db.get_request_by_id(request_id=request_id)
+        if not request:
+            raise ValueError(f"Request with id {request_id} not found")
+        if request.status != RequestStatus.PENDING:
+            raise ValueError(f"Request with id {request_id} is not in pending status")
+        request.status = RequestStatus.DENIED
+        request.fulfillment = FulfillmentStatus.UNFULFILLED
+        updated_request = self.collection.request_db.update_request(request)
+        worker = self.collection.worker_db.get_worker_by_id(updated_request.worker_id)
+        shift = self.collection.shift_db.get_shift_by_id(updated_request.shift_id)
+        return self.r_to_r_augmented(updated_request, worker, shift)
 
     def delete_request(self, request_id: str, author_id: str, team_role: str) -> None:
         request = self.collection.request_db.get_request_by_id(request_id=request_id)
