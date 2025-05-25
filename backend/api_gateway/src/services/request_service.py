@@ -76,6 +76,11 @@ class RequestService(BaseService):
         )
         if not old_request:
             raise ValueError(f"Request with id {request.id} not found")
+        if (
+            old_request.status != request.status
+            or old_request.fulfillment != request.fulfillment
+        ):
+            raise ValueError("You cannot change the status or fulfillment of a request")
         if not self.authz_request_team_member(
             new_request_worker_id=request.worker_id,
             author_id=author_id,
