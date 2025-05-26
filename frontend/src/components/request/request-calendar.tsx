@@ -15,6 +15,7 @@ type StatusColors = {
 type RequestCalendarProps = {
   workers: WorkerT[];
   requests: RequestT[];
+  currentMonth: Dayjs;
   statusColors?: StatusColors;
 };
 
@@ -53,15 +54,9 @@ function getStatusColor(request: RequestT, statusColors: StatusColors) {
 export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   workers,
   requests,
+  currentMonth,
   statusColors = defaultStatusColors,
 }) => {
-  const [currentMonth, setCurrentMonth] = React.useState(
-    dayjs().startOf("month")
-  );
-  const [showPending, setShowPending] = React.useState(true);
-  const [showAcceptedNotFulfilled, setShowAcceptedNotFulfilled] =
-    React.useState(true);
-  const [showFulfilled, setShowFulfilled] = React.useState(true);
   const days = getDaysInMonth(currentMonth);
 
   // Map workerId to requests for quick lookup
@@ -71,105 +66,19 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     requestsByWorker[req.workerId].push(req);
   }
 
-  // Helper: category check
-  function isPending(req: RequestT) {
-    return req.status === "pending";
-  }
-  function isAcceptedNotFulfilled(req: RequestT) {
-    return req.status === "approved" && req.fulfillment !== "fulfilled";
-  }
-  function isFulfilled(req: RequestT) {
-    return req.status === "approved" && req.fulfillment === "fulfilled";
-  }
-
-  // For each worker, for each day, find if a request covers that day and is visible
+  // For each worker, for each day, find if a request covers that day
   function getRequestForDay(workerId: string, day: Dayjs): RequestT | null {
     const reqs = requestsByWorker[workerId] || [];
     return (
-      reqs.find((r) => {
-        const inRange =
-          !day.isBefore(r.startDate, "day") && !day.isAfter(r.endDate, "day");
-        if (!inRange) return false;
-        if (isPending(r) && showPending) return true;
-        if (isAcceptedNotFulfilled(r) && showAcceptedNotFulfilled) return true;
-        if (isFulfilled(r) && showFulfilled) return true;
-        return false;
-      }) || null
+      reqs.find(
+        (r) =>
+          !day.isBefore(r.startDate, "day") && !day.isAfter(r.endDate, "day")
+      ) || null
     );
   }
 
-  // Month navigation handlers
-  const handlePrevMonth = () => setCurrentMonth((m) => m.subtract(1, "month"));
-  const handleNextMonth = () => setCurrentMonth((m) => m.add(1, "month"));
-  const handleToday = () => setCurrentMonth(dayjs().startOf("month"));
-
   return (
     <div className="request-calendar">
-      {/* Top Controls: Status Legend & Month Selector */}
-      <div className="calendar-top-controls">
-        <div className="calendar-month-selector">
-          <button
-            className="calendar-month-selector__today"
-            onClick={handleToday}
-          >
-            Today
-          </button>
-          <button
-            className="calendar-month-selector__arrow"
-            onClick={handlePrevMonth}
-            aria-label="Previous month"
-          >
-            &#8592;
-          </button>
-          <button
-            className="calendar-month-selector__arrow"
-            onClick={handleNextMonth}
-            aria-label="Next month"
-          >
-            &#8594;
-          </button>
-          <span className="calendar-month-selector__label">
-            {currentMonth.format("MMMM YYYY")}
-          </span>
-        </div>
-        <div className="calendar-status-legend">
-          <button
-            className={`calendar-status-legend__btn${
-              showPending ? " calendar-status-legend__btn--active" : ""
-            }`}
-            type="button"
-            onClick={() => setShowPending((v) => !v)}
-            aria-pressed={showPending}
-          >
-            <span className="calendar-status-legend__dot calendar-status-legend__dot--pending" />
-            Pending
-          </button>
-          <button
-            className={`calendar-status-legend__btn${
-              showAcceptedNotFulfilled
-                ? " calendar-status-legend__btn--active"
-                : ""
-            }`}
-            type="button"
-            onClick={() => setShowAcceptedNotFulfilled((v) => !v)}
-            aria-pressed={showAcceptedNotFulfilled}
-          >
-            <span className="calendar-status-legend__dot calendar-status-legend__dot--accepted-not-fulfilled" />
-            Accepted not fulfilled
-          </button>
-          <button
-            className={`calendar-status-legend__btn${
-              showFulfilled ? " calendar-status-legend__btn--active" : ""
-            }`}
-            type="button"
-            onClick={() => setShowFulfilled((v) => !v)}
-            aria-pressed={showFulfilled}
-          >
-            <span className="calendar-status-legend__dot calendar-status-legend__dot--fulfilled" />
-            Fulfilled
-          </button>
-        </div>
-      </div>
       {/* Calendar Header */}
       <div className="calendar-header">
         <div className="calendar-header__empty" />

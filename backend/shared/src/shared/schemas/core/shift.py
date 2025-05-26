@@ -100,7 +100,9 @@ class Shift:
             name=data["name"],
             acronym=data["acronym"],
             acronym_custom=data["acronym_custom"],
-            start_time=datetime.fromtimestamp(data["start_time"], tz=timezone.utc),
+            start_time=datetime.fromtimestamp(
+                data["start_time"], tz=timezone.utc
+            ),
             end_time=datetime.fromtimestamp(data["end_time"], tz=timezone.utc),
             staffing=[Staffing(**s) for s in data["staffing"]],
             color=data["color"],
@@ -134,7 +136,7 @@ class Shift:
         data_dict["end_time"] = datetime.fromtimestamp(
             data_dict["end_time"], tz=timezone.utc
         )
-        data_dict["staffing"] = [Staffing.from_dto(s) for s in data_dict["staffing"]]
+        data_dict["staffing"] = [Staffing.from_dto(s) for s in data.staffing]
         data_dict["shift_type"] = ShiftType(data_dict["shift_type"])
         data_dict["rest_type"] = ShiftRestType(data_dict["rest_type"])
         data_dict["leave_type"] = ShiftLeaveType(data_dict["leave_type"])
