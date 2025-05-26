@@ -1,6 +1,7 @@
 import React from "react";
 import dayjs, { Dayjs } from "dayjs";
 import "./request-calendar.css";
+import { StaffingSummaryLoadingIndicator } from "./StaffingSummaryLoadingIndicator";
 import { RequestT } from "../../types/request";
 
 type WorkerT = {
@@ -12,10 +13,15 @@ type StatusColors = {
   [key: string]: string;
 };
 
+import { DailyShiftDemandT } from "../../types/daily-shift-demand";
+import { ShiftT } from "../../types/shift";
+
 type RequestCalendarProps = {
   workers: WorkerT[];
   requests: RequestT[];
   statusColors?: StatusColors;
+  demands?: DailyShiftDemandT[];
+  shifts?: ShiftT[];
 };
 
 const defaultStatusColors: StatusColors = {
@@ -54,6 +60,8 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   workers,
   requests,
   statusColors = defaultStatusColors,
+  demands = [],
+  shifts = [],
 }) => {
   const [currentMonth, setCurrentMonth] = React.useState(
     dayjs().startOf("month")
@@ -62,14 +70,157 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   const [showAcceptedNotFulfilled, setShowAcceptedNotFulfilled] =
     React.useState(true);
   const [showFulfilled, setShowFulfilled] = React.useState(true);
-  const days = getDaysInMonth(currentMonth);
+  // Memoize days to avoid unnecessary rerenders and effect triggers
+  const days = React.useMemo(
+    () => getDaysInMonth(currentMonth),
+    [currentMonth]
+  );
 
-  // Map workerId to requests for quick lookup
-  const requestsByWorker: { [workerId: string]: RequestT[] } = {};
-  for (const req of requests) {
-    if (!requestsByWorker[req.workerId]) requestsByWorker[req.workerId] = [];
-    requestsByWorker[req.workerId].push(req);
+  // Progressive loading state for staffing summary
+  const [staffingSummary, setStaffingSummary] =
+    React.useState<StaffingSummary | null>(null);
+  const [isCalculating, setIsCalculating] = React.useState(false);
+  console.log("isCalculating", isCalculating);
+  console.log("staffingSummary", staffingSummary);
+
+  // --- STAFFING TABLE LOGIC ---
+  // Helper: get all shifts for this team (if provided)
+  const shiftMap: { [id: string]: ShiftT } = {};
+  for (const shift of shifts) {
+    shiftMap[shift.id] = shift;
   }
+
+  // Helper: get all demands for this month (memoized)
+  const monthDemands = React.useMemo(
+    () => demands.filter((d) => d.date.isSame(currentMonth, "month")),
+    [demands, currentMonth]
+  );
+
+  // --- PERFORMANCE OPTIMIZED: Precompute all values for the month ---
+  type StaffingSummary = {
+    [date: string]: {
+      demand: number;
+      available: number;
+      delta: number;
+    };
+  };
+
+  // Map workerId to requests for quick lookup (move up for use in summary)
+  const requestsByWorker = React.useMemo(() => {
+    const map: { [workerId: string]: RequestT[] } = {};
+    for (const req of requests) {
+      if (!map[req.workerId]) map[req.workerId] = [];
+      map[req.workerId].push(req);
+    }
+    return map;
+  }, [requests]);
+
+  // Progressive calculation of staffing summary (deferred, fixed infinite loop)
+  React.useEffect(() => {
+    setStaffingSummary(null);
+    setIsCalculating(true);
+    let cancelled = false;
+    const timerId = setTimeout(() => {
+      if (cancelled) return;
+      if (demands.length > 0 && shifts.length > 0) {
+        const summary: StaffingSummary = {};
+        // Preprocess leave requests for O(1) lookup
+        const workerLeaves: Record<string, Record<string, boolean>> = {};
+        for (const worker of workers) {
+          const workerReqs = requestsByWorker[worker.id] || [];
+          for (const req of workerReqs) {
+            if (req.requestType === "leave" && req.status === "approved") {
+              let current = dayjs.max(
+                req.startDate,
+                currentMonth.startOf("month")
+              );
+              const lastDay = dayjs.min(
+                req.endDate,
+                currentMonth.endOf("month")
+              );
+              while (!current.isAfter(lastDay, "day")) {
+                const dateKey = current.format("YYYY-MM-DD");
+                if (!workerLeaves[worker.id]) workerLeaves[worker.id] = {};
+                workerLeaves[worker.id][dateKey] = true;
+                current = current.add(1, "day");
+              }
+            }
+          }
+        }
+        for (const day of days) {
+          const dateKey = day.format("YYYY-MM-DD");
+          // Demand calculation
+          let totalDemand = 0;
+          for (const shift of shifts) {
+            const demandsForShift = monthDemands.filter(
+              (d) => d.date.isSame(day, "day") && d.shiftId === shift.id
+            );
+            const demandCount = demandsForShift.reduce(
+              (sum, d) => sum + d.count,
+              0
+            );
+            const shiftStaffing = shift.staffing.reduce(
+              (sum, s) =>
+                sum + (typeof s.staffing === "number" ? s.staffing : 0),
+              0
+            );
+            totalDemand += demandCount * shiftStaffing;
+          }
+          // Available staff calculation (O(1) lookup)
+          let available = 0;
+          for (const worker of workers) {
+            if (!workerLeaves[worker.id] || !workerLeaves[worker.id][dateKey]) {
+              available++;
+            }
+          }
+          summary[dateKey] = {
+            demand: totalDemand,
+            available,
+            delta: available - totalDemand,
+          };
+        }
+        if (!cancelled) {
+          setStaffingSummary(summary);
+          setIsCalculating(false);
+        }
+      } else {
+        setIsCalculating(false);
+      }
+    }, 0);
+    return () => {
+      cancelled = true;
+      clearTimeout(timerId);
+    };
+  }, [
+    currentMonth,
+    workers,
+    shifts,
+    demands,
+    requestsByWorker,
+    days,
+    monthDemands,
+  ]);
+
+  // Helper to get summary for a day
+  function getSummary(day: Dayjs) {
+    if (!staffingSummary) {
+      return { demand: 0, available: 0, delta: 0 };
+    }
+    return (
+      staffingSummary[day.format("YYYY-MM-DD")] || {
+        demand: 0,
+        available: 0,
+        delta: 0,
+      }
+    );
+  }
+
+  // // Map workerId to requests for quick lookup
+  // const requestsByWorker: { [workerId: string]: RequestT[] } = {};
+  // for (const req of requests) {
+  //   if (!requestsByWorker[req.workerId]) requestsByWorker[req.workerId] = [];
+  //   requestsByWorker[req.workerId].push(req);
+  // }
 
   // Helper: category check
   function isPending(req: RequestT) {
@@ -102,6 +253,8 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   const handlePrevMonth = () => setCurrentMonth((m) => m.subtract(1, "month"));
   const handleNextMonth = () => setCurrentMonth((m) => m.add(1, "month"));
   const handleToday = () => setCurrentMonth(dayjs().startOf("month"));
+
+  // --- END STAFFING TABLE LOGIC ---
 
   return (
     <div className="request-calendar">
@@ -184,6 +337,114 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           ))}
         </div>
       </div>
+
+      {/* STAFFING TABLE ROWS */}
+      {demands.length > 0 &&
+        shifts.length > 0 &&
+        (isCalculating || !staffingSummary ? (
+          <StaffingSummaryLoadingIndicator days={days} />
+        ) : (
+          <>
+            {/* Program staffing requirement */}
+            <div className="calendar-row">
+              <div
+                className="calendar-row__name"
+                style={{ fontWeight: 600, background: "#f0f4ff" }}
+              >
+                Program staffing requirement
+              </div>
+              <div className="calendar-row__days">
+                {days.map((d) => {
+                  const dateKey = d.format("YYYY-MM-DD");
+                  const summary = staffingSummary[dateKey] || {
+                    demand: 0,
+                    available: 0,
+                    delta: 0,
+                  };
+                  return (
+                    <div
+                      key={dateKey}
+                      className="calendar-cell"
+                      style={{
+                        background: "#f0f4ff",
+                        fontWeight: 600,
+                        color: "#1a237e",
+                      }}
+                    >
+                      {summary.demand}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            {/* Current staff available */}
+            <div className="calendar-row">
+              <div
+                className="calendar-row__name"
+                style={{ fontWeight: 600, background: "#e8f5e9" }}
+              >
+                Current staff available
+              </div>
+              <div className="calendar-row__days">
+                {days.map((d) => {
+                  const dateKey = d.format("YYYY-MM-DD");
+                  const summary = staffingSummary[dateKey] || {
+                    demand: 0,
+                    available: 0,
+                    delta: 0,
+                  };
+                  return (
+                    <div
+                      key={dateKey}
+                      className="calendar-cell"
+                      style={{
+                        background: "#e8f5e9",
+                        fontWeight: 600,
+                        color: "#256029",
+                      }}
+                    >
+                      {summary.available}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            {/* Delta */}
+            <div className="calendar-row">
+              <div
+                className="calendar-row__name"
+                style={{ fontWeight: 600, background: "#fff3e0" }}
+              >
+                Delta
+              </div>
+              <div className="calendar-row__days">
+                {days.map((d) => {
+                  const dateKey = d.format("YYYY-MM-DD");
+                  const summary = staffingSummary[dateKey] || {
+                    demand: 0,
+                    available: 0,
+                    delta: 0,
+                  };
+                  const delta = summary.delta;
+                  const isNegative = delta < 0;
+                  return (
+                    <div
+                      key={dateKey}
+                      className="calendar-cell"
+                      style={{
+                        background: isNegative ? "#ffebee" : "#e8f5e9",
+                        color: isNegative ? "#c62828" : "#256029",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {delta}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        ))}
       {/* Calendar Body */}
       <div className="calendar-body">
         {workers.map((worker) => (

@@ -33,6 +33,7 @@ import {
 import { ShiftT, ShiftType, ShiftRestType } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
 import { TeamMembershipRole } from "@/types/team";
+import { DailyShiftDemandT } from "@/types/daily-shift-demand";
 
 dayjs.extend(utc);
 
@@ -74,6 +75,7 @@ export default function RequestTab({
   const [requests, setRequests] = useState<RequestT[]>([]);
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
+  const [demands, setDemands] = useState<DailyShiftDemandT[]>([]);
 
   const userWorker = workers.find((w) => w.userId === userId);
 
@@ -106,14 +108,17 @@ export default function RequestTab({
           workers: fetchedWorkers,
           shifts: fetchedShifts,
           requests: fetchedRequests,
+          demands: fetchedDemands,
         }: {
           workers: WorkerT[];
           shifts: ShiftT[];
           requests: RequestT[];
+          demands: DailyShiftDemandT[];
         } = await getRequestsTabData(teamId);
         setWorkers(fetchedWorkers);
         setShifts(fetchedShifts);
         setRequests(fetchedRequests);
+        setDemands(fetchedDemands);
         setIsLoading(false);
       }
     };
@@ -230,7 +235,12 @@ export default function RequestTab({
             />
           )}
           {statusTab === 3 && (
-            <RequestCalendar workers={workers} requests={requests} />
+            <RequestCalendar
+              workers={workers}
+              requests={requests}
+              shifts={shifts}
+              demands={demands}
+            />
           )}
         </div>
       )}
