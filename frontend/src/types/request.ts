@@ -28,7 +28,7 @@ export type RequestT = {
   negative: boolean;
   hard: boolean;
   status: RequestStatus;
-  fulfillmentStatus: FulfillmentStatus;
+  fulfillment: FulfillmentStatus;
   comment: string;
   createdAt: dayjs.Dayjs;
   active: boolean;
