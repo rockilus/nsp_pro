@@ -40,7 +40,7 @@ function getDaysInMonth(month: Dayjs) {
   const days = [];
   const daysCount = month.daysInMonth();
   for (let i = 1; i <= daysCount; i++) {
-    days.push(month.date(i));
+    days.push(month.date(i).utc());
   }
   return days;
 }
@@ -64,7 +64,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   shifts = [],
 }) => {
   const [currentMonth, setCurrentMonth] = React.useState(
-    dayjs().startOf("month")
+    dayjs().utc().startOf("month")
   );
   const [showPending, setShowPending] = React.useState(true);
   const [showAcceptedNotFulfilled, setShowAcceptedNotFulfilled] =
@@ -80,8 +80,6 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   const [staffingSummary, setStaffingSummary] =
     React.useState<StaffingSummary | null>(null);
   const [isCalculating, setIsCalculating] = React.useState(false);
-  console.log("isCalculating", isCalculating);
-  console.log("staffingSummary", staffingSummary);
 
   // --- STAFFING TABLE LOGIC ---
   // Helper: get all shifts for this team (if provided)
@@ -155,6 +153,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
             const demandsForShift = monthDemands.filter(
               (d) => d.date.isSame(day, "day") && d.shiftId === shift.id
             );
+
             const demandCount = demandsForShift.reduce(
               (sum, d) => sum + d.count,
               0
@@ -201,20 +200,6 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     monthDemands,
   ]);
 
-  // Helper to get summary for a day
-  function getSummary(day: Dayjs) {
-    if (!staffingSummary) {
-      return { demand: 0, available: 0, delta: 0 };
-    }
-    return (
-      staffingSummary[day.format("YYYY-MM-DD")] || {
-        demand: 0,
-        available: 0,
-        delta: 0,
-      }
-    );
-  }
-
   // // Map workerId to requests for quick lookup
   // const requestsByWorker: { [workerId: string]: RequestT[] } = {};
   // for (const req of requests) {
@@ -252,7 +237,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   // Month navigation handlers
   const handlePrevMonth = () => setCurrentMonth((m) => m.subtract(1, "month"));
   const handleNextMonth = () => setCurrentMonth((m) => m.add(1, "month"));
-  const handleToday = () => setCurrentMonth(dayjs().startOf("month"));
+  const handleToday = () => setCurrentMonth(dayjs().utc().startOf("month"));
 
   // --- END STAFFING TABLE LOGIC ---
 
@@ -351,7 +336,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
                 className="calendar-row__name"
                 style={{ fontWeight: 600, background: "#f0f4ff" }}
               >
-                Program staffing requirement
+                Demand
               </div>
               <div className="calendar-row__days">
                 {days.map((d) => {
@@ -383,7 +368,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
                 className="calendar-row__name"
                 style={{ fontWeight: 600, background: "#e8f5e9" }}
               >
-                Current staff available
+                Offer
               </div>
               <div className="calendar-row__days">
                 {days.map((d) => {
