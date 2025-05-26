@@ -332,10 +332,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           <>
             {/* Program staffing requirement */}
             <div className="calendar-row">
-              <div
-                className="calendar-row__name"
-                style={{ fontWeight: 600, background: "#f0f4ff" }}
-              >
+              <div className="calendar-row__name" style={{ fontWeight: 600 }}>
                 Demand
               </div>
               <div className="calendar-row__days">
@@ -351,9 +348,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
                       key={dateKey}
                       className="calendar-cell"
                       style={{
-                        background: "#f0f4ff",
                         fontWeight: 600,
-                        color: "#1a237e",
                       }}
                     >
                       {summary.demand}
@@ -364,10 +359,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
             </div>
             {/* Current staff available */}
             <div className="calendar-row">
-              <div
-                className="calendar-row__name"
-                style={{ fontWeight: 600, background: "#e8f5e9" }}
-              >
+              <div className="calendar-row__name" style={{ fontWeight: 600 }}>
                 Offer
               </div>
               <div className="calendar-row__days">
@@ -383,9 +375,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
                       key={dateKey}
                       className="calendar-cell"
                       style={{
-                        background: "#e8f5e9",
                         fontWeight: 600,
-                        color: "#256029",
                       }}
                     >
                       {summary.available}
@@ -396,10 +386,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
             </div>
             {/* Delta */}
             <div className="calendar-row">
-              <div
-                className="calendar-row__name"
-                style={{ fontWeight: 600, background: "#fff3e0" }}
-              >
+              <div className="calendar-row__name" style={{ fontWeight: 600 }}>
                 Delta
               </div>
               <div className="calendar-row__days">
@@ -415,12 +402,11 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
                   return (
                     <div
                       key={dateKey}
-                      className="calendar-cell"
-                      style={{
-                        background: isNegative ? "#ffebee" : "#e8f5e9",
-                        color: isNegative ? "#c62828" : "#256029",
-                        fontWeight: 700,
-                      }}
+                      className={`calendar-cell calendar-cell--delta${
+                        isNegative
+                          ? " calendar-cell--delta-negative"
+                          : " calendar-cell--delta-positive"
+                      }`}
                     >
                       {delta}
                     </div>

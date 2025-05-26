@@ -1,3 +1,14 @@
+.calendar-cell--delta {
+  font-weight: 700;
+}
+.calendar-cell--delta-positive {
+  background: #e8f5e9;
+  color: #388e3c;
+}
+.calendar-cell--delta-negative {
+  background: #ffebee;
+  color: #c62828;
+}
 /* Skeleton loader for summary rows */
 .skeleton-loader {
   position: relative;
