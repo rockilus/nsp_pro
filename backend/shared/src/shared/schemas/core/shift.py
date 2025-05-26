@@ -100,9 +100,7 @@ class Shift:
             name=data["name"],
             acronym=data["acronym"],
             acronym_custom=data["acronym_custom"],
-            start_time=datetime.fromtimestamp(
-                data["start_time"], tz=timezone.utc
-            ),
+            start_time=datetime.fromtimestamp(data["start_time"], tz=timezone.utc),
             end_time=datetime.fromtimestamp(data["end_time"], tz=timezone.utc),
             staffing=[Staffing(**s) for s in data["staffing"]],
             color=data["color"],
