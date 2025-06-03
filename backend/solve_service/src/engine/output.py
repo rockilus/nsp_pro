@@ -72,9 +72,7 @@ class Output:
                 )
 
         for var_spe, bool_var_spe in self.model.assignment_wdss.items():
-            var_gen = self.model.variables[
-                (var_spe[0], var_spe[1], var_spe[2])
-            ]
+            var_gen = self.model.variables[(var_spe[0], var_spe[1], var_spe[2])]
             if self.model.solver.BooleanValue(
                 bool_var_spe
             ) and not self.model.solver.BooleanValue(var_gen):
@@ -150,9 +148,7 @@ class Output:
                 except (ValueError, TypeError):
                     pass
             else:
-                extracted_values[key] = (
-                    value  # Keep as string for status & fingerprint
-                )
+                extracted_values[key] = value  # Keep as string for status & fingerprint
 
         # Create SolverRun instance
         return SolverRun(
@@ -165,18 +161,14 @@ class Output:
             conflicts=extracted_values.get("conflicts", 0),
             branches=extracted_values.get("branches", 0),
             propagations=extracted_values.get("propagations", 0),
-            integer_propagations=extracted_values.get(
-                "integer_propagations", 0
-            ),
+            integer_propagations=extracted_values.get("integer_propagations", 0),
             restarts=extracted_values.get("restarts", 0),
             lp_iterations=extracted_values.get("lp_iterations", 0),
             walltime=extracted_values.get("walltime", 0.0),
             usertime=extracted_values.get("usertime", 0.0),
             deterministic_time=extracted_values.get("deterministic_time", 0.0),
             gap_integral=extracted_values.get("gap_integral", 0.0),
-            solution_fingerprint=str(
-                extracted_values.get("solution_fingerprint", "")
-            ),
+            solution_fingerprint=str(extracted_values.get("solution_fingerprint", "")),
             params=params,
             log_output=log_output,
         )
