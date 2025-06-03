@@ -134,7 +134,7 @@ class Shift:
         data_dict["end_time"] = datetime.fromtimestamp(
             data_dict["end_time"], tz=timezone.utc
         )
-        data_dict["staffing"] = [Staffing.from_dto(s) for s in data_dict["staffing"]]
+        data_dict["staffing"] = [Staffing.from_dto(s) for s in data.staffing]
         data_dict["shift_type"] = ShiftType(data_dict["shift_type"])
         data_dict["rest_type"] = ShiftRestType(data_dict["rest_type"])
         data_dict["leave_type"] = ShiftLeaveType(data_dict["leave_type"])

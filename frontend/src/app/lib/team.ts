@@ -18,12 +18,14 @@ const API_BASE_URL = API_URL;
  * @param {string} teamName - The name of the team to create.
  * @returns {Promise<TeamT>} A promise resolving to the created team.
  */
-export const createTeam = async (teamName: string): Promise<TeamT> => {
+export const createTeam = async (
+  teamName: string
+): Promise<TeamWithMembership> => {
   try {
     const response = await axios.post(`${API_BASE_URL}/teams`, {
       team_name: teamName,
     });
-    return toTeamtT(response.data);
+    return toTeamWithMembership(response.data);
   } catch (error) {
     console.error("Error creating team:", error);
     throw error;

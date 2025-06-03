@@ -224,7 +224,7 @@ export default function RequestPanel({
               <DatePicker
                 minDate={dayjs.utc().startOf("day")}
                 sx={{ marginLeft: 1, marginRight: 2 }}
-                value={dayjs(requestState.startDate)}
+                value={requestState.startDate}
                 onChange={(newValue) =>
                   setRequestState({
                     ...requestState,
@@ -245,7 +245,7 @@ export default function RequestPanel({
                     marginRight: 2,
                     width: "100%",
                   }}
-                  value={dayjs(requestState.endDate)}
+                  value={requestState.endDate}
                   onChange={(newValue) =>
                     setRequestState({
                       ...requestState,

@@ -133,14 +133,20 @@ class Output:
                 "restarts",
                 "lp_iterations",
             }:
-                extracted_values[key] = int(value)
+                try:
+                    extracted_values[key] = int(value)
+                except (ValueError, TypeError):
+                    pass
             elif key in {
                 "walltime",
                 "usertime",
                 "deterministic_time",
                 "gap_integral",
             }:
-                extracted_values[key] = float(value)
+                try:
+                    extracted_values[key] = float(value)
+                except (ValueError, TypeError):
+                    pass
             else:
                 extracted_values[key] = value  # Keep as string for status & fingerprint
 

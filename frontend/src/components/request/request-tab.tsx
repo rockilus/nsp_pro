@@ -5,9 +5,12 @@ import { useTranslation } from "../../app/i18n/client";
 // MUI
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
 // Components
 import RequestPanel from "./request-panel";
 import RequestTable from "./request-table";
+import { RequestCalendar } from "./request-calendar";
 // Skeletons
 import TablesSkeleton from "../skeletons/tables-skeleton";
 // Actions
@@ -28,6 +31,12 @@ import {
   FulfillmentStatus,
 } from "../../types/request";
 import { ShiftT, ShiftType, ShiftRestType } from "../../types/shift";
+import { WorkerT } from "../../types/worker";
+import { TeamMembershipRole } from "@/types/team";
+import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+
+dayjs.extend(utc);
+
 // Helper to filter shifts by request type
 function filterShiftsByRequestType(
   shifts: ShiftT[],
@@ -48,10 +57,6 @@ function filterShiftsByRequestType(
     }
   });
 }
-import { WorkerT } from "../../types/worker";
-import { TeamMembershipRole } from "@/types/team";
-
-dayjs.extend(utc);
 
 export default function RequestTab({
   lng,
@@ -70,6 +75,7 @@ export default function RequestTab({
   const [requests, setRequests] = useState<RequestT[]>([]);
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
+  const [demands, setDemands] = useState<DailyShiftDemandT[]>([]);
 
   const userWorker = workers.find((w) => w.userId === userId);
 
@@ -102,14 +108,17 @@ export default function RequestTab({
           workers: fetchedWorkers,
           shifts: fetchedShifts,
           requests: fetchedRequests,
+          demands: fetchedDemands,
         }: {
           workers: WorkerT[];
           shifts: ShiftT[];
           requests: RequestT[];
+          demands: DailyShiftDemandT[];
         } = await getRequestsTabData(teamId);
         setWorkers(fetchedWorkers);
         setShifts(fetchedShifts);
         setRequests(fetchedRequests);
+        setDemands(fetchedDemands);
         setIsLoading(false);
       }
     };
@@ -121,8 +130,11 @@ export default function RequestTab({
     RequestType.WORK_DEMAND
   );
 
+  // Tabs for request status/calendar
+  const [statusTab, setStatusTab] = useState(0);
+
   return (
-    <div className="tab-container">
+    <div className="tab-container-wide">
       {isLoading ? (
         <TablesSkeleton numTables={1} numInternalRows={3} />
       ) : (
@@ -181,7 +193,7 @@ export default function RequestTab({
                 negative: false,
                 hard: true,
                 status: RequestStatus.PENDING,
-                fulfillmentStatus: FulfillmentStatus.NOT_PROCESSED,
+                fulfillment: FulfillmentStatus.NOT_PROCESSED,
                 comment: "",
                 createdAt: dayjs.utc(),
                 active: true,
@@ -194,16 +206,42 @@ export default function RequestTab({
               handleUpdateRequest={handleUpdateRequest}
             />
           </div>
-          <RequestTable
-            lng={lng}
-            requests={requests.filter((r) => r.requestType === requestType)}
-            workers={workers}
-            shifts={shifts}
-            userWorkerId={userWorker?.id || null}
-            userTeamRole={userTeamRole}
-            handleUpdateRequest={handleUpdateRequest}
-            handleDeleteRequest={handleDeleteRequest}
-          />
+          <Tabs
+            value={statusTab}
+            onChange={(_e, v) => setStatusTab(v)}
+            sx={{ marginBottom: 2, marginLeft: 2 }}
+            aria-label="Request Status Tabs"
+          >
+            <Tab label={t("pending") || "Pending"} />
+            <Tab label={t("approved") || "Approved"} />
+            <Tab label={t("denied") || "Denied"} />
+            <Tab label={t("calendar") || "Calendar"} />
+          </Tabs>
+          {[0, 1, 2].includes(statusTab) && (
+            <RequestTable
+              lng={lng}
+              requests={requests.filter((r) => {
+                if (statusTab === 0) return r.status === RequestStatus.PENDING;
+                if (statusTab === 1) return r.status === RequestStatus.APPROVED;
+                if (statusTab === 2) return r.status === RequestStatus.DENIED;
+                return false;
+              })}
+              workers={workers}
+              shifts={shifts}
+              userWorkerId={userWorker?.id || null}
+              userTeamRole={userTeamRole}
+              handleUpdateRequest={handleUpdateRequest}
+              handleDeleteRequest={handleDeleteRequest}
+            />
+          )}
+          {statusTab === 3 && (
+            <RequestCalendar
+              workers={workers}
+              requests={requests}
+              shifts={shifts}
+              demands={demands}
+            />
+          )}
         </div>
       )}
     </div>

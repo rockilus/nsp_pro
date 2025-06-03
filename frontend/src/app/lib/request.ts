@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 // Actions
 import { getAllShifts } from "./shift";
 import { getAllWorkers } from "./worker";
+import { getDailyShiftDemands } from "./daily-shift-demand";
 // Types
 import { RequestT, toRequestT, fromRequestT } from "../../types/request";
 // Env Vars
@@ -156,11 +157,13 @@ export async function getRequestsTabData(teamId: string) {
       getAllWorkers(teamId),
       getAllShifts(teamId),
       getRequests(teamId),
+      getDailyShiftDemands(teamId),
     ]);
     return {
       workers: requestsTabData[0],
       shifts: requestsTabData[1],
       requests: requestsTabData[2],
+      demands: requestsTabData[3],
     };
   } catch (error) {
     console.error("Failed to fetch requests tab data:", error);

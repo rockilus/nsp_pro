@@ -31,7 +31,7 @@ class TeamService(BaseService):
         self.shift_service = shift_service
         self.team_membership_service = team_membership_service
 
-    async def create_team(self, team_name: str, owner_id: str) -> Team:
+    async def create_team(self, team_name: str, owner_id: str) -> TeamWithMembership:
         new_team = Team(
             id="",
             name=team_name,
@@ -49,7 +49,12 @@ class TeamService(BaseService):
         )
         await self.team_membership_service.create_team_membership(membership)
         self.shift_service.create_default_shifts(new_team.id)
-        return new_team
+        return TeamWithMembership(
+            team=new_team,
+            membership=MembershipForTeamWithMembership(
+                role=membership.role,
+            ),
+        )
 
     def get_team_by_id(self, team_id: str) -> Team | None:
         return self.collection.team_db.get_team_by_id(team_id=team_id)

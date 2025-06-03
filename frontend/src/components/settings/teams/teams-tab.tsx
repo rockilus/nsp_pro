@@ -43,6 +43,7 @@ export default function TeamsTab({
 
   const handleCreateTeam = async (teamName: string) => {
     const newTeam = await createTeam(teamName);
+    setTeams((prevTeams) => [...prevTeams, newTeam]);
   };
 
   const handleGetUserTeams = async () => {
