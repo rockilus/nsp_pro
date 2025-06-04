@@ -15,6 +15,7 @@ def r_to_r_augmented(
         start_date=request.start_date,
         end_date=request.end_date,
         shift_id=request.shift_id,
+        shift_options=request.shift_options,
         negative=request.negative,
         hard=request.hard,
         status=request.status,

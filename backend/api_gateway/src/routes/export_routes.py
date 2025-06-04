@@ -1,12 +1,10 @@
-from datetime import datetime, timezone
 from io import BytesIO
 
-import humps
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from shared.logger import log_info
-from shared.schemas.core import ExportOptions, ExportPeriodOptions
-from shared.schemas.errors import handle_create_schema_object_error
+from shared.schemas.core import ExportOptions
+from shared.schemas.dto import ExportOptionsDTO
 
 from src.dependencies import get_schedule_service
 from src.errors import NotAuthorizedError, handle_routes_errors
@@ -15,7 +13,6 @@ from src.integrations.authentication import (
     authn_verify_session,
 )
 from src.integrations.authorization import authz_check
-from src.routes.api_model import ExportOptionsMessage
 from src.services.schedule_service import ScheduleService
 
 router = APIRouter()
@@ -25,7 +22,7 @@ router = APIRouter()
 @router.post("/export/teams/{team_id}", status_code=201)
 async def export_schedule(
     team_id: str,
-    export_options: ExportOptionsMessage,
+    export_options: ExportOptionsDTO,
     session: SessionContainerType = Depends(authn_verify_session()),
     schedule_service: ScheduleService = Depends(get_schedule_service),
 ) -> StreamingResponse:
@@ -36,7 +33,7 @@ async def export_schedule(
             raise NotAuthorizedError(
                 "You do not have permission to export a schedule",
             )
-        data = msg_to_core_export_options(export_options)
+        data = ExportOptions.from_dto(export_options)
         workbook = schedule_service.export_schedule_to_excel(team_id, data)
 
         # Convert the workbook to a binary stream
@@ -58,22 +55,3 @@ async def export_schedule(
         log_info("Failed to export schedule")
         handle_routes_errors(e)
         raise HTTPException(status_code=500, detail="Failed to export schedule") from e
-
-
-# Mappers
-# message to core
-def msg_to_core_export_options(msg: ExportOptionsMessage) -> ExportOptions:
-    data_snake = humps.decamelize(msg.model_dump())
-    data_snake["period_option"] = ExportPeriodOptions(data_snake["period_option"])
-    data_snake["start_date"] = datetime.fromtimestamp(
-        data_snake["start_date"], timezone.utc
-    ).date()
-    data_snake["end_date"] = datetime.fromtimestamp(
-        data_snake["end_date"], timezone.utc
-    ).date()
-    try:
-        export_options = ExportOptions(**data_snake)
-    except Exception as e:
-        log_info("Failed to convert ExportOptionsMessage to ExportOptions")
-        handle_create_schema_object_error(e)
-    return export_options

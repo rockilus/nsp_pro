@@ -70,3 +70,15 @@ class DuplicateRequestDTO(BaseModel):
 class DuplicateResultDTO(BaseModel):
     assignments: AssignmentsRecurrencesResultDTO | None
     demands: DemandsResultDTO | None
+
+
+class WorkTimeTableDataDTO(BaseModel):
+    hours: int
+    count: int
+
+
+class WorkTimeTableDTO(BaseModel):
+    duties: WorkTimeTableDataDTO
+    others: WorkTimeTableDataDTO
+    workers: WorkTimeTableDataDTO
+    nbWeeks: float

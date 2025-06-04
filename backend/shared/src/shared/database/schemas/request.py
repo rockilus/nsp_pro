@@ -1,4 +1,5 @@
 from datetime import datetime, time, timezone
+from typing import Optional
 
 from pydantic import field_validator
 
@@ -19,7 +20,7 @@ class RequestSchema(DocumentBaseSchema):
     worker: str
     start_date: float
     end_date: float
-    shift: str
+    shift: Optional[str] = None
     negative: bool
     hard: bool
     status: str

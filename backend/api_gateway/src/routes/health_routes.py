@@ -1,6 +1,9 @@
+from typing import Dict
+
 import httpx
 import redis
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel
 from shared.database.database_collections import DatabaseCollections
 
 from src.config import config
@@ -8,9 +11,18 @@ from src.dependencies import get_db_collections
 from src.errors import AuthnConnectionError, AuthzConnectionError
 from src.integrations.authentication import authn_health_check
 from src.integrations.authorization import authz_connect, authz_health_check
-from src.routes.api_model import HealthCheck, ServiceStatus
 
 router = APIRouter()
+
+
+class ServiceStatus(BaseModel):
+    status: str
+    details: str | None
+
+
+class HealthCheck(BaseModel):
+    status: str
+    services: Dict[str, ServiceStatus]
 
 
 @router.get("/health", response_model=HealthCheck)

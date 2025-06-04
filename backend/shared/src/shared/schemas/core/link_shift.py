@@ -2,7 +2,11 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List
 
+import humps
+from pydantic import TypeAdapter
+
 from shared.schemas.core.shift import Shift
+from shared.schemas.dto.link_shift import LinkShiftDTO, LSChangeDTO
 
 
 @dataclass
@@ -42,7 +46,9 @@ class LinkShift:
                 message="Duplicate shift IDs found in link_shift.shift_ids.",
             )
         if len(shifts_ls) != len(self.shift_ids):
-            return ValidationResult(is_valid=False, message="Shifts not found.")
+            return ValidationResult(
+                is_valid=False, message="Shifts not found."
+            )
         if self.shifts_overlap(shifts_ls):
             return ValidationResult(is_valid=False, message="Shifts overlap.")
         for ls in ls_others:
@@ -61,16 +67,49 @@ class LinkShift:
 
                 s1_diff_days = (shift1.end_time - shift1.start_time).days
                 s1_start = datetime.combine(date_ref, shift1.start_time.time())
-                s1_end = datetime.combine(date_ref, shift1.end_time.time()) + timedelta(
-                    days=s1_diff_days
-                )
+                s1_end = datetime.combine(
+                    date_ref, shift1.end_time.time()
+                ) + timedelta(days=s1_diff_days)
 
                 s2_diff_days = (shift2.end_time - shift2.start_time).days
                 s2_start = datetime.combine(date_ref, shift2.start_time.time())
-                s2_end = datetime.combine(date_ref, shift2.end_time.time()) + timedelta(
-                    days=s2_diff_days
-                )
+                s2_end = datetime.combine(
+                    date_ref, shift2.end_time.time()
+                ) + timedelta(days=s2_diff_days)
 
                 if s1_start < s2_end and s1_end > s2_start:
                     return True
         return False
+
+    def to_dto(self) -> LinkShiftDTO:
+        data = asdict(self)
+        as_dict = humps.camelize(data)
+        validator = TypeAdapter(LinkShiftDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, dto: LinkShiftDTO) -> "LinkShift":
+        data_snake = humps.decamelize(dto.model_dump())
+        return cls(**data_snake)
+
+
+@dataclass
+class LSChange:
+    updated: List[LinkShift]
+    deleted: List[str]
+
+    def to_dto(self) -> LSChangeDTO:
+        updated_dto = [ls.to_dto() for ls in self.updated]
+        data = {
+            "updated": updated_dto,
+            "deleted": self.deleted,
+        }
+        as_dict = humps.camelize(data)
+        validator = TypeAdapter(LSChangeDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, dto: LSChangeDTO) -> "LSChange":
+        data_snake = humps.decamelize(dto.model_dump())
+        updated = [LinkShift.from_dto(ls) for ls in data_snake["updated"]]
+        return cls(updated=updated, deleted=data_snake["deleted"])

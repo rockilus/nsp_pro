@@ -1,19 +1,14 @@
-from dataclasses import asdict
 from typing import Dict, List
 
-import humps
 from fastapi import APIRouter, Depends
-from pydantic import TypeAdapter
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas.core import LinkShift
-from shared.schemas.errors import handle_create_schema_object_error
+from shared.schemas.dto import LinkShiftDTO
 
 from src.dependencies import get_db_collections, get_link_shift_service
 from src.errors import (
-    MessageTypeError,
     NotAuthorizedError,
-    handle_message_errors,
     handle_routes_errors,
 )
 from src.integrations.authentication import (
@@ -21,7 +16,6 @@ from src.integrations.authentication import (
     authn_verify_session,
 )
 from src.integrations.authorization import authz_check
-from src.routes.api_model import LinkShiftMessage
 from src.services.link_shift_service import LinkShiftService
 
 router = APIRouter()
@@ -31,12 +25,12 @@ router = APIRouter()
 @router.post("/link-shifts/teams/{team_id}")
 async def create_link_shift(
     team_id: str,
-    link_shift: LinkShiftMessage,
+    link_shift: LinkShiftDTO,
     session: SessionContainerType = Depends(authn_verify_session()),
     link_shift_service: LinkShiftService = Depends(
         get_link_shift_service,
     ),
-) -> LinkShiftMessage:
+) -> LinkShiftDTO:
     try:
         if not await authz_check(
             # session.get_user_id(), "create-link-shift", "team", team_id
@@ -48,9 +42,9 @@ async def create_link_shift(
             raise NotAuthorizedError(
                 "You do not have permission to create a link shift"
             )
-        ls_data = msg_to_core_link_shift(link_shift)
+        ls_data = LinkShift.from_dto(link_shift)
         link_shift_created = link_shift_service.create_link_shift(ls_data)
-        response = core_to_msg_link_shift(link_shift_created)
+        response = link_shift_created.to_dto()
     except Exception as e:
         log_info("Failed to create link_shift")
         handle_routes_errors(e)
@@ -64,7 +58,7 @@ async def get_link_shifts(
     db_collections: DatabaseCollections = Depends(
         get_db_collections,
     ),
-) -> List[LinkShiftMessage]:
+) -> List[LinkShiftDTO]:
     try:
         if not await authz_check(
             # session.get_user_id(), "read-link-shifts", "team", team_id
@@ -75,7 +69,7 @@ async def get_link_shifts(
         ):
             raise NotAuthorizedError("You do not have permission to get link shifts")
         link_shifts = db_collections.link_shift_db.get_link_shifts(team_id)
-        response = [core_to_msg_link_shift(ls) for ls in link_shifts]
+        response = [ls.to_dto() for ls in link_shifts]
     except Exception as e:
         log_info("Failed to get link shifts")
         handle_routes_errors(e)
@@ -85,12 +79,12 @@ async def get_link_shifts(
 @router.put("/link-shifts/{link_shift_id}/teams/{team_id}")
 async def update_link_shift(
     team_id: str,
-    link_shift: LinkShiftMessage,
+    link_shift: LinkShiftDTO,
     session: SessionContainerType = Depends(authn_verify_session()),
     link_shift_service: LinkShiftService = Depends(
         get_link_shift_service,
     ),
-) -> LinkShiftMessage:
+) -> LinkShiftDTO:
     try:
         if not await authz_check(
             # session.get_user_id(), "update-link-shift", "team", team_id
@@ -102,9 +96,9 @@ async def update_link_shift(
             raise NotAuthorizedError(
                 "You do not have permission to update a link shift"
             )
-        ls_data = msg_to_core_link_shift(link_shift)
+        ls_data = LinkShift.from_dto(link_shift)
         ls_updated = link_shift_service.update_link_shift(ls_data)
-        response = core_to_msg_link_shift(ls_updated)
+        response = ls_updated.to_dto()
     except Exception as e:
         log_info("Failed to update link shift")
         handle_routes_errors(e)
@@ -136,32 +130,3 @@ async def delete_link_shift(
         log_info("Failed to delete link shift")
         handle_routes_errors(e)
     return {"message": "LinkShift deleted"}
-
-
-# Mappers
-# core to message
-def core_to_msg_link_shift(link_shift: LinkShift) -> LinkShiftMessage:
-    try:
-        data = asdict(link_shift)
-    except Exception as e:
-        log_info("Failed to convert LinkShift to dictionary")
-        raise MessageTypeError(str(e)) from e
-    as_dict = humps.camelize(data)
-    validator = TypeAdapter(LinkShiftMessage)
-    try:
-        ls_msg = validator.validate_python(as_dict)
-    except Exception as e:
-        log_info("Failed to convert LinkShift to LinkShiftMessage")
-        handle_message_errors(e)
-    return ls_msg
-
-
-# message to core
-def msg_to_core_link_shift(msg: LinkShiftMessage) -> LinkShift:
-    data_snake = humps.decamelize(msg.model_dump())
-    try:
-        link_shift = LinkShift(**data_snake)
-    except Exception as e:
-        log_info("Failed to convert LinkShiftMessage to LinkShift")
-        handle_create_schema_object_error(e)
-    return link_shift

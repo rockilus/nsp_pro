@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List
 
 from shared.schemas.core import (
     Attribute,
@@ -7,6 +7,7 @@ from shared.schemas.core import (
     DimensionEntryType,
     DimensionType,
     DimEntry,
+    NewDimension,
 )
 
 from src.services.base_service import BaseService
@@ -15,7 +16,7 @@ from src.services.base_service import BaseService
 class DimensionService(BaseService):
     def create_dimension(
         self, dimension: Dimension, dim_entries: List[DimEntry]
-    ) -> Tuple[Dimension, List[DimEntry], List[Attribute]]:
+    ) -> NewDimension:
         d_created = self.collection.dimension_db.create_dimension(dimension)
         des_created: List[DimEntry] = []
         for dim_entry in dim_entries:
@@ -60,7 +61,11 @@ class DimensionService(BaseService):
             attributes_saved = self.collection.attribute_db.create_attributes(
                 attributes
             )
-        return d_created, des_created, attributes_saved
+        return NewDimension(
+            new_dimension=d_created,
+            new_dim_entries=des_created,
+            new_attributes=attributes_saved,
+        )
 
     def delete_dimension(self, sd_id: str) -> None:
         dim_entries = self.collection.dim_entry_db.get_dim_entries_by_dim_id(sd_id)

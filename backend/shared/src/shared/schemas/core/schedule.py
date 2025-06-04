@@ -21,6 +21,8 @@ from shared.schemas.dto.schedule import (
     ScheduleDTO,
     SolutionDTO,
     SolveDetailsDTO,
+    WorkTimeTableDataDTO,
+    WorkTimeTableDTO,
 )
 
 
@@ -233,6 +235,17 @@ class WorkTimeTableData:
     hours: int
     count: int
 
+    def to_dto(self) -> WorkTimeTableDataDTO:
+        data = asdict(self)
+        as_dict = humps.camelize(data)
+        validator = TypeAdapter(WorkTimeTableDataDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, data: WorkTimeTableDataDTO) -> "WorkTimeTableData":
+        data_snake = humps.decamelize(data.model_dump())
+        return WorkTimeTableData(**data_snake)
+
 
 @dataclass
 class WorkTimeTable:
@@ -240,6 +253,23 @@ class WorkTimeTable:
     others: WorkTimeTableData
     workers: WorkTimeTableData
     nb_weeks: float
+
+    def to_dto(self) -> WorkTimeTableDTO:
+        data = asdict(self)
+        data["duties"] = self.duties.to_dto()
+        data["others"] = self.others.to_dto()
+        data["workers"] = self.workers.to_dto()
+        as_dict = humps.camelize(data)
+        validator = TypeAdapter(WorkTimeTableDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, data: WorkTimeTableDTO) -> "WorkTimeTable":
+        data_snake = humps.decamelize(data.model_dump())
+        data_snake["duties"] = WorkTimeTableData.from_dto(data_snake["duties"])
+        data_snake["others"] = WorkTimeTableData.from_dto(data_snake["others"])
+        data_snake["workers"] = WorkTimeTableData.from_dto(data_snake["workers"])
+        return WorkTimeTable(**data_snake)
 
 
 @dataclass
