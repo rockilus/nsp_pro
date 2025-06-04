@@ -4,6 +4,7 @@ from typing import Optional
 from pydantic import field_validator
 
 from shared.database.schemas.base import DocumentBaseSchema
+from shared.database.schemas.constraint_build import ShiftWorkerOptionSchema
 from shared.schemas.core.request import (
     FulfillmentStatus,
     Request,
@@ -21,6 +22,7 @@ class RequestSchema(DocumentBaseSchema):
     start_date: float
     end_date: float
     shift: Optional[str] = None
+    shift_options: Optional[list[ShiftWorkerOptionSchema]]
     negative: bool
     hard: bool
     status: str
@@ -45,6 +47,7 @@ class RequestSchema(DocumentBaseSchema):
             start_date=datetime.fromtimestamp(self.start_date, tz=timezone.utc).date(),
             end_date=datetime.fromtimestamp(self.end_date, tz=timezone.utc).date(),
             shift_id=self.shift,
+            shift_options=[option.to_core() for option in self.shift_options or []],
             negative=self.negative,
             hard=self.hard,
             status=RequestStatus(self.status),
@@ -67,6 +70,10 @@ class RequestSchema(DocumentBaseSchema):
                 request.end_date, time.min, timezone.utc
             ).timestamp(),
             shift=request.shift_id,
+            shift_options=[
+                ShiftWorkerOptionSchema.from_core(option)
+                for option in request.shift_options or []
+            ],
             negative=request.negative,
             hard=request.hard,
             status=request.status.value,

@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Union
 import humps
 from pydantic import TypeAdapter
 
-from shared.schemas.core.constraint import ShiftWorkerOption
+from shared.schemas.core.constraint import MissingAttribute, ShiftWorkerOption
 from shared.schemas.dto.request import RequestDTO
 
 # class RequestStatus(Enum):
@@ -179,6 +179,7 @@ class Request:
 @dataclass
 class RequestAugmented(Request):
     active: bool = False
+    missing_attributes: List[MissingAttribute] = field(default_factory=list)
 
     def to_dict(self) -> Dict:
         out = super().to_dict()
@@ -197,6 +198,10 @@ class RequestAugmented(Request):
             ).date(),
             end_date=datetime.fromtimestamp(data["end_date"], tz=timezone.utc).date(),
             shift_id=data["shift_id"],
+            shift_options=[
+                ShiftWorkerOption.from_dict(option)
+                for option in data.get("shift_options", [])
+            ],
             negative=data["negative"],
             hard=data["hard"],
             status=RequestStatus(data["status"]),
@@ -204,6 +209,10 @@ class RequestAugmented(Request):
             comment=data.get("comment", ""),
             created_at=datetime.fromtimestamp(data["created_at"], tz=timezone.utc),
             active=data["active"],
+            missing_attributes=[
+                MissingAttribute.from_dict(attr)
+                for attr in data.get("missing_attributes", [])
+            ],
         )
 
     def to_dto(self) -> RequestDTO:
@@ -215,9 +224,11 @@ class RequestAugmented(Request):
         data["end_date"] = datetime.combine(
             self.end_date, time.min, tzinfo=timezone.utc
         ).timestamp()
+        data["shift_options"] = [option.to_dto() for option in self.shift_options]
         data["status"] = self.status.value
         data["fulfillment"] = self.fulfillment.value
         data["created_at"] = self.created_at.timestamp()
+        data["missing_attributes"] = [attr.to_dto() for attr in self.missing_attributes]
         as_dict = humps.camelize(data)
         validator = TypeAdapter(RequestDTO)
         return validator.validate_python(as_dict)

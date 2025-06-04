@@ -1,4 +1,11 @@
+from typing import List
+
 from pydantic import BaseModel
+
+from shared.schemas.dto.constraint import (
+    MissingAttributeDTO,
+    ShiftWorkerOptionDTO,
+)
 
 
 class RequestDTO(BaseModel):
@@ -8,7 +15,8 @@ class RequestDTO(BaseModel):
     workerId: str
     startDate: float
     endDate: float
-    shiftId: str
+    shiftId: str | None
+    shiftOptions: List[ShiftWorkerOptionDTO]
     negative: bool
     hard: bool
     status: str
@@ -16,3 +24,4 @@ class RequestDTO(BaseModel):
     comment: str
     createdAt: float
     active: bool
+    missingAttributes: List[MissingAttributeDTO]

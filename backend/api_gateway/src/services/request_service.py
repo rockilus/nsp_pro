@@ -1,15 +1,20 @@
 from datetime import datetime, timedelta, timezone
 from typing import List
 
+from shared.augment import r_to_r_augmented
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
     Assignment,
     AssignmentSource,
+    Attribute,
+    Dimension,
+    DimEntry,
     FulfillmentStatus,
     Request,
     RequestAugmented,
     RequestStatus,
-    Shift,
+    RequestType,
+    SWOIdTypes,
     Worker,
 )
 
@@ -18,6 +23,7 @@ from src.services.base_service import BaseService
 
 
 class RequestService(BaseService):
+
     def __init__(
         self,
         collection: DatabaseCollections,
@@ -42,30 +48,19 @@ class RequestService(BaseService):
         request.status = RequestStatus.PENDING
         request.fulfillment = FulfillmentStatus.UNFULFILLED
         new_request = self.collection.request_db.create_request(request)
-        worker = self.collection.worker_db.get_worker_by_id(new_request.worker_id)
-        shift = self.collection.shift_db.get_shift_by_id(new_request.shift_id)
-        return self.r_to_r_augmented(new_request, worker, shift)
+        return self._to_request_augmented(new_request)
 
     def get_requests(self, team_id: str) -> List[RequestAugmented]:
         workers = self.collection.worker_db.get_workers(team_id)
-        shifts = self.collection.shift_db.get_shifts(team_id)
         requests = self.collection.request_db.get_requests([w.id for w in workers])
-        rs_augmented = []
-        for r in requests:
-            worker = next((w for w in workers if w.id == r.worker_id), None)
-            shift = next((s for s in shifts if s.id == r.shift_id), None)
-            rs_augmented.append(self.r_to_r_augmented(r, worker, shift))
-        return rs_augmented
+        return self._to_requests_augmented(requests, team_id)
 
     def get_requests_by_workers(self, workers: List[Worker]) -> List[RequestAugmented]:
-        shifts = self.collection.shift_db.get_shifts(workers[0].team_id)
+        if not workers:
+            return []
+        team_id = workers[0].team_id
         requests = self.collection.request_db.get_requests([w.id for w in workers])
-        rs_augmented = []
-        for r in requests:
-            worker = next((w for w in workers if w.id == r.worker_id), None)
-            shift = next((s for s in shifts if s.id == r.shift_id), None)
-            rs_augmented.append(self.r_to_r_augmented(r, worker, shift))
-        return rs_augmented
+        return self._to_requests_augmented(requests, team_id)
 
     # pylint: disable=R0801
     def update_request(
@@ -93,9 +88,7 @@ class RequestService(BaseService):
             )
         request.created_at = old_request.created_at
         new_request = self.collection.request_db.update_request(request)
-        worker = self.collection.worker_db.get_worker_by_id(new_request.worker_id)
-        shift = self.collection.shift_db.get_shift_by_id(new_request.shift_id)
-        return self.r_to_r_augmented(new_request, worker, shift)
+        return self._to_request_augmented(new_request)
 
     def approve_request(self, request_id: str) -> RequestAugmented:
         request = self.collection.request_db.get_request_by_id(request_id=request_id)
@@ -103,6 +96,38 @@ class RequestService(BaseService):
             raise ValueError(f"Request with id {request_id} not found")
         if request.status != RequestStatus.PENDING:
             raise ValueError(f"Request with id {request_id} is not in pending status")
+        request_aug = self._to_request_augmented(request)
+        if not request_aug.active:
+            raise ValueError(
+                f"Request with id {request_id} is not active and cannot be approved"
+            )
+        single_shift_request = (
+            request.request_type == RequestType.LEAVE and request.shift_id is not None
+        ) or (
+            request.request_type == RequestType.WORK_DEMAND
+            and len(request.shift_options) == 1
+            and request.shift_options[0].id_type == SWOIdTypes.SHIFT
+        )
+        if single_shift_request:
+            target_shift_id = (
+                request.shift_id
+                if request.request_type == RequestType.LEAVE
+                and request.shift_id is not None
+                else request.shift_options[0].id
+            )
+            self._create_assignments_for_single_shift_request(request, target_shift_id)
+            request.fulfillment = FulfillmentStatus.FULFILLED
+        request.status = RequestStatus.APPROVED
+        updated_request = self.collection.request_db.update_request(request)
+        return self._to_request_augmented(updated_request)
+
+    def _create_assignments_for_single_shift_request(
+        self, request: Request, target_shift_id: str
+    ) -> None:
+        """
+        Create assignments for each date in the request for a single-shift
+        request (leave or work demand).
+        """
         dates = [
             request.start_date + timedelta(days=i)
             for i in range((request.end_date - request.start_date).days + 1)
@@ -115,7 +140,7 @@ class RequestService(BaseService):
             assignment_existing = self.collection.assignment_db\
                 .get_assignment_by_worker_shift_team_and_date(
                     worker_id=request.worker_id,
-                    shift_id=request.shift_id,
+                    shift_id=target_shift_id,
                     team_id=request.team_id,
                     a_date=date,
                 )
@@ -133,7 +158,7 @@ class RequestService(BaseService):
                     schedule_id=None,
                     worker_id=request.worker_id,
                     date=date,
-                    shift_id=request.shift_id,
+                    shift_id=target_shift_id,
                     fixed=True,
                     source=AssignmentSource.REQUEST,
                     source_id=request.id,
@@ -142,12 +167,6 @@ class RequestService(BaseService):
                 self.assignment_service.create_assignment_and_recurrence(
                     assignment_new=assignment_new, recurrence_new=None
                 )
-        request.status = RequestStatus.APPROVED
-        request.fulfillment = FulfillmentStatus.FULFILLED
-        updated_request = self.collection.request_db.update_request(request)
-        worker = self.collection.worker_db.get_worker_by_id(updated_request.worker_id)
-        shift = self.collection.shift_db.get_shift_by_id(updated_request.shift_id)
-        return self.r_to_r_augmented(updated_request, worker, shift)
 
     def deny_request(self, request_id: str) -> RequestAugmented:
         request = self.collection.request_db.get_request_by_id(request_id=request_id)
@@ -158,9 +177,7 @@ class RequestService(BaseService):
         request.status = RequestStatus.DENIED
         request.fulfillment = FulfillmentStatus.UNFULFILLED
         updated_request = self.collection.request_db.update_request(request)
-        worker = self.collection.worker_db.get_worker_by_id(updated_request.worker_id)
-        shift = self.collection.shift_db.get_shift_by_id(updated_request.shift_id)
-        return self.r_to_r_augmented(updated_request, worker, shift)
+        return self._to_request_augmented(updated_request)
 
     def delete_request(self, request_id: str, author_id: str, team_role: str) -> None:
         request = self.collection.request_db.get_request_by_id(request_id=request_id)
@@ -198,26 +215,96 @@ class RequestService(BaseService):
                     return False
         return True
 
-    @staticmethod
-    def r_to_r_augmented(
-        request: Request, worker: Worker | None, shift: Shift | None
-    ) -> RequestAugmented:
-        active = (not worker.deleted if worker else False) and (
-            not shift.deleted if shift else False
+    def _to_request_augmented(self, request: Request) -> RequestAugmented:
+        """
+        Convert a Request object to a RequestAugmented object, fetching all
+        related entities as needed.
+        """
+        worker = self.collection.worker_db.get_worker_by_id(request.worker_id)
+        shifts = self.collection.shift_db.get_shifts(request.team_id)
+        dimensions: List[Dimension] = []
+        dim_entries: List[DimEntry] = []
+        attributes: List[Attribute] = []
+        if request.request_type == RequestType.WORK_DEMAND:
+            dimensions = self.collection.dimension_db.get_dimensions(request.team_id)
+            dim_entries = self.collection.dim_entry_db.get_dim_entries_by_dim_ids(
+                [d.id for d in dimensions]
+            )
+            attributes = self.collection.attribute_db.get_attributes_by_owner_ids(
+                [s.id for s in shifts]
+            )
+
+        return r_to_r_augmented(
+            request=request,
+            worker=worker,
+            shifts=shifts,
+            dimensions=dimensions,
+            dim_entries=dim_entries,
+            attributes=attributes,
         )
-        return RequestAugmented(
-            id=request.id,
-            team_id=request.team_id,
-            request_type=request.request_type,
-            worker_id=request.worker_id,
-            start_date=request.start_date,
-            end_date=request.end_date,
-            shift_id=request.shift_id,
-            negative=request.negative,
-            hard=request.hard,
-            status=request.status,
-            fulfillment=request.fulfillment,
-            comment=request.comment,
-            created_at=request.created_at,
-            active=active,
+
+    def _to_requests_augmented(
+        self, requests: List[Request], team_id: str | None = None
+    ) -> List[RequestAugmented]:
+        """
+        Convert a list of Request objects to RequestAugmented objects
+        efficiently by batch-fetching related entities.
+        Args:
+            requests: List of Request objects to convert
+            team_id: Optional team_id. If not provided, will be extracted from
+            the first request
+        Returns:
+            List of RequestAugmented objects
+        """
+        if not requests:
+            return []
+        # Get team_id from first request if not provided
+        if not team_id:
+            team_id = requests[0].team_id
+        # Batch fetch all needed entities
+        workers = {
+            w.id: w for w in self.collection.worker_db.get_workers(team_id=team_id)
+        }
+        shifts = self.collection.shift_db.get_shifts(team_id=team_id)
+        # For leave requests, we need additional data
+        has_leave_requests = any(
+            r.request_type == RequestType.WORK_DEMAND for r in requests
         )
+        dimensions: List[Dimension] = []
+        dim_entries: List[DimEntry] = []
+        attributes: List[Attribute] = []
+        if has_leave_requests:
+            dimensions = self.collection.dimension_db.get_dimensions(team_id)
+            dim_entries = self.collection.dim_entry_db.get_dim_entries_by_dim_ids(
+                [d.id for d in dimensions]
+            )
+            attributes = self.collection.attribute_db.get_attributes_by_owner_ids(
+                [s.id for s in shifts]
+            )
+        # Convert each request to augmented form
+        result: List[RequestAugmented] = []
+        for request in requests:
+            worker = workers.get(request.worker_id)
+            result.append(
+                r_to_r_augmented(
+                    request=request,
+                    worker=worker,
+                    shifts=shifts,
+                    dimensions=(
+                        dimensions
+                        if request.request_type == RequestType.WORK_DEMAND
+                        else []
+                    ),
+                    dim_entries=(
+                        dim_entries
+                        if request.request_type == RequestType.WORK_DEMAND
+                        else []
+                    ),
+                    attributes=(
+                        attributes
+                        if request.request_type == RequestType.WORK_DEMAND
+                        else []
+                    ),
+                )
+            )
+        return result
