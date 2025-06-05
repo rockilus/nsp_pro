@@ -18,6 +18,8 @@ import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+// Components
+import ShiftOptionsDisplay from "../stats/nav-bar/shift-options-display";
 // Styles
 import "./request-panel.css";
 // Types
@@ -25,6 +27,7 @@ import { RequestT, RequestStatus, RequestType } from "../../types/request";
 import { ShiftT, ShiftType, ShiftRestType } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
 import { TeamMembershipRole } from "@/types/team";
+import { ShiftWorkerOptionT, SWOIdTypes } from "@/types/constraint";
 
 export default function RequestPanel({
   lng,
@@ -32,6 +35,7 @@ export default function RequestPanel({
   request,
   workers,
   shifts,
+  shiftOptions,
   userWorkerId,
   userTeamRole,
   handleAddRequest,
@@ -42,6 +46,7 @@ export default function RequestPanel({
   request: RequestT;
   workers: WorkerT[];
   shifts: ShiftT[];
+  shiftOptions: ShiftWorkerOptionT[];
   userWorkerId: string | null;
   userTeamRole: TeamMembershipRole;
   handleAddRequest: (request: RequestT) => void;
@@ -80,6 +85,41 @@ export default function RequestPanel({
       }
     });
   }
+
+  // Filters shiftOptions for ShiftOptionsDisplay (readability)
+  function filterShiftOptions(
+    shiftOptions: ShiftWorkerOptionT[],
+    shifts: ShiftT[]
+  ): ShiftWorkerOptionT[] {
+    const normalDutyShiftIds = shifts
+      .filter(
+        (s) =>
+          !s.deleted &&
+          (s.shiftType === ShiftType.NORMAL || s.shiftType === ShiftType.DUTY)
+      )
+      .map((s) => s.id);
+
+    return shiftOptions.filter((opt) => {
+      if (opt.categoryName === "All") return false;
+      if (
+        opt.idType === SWOIdTypes.SHIFT &&
+        !normalDutyShiftIds.includes(opt.id)
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }
+
+  const handleEditSelectedShifts = (selectedShifts: ShiftWorkerOptionT[]) => {
+    if (requestType === RequestType.LEAVE) return;
+
+    const newRequestState: RequestT = {
+      ...requestState,
+      shiftOptions: selectedShifts,
+    };
+    setRequestState(newRequestState);
+  };
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -170,7 +210,7 @@ export default function RequestPanel({
               })
             }
           >
-            {shifts.map((shift) => (
+            {filterShiftsByRequestType(shifts, requestType).map((shift) => (
               <MenuItem key={shift.id} value={shift.id}>
                 {shift.name}
               </MenuItem>
@@ -360,7 +400,17 @@ export default function RequestPanel({
           )}
           <div className="variable-input-container">
             <WorkIcon sx={{ marginLeft: 2, marginRight: 1 }} />
-            {selectShift()}
+            {requestType === RequestType.WORK_DEMAND ? (
+              <ShiftOptionsDisplay
+                lng={lng}
+                selectedShifts={requestState.shiftOptions}
+                statsShiftOptions={filterShiftOptions(shiftOptions, shifts)}
+                disabled={false}
+                handleEditSelectedShifts={handleEditSelectedShifts}
+              />
+            ) : (
+              selectShift()
+            )}
           </div>
           <div className="save-button-container">
             <Button

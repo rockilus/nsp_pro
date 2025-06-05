@@ -34,6 +34,7 @@ import { ShiftT, ShiftType, ShiftRestType } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
 import { TeamMembershipRole } from "@/types/team";
 import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { ShiftWorkerOptionT } from "@/types/constraint";
 
 dayjs.extend(utc);
 
@@ -55,6 +56,7 @@ export default function RequestTab({
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [demands, setDemands] = useState<DailyShiftDemandT[]>([]);
+  const [shiftOptions, setShiftOptions] = useState<ShiftWorkerOptionT[]>([]);
 
   const userWorker = workers.find((w) => w.userId === userId);
 
@@ -88,16 +90,19 @@ export default function RequestTab({
           shifts: fetchedShifts,
           requests: fetchedRequests,
           demands: fetchedDemands,
+          shiftOptions: fetchedShiftOptions,
         }: {
           workers: WorkerT[];
           shifts: ShiftT[];
           requests: RequestT[];
           demands: DailyShiftDemandT[];
+          shiftOptions: ShiftWorkerOptionT[];
         } = await getRequestsTabData(teamId);
         setWorkers(fetchedWorkers);
         setShifts(fetchedShifts);
         setRequests(fetchedRequests);
         setDemands(fetchedDemands);
+        setShiftOptions(fetchedShiftOptions);
         setIsLoading(false);
       }
     };
@@ -141,6 +146,7 @@ export default function RequestTab({
               }}
               workers={workers.filter((w) => !w.deleted)}
               shifts={shifts}
+              shiftOptions={shiftOptions}
               userWorkerId={userWorker?.id || null}
               userTeamRole={userTeamRole}
               handleAddRequest={handleAddRequest}
@@ -169,6 +175,7 @@ export default function RequestTab({
               })}
               workers={workers}
               shifts={shifts}
+              shiftOptions={shiftOptions}
               userWorkerId={userWorker?.id || null}
               userTeamRole={userTeamRole}
               handleUpdateRequest={handleUpdateRequest}

@@ -16,12 +16,14 @@ import { WorkerT } from "../../types/worker";
 import { RequestT } from "../../types/request";
 import { ShiftT } from "../../types/shift";
 import { TeamMembershipRole } from "@/types/team";
+import { ShiftWorkerOptionT } from "@/types/constraint";
 
 export default function RequestTable({
   lng,
   requests,
   workers,
   shifts,
+  shiftOptions,
   userWorkerId,
   userTeamRole,
   handleUpdateRequest,
@@ -31,6 +33,7 @@ export default function RequestTable({
   requests: RequestT[];
   workers: WorkerT[];
   shifts: ShiftT[];
+  shiftOptions: ShiftWorkerOptionT[];
   userWorkerId: string | null;
   userTeamRole: TeamMembershipRole;
   handleUpdateRequest: (request: RequestT) => void;
@@ -68,6 +71,7 @@ export default function RequestTable({
               request={request}
               workers={workers}
               shifts={shifts}
+              shiftOptions={shiftOptions}
               requestTableFields={requestTableFields}
               userWorkerId={userWorkerId}
               userTeamRole={userTeamRole}
