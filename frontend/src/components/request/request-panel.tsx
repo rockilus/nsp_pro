@@ -22,13 +22,12 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import "./request-panel.css";
 // Types
 import { RequestT, RequestStatus, RequestType } from "../../types/request";
-import { ShiftT } from "../../types/shift";
+import { ShiftT, ShiftType, ShiftRestType } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
 import { TeamMembershipRole } from "@/types/team";
 
 export default function RequestPanel({
   lng,
-  requestType,
   isEdit,
   request,
   workers,
@@ -39,7 +38,6 @@ export default function RequestPanel({
   handleUpdateRequest,
 }: {
   lng: string;
-  requestType: RequestType;
   isEdit: boolean;
   request: RequestT;
   workers: WorkerT[];
@@ -58,6 +56,30 @@ export default function RequestPanel({
   const [dateRange, setDateRange] = useState<boolean>(
     !request.startDate.isSame(request.endDate, "day")
   );
+  const [requestType, setRequestType] = useState<RequestType>(
+    RequestType.WORK_DEMAND
+  );
+  // Helper to filter shifts by request type
+  function filterShiftsByRequestType(
+    shifts: ShiftT[],
+    requestType: RequestType
+  ): ShiftT[] {
+    return shifts.filter((s) => {
+      if (requestType === RequestType.WORK_DEMAND) {
+        return (
+          !s.deleted &&
+          (s.shiftType === ShiftType.NORMAL || s.shiftType === ShiftType.DUTY)
+        );
+      } else {
+        return (
+          !s.deleted &&
+          (s.shiftType === ShiftType.REST || s.shiftType === ShiftType.LEAVE) &&
+          (s.restType === ShiftRestType.OFF ||
+            s.restType === ShiftRestType.NONE)
+        );
+      }
+    });
+  }
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -203,6 +225,44 @@ export default function RequestPanel({
               <CloseIcon />
             </IconButton>
           </div>
+          <ToggleButtonGroup
+            color="primary"
+            value={requestType}
+            exclusive
+            onChange={(_event, value) => {
+              if (value !== null) setRequestType(value);
+            }}
+            aria-label="Request Type"
+            sx={{ marginBottom: 2, marginLeft: 2 }}
+          >
+            <ToggleButton
+              value={RequestType.WORK_DEMAND}
+              sx={{
+                marginTop: "5px",
+                marginBottom: "5px",
+                marginLeft: "56px",
+                textTransform: "none",
+                height: "30px",
+                width: "105px",
+                fontSize: "0.8rem",
+              }}
+            >
+              {t("work")}
+            </ToggleButton>
+            <ToggleButton
+              value={RequestType.LEAVE}
+              sx={{
+                marginTop: "5px",
+                marginBottom: "5px",
+                textTransform: "none",
+                height: "30px",
+                width: "105px",
+                fontSize: "0.8rem",
+              }}
+            >
+              {t("leave")}
+            </ToggleButton>
+          </ToggleButtonGroup>
           <div className="variable-input-container">
             <PeopleAltIcon sx={{ marginLeft: 2, marginRight: 1 }} />
             {selectWorker()}

@@ -37,27 +37,6 @@ import { DailyShiftDemandT } from "@/types/daily-shift-demand";
 
 dayjs.extend(utc);
 
-// Helper to filter shifts by request type
-function filterShiftsByRequestType(
-  shifts: ShiftT[],
-  requestType: RequestType
-): ShiftT[] {
-  return shifts.filter((s) => {
-    if (requestType === RequestType.WORK_DEMAND) {
-      return (
-        !s.deleted &&
-        (s.shiftType === ShiftType.NORMAL || s.shiftType === ShiftType.DUTY)
-      );
-    } else {
-      return (
-        !s.deleted &&
-        (s.shiftType === ShiftType.REST || s.shiftType === ShiftType.LEAVE) &&
-        (s.restType === ShiftRestType.OFF || s.restType === ShiftRestType.NONE)
-      );
-    }
-  });
-}
-
 export default function RequestTab({
   lng,
   teamId,
@@ -126,9 +105,6 @@ export default function RequestTab({
   }, [teamId]);
 
   // ToggleButton state for request type
-  const [requestType, setRequestType] = useState<RequestType>(
-    RequestType.WORK_DEMAND
-  );
 
   // Tabs for request status/calendar
   const [statusTab, setStatusTab] = useState(0);
@@ -141,51 +117,13 @@ export default function RequestTab({
         <div>
           <div className="title-container">
             <span className="title">{t("requests")}</span>
-            <ToggleButtonGroup
-              color="primary"
-              value={requestType}
-              exclusive
-              onChange={(_event, value) => {
-                if (value !== null) setRequestType(value);
-              }}
-              aria-label="Request Type"
-            >
-              <ToggleButton
-                value={RequestType.WORK_DEMAND}
-                sx={{
-                  marginTop: "5px",
-                  marginBottom: "5px",
-                  marginLeft: "56px",
-                  textTransform: "none",
-                  height: "30px",
-                  width: "105px",
-                  fontSize: "0.8rem",
-                }}
-              >
-                {t("work")}
-              </ToggleButton>
-              <ToggleButton
-                value={RequestType.LEAVE}
-                sx={{
-                  marginTop: "5px",
-                  marginBottom: "5px",
-                  textTransform: "none",
-                  height: "30px",
-                  width: "105px",
-                  fontSize: "0.8rem",
-                }}
-              >
-                {t("leave")}
-              </ToggleButton>
-            </ToggleButtonGroup>
             <RequestPanel
               lng={lng}
-              requestType={requestType}
               isEdit={false}
               request={{
                 id: "",
                 teamId: teamId,
-                requestType: requestType,
+                requestType: RequestType.WORK_DEMAND,
                 workerId: userWorker?.id || "",
                 startDate: dayjs.utc().startOf("day"),
                 endDate: dayjs.utc().startOf("day"),
@@ -202,7 +140,7 @@ export default function RequestTab({
                 missingAttributes: [],
               }}
               workers={workers.filter((w) => !w.deleted)}
-              shifts={filterShiftsByRequestType(shifts, requestType)}
+              shifts={shifts}
               userWorkerId={userWorker?.id || null}
               userTeamRole={userTeamRole}
               handleAddRequest={handleAddRequest}

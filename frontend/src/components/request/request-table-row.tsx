@@ -186,7 +186,6 @@ export default function RequestTableRow({
         <div className="request-row-buttons">
           <RequestPanel
             lng={lng}
-            requestType={request.requestType}
             isEdit={true}
             request={request}
             workers={workers.filter((worker) => !worker.deleted)}
