@@ -190,6 +190,7 @@ export default function RequestTab({
                 startDate: dayjs.utc().startOf("day"),
                 endDate: dayjs.utc().startOf("day"),
                 shiftId: "",
+                shiftOptions: [],
                 negative: false,
                 hard: true,
                 status: RequestStatus.PENDING,
@@ -197,6 +198,8 @@ export default function RequestTab({
                 comment: "",
                 createdAt: dayjs.utc(),
                 active: true,
+                shiftTargetIds: [],
+                missingAttributes: [],
               }}
               workers={workers.filter((w) => !w.deleted)}
               shifts={filterShiftsByRequestType(shifts, requestType)}

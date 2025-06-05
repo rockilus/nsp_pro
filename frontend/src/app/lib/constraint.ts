@@ -6,7 +6,6 @@ import { getShifts } from "./shift";
 import { ConstraintT, TemplateT } from "../../types/constraint";
 // Env Vars
 import { API_URL } from "./env";
-import { get } from "http";
 
 const apiUrlConstraints = API_URL + "/constraints";
 const apiUrlTemplates = API_URL + "/constraint-templates";
