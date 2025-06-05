@@ -4,7 +4,7 @@ from typing import Dict, List
 from fastapi import APIRouter, Depends
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
-from shared.schemas.core import LinkShift, Shift
+from shared.schemas.core import Shift
 from shared.schemas.dto import ShiftDTO
 
 from src.dependencies import get_db_collections, get_shift_service
@@ -14,7 +14,6 @@ from src.integrations.authentication import (
     authn_verify_session,
 )
 from src.integrations.authorization import authz_check
-from src.routes.link_shift_routes import core_to_msg_link_shift
 from src.services.shift_service import ShiftService
 
 router = APIRouter()
@@ -128,7 +127,7 @@ async def update_shift(
         )
         response = {
             "shift": updated_shift.to_dto(attributes),
-            "linkShifts": core_to_msg_ls_change(ls_change),
+            "linkShifts": ls_change.to_dto(),
         }
     except Exception as e:
         log_info("Failed to update shift")
@@ -154,21 +153,5 @@ async def delete_shift(
         handle_routes_errors(e)
     return {
         "message": "shift deleted",
-        "linkShifts": core_to_msg_ls_change(ls_change),
-    }
-
-
-# Mappers
-def core_to_msg_ls_change(
-    ls_change: Dict[str, List[LinkShift | str]] | None,
-) -> Dict:
-    if ls_change is None:
-        return {"udpated": [], "deleted": []}
-    return {
-        "updated": [
-            core_to_msg_link_shift(ls)
-            for ls in ls_change.get("updated", [])
-            if isinstance(ls, LinkShift)
-        ],
-        "deleted": ls_change.get("deleted", []),
+        "linkShifts": ls_change.to_dto(),
     }

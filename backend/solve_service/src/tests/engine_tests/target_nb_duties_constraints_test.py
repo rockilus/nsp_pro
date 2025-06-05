@@ -331,7 +331,8 @@ class TestTargetWorkTimeConstraints:
             as_wip_fixed=[],
             cbs_augmented=[],
             daily_shift_demands=daily_shift_demands,
-            requests=[],
+            requests_work=[],
+            requests_leave=[],
             model_output=None,
             penalties=penalties_fix,
             model_config=mc_copy,
@@ -365,7 +366,7 @@ class TestTargetWorkTimeConstraints:
             engine_inputs_nb_duties.schedule,
             engine_inputs_nb_duties.workers,
             engine_inputs_nb_duties.shifts,
-            engine_inputs_nb_duties.requests,
+            engine_inputs_nb_duties.requests_leave,
             engine_inputs_nb_duties.daily_shift_demands,
             periods_monthly,
         )
@@ -420,7 +421,7 @@ class TestTargetWorkTimeConstraints:
             engine_inputs_nb_duties.schedule,
             engine_inputs_nb_duties.workers,
             engine_inputs_nb_duties.shifts,
-            engine_inputs_nb_duties.requests,
+            engine_inputs_nb_duties.requests_leave,
             engine_inputs_nb_duties.daily_shift_demands,
             periods_monthly,
         )
@@ -484,7 +485,7 @@ class TestTargetWorkTimeConstraints:
             engine_inputs_nb_duties.schedule,
             engine_inputs_nb_duties.workers,
             engine_inputs_nb_duties.shifts,
-            engine_inputs_nb_duties.requests,
+            engine_inputs_nb_duties.requests_leave,
             engine_inputs_nb_duties.daily_shift_demands,
             periods_monthly,
         )
@@ -581,7 +582,7 @@ class TestTargetWorkTimeConstraints:
             engine_inputs_nb_duties.schedule,
             engine_inputs_nb_duties.workers,
             engine_inputs_nb_duties.shifts,
-            engine_inputs_nb_duties.requests,
+            engine_inputs_nb_duties.requests_leave,
             engine_inputs_nb_duties.daily_shift_demands,
             periods_monthly,
         )

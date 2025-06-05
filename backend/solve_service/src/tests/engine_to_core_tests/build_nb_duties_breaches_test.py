@@ -335,7 +335,8 @@ class TestTargetWorkTimeConstraints:
             as_wip_fixed=[],
             cbs_augmented=[],
             daily_shift_demands=daily_shift_demands,
-            requests=[],
+            requests_work=[],
+            requests_leave=[],
             model_output=None,
             penalties=penalties_fix,
             model_config=mc_copy,
@@ -379,7 +380,7 @@ class TestTargetWorkTimeConstraints:
             ei_nb_duties.schedule,
             ei_nb_duties.workers,
             ei_nb_duties.shifts,
-            ei_nb_duties.requests,
+            ei_nb_duties.requests_leave,
             ei_nb_duties.daily_shift_demands,
             periods_monthly,
         )

@@ -1,5 +1,8 @@
 from typing import Dict, List, Tuple
 
+from shared.constraint_parser import (
+    build_dim_to_attr_value_to_owner,
+)
 from shared.schemas.core import (
     EngineInputsAugmented,
     Shift,
@@ -11,9 +14,6 @@ from core_to_engine_service.build_dates import (
     build_dates,
     build_worker_ids_to_worker_dates,
     build_ws_ids_to_dates,
-)
-from core_to_engine_service.build_dim_to_attr_value_to_owner import (
-    build_dim_to_attr_value_to_owner,
 )
 from core_to_engine_service.build_duty_recup_pairs import (
     build_duty_recup_pairs,
@@ -133,7 +133,7 @@ def core_to_engine_inputs(
         engine_inputs.schedule,
         workers_not_deleted,
         shifts_not_deleted,
-        engine_inputs.requests,
+        engine_inputs.requests_leave,
         engine_inputs.daily_shift_demands,
         periods_weekly,
     )
@@ -142,7 +142,7 @@ def core_to_engine_inputs(
         engine_inputs.schedule,
         workers_not_deleted,
         shifts_not_deleted,
-        engine_inputs.requests,
+        engine_inputs.requests_leave,
         engine_inputs.daily_shift_demands,
         periods_monthly,
     )
@@ -187,7 +187,7 @@ def core_to_engine_inputs(
                 engine_inputs.shifts,
                 engine_inputs.daily_shift_demands,
                 fixed_assignments,
-                engine_inputs.requests,
+                engine_inputs.requests_leave,
             ),
             sol_hint=SolHint(
                 var_sol=(
@@ -231,11 +231,13 @@ def core_to_engine_inputs(
                 engine_inputs.penalties.configuration_constraint.coverage,
             ),
             requests=build_engine_requests(
-                worker_not_deleted_ids,
-                worker_ids_to_worker_dates,
-                shift_not_deleted_ids,
-                engine_inputs.requests,
-                engine_inputs.penalties.user_constraint.request,
+                worker_not_deleted_ids=worker_not_deleted_ids,
+                worker_ids_to_worker_dates=worker_ids_to_worker_dates,
+                shift_not_deleted_ids=shift_not_deleted_ids,
+                shifts=shifts_not_deleted,
+                dim_to_attr_value_to_shift=dim_to_attr_value_to_shift,
+                requests=engine_inputs.requests_work,
+                r_penalty=engine_inputs.penalties.user_constraint.request,
             ),
             duty_recup_pairs=build_duty_recup_pairs(
                 workers_not_deleted,
@@ -303,7 +305,7 @@ def core_to_engine_inputs(
                     dates_hist,
                     dates_campaign,
                     engine_inputs.shifts,
-                    engine_inputs.requests,
+                    engine_inputs.requests_leave,
                     engine_inputs.daily_shift_demands,
                     fixed_assignments,
                     # fmt: off

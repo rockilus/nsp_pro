@@ -167,7 +167,11 @@ export default function RequestTableRow({
                   )}`;
                 }
               } else if (field.name === "shiftId") {
-                return getShiftName(request.shiftId);
+                if (!request.shiftId) {
+                  return "SHIFT OPTIONS TO BE IMPLEMENTED";
+                } else {
+                  return getShiftName(request.shiftId);
+                }
               } else if (field.name === "hard") {
                 return HardSoftButton(lng, request.hard, () =>
                   handleToggleHard(request)

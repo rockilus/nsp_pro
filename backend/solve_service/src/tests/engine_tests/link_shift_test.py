@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import List
 
+from shared.augment import requests_to_requests_augmented
 from shared.schemas.core import (
     Breach,
     EngineInputsAugmented,
@@ -10,6 +11,8 @@ from shared.schemas.core import (
     Request,
     RequestStatus,
     RequestType,
+    ShiftWorkerOption,
+    SWOIdTypes,
     Variable,
 )
 
@@ -103,7 +106,16 @@ class TestDutyRecupConstraint:
                 worker_id=worker_target_0.id,
                 start_date=date_target,
                 end_date=date_target,
-                shift_id=shift_target_0_id,
+                shift_id=None,
+                shift_options=[
+                    ShiftWorkerOption(
+                        name=shift_target_0_id,
+                        id=shift_target_0_id,
+                        id_type=SWOIdTypes.SHIFT,
+                        is_bool_dim=False,
+                        category_name=shift_target_0_id,
+                    )
+                ],
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING,
@@ -118,7 +130,16 @@ class TestDutyRecupConstraint:
                 worker_id=worker_target_1.id,
                 start_date=date_target,
                 end_date=date_target,
-                shift_id=shift_target_1_id,
+                shift_id=None,
+                shift_options=[
+                    ShiftWorkerOption(
+                        name=shift_target_1_id,
+                        id=shift_target_1_id,
+                        id_type=SWOIdTypes.SHIFT,
+                        is_bool_dim=False,
+                        category_name=shift_target_1_id,
+                    )
+                ],
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING,
@@ -128,7 +149,14 @@ class TestDutyRecupConstraint:
                 created_at=datetime.now(tz=timezone.utc),
             ),
         ]
-        sample_data_fixture.requests = requests
+        sample_data_fixture.requests_work = requests_to_requests_augmented(
+            requests=requests,
+            workers=workers,
+            shifts=shifts,
+            dimensions=sample_data_fixture.dimensions,
+            dim_entries=sample_data_fixture.dim_entries,
+            attributes=sample_data_fixture.attributes,
+        )
 
         shift_target_0 = next(
             (shift for shift in shifts if shift.id == shift_target_0_id), None
@@ -194,12 +222,12 @@ class TestDutyRecupConstraint:
             assert a_s1 is not None
 
         # Check requests are complied with
-        for r in requests:
+        for r in sample_data_fixture.requests_work:
             count_actual = sum(
                 1
                 for a in outputs.assignments
                 if a.worker_id == r.worker_id
-                and a.shift_id == r.shift_id
+                and a.shift_id in r.shift_target_ids
                 and a.date == r.start_date
             )
             assert count_actual == 1

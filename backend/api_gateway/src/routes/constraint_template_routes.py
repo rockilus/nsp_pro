@@ -1,19 +1,14 @@
-from dataclasses import asdict
 from typing import List
 
-import humps
 from fastapi import APIRouter, Depends
-from pydantic import TypeAdapter
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
-from shared.schemas.core import Template
+from shared.schemas.dto import TemplateDTO
 from shared.schemas.errors import UserNotFoundError
 
 from src.dependencies import get_data_fetching_service, get_db_collections
 from src.errors import (
-    MessageTypeError,
     NotAuthorizedError,
-    handle_message_errors,
     handle_routes_errors,
 )
 from src.integrations.authentication import (
@@ -21,7 +16,6 @@ from src.integrations.authentication import (
     authn_verify_session,
 )
 from src.integrations.authorization import authz_check
-from src.routes.api_model import TemplateMessage
 from src.services.data_fetching_service import DataFetchingService
 from src.utils.constraint_utils import build_templates
 
@@ -35,7 +29,7 @@ async def get_constraint_templates(
     session: SessionContainerType = Depends(authn_verify_session()),
     db_collections: DatabaseCollections = Depends(get_db_collections),
     data_fetching_service: DataFetchingService = Depends(get_data_fetching_service),
-) -> List[TemplateMessage]:
+) -> List[TemplateDTO]:
     try:
         if not await authz_check(
             session.get_user_id(), "read-constraint-templates", "team", team_id
@@ -65,28 +59,8 @@ async def get_constraint_templates(
             specialties,
             user.language,
         )
-        response = [core_to_msg_constraint_template(ct) for ct in templates]
+        response = [ct.to_dto() for ct in templates]
     except Exception as e:
         log_info("Failed to get constraint templates")
         handle_routes_errors(e)
     return response
-
-
-# Mappers
-# core to message
-def core_to_msg_constraint_template(
-    constraint_template: Template,
-) -> TemplateMessage:
-    try:
-        data = asdict(constraint_template)
-    except Exception as e:
-        log_info("Failed to convert core Template to dictionary")
-        raise MessageTypeError(str(e)) from e
-    as_dict = humps.camelize(data)
-    validator = TypeAdapter(TemplateMessage)
-    try:
-        t_msg = validator.validate_python(as_dict)
-    except Exception as e:
-        log_info("Failed to convert core Template to TemplateMessage")
-        handle_message_errors(e)
-    return t_msg

@@ -3,6 +3,7 @@ from datetime import date, datetime, timedelta, timezone
 from typing import Callable, List, Tuple
 
 import pytest
+from shared.augment.r_to_r_augmented import requests_to_requests_augmented
 from shared.schemas.core import (
     Breach,
     DailyShiftDemand,
@@ -17,7 +18,9 @@ from shared.schemas.core import (
     ShiftLeaveType,
     ShiftRestType,
     ShiftType,
+    ShiftWorkerOption,
     Staffing,
+    SWOIdTypes,
     Worker,
 )
 
@@ -58,7 +61,16 @@ class TestRequest:
                 worker_id=target_worker.id,
                 start_date=schedule.start_date,
                 end_date=schedule.start_date,
-                shift_id=target_shift.id,
+                shift_id=None,
+                shift_options=[
+                    ShiftWorkerOption(
+                        name=target_shift.name,
+                        id=target_shift.id,
+                        id_type=SWOIdTypes.SHIFT,
+                        is_bool_dim=False,
+                        category_name=target_shift.acronym,
+                    )
+                ],
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING,
@@ -69,7 +81,14 @@ class TestRequest:
             )
         ]
 
-        sample_data_fixture.requests = requests
+        sample_data_fixture.requests_work = requests_to_requests_augmented(
+            requests=requests,
+            workers=sample_data_fixture.workers,
+            shifts=sample_data_fixture.shifts,
+            dimensions=sample_data_fixture.dimensions,
+            dim_entries=sample_data_fixture.dim_entries,
+            attributes=sample_data_fixture.attributes,
+        )
 
         outputs: Outputs = engine_solve_engine_inputs(sample_data_fixture)
 
@@ -106,7 +125,16 @@ class TestRequest:
                 worker_id=target_worker.id,
                 start_date=schedule.start_date,
                 end_date=schedule.start_date,
-                shift_id=target_shift.id,
+                shift_id=None,
+                shift_options=[
+                    ShiftWorkerOption(
+                        name=target_shift.name,
+                        id=target_shift.id,
+                        id_type=SWOIdTypes.SHIFT,
+                        is_bool_dim=False,
+                        category_name=target_shift.acronym,
+                    )
+                ],
                 negative=False,
                 hard=False,
                 status=RequestStatus.PENDING,
@@ -117,7 +145,14 @@ class TestRequest:
             )
         ]
 
-        sample_data_fixture.requests = requests
+        sample_data_fixture.requests_work = requests_to_requests_augmented(
+            requests=requests,
+            workers=sample_data_fixture.workers,
+            shifts=sample_data_fixture.shifts,
+            dimensions=sample_data_fixture.dimensions,
+            dim_entries=sample_data_fixture.dim_entries,
+            attributes=sample_data_fixture.attributes,
+        )
 
         outputs: Outputs = engine_solve_engine_inputs(sample_data_fixture)
 
@@ -154,7 +189,16 @@ class TestRequest:
                 worker_id=target_worker.id,
                 start_date=schedule.start_date,
                 end_date=schedule.start_date,
-                shift_id=target_shift.id,
+                shift_id=None,
+                shift_options=[
+                    ShiftWorkerOption(
+                        name=target_shift.name,
+                        id=target_shift.id,
+                        id_type=SWOIdTypes.SHIFT,
+                        is_bool_dim=False,
+                        category_name=target_shift.acronym,
+                    )
+                ],
                 negative=True,
                 hard=True,
                 status=RequestStatus.PENDING,
@@ -165,7 +209,14 @@ class TestRequest:
             )
         ]
 
-        sample_data.requests = requests
+        sample_data.requests_work = requests_to_requests_augmented(
+            requests=requests,
+            workers=sample_data.workers,
+            shifts=sample_data.shifts,
+            dimensions=sample_data.dimensions,
+            dim_entries=sample_data.dim_entries,
+            attributes=sample_data.attributes,
+        )
 
         outputs: Outputs = engine_solve_engine_inputs(sample_data)
 
@@ -238,7 +289,16 @@ class TestRequest:
                 worker_id=target_worker.id,
                 start_date=schedule.start_date,
                 end_date=schedule.end_date,
-                shift_id=target_shift.id,
+                shift_id=None,
+                shift_options=[
+                    ShiftWorkerOption(
+                        name=target_shift.name,
+                        id=target_shift.id,
+                        id_type=SWOIdTypes.SHIFT,
+                        is_bool_dim=False,
+                        category_name=target_shift.acronym,
+                    )
+                ],
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING,
@@ -249,7 +309,14 @@ class TestRequest:
             )
         ]
 
-        sample_data.requests = requests
+        sample_data.requests_work = requests_to_requests_augmented(
+            requests=requests,
+            workers=sample_data.workers,
+            shifts=sample_data.shifts,
+            dimensions=sample_data.dimensions,
+            dim_entries=sample_data.dim_entries,
+            attributes=sample_data.attributes,
+        )
 
         outputs: Outputs = engine_solve_engine_inputs(sample_data)
 
@@ -280,7 +347,7 @@ class TestRequest:
         breaches: List[Breach] = _parse_breaches_engine(
             sample_data_benoit_case_fixture.schedule, outputs.breaches
         )
-        for r in sample_data_benoit_case_fixture.requests:
+        for r in sample_data_benoit_case_fixture.requests_work:
             as_request = [
                 a
                 for a in assignments
@@ -314,10 +381,20 @@ class TestRequest:
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
+        target_shift = engine_inputs.shifts[0]
         request_hard = Request(
             id="req_hard",
             team_id="t0",
             shift_id=engine_inputs.shifts[0].id,
+            shift_options=[
+                ShiftWorkerOption(
+                    name=target_shift.name,
+                    id=target_shift.id,
+                    id_type=SWOIdTypes.SHIFT,
+                    is_bool_dim=False,
+                    category_name=target_shift.acronym,
+                )
+            ],
             worker_id=engine_inputs.workers[0].id,
             start_date=engine_inputs.schedule.start_date,
             end_date=engine_inputs.schedule.start_date,
@@ -332,7 +409,16 @@ class TestRequest:
         request_soft = Request(
             id="req_soft",
             team_id="t0",
-            shift_id=engine_inputs.shifts[0].id,
+            shift_id=None,
+            shift_options=[
+                ShiftWorkerOption(
+                    name=target_shift.name,
+                    id=target_shift.id,
+                    id_type=SWOIdTypes.SHIFT,
+                    is_bool_dim=False,
+                    category_name=target_shift.acronym,
+                )
+            ],
             worker_id=engine_inputs.workers[0].id,
             start_date=engine_inputs.schedule.start_date,
             end_date=engine_inputs.schedule.start_date,
@@ -344,7 +430,14 @@ class TestRequest:
             comment="",
             created_at=datetime.now(tz=timezone.utc),
         )
-        engine_inputs.requests = [request_hard, request_soft]
+        engine_inputs.requests_work = requests_to_requests_augmented(
+            requests=[request_hard, request_soft],
+            workers=engine_inputs.workers,
+            shifts=engine_inputs.shifts,
+            dimensions=engine_inputs.dimensions,
+            dim_entries=engine_inputs.dim_entries,
+            attributes=engine_inputs.attributes,
+        )
 
         inputs, _ = run_core_to_engine_inputs(engine_inputs)
 
@@ -415,10 +508,20 @@ class TestRequest:
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
+        target_shift = engine_inputs.shifts[0]
         request_hard_1 = Request(
             id="req_hard_1",
             team_id="t0",
-            shift_id=engine_inputs.shifts[0].id,
+            shift_id=None,
+            shift_options=[
+                ShiftWorkerOption(
+                    name=target_shift.name,
+                    id=target_shift.id,
+                    id_type=SWOIdTypes.SHIFT,
+                    is_bool_dim=False,
+                    category_name=target_shift.acronym,
+                )
+            ],
             worker_id=engine_inputs.workers[0].id,
             start_date=engine_inputs.schedule.start_date,
             end_date=engine_inputs.schedule.start_date,
@@ -433,7 +536,16 @@ class TestRequest:
         request_hard_2 = Request(
             id="req_hard_2",
             team_id="t0",
-            shift_id=engine_inputs.shifts[0].id,
+            shift_id=None,
+            shift_options=[
+                ShiftWorkerOption(
+                    name=target_shift.name,
+                    id=target_shift.id,
+                    id_type=SWOIdTypes.SHIFT,
+                    is_bool_dim=False,
+                    category_name=target_shift.acronym,
+                )
+            ],
             worker_id=engine_inputs.workers[0].id,
             start_date=engine_inputs.schedule.start_date,
             end_date=engine_inputs.schedule.start_date,
@@ -445,7 +557,14 @@ class TestRequest:
             comment="",
             created_at=datetime.now(tz=timezone.utc),
         )
-        engine_inputs.requests = [request_hard_1, request_hard_2]
+        engine_inputs.requests_work = requests_to_requests_augmented(
+            requests=[request_hard_1, request_hard_2],
+            workers=engine_inputs.workers,
+            shifts=engine_inputs.shifts,
+            dimensions=engine_inputs.dimensions,
+            dim_entries=engine_inputs.dim_entries,
+            attributes=engine_inputs.attributes,
+        )
 
         inputs, _ = run_core_to_engine_inputs(engine_inputs)
 

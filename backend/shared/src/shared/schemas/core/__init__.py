@@ -47,8 +47,10 @@ from shared.schemas.core.daily_shift_demand import (
 from shared.schemas.core.dim_entry import DimEntry
 from shared.schemas.core.dimension import (
     Dimension,
+    DimensionAndDimEntries,
     DimensionEntryType,
     DimensionType,
+    NewDimension,
 )
 from shared.schemas.core.engine import (
     ConfigurationConstraints,
@@ -67,7 +69,7 @@ from shared.schemas.core.export_options import (
     ExportOptions,
     ExportPeriodOptions,
 )
-from shared.schemas.core.link_shift import LinkShift
+from shared.schemas.core.link_shift import LinkShift, LSChange
 from shared.schemas.core.model_output import ModelOutput, ModelOutputStatus
 from shared.schemas.core.recurrence import (
     FrequencyType,
@@ -193,8 +195,10 @@ __all__ = [
     "ShiftDemand",
     "ShiftDemandExclusion",
     "Dimension",
+    "DimensionAndDimEntries",
     "DimensionEntryType",
     "DimensionType",
+    "NewDimension",
     "DimEntry",
     "ConfigurationConstraints",
     "CustomSolverParams",
@@ -241,6 +245,7 @@ __all__ = [
     "WorkTimeTable",
     "WorkTimeTableData",
     "LinkShift",
+    "LSChange",
     "Shift",
     "ShiftLeaveType",
     "ShiftRestType",

@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
@@ -7,7 +7,7 @@ from shared.schemas.core import (
     AttributeOwnerType,
     DimensionEntryType,
     DimensionType,
-    LinkShift,
+    LSChange,
     Shift,
     ShiftLeaveType,
     ShiftRestType,
@@ -456,9 +456,7 @@ class ShiftService(BaseService):
         ]
         self.collection.shift_db.create_shifts(rest_shifts + leave_shifts)
 
-    def update_shift(
-        self, shift_new: Shift
-    ) -> Tuple[Shift, Dict[str, List[LinkShift | str]] | None]:
+    def update_shift(self, shift_new: Shift) -> Tuple[Shift, LSChange]:
         shift_old = self._validate_shift_update(shift_new.id)
         self._handle_acronym_update(shift_new, shift_old)
         shift_saved = self.collection.shift_db.update_shift(shift_new)
@@ -490,7 +488,7 @@ class ShiftService(BaseService):
 
     def _handle_link_shift_updates(
         self, shift_saved: Shift, shift_old: Shift
-    ) -> Dict[str, List[LinkShift | str]] | None:
+    ) -> LSChange:
         # If shift start or end time changed, then update link shifts
         # associated with the shift
         if (
@@ -500,7 +498,7 @@ class ShiftService(BaseService):
             return self.link_shift_service.update_link_shift_upon_shift_update(
                 shift_saved
             )
-        return None
+        return LSChange(updated=[], deleted=[])
 
     def _handle_duty_recuperation_shift_updates(
         self, shift_saved: Shift, shift_old: Shift
@@ -556,7 +554,7 @@ class ShiftService(BaseService):
                 )
             # fmt: on
 
-    def delete_shift(self, shift_id: str) -> Dict:
+    def delete_shift(self, shift_id: str) -> LSChange:
         shift = self._validate_shift_update(shift_id)
         ls_change = self.link_shift_service.update_link_shift_upon_shift_delete(shift)
         self._delete_shift_from_schedule_quick_staffing(shift_id)

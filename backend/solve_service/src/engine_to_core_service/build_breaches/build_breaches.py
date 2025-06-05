@@ -5,7 +5,7 @@ from shared.schemas.core import (
     Breach,
     DailyShiftDemand,
     LinkShift,
-    Request,
+    RequestAugmented,
     Schedule,
     Shift,
     Worker,
@@ -29,7 +29,7 @@ def build_breaches(
     link_shifts: List[LinkShift],
     daily_shift_demand: List[DailyShiftDemand],
     assignments: List[Assignment],
-    requests: List[Request],
+    requests: List[RequestAugmented],
     breaches_engine: List[BreachEngine],
     processing_cache: ProcessingCache,
 ) -> List[Breach]:

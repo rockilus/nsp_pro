@@ -1,11 +1,12 @@
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import date, datetime, time, timezone
 from enum import Enum
-from typing import Dict
+from typing import Any, Dict, List, Optional, Union
 
 import humps
 from pydantic import TypeAdapter
 
+from shared.schemas.core.constraint import MissingAttribute, ShiftWorkerOption
 from shared.schemas.dto.request import RequestDTO
 
 # class RequestStatus(Enum):
@@ -42,13 +43,80 @@ class Request:
     worker_id: str
     start_date: date
     end_date: date
-    shift_id: str
-    negative: bool
-    hard: bool
-    status: RequestStatus
-    fulfillment: FulfillmentStatus
-    comment: str
-    created_at: datetime
+    shift_id: Optional[str] = None  # Used for LEAVE requests
+    shift_options: List[ShiftWorkerOption] = field(
+        default_factory=list
+    )  # Used for WORK_DEMAND requests
+    negative: bool = False
+    hard: bool = True
+    status: RequestStatus = RequestStatus.PENDING
+    fulfillment: FulfillmentStatus = FulfillmentStatus.NOT_PROCESSED
+    comment: str = ""
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+
+    def __post_init__(self):
+        """Validate the request data based on request type."""
+        if self.request_type == RequestType.LEAVE and not self.shift_id:
+            raise ValueError("Leave requests must specify a shift_id")
+        if self.request_type == RequestType.WORK_DEMAND and not self.shift_options:
+            raise ValueError("Work demand requests must specify shift_options")
+
+    @property
+    def shift_selection(self) -> Union[str, List[ShiftWorkerOption]]:
+        """Return the appropriate shift selection based on request type."""
+        if self.request_type == RequestType.LEAVE:
+            assert self.shift_id is not None, "Leave requests must have a shift_id"
+            return self.shift_id
+        return self.shift_options
+
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
+    @classmethod
+    def create_leave_request(
+        cls,
+        request_id: str,
+        team_id: str,
+        worker_id: str,
+        start_date: date,
+        end_date: date,
+        shift_id: str,
+        **kwargs: Any,
+    ) -> "Request":
+        """Factory method for creating leave requests."""
+        return cls(
+            id=request_id,
+            team_id=team_id,
+            request_type=RequestType.LEAVE,
+            worker_id=worker_id,
+            start_date=start_date,
+            end_date=end_date,
+            shift_id=shift_id,
+            **kwargs,
+        )
+
+    @classmethod
+    def create_work_demand(
+        cls,
+        request_id: str,
+        team_id: str,
+        worker_id: str,
+        start_date: date,
+        end_date: date,
+        shift_options: List[ShiftWorkerOption],
+        negative: bool,
+        **kwargs: Any,
+    ) -> "Request":
+        """Factory method for creating work demand requests."""
+        return cls(
+            id=request_id,
+            team_id=team_id,
+            request_type=RequestType.WORK_DEMAND,
+            worker_id=worker_id,
+            start_date=start_date,
+            end_date=end_date,
+            shift_options=shift_options,
+            negative=negative,
+            **kwargs,
+        )
 
     def to_dict(self) -> Dict:
         out = asdict(self)
@@ -59,6 +127,7 @@ class Request:
         out["end_date"] = datetime.combine(
             self.end_date, time.min, tzinfo=timezone.utc
         ).timestamp()
+        out["shift_options"] = [option.to_dict() for option in self.shift_options]
         out["status"] = self.status.value
         out["fulfillment"] = self.fulfillment.value
         out["created_at"] = self.created_at.timestamp()
@@ -76,6 +145,10 @@ class Request:
             ).date(),
             end_date=datetime.fromtimestamp(data["end_date"], tz=timezone.utc).date(),
             shift_id=data["shift_id"],
+            shift_options=[
+                ShiftWorkerOption.from_dict(option)
+                for option in data.get("shift_options", [])
+            ],
             negative=data["negative"],
             hard=data["hard"],
             status=RequestStatus(data["status"]),
@@ -105,7 +178,9 @@ class Request:
 
 @dataclass
 class RequestAugmented(Request):
-    active: bool
+    active: bool = False
+    shift_target_ids: List[str] = field(default_factory=list)
+    missing_attributes: List[MissingAttribute] = field(default_factory=list)
 
     def to_dict(self) -> Dict:
         out = super().to_dict()
@@ -124,6 +199,10 @@ class RequestAugmented(Request):
             ).date(),
             end_date=datetime.fromtimestamp(data["end_date"], tz=timezone.utc).date(),
             shift_id=data["shift_id"],
+            shift_options=[
+                ShiftWorkerOption.from_dict(option)
+                for option in data.get("shift_options", [])
+            ],
             negative=data["negative"],
             hard=data["hard"],
             status=RequestStatus(data["status"]),
@@ -131,6 +210,11 @@ class RequestAugmented(Request):
             comment=data.get("comment", ""),
             created_at=datetime.fromtimestamp(data["created_at"], tz=timezone.utc),
             active=data["active"],
+            shift_target_ids=data.get("shift_target_ids", []),
+            missing_attributes=[
+                MissingAttribute.from_dict(attr)
+                for attr in data.get("missing_attributes", [])
+            ],
         )
 
     def to_dto(self) -> RequestDTO:
@@ -142,9 +226,11 @@ class RequestAugmented(Request):
         data["end_date"] = datetime.combine(
             self.end_date, time.min, tzinfo=timezone.utc
         ).timestamp()
+        data["shift_options"] = [option.to_dto() for option in self.shift_options]
         data["status"] = self.status.value
         data["fulfillment"] = self.fulfillment.value
         data["created_at"] = self.created_at.timestamp()
+        data["missing_attributes"] = [attr.to_dto() for attr in self.missing_attributes]
         as_dict = humps.camelize(data)
         validator = TypeAdapter(RequestDTO)
         return validator.validate_python(as_dict)

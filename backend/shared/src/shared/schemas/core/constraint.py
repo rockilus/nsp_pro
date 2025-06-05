@@ -2,7 +2,18 @@ from dataclasses import asdict, dataclass
 from enum import Enum
 from typing import Dict, List, Tuple
 
+import humps
+from pydantic import TypeAdapter
+
 from shared.schemas.core.attribute import AttributeOwnerType
+from shared.schemas.dto.constraint import (
+    BlockDTO,
+    ConstraintBuildDTO,
+    MissingAttributeDTO,
+    ShiftWorkerOptionDTO,
+    TemplateBlockDTO,
+    TemplateDTO,
+)
 
 
 class VarWorkerSelectorOptions(Enum):
@@ -55,6 +66,19 @@ class ShiftWorkerOption:
             category_name=data["category_name"],
         )
 
+    def to_dto(self) -> ShiftWorkerOptionDTO:
+        out = asdict(self)
+        out["id_type"] = self.id_type.value
+        as_dict = humps.camelize(out)
+        validator = TypeAdapter(ShiftWorkerOptionDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, data: ShiftWorkerOptionDTO) -> "ShiftWorkerOption":
+        data_snake = humps.decamelize(data.model_dump())
+        data_snake["id_type"] = SWOIdTypes(data.idType)
+        return cls(**data_snake)
+
 
 class BlockNameOptions(Enum):
     OPERATOR = 0
@@ -101,6 +125,29 @@ class Block:
             value=value,
         )
 
+    def to_dto(self) -> BlockDTO:
+        out = asdict(self)
+        out["name"] = self.name.value
+        out["type"] = self.type.value
+        if isinstance(self.value, list):
+            if all(isinstance(v, ShiftWorkerOption) for v in self.value):
+                out["value"] = [v.to_dto() for v in self.value]  # type: ignore
+        as_dict = humps.camelize(out)
+        validator = TypeAdapter(BlockDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, data: BlockDTO) -> "Block":
+        data_snake = humps.decamelize(data.model_dump())
+        value = data_snake["value"]
+        if data_snake["type"] == BlockTypeOptions.SHIFT_WORKER_OPTION.value:
+            value = [ShiftWorkerOption.from_dto(v) for v in data_snake["value"]]
+        return cls(
+            name=BlockNameOptions(data_snake["name"]),
+            type=BlockTypeOptions(data_snake["type"]),
+            value=value,
+        )
+
 
 # If the name of a Block is worker, shift, shift_reference or shift_relative,
 # the value is a list of dict with this format:
@@ -133,6 +180,19 @@ class MissingAttribute:
             category=AttributeOwnerType(data["category"]),
             attribute_values=data["attribute_values"],
         )
+
+    def to_dto(self) -> MissingAttributeDTO:
+        out = asdict(self)
+        out["category"] = self.category.value
+        as_dict = humps.camelize(out)
+        validator = TypeAdapter(MissingAttributeDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, data: MissingAttributeDTO) -> "MissingAttribute":
+        data_snake = humps.decamelize(data.model_dump())
+        data_snake["category"] = AttributeOwnerType(data_snake["category"])
+        return cls(**data_snake)
 
 
 class ConstraintType(Enum):
@@ -185,6 +245,16 @@ class ConstraintBuild:
             priority=data["priority"],
         )
 
+    @classmethod
+    def from_dto(cls, data: ConstraintBuildDTO) -> "ConstraintBuild":
+        data_snake = humps.decamelize(data.model_dump())
+        data_snake["constraint_type"] = ConstraintType(data_snake["constraint_type"])
+        data_snake["blocks"] = [Block.from_dto(block) for block in data_snake["blocks"]]
+        data_snake.pop("text")
+        data_snake.pop("active")
+        data_snake.pop("missing_attributes")
+        return cls(**data_snake)
+
 
 @dataclass
 # pylint: disable=too-many-instance-attributes
@@ -221,6 +291,25 @@ class ConstraintBuildAugmented(ConstraintBuild):
             ],
             text=data["text"],
         )
+
+    def to_dto(self) -> ConstraintBuildDTO:
+        out = asdict(self)
+        out["constraint_type"] = self.constraint_type.value
+        out["blocks"] = [block.to_dto() for block in self.blocks]
+        out["missing_attributes"] = [ma.to_dto() for ma in self.missing_attributes]
+        as_dict = humps.camelize(out)
+        validator = TypeAdapter(ConstraintBuildDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, data: ConstraintBuildDTO) -> "ConstraintBuildAugmented":
+        data_snake = humps.decamelize(data.model_dump())
+        data_snake["constraint_type"] = ConstraintType(data_snake["constraint_type"])
+        data_snake["blocks"] = [Block.from_dto(block) for block in data_snake["blocks"]]
+        data_snake["missing_attributes"] = [
+            MissingAttribute.from_dto(ma) for ma in data_snake["missing_attributes"]
+        ]
+        return cls(**data_snake)
 
 
 @dataclass
@@ -287,6 +376,30 @@ class TemplateBlock:
     options: List[str] | List[ShiftWorkerOption]
     placeholder: str | int
 
+    def to_dto(self) -> TemplateBlockDTO:
+        out = asdict(self)
+        out["name"] = self.name.value
+        out["type"] = self.type.value
+        if isinstance(self.options, list):
+            if all(isinstance(v, ShiftWorkerOption) for v in self.options):
+                out["options"] = [v.to_dto() for v in self.options]  # type: ignore
+        as_dict = humps.camelize(out)
+        validator = TypeAdapter(TemplateBlockDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, data: TemplateBlockDTO) -> "TemplateBlock":
+        data_snake = humps.decamelize(data.model_dump())
+        options = data_snake["options"]
+        if data_snake["type"] == BlockTypeOptions.SHIFT_WORKER_OPTION.value:
+            options = [ShiftWorkerOption.from_dto(v) for v in options]
+        return cls(
+            name=BlockNameOptions(data_snake["name"]),
+            type=BlockTypeOptions(data_snake["type"]),
+            options=options,
+            placeholder=data_snake["placeholder"],
+        )
+
 
 @dataclass
 class Template:
@@ -295,6 +408,23 @@ class Template:
     text: str
     language: str
     blocks: List[TemplateBlock]
+
+    def to_dto(self) -> TemplateDTO:
+        out = asdict(self)
+        out["constraint_type"] = self.constraint_type.value
+        out["blocks"] = [block.to_dto() for block in self.blocks]
+        as_dict = humps.camelize(out)
+        validator = TypeAdapter(TemplateDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, data: TemplateDTO) -> "Template":
+        data_snake = humps.decamelize(data.model_dump())
+        data_snake["constraint_type"] = ConstraintType(data_snake["constraint_type"])
+        data_snake["blocks"] = [
+            TemplateBlock.from_dto(block) for block in data_snake["blocks"]
+        ]
+        return cls(**data_snake)
 
 
 @dataclass

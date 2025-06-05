@@ -162,7 +162,8 @@ class EngineInputs:
     as_wip_fixed: List[Assignment]
     cbs_augmented: List[ConstraintBuildAugmented]
     daily_shift_demands: List[DailyShiftDemand]
-    requests: List[Request]
+    requests_work: List[RequestAugmented]
+    requests_leave: List[Request]
     model_output: ModelOutput | None
 
     def to_dict(self) -> Dict:
@@ -182,7 +183,8 @@ class EngineInputs:
             "daily_shift_demands": [
                 demand.to_dict() for demand in self.daily_shift_demands
             ],
-            "requests": [request.to_dict() for request in self.requests],
+            "requests_work": [request.to_dict() for request in self.requests_work],
+            "requests_leave": [request.to_dict() for request in self.requests_leave],
             "model_output": (
                 self.model_output.to_dict() if self.model_output else None
             ),
@@ -212,7 +214,12 @@ class EngineInputs:
                 DailyShiftDemand.from_dict(demand)
                 for demand in data["daily_shift_demands"]
             ],
-            requests=[Request.from_dict(request) for request in data["requests"]],
+            requests_work=[
+                RequestAugmented.from_dict(request) for request in data["requests"]
+            ],
+            requests_leave=[
+                Request.from_dict(request) for request in data.get("requests_leave", [])
+            ],
             model_output=(
                 ModelOutput.from_dict(data["model_output"])
                 if data["model_output"]
@@ -245,7 +252,8 @@ class EngineInputsAugmented(EngineInputs):
             as_wip_fixed=engine_inputs.as_wip_fixed,
             cbs_augmented=engine_inputs.cbs_augmented,
             daily_shift_demands=engine_inputs.daily_shift_demands,
-            requests=engine_inputs.requests,
+            requests_work=engine_inputs.requests_work,
+            requests_leave=engine_inputs.requests_leave,
             model_output=engine_inputs.model_output,
             penalties=penalties,
             model_config=model_config,
@@ -262,7 +270,7 @@ class EngineOutputs:
     schedule: Schedule
     assignments: List[Assignment]
     breaches: List[Breach]
-    requests: List[Request]
+    requests: List[RequestAugmented]
     model_output: ModelOutput
 
     def to_dict(self) -> Dict:
@@ -282,7 +290,9 @@ class EngineOutputs:
                 Assignment.from_dict(assignment) for assignment in data["assignments"]
             ],
             breaches=[Breach.from_dict(breach) for breach in data["breaches"]],
-            requests=[Request.from_dict(request) for request in data["requests"]],
+            requests=[
+                RequestAugmented.from_dict(request) for request in data["requests"]
+            ],
             model_output=ModelOutput.from_dict(data["model_output"]),
         )
 

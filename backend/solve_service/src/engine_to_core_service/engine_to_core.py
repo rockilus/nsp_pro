@@ -8,7 +8,7 @@ from shared.schemas.core import (
     LinkShift,
     ModelOutput,
     ModelOutputStatus,
-    Request,
+    RequestAugmented,
     Schedule,
     Shift,
     Worker,
@@ -20,10 +20,11 @@ from engine_to_core_service.build_breaches.build_breaches import build_breaches
 from engine_to_core_service.build_campaign_assignments import (
     build_campaign_assignments,
 )
-from engine_to_core_service.update_requests import (
-    update_requests_and_build_request_breaches,
-)
 from engine_to_core_service.update_schedule import update_schedule_status
+
+# from engine_to_core_service.update_requests import (
+#     update_requests_and_build_request_breaches,
+# )
 
 
 # pylint: disable=too-many-arguments
@@ -34,10 +35,16 @@ def engine_to_core(
     shifts: List[Shift],
     link_shifts: List[LinkShift],
     daily_shift_demand: List[DailyShiftDemand],
-    requests: List[Request],
+    requests: List[RequestAugmented],
     as_hist: List[Assignment],
     processing_cache: ProcessingCache,
-) -> Tuple[Schedule, List[Assignment], List[Breach], List[Request], ModelOutput]:
+) -> Tuple[
+    Schedule,
+    List[Assignment],
+    List[Breach],
+    List[RequestAugmented],
+    ModelOutput,
+]:
     as_campaign = build_campaign_assignments(schedule, outputs.assignments)
     assignments = as_hist + as_campaign
     breaches = build_breaches(
@@ -52,7 +59,7 @@ def engine_to_core(
         processing_cache,
     )
     schedule = update_schedule_status(schedule, outputs.is_solution, breaches)
-    requests = update_requests_and_build_request_breaches(assignments, requests)
+    # requests = update_requests_and_build_request_breaches(assignments, requests)
     model_output = ModelOutput(
         id="",
         schedule_id=schedule.id,

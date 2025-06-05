@@ -53,6 +53,7 @@ export const buildAssignmentsDataByOwnerAndDate = (
   // Precompute a map of requests by shiftId and date range
   const requestMap = new Map<string, RequestT[]>();
   requests.forEach((request) => {
+    if (!request.shiftId) return; // TO COME
     const key = request.shiftId;
     if (!requestMap.has(key)) {
       requestMap.set(key, []);

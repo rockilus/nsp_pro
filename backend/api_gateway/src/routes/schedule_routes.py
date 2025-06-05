@@ -1,27 +1,22 @@
-from dataclasses import asdict
 from typing import Dict, List, Tuple
 
-import humps
 from fastapi import APIRouter, Depends
-from pydantic import TypeAdapter
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas.core import (
     DuplicateRequest,
     Schedule,
-    WorkTimeTable,
 )
 from shared.schemas.dto import (
     DuplicateRequestDTO,
     DuplicateResultDTO,
     ScheduleDTO,
+    WorkTimeTableDTO,
 )
 
 from src.dependencies import get_db_collections, get_schedule_service
 from src.errors import (
-    MessageTypeError,
     NotAuthorizedError,
-    handle_message_errors,
     handle_routes_errors,
 )
 from src.integrations.authentication import (
@@ -29,7 +24,7 @@ from src.integrations.authentication import (
     authn_verify_session,
 )
 from src.integrations.authorization import authz_check
-from src.routes.api_model import CoverageSelectorMessage, WorkTimeTableMessage
+from src.routes.api_model import CoverageSelectorMessage
 from src.routes.coverage_selector_routes import core_to_msg_coverage_selector
 from src.services.schedule_service import ScheduleService
 
@@ -86,7 +81,7 @@ async def get_work_time_table(
     schedule_service: ScheduleService = Depends(
         get_schedule_service,
     ),
-) -> WorkTimeTableMessage:
+) -> WorkTimeTableDTO:
     try:
         if not await authz_check(
             session.get_user_id(), "read-schedule-work-times", "team", team_id
@@ -95,7 +90,7 @@ async def get_work_time_table(
                 "You do not have permission to read a work time table",
             )
         work_time_table = schedule_service.build_worktime_data(schedule_id)
-        response = core_to_msd_work_time_table(work_time_table)
+        response = work_time_table.to_dto()
     except Exception as e:
         log_info("Failed to get work time table")
         handle_routes_errors(e)
@@ -253,21 +248,3 @@ async def delete_schedule(
         log_info("Failed to delete schedule")
         handle_routes_errors(e)
     return {"message": "Schedule deleted"}
-
-
-# Mappers
-# core to message
-def core_to_msd_work_time_table(wtt: WorkTimeTable) -> WorkTimeTableMessage:
-    try:
-        data = asdict(wtt)
-    except Exception as e:
-        log_info("Failed to convert WorkTimeTable to dictionary")
-        raise MessageTypeError(str(e)) from e
-    as_dict = humps.camelize(data)
-    validator = TypeAdapter(WorkTimeTableMessage)
-    try:
-        wtt_msg = validator.validate_python(as_dict)
-    except Exception as e:
-        log_info("Failed to convert WorkTimeTable to WorkTimeTableMessage")
-        handle_message_errors(e)
-    return wtt_msg

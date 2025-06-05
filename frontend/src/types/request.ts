@@ -1,4 +1,6 @@
 import dayjs from "dayjs";
+// Types
+import { MissingAttribute, ShiftWorkerOptionT } from "./constraint";
 
 export enum RequestStatus {
   PENDING = "pending", // Waiting for manager review
@@ -24,7 +26,8 @@ export type RequestT = {
   workerId: string;
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
-  shiftId: string;
+  shiftId: string | null;
+  shiftOptions: ShiftWorkerOptionT[];
   negative: boolean;
   hard: boolean;
   status: RequestStatus;
@@ -32,6 +35,8 @@ export type RequestT = {
   comment: string;
   createdAt: dayjs.Dayjs;
   active: boolean;
+  shiftTargetIds: string[];
+  missingAttributes: MissingAttribute[];
 };
 
 export const toRequestT = (data: any) => {
