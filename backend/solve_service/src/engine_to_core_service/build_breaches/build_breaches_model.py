@@ -15,7 +15,7 @@ from shared.schemas.core import (
     DailyShiftDemand,
     LinkShift,
     ObjectiveCategory,
-    Request,
+    RequestAugmented,
     Schedule,
     Shift,
     ShiftType,
@@ -36,7 +36,7 @@ def build_breaches_model(
     daily_shift_demands: List[DailyShiftDemand],
     assignments: List[Assignment],
     constraints: Constraints,
-    requests: List[Request],
+    requests: List[RequestAugmented],
     breaches_engine: List[BreachEngine],
 ) -> List[Breach]:
     breaches = _parse_breaches_engine(schedule, breaches_engine)
@@ -113,7 +113,7 @@ def _build_breach_description(
     link_shifts: List[LinkShift],
     assignments: List[Assignment],
     constraints: Constraints,
-    requests: List[Request],
+    requests: List[RequestAugmented],
     breach: Breach,
 ) -> str:
     if breach.objective_category == ObjectiveCategory.CONSTRAINT:
@@ -369,26 +369,30 @@ def _build_description_breach_request(
     workers: List[Worker],
     shifts: List[Shift],
     assignments: List[Assignment],
-    requests: List[Request],
+    requests: List[RequestAugmented],
     breach: Breach,
 ) -> str:
     request = next((r for r in requests if r.id == breach.objective_id), None)
     worker = next((w for w in workers if w.id == breach.variables[0].worker_id), None)
     dates = list(set(v.date for v in breach.variables))
     start_date, end_date = min(dates), max(dates)
-    shift = next((s for s in shifts if s.id == breach.variables[0].shift_id), None)
-    if request is None or worker is None or shift is None:
-        return "Unknown request, worker or shift"
+    if request is None or worker is None:
+        return "Unknown request or worker"
+    shifts = [s for s in shifts if s.id in request.shift_target_ids]
+    if not shifts:
+        return "No shifts found for the request"
     shift_actual_ids = set(
         a.shift_id for a in assignments if a.worker_id == worker.id and a.date in dates
     )
     shifts_assigned = [s for s in shifts if s.id in shift_actual_ids]
-    shifts_breach_names = [s.name for s in shifts_assigned if s.id != shift.id]
+    shifts_breach_names = [
+        s.name for s in shifts_assigned if s.id not in request.shift_target_ids
+    ]
     if request.negative:
         string_list = [
             worker.name,
             "requested not to work",
-            shift.name,
+            ", ".join([str(swo.name) for swo in request.shift_options]),
             "on",
             (
                 dates[0].strftime("%b %d")
@@ -400,7 +404,7 @@ def _build_description_breach_request(
         string_list = [
             worker.name,
             "requested",
-            shift.name,
+            ", ".join([str(swo.name) for swo in request.shift_options]),
             "on",
             (
                 dates[0].strftime("%b %d")

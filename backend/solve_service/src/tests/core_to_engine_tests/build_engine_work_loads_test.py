@@ -67,7 +67,7 @@ class TestBuildEngineWorkLoads:
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
+            sample_data.requests_leave,
             sample_data.daily_shift_demands,
             periods_weekly,
         )
@@ -75,7 +75,7 @@ class TestBuildEngineWorkLoads:
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
+            sample_data.requests_leave,
             sample_data.daily_shift_demands,
             periods_monthly,
         )
@@ -150,7 +150,7 @@ class TestBuildEngineWorkLoads:
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
+            sample_data.requests_leave,
             sample_data.daily_shift_demands,
             periods_weekly,
         )
@@ -158,7 +158,7 @@ class TestBuildEngineWorkLoads:
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
+            sample_data.requests_leave,
             sample_data.daily_shift_demands,
             periods_monthly,
         )
@@ -221,7 +221,7 @@ class TestBuildEngineWorkLoads:
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
+            sample_data.requests_leave,
             sample_data.daily_shift_demands,
             periods_weekly,
         )
@@ -229,7 +229,7 @@ class TestBuildEngineWorkLoads:
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
+            sample_data.requests_leave,
             sample_data.daily_shift_demands,
             periods_monthly,
         )
@@ -307,7 +307,7 @@ class TestBuildEngineWorkLoads:
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
+            sample_data.requests_leave,
             sample_data.daily_shift_demands,
             periods_weekly,
         )
@@ -315,7 +315,7 @@ class TestBuildEngineWorkLoads:
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
+            sample_data.requests_leave,
             sample_data.daily_shift_demands,
             periods_monthly,
         )
@@ -406,7 +406,7 @@ class TestBuildEngineWorkLoads:
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
+            sample_data.requests_leave,
             sample_data.daily_shift_demands,
             periods_weekly,
         )
@@ -414,7 +414,7 @@ class TestBuildEngineWorkLoads:
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
+            sample_data.requests_leave,
             sample_data.daily_shift_demands,
             periods_monthly,
         )
@@ -500,7 +500,7 @@ class TestBuildEngineWorkLoads:
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
+            sample_data.requests_leave,
             sample_data.daily_shift_demands,
             periods_weekly,
         )
@@ -508,7 +508,7 @@ class TestBuildEngineWorkLoads:
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
+            sample_data.requests_leave,
             sample_data.daily_shift_demands,
             periods_monthly,
         )

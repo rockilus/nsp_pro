@@ -349,7 +349,8 @@ def engine_inputs_special_days(
         as_wip_fixed=[],
         cbs_augmented=[],
         daily_shift_demands=daily_shift_demands,
-        requests=[],
+        requests_work=[],
+        requests_leave=[],
         model_output=None,
         penalties=penalties_fix,
         model_config=model_config_fix,
@@ -382,7 +383,7 @@ class TestCalculateWorkerSpecialDays:
             dates_hist=dates_hist,
             dates_campaign=dates_campaign,
             shifts=engine_inputs_special_days.shifts,
-            requests=engine_inputs_special_days.requests,
+            requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.daily_shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
             + engine_inputs_special_days.as_wip_fixed,
@@ -444,7 +445,7 @@ class TestCalculateWorkerSpecialDays:
             dates_hist=dates_hist,
             dates_campaign=dates_campaign,
             shifts=engine_inputs_special_days.shifts,
-            requests=engine_inputs_special_days.requests,
+            requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.daily_shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
             + engine_inputs_special_days.as_wip_fixed,
@@ -514,15 +515,15 @@ class TestCalculateWorkerSpecialDays:
                 shift_id="s_leave",
                 negative=False,
                 hard=True,
-                status=RequestStatus.PENDING,
-                request_type=RequestType.WORK_DEMAND,
+                status=RequestStatus.APPROVED,
+                request_type=RequestType.LEAVE,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED,
                 comment="",
                 created_at=datetime.now(tz=timezone.utc),
             )
             for d in dates_target
         ]
-        engine_inputs_special_days.requests += request_leave
+        engine_inputs_special_days.requests_leave += request_leave
 
         # Call the method under test
         worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
@@ -538,7 +539,7 @@ class TestCalculateWorkerSpecialDays:
             dates_hist=dates_hist,
             dates_campaign=dates_campaign,
             shifts=engine_inputs_special_days.shifts,
-            requests=engine_inputs_special_days.requests,
+            requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.daily_shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
             + engine_inputs_special_days.as_wip_fixed,
@@ -575,7 +576,7 @@ class TestCalculateWorkerSpecialDays:
             dates_hist=dates_hist,
             dates_campaign=dates_campaign,
             shifts=engine_inputs_special_days.shifts,
-            requests=engine_inputs_special_days.requests,
+            requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.daily_shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
             + engine_inputs_special_days.as_wip_fixed,
@@ -623,7 +624,7 @@ class TestCalculateWorkerSpecialDays:
             dates_hist=dates_hist,
             dates_campaign=dates_campaign,
             shifts=engine_inputs_special_days.shifts,
-            requests=engine_inputs_special_days.requests,
+            requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.daily_shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
             + engine_inputs_special_days.as_wip_fixed,
@@ -704,7 +705,7 @@ class TestCalculateWorkerSpecialDays:
             dates_hist=dates_hist,
             dates_campaign=dates_campaign,
             shifts=engine_inputs_special_days.shifts,
-            requests=engine_inputs_special_days.requests,
+            requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.daily_shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
             + engine_inputs_special_days.as_wip_fixed,
@@ -735,7 +736,7 @@ class TestCalculateWorkerSpecialDays:
         worker_coefficients = calculate_adjustment_coefficients(
             workers=engine_inputs_special_days.workers,
             shifts=engine_inputs_special_days.shifts,
-            requests=engine_inputs_special_days.requests,
+            requests=engine_inputs_special_days.requests_leave,
             special_day_dates={
                 str(i): [d for d in dates_hist + dates_campaign if d.weekday() == i]
                 for i in special_day_indexes
@@ -847,7 +848,7 @@ class TestCalculateWorkerSpecialDays:
             dates_hist=dates_hist,
             dates_campaign=dates_campaign,
             shifts=engine_inputs_special_days.shifts,
-            requests=engine_inputs_special_days.requests,
+            requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.daily_shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
             + engine_inputs_special_days.as_wip_fixed,
@@ -878,7 +879,7 @@ class TestCalculateWorkerSpecialDays:
         worker_coefficients = calculate_adjustment_coefficients(
             workers=engine_inputs_special_days.workers,
             shifts=engine_inputs_special_days.shifts,
-            requests=engine_inputs_special_days.requests,
+            requests=engine_inputs_special_days.requests_leave,
             special_day_dates={
                 str(i): [d for d in dates_hist + dates_campaign if d.weekday() == i]
                 for i in special_day_indexes
@@ -939,7 +940,7 @@ class TestBuildDutySpecialDaysConstraints:
             dates_hist=dates_hist,
             dates_campaign=dates_campaign,
             shifts=engine_inputs_special_days.shifts,
-            requests=engine_inputs_special_days.requests,
+            requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.daily_shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
             + engine_inputs_special_days.as_wip_fixed,
@@ -975,7 +976,7 @@ class TestBuildDutySpecialDaysConstraints:
             dates_hist=dates_hist,
             dates_campaign=dates_campaign,
             shifts=engine_inputs_special_days.shifts,
-            requests=engine_inputs_special_days.requests,
+            requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.daily_shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
             + engine_inputs_special_days.as_wip_fixed,
@@ -987,7 +988,7 @@ class TestBuildDutySpecialDaysConstraints:
             dates_hist=dates_hist,
             dates_campaign=dates_campaign,
             shifts=engine_inputs_special_days.shifts,
-            requests=engine_inputs_special_days.requests,
+            requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.daily_shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
             + engine_inputs_special_days.as_wip_fixed,

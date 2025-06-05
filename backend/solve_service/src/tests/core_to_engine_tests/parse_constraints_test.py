@@ -1,7 +1,10 @@
 from typing import Callable, Tuple
 
 import pytest
-from shared.constraint_parser import parse_constraints
+from shared.constraint_parser import (
+    build_dim_to_attr_value_to_owner,
+    parse_constraints,
+)
 from shared.schemas.core import (
     ConstraintBuildAugmented,
     ConstraintFai,
@@ -17,9 +20,6 @@ from shared.schemas.core import (
 from core_to_engine_service.build_dates import (
     build_dates,
     build_worker_ids_to_worker_dates,
-)
-from core_to_engine_service.build_dim_to_attr_value_to_owner import (
-    build_dim_to_attr_value_to_owner,
 )
 from core_to_engine_service.build_periods import (
     build_periods_monthly,

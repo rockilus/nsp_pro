@@ -188,7 +188,8 @@ class TestTargetWorkTimeConstraints:
             as_wip_fixed=[],
             cbs_augmented=[],
             daily_shift_demands=daily_shift_demands,
-            requests=[],
+            requests_work=[],
+            requests_leave=[],
             model_output=None,
             penalties=penalties_fix,
             model_config=mc_copy,
@@ -219,7 +220,7 @@ class TestTargetWorkTimeConstraints:
             ei_work_times.schedule,
             ei_work_times.workers,
             ei_work_times.shifts,
-            ei_work_times.requests,
+            ei_work_times.requests_leave,
             ei_work_times.daily_shift_demands,
             periods_weekly,
         )
@@ -271,7 +272,7 @@ class TestTargetWorkTimeConstraints:
             ei_work_times.schedule,
             ei_work_times.workers,
             ei_work_times.shifts,
-            ei_work_times.requests,
+            ei_work_times.requests_leave,
             ei_work_times.daily_shift_demands,
             periods_weekly,
         )
@@ -379,7 +380,7 @@ class TestTargetWorkTimeConstraints:
             ei_work_times.schedule,
             ei_work_times.workers,
             ei_work_times.shifts,
-            ei_work_times.requests,
+            ei_work_times.requests_leave,
             ei_work_times.daily_shift_demands,
             periods_weekly,
         )
@@ -429,7 +430,7 @@ class TestTargetWorkTimeConstraints:
             ei_work_times.schedule,
             ei_work_times.workers,
             ei_work_times.shifts,
-            ei_work_times.requests,
+            ei_work_times.requests_leave,
             ei_work_times.daily_shift_demands,
             periods_weekly,
         )
@@ -540,7 +541,7 @@ class TestTargetWorkTimeConstraints:
             ei_work_times.schedule,
             ei_work_times.workers,
             ei_work_times.shifts,
-            ei_work_times.requests,
+            ei_work_times.requests_leave,
             ei_work_times.daily_shift_demands,
             periods_weekly,
         )

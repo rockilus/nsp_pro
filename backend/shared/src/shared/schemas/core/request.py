@@ -179,6 +179,7 @@ class Request:
 @dataclass
 class RequestAugmented(Request):
     active: bool = False
+    shift_target_ids: List[str] = field(default_factory=list)
     missing_attributes: List[MissingAttribute] = field(default_factory=list)
 
     def to_dict(self) -> Dict:
@@ -209,6 +210,7 @@ class RequestAugmented(Request):
             comment=data.get("comment", ""),
             created_at=datetime.fromtimestamp(data["created_at"], tz=timezone.utc),
             active=data["active"],
+            shift_target_ids=data.get("shift_target_ids", []),
             missing_attributes=[
                 MissingAttribute.from_dict(attr)
                 for attr in data.get("missing_attributes", [])

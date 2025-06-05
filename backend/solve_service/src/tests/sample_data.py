@@ -13,7 +13,6 @@ from shared.schemas.core import (
     DSDSourceType,
     EngineInputs,
     EngineInputsAugmented,
-    Request,
     Schedule,
     ScheduleSolveStatus,
     ScheduleStatus,
@@ -252,7 +251,6 @@ def sample_data_fixture() -> EngineInputsAugmented:
     dim_entries: List[DimEntry] = []
     attributes: List[Attribute] = []
     cbs_augmented: List[ConstraintBuildAugmented] = []
-    requests: List[Request] = []
 
     return EngineInputsAugmented(
         schedule=schedule,
@@ -266,7 +264,8 @@ def sample_data_fixture() -> EngineInputsAugmented:
         as_wip_fixed=[],
         cbs_augmented=cbs_augmented,
         daily_shift_demands=daily_shift_demands,
-        requests=requests,
+        requests_work=[],
+        requests_leave=[],
         model_output=None,
         penalties=penalties,
         model_config=model_config,
@@ -477,7 +476,6 @@ def sample_data() -> EngineInputsAugmented:
     dim_entries: List[DimEntry] = []
     attributes: List[Attribute] = []
     cbs_augmented: List[ConstraintBuildAugmented] = []
-    requests: List[Request] = []
 
     return EngineInputsAugmented(
         schedule=schedule,
@@ -491,7 +489,8 @@ def sample_data() -> EngineInputsAugmented:
         as_wip_fixed=[],
         cbs_augmented=cbs_augmented,
         daily_shift_demands=daily_shift_demands,
-        requests=requests,
+        requests_work=[],
+        requests_leave=[],
         model_output=None,
         penalties=penalties,
         model_config=model_config,
@@ -631,7 +630,6 @@ def sample_data_astrid_case() -> EngineInputsAugmented:
     dim_entries: List[DimEntry] = []
     attributes: List[Attribute] = []
     cbs_augmented: List[ConstraintBuildAugmented] = []
-    requests: List[Request] = []
 
     return EngineInputsAugmented(
         schedule=schedule,
@@ -645,7 +643,8 @@ def sample_data_astrid_case() -> EngineInputsAugmented:
         as_wip_fixed=[],
         cbs_augmented=cbs_augmented,
         daily_shift_demands=daily_shift_demands,
-        requests=requests,
+        requests_work=[],
+        requests_leave=[],
         model_output=None,
         penalties=penalties,
         model_config=model_config,
@@ -675,7 +674,8 @@ def load_engine_inputs_from_file(filename: str) -> EngineInputsAugmented:
         as_wip_fixed=ei.as_wip_fixed,
         cbs_augmented=ei.cbs_augmented,
         daily_shift_demands=ei.daily_shift_demands,
-        requests=ei.requests,
+        requests_work=ei.requests_work,
+        requests_leave=ei.requests_leave,
         model_output=ei.model_output,
         penalties=penalties,
         model_config=model_config,

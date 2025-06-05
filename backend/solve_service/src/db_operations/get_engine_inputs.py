@@ -37,8 +37,15 @@ def get_engine_inputs(
             schedule.id
         )
     )
-    requests = get_requests_by_dates(
-        schedule.start_date, schedule.end_date, workers, shifts, collections
+    requests_work, requests_leave = get_requests_by_dates(
+        start_date=schedule.start_date,
+        end_date=schedule.end_date,
+        workers=workers,
+        shifts=shifts,
+        dimensions=dimensions,
+        dim_entries=dim_entries,
+        attributes=attributes,
+        collections=collections,
     )
     model_output = collections.model_output_db.get_model_output(schedule.id)
     end_time_db = time.time()
@@ -54,7 +61,8 @@ def get_engine_inputs(
         as_wip_fixed=as_wip_fixed,
         cbs_augmented=cbs_augmented,
         daily_shift_demands=daily_shift_demands,
-        requests=requests,
+        requests_work=requests_work,
+        requests_leave=requests_leave,
         model_output=model_output,
     )
     total_time_db = end_time_db - start_time_db

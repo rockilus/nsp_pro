@@ -11,9 +11,10 @@ from shared.schemas.core import (
 )
 
 from db_operations.assignment_services import save_assignments
-from db_operations.get_request import update_requests
 from db_operations.save_breaches import save_breaches
 from db_operations.save_model_output import save_model_output
+
+# from db_operations.get_request import update_requests
 
 
 def save_engine_outputs(
@@ -23,12 +24,12 @@ def save_engine_outputs(
     collections: DatabaseCollections,
 ) -> EngineOutputsAugmented:
     start_time_update_db = time.time()
-    requests_aug_saved = update_requests(
-        engine_intputs.requests,
-        engine_intputs.workers,
-        engine_intputs.shifts,
-        collections,
-    )
+    # requests_aug_saved = update_requests(
+    #     engine_intputs.requests,
+    #     engine_intputs.workers,
+    #     engine_intputs.shifts,
+    #     collections,
+    # )
     engine_outputs.schedule.solve_details = SolveDetails(
         task_id=task_id,
         status=SolveDetailsStatus.SUCCESS,
@@ -58,5 +59,5 @@ def save_engine_outputs(
         schedule=schedule_saved,
         assignments=assignments_saved,
         breaches=breaches_saved,
-        requests=requests_aug_saved,
+        requests=engine_intputs.requests_work,  # Not updating requests for now
     )

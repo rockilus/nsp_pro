@@ -2,6 +2,7 @@ from copy import deepcopy
 from datetime import date, datetime, timezone
 from typing import Callable, Tuple
 
+from shared.augment import requests_to_requests_augmented
 from shared.schemas.core import (
     ConstraintBuildAugmented,
     ConstraintFai,
@@ -13,6 +14,8 @@ from shared.schemas.core import (
     EngineInputsAugmented,
     Request,
     RequestStatus,
+    ShiftWorkerOption,
+    SWOIdTypes,
 )
 from shared.schemas.core.request import FulfillmentStatus, RequestType
 
@@ -40,10 +43,21 @@ class TestConstraintOrd:
     ) -> None:
         cba, constraint = constraint_ord_with_expected_output
         engine_inputs.cbs_augmented = [cba]
+        shift_target_id = constraint.constraint_variables[0][0][2]
+
         request = Request(
             id="req_1",
             team_id="t0",
-            shift_id=constraint.constraint_variables[0][0][2],
+            shift_id=None,
+            shift_options=[
+                ShiftWorkerOption(
+                    name=shift_target_id,
+                    id=shift_target_id,
+                    id_type=SWOIdTypes.SHIFT,
+                    is_bool_dim=False,
+                    category_name=shift_target_id,
+                )
+            ],
             worker_id=constraint.constraint_variables[0][0][0],
             start_date=date.fromisoformat(constraint.constraint_variables[0][0][1]),
             end_date=date.fromisoformat(constraint.constraint_variables[0][0][1]),
@@ -55,7 +69,14 @@ class TestConstraintOrd:
             comment="",
             created_at=datetime.now(tz=timezone.utc),
         )
-        engine_inputs.requests = [request]
+        engine_inputs.requests_work = requests_to_requests_augmented(
+            requests=[request],
+            workers=engine_inputs.workers,
+            shifts=engine_inputs.shifts,
+            dimensions=engine_inputs.dimensions,
+            dim_entries=engine_inputs.dim_entries,
+            attributes=engine_inputs.attributes,
+        )
 
         out = run_engine_solve_from_engine_inputs(engine_inputs)
 
@@ -106,6 +127,7 @@ class TestConstraintOrd:
         else:
             assert False
 
+    # pylint: disable=too-many-locals
     def test_constraint_ord_soft(
         self,
         engine_inputs: EngineInputsAugmented,
@@ -123,11 +145,20 @@ class TestConstraintOrd:
         cba_soft = deepcopy(cba)
         cba_soft.hard = False
         engine_inputs.cbs_augmented = [cba_soft]
-
+        shift_target_id = constraint.constraint_variables[0][0][2]
         request = Request(
             id="req_1",
             team_id="t0",
-            shift_id=constraint.constraint_variables[0][0][2],
+            shift_id=None,
+            shift_options=[
+                ShiftWorkerOption(
+                    name=shift_target_id,
+                    id=shift_target_id,
+                    id_type=SWOIdTypes.SHIFT,
+                    is_bool_dim=False,
+                    category_name=shift_target_id,
+                )
+            ],
             worker_id=constraint.constraint_variables[0][0][0],
             start_date=date.fromisoformat(constraint.constraint_variables[0][0][1]),
             end_date=date.fromisoformat(constraint.constraint_variables[0][0][1]),
@@ -139,7 +170,14 @@ class TestConstraintOrd:
             comment="",
             created_at=datetime.now(tz=timezone.utc),
         )
-        engine_inputs.requests = [request]
+        engine_inputs.requests_work = requests_to_requests_augmented(
+            requests=[request],
+            workers=engine_inputs.workers,
+            shifts=engine_inputs.shifts,
+            dimensions=engine_inputs.dimensions,
+            dim_entries=engine_inputs.dim_entries,
+            attributes=engine_inputs.attributes,
+        )
 
         out = run_engine_solve_from_engine_inputs(engine_inputs)
 
@@ -209,11 +247,21 @@ class TestConstraintOrd:
     ) -> None:
         cba, c_fixture = constraint_ord_with_expected_output
         engine_inputs.cbs_augmented = [cba]
+        shift_target_id = c_fixture.constraint_variables[0][0][2]
 
         request = Request(
             id="req_1",
             team_id="t0",
-            shift_id=c_fixture.constraint_variables[0][0][2],
+            shift_id=None,
+            shift_options=[
+                ShiftWorkerOption(
+                    name=shift_target_id,
+                    id=shift_target_id,
+                    id_type=SWOIdTypes.SHIFT,
+                    is_bool_dim=False,
+                    category_name=shift_target_id,
+                )
+            ],
             worker_id=c_fixture.constraint_variables[0][0][0],
             start_date=date.fromisoformat(c_fixture.constraint_variables[0][0][1]),
             end_date=date.fromisoformat(c_fixture.constraint_variables[0][0][1]),
@@ -225,7 +273,14 @@ class TestConstraintOrd:
             comment="",
             created_at=datetime.now(tz=timezone.utc),
         )
-        engine_inputs.requests = [request]
+        engine_inputs.requests_work = requests_to_requests_augmented(
+            requests=[request],
+            workers=engine_inputs.workers,
+            shifts=engine_inputs.shifts,
+            dimensions=engine_inputs.dimensions,
+            dim_entries=engine_inputs.dim_entries,
+            attributes=engine_inputs.attributes,
+        )
 
         inputs, _ = run_core_to_engine_inputs(engine_inputs)
 
@@ -329,11 +384,21 @@ class TestConstraintOrd:
     ) -> None:
         cba, c_fixture = constraint_ord_with_expected_output
         engine_inputs.cbs_augmented = [cba]
+        shift_target_id = c_fixture.constraint_variables[0][0][2]
 
         request = Request(
             id="req_1",
             team_id="t0",
-            shift_id=c_fixture.constraint_variables[0][0][2],
+            shift_id=None,
+            shift_options=[
+                ShiftWorkerOption(
+                    name=shift_target_id,
+                    id=shift_target_id,
+                    id_type=SWOIdTypes.SHIFT,
+                    is_bool_dim=False,
+                    category_name=shift_target_id,
+                )
+            ],
             worker_id=c_fixture.constraint_variables[0][0][0],
             start_date=date.fromisoformat(c_fixture.constraint_variables[0][0][1]),
             end_date=date.fromisoformat(c_fixture.constraint_variables[0][0][1]),
@@ -345,7 +410,14 @@ class TestConstraintOrd:
             comment="",
             created_at=datetime.now(tz=timezone.utc),
         )
-        engine_inputs.requests = [request]
+        engine_inputs.requests_work = requests_to_requests_augmented(
+            requests=[request],
+            workers=engine_inputs.workers,
+            shifts=engine_inputs.shifts,
+            dimensions=engine_inputs.dimensions,
+            dim_entries=engine_inputs.dim_entries,
+            attributes=engine_inputs.attributes,
+        )
 
         inputs, _ = run_core_to_engine_inputs(engine_inputs)
 

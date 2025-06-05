@@ -24,4 +24,5 @@ class RequestDTO(BaseModel):
     comment: str
     createdAt: float
     active: bool
+    shiftTargetIds: List[str]
     missingAttributes: List[MissingAttributeDTO]

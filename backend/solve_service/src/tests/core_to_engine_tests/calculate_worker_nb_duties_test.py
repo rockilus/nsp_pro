@@ -46,7 +46,7 @@ class TestCalculateWorkerNbDuties:
             engine_inputs.schedule,
             engine_inputs.workers,
             engine_inputs.shifts,
-            engine_inputs.requests,
+            engine_inputs.requests_leave,
             engine_inputs.daily_shift_demands,
             periods_monthly,
         )
@@ -92,7 +92,7 @@ class TestCalculateWorkerNbDuties:
             engine_inputs.schedule,
             engine_inputs.workers,
             engine_inputs.shifts,
-            engine_inputs.requests,
+            engine_inputs.requests_leave,
             engine_inputs.daily_shift_demands,
             periods_monthly,
         )
@@ -168,7 +168,7 @@ class TestCalculateWorkerNbDuties:
             schedule,
             engine_inputs.workers,
             engine_inputs.shifts,
-            engine_inputs.requests,
+            engine_inputs.requests_leave,
             periods_monthly,
             ref_nb_days,
         )
@@ -224,19 +224,19 @@ class TestCalculateWorkerNbDuties:
             shift_id=shift_target_id,
             negative=False,
             hard=True,
-            status=RequestStatus.PENDING,
-            request_type=RequestType.WORK_DEMAND,
+            status=RequestStatus.APPROVED,
+            request_type=RequestType.LEAVE,
             fulfillment=FulfillmentStatus.NOT_PROCESSED,
             comment="",
             created_at=datetime.now(tz=timezone.utc),
         )
-        engine_inputs.requests.append(request_leave)
+        engine_inputs.requests_leave.append(request_leave)
 
         out = calculate_adjustment_coefficients(
             schedule,
             engine_inputs.workers,
             engine_inputs.shifts,
-            engine_inputs.requests,
+            engine_inputs.requests_leave,
             periods_monthly,
             ref_nb_days,
         )
@@ -267,7 +267,7 @@ class TestBuildNbDutiesConstraints:
             engine_inputs.schedule,
             engine_inputs.workers,
             engine_inputs.shifts,
-            engine_inputs.requests,
+            engine_inputs.requests_leave,
             engine_inputs.daily_shift_demands,
             periods_monthly,
         )
@@ -318,7 +318,7 @@ class TestBuildNbDutiesConstraints:
             engine_inputs.schedule,
             engine_inputs.workers,
             engine_inputs.shifts,
-            engine_inputs.requests,
+            engine_inputs.requests_leave,
             engine_inputs.daily_shift_demands,
             periods_monthly,
         )

@@ -355,7 +355,8 @@ class TestSpecialDayConstraints:
             as_wip_fixed=[],
             cbs_augmented=[],
             daily_shift_demands=daily_shift_demands,
-            requests=[],
+            requests_work=[],
+            requests_leave=[],
             model_output=None,
             penalties=penalties_fix,
             model_config=mc_copy,
@@ -397,7 +398,7 @@ class TestSpecialDayConstraints:
             dates_hist=dates_hist,
             dates_campaign=dates_campaign,
             shifts=engine_inputs_special_days.shifts,
-            requests=engine_inputs_special_days.requests,
+            requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.daily_shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
             + engine_inputs_special_days.as_wip_fixed,
@@ -502,7 +503,7 @@ class TestSpecialDayConstraints:
             dates_hist=dates_hist,
             dates_campaign=dates_campaign,
             shifts=engine_inputs_special_days.shifts,
-            requests=engine_inputs_special_days.requests,
+            requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.daily_shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
             + engine_inputs_special_days.as_wip_fixed,

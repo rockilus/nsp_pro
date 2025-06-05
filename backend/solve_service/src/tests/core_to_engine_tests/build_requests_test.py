@@ -1,13 +1,18 @@
 from datetime import datetime, timedelta, timezone
-from typing import List
+from typing import Callable, List
 
 import pytest
+from shared.augment.r_to_r_augmented import r_to_r_augmented
+from shared.constraint_parser import (
+    build_dim_to_attr_value_to_owner,
+)
 from shared.schemas.core import (
     DailyShiftDemand,
     DSDSourceType,
     EngineInputsAugmented,
     FulfillmentStatus,
     Request,
+    RequestAugmented,
     RequestStatus,
     RequestType,
     Schedule,
@@ -15,7 +20,9 @@ from shared.schemas.core import (
     ShiftLeaveType,
     ShiftRestType,
     ShiftType,
+    ShiftWorkerOption,
     Staffing,
+    SWOIdTypes,
     Worker,
 )
 
@@ -27,10 +34,73 @@ from tests.sample_data import test_data_set_3
 
 # pylint: disable=R0801
 class TestBuildRequests:
+    @pytest.fixture
+    def build_engine_requests_fixture(
+        self,
+    ) -> Callable[[List[Request], EngineInputsAugmented], List[RequestEngine]]:
+        """
+        Fixture to build engine requests from a list of requests and sample data.
+        Inputs:
+            - requests: List[Request]
+            - sample_data: EngineInputsAugmented
+        Returns:
+            - output of build_engine_requests
+        """
+
+        def _build_engine_requests(
+            requests: List[Request], sample_data: EngineInputsAugmented
+        ) -> List[RequestEngine]:
+            shifts: List[Shift] = sample_data.shifts
+            workers: List[Worker] = sample_data.workers
+            schedule: Schedule = sample_data.schedule
+
+            rs_augmented: List[RequestAugmented] = []
+            for r in requests:
+                worker = next((w for w in workers if w.id == r.worker_id), None)
+                assert worker is not None, "Worker not found in sample data"
+                r_augmented = r_to_r_augmented(
+                    request=r,
+                    worker=worker,
+                    shifts=shifts,
+                    dimensions=sample_data.dimensions,
+                    dim_entries=sample_data.dim_entries,
+                    attributes=sample_data.attributes,
+                )
+                rs_augmented.append(r_augmented)
+
+            dates_campaign = [
+                schedule.start_date + timedelta(days=i)
+                for i in range((schedule.end_date - schedule.start_date).days + 1)
+            ]
+            worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
+                schedule, workers, [], dates_campaign
+            )
+            dim_to_attr_value_to_shift = build_dim_to_attr_value_to_owner(
+                owners=shifts,
+                dimensions=sample_data.dimensions,
+                dim_entries=sample_data.dim_entries,
+                attributes=sample_data.attributes,
+            )
+            output = build_engine_requests(
+                worker_not_deleted_ids=[w.id for w in workers],
+                worker_ids_to_worker_dates=worker_ids_to_worker_dates,
+                shift_not_deleted_ids=[s.id for s in shifts],
+                shifts=shifts,
+                dim_to_attr_value_to_shift=dim_to_attr_value_to_shift,
+                requests=rs_augmented,
+                r_penalty=sample_data.penalties.user_constraint.request,
+            )
+            return output
+
+        return _build_engine_requests
+
     @pytest.mark.parametrize("sample_data", test_data_set_3)
     def test_build_request_one_day_positive_hard(
         self,
         sample_data: EngineInputsAugmented,
+        build_engine_requests_fixture: Callable[
+            [List[Request], EngineInputsAugmented], List[RequestEngine]
+        ],
     ) -> None:
         shifts: List[Shift] = sample_data.shifts
         target_shift = shifts[0]
@@ -40,15 +110,6 @@ class TestBuildRequests:
 
         schedule: Schedule = sample_data.schedule
 
-        dates_campaign = [
-            schedule.start_date + timedelta(days=i)
-            for i in range((schedule.end_date - schedule.start_date).days + 1)
-        ]
-
-        worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
-            schedule, workers, [], dates_campaign
-        )
-
         requests = [
             Request(
                 id="",
@@ -56,7 +117,16 @@ class TestBuildRequests:
                 worker_id=target_worker.id,
                 start_date=schedule.start_date,
                 end_date=schedule.start_date,
-                shift_id=target_shift.id,
+                shift_id=None,
+                shift_options=[
+                    ShiftWorkerOption(
+                        name=target_shift.name,
+                        id=target_shift.id,
+                        id_type=SWOIdTypes.SHIFT,
+                        is_bool_dim=False,
+                        category_name=target_shift.acronym,
+                    )
+                ],
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING,
@@ -67,13 +137,7 @@ class TestBuildRequests:
             )
         ]
 
-        output = build_engine_requests(
-            [w.id for w in workers],
-            worker_ids_to_worker_dates,
-            [s.id for s in shifts],
-            requests,
-            sample_data.penalties.user_constraint.request,
-        )
+        output = build_engine_requests_fixture(requests, sample_data)
 
         assert isinstance(output, list)
         assert all(isinstance(request, RequestEngine) for request in output)
@@ -96,6 +160,9 @@ class TestBuildRequests:
     def test_build_request_one_day_positive_soft(
         self,
         sample_data: EngineInputsAugmented,
+        build_engine_requests_fixture: Callable[
+            [List[Request], EngineInputsAugmented], List[RequestEngine]
+        ],
     ) -> None:
         shifts: List[Shift] = sample_data.shifts
         target_shift = shifts[0]
@@ -105,15 +172,6 @@ class TestBuildRequests:
 
         schedule: Schedule = sample_data.schedule
 
-        dates_campaign = [
-            schedule.start_date + timedelta(days=i)
-            for i in range((schedule.end_date - schedule.start_date).days + 1)
-        ]
-
-        worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
-            schedule, workers, [], dates_campaign
-        )
-
         requests = [
             Request(
                 id="",
@@ -121,7 +179,16 @@ class TestBuildRequests:
                 worker_id=target_worker.id,
                 start_date=schedule.start_date,
                 end_date=schedule.start_date,
-                shift_id=target_shift.id,
+                shift_id=None,
+                shift_options=[
+                    ShiftWorkerOption(
+                        name=target_shift.name,
+                        id=target_shift.id,
+                        id_type=SWOIdTypes.SHIFT,
+                        is_bool_dim=False,
+                        category_name=target_shift.acronym,
+                    )
+                ],
                 negative=False,
                 hard=False,
                 status=RequestStatus.PENDING,
@@ -132,13 +199,7 @@ class TestBuildRequests:
             )
         ]
 
-        output = build_engine_requests(
-            [w.id for w in workers],
-            worker_ids_to_worker_dates,
-            [s.id for s in shifts],
-            requests,
-            sample_data.penalties.user_constraint.request,
-        )
+        output = build_engine_requests_fixture(requests, sample_data)
 
         assert isinstance(output, list)
         assert all(isinstance(request, RequestEngine) for request in output)
@@ -159,7 +220,11 @@ class TestBuildRequests:
 
     @pytest.mark.parametrize("sample_data", test_data_set_3)
     def test_build_request_one_day_negative_hard(
-        self, sample_data: EngineInputsAugmented
+        self,
+        sample_data: EngineInputsAugmented,
+        build_engine_requests_fixture: Callable[
+            [List[Request], EngineInputsAugmented], List[RequestEngine]
+        ],
     ) -> None:
         shifts: List[Shift] = sample_data.shifts
         target_shift = shifts[0]
@@ -169,15 +234,6 @@ class TestBuildRequests:
 
         schedule: Schedule = sample_data.schedule
 
-        dates_campaign = [
-            schedule.start_date + timedelta(days=i)
-            for i in range((schedule.end_date - schedule.start_date).days + 1)
-        ]
-
-        worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
-            schedule, workers, [], dates_campaign
-        )
-
         requests = [
             Request(
                 id="",
@@ -185,7 +241,16 @@ class TestBuildRequests:
                 worker_id=target_worker.id,
                 start_date=schedule.start_date,
                 end_date=schedule.start_date,
-                shift_id=target_shift.id,
+                shift_id=None,
+                shift_options=[
+                    ShiftWorkerOption(
+                        name=target_shift.name,
+                        id=target_shift.id,
+                        id_type=SWOIdTypes.SHIFT,
+                        is_bool_dim=False,
+                        category_name=target_shift.acronym,
+                    )
+                ],
                 negative=True,
                 hard=True,
                 status=RequestStatus.PENDING,
@@ -196,13 +261,7 @@ class TestBuildRequests:
             )
         ]
 
-        output = build_engine_requests(
-            [w.id for w in workers],
-            worker_ids_to_worker_dates,
-            [s.id for s in shifts],
-            requests,
-            sample_data.penalties.user_constraint.request,
-        )
+        output = build_engine_requests_fixture(requests, sample_data)
 
         assert isinstance(output, list)
         assert all(isinstance(request, RequestEngine) for request in output)
@@ -223,7 +282,11 @@ class TestBuildRequests:
 
     @pytest.mark.parametrize("sample_data", test_data_set_3)
     def test_build_request_date_range_positive_hard(
-        self, sample_data: EngineInputsAugmented
+        self,
+        sample_data: EngineInputsAugmented,
+        build_engine_requests_fixture: Callable[
+            [List[Request], EngineInputsAugmented], List[RequestEngine]
+        ],
     ) -> None:
         schedule: Schedule = sample_data.schedule
 
@@ -269,10 +332,6 @@ class TestBuildRequests:
         workers: List[Worker] = sample_data.workers
         target_worker = workers[0]
 
-        worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
-            schedule, workers, [], dates_campaign
-        )
-
         requests = [
             Request(
                 id="",
@@ -280,7 +339,16 @@ class TestBuildRequests:
                 worker_id=target_worker.id,
                 start_date=schedule.start_date,
                 end_date=schedule.end_date,
-                shift_id=target_shift.id,
+                shift_id=None,
+                shift_options=[
+                    ShiftWorkerOption(
+                        name=target_shift.name,
+                        id=target_shift.id,
+                        id_type=SWOIdTypes.SHIFT,
+                        is_bool_dim=False,
+                        category_name=target_shift.acronym,
+                    )
+                ],
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING,
@@ -291,13 +359,7 @@ class TestBuildRequests:
             )
         ]
 
-        output = build_engine_requests(
-            [w.id for w in workers],
-            worker_ids_to_worker_dates,
-            [s.id for s in sample_data.shifts],
-            requests,
-            sample_data.penalties.user_constraint.request,
-        )
+        output = build_engine_requests_fixture(requests, sample_data)
 
         assert isinstance(output, list)
         assert all(isinstance(request, RequestEngine) for request in output)
