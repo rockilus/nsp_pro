@@ -23,7 +23,12 @@ import ShiftOptionsDisplay from "../stats/nav-bar/shift-options-display";
 // Styles
 import "./request-panel.css";
 // Types
-import { RequestT, RequestStatus, RequestType } from "../../types/request";
+import {
+  RequestT,
+  RequestStatus,
+  RequestType,
+  FulfillmentStatus,
+} from "../../types/request";
 import { ShiftT, ShiftType, ShiftRestType } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
 import { TeamMembershipRole } from "@/types/team";
@@ -31,8 +36,9 @@ import { ShiftWorkerOptionT, SWOIdTypes } from "@/types/constraint";
 
 export default function RequestPanel({
   lng,
+  teamId,
   isEdit,
-  request,
+  request = null,
   workers,
   shifts,
   shiftOptions,
@@ -42,8 +48,9 @@ export default function RequestPanel({
   handleUpdateRequest,
 }: {
   lng: string;
+  teamId: string;
   isEdit: boolean;
-  request: RequestT;
+  request?: RequestT | null;
   workers: WorkerT[];
   shifts: ShiftT[];
   shiftOptions: ShiftWorkerOptionT[];
@@ -57,12 +64,39 @@ export default function RequestPanel({
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
     null
   );
-  const [requestState, setRequestState] = useState<RequestT>(request);
+
+  // Helper to create a default request object
+  const createDefaultRequest = (): RequestT => ({
+    id: "",
+    teamId: teamId,
+    requestType: RequestType.WORK_DEMAND,
+    workerId: userWorkerId || "",
+    startDate: dayjs.utc().startOf("day"),
+    endDate: dayjs.utc().startOf("day"),
+    shiftId: null,
+    shiftOptions: [],
+    negative: false,
+    hard: true,
+    status: RequestStatus.PENDING,
+    fulfillment: FulfillmentStatus.NOT_PROCESSED,
+    comment: "",
+    createdAt: dayjs.utc(),
+    active: true,
+    shiftTargetIds: [],
+    missingAttributes: [],
+  });
+
+  // If editing, always expect a real request object. If creating, use default.
+  const [requestState, setRequestState] = useState<RequestT>(
+    isEdit && request ? request : createDefaultRequest()
+  );
   const [dateRange, setDateRange] = useState<boolean>(
-    !request.startDate.isSame(request.endDate, "day")
+    isEdit && request
+      ? !request.startDate.isSame(request.endDate, "day")
+      : false
   );
   const [requestType, setRequestType] = useState<RequestType>(
-    RequestType.WORK_DEMAND
+    isEdit && request ? request.requestType : RequestType.WORK_DEMAND
   );
 
   // Validation error state
@@ -135,6 +169,21 @@ export default function RequestPanel({
 
   const handleClose = () => {
     setAnchorEl(null);
+    // Reset state to initial value when closing
+    setRequestState(isEdit && request ? request : createDefaultRequest());
+    setDateRange(
+      isEdit && request
+        ? !request.startDate.isSame(request.endDate, "day")
+        : false
+    );
+    setRequestType(
+      isEdit && request ? request.requestType : RequestType.WORK_DEMAND
+    );
+    setWorkerIdError(false);
+    setStartDateError(false);
+    setEndDateError(false);
+    setShiftIdError(false);
+    setShiftOptionsError(false);
   };
 
   const open = Boolean(anchorEl);
@@ -200,7 +249,8 @@ export default function RequestPanel({
 
     if (!isEdit) {
       await handleAddRequest(requestState);
-    } else {
+    } else if (request) {
+      // Only compare if editing and request is defined
       if (
         requestState.workerId === request.workerId &&
         requestState.startDate === request.startDate &&
@@ -227,7 +277,7 @@ export default function RequestPanel({
         ...requestState,
         endDate: requestState.startDate,
       });
-    } else {
+    } else if (request) {
       setRequestState({
         ...requestState,
         endDate: request.endDate,
@@ -290,10 +340,10 @@ export default function RequestPanel({
 
   return (
     <div>
-      {isEdit ? (
+      {isEdit && request ? (
         <IconButton
           edge="end"
-          aria-label="delete"
+          aria-label="edit"
           disabled={
             userTeamRole === TeamMembershipRole.MEMBER &&
             (!userWorkerId || request.workerId !== userWorkerId)
