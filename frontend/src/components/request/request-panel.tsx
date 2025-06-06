@@ -18,32 +18,35 @@ import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+// Components
+import ShiftOptionsDisplay from "../stats/nav-bar/shift-options-display";
 // Styles
 import "./request-panel.css";
 // Types
 import { RequestT, RequestStatus, RequestType } from "../../types/request";
-import { ShiftT } from "../../types/shift";
+import { ShiftT, ShiftType, ShiftRestType } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
 import { TeamMembershipRole } from "@/types/team";
+import { ShiftWorkerOptionT, SWOIdTypes } from "@/types/constraint";
 
 export default function RequestPanel({
   lng,
-  requestType,
   isEdit,
   request,
   workers,
   shifts,
+  shiftOptions,
   userWorkerId,
   userTeamRole,
   handleAddRequest,
   handleUpdateRequest,
 }: {
   lng: string;
-  requestType: RequestType;
   isEdit: boolean;
   request: RequestT;
   workers: WorkerT[];
   shifts: ShiftT[];
+  shiftOptions: ShiftWorkerOptionT[];
   userWorkerId: string | null;
   userTeamRole: TeamMembershipRole;
   handleAddRequest: (request: RequestT) => void;
@@ -58,6 +61,73 @@ export default function RequestPanel({
   const [dateRange, setDateRange] = useState<boolean>(
     !request.startDate.isSame(request.endDate, "day")
   );
+  const [requestType, setRequestType] = useState<RequestType>(
+    RequestType.WORK_DEMAND
+  );
+
+  // Validation error state
+  const [workerIdError, setWorkerIdError] = useState(false);
+  const [startDateError, setStartDateError] = useState(false);
+  const [endDateError, setEndDateError] = useState(false);
+  const [shiftIdError, setShiftIdError] = useState(false);
+  const [shiftOptionsError, setShiftOptionsError] = useState(false);
+
+  // Helper to filter shifts by request type
+  function filterShiftsByRequestType(
+    shifts: ShiftT[],
+    requestType: RequestType
+  ): ShiftT[] {
+    return shifts.filter((s) => {
+      if (requestType === RequestType.WORK_DEMAND) {
+        return (
+          !s.deleted &&
+          (s.shiftType === ShiftType.NORMAL || s.shiftType === ShiftType.DUTY)
+        );
+      } else {
+        return (
+          !s.deleted &&
+          (s.shiftType === ShiftType.REST || s.shiftType === ShiftType.LEAVE) &&
+          (s.restType === ShiftRestType.OFF ||
+            s.restType === ShiftRestType.NONE)
+        );
+      }
+    });
+  }
+
+  // Filters shiftOptions for ShiftOptionsDisplay (readability)
+  function filterShiftOptions(
+    shiftOptions: ShiftWorkerOptionT[],
+    shifts: ShiftT[]
+  ): ShiftWorkerOptionT[] {
+    const normalDutyShiftIds = shifts
+      .filter(
+        (s) =>
+          !s.deleted &&
+          (s.shiftType === ShiftType.NORMAL || s.shiftType === ShiftType.DUTY)
+      )
+      .map((s) => s.id);
+
+    return shiftOptions.filter((opt) => {
+      if (opt.categoryName === "All") return false;
+      if (
+        opt.idType === SWOIdTypes.SHIFT &&
+        !normalDutyShiftIds.includes(opt.id)
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }
+
+  const handleEditSelectedShifts = (selectedShifts: ShiftWorkerOptionT[]) => {
+    if (requestType === RequestType.LEAVE) return;
+
+    const newRequestState: RequestT = {
+      ...requestState,
+      shiftOptions: selectedShifts,
+    };
+    setRequestState(newRequestState);
+  };
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -71,6 +141,63 @@ export default function RequestPanel({
   const id = open ? "simple-popover" : undefined;
 
   const handleSaveRequest = async () => {
+    // Reset all errors
+    setWorkerIdError(false);
+    setStartDateError(false);
+    setEndDateError(false);
+    setShiftIdError(false);
+    setShiftOptionsError(false);
+
+    let hasError = false;
+    // Worker ID validation
+    if (!requestState.workerId || requestState.workerId.trim() === "") {
+      setWorkerIdError(true);
+      hasError = true;
+    }
+    // Start date must be after today
+    const today = dayjs.utc().startOf("day");
+    if (
+      !requestState.startDate ||
+      !requestState.startDate.isAfter(today.subtract(1, "day"))
+    ) {
+      setStartDateError(true);
+      hasError = true;
+    }
+    // End date must be same as or after start date
+    if (
+      !requestState.endDate ||
+      requestState.endDate.isBefore(requestState.startDate, "day")
+    ) {
+      setEndDateError(true);
+      hasError = true;
+    }
+    // Leave request: shiftId required, shiftOptions must be empty
+    if (requestType === RequestType.LEAVE) {
+      if (!requestState.shiftId || requestState.shiftId === "") {
+        setShiftIdError(true);
+        hasError = true;
+      }
+      if (requestState.shiftOptions && requestState.shiftOptions.length > 0) {
+        setShiftOptionsError(true);
+        hasError = true;
+      }
+    }
+    // Work demand: shiftId must be null, shiftOptions required
+    if (requestType === RequestType.WORK_DEMAND) {
+      if (requestState.shiftId !== null) {
+        setShiftIdError(true);
+        hasError = true;
+      }
+      if (
+        !requestState.shiftOptions ||
+        requestState.shiftOptions.length === 0
+      ) {
+        setShiftOptionsError(true);
+        hasError = true;
+      }
+    }
+    if (hasError) return;
+
     if (!isEdit) {
       await handleAddRequest(requestState);
     } else {
@@ -112,17 +239,18 @@ export default function RequestPanel({
   const selectWorker = () => {
     return (
       <div className="select-container">
-        <FormControl fullWidth>
+        <FormControl fullWidth error={workerIdError}>
           <Select
             value={requestState.workerId}
             disabled={userTeamRole === TeamMembershipRole.MEMBER}
             label="Worker"
-            onChange={(e) =>
+            onChange={(e) => {
               setRequestState({
                 ...requestState,
                 workerId: e.target.value as string,
-              })
-            }
+              });
+              setWorkerIdError(false);
+            }}
           >
             {workers.map((worker) => (
               <MenuItem key={worker.id} value={worker.id}>
@@ -137,18 +265,19 @@ export default function RequestPanel({
   const selectShift = () => {
     return (
       <div className="select-container">
-        <FormControl fullWidth>
+        <FormControl fullWidth error={shiftIdError}>
           <Select
-            value={requestState.shiftId}
+            value={requestState.shiftId || ""}
             label="Shift"
-            onChange={(e) =>
+            onChange={(e) => {
               setRequestState({
                 ...requestState,
                 shiftId: e.target.value as string,
-              })
-            }
+              });
+              setShiftIdError(false);
+            }}
           >
-            {shifts.map((shift) => (
+            {filterShiftsByRequestType(shifts, requestType).map((shift) => (
               <MenuItem key={shift.id} value={shift.id}>
                 {shift.name}
               </MenuItem>
@@ -203,6 +332,56 @@ export default function RequestPanel({
               <CloseIcon />
             </IconButton>
           </div>
+          <ToggleButtonGroup
+            color="primary"
+            value={requestType}
+            exclusive
+            onChange={(_event, value) => {
+              if (value !== null) {
+                setRequestType(value);
+                setRequestState((prev) => {
+                  if (value === RequestType.WORK_DEMAND) {
+                    // When switching to work demand, clear shiftId
+                    return { ...prev, shiftId: null };
+                  } else if (value === RequestType.LEAVE) {
+                    // When switching to leave, clear shiftOptions and set negative to false
+                    return { ...prev, shiftOptions: [], negative: false };
+                  }
+                  return prev;
+                });
+              }
+            }}
+            aria-label="Request Type"
+            sx={{ marginBottom: 2, marginLeft: 2 }}
+          >
+            <ToggleButton
+              value={RequestType.WORK_DEMAND}
+              sx={{
+                marginTop: "5px",
+                marginBottom: "5px",
+                marginLeft: "56px",
+                textTransform: "none",
+                height: "30px",
+                width: "105px",
+                fontSize: "0.8rem",
+              }}
+            >
+              {t("work")}
+            </ToggleButton>
+            <ToggleButton
+              value={RequestType.LEAVE}
+              sx={{
+                marginTop: "5px",
+                marginBottom: "5px",
+                textTransform: "none",
+                height: "30px",
+                width: "105px",
+                fontSize: "0.8rem",
+              }}
+            >
+              {t("leave")}
+            </ToggleButton>
+          </ToggleButtonGroup>
           <div className="variable-input-container">
             <PeopleAltIcon sx={{ marginLeft: 2, marginRight: 1 }} />
             {selectWorker()}
@@ -225,7 +404,7 @@ export default function RequestPanel({
                 minDate={dayjs.utc().startOf("day")}
                 sx={{ marginLeft: 1, marginRight: 2 }}
                 value={requestState.startDate}
-                onChange={(newValue) =>
+                onChange={(newValue) => {
                   setRequestState({
                     ...requestState,
                     startDate:
@@ -233,8 +412,11 @@ export default function RequestPanel({
                     endDate: !dateRange
                       ? newValue?.startOf("day") || dayjs.utc().startOf("day")
                       : requestState.endDate,
-                  })
-                }
+                  });
+                  setStartDateError(false);
+                  if (!dateRange) setEndDateError(false);
+                }}
+                slotProps={{ textField: { error: startDateError } }}
               />
               {dateRange && (
                 <DatePicker
@@ -246,13 +428,15 @@ export default function RequestPanel({
                     width: "100%",
                   }}
                   value={requestState.endDate}
-                  onChange={(newValue) =>
+                  onChange={(newValue) => {
                     setRequestState({
                       ...requestState,
                       endDate:
                         newValue?.startOf("day") || dayjs.utc().startOf("day"),
-                    })
-                  }
+                    });
+                    setEndDateError(false);
+                  }}
+                  slotProps={{ textField: { error: endDateError } }}
                 />
               )}
             </div>
@@ -300,7 +484,32 @@ export default function RequestPanel({
           )}
           <div className="variable-input-container">
             <WorkIcon sx={{ marginLeft: 2, marginRight: 1 }} />
-            {selectShift()}
+            {requestType === RequestType.WORK_DEMAND ? (
+              <div
+                style={
+                  shiftOptionsError
+                    ? {
+                        border: "2px solid #f44336",
+                        borderRadius: 8,
+                        padding: 2,
+                      }
+                    : {}
+                }
+              >
+                <ShiftOptionsDisplay
+                  lng={lng}
+                  selectedShifts={requestState.shiftOptions}
+                  statsShiftOptions={filterShiftOptions(shiftOptions, shifts)}
+                  disabled={false}
+                  handleEditSelectedShifts={(selected) => {
+                    handleEditSelectedShifts(selected);
+                    setShiftOptionsError(false);
+                  }}
+                />
+              </div>
+            ) : (
+              selectShift()
+            )}
           </div>
           <div className="save-button-container">
             <Button

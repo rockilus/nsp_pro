@@ -26,12 +26,14 @@ import { RequestT, RequestStatus } from "../../types/request";
 import { ShiftT } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
 import { TeamMembershipRole } from "@/types/team";
+import { ShiftWorkerOptionT } from "@/types/constraint";
 
 export default function RequestTableRow({
   lng,
   request,
   workers,
   shifts,
+  shiftOptions,
   requestTableFields,
   userWorkerId,
   userTeamRole,
@@ -42,6 +44,7 @@ export default function RequestTableRow({
   request: RequestT;
   workers: WorkerT[];
   shifts: ShiftT[];
+  shiftOptions: ShiftWorkerOptionT[];
   requestTableFields: Record<string, string>[];
   userWorkerId: string | null;
   userTeamRole: TeamMembershipRole;
@@ -186,11 +189,11 @@ export default function RequestTableRow({
         <div className="request-row-buttons">
           <RequestPanel
             lng={lng}
-            requestType={request.requestType}
             isEdit={true}
             request={request}
             workers={workers.filter((worker) => !worker.deleted)}
             shifts={shifts.filter((shift) => !shift.deleted)}
+            shiftOptions={shiftOptions}
             userWorkerId={userWorkerId}
             userTeamRole={userTeamRole}
             handleAddRequest={handleUpdateRequest}
