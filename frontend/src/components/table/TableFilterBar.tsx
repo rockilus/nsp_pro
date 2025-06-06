@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Chip, Button, Typography } from "@mui/material";
+import { Box, Chip, Button } from "@mui/material";
 import { Clear as ClearIcon, Sort as SortIcon } from "@mui/icons-material";
 import { ColumnFilter, TableSort } from "../../types/filter";
 
@@ -26,21 +26,17 @@ export default function TableFilterBar({
 
   return (
     <Box sx={{ p: 2, backgroundColor: "grey.50", borderRadius: 1, mb: 2 }}>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-          Active Filters & Sorting:
-        </Typography>
-        <Button
-          size="small"
-          onClick={onResetAll}
-          startIcon={<ClearIcon />}
-          sx={{ ml: "auto" }}
-        >
-          Clear All
-        </Button>
-      </Box>
-
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "flex-start",
+          gap: 1,
+          maxHeight: "80px", // Approximately 2 lines of chips (32px each + gap)
+          overflowY: "auto",
+          overflowX: "hidden",
+        }}
+      >
         {sort && (
           <Chip
             icon={<SortIcon />}
@@ -62,6 +58,19 @@ export default function TableFilterBar({
             color="secondary"
           />
         ))}
+
+        <Button
+          size="small"
+          onClick={onResetAll}
+          startIcon={<ClearIcon />}
+          sx={{
+            ml: "auto",
+            flexShrink: 0, // Prevent button from shrinking
+            alignSelf: "flex-start", // Keep button at top when scrolling
+          }}
+        >
+          Reset
+        </Button>
       </Box>
     </Box>
   );
