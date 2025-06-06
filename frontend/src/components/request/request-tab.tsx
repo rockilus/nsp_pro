@@ -132,7 +132,7 @@ export default function RequestTab({
                 workerId: userWorker?.id || "",
                 startDate: dayjs.utc().startOf("day"),
                 endDate: dayjs.utc().startOf("day"),
-                shiftId: "",
+                shiftId: null,
                 shiftOptions: [],
                 negative: false,
                 hard: true,
