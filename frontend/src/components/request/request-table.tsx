@@ -143,7 +143,7 @@ export default function RequestTable({
     removeFilter,
     updateSort,
     resetAll,
-  } = useTableState(requests, columns);
+  } = useTableState(requests, columns, "nsp-pro-request-table-state");
 
   // Convert columns back to requestTableFields format for RequestTableRow compatibility
   const requestTableFields: Record<string, string>[] = columns.map((col) => ({
