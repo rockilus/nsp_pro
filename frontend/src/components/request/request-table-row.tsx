@@ -2,21 +2,14 @@ import dayjs from "dayjs";
 import React, { ReactElement, useState } from "react";
 import { useTranslation } from "../../app/i18n/client";
 // MUI
-import AddCircleIcon from "@mui/icons-material/AddCircle";
 import BlockIcon from "@mui/icons-material/Block";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import IconButton from "@mui/material/IconButton";
-import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
-import TaskAltIcon from "@mui/icons-material/TaskAlt";
 // Components
-import PopoverAnchorElBelow from "../inputs/popover-anchor-el-below";
 import RequestPanel from "./request-panel";
 import { HardSoftButton } from "../buttons/hard-soft-button";
 // Styles
@@ -52,8 +45,6 @@ export default function RequestTableRow({
   handleDeleteRequest: (requestId: string) => void;
 }) {
   const { t } = useTranslation(lng, "request-page");
-
-  const [open, setOpen] = useState<boolean>(false);
 
   const requestStatus: { name: RequestStatus; label: string }[] = [
     { name: RequestStatus.PENDING, label: t("pending") },
@@ -189,6 +180,7 @@ export default function RequestTableRow({
         <div className="request-row-buttons">
           <RequestPanel
             lng={lng}
+            teamId={request.teamId}
             isEdit={true}
             request={request}
             workers={workers.filter((worker) => !worker.deleted)}

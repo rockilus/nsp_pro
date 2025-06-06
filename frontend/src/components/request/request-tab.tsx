@@ -3,8 +3,6 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
 // MUI
-import ToggleButton from "@mui/material/ToggleButton";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 // Components
@@ -24,13 +22,8 @@ import {
 import "../../styles/tab-container-styles.css";
 import "../../styles/text-styles.css";
 // Types
-import {
-  RequestT,
-  RequestStatus,
-  RequestType,
-  FulfillmentStatus,
-} from "../../types/request";
-import { ShiftT, ShiftType, ShiftRestType } from "../../types/shift";
+import { RequestT, RequestStatus } from "../../types/request";
+import { ShiftT } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
 import { TeamMembershipRole } from "@/types/team";
 import { DailyShiftDemandT } from "@/types/daily-shift-demand";
@@ -124,26 +117,8 @@ export default function RequestTab({
             <span className="title">{t("requests")}</span>
             <RequestPanel
               lng={lng}
+              teamId={teamId}
               isEdit={false}
-              request={{
-                id: "",
-                teamId: teamId,
-                requestType: RequestType.WORK_DEMAND,
-                workerId: userWorker?.id || "",
-                startDate: dayjs.utc().startOf("day"),
-                endDate: dayjs.utc().startOf("day"),
-                shiftId: null,
-                shiftOptions: [],
-                negative: false,
-                hard: true,
-                status: RequestStatus.PENDING,
-                fulfillment: FulfillmentStatus.NOT_PROCESSED,
-                comment: "",
-                createdAt: dayjs.utc(),
-                active: true,
-                shiftTargetIds: [],
-                missingAttributes: [],
-              }}
               workers={workers.filter((w) => !w.deleted)}
               shifts={shifts}
               shiftOptions={shiftOptions}
