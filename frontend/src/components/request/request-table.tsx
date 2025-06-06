@@ -308,6 +308,7 @@ export default function RequestTable({
   userTeamRole,
   handleUpdateRequest,
   handleDeleteRequest,
+  showPastRequests,
 }: {
   lng: string;
   requests: RequestT[];
@@ -318,8 +319,14 @@ export default function RequestTable({
   userTeamRole: TeamMembershipRole;
   handleUpdateRequest: (request: RequestT) => void;
   handleDeleteRequest: (requestId: string) => void;
+  showPastRequests: boolean;
 }) {
   const { t } = useTranslation(lng, "request-page");
+
+  // Helper function to check if request is in the past
+  const isRequestPast = (request: RequestT) => {
+    return request.endDate.isBefore(new Date(), "day");
+  };
 
   const handleApproveRequest = (requestId: string) => {
     const request = requests.find((r) => r.id === requestId);
@@ -477,48 +484,72 @@ export default function RequestTable({
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredAndSortedData.map((request) => (
-              <TableRow
-                key={request.id}
-                className={`hover:bg-gray-50 ${
-                  !request.active ? "opacity-50" : ""
-                }`}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell>
-                  <WorkerCell request={request} workers={workers} />
-                </TableCell>
-                <TableCell>
-                  <ShiftCell request={request} shifts={shifts} />
-                </TableCell>
-                <TableCell>
-                  <DateCell request={request} />
-                </TableCell>
-                <TableCell>
-                  <TypeCell request={request} />
-                </TableCell>
-                <TableCell>
-                  <StatusCell request={request} t={t} />
-                </TableCell>
-                <TableCell>
-                  <FulfillmentCell request={request} />
-                </TableCell>
-                <TableCell>
-                  <ActionsCell
-                    request={request}
-                    lng={lng}
-                    workers={workers}
-                    shifts={shifts}
-                    shiftOptions={shiftOptions}
-                    userWorkerId={userWorkerId}
-                    userTeamRole={userTeamRole}
-                    handleUpdateRequest={handleUpdateRequest}
-                    handleDeleteRequest={handleDeleteRequest}
-                    handleApproveRequest={handleApproveRequest}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
+            {filteredAndSortedData.map((request) => {
+              const isPast = isRequestPast(request);
+              return (
+                <TableRow
+                  key={request.id}
+                  className={`hover:bg-gray-50 ${
+                    !request.active ? "opacity-50" : ""
+                  } ${
+                    isPast && showPastRequests ? "bg-gray-25 opacity-75" : ""
+                  }`}
+                  sx={{
+                    "&:last-child td, &:last-child th": { border: 0 },
+                    ...(isPast &&
+                      showPastRequests && {
+                        "& .MuiTableCell-root": {
+                          color: "text.secondary",
+                        },
+                      }),
+                  }}
+                >
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <WorkerCell request={request} workers={workers} />
+                      {isPast && showPastRequests && (
+                        <Chip
+                          label={t("past") || "Past"}
+                          size="small"
+                          variant="outlined"
+                          color="default"
+                          className="text-xs opacity-60"
+                        />
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <ShiftCell request={request} shifts={shifts} />
+                  </TableCell>
+                  <TableCell>
+                    <DateCell request={request} />
+                  </TableCell>
+                  <TableCell>
+                    <TypeCell request={request} />
+                  </TableCell>
+                  <TableCell>
+                    <StatusCell request={request} t={t} />
+                  </TableCell>
+                  <TableCell>
+                    <FulfillmentCell request={request} />
+                  </TableCell>
+                  <TableCell>
+                    <ActionsCell
+                      request={request}
+                      lng={lng}
+                      workers={workers}
+                      shifts={shifts}
+                      shiftOptions={shiftOptions}
+                      userWorkerId={userWorkerId}
+                      userTeamRole={userTeamRole}
+                      handleUpdateRequest={handleUpdateRequest}
+                      handleDeleteRequest={handleDeleteRequest}
+                      handleApproveRequest={handleApproveRequest}
+                    />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>

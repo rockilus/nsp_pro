@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
+import Switch from "@mui/material/Switch";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Typography from "@mui/material/Typography";
+import Chip from "@mui/material/Chip";
 // Components
 import RequestPanel from "./request-panel";
 import RequestTable from "./request-table";
@@ -50,8 +54,30 @@ export default function RequestTab({
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [demands, setDemands] = useState<DailyShiftDemandT[]>([]);
   const [shiftOptions, setShiftOptions] = useState<ShiftWorkerOptionT[]>([]);
+  const [showPastRequests, setShowPastRequests] = useState<boolean>(false);
 
   const userWorker = workers.find((w) => w.userId === userId);
+
+  // Filter requests based on past/future
+  const { currentRequests, pastRequests } = useMemo(() => {
+    const now = new Date();
+    const current: RequestT[] = [];
+    const past: RequestT[] = [];
+
+    requests.forEach((request) => {
+      if (request.endDate.isBefore(now, "day")) {
+        past.push(request);
+      } else {
+        current.push(request);
+      }
+    });
+
+    return { currentRequests: current, pastRequests: past };
+  }, [requests]);
+
+  const displayRequests = useMemo(() => {
+    return showPastRequests ? requests : currentRequests;
+  }, [requests, currentRequests, showPastRequests]);
 
   //////////////////////////
   // Request Actions
@@ -113,34 +139,68 @@ export default function RequestTab({
         <TablesSkeleton numTables={1} numInternalRows={3} />
       ) : (
         <div>
-          <div className="title-container">
-            <span className="title">{t("requests")}</span>
-            <RequestPanel
-              lng={lng}
-              teamId={teamId}
-              isEdit={false}
-              workers={workers.filter((w) => !w.deleted)}
-              shifts={shifts}
-              shiftOptions={shiftOptions}
-              userWorkerId={userWorker?.id || null}
-              userTeamRole={userTeamRole}
-              handleAddRequest={handleAddRequest}
-              handleUpdateRequest={handleUpdateRequest}
-            />
-          </div>
-          <Tabs
-            value={statusTab}
-            onChange={(_e, v) => setStatusTab(v)}
-            sx={{ marginBottom: 2, marginLeft: 2 }}
-            aria-label="Request Tabs"
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 2,
+            }}
           >
-            <Tab label={t("requests") || "Requests"} />
-            <Tab label={t("calendar") || "Calendar"} />
-          </Tabs>
+            <Tabs
+              value={statusTab}
+              onChange={(_e, v) => setStatusTab(v)}
+              sx={{
+                marginLeft: 2,
+                "& .MuiTab-root": {
+                  textTransform: "none",
+                },
+              }}
+              aria-label="Request Tabs"
+            >
+              <Tab label={t("requests") || "Requests"} />
+              <Tab label={t("calendar") || "Calendar"} />
+            </Tabs>
+
+            <div className="flex items-center gap-4">
+              {statusTab === 0 && (
+                <div className="flex items-center gap-2">
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={showPastRequests}
+                        onChange={(e) => setShowPastRequests(e.target.checked)}
+                        size="small"
+                        color="primary"
+                      />
+                    }
+                    label={
+                      <Typography variant="body2" className="text-gray-600">
+                        {t("show_past") || "Show Past"}
+                      </Typography>
+                    }
+                  />
+                </div>
+              )}
+
+              <RequestPanel
+                lng={lng}
+                teamId={teamId}
+                isEdit={false}
+                workers={workers.filter((w) => !w.deleted)}
+                shifts={shifts}
+                shiftOptions={shiftOptions}
+                userWorkerId={userWorker?.id || null}
+                userTeamRole={userTeamRole}
+                handleAddRequest={handleAddRequest}
+                handleUpdateRequest={handleUpdateRequest}
+              />
+            </div>
+          </div>
           {statusTab === 0 && (
             <RequestTable
               lng={lng}
-              requests={requests}
+              requests={displayRequests}
               workers={workers}
               shifts={shifts}
               shiftOptions={shiftOptions}
@@ -148,6 +208,7 @@ export default function RequestTab({
               userTeamRole={userTeamRole}
               handleUpdateRequest={handleUpdateRequest}
               handleDeleteRequest={handleDeleteRequest}
+              showPastRequests={showPastRequests}
             />
           )}
           {statusTab === 1 && (
