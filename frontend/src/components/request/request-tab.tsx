@@ -22,7 +22,7 @@ import {
 import "../../styles/tab-container-styles.css";
 import "../../styles/text-styles.css";
 // Types
-import { RequestT, RequestStatus } from "../../types/request";
+import { RequestT } from "../../types/request";
 import { ShiftT } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
 import { TeamMembershipRole } from "@/types/team";
@@ -132,22 +132,15 @@ export default function RequestTab({
             value={statusTab}
             onChange={(_e, v) => setStatusTab(v)}
             sx={{ marginBottom: 2, marginLeft: 2 }}
-            aria-label="Request Status Tabs"
+            aria-label="Request Tabs"
           >
-            <Tab label={t("pending") || "Pending"} />
-            <Tab label={t("approved") || "Approved"} />
-            <Tab label={t("denied") || "Denied"} />
+            <Tab label={t("requests") || "Requests"} />
             <Tab label={t("calendar") || "Calendar"} />
           </Tabs>
-          {[0, 1, 2].includes(statusTab) && (
+          {statusTab === 0 && (
             <RequestTable
               lng={lng}
-              requests={requests.filter((r) => {
-                if (statusTab === 0) return r.status === RequestStatus.PENDING;
-                if (statusTab === 1) return r.status === RequestStatus.APPROVED;
-                if (statusTab === 2) return r.status === RequestStatus.DENIED;
-                return false;
-              })}
+              requests={requests}
               workers={workers}
               shifts={shifts}
               shiftOptions={shiftOptions}
@@ -157,7 +150,7 @@ export default function RequestTab({
               handleDeleteRequest={handleDeleteRequest}
             />
           )}
-          {statusTab === 3 && (
+          {statusTab === 1 && (
             <RequestCalendar
               workers={workers}
               requests={requests}

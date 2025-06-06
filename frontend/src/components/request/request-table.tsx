@@ -7,8 +7,13 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+import Chip from "@mui/material/Chip";
+import IconButton from "@mui/material/IconButton";
+import CheckIcon from "@mui/icons-material/Check";
+import CloseIcon from "@mui/icons-material/Close";
+import DeleteIcon from "@mui/icons-material/Delete";
 // Components
-import RequestTableRow from "./request-table-row";
+import RequestPanel from "./request-panel";
 import TableColumnHeader from "../table/TableColumnHeader";
 import TableFilterBar from "../table/TableFilterBar";
 // Hooks
@@ -17,11 +22,281 @@ import { useTableState } from "../../hooks/useTableState";
 import "../../styles/table-styles.css";
 // Types
 import { WorkerT } from "../../types/worker";
-import { RequestT, RequestStatus } from "../../types/request";
+import {
+  RequestT,
+  RequestStatus,
+  FulfillmentStatus,
+  RequestType,
+} from "../../types/request";
 import { ShiftT } from "../../types/shift";
 import { TeamMembershipRole } from "@/types/team";
 import { ShiftWorkerOptionT } from "@/types/constraint";
 import { ColumnDefinition } from "../../types/filter";
+
+// Helper components for better organization
+const WorkerCell = ({
+  request,
+  workers,
+}: {
+  request: RequestT;
+  workers: WorkerT[];
+}) => {
+  const worker = workers.find((w) => w.id === request.workerId);
+  return (
+    <div className="flex flex-col">
+      <span className="font-medium">{worker?.name || "Unknown"}</span>
+      {worker?.deleted && (
+        <span className="text-xs text-red-500">Worker deleted</span>
+      )}
+    </div>
+  );
+};
+
+const ShiftCell = ({
+  request,
+  shifts,
+}: {
+  request: RequestT;
+  shifts: ShiftT[];
+}) => {
+  if (request.requestType === RequestType.LEAVE) {
+    if (!request.shiftId) {
+      return <Chip label="All Day" size="small" variant="outlined" />;
+    }
+    const shift = shifts.find((s) => s.id === request.shiftId);
+    return (
+      <div className="flex flex-col">
+        <span>{shift?.name || "Unknown"}</span>
+        {shift?.deleted && (
+          <span className="text-xs text-red-500">Shift deleted</span>
+        )}
+      </div>
+    );
+  } else {
+    // Work request - show shift preferences
+    if (request.shiftOptions.length === 0) {
+      return <Chip label="No Preferences" size="small" variant="outlined" />;
+    }
+    return (
+      <div className="flex flex-wrap gap-1">
+        {request.shiftOptions.map((option, index) => (
+          <Chip
+            key={index}
+            label={`${option.name} ${request.negative ? "❌" : "✅"}`}
+            size="small"
+            variant="filled"
+            color={request.negative ? "error" : "success"}
+          />
+        ))}
+      </div>
+    );
+  }
+};
+
+const DateCell = ({ request }: { request: RequestT }) => {
+  if (request.startDate.isSame(request.endDate, "day")) {
+    return (
+      <div className="flex flex-col">
+        <span className="font-medium">{request.startDate.format("MMM D")}</span>
+        <span className="text-xs text-gray-500">
+          {request.startDate.format("dddd")}
+        </span>
+      </div>
+    );
+  } else {
+    return (
+      <div className="flex flex-col">
+        <span className="font-medium">
+          {request.startDate.format("MMM D")} -{" "}
+          {request.endDate.format("MMM D")}
+        </span>
+        <span className="text-xs text-gray-500">
+          {request.startDate.format("ddd")} - {request.endDate.format("ddd")}
+        </span>
+      </div>
+    );
+  }
+};
+
+const TypeCell = ({ request }: { request: RequestT }) => {
+  const isWork = request.requestType === RequestType.WORK_DEMAND;
+  return (
+    <div className="flex flex-col items-start gap-1">
+      <Chip
+        label={isWork ? "Work" : "Leave"}
+        size="small"
+        color={isWork ? "primary" : "secondary"}
+        variant="filled"
+      />
+      {/* <Chip
+        label={request.hard ? "Hard" : "Soft"}
+        size="small"
+        variant="outlined"
+        color={request.hard ? "error" : "default"}
+      /> */}
+    </div>
+  );
+};
+
+const StatusCell = ({ request, t }: { request: RequestT; t: any }) => {
+  const getStatusColor = (status: RequestStatus) => {
+    switch (status) {
+      case RequestStatus.APPROVED:
+        return "success";
+      case RequestStatus.DENIED:
+        return "error";
+      case RequestStatus.DEFERRED:
+        return "warning";
+      default:
+        return "default";
+    }
+  };
+
+  const getStatusLabel = (status: RequestStatus) => {
+    switch (status) {
+      case RequestStatus.PENDING:
+        return t("pending");
+      case RequestStatus.APPROVED:
+        return t("approved");
+      case RequestStatus.DENIED:
+        return t("rejected");
+      // case RequestStatus.DEFERRED:
+      //   return t("deferred");
+      default:
+        return "Unknown";
+    }
+  };
+
+  return (
+    <Chip
+      label={getStatusLabel(request.status)}
+      size="small"
+      color={getStatusColor(request.status)}
+      variant="filled"
+    />
+  );
+};
+
+const FulfillmentCell = ({ request }: { request: RequestT }) => {
+  const getFulfillmentColor = (fulfillment: FulfillmentStatus) => {
+    switch (fulfillment) {
+      case FulfillmentStatus.FULFILLED:
+        return "success";
+      case FulfillmentStatus.UNFULFILLED:
+        return "error";
+      default:
+        return "default";
+    }
+  };
+
+  const getFulfillmentLabel = (fulfillment: FulfillmentStatus) => {
+    switch (fulfillment) {
+      case FulfillmentStatus.FULFILLED:
+        return "Fulfilled";
+      case FulfillmentStatus.UNFULFILLED:
+        return "Unfulfilled";
+      case FulfillmentStatus.NOT_PROCESSED:
+        return "Not Processed";
+      default:
+        return "Unknown";
+    }
+  };
+
+  return (
+    <Chip
+      label={getFulfillmentLabel(request.fulfillment)}
+      size="small"
+      color={getFulfillmentColor(request.fulfillment)}
+      variant="outlined"
+    />
+  );
+};
+
+const ActionsCell = ({
+  request,
+  lng,
+  workers,
+  shifts,
+  shiftOptions,
+  userWorkerId,
+  userTeamRole,
+  handleUpdateRequest,
+  handleDeleteRequest,
+  handleApproveRequest,
+}: {
+  request: RequestT;
+  lng: string;
+  workers: WorkerT[];
+  shifts: ShiftT[];
+  shiftOptions: ShiftWorkerOptionT[];
+  userWorkerId: string | null;
+  userTeamRole: TeamMembershipRole;
+  handleUpdateRequest: (request: RequestT) => void;
+  handleDeleteRequest: (requestId: string) => void;
+  handleApproveRequest: (requestId: string) => void;
+}) => {
+  const canEdit =
+    userTeamRole !== TeamMembershipRole.MEMBER ||
+    (userWorkerId && request.workerId === userWorkerId);
+
+  const canApprove =
+    userTeamRole === TeamMembershipRole.OWNER &&
+    request.status === RequestStatus.PENDING;
+
+  return (
+    <div className="flex items-center gap-1">
+      <RequestPanel
+        lng={lng}
+        teamId={request.teamId}
+        isEdit={true}
+        request={request}
+        workers={workers.filter((worker) => !worker.deleted)}
+        shifts={shifts.filter((shift) => !shift.deleted)}
+        shiftOptions={shiftOptions}
+        userWorkerId={userWorkerId}
+        userTeamRole={userTeamRole}
+        handleAddRequest={handleUpdateRequest}
+        handleUpdateRequest={handleUpdateRequest}
+      />
+
+      {canApprove && (
+        <IconButton
+          size="small"
+          onClick={() => handleApproveRequest(request.id)}
+          title="Approve Request"
+          color="success"
+        >
+          <CheckIcon />
+        </IconButton>
+      )}
+
+      {canApprove && (
+        <IconButton
+          size="small"
+          onClick={() => {
+            // Handle reject logic
+            const updatedRequest = { ...request, status: RequestStatus.DENIED };
+            handleUpdateRequest(updatedRequest);
+          }}
+          title="Reject Request"
+          color="error"
+        >
+          <CloseIcon />
+        </IconButton>
+      )}
+
+      <IconButton
+        size="small"
+        disabled={!canEdit}
+        onClick={() => handleDeleteRequest(request.id)}
+        title="Delete Request"
+        color="error"
+      >
+        <DeleteIcon />
+      </IconButton>
+    </div>
+  );
+};
 
 export default function RequestTable({
   lng,
@@ -46,21 +321,17 @@ export default function RequestTable({
 }) {
   const { t } = useTranslation(lng, "request-page");
 
-  // Define columns with filter/sort configurations
+  const handleApproveRequest = (requestId: string) => {
+    const request = requests.find((r) => r.id === requestId);
+    if (request) {
+      const updatedRequest = { ...request, status: RequestStatus.APPROVED };
+      handleUpdateRequest(updatedRequest);
+    }
+  };
+
+  // Simplified column definitions focused on the actual requirements
   const columns: ColumnDefinition[] = useMemo(
     () => [
-      {
-        id: "negative",
-        label: "",
-        type: "select" as const,
-        getValue: (request: RequestT) => request.negative,
-        getDisplayValue: (request: RequestT) =>
-          request.negative ? "Negative" : "Positive",
-        getOptions: () => [
-          { value: true, label: "Negative" },
-          { value: false, label: "Positive" },
-        ],
-      },
       {
         id: "workerId",
         label: t("worker"),
@@ -77,17 +348,31 @@ export default function RequestTable({
           })),
       },
       {
-        id: "shiftId",
+        id: "shift",
         label: t("shift"),
         type: "select" as const,
-        getValue: (request: RequestT) => request.shiftId || "none",
+        getValue: (request: RequestT) => {
+          if (request.requestType === RequestType.LEAVE) {
+            return request.shiftId || "all_day";
+          }
+          return (
+            request.shiftOptions.map((opt) => opt.id).join(",") ||
+            "no_preferences"
+          );
+        },
         getDisplayValue: (request: RequestT) => {
-          if (!request.shiftId) return "Shift Options";
-          const shift = shifts.find((s) => s.id === request.shiftId);
-          return shift ? shift.name : "Unknown";
+          if (request.requestType === RequestType.LEAVE) {
+            if (!request.shiftId) return "All Day";
+            const shift = shifts.find((s) => s.id === request.shiftId);
+            return shift ? shift.name : "Unknown";
+          }
+          return request.shiftOptions.length > 0
+            ? request.shiftOptions.map((opt) => opt.name).join(", ")
+            : "No Preferences";
         },
         getOptions: () => [
-          { value: "none", label: "Shift Options" },
+          { value: "all_day", label: "All Day" },
+          { value: "no_preferences", label: "No Preferences" },
           ...shifts.map((shift) => ({
             value: shift.id,
             label: shift.name,
@@ -101,24 +386,23 @@ export default function RequestTable({
         getValue: (request: RequestT) => request.startDate.format("YYYY-MM-DD"),
         getDisplayValue: (request: RequestT) => {
           if (request.startDate.isSame(request.endDate, "day")) {
-            return request.startDate.format("dddd, MMM D");
-          } else {
-            return `${request.startDate.format(
-              "dddd, MMM D"
-            )} - ${request.endDate.format("dddd, MMM D")}`;
+            return request.startDate.format("MMM D, YYYY");
           }
+          return `${request.startDate.format(
+            "MMM D"
+          )} - ${request.endDate.format("MMM D, YYYY")}`;
         },
       },
       {
-        id: "hard",
+        id: "requestType",
         label: t("type"),
         type: "select" as const,
-        getValue: (request: RequestT) => request.hard,
+        getValue: (request: RequestT) => request.requestType,
         getDisplayValue: (request: RequestT) =>
-          request.hard ? "Hard" : "Soft",
+          request.requestType === RequestType.WORK_DEMAND ? "Work" : "Leave",
         getOptions: () => [
-          { value: true, label: "Hard" },
-          { value: false, label: "Soft" },
+          { value: RequestType.WORK_DEMAND, label: "Work" },
+          { value: RequestType.LEAVE, label: "Leave" },
         ],
       },
       {
@@ -130,6 +414,18 @@ export default function RequestTable({
           { value: RequestStatus.PENDING, label: t("pending") },
           { value: RequestStatus.APPROVED, label: t("approved") },
           { value: RequestStatus.DENIED, label: t("rejected") },
+          // { value: RequestStatus.DEFERRED, label: t("deferred") },
+        ],
+      },
+      {
+        id: "fulfillment",
+        label: t("fulfillment"),
+        type: "select" as const,
+        getValue: (request: RequestT) => request.fulfillment,
+        getOptions: () => [
+          { value: FulfillmentStatus.NOT_PROCESSED, label: "Not Processed" },
+          { value: FulfillmentStatus.FULFILLED, label: "Fulfilled" },
+          { value: FulfillmentStatus.UNFULFILLED, label: "Unfulfilled" },
         ],
       },
     ],
@@ -145,14 +441,8 @@ export default function RequestTable({
     resetAll,
   } = useTableState(requests, columns, "nsp-pro-request-table-state");
 
-  // Convert columns back to requestTableFields format for RequestTableRow compatibility
-  const requestTableFields: Record<string, string>[] = columns.map((col) => ({
-    name: col.id,
-    label: col.label,
-  }));
-
   return (
-    <>
+    <div className="w-full">
       <TableFilterBar
         filters={tableState.filters}
         sort={tableState.sort}
@@ -161,10 +451,10 @@ export default function RequestTable({
         onResetAll={resetAll}
       />
 
-      <TableContainer>
-        <Table aria-label="simple table">
+      <TableContainer className="border border-gray-200 rounded-lg">
+        <Table size="small" aria-label="requests table">
           <TableHead>
-            <TableRow>
+            <TableRow className="bg-gray-50">
               {columns.map((column) => (
                 <TableColumnHeader
                   key={column.id}
@@ -181,28 +471,57 @@ export default function RequestTable({
                   onFilter={addFilter}
                 />
               ))}
-              <TableCell sx={{ padding: 0, width: 110 }}></TableCell>
+              <TableCell className="font-medium text-gray-700 w-32">
+                Actions
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredAndSortedData.map((request, requestIndex) => (
-              <RequestTableRow
-                key={requestIndex}
-                lng={lng}
-                request={request}
-                workers={workers}
-                shifts={shifts}
-                shiftOptions={shiftOptions}
-                requestTableFields={requestTableFields}
-                userWorkerId={userWorkerId}
-                userTeamRole={userTeamRole}
-                handleUpdateRequest={handleUpdateRequest}
-                handleDeleteRequest={handleDeleteRequest}
-              />
+            {filteredAndSortedData.map((request) => (
+              <TableRow
+                key={request.id}
+                className={`hover:bg-gray-50 ${
+                  !request.active ? "opacity-50" : ""
+                }`}
+                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+              >
+                <TableCell>
+                  <WorkerCell request={request} workers={workers} />
+                </TableCell>
+                <TableCell>
+                  <ShiftCell request={request} shifts={shifts} />
+                </TableCell>
+                <TableCell>
+                  <DateCell request={request} />
+                </TableCell>
+                <TableCell>
+                  <TypeCell request={request} />
+                </TableCell>
+                <TableCell>
+                  <StatusCell request={request} t={t} />
+                </TableCell>
+                <TableCell>
+                  <FulfillmentCell request={request} />
+                </TableCell>
+                <TableCell>
+                  <ActionsCell
+                    request={request}
+                    lng={lng}
+                    workers={workers}
+                    shifts={shifts}
+                    shiftOptions={shiftOptions}
+                    userWorkerId={userWorkerId}
+                    userTeamRole={userTeamRole}
+                    handleUpdateRequest={handleUpdateRequest}
+                    handleDeleteRequest={handleDeleteRequest}
+                    handleApproveRequest={handleApproveRequest}
+                  />
+                </TableCell>
+              </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
-    </>
+    </div>
   );
 }
