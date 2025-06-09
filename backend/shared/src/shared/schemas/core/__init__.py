@@ -112,6 +112,10 @@ from shared.schemas.core.shift import (
 )
 from shared.schemas.core.shift_demand import ShiftDemand
 from shared.schemas.core.shift_demand_exclusion import ShiftDemandExclusion
+from shared.schemas.core.shift_demand_new import (
+    ShiftDemandNew,
+    ShiftDemandSource,
+)
 from shared.schemas.core.specialty import Specialty
 from shared.schemas.core.stats import (
     HeaderUnitOptions,
@@ -194,6 +198,8 @@ __all__ = [
     "DSDSourceType",
     "ShiftDemand",
     "ShiftDemandExclusion",
+    "ShiftDemandNew",
+    "ShiftDemandSource",
     "Dimension",
     "DimensionAndDimEntries",
     "DimensionEntryType",
