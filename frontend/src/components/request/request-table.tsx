@@ -12,6 +12,7 @@ import IconButton from "@mui/material/IconButton";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
+import UndoIcon from "@mui/icons-material/Undo";
 // Components
 import RequestPanel from "./request-panel";
 import TableColumnHeader from "../table/TableColumnHeader";
@@ -222,6 +223,7 @@ const ActionsCell = ({
   userTeamRole,
   handleUpdateRequest,
   handleDeleteRequest,
+  handleRescindRequest,
   handleApproveRequest,
 }: {
   request: RequestT;
@@ -233,6 +235,7 @@ const ActionsCell = ({
   userTeamRole: TeamMembershipRole;
   handleUpdateRequest: (request: RequestT) => void;
   handleDeleteRequest: (requestId: string) => void;
+  handleRescindRequest: (requestId: string) => void;
   handleApproveRequest: (requestId: string) => void;
 }) => {
   const canEdit =
@@ -242,6 +245,11 @@ const ActionsCell = ({
   const canApprove =
     userTeamRole === TeamMembershipRole.OWNER &&
     request.status === RequestStatus.PENDING;
+
+  const canRescind =
+    userTeamRole === TeamMembershipRole.OWNER &&
+    (request.status === RequestStatus.APPROVED ||
+      request.status === RequestStatus.DENIED);
 
   return (
     <div className="flex items-center gap-1">
@@ -285,6 +293,19 @@ const ActionsCell = ({
         </IconButton>
       )}
 
+      {canRescind && (
+        <IconButton
+          size="small"
+          onClick={() => handleRescindRequest(request.id)}
+          title={`Rescind ${
+            request.status === RequestStatus.APPROVED ? "Approval" : "Rejection"
+          }`}
+          color="warning"
+        >
+          <UndoIcon />
+        </IconButton>
+      )}
+
       <IconButton
         size="small"
         disabled={!canEdit}
@@ -308,6 +329,7 @@ export default function RequestTable({
   userTeamRole,
   handleUpdateRequest,
   handleDeleteRequest,
+  handleRescindRequest,
   showPastRequests,
 }: {
   lng: string;
@@ -319,6 +341,7 @@ export default function RequestTable({
   userTeamRole: TeamMembershipRole;
   handleUpdateRequest: (request: RequestT) => void;
   handleDeleteRequest: (requestId: string) => void;
+  handleRescindRequest: (requestId: string) => void;
   showPastRequests: boolean;
 }) {
   const { t } = useTranslation(lng, "request-page");
@@ -544,6 +567,7 @@ export default function RequestTable({
                       userTeamRole={userTeamRole}
                       handleUpdateRequest={handleUpdateRequest}
                       handleDeleteRequest={handleDeleteRequest}
+                      handleRescindRequest={handleRescindRequest}
                       handleApproveRequest={handleApproveRequest}
                     />
                   </TableCell>

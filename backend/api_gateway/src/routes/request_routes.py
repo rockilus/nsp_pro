@@ -168,6 +168,30 @@ async def deny_request(
     return response
 
 
+@router.post("/requests/{request_id}/teams/{team_id}/rescind", status_code=200)
+async def rescind_request(
+    request_id: str,
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+    request_service: RequestService = Depends(get_request_service),
+) -> RequestDTO:
+    try:
+        user_id = session.get_user_id()
+        if not await authz_check(
+            user_id=user_id,
+            action="rescind-request",
+            resource="team",
+            resource_id=team_id,
+        ):
+            raise NotAuthorizedError("You do not have permission to rescind a request")
+        request = request_service.rescind_request(request_id=request_id)
+        response = request.to_dto()
+    except Exception as e:
+        log_info("Failed to rescind request")
+        handle_routes_errors(e)
+    return response
+
+
 @router.delete("/requests/{request_id}/teams/{team_id}")
 async def delete_request(
     request_id: str,

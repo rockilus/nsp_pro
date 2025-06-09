@@ -21,6 +21,7 @@ import {
   addRequest,
   updateRequest,
   deleteRequest,
+  rescindRequest,
 } from "@/app/lib/request";
 // Styles
 import "../../styles/tab-container-styles.css";
@@ -98,6 +99,13 @@ export default function RequestTab({
   const handleDeleteRequest = async (requestId: string) => {
     await deleteRequest(requestId, teamId);
     setRequests(requests.filter((r) => r.id !== requestId));
+  };
+
+  const handleRescindRequest = async (requestId: string) => {
+    const rescindedRequest = await rescindRequest(requestId, teamId);
+    setRequests(
+      requests.map((r) => (r.id === rescindedRequest.id ? rescindedRequest : r))
+    );
   };
 
   useEffect(() => {
@@ -208,6 +216,7 @@ export default function RequestTab({
               userTeamRole={userTeamRole}
               handleUpdateRequest={handleUpdateRequest}
               handleDeleteRequest={handleDeleteRequest}
+              handleRescindRequest={handleRescindRequest}
               showPastRequests={showPastRequests}
             />
           )}

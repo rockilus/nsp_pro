@@ -1,6 +1,4 @@
-import axios from "axios";
 import { unstable_noStore as noStore } from "next/cache";
-import dayjs from "dayjs";
 // Actions
 import { getAllShifts } from "./shift";
 import { getAllWorkers } from "./worker";
@@ -85,44 +83,152 @@ export async function updateRequest(updatedRequest: RequestT, teamId: string) {
 }
 
 // Accept a request
-export async function acceptRequest(requestId: string, teamId: string) {
+export async function acceptRequest(
+  requestId: string,
+  teamId: string
+): Promise<RequestT> {
+  // Input validation
+  if (!requestId?.trim()) {
+    throw new Error("Request ID is required");
+  }
+  if (!teamId?.trim()) {
+    throw new Error("Team ID is required");
+  }
+
   try {
-    const response = await axios.post(
+    const response = await fetch(
       `${apiUrlRequests}/${requestId}/teams/${teamId}/accept`,
-      {},
       {
-        headers: { "Content-Type": "application/json" },
-        withCredentials: true,
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
       }
     );
-    return toRequestT(response.data);
-  } catch (error: any) {
-    if (error.response && error.response.data && error.response.data.detail) {
-      throw new Error(
-        "Failed to accept request: " + error.response.data.detail
-      );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.detail || `HTTP ${response.status}`;
+      throw new Error(`Failed to accept request: ${errorMessage}`);
     }
-    throw new Error("Failed to accept request, please try again later");
+
+    const responseData = await response.json();
+    return toRequestT(responseData);
+  } catch (error) {
+    // Re-throw our custom errors
+    if (
+      error instanceof Error &&
+      error.message.startsWith("Failed to accept request:")
+    ) {
+      throw error;
+    }
+
+    // Handle network and other errors
+    console.error("Failed to accept request:", error);
+    throw new Error(
+      "Failed to accept request. Please check your connection and try again."
+    );
   }
 }
 
 // Deny a request
-export async function denyRequest(requestId: string, teamId: string) {
+export async function denyRequest(
+  requestId: string,
+  teamId: string
+): Promise<RequestT> {
+  // Input validation
+  if (!requestId?.trim()) {
+    throw new Error("Request ID is required");
+  }
+  if (!teamId?.trim()) {
+    throw new Error("Team ID is required");
+  }
+
   try {
-    const response = await axios.post(
+    const response = await fetch(
       `${apiUrlRequests}/${requestId}/teams/${teamId}/deny`,
-      {},
       {
-        headers: { "Content-Type": "application/json" },
-        withCredentials: true,
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
       }
     );
-    return toRequestT(response.data);
-  } catch (error: any) {
-    if (error.response && error.response.data && error.response.data.detail) {
-      throw new Error("Failed to deny request: " + error.response.data.detail);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.detail || `HTTP ${response.status}`;
+      throw new Error(`Failed to deny request: ${errorMessage}`);
     }
-    throw new Error("Failed to deny request, please try again later");
+
+    const responseData = await response.json();
+    return toRequestT(responseData);
+  } catch (error) {
+    // Re-throw our custom errors
+    if (
+      error instanceof Error &&
+      error.message.startsWith("Failed to deny request:")
+    ) {
+      throw error;
+    }
+
+    // Handle network and other errors
+    console.error("Failed to deny request:", error);
+    throw new Error(
+      "Failed to deny request. Please check your connection and try again."
+    );
+  }
+}
+
+// Rescind a request (revert approved/denied back to pending)
+export async function rescindRequest(
+  requestId: string,
+  teamId: string
+): Promise<RequestT> {
+  // Input validation
+  if (!requestId?.trim()) {
+    throw new Error("Request ID is required");
+  }
+  if (!teamId?.trim()) {
+    throw new Error("Team ID is required");
+  }
+
+  try {
+    const response = await fetch(
+      `${apiUrlRequests}/${requestId}/teams/${teamId}/rescind`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.detail || `HTTP ${response.status}`;
+      throw new Error(`Failed to rescind request: ${errorMessage}`);
+    }
+
+    const responseData = await response.json();
+    return toRequestT(responseData);
+  } catch (error) {
+    // Re-throw our custom errors
+    if (
+      error instanceof Error &&
+      error.message.startsWith("Failed to rescind request:")
+    ) {
+      throw error;
+    }
+
+    // Handle network and other errors
+    console.error("Failed to rescind request:", error);
+    throw new Error(
+      "Failed to rescind request. Please check your connection and try again."
+    );
   }
 }
 
