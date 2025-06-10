@@ -1,4 +1,23 @@
 import React, { useState, useMemo } from "react";
+import Checkbox from "@mui/material/Checkbox";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import InputAdornment from "@mui/material/InputAdornment";
+import Chip from "@mui/material/Chip";
+import SelectAllIcon from "@mui/icons-material/SelectAll";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+interface SelectedCell {
+  shiftId: string;
+  date: string;
+}
+
+interface BulkChangeState {
+  isActive: boolean;
+  selectedCells: SelectedCell[];
+  bulkValue: string;
+}
 import { useTranslation } from "../../app/i18n/client";
 import dayjs, { Dayjs } from "dayjs";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
@@ -69,6 +88,236 @@ function ShiftDemandTabInternal({
   const [pendingEdits, setPendingEdits] = useState<CellEdit[]>([]);
 
   // Calculate date range for current period based on period type
+  // Bulk change state
+  const [bulkChangeState, setBulkChangeState] = useState<BulkChangeState>({
+    isActive: false,
+    selectedCells: [],
+    bulkValue: "",
+  });
+
+  // Bulk selection helpers
+  const toggleBulkMode = () => {
+    setBulkChangeState((prev) => ({
+      ...prev,
+      isActive: !prev.isActive,
+      selectedCells: [],
+      bulkValue: "",
+    }));
+  };
+
+  const isCellSelected = (shiftId: string, date: Dayjs): boolean => {
+    const dateStr = date.format("YYYY-MM-DD");
+    return bulkChangeState.selectedCells.some(
+      (cell) => cell.shiftId === shiftId && cell.date === dateStr
+    );
+  };
+
+  const toggleCellSelection = (shiftId: string, date: Dayjs) => {
+    const dateStr = date.format("YYYY-MM-DD");
+    setBulkChangeState((prev) => {
+      const isSelected = prev.selectedCells.some(
+        (cell) => cell.shiftId === shiftId && cell.date === dateStr
+      );
+      if (isSelected) {
+        return {
+          ...prev,
+          selectedCells: prev.selectedCells.filter(
+            (cell) => !(cell.shiftId === shiftId && cell.date === dateStr)
+          ),
+        };
+      } else {
+        return {
+          ...prev,
+          selectedCells: [...prev.selectedCells, { shiftId, date: dateStr }],
+        };
+      }
+    });
+  };
+
+  const selectAllRowCells = (shiftId: string) => {
+    const rowCells = dates.map((date) => ({
+      shiftId,
+      date: date.format("YYYY-MM-DD"),
+    }));
+    setBulkChangeState((prev) => {
+      const allSelected = rowCells.every((cell) =>
+        prev.selectedCells.some(
+          (selected) => selected.shiftId === cell.shiftId && selected.date === cell.date
+        )
+      );
+      if (allSelected) {
+        return {
+          ...prev,
+          selectedCells: prev.selectedCells.filter(
+            (selected) =>
+              !rowCells.some(
+                (cell) =>
+                  selected.shiftId === cell.shiftId && selected.date === cell.date
+              )
+          ),
+        };
+      } else {
+        const newCells = rowCells.filter(
+          (cell) =>
+            !prev.selectedCells.some(
+              (selected) =>
+                selected.shiftId === cell.shiftId && selected.date === cell.date
+            )
+        );
+        return {
+          ...prev,
+          selectedCells: [...prev.selectedCells, ...newCells],
+        };
+      }
+    });
+  };
+
+  const selectAllColumnCells = (date: Dayjs) => {
+    const dateStr = date.format("YYYY-MM-DD");
+    const columnCells = shifts.map((shift) => ({
+      shiftId: shift.id,
+      date: dateStr,
+    }));
+    setBulkChangeState((prev) => {
+      const allSelected = columnCells.every((cell) =>
+        prev.selectedCells.some(
+          (selected) => selected.shiftId === cell.shiftId && selected.date === cell.date
+        )
+      );
+      if (allSelected) {
+        return {
+          ...prev,
+          selectedCells: prev.selectedCells.filter(
+            (selected) =>
+              !columnCells.some(
+                (cell) =>
+                  selected.shiftId === cell.shiftId && selected.date === cell.date
+              )
+          ),
+        };
+      } else {
+        const newCells = columnCells.filter(
+          (cell) =>
+            !prev.selectedCells.some(
+              (selected) =>
+                selected.shiftId === cell.shiftId && selected.date === cell.date
+            )
+        );
+        return {
+          ...prev,
+          selectedCells: [...prev.selectedCells, ...newCells],
+        };
+      }
+    });
+  };
+
+  const selectAllCells = () => {
+    const allCells = shifts.flatMap((shift) =>
+      dates.map((date) => ({
+        shiftId: shift.id,
+        date: date.format("YYYY-MM-DD"),
+      }))
+    );
+    setBulkChangeState((prev) => {
+      const allSelected = allCells.length === prev.selectedCells.length && allCells.length > 0;
+      return {
+        ...prev,
+        selectedCells: allSelected ? [] : allCells,
+      };
+    });
+  };
+
+  const applyBulkChange = () => {
+    if (bulkChangeState.selectedCells.length === 0) return;
+    const value = parseInt(bulkChangeState.bulkValue) || 0;
+    console.log("Applying bulk change:", {
+      selectedCells: bulkChangeState.selectedCells,
+      value,
+    });
+    const newEdits: CellEdit[] = bulkChangeState.selectedCells.map((cell) => ({
+      shiftId: cell.shiftId,
+      date: cell.date,
+      value: Math.max(0, value),
+    }));
+    setPendingEdits((prev) => {
+      const updatedEdits = [...prev];
+      newEdits.forEach((newEdit) => {
+        const existingIndex = updatedEdits.findIndex(
+          (edit) => edit.shiftId === newEdit.shiftId && edit.date === newEdit.date
+        );
+        if (existingIndex >= 0) {
+          updatedEdits[existingIndex] = newEdit;
+        } else {
+          updatedEdits.push(newEdit);
+        }
+      });
+      return updatedEdits;
+    });
+    setBulkChangeState({
+      isActive: false,
+      selectedCells: [],
+      bulkValue: "",
+    });
+  };
+
+  const deleteBulkSelection = () => {
+    if (bulkChangeState.selectedCells.length === 0) return;
+    console.log("Deleting bulk selection:", bulkChangeState.selectedCells);
+    const deleteEdits: CellEdit[] = bulkChangeState.selectedCells.map((cell) => ({
+      shiftId: cell.shiftId,
+      date: cell.date,
+      value: 0,
+    }));
+    setPendingEdits((prev) => {
+      const updatedEdits = [...prev];
+      deleteEdits.forEach((deleteEdit) => {
+        const existingIndex = updatedEdits.findIndex(
+          (edit) => edit.shiftId === deleteEdit.shiftId && edit.date === deleteEdit.date
+        );
+        if (existingIndex >= 0) {
+          updatedEdits[existingIndex] = deleteEdit;
+        } else {
+          updatedEdits.push(deleteEdit);
+        }
+      });
+      return updatedEdits;
+    });
+    setBulkChangeState({
+      isActive: false,
+      selectedCells: [],
+      bulkValue: "",
+    });
+  };
+
+  const isRowSelected = (shiftId: string): boolean => {
+    const rowCells = dates.map((date) => ({
+      shiftId,
+      date: date.format("YYYY-MM-DD"),
+    }));
+    return rowCells.every((cell) =>
+      bulkChangeState.selectedCells.some(
+        (selected) => selected.shiftId === cell.shiftId && selected.date === cell.date
+      )
+    );
+  };
+
+  const isColumnSelected = (date: Dayjs): boolean => {
+    const dateStr = date.format("YYYY-MM-DD");
+    const columnCells = shifts.map((shift) => ({
+      shiftId: shift.id,
+      date: dateStr,
+    }));
+    return columnCells.every((cell) =>
+      bulkChangeState.selectedCells.some(
+        (selected) => selected.shiftId === cell.shiftId && selected.date === cell.date
+      )
+    );
+  };
+
+  const isAllSelected = (): boolean => {
+    const totalCells = shifts.length * dates.length;
+    return bulkChangeState.selectedCells.length === totalCells && totalCells > 0;
+  };
   const { startDate, endDate } = useMemo(() => {
     if (periodType === "month") {
       return {
@@ -339,7 +588,16 @@ function ShiftDemandTabInternal({
         >
           {/* Actions */}
           <Box display="flex" gap={1} alignItems="center">
-            {pendingEdits.length > 0 && (
+            {/* Bulk Mode Toggle */}
+            <Button
+              variant={bulkChangeState.isActive ? "contained" : "outlined"}
+              startIcon={<SelectAllIcon />}
+              onClick={toggleBulkMode}
+              size="small"
+            >
+              {bulkChangeState.isActive ? t("exit_bulk_mode") : t("bulk_select")}
+            </Button>
+            {pendingEdits.length > 0 && !bulkChangeState.isActive && (
               <Box display="flex" gap={1}>
                 <Button
                   variant="outlined"
@@ -363,6 +621,70 @@ function ShiftDemandTabInternal({
               <RefreshIcon />
             </IconButton>
           </Box>
+        {/* Bulk Action Bar */}
+        {bulkChangeState.isActive && (
+          <Paper elevation={2} sx={{ p: 2, mb: 2, backgroundColor: "primary.50" }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Box display="flex" alignItems="center" gap={2}>
+                <Chip
+                  label={t("bulk_mode_active")}
+                  color="primary"
+                  variant="outlined"
+                />
+                <Typography variant="body2">
+                  {t("selected_cells", { count: bulkChangeState.selectedCells.length })}
+                </Typography>
+              </Box>
+              {bulkChangeState.selectedCells.length > 0 && (
+                <Box display="flex" alignItems="center" gap={2}>
+                  <FormControl size="small" sx={{ minWidth: 120 }}>
+                    <InputLabel>{t("set_value")}</InputLabel>
+                    <OutlinedInput
+                      type="number"
+                      value={bulkChangeState.bulkValue}
+                      onChange={(e) =>
+                        setBulkChangeState((prev) => ({
+                          ...prev,
+                          bulkValue: e.target.value,
+                        }))
+                      }
+                      inputProps={{ min: 0 }}
+                      label={t("set_value")}
+                      endAdornment={
+                        <InputAdornment position="end">
+                          <Button
+                            size="small"
+                            startIcon={<EditIcon />}
+                            onClick={applyBulkChange}
+                            disabled={!bulkChangeState.bulkValue}
+                          >
+                            {t("apply")}
+                          </Button>
+                        </InputAdornment>
+                      }
+                    />
+                  </FormControl>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    startIcon={<DeleteIcon />}
+                    onClick={deleteBulkSelection}
+                    size="small"
+                  >
+                    {t("delete")}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={toggleBulkMode}
+                    size="small"
+                  >
+                    {t("cancel")}
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          </Paper>
+        )}
         </Box>
 
         {/* Period Navigation */}
@@ -404,7 +726,21 @@ function ShiftDemandTabInternal({
             <TableHead>
               <TableRow>
                 <TableCell sx={{ fontWeight: "bold", minWidth: 120 }}>
-                  {t("shift")}
+                  {bulkChangeState.isActive ? (
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Checkbox
+                        checked={isAllSelected()}
+                        indeterminate={
+                          bulkChangeState.selectedCells.length > 0 && !isAllSelected()
+                        }
+                        onChange={selectAllCells}
+                        size="small"
+                      />
+                      <Typography variant="body2">{t("shift")}</Typography>
+                    </Box>
+                  ) : (
+                    t("shift")
+                  )}
                 </TableCell>
                 {dates.map((date) => (
                   <TableCell
@@ -420,6 +756,13 @@ function ShiftDemandTabInternal({
                     }}
                   >
                     <Box>
+                      {bulkChangeState.isActive && (
+                        <Checkbox
+                          checked={isColumnSelected(date)}
+                          onChange={() => selectAllColumnCells(date)}
+                          size="small"
+                        />
+                      )}
                       <Typography variant="caption" display="block">
                         {date.format("ddd")}
                       </Typography>
@@ -437,33 +780,41 @@ function ShiftDemandTabInternal({
                 </TableCell>
               </TableRow>
             </TableHead>
+
             <TableBody>
               {shifts.map((shift) => {
                 const shiftTotal = dates.reduce(
                   (sum, date) => sum + getDemandValue(shift.id, date),
                   0
                 );
-
                 return (
                   <TableRow key={shift.id} hover>
                     <TableCell sx={{ fontWeight: "medium" }}>
-                      <Tooltip title={shift.name}>
-                        <Box>
-                          <Typography variant="body2" noWrap>
-                            {shift.acronym || shift.name}
-                          </Typography>
-                          <Typography variant="caption" color="textSecondary">
-                            {shift.startTime.format("HH:mm")} -{" "}
-                            {shift.endTime.format("HH:mm")}
-                          </Typography>
-                        </Box>
-                      </Tooltip>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        {bulkChangeState.isActive && (
+                          <Checkbox
+                            checked={isRowSelected(shift.id)}
+                            onChange={() => selectAllRowCells(shift.id)}
+                            size="small"
+                          />
+                        )}
+                        <Tooltip title={shift.name}>
+                          <Box>
+                            <Typography variant="body2" noWrap>
+                              {shift.acronym || shift.name}
+                            </Typography>
+                            <Typography variant="caption" color="textSecondary">
+                              {shift.startTime.format("HH:mm")} -{" "}
+                              {shift.endTime.format("HH:mm")}
+                            </Typography>
+                          </Box>
+                        </Tooltip>
+                      </Box>
                     </TableCell>
                     {dates.map((date) => {
                       const value = getDemandValue(shift.id, date);
-                      // Use dayjs .day() for weekday (0=Sunday, 6=Saturday)
                       const isWeekend = date.day() === 0 || date.day() === 6;
-
+                      const isSelected = isCellSelected(shift.id, date);
                       return (
                         <TableCell
                           key={date.toISOString()}
@@ -472,36 +823,58 @@ function ShiftDemandTabInternal({
                             backgroundColor: isWeekend ? "grey.50" : "inherit",
                           }}
                         >
-                          <TextField
-                            size="small"
-                            type="number"
-                            value={value}
-                            onChange={(e) =>
-                              handleCellChange(shift.id, date, e.target.value)
-                            }
-                            inputProps={{
-                              min: 0,
-                              style: {
-                                textAlign: "center",
-                                padding: "4px 8px",
-                                fontSize: "0.875rem",
-                              },
-                            }}
-                            sx={{
-                              "& .MuiOutlinedInput-root": {
-                                "& fieldset": {
-                                  border: "1px solid",
-                                  borderColor: pendingEdits.some(
-                                    (edit) =>
-                                      edit.shiftId === shift.id &&
-                                      edit.date === date.format("YYYY-MM-DD")
-                                  )
-                                    ? "primary.main"
-                                    : "grey.300",
+                          {bulkChangeState.isActive ? (
+                            <Box
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="center"
+                              sx={{
+                                backgroundColor: isSelected ? "primary.50" : "transparent",
+                                borderRadius: 1,
+                                p: 0.5,
+                              }}
+                            >
+                              <Checkbox
+                                checked={isSelected}
+                                onChange={() => toggleCellSelection(shift.id, date)}
+                                size="small"
+                              />
+                              <Typography variant="caption" sx={{ ml: 0.5 }}>
+                                {value}
+                              </Typography>
+                            </Box>
+                          ) : (
+                            <TextField
+                              size="small"
+                              type="number"
+                              value={value}
+                              onChange={(e) =>
+                                handleCellChange(shift.id, date, e.target.value)
+                              }
+                              inputProps={{
+                                min: 0,
+                                style: {
+                                  textAlign: "center",
+                                  padding: "4px 8px",
+                                  fontSize: "0.875rem",
                                 },
-                              },
-                            }}
-                          />
+                              }}
+                              sx={{
+                                "& .MuiOutlinedInput-root": {
+                                  "& fieldset": {
+                                    border: "1px solid",
+                                    borderColor: pendingEdits.some(
+                                      (edit) =>
+                                        edit.shiftId === shift.id &&
+                                        edit.date === date.format("YYYY-MM-DD")
+                                    )
+                                      ? "primary.main"
+                                      : "grey.300",
+                                  },
+                                },
+                              }}
+                            />
+                          )}
                         </TableCell>
                       );
                     })}
