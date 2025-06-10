@@ -75,6 +75,7 @@ export const PageRolePermissions = {
   requests: [TeamMembershipRole.OWNER, TeamMembershipRole.MEMBER],
   campaign: [TeamMembershipRole.OWNER],
   schedule: [TeamMembershipRole.OWNER, TeamMembershipRole.MEMBER],
+  "shift-demands": [TeamMembershipRole.OWNER],
   stats: [TeamMembershipRole.OWNER],
   teams: [TeamMembershipRole.OWNER],
 };

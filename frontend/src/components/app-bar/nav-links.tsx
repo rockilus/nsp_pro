@@ -69,6 +69,12 @@ export default function NavLinks({
       route: "/schedule",
     },
     {
+      name: "shift-demands",
+      label: t("shift_demands"),
+      href: `/${lng}/plan/shift-demands`,
+      route: "/shift-demands",
+    },
+    {
       name: "stats",
       label: t("stats"),
       href: `/${lng}/plan/stats`,
