@@ -33,6 +33,7 @@ from src.routes import (
     router_schedule,
     router_shift,
     router_shift_demand,
+    router_shift_demand_new,
     router_specialty,
     router_sse,
     router_stats,
@@ -78,6 +79,7 @@ def create_app(db_collections: DatabaseCollections) -> FastAPI:
     app.include_router(router_schedule)
     app.include_router(router_shift)
     app.include_router(router_shift_demand)
+    app.include_router(router_shift_demand_new)
     app.include_router(router_specialty)
     app.include_router(router_sse)
     app.include_router(router_stats)

@@ -1,9 +1,12 @@
 from datetime import date, datetime, time, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.shift_demand_new import ShiftDemandNewSchema
-from shared.schemas.core.shift_demand_new import ShiftDemandNew
+from shared.schemas.core.shift_demand_new import (
+    ShiftDemandNew,
+    ShiftDemandSource,
+)
 
 
 class ShiftDemandNewRepository(BaseRepository[ShiftDemandNewSchema]):
@@ -30,7 +33,7 @@ class ShiftDemandNewRepository(BaseRepository[ShiftDemandNewSchema]):
         shift_demands = self.find_all({"team": team_id})
         return [shift_demand.to_core() for shift_demand in shift_demands]
 
-    def get_shift_demands_by_team_and_date_range(
+    def get_shift_demands_by_date_range(
         self, team_id: str, start_date: date, end_date: date
     ) -> List[ShiftDemandNew]:
         """Get shift demands for a team within a date range."""
@@ -47,7 +50,7 @@ class ShiftDemandNewRepository(BaseRepository[ShiftDemandNewSchema]):
         shift_demands = self.find_all(filter_query)
         return [shift_demand.to_core() for shift_demand in shift_demands]
 
-    def get_shift_demands_by_team_shift_and_date_range(
+    def get_shift_demands_by_shift_and_date_range(
         self, team_id: str, shift_id: str, start_date: date, end_date: date
     ) -> List[ShiftDemandNew]:
         """Get shift demands for a specific team/shift within a date range."""
@@ -87,10 +90,58 @@ class ShiftDemandNewRepository(BaseRepository[ShiftDemandNewSchema]):
         results = self.create_many(shift_demand_schemas)
         return [result.to_core() for result in results]
 
-    def delete_shift_demands_by_team_and_date_range(
-        self, team_id: str, start_date: date, end_date: date
+    def bulk_upsert_shift_demands(
+        self, shift_demands: List[ShiftDemandNew]
+    ) -> Tuple[List[ShiftDemandNew], List[ShiftDemandNew]]:
+        """
+        Bulk upsert (create or update) shift demands.
+
+        Args:
+            shift_demands: List of shift demands to upsert
+
+        Returns:
+            Tuple of (created_demands, updated_demands)
+        """
+        created_demands: List[ShiftDemandNew] = []
+        updated_demands: List[ShiftDemandNew] = []
+
+        for shift_demand in shift_demands:
+            if not shift_demand.id or shift_demand.id == "":
+                # Create new demand
+                result = self.create_shift_demand(shift_demand)
+                created_demands.append(result)
+            else:
+                # Update existing demand
+                try:
+                    result = self.update_shift_demand(shift_demand)
+                    updated_demands.append(result)
+                except ValueError:
+                    # If update fails, create new (handles race conditions)
+                    shift_demand.id = ""  # Clear ID to force creation
+                    result = self.create_shift_demand(shift_demand)
+                    created_demands.append(result)
+
+        return created_demands, updated_demands
+
+    def delete_demands_by_date_range(
+        self,
+        team_id: str,
+        start_date: date,
+        end_date: date,
+        shift_ids: Optional[List[str]] = None,
     ) -> int:
-        """Delete shift demands for a team within a date range."""
+        """
+        Delete demands within a date range, optionally filtered by shifts.
+
+        Args:
+            team_id: Team identifier
+            start_date: Start of the period
+            end_date: End of the period
+            shift_ids: Optional list of shift IDs to filter by
+
+        Returns:
+            Number of demands deleted
+        """
         start_timestamp = datetime.combine(
             start_date, time.min, timezone.utc
         ).timestamp()
@@ -101,31 +152,36 @@ class ShiftDemandNewRepository(BaseRepository[ShiftDemandNewSchema]):
             "date": {"$gte": start_timestamp, "$lte": end_timestamp},
         }
 
+        if shift_ids:
+            filter_query["shift"] = {"$in": shift_ids}
+
         result = self.collection.delete_many(filter_query)
         return result.deleted_count
 
-    def upsert_shift_demand(
+    def get_demands_by_source(
         self,
         team_id: str,
-        shift_id: str,
-        demand_date: date,
-        shift_demand: ShiftDemandNew,
-    ) -> ShiftDemandNew:
-        """Upsert a shift demand - update if exists, create if not."""
-        date_timestamp = datetime.combine(
-            demand_date, time.min, timezone.utc
-        ).timestamp()
+        source: ShiftDemandSource,
+        source_id: Optional[str] = None,
+    ) -> List[ShiftDemandNew]:
+        """
+        Get demands by source type and optional source ID.
 
+        Args:
+            team_id: Team identifier
+            source: Source type
+            source_id: Optional source ID for tracking
+
+        Returns:
+            List of matching shift demands
+        """
         filter_query: Dict[str, Any] = {
             "team": team_id,
-            "shift": shift_id,
-            "date": date_timestamp,
+            "source": source.value,
         }
 
-        existing = self.find_one(filter_query)
-        if existing:
-            # Update existing
-            shift_demand.id = existing.id
-            return self.update_shift_demand(shift_demand)
-        # Create new
-        return self.create_shift_demand(shift_demand)
+        if source_id:
+            filter_query["source_id"] = source_id
+
+        shift_demands = self.find_all(filter_query)
+        return [shift_demand.to_core() for shift_demand in shift_demands]

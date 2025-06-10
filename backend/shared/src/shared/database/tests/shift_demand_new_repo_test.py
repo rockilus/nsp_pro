@@ -141,7 +141,7 @@ class TestShiftDemandNewRepository:
         team_ids = [sd.team_id for sd in result]
         assert all(team_id == "team1" for team_id in team_ids)
 
-    def test_get_shift_demands_by_team_and_date_range(self):
+    def test_get_shift_demands_by_date_range(self):
         """Test getting shift demands for a team within a date range."""
         # Create shift demands on different dates
         shift_demand1 = self._create_test_shift_demand(demand_date=date(2025, 1, 10))
@@ -155,7 +155,7 @@ class TestShiftDemandNewRepository:
         self.repo.create_shift_demand(shift_demand4)
 
         # Query for date range 2025-01-12 to 2025-01-22
-        result = self.repo.get_shift_demands_by_team_and_date_range(
+        result = self.repo.get_shift_demands_by_date_range(
             "team1", date(2025, 1, 12), date(2025, 1, 22)
         )
 
@@ -181,7 +181,7 @@ class TestShiftDemandNewRepository:
         self.repo.create_shift_demand(shift_demand2)
         self.repo.create_shift_demand(shift_demand3)
 
-        result = self.repo.get_shift_demands_by_team_shift_and_date_range(
+        result = self.repo.get_shift_demands_by_shift_and_date_range(
             "team1", "shift1", date(2025, 1, 10), date(2025, 1, 25)
         )
 
@@ -263,7 +263,7 @@ class TestShiftDemandNewRepository:
         all_demands = self.repo.get_shift_demands_by_team_id("team1")
         assert len(all_demands) == 3
 
-    def test_delete_shift_demands_by_team_and_date_range(self):
+    def test_delete_demands_by_date_range(self):
         """Test deleting shift demands for a team within a date range."""
         # Create shift demands on different dates
         shift_demands = [
@@ -277,7 +277,7 @@ class TestShiftDemandNewRepository:
             self.repo.create_shift_demand(sd)
 
         # Delete demands between 2025-01-12 and 2025-01-22
-        deleted_count = self.repo.delete_shift_demands_by_team_and_date_range(
+        deleted_count = self.repo.delete_demands_by_date_range(
             "team1", date(2025, 1, 12), date(2025, 1, 22)
         )
 
@@ -290,45 +290,62 @@ class TestShiftDemandNewRepository:
         assert date(2025, 1, 10) in dates
         assert date(2025, 1, 25) in dates
 
-    def test_upsert_shift_demand_create_new(self):
-        """Test upserting a shift demand when it doesn't exist (create)."""
-        shift_demand = self._create_test_shift_demand()
-        demand_date = date(2025, 1, 15)
+    def test_bulk_upsert_shift_demands_create_new(self):
+        """Test bulk upserting shift demands when they don't exist (create)."""
+        shift_demands = [
+            self._create_test_shift_demand(shift_id="shift1", count=2),
+            self._create_test_shift_demand(shift_id="shift2", count=3),
+            self._create_test_shift_demand(shift_id="shift3", count=4),
+        ]
 
-        result = self.repo.upsert_shift_demand(
-            "team1", "shift1", demand_date, shift_demand
-        )
+        created, updated = self.repo.bulk_upsert_shift_demands(shift_demands)
 
-        assert result.id is not None
-        assert result.team_id == "team1"
-        assert result.shift_id == "shift1"
-        assert result.date == demand_date
-        assert result.count == 2
+        assert len(created) == 3
+        assert len(updated) == 0
 
-        # Verify it was created
+        for demand in created:
+            assert demand.id is not None
+            assert demand.team_id == "team1"
+
+        # Verify they were created
         all_demands = self.repo.get_shift_demands_by_team_id("team1")
-        assert len(all_demands) == 1
+        assert len(all_demands) == 3
 
-    def test_upsert_shift_demand_update_existing(self):
-        """Test upserting a shift demand when it exists (update)."""
-        # First create a shift demand
-        shift_demand = self._create_test_shift_demand(count=2)
-        created = self.repo.create_shift_demand(shift_demand)
-        demand_date = created.date
+    def test_bulk_upsert_shift_demands_update_existing(self):
+        """Test bulk upserting shift demands when some exist (update)."""
+        # First create some shift demands
+        existing_demands = [
+            self._create_test_shift_demand(shift_id="shift1", count=2),
+            self._create_test_shift_demand(shift_id="shift2", count=3),
+        ]
 
-        # Now upsert with different count
-        updated_demand = self._create_test_shift_demand(count=5)
-        result = self.repo.upsert_shift_demand(
-            "team1", "shift1", demand_date, updated_demand
-        )
+        created_demand1 = self.repo.create_shift_demand(existing_demands[0])
+        created_demand2 = self.repo.create_shift_demand(existing_demands[1])
 
-        assert result.id == created.id  # Same ID, so it was updated
-        assert result.count == 5  # New count
+        # Now update them and add a new one
+        update_demands = [
+            self._create_test_shift_demand(shift_id="shift1", count=5),  # Update
+            self._create_test_shift_demand(shift_id="shift2", count=6),  # Update
+            self._create_test_shift_demand(shift_id="shift3", count=4),  # Create new
+        ]
 
-        # Verify only one exists
+        # Set IDs for update operations
+        update_demands[0].id = created_demand1.id
+        update_demands[1].id = created_demand2.id
+
+        created, updated = self.repo.bulk_upsert_shift_demands(update_demands)
+
+        assert len(created) == 1  # New shift3
+        assert len(updated) == 2  # Updated shift1 and shift2
+
+        # Verify all exist with correct counts
         all_demands = self.repo.get_shift_demands_by_team_id("team1")
-        assert len(all_demands) == 1
-        assert all_demands[0].count == 5
+        assert len(all_demands) == 3
+
+        counts_by_shift = {sd.shift_id: sd.count for sd in all_demands}
+        assert counts_by_shift["shift1"] == 5
+        assert counts_by_shift["shift2"] == 6
+        assert counts_by_shift["shift3"] == 4
 
     def test_shift_demand_with_different_sources(self):
         """Test creating shift demands with different sources."""
@@ -365,7 +382,7 @@ class TestShiftDemandNewRepository:
         assert result2.date == date(2025, 1, 1)
 
         # Test querying across year boundary
-        results = self.repo.get_shift_demands_by_team_and_date_range(
+        results = self.repo.get_shift_demands_by_date_range(
             "team1", date(2024, 12, 30), date(2025, 1, 2)
         )
         assert len(results) == 2
@@ -415,7 +432,7 @@ class TestShiftDemandNewRepository:
         assert team2_demands[0].team_id == "team2"
 
         # Test deletion is isolated
-        deleted_count = self.repo.delete_shift_demands_by_team_and_date_range(
+        deleted_count = self.repo.delete_demands_by_date_range(
             "team1", date(2025, 1, 1), date(2025, 1, 31)
         )
         assert deleted_count == 1
@@ -431,13 +448,13 @@ class TestShiftDemandNewRepository:
         assert result == []
 
         # Test empty date range
-        result = self.repo.get_shift_demands_by_team_and_date_range(
+        result = self.repo.get_shift_demands_by_date_range(
             "team1", date(2025, 1, 1), date(2025, 1, 31)
         )
         assert result == []
 
         # Test empty specific shift
-        result = self.repo.get_shift_demands_by_team_shift_and_date_range(
+        result = self.repo.get_shift_demands_by_shift_and_date_range(
             "team1", "nonexistent_shift", date(2025, 1, 1), date(2025, 1, 31)
         )
         assert result == []
@@ -457,3 +474,87 @@ class TestShiftDemandNewRepository:
 
         assert updated.created_at == original_created  # Should not change
         assert updated.updated_at > original_updated  # Should be newer
+
+    def test_get_demands_by_source(self):
+        """Test getting demands by source type and optional source ID."""
+        # Create shift demands with different sources
+        manual_demand = self._create_test_shift_demand(
+            shift_id="shift1", source=ShiftDemandSource.MANUAL
+        )
+        template_demand1 = self._create_test_shift_demand(
+            shift_id="shift2",
+            source=ShiftDemandSource.TEMPLATE,
+            source_id="template123",
+        )
+        template_demand2 = self._create_test_shift_demand(
+            shift_id="shift3",
+            source=ShiftDemandSource.TEMPLATE,
+            source_id="template456",
+        )
+        duplicated_demand = self._create_test_shift_demand(
+            shift_id="shift4",
+            source=ShiftDemandSource.DUPLICATED,
+            source_id="dup789",
+        )
+
+        self.repo.create_shift_demand(manual_demand)
+        self.repo.create_shift_demand(template_demand1)
+        self.repo.create_shift_demand(template_demand2)
+        self.repo.create_shift_demand(duplicated_demand)
+
+        # Test getting all template demands
+        template_demands = self.repo.get_demands_by_source(
+            "team1", ShiftDemandSource.TEMPLATE
+        )
+        assert len(template_demands) == 2
+
+        # Test getting specific template by source_id
+        specific_template = self.repo.get_demands_by_source(
+            "team1", ShiftDemandSource.TEMPLATE, "template123"
+        )
+        assert len(specific_template) == 1
+        assert specific_template[0].shift_id == "shift2"
+        assert specific_template[0].source_id == "template123"
+
+        # Test getting manual demands (no source_id)
+        manual_demands = self.repo.get_demands_by_source(
+            "team1", ShiftDemandSource.MANUAL
+        )
+        assert len(manual_demands) == 1
+        assert manual_demands[0].shift_id == "shift1"
+
+    def test_delete_demands_by_date_range_with_shift_filter(self):
+        """Test deleting demands with optional shift filter."""
+        # Create demands for different shifts and dates
+        shift_demands = [
+            self._create_test_shift_demand(
+                shift_id="shift1", demand_date=date(2025, 1, 15)
+            ),
+            self._create_test_shift_demand(
+                shift_id="shift2", demand_date=date(2025, 1, 15)
+            ),
+            self._create_test_shift_demand(
+                shift_id="shift1", demand_date=date(2025, 1, 20)
+            ),
+            self._create_test_shift_demand(
+                shift_id="shift3", demand_date=date(2025, 1, 20)
+            ),
+        ]
+
+        for sd in shift_demands:
+            self.repo.create_shift_demand(sd)
+
+        # Delete only shift1 demands in the date range
+        deleted_count = self.repo.delete_demands_by_date_range(
+            "team1", date(2025, 1, 10), date(2025, 1, 25), shift_ids=["shift1"]
+        )
+
+        assert deleted_count == 2  # Only shift1 demands deleted
+
+        # Verify shift2 and shift3 demands remain
+        remaining = self.repo.get_shift_demands_by_team_id("team1")
+        assert len(remaining) == 2
+        shift_ids = [sd.shift_id for sd in remaining]
+        assert "shift2" in shift_ids
+        assert "shift3" in shift_ids
+        assert "shift1" not in shift_ids
