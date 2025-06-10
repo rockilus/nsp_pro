@@ -1,0 +1,17 @@
+{
+    "title": "Shift Demand Management",
+    "description": "Manage shift demands and staffing requirements for your team.",
+    "select_team_message": "Please select a team to manage shift demands",
+    "error_loading_data": "Error loading data",
+    "retry": "Retry",
+    "no_shifts_title": "No Shifts Available",
+    "no_shifts_message": "Create shifts first before managing shift demands. Go to the Shifts tab to add work shifts.",
+    "cancel": "Cancel",
+    "save_changes": "Save Changes",
+    "pending_changes_message": "You have {{count}} unsaved changes",
+    "save_error_message": "Failed to save changes",
+    "save_success_message": "Changes saved successfully",
+    "shift": "Shift",
+    "total": "Total",
+    "daily_total": "Daily Total"
+}
