@@ -6,80 +6,21 @@
 "use client";
 
 import React, { useState } from "react";
+import dayjs, { Dayjs } from "dayjs";
 import {
-  Box,
-  Paper,
-  IconButton,
-  Typography,
-  ToggleButton,
-  ToggleButtonGroup,
-  TextField,
-  Button,
-  Tooltip,
-  Menu,
-  MenuItem,
-} from "@mui/material";
-import {
-  ChevronLeft as ChevronLeftIcon,
-  ChevronRight as ChevronRightIcon,
-  Today as TodayIcon,
-  CalendarToday as CalendarIcon,
-  MoreVert as MoreVertIcon,
+  NavigateBefore as NavigateBeforeIcon,
+  NavigateNext as NavigateNextIcon,
 } from "@mui/icons-material";
-import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { styled } from "@mui/material/styles";
 import { PeriodType } from "@/types/shiftDemand";
 import { DateUtils } from "@/app/lib/utils/shiftDemandUtils";
-
-const NavigationContainer = styled(Paper)(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: theme.spacing(1, 2),
-  backgroundColor: theme.palette.background.paper,
-  borderRadius: theme.shape.borderRadius,
-  boxShadow: theme.shadows[1],
-}));
-
-const NavigationLeft = styled(Box)({
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-});
-
-const NavigationCenter = styled(Box)({
-  display: "flex",
-  alignItems: "center",
-  gap: 16,
-});
-
-const NavigationRight = styled(Box)({
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-});
-
-const PeriodDisplay = styled(Box)({
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  minWidth: 200,
-});
-
-const CustomDateContainer = styled(Box)({
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-});
+import styles from "./PeriodNavigation.module.css";
 
 interface PeriodNavigationProps {
-  currentPeriod: { start: Date; end: Date };
-  onPeriodChange: (start: Date, end: Date) => void;
+  currentPeriod: { start: Dayjs; end: Dayjs };
+  onPeriodChange: (start: Dayjs, end: Dayjs) => void;
   periodType: PeriodType;
   onPeriodTypeChange: (type: PeriodType) => void;
   isLoading?: boolean;
-  allowCustomDates?: boolean;
 }
 
 export const PeriodNavigation: React.FC<PeriodNavigationProps> = ({
@@ -88,259 +29,145 @@ export const PeriodNavigation: React.FC<PeriodNavigationProps> = ({
   periodType,
   onPeriodTypeChange,
   isLoading = false,
-  allowCustomDates = true,
 }) => {
-  const [customStartDate, setCustomStartDate] = useState<Date | null>(
-    currentPeriod.start
-  );
-  const [customEndDate, setCustomEndDate] = useState<Date | null>(
-    currentPeriod.end
-  );
-  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
-
   // Handle period navigation
   const handlePrevious = () => {
+    if (isLoading) return;
     const { start, end } = DateUtils.getPreviousPeriod(
-      currentPeriod.start,
-      currentPeriod.end,
+      currentPeriod.start.toDate(),
+      currentPeriod.end.toDate(),
       periodType
     );
-    onPeriodChange(start, end);
+    onPeriodChange(dayjs(start), dayjs(end));
   };
 
   const handleNext = () => {
+    if (isLoading) return;
     const { start, end } = DateUtils.getNextPeriod(
-      currentPeriod.start,
-      currentPeriod.end,
+      currentPeriod.start.toDate(),
+      currentPeriod.end.toDate(),
       periodType
     );
-    onPeriodChange(start, end);
+    onPeriodChange(dayjs(start), dayjs(end));
   };
 
   const handleToday = () => {
-    const today = new Date();
-    let start: Date, end: Date;
+    if (isLoading) return;
+    const today = dayjs();
+    let start: Dayjs, end: Dayjs;
 
     switch (periodType) {
       case "week":
-        start = DateUtils.getStartOfWeek(today);
-        end = DateUtils.getEndOfWeek(today);
+        start = dayjs(DateUtils.getStartOfWeek(today.toDate()));
+        end = dayjs(DateUtils.getEndOfWeek(today.toDate()));
         break;
       case "month":
-        start = DateUtils.getStartOfMonth(today);
-        end = DateUtils.getEndOfMonth(today);
+        start = dayjs(DateUtils.getStartOfMonth(today.toDate()));
+        end = dayjs(DateUtils.getEndOfMonth(today.toDate()));
         break;
       default:
         // Keep current period length for custom
-        const periodLength =
-          currentPeriod.end.getTime() - currentPeriod.start.getTime();
+        const periodLength = currentPeriod.end.diff(currentPeriod.start);
         start = today;
-        end = new Date(today.getTime() + periodLength);
+        end = today.add(periodLength, "millisecond");
     }
 
     onPeriodChange(start, end);
   };
 
   // Handle period type change
-  const handlePeriodTypeChange = (
-    event: React.MouseEvent<HTMLElement>,
-    newType: PeriodType | null
-  ) => {
+  const handlePeriodTypeChange = (newType: PeriodType) => {
     if (newType && newType !== periodType) {
       onPeriodTypeChange(newType);
 
       // Adjust current period to match new type
       if (newType === "week") {
-        const start = DateUtils.getStartOfWeek(currentPeriod.start);
-        const end = DateUtils.getEndOfWeek(currentPeriod.start);
+        const start = dayjs(
+          DateUtils.getStartOfWeek(currentPeriod.start.toDate())
+        );
+        const end = dayjs(DateUtils.getEndOfWeek(currentPeriod.start.toDate()));
         onPeriodChange(start, end);
       } else if (newType === "month") {
-        const start = DateUtils.getStartOfMonth(currentPeriod.start);
-        const end = DateUtils.getEndOfMonth(currentPeriod.start);
+        const start = dayjs(
+          DateUtils.getStartOfMonth(currentPeriod.start.toDate())
+        );
+        const end = dayjs(
+          DateUtils.getEndOfMonth(currentPeriod.start.toDate())
+        );
         onPeriodChange(start, end);
       }
     }
   };
 
-  // Handle custom date changes
-  const handleCustomDateApply = () => {
-    if (customStartDate && customEndDate && customStartDate <= customEndDate) {
-      onPeriodChange(customStartDate, customEndDate);
-      setMenuAnchor(null);
-    }
-  };
-
-  // Format period display
-  const formatPeriodDisplay = () => {
+  // Format period display - similar to TimeViewSelector's getPeriodLabel
+  const getPeriodLabel = (): string => {
     const start = currentPeriod.start;
     const end = currentPeriod.end;
 
     if (periodType === "week") {
-      const weekStart = start.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
-      const weekEnd = end.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-      return `${weekStart} - ${weekEnd}`;
+      if (start.month() === end.month() && start.year() === end.year()) {
+        return start.format("MMMM YYYY");
+      } else if (start.month() !== end.month() && start.year() === end.year()) {
+        return start.format("MMM") + " - " + end.format("MMM YYYY");
+      } else {
+        return start.format("MMM YYYY") + " - " + end.format("MMM YYYY");
+      }
     } else if (periodType === "month") {
-      return start.toLocaleDateString("en-US", {
-        month: "long",
-        year: "numeric",
-      });
+      return start.format("MMMM YYYY");
     } else {
-      const customStart = start.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
-      const customEnd = end.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-      return `${customStart} - ${customEnd}`;
+      // Custom period
+      if (start.month() === end.month() && start.year() === end.year()) {
+        return start.format("MMMM YYYY");
+      } else if (start.month() !== end.month() && start.year() === end.year()) {
+        return start.format("MMM") + " - " + end.format("MMM YYYY");
+      } else {
+        return start.format("MMM YYYY") + " - " + end.format("MMM YYYY");
+      }
     }
   };
 
-  const getPeriodSubtitle = () => {
-    const days =
-      DateUtils.getDaysBetween(currentPeriod.start, currentPeriod.end) + 1;
-    return `${days} days`;
-  };
-
   return (
-    <NavigationContainer>
-      <NavigationLeft>
-        <Tooltip title="Previous period">
-          <IconButton
-            onClick={handlePrevious}
-            disabled={isLoading}
-            size="small"
-          >
-            <ChevronLeftIcon />
-          </IconButton>
-        </Tooltip>
+    <div className={`${styles.container} ${styles.containerWithCustom}`}>
+      {/* Today Button */}
+      <button
+        onClick={handleToday}
+        disabled={isLoading}
+        className={styles.todayButton}
+      >
+        Today
+      </button>
 
-        <Tooltip title="Go to today">
-          <IconButton
-            onClick={handleToday}
-            disabled={isLoading}
-            size="small"
-            color="primary"
-          >
-            <TodayIcon />
-          </IconButton>
-        </Tooltip>
+      {/* Previous Period Button */}
+      <button
+        onClick={handlePrevious}
+        disabled={isLoading}
+        className={styles.previousButton}
+      >
+        <NavigateBeforeIcon />
+      </button>
 
-        <Tooltip title="Next period">
-          <IconButton onClick={handleNext} disabled={isLoading} size="small">
-            <ChevronRightIcon />
-          </IconButton>
-        </Tooltip>
-      </NavigationLeft>
+      {/* Next Period Button */}
+      <button
+        onClick={handleNext}
+        disabled={isLoading}
+        className={styles.nextButton}
+      >
+        <NavigateNextIcon />
+      </button>
 
-      <NavigationCenter>
-        <PeriodDisplay>
-          <Typography variant="h6" component="h2">
-            {formatPeriodDisplay()}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {getPeriodSubtitle()}
-          </Typography>
-        </PeriodDisplay>
+      {/* Period Label */}
+      <span className={styles.periodLabel}>{getPeriodLabel()}</span>
 
-        <ToggleButtonGroup
-          value={periodType}
-          exclusive
-          onChange={handlePeriodTypeChange}
-          size="small"
-          disabled={isLoading}
-        >
-          <ToggleButton value="week">Week</ToggleButton>
-          <ToggleButton value="month">Month</ToggleButton>
-          <ToggleButton value="custom">Custom</ToggleButton>
-        </ToggleButtonGroup>
-      </NavigationCenter>
-
-      <NavigationRight>
-        {allowCustomDates && (
-          <>
-            <Tooltip title="Custom date range">
-              <IconButton
-                onClick={(event) => setMenuAnchor(event.currentTarget)}
-                size="small"
-              >
-                <CalendarIcon />
-              </IconButton>
-            </Tooltip>
-
-            <Menu
-              anchorEl={menuAnchor}
-              open={Boolean(menuAnchor)}
-              onClose={() => setMenuAnchor(null)}
-              PaperProps={{
-                sx: { p: 2, minWidth: 300 },
-              }}
-            >
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <CustomDateContainer>
-                  <DatePicker
-                    label="Start Date"
-                    value={customStartDate}
-                    onChange={setCustomStartDate}
-                    slotProps={{
-                      textField: { size: "small", sx: { width: 120 } },
-                    }}
-                  />
-                  <Typography variant="body2">to</Typography>
-                  <DatePicker
-                    label="End Date"
-                    value={customEndDate}
-                    onChange={setCustomEndDate}
-                    minDate={customStartDate || undefined}
-                    slotProps={{
-                      textField: { size: "small", sx: { width: 120 } },
-                    }}
-                  />
-                </CustomDateContainer>
-                <Box
-                  sx={{
-                    mt: 2,
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    gap: 1,
-                  }}
-                >
-                  <Button size="small" onClick={() => setMenuAnchor(null)}>
-                    Cancel
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="contained"
-                    onClick={handleCustomDateApply}
-                    disabled={
-                      !customStartDate ||
-                      !customEndDate ||
-                      customStartDate > customEndDate
-                    }
-                  >
-                    Apply
-                  </Button>
-                </Box>
-              </LocalizationProvider>
-            </Menu>
-          </>
-        )}
-
-        <Tooltip title="More options">
-          <IconButton size="small">
-            <MoreVertIcon />
-          </IconButton>
-        </Tooltip>
-      </NavigationRight>
-    </NavigationContainer>
+      {/* Period Type Selector */}
+      <select
+        value={periodType === "custom" ? "week" : periodType} // Default to week for custom to avoid issues
+        onChange={(e) => handlePeriodTypeChange(e.target.value as PeriodType)}
+        disabled={isLoading}
+        className={styles.select}
+      >
+        <option value="week">Week</option>
+        <option value="month">Month</option>
+      </select>
+    </div>
   );
 };

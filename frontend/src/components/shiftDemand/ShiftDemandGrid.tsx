@@ -7,6 +7,7 @@
 "use client";
 
 import React, { useMemo, useState, useCallback, useRef } from "react";
+import dayjs, { Dayjs } from "dayjs";
 import {
   Box,
   Paper,
@@ -27,10 +28,10 @@ import {
 } from "@/types/shiftDemand";
 import { ShiftT } from "@/types/shift";
 import { DateUtils } from "@/app/lib/utils/shiftDemandUtils";
-import { DemandCell } from "./DemandCell";
-import { GridHeader } from "./GridHeader";
-import { GridSidebar } from "./GridSidebar";
-import { BulkOperationsToolbar } from "./bulkOperations/BulkOperationsToolbar";
+// import { DemandCell } from "./DemandCell";
+// import { GridHeader } from "./GridHeader";
+// import { GridSidebar } from "./GridSidebar";
+// import { BulkOperationsToolbar } from "./bulkOperations/BulkOperationsToolbar";
 import {
   BulkOperationsManager,
   BulkOperationsManagerRef,
@@ -96,8 +97,8 @@ const DateHeader = styled(Box)(({ theme }) => ({
 
 interface ShiftDemandGridProps {
   teamId: string;
-  startDate: Date;
-  endDate: Date;
+  startDate: Dayjs;
+  endDate: Dayjs;
   matrix: ShiftDemandMatrix;
   shifts: ShiftT[];
   onCellChange: (shiftId: string, date: string, count: number) => void;
@@ -172,7 +173,10 @@ export const ShiftDemandGrid: React.FC<ShiftDemandGridProps> = ({
 
   // Generate date range for the grid
   const dateRange = useMemo(() => {
-    const dates = DateUtils.generateDateRange(startDate, endDate);
+    const dates = DateUtils.generateDateRange(
+      startDate.toDate(),
+      endDate.toDate()
+    );
     if (!displayOptions.showWeekends) {
       return dates.filter((date) => !DateUtils.isWeekend(date));
     }

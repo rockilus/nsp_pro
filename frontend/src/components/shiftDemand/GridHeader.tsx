@@ -6,6 +6,7 @@
 "use client";
 
 import React from "react";
+import dayjs, { Dayjs } from "dayjs";
 import {
   Box,
   Typography,
@@ -63,8 +64,8 @@ const BulkControls = styled(Box)({
 });
 
 interface GridHeaderProps {
-  startDate: Date;
-  endDate: Date;
+  startDate: Dayjs;
+  endDate: Dayjs;
   totalDemands: number;
   selectedCells: Set<string>;
   onClearSelection: () => void;
@@ -100,18 +101,11 @@ export const GridHeader: React.FC<GridHeaderProps> = ({
   onDisplayOptionsChange,
 }) => {
   const selectedCount = selectedCells.size;
-  const periodDays = DateUtils.getDaysBetween(startDate, endDate) + 1;
+  const periodDays = endDate.diff(startDate, "day") + 1;
 
   const formatDateRange = () => {
-    const start = startDate.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-    const end = endDate.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+    const start = startDate.format("MMM D");
+    const end = endDate.format("MMM D, YYYY");
     return `${start} - ${end}`;
   };
 

@@ -472,9 +472,6 @@ export const ShiftDemandPage: React.FC<ShiftDemandPageProps> = ({
         {/* Page Header */}
         <PageHeader>
           <Box>
-            <Typography variant="h4" component="h1" gutterBottom>
-              Shift Demand Management
-            </Typography>
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
               <Chip
                 icon={<DashboardIcon />}

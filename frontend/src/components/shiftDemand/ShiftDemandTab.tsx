@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { useTranslation } from "../../app/i18n/client";
-import { format, startOfMonth, endOfMonth, addDays, subDays } from "date-fns";
+import dayjs, { Dayjs } from "dayjs";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import isoWeek from "dayjs/plugin/isoWeek";
 // MUI
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -8,7 +10,6 @@ import Paper from "@mui/material/Paper";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
-import ButtonGroup from "@mui/material/ButtonGroup";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -18,9 +19,6 @@ import TableRow from "@mui/material/TableRow";
 import TextField from "@mui/material/TextField";
 import Tooltip from "@mui/material/Tooltip";
 // Icons
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import TodayIcon from "@mui/icons-material/Today";
 import SaveIcon from "@mui/icons-material/Save";
 import RefreshIcon from "@mui/icons-material/Refresh";
 // Skeletons
@@ -35,9 +33,16 @@ import {
 import { getWorkShifts } from "../../app/lib/shift";
 // Types
 import { ShiftT, ShiftType } from "../../types/shift";
-import { ShiftDemandDTO } from "../../types/shiftDemand";
+import { ShiftDemandDTO, PeriodType } from "../../types/shiftDemand";
+import { usePeriodState } from "../../app/lib/hooks/usePeriodState";
+// Components
+import { PeriodNavigation } from "./PeriodNavigation";
 // Styles
 import "../../styles/tab-container-styles.css";
+
+// Extend dayjs with the required plugins
+dayjs.extend(isSameOrBefore);
+dayjs.extend(isoWeek);
 
 interface CellEdit {
   shiftId: string;
@@ -55,24 +60,46 @@ function ShiftDemandTabInternal({
 }) {
   const { t } = useTranslation(lng, "shift-demands");
 
-  // Date state - start with current month
-  const [currentDate, setCurrentDate] = useState(new Date());
+  // Centralized period state (with localStorage persistence)
+  const { currentDate, periodType, setCurrentDate, setPeriodType, isHydrated } =
+    usePeriodState();
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [isLoadingShifts, setIsLoadingShifts] = useState(false);
   const [shiftError, setShiftError] = useState<string | null>(null);
   const [pendingEdits, setPendingEdits] = useState<CellEdit[]>([]);
 
-  // Calculate date range for current period
-  const startDate = useMemo(() => startOfMonth(currentDate), [currentDate]);
-  const endDate = useMemo(() => endOfMonth(currentDate), [currentDate]);
+  // Calculate date range for current period based on period type
+  const { startDate, endDate } = useMemo(() => {
+    if (periodType === "month") {
+      return {
+        startDate: currentDate.startOf("month"),
+        endDate: currentDate.endOf("month"),
+      };
+    } else if (periodType === "week") {
+      // For week view, calculate week boundaries (Monday to Sunday, ISO week)
+      return {
+        startDate: currentDate.startOf("isoWeek"),
+        endDate: currentDate.endOf("isoWeek"),
+      };
+    } else {
+      // Custom period - use current date as center, show 2 weeks around it
+      const start = currentDate.subtract(7, "day");
+      const end = currentDate.add(7, "day");
+      return {
+        startDate: start,
+        endDate: end,
+      };
+    }
+  }, [currentDate, periodType]);
 
   // Generate array of dates for the period
   const dates = useMemo(() => {
-    const dateArray: Date[] = [];
+    const dateArray: Dayjs[] = [];
     let current = startDate;
-    while (current <= endDate) {
+    const end = endDate;
+    while (current.isSameOrBefore(end, "day")) {
       dateArray.push(current);
-      current = addDays(current, 1);
+      current = current.add(1, "day");
     }
     return dateArray;
   }, [startDate, endDate]);
@@ -85,9 +112,14 @@ function ShiftDemandTabInternal({
     isLoading: isLoadingDemands,
     error: demandsError,
     refetch: refetchDemands,
-  } = useShiftDemands(selectedTeamId || "", startDate, endDate, {
-    enabled: !!selectedTeamId,
-  });
+  } = useShiftDemands(
+    selectedTeamId || "",
+    startDate.toDate(),
+    endDate.toDate(),
+    {
+      enabled: !!selectedTeamId,
+    }
+  );
 
   // Shift demand mutations
   const { bulkUpsert } = useShiftDemandMutations(selectedTeamId || "");
@@ -153,26 +185,24 @@ function ShiftDemandTabInternal({
     loadShifts();
   }, [selectedTeamId]);
 
-  // Navigation functions
-  const goToPreviousMonth = () => {
-    setCurrentDate((prev) => subDays(startOfMonth(prev), 1));
+  // Navigation functions for PeriodNavigation component
+  const handlePeriodChange = (start: Dayjs, end: Dayjs) => {
+    // Calculate the center date of the new period
+    const centerDate = dayjs(
+      start.valueOf() + (end.valueOf() - start.valueOf()) / 2
+    );
+    setCurrentDate(centerDate);
     setPendingEdits([]); // Clear pending edits when navigating
   };
 
-  const goToNextMonth = () => {
-    setCurrentDate((prev) => addDays(endOfMonth(prev), 1));
-    setPendingEdits([]); // Clear pending edits when navigating
-  };
-
-  const goToToday = () => {
-    setCurrentDate(new Date());
-    setPendingEdits([]); // Clear pending edits when navigating
+  const handlePeriodTypeChange = (newType: PeriodType) => {
+    setPeriodType(newType);
+    setPendingEdits([]); // Clear pending edits when changing period type
   };
 
   // Get demand value for a specific shift and date
-  const getDemandValue = (shiftId: string, date: Date): number => {
-    const dateStr = format(date, "yyyy-MM-dd");
-
+  const getDemandValue = (shiftId: string, date: Dayjs): number => {
+    const dateStr = date.format("YYYY-MM-DD");
     // Check pending edits first
     const pendingEdit = pendingEdits.find(
       (edit) => edit.shiftId === shiftId && edit.date === dateStr
@@ -180,21 +210,18 @@ function ShiftDemandTabInternal({
     if (pendingEdit) {
       return pendingEdit.value;
     }
-
     // Check matrix data
     return matrix[shiftId]?.[dateStr] || 0;
   };
 
   // Handle cell value change
-  const handleCellChange = (shiftId: string, date: Date, value: string) => {
-    const dateStr = format(date, "yyyy-MM-dd");
+  const handleCellChange = (shiftId: string, date: Dayjs, value: string) => {
+    const dateStr = date.format("YYYY-MM-DD");
     const numValue = Math.max(0, parseInt(value) || 0);
-
     setPendingEdits((prev) => {
       const existingIndex = prev.findIndex(
         (edit) => edit.shiftId === shiftId && edit.date === dateStr
       );
-
       if (existingIndex >= 0) {
         // Update existing edit
         const newEdits = [...prev];
@@ -236,8 +263,8 @@ function ShiftDemandTabInternal({
     setPendingEdits([]);
   };
 
-  // Loading state
-  if (isLoadingShifts || isLoadingDemands) {
+  // Wait for hydration of period state before rendering (prevents SSR mismatch)
+  if (!isHydrated || isLoadingShifts || isLoadingDemands) {
     return (
       <div className="tab-container-ultrawide">
         <TablesSkeleton numTables={1} numInternalRows={5} />
@@ -310,15 +337,6 @@ function ShiftDemandTabInternal({
           alignItems="center"
           mb={3}
         >
-          <Box>
-            <Typography variant="h4" gutterBottom>
-              {t("title")}
-            </Typography>
-            <Typography variant="body1" color="textSecondary">
-              {t("description")}
-            </Typography>
-          </Box>
-
           {/* Actions */}
           <Box display="flex" gap={1} alignItems="center">
             {pendingEdits.length > 0 && (
@@ -349,21 +367,14 @@ function ShiftDemandTabInternal({
 
         {/* Period Navigation */}
         <Box display="flex" justifyContent="center" alignItems="center" mb={3}>
-          <ButtonGroup variant="outlined">
-            <IconButton onClick={goToPreviousMonth}>
-              <ChevronLeftIcon />
-            </IconButton>
-            <Button
-              onClick={goToToday}
-              startIcon={<TodayIcon />}
-              sx={{ minWidth: 200 }}
-            >
-              {format(currentDate, "MMMM yyyy")}
-            </Button>
-            <IconButton onClick={goToNextMonth}>
-              <ChevronRightIcon />
-            </IconButton>
-          </ButtonGroup>
+          <PeriodNavigation
+            currentPeriod={{ start: startDate, end: endDate }}
+            onPeriodChange={handlePeriodChange}
+            periodType={periodType}
+            onPeriodTypeChange={handlePeriodTypeChange}
+            isLoading={isLoadingDemands || bulkUpsert.isLoading}
+            allowCustomDates={true}
+          />
         </Box>
 
         {/* Pending changes indicator */}
@@ -404,17 +415,17 @@ function ShiftDemandTabInternal({
                       fontWeight: "bold",
                       minWidth: 60,
                       backgroundColor:
-                        date.getDay() === 0 || date.getDay() === 6
+                        date.day() === 0 || date.day() === 6
                           ? "grey.50"
                           : "inherit",
                     }}
                   >
                     <Box>
                       <Typography variant="caption" display="block">
-                        {format(date, "EEE")}
+                        {date.format("ddd")}
                       </Typography>
                       <Typography variant="body2">
-                        {format(date, "d")}
+                        {date.format("D")}
                       </Typography>
                     </Box>
                   </TableCell>
@@ -451,8 +462,8 @@ function ShiftDemandTabInternal({
                     </TableCell>
                     {dates.map((date) => {
                       const value = getDemandValue(shift.id, date);
-                      const isWeekend =
-                        date.getDay() === 0 || date.getDay() === 6;
+                      // Use dayjs .day() for weekday (0=Sunday, 6=Saturday)
+                      const isWeekend = date.day() === 0 || date.day() === 6;
 
                       return (
                         <TableCell
@@ -484,7 +495,7 @@ function ShiftDemandTabInternal({
                                   borderColor: pendingEdits.some(
                                     (edit) =>
                                       edit.shiftId === shift.id &&
-                                      edit.date === format(date, "yyyy-MM-dd")
+                                      edit.date === date.format("YYYY-MM-DD")
                                   )
                                     ? "primary.main"
                                     : "grey.300",

@@ -1,0 +1,134 @@
+.container {
+  display: flex;
+  align-items: center;
+  width: 430px;
+}
+
+.containerWithCustom {
+  width: 500px;
+}
+
+.button {
+  border-radius: 4px;
+  border: 1px solid #e5e7eb;
+  height: 35px;
+  padding: 0 15px;
+  font-size: 0.9rem;
+  font-weight: 550;
+  color: #616161;
+  background-color: white;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.button:hover:not(:disabled) {
+  background-color: #f0f0f0;
+}
+
+.button:disabled {
+  color: #bbb;
+  cursor: not-allowed;
+}
+
+.roundButton {
+  border-radius: 50%;
+  height: 30px;
+  width: 30px;
+  color: #616161;
+  background-color: white;
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+  margin-left: 5px;
+}
+
+.roundButton:hover:not(:disabled) {
+  background-color: #f0f0f0;
+}
+
+.roundButton:disabled {
+  color: #bbb;
+  cursor: not-allowed;
+}
+
+.todayButton {
+  composes: button;
+}
+
+.previousButton {
+  composes: roundButton;
+}
+
+.nextButton {
+  composes: roundButton;
+}
+
+.periodLabel {
+  display: flex;
+  align-items: center;
+  margin-left: 5px;
+  height: 35px;
+  width: 180px;
+  font-size: 1.2rem;
+  font-weight: 550;
+  color: #616161;
+}
+
+.select {
+  border-radius: 4px;
+  border: 1px solid #e5e7eb;
+  height: 35px;
+  width: 80px;
+  padding: 0 0 0 5px;
+  font-size: 0.9rem;
+  font-weight: 550;
+  color: #616161;
+  background-color: white;
+  margin-left: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.select:hover:not(:disabled) {
+  background-color: #f0f0f0;
+}
+
+.select:disabled {
+  color: #bbb;
+  cursor: not-allowed;
+}
+
+.customButton {
+  composes: button;
+  width: 35px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+}
+
+.menuContainer {
+  padding: 16px;
+  min-width: 300px;
+}
+
+.datePickerContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.datePickerLabel {
+  font-size: 0.875rem;
+}
+
+.menuActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
