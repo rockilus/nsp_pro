@@ -373,7 +373,6 @@ function ShiftDemandTabInternal({
             periodType={periodType}
             onPeriodTypeChange={handlePeriodTypeChange}
             isLoading={isLoadingDemands || bulkUpsert.isLoading}
-            allowCustomDates={true}
           />
         </Box>
 
