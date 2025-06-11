@@ -364,7 +364,6 @@ function ShiftDemandTabInternal({
   const {
     demands,
     matrix,
-    summary,
     isLoading: isLoadingDemands,
     error: demandsError,
     refetch: refetchDemands,

@@ -241,57 +241,6 @@ function ShiftDemandRow({
   );
 }
 
-// Summary row component
-interface ShiftDemandSummaryRowProps {
-  lng: string;
-  shifts: ShiftT[];
-  dates: Dayjs[];
-  getDemandValue: (shiftId: string, date: Dayjs) => number;
-}
-
-function ShiftDemandSummaryRow({
-  lng,
-  shifts,
-  dates,
-  getDemandValue,
-}: ShiftDemandSummaryRowProps) {
-  const { t } = useTranslation(lng, "shift-demands");
-
-  const grandTotal = shifts.reduce(
-    (sum, shift) =>
-      sum +
-      dates.reduce(
-        (dateSum, date) => dateSum + getDemandValue(shift.id, date),
-        0
-      ),
-    0
-  );
-
-  return (
-    <TableRow sx={{ backgroundColor: "grey.100" }}>
-      <TableCell sx={{ fontWeight: "bold" }}>{t("daily_total")}</TableCell>
-      {dates.map((date) => {
-        const dailyTotal = shifts.reduce(
-          (sum, shift) => sum + getDemandValue(shift.id, date),
-          0
-        );
-        return (
-          <TableCell
-            key={date.toISOString()}
-            align="center"
-            sx={{ fontWeight: "bold" }}
-          >
-            {dailyTotal}
-          </TableCell>
-        );
-      })}
-      <TableCell align="center" sx={{ fontWeight: "bold" }}>
-        {grandTotal}
-      </TableCell>
-    </TableRow>
-  );
-}
-
 // Table header component
 interface ShiftDemandTableHeaderProps {
   lng: string;
@@ -413,12 +362,6 @@ function ShiftDemandTableBody({
           isRowSelected={isRowSelected}
         />
       ))}
-      <ShiftDemandSummaryRow
-        lng={lng}
-        shifts={shifts}
-        dates={dates}
-        getDemandValue={getDemandValue}
-      />
     </TableBody>
   );
 }
