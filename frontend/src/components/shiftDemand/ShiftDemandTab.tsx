@@ -1,22 +1,4 @@
 import React, { useState, useMemo } from "react";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import OutlinedInput from "@mui/material/OutlinedInput";
-import InputAdornment from "@mui/material/InputAdornment";
-import Chip from "@mui/material/Chip";
-import SelectAllIcon from "@mui/icons-material/SelectAll";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-interface SelectedCell {
-  shiftId: string;
-  date: string;
-}
-
-interface BulkChangeState {
-  isActive: boolean;
-  selectedCells: SelectedCell[];
-  bulkValue: string;
-}
 import { useTranslation } from "../../app/i18n/client";
 import dayjs, { Dayjs } from "dayjs";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
@@ -27,7 +9,6 @@ import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
 // Icons
 import SaveIcon from "@mui/icons-material/Save";
 import RefreshIcon from "@mui/icons-material/Refresh";
@@ -46,7 +27,6 @@ import { ShiftT, ShiftType } from "../../types/shift";
 import { ShiftDemandDTO, PeriodType } from "../../types/shiftDemand";
 import { usePeriodState } from "../../app/lib/hooks/usePeriodState";
 // Components
-import { PeriodNavigation } from "./PeriodNavigation";
 import { ShiftDemandToolbar } from "./ShiftDemandToolbar";
 import { BulkSelectToolbar } from "./BulkSelectToolbar";
 import ShiftDemandTable from "./ShiftDemandTable";
@@ -56,6 +36,17 @@ import "../../styles/tab-container-styles.css";
 // Extend dayjs with the required plugins
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isoWeek);
+
+interface SelectedCell {
+  shiftId: string;
+  date: string;
+}
+
+interface BulkChangeState {
+  isActive: boolean;
+  selectedCells: SelectedCell[];
+  bulkValue: string;
+}
 
 interface CellEdit {
   shiftId: string;
@@ -378,36 +369,6 @@ function ShiftDemandTabInternal({
 
   // Shift demand mutations
   const { bulkUpsert } = useShiftDemandMutations(selectedTeamId || "");
-
-  // Debug logging
-  React.useEffect(() => {
-    if (selectedTeamId) {
-      console.log("ShiftDemandTab: Team selected", selectedTeamId);
-      console.log("ShiftDemandTab: Date range", { startDate, endDate });
-      console.log("ShiftDemandTab: Loading states", {
-        isLoadingDemands,
-        isLoadingShifts,
-      });
-      if (demandsError) {
-        console.error("ShiftDemandTab: Demands error", demandsError);
-      }
-      if (matrix) {
-        console.log(
-          "ShiftDemandTab: Matrix loaded",
-          Object.keys(matrix).length,
-          "shifts"
-        );
-      }
-    }
-  }, [
-    selectedTeamId,
-    startDate,
-    endDate,
-    isLoadingDemands,
-    isLoadingShifts,
-    demandsError,
-    matrix,
-  ]);
 
   // Load shifts when team changes
   React.useEffect(() => {
