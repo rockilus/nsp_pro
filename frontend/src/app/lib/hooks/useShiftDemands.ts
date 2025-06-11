@@ -3,12 +3,16 @@
  * Provides data fetching, caching, and mutation capabilities
  */
 
+import { useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ShiftDemandDTO,
+  ShiftDemandCreateDTO,
+  ShiftDemandUpdateDTO,
   ShiftDemandSource,
   UseShiftDemandsResult,
   UseShiftDemandMutationsResult,
+  BulkUpsertResponse,
 } from "@/types/shiftDemand";
 import { ShiftDemandApi } from "@/app/lib/api/shiftDemandApi";
 
@@ -104,7 +108,7 @@ export const useShiftDemandsMatrix = (
 };
 
 /**
- * Comprehensive hook that fetches all shift demand data for a period
+ * Comprehensive hook that fetches all shift demand data for a period with enhanced mapping
  */
 export const useShiftDemands = (
   teamId: string,
@@ -130,11 +134,22 @@ export const useShiftDemands = (
   );
 
   const demands = demandsQuery.data || [];
-  const demandsById = new Map(
-    demands
-      .filter((demand) => demand.id !== null)
-      .map((demand) => [demand.id!, demand])
-  );
+
+  // Create demandsById Map using shiftId-date combination for O(1) lookups
+  const demandsById = useMemo(() => {
+    const map = new Map<string, ShiftDemandDTO>();
+    demands.forEach((demand) => {
+      if (demand.id) {
+        // Use shiftId-date combination as key for cell lookups
+        const dateStr = new Date(demand.date * 1000)
+          .toISOString()
+          .split("T")[0];
+        const key = `${demand.shiftId}-${dateStr}`;
+        map.set(key, demand);
+      }
+    });
+    return map;
+  }, [demands]);
 
   return {
     demands,
@@ -150,7 +165,7 @@ export const useShiftDemands = (
 };
 
 /**
- * Hook for shift demand mutations (create, update, delete)
+ * Enhanced hook for shift demand mutations with proper error handling and optimistic updates
  */
 export const useShiftDemandMutations = (
   teamId: string
@@ -161,48 +176,146 @@ export const useShiftDemandMutations = (
     queryClient.invalidateQueries({ queryKey: shiftDemandKeys.teams(teamId) });
   };
 
+  // Create mutation with optimistic updates
   const create = useMutation({
-    mutationFn: (
-      demand: Omit<ShiftDemandDTO, "id" | "createdAt" | "updatedAt">
-    ) => ShiftDemandApi.createShiftDemand(teamId, demand),
-    onSuccess: () => {
-      invalidateQueries();
+    mutationFn: async (params: {
+      demand: Omit<ShiftDemandCreateDTO, "teamId">;
+    }) => {
+      return ShiftDemandApi.createShiftDemand(teamId, params.demand);
     },
-    onError: (error: Error) => {
-      console.error("Failed to create shift demand:", error);
+    onMutate: async (variables) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({
+        queryKey: shiftDemandKeys.teams(teamId),
+      });
+
+      // Snapshot the previous value
+      const previousData = queryClient.getQueryData(
+        shiftDemandKeys.teams(teamId)
+      );
+
+      // Optimistically update the cache
+      const optimisticDemand: ShiftDemandDTO = {
+        ...variables.demand,
+        teamId,
+        id: `temp-${Date.now()}`, // Temporary ID
+        createdAt: Date.now() / 1000,
+        updatedAt: Date.now() / 1000,
+      };
+
+      // Update any cached queries that match this team
+      queryClient.setQueryData(shiftDemandKeys.teams(teamId), (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          demands: [...(old.demands || []), optimisticDemand],
+        };
+      });
+
+      return { previousData, optimisticDemand };
+    },
+    onError: (err, variables, context) => {
+      // Rollback on error
+      if (context?.previousData) {
+        queryClient.setQueryData(
+          shiftDemandKeys.teams(teamId),
+          context.previousData
+        );
+      }
+      console.error("Failed to create shift demand:", err);
+    },
+    onSettled: () => {
+      // Always refetch after error or success
+      invalidateQueries();
     },
   });
 
+  // Update mutation with optimistic updates
   const update = useMutation({
-    mutationFn: ({
-      demandId,
-      demand,
-    }: {
+    mutationFn: async (params: {
       demandId: string;
-      demand: Partial<ShiftDemandDTO>;
-    }) => ShiftDemandApi.updateShiftDemand(teamId, demandId, demand),
-    onSuccess: () => {
-      invalidateQueries();
+      demand: ShiftDemandUpdateDTO;
+    }) => {
+      return ShiftDemandApi.updateShiftDemand(
+        teamId,
+        params.demandId,
+        params.demand
+      );
     },
-    onError: (error: Error) => {
-      console.error("Failed to update shift demand:", error);
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({
+        queryKey: shiftDemandKeys.teams(teamId),
+      });
+
+      const previousData = queryClient.getQueryData(
+        shiftDemandKeys.teams(teamId)
+      );
+
+      // Optimistically update existing demand
+      queryClient.setQueryData(shiftDemandKeys.teams(teamId), (old: any) => {
+        if (!old) return old;
+
+        const updatedDemands = old.demands?.map((demand: ShiftDemandDTO) =>
+          demand.id === variables.demandId
+            ? { ...demand, ...variables.demand, updatedAt: Date.now() / 1000 }
+            : demand
+        );
+
+        return {
+          ...old,
+          demands: updatedDemands,
+        };
+      });
+
+      return { previousData };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(
+          shiftDemandKeys.teams(teamId),
+          context.previousData
+        );
+      }
+      console.error("Failed to update shift demand:", err);
+    },
+    onSettled: () => {
+      invalidateQueries();
     },
   });
 
+  // Delete mutation
   const deleteMutation = useMutation({
-    mutationFn: (demandId: string) =>
-      ShiftDemandApi.deleteShiftDemand(teamId, demandId),
-    onSuccess: () => {
-      invalidateQueries();
+    mutationFn: async (demandId: string) => {
+      await ShiftDemandApi.deleteShiftDemand(teamId, demandId);
+    },
+    onSuccess: (_, deletedId) => {
+      // Remove from cache
+      queryClient.setQueryData(shiftDemandKeys.teams(teamId), (old: any) => {
+        if (!old) return old;
+
+        const filteredDemands = old.demands?.filter(
+          (demand: ShiftDemandDTO) => demand.id !== deletedId
+        );
+
+        return {
+          ...old,
+          demands: filteredDemands,
+        };
+      });
     },
     onError: (error: Error) => {
       console.error("Failed to delete shift demand:", error);
     },
+    onSettled: () => {
+      invalidateQueries();
+    },
   });
 
+  // Bulk upsert mutation (for bulk operations)
   const bulkUpsert = useMutation({
-    mutationFn: (demands: Partial<ShiftDemandDTO>[]) =>
-      ShiftDemandApi.bulkUpsertShiftDemands(teamId, demands),
+    mutationFn: async (demands: Omit<ShiftDemandCreateDTO, "teamId">[]) => {
+      return ShiftDemandApi.bulkUpsertShiftDemands(teamId, demands);
+    },
     onSuccess: () => {
       invalidateQueries();
     },

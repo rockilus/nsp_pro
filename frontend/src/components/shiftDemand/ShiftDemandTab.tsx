@@ -24,12 +24,19 @@ import {
 import { getWorkShifts } from "../../app/lib/shift";
 // Types
 import { ShiftT, ShiftType } from "../../types/shift";
-import { ShiftDemandDTO, PeriodType } from "../../types/shiftDemand";
+import {
+  ShiftDemandDTO,
+  ShiftDemandCreateDTO,
+  ShiftDemandUpdateDTO,
+  PeriodType,
+  SHIFT_DEMAND_CONSTRAINTS,
+} from "../../types/shiftDemand";
 import { usePeriodState } from "../../app/lib/hooks/usePeriodState";
 // Components
 import { ShiftDemandToolbar } from "./ShiftDemandToolbar";
 import { BulkSelectToolbar } from "./BulkSelectToolbar";
 import ShiftDemandTable from "./ShiftDemandTable";
+import ErrorFeedback from "./ErrorFeedback";
 // Styles
 import "../../styles/tab-container-styles.css";
 
@@ -65,6 +72,7 @@ function ShiftDemandTabInternal({
   const [isLoadingShifts, setIsLoadingShifts] = useState(false);
   const [shiftError, setShiftError] = useState<string | null>(null);
   const [savingCells, setSavingCells] = useState<Set<string>>(new Set());
+  const [error, setError] = useState<string | null>(null);
 
   // Calculate date range for current period based on period type
   // Bulk change state
@@ -211,15 +219,22 @@ function ShiftDemandTabInternal({
     });
   };
 
+  // Enhanced bulk operations with better error handling
   const applyBulkChange = async () => {
     if (bulkChangeState.selectedCells.length === 0) return;
+
     const value = parseInt(bulkChangeState.bulkValue) || 0;
 
+    // Validate bulk value
+    if (value > SHIFT_DEMAND_CONSTRAINTS.MAX_COUNT) {
+      setError(`Count cannot exceed ${SHIFT_DEMAND_CONSTRAINTS.MAX_COUNT}`);
+      return;
+    }
+
     try {
-      const demands: Partial<ShiftDemandDTO>[] =
+      const demands: Omit<ShiftDemandCreateDTO, "teamId">[] =
         bulkChangeState.selectedCells.map((cell) => ({
           shiftId: cell.shiftId,
-          teamId: selectedTeamId!,
           date: Math.floor(new Date(cell.date).getTime() / 1000),
           count: Math.max(0, value),
           source: "manual" as const,
@@ -227,7 +242,6 @@ function ShiftDemandTabInternal({
           notes: null,
         }));
 
-      // Save immediately
       await bulkUpsert.mutateAsync(demands);
 
       setBulkChangeState({
@@ -235,8 +249,16 @@ function ShiftDemandTabInternal({
         selectedCells: [],
         bulkValue: "",
       });
+
+      setError(null);
     } catch (error) {
       console.error("Failed to apply bulk changes:", error);
+
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("Failed to apply bulk changes. Please try again.");
+      }
     }
   };
 
@@ -244,10 +266,9 @@ function ShiftDemandTabInternal({
     if (bulkChangeState.selectedCells.length === 0) return;
 
     try {
-      const demands: Partial<ShiftDemandDTO>[] =
+      const demands: Omit<ShiftDemandCreateDTO, "teamId">[] =
         bulkChangeState.selectedCells.map((cell) => ({
           shiftId: cell.shiftId,
-          teamId: selectedTeamId!,
           date: Math.floor(new Date(cell.date).getTime() / 1000),
           count: 0,
           source: "manual" as const,
@@ -255,7 +276,6 @@ function ShiftDemandTabInternal({
           notes: null,
         }));
 
-      // Save immediately
       await bulkUpsert.mutateAsync(demands);
 
       setBulkChangeState({
@@ -263,8 +283,16 @@ function ShiftDemandTabInternal({
         selectedCells: [],
         bulkValue: "",
       });
+
+      setError(null);
     } catch (error) {
       console.error("Failed to delete bulk selection:", error);
+
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("Failed to delete bulk selection. Please try again.");
+      }
     }
   };
 
@@ -409,7 +437,7 @@ function ShiftDemandTabInternal({
     return matrix[shiftId]?.[dateStr] || 0;
   };
 
-  // Handle cell value change - auto-save on change
+  // Enhanced handleCellChange with better validation and error handling
   const handleCellChange = async (
     shiftId: string,
     date: Dayjs,
@@ -422,42 +450,62 @@ function ShiftDemandTabInternal({
     // Don't save if already saving this cell
     if (savingCells.has(cellKey)) return;
 
+    // Input validation
+    if (!selectedTeamId) {
+      console.error("No team selected");
+      return;
+    }
+
+    if (numValue > SHIFT_DEMAND_CONSTRAINTS.MAX_COUNT) {
+      // Show user-friendly error
+      setError(`Count cannot exceed ${SHIFT_DEMAND_CONSTRAINTS.MAX_COUNT}`);
+      return;
+    }
+
     // Mark cell as saving
     setSavingCells((prev) => new Set(prev).add(cellKey));
+    setError(null); // Clear any previous errors
 
     try {
-      // Find existing demand for this shift and date
-      const existingDemand = demands.find(
-        (demand) =>
-          demand.shiftId === shiftId &&
-          new Date(demand.date * 1000).toISOString().split("T")[0] === dateStr
-      );
+      const existingDemand = demandsById.get(cellKey);
+      const timestamp = Math.floor(new Date(dateStr).getTime() / 1000);
 
-      if (existingDemand && existingDemand.id) {
+      if (existingDemand) {
         // Update existing demand
+        const updateData: ShiftDemandUpdateDTO = {
+          count: numValue,
+          source: "manual" as const,
+          notes: null,
+        };
+
         await update.mutateAsync({
           demandId: existingDemand.id,
-          demand: {
-            count: numValue,
-            source: "manual" as const,
-            notes: null,
-          },
+          demand: updateData,
         });
       } else {
         // Create new demand
-        await create.mutateAsync({
+        const createData: Omit<ShiftDemandCreateDTO, "teamId"> = {
           shiftId,
-          teamId: selectedTeamId!,
-          date: Math.floor(new Date(dateStr).getTime() / 1000),
+          date: timestamp,
           count: numValue,
           source: "manual" as const,
           sourceId: null,
           notes: null,
+        };
+
+        await create.mutateAsync({
+          demand: createData,
         });
       }
     } catch (error) {
       console.error("Failed to save cell change:", error);
-      // Optionally show error feedback to user
+
+      // Show user-friendly error message
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("Failed to save changes. Please try again.");
+      }
     } finally {
       // Remove from saving set
       setSavingCells((prev) => {
@@ -605,6 +653,9 @@ function ShiftDemandTabInternal({
           savingCells={savingCells}
         />
       </Paper>
+
+      {/* Error Feedback */}
+      <ErrorFeedback error={error} onClose={() => setError(null)} />
     </div>
   );
 }

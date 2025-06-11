@@ -1,7 +1,7 @@
 """
 Service layer for shift demand management with enhanced features.
-Provides business logic for creating, reading, updating, and deleting shift demands,
-including support for period-based operations and matrix formatting.
+Provides business logic for creating, reading, updating, and deleting shift
+demands, including support for period-based operations and matrix formatting.
 """
 
 from datetime import date, datetime, timedelta, timezone
@@ -33,7 +33,8 @@ class ShiftDemandNewService(BaseService):
             team_id: Team identifier
             start_date: Start of the period
             end_date: End of the period
-            buffer_days: Additional days to fetch before/after period for navigation
+            buffer_days: Additional days to fetch before/after period for
+                navigation
 
         Returns:
             List of shift demands for the period
@@ -99,7 +100,9 @@ class ShiftDemandNewService(BaseService):
 
         return matrix
 
-    def create_shift_demand(self, shift_demand: ShiftDemandNew) -> ShiftDemandNew:
+    def create_shift_demand(
+        self, shift_demand: ShiftDemandNew
+    ) -> ShiftDemandNew:
         """
         Create a new shift demand with validation.
 
@@ -115,7 +118,9 @@ class ShiftDemandNewService(BaseService):
         # Validate shift exists
         shift = self.collection.shift_db.get_shift_by_id(shift_demand.shift_id)
         if not shift:
-            raise ValueError(f"Shift with id {shift_demand.shift_id} not found")
+            raise ValueError(
+                f"Shift with id {shift_demand.shift_id} not found"
+            )
 
         # Validate team consistency
         if shift.team_id != shift_demand.team_id:
@@ -125,9 +130,13 @@ class ShiftDemandNewService(BaseService):
         shift_demand.created_at = datetime.now(timezone.utc)
         shift_demand.updated_at = shift_demand.created_at
 
-        return self.collection.shift_demand_new_db.create_shift_demand(shift_demand)
+        return self.collection.shift_demand_new_db.create_shift_demand(
+            shift_demand
+        )
 
-    def update_shift_demand(self, shift_demand: ShiftDemandNew) -> ShiftDemandNew:
+    def update_shift_demand(
+        self, shift_demand: ShiftDemandNew
+    ) -> ShiftDemandNew:
         """
         Update an existing shift demand.
 
@@ -147,12 +156,16 @@ class ShiftDemandNewService(BaseService):
             shift_demand.id
         )
         if not existing:
-            raise ValueError(f"Shift demand with id {shift_demand.id} not found")
+            raise ValueError(
+                f"Shift demand with id {shift_demand.id} not found"
+            )
 
         # Validate shift exists
         shift = self.collection.shift_db.get_shift_by_id(shift_demand.shift_id)
         if not shift:
-            raise ValueError(f"Shift with id {shift_demand.shift_id} not found")
+            raise ValueError(
+                f"Shift with id {shift_demand.shift_id} not found"
+            )
 
         # Validate team consistency
         if shift.team_id != shift_demand.team_id:
@@ -162,7 +175,9 @@ class ShiftDemandNewService(BaseService):
         shift_demand.created_at = existing.created_at
         shift_demand.updated_at = datetime.now(timezone.utc)
 
-        return self.collection.shift_demand_new_db.update_shift_demand(shift_demand)
+        return self.collection.shift_demand_new_db.update_shift_demand(
+            shift_demand
+        )
 
     def delete_shift_demand(self, demand_id: str) -> bool:
         """
@@ -174,7 +189,9 @@ class ShiftDemandNewService(BaseService):
         Returns:
             True if deleted successfully
         """
-        return self.collection.shift_demand_new_db.delete_shift_demand(demand_id)
+        return self.collection.shift_demand_new_db.delete_shift_demand(
+            demand_id
+        )
 
     def bulk_upsert_shift_demands(
         self, shift_demands: List[ShiftDemandNew]
@@ -210,7 +227,9 @@ class ShiftDemandNewService(BaseService):
         # Validate team consistency
         for shift in shifts:
             if shift.team_id != team_id:
-                raise ValueError(f"Shift {shift.id} does not belong to team {team_id}")
+                raise ValueError(
+                    f"Shift {shift.id} does not belong to team {team_id}"
+                )
 
         # Prepare demands with timestamps
         now = datetime.now(timezone.utc)
@@ -249,12 +268,10 @@ class ShiftDemandNewService(BaseService):
             List of created shift demands
         """
         # Get source demands
-        source_demands = (
-            self.collection.shift_demand_new_db.get_shift_demands_by_date_range(
-                team_id=team_id,
-                start_date=source_start,
-                end_date=source_end,
-            )
+        source_demands = self.collection.shift_demand_new_db.get_shift_demands_by_date_range(
+            team_id=team_id,
+            start_date=source_start,
+            end_date=source_end,
         )
 
         if not source_demands:
@@ -368,7 +385,9 @@ class ShiftDemandNewService(BaseService):
         )
 
         # Filter to exact period
-        period_demands = [d for d in demands if start_date <= d.date <= end_date]
+        period_demands = [
+            d for d in demands if start_date <= d.date <= end_date
+        ]
 
         # Calculate statistics by shift
         shift_stats: Dict[str, Dict[str, int]] = {}
@@ -393,7 +412,9 @@ class ShiftDemandNewService(BaseService):
         total_days = (end_date - start_date).days + 1
         for shift_id, stats in shift_stats.items():
             if total_days > 0:
-                stats["avg_per_day"] = int(round(stats["total"] / total_days, 0))
+                stats["avg_per_day"] = int(
+                    round(stats["total"] / total_days, 0)
+                )
             else:
                 stats["avg_per_day"] = 0
 
@@ -447,11 +468,13 @@ class ShiftDemandNewService(BaseService):
         Returns:
             Number of demands deleted
         """
-        return self.collection.shift_demand_new_db.delete_demands_by_date_range(
-            team_id=team_id,
-            start_date=start_date,
-            end_date=end_date,
-            shift_ids=shift_ids,
+        return (
+            self.collection.shift_demand_new_db.delete_demands_by_date_range(
+                team_id=team_id,
+                start_date=start_date,
+                end_date=end_date,
+                shift_ids=shift_ids,
+            )
         )
 
     def get_demands_by_source(
@@ -476,4 +499,20 @@ class ShiftDemandNewService(BaseService):
             team_id=team_id,
             source=source,
             source_id=source_id,
+        )
+
+    def get_shift_demand_by_id(
+        self, demand_id: str
+    ) -> Optional[ShiftDemandNew]:
+        """
+        Get a shift demand by its ID.
+
+        Args:
+            demand_id: ID of the shift demand
+
+        Returns:
+            ShiftDemandNew instance if found, None otherwise
+        """
+        return self.collection.shift_demand_new_db.get_shift_demand_by_id(
+            demand_id
         )

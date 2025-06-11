@@ -38,7 +38,9 @@ from shared.schemas.dto.schedule import (
 )
 from shared.schemas.dto.shift import ShiftDTO
 from shared.schemas.dto.shift_demand_new import (
+    ShiftDemandNewCreateDTO,
     ShiftDemandNewDTO,
+    ShiftDemandNewUpdateDTO,
     ShiftDemandsResultDTO,
 )
 from shared.schemas.dto.specialty import SpecialtyDTO
@@ -97,7 +99,9 @@ __all__ = [
     "WorkTimeTableDataDTO",
     "WorkTimeTableDTO",
     "ShiftDTO",
+    "ShiftDemandNewCreateDTO",
     "ShiftDemandNewDTO",
+    "ShiftDemandNewUpdateDTO",
     "ShiftDemandsResultDTO",
     "SpecialtyDTO",
     "StatsDTO",

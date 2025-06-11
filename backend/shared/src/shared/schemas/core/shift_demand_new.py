@@ -1,12 +1,17 @@
 from dataclasses import asdict, dataclass, field
-from datetime import date, datetime, time, timezone
+from datetime import date as date_type
+from datetime import datetime, time, timezone
 from enum import Enum
 from typing import Optional
 
 import humps
 from pydantic import TypeAdapter
 
-from shared.schemas.dto.shift_demand_new import ShiftDemandNewDTO
+from shared.schemas.dto.shift_demand_new import (
+    ShiftDemandNewCreateDTO,
+    ShiftDemandNewDTO,
+    ShiftDemandNewUpdateDTO,
+)
 
 
 class ShiftDemandSource(str, Enum):
@@ -27,15 +32,19 @@ class ShiftDemandNew:
     shift on a specific date, enabling the solver to generate optimal schedules.
     """
 
-    date: date
+    date: date_type
     shift_id: str
     team_id: str
     count: int
     notes: Optional[str] = None
     source: ShiftDemandSource = ShiftDemandSource.MANUAL
     source_id: Optional[str] = None
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: datetime = field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
     id: Optional[str] = None
 
     def __post_init__(self):
@@ -61,9 +70,15 @@ class ShiftDemandNew:
     def from_dict(cls, data: dict) -> "ShiftDemandNew":
         """Create instance from MongoDB document."""
         # Convert datetime back to date for the date field
-        data["date"] = datetime.fromtimestamp(data["date"], tz=timezone.utc).date()
-        data["created_at"] = datetime.fromtimestamp(data["created_at"], tz=timezone.utc)
-        data["updated_at"] = datetime.fromtimestamp(data["updated_at"], tz=timezone.utc)
+        data["date"] = datetime.fromtimestamp(
+            data["date"], tz=timezone.utc
+        ).date()
+        data["created_at"] = datetime.fromtimestamp(
+            data["created_at"], tz=timezone.utc
+        )
+        data["updated_at"] = datetime.fromtimestamp(
+            data["updated_at"], tz=timezone.utc
+        )
         data["source"] = ShiftDemandSource(data["source"])
         return cls(
             date=data["date"],
@@ -111,3 +126,53 @@ class ShiftDemandNew:
         data_dict["source"] = ShiftDemandSource(data.source)
         data_dict = humps.decamelize(data_dict)
         return cls(**data_dict)
+
+    @classmethod
+    def from_create_dto(
+        cls, data: ShiftDemandNewCreateDTO
+    ) -> "ShiftDemandNew":
+        """Create instance from create DTO with server-managed fields."""
+        data_dict = data.model_dump()
+        data_dict["date"] = datetime.fromtimestamp(
+            data_dict["date"], tz=timezone.utc
+        ).date()
+        data_dict["source"] = ShiftDemandSource(data.source)
+        data_dict = humps.decamelize(data_dict)
+
+        # Server-managed fields
+        now = datetime.now(timezone.utc)
+        data_dict["created_at"] = now
+        data_dict["updated_at"] = now
+        data_dict["id"] = None  # Will be set by service layer
+
+        return cls(**data_dict)
+
+    def update_from_dto(self, data: ShiftDemandNewUpdateDTO) -> None:
+        """Update instance from update DTO with only provided fields."""
+        data_dict = data.model_dump(exclude_unset=True)
+
+        if "date" in data_dict:
+            self.date = datetime.fromtimestamp(
+                data_dict["date"], tz=timezone.utc
+            ).date()
+
+        if "shiftId" in data_dict:
+            self.shift_id = data_dict["shiftId"]
+
+        if "teamId" in data_dict:
+            self.team_id = data_dict["teamId"]
+
+        if "count" in data_dict:
+            self.count = data_dict["count"]
+
+        if "notes" in data_dict:
+            self.notes = data_dict["notes"]
+
+        if "source" in data_dict:
+            self.source = ShiftDemandSource(data_dict["source"])
+
+        if "sourceId" in data_dict:
+            self.source_id = data_dict["sourceId"]
+
+        # Always update timestamp on any change
+        self.update_timestamp()

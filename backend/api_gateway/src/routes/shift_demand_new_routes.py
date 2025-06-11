@@ -4,7 +4,12 @@ from typing import Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from shared.logger import log_info
 from shared.schemas.core import ShiftDemandNew, ShiftDemandSource
-from shared.schemas.dto import ShiftDemandNewDTO
+from shared.schemas.dto import (
+    ShiftDemandNewCreateDTO,
+    ShiftDemandNewDTO,
+    ShiftDemandNewUpdateDTO,
+    ShiftDemandsResultDTO,
+)
 
 from src.dependencies import get_shift_demand_new_service
 from src.errors import (
@@ -25,7 +30,7 @@ router = APIRouter()
 @router.post("/shift-demands-new/teams/{team_id}", status_code=201)
 async def create_shift_demand(
     team_id: str,
-    demand_dto: ShiftDemandNewDTO,
+    demand_dto: ShiftDemandNewCreateDTO,
     session: SessionContainerType = Depends(authn_verify_session()),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
 ) -> ShiftDemandNewDTO:
@@ -38,18 +43,57 @@ async def create_shift_demand(
                 "You do not have permission to create shift demands"
             )
 
-        # Convert DTO to core model
-        demand = ShiftDemandNew.from_dto(demand_dto)
-        demand.team_id = team_id  # Ensure team_id matches route
+        # Validate team ID consistency
+        if demand_dto.teamId != team_id:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "team_id_mismatch",
+                    "message": (
+                        "Team ID in path must match team ID in request body"
+                    ),
+                    "path_team_id": team_id,
+                    "body_team_id": demand_dto.teamId,
+                },
+            )
 
+        # Convert create DTO to core model with server-generated fields
+        demand = ShiftDemandNew.from_create_dto(demand_dto)
+
+        # Create through service
         created_demand = service.create_shift_demand(demand)
+
+        log_info(
+            f"Created shift demand {created_demand.id} for team {team_id}"
+        )
         return created_demand.to_dto()
 
+    except NotAuthorizedError:
+        raise
+    except HTTPException:
+        raise
+    except ValueError as e:
+        log_info(f"Validation error creating shift demand: {str(e)}")
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "validation_error",
+                "operation": "create",
+                "message": str(e),
+            },
+        ) from e
     except Exception as e:
-        log_info("Failed to create shift demand")
+        log_info(f"Internal error creating shift demand: {str(e)}")
         handle_routes_errors(e)
         raise HTTPException(
-            status_code=500, detail="Internal server error"
+            status_code=500,
+            detail={
+                "error": "internal_error",
+                "operation": "create",
+                "message": (
+                    "An internal error occurred. Please try again later."
+                ),
+            },
         ) from e
 
 
@@ -131,7 +175,7 @@ async def get_shift_demands_matrix(
 async def update_shift_demand(
     team_id: str,
     demand_id: str,
-    demand_dto: ShiftDemandNewDTO,
+    demand_dto: ShiftDemandNewUpdateDTO,
     session: SessionContainerType = Depends(authn_verify_session()),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
 ) -> ShiftDemandNewDTO:
@@ -144,19 +188,85 @@ async def update_shift_demand(
                 "You do not have permission to update shift demands"
             )
 
-        # Convert DTO to core model
-        demand = ShiftDemandNew.from_dto(demand_dto)
-        demand.id = demand_id  # Ensure ID matches route
-        demand.team_id = team_id  # Ensure team_id matches route
+        # Validate team_id consistency if provided in update
+        if demand_dto.teamId is not None and demand_dto.teamId != team_id:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "team_change_not_allowed",
+                    "message": (
+                        "Cannot change team ID through update operation"
+                    ),
+                    "current_team_id": team_id,
+                    "requested_team_id": demand_dto.teamId,
+                },
+            )
 
-        updated_demand = service.update_shift_demand(demand)
+        # Get existing demand for validation and update
+        existing_demand = service.get_shift_demand_by_id(demand_id)
+        if not existing_demand:
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": "not_found",
+                    "message": f"Shift demand with ID {demand_id} not found",
+                    "demand_id": demand_id,
+                },
+            )
+
+        # Validate team ownership
+        if existing_demand.team_id != team_id:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "error": "forbidden",
+                    "message": (
+                        "Shift demand does not belong to specified team"
+                    ),
+                    "demand_id": demand_id,
+                    "team_id": team_id,
+                },
+            )
+
+        # Apply partial update
+        existing_demand.update_from_dto(demand_dto)
+
+        # Save through service
+        updated_demand = service.update_shift_demand(existing_demand)
+
+        log_info(f"Updated shift demand {demand_id} for team {team_id}")
         return updated_demand.to_dto()
 
+    except NotAuthorizedError:
+        raise
+    except HTTPException:
+        raise
+    except ValueError as e:
+        log_info(
+            f"Validation error updating shift demand {demand_id}: {str(e)}"
+        )
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "validation_error",
+                "operation": "update",
+                "message": str(e),
+                "demand_id": demand_id,
+            },
+        ) from e
     except Exception as e:
-        log_info("Failed to update shift demand")
+        log_info(f"Internal error updating shift demand {demand_id}: {str(e)}")
         handle_routes_errors(e)
         raise HTTPException(
-            status_code=500, detail="Internal server error"
+            status_code=500,
+            detail={
+                "error": "internal_error",
+                "operation": "update",
+                "message": (
+                    "An internal error occurred. Please try again later."
+                ),
+                "demand_id": demand_id,
+            },
         ) from e
 
 
@@ -195,10 +305,10 @@ async def delete_shift_demand(
 @router.post("/shift-demands-new/teams/{team_id}/bulk-upsert")
 async def bulk_upsert_shift_demands(
     team_id: str,
-    demands_dto: List[ShiftDemandNewDTO],
+    demands_dto: List[ShiftDemandNewCreateDTO],
     session: SessionContainerType = Depends(authn_verify_session()),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
-) -> Dict[str, List[ShiftDemandNewDTO]]:
+) -> ShiftDemandsResultDTO:
     """Bulk upsert (create or update) shift demands."""
     try:
         if not await authz_check(
@@ -208,25 +318,71 @@ async def bulk_upsert_shift_demands(
                 "You do not have permission to create/update shift demands"
             )
 
-        # Convert DTOs to core models
-        demands = []
-        for demand_dto in demands_dto:
-            demand = ShiftDemandNew.from_dto(demand_dto)
-            demand.team_id = team_id  # Ensure team_id matches route
-            demands.append(demand)
+        # Validate all demands belong to the correct team
+        for i, demand_dto in enumerate(demands_dto):
+            if demand_dto.teamId != team_id:
+                raise HTTPException(
+                    status_code=400,
+                    detail={
+                        "error": "bulk_team_id_mismatch",
+                        "message": (
+                            f"Demand at index {i}: team ID must match "
+                            "route parameter"
+                        ),
+                        "index": i,
+                        "path_team_id": team_id,
+                        "body_team_id": demand_dto.teamId,
+                    },
+                )
 
+        # Convert DTOs to domain models
+        demands = [
+            ShiftDemandNew.from_create_dto(demand_dto)
+            for demand_dto in demands_dto
+        ]
+
+        # Process bulk upsert through service
         created, updated = service.bulk_upsert_shift_demands(demands)
 
-        return {
-            "created": [demand.to_dto() for demand in created],
-            "updated": [demand.to_dto() for demand in updated],
-        }
+        log_info(
+            f"Bulk upsert completed for team {team_id}: "
+            f"{len(created)} created, {len(updated)} updated"
+        )
 
+        # Convert result to response DTO
+        return ShiftDemandsResultDTO(
+            demandsCreated=[demand.to_dto() for demand in created],
+            demandsRead=[],  # Not used in upsert
+            demandsUpdated=[demand.to_dto() for demand in updated],
+            demandsDeletedIds=[],  # Not used in upsert
+        )
+
+    except NotAuthorizedError:
+        raise
+    except HTTPException:
+        raise
+    except ValueError as e:
+        log_info(f"Validation error in bulk upsert: {str(e)}")
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "validation_error",
+                "operation": "bulk_upsert",
+                "message": str(e),
+            },
+        ) from e
     except Exception as e:
-        log_info("Failed to bulk upsert shift demands")
+        log_info(f"Internal error in bulk upsert: {str(e)}")
         handle_routes_errors(e)
         raise HTTPException(
-            status_code=500, detail="Internal server error"
+            status_code=500,
+            detail={
+                "error": "internal_error",
+                "operation": "bulk_upsert",
+                "message": (
+                    "An internal error occurred. Please try again later."
+                ),
+            },
         ) from e
 
 
