@@ -129,8 +129,16 @@ export const useShiftDemands = (
     options
   );
 
+  const demands = demandsQuery.data || [];
+  const demandsById = new Map(
+    demands
+      .filter((demand) => demand.id !== null)
+      .map((demand) => [demand.id!, demand])
+  );
+
   return {
-    demands: demandsQuery.data || [],
+    demands,
+    demandsById,
     matrix: matrixQuery.data || {},
     isLoading: demandsQuery.isLoading || matrixQuery.isLoading,
     error: demandsQuery.error || matrixQuery.error,
@@ -153,6 +161,45 @@ export const useShiftDemandMutations = (
     queryClient.invalidateQueries({ queryKey: shiftDemandKeys.teams(teamId) });
   };
 
+  const create = useMutation({
+    mutationFn: (
+      demand: Omit<ShiftDemandDTO, "id" | "createdAt" | "updatedAt">
+    ) => ShiftDemandApi.createShiftDemand(teamId, demand),
+    onSuccess: () => {
+      invalidateQueries();
+    },
+    onError: (error: Error) => {
+      console.error("Failed to create shift demand:", error);
+    },
+  });
+
+  const update = useMutation({
+    mutationFn: ({
+      demandId,
+      demand,
+    }: {
+      demandId: string;
+      demand: Partial<ShiftDemandDTO>;
+    }) => ShiftDemandApi.updateShiftDemand(teamId, demandId, demand),
+    onSuccess: () => {
+      invalidateQueries();
+    },
+    onError: (error: Error) => {
+      console.error("Failed to update shift demand:", error);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (demandId: string) =>
+      ShiftDemandApi.deleteShiftDemand(teamId, demandId),
+    onSuccess: () => {
+      invalidateQueries();
+    },
+    onError: (error: Error) => {
+      console.error("Failed to delete shift demand:", error);
+    },
+  });
+
   const bulkUpsert = useMutation({
     mutationFn: (demands: Partial<ShiftDemandDTO>[]) =>
       ShiftDemandApi.bulkUpsertShiftDemands(teamId, demands),
@@ -165,8 +212,27 @@ export const useShiftDemandMutations = (
   });
 
   return {
+    create: {
+      mutate: create.mutate,
+      mutateAsync: create.mutateAsync,
+      isLoading: create.isPending,
+      error: create.error,
+    },
+    update: {
+      mutate: update.mutate,
+      mutateAsync: update.mutateAsync,
+      isLoading: update.isPending,
+      error: update.error,
+    },
+    delete: {
+      mutate: deleteMutation.mutate,
+      mutateAsync: deleteMutation.mutateAsync,
+      isLoading: deleteMutation.isPending,
+      error: deleteMutation.error,
+    },
     bulkUpsert: {
       mutate: bulkUpsert.mutate,
+      mutateAsync: bulkUpsert.mutateAsync,
       isLoading: bulkUpsert.isPending,
       error: bulkUpsert.error,
     },

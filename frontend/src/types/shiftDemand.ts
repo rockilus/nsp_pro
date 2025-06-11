@@ -65,6 +65,7 @@ export interface APIError {
  */
 export interface UseShiftDemandsResult {
   demands: ShiftDemandDTO[];
+  demandsById: Map<string, ShiftDemandDTO>;
   matrix: ShiftDemandMatrix;
   isLoading: boolean;
   error: Error | null;
@@ -75,8 +76,39 @@ export interface UseShiftDemandsResult {
  * Hook return type for mutations
  */
 export interface UseShiftDemandMutationsResult {
+  create: {
+    mutate: (
+      demand: Omit<ShiftDemandDTO, "id" | "createdAt" | "updatedAt">
+    ) => void;
+    mutateAsync: (
+      demand: Omit<ShiftDemandDTO, "id" | "createdAt" | "updatedAt">
+    ) => Promise<ShiftDemandDTO>;
+    isLoading: boolean;
+    error: Error | null;
+  };
+  update: {
+    mutate: (params: {
+      demandId: string;
+      demand: Partial<ShiftDemandDTO>;
+    }) => void;
+    mutateAsync: (params: {
+      demandId: string;
+      demand: Partial<ShiftDemandDTO>;
+    }) => Promise<ShiftDemandDTO>;
+    isLoading: boolean;
+    error: Error | null;
+  };
+  delete: {
+    mutate: (demandId: string) => void;
+    mutateAsync: (demandId: string) => Promise<void>;
+    isLoading: boolean;
+    error: Error | null;
+  };
   bulkUpsert: {
     mutate: (demands: Partial<ShiftDemandDTO>[]) => void;
+    mutateAsync: (
+      demands: Partial<ShiftDemandDTO>[]
+    ) => Promise<BulkUpsertResponse>;
     isLoading: boolean;
     error: Error | null;
   };

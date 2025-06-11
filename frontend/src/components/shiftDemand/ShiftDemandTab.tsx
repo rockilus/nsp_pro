@@ -48,12 +48,6 @@ interface BulkChangeState {
   bulkValue: string;
 }
 
-interface CellEdit {
-  shiftId: string;
-  date: string;
-  value: number;
-}
-
 // Internal component that uses React Query hooks
 function ShiftDemandTabInternal({
   lng,
@@ -70,7 +64,7 @@ function ShiftDemandTabInternal({
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [isLoadingShifts, setIsLoadingShifts] = useState(false);
   const [shiftError, setShiftError] = useState<string | null>(null);
-  const [pendingEdits, setPendingEdits] = useState<CellEdit[]>([]);
+  const [savingCells, setSavingCells] = useState<Set<string>>(new Set());
 
   // Calculate date range for current period based on period type
   // Bulk change state
@@ -217,70 +211,61 @@ function ShiftDemandTabInternal({
     });
   };
 
-  const applyBulkChange = () => {
+  const applyBulkChange = async () => {
     if (bulkChangeState.selectedCells.length === 0) return;
     const value = parseInt(bulkChangeState.bulkValue) || 0;
-    console.log("Applying bulk change:", {
-      selectedCells: bulkChangeState.selectedCells,
-      value,
-    });
-    const newEdits: CellEdit[] = bulkChangeState.selectedCells.map((cell) => ({
-      shiftId: cell.shiftId,
-      date: cell.date,
-      value: Math.max(0, value),
-    }));
-    setPendingEdits((prev) => {
-      const updatedEdits = [...prev];
-      newEdits.forEach((newEdit) => {
-        const existingIndex = updatedEdits.findIndex(
-          (edit) =>
-            edit.shiftId === newEdit.shiftId && edit.date === newEdit.date
-        );
-        if (existingIndex >= 0) {
-          updatedEdits[existingIndex] = newEdit;
-        } else {
-          updatedEdits.push(newEdit);
-        }
+
+    try {
+      const demands: Partial<ShiftDemandDTO>[] =
+        bulkChangeState.selectedCells.map((cell) => ({
+          shiftId: cell.shiftId,
+          teamId: selectedTeamId!,
+          date: Math.floor(new Date(cell.date).getTime() / 1000),
+          count: Math.max(0, value),
+          source: "manual" as const,
+          sourceId: null,
+          notes: null,
+        }));
+
+      // Save immediately
+      await bulkUpsert.mutateAsync(demands);
+
+      setBulkChangeState({
+        isActive: false,
+        selectedCells: [],
+        bulkValue: "",
       });
-      return updatedEdits;
-    });
-    setBulkChangeState({
-      isActive: false,
-      selectedCells: [],
-      bulkValue: "",
-    });
+    } catch (error) {
+      console.error("Failed to apply bulk changes:", error);
+    }
   };
 
-  const deleteBulkSelection = () => {
+  const deleteBulkSelection = async () => {
     if (bulkChangeState.selectedCells.length === 0) return;
-    console.log("Deleting bulk selection:", bulkChangeState.selectedCells);
-    const deleteEdits: CellEdit[] = bulkChangeState.selectedCells.map(
-      (cell) => ({
-        shiftId: cell.shiftId,
-        date: cell.date,
-        value: 0,
-      })
-    );
-    setPendingEdits((prev) => {
-      const updatedEdits = [...prev];
-      deleteEdits.forEach((deleteEdit) => {
-        const existingIndex = updatedEdits.findIndex(
-          (edit) =>
-            edit.shiftId === deleteEdit.shiftId && edit.date === deleteEdit.date
-        );
-        if (existingIndex >= 0) {
-          updatedEdits[existingIndex] = deleteEdit;
-        } else {
-          updatedEdits.push(deleteEdit);
-        }
+
+    try {
+      const demands: Partial<ShiftDemandDTO>[] =
+        bulkChangeState.selectedCells.map((cell) => ({
+          shiftId: cell.shiftId,
+          teamId: selectedTeamId!,
+          date: Math.floor(new Date(cell.date).getTime() / 1000),
+          count: 0,
+          source: "manual" as const,
+          sourceId: null,
+          notes: null,
+        }));
+
+      // Save immediately
+      await bulkUpsert.mutateAsync(demands);
+
+      setBulkChangeState({
+        isActive: false,
+        selectedCells: [],
+        bulkValue: "",
       });
-      return updatedEdits;
-    });
-    setBulkChangeState({
-      isActive: false,
-      selectedCells: [],
-      bulkValue: "",
-    });
+    } catch (error) {
+      console.error("Failed to delete bulk selection:", error);
+    }
   };
 
   const isRowSelected = (shiftId: string): boolean => {
@@ -354,6 +339,7 @@ function ShiftDemandTabInternal({
   // Fetch shift demands using the React Query hook
   const {
     demands,
+    demandsById,
     matrix,
     isLoading: isLoadingDemands,
     error: demandsError,
@@ -368,7 +354,9 @@ function ShiftDemandTabInternal({
   );
 
   // Shift demand mutations
-  const { bulkUpsert } = useShiftDemandMutations(selectedTeamId || "");
+  const { create, update, bulkUpsert } = useShiftDemandMutations(
+    selectedTeamId || ""
+  );
 
   // Load shifts when team changes
   React.useEffect(() => {
@@ -408,75 +396,76 @@ function ShiftDemandTabInternal({
       start.valueOf() + (end.valueOf() - start.valueOf()) / 2
     );
     setCurrentDate(centerDate);
-    setPendingEdits([]); // Clear pending edits when navigating
   };
 
   const handlePeriodTypeChange = (newType: PeriodType) => {
     setPeriodType(newType);
-    setPendingEdits([]); // Clear pending edits when changing period type
   };
 
   // Get demand value for a specific shift and date
   const getDemandValue = (shiftId: string, date: Dayjs): number => {
     const dateStr = date.format("YYYY-MM-DD");
-    // Check pending edits first
-    const pendingEdit = pendingEdits.find(
-      (edit) => edit.shiftId === shiftId && edit.date === dateStr
-    );
-    if (pendingEdit) {
-      return pendingEdit.value;
-    }
-    // Check matrix data
+    // Only use matrix data since changes are saved immediately
     return matrix[shiftId]?.[dateStr] || 0;
   };
 
-  // Handle cell value change
-  const handleCellChange = (shiftId: string, date: Dayjs, value: string) => {
+  // Handle cell value change - auto-save on change
+  const handleCellChange = async (
+    shiftId: string,
+    date: Dayjs,
+    value: string
+  ) => {
     const dateStr = date.format("YYYY-MM-DD");
     const numValue = Math.max(0, parseInt(value) || 0);
-    setPendingEdits((prev) => {
-      const existingIndex = prev.findIndex(
-        (edit) => edit.shiftId === shiftId && edit.date === dateStr
+    const cellKey = `${shiftId}-${dateStr}`;
+
+    // Don't save if already saving this cell
+    if (savingCells.has(cellKey)) return;
+
+    // Mark cell as saving
+    setSavingCells((prev) => new Set(prev).add(cellKey));
+
+    try {
+      // Find existing demand for this shift and date
+      const existingDemand = demands.find(
+        (demand) =>
+          demand.shiftId === shiftId &&
+          new Date(demand.date * 1000).toISOString().split("T")[0] === dateStr
       );
-      if (existingIndex >= 0) {
-        // Update existing edit
-        const newEdits = [...prev];
-        newEdits[existingIndex] = { shiftId, date: dateStr, value: numValue };
-        return newEdits;
+
+      if (existingDemand && existingDemand.id) {
+        // Update existing demand
+        await update.mutateAsync({
+          demandId: existingDemand.id,
+          demand: {
+            count: numValue,
+            source: "manual" as const,
+            notes: null,
+          },
+        });
       } else {
-        // Add new edit
-        return [...prev, { shiftId, date: dateStr, value: numValue }];
+        // Create new demand
+        await create.mutateAsync({
+          shiftId,
+          teamId: selectedTeamId!,
+          date: Math.floor(new Date(dateStr).getTime() / 1000),
+          count: numValue,
+          source: "manual" as const,
+          sourceId: null,
+          notes: null,
+        });
       }
-    });
-  };
-
-  // Save pending changes
-  const savePendingChanges = async () => {
-    if (!selectedTeamId || pendingEdits.length === 0) return;
-
-    console.log("ShiftDemandTab: Saving pending changes", pendingEdits.length);
-
-    const demands: Partial<ShiftDemandDTO>[] = pendingEdits.map((edit) => ({
-      shiftId: edit.shiftId,
-      teamId: selectedTeamId,
-      date: Math.floor(new Date(edit.date).getTime() / 1000),
-      count: edit.value,
-      source: "manual" as const,
-      notes: null,
-    }));
-
-    console.log("ShiftDemandTab: Demands to save", demands);
-
-    // Use mutate instead of mutateAsync - the mutation handles success/error internally
-    bulkUpsert.mutate(demands);
-
-    // Clear pending edits immediately - if mutation fails, user can retry
-    setPendingEdits([]);
-  };
-
-  // Cancel pending changes
-  const cancelPendingChanges = () => {
-    setPendingEdits([]);
+    } catch (error) {
+      console.error("Failed to save cell change:", error);
+      // Optionally show error feedback to user
+    } finally {
+      // Remove from saving set
+      setSavingCells((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(cellKey);
+        return newSet;
+      });
+    }
   };
 
   // Wait for hydration of period state before rendering (prevents SSR mismatch)
@@ -552,7 +541,12 @@ function ShiftDemandTabInternal({
         onPeriodChange={handlePeriodChange}
         periodType={periodType}
         onPeriodTypeChange={handlePeriodTypeChange}
-        isLoading={isLoadingDemands || bulkUpsert.isLoading}
+        isLoading={
+          isLoadingDemands ||
+          create.isLoading ||
+          update.isLoading ||
+          bulkUpsert.isLoading
+        }
         bulkModeActive={bulkChangeState.isActive}
         onToggleBulkMode={toggleBulkMode}
         selectedCellsCount={bulkChangeState.selectedCells.length}
@@ -576,45 +570,17 @@ function ShiftDemandTabInternal({
       )}
 
       <Paper elevation={1} sx={{ p: 3, mb: 2 }}>
-        {/* Save/cancel actions for pending edits */}
-        {pendingEdits.length > 0 && !bulkChangeState.isActive && (
-          <Box display="flex" justifyContent="flex-end" gap={1} mb={2}>
-            <Button
-              variant="outlined"
-              onClick={cancelPendingChanges}
-              size="small"
-            >
-              {t("cancel")}
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<SaveIcon />}
-              onClick={savePendingChanges}
-              disabled={bulkUpsert.isLoading}
-              size="small"
-            >
-              {t("save_changes")} ({pendingEdits.length})
-            </Button>
-          </Box>
-        )}
-
-        {/* Pending changes indicator */}
-        {pendingEdits.length > 0 && (
-          <Alert severity="info" sx={{ mb: 2 }}>
-            {t("pending_changes_message", { count: pendingEdits.length })}
-          </Alert>
-        )}
-
         {/* Save operation error */}
-        {bulkUpsert.error && (
+        {(bulkUpsert.error || create.error || update.error) && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {t("save_error_message")}:{" "}
-            {bulkUpsert.error.message || "Unknown error"}
+            {(bulkUpsert.error || create.error || update.error)?.message ||
+              "Unknown error"}
           </Alert>
         )}
 
         {/* Loading indicator during save */}
-        {bulkUpsert.isLoading && (
+        {(bulkUpsert.isLoading || create.isLoading || update.isLoading) && (
           <Alert severity="info" sx={{ mb: 2 }}>
             Saving changes...
           </Alert>
@@ -626,7 +592,6 @@ function ShiftDemandTabInternal({
           shifts={shifts}
           dates={dates}
           bulkChangeState={bulkChangeState}
-          pendingEdits={pendingEdits}
           getDemandValue={getDemandValue}
           handleCellChange={handleCellChange}
           isCellSelected={isCellSelected}
@@ -637,6 +602,7 @@ function ShiftDemandTabInternal({
           isRowSelected={isRowSelected}
           isColumnSelected={isColumnSelected}
           isAllSelected={isAllSelected}
+          savingCells={savingCells}
         />
       </Paper>
     </div>

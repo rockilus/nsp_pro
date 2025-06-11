@@ -17,12 +17,6 @@ import { useTranslation } from "../../app/i18n/client";
 import { ShiftT } from "../../types/shift";
 
 // Types
-interface CellEdit {
-  shiftId: string;
-  date: string;
-  value: number;
-}
-
 interface SelectedCell {
   shiftId: string;
   date: string;
@@ -39,9 +33,12 @@ interface ShiftDemandTableProps {
   shifts: ShiftT[];
   dates: Dayjs[];
   bulkChangeState: BulkChangeState;
-  pendingEdits: CellEdit[];
   getDemandValue: (shiftId: string, date: Dayjs) => number;
-  handleCellChange: (shiftId: string, date: Dayjs, value: string) => void;
+  handleCellChange: (
+    shiftId: string,
+    date: Dayjs,
+    value: string
+  ) => Promise<void>;
   isCellSelected: (shiftId: string, date: Dayjs) => boolean;
   toggleCellSelection: (shiftId: string, date: Dayjs) => void;
   selectAllRowCells: (shiftId: string) => void;
@@ -50,6 +47,7 @@ interface ShiftDemandTableProps {
   isRowSelected: (shiftId: string) => boolean;
   isColumnSelected: (date: Dayjs) => boolean;
   isAllSelected: () => boolean;
+  savingCells: Set<string>;
 }
 
 // Individual cell component
@@ -60,8 +58,8 @@ interface ShiftDemandCellProps {
   isWeekend: boolean;
   isSelected: boolean;
   isBulkMode: boolean;
-  hasPendingEdit: boolean;
-  onCellChange: (shiftId: string, date: Dayjs, value: string) => void;
+  isSaving: boolean;
+  onCellChange: (shiftId: string, date: Dayjs, value: string) => Promise<void>;
   onToggleSelection: (shiftId: string, date: Dayjs) => void;
 }
 
@@ -72,7 +70,7 @@ function ShiftDemandCell({
   isWeekend,
   isSelected,
   isBulkMode,
-  hasPendingEdit,
+  isSaving,
   onCellChange,
   onToggleSelection,
 }: ShiftDemandCellProps) {
@@ -109,6 +107,7 @@ function ShiftDemandCell({
           type="number"
           value={value}
           onChange={(e) => onCellChange(shiftId, date, e.target.value)}
+          disabled={isSaving}
           inputProps={{
             min: 0,
             style: {
@@ -121,9 +120,10 @@ function ShiftDemandCell({
             "& .MuiOutlinedInput-root": {
               "& fieldset": {
                 border: "1px solid",
-                borderColor: hasPendingEdit ? "primary.main" : "grey.300",
+                borderColor: isSaving ? "warning.main" : "grey.300",
               },
             },
+            opacity: isSaving ? 0.7 : 1,
           }}
         />
       )}
@@ -176,26 +176,30 @@ interface ShiftDemandRowProps {
   shift: ShiftT;
   dates: Dayjs[];
   bulkChangeState: BulkChangeState;
-  pendingEdits: CellEdit[];
   getDemandValue: (shiftId: string, date: Dayjs) => number;
-  handleCellChange: (shiftId: string, date: Dayjs, value: string) => void;
+  handleCellChange: (
+    shiftId: string,
+    date: Dayjs,
+    value: string
+  ) => Promise<void>;
   isCellSelected: (shiftId: string, date: Dayjs) => boolean;
   toggleCellSelection: (shiftId: string, date: Dayjs) => void;
   selectAllRowCells: (shiftId: string) => void;
   isRowSelected: (shiftId: string) => boolean;
+  savingCells: Set<string>;
 }
 
 function ShiftDemandRow({
   shift,
   dates,
   bulkChangeState,
-  pendingEdits,
   getDemandValue,
   handleCellChange,
   isCellSelected,
   toggleCellSelection,
   selectAllRowCells,
   isRowSelected,
+  savingCells,
 }: ShiftDemandRowProps) {
   const shiftTotal = dates.reduce(
     (sum, date) => sum + getDemandValue(shift.id, date),
@@ -214,10 +218,8 @@ function ShiftDemandRow({
         const value = getDemandValue(shift.id, date);
         const isWeekend = date.day() === 0 || date.day() === 6;
         const isSelected = isCellSelected(shift.id, date);
-        const hasPendingEdit = pendingEdits.some(
-          (edit) =>
-            edit.shiftId === shift.id && edit.date === date.format("YYYY-MM-DD")
-        );
+        const cellKey = `${shift.id}-${date.format("YYYY-MM-DD")}`;
+        const isSaving = savingCells.has(cellKey);
 
         return (
           <ShiftDemandCell
@@ -228,7 +230,7 @@ function ShiftDemandRow({
             isWeekend={isWeekend}
             isSelected={isSelected}
             isBulkMode={bulkChangeState.isActive}
-            hasPendingEdit={hasPendingEdit}
+            isSaving={isSaving}
             onCellChange={handleCellChange}
             onToggleSelection={toggleCellSelection}
           />
@@ -323,13 +325,17 @@ interface ShiftDemandTableBodyProps {
   shifts: ShiftT[];
   dates: Dayjs[];
   bulkChangeState: BulkChangeState;
-  pendingEdits: CellEdit[];
   getDemandValue: (shiftId: string, date: Dayjs) => number;
-  handleCellChange: (shiftId: string, date: Dayjs, value: string) => void;
+  handleCellChange: (
+    shiftId: string,
+    date: Dayjs,
+    value: string
+  ) => Promise<void>;
   isCellSelected: (shiftId: string, date: Dayjs) => boolean;
   toggleCellSelection: (shiftId: string, date: Dayjs) => void;
   selectAllRowCells: (shiftId: string) => void;
   isRowSelected: (shiftId: string) => boolean;
+  savingCells: Set<string>;
 }
 
 function ShiftDemandTableBody({
@@ -337,13 +343,13 @@ function ShiftDemandTableBody({
   shifts,
   dates,
   bulkChangeState,
-  pendingEdits,
   getDemandValue,
   handleCellChange,
   isCellSelected,
   toggleCellSelection,
   selectAllRowCells,
   isRowSelected,
+  savingCells,
 }: ShiftDemandTableBodyProps) {
   return (
     <TableBody>
@@ -353,13 +359,13 @@ function ShiftDemandTableBody({
           shift={shift}
           dates={dates}
           bulkChangeState={bulkChangeState}
-          pendingEdits={pendingEdits}
           getDemandValue={getDemandValue}
           handleCellChange={handleCellChange}
           isCellSelected={isCellSelected}
           toggleCellSelection={toggleCellSelection}
           selectAllRowCells={selectAllRowCells}
           isRowSelected={isRowSelected}
+          savingCells={savingCells}
         />
       ))}
     </TableBody>
@@ -372,7 +378,6 @@ export default function ShiftDemandTable({
   shifts,
   dates,
   bulkChangeState,
-  pendingEdits,
   getDemandValue,
   handleCellChange,
   isCellSelected,
@@ -383,6 +388,7 @@ export default function ShiftDemandTable({
   isRowSelected,
   isColumnSelected,
   isAllSelected,
+  savingCells,
 }: ShiftDemandTableProps) {
   return (
     <TableContainer>
@@ -401,13 +407,13 @@ export default function ShiftDemandTable({
           shifts={shifts}
           dates={dates}
           bulkChangeState={bulkChangeState}
-          pendingEdits={pendingEdits}
           getDemandValue={getDemandValue}
           handleCellChange={handleCellChange}
           isCellSelected={isCellSelected}
           toggleCellSelection={toggleCellSelection}
           selectAllRowCells={selectAllRowCells}
           isRowSelected={isRowSelected}
+          savingCells={savingCells}
         />
       </Table>
     </TableContainer>
