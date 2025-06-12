@@ -116,6 +116,12 @@ from shared.schemas.core.shift_demand_new import (
     ShiftDemandNew,
     ShiftDemandSource,
 )
+from shared.schemas.core.shift_demand_template import (
+    ShiftDemandTemplate,
+    TemplateType,
+    TemplateWeekData,
+    create_template_from_demands,
+)
 from shared.schemas.core.specialty import Specialty
 from shared.schemas.core.stats import (
     HeaderUnitOptions,
@@ -200,6 +206,10 @@ __all__ = [
     "ShiftDemandExclusion",
     "ShiftDemandNew",
     "ShiftDemandSource",
+    "ShiftDemandTemplate",
+    "TemplateType",
+    "TemplateWeekData",
+    "create_template_from_demands",
     "Dimension",
     "DimensionAndDimEntries",
     "DimensionEntryType",

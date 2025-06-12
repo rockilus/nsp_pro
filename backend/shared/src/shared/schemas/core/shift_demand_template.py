@@ -148,6 +148,9 @@ class ShiftDemandTemplate:
         data["template_type"] = self.template_type.value
         data["created_at"] = self.created_at.timestamp()
         data["updated_at"] = self.updated_at.timestamp()
+        # Handle None id case
+        if data["id"] is None:
+            data["id"] = ""
         as_dict = humps.camelize(data)
         validator = TypeAdapter(ShiftDemandTemplateDTO)
         return validator.validate_python(as_dict)
