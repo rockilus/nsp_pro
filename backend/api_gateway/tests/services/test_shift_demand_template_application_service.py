@@ -12,10 +12,10 @@ from src.services.shift_demand_template_application_service import (
     ShiftDemandTemplateApplicationService,
 )
 from tests.fixtures.template_test_data import (
-    TemplateTestFixtures,
     MockServiceFactory,
-    TestDateRanges,
     SecurityTestData,
+    TemplateTestFixtures,
+    TestDateRanges,
 )
 
 
@@ -64,9 +64,7 @@ class TestShiftDemandTemplateApplicationService:
         )
 
         # Verify template service was called correctly
-        mock_template_service.get_template_by_id.assert_called_once_with(
-            template.id
-        )
+        mock_template_service.get_template_by_id.assert_called_once_with(template.id)
 
         # Verify result structure
         created_demands, replaced_count = result
@@ -84,7 +82,7 @@ class TestShiftDemandTemplateApplicationService:
         self,
         application_service,
         mock_template_service,
-        mock_demand_service,
+        mock_demand_service,  # pylint: disable=unused-argument
     ):
         """Test applying an even/odd template to a two-week period."""
         # Setup test data
@@ -103,9 +101,7 @@ class TestShiftDemandTemplateApplicationService:
         )
 
         # Verify template service was called
-        mock_template_service.get_template_by_id.assert_called_once_with(
-            template.id
-        )
+        mock_template_service.get_template_by_id.assert_called_once_with(template.id)
 
         # Verify result structure
         created_demands, replaced_count = result
@@ -183,8 +179,9 @@ class TestShiftDemandTemplateApplicationService:
             target_end=target_end,
         )
 
-        # Should be compatible (validation logic doesn't check template week count currently)
-        # The validation mainly checks for template existence and team ownership
+        # Should be compatible (validation logic doesn't check template
+        # week count currently). The validation mainly checks for template
+        # existence and team ownership
         assert "valid_shifts" in result
         assert "invalid_shifts" in result
         assert "warnings" in result
@@ -270,6 +267,7 @@ class TestShiftDemandTemplateApplicationService:
         # Verify replacement was performed
         created_demands, replaced_count = result
         assert replaced_count == 5
+        assert isinstance(created_demands, list)  # Use created_demands
 
         # Verify delete was called
         mock_demand_service.delete_demands_by_date_range.assert_called_once()
@@ -279,7 +277,7 @@ class TestShiftDemandTemplateApplicationService:
         self,
         application_service,
         mock_template_service,
-        mock_demand_service,
+        mock_demand_service,  # pylint: disable=unused-argument
     ):
         """Test applying a multi-week template to a longer period."""
         # Setup test data
@@ -301,10 +299,11 @@ class TestShiftDemandTemplateApplicationService:
         created_demands, replaced_count = result
         assert isinstance(created_demands, list)
         assert len(created_demands) > 0
+        assert replaced_count == 0  # Use replaced_count
 
     # Business Logic Unit Tests
-    # Note: Testing private methods is not recommended as they are implementation details
-    # These tests focus on the public API behavior
+    # Note: Testing private methods is not recommended as they are
+    # implementation details. These tests focus on the public API behavior
 
     @pytest.mark.asyncio
     async def test_business_logic_validation(

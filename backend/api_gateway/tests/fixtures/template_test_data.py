@@ -4,13 +4,10 @@ Following NSP Pro security and production best practices.
 """
 
 from datetime import date, datetime, timezone
-from typing import Dict, List
-import pytest
 from unittest.mock import AsyncMock, MagicMock
 
+import pytest
 from shared.schemas.core import (
-    ShiftDemandNew,
-    ShiftDemandSource,
     ShiftDemandTemplate,
     TemplateType,
     TemplateWeekData,
@@ -147,9 +144,7 @@ class TemplateTestFixtures:
         """Create template for security testing - different team ownership."""
         template = TemplateTestFixtures.create_standard_template()
         template.id = "test_template_other_team"
-        template.team_id = (
-            "different_team_456"  # Different team for security tests
-        )
+        template.team_id = "different_team_456"  # Different team for security tests
         template.name = "Other Team Template"
         return template
 
@@ -197,7 +192,7 @@ class MockServiceFactory:
         return service
 
 
-class TestDateRanges:
+class TestDateRanges:  # pylint: disable=too-few-public-methods
     """Standard date ranges for consistent testing."""
 
     # Single week periods
@@ -218,7 +213,7 @@ class TestDateRanges:
     INVALID_RANGE = (date(2024, 1, 7), date(2024, 1, 1))  # End before start
 
 
-class SecurityTestData:
+class SecurityTestData:  # pylint: disable=too-few-public-methods
     """Data for security-focused testing."""
 
     VALID_TEAM_ID = "test_team_secure_123"
