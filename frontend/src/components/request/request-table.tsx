@@ -15,7 +15,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import UndoIcon from "@mui/icons-material/Undo";
 // Components
 import RequestPanel from "./request-panel";
-import TableColumnHeader from "../table/TableColumnHeader";
+import ColumnSortFilterMenu from "../table/ColumnSortFilterMenu";
 import TableFilterBar from "../table/TableFilterBar";
 // Hooks
 import { useTableState } from "../../hooks/useTableState";
@@ -486,20 +486,27 @@ export default function RequestTable({
           <TableHead>
             <TableRow className="bg-gray-50">
               {columns.map((column) => (
-                <TableColumnHeader
+                <TableCell
                   key={column.id}
-                  column={column}
-                  currentSort={
-                    tableState.sort?.columnId === column.id
-                      ? tableState.sort
-                      : undefined
-                  }
-                  currentFilter={tableState.filters.find(
-                    (f) => f.id === column.id
-                  )}
-                  onSort={updateSort}
-                  onFilter={addFilter}
-                />
+                  className="font-medium text-gray-700"
+                >
+                  <div className="flex items-center justify-between">
+                    <span>{column.label}</span>
+                    <ColumnSortFilterMenu
+                      column={column}
+                      currentSort={
+                        tableState.sort?.columnId === column.id
+                          ? tableState.sort
+                          : undefined
+                      }
+                      currentFilter={tableState.filters.find(
+                        (f) => f.id === column.id
+                      )}
+                      onSort={updateSort}
+                      onFilter={addFilter}
+                    />
+                  </div>
+                </TableCell>
               ))}
               <TableCell className="font-medium text-gray-700 w-32">
                 Actions

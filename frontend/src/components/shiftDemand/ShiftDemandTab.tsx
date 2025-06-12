@@ -32,9 +32,13 @@ import {
 import { usePeriodState } from "../../app/lib/hooks/usePeriodState";
 // Components
 import { ShiftDemandToolbar } from "./ShiftDemandToolbar";
-import { BulkSelectToolbar } from "./BulkSelectToolbar";
+import { ShiftDemandFilterToolbar } from "./ShiftDemandFilterToolbar";
 import ShiftDemandTable from "./ShiftDemandTable";
 import ErrorFeedback from "./ErrorFeedback";
+// Hooks
+import { useTableState } from "../../hooks/useTableState";
+// Utils
+import { createShiftColumns } from "./shiftColumns";
 // Styles
 import "../../styles/tab-container-styles.css";
 
@@ -43,7 +47,7 @@ dayjs.extend(isSameOrBefore);
 dayjs.extend(isoWeek);
 
 // Hook for dynamic height calculation
-const useTableHeight = (isBulkModeActive: boolean) => {
+const useTableHeight = (isFilterToolbarActive: boolean) => {
   const [tableHeight, setTableHeight] = React.useState("70vh");
 
   React.useEffect(() => {
@@ -52,14 +56,14 @@ const useTableHeight = (isBulkModeActive: boolean) => {
       const viewportHeight = window.innerHeight;
       const headerHeight = 65; // Header height (64px + 1px border)
       const toolbarHeight = 46; // Toolbar height (40px + 6px of padding)
-      const bulkToolbarHeight = isBulkModeActive ? 42 : 0; // Bulk toolbar height (35px + 6px padding + 1px border)
+      const filterToolbarHeight = isFilterToolbarActive ? 42 : 0; // Filter toolbar height (35px + 6px padding + 1px border)
       const paddingAndMargins = 29; // Padding and margins (29px padding)
 
       const availableHeight =
         viewportHeight -
         headerHeight -
         toolbarHeight -
-        bulkToolbarHeight -
+        filterToolbarHeight -
         paddingAndMargins;
       const maxHeight = Math.max(
         300,
@@ -73,7 +77,7 @@ const useTableHeight = (isBulkModeActive: boolean) => {
     window.addEventListener("resize", calculateHeight);
 
     return () => window.removeEventListener("resize", calculateHeight);
-  }, [isBulkModeActive]);
+  }, [isFilterToolbarActive]);
 
   return tableHeight;
 };
@@ -106,9 +110,6 @@ function ShiftDemandTabInternal({
     bulkValue: "",
   });
 
-  // Dynamic table height
-  const tableHeight = useTableHeight(bulkChangeState.isActive);
-
   // Centralized period state (with localStorage persistence)
   const { currentDate, periodType, setCurrentDate, setPeriodType, isHydrated } =
     usePeriodState();
@@ -117,6 +118,31 @@ function ShiftDemandTabInternal({
   const [shiftError, setShiftError] = useState<string | null>(null);
   const [savingCells, setSavingCells] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
+
+  // Shift column definitions for filtering/sorting
+  const shiftColumns = useMemo(
+    () => createShiftColumns(t, shifts),
+    [t, shifts]
+  );
+
+  // Table state for shift filtering and sorting
+  const {
+    tableState: shiftTableState,
+    filteredAndSortedData: filteredShifts,
+    addFilter: addShiftFilter,
+    removeFilter: removeShiftFilter,
+    updateSort: updateShiftSort,
+    resetAll: resetShiftFilters,
+  } = useTableState(shifts, shiftColumns, "nsp-pro-shift-demand-table-state");
+
+  // Show filter toolbar when either bulk mode is active OR filters/sorting is applied
+  const showFilterToolbar =
+    bulkChangeState.isActive ||
+    shiftTableState.filters.length > 0 ||
+    shiftTableState.sort !== null;
+
+  // Dynamic table height now accounts for filter toolbar
+  const tableHeight = useTableHeight(showFilterToolbar);
 
   // Bulk selection helpers
   const toggleBulkMode = () => {
@@ -199,7 +225,7 @@ function ShiftDemandTabInternal({
 
   const selectAllColumnCells = (date: Dayjs) => {
     const dateStr = date.format("YYYY-MM-DD");
-    const columnCells = shifts.map((shift) => ({
+    const columnCells = filteredShifts.map((shift) => ({
       shiftId: shift.id,
       date: dateStr,
     }));
@@ -239,7 +265,7 @@ function ShiftDemandTabInternal({
   };
 
   const selectAllCells = () => {
-    const allCells = shifts.flatMap((shift) =>
+    const allCells = filteredShifts.flatMap((shift) =>
       dates.map((date) => ({
         shiftId: shift.id,
         date: date.format("YYYY-MM-DD"),
@@ -347,7 +373,7 @@ function ShiftDemandTabInternal({
 
   const isColumnSelected = (date: Dayjs): boolean => {
     const dateStr = date.format("YYYY-MM-DD");
-    const columnCells = shifts.map((shift) => ({
+    const columnCells = filteredShifts.map((shift) => ({
       shiftId: shift.id,
       date: dateStr,
     }));
@@ -360,7 +386,7 @@ function ShiftDemandTabInternal({
   };
 
   const isAllSelected = (): boolean => {
-    const totalCells = shifts.length * dates.length;
+    const totalCells = filteredShifts.length * dates.length;
     return (
       bulkChangeState.selectedCells.length === totalCells && totalCells > 0
     );
@@ -638,10 +664,20 @@ function ShiftDemandTabInternal({
         isRefreshing={isLoadingDemands}
       />
 
-      {/* Bulk Select Toolbar - appears when bulk mode is active */}
-      {bulkChangeState.isActive && (
-        <BulkSelectToolbar
+      {/* Filter/Sort Toolbar - appears when filtering/sorting is active OR bulk mode is active */}
+      {showFilterToolbar && (
+        <ShiftDemandFilterToolbar
           lng={lng}
+          // Filter/Sort props
+          filters={shiftTableState.filters}
+          sort={shiftTableState.sort}
+          onRemoveFilter={removeShiftFilter}
+          onRemoveSort={() => updateShiftSort(null)}
+          onResetAll={resetShiftFilters}
+          showFilters={
+            shiftTableState.filters.length > 0 || shiftTableState.sort !== null
+          }
+          // Bulk select props
           selectedCellsCount={bulkChangeState.selectedCells.length}
           bulkValue={bulkChangeState.bulkValue}
           onBulkValueChange={(value) =>
@@ -650,6 +686,7 @@ function ShiftDemandTabInternal({
           onApplyBulkChange={applyBulkChange}
           onDeleteBulkSelection={deleteBulkSelection}
           onCancelBulkMode={toggleBulkMode}
+          showBulkSelect={bulkChangeState.isActive}
         />
       )}
 
@@ -673,7 +710,7 @@ function ShiftDemandTabInternal({
         {/* Shift Demand Grid */}
         <ShiftDemandTable
           lng={lng}
-          shifts={shifts}
+          shifts={filteredShifts}
           dates={dates}
           bulkChangeState={bulkChangeState}
           getDemandValue={getDemandValue}
@@ -688,6 +725,12 @@ function ShiftDemandTabInternal({
           isAllSelected={isAllSelected}
           savingCells={savingCells}
           maxHeight={tableHeight}
+          // Filter/Sort props
+          currentSort={shiftTableState.sort || undefined}
+          currentFilter={shiftTableState.filters[0]} // Pass first filter if any
+          onSort={updateShiftSort}
+          onFilter={addShiftFilter}
+          shiftColumn={shiftColumns[0]} // Pass first column definition
         />
       </Paper>
 

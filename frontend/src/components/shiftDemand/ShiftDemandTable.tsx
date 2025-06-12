@@ -16,6 +16,8 @@ import { Add, Remove } from "@mui/icons-material";
 import { useTranslation } from "../../app/i18n/client";
 import { ShiftT, ShiftType } from "../../types/shift";
 import { ShiftColorMappings } from "../../constants/constants";
+import { ColumnDefinition, ColumnFilter, TableSort } from "../../types/filter";
+import ColumnSortFilterMenu from "../table/ColumnSortFilterMenu";
 import "./ShiftDemandTable.css";
 
 // Types
@@ -51,6 +53,12 @@ interface ShiftDemandTableProps {
   isAllSelected: () => boolean;
   savingCells: Set<string>;
   maxHeight?: string; // New optional prop for controlling height
+  // New props for filtering/sorting
+  currentSort?: TableSort;
+  currentFilter?: ColumnFilter;
+  onSort?: (sort: TableSort | null) => void;
+  onFilter?: (filter: ColumnFilter) => void;
+  shiftColumn?: ColumnDefinition;
 }
 
 // Individual cell component
@@ -229,6 +237,7 @@ function ShiftDemandRowHeader({
         padding: 0,
         minWidth: 180,
         maxWidth: 220,
+        position: "relative",
       }}
     >
       <div className="shift-demand-row-header-container">
@@ -366,6 +375,12 @@ interface ShiftDemandTableHeaderProps {
   selectAllCells: () => void;
   isColumnSelected: (date: Dayjs) => boolean;
   isAllSelected: () => boolean;
+  // Filter/Sort props
+  currentSort?: TableSort;
+  currentFilter?: ColumnFilter;
+  onSort?: (sort: TableSort | null) => void;
+  onFilter?: (filter: ColumnFilter) => void;
+  shiftColumn?: ColumnDefinition;
 }
 
 function ShiftDemandTableHeader({
@@ -376,28 +391,52 @@ function ShiftDemandTableHeader({
   selectAllCells,
   isColumnSelected,
   isAllSelected,
+  currentSort,
+  currentFilter,
+  onSort,
+  onFilter,
+  shiftColumn,
 }: ShiftDemandTableHeaderProps) {
   const { t } = useTranslation(lng, "shift-demands");
 
   return (
     <TableHead>
       <TableRow>
-        <TableCell className="shift-demand-table-header">
-          {bulkChangeState.isActive ? (
-            <div className="shift-demand-header-content">
-              <Checkbox
-                checked={isAllSelected()}
-                indeterminate={
-                  bulkChangeState.selectedCells.length > 0 && !isAllSelected()
-                }
-                onChange={selectAllCells}
-                size="small"
-              />
-              <Typography variant="body2">{t("shift")}</Typography>
+        <TableCell
+          className="shift-demand-table-header"
+          sx={{ position: "relative" }}
+        >
+          <div className="shift-demand-header-content">
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              {bulkChangeState.isActive ? (
+                <>
+                  <Checkbox
+                    checked={isAllSelected()}
+                    indeterminate={
+                      bulkChangeState.selectedCells.length > 0 &&
+                      !isAllSelected()
+                    }
+                    onChange={selectAllCells}
+                    size="small"
+                  />
+                  <Typography variant="body2">{t("shift")}</Typography>
+                </>
+              ) : (
+                <Typography variant="body2">{t("shift")}</Typography>
+              )}
             </div>
-          ) : (
-            t("shift")
-          )}
+
+            {/* Filter/Sort menu - aligned horizontally with content */}
+            {shiftColumn && onSort && onFilter && (
+              <ColumnSortFilterMenu
+                column={shiftColumn}
+                currentSort={currentSort}
+                currentFilter={currentFilter}
+                onSort={onSort}
+                onFilter={onFilter}
+              />
+            )}
+          </div>
         </TableCell>
         {dates.map((date) => (
           <TableCell
@@ -468,7 +507,7 @@ function ShiftDemandTableBody({
 }: ShiftDemandTableBodyProps) {
   return (
     <TableBody>
-      {shifts.map((shift) => (
+      {shifts.map((shift, index) => (
         <ShiftDemandRow
           key={shift.id}
           shift={shift}
@@ -505,6 +544,11 @@ export default function ShiftDemandTable({
   isAllSelected,
   savingCells,
   maxHeight = "70vh", // Default to 70% of viewport height
+  currentSort,
+  currentFilter,
+  onSort,
+  onFilter,
+  shiftColumn,
 }: ShiftDemandTableProps) {
   return (
     <TableContainer
@@ -562,6 +606,11 @@ export default function ShiftDemandTable({
           selectAllCells={selectAllCells}
           isColumnSelected={isColumnSelected}
           isAllSelected={isAllSelected}
+          currentSort={currentSort}
+          currentFilter={currentFilter}
+          onSort={onSort}
+          onFilter={onFilter}
+          shiftColumn={shiftColumn}
         />
         <ShiftDemandTableBody
           lng={lng}
