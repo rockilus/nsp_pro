@@ -13,5 +13,14 @@
     "save_success_message": "Modifications sauvegardées avec succès",
     "shift": "Poste",
     "total": "Total",
-    "daily_total": "Total Quotidien"
+    "daily_total": "Total Quotidien",
+    "selection": "Sélection",
+    "select": "Sélectionner",
+    "none": "Aucune",
+    "shift_demands": "Demandes de postes",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "reset": "Réinitialiser",
+    "confirm_delete": "Confirmer la Suppression",
+    "delete_selection_confirmation": "Êtes-vous sûr de vouloir supprimer les demandes de postes pour {{count}} cellules sélectionnées ? Cette action ne peut pas être annulée."
 }

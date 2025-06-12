@@ -32,7 +32,7 @@ import {
 import { usePeriodState } from "../../app/lib/hooks/usePeriodState";
 // Components
 import { ShiftDemandToolbar } from "./ShiftDemandToolbar";
-import { ShiftDemandFilterToolbar } from "./ShiftDemandFilterToolbar";
+import { ShiftDemandActionToolbar } from "./toolbar";
 import ShiftDemandTable from "./ShiftDemandTable";
 import ErrorFeedback from "./ErrorFeedback";
 // Hooks
@@ -107,7 +107,7 @@ function ShiftDemandTabInternal({
   const [bulkChangeState, setBulkChangeState] = useState<BulkChangeState>({
     isActive: false,
     selectedCells: [],
-    bulkValue: "",
+    bulkValue: "1",
   });
 
   // Centralized period state (with localStorage persistence)
@@ -150,7 +150,7 @@ function ShiftDemandTabInternal({
       ...prev,
       isActive: !prev.isActive,
       selectedCells: [],
-      bulkValue: "",
+      bulkValue: "1",
     }));
   };
 
@@ -309,7 +309,7 @@ function ShiftDemandTabInternal({
       setBulkChangeState({
         isActive: false,
         selectedCells: [],
-        bulkValue: "",
+        bulkValue: "1",
       });
 
       setError(null);
@@ -343,7 +343,7 @@ function ShiftDemandTabInternal({
       setBulkChangeState({
         isActive: false,
         selectedCells: [],
-        bulkValue: "",
+        bulkValue: "1",
       });
 
       setError(null);
@@ -659,20 +659,21 @@ function ShiftDemandTabInternal({
         onToggleBulkMode={toggleBulkMode}
       />
 
-      {/* Filter/Sort Toolbar - appears when filtering/sorting is active OR bulk mode is active */}
+      {/* Action Toolbar - Filter/Sort and Bulk Selection */}
       {showFilterToolbar && (
-        <ShiftDemandFilterToolbar
+        <ShiftDemandActionToolbar
           lng={lng}
+          showBulkMode={bulkChangeState.isActive}
+          showFilters={
+            shiftTableState.filters.length > 0 || shiftTableState.sort !== null
+          }
           // Filter/Sort props
           filters={shiftTableState.filters}
           sort={shiftTableState.sort}
           onRemoveFilter={removeShiftFilter}
           onRemoveSort={() => updateShiftSort(null)}
           onResetAll={resetShiftFilters}
-          showFilters={
-            shiftTableState.filters.length > 0 || shiftTableState.sort !== null
-          }
-          // Bulk select props
+          // Bulk selection props
           selectedCellsCount={bulkChangeState.selectedCells.length}
           bulkValue={bulkChangeState.bulkValue}
           onBulkValueChange={(value) =>
@@ -681,7 +682,6 @@ function ShiftDemandTabInternal({
           onApplyBulkChange={applyBulkChange}
           onDeleteBulkSelection={deleteBulkSelection}
           onCancelBulkMode={toggleBulkMode}
-          showBulkSelect={bulkChangeState.isActive}
         />
       )}
 

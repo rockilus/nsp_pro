@@ -13,5 +13,14 @@
     "save_success_message": "Cambios guardados exitosamente",
     "shift": "Turno",
     "total": "Total",
-    "daily_total": "Total Diario"
+    "daily_total": "Total Diario",
+    "selection": "Selección",
+    "select": "Seleccionar",
+    "none": "Ninguna",
+    "shift_demands": "Demandas de turnos",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "reset": "Restablecer",
+    "confirm_delete": "Confirmar Eliminación",
+    "delete_selection_confirmation": "¿Estás seguro de que quieres eliminar las demandas de turnos para {{count}} celdas seleccionadas? Esta acción no se puede deshacer."
 }
