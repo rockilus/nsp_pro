@@ -8,7 +8,6 @@ import Tab from "@mui/material/Tab";
 import Switch from "@mui/material/Switch";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Typography from "@mui/material/Typography";
-import Chip from "@mui/material/Chip";
 // Components
 import RequestPanel from "./request-panel";
 import RequestTable from "./request-table";

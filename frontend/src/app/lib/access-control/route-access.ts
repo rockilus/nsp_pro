@@ -12,6 +12,7 @@ export const routeAccess: Record<
     features: ["use_solver"],
   },
   "/campaign": { roles: [TeamMembershipRole.OWNER] },
+  "/shift-demands": { roles: [TeamMembershipRole.OWNER] },
   "/stats": { roles: [TeamMembershipRole.OWNER] },
   "/teams": { roles: [TeamMembershipRole.OWNER] },
 };

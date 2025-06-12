@@ -28,6 +28,7 @@ from src.services.shift_demand_service import ShiftDemandService
 router = APIRouter()
 
 
+# pylint: disable=R0801
 @router.post("/shift-demands/teams/{team_id}", status_code=201)
 async def create_shift_demands(
     team_id: str,

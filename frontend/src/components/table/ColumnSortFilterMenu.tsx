@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  TableCell,
   IconButton,
   Menu,
   MenuItem,
@@ -25,7 +24,7 @@ import TextFilter from "./filters/TextFilter";
 import SelectFilter from "./filters/SelectFilter";
 import DateFilter from "./filters/DateFilter";
 
-interface TableColumnHeaderProps {
+interface ColumnSortFilterMenuProps {
   column: ColumnDefinition;
   currentSort?: TableSort;
   currentFilter?: ColumnFilter;
@@ -33,13 +32,13 @@ interface TableColumnHeaderProps {
   onFilter: (filter: ColumnFilter) => void;
 }
 
-export default function TableColumnHeader({
+export default function ColumnSortFilterMenu({
   column,
   currentSort,
   currentFilter,
   onSort,
   onFilter,
-}: TableColumnHeaderProps) {
+}: ColumnSortFilterMenuProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(
     null
@@ -120,17 +119,17 @@ export default function TableColumnHeader({
   const sortDirection = isCurrentlySorted ? currentSort.direction : null;
 
   return (
-    <TableCell sx={{ paddingY: 0, position: "relative" }}>
-      <div className="flex items-center justify-between">
-        <span className="table-header-default">{column.label}</span>
-        <IconButton
-          size="small"
-          onClick={handleMenuOpen}
-          sx={{ ml: 1, opacity: 0.7, "&:hover": { opacity: 1 } }}
-        >
-          <MoreVertIcon fontSize="small" />
-        </IconButton>
-      </div>
+    <>
+      <IconButton
+        size="small"
+        onClick={handleMenuOpen}
+        sx={{
+          opacity: 0.7,
+          "&:hover": { opacity: 1 },
+        }}
+      >
+        <MoreVertIcon fontSize="small" />
+      </IconButton>
 
       <Menu
         anchorEl={anchorEl}
@@ -179,6 +178,6 @@ export default function TableColumnHeader({
       >
         {renderFilterComponent()}
       </Popover>
-    </TableCell>
+    </>
   );
 }

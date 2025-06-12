@@ -1,0 +1,89 @@
+import React from "react";
+import { Box, Paper, Divider } from "@mui/material";
+import { FilterSortSection } from "./FilterSortSection";
+import { BulkSelectionSection } from "./BulkSelectionSection";
+import { ShiftDemandActionToolbarProps } from "./types";
+
+export function ShiftDemandActionToolbar({
+  lng,
+  showBulkMode,
+  showFilters,
+  // Filter/Sort props
+  filters,
+  sort,
+  onRemoveFilter,
+  onRemoveSort,
+  onResetAll,
+  // Bulk selection props
+  selectedCellsCount,
+  bulkValue,
+  onBulkValueChange,
+  onApplyBulkChange,
+  onDeleteBulkSelection,
+  onCancelBulkMode,
+}: ShiftDemandActionToolbarProps) {
+  // Only render if there's something to show
+  if (!showBulkMode && !showFilters) {
+    return null;
+  }
+
+  const hasFiltersOrSort = filters.length > 0 || sort !== null;
+
+  return (
+    <Paper
+      elevation={2}
+      sx={{
+        p: 2,
+        mb: 2,
+        width: "100%",
+        margin: 0,
+        padding: "8px 16px",
+        backgroundColor: showBulkMode ? "primary.50" : "grey.50",
+        borderTop: "1px solid",
+        borderColor: "grey.100",
+      }}
+    >
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        width="100%"
+        minHeight="40px"
+      >
+        {/* Left side - Filters and Sort */}
+        {showFilters && hasFiltersOrSort && (
+          <FilterSortSection
+            lng={lng}
+            filters={filters}
+            sort={sort}
+            onRemoveFilter={onRemoveFilter}
+            onRemoveSort={onRemoveSort}
+            onResetAll={onResetAll}
+          />
+        )}
+
+        {/* Spacer when only showing filters or bulk mode */}
+        {!showBulkMode && showFilters && hasFiltersOrSort && <Box flex={1} />}
+        {!showFilters && showBulkMode && <Box flex={1} />}
+
+        {/* Divider between sections */}
+        {showFilters && showBulkMode && hasFiltersOrSort && (
+          <Divider orientation="vertical" flexItem sx={{ mx: 2 }} />
+        )}
+
+        {/* Right side - Bulk Selection */}
+        {showBulkMode && (
+          <BulkSelectionSection
+            lng={lng}
+            selectedCellsCount={selectedCellsCount}
+            bulkValue={bulkValue}
+            onBulkValueChange={onBulkValueChange}
+            onApplyBulkChange={onApplyBulkChange}
+            onDeleteBulkSelection={onDeleteBulkSelection}
+            onCancelBulkMode={onCancelBulkMode}
+          />
+        )}
+      </Box>
+    </Paper>
+  );
+}
