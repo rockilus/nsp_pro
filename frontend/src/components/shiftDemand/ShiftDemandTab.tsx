@@ -628,11 +628,11 @@ function ShiftDemandTabInternal({
         )}
 
         {/* Loading indicator during save */}
-        {(bulkUpsert.isLoading || create.isLoading || update.isLoading) && (
+        {/* {(bulkUpsert.isLoading || create.isLoading || update.isLoading) && (
           <Alert severity="info" sx={{ mb: 2 }}>
             Saving changes...
           </Alert>
-        )}
+        )} */}
 
         {/* Shift Demand Grid */}
         <ShiftDemandTable

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Dayjs } from "dayjs";
 import {
   Table,
@@ -12,9 +12,13 @@ import {
   Checkbox,
   TextField,
   Tooltip,
+  IconButton,
+  CircularProgress,
 } from "@mui/material";
+import { Add, Remove } from "@mui/icons-material";
 import { useTranslation } from "../../app/i18n/client";
 import { ShiftT } from "../../types/shift";
+import "./ShiftDemandTable.css";
 
 // Types
 interface SelectedCell {
@@ -74,24 +78,30 @@ function ShiftDemandCell({
   onCellChange,
   onToggleSelection,
 }: ShiftDemandCellProps) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleAddDemand = async () => {
+    if (isSaving) return;
+    await onCellChange(shiftId, date, "1");
+  };
+
+  const handleIncrement = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isSaving) return;
+    await onCellChange(shiftId, date, String(value + 1));
+  };
+
+  const handleDecrement = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isSaving) return;
+    const newValue = Math.max(0, value - 1);
+    await onCellChange(shiftId, date, String(newValue));
+  };
+
   return (
-    <TableCell
-      sx={{
-        p: 0.5,
-        backgroundColor: isWeekend ? "grey.50" : "inherit",
-      }}
-    >
+    <TableCell className={`shift-demand-cell ${isWeekend ? "weekend" : ""}`}>
       {isBulkMode ? (
-        <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          sx={{
-            backgroundColor: isSelected ? "primary.50" : "transparent",
-            borderRadius: 1,
-            p: 0.5,
-          }}
-        >
+        <div className={`shift-demand-bulk ${isSelected ? "selected" : ""}`}>
           <Checkbox
             checked={isSelected}
             onChange={() => onToggleSelection(shiftId, date)}
@@ -100,32 +110,73 @@ function ShiftDemandCell({
           <Typography variant="caption" sx={{ ml: 0.5 }}>
             {value}
           </Typography>
-        </Box>
+        </div>
       ) : (
-        <TextField
-          size="small"
-          type="number"
-          value={value}
-          onChange={(e) => onCellChange(shiftId, date, e.target.value)}
-          disabled={isSaving}
-          inputProps={{
-            min: 0,
-            style: {
-              textAlign: "center",
-              padding: "4px 8px",
-              fontSize: "0.875rem",
-            },
-          }}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                border: "1px solid",
-                borderColor: isSaving ? "warning.main" : "grey.300",
-              },
-            },
-            opacity: isSaving ? 0.7 : 1,
-          }}
-        />
+        <div
+          className={`shift-demand-cell-content ${
+            value === 0 ? "clickable" : ""
+          }`}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          {value === 0 ? (
+            // Empty state
+            <div
+              className={`shift-demand-empty ${isHovered ? "hovered" : ""}`}
+              onClick={handleAddDemand}
+            >
+              {isSaving ? (
+                <CircularProgress size={16} />
+              ) : (
+                isHovered && <Add className="shift-demand-empty-icon" />
+              )}
+            </div>
+          ) : (
+            // Demand state
+            <div
+              className={`shift-demand-content ${isHovered ? "hovered" : ""} ${
+                isSaving ? "saving" : ""
+              }`}
+            >
+              {isSaving && (
+                <CircularProgress size={16} className="shift-demand-loading" />
+              )}
+
+              {/* Decrement button */}
+              {isHovered && !isSaving && (
+                <button
+                  onClick={handleDecrement}
+                  className="shift-demand-button decrement"
+                >
+                  <Remove
+                    className="shift-demand-button-icon"
+                    sx={{ fontSize: "14px" }}
+                  />
+                </button>
+              )}
+
+              {/* Value display */}
+              <span
+                className={`shift-demand-value ${isSaving ? "saving" : ""}`}
+              >
+                {value}
+              </span>
+
+              {/* Increment button */}
+              {isHovered && !isSaving && (
+                <button
+                  onClick={handleIncrement}
+                  className="shift-demand-button increment"
+                >
+                  <Add
+                    className="shift-demand-button-icon"
+                    sx={{ fontSize: "14px" }}
+                  />
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       )}
     </TableCell>
   );
@@ -146,8 +197,8 @@ function ShiftDemandRowHeader({
   onSelectRow,
 }: ShiftDemandRowHeaderProps) {
   return (
-    <TableCell sx={{ fontWeight: "medium" }}>
-      <Box display="flex" alignItems="center" gap={1}>
+    <TableCell className="shift-demand-row-header">
+      <div className="shift-demand-row-header-content">
         {isBulkMode && (
           <Checkbox
             checked={isRowSelected}
@@ -156,17 +207,20 @@ function ShiftDemandRowHeader({
           />
         )}
         <Tooltip title={shift.name}>
-          <Box>
-            <Typography variant="body2" noWrap>
+          <div className="shift-demand-shift-info">
+            <Typography variant="body2" noWrap sx={{ fontSize: "0.875rem" }}>
               {shift.acronym || shift.name}
             </Typography>
-            <Typography variant="caption" color="textSecondary">
+            <Typography
+              variant="caption"
+              sx={{ fontSize: "0.75rem", color: "text.secondary" }}
+            >
               {shift.startTime.format("HH:mm")} -{" "}
               {shift.endTime.format("HH:mm")}
             </Typography>
-          </Box>
+          </div>
         </Tooltip>
-      </Box>
+      </div>
     </TableCell>
   );
 }
@@ -236,9 +290,7 @@ function ShiftDemandRow({
           />
         );
       })}
-      <TableCell align="center" sx={{ fontWeight: "bold" }}>
-        {shiftTotal}
-      </TableCell>
+      <TableCell className="shift-demand-total">{shiftTotal}</TableCell>
     </TableRow>
   );
 }
@@ -268,9 +320,9 @@ function ShiftDemandTableHeader({
   return (
     <TableHead>
       <TableRow>
-        <TableCell sx={{ fontWeight: "bold", minWidth: 120 }}>
+        <TableCell className="shift-demand-table-header">
           {bulkChangeState.isActive ? (
-            <Box display="flex" alignItems="center" gap={1}>
+            <div className="shift-demand-header-content">
               <Checkbox
                 checked={isAllSelected()}
                 indeterminate={
@@ -280,7 +332,7 @@ function ShiftDemandTableHeader({
                 size="small"
               />
               <Typography variant="body2">{t("shift")}</Typography>
-            </Box>
+            </div>
           ) : (
             t("shift")
           )}
@@ -288,15 +340,11 @@ function ShiftDemandTableHeader({
         {dates.map((date) => (
           <TableCell
             key={date.toISOString()}
-            align="center"
-            sx={{
-              fontWeight: "bold",
-              minWidth: 60,
-              backgroundColor:
-                date.day() === 0 || date.day() === 6 ? "grey.50" : "inherit",
-            }}
+            className={`shift-demand-table-header date-column ${
+              date.day() === 0 || date.day() === 6 ? "weekend" : ""
+            }`}
           >
-            <Box>
+            <div className="shift-demand-date-info">
               {bulkChangeState.isActive && (
                 <Checkbox
                   checked={isColumnSelected(date)}
@@ -304,14 +352,19 @@ function ShiftDemandTableHeader({
                   size="small"
                 />
               )}
-              <Typography variant="caption" display="block">
+              <Typography
+                variant="caption"
+                sx={{ fontSize: "0.75rem", display: "block" }}
+              >
                 {date.format("ddd")}
               </Typography>
-              <Typography variant="body2">{date.format("D")}</Typography>
-            </Box>
+              <Typography variant="body2" sx={{ fontSize: "0.875rem" }}>
+                {date.format("D")}
+              </Typography>
+            </div>
           </TableCell>
         ))}
-        <TableCell align="center" sx={{ fontWeight: "bold", minWidth: 80 }}>
+        <TableCell className="shift-demand-table-header total-column">
           {t("total")}
         </TableCell>
       </TableRow>
