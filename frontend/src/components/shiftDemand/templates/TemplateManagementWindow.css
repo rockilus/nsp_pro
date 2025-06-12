@@ -13,6 +13,9 @@
 
 .template-management-content {
   background-color: #fafafa;
+  display: flex;
+  flex-direction: row;
+  height: 100%;
 }
 
 .template-management-layout {
@@ -21,12 +24,31 @@
 }
 
 .template-management-sidebar {
+  width: 320px;
+  min-width: 320px;
   background: white;
   box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
 }
 
 .template-management-main {
+  flex: 1;
   background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* Allow flex item to shrink */
+}
+
+/* Empty state when no template selected */
+.template-management-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 32px;
+  text-align: center;
 }
 
 /* Template List Styles */
@@ -145,6 +167,7 @@
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
@@ -362,9 +385,20 @@
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
+  .template-management-content {
+    flex-direction: column;
+  }
+
   .template-management-sidebar {
-    width: 100% !important;
-    min-width: 100% !important;
+    width: 100%;
+    min-width: 100%;
+    height: 40%;
+    border-bottom: 1px solid #e0e0e0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .template-management-main {
+    height: 60%;
   }
 
   .template-week-grid {

@@ -47,8 +47,8 @@
     "template_creation_description": "L'interface de création de modèles vous permettra de créer de nouveaux modèles à partir de zéro ou de motifs de demandes existants.",
     "template_application_coming_soon": "Application de Modèle Bientôt Disponible",
     "template_application_description": "L'interface d'application de modèles vous permettra d'appliquer des modèles à des plages de dates spécifiques avec résolution de conflits.",
-    "template_editor_coming_soon": "Éditeur de Modèles Bientôt Disponible",
-    "template_editor_description": "L'éditeur de modèles vous permettra de créer et modifier des motifs de demandes de modèles avec une interface en grille intuitive.",
+    "template_editor_coming_soon": "Éditeur de modèles bientôt disponible",
+    "template_editor_description": "L'éditeur de modèles vous permettra de créer et modifier les modèles de demandes avec une interface en grille intuitive.",
     "confirm_delete_template": "Êtes-vous sûr de vouloir supprimer le modèle \"{{name}}\" ? Cette action ne peut pas être annulée.",
     "edit": "Modifier",
     "back": "Retour",
@@ -60,5 +60,10 @@
     "error_deleting_template": "Échec de la suppression du modèle",
     "error_creating_template": "Échec de la création du modèle",
     "error_updating_template": "Échec de la mise à jour du modèle",
-    "error_applying_template": "Échec de l'application du modèle"
+    "error_applying_template": "Échec de l'application du modèle",
+    "template_created_successfully": "Modèle créé avec succès",
+    "template_updated_successfully": "Modèle mis à jour avec succès",
+    "template_deleted_successfully": "Modèle supprimé avec succès",
+    "template_applied_successfully": "Modèle appliqué avec succès",
+    "select_template_description": "Choisissez un modèle dans la liste de gauche pour voir ses détails et effectuer des modifications."
 }

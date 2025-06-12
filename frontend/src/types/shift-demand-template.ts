@@ -20,6 +20,11 @@ export enum WeekType {
 }
 
 /**
+ * UI view modes for template management
+ */
+export type TemplateViewMode = "list" | "view" | "edit";
+
+/**
  * Template week data structure
  */
 export interface TemplateWeekDataT {
@@ -179,7 +184,7 @@ export interface TemplateCreationOptions {
  */
 export interface TemplateManagementState {
   selectedTemplate: ShiftDemandTemplateT | null;
-  viewMode: "list" | "view" | "edit" | "create";
+  viewMode: TemplateViewMode;
   isLoading: boolean;
   error: string | null;
   templates: TemplateListItem[];
