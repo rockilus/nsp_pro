@@ -73,9 +73,7 @@ class ShiftDemandTemplateApplicationService:
 
         # Validate period
         if target_start > target_end:
-            raise ValueError(
-                "Target start date must be before or equal to end date"
-            )
+            raise ValueError("Target start date must be before or equal to end date")
 
         # Generate demands based on template type
         if template.template_type == TemplateType.EVEN_ODD:
@@ -96,9 +94,7 @@ class ShiftDemandTemplateApplicationService:
         replaced_count = 0
         if replace_existing:
             # Get shift IDs that will be affected
-            affected_shift_ids = list(
-                set(demand.shift_id for demand in demands)
-            )
+            affected_shift_ids = list(set(demand.shift_id for demand in demands))
 
             # Delete existing demands for these shifts in the target period
             replaced_count = self.demand_service.delete_demands_by_date_range(
@@ -108,9 +104,7 @@ class ShiftDemandTemplateApplicationService:
                 shift_ids=affected_shift_ids,
             )
 
-            log_info(
-                f"Replaced {replaced_count} existing demands in target period"
-            )
+            log_info(f"Replaced {replaced_count} existing demands in target period")
 
         # Create new demands
         created_demands = []
@@ -159,9 +153,7 @@ class ShiftDemandTemplateApplicationService:
         to start with.
         """
         if len(template.weeks_data) != 2:
-            raise ValueError(
-                "Even/odd template must have exactly 2 weeks of data"
-            )
+            raise ValueError("Even/odd template must have exactly 2 weeks of data")
 
         week_1_data = template.weeks_data[0]
         week_2_data = template.weeks_data[1]
@@ -330,16 +322,12 @@ class ShiftDemandTemplateApplicationService:
             return result
 
         if template.team_id != team_id:
-            result["warnings"].append(
-                "Template does not belong to specified team"
-            )
+            result["warnings"].append("Template does not belong to specified team")
             return result
 
         # Validate period
         if target_start > target_end:
-            result["warnings"].append(
-                "Invalid period: start date after end date"
-            )
+            result["warnings"].append("Invalid period: start date after end date")
             return result
 
         # Extract all shift IDs from template
@@ -353,10 +341,7 @@ class ShiftDemandTemplateApplicationService:
 
         # Add informational warnings
         period_days = (target_end - target_start).days + 1
-        if (
-            template.template_type == TemplateType.EVEN_ODD
-            and period_days < 14
-        ):
+        if template.template_type == TemplateType.EVEN_ODD and period_days < 14:
             result["warnings"].append(
                 "Even/odd template works best with periods of 2+ weeks"
             )

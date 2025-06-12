@@ -82,10 +82,8 @@ class ShiftDemandTemplateService:
 
             # Check name uniqueness if name changed
             if existing.name != template.name:
-                name_conflict = (
-                    self.template_repo.get_template_by_name_and_team(
-                        template.name, template.team_id
-                    )
+                name_conflict = self.template_repo.get_template_by_name_and_team(
+                    template.name, template.team_id
                 )
                 if name_conflict and name_conflict.id != template.id:
                     raise ValueError(
@@ -142,13 +140,10 @@ class ShiftDemandTemplateService:
         """Create a template from existing shift demands."""
         try:
             # Validate name uniqueness within team
-            existing = self.template_repo.get_template_by_name_and_team(
-                name, team_id
-            )
+            existing = self.template_repo.get_template_by_name_and_team(name, team_id)
             if existing:
                 raise ValueError(
-                    f"Template with name '{name}' already exists "
-                    f"for team {team_id}"
+                    f"Template with name '{name}' already exists " f"for team {team_id}"
                 )
 
             # Create template using helper function
@@ -180,9 +175,7 @@ class ShiftDemandTemplateService:
     ) -> List[ShiftDemandTemplate]:
         """Get templates created by a specific user within a team."""
         try:
-            return self.template_repo.get_templates_by_created_by(
-                created_by, team_id
-            )
+            return self.template_repo.get_templates_by_created_by(created_by, team_id)
         except Exception as e:
             log_info(
                 f"Failed to get templates by creator {created_by} "

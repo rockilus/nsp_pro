@@ -50,9 +50,7 @@ class TemplateCompatibilityResponse(BaseModel):
 
     compatible: bool = Field(..., description="Whether template is compatible")
     valid_shifts: List[str] = Field(..., description="List of valid shift IDs")
-    invalid_shifts: List[str] = Field(
-        ..., description="List of invalid shift IDs"
-    )
+    invalid_shifts: List[str] = Field(..., description="List of invalid shift IDs")
     warnings: List[str] = Field(..., description="List of warning messages")
 
 
@@ -60,18 +58,12 @@ class TemplatePreviewResponse(BaseModel):
     """Response model for template application preview."""
 
     total_demands: int = Field(..., description="Total number of demands")
-    total_demand_value: int = Field(
-        ..., description="Sum of all demand values"
-    )
+    total_demand_value: int = Field(..., description="Sum of all demand values")
     demands_by_shift: dict[str, int] = Field(
         ..., description="Demands grouped by shift ID"
     )
-    demands_by_date: dict[str, int] = Field(
-        ..., description="Demands grouped by date"
-    )
-    affected_dates: List[str] = Field(
-        ..., description="List of affected dates"
-    )
+    demands_by_date: dict[str, int] = Field(..., description="Demands grouped by date")
+    affected_dates: List[str] = Field(..., description="List of affected dates")
     template_type: str = Field(..., description="Type of template")
     template_weeks: int = Field(..., description="Number of weeks in template")
 
@@ -138,9 +130,7 @@ def create_template_application_router(
     async def check_template_compatibility(
         team_id: str,
         template_id: str,
-        target_start: date = Query(
-            ..., description="Start date of target period"
-        ),
+        target_start: date = Query(..., description="Start date of target period"),
         target_end: date = Query(..., description="End date of target period"),
         session: SessionContainerType = Depends(authn_verify_session()),
     ):
@@ -177,16 +167,13 @@ def create_template_application_router(
         response_model=TemplatePreviewResponse,
         summary="Preview template application",
         description=(
-            "Preview the result of applying a template without actually "
-            "applying it"
+            "Preview the result of applying a template without actually " "applying it"
         ),
     )
     async def preview_template_application(
         team_id: str,
         template_id: str,
-        target_start: date = Query(
-            ..., description="Start date of target period"
-        ),
+        target_start: date = Query(..., description="Start date of target period"),
         target_end: date = Query(..., description="End date of target period"),
         shift_filter: Optional[List[str]] = Query(
             None, description="Optional list of shift IDs to filter"
@@ -199,14 +186,12 @@ def create_template_application_router(
             # if not await check_team_access(session.get_user_id(), team_id):
             #     raise HTTPException(status_code=403, detail="Access denied")
 
-            preview_result = (
-                await application_service.preview_template_application(
-                    template_id=template_id,
-                    team_id=team_id,
-                    target_start=target_start,
-                    target_end=target_end,
-                    shift_filter=shift_filter,
-                )
+            preview_result = await application_service.preview_template_application(
+                template_id=template_id,
+                team_id=team_id,
+                target_start=target_start,
+                target_end=target_end,
+                shift_filter=shift_filter,
             )
 
             return TemplatePreviewResponse(**preview_result)
@@ -261,8 +246,7 @@ def create_template_application_router(
                             replaced_count=replaced_count,
                             template_id=request.template_id,
                             target_period=(
-                                f"{request.target_start} to "
-                                f"{request.target_end}"
+                                f"{request.target_start} to " f"{request.target_end}"
                             ),
                         )
                     )
@@ -276,8 +260,7 @@ def create_template_application_router(
                             replaced_count=0,
                             template_id=request.template_id,
                             target_period=(
-                                f"{request.target_start} to "
-                                f"{request.target_end}"
+                                f"{request.target_start} to " f"{request.target_end}"
                             ),
                         )
                     )

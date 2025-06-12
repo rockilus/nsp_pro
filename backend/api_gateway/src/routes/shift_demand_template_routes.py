@@ -7,7 +7,6 @@ from shared.schemas.core.shift_demand_template import (
     TemplateType,
 )
 from shared.schemas.dto.shift_demand_template import (
-    ApplyTemplateDTO,
     ShiftDemandTemplateCreateDTO,
     ShiftDemandTemplateDTO,
     ShiftDemandTemplateUpdateDTO,
@@ -33,18 +32,14 @@ async def create_template(
     team_id: str,
     template_dto: ShiftDemandTemplateCreateDTO,
     session: SessionContainerType = Depends(authn_verify_session()),
-    service: ShiftDemandTemplateService = Depends(
-        get_shift_demand_template_service
-    ),
+    service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
 ) -> ShiftDemandTemplateDTO:
     """Create a new shift demand template."""
     try:
         if not await authz_check(
             session.get_user_id(), "create-shift-demand", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to create templates"
-            )
+            raise NotAuthorizedError("You do not have permission to create templates")
 
         # Validate team ID consistency
         if template_dto.teamId != team_id:
@@ -103,18 +98,14 @@ async def get_templates_by_team(
         None, description="Filter by template type (standard|even_odd)"
     ),
     session: SessionContainerType = Depends(authn_verify_session()),
-    service: ShiftDemandTemplateService = Depends(
-        get_shift_demand_template_service
-    ),
+    service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
 ) -> List[ShiftDemandTemplateDTO]:
     """Get all templates for a team, optionally filtered by type."""
     try:
         if not await authz_check(
             session.get_user_id(), "read-shift-demands", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to read templates"
-            )
+            raise NotAuthorizedError("You do not have permission to read templates")
 
         # Validate template_type if provided
         if template_type and template_type not in ["standard", "even_odd"]:
@@ -137,9 +128,7 @@ async def get_templates_by_team(
     except Exception as e:
         log_info(f"Failed to get templates for team {team_id}: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(
-            status_code=500, detail="Internal server error"
-        ) from e
+        raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.get("/shift-demand-templates/{template_id}/teams/{team_id}")
@@ -147,23 +136,17 @@ async def get_template_by_id(
     template_id: str,
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
-    service: ShiftDemandTemplateService = Depends(
-        get_shift_demand_template_service
-    ),
+    service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
 ) -> ShiftDemandTemplateDTO:
     """Get a specific template by ID."""
     try:
         if not await authz_check(
             session.get_user_id(), "read-shift-demands", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to read templates"
-            )
+            raise NotAuthorizedError("You do not have permission to read templates")
 
         # Validate template belongs to team
-        template = await service.validate_template_for_team(
-            template_id, team_id
-        )
+        template = await service.validate_template_for_team(template_id, team_id)
         return template.to_dto()
 
     except NotAuthorizedError:
@@ -199,9 +182,7 @@ async def get_template_by_id(
     except Exception as e:
         log_info(f"Failed to get template {template_id}: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(
-            status_code=500, detail="Internal server error"
-        ) from e
+        raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.put("/shift-demand-templates/{template_id}/teams/{team_id}")
@@ -210,18 +191,14 @@ async def update_template(
     team_id: str,
     template_dto: ShiftDemandTemplateUpdateDTO,
     session: SessionContainerType = Depends(authn_verify_session()),
-    service: ShiftDemandTemplateService = Depends(
-        get_shift_demand_template_service
-    ),
+    service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
 ) -> ShiftDemandTemplateDTO:
     """Update an existing template."""
     try:
         if not await authz_check(
             session.get_user_id(), "update-shift-demand", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to update templates"
-            )
+            raise NotAuthorizedError("You do not have permission to update templates")
 
         # Validate team_id consistency if provided in update
         if template_dto.teamId is not None and template_dto.teamId != team_id:
@@ -274,9 +251,7 @@ async def update_template(
                 },
             ) from e
         else:
-            log_info(
-                f"Validation error updating template {template_id}: {str(e)}"
-            )
+            log_info(f"Validation error updating template {template_id}: {str(e)}")
             raise HTTPException(
                 status_code=400,
                 detail={
@@ -300,25 +275,19 @@ async def update_template(
         ) from e
 
 
-@router.delete(
-    "/shift-demand-templates/{template_id}/teams/{team_id}", status_code=204
-)
+@router.delete("/shift-demand-templates/{template_id}/teams/{team_id}", status_code=204)
 async def delete_template(
     template_id: str,
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
-    service: ShiftDemandTemplateService = Depends(
-        get_shift_demand_template_service
-    ),
+    service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
 ) -> None:
     """Delete a template."""
     try:
         if not await authz_check(
             session.get_user_id(), "delete-shift-demand", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to delete templates"
-            )
+            raise NotAuthorizedError("You do not have permission to delete templates")
 
         # Validate template belongs to team
         await service.validate_template_for_team(template_id, team_id)
@@ -372,9 +341,7 @@ async def delete_template(
     except Exception as e:
         log_info(f"Failed to delete template {template_id}: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(
-            status_code=500, detail="Internal server error"
-        ) from e
+        raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.post("/shift-demand-templates/teams/{team_id}/from-demands")
@@ -382,18 +349,14 @@ async def create_template_from_demands(
     team_id: str,
     demands_dto: TemplateFromDemandsDTO,
     session: SessionContainerType = Depends(authn_verify_session()),
-    service: ShiftDemandTemplateService = Depends(
-        get_shift_demand_template_service
-    ),
+    service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
 ) -> ShiftDemandTemplateDTO:
     """Create a template from existing shift demands."""
     try:
         if not await authz_check(
             session.get_user_id(), "create-shift-demand", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to create templates"
-            )
+            raise NotAuthorizedError("You do not have permission to create templates")
 
         # Validate team ID consistency
         if demands_dto.teamId != team_id:
