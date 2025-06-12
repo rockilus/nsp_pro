@@ -41,7 +41,7 @@ class TestShiftDemandTemplateRepository:
         assert db is not None
 
         # Test collection access
-        collection = db["shift_demand_templates"]
+        collection = db.shift_demand_templates
         assert collection is not None
 
     def test_collection_operations(self):
@@ -86,9 +86,7 @@ class TestShiftDemandTemplateRepository:
         assert update_result.modified_count == 1
 
         # Test delete
-        delete_result = self.repo.collection.delete_one(
-            {"_id": result.inserted_id}
-        )
+        delete_result = self.repo.collection.delete_one({"_id": result.inserted_id})
         assert delete_result.acknowledged
         assert delete_result.deleted_count == 1
 

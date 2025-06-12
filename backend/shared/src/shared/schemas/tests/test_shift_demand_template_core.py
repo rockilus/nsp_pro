@@ -2,12 +2,14 @@
 Tests for shift demand template core domain models.
 """
 
+from datetime import datetime, timezone
+
 import pytest
-from datetime import datetime, timezone, date
+
 from shared.schemas.core.shift_demand_template import (
     ShiftDemandTemplate,
-    TemplateWeekData,
     TemplateType,
+    TemplateWeekData,
     create_template_from_demands,
 )
 
@@ -18,9 +20,7 @@ class TestShiftDemandTemplate:
     def test_template_creation_basic(self):
         """Test basic template creation."""
         weeks_data = [
-            TemplateWeekData(
-                week_number=0, demands={"shift1": [2, 3, 2, 2, 3, 0, 0]}
-            )
+            TemplateWeekData(week_number=0, demands={"shift1": [2, 3, 2, 2, 3, 0, 0]})
         ]
 
         template = ShiftDemandTemplate(
@@ -40,9 +40,7 @@ class TestShiftDemandTemplate:
     def test_template_validation_errors(self):
         """Test validation of template data."""
         weeks_data = [
-            TemplateWeekData(
-                week_number=0, demands={"shift1": [2, 3, 2, 2, 3, 0, 0]}
-            )
+            TemplateWeekData(week_number=0, demands={"shift1": [2, 3, 2, 2, 3, 0, 0]})
         ]
 
         # Empty name
@@ -56,9 +54,7 @@ class TestShiftDemandTemplate:
             )
 
         # No weeks data
-        with pytest.raises(
-            ValueError, match="Template must have at least one week"
-        ):
+        with pytest.raises(ValueError, match="Template must have at least one week"):
             ShiftDemandTemplate(
                 name="Test",
                 team_id="team1",
@@ -71,9 +67,7 @@ class TestShiftDemandTemplate:
         """Test validation for even/odd templates."""
         # Even/odd must have exactly 2 weeks
         weeks_data = [
-            TemplateWeekData(
-                week_number=0, demands={"shift1": [2, 3, 2, 2, 3, 0, 0]}
-            )
+            TemplateWeekData(week_number=0, demands={"shift1": [2, 3, 2, 2, 3, 0, 0]})
         ]
 
         with pytest.raises(
@@ -89,9 +83,7 @@ class TestShiftDemandTemplate:
 
         # Valid even/odd template
         weeks_data.append(
-            TemplateWeekData(
-                week_number=1, demands={"shift1": [1, 2, 1, 1, 2, 0, 0]}
-            )
+            TemplateWeekData(week_number=1, demands={"shift1": [1, 2, 1, 1, 2, 0, 0]})
         )
 
         template = ShiftDemandTemplate(
@@ -107,9 +99,7 @@ class TestShiftDemandTemplate:
     def test_demand_data_validation(self):
         """Test validation of demand data structure."""
         # Wrong number of days
-        with pytest.raises(
-            ValueError, match="Each shift must have exactly 7 days"
-        ):
+        with pytest.raises(ValueError, match="Each shift must have exactly 7 days"):
             weeks_data = [
                 TemplateWeekData(
                     week_number=0, demands={"shift1": [2, 3, 2]}  # Only 3 days
@@ -124,9 +114,7 @@ class TestShiftDemandTemplate:
             )
 
         # Negative demand count
-        with pytest.raises(
-            ValueError, match="Demand counts must be non-negative"
-        ):
+        with pytest.raises(ValueError, match="Demand counts must be non-negative"):
             weeks_data = [
                 TemplateWeekData(
                     week_number=0, demands={"shift1": [2, 3, -1, 2, 3, 0, 0]}
@@ -224,9 +212,7 @@ class TestShiftDemandTemplate:
     def test_template_update_timestamp(self):
         """Test timestamp update functionality."""
         weeks_data = [
-            TemplateWeekData(
-                week_number=0, demands={"shift1": [2, 3, 2, 2, 3, 0, 0]}
-            )
+            TemplateWeekData(week_number=0, demands={"shift1": [2, 3, 2, 2, 3, 0, 0]})
         ]
 
         template = ShiftDemandTemplate(
@@ -245,9 +231,7 @@ class TestShiftDemandTemplate:
     def test_to_dict_and_from_dict(self):
         """Test serialization and deserialization."""
         weeks_data = [
-            TemplateWeekData(
-                week_number=0, demands={"shift1": [2, 3, 2, 2, 3, 0, 0]}
-            )
+            TemplateWeekData(week_number=0, demands={"shift1": [2, 3, 2, 2, 3, 0, 0]})
         ]
 
         template = ShiftDemandTemplate(

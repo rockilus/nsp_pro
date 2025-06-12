@@ -33,9 +33,7 @@ class ShiftDemandTemplateSchema(DocumentBaseSchema):
 
     @field_validator("weeks_data")
     @classmethod
-    def validate_weeks_data(
-        cls, v: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+    def validate_weeks_data(cls, v: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Validate weeks_data structure."""
         if not v:
             raise ValueError("Template must have at least one week of data")
@@ -51,20 +49,15 @@ class ShiftDemandTemplateSchema(DocumentBaseSchema):
             if not isinstance(demands, dict):
                 raise ValueError("Week demands must be a dictionary")
 
-            for shift_id, daily_demands in demands.items():
+            for _, daily_demands in demands.items():
                 if not isinstance(daily_demands, list):
                     raise ValueError("Daily demands must be a list")
                 if len(daily_demands) != 7:
-                    raise ValueError(
-                        "Daily demands must contain exactly 7 days"
-                    )
+                    raise ValueError("Daily demands must contain exactly 7 days")
                 if not all(
-                    isinstance(count, int) and count >= 0
-                    for count in daily_demands
+                    isinstance(count, int) and count >= 0 for count in daily_demands
                 ):
-                    raise ValueError(
-                        "All demand counts must be non-negative integers"
-                    )
+                    raise ValueError("All demand counts must be non-negative integers")
 
         return v
 
@@ -97,18 +90,12 @@ class ShiftDemandTemplateSchema(DocumentBaseSchema):
             weeks_data=weeks_data,
             description=self.description,
             created_by=self.created_by,
-            created_at=datetime.fromtimestamp(
-                self.created_at, tz=timezone.utc
-            ),
-            updated_at=datetime.fromtimestamp(
-                self.updated_at, tz=timezone.utc
-            ),
+            created_at=datetime.fromtimestamp(self.created_at, tz=timezone.utc),
+            updated_at=datetime.fromtimestamp(self.updated_at, tz=timezone.utc),
         )
 
     @classmethod
-    def from_core(
-        cls, template: ShiftDemandTemplate
-    ) -> "ShiftDemandTemplateSchema":
+    def from_core(cls, template: ShiftDemandTemplate) -> "ShiftDemandTemplateSchema":
         """Convert from core domain model."""
         weeks_data = [
             {"week_number": week.week_number, "demands": week.demands}
