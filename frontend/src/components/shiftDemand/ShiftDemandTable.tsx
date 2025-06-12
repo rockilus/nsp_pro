@@ -8,11 +8,8 @@ import {
   TableRow,
   TableCell,
   Typography,
-  Box,
   Checkbox,
-  TextField,
   Tooltip,
-  IconButton,
   CircularProgress,
 } from "@mui/material";
 import { Add, Remove } from "@mui/icons-material";
@@ -52,6 +49,7 @@ interface ShiftDemandTableProps {
   isColumnSelected: (date: Dayjs) => boolean;
   isAllSelected: () => boolean;
   savingCells: Set<string>;
+  maxHeight?: string; // New optional prop for controlling height
 }
 
 // Individual cell component
@@ -442,9 +440,55 @@ export default function ShiftDemandTable({
   isColumnSelected,
   isAllSelected,
   savingCells,
+  maxHeight = "70vh", // Default to 70% of viewport height
 }: ShiftDemandTableProps) {
   return (
-    <TableContainer>
+    <TableContainer
+      sx={{
+        maxHeight: maxHeight,
+        overflowY: "auto",
+        overflowX: "auto",
+        // Ensure smooth scrolling
+        scrollBehavior: "smooth",
+        // Add subtle border to indicate scrollable area
+        border: "1px solid",
+        borderColor: "divider",
+        borderRadius: 1,
+        // Ensure the sticky header has proper z-index
+        "& .MuiTableHead-root": {
+          position: "sticky",
+          top: 0,
+          zIndex: 1,
+          backgroundColor: "background.paper",
+        },
+        // Add subtle shadow under header when scrolling
+        "& .MuiTableHead-root::after": {
+          content: '""',
+          position: "absolute",
+          bottom: -1,
+          left: 0,
+          right: 0,
+          height: "1px",
+          background:
+            "linear-gradient(to right, transparent, rgba(0,0,0,0.1), transparent)",
+          opacity: 0,
+          transition: "opacity 0.2s ease-in-out",
+        },
+        // Show shadow when scrolled
+        "&.scrolled .MuiTableHead-root::after": {
+          opacity: 1,
+        },
+      }}
+      // Add scroll event listener to handle header shadow
+      onScroll={(e) => {
+        const container = e.currentTarget;
+        if (container.scrollTop > 0) {
+          container.classList.add("scrolled");
+        } else {
+          container.classList.remove("scrolled");
+        }
+      }}
+    >
       <Table size="small" stickyHeader>
         <ShiftDemandTableHeader
           lng={lng}

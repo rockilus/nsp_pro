@@ -42,12 +42,22 @@ export function BulkSelectToolbar({
       sx={{
         p: 2,
         mb: 2,
+        width: "100%",
+        margin: 0,
+        padding: "3px 16px",
         backgroundColor: "primary.50",
-        border: 1,
-        borderColor: "primary.200",
+        borderTop: "1px solid",
+        // borderBottom: "1px solid",
+        borderColor: "grey.100",
       }}
     >
-      <Box display="flex" justifyContent="space-between" alignItems="center">
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        width="100%"
+        height="35px"
+      >
         {/* Left side - Status */}
         <Box display="flex" alignItems="center" gap={2}>
           <Chip

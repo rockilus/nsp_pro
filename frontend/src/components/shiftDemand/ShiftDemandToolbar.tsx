@@ -43,11 +43,13 @@ export function ShiftDemandToolbar({
 
   return (
     <Paper
-      elevation={1}
+      elevation={0}
       sx={{
         p: 2,
         mb: 1,
         width: "100%",
+        margin: 0,
+        padding: "3px 16px",
         position: "sticky",
         top: 0,
         zIndex: 10,
@@ -59,6 +61,7 @@ export function ShiftDemandToolbar({
         justifyContent="space-between"
         alignItems="center"
         width="100%"
+        height="40px"
       >
         {/* Left side - Period Navigation (centered) */}
         <Box flex={1} display="flex" justifyContent="center">

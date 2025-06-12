@@ -10,7 +10,6 @@ import Paper from "@mui/material/Paper";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 // Icons
-import SaveIcon from "@mui/icons-material/Save";
 import RefreshIcon from "@mui/icons-material/Refresh";
 // Skeletons
 import TablesSkeleton from "../skeletons/tables-skeleton";
@@ -25,7 +24,6 @@ import { getWorkShifts } from "../../app/lib/shift";
 // Types
 import { ShiftT, ShiftType } from "../../types/shift";
 import {
-  ShiftDemandDTO,
   ShiftDemandCreateDTO,
   ShiftDemandUpdateDTO,
   PeriodType,
@@ -43,6 +41,42 @@ import "../../styles/tab-container-styles.css";
 // Extend dayjs with the required plugins
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isoWeek);
+
+// Hook for dynamic height calculation
+const useTableHeight = (isBulkModeActive: boolean) => {
+  const [tableHeight, setTableHeight] = React.useState("70vh");
+
+  React.useEffect(() => {
+    const calculateHeight = () => {
+      // Calculate available height based on viewport and other elements
+      const viewportHeight = window.innerHeight;
+      const headerHeight = 65; // Header height (64px + 1px border)
+      const toolbarHeight = 46; // Toolbar height (40px + 6px of padding)
+      const bulkToolbarHeight = isBulkModeActive ? 42 : 0; // Bulk toolbar height (35px + 6px padding + 1px border)
+      const paddingAndMargins = 29; // Padding and margins (29px padding)
+
+      const availableHeight =
+        viewportHeight -
+        headerHeight -
+        toolbarHeight -
+        bulkToolbarHeight -
+        paddingAndMargins;
+      const maxHeight = Math.max(
+        300,
+        Math.min(availableHeight, viewportHeight)
+      );
+
+      setTableHeight(`${maxHeight}px`);
+    };
+
+    calculateHeight();
+    window.addEventListener("resize", calculateHeight);
+
+    return () => window.removeEventListener("resize", calculateHeight);
+  }, [isBulkModeActive]);
+
+  return tableHeight;
+};
 
 interface SelectedCell {
   shiftId: string;
@@ -65,6 +99,16 @@ function ShiftDemandTabInternal({
 }) {
   const { t } = useTranslation(lng, "shift-demands");
 
+  // Bulk change state
+  const [bulkChangeState, setBulkChangeState] = useState<BulkChangeState>({
+    isActive: false,
+    selectedCells: [],
+    bulkValue: "",
+  });
+
+  // Dynamic table height
+  const tableHeight = useTableHeight(bulkChangeState.isActive);
+
   // Centralized period state (with localStorage persistence)
   const { currentDate, periodType, setCurrentDate, setPeriodType, isHydrated } =
     usePeriodState();
@@ -73,14 +117,6 @@ function ShiftDemandTabInternal({
   const [shiftError, setShiftError] = useState<string | null>(null);
   const [savingCells, setSavingCells] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
-
-  // Calculate date range for current period based on period type
-  // Bulk change state
-  const [bulkChangeState, setBulkChangeState] = useState<BulkChangeState>({
-    isActive: false,
-    selectedCells: [],
-    bulkValue: "",
-  });
 
   // Bulk selection helpers
   const toggleBulkMode = () => {
@@ -617,7 +653,7 @@ function ShiftDemandTabInternal({
         />
       )}
 
-      <Paper elevation={1} sx={{ p: 3, mb: 2 }}>
+      <Paper elevation={1} sx={{ p: 3, mb: 2, padding: "5px 24px 24px 24px" }}>
         {/* Save operation error */}
         {(bulkUpsert.error || create.error || update.error) && (
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -651,6 +687,7 @@ function ShiftDemandTabInternal({
           isColumnSelected={isColumnSelected}
           isAllSelected={isAllSelected}
           savingCells={savingCells}
+          maxHeight={tableHeight}
         />
       </Paper>
 
