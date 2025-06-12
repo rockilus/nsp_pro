@@ -39,12 +39,8 @@ class ShiftDemandNew:
     notes: Optional[str] = None
     source: ShiftDemandSource = ShiftDemandSource.MANUAL
     source_id: Optional[str] = None
-    created_at: datetime = field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
-    updated_at: datetime = field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     id: Optional[str] = None
 
     def __post_init__(self):
@@ -70,15 +66,9 @@ class ShiftDemandNew:
     def from_dict(cls, data: dict) -> "ShiftDemandNew":
         """Create instance from MongoDB document."""
         # Convert datetime back to date for the date field
-        data["date"] = datetime.fromtimestamp(
-            data["date"], tz=timezone.utc
-        ).date()
-        data["created_at"] = datetime.fromtimestamp(
-            data["created_at"], tz=timezone.utc
-        )
-        data["updated_at"] = datetime.fromtimestamp(
-            data["updated_at"], tz=timezone.utc
-        )
+        data["date"] = datetime.fromtimestamp(data["date"], tz=timezone.utc).date()
+        data["created_at"] = datetime.fromtimestamp(data["created_at"], tz=timezone.utc)
+        data["updated_at"] = datetime.fromtimestamp(data["updated_at"], tz=timezone.utc)
         data["source"] = ShiftDemandSource(data["source"])
         return cls(
             date=data["date"],
@@ -128,9 +118,7 @@ class ShiftDemandNew:
         return cls(**data_dict)
 
     @classmethod
-    def from_create_dto(
-        cls, data: ShiftDemandNewCreateDTO
-    ) -> "ShiftDemandNew":
+    def from_create_dto(cls, data: ShiftDemandNewCreateDTO) -> "ShiftDemandNew":
         """Create instance from create DTO with server-managed fields."""
         data_dict = data.model_dump()
         data_dict["date"] = datetime.fromtimestamp(
