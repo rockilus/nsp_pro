@@ -107,7 +107,6 @@ export interface UseShiftDemandsResult {
   matrix: ShiftDemandMatrix;
   isLoading: boolean;
   error: Error | null;
-  refetch: () => void;
 }
 
 /**

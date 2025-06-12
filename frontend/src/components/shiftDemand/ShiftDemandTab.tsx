@@ -433,7 +433,6 @@ function ShiftDemandTabInternal({
     matrix,
     isLoading: isLoadingDemands,
     error: demandsError,
-    refetch: refetchDemands,
   } = useShiftDemands(
     selectedTeamId || "",
     startDate.toDate(),
@@ -616,8 +615,7 @@ function ShiftDemandTabInternal({
           variant="contained"
           startIcon={<RefreshIcon />}
           onClick={() => {
-            refetchDemands();
-            window.location.reload(); // Reload to retry shift loading
+            window.location.reload(); // Reload to retry data loading
           }}
         >
           {t("retry")}
@@ -659,9 +657,6 @@ function ShiftDemandTabInternal({
         }
         bulkModeActive={bulkChangeState.isActive}
         onToggleBulkMode={toggleBulkMode}
-        selectedCellsCount={bulkChangeState.selectedCells.length}
-        onRefresh={refetchDemands}
-        isRefreshing={isLoadingDemands}
       />
 
       {/* Filter/Sort Toolbar - appears when filtering/sorting is active OR bulk mode is active */}

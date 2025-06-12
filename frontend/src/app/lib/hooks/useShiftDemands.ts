@@ -157,10 +157,6 @@ export const useShiftDemands = (
     matrix: matrixQuery.data || {},
     isLoading: demandsQuery.isLoading || matrixQuery.isLoading,
     error: demandsQuery.error || matrixQuery.error,
-    refetch: () => {
-      demandsQuery.refetch();
-      matrixQuery.refetch();
-    },
   };
 };
 

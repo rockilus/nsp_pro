@@ -1,7 +1,5 @@
 import React from "react";
-import { Box, Paper, Button, IconButton } from "@mui/material";
-import SelectAllIcon from "@mui/icons-material/SelectAll";
-import RefreshIcon from "@mui/icons-material/Refresh";
+import { Box, Paper } from "@mui/material";
 import { PeriodNavigation } from "./PeriodNavigation";
 import { useTranslation } from "../../app/i18n/client";
 import { Dayjs } from "dayjs";
@@ -19,11 +17,6 @@ interface ShiftDemandToolbarProps {
   // Bulk operations props
   bulkModeActive: boolean;
   onToggleBulkMode: () => void;
-  selectedCellsCount: number;
-
-  // Other actions
-  onRefresh: () => void;
-  isRefreshing: boolean;
 }
 
 export function ShiftDemandToolbar({
@@ -35,9 +28,6 @@ export function ShiftDemandToolbar({
   isLoading,
   bulkModeActive,
   onToggleBulkMode,
-  selectedCellsCount,
-  onRefresh,
-  isRefreshing,
 }: ShiftDemandToolbarProps) {
   const { t } = useTranslation(lng, "shift-demands");
 
@@ -76,26 +66,34 @@ export function ShiftDemandToolbar({
 
         {/* Right side - Bulk Select and Actions */}
         <Box display="flex" gap={1} alignItems="center">
-          <Button
-            variant={bulkModeActive ? "contained" : "outlined"}
-            startIcon={<SelectAllIcon />}
+          <button
             onClick={onToggleBulkMode}
-            size="small"
+            disabled={isLoading}
+            style={{
+              borderRadius: "4px",
+              border: "1px solid #e5e7eb",
+              height: "35px",
+              padding: "0 15px",
+              fontSize: "0.9rem",
+              fontWeight: 550,
+              color: bulkModeActive ? "white" : "#616161",
+              backgroundColor: bulkModeActive ? "#1976d2" : "white",
+              cursor: isLoading ? "not-allowed" : "pointer",
+              transition: "background-color 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              if (!isLoading && !bulkModeActive) {
+                e.currentTarget.style.backgroundColor = "#f0f0f0";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!bulkModeActive) {
+                e.currentTarget.style.backgroundColor = "white";
+              }
+            }}
           >
-            {bulkModeActive ? t("exit_bulk_mode") : t("bulk_select")}
-            {bulkModeActive &&
-              selectedCellsCount > 0 &&
-              ` (${selectedCellsCount})`}
-          </Button>
-
-          <IconButton
-            onClick={onRefresh}
-            disabled={isRefreshing}
-            size="small"
-            aria-label="refresh"
-          >
-            <RefreshIcon />
-          </IconButton>
+            {t("select")}
+          </button>
         </Box>
       </Box>
     </Paper>
