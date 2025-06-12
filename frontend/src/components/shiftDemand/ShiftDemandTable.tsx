@@ -62,6 +62,7 @@ interface ShiftDemandCellProps {
   isSelected: boolean;
   isBulkMode: boolean;
   isSaving: boolean;
+  shift: ShiftT; // Add shift object to get color information
   onCellChange: (shiftId: string, date: Dayjs, value: string) => Promise<void>;
   onToggleSelection: (shiftId: string, date: Dayjs) => void;
 }
@@ -74,10 +75,18 @@ function ShiftDemandCell({
   isSelected,
   isBulkMode,
   isSaving,
+  shift, // Add shift prop
   onCellChange,
   onToggleSelection,
 }: ShiftDemandCellProps) {
   const [isHovered, setIsHovered] = useState(false);
+
+  // Get shift colors from the mapping
+  const { background, sample, text } = ShiftColorMappings[shift.color] || {
+    background: "#f5f5f5",
+    sample: "#9e9e9e",
+    text: "#212121",
+  };
 
   const handleAddDemand = async () => {
     if (isSaving) return;
@@ -98,7 +107,16 @@ function ShiftDemandCell({
   };
 
   return (
-    <TableCell className={`shift-demand-cell ${isWeekend ? "weekend" : ""}`}>
+    <TableCell
+      className={`shift-demand-cell ${isWeekend ? "weekend" : ""}`}
+      style={
+        {
+          "--shift-bg-color": background,
+          "--shift-sample-color": sample,
+          "--shift-text-color": text,
+        } as React.CSSProperties
+      }
+    >
       {isBulkMode ? (
         <div className={`shift-demand-bulk ${isSelected ? "selected" : ""}`}>
           <Checkbox
@@ -119,7 +137,7 @@ function ShiftDemandCell({
           onMouseLeave={() => setIsHovered(false)}
         >
           {value === 0 ? (
-            // Empty state
+            // Empty state with shift color theming
             <div
               className={`shift-demand-empty ${isHovered ? "hovered" : ""}`}
               onClick={handleAddDemand}
@@ -131,7 +149,7 @@ function ShiftDemandCell({
               )}
             </div>
           ) : (
-            // Demand state
+            // Demand state with shift color theming
             <div
               className={`shift-demand-content ${isHovered ? "hovered" : ""} ${
                 isSaving ? "saving" : ""
@@ -328,6 +346,7 @@ function ShiftDemandRow({
             isSelected={isSelected}
             isBulkMode={bulkChangeState.isActive}
             isSaving={isSaving}
+            shift={shift} // Pass the shift object
             onCellChange={handleCellChange}
             onToggleSelection={toggleCellSelection}
           />
