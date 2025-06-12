@@ -14,7 +14,8 @@ import {
 } from "@mui/material";
 import { Add, Remove } from "@mui/icons-material";
 import { useTranslation } from "../../app/i18n/client";
-import { ShiftT } from "../../types/shift";
+import { ShiftT, ShiftType } from "../../types/shift";
+import { ShiftColorMappings } from "../../constants/constants";
 import "./ShiftDemandTable.css";
 
 // Types
@@ -194,30 +195,74 @@ function ShiftDemandRowHeader({
   isRowSelected,
   onSelectRow,
 }: ShiftDemandRowHeaderProps) {
+  const { background, sample, text } = ShiftColorMappings[shift.color] || {
+    background: "#f5f5f5",
+    sample: "#9e9e9e",
+    text: "#212121",
+  };
+
+  const isNextDay = !shift.endTime.isSame(shift.startTime, "day");
+  const isDutyShift = shift.shiftType === ShiftType.DUTY;
+
   return (
-    <TableCell className="shift-demand-row-header">
-      <div className="shift-demand-row-header-content">
+    <TableCell
+      className="shift-demand-row-header"
+      sx={{
+        padding: 0,
+        minWidth: 180,
+        maxWidth: 220,
+      }}
+    >
+      <div className="shift-demand-row-header-container">
+        {/* Shift type marker for duty shifts, placeholder for non-duty shifts */}
+        <div
+          className={`shift-demand-type-marker ${
+            isDutyShift ? "duty" : "placeholder"
+          }`}
+          style={{ "--bg-color": sample } as React.CSSProperties}
+        />
+
+        {/* Bulk mode checkbox */}
         {isBulkMode && (
           <Checkbox
             checked={isRowSelected}
             onChange={() => onSelectRow(shift.id)}
             size="small"
+            sx={{ mr: 0.5 }}
           />
         )}
-        <Tooltip title={shift.name}>
-          <div className="shift-demand-shift-info">
-            <Typography variant="body2" noWrap sx={{ fontSize: "0.875rem" }}>
-              {shift.acronym || shift.name}
-            </Typography>
+
+        {/* Shift name with truncation */}
+        <div className="shift-demand-name-container">
+          <Tooltip title={shift.name}>
             <Typography
-              variant="caption"
-              sx={{ fontSize: "0.75rem", color: "text.secondary" }}
+              variant="body2"
+              className="shift-demand-name"
+              sx={{ fontSize: "0.875rem", fontWeight: 550 }}
             >
-              {shift.startTime.format("HH:mm")} -{" "}
-              {shift.endTime.format("HH:mm")}
+              {shift.name || shift.acronym}
             </Typography>
-          </div>
-        </Tooltip>
+          </Tooltip>
+        </div>
+
+        {/* Time display */}
+        <div className="shift-demand-time-container">
+          <Typography
+            variant="caption"
+            className="shift-demand-time"
+            sx={{ fontSize: "0.75rem", color: "text.secondary" }}
+          >
+            {shift.startTime.format("HH:mm")}
+          </Typography>
+          <Typography
+            variant="caption"
+            className="shift-demand-time"
+            sx={{ fontSize: "0.75rem", color: "text.secondary" }}
+          >
+            {shift.endTime.format("HH:mm")}
+            {isNextDay && <sup>+1</sup>}
+          </Typography>
+        </div>
       </div>
     </TableCell>
   );
@@ -458,7 +503,7 @@ export default function ShiftDemandTable({
         "& .MuiTableHead-root": {
           position: "sticky",
           top: 0,
-          zIndex: 1,
+          zIndex: 2,
           backgroundColor: "background.paper",
         },
         // Add subtle shadow under header when scrolling
