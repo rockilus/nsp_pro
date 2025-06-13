@@ -52,27 +52,20 @@ class Request:
     status: RequestStatus = RequestStatus.PENDING
     fulfillment: FulfillmentStatus = FulfillmentStatus.NOT_PROCESSED
     comment: str = ""
-    created_at: datetime = field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     def __post_init__(self):
         """Validate the request data based on request type."""
         if self.request_type == RequestType.LEAVE and not self.shift_id:
             raise ValueError("Leave requests must specify a shift_id")
-        if (
-            self.request_type == RequestType.WORK_DEMAND
-            and not self.shift_options
-        ):
+        if self.request_type == RequestType.WORK_DEMAND and not self.shift_options:
             raise ValueError("Work demand requests must specify shift_options")
 
     @property
     def shift_selection(self) -> Union[str, List[ShiftWorkerOption]]:
         """Return the appropriate shift selection based on request type."""
         if self.request_type == RequestType.LEAVE:
-            assert (
-                self.shift_id is not None
-            ), "Leave requests must have a shift_id"
+            assert self.shift_id is not None, "Leave requests must have a shift_id"
             return self.shift_id
         return self.shift_options
 
@@ -134,9 +127,7 @@ class Request:
         out["end_date"] = datetime.combine(
             self.end_date, time.min, tzinfo=timezone.utc
         ).timestamp()
-        out["shift_options"] = [
-            option.to_dict() for option in self.shift_options
-        ]
+        out["shift_options"] = [option.to_dict() for option in self.shift_options]
         out["status"] = self.status.value
         out["fulfillment"] = self.fulfillment.value
         out["created_at"] = self.created_at.timestamp()
@@ -152,9 +143,7 @@ class Request:
             start_date=datetime.fromtimestamp(
                 data["start_date"], tz=timezone.utc
             ).date(),
-            end_date=datetime.fromtimestamp(
-                data["end_date"], tz=timezone.utc
-            ).date(),
+            end_date=datetime.fromtimestamp(data["end_date"], tz=timezone.utc).date(),
             shift_id=data["shift_id"],
             shift_options=[
                 ShiftWorkerOption.from_dict(option)
@@ -165,9 +154,7 @@ class Request:
             status=RequestStatus(data["status"]),
             fulfillment=FulfillmentStatus(data["fulfillment"]),
             comment=data.get("comment", ""),
-            created_at=datetime.fromtimestamp(
-                data["created_at"], tz=timezone.utc
-            ),
+            created_at=datetime.fromtimestamp(data["created_at"], tz=timezone.utc),
         )
 
     @classmethod
@@ -185,9 +172,7 @@ class Request:
             for option in data_snake.get("shift_options", [])
         ]
         data_snake["status"] = RequestStatus(data_snake["status"])
-        data_snake["fulfillment"] = FulfillmentStatus(
-            data_snake["fulfillment"]
-        )
+        data_snake["fulfillment"] = FulfillmentStatus(data_snake["fulfillment"])
         data_snake["created_at"] = datetime.fromtimestamp(
             data_snake["created_at"], timezone.utc
         )
@@ -218,9 +203,7 @@ class RequestAugmented(Request):
             start_date=datetime.fromtimestamp(
                 data["start_date"], tz=timezone.utc
             ).date(),
-            end_date=datetime.fromtimestamp(
-                data["end_date"], tz=timezone.utc
-            ).date(),
+            end_date=datetime.fromtimestamp(data["end_date"], tz=timezone.utc).date(),
             shift_id=data["shift_id"],
             shift_options=[
                 ShiftWorkerOption.from_dict(option)
@@ -231,9 +214,7 @@ class RequestAugmented(Request):
             status=RequestStatus(data["status"]),
             fulfillment=FulfillmentStatus(data["fulfillment"]),
             comment=data.get("comment", ""),
-            created_at=datetime.fromtimestamp(
-                data["created_at"], tz=timezone.utc
-            ),
+            created_at=datetime.fromtimestamp(data["created_at"], tz=timezone.utc),
             active=data["active"],
             shift_target_ids=data.get("shift_target_ids", []),
             missing_attributes=[
@@ -251,15 +232,11 @@ class RequestAugmented(Request):
         data["end_date"] = datetime.combine(
             self.end_date, time.min, tzinfo=timezone.utc
         ).timestamp()
-        data["shift_options"] = [
-            option.to_dto() for option in self.shift_options
-        ]
+        data["shift_options"] = [option.to_dto() for option in self.shift_options]
         data["status"] = self.status.value
         data["fulfillment"] = self.fulfillment.value
         data["created_at"] = self.created_at.timestamp()
-        data["missing_attributes"] = [
-            attr.to_dto() for attr in self.missing_attributes
-        ]
+        data["missing_attributes"] = [attr.to_dto() for attr in self.missing_attributes]
         as_dict = humps.camelize(data)
         validator = TypeAdapter(RequestDTO)
         return validator.validate_python(as_dict)

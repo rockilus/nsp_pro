@@ -1,15 +1,23 @@
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
+
+
+class DemandEntryDTO(BaseModel):
+    """DTO for individual demand entries."""
+
+    shiftId: str = Field(..., description="Shift identifier")
+    dayOfWeek: int = Field(
+        ..., ge=0, le=6, description="Day of week (0=Monday, 6=Sunday)"
+    )
+    count: int = Field(..., ge=0, description="Demand count")
 
 
 class TemplateWeekDataDTO(BaseModel):
     """DTO for template week data."""
 
     weekNumber: int = Field(..., ge=0, description="Week number (0-based)")
-    demands: Dict[str, List[int]] = Field(
-        ..., description="Shift ID to daily demands mapping"
-    )
+    demands: List[DemandEntryDTO] = Field(..., description="List of demand entries")
 
 
 class ShiftDemandTemplateDTO(BaseModel):
@@ -30,8 +38,6 @@ class ShiftDemandTemplateCreateDTO(BaseModel):
     """DTO for creating shift demand templates."""
 
     name: str = Field(..., min_length=1, max_length=100)
-    templateType: str = Field(..., pattern="^(standard|even_odd)$")
-    weeksData: List[TemplateWeekDataDTO] = Field(..., min_length=1, max_length=8)
     description: Optional[str] = Field(None, max_length=500)
 
 

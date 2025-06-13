@@ -5,6 +5,7 @@ from pydantic import field_validator
 
 from shared.database.schemas.base import DocumentBaseSchema
 from shared.schemas.core.shift_demand_template import (
+    DemandEntry,
     ShiftDemandTemplate,
     TemplateType,
     TemplateWeekData,
@@ -31,6 +32,7 @@ class ShiftDemandTemplateSchema(DocumentBaseSchema):
             raise ValueError(f"Invalid template type: {v}")
         return v
 
+    # pylint: disable=too-many-branches
     @field_validator("weeks_data")
     @classmethod
     def validate_weeks_data(cls, v: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -44,20 +46,29 @@ class ShiftDemandTemplateSchema(DocumentBaseSchema):
             if "demands" not in week_data:
                 raise ValueError("Week data must contain demands")
 
-            # Validate demands structure
+            # Validate demands structure (list of demand entries)
             demands = week_data["demands"]
-            if not isinstance(demands, dict):
-                raise ValueError("Week demands must be a dictionary")
+            if not isinstance(demands, list):
+                raise ValueError("Week demands must be a list")
 
-            for _, daily_demands in demands.items():
-                if not isinstance(daily_demands, list):
-                    raise ValueError("Daily demands must be a list")
-                if len(daily_demands) != 7:
-                    raise ValueError("Daily demands must contain exactly 7 days")
-                if not all(
-                    isinstance(count, int) and count >= 0 for count in daily_demands
-                ):
-                    raise ValueError("All demand counts must be non-negative integers")
+            for demand_entry in demands:
+                if not isinstance(demand_entry, dict):
+                    raise ValueError("Demand entry must be a dictionary")
+
+                required_fields = ["shift_id", "day_of_week", "count"]
+                for field in required_fields:
+                    if field not in demand_entry:
+                        raise ValueError(f"Demand entry must contain {field}")
+
+                if not isinstance(demand_entry["day_of_week"], int):
+                    raise ValueError("day_of_week must be an integer")
+                if not 0 <= demand_entry["day_of_week"] <= 6:
+                    raise ValueError("day_of_week must be between 0 and 6")
+
+                if not isinstance(demand_entry["count"], int):
+                    raise ValueError("count must be an integer")
+                if demand_entry["count"] < 0:
+                    raise ValueError("count must be non-negative")
 
         return v
 
@@ -74,13 +85,22 @@ class ShiftDemandTemplateSchema(DocumentBaseSchema):
 
     def to_core(self) -> ShiftDemandTemplate:
         """Convert to core domain model."""
-        weeks_data = [
-            TemplateWeekData(
-                week_number=week_data["week_number"],
-                demands=week_data["demands"],
+        weeks_data: List[TemplateWeekData] = []
+        for week_data in self.weeks_data:
+            demand_entries = [
+                DemandEntry(
+                    shift_id=entry["shift_id"],
+                    day_of_week=entry["day_of_week"],
+                    count=entry["count"],
+                )
+                for entry in week_data["demands"]
+            ]
+            weeks_data.append(
+                TemplateWeekData(
+                    week_number=week_data["week_number"],
+                    demands=demand_entries,
+                )
             )
-            for week_data in self.weeks_data
-        ]
 
         return ShiftDemandTemplate(
             id=self.id or "",
@@ -97,10 +117,19 @@ class ShiftDemandTemplateSchema(DocumentBaseSchema):
     @classmethod
     def from_core(cls, template: ShiftDemandTemplate) -> "ShiftDemandTemplateSchema":
         """Convert from core domain model."""
-        weeks_data = [
-            {"week_number": week.week_number, "demands": week.demands}
-            for week in template.weeks_data
-        ]
+        weeks_data: List[Dict[str, Any]] = []
+        for week in template.weeks_data:
+            demand_entries = [
+                {
+                    "shift_id": entry.shift_id,
+                    "day_of_week": entry.day_of_week,
+                    "count": entry.count,
+                }
+                for entry in week.demands
+            ]
+            weeks_data.append(
+                {"week_number": week.week_number, "demands": demand_entries}
+            )
 
         return cls(
             id=template.id,

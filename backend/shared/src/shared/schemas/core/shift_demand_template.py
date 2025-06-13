@@ -21,13 +21,29 @@ class TemplateType(str, Enum):
 
 
 @dataclass
+class DemandEntry:
+    """Individual demand entry for a specific shift and day."""
+
+    shift_id: str
+    day_of_week: int  # 0-6 (Monday=0, Sunday=6)
+    count: int
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for storage."""
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "DemandEntry":
+        """Create instance from dictionary."""
+        return cls(**data)
+
+
+@dataclass
 class TemplateWeekData:
     """Represents demand data for a single week within a template."""
 
     week_number: int  # 0-based week index (0 for first week, 1 for second)
-    demands: Dict[
-        str, List[int]
-    ]  # shift_id -> [day0_count, day1_count, ..., day6_count]
+    demands: List[DemandEntry]  # List of demand entries
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for storage."""
@@ -36,7 +52,9 @@ class TemplateWeekData:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "TemplateWeekData":
         """Create instance from dictionary."""
-        return cls(**data)
+        # Convert demand dictionaries back to DemandEntry objects
+        demands = [DemandEntry.from_dict(demand) for demand in data["demands"]]
+        return cls(week_number=data["week_number"], demands=demands)
 
 
 @dataclass
@@ -92,12 +110,10 @@ class ShiftDemandTemplate:
 
         # Validate demand data structure
         for week in self.weeks_data:
-            for _, demands in week.demands.items():
-                if len(demands) != 7:
-                    raise ValueError(
-                        "Each shift must have exactly 7 days of demand data"
-                    )
-                if any(count < 0 for count in demands):
+            for demand_entry in week.demands:
+                if demand_entry.day_of_week < 0 or demand_entry.day_of_week > 6:
+                    raise ValueError("Day of week must be between 0 and 6")
+                if demand_entry.count < 0:
                     raise ValueError("Demand counts must be non-negative")
 
     @property
@@ -142,29 +158,31 @@ class ShiftDemandTemplate:
         validator = TypeAdapter(ShiftDemandTemplateDTO)
         return validator.validate_python(as_dict)
 
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
     @classmethod
     def from_create_dto(
-        cls, data: ShiftDemandTemplateCreateDTO, created_by: str
+        cls,
+        data: ShiftDemandTemplateCreateDTO,
+        created_by: str,
+        team_id: str,
+        template_type: TemplateType,
+        weeks_data: List[TemplateWeekData],
     ) -> "ShiftDemandTemplate":
         """Create instance from create DTO with server-managed fields."""
-        data_dict = data.model_dump()
-        data_dict["template_type"] = TemplateType(data.templateType)
-        data_dict["weeks_data"] = [
-            TemplateWeekData(
-                week_number=week_data.weekNumber, demands=week_data.demands
-            )
-            for week_data in data.weeksData
-        ]
-        data_dict = humps.decamelize(data_dict)
-
         # Server-managed fields
         now = datetime.now(timezone.utc)
-        data_dict["created_by"] = created_by
-        data_dict["created_at"] = now
-        data_dict["updated_at"] = now
-        data_dict["id"] = None  # Will be set by service layer
 
-        return cls(**data_dict)
+        return cls(
+            name=data.name,
+            description=data.description,
+            team_id=team_id,
+            template_type=template_type,
+            weeks_data=weeks_data,
+            created_by=created_by,
+            created_at=now,
+            updated_at=now,
+            id=None,  # Will be set by service layer
+        )
 
     def update_from_dto(self, data: ShiftDemandTemplateUpdateDTO) -> None:
         """Update instance from update DTO with only provided fields."""
@@ -180,24 +198,36 @@ class ShiftDemandTemplate:
             self.template_type = TemplateType(data_dict["templateType"])
 
         if "weeksData" in data_dict:
-            self.weeks_data = [
-                TemplateWeekData(
-                    week_number=week_data.weekNumber, demands=week_data.demands
+            # Convert DTO weeks data to core model
+            weeks_data: List[TemplateWeekData] = []
+            for week_dto in data_dict["weeksData"]:
+                demand_entries = [
+                    DemandEntry(
+                        shift_id=entry.shiftId,
+                        day_of_week=entry.dayOfWeek,
+                        count=entry.count,
+                    )
+                    for entry in week_dto.demands
+                ]
+                weeks_data.append(
+                    TemplateWeekData(
+                        week_number=week_dto.weekNumber, demands=demand_entries
+                    )
                 )
-                for week_data in data_dict["weeksData"]
-            ]
+            self.weeks_data = weeks_data
 
         # Always update timestamp on any change
         self.update_timestamp()
 
 
 # Helper functions for creating templates from existing shift demands
-# pylint: disable=too-many-arguments, too-many-positional-arguments, too-many-locals
+# pylint: disable=too-many-arguments, too-many-positional-arguments
+# pylint: disable=too-many-locals
 def create_template_from_demands(
     name: str,
     team_id: str,
     template_type: TemplateType,
-    shift_demands: List[Dict[str, Any]],  # List of shift demand dictionaries
+    shift_demands: List[Dict[str, Any]],  # List of shift demand data
     created_by: str,
     description: Optional[str] = None,
 ) -> ShiftDemandTemplate:
@@ -217,7 +247,7 @@ def create_template_from_demands(
     """
 
     # Group demands by week and shift
-    weeks_data: Dict[int, Dict[str, List[int]]] = {}
+    weeks_data: Dict[int, List[DemandEntry]] = {}
 
     # Find date range and group by weeks
     if not shift_demands:
@@ -256,13 +286,16 @@ def create_template_from_demands(
             continue
 
         if week_num not in weeks_data:
-            weeks_data[week_num] = {}
+            weeks_data[week_num] = []
 
-        shift_id = demand["shift_id"]
-        if shift_id not in weeks_data[week_num]:
-            weeks_data[week_num][shift_id] = [0] * 7  # 7 days
-
-        weeks_data[week_num][shift_id][day_of_week] = demand["count"]
+        # Add demand entry
+        weeks_data[week_num].append(
+            DemandEntry(
+                shift_id=demand["shift_id"],
+                day_of_week=day_of_week,
+                count=demand["count"],
+            )
+        )
 
     # Convert to TemplateWeekData objects
     template_weeks: List[TemplateWeekData] = []

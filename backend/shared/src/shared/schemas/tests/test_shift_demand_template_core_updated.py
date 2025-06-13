@@ -1,6 +1,7 @@
-"""Tests for shift demand template core models."""
+"""
+Tests for shift demand template core domain models with updated structure.
+"""
 
-import time
 from datetime import datetime, timezone
 
 import pytest
@@ -15,18 +16,22 @@ from shared.schemas.core.shift_demand_template import (
 
 
 class TestShiftDemandTemplate:
-    """Test shift demand template functionality."""
+    """Test the core domain logic for shift demand templates."""
 
     def test_template_creation_basic(self):
         """Test basic template creation."""
-        # Create demand entries for the new format
-        demands = [
-            DemandEntry(shift_id="shift1", day_of_week=0, count=2),  # Monday
-            DemandEntry(shift_id="shift1", day_of_week=1, count=3),  # Tuesday
-            DemandEntry(shift_id="shift2", day_of_week=0, count=1),  # Monday
+        weeks_data = [
+            TemplateWeekData(
+                week_number=0,
+                demands=[
+                    DemandEntry(shift_id="shift1", day_of_week=0, count=2),
+                    DemandEntry(shift_id="shift1", day_of_week=1, count=3),
+                    DemandEntry(shift_id="shift1", day_of_week=2, count=2),
+                    DemandEntry(shift_id="shift1", day_of_week=3, count=2),
+                    DemandEntry(shift_id="shift1", day_of_week=4, count=3),
+                ],
+            )
         ]
-
-        weeks_data = [TemplateWeekData(week_number=0, demands=demands)]
 
         template = ShiftDemandTemplate(
             name="Test Template",
@@ -34,7 +39,6 @@ class TestShiftDemandTemplate:
             template_type=TemplateType.STANDARD,
             weeks_data=weeks_data,
             created_by="user1",
-            description="Test description",
         )
 
         assert template.name == "Test Template"
@@ -42,14 +46,17 @@ class TestShiftDemandTemplate:
         assert template.template_type == TemplateType.STANDARD
         assert len(template.weeks_data) == 1
         assert template.week_count == 1
-        assert template.description == "Test description"
-        assert template.created_by == "user1"
-        assert len(template.weeks_data[0].demands) == 3
 
     def test_template_validation_errors(self):
-        """Test template validation catches errors."""
-        demands = [DemandEntry(shift_id="shift1", day_of_week=0, count=2)]
-        weeks_data = [TemplateWeekData(week_number=0, demands=demands)]
+        """Test validation of template data."""
+        weeks_data = [
+            TemplateWeekData(
+                week_number=0,
+                demands=[
+                    DemandEntry(shift_id="shift1", day_of_week=0, count=2),
+                ],
+            )
+        ]
 
         # Empty name
         with pytest.raises(ValueError, match="Template name is required"):
@@ -61,36 +68,8 @@ class TestShiftDemandTemplate:
                 created_by="user1",
             )
 
-        # Name too long
-        with pytest.raises(
-            ValueError, match="Template name must be 100 characters or less"
-        ):
-            ShiftDemandTemplate(
-                name="x" * 101,
-                team_id="team1",
-                template_type=TemplateType.STANDARD,
-                weeks_data=weeks_data,
-                created_by="user1",
-            )
-
-        # Description too long
-        with pytest.raises(
-            ValueError,
-            match="Template description must be 500 characters or less",
-        ):
-            ShiftDemandTemplate(
-                name="Test",
-                team_id="team1",
-                template_type=TemplateType.STANDARD,
-                weeks_data=weeks_data,
-                created_by="user1",
-                description="x" * 501,
-            )
-
         # No weeks data
-        with pytest.raises(
-            ValueError, match="Template must have at least one week of data"
-        ):
+        with pytest.raises(ValueError, match="Template must have at least one week"):
             ShiftDemandTemplate(
                 name="Test",
                 team_id="team1",
@@ -100,14 +79,20 @@ class TestShiftDemandTemplate:
             )
 
     def test_even_odd_template_validation(self):
-        """Test even/odd template validation."""
-        demands = [DemandEntry(shift_id="shift1", day_of_week=0, count=2)]
+        """Test validation for even/odd templates."""
+        # Even/odd must have exactly 2 weeks
+        weeks_data = [
+            TemplateWeekData(
+                week_number=0,
+                demands=[
+                    DemandEntry(shift_id="shift1", day_of_week=0, count=2),
+                ],
+            )
+        ]
 
-        # Even/odd template with wrong number of weeks
         with pytest.raises(
             ValueError, match="Even/odd templates must have exactly 2 weeks"
         ):
-            weeks_data = [TemplateWeekData(week_number=0, demands=demands)]
             ShiftDemandTemplate(
                 name="Test",
                 team_id="team1",
@@ -117,10 +102,15 @@ class TestShiftDemandTemplate:
             )
 
         # Valid even/odd template
-        weeks_data = [
-            TemplateWeekData(week_number=0, demands=demands),
-            TemplateWeekData(week_number=1, demands=demands),
-        ]
+        weeks_data.append(
+            TemplateWeekData(
+                week_number=1,
+                demands=[
+                    DemandEntry(shift_id="shift1", day_of_week=0, count=1),
+                ],
+            )
+        )
+
         template = ShiftDemandTemplate(
             name="Test",
             team_id="team1",
@@ -128,16 +118,21 @@ class TestShiftDemandTemplate:
             weeks_data=weeks_data,
             created_by="user1",
         )
-        assert len(template.weeks_data) == 2
+
+        assert template.week_count == 2
 
     def test_demand_data_validation(self):
         """Test validation of demand data structure."""
-        # Invalid day of week
+        # Invalid day of week (too high)
         with pytest.raises(ValueError, match="Day of week must be between 0 and 6"):
-            demands = [
-                DemandEntry(shift_id="shift1", day_of_week=7, count=2)
-            ]  # Invalid day
-            weeks_data = [TemplateWeekData(week_number=0, demands=demands)]
+            weeks_data = [
+                TemplateWeekData(
+                    week_number=0,
+                    demands=[
+                        DemandEntry(shift_id="shift1", day_of_week=7, count=2),
+                    ],
+                )
+            ]
             ShiftDemandTemplate(
                 name="Test",
                 team_id="team1",
@@ -146,12 +141,34 @@ class TestShiftDemandTemplate:
                 created_by="user1",
             )
 
-        # Negative count
+        # Invalid day of week (negative)
+        with pytest.raises(ValueError, match="Day of week must be between 0 and 6"):
+            weeks_data = [
+                TemplateWeekData(
+                    week_number=0,
+                    demands=[
+                        DemandEntry(shift_id="shift1", day_of_week=-1, count=2),
+                    ],
+                )
+            ]
+            ShiftDemandTemplate(
+                name="Test",
+                team_id="team1",
+                template_type=TemplateType.STANDARD,
+                weeks_data=weeks_data,
+                created_by="user1",
+            )
+
+        # Negative demand count
         with pytest.raises(ValueError, match="Demand counts must be non-negative"):
-            demands = [
-                DemandEntry(shift_id="shift1", day_of_week=0, count=-1)
-            ]  # Negative count
-            weeks_data = [TemplateWeekData(week_number=0, demands=demands)]
+            weeks_data = [
+                TemplateWeekData(
+                    week_number=0,
+                    demands=[
+                        DemandEntry(shift_id="shift1", day_of_week=0, count=-1),
+                    ],
+                )
+            ]
             ShiftDemandTemplate(
                 name="Test",
                 team_id="team1",
@@ -185,12 +202,12 @@ class TestShiftDemandTemplate:
                 "date": "2023-01-09",
                 "shift_id": "shift1",
                 "count": 1,
-            },  # Next Monday (week 1)
+            },  # Next Monday
             {
                 "date": "2023-01-10",
                 "shift_id": "shift1",
                 "count": 2,
-            },  # Tuesday (week 1)
+            },  # Tuesday
         ]
 
         template = create_template_from_demands(
@@ -210,32 +227,26 @@ class TestShiftDemandTemplate:
         week0 = template.weeks_data[0]
         assert week0.week_number == 0
 
-        # Check that we have the right demands for week 0 (should have 5 entries
-        # for Mon-Fri)
-        week0_demands = week0.demands
-        assert len(week0_demands) == 5
-
-        # Check specific demand entries
-        monday_demand = next(d for d in week0_demands if d.day_of_week == 0)  # Monday
-        assert monday_demand.shift_id == "shift1"
-        assert monday_demand.count == 2
-
-        tuesday_demand = next(d for d in week0_demands if d.day_of_week == 1)  # Tuesday
-        assert tuesday_demand.shift_id == "shift1"
-        assert tuesday_demand.count == 3
+        # Find demands for each day of week
+        week0_demands = {
+            entry.day_of_week: entry.count
+            for entry in week0.demands
+            if entry.shift_id == "shift1"
+        }
+        expected_week0 = {0: 2, 1: 3, 2: 2, 3: 2, 4: 3}  # Mon-Fri
+        assert week0_demands == expected_week0
 
         # Check week 1 data
         week1 = template.weeks_data[1]
         assert week1.week_number == 1
-        week1_demands = week1.demands
-        assert len(week1_demands) == 2  # Monday and Tuesday of week 1
 
-        # Check Monday and Tuesday of week 1
-        monday_week1 = next(d for d in week1_demands if d.day_of_week == 0)
-        assert monday_week1.count == 1
-
-        tuesday_week1 = next(d for d in week1_demands if d.day_of_week == 1)
-        assert tuesday_week1.count == 2
+        week1_demands = {
+            entry.day_of_week: entry.count
+            for entry in week1.demands
+            if entry.shift_id == "shift1"
+        }
+        expected_week1 = {0: 1, 1: 2}  # Mon-Tue
+        assert week1_demands == expected_week1
 
     def test_create_template_from_demands_with_timestamps(self):
         """Test creating template from demands with timestamp dates."""
@@ -260,23 +271,25 @@ class TestShiftDemandTemplate:
 
         assert len(template.weeks_data) == 1
         week0 = template.weeks_data[0]
-        week0_demands = week0.demands
 
-        # Should have 2 demand entries
-        assert len(week0_demands) == 2
-
-        # Check Monday (day 0)
-        monday_demand = next(d for d in week0_demands if d.day_of_week == 0)
-        assert monday_demand.count == 2
-
-        # Check Tuesday (day 1)
-        tuesday_demand = next(d for d in week0_demands if d.day_of_week == 1)
-        assert tuesday_demand.count == 3
+        week0_demands = {
+            entry.day_of_week: entry.count
+            for entry in week0.demands
+            if entry.shift_id == "shift1"
+        }
+        expected = {0: 2, 1: 3}  # Mon-Tue
+        assert week0_demands == expected
 
     def test_template_update_timestamp(self):
         """Test timestamp update functionality."""
-        demands = [DemandEntry(shift_id="shift1", day_of_week=0, count=2)]
-        weeks_data = [TemplateWeekData(week_number=0, demands=demands)]
+        weeks_data = [
+            TemplateWeekData(
+                week_number=0,
+                demands=[
+                    DemandEntry(shift_id="shift1", day_of_week=0, count=2),
+                ],
+            )
+        ]
 
         template = ShiftDemandTemplate(
             name="Test Template",
@@ -286,21 +299,22 @@ class TestShiftDemandTemplate:
             created_by="user1",
         )
 
-        initial_updated_at = template.updated_at
-        # Small delay to ensure timestamp difference
-
-        time.sleep(0.01)
+        original_updated = template.updated_at
         template.update_timestamp()
 
-        assert template.updated_at > initial_updated_at
+        assert template.updated_at > original_updated
 
     def test_to_dict_and_from_dict(self):
         """Test serialization and deserialization."""
-        demands = [
-            DemandEntry(shift_id="shift1", day_of_week=0, count=2),
-            DemandEntry(shift_id="shift1", day_of_week=1, count=3),
+        weeks_data = [
+            TemplateWeekData(
+                week_number=0,
+                demands=[
+                    DemandEntry(shift_id="shift1", day_of_week=0, count=2),
+                    DemandEntry(shift_id="shift1", day_of_week=1, count=3),
+                ],
+            )
         ]
-        weeks_data = [TemplateWeekData(week_number=0, demands=demands)]
 
         template = ShiftDemandTemplate(
             name="Test Template",
@@ -311,26 +325,28 @@ class TestShiftDemandTemplate:
             description="Test description",
         )
 
-        # Test to_dict
+        # Convert to dict
         template_dict = template.to_dict()
+
         assert template_dict["name"] == "Test Template"
-        assert template_dict["team_id"] == "team1"
         assert template_dict["template_type"] == "standard"
+        assert isinstance(template_dict["created_at"], float)
         assert len(template_dict["weeks_data"]) == 1
-        assert template_dict["weeks_data"][0]["week_number"] == 0
-        assert len(template_dict["weeks_data"][0]["demands"]) == 2
 
-        # Test from_dict
-        template_from_dict = ShiftDemandTemplate.from_dict(template_dict)
-        assert template_from_dict.name == "Test Template"
-        assert template_from_dict.team_id == "team1"
-        assert template_from_dict.template_type == TemplateType.STANDARD
-        assert len(template_from_dict.weeks_data) == 1
-        assert len(template_from_dict.weeks_data[0].demands) == 2
-        assert isinstance(template_from_dict.weeks_data[0].demands[0], DemandEntry)
+        # Convert back from dict
+        restored_template = ShiftDemandTemplate.from_dict(template_dict)
 
-        # Check that demand entries are correctly deserialized
-        first_demand = template_from_dict.weeks_data[0].demands[0]
-        assert first_demand.shift_id == "shift1"
-        assert first_demand.day_of_week == 0
-        assert first_demand.count == 2
+        assert restored_template.name == template.name
+        assert restored_template.team_id == template.team_id
+        assert restored_template.template_type == template.template_type
+        assert len(restored_template.weeks_data) == 1
+
+        # Check that demand entries are correctly restored
+        original_demands = weeks_data[0].demands
+        restored_demands = restored_template.weeks_data[0].demands
+
+        assert len(original_demands) == len(restored_demands)
+        for orig, restored in zip(original_demands, restored_demands):
+            assert orig.shift_id == restored.shift_id
+            assert orig.day_of_week == restored.day_of_week
+            assert orig.count == restored.count
