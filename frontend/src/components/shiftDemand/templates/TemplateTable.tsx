@@ -204,38 +204,47 @@ function TemplateCell({
               )}
             </div>
           ) : (
+            // Demand state with shift color theming
             <div
               className={`template-content ${isHovered ? "hovered" : ""} ${
                 isSaving ? "saving" : ""
               }`}
             >
               {isSaving && (
-                <CircularProgress
-                  size={12}
-                  className="template-loading"
-                  color="inherit"
-                />
+                <CircularProgress size={16} className="template-loading" />
               )}
-              <span className={`template-value ${isSaving ? "saving" : ""}`}>
+
+              {/* Decrement button */}
+              {isHovered && !isSaving && (
+                <button
+                  onClick={handleDecrement}
+                  className="template-button decrement"
+                >
+                  <Remove
+                    className="template-button-icon"
+                    sx={{ fontSize: "14px" }}
+                  />
+                </button>
+              )}
+
+              {/* Value display */}
+              <span
+                className={`template-value ${isSaving ? "saving" : ""}`}
+              >
                 {value}
               </span>
+
+              {/* Increment button */}
               {isHovered && !isSaving && (
-                <>
-                  <IconButton
-                    className="template-button decrement"
-                    onClick={handleDecrement}
-                    size="small"
-                  >
-                    <Remove className="template-button-icon" />
-                  </IconButton>
-                  <IconButton
-                    className="template-button increment"
-                    onClick={handleIncrement}
-                    size="small"
-                  >
-                    <Add className="template-button-icon" />
-                  </IconButton>
-                </>
+                <button
+                  onClick={handleIncrement}
+                  className="template-button increment"
+                >
+                  <Add
+                    className="template-button-icon"
+                    sx={{ fontSize: "14px" }}
+                  />
+                </button>
               )}
             </div>
           )}
