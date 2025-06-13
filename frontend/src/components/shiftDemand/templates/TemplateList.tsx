@@ -82,10 +82,10 @@ export function TemplateList({
         id: template.id,
         name: template.name,
         description: template.description,
-        templateType: template.templateType,
+        templateType: template.templateType as TemplateType,
         createdBy: template.createdBy,
-        createdAt: dayjs(template.createdAt),
-        updatedAt: dayjs(template.updatedAt),
+        createdAt: dayjs(template.createdAt * 1000), // Convert timestamp to milliseconds
+        updatedAt: dayjs(template.updatedAt * 1000), // Convert timestamp to milliseconds
         totalDemands: TemplateUtils.calculateTotalDemands(template),
       }));
 
@@ -110,7 +110,7 @@ export function TemplateList({
 
     setDeleteLoading(templateId);
     try {
-      await ShiftDemandTemplateApi.deleteTemplate(templateId);
+      await ShiftDemandTemplateApi.deleteTemplate(templateId, teamId);
       onDeleteTemplate(templateId);
     } catch (error) {
       console.error("Failed to delete template:", error);

@@ -24,10 +24,11 @@ import dayjs from "dayjs";
 import { useTranslation } from "../../../app/i18n/client";
 import { ShiftT } from "../../../types/shift";
 import {
-  ShiftDemandTemplateT,
+  ShiftDemandTemplateDTO,
   TemplateViewMode,
   TemplateListItem,
   ShiftDemandTemplateCreateDTO,
+  ShiftDemandTemplateUpdateDTO,
   TemplateType,
 } from "../../../types/shift-demand-template";
 import { ShiftDemandTemplateApi } from "../../../app/lib/api/shiftDemandTemplateApi";
@@ -68,7 +69,7 @@ export default function TemplateManagementWindow({
 
   // State management
   const [selectedTemplate, setSelectedTemplate] =
-    useState<ShiftDemandTemplateT | null>(null);
+    useState<ShiftDemandTemplateDTO | null>(null);
   const [viewMode, setViewMode] = useState<TemplateViewMode>("list");
   const [showCreationDialog, setShowCreationDialog] = useState(false);
   const [showApplicationDialog, setShowApplicationDialog] = useState(false);
@@ -97,22 +98,20 @@ export default function TemplateManagementWindow({
   }, [open]);
 
   // Handlers
-  const handleTemplateSelect = (template: TemplateListItem) => {
-    // Convert TemplateListItem to ShiftDemandTemplateT
-    // For now, we'll use a simplified approach
-    const fullTemplate: ShiftDemandTemplateT = {
-      id: template.id,
-      teamId: teamId,
-      name: template.name,
-      description: template.description,
-      templateType: template.templateType,
-      standardWeekData: [],
-      createdBy: template.createdBy,
-      createdAt: template.createdAt.toISOString(),
-      updatedAt: template.updatedAt.toISOString(),
-    };
-    setSelectedTemplate(fullTemplate);
-    setViewMode("view");
+  const handleTemplateSelect = async (template: TemplateListItem) => {
+    try {
+      // Load full template data from API
+      const fullTemplate = await ShiftDemandTemplateApi.getTemplate(
+        template.id,
+        teamId
+      );
+      setSelectedTemplate(fullTemplate);
+      setViewMode("view");
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : t("error_loading_template")
+      );
+    }
   };
 
   const handleTemplateEdit = () => {
@@ -137,18 +136,33 @@ export default function TemplateManagementWindow({
     setTemplates((prev) => prev.filter((t) => t.id !== templateId));
   };
 
-  const handleTemplateUpdated = (updatedTemplate: ShiftDemandTemplateT) => {
-    setSelectedTemplate(updatedTemplate);
-    setViewMode("view");
-    setSuccessMessage(t("template_updated_successfully"));
+  const handleTemplateUpdated = async (
+    updateData: ShiftDemandTemplateUpdateDTO
+  ) => {
+    if (!selectedTemplate) return;
+
+    try {
+      const updatedTemplate = await ShiftDemandTemplateApi.updateTemplate(
+        selectedTemplate.id,
+        teamId,
+        updateData
+      );
+      setSelectedTemplate(updatedTemplate);
+      setViewMode("view");
+      setSuccessMessage(t("template_updated_successfully"));
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : t("error_updating_template")
+      );
+    }
   };
 
   const handleTemplateCreated = async (
     templateData: ShiftDemandTemplateCreateDTO
   ) => {
     try {
-      // Create the template via API client method that allows empty templates
-      const newTemplate = await ShiftDemandTemplateApi.createEmptyTemplate(
+      // Create the template via API client
+      const newTemplate = await ShiftDemandTemplateApi.createTemplate(
         teamId,
         templateData
       );
@@ -164,10 +178,10 @@ export default function TemplateManagementWindow({
         id: newTemplate.id,
         name: newTemplate.name,
         description: newTemplate.description,
-        templateType: newTemplate.templateType,
+        templateType: newTemplate.templateType as TemplateType,
         createdBy: newTemplate.createdBy,
-        createdAt: dayjs(newTemplate.createdAt),
-        updatedAt: dayjs(newTemplate.updatedAt),
+        createdAt: dayjs(newTemplate.createdAt * 1000), // Convert timestamp
+        updatedAt: dayjs(newTemplate.updatedAt * 1000), // Convert timestamp
         totalDemands: 0, // Empty template starts with 0 demands
       };
       setTemplates((prev) => [...prev, newTemplateListItem]);

@@ -31,8 +31,9 @@ import dayjs from "dayjs";
 import { useTranslation } from "../../../app/i18n/client";
 import { ShiftT } from "../../../types/shift";
 import {
-  ShiftDemandTemplateT,
-  TemplateWeekDataT,
+  ShiftDemandTemplateDTO,
+  TemplateWeekDataDTO,
+  DemandEntryDTO,
   TemplateType,
 } from "../../../types/shift-demand-template";
 import {
@@ -42,7 +43,7 @@ import {
 
 interface TemplateViewerProps {
   lng: string;
-  template: ShiftDemandTemplateT;
+  template: ShiftDemandTemplateDTO;
   shifts: ShiftT[];
   onEdit: () => void;
   onApply: () => void;
@@ -87,7 +88,7 @@ export function TemplateViewer({
 
     setDeleteLoading(true);
     try {
-      await ShiftDemandTemplateApi.deleteTemplate(template.id);
+      await ShiftDemandTemplateApi.deleteTemplate(template.id, template.teamId);
       onDelete();
     } catch (error) {
       console.error("Failed to delete template:", error);
@@ -103,14 +104,14 @@ export function TemplateViewer({
     return TemplateUtils.formatTemplateType(type);
   };
 
-  const formatDate = (dateStr: string) => {
-    return dayjs(dateStr).format("MMMM D, YYYY [at] h:mm A");
+  const formatDate = (timestamp: number) => {
+    return dayjs(timestamp * 1000).format("MMMM D, YYYY [at] h:mm A");
   };
 
   // Render a week data grid
-  const renderWeekGrid = (weekData: TemplateWeekDataT[], title: string) => {
+  const renderWeekGrid = (demands: DemandEntryDTO[], title: string) => {
     // Group demands by shift
-    const demandsByShift = weekData.reduce((acc, demand) => {
+    const demandsByShift = demands.reduce((acc, demand) => {
       if (!acc[demand.shiftId]) {
         acc[demand.shiftId] = new Array(7).fill(0);
       }
@@ -281,42 +282,24 @@ export function TemplateViewer({
 
         <Divider sx={{ my: 3 }} />
 
-        {/* Standard Week */}
-        <Box className="template-viewer-section">
-          <Typography className="template-viewer-section-title">
-            {template.templateType === "standard"
-              ? t("weekly_demands")
-              : t("standard_week_demands")}
-          </Typography>
-          {renderWeekGrid(template.standardWeekData, t("standard_week"))}
-        </Box>
-
-        {/* Even/Odd Weeks */}
-        {template.templateType === "even_odd" && (
-          <>
-            <Divider sx={{ my: 3 }} />
-
-            {/* Even Week */}
+        {/* Week Data */}
+        {template.weeksData.map((weekData, index) => (
+          <React.Fragment key={weekData.weekNumber}>
             <Box className="template-viewer-section">
               <Typography className="template-viewer-section-title">
-                {t("even_week_demands")}
+                {template.templateType === "standard"
+                  ? t("weekly_demands")
+                  : index === 0
+                  ? t("even_week_demands")
+                  : t("odd_week_demands")}
               </Typography>
-              {template.evenWeekData &&
-                renderWeekGrid(template.evenWeekData, t("even_week"))}
+              {renderWeekGrid(weekData.demands, `Week ${weekData.weekNumber}`)}
             </Box>
-
-            <Divider sx={{ my: 3 }} />
-
-            {/* Odd Week */}
-            <Box className="template-viewer-section">
-              <Typography className="template-viewer-section-title">
-                {t("odd_week_demands")}
-              </Typography>
-              {template.oddWeekData &&
-                renderWeekGrid(template.oddWeekData, t("odd_week"))}
-            </Box>
-          </>
-        )}
+            {index < template.weeksData.length - 1 && (
+              <Divider sx={{ my: 3 }} />
+            )}
+          </React.Fragment>
+        ))}
 
         {/* Usage Information */}
         <Divider sx={{ my: 3 }} />

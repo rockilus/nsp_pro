@@ -1,13 +1,13 @@
 /**
  * API client for shift demand template management
- * Handles all HTTP requests to the template endpoints with enhanced
- * error handling and validation
+ * Updated to match new backend DTO structure
  */
 
 import {
-  ShiftDemandTemplateT,
+  ShiftDemandTemplateDTO,
   ShiftDemandTemplateCreateDTO,
   ShiftDemandTemplateUpdateDTO,
+  TemplateFromDemandsDTO,
   ApplyTemplateDTO,
   TemplateApplicationResult,
   TemplateValidationResult,
@@ -69,7 +69,7 @@ const handleTemplateAPIError = async (response: Response): Promise<never> => {
 };
 
 /**
- * Client-side validation for template creation
+ * Client-side validation for template creation (updated for new structure)
  */
 const validateTemplateCreateRequest = (
   template: ShiftDemandTemplateCreateDTO
@@ -98,81 +98,32 @@ const validateTemplateCreateRequest = (
     );
   }
 
-  if (!template.standardWeekData || template.standardWeekData.length === 0) {
-    throw new Error("Template must have at least one standard week demand");
-  }
-
-  // Validate week data
-  template.standardWeekData.forEach((demand) => {
-    if (demand.dayOfWeek < 0 || demand.dayOfWeek > 6) {
-      throw new Error("Day of week must be between 0 (Monday) and 6 (Sunday)");
-    }
-    if (
-      demand.count < 0 ||
-      demand.count > TEMPLATE_CONSTRAINTS.MAX_COUNT_PER_DEMAND
-    ) {
-      throw new Error(
-        `Demand count must be between 0 and ${TEMPLATE_CONSTRAINTS.MAX_COUNT_PER_DEMAND}`
-      );
-    }
-  });
-
-  // Validate even/odd week data if template type is even_odd
-  if (template.templateType === "even_odd") {
-    if (!template.evenWeekData || !template.oddWeekData) {
-      throw new Error(
-        "Even/odd template type requires both even and odd week data"
-      );
-    }
-
-    [...template.evenWeekData, ...template.oddWeekData].forEach((demand) => {
-      if (demand.dayOfWeek < 0 || demand.dayOfWeek > 6) {
-        throw new Error(
-          "Day of week must be between 0 (Monday) and 6 (Sunday)"
-        );
-      }
-      if (
-        demand.count < 0 ||
-        demand.count > TEMPLATE_CONSTRAINTS.MAX_COUNT_PER_DEMAND
-      ) {
-        throw new Error(
-          `Demand count must be between 0 and ${TEMPLATE_CONSTRAINTS.MAX_COUNT_PER_DEMAND}`
-        );
-      }
-    });
-  }
+  // Note: Simplified validation since the new CreateDTO only has name and description
+  // Week data validation is handled by the backend
 };
 
 /**
- * Client-side validation for template application
+ * Client-side validation for template application (updated)
  */
 const validateApplyTemplateRequest = (request: ApplyTemplateDTO): void => {
   const startDate = new Date(request.startDate);
-  const endDate = new Date(request.endDate);
 
-  if (startDate >= endDate) {
-    throw new Error("End date must be after start date");
+  if (isNaN(startDate.getTime())) {
+    throw new Error("Invalid start date provided");
   }
 
-  const weeksDiff = Math.ceil(
-    (endDate.getTime() - startDate.getTime()) / (7 * 24 * 60 * 60 * 1000)
-  );
-  if (weeksDiff > TEMPLATE_CONSTRAINTS.MAX_WEEKS_IN_PERIOD) {
-    throw new Error(
-      `Date range cannot exceed ${TEMPLATE_CONSTRAINTS.MAX_WEEKS_IN_PERIOD} weeks`
-    );
-  }
+  // Additional validation can be added here as needed
 };
 
 /**
- * Main API client class for template operations
+ * Main API client class for template operations (updated)
  */
 export class ShiftDemandTemplateApi {
   /**
-   * Get all templates for a team
+   * Get all templates for a team (updated endpoint)
    */
-  static async getTemplates(teamId: string): Promise<ShiftDemandTemplateT[]> {
-    const response = await fetch(`${TEMPLATES_BASE}?team_id=${teamId}`, {
+  static async getTemplates(teamId: string): Promise<ShiftDemandTemplateDTO[]> {
+    const response = await fetch(`${TEMPLATES_BASE}/teams/${teamId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -188,16 +139,22 @@ export class ShiftDemandTemplateApi {
   }
 
   /**
-   * Get a specific template by ID
+   * Get a specific template by ID (updated endpoint)
    */
-  static async getTemplate(templateId: string): Promise<ShiftDemandTemplateT> {
-    const response = await fetch(`${TEMPLATES_BASE}/${templateId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    });
+  static async getTemplate(
+    templateId: string,
+    teamId: string
+  ): Promise<ShiftDemandTemplateDTO> {
+    const response = await fetch(
+      `${TEMPLATES_BASE}/${templateId}/teams/${teamId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      }
+    );
 
     if (!response.ok) {
       await handleTemplateAPIError(response);
@@ -207,52 +164,21 @@ export class ShiftDemandTemplateApi {
   }
 
   /**
-   * Create a new template
+   * Create a new template (simplified for new DTO structure)
    */
   static async createTemplate(
     teamId: string,
     template: ShiftDemandTemplateCreateDTO
-  ): Promise<ShiftDemandTemplateT> {
+  ): Promise<ShiftDemandTemplateDTO> {
     validateTemplateCreateRequest(template);
 
-    const response = await fetch(TEMPLATES_BASE, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        teamId,
-        ...template,
-      }),
-    });
-
-    if (!response.ok) {
-      await handleTemplateAPIError(response);
-    }
-
-    return response.json();
-  }
-
-  /**
-   * Create a new template with empty week data (bypassing client-side validation)
-   * This is useful for creating basic templates that can be edited later
-   */
-  static async createEmptyTemplate(
-    teamId: string,
-    template: ShiftDemandTemplateCreateDTO
-  ): Promise<ShiftDemandTemplateT> {
-    // Skip client-side validation for empty templates
     const response = await fetch(`${TEMPLATES_BASE}/teams/${teamId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       credentials: "include",
-      body: JSON.stringify({
-        teamId,
-        ...template,
-      }),
+      body: JSON.stringify(template),
     });
 
     if (!response.ok) {
@@ -263,20 +189,50 @@ export class ShiftDemandTemplateApi {
   }
 
   /**
-   * Update an existing template
+   * Create a template from existing demands in a date range
+   */
+  static async createTemplateFromDateRange(
+    teamId: string,
+    template: TemplateFromDemandsDTO
+  ): Promise<ShiftDemandTemplateDTO> {
+    const response = await fetch(
+      `${TEMPLATES_BASE}/teams/${teamId}/from-demands`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(template),
+      }
+    );
+
+    if (!response.ok) {
+      await handleTemplateAPIError(response);
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Update an existing template (updated endpoint)
    */
   static async updateTemplate(
     templateId: string,
+    teamId: string,
     update: ShiftDemandTemplateUpdateDTO
-  ): Promise<ShiftDemandTemplateT> {
-    const response = await fetch(`${TEMPLATES_BASE}/${templateId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify(update),
-    });
+  ): Promise<ShiftDemandTemplateDTO> {
+    const response = await fetch(
+      `${TEMPLATES_BASE}/${templateId}/teams/${teamId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(update),
+      }
+    );
 
     if (!response.ok) {
       await handleTemplateAPIError(response);
@@ -286,16 +242,22 @@ export class ShiftDemandTemplateApi {
   }
 
   /**
-   * Delete a template
+   * Delete a template (updated endpoint)
    */
-  static async deleteTemplate(templateId: string): Promise<void> {
-    const response = await fetch(`${TEMPLATES_BASE}/${templateId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    });
+  static async deleteTemplate(
+    templateId: string,
+    teamId: string
+  ): Promise<void> {
+    const response = await fetch(
+      `${TEMPLATES_BASE}/${templateId}/teams/${teamId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      }
+    );
 
     if (!response.ok) {
       await handleTemplateAPIError(response);
@@ -405,23 +367,14 @@ export const TemplateUtils = {
   /**
    * Calculate total demands in a template
    */
-  calculateTotalDemands(template: ShiftDemandTemplateT): number {
-    let total = template.standardWeekData.reduce(
-      (sum, demand) => sum + demand.count,
-      0
-    );
-
-    if (template.templateType === "even_odd") {
-      const evenTotal =
-        template.evenWeekData?.reduce((sum, demand) => sum + demand.count, 0) ||
-        0;
-      const oddTotal =
-        template.oddWeekData?.reduce((sum, demand) => sum + demand.count, 0) ||
-        0;
-      total = Math.max(evenTotal, oddTotal); // Use the larger of the two for display
-    }
-
-    return total;
+  calculateTotalDemands(template: ShiftDemandTemplateDTO): number {
+    return template.weeksData.reduce((totalWeekSum, week) => {
+      const weekSum = week.demands.reduce(
+        (sum: number, demand) => sum + demand.count,
+        0
+      );
+      return totalWeekSum + weekSum;
+    }, 0);
   },
 
   /**

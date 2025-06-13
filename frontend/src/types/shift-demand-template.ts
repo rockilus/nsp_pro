@@ -1,6 +1,6 @@
 /**
  * TypeScript type definitions for shift demand templates
- * Mirrors backend DTOs for consistent API communication
+ * Updated to match new backend DTO structure
  */
 
 import { Dayjs } from "dayjs";
@@ -13,53 +13,50 @@ export enum TemplateType {
   EVEN_ODD = "even_odd",
 }
 
-export enum WeekType {
-  STANDARD = "standard",
-  EVEN = "even",
-  ODD = "odd",
-}
-
 /**
  * UI view modes for template management
  */
 export type TemplateViewMode = "list" | "view" | "edit";
 
 /**
- * Template week data structure
+ * Individual demand entry structure (new format)
  */
-export interface TemplateWeekDataT {
+export interface DemandEntryDTO {
   shiftId: string;
   dayOfWeek: number; // 0-6 (Monday=0, Sunday=6)
   count: number;
 }
 
 /**
- * Core template data structure
+ * Template week data structure (new format)
  */
-export interface ShiftDemandTemplateT {
-  id: string;
-  teamId: string;
-  name: string;
-  description?: string;
-  templateType: TemplateType;
-  standardWeekData: TemplateWeekDataT[];
-  evenWeekData?: TemplateWeekDataT[];
-  oddWeekData?: TemplateWeekDataT[];
-  createdBy: string;
-  createdAt: string; // ISO date string
-  updatedAt: string; // ISO date string
+export interface TemplateWeekDataDTO {
+  weekNumber: number; // 0-based week index
+  demands: DemandEntryDTO[]; // Changed from dictionary to array
 }
 
 /**
- * DTO for creating new templates
+ * Core template data structure (response DTO)
+ */
+export interface ShiftDemandTemplateDTO {
+  id: string;
+  name: string;
+  teamId: string;
+  templateType: TemplateType;
+  weeksData: TemplateWeekDataDTO[];
+  description?: string;
+  createdBy: string;
+  createdAt: number; // timestamp
+  updatedAt: number; // timestamp
+}
+
+/**
+ * DTO for creating new templates (simplified)
  */
 export interface ShiftDemandTemplateCreateDTO {
   name: string;
   description?: string;
-  templateType: TemplateType;
-  standardWeekData: TemplateWeekDataT[];
-  evenWeekData?: TemplateWeekDataT[];
-  oddWeekData?: TemplateWeekDataT[];
+  // Removed: teamId, templateType, weeksData (handled by backend)
 }
 
 /**
@@ -69,9 +66,20 @@ export interface ShiftDemandTemplateUpdateDTO {
   name?: string;
   description?: string;
   templateType?: TemplateType;
-  standardWeekData?: TemplateWeekDataT[];
-  evenWeekData?: TemplateWeekDataT[];
-  oddWeekData?: TemplateWeekDataT[];
+  weeksData?: TemplateWeekDataDTO[];
+  // Removed: teamId (immutable)
+}
+
+/**
+ * DTO for creating template from existing shift demands (new structure)
+ */
+export interface TemplateFromDemandsDTO {
+  name: string;
+  templateType: TemplateType;
+  description?: string;
+  startDate: number; // timestamp
+  endDate: number; // timestamp
+  // Removed: teamId, shiftDemands (handled by backend)
 }
 
 /**
@@ -79,8 +87,7 @@ export interface ShiftDemandTemplateUpdateDTO {
  */
 export interface ApplyTemplateDTO {
   templateId: string;
-  startDate: string; // ISO date string
-  endDate: string; // ISO date string
+  startDate: number; // timestamp for application
   overwriteExisting: boolean;
 }
 
@@ -136,7 +143,7 @@ export interface TemplatePreview {
   templateId: string;
   templateName: string;
   weeklyPreview: Array<{
-    weekType: WeekType;
+    weekNumber: number;
     weekStartDate: Dayjs;
     demands: Array<{
       date: Dayjs;
@@ -153,26 +160,24 @@ export interface TemplatePreview {
 }
 
 /**
- * Template creation methods
+ * Template creation methods (updated)
  */
 export enum TemplateCreationMethod {
   FROM_SCRATCH = "from_scratch",
-  FROM_EXISTING_WEEK = "from_existing_week",
-  FROM_PERIOD = "from_period",
+  FROM_DATE_RANGE = "from_date_range", // Updated from FROM_PERIOD
 }
 
 export interface TemplateCreationOptions {
   method: TemplateCreationMethod;
-  sourceWeekStart?: Dayjs; // For FROM_EXISTING_WEEK
-  sourcePeriodStart?: Dayjs; // For FROM_PERIOD
-  sourcePeriodEnd?: Dayjs; // For FROM_PERIOD
+  sourcePeriodStart?: Dayjs; // For FROM_DATE_RANGE
+  sourcePeriodEnd?: Dayjs; // For FROM_DATE_RANGE
 }
 
 /**
  * Template management UI state
  */
 export interface TemplateManagementState {
-  selectedTemplate: ShiftDemandTemplateT | null;
+  selectedTemplate: ShiftDemandTemplateDTO | null; // Updated type
   viewMode: TemplateViewMode;
   isLoading: boolean;
   error: string | null;
@@ -180,11 +185,11 @@ export interface TemplateManagementState {
 }
 
 /**
- * Week selector for template creation from existing weeks
+ * Week selector for template creation from date ranges
  */
-export interface WeekSelectorData {
-  weekStart: Dayjs;
-  weekEnd: Dayjs;
+export interface DateRangeSelectorData {
+  startDate: Dayjs;
+  endDate: Dayjs;
   hasDemands: boolean;
   totalDemands: number;
   preview: Array<{
@@ -196,15 +201,16 @@ export interface WeekSelectorData {
 }
 
 /**
- * Constants and validation
+ * Constants and validation (updated)
  */
 export const TEMPLATE_CONSTRAINTS = {
   MAX_NAME_LENGTH: 100,
   MAX_DESCRIPTION_LENGTH: 500,
   MAX_TEMPLATES_PER_TEAM: 50,
-  MIN_NAME_LENGTH: 3,
-  MAX_COUNT_PER_DEMAND: 20,
-  MAX_WEEKS_IN_PERIOD: 52,
+  MIN_NAME_LENGTH: 1, // Updated to match backend
+  MAX_COUNT_PER_DEMAND: 50, // Updated
+  MAX_WEEKS_IN_TEMPLATE: 8,
+  MAX_DATE_RANGE_DAYS: 365,
 } as const;
 
 /**
@@ -224,3 +230,42 @@ export type TemplateError =
   | "template_limit_exceeded"
   | "invalid_date_range"
   | "internal_error";
+
+/**
+ * Utility functions for template data transformation
+ */
+export interface TemplateUtils {
+  /**
+   * Convert template DTO to display format
+   */
+  toListItem: (template: ShiftDemandTemplateDTO) => TemplateListItem;
+
+  /**
+   * Calculate total demands across all weeks
+   */
+  calculateTotalDemands: (weeksData: TemplateWeekDataDTO[]) => number;
+
+  /**
+   * Convert timestamps to Dayjs objects
+   */
+  timestampsToDayjs: (template: ShiftDemandTemplateDTO) => TemplateListItem;
+
+  /**
+   * Validate demand entry
+   */
+  validateDemandEntry: (entry: DemandEntryDTO) => string[];
+
+  /**
+   * Group demands by day of week
+   */
+  groupDemandsByDay: (
+    demands: DemandEntryDTO[]
+  ) => Record<number, DemandEntryDTO[]>;
+}
+
+// Legacy type aliases for backward compatibility
+/** @deprecated Use ShiftDemandTemplateDTO instead */
+export type ShiftDemandTemplateT = ShiftDemandTemplateDTO;
+
+/** @deprecated Use DemandEntryDTO instead */
+export type TemplateWeekDataT = DemandEntryDTO;

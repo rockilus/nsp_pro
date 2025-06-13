@@ -116,12 +116,10 @@ export function TemplateCreationDialog({
     setSubmitError("");
 
     try {
-      // Create basic template data with empty week data
+      // Create basic template data - backend will handle creating default week data
       const templateData: ShiftDemandTemplateCreateDTO = {
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
-        templateType: TemplateType.STANDARD,
-        standardWeekData: [], // Empty for now, can be edited later
       };
 
       // Pass the template data to parent component for API call
