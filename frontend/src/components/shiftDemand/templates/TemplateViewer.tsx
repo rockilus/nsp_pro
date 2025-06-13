@@ -7,22 +7,25 @@
  * - Action buttons (edit, apply, delete)
  */
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Box,
   Typography,
   Button,
   IconButton,
   Chip,
-  Divider,
-  Alert,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Alert,
 } from "@mui/material";
 import {
   Edit,
   PlayArrow,
   Delete,
-  ArrowBack,
   CalendarToday,
   Person,
   Info,
@@ -35,11 +38,14 @@ import {
   TemplateWeekDataDTO,
   DemandEntryDTO,
   TemplateType,
+  TEMPLATE_CONSTRAINTS,
 } from "../../../types/shift-demand-template";
 import {
   ShiftDemandTemplateApi,
   TemplateUtils,
 } from "../../../app/lib/api/shiftDemandTemplateApi";
+import { TemplateToolbar } from "./TemplateToolbar";
+import { BuildFromDemandsDialog } from "./dialogs/BuildFromDemandsDialog";
 
 interface TemplateViewerProps {
   lng: string;
@@ -48,7 +54,6 @@ interface TemplateViewerProps {
   onEdit: () => void;
   onApply: () => void;
   onDelete: () => void;
-  onBack: () => void;
   onError: (error: string) => void;
 }
 
@@ -59,11 +64,27 @@ export function TemplateViewer({
   onEdit,
   onApply,
   onDelete,
-  onBack,
   onError,
 }: TemplateViewerProps) {
   const { t } = useTranslation(lng, "shift-demand-templates");
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  // Toolbar state
+  const [currentWeek, setCurrentWeek] = useState(0);
+  const [weeksToShow, setWeeksToShow] = useState<1 | 2 | "all">(1);
+  const [templateType, setTemplateType] = useState<TemplateType>(
+    template.templateType as TemplateType
+  );
+  const [buildDialogOpen, setBuildDialogOpen] = useState(false);
+
+  // Edit dialogs state
+  const [editNameOpen, setEditNameOpen] = useState(false);
+  const [editDescriptionOpen, setEditDescriptionOpen] = useState(false);
+  const [editedName, setEditedName] = useState(template.name);
+  const [editedDescription, setEditedDescription] = useState(
+    template.description || ""
+  );
+  const [saveLoading, setSaveLoading] = useState(false);
 
   // Get day names for headers
   const dayNames = [
@@ -78,6 +99,21 @@ export function TemplateViewer({
 
   // Create shifts map for quick lookup
   const shiftsMap = new Map(shifts.map((shift) => [shift.id, shift]));
+
+  // Compute derived values for toolbar
+  const totalWeeks = template.weeksData.length;
+  const displayedWeeks = useMemo(() => {
+    if (weeksToShow === "all") {
+      return template.weeksData.map((w) => w.weekNumber);
+    }
+    if (weeksToShow === 2) {
+      const secondWeek = Math.min(currentWeek + 1, totalWeeks - 1);
+      return currentWeek === secondWeek
+        ? [currentWeek]
+        : [currentWeek, secondWeek];
+    }
+    return [currentWeek];
+  }, [currentWeek, weeksToShow, template.weeksData, totalWeeks]);
 
   const handleDelete = async () => {
     if (
@@ -100,12 +136,168 @@ export function TemplateViewer({
     }
   };
 
+  const handleEditName = () => {
+    setEditedName(template.name);
+    setEditNameOpen(true);
+  };
+
+  const handleEditDescription = () => {
+    setEditedDescription(template.description || "");
+    setEditDescriptionOpen(true);
+  };
+
+  const handleSaveName = async () => {
+    const trimmedName = editedName.trim();
+
+    if (
+      trimmedName === "" ||
+      trimmedName.length < TEMPLATE_CONSTRAINTS.MIN_NAME_LENGTH
+    ) {
+      setEditNameOpen(false);
+      return;
+    }
+
+    if (trimmedName === template.name) {
+      setEditNameOpen(false);
+      return;
+    }
+
+    setSaveLoading(true);
+    try {
+      await ShiftDemandTemplateApi.updateTemplate(
+        template.id,
+        template.teamId,
+        {
+          name: trimmedName,
+        }
+      );
+      setEditNameOpen(false);
+      onEdit(); // Refresh the template data
+    } catch (error) {
+      console.error("Failed to update template name:", error);
+      onError(
+        error instanceof Error
+          ? error.message
+          : "Failed to update template name"
+      );
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
+  const handleSaveDescription = async () => {
+    if (editedDescription === template.description) {
+      setEditDescriptionOpen(false);
+      return;
+    }
+
+    setSaveLoading(true);
+    try {
+      await ShiftDemandTemplateApi.updateTemplate(
+        template.id,
+        template.teamId,
+        {
+          description: editedDescription.trim() || undefined,
+        }
+      );
+      setEditDescriptionOpen(false);
+      onEdit(); // Refresh the template data
+    } catch (error) {
+      console.error("Failed to update template description:", error);
+      onError(
+        error instanceof Error
+          ? error.message
+          : "Failed to update template description"
+      );
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
   const formatTemplateType = (type: TemplateType) => {
     return TemplateUtils.formatTemplateType(type);
   };
 
   const formatDate = (timestamp: number) => {
-    return dayjs(timestamp * 1000).format("MMMM D, YYYY [at] h:mm A");
+    return dayjs(timestamp * 1000).format("MMMM D, YYYY");
+  };
+
+  // Toolbar handlers
+  const handleWeekChange = (week: number) => {
+    setCurrentWeek(Math.max(0, Math.min(week, totalWeeks - 1)));
+  };
+
+  const handleWeeksToShowChange = (weeks: 1 | 2 | "all") => {
+    setWeeksToShow(weeks);
+    // Reset current week if it would go out of bounds
+    if (weeks !== "all") {
+      const maxStartWeek = totalWeeks - (weeks === 2 ? 2 : 1);
+      if (currentWeek > Math.max(0, maxStartWeek)) {
+        setCurrentWeek(Math.max(0, maxStartWeek));
+      }
+    }
+  };
+
+  const handleTemplateTypeChange = (type: TemplateType) => {
+    setTemplateType(type);
+  };
+
+  const handleAddWeek = async () => {
+    // Create new week data with empty demands
+    const newWeekNumber = template.weeksData.length;
+    const newWeekData: TemplateWeekDataDTO = {
+      weekNumber: newWeekNumber,
+      demands: [],
+    };
+
+    const updatedWeeksData = [...template.weeksData, newWeekData];
+
+    try {
+      await ShiftDemandTemplateApi.updateTemplate(
+        template.id,
+        template.teamId,
+        { weeksData: updatedWeeksData }
+      );
+      onEdit(); // Refresh template data
+    } catch (error) {
+      throw error; // Let the toolbar handle the error display
+    }
+  };
+
+  const handleDeleteWeek = async (weekNumber: number) => {
+    if (template.weeksData.length <= 1) {
+      throw new Error("Cannot delete the last week");
+    }
+
+    // Remove the week and renumber remaining weeks
+    const updatedWeeksData = template.weeksData
+      .filter((week) => week.weekNumber !== weekNumber)
+      .map((week, index) => ({
+        ...week,
+        weekNumber: index, // Renumber weeks to be consecutive
+      }));
+
+    try {
+      await ShiftDemandTemplateApi.updateTemplate(
+        template.id,
+        template.teamId,
+        { weeksData: updatedWeeksData }
+      );
+
+      // Adjust current week if necessary
+      const newTotalWeeks = updatedWeeksData.length;
+      if (currentWeek >= newTotalWeeks) {
+        setCurrentWeek(Math.max(0, newTotalWeeks - 1));
+      }
+
+      onEdit(); // Refresh template data
+    } catch (error) {
+      throw error; // Let the toolbar handle the error display
+    }
+  };
+
+  const handleBuildFromDemands = () => {
+    setBuildDialogOpen(true);
   };
 
   // Render a week data grid
@@ -173,150 +365,232 @@ export function TemplateViewer({
     <Box className="template-viewer-container">
       {/* Header */}
       <Box className="template-viewer-header">
-        <Box className="template-viewer-title">
-          <IconButton onClick={onBack} sx={{ mr: 1 }}>
-            <ArrowBack />
-          </IconButton>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="h5" component="h2" gutterBottom>
-              {template.name}
-            </Typography>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
-              <Chip
-                label={formatTemplateType(template.templateType)}
-                color="primary"
-                variant="outlined"
+        {/* First line: Title, template info, and action buttons */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 1,
+          }}
+        >
+          {/* Left side: Title + Template info */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            {/* Title with edit button */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              <Typography variant="h5" component="h2">
+                {template.name}
+              </Typography>
+              <IconButton
                 size="small"
-              />
-              <Typography
-                variant="body2"
-                color="textSecondary"
-                sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+                onClick={handleEditName}
+                sx={{
+                  opacity: 0.6,
+                  "&:hover": { opacity: 1 },
+                }}
               >
-                <CalendarToday fontSize="small" />
-                {t("created")} {formatDate(template.createdAt)}
-              </Typography>
+                <Edit fontSize="small" />
+              </IconButton>
             </Box>
-            {template.description && (
-              <Typography variant="body1" color="textSecondary">
-                {template.description}
-              </Typography>
-            )}
-          </Box>
-        </Box>
 
-        {/* Action buttons */}
-        <Box className="template-viewer-actions">
-          <Button variant="outlined" startIcon={<Edit />} onClick={onEdit}>
-            {t("edit")}
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<PlayArrow />}
-            onClick={onApply}
-            color="primary"
-          >
-            {t("apply_template")}
-          </Button>
-          <Button
-            variant="outlined"
-            startIcon={
-              deleteLoading ? <CircularProgress size={16} /> : <Delete />
-            }
-            onClick={handleDelete}
-            disabled={deleteLoading}
-            color="error"
-          >
-            {t("delete")}
-          </Button>
-        </Box>
-      </Box>
-
-      {/* Content */}
-      <Box className="template-viewer-content">
-        {/* Template Info */}
-        <Box className="template-viewer-section">
-          <Typography className="template-viewer-section-title">
-            {t("template_information")}
-          </Typography>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 2,
-              mb: 2,
-            }}
-          >
-            <Box>
-              <Typography variant="body2" color="textSecondary">
-                {t("template_type")}
-              </Typography>
-              <Typography variant="body1">
-                {formatTemplateType(template.templateType)}
-              </Typography>
-            </Box>
-            <Box>
-              <Typography variant="body2" color="textSecondary">
-                {t("total_demands")}
-              </Typography>
-              <Typography variant="body1">
-                {TemplateUtils.calculateTotalDemands(template)}
-              </Typography>
-            </Box>
-            <Box>
-              <Typography variant="body2" color="textSecondary">
-                {t("created_by")}
-              </Typography>
-              <Typography variant="body1">{template.createdBy}</Typography>
-            </Box>
-            <Box>
-              <Typography variant="body2" color="textSecondary">
-                {t("last_updated")}
-              </Typography>
-              <Typography variant="body1">
-                {formatDate(template.updatedAt)}
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-
-        <Divider sx={{ my: 3 }} />
-
-        {/* Week Data */}
-        {template.weeksData.map((weekData, index) => (
-          <React.Fragment key={weekData.weekNumber}>
-            <Box className="template-viewer-section">
-              <Typography className="template-viewer-section-title">
-                {template.templateType === "standard"
-                  ? t("weekly_demands")
-                  : index === 0
-                  ? t("even_week_demands")
-                  : t("odd_week_demands")}
-              </Typography>
-              {renderWeekGrid(weekData.demands, `Week ${weekData.weekNumber}`)}
-            </Box>
-            {index < template.weeksData.length - 1 && (
-              <Divider sx={{ my: 3 }} />
-            )}
-          </React.Fragment>
-        ))}
-
-        {/* Usage Information */}
-        <Divider sx={{ my: 3 }} />
-
-        <Box className="template-viewer-section">
-          <Typography className="template-viewer-section-title">
-            {t("usage_information")}
-          </Typography>
-          <Alert severity="info" icon={<Info />}>
-            <Typography variant="body2">
-              {template.templateType === "standard"
-                ? t("standard_template_usage_info")
-                : t("even_odd_template_usage_info")}
+            {/* Template info (type and date) */}
+            <Chip
+              label={formatTemplateType(template.templateType)}
+              color="primary"
+              variant="outlined"
+              size="small"
+            />
+            <Typography
+              variant="body2"
+              color="textSecondary"
+              sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+            >
+              <CalendarToday fontSize="small" />
+              {formatDate(template.createdAt)}
             </Typography>
-          </Alert>
+          </Box>
+
+          {/* Right side: Action buttons (icons only) */}
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <IconButton
+              onClick={onApply}
+              color="primary"
+              sx={{
+                bgcolor: "primary.main",
+                color: "white",
+                "&:hover": { bgcolor: "primary.dark" },
+              }}
+            >
+              <PlayArrow />
+            </IconButton>
+            <IconButton
+              onClick={handleDelete}
+              disabled={deleteLoading}
+              color="error"
+            >
+              {deleteLoading ? <CircularProgress size={20} /> : <Delete />}
+            </IconButton>
+          </Box>
+        </Box>
+
+        {/* Second line: Description */}
+        {template.description && (
+          <Box
+            sx={{ display: "flex", alignItems: "flex-start", gap: 0.5, mb: 2 }}
+          >
+            <Typography variant="body1" color="textSecondary" sx={{ flex: 1 }}>
+              {template.description}
+            </Typography>
+            <IconButton
+              size="small"
+              onClick={handleEditDescription}
+              sx={{
+                opacity: 0.6,
+                "&:hover": { opacity: 1 },
+                mt: -0.5,
+              }}
+            >
+              <Edit fontSize="small" />
+            </IconButton>
+          </Box>
+        )}
+
+        {/* Template Toolbar */}
+        <TemplateToolbar
+          lng={lng}
+          template={template}
+          currentWeek={currentWeek}
+          weeksToShow={weeksToShow}
+          templateType={templateType}
+          displayedWeeks={displayedWeeks}
+          totalWeeks={totalWeeks}
+          onWeekChange={handleWeekChange}
+          onWeeksToShowChange={handleWeeksToShowChange}
+          onTemplateTypeChange={handleTemplateTypeChange}
+          onAddWeek={handleAddWeek}
+          onDeleteWeek={handleDeleteWeek}
+          onBuildFromDemands={handleBuildFromDemands}
+          onError={onError}
+          onTemplateUpdated={onEdit}
+        />
+      </Box>
+
+      {/* Main Component */}
+      <Box className="template-viewer-content" sx={{ mt: 3, p: 3 }}>
+        {/* Main component placeholder - will be implemented later */}
+        <Box sx={{ textAlign: "center", py: 4 }}>
+          <Typography variant="h6" color="textSecondary" gutterBottom>
+            {t("main_component_placeholder", "Main component coming soon...")}
+          </Typography>
+          <Typography variant="body2" color="textSecondary">
+            {t(
+              "template_content_description",
+              "Template content and editor will be displayed here"
+            )}
+          </Typography>
         </Box>
       </Box>
+
+      {/* Edit Name Dialog */}
+      <Dialog
+        open={editNameOpen}
+        onClose={() => setEditNameOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>{t("edit_template_name")}</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label={t("template_name")}
+            fullWidth
+            variant="outlined"
+            value={editedName}
+            onChange={(e) => setEditedName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleSaveName();
+              }
+            }}
+            error={
+              editedName.trim().length > 0 &&
+              editedName.trim().length < TEMPLATE_CONSTRAINTS.MIN_NAME_LENGTH
+            }
+            helperText={
+              editedName.trim().length > 0 &&
+              editedName.trim().length < TEMPLATE_CONSTRAINTS.MIN_NAME_LENGTH
+                ? t("template_name_too_short")
+                : `${editedName.length}/${TEMPLATE_CONSTRAINTS.MAX_NAME_LENGTH}`
+            }
+            inputProps={{
+              maxLength: TEMPLATE_CONSTRAINTS.MAX_NAME_LENGTH,
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditNameOpen(false)}>{t("cancel")}</Button>
+          <Button
+            onClick={handleSaveName}
+            variant="contained"
+            disabled={
+              saveLoading ||
+              editedName.trim() === "" ||
+              editedName.trim().length < TEMPLATE_CONSTRAINTS.MIN_NAME_LENGTH ||
+              editedName.length > TEMPLATE_CONSTRAINTS.MAX_NAME_LENGTH
+            }
+          >
+            {saveLoading ? <CircularProgress size={20} /> : t("save")}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Description Dialog */}
+      <Dialog
+        open={editDescriptionOpen}
+        onClose={() => setEditDescriptionOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>{t("edit_template_description")}</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label={t("template_description")}
+            fullWidth
+            multiline
+            rows={3}
+            variant="outlined"
+            value={editedDescription}
+            onChange={(e) => setEditedDescription(e.target.value)}
+            helperText={`${editedDescription.length}/${TEMPLATE_CONSTRAINTS.MAX_DESCRIPTION_LENGTH}`}
+            inputProps={{
+              maxLength: TEMPLATE_CONSTRAINTS.MAX_DESCRIPTION_LENGTH,
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditDescriptionOpen(false)}>
+            {t("cancel")}
+          </Button>
+          <Button
+            onClick={handleSaveDescription}
+            variant="contained"
+            disabled={saveLoading}
+          >
+            {saveLoading ? <CircularProgress size={20} /> : t("save")}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Build From Demands Dialog */}
+      <BuildFromDemandsDialog
+        lng={lng}
+        open={buildDialogOpen}
+        onClose={() => setBuildDialogOpen(false)}
+        templateName={template.name}
+      />
     </Box>
   );
 }

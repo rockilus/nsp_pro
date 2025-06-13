@@ -280,7 +280,6 @@ export default function TemplateManagementWindow({
           onEdit={handleTemplateEdit}
           onApply={() => handleTemplateApply()}
           onDelete={handleBack} // This will go back to list after delete
-          onBack={handleBack}
           onError={handleError}
         />
       );
