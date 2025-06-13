@@ -21,6 +21,8 @@ import {
   Checkbox,
   IconButton,
   CircularProgress,
+  Typography,
+  Tooltip,
 } from "@mui/material";
 import { Add, Remove } from "@mui/icons-material";
 import { useTranslation } from "../../../app/i18n/client";
@@ -30,7 +32,13 @@ import {
   DemandEntryDTO,
   TemplateType,
 } from "../../../types/shift-demand-template";
+import {
+  ColumnDefinition,
+  ColumnFilter,
+  TableSort,
+} from "../../../types/filter";
 import { ShiftColorMappings } from "../../../constants/constants";
+import ColumnSortFilterMenu from "../../table/ColumnSortFilterMenu";
 import "./TemplateTable.css";
 
 // Types
@@ -82,6 +90,12 @@ interface TemplateTableProps {
   isAllSelected: () => boolean;
   savingCells: Set<string>;
   maxHeight?: string;
+  // Filter/Sort props
+  currentSort?: TableSort;
+  currentFilter?: ColumnFilter;
+  onSort?: (sort: TableSort | null) => void;
+  onFilter?: (filter: ColumnFilter) => void;
+  shiftColumn?: ColumnDefinition;
 }
 
 // Individual cell component
@@ -250,34 +264,61 @@ function TemplateRowHeader({
       className="template-row-header"
       sx={{
         padding: 0,
-        minWidth: 180,
-        maxWidth: 220,
+        minWidth: 80,
+        maxWidth: 120,
         position: "relative",
       }}
     >
       <div className="template-row-header-container">
+        {/* Shift type marker for duty shifts, placeholder for non-duty shifts */}
         <div
           className={`template-type-marker ${
             isDutyShift ? "duty" : "placeholder"
           }`}
           style={{ "--bg-color": sample } as React.CSSProperties}
         />
-        <div className="template-name-container">
-          <div className="template-name" title={shift.name}>
-            {shift.name}
-          </div>
-          <div className="template-time">
-            {shift.startTime.format("HH:mm")} - {shift.endTime.format("HH:mm")}
-            {isNextDay && " (+1)"}
-          </div>
-        </div>
+
+        {/* Bulk mode checkbox */}
         {isBulkMode && (
           <Checkbox
             checked={isRowSelected}
             onChange={() => onSelectRow(shift.id)}
             size="small"
+            sx={{ mr: 0.5 }}
           />
         )}
+
+        {/* Shift name with truncation */}
+        <div className="template-name-container">
+          <Tooltip title={shift.name}>
+            <Typography
+              variant="body2"
+              className="template-name"
+              sx={{ fontSize: "0.875rem", fontWeight: 550 }}
+            >
+              {shift.name || shift.acronym}
+            </Typography>
+          </Tooltip>
+        </div>
+
+        {/* Time display */}
+        <div className="template-time-container">
+          <Typography
+            variant="caption"
+            className="template-time"
+            sx={{ fontSize: "0.75rem", color: "text.secondary" }}
+          >
+            {shift.startTime.format("HH:mm")}
+          </Typography>
+          <Typography
+            variant="caption"
+            className="template-time"
+            sx={{ fontSize: "0.75rem", color: "text.secondary" }}
+          >
+            {shift.endTime.format("HH:mm")}
+            {isNextDay && <sup>+1</sup>}
+          </Typography>
+        </div>
       </div>
     </TableCell>
   );
@@ -328,16 +369,6 @@ function TemplateRow({
   isRowSelected,
   savingCells,
 }: TemplateRowProps) {
-  // Calculate row total
-  const rowTotal = displayedWeeks.reduce((weekSum, weekNumber) => {
-    return (
-      weekSum +
-      Array.from({ length: 7 }, (_, dayIndex) =>
-        getDemandValue(shift.id, weekNumber, dayIndex)
-      ).reduce((daySum, value) => daySum + value, 0)
-    );
-  }, 0);
-
   return (
     <TableRow hover>
       <TemplateRowHeader
@@ -372,9 +403,6 @@ function TemplateRow({
           );
         })
       )}
-      <TableCell className="template-total-cell">
-        <div className="template-total">{rowTotal}</div>
-      </TableCell>
     </TableRow>
   );
 }
@@ -389,6 +417,12 @@ interface TemplateTableHeaderProps {
   selectAllCells: () => void;
   isColumnSelected: (weekNumber: number, dayIndex: number) => boolean;
   isAllSelected: () => boolean;
+  // Filter/Sort props
+  currentSort?: TableSort;
+  currentFilter?: ColumnFilter;
+  onSort?: (sort: TableSort | null) => void;
+  onFilter?: (filter: ColumnFilter) => void;
+  shiftColumn?: ColumnDefinition;
 }
 
 function TemplateTableHeader({
@@ -400,6 +434,11 @@ function TemplateTableHeader({
   selectAllCells,
   isColumnSelected,
   isAllSelected,
+  currentSort,
+  currentFilter,
+  onSort,
+  onFilter,
+  shiftColumn,
 }: TemplateTableHeaderProps) {
   const { t } = useTranslation(lng, "shift-demand-templates");
 
@@ -418,14 +457,42 @@ function TemplateTableHeader({
     <TableHead>
       {/* Week header row */}
       <TableRow>
-        <TableCell className="template-header-corner" rowSpan={2}>
-          {bulkChangeState.isActive && (
-            <Checkbox
-              checked={isAllSelected()}
-              onChange={selectAllCells}
-              size="small"
-            />
-          )}
+        <TableCell
+          className="template-header-corner"
+          rowSpan={2}
+          sx={{ position: "relative" }}
+        >
+          <div className="template-header-content">
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              {bulkChangeState.isActive ? (
+                <>
+                  <Checkbox
+                    checked={isAllSelected()}
+                    indeterminate={
+                      bulkChangeState.selectedCells.length > 0 &&
+                      !isAllSelected()
+                    }
+                    onChange={selectAllCells}
+                    size="small"
+                  />
+                  <Typography variant="body2">{t("shift", "Shift")}</Typography>
+                </>
+              ) : (
+                <Typography variant="body2">{t("shift", "Shift")}</Typography>
+              )}
+            </div>
+
+            {/* Filter/Sort menu - aligned horizontally with content */}
+            {shiftColumn && onSort && onFilter && (
+              <ColumnSortFilterMenu
+                column={shiftColumn}
+                currentSort={currentSort}
+                currentFilter={currentFilter}
+                onSort={onSort}
+                onFilter={onFilter}
+              />
+            )}
+          </div>
         </TableCell>
         {displayedWeeks.map((weekNumber) => {
           const weekLabel =
@@ -452,9 +519,6 @@ function TemplateTableHeader({
             </TableCell>
           );
         })}
-        <TableCell className="template-total-header" rowSpan={2}>
-          {t("total", "Total")}
-        </TableCell>
       </TableRow>
 
       {/* Day header row */}
@@ -582,6 +646,11 @@ export default function TemplateTable({
   isAllSelected,
   savingCells,
   maxHeight = "70vh",
+  currentSort,
+  currentFilter,
+  onSort,
+  onFilter,
+  shiftColumn,
 }: TemplateTableProps) {
   return (
     <TableContainer
@@ -633,6 +702,11 @@ export default function TemplateTable({
           selectAllCells={selectAllCells}
           isColumnSelected={isColumnSelected}
           isAllSelected={isAllSelected}
+          currentSort={currentSort}
+          currentFilter={currentFilter}
+          onSort={onSort}
+          onFilter={onFilter}
+          shiftColumn={shiftColumn}
         />
         <TemplateTableBody
           lng={lng}

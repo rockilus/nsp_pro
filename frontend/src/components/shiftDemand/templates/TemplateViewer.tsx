@@ -41,9 +41,16 @@ import {
   TEMPLATE_CONSTRAINTS,
 } from "../../../types/shift-demand-template";
 import {
+  ColumnDefinition,
+  ColumnFilter,
+  TableSort,
+} from "../../../types/filter";
+import {
   ShiftDemandTemplateApi,
   TemplateUtils,
 } from "../../../app/lib/api/shiftDemandTemplateApi";
+import { useTableState } from "../../../hooks/useTableState";
+import { createShiftColumns } from "../shiftColumns";
 import { TemplateToolbar } from "./TemplateToolbar";
 import { BuildFromDemandsDialog } from "./dialogs/BuildFromDemandsDialog";
 import TemplateTable from "./TemplateTable";
@@ -137,6 +144,22 @@ export function TemplateViewer({
     });
     return map;
   }, [template.weeksData]);
+
+  // Shift column definitions for filtering/sorting
+  const shiftColumns = useMemo(
+    () => createShiftColumns(t, shifts),
+    [t, shifts]
+  );
+
+  // Table state for shift filtering and sorting
+  const {
+    tableState: shiftTableState,
+    filteredAndSortedData: filteredShifts,
+    addFilter: addShiftFilter,
+    removeFilter: removeShiftFilter,
+    updateSort: updateShiftSort,
+    resetAll: resetShiftFilters,
+  } = useTableState(shifts, shiftColumns, "nsp-pro-template-table-state");
 
   const handleDelete = async () => {
     if (
@@ -583,7 +606,7 @@ export function TemplateViewer({
       weekNumber: number;
       dayIndex: number;
     }[] = [];
-    shifts.forEach((shift) => {
+    filteredShifts.forEach((shift) => {
       columnCells.push({ shiftId: shift.id, weekNumber, dayIndex });
     });
 
@@ -636,7 +659,7 @@ export function TemplateViewer({
       weekNumber: number;
       dayIndex: number;
     }[] = [];
-    shifts.forEach((shift) => {
+    filteredShifts.forEach((shift) => {
       displayedWeeks.forEach((weekNumber) => {
         for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
           allCells.push({ shiftId: shift.id, weekNumber, dayIndex });
@@ -690,7 +713,7 @@ export function TemplateViewer({
       weekNumber: number;
       dayIndex: number;
     }[] = [];
-    shifts.forEach((shift) => {
+    filteredShifts.forEach((shift) => {
       columnCells.push({ shiftId: shift.id, weekNumber, dayIndex });
     });
 
@@ -710,7 +733,7 @@ export function TemplateViewer({
       weekNumber: number;
       dayIndex: number;
     }[] = [];
-    shifts.forEach((shift) => {
+    filteredShifts.forEach((shift) => {
       displayedWeeks.forEach((weekNumber) => {
         for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
           allCells.push({ shiftId: shift.id, weekNumber, dayIndex });
@@ -727,8 +750,6 @@ export function TemplateViewer({
       )
     );
   };
-
-  // ...existing code...
 
   return (
     <Box className="template-viewer-container">
@@ -829,7 +850,7 @@ export function TemplateViewer({
         <TemplateTable
           lng={lng}
           template={template}
-          shifts={shifts}
+          shifts={filteredShifts}
           displayedWeeks={displayedWeeks}
           templateType={templateType}
           bulkChangeState={bulkChangeState}
@@ -845,6 +866,11 @@ export function TemplateViewer({
           isAllSelected={isAllSelected}
           savingCells={savingCells}
           maxHeight="60vh"
+          currentSort={shiftTableState.sort || undefined}
+          currentFilter={shiftTableState.filters[0]}
+          onSort={updateShiftSort}
+          onFilter={addShiftFilter}
+          shiftColumn={shiftColumns[0]}
         />
       </Box>
 
