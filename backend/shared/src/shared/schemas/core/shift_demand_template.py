@@ -201,19 +201,49 @@ class ShiftDemandTemplate:
             # Convert DTO weeks data to core model
             weeks_data: List[TemplateWeekData] = []
             for week_dto in data_dict["weeksData"]:
-                demand_entries = [
-                    DemandEntry(
-                        shift_id=entry.shiftId,
-                        day_of_week=entry.dayOfWeek,
-                        count=entry.count,
+                # Validate week_dto structure
+                if not isinstance(week_dto, dict):
+                    continue
+
+                if "demands" not in week_dto or "weekNumber" not in week_dto:
+                    continue
+
+                demands_data = week_dto["demands"]
+                if not isinstance(demands_data, list):
+                    continue
+
+                demand_entries = []
+                for entry in demands_data:
+                    if not isinstance(entry, dict):
+                        continue
+
+                    # Check required fields exist
+                    required_fields = ["shiftId", "dayOfWeek", "count"]
+                    if not all(field in entry for field in required_fields):
+                        continue
+
+                    try:
+                        demand_entries.append(
+                            DemandEntry(
+                                shift_id=entry["shiftId"],
+                                day_of_week=entry["dayOfWeek"],
+                                count=entry["count"],
+                            )
+                        )
+                    except (ValueError, TypeError):
+                        # Log the error but continue processing other entries
+                        continue
+
+                try:
+                    weeks_data.append(
+                        TemplateWeekData(
+                            week_number=week_dto["weekNumber"],
+                            demands=demand_entries,
+                        )
                     )
-                    for entry in week_dto.demands
-                ]
-                weeks_data.append(
-                    TemplateWeekData(
-                        week_number=week_dto.weekNumber, demands=demand_entries
-                    )
-                )
+                except (ValueError, TypeError):
+                    # Log the error but continue processing other weeks
+                    continue
             self.weeks_data = weeks_data
 
         # Always update timestamp on any change

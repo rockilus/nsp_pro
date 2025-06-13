@@ -201,6 +201,35 @@ export interface DateRangeSelectorData {
 }
 
 /**
+ * Template type constraints
+ */
+export interface TemplateTypeConstraints {
+  [TemplateType.STANDARD]: {
+    minWeeks: number;
+    maxWeeks: number;
+    allowWeekModification: boolean;
+  };
+  [TemplateType.EVEN_ODD]: {
+    minWeeks: number;
+    maxWeeks: number;
+    allowWeekModification: boolean;
+  };
+}
+
+export const TEMPLATE_TYPE_CONSTRAINTS: TemplateTypeConstraints = {
+  [TemplateType.STANDARD]: {
+    minWeeks: 1,
+    maxWeeks: 8,
+    allowWeekModification: true,
+  },
+  [TemplateType.EVEN_ODD]: {
+    minWeeks: 2,
+    maxWeeks: 2,
+    allowWeekModification: false,
+  },
+} as const;
+
+/**
  * Constants and validation (updated)
  */
 export const TEMPLATE_CONSTRAINTS = {

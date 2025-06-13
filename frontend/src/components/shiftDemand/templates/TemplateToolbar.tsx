@@ -45,6 +45,12 @@ import {
   TemplateWeekDataDTO,
 } from "../../../types/shift-demand-template";
 import { ShiftDemandTemplateApi } from "../../../app/lib/api/shiftDemandTemplateApi";
+import {
+  getWeekManagementConstraints,
+  validateTemplateForTypeChange,
+  getValidationErrorMessage,
+} from "../../../utils/templateValidation";
+import { ConfirmEvenOddDialog } from "./dialogs/ConfirmEvenOddDialog";
 
 type WeeksToShow = 1 | 2 | "all";
 
@@ -95,6 +101,14 @@ export function TemplateToolbar({
   // Confirmation dialogs
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [weekToDelete, setWeekToDelete] = useState<number | null>(null);
+  const [confirmEvenOddOpen, setConfirmEvenOddOpen] = useState(false);
+  const [pendingTemplateType, setPendingTemplateType] =
+    useState<TemplateType | null>(null);
+
+  // Calculate week management constraints based on template type
+  const weekConstraints = useMemo(() => {
+    return getWeekManagementConstraints(templateType, totalWeeks);
+  }, [templateType, totalWeeks]);
 
   // Navigation logic
   const canNavigatePrevious = useMemo(() => {
@@ -168,15 +182,59 @@ export function TemplateToolbar({
   ) => {
     if (newType === null || newType === templateType) return;
 
+    // Special handling for EVEN_ODD conversion
+    if (newType === TemplateType.EVEN_ODD) {
+      if (totalWeeks === 2) {
+        // Already has exactly 2 weeks, direct conversion
+        await updateTemplateType(newType);
+      } else if (totalWeeks > 2) {
+        // More than 2 weeks - show confirmation dialog for deletion
+        setPendingTemplateType(newType);
+        setConfirmEvenOddOpen(true);
+      } else {
+        // Less than 2 weeks - automatically add weeks to reach 2
+        await updateTemplateType(newType);
+      }
+      return;
+    }
+
+    // For non-EVEN_ODD conversions, proceed with validation
+    const validation = validateTemplateForTypeChange(
+      templateType,
+      newType,
+      totalWeeks
+    );
+
+    if (!validation.isValid) {
+      const errorMessage = getValidationErrorMessage(
+        validation.error || "unknown_error",
+        newType,
+        totalWeeks
+      );
+      onError(errorMessage);
+      return;
+    }
+
+    // Direct update for standard template type changes
+    await updateTemplateType(newType);
+  };
+
+  // Update template type (used by both direct update and confirmation)
+  const updateTemplateType = async (newType: TemplateType) => {
     setTypeToggleLoading(true);
     try {
-      await ShiftDemandTemplateApi.updateTemplate(
-        template.id,
-        template.teamId,
-        { templateType: newType }
-      );
-      onTemplateTypeChange(newType);
-      onTemplateUpdated(); // Refresh template data
+      // For EVEN_ODD conversion, we need to handle week adjustment
+      if (newType === TemplateType.EVEN_ODD && totalWeeks !== 2) {
+        await convertToEvenOddTemplate(newType);
+      } else {
+        await ShiftDemandTemplateApi.updateTemplate(
+          template.id,
+          template.teamId,
+          { templateType: newType }
+        );
+        onTemplateTypeChange(newType);
+        onTemplateUpdated();
+      }
     } catch (error) {
       console.error("Failed to update template type:", error);
       onError(
@@ -187,6 +245,69 @@ export function TemplateToolbar({
     } finally {
       setTypeToggleLoading(false);
     }
+  };
+
+  // Convert template to EVEN_ODD with week adjustment
+  const convertToEvenOddTemplate = async (newType: TemplateType) => {
+    try {
+      let adjustedWeeksData: TemplateWeekDataDTO[];
+
+      if (totalWeeks >= 2) {
+        // Template has 2 or more weeks - keep only first 2
+        adjustedWeeksData = template.weeksData
+          .slice(0, 2)
+          .map((week, index) => ({
+            ...week,
+            weekNumber: index, // Renumber to 0, 1
+          }));
+      } else {
+        // Template has fewer than 2 weeks - use existing weeks and add empty ones
+        adjustedWeeksData = [...template.weeksData];
+
+        // Renumber existing weeks
+        adjustedWeeksData.forEach((week, index) => {
+          week.weekNumber = index;
+        });
+      }
+
+      // Ensure we have exactly 2 weeks
+      while (adjustedWeeksData.length < 2) {
+        adjustedWeeksData.push({
+          weekNumber: adjustedWeeksData.length,
+          demands: [],
+        });
+      }
+
+      await ShiftDemandTemplateApi.updateTemplate(
+        template.id,
+        template.teamId,
+        {
+          templateType: newType,
+          weeksData: adjustedWeeksData,
+        }
+      );
+
+      onTemplateTypeChange(newType);
+      onTemplateUpdated();
+    } catch (error) {
+      console.error("Failed to convert to Even/Odd template:", error);
+      throw error;
+    }
+  };
+
+  // Handle Even/Odd conversion confirmation
+  const handleEvenOddConfirm = async () => {
+    if (pendingTemplateType) {
+      await updateTemplateType(pendingTemplateType);
+      setPendingTemplateType(null);
+      setConfirmEvenOddOpen(false);
+    }
+  };
+
+  // Handle Even/Odd conversion cancellation
+  const handleEvenOddCancel = () => {
+    setPendingTemplateType(null);
+    setConfirmEvenOddOpen(false);
   };
 
   // Format displayed weeks
@@ -253,32 +374,53 @@ export function TemplateToolbar({
           {/* Week Management - Add/Remove Buttons */}
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <ToggleButtonGroup size="small" sx={{ height: 32 }}>
-              <ToggleButton
-                value="remove"
-                onClick={() => handleDeleteWeekClick(totalWeeks - 1)}
-                disabled={
-                  totalWeeks <= 1 || deleteWeekLoading.get(totalWeeks - 1)
+              <Tooltip
+                title={
+                  weekConstraints.removeButtonDisabledReason
+                    ? t(weekConstraints.removeButtonDisabledReason)
+                    : t("remove_week")
                 }
-                sx={{ px: 1, minWidth: 32 }}
               >
-                {deleteWeekLoading.get(totalWeeks - 1) ? (
-                  <CircularProgress size={16} />
-                ) : (
-                  <Remove fontSize="small" />
-                )}
-              </ToggleButton>
-              <ToggleButton
-                value="add"
-                onClick={handleAddWeek}
-                disabled={addWeekLoading || totalWeeks >= 8}
-                sx={{ px: 1, minWidth: 32 }}
+                <span>
+                  <ToggleButton
+                    value="remove"
+                    onClick={() => handleDeleteWeekClick(totalWeeks - 1)}
+                    disabled={
+                      !weekConstraints.canRemoveWeek ||
+                      deleteWeekLoading.get(totalWeeks - 1)
+                    }
+                    sx={{ px: 1, minWidth: 32 }}
+                  >
+                    {deleteWeekLoading.get(totalWeeks - 1) ? (
+                      <CircularProgress size={16} />
+                    ) : (
+                      <Remove fontSize="small" />
+                    )}
+                  </ToggleButton>
+                </span>
+              </Tooltip>
+              <Tooltip
+                title={
+                  weekConstraints.addButtonDisabledReason
+                    ? t(weekConstraints.addButtonDisabledReason)
+                    : t("add_week")
+                }
               >
-                {addWeekLoading ? (
-                  <CircularProgress size={16} />
-                ) : (
-                  <Add fontSize="small" />
-                )}
-              </ToggleButton>
+                <span>
+                  <ToggleButton
+                    value="add"
+                    onClick={handleAddWeek}
+                    disabled={!weekConstraints.canAddWeek || addWeekLoading}
+                    sx={{ px: 1, minWidth: 32 }}
+                  >
+                    {addWeekLoading ? (
+                      <CircularProgress size={16} />
+                    ) : (
+                      <Add fontSize="small" />
+                    )}
+                  </ToggleButton>
+                </span>
+              </Tooltip>
             </ToggleButtonGroup>
           </Box>
         </Box>
@@ -370,6 +512,21 @@ export function TemplateToolbar({
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Confirm Even/Odd Conversion Dialog */}
+      <ConfirmEvenOddDialog
+        open={confirmEvenOddOpen}
+        onClose={handleEvenOddCancel}
+        onConfirm={handleEvenOddConfirm}
+        currentWeeks={totalWeeks}
+        weeksToDelete={
+          totalWeeks > 2
+            ? Array.from({ length: totalWeeks - 2 }, (_, i) => i + 2)
+            : []
+        }
+        lng={lng}
+        templateName={template.name}
+      />
     </Box>
   );
 }

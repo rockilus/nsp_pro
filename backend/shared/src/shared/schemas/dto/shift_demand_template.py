@@ -17,9 +17,7 @@ class TemplateWeekDataDTO(BaseModel):
     """DTO for template week data."""
 
     weekNumber: int = Field(..., ge=0, description="Week number (0-based)")
-    demands: List[DemandEntryDTO] = Field(
-        ..., description="List of demand entries"
-    )
+    demands: List[DemandEntryDTO] = Field(..., description="List of demand entries")
 
 
 class ShiftDemandTemplateDTO(BaseModel):
@@ -58,9 +56,7 @@ class ApplyTemplateDTO(BaseModel):
     """DTO for applying template to specific dates."""
 
     templateId: str
-    startDate: float = Field(
-        ..., description="Start date timestamp for application"
-    )
+    startDate: float = Field(..., description="Start date timestamp for application")
     overwriteExisting: bool = Field(
         default=False, description="Whether to overwrite existing demands"
     )
