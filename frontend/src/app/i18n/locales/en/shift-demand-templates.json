@@ -111,5 +111,6 @@
     "min_weeks_required": "Minimum 1 week required",
     "insufficient_weeks_for_even_odd": "Cannot convert: template needs at least 2 weeks",
     "even_odd_adding_weeks": "Converting to Even/Odd will add {{count}} week(s) to reach exactly 2 weeks",
-    "even_odd_removing_weeks": "Converting to Even/Odd will remove {{count}} week(s) to keep exactly 2 weeks"
+    "even_odd_removing_weeks": "Converting to Even/Odd will remove {{count}} week(s) to keep exactly 2 weeks",
+    "total": "Total"
 }

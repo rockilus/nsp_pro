@@ -111,5 +111,6 @@
     "min_weeks_required": "Minimum 1 semaine requise",
     "insufficient_weeks_for_even_odd": "Impossible de convertir: le modèle a besoin d'au moins 2 semaines",
     "even_odd_adding_weeks": "La conversion en Pair/Impair ajoutera {{count}} semaine(s) pour atteindre exactement 2 semaines",
-    "even_odd_removing_weeks": "La conversion en Pair/Impair supprimera {{count}} semaine(s) pour ne garder que 2 semaines"
+    "even_odd_removing_weeks": "La conversion en Pair/Impair supprimera {{count}} semaine(s) pour ne garder que 2 semaines",
+    "total": "Total"
 }

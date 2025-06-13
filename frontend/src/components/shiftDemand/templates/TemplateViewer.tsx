@@ -46,6 +46,7 @@ import {
 } from "../../../app/lib/api/shiftDemandTemplateApi";
 import { TemplateToolbar } from "./TemplateToolbar";
 import { BuildFromDemandsDialog } from "./dialogs/BuildFromDemandsDialog";
+import TemplateTable from "./TemplateTable";
 
 interface TemplateViewerProps {
   lng: string;
@@ -84,6 +85,18 @@ export function TemplateViewer({
   );
   const [saveLoading, setSaveLoading] = useState(false);
 
+  // Template table state
+  const [savingCells, setSavingCells] = useState<Set<string>>(new Set());
+  const [bulkChangeState, setBulkChangeState] = useState<{
+    isActive: boolean;
+    selectedCells: { shiftId: string; weekNumber: number; dayIndex: number }[];
+    bulkValue: string;
+  }>({
+    isActive: false,
+    selectedCells: [],
+    bulkValue: "1",
+  });
+
   // Get day names for headers
   const dayNames = [
     t("monday_short"),
@@ -112,6 +125,18 @@ export function TemplateViewer({
     }
     return [currentWeek];
   }, [currentWeek, weeksToShow, template.weeksData, totalWeeks]);
+
+  // Template data lookup maps
+  const templateDataMap = useMemo(() => {
+    const map = new Map<string, number>();
+    template.weeksData.forEach((week) => {
+      week.demands.forEach((demand) => {
+        const key = `${demand.shiftId}-${week.weekNumber}-${demand.dayOfWeek}`;
+        map.set(key, demand.count);
+      });
+    });
+    return map;
+  }, [template.weeksData]);
 
   const handleDelete = async () => {
     if (
@@ -354,6 +379,357 @@ export function TemplateViewer({
     );
   };
 
+  const getDemandValue = (
+    shiftId: string,
+    weekNumber: number,
+    dayIndex: number
+  ): number => {
+    const key = `${shiftId}-${weekNumber}-${dayIndex}`;
+    return templateDataMap.get(key) || 0;
+  };
+
+  const handleCellChange = async (
+    shiftId: string,
+    weekNumber: number,
+    dayIndex: number,
+    value: string
+  ): Promise<void> => {
+    const cellKey = `${shiftId}-${weekNumber}-${dayIndex}`;
+    const numericValue = parseInt(value, 10);
+
+    if (isNaN(numericValue) || numericValue < 0) {
+      return;
+    }
+
+    setSavingCells((prev) => new Set([...prev, cellKey]));
+
+    try {
+      // Create updated weeks data
+      const updatedWeeksData = template.weeksData.map((week) => {
+        if (week.weekNumber !== weekNumber) {
+          return week;
+        }
+
+        // Update or add demand for this week
+        const existingDemandIndex = week.demands.findIndex(
+          (d) => d.shiftId === shiftId && d.dayOfWeek === dayIndex
+        );
+
+        let updatedDemands: DemandEntryDTO[];
+        if (numericValue === 0) {
+          // Remove demand if value is 0
+          updatedDemands = week.demands.filter(
+            (d) => !(d.shiftId === shiftId && d.dayOfWeek === dayIndex)
+          );
+        } else if (existingDemandIndex >= 0) {
+          // Update existing demand
+          updatedDemands = [...week.demands];
+          updatedDemands[existingDemandIndex] = {
+            ...updatedDemands[existingDemandIndex],
+            count: numericValue,
+          };
+        } else {
+          // Add new demand
+          updatedDemands = [
+            ...week.demands,
+            {
+              shiftId,
+              dayOfWeek: dayIndex,
+              count: numericValue,
+            },
+          ];
+        }
+
+        return {
+          ...week,
+          demands: updatedDemands,
+        };
+      });
+
+      // Save to API
+      await ShiftDemandTemplateApi.updateTemplate(
+        template.id,
+        template.teamId,
+        {
+          weeksData: updatedWeeksData,
+        }
+      );
+
+      // Update local data map for immediate UI feedback
+      templateDataMap.set(cellKey, numericValue);
+    } catch (error) {
+      console.error("Failed to update template demand:", error);
+      onError(
+        error instanceof Error ? error.message : "Failed to update demand"
+      );
+    } finally {
+      setSavingCells((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(cellKey);
+        return newSet;
+      });
+    }
+  };
+
+  // Bulk selection handlers
+  const isCellSelected = (
+    shiftId: string,
+    weekNumber: number,
+    dayIndex: number
+  ): boolean => {
+    return bulkChangeState.selectedCells.some(
+      (cell) =>
+        cell.shiftId === shiftId &&
+        cell.weekNumber === weekNumber &&
+        cell.dayIndex === dayIndex
+    );
+  };
+
+  const toggleCellSelection = (
+    shiftId: string,
+    weekNumber: number,
+    dayIndex: number
+  ): void => {
+    setBulkChangeState((prev) => {
+      const isSelected = prev.selectedCells.some(
+        (cell) =>
+          cell.shiftId === shiftId &&
+          cell.weekNumber === weekNumber &&
+          cell.dayIndex === dayIndex
+      );
+
+      if (isSelected) {
+        return {
+          ...prev,
+          selectedCells: prev.selectedCells.filter(
+            (cell) =>
+              !(
+                cell.shiftId === shiftId &&
+                cell.weekNumber === weekNumber &&
+                cell.dayIndex === dayIndex
+              )
+          ),
+        };
+      } else {
+        return {
+          ...prev,
+          selectedCells: [
+            ...prev.selectedCells,
+            { shiftId, weekNumber, dayIndex },
+          ],
+        };
+      }
+    });
+  };
+
+  const selectAllRowCells = (shiftId: string): void => {
+    const rowCells: {
+      shiftId: string;
+      weekNumber: number;
+      dayIndex: number;
+    }[] = [];
+    displayedWeeks.forEach((weekNumber) => {
+      for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+        rowCells.push({ shiftId, weekNumber, dayIndex });
+      }
+    });
+
+    setBulkChangeState((prev) => {
+      const isRowSelected = rowCells.every((cell) =>
+        prev.selectedCells.some(
+          (selected) =>
+            selected.shiftId === cell.shiftId &&
+            selected.weekNumber === cell.weekNumber &&
+            selected.dayIndex === cell.dayIndex
+        )
+      );
+
+      if (isRowSelected) {
+        // Deselect all row cells
+        return {
+          ...prev,
+          selectedCells: prev.selectedCells.filter(
+            (selected) =>
+              !rowCells.some(
+                (cell) =>
+                  cell.shiftId === selected.shiftId &&
+                  cell.weekNumber === selected.weekNumber &&
+                  cell.dayIndex === selected.dayIndex
+              )
+          ),
+        };
+      } else {
+        // Select all row cells
+        const newCells = rowCells.filter(
+          (cell) =>
+            !prev.selectedCells.some(
+              (selected) =>
+                selected.shiftId === cell.shiftId &&
+                selected.weekNumber === cell.weekNumber &&
+                selected.dayIndex === cell.dayIndex
+            )
+        );
+        return {
+          ...prev,
+          selectedCells: [...prev.selectedCells, ...newCells],
+        };
+      }
+    });
+  };
+
+  const selectAllColumnCells = (weekNumber: number, dayIndex: number): void => {
+    const columnCells: {
+      shiftId: string;
+      weekNumber: number;
+      dayIndex: number;
+    }[] = [];
+    shifts.forEach((shift) => {
+      columnCells.push({ shiftId: shift.id, weekNumber, dayIndex });
+    });
+
+    setBulkChangeState((prev) => {
+      const isColumnSelected = columnCells.every((cell) =>
+        prev.selectedCells.some(
+          (selected) =>
+            selected.shiftId === cell.shiftId &&
+            selected.weekNumber === cell.weekNumber &&
+            selected.dayIndex === cell.dayIndex
+        )
+      );
+
+      if (isColumnSelected) {
+        // Deselect all column cells
+        return {
+          ...prev,
+          selectedCells: prev.selectedCells.filter(
+            (selected) =>
+              !columnCells.some(
+                (cell) =>
+                  cell.shiftId === selected.shiftId &&
+                  cell.weekNumber === selected.weekNumber &&
+                  cell.dayIndex === selected.dayIndex
+              )
+          ),
+        };
+      } else {
+        // Select all column cells
+        const newCells = columnCells.filter(
+          (cell) =>
+            !prev.selectedCells.some(
+              (selected) =>
+                selected.shiftId === cell.shiftId &&
+                selected.weekNumber === cell.weekNumber &&
+                selected.dayIndex === cell.dayIndex
+            )
+        );
+        return {
+          ...prev,
+          selectedCells: [...prev.selectedCells, ...newCells],
+        };
+      }
+    });
+  };
+
+  const selectAllCells = (): void => {
+    const allCells: {
+      shiftId: string;
+      weekNumber: number;
+      dayIndex: number;
+    }[] = [];
+    shifts.forEach((shift) => {
+      displayedWeeks.forEach((weekNumber) => {
+        for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+          allCells.push({ shiftId: shift.id, weekNumber, dayIndex });
+        }
+      });
+    });
+
+    setBulkChangeState((prev) => {
+      const isAllSelected = allCells.every((cell) =>
+        prev.selectedCells.some(
+          (selected) =>
+            selected.shiftId === cell.shiftId &&
+            selected.weekNumber === cell.weekNumber &&
+            selected.dayIndex === cell.dayIndex
+        )
+      );
+
+      if (isAllSelected) {
+        return { ...prev, selectedCells: [] };
+      } else {
+        return { ...prev, selectedCells: allCells };
+      }
+    });
+  };
+
+  const isRowSelected = (shiftId: string): boolean => {
+    const rowCells: {
+      shiftId: string;
+      weekNumber: number;
+      dayIndex: number;
+    }[] = [];
+    displayedWeeks.forEach((weekNumber) => {
+      for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+        rowCells.push({ shiftId, weekNumber, dayIndex });
+      }
+    });
+
+    return rowCells.every((cell) =>
+      bulkChangeState.selectedCells.some(
+        (selected) =>
+          selected.shiftId === cell.shiftId &&
+          selected.weekNumber === cell.weekNumber &&
+          selected.dayIndex === cell.dayIndex
+      )
+    );
+  };
+
+  const isColumnSelected = (weekNumber: number, dayIndex: number): boolean => {
+    const columnCells: {
+      shiftId: string;
+      weekNumber: number;
+      dayIndex: number;
+    }[] = [];
+    shifts.forEach((shift) => {
+      columnCells.push({ shiftId: shift.id, weekNumber, dayIndex });
+    });
+
+    return columnCells.every((cell) =>
+      bulkChangeState.selectedCells.some(
+        (selected) =>
+          selected.shiftId === cell.shiftId &&
+          selected.weekNumber === cell.weekNumber &&
+          selected.dayIndex === cell.dayIndex
+      )
+    );
+  };
+
+  const isAllSelected = (): boolean => {
+    const allCells: {
+      shiftId: string;
+      weekNumber: number;
+      dayIndex: number;
+    }[] = [];
+    shifts.forEach((shift) => {
+      displayedWeeks.forEach((weekNumber) => {
+        for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+          allCells.push({ shiftId: shift.id, weekNumber, dayIndex });
+        }
+      });
+    });
+
+    return allCells.every((cell) =>
+      bulkChangeState.selectedCells.some(
+        (selected) =>
+          selected.shiftId === cell.shiftId &&
+          selected.weekNumber === cell.weekNumber &&
+          selected.dayIndex === cell.dayIndex
+      )
+    );
+  };
+
+  // ...existing code...
+
   return (
     <Box className="template-viewer-container">
       {/* Header */}
@@ -450,18 +826,26 @@ export function TemplateViewer({
 
       {/* Main Component */}
       <Box className="template-viewer-content" sx={{ mt: 3, p: 3 }}>
-        {/* Main component placeholder - will be implemented later */}
-        <Box sx={{ textAlign: "center", py: 4 }}>
-          <Typography variant="h6" color="textSecondary" gutterBottom>
-            {t("main_component_placeholder", "Main component coming soon...")}
-          </Typography>
-          <Typography variant="body2" color="textSecondary">
-            {t(
-              "template_content_description",
-              "Template content and editor will be displayed here"
-            )}
-          </Typography>
-        </Box>
+        <TemplateTable
+          lng={lng}
+          template={template}
+          shifts={shifts}
+          displayedWeeks={displayedWeeks}
+          templateType={templateType}
+          bulkChangeState={bulkChangeState}
+          getDemandValue={getDemandValue}
+          handleCellChange={handleCellChange}
+          isCellSelected={isCellSelected}
+          toggleCellSelection={toggleCellSelection}
+          selectAllRowCells={selectAllRowCells}
+          selectAllColumnCells={selectAllColumnCells}
+          selectAllCells={selectAllCells}
+          isRowSelected={isRowSelected}
+          isColumnSelected={isColumnSelected}
+          isAllSelected={isAllSelected}
+          savingCells={savingCells}
+          maxHeight="60vh"
+        />
       </Box>
 
       {/* Edit Name Dialog */}
