@@ -260,29 +260,29 @@ class ShiftDemandTemplateApplicationService:
             day_of_week = current_date.weekday()
 
             # Get demands for this day from template
-            for shift_id, demand_counts in template_week.demands.items():
-                # Apply shift filter if provided
-                if shift_filter and shift_id not in shift_filter:
+            for demand_entry in template_week.demands:
+                # Only process demands for the current day of week
+                if demand_entry.day_of_week != day_of_week:
                     continue
 
-                # Get demand for this day (ensure we have data for this day)
-                if day_of_week < len(demand_counts):
-                    demand_value = demand_counts[day_of_week]
+                # Apply shift filter if provided
+                if shift_filter and demand_entry.shift_id not in shift_filter:
+                    continue
 
-                    # Skip zero demands (optimization)
-                    if demand_value <= 0:
-                        continue
+                # Skip zero demands (optimization)
+                if demand_entry.count <= 0:
+                    continue
 
-                    # Create demand
-                    demand = ShiftDemandNew(
-                        team_id=team_id,
-                        shift_id=shift_id,
-                        date=current_date,
-                        count=demand_value,
-                        source=ShiftDemandSource.TEMPLATE,
-                        source_id=template_id,
-                    )
-                    demands.append(demand)
+                # Create demand
+                demand = ShiftDemandNew(
+                    team_id=team_id,
+                    shift_id=demand_entry.shift_id,
+                    date=current_date,
+                    count=demand_entry.count,
+                    source=ShiftDemandSource.TEMPLATE,
+                    source_id=template_id,
+                )
+                demands.append(demand)
 
             current_date += timedelta(days=1)
 
@@ -333,7 +333,8 @@ class ShiftDemandTemplateApplicationService:
         # Extract all shift IDs from template
         all_shift_ids: set[str] = set()
         for week_data in template.weeks_data:
-            all_shift_ids.update(week_data.demands.keys())
+            for demand_entry in week_data.demands:
+                all_shift_ids.add(demand_entry.shift_id)
 
         # For now, assume all shifts are valid
         # (shift validation can be added later)

@@ -41,21 +41,21 @@ async def create_template(
         ):
             raise NotAuthorizedError("You do not have permission to create templates")
 
-        # Validate team ID consistency
-        if template_dto.teamId != team_id:
-            raise HTTPException(
-                status_code=400,
-                detail={
-                    "error": "team_id_mismatch",
-                    "message": "Team ID in path must match team ID in request body",
-                    "path_team_id": team_id,
-                    "body_team_id": template_dto.teamId,
-                },
-            )
+        # Create a basic template with minimal data
+        # Since CreateDTO only has name and description, we create a standard template
+        # with one empty week as the default
+        from shared.schemas.core.shift_demand_template import TemplateWeekData
 
-        # Convert create DTO to core model
-        template = ShiftDemandTemplate.from_create_dto(
-            template_dto, session.get_user_id()
+        # Create empty week data as default
+        empty_week = TemplateWeekData(week_number=0, demands=[])
+
+        template = ShiftDemandTemplate(
+            name=template_dto.name,
+            description=template_dto.description,
+            team_id=team_id,
+            template_type=TemplateType.STANDARD,
+            weeks_data=[empty_week],
+            created_by=session.get_user_id(),
         )
 
         # Create through service
@@ -199,18 +199,6 @@ async def update_template(
             session.get_user_id(), "update-shift-demand", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to update templates")
-
-        # Validate team_id consistency if provided in update
-        if template_dto.teamId is not None and template_dto.teamId != team_id:
-            raise HTTPException(
-                status_code=400,
-                detail={
-                    "error": "team_change_not_allowed",
-                    "message": "Cannot change team ID through update operation",
-                    "current_team_id": team_id,
-                    "requested_team_id": template_dto.teamId,
-                },
-            )
 
         # Get existing template for validation and update
         existing_template = await service.validate_template_for_team(
@@ -359,29 +347,31 @@ async def create_template_from_demands(
             raise NotAuthorizedError("You do not have permission to create templates")
 
         # Validate team ID consistency
-        if demands_dto.teamId != team_id:
-            raise HTTPException(
-                status_code=400,
-                detail={
-                    "error": "team_id_mismatch",
-                    "message": "Team ID in path must match team ID in request body",
-                    "path_team_id": team_id,
-                    "body_team_id": demands_dto.teamId,
-                },
-            )
+        # Note: TemplateFromDemandsDTO no longer has teamId field
+        # Team ID is now taken from the path parameter
 
         # Convert DTO to parameters for service call
         template_type = TemplateType(demands_dto.templateType)
 
-        # Create template from demands
-        created_template = await service.create_template_from_demands(
+        # TODO: Implement create_template_from_date_range functionality
+        # For now, create an empty template as placeholder
+        # When implemented, this should:
+        # 1. Convert timestamps to dates
+        # 2. Fetch existing demands from the date range
+        # 3. Generate template data from those demands
+        from shared.schemas.core.shift_demand_template import TemplateWeekData
+
+        empty_week = TemplateWeekData(week_number=0, demands=[])
+
+        template = ShiftDemandTemplate(
             name=demands_dto.name,
+            description=demands_dto.description,
             team_id=team_id,
             template_type=template_type,
-            shift_demands=demands_dto.shiftDemands,
+            weeks_data=[empty_week],
             created_by=session.get_user_id(),
-            description=demands_dto.description,
         )
+        created_template = await service.create_template(template)
 
         log_info(
             f"Created template from demands {created_template.id} for team {team_id}"

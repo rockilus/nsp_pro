@@ -12,6 +12,7 @@ from shared.schemas.core import (
     TemplateType,
     TemplateWeekData,
 )
+from shared.schemas.core.shift_demand_template import DemandEntry
 
 
 class TemplateTestFixtures:
@@ -20,6 +21,46 @@ class TemplateTestFixtures:
     @staticmethod
     def create_standard_template() -> ShiftDemandTemplate:
         """Create test data for standard template - sanitized for security."""
+        # Create demand entries using the new structure
+        demands = [
+            # Morning shift demands - Mon-Fri: 2 people, Weekends: 0
+            DemandEntry(shift_id="morning_shift_001", day_of_week=0, count=2),  # Monday
+            DemandEntry(
+                shift_id="morning_shift_001", day_of_week=1, count=2
+            ),  # Tuesday
+            DemandEntry(
+                shift_id="morning_shift_001", day_of_week=2, count=2
+            ),  # Wednesday
+            DemandEntry(
+                shift_id="morning_shift_001", day_of_week=3, count=2
+            ),  # Thursday
+            DemandEntry(shift_id="morning_shift_001", day_of_week=4, count=2),  # Friday
+            # Evening shift demands - Every day: 1 person
+            DemandEntry(shift_id="evening_shift_001", day_of_week=0, count=1),  # Monday
+            DemandEntry(
+                shift_id="evening_shift_001", day_of_week=1, count=1
+            ),  # Tuesday
+            DemandEntry(
+                shift_id="evening_shift_001", day_of_week=2, count=1
+            ),  # Wednesday
+            DemandEntry(
+                shift_id="evening_shift_001", day_of_week=3, count=1
+            ),  # Thursday
+            DemandEntry(shift_id="evening_shift_001", day_of_week=4, count=1),  # Friday
+            DemandEntry(
+                shift_id="evening_shift_001", day_of_week=5, count=1
+            ),  # Saturday
+            DemandEntry(shift_id="evening_shift_001", day_of_week=6, count=1),  # Sunday
+            # Night shift demands - Mon-Fri: 1 person, Weekends: 0
+            DemandEntry(shift_id="night_shift_001", day_of_week=0, count=1),  # Monday
+            DemandEntry(shift_id="night_shift_001", day_of_week=1, count=1),  # Tuesday
+            DemandEntry(
+                shift_id="night_shift_001", day_of_week=2, count=1
+            ),  # Wednesday
+            DemandEntry(shift_id="night_shift_001", day_of_week=3, count=1),  # Thursday
+            DemandEntry(shift_id="night_shift_001", day_of_week=4, count=1),  # Friday
+        ]
+
         return ShiftDemandTemplate(
             id="test_template_std_001",
             team_id="test_team_secure_123",  # Anonymized test data
@@ -28,35 +69,7 @@ class TemplateTestFixtures:
             weeks_data=[
                 TemplateWeekData(
                     week_number=0,
-                    demands={
-                        "morning_shift_001": [
-                            2,
-                            2,
-                            2,
-                            2,
-                            2,
-                            0,
-                            0,
-                        ],  # Mon-Fri: 2 people
-                        "evening_shift_001": [
-                            1,
-                            1,
-                            1,
-                            1,
-                            1,
-                            1,
-                            1,
-                        ],  # Every day: 1 person
-                        "night_shift_001": [
-                            1,
-                            1,
-                            1,
-                            1,
-                            1,
-                            0,
-                            0,
-                        ],  # Mon-Fri: 1 person
-                    },
+                    demands=demands,
                 )
             ],
             description="Test template for healthcare shift scheduling",
@@ -68,6 +81,46 @@ class TemplateTestFixtures:
     @staticmethod
     def create_even_odd_template() -> ShiftDemandTemplate:
         """Create test data for even/odd template."""
+        # Week 1 demands (higher staffing)
+        week1_demands = [
+            # ICU shift - Week 1: Higher staffing
+            DemandEntry(shift_id="icu_shift_001", day_of_week=0, count=3),  # Monday
+            DemandEntry(shift_id="icu_shift_001", day_of_week=1, count=3),  # Tuesday
+            DemandEntry(shift_id="icu_shift_001", day_of_week=2, count=3),  # Wednesday
+            DemandEntry(shift_id="icu_shift_001", day_of_week=3, count=3),  # Thursday
+            DemandEntry(shift_id="icu_shift_001", day_of_week=4, count=3),  # Friday
+            DemandEntry(shift_id="icu_shift_001", day_of_week=5, count=2),  # Saturday
+            DemandEntry(shift_id="icu_shift_001", day_of_week=6, count=2),  # Sunday
+            # ER shift - Week 1
+            DemandEntry(shift_id="er_shift_001", day_of_week=0, count=2),  # Monday
+            DemandEntry(shift_id="er_shift_001", day_of_week=1, count=2),  # Tuesday
+            DemandEntry(shift_id="er_shift_001", day_of_week=2, count=2),  # Wednesday
+            DemandEntry(shift_id="er_shift_001", day_of_week=3, count=2),  # Thursday
+            DemandEntry(shift_id="er_shift_001", day_of_week=4, count=2),  # Friday
+            DemandEntry(shift_id="er_shift_001", day_of_week=5, count=1),  # Saturday
+            DemandEntry(shift_id="er_shift_001", day_of_week=6, count=1),  # Sunday
+        ]
+
+        # Week 2 demands (lower staffing)
+        week2_demands = [
+            # ICU shift - Week 2: Lower staffing
+            DemandEntry(shift_id="icu_shift_001", day_of_week=0, count=2),  # Monday
+            DemandEntry(shift_id="icu_shift_001", day_of_week=1, count=2),  # Tuesday
+            DemandEntry(shift_id="icu_shift_001", day_of_week=2, count=2),  # Wednesday
+            DemandEntry(shift_id="icu_shift_001", day_of_week=3, count=2),  # Thursday
+            DemandEntry(shift_id="icu_shift_001", day_of_week=4, count=2),  # Friday
+            DemandEntry(shift_id="icu_shift_001", day_of_week=5, count=1),  # Saturday
+            DemandEntry(shift_id="icu_shift_001", day_of_week=6, count=1),  # Sunday
+            # ER shift - Week 2
+            DemandEntry(shift_id="er_shift_001", day_of_week=0, count=1),  # Monday
+            DemandEntry(shift_id="er_shift_001", day_of_week=1, count=1),  # Tuesday
+            DemandEntry(shift_id="er_shift_001", day_of_week=2, count=1),  # Wednesday
+            DemandEntry(shift_id="er_shift_001", day_of_week=3, count=1),  # Thursday
+            DemandEntry(shift_id="er_shift_001", day_of_week=4, count=1),  # Friday
+            DemandEntry(shift_id="er_shift_001", day_of_week=5, count=1),  # Saturday
+            DemandEntry(shift_id="er_shift_001", day_of_week=6, count=1),  # Sunday
+        ]
+
         return ShiftDemandTemplate(
             id="test_template_eo_001",
             team_id="test_team_secure_123",
@@ -76,33 +129,11 @@ class TemplateTestFixtures:
             weeks_data=[
                 TemplateWeekData(
                     week_number=0,
-                    demands={
-                        "icu_shift_001": [
-                            3,
-                            3,
-                            3,
-                            3,
-                            3,
-                            2,
-                            2,
-                        ],  # Week 1: Higher staffing
-                        "er_shift_001": [2, 2, 2, 2, 2, 1, 1],
-                    },
+                    demands=week1_demands,
                 ),
                 TemplateWeekData(
                     week_number=1,
-                    demands={
-                        "icu_shift_001": [
-                            2,
-                            2,
-                            2,
-                            2,
-                            2,
-                            1,
-                            1,
-                        ],  # Week 2: Lower staffing
-                        "er_shift_001": [1, 1, 1, 1, 1, 1, 1],
-                    },
+                    demands=week2_demands,
                 ),
             ],
             description="Even/odd pattern for alternating healthcare coverage",
@@ -114,24 +145,42 @@ class TemplateTestFixtures:
     @staticmethod
     def create_multi_week_template() -> ShiftDemandTemplate:
         """Create test template with multiple weeks for complex patterns."""
+        # Week 1 demands (high staffing)
+        week1_demands = [
+            DemandEntry(shift_id="shift_001", day_of_week=0, count=3),  # Monday
+            DemandEntry(shift_id="shift_001", day_of_week=1, count=3),  # Tuesday
+            DemandEntry(shift_id="shift_001", day_of_week=2, count=3),  # Wednesday
+            DemandEntry(shift_id="shift_001", day_of_week=3, count=3),  # Thursday
+            DemandEntry(shift_id="shift_001", day_of_week=4, count=3),  # Friday
+        ]
+
+        # Week 2 demands (medium staffing)
+        week2_demands = [
+            DemandEntry(shift_id="shift_001", day_of_week=0, count=2),  # Monday
+            DemandEntry(shift_id="shift_001", day_of_week=1, count=2),  # Tuesday
+            DemandEntry(shift_id="shift_001", day_of_week=2, count=2),  # Wednesday
+            DemandEntry(shift_id="shift_001", day_of_week=3, count=2),  # Thursday
+            DemandEntry(shift_id="shift_001", day_of_week=4, count=2),  # Friday
+        ]
+
+        # Week 3 demands (low staffing)
+        week3_demands = [
+            DemandEntry(shift_id="shift_001", day_of_week=0, count=1),  # Monday
+            DemandEntry(shift_id="shift_001", day_of_week=1, count=1),  # Tuesday
+            DemandEntry(shift_id="shift_001", day_of_week=2, count=1),  # Wednesday
+            DemandEntry(shift_id="shift_001", day_of_week=3, count=1),  # Thursday
+            DemandEntry(shift_id="shift_001", day_of_week=4, count=1),  # Friday
+        ]
+
         return ShiftDemandTemplate(
             id="test_template_multi_001",
             team_id="test_team_secure_123",
             name="Multi-Week Test Template",
             template_type=TemplateType.STANDARD,
             weeks_data=[
-                TemplateWeekData(
-                    week_number=0,
-                    demands={"shift_001": [3, 3, 3, 3, 3, 0, 0]},  # Week 1
-                ),
-                TemplateWeekData(
-                    week_number=1,
-                    demands={"shift_001": [2, 2, 2, 2, 2, 0, 0]},  # Week 2
-                ),
-                TemplateWeekData(
-                    week_number=2,
-                    demands={"shift_001": [1, 1, 1, 1, 1, 0, 0]},  # Week 3
-                ),
+                TemplateWeekData(week_number=0, demands=week1_demands),
+                TemplateWeekData(week_number=1, demands=week2_demands),
+                TemplateWeekData(week_number=2, demands=week3_demands),
             ],
             description="Multi-week rotating pattern for specialized care units",
             created_by="test_user_secure",
