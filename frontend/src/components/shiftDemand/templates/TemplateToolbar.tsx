@@ -13,31 +13,20 @@ import React, { useState, useMemo } from "react";
 import {
   Box,
   Typography,
-  IconButton,
   Button,
   Select,
   MenuItem,
   FormControl,
   InputLabel,
-  ToggleButtonGroup,
-  ToggleButton,
   Tooltip,
-  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   CircularProgress,
-  Divider,
+  Paper,
 } from "@mui/material";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Add,
-  Remove,
-  Build,
-  Delete,
-} from "@mui/icons-material";
+import { ChevronLeft, ChevronRight, Add, Remove } from "@mui/icons-material";
 import { useTranslation } from "../../../app/i18n/client";
 import {
   ShiftDemandTemplateDTO,
@@ -51,6 +40,7 @@ import {
   getValidationErrorMessage,
 } from "../../../utils/templateValidation";
 import { ConfirmEvenOddDialog } from "./dialogs/ConfirmEvenOddDialog";
+import styles from "./TemplateToolbar.module.css";
 
 type WeeksToShow = 1 | 2 | "all";
 
@@ -322,58 +312,48 @@ export function TemplateToolbar({
   };
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        p: 2,
-        borderBottom: 1,
-        borderColor: "divider",
-        bgcolor: "background.paper",
-      }}
-    >
-      {/* Left Section: Week Navigation & Management */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-        {/* Week Navigator */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <IconButton
-            onClick={handlePreviousWeek}
-            disabled={!canNavigatePrevious}
-            size="small"
-          >
-            <ChevronLeft />
-          </IconButton>
-          <IconButton
-            onClick={handleNextWeek}
-            disabled={!canNavigateNext}
-            size="small"
-          >
-            <ChevronRight />
-          </IconButton>
+    <Paper elevation={0} className={styles.toolbar}>
+      <div className={styles.container}>
+        {/* Left Section: Week Navigation & Management */}
+        <div className={styles.leftSection}>
+          {/* Week Navigator */}
+          <div className={styles.weekNavigation}>
+            <button
+              onClick={handlePreviousWeek}
+              disabled={!canNavigatePrevious}
+              className={styles.iconButton}
+            >
+              <ChevronLeft />
+            </button>
+            <button
+              onClick={handleNextWeek}
+              disabled={!canNavigateNext}
+              className={styles.iconButton}
+            >
+              <ChevronRight />
+            </button>
 
-          <Box sx={{ minWidth: 120, textAlign: "center" }}>
-            <Typography variant="body2" fontWeight={500}>
-              {weeksToShow === "all" ? (
-                formatDisplayedWeeks()
-              ) : (
-                <>
-                  {t("week")} {formatDisplayedWeeks()}
-                  <Typography
-                    component="span"
-                    variant="caption"
-                    color="textSecondary"
-                  >
-                    /{totalWeeks}
-                  </Typography>
-                </>
-              )}
-            </Typography>
-          </Box>
+            <div className={styles.weekDisplay}>
+              <Typography variant="body2" fontWeight={500}>
+                {weeksToShow === "all" ? (
+                  formatDisplayedWeeks()
+                ) : (
+                  <>
+                    {t("week")} {formatDisplayedWeeks()}
+                    <Typography
+                      component="span"
+                      variant="caption"
+                      color="textSecondary"
+                    >
+                      /{totalWeeks}
+                    </Typography>
+                  </>
+                )}
+              </Typography>
+            </div>
 
-          {/* Week Management - Add/Remove Buttons */}
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <ToggleButtonGroup size="small" sx={{ height: 32 }}>
+            {/* Week Management - Add/Remove Buttons */}
+            <div className={styles.weekManagement}>
               <Tooltip
                 title={
                   weekConstraints.removeButtonDisabledReason
@@ -382,21 +362,21 @@ export function TemplateToolbar({
                 }
               >
                 <span>
-                  <ToggleButton
-                    value="remove"
+                  <button
                     onClick={() => handleDeleteWeekClick(totalWeeks - 1)}
                     disabled={
                       !weekConstraints.canRemoveWeek ||
                       deleteWeekLoading.get(totalWeeks - 1)
                     }
-                    sx={{ px: 1, minWidth: 32 }}
+                    className={styles.iconButton}
+                    style={{ marginRight: "4px" }}
                   >
                     {deleteWeekLoading.get(totalWeeks - 1) ? (
                       <CircularProgress size={16} />
                     ) : (
                       <Remove fontSize="small" />
                     )}
-                  </ToggleButton>
+                  </button>
                 </span>
               </Tooltip>
               <Tooltip
@@ -407,75 +387,89 @@ export function TemplateToolbar({
                 }
               >
                 <span>
-                  <ToggleButton
-                    value="add"
+                  <button
                     onClick={handleAddWeek}
                     disabled={!weekConstraints.canAddWeek || addWeekLoading}
-                    sx={{ px: 1, minWidth: 32 }}
+                    className={styles.iconButton}
                   >
                     {addWeekLoading ? (
                       <CircularProgress size={16} />
                     ) : (
                       <Add fontSize="small" />
                     )}
-                  </ToggleButton>
+                  </button>
                 </span>
               </Tooltip>
-            </ToggleButtonGroup>
-          </Box>
-        </Box>
+            </div>
+          </div>
 
-        {/* Week Display Selector */}
-        <FormControl size="small" sx={{ minWidth: 120 }}>
-          <InputLabel>{t("show_weeks")}</InputLabel>
-          <Select
-            value={weeksToShow}
-            label={t("show_weeks")}
-            onChange={(e) => onWeeksToShowChange(e.target.value as WeeksToShow)}
-          >
-            <MenuItem value={1}>{t("one_week")}</MenuItem>
-            <MenuItem value={2}>{t("two_weeks")}</MenuItem>
-            <MenuItem value="all">{t("all_weeks")}</MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
+          {/* Week Display Selector */}
+          <FormControl size="small" className={styles.weekSelector}>
+            <InputLabel>{t("show_weeks")}</InputLabel>
+            <Select
+              value={weeksToShow}
+              label={t("show_weeks")}
+              onChange={(e) =>
+                onWeeksToShowChange(e.target.value as WeeksToShow)
+              }
+              sx={{ height: "35px", fontSize: "0.9rem" }}
+            >
+              <MenuItem value={1}>{t("one_week")}</MenuItem>
+              <MenuItem value={2}>{t("two_weeks")}</MenuItem>
+              <MenuItem value="all">{t("all_weeks")}</MenuItem>
+            </Select>
+          </FormControl>
+        </div>
 
-      {/* Right Section: Template Controls */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-        {/* Template Type Toggle */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Typography variant="body2" color="textSecondary">
-            {t("template_type")}:
-          </Typography>
-          <ToggleButtonGroup
-            value={templateType}
-            exclusive
-            onChange={handleTemplateTypeChange}
-            size="small"
-            disabled={typeToggleLoading}
-          >
-            <ToggleButton value={TemplateType.STANDARD}>
+        {/* Right Section: Template Controls */}
+        <div className={styles.rightSection}>
+          {/* Template Type Toggle */}
+          <div className={styles.templateTypeToggle}>
+            <button
+              onClick={(e) =>
+                handleTemplateTypeChange(e, TemplateType.STANDARD)
+              }
+              disabled={typeToggleLoading}
+              className={styles.standardButton}
+              style={{
+                backgroundColor:
+                  templateType === TemplateType.STANDARD ? "#1976d2" : "white",
+                color:
+                  templateType === TemplateType.STANDARD ? "white" : "#616161",
+                marginRight: "2px",
+              }}
+            >
               {t("standard")}
-            </ToggleButton>
-            <ToggleButton value={TemplateType.EVEN_ODD}>
+            </button>
+            <button
+              onClick={(e) =>
+                handleTemplateTypeChange(e, TemplateType.EVEN_ODD)
+              }
+              disabled={typeToggleLoading}
+              className={styles.standardButton}
+              style={{
+                backgroundColor:
+                  templateType === TemplateType.EVEN_ODD ? "#1976d2" : "white",
+                color:
+                  templateType === TemplateType.EVEN_ODD ? "white" : "#616161",
+              }}
+            >
               {t("even_odd")}
-            </ToggleButton>
-          </ToggleButtonGroup>
-          {typeToggleLoading && <CircularProgress size={16} />}
-        </Box>
+            </button>
+            {typeToggleLoading && (
+              <CircularProgress size={16} style={{ marginLeft: "8px" }} />
+            )}
+          </div>
 
-        <Divider orientation="vertical" flexItem />
-
-        {/* Build from Demands Button */}
-        <Button
-          startIcon={<Build />}
-          onClick={onBuildFromDemands}
-          variant="outlined"
-          size="small"
-        >
-          {t("build_from_demands")}
-        </Button>
-      </Box>
+          {/* From Demands Button */}
+          <button
+            onClick={onBuildFromDemands}
+            className={styles.standardButton}
+          >
+            {t("from_demands")}
+          </button>
+        </div>
+      </div>
 
       {/* Delete Week Confirmation Dialog */}
       <Dialog
@@ -527,6 +521,6 @@ export function TemplateToolbar({
         lng={lng}
         templateName={template.name}
       />
-    </Box>
+    </Paper>
   );
 }
