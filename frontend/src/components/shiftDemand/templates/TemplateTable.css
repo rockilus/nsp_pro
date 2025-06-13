@@ -284,11 +284,10 @@
 }
 
 /* Week separation - visual dividers between weeks */
-.template-cell:nth-child(7n + 1) {
-  border-left: 2px solid #e0e0e0 !important;
-}
-
-.template-day-header:nth-child(7n + 1) {
+/* Border between weeks (left border on Monday of weeks 2, 3, etc.) */
+.template-cell.week-boundary,
+.template-day-header.week-boundary,
+.template-week-header.week-boundary {
   border-left: 2px solid #e0e0e0 !important;
 }
 

@@ -109,6 +109,7 @@ interface TemplateCellProps {
   isBulkMode: boolean;
   isSaving: boolean;
   shift: ShiftT;
+  isWeekBoundary?: boolean;
   onCellChange: (
     shiftId: string,
     weekNumber: number,
@@ -132,6 +133,7 @@ function TemplateCell({
   isBulkMode,
   isSaving,
   shift,
+  isWeekBoundary = false,
   onCellChange,
   onToggleSelection,
 }: TemplateCellProps) {
@@ -164,7 +166,9 @@ function TemplateCell({
 
   return (
     <TableCell
-      className={`template-cell ${isWeekend ? "weekend" : ""}`}
+      className={`template-cell ${isWeekend ? "weekend" : ""} ${
+        isWeekBoundary ? "week-boundary" : ""
+      }`}
       style={
         {
           "--shift-bg-color": background,
@@ -188,11 +192,16 @@ function TemplateCell({
           onMouseLeave={() => setIsHovered(false)}
         >
           {value === 0 ? (
+            // Empty state with shift color theming
             <div
               className={`template-empty ${isHovered ? "hovered" : ""}`}
               onClick={handleAddDemand}
             >
-              <Add className="template-empty-icon" />
+              {isSaving ? (
+                <CircularProgress size={16} />
+              ) : (
+                isHovered && <Add className="template-empty-icon" />
+              )}
             </div>
           ) : (
             <div
@@ -377,13 +386,15 @@ function TemplateRow({
         isRowSelected={isRowSelected(shift.id)}
         onSelectRow={selectAllRowCells}
       />
-      {displayedWeeks.map((weekNumber) =>
+      {displayedWeeks.map((weekNumber, weekIndex) =>
         Array.from({ length: 7 }, (_, dayIndex) => {
           const value = getDemandValue(shift.id, weekNumber, dayIndex);
           const isWeekend = dayIndex === 5 || dayIndex === 6; // Saturday=5, Sunday=6
           const isSelected = isCellSelected(shift.id, weekNumber, dayIndex);
           const cellKey = `${shift.id}-${weekNumber}-${dayIndex}`;
           const isSaving = savingCells.has(cellKey);
+          // Add week boundary class for Monday of week 2, 3, etc.
+          const isWeekBoundary = weekIndex > 0 && dayIndex === 0; // Monday of non-first weeks
 
           return (
             <TemplateCell
@@ -399,6 +410,7 @@ function TemplateRow({
               shift={shift}
               onCellChange={handleCellChange}
               onToggleSelection={toggleCellSelection}
+              isWeekBoundary={isWeekBoundary}
             />
           );
         })
@@ -494,13 +506,16 @@ function TemplateTableHeader({
             )}
           </div>
         </TableCell>
-        {displayedWeeks.map((weekNumber) => {
+        {displayedWeeks.map((weekNumber, weekIndex) => {
           const weekLabel =
             templateType === TemplateType.EVEN_ODD
               ? weekNumber === 0
                 ? t("even_week", "Even Week")
                 : t("odd_week", "Odd Week")
               : t("week_number", "Week {{number}}", { number: weekNumber + 1 });
+
+          // Add week boundary class for weeks 2, 3, etc.
+          const isWeekBoundary = weekIndex > 0;
 
           return (
             <TableCell
@@ -511,7 +526,7 @@ function TemplateTableHeader({
                     ? "even"
                     : "odd"
                   : ""
-              }`}
+              } ${isWeekBoundary ? "week-boundary" : ""}`}
               colSpan={7}
               align="center"
             >
@@ -523,15 +538,19 @@ function TemplateTableHeader({
 
       {/* Day header row */}
       <TableRow>
-        {displayedWeeks.map((weekNumber) =>
+        {displayedWeeks.map((weekNumber, weekIndex) =>
           dayNames.map((dayName, dayIndex) => {
             const isWeekend = dayIndex === 5 || dayIndex === 6;
             const isSelected = isColumnSelected(weekNumber, dayIndex);
+            // Add week boundary class for Monday of week 2, 3, etc.
+            const isWeekBoundary = weekIndex > 0 && dayIndex === 0; // Monday of non-first weeks
 
             return (
               <TableCell
                 key={`${weekNumber}-${dayIndex}`}
-                className={`template-day-header ${isWeekend ? "weekend" : ""}`}
+                className={`template-day-header ${isWeekend ? "weekend" : ""} ${
+                  isWeekBoundary ? "week-boundary" : ""
+                }`}
                 align="center"
               >
                 {bulkChangeState.isActive ? (
