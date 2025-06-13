@@ -61,6 +61,9 @@ interface TemplateToolbarProps {
   onDeleteWeek: (weekNumber: number) => Promise<void>;
   onBuildFromDemands: () => void;
   onError: (error: string) => void;
+  // Bulk mode props
+  bulkModeActive: boolean;
+  onToggleBulkMode: () => void;
 }
 
 export function TemplateToolbar({
@@ -78,6 +81,8 @@ export function TemplateToolbar({
   onDeleteWeek,
   onBuildFromDemands,
   onError,
+  bulkModeActive,
+  onToggleBulkMode,
 }: TemplateToolbarProps) {
   const { t } = useTranslation(lng, "shift-demand-templates");
 
@@ -443,13 +448,42 @@ export function TemplateToolbar({
           </div>
         </div>
 
-        {/* Third Group: From Demands Button */}
+        {/* Third Group: Select Button and From Demands Button */}
         <div className={styles.rightSection}>
           <button
             onClick={onBuildFromDemands}
             className={styles.standardButton}
           >
             {t("from_demands")}
+          </button>
+
+          <button
+            onClick={onToggleBulkMode}
+            style={{
+              borderRadius: "4px",
+              border: "1px solid #e5e7eb",
+              height: "35px",
+              padding: "0 15px",
+              fontSize: "0.9rem",
+              fontWeight: 550,
+              color: bulkModeActive ? "white" : "#616161",
+              backgroundColor: bulkModeActive ? "#1976d2" : "white",
+              cursor: "pointer",
+              transition: "background-color 0.2s ease",
+              marginLeft: "8px",
+            }}
+            onMouseEnter={(e) => {
+              if (!bulkModeActive) {
+                e.currentTarget.style.backgroundColor = "#f0f0f0";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!bulkModeActive) {
+                e.currentTarget.style.backgroundColor = "white";
+              }
+            }}
+          >
+            {t("select", "Select")}
           </button>
         </div>
       </div>

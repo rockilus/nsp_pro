@@ -54,6 +54,7 @@ import { createShiftColumns } from "../shiftColumns";
 import { TemplateToolbar } from "./TemplateToolbar";
 import { BuildFromDemandsDialog } from "./dialogs/BuildFromDemandsDialog";
 import TemplateTable from "./TemplateTable";
+import { TemplateActionToolbar } from "./TemplateActionToolbar";
 
 interface TemplateViewerProps {
   lng: string;
@@ -160,6 +161,22 @@ export function TemplateViewer({
     updateSort: updateShiftSort,
     resetAll: resetShiftFilters,
   } = useTableState(shifts, shiftColumns, "nsp-pro-template-table-state");
+
+  // Bulk mode toggle
+  const toggleBulkMode = () => {
+    setBulkChangeState((prev) => ({
+      ...prev,
+      isActive: !prev.isActive,
+      selectedCells: [],
+      bulkValue: "1",
+    }));
+  };
+
+  // Show filter toolbar when either bulk mode is active OR filters/sorting is applied
+  const showFilterToolbar =
+    bulkChangeState.isActive ||
+    shiftTableState.filters.length > 0 ||
+    shiftTableState.sort !== null;
 
   const handleDelete = async () => {
     if (
@@ -751,6 +768,100 @@ export function TemplateViewer({
     );
   };
 
+  // Bulk operations
+  const applyBulkChange = async () => {
+    if (bulkChangeState.selectedCells.length === 0) return;
+
+    const value = parseInt(bulkChangeState.bulkValue, 10) || 0;
+
+    // Validate bulk value
+    if (value < 0) {
+      onError(t("invalid_demand_value", "Invalid demand value"));
+      return;
+    }
+
+    try {
+      const updates: Promise<void>[] = [];
+
+      bulkChangeState.selectedCells.forEach((cell) => {
+        updates.push(
+          handleCellChange(
+            cell.shiftId,
+            cell.weekNumber,
+            cell.dayIndex,
+            String(value)
+          )
+        );
+      });
+
+      await Promise.all(updates);
+
+      // Clear selection after successful bulk update
+      setBulkChangeState((prev) => ({
+        ...prev,
+        selectedCells: [],
+      }));
+    } catch (error) {
+      console.error("Failed to apply bulk changes:", error);
+      onError(
+        error instanceof Error ? error.message : "Failed to apply bulk changes"
+      );
+    }
+  };
+
+  const deleteBulkSelection = async () => {
+    if (bulkChangeState.selectedCells.length === 0) return;
+
+    try {
+      const updates: Promise<void>[] = [];
+
+      bulkChangeState.selectedCells.forEach((cell) => {
+        updates.push(
+          handleCellChange(cell.shiftId, cell.weekNumber, cell.dayIndex, "0")
+        );
+      });
+
+      await Promise.all(updates);
+
+      // Clear selection after successful bulk deletion
+      setBulkChangeState((prev) => ({
+        ...prev,
+        selectedCells: [],
+      }));
+    } catch (error) {
+      console.error("Failed to delete bulk selection:", error);
+      onError(
+        error instanceof Error
+          ? error.message
+          : "Failed to delete bulk selection"
+      );
+    }
+  };
+
+  const cancelBulkMode = () => {
+    setBulkChangeState((prev) => ({
+      ...prev,
+      isActive: false,
+      selectedCells: [],
+      bulkValue: "1",
+    }));
+  };
+
+  // Filter/Sort handlers
+  const handleRemoveFilter = (filterId: string) => {
+    removeShiftFilter(filterId);
+  };
+
+  const handleRemoveSort = () => {
+    updateShiftSort(null);
+  };
+
+  const handleResetAll = () => {
+    resetShiftFilters();
+  };
+
+  // ...existing code...
+
   return (
     <Box className="template-viewer-container">
       {/* Header */}
@@ -842,8 +953,34 @@ export function TemplateViewer({
           onDeleteWeek={handleDeleteWeek}
           onBuildFromDemands={handleBuildFromDemands}
           onError={onError}
+          bulkModeActive={bulkChangeState.isActive}
+          onToggleBulkMode={toggleBulkMode}
         />
       </Box>
+
+      {/* Action Toolbar */}
+      <TemplateActionToolbar
+        lng={lng}
+        showBulkMode={bulkChangeState.isActive}
+        showFilters={
+          shiftTableState.filters.length > 0 || shiftTableState.sort !== null
+        }
+        // Filter/Sort props
+        filters={shiftTableState.filters}
+        sort={shiftTableState.sort}
+        onRemoveFilter={handleRemoveFilter}
+        onRemoveSort={handleRemoveSort}
+        onResetAll={handleResetAll}
+        // Bulk selection props
+        selectedCellsCount={bulkChangeState.selectedCells.length}
+        bulkValue={bulkChangeState.bulkValue}
+        onBulkValueChange={(value) =>
+          setBulkChangeState((prev) => ({ ...prev, bulkValue: value }))
+        }
+        onApplyBulkChange={applyBulkChange}
+        onDeleteBulkSelection={deleteBulkSelection}
+        onCancelBulkMode={cancelBulkMode}
+      />
 
       {/* Main Component */}
       <Box className="template-viewer-content" sx={{ mt: 3, p: 3 }}>

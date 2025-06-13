@@ -228,9 +228,7 @@ function TemplateCell({
               )}
 
               {/* Value display */}
-              <span
-                className={`template-value ${isSaving ? "saving" : ""}`}
-              >
+              <span className={`template-value ${isSaving ? "saving" : ""}`}>
                 {value}
               </span>
 
