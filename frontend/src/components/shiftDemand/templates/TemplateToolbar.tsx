@@ -18,6 +18,8 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  ToggleButtonGroup,
+  ToggleButton,
   Tooltip,
   Dialog,
   DialogTitle,
@@ -26,7 +28,7 @@ import {
   CircularProgress,
   Paper,
 } from "@mui/material";
-import { ChevronLeft, ChevronRight, Add, Remove } from "@mui/icons-material";
+import { NavigateBefore, NavigateNext, Add, Remove } from "@mui/icons-material";
 import { useTranslation } from "../../../app/i18n/client";
 import {
   ShiftDemandTemplateDTO,
@@ -314,7 +316,7 @@ export function TemplateToolbar({
   return (
     <Paper elevation={0} className={styles.toolbar}>
       <div className={styles.container}>
-        {/* Left Section: Week Navigation & Management */}
+        {/* First Group: Week Navigation & Management */}
         <div className={styles.leftSection}>
           {/* Week Navigator */}
           <div className={styles.weekNavigation}>
@@ -323,14 +325,14 @@ export function TemplateToolbar({
               disabled={!canNavigatePrevious}
               className={styles.iconButton}
             >
-              <ChevronLeft />
+              <NavigateBefore />
             </button>
             <button
               onClick={handleNextWeek}
               disabled={!canNavigateNext}
               className={styles.iconButton}
             >
-              <ChevronRight />
+              <NavigateNext />
             </button>
 
             <div className={styles.weekDisplay}>
@@ -421,47 +423,32 @@ export function TemplateToolbar({
           </FormControl>
         </div>
 
-        {/* Right Section: Template Controls */}
-        <div className={styles.rightSection}>
+        {/* Second Group: Template Type Toggle */}
+        <div className={styles.centerSection}>
           {/* Template Type Toggle */}
           <div className={styles.templateTypeToggle}>
-            <button
-              onClick={(e) =>
-                handleTemplateTypeChange(e, TemplateType.STANDARD)
-              }
+            <ToggleButtonGroup
+              value={templateType}
+              exclusive
+              onChange={handleTemplateTypeChange}
+              size="small"
               disabled={typeToggleLoading}
-              className={styles.standardButton}
-              style={{
-                backgroundColor:
-                  templateType === TemplateType.STANDARD ? "#1976d2" : "white",
-                color:
-                  templateType === TemplateType.STANDARD ? "white" : "#616161",
-                marginRight: "2px",
-              }}
             >
-              {t("standard")}
-            </button>
-            <button
-              onClick={(e) =>
-                handleTemplateTypeChange(e, TemplateType.EVEN_ODD)
-              }
-              disabled={typeToggleLoading}
-              className={styles.standardButton}
-              style={{
-                backgroundColor:
-                  templateType === TemplateType.EVEN_ODD ? "#1976d2" : "white",
-                color:
-                  templateType === TemplateType.EVEN_ODD ? "white" : "#616161",
-              }}
-            >
-              {t("even_odd")}
-            </button>
+              <ToggleButton value={TemplateType.STANDARD}>
+                {t("standard")}
+              </ToggleButton>
+              <ToggleButton value={TemplateType.EVEN_ODD}>
+                {t("even_odd")}
+              </ToggleButton>
+            </ToggleButtonGroup>
             {typeToggleLoading && (
               <CircularProgress size={16} style={{ marginLeft: "8px" }} />
             )}
           </div>
+        </div>
 
-          {/* From Demands Button */}
+        {/* Third Group: From Demands Button */}
+        <div className={styles.rightSection}>
           <button
             onClick={onBuildFromDemands}
             className={styles.standardButton}

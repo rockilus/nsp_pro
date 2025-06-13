@@ -371,7 +371,6 @@ export function TemplateViewer({
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            mb: 1,
           }}
         >
           {/* Left side: Title + Template info */}
@@ -392,22 +391,6 @@ export function TemplateViewer({
                 <Edit fontSize="small" />
               </IconButton>
             </Box>
-
-            {/* Template info (type and date) */}
-            <Chip
-              label={formatTemplateType(template.templateType)}
-              color="primary"
-              variant="outlined"
-              size="small"
-            />
-            <Typography
-              variant="body2"
-              color="textSecondary"
-              sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-            >
-              <CalendarToday fontSize="small" />
-              {formatDate(template.createdAt)}
-            </Typography>
           </Box>
 
           {/* Right side: Action buttons (icons only) */}
@@ -435,10 +418,8 @@ export function TemplateViewer({
 
         {/* Second line: Description */}
         {template.description && (
-          <Box
-            sx={{ display: "flex", alignItems: "flex-start", gap: 0.5, mb: 2 }}
-          >
-            <Typography variant="body1" color="textSecondary" sx={{ flex: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "flex-start", gap: 0.5 }}>
+            <Typography variant="body1" color="textSecondary">
               {template.description}
             </Typography>
             <IconButton
