@@ -392,10 +392,15 @@ export default function RequestPanel({
                 setRequestState((prev) => {
                   if (value === RequestType.WORK_DEMAND) {
                     // When switching to work demand, clear shiftId
-                    return { ...prev, shiftId: null };
+                    return { ...prev, shiftId: null, requestType: value };
                   } else if (value === RequestType.LEAVE) {
                     // When switching to leave, clear shiftOptions and set negative to false
-                    return { ...prev, shiftOptions: [], negative: false };
+                    return {
+                      ...prev,
+                      shiftOptions: [],
+                      negative: false,
+                      requestType: value,
+                    };
                   }
                   return prev;
                 });

@@ -236,6 +236,34 @@ export class ShiftDemandTemplateApi {
   }
 
   /**
+   * Create a new template with empty week data (bypassing client-side validation)
+   * This is useful for creating basic templates that can be edited later
+   */
+  static async createEmptyTemplate(
+    teamId: string,
+    template: ShiftDemandTemplateCreateDTO
+  ): Promise<ShiftDemandTemplateT> {
+    // Skip client-side validation for empty templates
+    const response = await fetch(`${TEMPLATES_BASE}/teams/${teamId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        teamId,
+        ...template,
+      }),
+    });
+
+    if (!response.ok) {
+      await handleTemplateAPIError(response);
+    }
+
+    return response.json();
+  }
+
+  /**
    * Update an existing template
    */
   static async updateTemplate(

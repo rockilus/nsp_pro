@@ -20,13 +20,17 @@ import {
   Snackbar,
 } from "@mui/material";
 import { Close } from "@mui/icons-material";
+import dayjs from "dayjs";
 import { useTranslation } from "../../../app/i18n/client";
 import { ShiftT } from "../../../types/shift";
 import {
   ShiftDemandTemplateT,
   TemplateViewMode,
   TemplateListItem,
+  ShiftDemandTemplateCreateDTO,
+  TemplateType,
 } from "../../../types/shift-demand-template";
+import { ShiftDemandTemplateApi } from "../../../app/lib/api/shiftDemandTemplateApi";
 
 // Import template components
 import { TemplateList } from "./TemplateList";
@@ -139,11 +143,39 @@ export default function TemplateManagementWindow({
     setSuccessMessage(t("template_updated_successfully"));
   };
 
-  const handleTemplateCreated = (newTemplate: ShiftDemandTemplateT) => {
-    setShowCreationDialog(false);
-    setSelectedTemplate(newTemplate);
-    setViewMode("view");
-    setSuccessMessage(t("template_created_successfully"));
+  const handleTemplateCreated = async (
+    templateData: ShiftDemandTemplateCreateDTO
+  ) => {
+    try {
+      // Create the template via API client method that allows empty templates
+      const newTemplate = await ShiftDemandTemplateApi.createEmptyTemplate(
+        teamId,
+        templateData
+      );
+
+      // Update UI state
+      setShowCreationDialog(false);
+      setSelectedTemplate(newTemplate);
+      setViewMode("view");
+      setSuccessMessage(t("template_created_successfully"));
+
+      // Add to templates list for immediate UI update
+      const newTemplateListItem: TemplateListItem = {
+        id: newTemplate.id,
+        name: newTemplate.name,
+        description: newTemplate.description,
+        templateType: newTemplate.templateType,
+        createdBy: newTemplate.createdBy,
+        createdAt: dayjs(newTemplate.createdAt),
+        updatedAt: dayjs(newTemplate.updatedAt),
+        totalDemands: 0, // Empty template starts with 0 demands
+      };
+      setTemplates((prev) => [...prev, newTemplateListItem]);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : t("error_creating_template");
+      setError(errorMessage);
+    }
   };
 
   const handleTemplateApplied = () => {

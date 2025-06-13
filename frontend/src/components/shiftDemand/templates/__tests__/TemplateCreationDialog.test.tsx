@@ -6,15 +6,8 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { TemplateCreationDialog } from "../TemplateCreationDialog";
-import { ShiftDemandTemplateApi } from "../../../../app/lib/api/shiftDemandTemplateApi";
 import { TemplateType } from "../../../../types/shift-demand-template";
 import dayjs from "dayjs";
-
-// Mock the API
-jest.mock("../../../../app/lib/api/shiftDemandTemplateApi");
-const mockApi = ShiftDemandTemplateApi as jest.Mocked<
-  typeof ShiftDemandTemplateApi
->;
 
 // Mock the translation hook
 jest.mock("../../../../app/i18n/client", () => ({

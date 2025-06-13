@@ -20,12 +20,10 @@ import {
 import { useTranslation } from "../../../app/i18n/client";
 import { ShiftT } from "../../../types/shift";
 import {
-  ShiftDemandTemplateT,
   ShiftDemandTemplateCreateDTO,
   TemplateType,
   TEMPLATE_CONSTRAINTS,
 } from "../../../types/shift-demand-template";
-import { ShiftDemandTemplateApi } from "../../../app/lib/api/shiftDemandTemplateApi";
 
 interface TemplateCreationDialogProps {
   lng: string;
@@ -37,7 +35,7 @@ interface TemplateCreationDialogProps {
     start: any; // Dayjs
     end: any; // Dayjs
   };
-  onTemplateCreated: (template: ShiftDemandTemplateT) => void;
+  onTemplateCreated: (templateData: ShiftDemandTemplateCreateDTO) => void;
   onError: (error: string) => void;
 }
 
@@ -118,7 +116,7 @@ export function TemplateCreationDialog({
     setSubmitError("");
 
     try {
-      // Create basic template with empty week data
+      // Create basic template data with empty week data
       const templateData: ShiftDemandTemplateCreateDTO = {
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
@@ -126,11 +124,8 @@ export function TemplateCreationDialog({
         standardWeekData: [], // Empty for now, can be edited later
       };
 
-      const newTemplate = await ShiftDemandTemplateApi.createTemplate(
-        teamId,
-        templateData
-      );
-      onTemplateCreated(newTemplate);
+      // Pass the template data to parent component for API call
+      onTemplateCreated(templateData);
       handleClose();
     } catch (error) {
       const errorMessage =
