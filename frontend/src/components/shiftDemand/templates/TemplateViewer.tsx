@@ -51,7 +51,6 @@ interface TemplateViewerProps {
   lng: string;
   template: ShiftDemandTemplateDTO;
   shifts: ShiftT[];
-  onEdit: () => void;
   onApply: () => void;
   onDelete: () => void;
   onError: (error: string) => void;
@@ -61,7 +60,6 @@ export function TemplateViewer({
   lng,
   template,
   shifts,
-  onEdit,
   onApply,
   onDelete,
   onError,
@@ -172,7 +170,6 @@ export function TemplateViewer({
         }
       );
       setEditNameOpen(false);
-      onEdit(); // Refresh the template data
     } catch (error) {
       console.error("Failed to update template name:", error);
       onError(
@@ -201,7 +198,6 @@ export function TemplateViewer({
         }
       );
       setEditDescriptionOpen(false);
-      onEdit(); // Refresh the template data
     } catch (error) {
       console.error("Failed to update template description:", error);
       onError(
@@ -258,7 +254,6 @@ export function TemplateViewer({
         template.teamId,
         { weeksData: updatedWeeksData }
       );
-      onEdit(); // Refresh template data
     } catch (error) {
       throw error; // Let the toolbar handle the error display
     }
@@ -289,8 +284,6 @@ export function TemplateViewer({
       if (currentWeek >= newTotalWeeks) {
         setCurrentWeek(Math.max(0, newTotalWeeks - 1));
       }
-
-      onEdit(); // Refresh template data
     } catch (error) {
       throw error; // Let the toolbar handle the error display
     }
@@ -452,7 +445,6 @@ export function TemplateViewer({
           onDeleteWeek={handleDeleteWeek}
           onBuildFromDemands={handleBuildFromDemands}
           onError={onError}
-          onTemplateUpdated={onEdit}
         />
       </Box>
 

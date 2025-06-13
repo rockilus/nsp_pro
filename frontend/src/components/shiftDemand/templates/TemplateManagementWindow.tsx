@@ -231,7 +231,6 @@ export default function TemplateManagementWindow({
           lng={lng}
           template={selectedTemplate}
           shifts={shifts}
-          onEdit={handleTemplateEdit}
           onApply={() => handleTemplateApply()}
           onDelete={handleBack} // This will go back to list after delete
           onError={handleError}

@@ -61,7 +61,6 @@ interface TemplateToolbarProps {
   onDeleteWeek: (weekNumber: number) => Promise<void>;
   onBuildFromDemands: () => void;
   onError: (error: string) => void;
-  onTemplateUpdated: () => void; // Callback to refresh template data
 }
 
 export function TemplateToolbar({
@@ -79,7 +78,6 @@ export function TemplateToolbar({
   onDeleteWeek,
   onBuildFromDemands,
   onError,
-  onTemplateUpdated,
 }: TemplateToolbarProps) {
   const { t } = useTranslation(lng, "shift-demand-templates");
 
@@ -225,7 +223,6 @@ export function TemplateToolbar({
           { templateType: newType }
         );
         onTemplateTypeChange(newType);
-        onTemplateUpdated();
       }
     } catch (error) {
       console.error("Failed to update template type:", error);
@@ -280,7 +277,6 @@ export function TemplateToolbar({
       );
 
       onTemplateTypeChange(newType);
-      onTemplateUpdated();
     } catch (error) {
       console.error("Failed to convert to Even/Odd template:", error);
       throw error;
