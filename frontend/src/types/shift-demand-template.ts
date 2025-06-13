@@ -75,17 +75,6 @@ export interface ShiftDemandTemplateUpdateDTO {
 }
 
 /**
- * DTO for creating templates from existing demands
- */
-export interface TemplateFromDemandsDTO {
-  name: string;
-  description?: string;
-  templateType: TemplateType;
-  startDate: string; // ISO date string
-  endDate: string; // ISO date string
-}
-
-/**
  * DTO for applying templates to periods
  */
 export interface ApplyTemplateDTO {

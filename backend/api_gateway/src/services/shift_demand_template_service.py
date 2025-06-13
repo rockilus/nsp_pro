@@ -64,8 +64,7 @@ class ShiftDemandTemplateService:
                 return self.template_repo.get_templates_by_team_and_type(
                     team_id, template_type
                 )
-            else:
-                return self.template_repo.get_templates_by_team_id(team_id)
+            return self.template_repo.get_templates_by_team_id(team_id)
         except Exception as e:
             log_info(f"Failed to get templates for team {team_id}: {str(e)}")
             raise
@@ -75,6 +74,9 @@ class ShiftDemandTemplateService:
     ) -> ShiftDemandTemplate:
         """Update an existing template."""
         try:
+            # Validate template has ID for update operation
+            if not template.id:
+                raise ValueError("Template ID is required for update operation")
             # Validate template exists
             existing = self.template_repo.get_template_by_id(template.id)
             if not existing:
@@ -128,6 +130,7 @@ class ShiftDemandTemplateService:
             log_info(f"Failed to delete template {template_id}: {str(e)}")
             raise
 
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
     async def create_template_from_demands(
         self,
         name: str,

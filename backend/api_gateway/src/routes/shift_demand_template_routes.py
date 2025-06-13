@@ -5,12 +5,12 @@ from shared.logger import log_info
 from shared.schemas.core.shift_demand_template import (
     ShiftDemandTemplate,
     TemplateType,
+    TemplateWeekData,
 )
 from shared.schemas.dto.shift_demand_template import (
     ShiftDemandTemplateCreateDTO,
     ShiftDemandTemplateDTO,
     ShiftDemandTemplateUpdateDTO,
-    TemplateFromDemandsDTO,
 )
 
 from src.dependencies import get_shift_demand_template_service
@@ -27,6 +27,7 @@ from src.services.shift_demand_template_service import (
 router = APIRouter()
 
 
+# pylint: disable=R0801
 @router.post("/shift-demand-templates/teams/{team_id}", status_code=201)
 async def create_template(
     team_id: str,
@@ -44,7 +45,6 @@ async def create_template(
         # Create a basic template with minimal data
         # Since CreateDTO only has name and description, we create a standard template
         # with one empty week as the default
-        from shared.schemas.core.shift_demand_template import TemplateWeekData
 
         # Create empty week data as default
         empty_week = TemplateWeekData(week_number=0, demands=[])
@@ -161,7 +161,7 @@ async def get_template_by_id(
                     "template_id": template_id,
                 },
             ) from e
-        elif "does not belong" in str(e):
+        if "does not belong" in str(e):
             raise HTTPException(
                 status_code=403,
                 detail={
@@ -171,14 +171,13 @@ async def get_template_by_id(
                     "team_id": team_id,
                 },
             ) from e
-        else:
-            raise HTTPException(
-                status_code=400,
-                detail={
-                    "error": "validation_error",
-                    "message": str(e),
-                },
-            ) from e
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "validation_error",
+                "message": str(e),
+            },
+        ) from e
     except Exception as e:
         log_info(f"Failed to get template {template_id}: {str(e)}")
         handle_routes_errors(e)
@@ -228,7 +227,7 @@ async def update_template(
                     "template_id": template_id,
                 },
             ) from e
-        elif "does not belong" in str(e):
+        if "does not belong" in str(e):
             raise HTTPException(
                 status_code=403,
                 detail={
@@ -238,17 +237,16 @@ async def update_template(
                     "team_id": team_id,
                 },
             ) from e
-        else:
-            log_info(f"Validation error updating template {template_id}: {str(e)}")
-            raise HTTPException(
-                status_code=400,
-                detail={
-                    "error": "validation_error",
-                    "operation": "update",
-                    "message": str(e),
-                    "template_id": template_id,
-                },
-            ) from e
+        log_info(f"Validation error updating template {template_id}: {str(e)}")
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "validation_error",
+                "operation": "update",
+                "message": str(e),
+                "template_id": template_id,
+            },
+        ) from e
     except Exception as e:
         log_info(f"Internal error updating template {template_id}: {str(e)}")
         handle_routes_errors(e)
@@ -308,7 +306,7 @@ async def delete_template(
                     "template_id": template_id,
                 },
             ) from e
-        elif "does not belong" in str(e):
+        if "does not belong" in str(e):
             raise HTTPException(
                 status_code=403,
                 detail={
@@ -318,88 +316,14 @@ async def delete_template(
                     "team_id": team_id,
                 },
             ) from e
-        else:
-            raise HTTPException(
-                status_code=400,
-                detail={
-                    "error": "validation_error",
-                    "message": str(e),
-                },
-            ) from e
-    except Exception as e:
-        log_info(f"Failed to delete template {template_id}: {str(e)}")
-        handle_routes_errors(e)
-        raise HTTPException(status_code=500, detail="Internal server error") from e
-
-
-@router.post("/shift-demand-templates/teams/{team_id}/from-demands")
-async def create_template_from_demands(
-    team_id: str,
-    demands_dto: TemplateFromDemandsDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
-    service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
-) -> ShiftDemandTemplateDTO:
-    """Create a template from existing shift demands."""
-    try:
-        if not await authz_check(
-            session.get_user_id(), "create-shift-demand", "team", team_id
-        ):
-            raise NotAuthorizedError("You do not have permission to create templates")
-
-        # Validate team ID consistency
-        # Note: TemplateFromDemandsDTO no longer has teamId field
-        # Team ID is now taken from the path parameter
-
-        # Convert DTO to parameters for service call
-        template_type = TemplateType(demands_dto.templateType)
-
-        # TODO: Implement create_template_from_date_range functionality
-        # For now, create an empty template as placeholder
-        # When implemented, this should:
-        # 1. Convert timestamps to dates
-        # 2. Fetch existing demands from the date range
-        # 3. Generate template data from those demands
-        from shared.schemas.core.shift_demand_template import TemplateWeekData
-
-        empty_week = TemplateWeekData(week_number=0, demands=[])
-
-        template = ShiftDemandTemplate(
-            name=demands_dto.name,
-            description=demands_dto.description,
-            team_id=team_id,
-            template_type=template_type,
-            weeks_data=[empty_week],
-            created_by=session.get_user_id(),
-        )
-        created_template = await service.create_template(template)
-
-        log_info(
-            f"Created template from demands {created_template.id} for team {team_id}"
-        )
-        return created_template.to_dto()
-
-    except NotAuthorizedError:
-        raise
-    except HTTPException:
-        raise
-    except ValueError as e:
-        log_info(f"Validation error creating template from demands: {str(e)}")
         raise HTTPException(
             status_code=400,
             detail={
                 "error": "validation_error",
-                "operation": "create_from_demands",
                 "message": str(e),
             },
         ) from e
     except Exception as e:
-        log_info(f"Internal error creating template from demands: {str(e)}")
+        log_info(f"Failed to delete template {template_id}: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "error": "internal_error",
-                "operation": "create_from_demands",
-                "message": "An internal error occurred. Please try again later.",
-            },
-        ) from e
+        raise HTTPException(status_code=500, detail="Internal server error") from e

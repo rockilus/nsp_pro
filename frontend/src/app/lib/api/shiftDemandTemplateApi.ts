@@ -8,7 +8,6 @@ import {
   ShiftDemandTemplateT,
   ShiftDemandTemplateCreateDTO,
   ShiftDemandTemplateUpdateDTO,
-  TemplateFromDemandsDTO,
   ApplyTemplateDTO,
   TemplateApplicationResult,
   TemplateValidationResult,
@@ -301,32 +300,6 @@ export class ShiftDemandTemplateApi {
     if (!response.ok) {
       await handleTemplateAPIError(response);
     }
-  }
-
-  /**
-   * Create template from existing demands
-   */
-  static async createTemplateFromDemands(
-    teamId: string,
-    request: TemplateFromDemandsDTO
-  ): Promise<ShiftDemandTemplateT> {
-    const response = await fetch(`${TEMPLATES_BASE}/from-demands`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        teamId,
-        ...request,
-      }),
-    });
-
-    if (!response.ok) {
-      await handleTemplateAPIError(response);
-    }
-
-    return response.json();
   }
 
   /**
