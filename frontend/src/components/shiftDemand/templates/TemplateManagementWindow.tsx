@@ -29,7 +29,6 @@ import {
   TemplateViewMode,
   TemplateListItem,
   ShiftDemandTemplateCreateDTO,
-  ShiftDemandTemplateUpdateDTO,
   TemplateType,
 } from "../../../types/shift-demand-template";
 import { ShiftDemandTemplateApi } from "../../../app/lib/api/shiftDemandTemplateApi";
@@ -37,7 +36,6 @@ import { ShiftDemandTemplateApi } from "../../../app/lib/api/shiftDemandTemplate
 // Import template components
 import { TemplateList } from "./TemplateList";
 import { TemplateViewer } from "./TemplateViewer";
-import { TemplateEditor } from "./TemplateEditor";
 import { TemplateCreationDialog } from "./TemplateCreationDialog";
 import { TemplateApplicationDialog } from "./TemplateApplicationDialog";
 
@@ -134,12 +132,6 @@ export default function TemplateManagementWindow({
     }
   };
 
-  const handleTemplateEdit = () => {
-    if (selectedTemplate) {
-      setViewMode("edit");
-    }
-  };
-
   const handleTemplateApply = (templateId?: string) => {
     const idToUse = templateId || selectedTemplate?.id;
     if (idToUse) {
@@ -154,27 +146,6 @@ export default function TemplateManagementWindow({
     setSuccessMessage(t("template_deleted_successfully"));
     // Trigger template list refresh by updating templates state
     setTemplates((prev) => prev.filter((t) => t.id !== templateId));
-  };
-
-  const handleTemplateUpdated = async (
-    updateData: ShiftDemandTemplateUpdateDTO
-  ) => {
-    if (!selectedTemplate) return;
-
-    try {
-      const updatedTemplate = await ShiftDemandTemplateApi.updateTemplate(
-        selectedTemplate.id,
-        teamId,
-        updateData
-      );
-      setSelectedTemplate(updatedTemplate);
-      setViewMode("view");
-      setSuccessMessage(t("template_updated_successfully"));
-    } catch (error) {
-      setError(
-        error instanceof Error ? error.message : t("error_updating_template")
-      );
-    }
   };
 
   const handleTemplateCreated = async (
@@ -224,15 +195,11 @@ export default function TemplateManagementWindow({
   };
 
   const handleBack = () => {
-    if (viewMode === "edit") {
-      setViewMode("view");
-    } else {
-      setSelectedTemplate(null);
-      setViewMode("list");
-      // Show sidebar when going back to list on mobile
-      if (isMobile) {
-        setSidebarVisible(true);
-      }
+    setSelectedTemplate(null);
+    setViewMode("list");
+    // Show sidebar when going back to list on mobile
+    if (isMobile) {
+      setSidebarVisible(true);
     }
   };
 
@@ -258,19 +225,6 @@ export default function TemplateManagementWindow({
 
   // Render main content based on view mode
   const renderMainContent = () => {
-    if (viewMode === "edit" && selectedTemplate) {
-      return (
-        <TemplateEditor
-          lng={lng}
-          template={selectedTemplate}
-          shifts={shifts}
-          onSave={handleTemplateUpdated}
-          onCancel={handleBack}
-          onError={handleError}
-        />
-      );
-    }
-
     if (viewMode === "view" && selectedTemplate) {
       return (
         <TemplateViewer
