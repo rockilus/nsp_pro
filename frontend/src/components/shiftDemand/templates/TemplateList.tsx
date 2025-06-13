@@ -145,9 +145,6 @@ export function TemplateList({
     <Box className="template-list-container">
       {/* Header */}
       <Box className="template-list-header">
-        <Typography variant="h6" component="h3" gutterBottom>
-          {t("templates")}
-        </Typography>
         <Button
           variant="contained"
           startIcon={<Add />}

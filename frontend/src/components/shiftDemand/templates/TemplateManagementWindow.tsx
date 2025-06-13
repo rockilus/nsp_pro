@@ -18,8 +18,9 @@ import {
   useMediaQuery,
   Alert,
   Snackbar,
+  Tooltip,
 } from "@mui/material";
-import { Close } from "@mui/icons-material";
+import { Close, Menu, MenuOpen } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { useTranslation } from "../../../app/i18n/client";
 import { ShiftT } from "../../../types/shift";
@@ -80,9 +81,19 @@ export default function TemplateManagementWindow({
   // Template list state
   const [templates, setTemplates] = useState<TemplateListItem[]>([]);
 
+  // Sidebar visibility state
+  const [sidebarVisible, setSidebarVisible] = useState(true);
+
   // Error and success notifications
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Auto-hide sidebar on mobile when template is selected
+  useEffect(() => {
+    if (isMobile && selectedTemplate && viewMode !== "list") {
+      setSidebarVisible(false);
+    }
+  }, [isMobile, selectedTemplate, viewMode]);
 
   // Reset state when dialog opens/closes
   useEffect(() => {
@@ -94,10 +105,14 @@ export default function TemplateManagementWindow({
       setTemplateToApplyId(null);
       setError(null);
       setSuccessMessage(null);
+      setSidebarVisible(true); // Reset sidebar visibility
     }
   }, [open]);
 
   // Handlers
+  const toggleSidebar = () => {
+    setSidebarVisible(!sidebarVisible);
+  };
   const handleTemplateSelect = async (template: TemplateListItem) => {
     try {
       // Load full template data from API
@@ -107,6 +122,11 @@ export default function TemplateManagementWindow({
       );
       setSelectedTemplate(fullTemplate);
       setViewMode("view");
+
+      // Auto-hide sidebar on mobile after selection
+      if (isMobile) {
+        setSidebarVisible(false);
+      }
     } catch (error) {
       setError(
         error instanceof Error ? error.message : t("error_loading_template")
@@ -185,6 +205,11 @@ export default function TemplateManagementWindow({
         totalDemands: 0, // Empty template starts with 0 demands
       };
       setTemplates((prev) => [...prev, newTemplateListItem]);
+
+      // Auto-hide sidebar on mobile after creation
+      if (isMobile) {
+        setSidebarVisible(false);
+      }
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : t("error_creating_template");
@@ -204,6 +229,10 @@ export default function TemplateManagementWindow({
     } else {
       setSelectedTemplate(null);
       setViewMode("list");
+      // Show sidebar when going back to list on mobile
+      if (isMobile) {
+        setSidebarVisible(true);
+      }
     }
   };
 
@@ -301,9 +330,24 @@ export default function TemplateManagementWindow({
             zIndex: 1,
           }}
         >
-          <Typography variant="h6" component="h2">
-            {t("template_management")}
-          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Tooltip
+              title={sidebarVisible ? t("hide_sidebar") : t("show_sidebar")}
+            >
+              <IconButton
+                onClick={toggleSidebar}
+                sx={{ color: "text.secondary" }}
+                aria-label={
+                  sidebarVisible ? t("hide_sidebar") : t("show_sidebar")
+                }
+              >
+                {sidebarVisible ? <MenuOpen /> : <Menu />}
+              </IconButton>
+            </Tooltip>
+            <Typography variant="h6" component="h2">
+              {t("template_management")}
+            </Typography>
+          </Box>
           <IconButton
             onClick={onClose}
             sx={{ color: "text.secondary" }}
@@ -324,22 +368,32 @@ export default function TemplateManagementWindow({
           className="template-management-content"
         >
           {/* Sidebar - Template List */}
-          <Box className="template-management-sidebar">
-            <TemplateList
-              lng={lng}
-              teamId={teamId}
-              templates={templates}
-              selectedTemplateId={selectedTemplate?.id || null}
-              onSelectTemplate={handleTemplateSelect}
-              onCreateTemplate={handleCreateNew}
-              onDeleteTemplate={handleTemplateDelete}
-              onError={handleError}
-              onTemplatesLoaded={handleTemplatesLoaded}
-            />
-          </Box>
+          {sidebarVisible && (
+            <Box className="template-management-sidebar">
+              <TemplateList
+                lng={lng}
+                teamId={teamId}
+                templates={templates}
+                selectedTemplateId={selectedTemplate?.id || null}
+                onSelectTemplate={handleTemplateSelect}
+                onCreateTemplate={handleCreateNew}
+                onDeleteTemplate={handleTemplateDelete}
+                onError={handleError}
+                onTemplatesLoaded={handleTemplatesLoaded}
+              />
+            </Box>
+          )}
 
           {/* Main Content Area */}
-          <Box className="template-management-main">{renderMainContent()}</Box>
+          <Box
+            className="template-management-main"
+            sx={{
+              flex: 1,
+              ...(sidebarVisible ? {} : { width: "100%" }),
+            }}
+          >
+            {renderMainContent()}
+          </Box>
         </DialogContent>
       </Dialog>
 
