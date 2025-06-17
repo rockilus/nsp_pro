@@ -63,6 +63,17 @@ interface TemplateViewerProps {
   onApply: () => void;
   onDelete: () => void;
   onError: (error: string) => void;
+  // New props for centralized state management
+  onUpdateTemplate: (updates: Partial<ShiftDemandTemplateDTO>) => Promise<void>;
+  onAddWeek: () => Promise<void>;
+  onDeleteWeek: (weekNumber: number) => Promise<void>;
+  onUpdateTemplateType: (templateType: TemplateType) => Promise<void>;
+  onUpdateTemplateMetadata: (updates: {
+    name?: string;
+    description?: string;
+  }) => Promise<void>;
+  onDeleteTemplate: (templateId: string) => Promise<void>;
+  templateUpdateLoading: boolean;
 }
 
 export function TemplateViewer({
@@ -72,6 +83,13 @@ export function TemplateViewer({
   onApply,
   onDelete,
   onError,
+  onUpdateTemplate,
+  onAddWeek,
+  onDeleteWeek,
+  onUpdateTemplateType,
+  onUpdateTemplateMetadata,
+  onDeleteTemplate,
+  templateUpdateLoading,
 }: TemplateViewerProps) {
   const { t } = useTranslation(lng, "shift-demand-templates");
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -187,7 +205,7 @@ export function TemplateViewer({
 
     setDeleteLoading(true);
     try {
-      await ShiftDemandTemplateApi.deleteTemplate(template.id, template.teamId);
+      await onDeleteTemplate(template.id);
       onDelete();
     } catch (error) {
       console.error("Failed to delete template:", error);
@@ -227,13 +245,7 @@ export function TemplateViewer({
 
     setSaveLoading(true);
     try {
-      await ShiftDemandTemplateApi.updateTemplate(
-        template.id,
-        template.teamId,
-        {
-          name: trimmedName,
-        }
-      );
+      await onUpdateTemplateMetadata({ name: trimmedName });
       setEditNameOpen(false);
     } catch (error) {
       console.error("Failed to update template name:", error);
@@ -255,13 +267,9 @@ export function TemplateViewer({
 
     setSaveLoading(true);
     try {
-      await ShiftDemandTemplateApi.updateTemplate(
-        template.id,
-        template.teamId,
-        {
-          description: editedDescription.trim() || undefined,
-        }
-      );
+      await onUpdateTemplateMetadata({
+        description: editedDescription.trim() || undefined,
+      });
       setEditDescriptionOpen(false);
     } catch (error) {
       console.error("Failed to update template description:", error);
@@ -299,58 +307,23 @@ export function TemplateViewer({
     }
   };
 
-  const handleTemplateTypeChange = (type: TemplateType) => {
+  const handleTemplateTypeChange = async (type: TemplateType) => {
     setTemplateType(type);
+    await onUpdateTemplateType(type);
   };
 
-  const handleAddWeek = async () => {
-    // Create new week data with empty demands
-    const newWeekNumber = template.weeksData.length;
-    const newWeekData: TemplateWeekDataDTO = {
-      weekNumber: newWeekNumber,
-      demands: [],
-    };
-
-    const updatedWeeksData = [...template.weeksData, newWeekData];
-
-    try {
-      await ShiftDemandTemplateApi.updateTemplate(
-        template.id,
-        template.teamId,
-        { weeksData: updatedWeeksData }
-      );
-    } catch (error) {
-      throw error; // Let the toolbar handle the error display
-    }
+  // Wrapper handlers to maintain state consistency
+  const handleAddWeekWrapper = async () => {
+    await onAddWeek();
   };
 
-  const handleDeleteWeek = async (weekNumber: number) => {
-    if (template.weeksData.length <= 1) {
-      throw new Error("Cannot delete the last week");
-    }
+  const handleDeleteWeekWrapper = async (weekNumber: number) => {
+    await onDeleteWeek(weekNumber);
 
-    // Remove the week and renumber remaining weeks
-    const updatedWeeksData = template.weeksData
-      .filter((week) => week.weekNumber !== weekNumber)
-      .map((week, index) => ({
-        ...week,
-        weekNumber: index, // Renumber weeks to be consecutive
-      }));
-
-    try {
-      await ShiftDemandTemplateApi.updateTemplate(
-        template.id,
-        template.teamId,
-        { weeksData: updatedWeeksData }
-      );
-
-      // Adjust current week if necessary
-      const newTotalWeeks = updatedWeeksData.length;
-      if (currentWeek >= newTotalWeeks) {
-        setCurrentWeek(Math.max(0, newTotalWeeks - 1));
-      }
-    } catch (error) {
-      throw error; // Let the toolbar handle the error display
+    // Adjust current week if necessary
+    const newTotalWeeks = template.weeksData.length - 1;
+    if (currentWeek >= newTotalWeeks) {
+      setCurrentWeek(Math.max(0, newTotalWeeks - 1));
     }
   };
 
@@ -949,12 +922,13 @@ export function TemplateViewer({
           onWeekChange={handleWeekChange}
           onWeeksToShowChange={handleWeeksToShowChange}
           onTemplateTypeChange={handleTemplateTypeChange}
-          onAddWeek={handleAddWeek}
-          onDeleteWeek={handleDeleteWeek}
+          onAddWeek={handleAddWeekWrapper}
+          onDeleteWeek={handleDeleteWeekWrapper}
           onBuildFromDemands={handleBuildFromDemands}
           onError={onError}
           bulkModeActive={bulkChangeState.isActive}
           onToggleBulkMode={toggleBulkMode}
+          updateLoading={templateUpdateLoading}
         />
       </Box>
 

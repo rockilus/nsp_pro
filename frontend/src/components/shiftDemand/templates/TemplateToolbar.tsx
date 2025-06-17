@@ -35,7 +35,6 @@ import {
   TemplateType,
   TemplateWeekDataDTO,
 } from "../../../types/shift-demand-template";
-import { ShiftDemandTemplateApi } from "../../../app/lib/api/shiftDemandTemplateApi";
 import {
   getWeekManagementConstraints,
   validateTemplateForTypeChange,
@@ -56,14 +55,15 @@ interface TemplateToolbarProps {
   totalWeeks: number;
   onWeekChange: (week: number) => void;
   onWeeksToShowChange: (weeks: WeeksToShow) => void;
-  onTemplateTypeChange: (type: TemplateType) => void;
-  onAddWeek: () => Promise<void>;
-  onDeleteWeek: (weekNumber: number) => Promise<void>;
+  onTemplateTypeChange: (type: TemplateType) => Promise<void>; // Now async handler from parent
+  onAddWeek: () => Promise<void>; // Now async handler from parent
+  onDeleteWeek: (weekNumber: number) => Promise<void>; // Now async handler from parent
   onBuildFromDemands: () => void;
   onError: (error: string) => void;
   // Bulk mode props
   bulkModeActive: boolean;
   onToggleBulkMode: () => void;
+  updateLoading?: boolean; // New prop for loading state
 }
 
 export function TemplateToolbar({
@@ -83,6 +83,7 @@ export function TemplateToolbar({
   onError,
   bulkModeActive,
   onToggleBulkMode,
+  updateLoading = false,
 }: TemplateToolbarProps) {
   const { t } = useTranslation(lng, "shift-demand-templates");
 
@@ -91,7 +92,7 @@ export function TemplateToolbar({
   const [deleteWeekLoading, setDeleteWeekLoading] = useState<
     Map<number, boolean>
   >(new Map());
-  const [typeToggleLoading, setTypeToggleLoading] = useState(false);
+  // Remove typeToggleLoading - use updateLoading from parent
 
   // Confirmation dialogs
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -216,19 +217,8 @@ export function TemplateToolbar({
 
   // Update template type (used by both direct update and confirmation)
   const updateTemplateType = async (newType: TemplateType) => {
-    setTypeToggleLoading(true);
     try {
-      // For EVEN_ODD conversion, we need to handle week adjustment
-      if (newType === TemplateType.EVEN_ODD && totalWeeks !== 2) {
-        await convertToEvenOddTemplate(newType);
-      } else {
-        await ShiftDemandTemplateApi.updateTemplate(
-          template.id,
-          template.teamId,
-          { templateType: newType }
-        );
-        onTemplateTypeChange(newType);
-      }
+      await onTemplateTypeChange(newType);
     } catch (error) {
       console.error("Failed to update template type:", error);
       onError(
@@ -236,55 +226,6 @@ export function TemplateToolbar({
           ? error.message
           : "Failed to update template type"
       );
-    } finally {
-      setTypeToggleLoading(false);
-    }
-  };
-
-  // Convert template to EVEN_ODD with week adjustment
-  const convertToEvenOddTemplate = async (newType: TemplateType) => {
-    try {
-      let adjustedWeeksData: TemplateWeekDataDTO[];
-
-      if (totalWeeks >= 2) {
-        // Template has 2 or more weeks - keep only first 2
-        adjustedWeeksData = template.weeksData
-          .slice(0, 2)
-          .map((week, index) => ({
-            ...week,
-            weekNumber: index, // Renumber to 0, 1
-          }));
-      } else {
-        // Template has fewer than 2 weeks - use existing weeks and add empty ones
-        adjustedWeeksData = [...template.weeksData];
-
-        // Renumber existing weeks
-        adjustedWeeksData.forEach((week, index) => {
-          week.weekNumber = index;
-        });
-      }
-
-      // Ensure we have exactly 2 weeks
-      while (adjustedWeeksData.length < 2) {
-        adjustedWeeksData.push({
-          weekNumber: adjustedWeeksData.length,
-          demands: [],
-        });
-      }
-
-      await ShiftDemandTemplateApi.updateTemplate(
-        template.id,
-        template.teamId,
-        {
-          templateType: newType,
-          weeksData: adjustedWeeksData,
-        }
-      );
-
-      onTemplateTypeChange(newType);
-    } catch (error) {
-      console.error("Failed to convert to Even/Odd template:", error);
-      throw error;
     }
   };
 
@@ -408,10 +349,10 @@ export function TemplateToolbar({
 
           {/* Week Display Selector */}
           <FormControl size="small" className={styles.weekSelector}>
-            <InputLabel>{t("show_weeks")}</InputLabel>
+            {/* <InputLabel>{t("show_weeks")}</InputLabel> */}
             <Select
               value={weeksToShow}
-              label={t("show_weeks")}
+              // label={t("show_weeks")}
               onChange={(e) =>
                 onWeeksToShowChange(e.target.value as WeeksToShow)
               }
@@ -433,7 +374,7 @@ export function TemplateToolbar({
               exclusive
               onChange={handleTemplateTypeChange}
               size="small"
-              disabled={typeToggleLoading}
+              disabled={updateLoading}
             >
               <ToggleButton value={TemplateType.STANDARD}>
                 {t("standard")}
@@ -442,7 +383,7 @@ export function TemplateToolbar({
                 {t("even_odd")}
               </ToggleButton>
             </ToggleButtonGroup>
-            {typeToggleLoading && (
+            {updateLoading && (
               <CircularProgress size={16} style={{ marginLeft: "8px" }} />
             )}
           </div>

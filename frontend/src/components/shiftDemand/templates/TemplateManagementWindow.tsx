@@ -30,6 +30,7 @@ import {
   TemplateListItem,
   ShiftDemandTemplateCreateDTO,
   TemplateType,
+  TemplateWeekDataDTO,
 } from "../../../types/shift-demand-template";
 import { ShiftDemandTemplateApi } from "../../../app/lib/api/shiftDemandTemplateApi";
 
@@ -85,6 +86,9 @@ export default function TemplateManagementWindow({
   // Error and success notifications
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Template update state
+  const [templateUpdateLoading, setTemplateUpdateLoading] = useState(false);
 
   // Auto-hide sidebar on mobile when template is selected
   useEffect(() => {
@@ -223,6 +227,129 @@ export default function TemplateManagementWindow({
     setTemplates(loadedTemplates);
   };
 
+  // Centralized template update handlers
+  const handleUpdateTemplate = async (
+    updates: Partial<ShiftDemandTemplateDTO>
+  ) => {
+    if (!selectedTemplate) return;
+
+    setTemplateUpdateLoading(true);
+    try {
+      const updatedTemplate = await ShiftDemandTemplateApi.updateTemplate(
+        selectedTemplate.id,
+        teamId,
+        updates
+      );
+
+      // Update local state
+      setSelectedTemplate(updatedTemplate);
+      setSuccessMessage(t("template_updated_successfully"));
+    } catch (error) {
+      console.error("Failed to update template:", error);
+      setError(
+        error instanceof Error ? error.message : t("error_updating_template")
+      );
+      throw error; // Re-throw so child components can handle loading states
+    } finally {
+      setTemplateUpdateLoading(false);
+    }
+  };
+
+  const handleAddWeek = async () => {
+    if (!selectedTemplate) return;
+
+    // Create new week data with empty demands
+    const newWeekNumber = selectedTemplate.weeksData.length;
+    const newWeekData: TemplateWeekDataDTO = {
+      weekNumber: newWeekNumber,
+      demands: [],
+    };
+
+    const updatedWeeksData = [...selectedTemplate.weeksData, newWeekData];
+    await handleUpdateTemplate({ weeksData: updatedWeeksData });
+  };
+
+  const handleDeleteWeek = async (weekNumber: number) => {
+    if (!selectedTemplate || selectedTemplate.weeksData.length <= 1) {
+      throw new Error("Cannot delete the last week");
+    }
+
+    // Remove the week and renumber remaining weeks
+    const updatedWeeksData = selectedTemplate.weeksData
+      .filter((week) => week.weekNumber !== weekNumber)
+      .map((week, index) => ({
+        ...week,
+        weekNumber: index, // Renumber weeks to be consecutive
+      }));
+
+    await handleUpdateTemplate({ weeksData: updatedWeeksData });
+  };
+
+  const handleUpdateTemplateType = async (templateType: TemplateType) => {
+    if (!selectedTemplate) return;
+
+    // For EVEN_ODD conversion, we need to handle week adjustment
+    if (
+      templateType === TemplateType.EVEN_ODD &&
+      selectedTemplate.weeksData.length !== 2
+    ) {
+      let adjustedWeeksData: TemplateWeekDataDTO[];
+
+      if (selectedTemplate.weeksData.length >= 2) {
+        // Template has 2 or more weeks - keep only first 2
+        adjustedWeeksData = selectedTemplate.weeksData
+          .slice(0, 2)
+          .map((week, index) => ({
+            ...week,
+            weekNumber: index, // Renumber to 0, 1
+          }));
+      } else {
+        // Template has fewer than 2 weeks - use existing weeks and add empty ones
+        adjustedWeeksData = [...selectedTemplate.weeksData];
+
+        // Renumber existing weeks
+        adjustedWeeksData.forEach((week, index) => {
+          week.weekNumber = index;
+        });
+      }
+
+      // Ensure we have exactly 2 weeks
+      while (adjustedWeeksData.length < 2) {
+        adjustedWeeksData.push({
+          weekNumber: adjustedWeeksData.length,
+          demands: [],
+        });
+      }
+
+      await handleUpdateTemplate({
+        templateType,
+        weeksData: adjustedWeeksData,
+      });
+    } else {
+      await handleUpdateTemplate({ templateType });
+    }
+  };
+
+  const handleUpdateTemplateMetadata = async (updates: {
+    name?: string;
+    description?: string;
+  }) => {
+    await handleUpdateTemplate(updates);
+  };
+
+  const handleDeleteTemplate = async (templateId: string) => {
+    try {
+      await ShiftDemandTemplateApi.deleteTemplate(templateId, teamId);
+      // The onDelete callback will handle UI updates
+    } catch (error) {
+      console.error("Failed to delete template:", error);
+      setError(
+        error instanceof Error ? error.message : t("error_deleting_template")
+      );
+      throw error;
+    }
+  };
+
   // Render main content based on view mode
   const renderMainContent = () => {
     if (viewMode === "view" && selectedTemplate) {
@@ -234,6 +361,13 @@ export default function TemplateManagementWindow({
           onApply={() => handleTemplateApply()}
           onDelete={handleBack} // This will go back to list after delete
           onError={handleError}
+          onUpdateTemplate={handleUpdateTemplate}
+          onAddWeek={handleAddWeek}
+          onDeleteWeek={handleDeleteWeek}
+          onUpdateTemplateType={handleUpdateTemplateType}
+          onUpdateTemplateMetadata={handleUpdateTemplateMetadata}
+          onDeleteTemplate={handleDeleteTemplate}
+          templateUpdateLoading={templateUpdateLoading}
         />
       );
     }
