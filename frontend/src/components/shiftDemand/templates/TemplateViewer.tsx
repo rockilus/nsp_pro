@@ -60,6 +60,7 @@ interface TemplateViewerProps {
   lng: string;
   template: ShiftDemandTemplateDTO;
   shifts: ShiftT[];
+  teamId: string;
   onApply: () => void;
   onDelete: () => void;
   onError: (error: string) => void;
@@ -80,6 +81,7 @@ export function TemplateViewer({
   lng,
   template,
   shifts,
+  teamId,
   onApply,
   onDelete,
   onError,
@@ -329,6 +331,18 @@ export function TemplateViewer({
 
   const handleBuildFromDemands = () => {
     setBuildDialogOpen(true);
+  };
+
+  const handleBuildFromDemandsSuccess = async (
+    updatedTemplate: ShiftDemandTemplateDTO
+  ) => {
+    try {
+      await onUpdateTemplate(updatedTemplate);
+      setBuildDialogOpen(false);
+    } catch (error) {
+      console.error("Failed to update template:", error);
+      onError("Failed to update template after applying demands");
+    }
   };
 
   // Render a week data grid
@@ -1083,7 +1097,9 @@ export function TemplateViewer({
         lng={lng}
         open={buildDialogOpen}
         onClose={() => setBuildDialogOpen(false)}
-        templateName={template.name}
+        template={template}
+        teamId={teamId}
+        onSuccess={handleBuildFromDemandsSuccess}
       />
     </Box>
   );

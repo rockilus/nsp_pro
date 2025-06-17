@@ -9,6 +9,7 @@ import {
   ShiftDemandTemplateUpdateDTO,
   TemplateFromDemandsDTO,
   ApplyTemplateDTO,
+  ApplyDemandsToTemplateWeekDTO,
   TemplateApplicationResult,
   TemplateValidationResult,
   BatchTemplateOperationResult,
@@ -351,6 +352,33 @@ export class ShiftDemandTemplateApi {
       },
       credentials: "include",
     });
+
+    if (!response.ok) {
+      await handleTemplateAPIError(response);
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Apply existing demands to template week
+   */
+  static async applyDemandsToTemplateWeek(
+    templateId: string,
+    teamId: string,
+    request: ApplyDemandsToTemplateWeekDTO
+  ): Promise<ShiftDemandTemplateDTO> {
+    const response = await fetch(
+      `${TEMPLATES_BASE}/${templateId}/apply-demands/teams/${teamId}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(request),
+      }
+    );
 
     if (!response.ok) {
       await handleTemplateAPIError(response);

@@ -60,3 +60,15 @@ class ApplyTemplateDTO(BaseModel):
     overwriteExisting: bool = Field(
         default=False, description="Whether to overwrite existing demands"
     )
+
+
+class ApplyDemandsToTemplateWeekDTO(BaseModel):
+    """DTO for applying existing demands to template week."""
+
+    templateId: str = Field(..., description="Template identifier")
+    sourceWeekStartDate: float = Field(
+        ..., description="Timestamp of source week Monday"
+    )
+    targetWeekNumber: int = Field(
+        ..., ge=0, description="0-based week number in template to update"
+    )

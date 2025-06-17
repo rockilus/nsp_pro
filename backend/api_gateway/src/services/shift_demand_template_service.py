@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import List, Optional
 
 from shared.database.database_collections import DatabaseCollections
@@ -5,6 +6,7 @@ from shared.logger import log_info
 from shared.schemas.core.shift_demand_template import (
     ShiftDemandTemplate,
     TemplateType,
+    apply_demands_to_template_week,
     create_template_from_demands,
 )
 
@@ -200,3 +202,76 @@ class ShiftDemandTemplateService:
             )
 
         return template
+
+    async def apply_demands_to_template_week(
+        self,
+        template_id: str,
+        team_id: str,
+        source_week_start: datetime,
+        target_week_number: int,
+    ) -> ShiftDemandTemplate:
+        """
+        Apply existing shift demands from a source week to a template week.
+
+        Args:
+            template_id: Template identifier
+            team_id: Team identifier for validation
+            source_week_start: Start of source week (should be Monday)
+            target_week_number: 0-based week number in template to update
+
+        Returns:
+            Updated template with new demands applied to target week
+
+        Raises:
+            ValueError: If template doesn't exist, doesn't belong to team,
+                       or target week is invalid
+        """
+        try:
+            # Validate template exists and belongs to team
+            template = await self.validate_template_for_team(template_id, team_id)
+
+            # Calculate week date range (Monday to Sunday)
+            week_start = source_week_start - timedelta(days=source_week_start.weekday())
+            week_end = week_start + timedelta(days=6)
+
+            # Fetch existing shift demands for the source week
+            # Use ShiftDemandNew which is the current shift demand system
+            source_demands = (
+                self.db.shift_demand_new_db.get_shift_demands_by_date_range(
+                    team_id=team_id,
+                    start_date=week_start.date(),
+                    end_date=week_end.date(),
+                )
+            )
+
+            # Convert shift demands to the format expected by the core function
+            demands_data = []
+            for demand in source_demands:
+                demands_data.append(
+                    {
+                        "date": demand.date,
+                        "shift_id": demand.shift_id,
+                        "count": demand.count,
+                    }
+                )
+
+            # Apply demands to template using core function
+            updated_template = apply_demands_to_template_week(
+                template=template,
+                source_week_demands=demands_data,
+                target_week_number=target_week_number,
+            )
+
+            # Save updated template
+            saved_template = self.template_repo.update_template(updated_template)
+
+            log_info(
+                f"Applied demands from week {week_start.date()} to template "
+                f"{template_id} week {target_week_number} for team {team_id}"
+            )
+
+            return saved_template
+
+        except Exception as e:
+            log_info(f"Failed to apply demands to template week: {str(e)}")
+            raise

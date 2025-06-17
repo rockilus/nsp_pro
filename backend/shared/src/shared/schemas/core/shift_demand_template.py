@@ -342,3 +342,77 @@ def create_template_from_demands(
         description=description,
         created_by=created_by,
     )
+
+
+def apply_demands_to_template_week(
+    template: ShiftDemandTemplate,
+    source_week_demands: List[Dict[str, Any]],  # List of shift demand data
+    target_week_number: int,
+) -> ShiftDemandTemplate:
+    """
+    Apply shift demands from a source week to a specific template week.
+
+    Args:
+        template: The template to update
+        source_week_demands: List of shift demand data for the source week
+        target_week_number: 0-based week number in template to update
+
+    Returns:
+        Updated template with new demands applied to target week
+
+    Raises:
+        ValueError: If target week number is invalid
+    """
+    if target_week_number < 0 or target_week_number >= len(template.weeks_data):
+        raise ValueError(
+            f"Target week number {target_week_number} is out of range. "
+            f"Template has {len(template.weeks_data)} weeks "
+            f"(0-{len(template.weeks_data)-1})"
+        )
+
+    # Convert source week demands to DemandEntry format
+    new_demands: List[DemandEntry] = []
+    for demand in source_week_demands:
+        demand_date = demand["date"]
+        if isinstance(demand_date, str):
+            demand_date = datetime.strptime(demand_date, "%Y-%m-%d").date()
+        elif isinstance(demand_date, (int, float)):
+            demand_date = datetime.fromtimestamp(demand_date, tz=timezone.utc).date()
+
+        # Calculate day of week (0=Monday, 6=Sunday)
+        day_of_week = demand_date.weekday()
+
+        # Add demand entry
+        new_demands.append(
+            DemandEntry(
+                shift_id=demand["shift_id"],
+                day_of_week=day_of_week,
+                count=demand["count"],
+            )
+        )
+
+    # Update the target week in template
+    updated_weeks_data: List[TemplateWeekData] = []
+    for week in template.weeks_data:
+        if week.week_number == target_week_number:
+            # Replace the demands for the target week
+            updated_weeks_data.append(
+                TemplateWeekData(week_number=target_week_number, demands=new_demands)
+            )
+        else:
+            updated_weeks_data.append(week)
+
+    # Create updated template
+    updated_template = ShiftDemandTemplate(
+        id=template.id,
+        name=template.name,
+        team_id=template.team_id,
+        template_type=template.template_type,
+        weeks_data=updated_weeks_data,
+        description=template.description,
+        created_by=template.created_by,
+        created_at=template.created_at,
+        updated_at=datetime.now(timezone.utc),
+    )
+
+    return updated_template

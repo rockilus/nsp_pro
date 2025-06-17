@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -8,6 +9,7 @@ from shared.schemas.core.shift_demand_template import (
     TemplateWeekData,
 )
 from shared.schemas.dto.shift_demand_template import (
+    ApplyDemandsToTemplateWeekDTO,
     ShiftDemandTemplateCreateDTO,
     ShiftDemandTemplateDTO,
     ShiftDemandTemplateUpdateDTO,
@@ -325,5 +327,85 @@ async def delete_template(
         ) from e
     except Exception as e:
         log_info(f"Failed to delete template {template_id}: {str(e)}")
+        handle_routes_errors(e)
+        raise HTTPException(status_code=500, detail="Internal server error") from e
+
+
+@router.post("/shift-demand-templates/{template_id}/apply-demands/teams/{team_id}")
+async def apply_demands_to_template_week(
+    template_id: str,
+    team_id: str,
+    apply_dto: ApplyDemandsToTemplateWeekDTO,
+    session: SessionContainerType = Depends(authn_verify_session()),
+    service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
+) -> ShiftDemandTemplateDTO:
+    """Apply existing shift demands from a source week to a template week."""
+    try:
+        if not await authz_check(
+            session.get_user_id(), "update-shift-demand", "team", team_id
+        ):
+            raise NotAuthorizedError("You do not have permission to update templates")
+
+        # Convert timestamp to datetime
+        source_week_start = datetime.fromtimestamp(
+            apply_dto.sourceWeekStartDate, tz=timezone.utc
+        )
+
+        # Apply demands using service
+        updated_template = await service.apply_demands_to_template_week(
+            template_id=template_id,
+            team_id=team_id,
+            source_week_start=source_week_start,
+            target_week_number=apply_dto.targetWeekNumber,
+        )
+
+        log_info(
+            f"Applied demands to template {template_id} week "
+            f"{apply_dto.targetWeekNumber} for team {team_id}"
+        )
+        return updated_template.to_dto()
+
+    except NotAuthorizedError:
+        raise
+    except HTTPException:
+        raise
+    except ValueError as e:
+        if "not found" in str(e):
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": "not_found",
+                    "message": f"Template with ID {template_id} not found",
+                    "template_id": template_id,
+                },
+            ) from e
+        if "does not belong" in str(e):
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "error": "forbidden",
+                    "message": "Template does not belong to specified team",
+                    "template_id": template_id,
+                    "team_id": team_id,
+                },
+            ) from e
+        if "invalid week" in str(e).lower():
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "invalid_week",
+                    "message": str(e),
+                    "target_week_number": apply_dto.targetWeekNumber,
+                },
+            ) from e
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "validation_error",
+                "message": str(e),
+            },
+        ) from e
+    except Exception as e:
+        log_info(f"Failed to apply demands to template {template_id}: {str(e)}")
         handle_routes_errors(e)
         raise HTTPException(status_code=500, detail="Internal server error") from e

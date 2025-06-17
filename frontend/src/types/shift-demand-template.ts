@@ -92,6 +92,15 @@ export interface ApplyTemplateDTO {
 }
 
 /**
+ * DTO for applying existing demands to template week
+ */
+export interface ApplyDemandsToTemplateWeekDTO {
+  templateId: string;
+  sourceWeekStartDate: number; // timestamp of source week Monday
+  targetWeekNumber: number; // 0-based week number in template
+}
+
+/**
  * Response types for template operations
  */
 export interface TemplateApplicationResult {
