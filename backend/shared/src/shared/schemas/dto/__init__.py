@@ -43,6 +43,13 @@ from shared.schemas.dto.shift_demand_new import (
     ShiftDemandNewUpdateDTO,
     ShiftDemandsResultDTO,
 )
+from shared.schemas.dto.shift_demand_template import (
+    ApplyTemplateDTO,
+    ShiftDemandTemplateCreateDTO,
+    ShiftDemandTemplateDTO,
+    ShiftDemandTemplateUpdateDTO,
+    TemplateWeekDataDTO,
+)
 from shared.schemas.dto.specialty import SpecialtyDTO
 from shared.schemas.dto.stats import (
     StatsDTO,
@@ -103,6 +110,11 @@ __all__ = [
     "ShiftDemandNewDTO",
     "ShiftDemandNewUpdateDTO",
     "ShiftDemandsResultDTO",
+    "ApplyTemplateDTO",
+    "ShiftDemandTemplateCreateDTO",
+    "ShiftDemandTemplateDTO",
+    "ShiftDemandTemplateUpdateDTO",
+    "TemplateWeekDataDTO",
     "SpecialtyDTO",
     "StatsDTO",
     "StatsHeaderDTO",

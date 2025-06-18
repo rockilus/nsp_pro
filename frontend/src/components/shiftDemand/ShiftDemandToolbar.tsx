@@ -1,5 +1,6 @@
 import React from "react";
-import { Box, Paper } from "@mui/material";
+import { Box, Paper, Button } from "@mui/material";
+import { Description } from "@mui/icons-material";
 import { PeriodNavigation } from "./PeriodNavigation";
 import { useTranslation } from "../../app/i18n/client";
 import { Dayjs } from "dayjs";
@@ -17,6 +18,9 @@ interface ShiftDemandToolbarProps {
   // Bulk operations props
   bulkModeActive: boolean;
   onToggleBulkMode: () => void;
+
+  // Template management props
+  onOpenTemplates: () => void;
 }
 
 export function ShiftDemandToolbar({
@@ -28,6 +32,7 @@ export function ShiftDemandToolbar({
   isLoading,
   bulkModeActive,
   onToggleBulkMode,
+  onOpenTemplates,
 }: ShiftDemandToolbarProps) {
   const { t } = useTranslation(lng, "shift-demands");
 
@@ -64,8 +69,25 @@ export function ShiftDemandToolbar({
           />
         </Box>
 
-        {/* Right side - Bulk Select and Actions */}
+        {/* Right side - Template Management, Bulk Select and Actions */}
         <Box display="flex" gap={1} alignItems="center">
+          <Button
+            variant="outlined"
+            startIcon={<Description />}
+            onClick={onOpenTemplates}
+            disabled={isLoading}
+            sx={{
+              height: "35px",
+              fontSize: "0.9rem",
+              fontWeight: 550,
+              textTransform: "none",
+              minWidth: "auto",
+              px: 2,
+            }}
+          >
+            {t("templates")}
+          </Button>
+
           <button
             onClick={onToggleBulkMode}
             disabled={isLoading}

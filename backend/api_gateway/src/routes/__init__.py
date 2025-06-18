@@ -16,6 +16,9 @@ from src.routes.request_routes import router as router_request
 from src.routes.schedule_routes import router as router_schedule
 from src.routes.shift_demand_new_routes import router as router_shift_demand_new
 from src.routes.shift_demand_routes import router as router_shift_demand
+from src.routes.shift_demand_template_routes import (
+    router as router_shift_demand_template,
+)
 from src.routes.shift_routes import router as router_shift
 from src.routes.specialty_routes import router as router_specialty
 from src.routes.sse import router as router_sse
@@ -43,6 +46,7 @@ __all__ = [
     "router_request",
     "router_schedule",
     "router_shift_demand",
+    "router_shift_demand_template",
     "router_shift_demand_new",
     "router_shift",
     "router_specialty",

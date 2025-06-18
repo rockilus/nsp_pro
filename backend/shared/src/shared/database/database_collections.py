@@ -33,6 +33,9 @@ from shared.database.repositories.shift_demand_exclusion import (
 from shared.database.repositories.shift_demand_new import (
     ShiftDemandNewRepository,
 )
+from shared.database.repositories.shift_demand_template import (
+    ShiftDemandTemplateRepository,
+)
 from shared.database.repositories.specialty import SpecialtyRepository
 from shared.database.repositories.stats_header import StatsHeaderRepository
 from shared.database.repositories.team import TeamRepository
@@ -69,6 +72,7 @@ class DatabaseCollections:
     shift_demand_db: ShiftDemandRepository
     shift_demand_exclusion_db: ShiftDemandExclusionRepository
     shift_demand_new_db: ShiftDemandNewRepository
+    shift_demand_template_db: ShiftDemandTemplateRepository
     specialty_db: SpecialtyRepository
     stats_header_db: StatsHeaderRepository
     team_db: TeamRepository
@@ -100,6 +104,7 @@ class DatabaseCollections:
         self.shift_demand_db = ShiftDemandRepository()
         self.shift_demand_exclusion_db = ShiftDemandExclusionRepository()
         self.shift_demand_new_db = ShiftDemandNewRepository()
+        self.shift_demand_template_db = ShiftDemandTemplateRepository()
         self.specialty_db = SpecialtyRepository()
         self.stats_header_db = StatsHeaderRepository()
         self.team_db = TeamRepository()

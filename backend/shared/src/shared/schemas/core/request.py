@@ -167,12 +167,18 @@ class Request:
         data_snake["end_date"] = datetime.fromtimestamp(
             data_snake["end_date"], timezone.utc
         ).date()
+        data_snake["shift_options"] = [
+            ShiftWorkerOption.from_dict(option)
+            for option in data_snake.get("shift_options", [])
+        ]
         data_snake["status"] = RequestStatus(data_snake["status"])
         data_snake["fulfillment"] = FulfillmentStatus(data_snake["fulfillment"])
         data_snake["created_at"] = datetime.fromtimestamp(
             data_snake["created_at"], timezone.utc
         )
         data_snake.pop("active", None)
+        data_snake.pop("shift_target_ids", None)
+        data_snake.pop("missing_attributes", None)
         return cls(**data_snake)
 
 

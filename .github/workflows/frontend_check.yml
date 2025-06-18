@@ -40,3 +40,5 @@ jobs:
         run: npx tsc
       - name: Lint
         run: npm run lint
+      - name: Run tests
+        run: npm test -- --ci --coverage --watchAll=false

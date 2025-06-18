@@ -35,6 +35,7 @@ import { ShiftDemandToolbar } from "./ShiftDemandToolbar";
 import { ShiftDemandActionToolbar } from "./toolbar";
 import ShiftDemandTable from "./ShiftDemandTable";
 import ErrorFeedback from "./ErrorFeedback";
+import TemplateManagementWindow from "./templates/TemplateManagementWindow";
 // Hooks
 import { useTableState } from "../../hooks/useTableState";
 // Utils
@@ -118,6 +119,9 @@ function ShiftDemandTabInternal({
   const [shiftError, setShiftError] = useState<string | null>(null);
   const [savingCells, setSavingCells] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
+
+  // Template management state
+  const [templateManagementOpen, setTemplateManagementOpen] = useState(false);
 
   // Shift column definitions for filtering/sorting
   const shiftColumns = useMemo(
@@ -657,6 +661,7 @@ function ShiftDemandTabInternal({
         }
         bulkModeActive={bulkChangeState.isActive}
         onToggleBulkMode={toggleBulkMode}
+        onOpenTemplates={() => setTemplateManagementOpen(true)}
       />
 
       {/* Action Toolbar - Filter/Sort and Bulk Selection */}
@@ -728,6 +733,16 @@ function ShiftDemandTabInternal({
           shiftColumn={shiftColumns[0]} // Pass first column definition
         />
       </Paper>
+
+      {/* Template Management Window */}
+      <TemplateManagementWindow
+        lng={lng}
+        open={templateManagementOpen}
+        onClose={() => setTemplateManagementOpen(false)}
+        teamId={selectedTeamId || ""}
+        shifts={shifts}
+        currentPeriod={{ start: startDate, end: endDate }}
+      />
 
       {/* Error Feedback */}
       <ErrorFeedback error={error} onClose={() => setError(null)} />

@@ -21,6 +21,9 @@ from src.dependencies.shift_demand_new_service import (
     get_shift_demand_new_service,
 )
 from src.dependencies.shift_demand_service import get_shift_demand_service
+from src.dependencies.shift_demand_template_service import (
+    get_shift_demand_template_service,
+)
 from src.dependencies.shift_service import get_shift_service
 from src.dependencies.specialty_service import get_specialty_service
 from src.dependencies.stats_service import get_stats_service
@@ -46,6 +49,7 @@ __all__ = [
     "get_schedule_service",
     "get_shift_demand_service",
     "get_shift_demand_new_service",
+    "get_shift_demand_template_service",
     "get_shift_service",
     "get_specialty_service",
     "get_stats_service",
