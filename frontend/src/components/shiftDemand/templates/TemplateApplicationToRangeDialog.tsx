@@ -40,7 +40,6 @@ import {
   TemplateApplicationResult,
   TemplateType,
 } from "../../../types/shift-demand-template";
-import { ShiftDemandTemplateApi } from "../../../app/lib/api/shiftDemandTemplateApi";
 
 interface TemplateApplicationToRangeDialogProps {
   lng: string;
@@ -50,6 +49,9 @@ interface TemplateApplicationToRangeDialogProps {
   teamId: string;
   onApplicationComplete: (result: TemplateApplicationResult) => void;
   onError: (error: string) => void;
+  onApplyTemplate: (
+    request: ApplyTemplateToDateRangeDTO
+  ) => Promise<TemplateApplicationResult>;
 }
 
 export default function TemplateApplicationToRangeDialog({
@@ -60,6 +62,7 @@ export default function TemplateApplicationToRangeDialog({
   teamId,
   onApplicationComplete,
   onError,
+  onApplyTemplate,
 }: TemplateApplicationToRangeDialogProps) {
   const { t } = useTranslation(lng, "shift-demand-templates");
 
@@ -147,11 +150,7 @@ export default function TemplateApplicationToRangeDialog({
         endDateFromTimestamp: new Date(request.endDate).toISOString(),
       });
 
-      const result = await ShiftDemandTemplateApi.applyTemplateToDateRange(
-        template.id,
-        teamId,
-        request
-      );
+      const result = await onApplyTemplate(request);
 
       onApplicationComplete(result);
       onClose();

@@ -32,6 +32,7 @@ import {
   TemplateType,
   TemplateWeekDataDTO,
   ApplyDemandsToTemplateWeekDTO,
+  ApplyTemplateToDateRangeDTO,
   TemplateApplicationResult,
 } from "../../../types/shift-demand-template";
 import { ShiftDemandTemplateApi } from "../../../app/lib/api/shiftDemandTemplateApi";
@@ -237,6 +238,25 @@ export default function TemplateManagementWindow({
 
   const handleRangeApplicationError = (error: string) => {
     setError(error);
+  };
+
+  const handleApplyTemplateToRange = async (
+    request: ApplyTemplateToDateRangeDTO
+  ): Promise<TemplateApplicationResult> => {
+    if (!templateToApply) {
+      throw new Error("No template selected for application");
+    }
+
+    try {
+      return await ShiftDemandTemplateApi.applyTemplateToDateRange(
+        templateToApply.id,
+        teamId,
+        request
+      );
+    } catch (error) {
+      console.error("Failed to apply template to date range:", error);
+      throw error;
+    }
   };
 
   const handleBack = () => {
@@ -637,6 +657,7 @@ export default function TemplateManagementWindow({
           teamId={teamId}
           onApplicationComplete={handleRangeApplicationComplete}
           onError={handleRangeApplicationError}
+          onApplyTemplate={handleApplyTemplateToRange}
         />
       )}
     </>
