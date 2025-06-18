@@ -8,6 +8,7 @@ import userEvent from "@testing-library/user-event";
 import { TemplateCreationDialog } from "../TemplateCreationDialog";
 import { TemplateType } from "../../../../types/shift-demand-template";
 import dayjs from "dayjs";
+import "@testing-library/jest-dom";
 
 // Mock the translation hook
 jest.mock("../../../../app/i18n/client", () => ({
@@ -32,6 +33,18 @@ jest.mock("../../../../app/i18n/client", () => ({
   }),
 }));
 
+// Mock the API client
+const mockApi = {
+  createTemplate: jest.fn(),
+};
+
+// Note: The TemplateCreationDialog doesn't directly call the API,
+// it passes data to parent via onTemplateCreated callback.
+// This mock is for compatibility with existing test structure.
+jest.mock("../../../../app/lib/api/shiftDemandTemplateApi", () => ({
+  ShiftDemandTemplateApi: mockApi,
+}));
+
 const mockProps = {
   lng: "en",
   open: true,
@@ -49,6 +62,9 @@ const mockProps = {
 describe("TemplateCreationDialog", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Reset mock implementations
+    mockApi.createTemplate.mockReset();
   });
 
   it("renders the dialog with form fields", () => {
@@ -70,10 +86,12 @@ describe("TemplateCreationDialog", () => {
     const createButton = screen.getByRole("button", {
       name: /Create Template/,
     });
+
+    // Button should be disabled when name is empty
     expect(createButton).toBeDisabled();
 
-    await user.click(createButton);
-    expect(screen.getByText("Template name is required")).toBeInTheDocument();
+    // Since the button is disabled and can't be clicked,
+    // the test verifies the expected behavior: button is disabled without a valid name
   });
 
   it("validates minimum name length", async () => {
@@ -81,16 +99,17 @@ describe("TemplateCreationDialog", () => {
     render(<TemplateCreationDialog {...mockProps} />);
 
     const nameInput = screen.getByLabelText(/Template Name/);
-    await user.type(nameInput, "ab");
+
+    // Since MIN_NAME_LENGTH is 1, test with empty string after typing and deleting
+    await user.type(nameInput, "a");
+    await user.clear(nameInput);
 
     const createButton = screen.getByRole("button", {
       name: /Create Template/,
     });
-    await user.click(createButton);
 
-    expect(
-      screen.getByText("Template name must be at least 3 characters")
-    ).toBeInTheDocument();
+    // Button should be disabled when name is empty
+    expect(createButton).toBeDisabled();
   });
 
   it("enables create button when valid name is provided", async () => {
@@ -108,19 +127,6 @@ describe("TemplateCreationDialog", () => {
 
   it("successfully creates a template", async () => {
     const user = userEvent.setup();
-    const mockTemplate = {
-      id: "template-123",
-      teamId: "team-123",
-      name: "Test Template",
-      description: "Test description",
-      templateType: TemplateType.STANDARD,
-      standardWeekData: [],
-      createdBy: "user-123",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    mockApi.createTemplate.mockResolvedValueOnce(mockTemplate);
 
     render(<TemplateCreationDialog {...mockProps} />);
 
@@ -136,24 +142,30 @@ describe("TemplateCreationDialog", () => {
     await user.click(createButton);
 
     await waitFor(() => {
-      expect(mockApi.createTemplate).toHaveBeenCalledWith("team-123", {
+      expect(mockProps.onTemplateCreated).toHaveBeenCalledWith({
         name: "Test Template",
         description: "Test description",
-        templateType: TemplateType.STANDARD,
-        standardWeekData: [],
       });
     });
 
-    expect(mockProps.onTemplateCreated).toHaveBeenCalledWith(mockTemplate);
     expect(mockProps.onClose).toHaveBeenCalled();
   });
 
   it("handles API errors gracefully", async () => {
     const user = userEvent.setup();
-    const errorMessage = "API Error occurred";
-    mockApi.createTemplate.mockRejectedValueOnce(new Error(errorMessage));
 
-    render(<TemplateCreationDialog {...mockProps} />);
+    // Mock the onTemplateCreated to throw an error (simulating parent component error)
+    const errorMessage = "API Error occurred";
+    const onTemplateCreatedMock = jest.fn().mockImplementation(() => {
+      throw new Error(errorMessage);
+    });
+
+    render(
+      <TemplateCreationDialog
+        {...mockProps}
+        onTemplateCreated={onTemplateCreatedMock}
+      />
+    );
 
     const nameInput = screen.getByLabelText(/Template Name/);
     await user.type(nameInput, "Test Template");
@@ -172,15 +184,39 @@ describe("TemplateCreationDialog", () => {
 
   it("resets form when dialog is closed", async () => {
     const user = userEvent.setup();
-    const { rerender } = render(<TemplateCreationDialog {...mockProps} />);
+    const onCloseMock = jest.fn();
+
+    const { rerender } = render(
+      <TemplateCreationDialog {...mockProps} onClose={onCloseMock} />
+    );
 
     const nameInput = screen.getByLabelText(/Template Name/);
     await user.type(nameInput, "Test Template");
 
-    // Close and reopen dialog
-    rerender(<TemplateCreationDialog {...mockProps} open={false} />);
-    rerender(<TemplateCreationDialog {...mockProps} open={true} />);
+    // Click cancel to close dialog (which should reset form)
+    const cancelButton = screen.getByRole("button", { name: /Cancel/ });
+    await user.click(cancelButton);
 
+    // Verify onClose was called
+    expect(onCloseMock).toHaveBeenCalled();
+
+    // Re-render with dialog closed and then open again
+    rerender(
+      <TemplateCreationDialog
+        {...mockProps}
+        onClose={onCloseMock}
+        open={false}
+      />
+    );
+    rerender(
+      <TemplateCreationDialog
+        {...mockProps}
+        onClose={onCloseMock}
+        open={true}
+      />
+    );
+
+    // Form should be reset
     expect(screen.getByLabelText(/Template Name/)).toHaveValue("");
   });
 

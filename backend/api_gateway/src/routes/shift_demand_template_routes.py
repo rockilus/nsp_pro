@@ -37,18 +37,14 @@ async def create_template(
     team_id: str,
     template_dto: ShiftDemandTemplateCreateDTO,
     session: SessionContainerType = Depends(authn_verify_session()),
-    service: ShiftDemandTemplateService = Depends(
-        get_shift_demand_template_service
-    ),
+    service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
 ) -> ShiftDemandTemplateDTO:
     """Create a new shift demand template."""
     try:
         if not await authz_check(
             session.get_user_id(), "create-shift-demand", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to create templates"
-            )
+            raise NotAuthorizedError("You do not have permission to create templates")
 
         # Create a basic template with minimal data
         # Since CreateDTO only has name and description, we create a standard template
@@ -106,18 +102,14 @@ async def get_templates_by_team(
         None, description="Filter by template type (standard|even_odd)"
     ),
     session: SessionContainerType = Depends(authn_verify_session()),
-    service: ShiftDemandTemplateService = Depends(
-        get_shift_demand_template_service
-    ),
+    service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
 ) -> List[ShiftDemandTemplateDTO]:
     """Get all templates for a team, optionally filtered by type."""
     try:
         if not await authz_check(
             session.get_user_id(), "read-shift-demands", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to read templates"
-            )
+            raise NotAuthorizedError("You do not have permission to read templates")
 
         # Validate template_type if provided
         if template_type and template_type not in ["standard", "even_odd"]:
@@ -140,9 +132,7 @@ async def get_templates_by_team(
     except Exception as e:
         log_info(f"Failed to get templates for team {team_id}: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(
-            status_code=500, detail="Internal server error"
-        ) from e
+        raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.get("/shift-demand-templates/{template_id}/teams/{team_id}")
@@ -150,23 +140,17 @@ async def get_template_by_id(
     template_id: str,
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
-    service: ShiftDemandTemplateService = Depends(
-        get_shift_demand_template_service
-    ),
+    service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
 ) -> ShiftDemandTemplateDTO:
     """Get a specific template by ID."""
     try:
         if not await authz_check(
             session.get_user_id(), "read-shift-demands", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to read templates"
-            )
+            raise NotAuthorizedError("You do not have permission to read templates")
 
         # Validate template belongs to team
-        template = await service.validate_template_for_team(
-            template_id, team_id
-        )
+        template = await service.validate_template_for_team(template_id, team_id)
         return template.to_dto()
 
     except NotAuthorizedError:
@@ -201,9 +185,7 @@ async def get_template_by_id(
     except Exception as e:
         log_info(f"Failed to get template {template_id}: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(
-            status_code=500, detail="Internal server error"
-        ) from e
+        raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.put("/shift-demand-templates/{template_id}/teams/{team_id}")
@@ -212,18 +194,14 @@ async def update_template(
     team_id: str,
     template_dto: ShiftDemandTemplateUpdateDTO,
     session: SessionContainerType = Depends(authn_verify_session()),
-    service: ShiftDemandTemplateService = Depends(
-        get_shift_demand_template_service
-    ),
+    service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
 ) -> ShiftDemandTemplateDTO:
     """Update an existing template."""
     try:
         if not await authz_check(
             session.get_user_id(), "update-shift-demand", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to update templates"
-            )
+            raise NotAuthorizedError("You do not have permission to update templates")
 
         # Get existing template for validation and update
         existing_template = await service.validate_template_for_team(
@@ -287,25 +265,19 @@ async def update_template(
         ) from e
 
 
-@router.delete(
-    "/shift-demand-templates/{template_id}/teams/{team_id}", status_code=204
-)
+@router.delete("/shift-demand-templates/{template_id}/teams/{team_id}", status_code=204)
 async def delete_template(
     template_id: str,
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
-    service: ShiftDemandTemplateService = Depends(
-        get_shift_demand_template_service
-    ),
+    service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
 ) -> None:
     """Delete a template."""
     try:
         if not await authz_check(
             session.get_user_id(), "delete-shift-demand", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to delete templates"
-            )
+            raise NotAuthorizedError("You do not have permission to delete templates")
 
         # Validate template belongs to team
         await service.validate_template_for_team(template_id, team_id)
@@ -358,31 +330,23 @@ async def delete_template(
     except Exception as e:
         log_info(f"Failed to delete template {template_id}: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(
-            status_code=500, detail="Internal server error"
-        ) from e
+        raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
-@router.post(
-    "/shift-demand-templates/{template_id}/apply-demands/teams/{team_id}"
-)
+@router.post("/shift-demand-templates/{template_id}/apply-demands/teams/{team_id}")
 async def apply_demands_to_template_week(
     template_id: str,
     team_id: str,
     apply_dto: ApplyDemandsToTemplateWeekDTO,
     session: SessionContainerType = Depends(authn_verify_session()),
-    service: ShiftDemandTemplateService = Depends(
-        get_shift_demand_template_service
-    ),
+    service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
 ) -> ShiftDemandTemplateDTO:
     """Apply existing shift demands from a source week to a template week."""
     try:
         if not await authz_check(
             session.get_user_id(), "update-shift-demand", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to update templates"
-            )
+            raise NotAuthorizedError("You do not have permission to update templates")
 
         # Convert timestamp to datetime
         # Handle both seconds and milliseconds (defensive programming)
@@ -453,26 +417,18 @@ async def apply_demands_to_template_week(
             },
         ) from e
     except Exception as e:
-        log_info(
-            f"Failed to apply demands to template {template_id}: {str(e)}"
-        )
+        log_info(f"Failed to apply demands to template {template_id}: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(
-            status_code=500, detail="Internal server error"
-        ) from e
+        raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
-@router.post(
-    "/shift-demand-templates/{template_id}/apply-to-range/teams/{team_id}"
-)
+@router.post("/shift-demand-templates/{template_id}/apply-to-range/teams/{team_id}")
 async def apply_template_to_date_range(
     template_id: str,
     team_id: str,
     apply_dto: ApplyTemplateToDateRangeDTO,
     session: SessionContainerType = Depends(authn_verify_session()),
-    service: ShiftDemandTemplateService = Depends(
-        get_shift_demand_template_service
-    ),
+    service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
 ) -> TemplateApplicationResult:
     """Apply a template to a specific date range."""
     try:
@@ -480,9 +436,7 @@ async def apply_template_to_date_range(
         if not await authz_check(
             session.get_user_id(), "create-shift-demand", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to apply templates"
-            )
+            raise NotAuthorizedError("You do not have permission to apply templates")
 
         # Convert timestamps to date objects
         # Handle both seconds and milliseconds (defensive programming)
@@ -495,12 +449,8 @@ async def apply_template_to_date_range(
         if end_timestamp > 1e10:
             end_timestamp = end_timestamp / 1000
 
-        start_date = datetime.fromtimestamp(
-            start_timestamp, tz=timezone.utc
-        ).date()
-        end_date = datetime.fromtimestamp(
-            end_timestamp, tz=timezone.utc
-        ).date()
+        start_date = datetime.fromtimestamp(start_timestamp, tz=timezone.utc).date()
+        end_date = datetime.fromtimestamp(end_timestamp, tz=timezone.utc).date()
 
         # Validate date range
         if start_date > end_date:
@@ -543,10 +493,6 @@ async def apply_template_to_date_range(
         log_info(f"Validation error in template application: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
-        log_info(
-            f"Failed to apply template {template_id} to date range: {str(e)}"
-        )
+        log_info(f"Failed to apply template {template_id} to date range: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(
-            status_code=500, detail="Internal server error"
-        ) from e
+        raise HTTPException(status_code=500, detail="Internal server error") from e
