@@ -74,6 +74,7 @@ from shared.schemas.core.model_output import ModelOutput, ModelOutputStatus
 from shared.schemas.core.multitasking import (
     ConcurrentCombination,
     ShiftDemandConcurrency,
+    ShiftDemandConcurrencyRequest,
     ShiftDemandConcurrencyResponse,
     TemplateConcurrency,
     TemplateConcurrencyResponse,
@@ -271,6 +272,7 @@ __all__ = [
     "LSChange",
     "ConcurrentCombination",
     "ShiftDemandConcurrency",
+    "ShiftDemandConcurrencyRequest",
     "ShiftDemandConcurrencyResponse",
     "TemplateConcurrency",
     "TemplateConcurrencyResponse",

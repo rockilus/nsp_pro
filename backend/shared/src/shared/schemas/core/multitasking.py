@@ -14,19 +14,12 @@ import humps
 from pydantic import TypeAdapter
 
 from shared.schemas.dto.multitasking import (
-    ConcurrentCombination as ConcurrentCombinationDTO,
-)
-from shared.schemas.dto.multitasking import (
-    ShiftDemandConcurrency as ShiftDemandConcurrencyDTO,
-)
-from shared.schemas.dto.multitasking import (
-    ShiftDemandConcurrencyResponse as ShiftDemandConcurrencyResponseDTO,
-)
-from shared.schemas.dto.multitasking import (
-    TemplateConcurrency as TemplateConcurrencyDTO,
-)
-from shared.schemas.dto.multitasking import (
-    TemplateConcurrencyResponse as TemplateConcurrencyResponseDTO,
+    ConcurrentCombinationDTO,
+    ShiftDemandConcurrencyDTO,
+    ShiftDemandConcurrencyRequestDTO,
+    ShiftDemandConcurrencyResponseDTO,
+    TemplateConcurrencyDTO,
+    TemplateConcurrencyResponseDTO,
 )
 
 
@@ -249,9 +242,11 @@ class ShiftDemandConcurrencyResponse:
         """Convert to DTO for API responses."""
         data = asdict(self)
 
-        # Convert dates to ISO format
-        data["start_date"] = self.start_date.isoformat()
-        data["end_date"] = self.end_date.isoformat()
+        # Convert dates to timestamps
+        start_datetime = datetime.combine(self.start_date, datetime.min.time())
+        end_datetime = datetime.combine(self.end_date, datetime.min.time())
+        data["start_date"] = int(start_datetime.timestamp())
+        data["end_date"] = int(end_datetime.timestamp())
 
         # Convert concurrency list to DTOs
         data["concurrency_list"] = [item.to_dto() for item in self.concurrency_list]
@@ -268,9 +263,11 @@ class ShiftDemandConcurrencyResponse:
         data_dict = data.model_dump()
         data_dict = humps.decamelize(data_dict)
 
-        # Convert dates from ISO format
-        data_dict["start_date"] = datetime.fromisoformat(data_dict["start_date"]).date()
-        data_dict["end_date"] = datetime.fromisoformat(data_dict["end_date"]).date()
+        # Convert timestamps to dates
+        start_timestamp = data_dict["start_date"]
+        end_timestamp = data_dict["end_date"]
+        data_dict["start_date"] = datetime.fromtimestamp(start_timestamp).date()
+        data_dict["end_date"] = datetime.fromtimestamp(end_timestamp).date()
 
         # Convert concurrency list from DTOs
         concurrency_list = []
@@ -336,3 +333,43 @@ class TemplateConcurrencyResponse:
         data_dict["concurrency_list"] = concurrency_list
 
         return cls(**data_dict)
+
+
+@dataclass
+class ShiftDemandConcurrencyRequest:
+    """Core model for shift demand concurrency request."""
+
+    team_id: str
+    start_date: date_type
+    end_date: date_type
+
+    def __post_init__(self):
+        """Validate the request data."""
+        if not self.team_id:
+            raise ValueError("team_id cannot be empty")
+
+        if self.start_date > self.end_date:
+            raise ValueError("start_date must be before or equal to end_date")
+
+    def to_dto(self) -> ShiftDemandConcurrencyRequestDTO:
+        """Convert to DTO for API requests."""
+        # Convert dates to timestamps
+        start_datetime = datetime.combine(self.start_date, datetime.min.time())
+        end_datetime = datetime.combine(self.end_date, datetime.min.time())
+
+        return ShiftDemandConcurrencyRequestDTO(
+            team_id=self.team_id,
+            start_date=int(start_datetime.timestamp()),
+            end_date=int(end_datetime.timestamp()),
+        )
+
+    @classmethod
+    def from_dto(
+        cls, dto: ShiftDemandConcurrencyRequestDTO
+    ) -> "ShiftDemandConcurrencyRequest":
+        """Create from DTO."""
+        return cls(
+            team_id=dto.team_id,
+            start_date=datetime.fromtimestamp(dto.start_date, tz=timezone.utc).date(),
+            end_date=datetime.fromtimestamp(dto.end_date, tz=timezone.utc).date(),
+        )
