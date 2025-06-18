@@ -21,6 +21,7 @@ import {
   useShiftDemandMutations,
 } from "../../app/lib/hooks/useShiftDemands";
 import { getWorkShifts } from "../../app/lib/shift";
+import { MultitaskingApi } from "../../app/lib/api/multitaskingApi";
 // Types
 import { ShiftT, ShiftType } from "../../types/shift";
 import {
@@ -29,6 +30,11 @@ import {
   PeriodType,
   SHIFT_DEMAND_CONSTRAINTS,
 } from "../../types/shiftDemand";
+import {
+  MultitaskingSelectionState,
+  MultitaskingGroup,
+  ShiftDemandConcurrency,
+} from "../../types/multitasking";
 import { usePeriodState } from "../../app/lib/hooks/usePeriodState";
 // Components
 import { ShiftDemandToolbar } from "./ShiftDemandToolbar";
@@ -111,6 +117,22 @@ function ShiftDemandTabInternal({
     bulkValue: "1",
   });
 
+  // Multitasking state
+  const [multitaskingState, setMultitaskingState] =
+    useState<MultitaskingSelectionState>({
+      isActive: false,
+      selectedShiftDemandIds: [],
+      availableShiftDemandIds: [],
+      mode: "selecting",
+    });
+
+  const [multitaskingGroups, setMultitaskingGroups] = useState<
+    MultitaskingGroup[]
+  >([]);
+  const [concurrencyData, setConcurrencyData] = useState<
+    Record<string, string[]>
+  >({});
+
   // Centralized period state (with localStorage persistence)
   const { currentDate, periodType, setCurrentDate, setPeriodType, isHydrated } =
     usePeriodState();
@@ -139,9 +161,10 @@ function ShiftDemandTabInternal({
     resetAll: resetShiftFilters,
   } = useTableState(shifts, shiftColumns, "nsp-pro-shift-demand-table-state");
 
-  // Show filter toolbar when either bulk mode is active OR filters/sorting is applied
+  // Show filter toolbar when bulk mode, multitasking mode is active, OR filters/sorting is applied
   const showFilterToolbar =
     bulkChangeState.isActive ||
+    multitaskingState.isActive ||
     shiftTableState.filters.length > 0 ||
     shiftTableState.sort !== null;
 
@@ -395,6 +418,153 @@ function ShiftDemandTabInternal({
       bulkChangeState.selectedCells.length === totalCells && totalCells > 0
     );
   };
+
+  // Multitasking mode functions
+  const toggleMultitaskingMode = async () => {
+    if (!selectedTeamId) return;
+
+    if (!multitaskingState.isActive) {
+      // Entering multitasking mode - fetch concurrency data
+      try {
+        const concurrencyList = await MultitaskingApi.getShiftDemandConcurrency(
+          selectedTeamId,
+          startDate.toDate(),
+          endDate.toDate()
+        );
+
+        // Convert array to lookup object
+        const concurrencyMap: Record<string, string[]> = {};
+        concurrencyList.forEach((item) => {
+          concurrencyMap[item.shiftDemandId] = item.concurrentShiftDemandIds;
+        });
+        setConcurrencyData(concurrencyMap);
+
+        // Update available shift demands based on concurrency
+        const availableIds = Object.keys(concurrencyMap).filter(
+          (id) => concurrencyMap[id].length > 0
+        );
+
+        setMultitaskingState({
+          isActive: true,
+          selectedShiftDemandIds: [],
+          availableShiftDemandIds: availableIds,
+          mode: "selecting",
+        });
+      } catch (error) {
+        console.error("Failed to fetch concurrency data:", error);
+        setError("Failed to load multitasking data. Please try again.");
+      }
+    } else {
+      // Exiting multitasking mode
+      setMultitaskingState({
+        isActive: false,
+        selectedShiftDemandIds: [],
+        availableShiftDemandIds: [],
+        mode: "selecting",
+      });
+      setMultitaskingGroups([]);
+      setConcurrencyData({});
+    }
+  };
+
+  const toggleShiftDemandSelection = (shiftDemandId: string) => {
+    if (!multitaskingState.isActive) return;
+
+    setMultitaskingState((prev) => {
+      const isSelected = prev.selectedShiftDemandIds.includes(shiftDemandId);
+      let newSelectedIds: string[];
+      let newAvailableIds = prev.availableShiftDemandIds;
+
+      if (isSelected) {
+        // Deselecting - remove from selection
+        newSelectedIds = prev.selectedShiftDemandIds.filter(
+          (id) => id !== shiftDemandId
+        );
+
+        // If no selections left, reset available to all concurrent shift demands
+        if (newSelectedIds.length === 0) {
+          newAvailableIds = Object.keys(concurrencyData).filter(
+            (id) => concurrencyData[id].length > 0
+          );
+        }
+      } else {
+        // Selecting - add to selection
+        newSelectedIds = [...prev.selectedShiftDemandIds, shiftDemandId];
+
+        // Progressive selection: limit available to concurrent shift demands
+        if (newSelectedIds.length === 1) {
+          // First selection - limit to its concurrent partners
+          newAvailableIds = [
+            shiftDemandId,
+            ...(concurrencyData[shiftDemandId] || []),
+          ];
+        } else {
+          // Multiple selections - intersection of all concurrent partners
+          newAvailableIds = newAvailableIds.filter((id) =>
+            newSelectedIds.every(
+              (selectedId: string) =>
+                id === selectedId || concurrencyData[selectedId]?.includes(id)
+            )
+          );
+        }
+      }
+
+      return {
+        ...prev,
+        selectedShiftDemandIds: newSelectedIds,
+        availableShiftDemandIds: newAvailableIds,
+      };
+    });
+  };
+
+  const confirmMultitasking = async () => {
+    if (
+      !selectedTeamId ||
+      multitaskingState.selectedShiftDemandIds.length === 0
+    )
+      return;
+
+    try {
+      const newGroup = await MultitaskingApi.createMultitaskingGroup({
+        teamId: selectedTeamId,
+        shiftDemandIds: multitaskingState.selectedShiftDemandIds,
+      });
+
+      setMultitaskingGroups((prev) => [...prev, newGroup]);
+
+      // Reset selection but stay in multitasking mode
+      setMultitaskingState((prev) => ({
+        ...prev,
+        selectedShiftDemandIds: [],
+        availableShiftDemandIds: Object.keys(concurrencyData).filter(
+          (id) => concurrencyData[id].length > 0
+        ),
+      }));
+    } catch (error) {
+      console.error("Failed to create multitasking group:", error);
+      setError("Failed to create multitasking group. Please try again.");
+    }
+  };
+
+  const editMultitasking = () => {
+    // Placeholder for edit functionality
+    console.log("Edit multitasking groups (placeholder)");
+  };
+
+  const isShiftDemandSelectable = (shiftId: string, date: Dayjs): boolean => {
+    if (!multitaskingState.isActive) return true;
+
+    const shiftDemandId = `${shiftId}-${date.format("YYYY-MM-DD")}`;
+    return multitaskingState.availableShiftDemandIds.includes(shiftDemandId);
+  };
+
+  const isShiftDemandSelected = (shiftId: string, date: Dayjs): boolean => {
+    if (!multitaskingState.isActive) return false;
+
+    const shiftDemandId = `${shiftId}-${date.format("YYYY-MM-DD")}`;
+    return multitaskingState.selectedShiftDemandIds.includes(shiftDemandId);
+  };
+
   const { startDate, endDate } = useMemo(() => {
     if (periodType === "month") {
       return {
@@ -661,6 +831,8 @@ function ShiftDemandTabInternal({
         }
         bulkModeActive={bulkChangeState.isActive}
         onToggleBulkMode={toggleBulkMode}
+        multitaskingModeActive={multitaskingState.isActive}
+        onToggleMultitaskingMode={toggleMultitaskingMode}
         onOpenTemplates={() => setTemplateManagementOpen(true)}
       />
 
@@ -672,6 +844,16 @@ function ShiftDemandTabInternal({
           showFilters={
             shiftTableState.filters.length > 0 || shiftTableState.sort !== null
           }
+          showMultitaskingMode={multitaskingState.isActive}
+          multitaskingProps={{
+            lng,
+            selectedShiftDemandsCount:
+              multitaskingState.selectedShiftDemandIds.length,
+            multitaskingGroups,
+            onConfirmMultitasking: confirmMultitasking,
+            onEditMultitasking: editMultitasking,
+            onCancelMultitaskingMode: toggleMultitaskingMode,
+          }}
           // Filter/Sort props
           filters={shiftTableState.filters}
           sort={shiftTableState.sort}
@@ -713,6 +895,12 @@ function ShiftDemandTabInternal({
           shifts={filteredShifts}
           dates={dates}
           bulkChangeState={bulkChangeState}
+          // Multitasking props
+          multitaskingState={multitaskingState}
+          onToggleShiftDemandSelection={toggleShiftDemandSelection}
+          isShiftDemandSelectable={isShiftDemandSelectable}
+          isShiftDemandSelected={isShiftDemandSelected}
+          // Regular props
           getDemandValue={getDemandValue}
           handleCellChange={handleCellChange}
           isCellSelected={isCellSelected}

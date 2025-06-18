@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Paper, Button } from "@mui/material";
-import { Description } from "@mui/icons-material";
+import { Description, Group } from "@mui/icons-material";
 import { PeriodNavigation } from "./PeriodNavigation";
 import { useTranslation } from "../../app/i18n/client";
 import { Dayjs } from "dayjs";
@@ -15,9 +15,11 @@ interface ShiftDemandToolbarProps {
   onPeriodTypeChange: (type: PeriodType) => void;
   isLoading: boolean;
 
-  // Bulk operations props
+  // Mode selection props - only one can be active at a time
   bulkModeActive: boolean;
+  multitaskingModeActive: boolean;
   onToggleBulkMode: () => void;
+  onToggleMultitaskingMode: () => void;
 
   // Template management props
   onOpenTemplates: () => void;
@@ -31,7 +33,9 @@ export function ShiftDemandToolbar({
   onPeriodTypeChange,
   isLoading,
   bulkModeActive,
+  multitaskingModeActive,
   onToggleBulkMode,
+  onToggleMultitaskingMode,
   onOpenTemplates,
 }: ShiftDemandToolbarProps) {
   const { t } = useTranslation(lng, "shift-demands");
@@ -69,7 +73,7 @@ export function ShiftDemandToolbar({
           />
         </Box>
 
-        {/* Right side - Template Management, Bulk Select and Actions */}
+        {/* Right side - Template Management, Bulk Select, Multitasking */}
         <Box display="flex" gap={1} alignItems="center">
           <Button
             variant="outlined"
@@ -88,9 +92,10 @@ export function ShiftDemandToolbar({
             {t("templates")}
           </Button>
 
+          {/* Bulk Select Button */}
           <button
             onClick={onToggleBulkMode}
-            disabled={isLoading}
+            disabled={isLoading || multitaskingModeActive}
             style={{
               borderRadius: "4px",
               border: "1px solid #e5e7eb",
@@ -100,21 +105,58 @@ export function ShiftDemandToolbar({
               fontWeight: 550,
               color: bulkModeActive ? "white" : "#616161",
               backgroundColor: bulkModeActive ? "#1976d2" : "white",
-              cursor: isLoading ? "not-allowed" : "pointer",
+              cursor:
+                isLoading || multitaskingModeActive ? "not-allowed" : "pointer",
               transition: "background-color 0.2s ease",
+              opacity: multitaskingModeActive ? 0.5 : 1,
             }}
             onMouseEnter={(e) => {
-              if (!isLoading && !bulkModeActive) {
+              if (!isLoading && !bulkModeActive && !multitaskingModeActive) {
                 e.currentTarget.style.backgroundColor = "#f0f0f0";
               }
             }}
             onMouseLeave={(e) => {
-              if (!bulkModeActive) {
+              if (!bulkModeActive && !multitaskingModeActive) {
                 e.currentTarget.style.backgroundColor = "white";
               }
             }}
           >
             {t("select")}
+          </button>
+
+          {/* Multitasking Button */}
+          <button
+            onClick={onToggleMultitaskingMode}
+            disabled={isLoading || bulkModeActive}
+            style={{
+              borderRadius: "4px",
+              border: "1px solid #e5e7eb",
+              height: "35px",
+              padding: "0 15px",
+              fontSize: "0.9rem",
+              fontWeight: 550,
+              color: multitaskingModeActive ? "white" : "#616161",
+              backgroundColor: multitaskingModeActive ? "#1976d2" : "white",
+              cursor: isLoading || bulkModeActive ? "not-allowed" : "pointer",
+              transition: "background-color 0.2s ease",
+              opacity: bulkModeActive ? 0.5 : 1,
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+            }}
+            onMouseEnter={(e) => {
+              if (!isLoading && !multitaskingModeActive && !bulkModeActive) {
+                e.currentTarget.style.backgroundColor = "#f0f0f0";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!multitaskingModeActive && !bulkModeActive) {
+                e.currentTarget.style.backgroundColor = "white";
+              }
+            }}
+          >
+            <Group style={{ fontSize: "16px" }} />
+            Multitasking
           </button>
         </Box>
       </Box>

@@ -1,4 +1,5 @@
 import { ColumnFilter, TableSort } from "../../../types/filter";
+import { MultitaskingGroup } from "../../../types/multitasking";
 
 export interface FilterSortProps {
   lng: string;
@@ -19,9 +20,21 @@ export interface BulkSelectionProps {
   onCancelBulkMode: () => void;
 }
 
+export interface MultitaskingSelectionProps {
+  lng: string;
+  selectedShiftDemandsCount: number;
+  multitaskingGroups: MultitaskingGroup[];
+  onConfirmMultitasking: () => void;
+  onEditMultitasking: () => void;
+  onCancelMultitaskingMode: () => void;
+}
+
 export interface ShiftDemandActionToolbarProps
   extends FilterSortProps,
     BulkSelectionProps {
   showBulkMode: boolean;
   showFilters: boolean;
+  // Multitasking props
+  showMultitaskingMode?: boolean;
+  multitaskingProps?: MultitaskingSelectionProps;
 }

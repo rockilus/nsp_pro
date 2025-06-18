@@ -2,12 +2,15 @@ import React from "react";
 import { Box, Paper, Divider } from "@mui/material";
 import { FilterSortSection } from "./FilterSortSection";
 import { BulkSelectionSection } from "./BulkSelectionSection";
+import { MultitaskingSelectionSection } from "./MultitaskingSelectionSection";
 import { ShiftDemandActionToolbarProps } from "./types";
 
 export function ShiftDemandActionToolbar({
   lng,
   showBulkMode,
   showFilters,
+  showMultitaskingMode = false,
+  multitaskingProps,
   // Filter/Sort props
   filters,
   sort,
@@ -23,7 +26,7 @@ export function ShiftDemandActionToolbar({
   onCancelBulkMode,
 }: ShiftDemandActionToolbarProps) {
   // Only render if there's something to show
-  if (!showBulkMode && !showFilters) {
+  if (!showBulkMode && !showFilters && !showMultitaskingMode) {
     return null;
   }
 
@@ -38,7 +41,11 @@ export function ShiftDemandActionToolbar({
         width: "100%",
         margin: 0,
         padding: "8px 16px",
-        backgroundColor: showBulkMode ? "primary.50" : "grey.50",
+        backgroundColor: showBulkMode
+          ? "primary.50"
+          : showMultitaskingMode
+          ? "secondary.50"
+          : "grey.50",
         borderTop: "1px solid",
         borderColor: "grey.100",
       }}
@@ -62,14 +69,21 @@ export function ShiftDemandActionToolbar({
           />
         )}
 
-        {/* Spacer when only showing filters or bulk mode */}
-        {!showBulkMode && showFilters && hasFiltersOrSort && <Box flex={1} />}
-        {!showFilters && showBulkMode && <Box flex={1} />}
+        {/* Spacer when only showing filters, bulk mode, or multitasking mode */}
+        {!showBulkMode &&
+          !showMultitaskingMode &&
+          showFilters &&
+          hasFiltersOrSort && <Box flex={1} />}
+        {!showFilters && (showBulkMode || showMultitaskingMode) && (
+          <Box flex={1} />
+        )}
 
         {/* Divider between sections */}
-        {showFilters && showBulkMode && hasFiltersOrSort && (
-          <Divider orientation="vertical" flexItem sx={{ mx: 2 }} />
-        )}
+        {showFilters &&
+          (showBulkMode || showMultitaskingMode) &&
+          hasFiltersOrSort && (
+            <Divider orientation="vertical" flexItem sx={{ mx: 2 }} />
+          )}
 
         {/* Right side - Bulk Selection */}
         {showBulkMode && (
@@ -82,6 +96,11 @@ export function ShiftDemandActionToolbar({
             onDeleteBulkSelection={onDeleteBulkSelection}
             onCancelBulkMode={onCancelBulkMode}
           />
+        )}
+
+        {/* Right side - Multitasking Selection */}
+        {showMultitaskingMode && multitaskingProps && (
+          <MultitaskingSelectionSection {...multitaskingProps} />
         )}
       </Box>
     </Paper>
