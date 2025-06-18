@@ -168,6 +168,9 @@ export function TemplateViewer({
     return map;
   }, [template.weeksData]);
 
+  console.log("template", template);
+  console.log("templateDataMap", templateDataMap);
+
   // Shift column definitions for filtering/sorting
   const shiftColumns = useMemo(
     () => createShiftColumns(t, shifts),

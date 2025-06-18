@@ -92,6 +92,9 @@ class ShiftDemandTemplate:
         if not self.weeks_data:
             raise ValueError("Template must have at least one week of data")
 
+        # Normalize weeks data to enforce constraints
+        self.weeks_data = self._normalize_weeks_data(self.weeks_data)
+
         # Validate template type constraints
         if self.template_type == TemplateType.EVEN_ODD:
             if len(self.weeks_data) != 2:
@@ -108,13 +111,60 @@ class ShiftDemandTemplate:
         if expected_weeks != actual_weeks:
             raise ValueError("Week numbers must be consecutive starting from 0")
 
-        # Validate demand data structure
-        for week in self.weeks_data:
-            for demand_entry in week.demands:
-                if demand_entry.day_of_week < 0 or demand_entry.day_of_week > 6:
+    def _normalize_weeks_data(
+        self, weeks_data: List[TemplateWeekData]
+    ) -> List[TemplateWeekData]:
+        """
+        Normalize weeks data to enforce business rules:
+        1. Remove demands with count 0
+        2. Consolidate duplicate demands (same shift_id + day_of_week)
+
+        Returns:
+            List of normalized TemplateWeekData
+        """
+        normalized_weeks: List[TemplateWeekData] = []
+
+        for week in weeks_data:
+            # Group demands by (shift_id, day_of_week) and sum counts
+            demand_groups: Dict[Tuple[str, int], int] = {}
+
+            for demand in week.demands:
+                # Validate individual demand entry
+                if demand.day_of_week < 0 or demand.day_of_week > 6:
                     raise ValueError("Day of week must be between 0 and 6")
-                if demand_entry.count < 0:
+                if demand.count < 0:
                     raise ValueError("Demand counts must be non-negative")
+
+                # Skip demands with count 0
+                if demand.count == 0:
+                    continue
+
+                key = (demand.shift_id, demand.day_of_week)
+                demand_groups[key] = demand_groups.get(key, 0) + demand.count
+
+            # Create consolidated demand entries
+            consolidated_demands: List[DemandEntry] = []
+            for (shift_id, day_of_week), total_count in demand_groups.items():
+                # Only add if total count > 0 (defensive check)
+                if total_count > 0:
+                    consolidated_demands.append(
+                        DemandEntry(
+                            shift_id=shift_id,
+                            day_of_week=day_of_week,
+                            count=total_count,
+                        )
+                    )
+
+            # Sort demands for consistent ordering (by shift_id, then day_of_week)
+            consolidated_demands.sort(key=lambda d: (d.shift_id, d.day_of_week))
+
+            normalized_weeks.append(
+                TemplateWeekData(
+                    week_number=week.week_number, demands=consolidated_demands
+                )
+            )
+
+        return normalized_weeks
 
     @property
     def week_count(self) -> int:
@@ -212,7 +262,7 @@ class ShiftDemandTemplate:
                 if not isinstance(demands_data, list):
                     continue
 
-                demand_entries = []
+                demand_entries: List[DemandEntry] = []
                 for entry in demands_data:
                     if not isinstance(entry, dict):
                         continue
@@ -244,7 +294,9 @@ class ShiftDemandTemplate:
                 except (ValueError, TypeError):
                     # Log the error but continue processing other weeks
                     continue
-            self.weeks_data = weeks_data
+
+            # Apply normalization when updating weeks_data
+            self.weeks_data = self._normalize_weeks_data(weeks_data)
 
         # Always update timestamp on any change
         self.update_timestamp()

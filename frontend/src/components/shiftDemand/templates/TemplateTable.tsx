@@ -678,6 +678,8 @@ export default function TemplateTable({
   onFilter,
   shiftColumn,
 }: TemplateTableProps) {
+  console.log("displayedWeeks:", displayedWeeks);
+
   return (
     <TableContainer
       sx={{
