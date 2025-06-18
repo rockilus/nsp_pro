@@ -33,10 +33,7 @@ import {
   TemplateListItem,
   TemplateType,
 } from "../../../types/shift-demand-template";
-import {
-  ShiftDemandTemplateApi,
-  TemplateUtils,
-} from "../../../app/lib/api/shiftDemandTemplateApi";
+import { TemplateUtils } from "../../../app/lib/api/shiftDemandTemplateApi";
 
 interface TemplateListProps {
   lng: string;
@@ -48,6 +45,11 @@ interface TemplateListProps {
   onDeleteTemplate: (templateId: string) => void;
   onError: (error: string) => void;
   onTemplatesLoaded: (templates: TemplateListItem[]) => void;
+  onLoadTemplates: () => Promise<void>;
+  onDeleteTemplateRequest: (
+    templateId: string,
+    templateName: string
+  ) => Promise<void>;
 }
 
 export function TemplateList({
@@ -60,6 +62,8 @@ export function TemplateList({
   onDeleteTemplate,
   onError,
   onTemplatesLoaded,
+  onLoadTemplates,
+  onDeleteTemplateRequest,
 }: TemplateListProps) {
   const { t } = useTranslation(lng, "shift-demand-templates");
   const [isLoading, setIsLoading] = useState(false);
@@ -67,38 +71,8 @@ export function TemplateList({
 
   // Load templates on mount
   useEffect(() => {
-    loadTemplates();
-  }, [teamId]);
-
-  const loadTemplates = async () => {
-    if (!teamId) return;
-
-    setIsLoading(true);
-    try {
-      const templatesData = await ShiftDemandTemplateApi.getTemplates(teamId);
-
-      // Convert to list items with calculated fields
-      const listItems: TemplateListItem[] = templatesData.map((template) => ({
-        id: template.id,
-        name: template.name,
-        description: template.description,
-        templateType: template.templateType as TemplateType,
-        createdBy: template.createdBy,
-        createdAt: dayjs(template.createdAt * 1000), // Convert timestamp to milliseconds
-        updatedAt: dayjs(template.updatedAt * 1000), // Convert timestamp to milliseconds
-        totalDemands: TemplateUtils.calculateTotalDemands(template),
-      }));
-
-      onTemplatesLoaded(listItems);
-    } catch (error) {
-      console.error("Failed to load templates:", error);
-      onError(
-        error instanceof Error ? error.message : "Failed to load templates"
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    onLoadTemplates();
+  }, [teamId, onLoadTemplates]);
 
   const handleDeleteTemplate = async (
     templateId: string,
@@ -110,8 +84,7 @@ export function TemplateList({
 
     setDeleteLoading(templateId);
     try {
-      await ShiftDemandTemplateApi.deleteTemplate(templateId, teamId);
-      onDeleteTemplate(templateId);
+      await onDeleteTemplateRequest(templateId, templateName);
     } catch (error) {
       console.error("Failed to delete template:", error);
       onError(

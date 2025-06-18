@@ -35,7 +35,10 @@ import {
   ApplyTemplateToDateRangeDTO,
   TemplateApplicationResult,
 } from "../../../types/shift-demand-template";
-import { ShiftDemandTemplateApi } from "../../../app/lib/api/shiftDemandTemplateApi";
+import {
+  ShiftDemandTemplateApi,
+  TemplateUtils,
+} from "../../../app/lib/api/shiftDemandTemplateApi";
 
 // Import template components
 import { TemplateList } from "./TemplateList";
@@ -286,6 +289,49 @@ export default function TemplateManagementWindow({
 
   const handleTemplatesLoaded = (loadedTemplates: TemplateListItem[]) => {
     setTemplates(loadedTemplates);
+  };
+
+  const handleLoadTemplates = async () => {
+    if (!teamId) return;
+
+    try {
+      const templatesData = await ShiftDemandTemplateApi.getTemplates(teamId);
+
+      // Convert to list items with calculated fields
+      const listItems: TemplateListItem[] = templatesData.map((template) => ({
+        id: template.id,
+        name: template.name,
+        description: template.description,
+        templateType: template.templateType as TemplateType,
+        createdBy: template.createdBy,
+        createdAt: dayjs(template.createdAt * 1000), // Convert timestamp to milliseconds
+        updatedAt: dayjs(template.updatedAt * 1000), // Convert timestamp to milliseconds
+        totalDemands: TemplateUtils.calculateTotalDemands(template),
+      }));
+
+      setTemplates(listItems);
+    } catch (error) {
+      console.error("Failed to load templates:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to load templates"
+      );
+    }
+  };
+
+  const handleDeleteTemplateRequest = async (
+    templateId: string,
+    templateName: string
+  ) => {
+    try {
+      await ShiftDemandTemplateApi.deleteTemplate(templateId, teamId);
+      handleTemplateDelete(templateId);
+    } catch (error) {
+      console.error("Failed to delete template:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to delete template"
+      );
+      throw error;
+    }
   };
 
   // Centralized template update handlers
@@ -566,6 +612,8 @@ export default function TemplateManagementWindow({
                 onDeleteTemplate={handleTemplateDelete}
                 onError={handleError}
                 onTemplatesLoaded={handleTemplatesLoaded}
+                onLoadTemplates={handleLoadTemplates}
+                onDeleteTemplateRequest={handleDeleteTemplateRequest}
               />
             </Box>
           )}

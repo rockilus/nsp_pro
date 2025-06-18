@@ -45,10 +45,7 @@ import {
   ColumnFilter,
   TableSort,
 } from "../../../types/filter";
-import {
-  ShiftDemandTemplateApi,
-  TemplateUtils,
-} from "../../../app/lib/api/shiftDemandTemplateApi";
+import { TemplateUtils } from "../../../app/lib/api/shiftDemandTemplateApi";
 import { useTableState } from "../../../hooks/useTableState";
 import { createShiftColumns } from "../shiftColumns";
 import { TemplateToolbar } from "./TemplateToolbar";
@@ -480,14 +477,10 @@ export function TemplateViewer({
         };
       });
 
-      // Save to API
-      await ShiftDemandTemplateApi.updateTemplate(
-        template.id,
-        template.teamId,
-        {
-          weeksData: updatedWeeksData,
-        }
-      );
+      // Save to API using centralized method
+      await onUpdateTemplate({
+        weeksData: updatedWeeksData,
+      });
 
       // Update local data map for immediate UI feedback
       templateDataMap.set(cellKey, numericValue);
