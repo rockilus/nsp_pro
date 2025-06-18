@@ -1,2 +1,0 @@
-def test_template_viewer_api_centralization():
-    assert True  # Replace with actual test logic

@@ -1,2 +1,0 @@
-def test_template_application():
-    assert True  # Replace with actual test logic
