@@ -95,6 +95,7 @@
     "overwrite_warning": "This will completely overwrite all existing demands in Week {{weekNumber}} of the template.",
     "please_select_source_week": "Please select a source week date",
     "failed_to_apply_demands_to_template_week": "Failed to apply demands to template week",
+    "demands_applied_successfully": "Demands applied successfully",
     "applying": "Applying...",
     "apply_demands": "Apply Demands",
     "confirm_delete_week": "Delete Week",

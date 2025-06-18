@@ -96,7 +96,7 @@ export interface ApplyTemplateDTO {
  */
 export interface ApplyDemandsToTemplateWeekDTO {
   templateId: string;
-  sourceWeekStartDate: number; // timestamp of source week Monday
+  sourceWeekStartDate: number; // timestamp in seconds (Unix timestamp)
   targetWeekNumber: number; // 0-based week number in template
 }
 

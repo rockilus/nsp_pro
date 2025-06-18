@@ -74,6 +74,10 @@ interface TemplateViewerProps {
     description?: string;
   }) => Promise<void>;
   onDeleteTemplate: (templateId: string) => Promise<void>;
+  onApplyDemandsToTemplateWeek: (
+    sourceWeekStartDate: number,
+    targetWeekNumber: number
+  ) => Promise<void>;
   templateUpdateLoading: boolean;
 }
 
@@ -91,6 +95,7 @@ export function TemplateViewer({
   onUpdateTemplateType,
   onUpdateTemplateMetadata,
   onDeleteTemplate,
+  onApplyDemandsToTemplateWeek,
   templateUpdateLoading,
 }: TemplateViewerProps) {
   const { t } = useTranslation(lng, "shift-demand-templates");
@@ -333,15 +338,17 @@ export function TemplateViewer({
     setBuildDialogOpen(true);
   };
 
-  const handleBuildFromDemandsSuccess = async (
-    updatedTemplate: ShiftDemandTemplateDTO
+  const handleApplyDemandsRequest = async (
+    sourceWeekStartDate: number,
+    targetWeekNumber: number
   ) => {
     try {
-      await onUpdateTemplate(updatedTemplate);
+      await onApplyDemandsToTemplateWeek(sourceWeekStartDate, targetWeekNumber);
       setBuildDialogOpen(false);
     } catch (error) {
-      console.error("Failed to update template:", error);
-      onError("Failed to update template after applying demands");
+      console.error("Failed to apply demands to template week:", error);
+      // Error is handled in parent component, just re-throw
+      throw error;
     }
   };
 
@@ -1098,8 +1105,8 @@ export function TemplateViewer({
         open={buildDialogOpen}
         onClose={() => setBuildDialogOpen(false)}
         template={template}
-        teamId={teamId}
-        onSuccess={handleBuildFromDemandsSuccess}
+        onApplyDemands={handleApplyDemandsRequest}
+        applyLoading={templateUpdateLoading}
       />
     </Box>
   );

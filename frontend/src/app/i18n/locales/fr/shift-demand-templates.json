@@ -95,6 +95,7 @@
     "overwrite_warning": "Ceci écrasera complètement toutes les demandes existantes dans la Semaine {{weekNumber}} du modèle.",
     "please_select_source_week": "Veuillez sélectionner une date de semaine source",
     "failed_to_apply_demands_to_template_week": "Échec de l'application des demandes à la semaine du modèle",
+    "demands_applied_successfully": "Demandes appliquées avec succès",
     "applying": "Application...",
     "apply_demands": "Appliquer les Demandes",
     "confirm_delete_week": "Supprimer la Semaine",

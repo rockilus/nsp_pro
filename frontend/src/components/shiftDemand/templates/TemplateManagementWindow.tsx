@@ -31,6 +31,7 @@ import {
   ShiftDemandTemplateCreateDTO,
   TemplateType,
   TemplateWeekDataDTO,
+  ApplyDemandsToTemplateWeekDTO,
 } from "../../../types/shift-demand-template";
 import { ShiftDemandTemplateApi } from "../../../app/lib/api/shiftDemandTemplateApi";
 
@@ -350,6 +351,43 @@ export default function TemplateManagementWindow({
     }
   };
 
+  const handleApplyDemandsToTemplateWeek = async (
+    sourceWeekStartDate: number,
+    targetWeekNumber: number
+  ) => {
+    if (!selectedTemplate) return;
+
+    setTemplateUpdateLoading(true);
+    try {
+      const request: ApplyDemandsToTemplateWeekDTO = {
+        templateId: selectedTemplate.id,
+        sourceWeekStartDate: sourceWeekStartDate,
+        targetWeekNumber: targetWeekNumber,
+      };
+
+      const updatedTemplate =
+        await ShiftDemandTemplateApi.applyDemandsToTemplateWeek(
+          selectedTemplate.id,
+          teamId,
+          request
+        );
+
+      // Update local state
+      setSelectedTemplate(updatedTemplate);
+      setSuccessMessage(t("demands_applied_successfully"));
+    } catch (error) {
+      console.error("Failed to apply demands to template week:", error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : t("failed_to_apply_demands_to_template_week")
+      );
+      throw error; // Re-throw so child components can handle loading states
+    } finally {
+      setTemplateUpdateLoading(false);
+    }
+  };
+
   // Render main content based on view mode
   const renderMainContent = () => {
     if (viewMode === "view" && selectedTemplate) {
@@ -368,6 +406,7 @@ export default function TemplateManagementWindow({
           onUpdateTemplateType={handleUpdateTemplateType}
           onUpdateTemplateMetadata={handleUpdateTemplateMetadata}
           onDeleteTemplate={handleDeleteTemplate}
+          onApplyDemandsToTemplateWeek={handleApplyDemandsToTemplateWeek}
           templateUpdateLoading={templateUpdateLoading}
         />
       );
