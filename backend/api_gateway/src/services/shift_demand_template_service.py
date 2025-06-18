@@ -1,12 +1,17 @@
-from datetime import datetime, timedelta
-from typing import List, Optional
+from datetime import date, datetime, timedelta
+from typing import Dict, List, Optional
 
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
+from shared.schemas.core.shift_demand_new import (
+    ShiftDemandNew,
+    ShiftDemandSource,
+)
 from shared.schemas.core.shift_demand_template import (
     ShiftDemandTemplate,
     TemplateType,
     apply_demands_to_template_week,
+    apply_template_to_date_range,
     create_template_from_demands,
 )
 
@@ -274,4 +279,99 @@ class ShiftDemandTemplateService:
 
         except Exception as e:
             log_info(f"Failed to apply demands to template week: {str(e)}")
+            raise
+
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
+    async def apply_template_to_date_range(
+        self,
+        template_id: str,
+        team_id: str,
+        start_date: date,
+        end_date: date,
+        overwrite_existing: bool = True,
+    ) -> Dict[str, int]:
+        """
+        Apply a template to a specific date range.
+
+        Args:
+            template_id: ID of the template to apply
+            team_id: Team ID for validation and demand creation
+            start_date: Start date of the target period
+            end_date: End date of the target period
+            overwrite_existing: Whether to overwrite existing demands
+
+        Returns:
+            Dictionary with counts of created/updated/deleted demands
+
+        Raises:
+            ValueError: If template not found or validation fails
+        """
+        try:
+            # Validate template exists and belongs to team
+            template = await self.validate_template_for_team(template_id, team_id)
+
+            # Generate demands from template application
+            demands_to_create = apply_template_to_date_range(
+                template=template,
+                start_date=start_date,
+                end_date=end_date,
+                team_id=team_id,
+            )
+
+            log_info(
+                f"Generated {len(demands_to_create)} demands from template "
+                f"{template_id} for date range {start_date} to {end_date}"
+            )
+
+            # Handle existing demands if overwrite is disabled
+            if not overwrite_existing:
+                # TO-DO: Implement merge logic when overwrite_existing=False
+                # For now, we'll always overwrite as per initial requirements
+                pass
+
+            # Apply demands to database
+            demands_created = 0
+            demands_updated = 0
+            demands_deleted = 0
+
+            if overwrite_existing:
+                # Delete existing demands for the date range
+                deleted_count = (
+                    self.db.shift_demand_new_db.delete_demands_by_date_range(
+                        team_id=team_id,
+                        start_date=start_date,
+                        end_date=end_date,
+                    )
+                )
+                demands_deleted = deleted_count
+
+            # Create new demands using ShiftDemandNew model
+            for demand in demands_to_create:
+                shift_demand = ShiftDemandNew(
+                    date=demand["date"],
+                    shift_id=demand["shift_id"],
+                    team_id=demand["team_id"],
+                    count=demand["count"],
+                    source=ShiftDemandSource.TEMPLATE,
+                    source_id=template_id,
+                )
+
+                self.db.shift_demand_new_db.create_shift_demand(shift_demand)
+                demands_created += 1
+
+            log_info(
+                f"Applied template {template_id} to date range "
+                f"{start_date} to {end_date}: "
+                f"created {demands_created}, updated {demands_updated}, "
+                f"deleted {demands_deleted} demands"
+            )
+
+            return {
+                "demands_created": demands_created,
+                "demands_updated": demands_updated,
+                "demands_deleted": demands_deleted,
+            }
+
+        except Exception as e:
+            log_info(f"Failed to apply template to date range: {str(e)}")
             raise

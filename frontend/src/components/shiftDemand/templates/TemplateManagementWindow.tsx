@@ -32,6 +32,7 @@ import {
   TemplateType,
   TemplateWeekDataDTO,
   ApplyDemandsToTemplateWeekDTO,
+  TemplateApplicationResult,
 } from "../../../types/shift-demand-template";
 import { ShiftDemandTemplateApi } from "../../../app/lib/api/shiftDemandTemplateApi";
 
@@ -40,6 +41,7 @@ import { TemplateList } from "./TemplateList";
 import { TemplateViewer } from "./TemplateViewer";
 import { TemplateCreationDialog } from "./TemplateCreationDialog";
 import { TemplateApplicationDialog } from "./TemplateApplicationDialog";
+import TemplateApplicationToRangeDialog from "./TemplateApplicationToRangeDialog";
 
 // Import CSS
 import "./TemplateManagementWindow.css";
@@ -74,9 +76,13 @@ export default function TemplateManagementWindow({
   const [viewMode, setViewMode] = useState<TemplateViewMode>("list");
   const [showCreationDialog, setShowCreationDialog] = useState(false);
   const [showApplicationDialog, setShowApplicationDialog] = useState(false);
+  const [showRangeApplicationDialog, setShowRangeApplicationDialog] =
+    useState(false);
   const [templateToApplyId, setTemplateToApplyId] = useState<string | null>(
     null
   );
+  const [templateToApply, setTemplateToApply] =
+    useState<ShiftDemandTemplateDTO | null>(null);
 
   // Template list state
   const [templates, setTemplates] = useState<TemplateListItem[]>([]);
@@ -137,11 +143,26 @@ export default function TemplateManagementWindow({
     }
   };
 
-  const handleTemplateApply = (templateId?: string) => {
+  const handleTemplateApply = async (templateId?: string) => {
     const idToUse = templateId || selectedTemplate?.id;
     if (idToUse) {
-      setTemplateToApplyId(idToUse);
-      setShowApplicationDialog(true);
+      try {
+        // Use the selected template if it's the same one, otherwise fetch it
+        let templateToUse = selectedTemplate;
+        if (!templateToUse || templateToUse.id !== idToUse) {
+          templateToUse = await ShiftDemandTemplateApi.getTemplate(
+            idToUse,
+            teamId
+          );
+        }
+
+        setTemplateToApply(templateToUse);
+        setTemplateToApplyId(idToUse);
+        setShowRangeApplicationDialog(true);
+      } catch (error) {
+        console.error("Failed to fetch template for application:", error);
+        setError(t("template_fetch_failed"));
+      }
     }
   };
 
@@ -197,6 +218,25 @@ export default function TemplateManagementWindow({
     setShowApplicationDialog(false);
     setTemplateToApplyId(null);
     setSuccessMessage(t("template_applied_successfully"));
+  };
+
+  const handleRangeApplicationComplete = (
+    result: TemplateApplicationResult
+  ) => {
+    setShowRangeApplicationDialog(false);
+    setTemplateToApplyId(null);
+    setTemplateToApply(null);
+    setSuccessMessage(
+      t("template_applied_successfully_with_counts", {
+        created: result.demandsCreated,
+        updated: result.demandsUpdated,
+        deleted: result.demandsDeleted,
+      })
+    );
+  };
+
+  const handleRangeApplicationError = (error: string) => {
+    setError(error);
   };
 
   const handleBack = () => {
@@ -582,6 +622,23 @@ export default function TemplateManagementWindow({
           {successMessage}
         </Alert>
       </Snackbar>
+
+      {/* Template Range Application Dialog */}
+      {templateToApply && (
+        <TemplateApplicationToRangeDialog
+          lng={lng}
+          open={showRangeApplicationDialog}
+          onClose={() => {
+            setShowRangeApplicationDialog(false);
+            setTemplateToApplyId(null);
+            setTemplateToApply(null);
+          }}
+          template={templateToApply}
+          teamId={teamId}
+          onApplicationComplete={handleRangeApplicationComplete}
+          onError={handleRangeApplicationError}
+        />
+      )}
     </>
   );
 }

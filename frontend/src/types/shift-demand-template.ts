@@ -101,18 +101,24 @@ export interface ApplyDemandsToTemplateWeekDTO {
 }
 
 /**
+ * DTO for applying templates to date ranges
+ */
+export interface ApplyTemplateToDateRangeDTO {
+  templateId: string;
+  startDate: number; // timestamp
+  endDate: number; // timestamp
+  overwriteExisting: boolean;
+}
+
+/**
  * Response types for template operations
  */
 export interface TemplateApplicationResult {
+  success: boolean;
   demandsCreated: number;
   demandsUpdated: number;
-  demandsSkipped: number;
-  conflicts: Array<{
-    date: string;
-    shiftId: string;
-    existingCount: number;
-    templateCount: number;
-  }>;
+  demandsDeleted: number;
+  message: string;
 }
 
 export interface TemplateValidationResult {

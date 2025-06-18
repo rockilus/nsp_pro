@@ -10,9 +10,11 @@ from shared.schemas.core.shift_demand_template import (
 )
 from shared.schemas.dto.shift_demand_template import (
     ApplyDemandsToTemplateWeekDTO,
+    ApplyTemplateToDateRangeDTO,
     ShiftDemandTemplateCreateDTO,
     ShiftDemandTemplateDTO,
     ShiftDemandTemplateUpdateDTO,
+    TemplateApplicationResult,
 )
 
 from src.dependencies import get_shift_demand_template_service
@@ -453,6 +455,96 @@ async def apply_demands_to_template_week(
     except Exception as e:
         log_info(
             f"Failed to apply demands to template {template_id}: {str(e)}"
+        )
+        handle_routes_errors(e)
+        raise HTTPException(
+            status_code=500, detail="Internal server error"
+        ) from e
+
+
+@router.post(
+    "/shift-demand-templates/{template_id}/apply-to-range/teams/{team_id}"
+)
+async def apply_template_to_date_range(
+    template_id: str,
+    team_id: str,
+    apply_dto: ApplyTemplateToDateRangeDTO,
+    session: SessionContainerType = Depends(authn_verify_session()),
+    service: ShiftDemandTemplateService = Depends(
+        get_shift_demand_template_service
+    ),
+) -> TemplateApplicationResult:
+    """Apply a template to a specific date range."""
+    try:
+        # Check permissions for creating shift demands
+        if not await authz_check(
+            session.get_user_id(), "create-shift-demand", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to apply templates"
+            )
+
+        # Convert timestamps to date objects
+        # Handle both seconds and milliseconds (defensive programming)
+        start_timestamp = apply_dto.startDate
+        end_timestamp = apply_dto.endDate
+
+        # If timestamp is too large, likely milliseconds, convert to seconds
+        if start_timestamp > 1e10:
+            start_timestamp = start_timestamp / 1000
+        if end_timestamp > 1e10:
+            end_timestamp = end_timestamp / 1000
+
+        start_date = datetime.fromtimestamp(
+            start_timestamp, tz=timezone.utc
+        ).date()
+        end_date = datetime.fromtimestamp(
+            end_timestamp, tz=timezone.utc
+        ).date()
+
+        # Validate date range
+        if start_date > end_date:
+            raise HTTPException(
+                status_code=400,
+                detail="Start date must be before or equal to end date",
+            )
+
+        # Apply template to date range
+        result = await service.apply_template_to_date_range(
+            template_id=template_id,
+            team_id=team_id,
+            start_date=start_date,
+            end_date=end_date,
+            overwrite_existing=apply_dto.overwriteExisting,
+        )
+
+        log_info(
+            f"Successfully applied template {template_id} to date range "
+            f"{start_date} to {end_date} for team {team_id}"
+        )
+
+        return TemplateApplicationResult(
+            success=True,
+            demandsCreated=result["demands_created"],
+            demandsUpdated=result["demands_updated"],
+            demandsDeleted=result["demands_deleted"],
+            message=(
+                f"Template applied successfully. "
+                f"Created {result['demands_created']}, "
+                f"updated {result['demands_updated']}, "
+                f"deleted {result['demands_deleted']} demands."
+            ),
+        )
+
+    except NotAuthorizedError as e:
+        log_info(f"Authorization failed for template application: {str(e)}")
+        raise HTTPException(status_code=403, detail=str(e)) from e
+    except ValueError as e:
+        log_info(f"Validation error in template application: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    except Exception as e:
+        log_info(
+            f"Failed to apply template {template_id} to date range: {str(e)}"
         )
         handle_routes_errors(e)
         raise HTTPException(

@@ -10,6 +10,7 @@ import {
   TemplateFromDemandsDTO,
   ApplyTemplateDTO,
   ApplyDemandsToTemplateWeekDTO,
+  ApplyTemplateToDateRangeDTO,
   TemplateApplicationResult,
   TemplateValidationResult,
   BatchTemplateOperationResult,
@@ -370,6 +371,33 @@ export class ShiftDemandTemplateApi {
   ): Promise<ShiftDemandTemplateDTO> {
     const response = await fetch(
       `${TEMPLATES_BASE}/${templateId}/apply-demands/teams/${teamId}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(request),
+      }
+    );
+
+    if (!response.ok) {
+      await handleTemplateAPIError(response);
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Apply template to a specific date range
+   */
+  static async applyTemplateToDateRange(
+    templateId: string,
+    teamId: string,
+    request: ApplyTemplateToDateRangeDTO
+  ): Promise<TemplateApplicationResult> {
+    const response = await fetch(
+      `${TEMPLATES_BASE}/${templateId}/apply-to-range/teams/${teamId}`,
       {
         method: "POST",
         headers: {

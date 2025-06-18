@@ -72,3 +72,24 @@ class ApplyDemandsToTemplateWeekDTO(BaseModel):
     targetWeekNumber: int = Field(
         ..., ge=0, description="0-based week number in template to update"
     )
+
+
+class ApplyTemplateToDateRangeDTO(BaseModel):
+    """DTO for applying template to a date range."""
+
+    templateId: str = Field(..., description="Template identifier")
+    startDate: float = Field(..., description="Start date timestamp")
+    endDate: float = Field(..., description="End date timestamp")
+    overwriteExisting: bool = Field(
+        default=True, description="Whether to overwrite existing demands"
+    )
+
+
+class TemplateApplicationResult(BaseModel):
+    """Result of template application operation."""
+
+    success: bool = Field(..., description="Whether the operation was successful")
+    demandsCreated: int = Field(..., description="Number of demands created")
+    demandsUpdated: int = Field(..., description="Number of demands updated")
+    demandsDeleted: int = Field(..., description="Number of demands deleted")
+    message: str = Field(..., description="Result message")

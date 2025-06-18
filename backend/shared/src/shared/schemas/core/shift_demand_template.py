@@ -1,7 +1,7 @@
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import humps
 from pydantic import TypeAdapter
@@ -416,3 +416,124 @@ def apply_demands_to_template_week(
     )
 
     return updated_template
+
+
+def apply_template_to_date_range(
+    template: ShiftDemandTemplate,
+    start_date: date,
+    end_date: date,
+    team_id: str,
+) -> List[Dict[str, Any]]:
+    """
+    Apply template to a specific date range.
+
+    Args:
+        template: The template to apply
+        start_date: Start date of the target period
+        end_date: End date of the target period
+        team_id: Team ID for the demands
+
+    Returns:
+        List of shift demands to create/update
+
+    Raises:
+        ValueError: If date range is invalid
+    """
+    if start_date > end_date:
+        raise ValueError("End date must be after or equal to start date")
+
+    if (end_date - start_date).days > 365:  # Max 1 year
+        raise ValueError("Date range cannot exceed 365 days")
+
+    # Calculate template application mapping
+    mappings = _calculate_template_application_mapping(template, start_date, end_date)
+
+    # Generate demands from mapping
+    demands = _generate_demands_from_mapping(template, mappings, team_id)
+
+    return demands
+
+
+def _calculate_template_application_mapping(
+    template: ShiftDemandTemplate,
+    start_date: date,
+    end_date: date,
+) -> List[Tuple[date, int, int]]:
+    """
+    Calculate how template weeks map to target dates.
+
+    Returns list of (target_date, template_week_number, template_day_of_week).
+    """
+    mappings: List[Tuple[date, int, int]] = []
+    current_date = start_date
+    template_week = 0  # Initialize template_week
+    week_cycle_length = len(template.weeks_data)  # Initialize for all cases
+
+    if template.template_type == TemplateType.STANDARD:
+        # Standard: cycle through weeks 0, 1, 2, ..., n-1, 0, 1, 2, ...
+
+        # Calculate which template week to start with based on start_date
+        # This ensures Monday-Sunday alignment
+        start_monday = current_date - timedelta(days=current_date.weekday())
+        # Use epoch Monday (1970-01-05) as reference
+        days_since_epoch = (start_monday - date(1970, 1, 5)).days
+        starting_template_week = (days_since_epoch // 7) % week_cycle_length
+
+        template_week = starting_template_week
+
+    elif template.template_type == TemplateType.EVEN_ODD:
+        # Even/Odd: determine if start week is even or odd
+        start_monday = current_date - timedelta(days=current_date.weekday())
+        days_since_epoch = (start_monday - date(1970, 1, 5)).days
+        week_number = days_since_epoch // 7
+        template_week = 0 if week_number % 2 == 0 else 1  # Even=0, Odd=1
+
+    while current_date <= end_date:
+        template_day = current_date.weekday()  # 0=Monday, 6=Sunday
+        mappings.append((current_date, template_week, template_day))
+
+        current_date += timedelta(days=1)
+
+        # Update template week for next iteration
+        if current_date.weekday() == 0:  # Monday = start of new week
+            if template.template_type == TemplateType.STANDARD:
+                template_week = (template_week + 1) % week_cycle_length
+            elif template.template_type == TemplateType.EVEN_ODD:
+                template_week = 1 - template_week  # Toggle between 0 and 1
+
+    return mappings
+
+
+def _generate_demands_from_mapping(
+    template: ShiftDemandTemplate,
+    mappings: List[Tuple[date, int, int]],
+    team_id: str,
+) -> List[Dict[str, Any]]:
+    """Generate shift demands based on template-to-date mappings."""
+    demands: List[Dict[str, Any]] = []
+
+    for target_date, template_week, template_day in mappings:
+        # Find template week data
+        week_data = next(
+            (w for w in template.weeks_data if w.week_number == template_week),
+            None,
+        )
+
+        if not week_data:
+            continue
+
+        # Find demands for this day
+        day_demands = [d for d in week_data.demands if d.day_of_week == template_day]
+
+        for demand_entry in day_demands:
+            if demand_entry.count > 0:
+                demands.append(
+                    {
+                        "date": target_date,
+                        "shift_id": demand_entry.shift_id,
+                        "count": demand_entry.count,
+                        "team_id": team_id,
+                    }
+                )
+
+    return demands
