@@ -3,23 +3,23 @@
 Test script to verify the API gateway template application integration.
 """
 
-import sys
-
-sys.path.append("/Users/felipekharaba/Code/nsp_pro/backend/shared/src")
-sys.path.append("/Users/felipekharaba/Code/nsp_pro/backend/api_gateway/src")
-
+# import sys
 from datetime import date, datetime, timezone
+
 from shared.schemas.core.shift_demand_template import (
+    DemandEntry,
     ShiftDemandTemplate,
     TemplateType,
     TemplateWeekData,
-    DemandEntry,
     apply_template_to_date_range,
 )
 from shared.schemas.dto.shift_demand_template import (
     ApplyTemplateToDateRangeDTO,
     TemplateApplicationResult,
 )
+
+# sys.path.append("/Users/felipekharaba/Code/nsp_pro/backend/shared/src")
+# sys.path.append("/Users/felipekharaba/Code/nsp_pro/backend/api_gateway/src")
 
 
 def test_dto_creation():
@@ -79,15 +79,11 @@ def test_integration_flow():
     start_date = date(2025, 6, 23)  # Monday
     end_date = date(2025, 6, 27)  # Friday
 
-    demands = apply_template_to_date_range(
-        template, start_date, end_date, "team123"
-    )
+    demands = apply_template_to_date_range(template, start_date, end_date, "team123")
 
     print(f"Generated {len(demands)} demands:")
     for demand in demands:
-        print(
-            f"  {demand['date']}: shift {demand['shift_id']} count {demand['count']}"
-        )
+        print(f"  {demand['date']}: shift {demand['shift_id']} count {demand['count']}")
 
     # Verify we got the expected demands
     assert len(demands) == 2, f"Expected 2 demands, got {len(demands)}"

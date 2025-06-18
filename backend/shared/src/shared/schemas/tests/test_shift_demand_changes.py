@@ -4,21 +4,20 @@ Quick test script to verify shift demand template changes work correctly.
 """
 
 import sys
-import os
-
-sys.path.append("/Users/felipekharaba/Code/nsp_pro/backend/shared/src")
 
 from shared.schemas.core.shift_demand_template import (
     DemandEntry,
-    TemplateWeekData,
     ShiftDemandTemplate,
     TemplateType,
+    TemplateWeekData,
 )
 from shared.schemas.dto.shift_demand_template import (
     DemandEntryDTO,
-    TemplateWeekDataDTO,
     ShiftDemandTemplateCreateDTO,
+    TemplateWeekDataDTO,
 )
+
+# sys.path.append("/Users/felipekharaba/Code/nsp_pro/backend/shared/src")
 
 
 def test_demand_entry():
@@ -145,7 +144,8 @@ if __name__ == "__main__":
         test_dto()
         test_full_template()
         print(
-            "\n🎉 All tests passed! The shift demand template changes are working correctly."
+            "\n🎉 All tests passed! The shift demand template changes are "
+            "working correctly."
         )
     except Exception as e:
         print(f"\n❌ Test failed: {e}")

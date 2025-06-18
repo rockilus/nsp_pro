@@ -41,4 +41,4 @@ jobs:
       - name: Lint
         run: npm run lint
       - name: Run tests
-        run: npm test
+        run: npm test -- --ci --coverage --watchAll=false

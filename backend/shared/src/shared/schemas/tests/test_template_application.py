@@ -3,18 +3,18 @@
 Simple test script to verify the template application logic works correctly.
 """
 
-import sys
+# import sys
+from datetime import date
 
-sys.path.append("/Users/felipekharaba/Code/nsp_pro/backend/shared/src")
-
-from datetime import date, datetime, timezone
 from shared.schemas.core.shift_demand_template import (
+    DemandEntry,
     ShiftDemandTemplate,
     TemplateType,
     TemplateWeekData,
-    DemandEntry,
     apply_template_to_date_range,
 )
+
+# sys.path.append("/Users/felipekharaba/Code/nsp_pro/backend/shared/src")
 
 
 def test_standard_template_application():
@@ -46,15 +46,11 @@ def test_standard_template_application():
     start_date = date(2025, 6, 23)  # Monday
     end_date = date(2025, 6, 27)  # Friday
 
-    demands = apply_template_to_date_range(
-        template, start_date, end_date, "team123"
-    )
+    demands = apply_template_to_date_range(template, start_date, end_date, "team123")
 
     print(f"Generated {len(demands)} demands:")
     for demand in demands:
-        print(
-            f"  {demand['date']}: shift {demand['shift_id']} count {demand['count']}"
-        )
+        print(f"  {demand['date']}: shift {demand['shift_id']} count {demand['count']}")
 
     # Expected:
     # Mon 23rd: shift1 count 2 (week 0, day 0)
@@ -86,12 +82,8 @@ def test_even_odd_template_application():
         team_id="team123",
         template_type=TemplateType.EVEN_ODD,
         weeks_data=[
-            TemplateWeekData(
-                week_number=0, demands=even_week_demands
-            ),  # Even week
-            TemplateWeekData(
-                week_number=1, demands=odd_week_demands
-            ),  # Odd week
+            TemplateWeekData(week_number=0, demands=even_week_demands),  # Even week
+            TemplateWeekData(week_number=1, demands=odd_week_demands),  # Odd week
         ],
         created_by="user123",
     )
@@ -100,15 +92,11 @@ def test_even_odd_template_application():
     start_date = date(2025, 6, 23)  # Monday
     end_date = date(2025, 7, 6)  # Sunday (2 weeks)
 
-    demands = apply_template_to_date_range(
-        template, start_date, end_date, "team123"
-    )
+    demands = apply_template_to_date_range(template, start_date, end_date, "team123")
 
     print(f"Generated {len(demands)} demands:")
     for demand in demands:
-        print(
-            f"  {demand['date']}: shift {demand['shift_id']} count {demand['count']}"
-        )
+        print(f"  {demand['date']}: shift {demand['shift_id']} count {demand['count']}")
 
     # Should generate demands for Mondays with alternating counts
     assert len(demands) == 2, f"Expected 2 demands, got {len(demands)}"
