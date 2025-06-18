@@ -57,3 +57,22 @@ export interface CreateMultitaskingGroupRequest {
 export interface UpdateMultitaskingGroupRequest {
   shiftDemandIds: string[];
 }
+
+/**
+ * Request for shift demand concurrency data
+ */
+export interface ShiftDemandConcurrencyRequest {
+  teamId: string;
+  startDate: number; // Unix timestamp
+  endDate: number; // Unix timestamp
+}
+
+/**
+ * Response containing shift demand concurrency data for a period
+ */
+export interface ShiftDemandConcurrencyResponse {
+  teamId: string;
+  startDate: number; // Unix timestamp
+  endDate: number; // Unix timestamp
+  concurrencyList: ShiftDemandConcurrency[];
+}

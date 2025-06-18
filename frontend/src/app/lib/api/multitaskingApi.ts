@@ -1,14 +1,18 @@
 /**
- * Mock API client for multitasking operations
- * Logs all operations to console for development
+ * API client for multitasking operations
  */
 
+import axios from "axios";
 import {
   MultitaskingGroup,
   ShiftDemandConcurrency,
+  ShiftDemandConcurrencyRequest,
+  ShiftDemandConcurrencyResponse,
   CreateMultitaskingGroupRequest,
   UpdateMultitaskingGroupRequest,
 } from "@/types/multitasking";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export class MultitaskingApi {
   /**
@@ -123,37 +127,57 @@ export class MultitaskingApi {
     startDate: Date,
     endDate: Date
   ): Promise<ShiftDemandConcurrency[]> {
-    console.log("MultitaskingApi.getShiftDemandConcurrency called with:", {
-      teamId,
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-    });
+    try {
+      // Convert dates to Unix timestamps
+      const startTimestamp = Math.floor(startDate.getTime() / 1000);
+      const endTimestamp = Math.floor(endDate.getTime() / 1000);
 
-    // Mock concurrency data - this would normally calculate overlapping shifts
-    // For demo purposes, let's say shift demands with IDs ending in same numbers are concurrent
-    const mockConcurrency: ShiftDemandConcurrency[] = [
-      {
-        shiftDemandId: "shift1-2024-01-01",
-        concurrentShiftDemandIds: ["shift2-2024-01-01", "shift3-2024-01-01"],
-      },
-      {
-        shiftDemandId: "shift2-2024-01-01",
-        concurrentShiftDemandIds: ["shift1-2024-01-01", "shift4-2024-01-01"],
-      },
-      {
-        shiftDemandId: "shift3-2024-01-01",
-        concurrentShiftDemandIds: ["shift1-2024-01-01"],
-      },
-      {
-        shiftDemandId: "shift4-2024-01-01",
-        concurrentShiftDemandIds: ["shift2-2024-01-01"],
-      },
-    ];
+      const request: ShiftDemandConcurrencyRequest = {
+        teamId,
+        startDate: startTimestamp,
+        endDate: endTimestamp,
+      };
 
-    console.log(
-      "MultitaskingApi.getShiftDemandConcurrency response:",
-      mockConcurrency
-    );
-    return Promise.resolve(mockConcurrency);
+      console.log("MultitaskingApi.getShiftDemandConcurrency called with:", {
+        teamId,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        request,
+      });
+
+      const response = await axios.post<any>(
+        `${API_BASE_URL}/multitasking/shift-demand-concurrency`,
+        {
+          team_id: request.teamId,
+          start_date: request.startDate,
+          end_date: request.endDate,
+        }
+      );
+
+      // Convert snake_case response to camelCase for frontend
+      const concurrencyList: ShiftDemandConcurrency[] =
+        response.data.concurrency_list?.map((item: any) => ({
+          shiftDemandId: item.shift_demand_id,
+          concurrentShiftDemandIds: item.concurrent_shift_demand_ids,
+        })) || [];
+
+      console.log(
+        "MultitaskingApi.getShiftDemandConcurrency response:",
+        concurrencyList
+      );
+
+      return concurrencyList;
+    } catch (error) {
+      console.error("Error fetching shift demand concurrency:", error);
+
+      // Check if it's an axios error with response data
+      if (axios.isAxiosError(error) && error.response) {
+        const errorMessage =
+          error.response.data?.detail || "Failed to fetch concurrency data";
+        throw new Error(`API Error: ${errorMessage}`);
+      }
+
+      throw new Error("Failed to fetch shift demand concurrency data");
+    }
   }
 }
