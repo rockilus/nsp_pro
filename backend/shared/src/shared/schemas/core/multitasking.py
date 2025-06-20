@@ -8,69 +8,28 @@ calculations, both for actual shift demands and template-based demands.
 from dataclasses import asdict, dataclass, field
 from datetime import date as date_type
 from datetime import datetime, timezone
-from typing import List
+from enum import Enum
+from typing import List, Optional
 
 import humps
 from pydantic import TypeAdapter
 
 from shared.schemas.dto.multitasking import (
-    ConcurrentCombinationDTO,
+    MultitaskingGroupDTO,
     ShiftDemandConcurrencyDTO,
     ShiftDemandConcurrencyRequestDTO,
     ShiftDemandConcurrencyResponseDTO,
-    TemplateConcurrencyDTO,
-    TemplateConcurrencyResponseDTO,
 )
 
 
 @dataclass
-class ConcurrentCombination:
-    """Core model for a single concurrent combination in template concurrency."""
-
-    week_number: int
-    day_of_week: int
-    shift_id: str
-
-    def __post_init__(self):
-        """Validate the concurrent combination data."""
-        if not 0 <= self.day_of_week <= 6:
-            raise ValueError(
-                "Day of week must be between 0 (Monday) and 6 (Sunday)"
-            )
-        if self.week_number < 1:
-            raise ValueError("Week number must be positive")
-        if not self.shift_id:
-            raise ValueError("Shift ID cannot be empty")
-
-    def to_dto(self) -> ConcurrentCombinationDTO:
-        """Convert to DTO for API responses."""
-        data = asdict(self)
-        as_dict = humps.camelize(data)
-        validator = TypeAdapter(ConcurrentCombinationDTO)
-        return validator.validate_python(as_dict)
-
-    @classmethod
-    def from_dto(
-        cls, data: ConcurrentCombinationDTO
-    ) -> "ConcurrentCombination":
-        """Create instance from DTO."""
-        data_dict = data.model_dump()
-        data_dict = humps.decamelize(data_dict)
-        return cls(**data_dict)
-
-
-@dataclass
-class ShiftDemandConcurrency:
+class ShiftDemandConcurrency:  # OK
     """Core model for shift demand concurrency information."""
 
     shift_demand_id: str
     concurrent_shift_demand_ids: List[str] = field(default_factory=list)
-    created_at: datetime = field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
-    updated_at: datetime = field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     def __post_init__(self):
         """Validate the shift demand concurrency data."""
@@ -113,9 +72,7 @@ class ShiftDemandConcurrency:
         return validator.validate_python(as_dict)
 
     @classmethod
-    def from_dto(
-        cls, data: ShiftDemandConcurrencyDTO
-    ) -> "ShiftDemandConcurrency":
+    def from_dto(cls, data: ShiftDemandConcurrencyDTO) -> "ShiftDemandConcurrency":
         """Create instance from DTO."""
         data_dict = data.model_dump()
         data_dict = humps.decamelize(data_dict)
@@ -129,129 +86,13 @@ class ShiftDemandConcurrency:
 
 
 @dataclass
-class TemplateConcurrency:
-    """Core model for template concurrency information."""
-
-    week_number: int
-    day_of_week: int
-    shift_id: str
-    concurrent_combinations: List[ConcurrentCombination] = field(
-        default_factory=list
-    )
-    created_at: datetime = field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
-    updated_at: datetime = field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
-
-    def __post_init__(self):
-        """Validate the template concurrency data."""
-        if not 0 <= self.day_of_week <= 6:
-            raise ValueError(
-                "Day of week must be between 0 (Monday) and 6 (Sunday)"
-            )
-        if self.week_number < 1:
-            raise ValueError("Week number must be positive")
-        if not self.shift_id:
-            raise ValueError("Shift ID cannot be empty")
-
-    def add_concurrent_combination(
-        self, combination: ConcurrentCombination
-    ) -> None:
-        """Add a concurrent combination if not already present."""
-        # Check for duplicates
-        for existing in self.concurrent_combinations:
-            if (
-                existing.week_number == combination.week_number
-                and existing.day_of_week == combination.day_of_week
-                and existing.shift_id == combination.shift_id
-            ):
-                return  # Already exists
-
-        # Don't add self-reference
-        if (
-            combination.week_number == self.week_number
-            and combination.day_of_week == self.day_of_week
-            and combination.shift_id == self.shift_id
-        ):
-            return
-
-        self.concurrent_combinations.append(combination)
-        self.update_timestamp()
-
-    def remove_concurrent_combination(
-        self, week_number: int, day_of_week: int, shift_id: str
-    ) -> None:
-        """Remove a concurrent combination if present."""
-        self.concurrent_combinations = [
-            combo
-            for combo in self.concurrent_combinations
-            if not (
-                combo.week_number == week_number
-                and combo.day_of_week == day_of_week
-                and combo.shift_id == shift_id
-            )
-        ]
-        self.update_timestamp()
-
-    def update_timestamp(self):
-        """Update the updated_at timestamp."""
-        self.updated_at = datetime.now(timezone.utc)
-
-    def to_dto(self) -> TemplateConcurrencyDTO:
-        """Convert to DTO for API responses."""
-        data = asdict(self)
-        # Remove internal timestamps from DTO
-        data.pop("created_at", None)
-        data.pop("updated_at", None)
-
-        # Convert concurrent combinations to DTOs
-        data["concurrent_combinations"] = [
-            combo.to_dto() for combo in self.concurrent_combinations
-        ]
-
-        as_dict = humps.camelize(data)
-        validator = TypeAdapter(TemplateConcurrencyDTO)
-        return validator.validate_python(as_dict)
-
-    @classmethod
-    def from_dto(cls, data: TemplateConcurrencyDTO) -> "TemplateConcurrency":
-        """Create instance from DTO."""
-        data_dict = data.model_dump()
-        data_dict = humps.decamelize(data_dict)
-
-        # Convert concurrent combinations from DTOs
-        combinations = []
-        for combo_data in data_dict.get("concurrent_combinations", []):
-            if isinstance(combo_data, dict):
-                # Create ConcurrentCombinationDTO first, then convert to core
-                combo_dto = ConcurrentCombinationDTO(**combo_data)
-                combinations.append(ConcurrentCombination.from_dto(combo_dto))
-            elif hasattr(combo_data, "model_dump"):
-                # Already a DTO
-                combinations.append(ConcurrentCombination.from_dto(combo_data))
-
-        data_dict["concurrent_combinations"] = combinations
-
-        # Add server-managed timestamps
-        now = datetime.now(timezone.utc)
-        data_dict["created_at"] = now
-        data_dict["updated_at"] = now
-
-        return cls(**data_dict)
-
-
-@dataclass
-class ShiftDemandConcurrencyResponse:
+class ShiftDemandConcurrencyResponse:  # OK
     """Core model for shift demand concurrency response."""
 
     team_id: str
     start_date: date_type
     end_date: date_type
-    concurrency_list: List[ShiftDemandConcurrency] = field(
-        default_factory=list
-    )
+    concurrency_list: List[ShiftDemandConcurrency] = field(default_factory=list)
 
     def __post_init__(self):
         """Validate the response data."""
@@ -271,9 +112,7 @@ class ShiftDemandConcurrencyResponse:
         data["end_date"] = int(end_datetime.timestamp())
 
         # Convert concurrency list to DTOs
-        data["concurrency_list"] = [
-            item.to_dto() for item in self.concurrency_list
-        ]
+        data["concurrency_list"] = [item.to_dto() for item in self.concurrency_list]
 
         as_dict = humps.camelize(data)
         validator = TypeAdapter(ShiftDemandConcurrencyResponseDTO)
@@ -290,9 +129,7 @@ class ShiftDemandConcurrencyResponse:
         # Convert timestamps to dates
         start_timestamp = data_dict["start_date"]
         end_timestamp = data_dict["end_date"]
-        data_dict["start_date"] = datetime.fromtimestamp(
-            start_timestamp
-        ).date()
+        data_dict["start_date"] = datetime.fromtimestamp(start_timestamp).date()
         data_dict["end_date"] = datetime.fromtimestamp(end_timestamp).date()
 
         # Convert concurrency list from DTOs
@@ -301,68 +138,10 @@ class ShiftDemandConcurrencyResponse:
             if isinstance(item_data, dict):
                 # Create DTO first, then convert to core
                 item_dto = ShiftDemandConcurrencyDTO(**item_data)
-                concurrency_list.append(
-                    ShiftDemandConcurrency.from_dto(item_dto)
-                )
+                concurrency_list.append(ShiftDemandConcurrency.from_dto(item_dto))
             elif hasattr(item_data, "model_dump"):
                 # Already a DTO
-                concurrency_list.append(
-                    ShiftDemandConcurrency.from_dto(item_data)
-                )
-
-        data_dict["concurrency_list"] = concurrency_list
-
-        return cls(**data_dict)
-
-
-@dataclass
-class TemplateConcurrencyResponse:
-    """Core model for template concurrency response."""
-
-    team_id: str
-    template_id: str
-    concurrency_list: List[TemplateConcurrency] = field(default_factory=list)
-
-    def __post_init__(self):
-        """Validate the response data."""
-        if not self.team_id:
-            raise ValueError("Team ID cannot be empty")
-        if not self.template_id:
-            raise ValueError("Template ID cannot be empty")
-
-    def to_dto(self) -> TemplateConcurrencyResponseDTO:
-        """Convert to DTO for API responses."""
-        data = asdict(self)
-
-        # Convert concurrency list to DTOs
-        data["concurrency_list"] = [
-            item.to_dto() for item in self.concurrency_list
-        ]
-
-        as_dict = humps.camelize(data)
-        validator = TypeAdapter(TemplateConcurrencyResponseDTO)
-        return validator.validate_python(as_dict)
-
-    @classmethod
-    def from_dto(
-        cls, data: TemplateConcurrencyResponseDTO
-    ) -> "TemplateConcurrencyResponse":
-        """Create instance from DTO."""
-        data_dict = data.model_dump()
-        data_dict = humps.decamelize(data_dict)
-
-        # Convert concurrency list from DTOs
-        concurrency_list = []
-        for item_data in data_dict.get("concurrency_list", []):
-            if isinstance(item_data, dict):
-                # Create DTO first, then convert to core
-                item_dto = TemplateConcurrencyDTO(**item_data)
-                concurrency_list.append(TemplateConcurrency.from_dto(item_dto))
-            elif hasattr(item_data, "model_dump"):
-                # Already a DTO
-                concurrency_list.append(
-                    TemplateConcurrency.from_dto(item_data)
-                )
+                concurrency_list.append(ShiftDemandConcurrency.from_dto(item_data))
 
         data_dict["concurrency_list"] = concurrency_list
 
@@ -418,4 +197,92 @@ class ShiftDemandConcurrencyRequest:
             end_date=datetime.fromtimestamp(
                 data_dict["end_date"], tz=timezone.utc
             ).date(),
+        )
+
+
+@dataclass
+class MultitaskingGroupType(Enum):
+    SHIFT_DEMAND = "shift_demand"
+    SHIFT_DEMAND_TEMPLATE = "shift_demand_template"
+    ASSIGNMENT = "assignment"
+
+
+@dataclass
+class MultitaskingGroup:
+    """
+    Core model for multitasking group, supporting shift demands, templates, and
+    assignments.
+    """
+
+    type: MultitaskingGroupType
+    team_id: str
+    related_ids: List[str] = field(default_factory=list)
+    shift_demand_template_id: Optional[str] = None  # For template association
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    notes: Optional[str] = None
+    id: Optional[str] = None
+
+    def __post_init__(self):
+        if not self.team_id:
+            raise ValueError("MultitaskingGroup team_id cannot be empty")
+        if not isinstance(self.type, MultitaskingGroupType):
+            raise ValueError("Invalid MultitaskingGroup type")
+        # Remove duplicates in related_ids
+        self.related_ids = list(set(self.related_ids))
+        if len(self.related_ids) < 2:
+            raise ValueError("MultitaskingGroup related_ids must have at least 2 items")
+        if self.shift_demand_template_id == "":
+            self.shift_demand_template_id = None
+
+    def add_related_id(self, related_id: str) -> None:
+        if related_id not in self.related_ids:
+            self.related_ids.append(related_id)
+            self.update_timestamp()
+
+    def remove_related_id(self, related_id: str) -> None:
+        if related_id in self.related_ids:
+            self.related_ids.remove(related_id)
+            self.update_timestamp()
+
+    def update_timestamp(self):
+        self.updated_at = datetime.now(timezone.utc)
+
+    def to_dict(self) -> dict:
+        data = asdict(self)
+        data["type"] = self.type.value
+        return data
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "MultitaskingGroup":
+        data = data.copy()
+        data["type"] = MultitaskingGroupType(data["type"])
+        return cls(**data)
+
+    def to_dto(self) -> MultitaskingGroupDTO:
+        """Convert to DTO for API responses."""
+
+        return MultitaskingGroupDTO(
+            id=self.id,
+            type=self.type.value,
+            teamId=self.team_id,
+            relatedIds=list(self.related_ids),
+            shiftDemandTemplateId=self.shift_demand_template_id,
+            createdAt=int(self.created_at.timestamp()),
+            updatedAt=int(self.updated_at.timestamp()),
+            notes=self.notes,
+        )
+
+    @classmethod
+    def from_dto(cls, dto: "MultitaskingGroupDTO") -> "MultitaskingGroup":
+        """Create instance from DTO."""
+        return cls(
+            id=dto.id,
+            type=MultitaskingGroupType(dto.type),
+            team_id=dto.teamId,
+            related_ids=list(dto.relatedIds),
+            shift_demand_template_id=dto.shiftDemandTemplateId,
+            created_at=datetime.fromtimestamp(dto.createdAt, tz=timezone.utc),
+            updated_at=datetime.fromtimestamp(dto.updatedAt, tz=timezone.utc),
+            notes=dto.notes,
         )
