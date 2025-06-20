@@ -217,7 +217,7 @@ function ShiftDemandCell({
               )}
 
               {/* Decrement button */}
-              {isHovered && !isSaving && (
+              {isHovered && !isSaving && !isMultitaskingMode && (
                 <button
                   onClick={handleDecrement}
                   className="shift-demand-button decrement"
@@ -237,7 +237,7 @@ function ShiftDemandCell({
               </span>
 
               {/* Increment button */}
-              {isHovered && !isSaving && (
+              {isHovered && !isSaving && !isMultitaskingMode && (
                 <button
                   onClick={handleIncrement}
                   className="shift-demand-button increment"
