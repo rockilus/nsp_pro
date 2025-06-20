@@ -27,7 +27,9 @@ class ShiftDemandConcurrencyResponseDTO(BaseModel):  # OK
     """Response containing all shift demand concurrency data for a period."""
 
     teamId: str = Field(..., description="Team ID")
-    startDate: int = Field(..., description="Period start date (Unix timestamp)")
+    startDate: int = Field(
+        ..., description="Period start date (Unix timestamp)"
+    )
     endDate: int = Field(..., description="Period end date (Unix timestamp)")
     concurrencyList: List[ShiftDemandConcurrencyDTO] = Field(
         default_factory=list,
@@ -87,7 +89,9 @@ class MultitaskingGroupDTO(BaseModel):
     DTO for multitasking group, supporting shift demands, templates, and assignments.
     """
 
-    id: Optional[str] = Field(default=None, description="Multitasking group ID")
+    id: Optional[str] = Field(
+        default=None, description="Multitasking group ID"
+    )
     type: str = Field(
         ...,
         description="Type of multitasking group (shift_demand, "
@@ -103,7 +107,9 @@ class MultitaskingGroupDTO(BaseModel):
         description="ID of the associated shift demand template, if applicable",
     )
     createdAt: int = Field(..., description="Creation timestamp (Unix epoch)")
-    updatedAt: int = Field(..., description="Last update timestamp (Unix epoch)")
+    updatedAt: int = Field(
+        ..., description="Last update timestamp (Unix epoch)"
+    )
     notes: Optional[str] = Field(default=None, description="Optional notes")
 
     @field_validator("relatedIds")
@@ -206,7 +212,9 @@ class UpdateMultitaskingGroupRequest(BaseModel):
 
     @field_validator("relatedIds")
     @classmethod
-    def validate_related_ids(cls, v: Optional[List[str]]) -> Optional[List[str]]:
+    def validate_related_ids(
+        cls, v: Optional[List[str]]
+    ) -> Optional[List[str]]:
         if v is not None and len(set(v)) < 2:
             raise ValueError("relatedIds must have at least 2 unique items")
         return list(set(v)) if v is not None else v

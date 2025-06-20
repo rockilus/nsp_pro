@@ -28,8 +28,12 @@ class ShiftDemandConcurrency:  # OK
 
     shift_demand_id: str
     concurrent_shift_demand_ids: List[str] = field(default_factory=list)
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: datetime = field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
 
     def __post_init__(self):
         """Validate the shift demand concurrency data."""
@@ -72,7 +76,9 @@ class ShiftDemandConcurrency:  # OK
         return validator.validate_python(as_dict)
 
     @classmethod
-    def from_dto(cls, data: ShiftDemandConcurrencyDTO) -> "ShiftDemandConcurrency":
+    def from_dto(
+        cls, data: ShiftDemandConcurrencyDTO
+    ) -> "ShiftDemandConcurrency":
         """Create instance from DTO."""
         data_dict = data.model_dump()
         data_dict = humps.decamelize(data_dict)
@@ -92,7 +98,9 @@ class ShiftDemandConcurrencyResponse:  # OK
     team_id: str
     start_date: date_type
     end_date: date_type
-    concurrency_list: List[ShiftDemandConcurrency] = field(default_factory=list)
+    concurrency_list: List[ShiftDemandConcurrency] = field(
+        default_factory=list
+    )
 
     def __post_init__(self):
         """Validate the response data."""
@@ -112,7 +120,9 @@ class ShiftDemandConcurrencyResponse:  # OK
         data["end_date"] = int(end_datetime.timestamp())
 
         # Convert concurrency list to DTOs
-        data["concurrency_list"] = [item.to_dto() for item in self.concurrency_list]
+        data["concurrency_list"] = [
+            item.to_dto() for item in self.concurrency_list
+        ]
 
         as_dict = humps.camelize(data)
         validator = TypeAdapter(ShiftDemandConcurrencyResponseDTO)
@@ -129,7 +139,9 @@ class ShiftDemandConcurrencyResponse:  # OK
         # Convert timestamps to dates
         start_timestamp = data_dict["start_date"]
         end_timestamp = data_dict["end_date"]
-        data_dict["start_date"] = datetime.fromtimestamp(start_timestamp).date()
+        data_dict["start_date"] = datetime.fromtimestamp(
+            start_timestamp
+        ).date()
         data_dict["end_date"] = datetime.fromtimestamp(end_timestamp).date()
 
         # Convert concurrency list from DTOs
@@ -138,10 +150,14 @@ class ShiftDemandConcurrencyResponse:  # OK
             if isinstance(item_data, dict):
                 # Create DTO first, then convert to core
                 item_dto = ShiftDemandConcurrencyDTO(**item_data)
-                concurrency_list.append(ShiftDemandConcurrency.from_dto(item_dto))
+                concurrency_list.append(
+                    ShiftDemandConcurrency.from_dto(item_dto)
+                )
             elif hasattr(item_data, "model_dump"):
                 # Already a DTO
-                concurrency_list.append(ShiftDemandConcurrency.from_dto(item_data))
+                concurrency_list.append(
+                    ShiftDemandConcurrency.from_dto(item_data)
+                )
 
         data_dict["concurrency_list"] = concurrency_list
 
@@ -218,8 +234,12 @@ class MultitaskingGroup:
     team_id: str
     related_ids: List[str] = field(default_factory=list)
     shift_demand_template_id: Optional[str] = None  # For template association
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: datetime = field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
     notes: Optional[str] = None
     id: Optional[str] = None
 
@@ -231,7 +251,9 @@ class MultitaskingGroup:
         # Remove duplicates in related_ids
         self.related_ids = list(set(self.related_ids))
         if len(self.related_ids) < 2:
-            raise ValueError("MultitaskingGroup related_ids must have at least 2 items")
+            raise ValueError(
+                "MultitaskingGroup related_ids must have at least 2 items"
+            )
         if self.shift_demand_template_id == "":
             self.shift_demand_template_id = None
 

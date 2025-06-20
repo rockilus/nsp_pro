@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException
 from shared.logger import log_info
 from shared.schemas.core import (
@@ -6,6 +8,11 @@ from shared.schemas.core import (
 from shared.schemas.dto import (
     ShiftDemandConcurrencyRequestDTO,
     ShiftDemandConcurrencyResponseDTO,
+)
+from shared.schemas.dto.multitasking import (
+    CreateMultitaskingGroupRequest,
+    MultitaskingGroupDTO,
+    UpdateMultitaskingGroupRequest,
 )
 
 from src.dependencies import get_multitasking_service
@@ -70,5 +77,158 @@ async def get_shift_demand_concurrency(
         raise HTTPException(status_code=403, detail=str(e)) from e
     except Exception as e:
         log_info(f"Failed to get shift demand concurrency: {str(e)}")
+        handle_routes_errors(e)
+        raise HTTPException(status_code=500, detail="Internal server error") from e
+
+
+@router.post(
+    "/multitasking/groups",
+    response_model=List[MultitaskingGroupDTO],
+    summary="Create multitasking group(s)",
+    description="Create a new multitasking group and return all groups for the team.",
+)
+async def create_multitasking_group(
+    request: CreateMultitaskingGroupRequest,
+    session: SessionContainerType = Depends(authn_verify_session()),
+    service: MultitaskingService = Depends(get_multitasking_service),
+) -> List[MultitaskingGroupDTO]:
+    """Create a multitasking group and return all groups for the team."""
+    try:
+        # Authorization: user must be able to manage multitasking groups for the team
+        if not await authz_check(
+            session.get_user_id(),
+            "manage-multitasking-groups",
+            "team",
+            request.teamId,
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to manage multitasking groups for this team"
+            )
+        # Create the group
+        service.create_multitasking(request)
+        # Return all groups for the team
+        groups = service.get_multitaskings(team_id=request.teamId)
+        return [g.to_dto() for g in groups]
+    except ValueError as e:
+        log_info(f"Validation error in create_multitasking_group: {str(e)}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid request data: {str(e)}"
+        ) from e
+    except NotAuthorizedError as e:
+        log_info(f"Authorization error in create_multitasking_group: {str(e)}")
+        raise HTTPException(status_code=403, detail=str(e)) from e
+    except Exception as e:
+        log_info(f"Failed to create multitasking group: {str(e)}")
+        handle_routes_errors(e)
+        raise HTTPException(status_code=500, detail="Internal server error") from e
+
+
+@router.put(
+    "/multitasking/teams/{team_id}/groups/{group_id}",
+    response_model=List[MultitaskingGroupDTO],
+    summary="Update multitasking group(s)",
+    description="Update a multitasking group and return all groups for the team.",
+)
+async def update_multitasking_group(
+    team_id: str,
+    group_id: str,
+    request: UpdateMultitaskingGroupRequest,
+    session: SessionContainerType = Depends(authn_verify_session()),
+    service: MultitaskingService = Depends(get_multitasking_service),
+) -> MultitaskingGroupDTO:
+    """Update a multitasking group and return all groups for the team."""
+    try:
+        # Authorization: user must be able to manage multitasking groups for the team
+        if not await authz_check(
+            session.get_user_id(),
+            "manage-multitasking-groups",
+            "team",
+            team_id,
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to manage multitasking groups for this team"
+            )
+        group_updated = service.update_multitasking(request)
+        return group_updated.to_dto()
+    except ValueError as e:
+        log_info(f"Validation error in update_multitasking_group: {str(e)}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid request data: {str(e)}"
+        ) from e
+    except NotAuthorizedError as e:
+        log_info(f"Authorization error in update_multitasking_group: {str(e)}")
+        raise HTTPException(status_code=403, detail=str(e)) from e
+    except Exception as e:
+        log_info(f"Failed to update multitasking group: {str(e)}")
+        handle_routes_errors(e)
+        raise HTTPException(status_code=500, detail="Internal server error") from e
+
+
+@router.get(
+    "/multitasking/teams/{team_id}/groups",
+    response_model=List[MultitaskingGroupDTO],
+    summary="Get multitasking groups",
+    description="Get all multitasking groups for a team, optionally filtered by "
+    + "template.",
+)
+async def get_multitasking_groups(
+    team_id: str,
+    template_id: str = None,
+    session: SessionContainerType = Depends(authn_verify_session()),
+    service: MultitaskingService = Depends(get_multitasking_service),
+) -> List[MultitaskingGroupDTO]:
+    """Get all multitasking groups for a team, optionally filtered by template."""
+    try:
+        if not await authz_check(
+            session.get_user_id(),
+            "read-multitasking-groups",
+            "team",
+            team_id,
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to view multitasking groups for this team"
+            )
+        groups = service.get_multitaskings(team_id=team_id, template_id=template_id)
+        return [g.to_dto() for g in groups]
+    except NotAuthorizedError as e:
+        log_info(f"Authorization error in get_multitasking_groups: {str(e)}")
+        raise HTTPException(status_code=403, detail=str(e)) from e
+    except Exception as e:
+        log_info(f"Failed to get multitasking groups: {str(e)}")
+        handle_routes_errors(e)
+        raise HTTPException(status_code=500, detail="Internal server error") from e
+
+
+@router.delete(
+    "/multitasking/teams/{team_id}/groups/{group_id}",
+    response_model=List[MultitaskingGroupDTO],
+    summary="Delete multitasking group",
+    description="Delete a multitasking group and return all groups for the team.",
+)
+async def delete_multitasking_group(
+    team_id: str,
+    group_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+    service: MultitaskingService = Depends(get_multitasking_service),
+) -> List[MultitaskingGroupDTO]:
+    """Delete a multitasking group and return all groups for the team."""
+    try:
+        if not await authz_check(
+            session.get_user_id(),
+            "manage-multitasking-groups",
+            "team",
+            team_id,
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to manage multitasking groups for this team"
+            )
+        service.delete_multitasking(group_id)
+        groups = service.get_multitaskings(team_id=team_id)
+        return [g.to_dto() for g in groups]
+    except NotAuthorizedError as e:
+        log_info(f"Authorization error in delete_multitasking_group: {str(e)}")
+        raise HTTPException(status_code=403, detail=str(e)) from e
+    except Exception as e:
+        log_info(f"Failed to delete multitasking group: {str(e)}")
         handle_routes_errors(e)
         raise HTTPException(status_code=500, detail="Internal server error") from e

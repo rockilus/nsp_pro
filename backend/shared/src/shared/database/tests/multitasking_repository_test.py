@@ -87,9 +87,15 @@ class TestMultitaskingGroupRepository:
         assert result is None
 
     def test_get_groups_by_team_id(self):
-        group1 = self._create_test_group(team_id="team1", related_ids=["a", "b"])
-        group2 = self._create_test_group(team_id="team1", related_ids=["c", "d"])
-        group3 = self._create_test_group(team_id="team2", related_ids=["e", "f"])
+        group1 = self._create_test_group(
+            team_id="team1", related_ids=["a", "b"]
+        )
+        group2 = self._create_test_group(
+            team_id="team1", related_ids=["c", "d"]
+        )
+        group3 = self._create_test_group(
+            team_id="team2", related_ids=["e", "f"]
+        )
         self.repo.create_group(group1)
         self.repo.create_group(group2)
         self.repo.create_group(group3)

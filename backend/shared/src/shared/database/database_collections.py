@@ -19,6 +19,9 @@ from shared.database.repositories.dim_entry import DimEntryRepository
 from shared.database.repositories.dimension import DimensionRepository
 from shared.database.repositories.link_shift import LinkShiftRepository
 from shared.database.repositories.model_output import ModelOutputRepository
+from shared.database.repositories.multitasking import (
+    MultitaskingGroupRepository,
+)
 from shared.database.repositories.recurrence import RecurrenceRepository
 from shared.database.repositories.recurrence_exclusion import (
     RecurrenceExclusionRepository,
@@ -64,6 +67,7 @@ class DatabaseCollections:
     dimension_db: DimensionRepository
     link_shift_db: LinkShiftRepository
     model_output_db: ModelOutputRepository
+    multitasking_db: MultitaskingGroupRepository
     recurrence_db: RecurrenceRepository
     recurrence_exclusion_db: RecurrenceExclusionRepository
     request_db: RequestRepository
@@ -96,6 +100,7 @@ class DatabaseCollections:
         self.dimension_db = DimensionRepository()
         self.link_shift_db = LinkShiftRepository()
         self.model_output_db = ModelOutputRepository()
+        self.multitasking_db = MultitaskingGroupRepository()
         self.recurrence_db = RecurrenceRepository()
         self.recurrence_exclusion_db = RecurrenceExclusionRepository()
         self.request_db = RequestRepository()

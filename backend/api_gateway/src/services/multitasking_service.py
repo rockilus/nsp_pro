@@ -1,13 +1,19 @@
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List, Optional, Set
 
 from shared.logger import log_error
 from shared.schemas.core import (
+    MultitaskingGroup,
+    MultitaskingGroupType,
     Shift,
     ShiftDemandConcurrency,
     ShiftDemandConcurrencyResponse,
     ShiftDemandNew,
+)
+from shared.schemas.dto import (
+    CreateMultitaskingGroupRequest,
+    UpdateMultitaskingGroupRequest,
 )
 
 from src.services.base_service import BaseService
@@ -298,3 +304,60 @@ class MultitaskingService(BaseService):
             return False
 
         return True
+
+    def create_multitasking(
+        self, group_data: CreateMultitaskingGroupRequest
+    ) -> MultitaskingGroup:
+        """Create a new multitasking group."""
+        group = MultitaskingGroup(
+            id=None,
+            type=MultitaskingGroupType(group_data.type),
+            team_id=group_data.teamId,
+            related_ids=group_data.relatedIds,
+            shift_demand_template_id=group_data.shiftDemandTemplateId,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+            notes=group_data.notes,
+        )
+        created = self.collection.multitasking_db.create_group(group)
+        return created
+
+    def get_multitaskings(
+        self, team_id: str, template_id: Optional[str] = None
+    ) -> List[MultitaskingGroup]:
+        """Get a multitasking group by ID."""
+        if template_id:
+            groups = self.collection.multitasking_db.get_groups_by_template_id(
+                template_id=template_id
+            )
+        else:
+            groups = self.collection.multitasking_db.get_groups_by_team_id(
+                team_id=team_id
+            )
+        return groups
+
+    def update_multitasking(
+        self, update_data: UpdateMultitaskingGroupRequest
+    ) -> MultitaskingGroup:
+        """Update a multitasking group."""
+        group = self.collection.multitasking_db.get_group_by_id(update_data.id)
+        if not group:
+            raise ValueError(f"Multitasking group with id {update_data.id} not found")
+        # Update fields if provided
+        if update_data.type is not None:
+            group.type = MultitaskingGroupType(update_data.type)
+        if update_data.teamId is not None:
+            group.team_id = update_data.teamId
+        if update_data.relatedIds is not None:
+            group.related_ids = update_data.relatedIds
+        if update_data.shiftDemandTemplateId is not None:
+            group.shift_demand_template_id = update_data.shiftDemandTemplateId
+        if update_data.notes is not None:
+            group.notes = update_data.notes
+        group.updated_at = datetime.now(timezone.utc)
+        updated = self.collection.multitasking_db.update_group(group)
+        return updated
+
+    def delete_multitasking(self, group_id: str) -> bool:
+        """Delete a multitasking group by ID."""
+        return self.collection.multitasking_db.delete_group(group_id)
