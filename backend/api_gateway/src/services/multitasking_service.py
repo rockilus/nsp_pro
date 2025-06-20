@@ -33,6 +33,8 @@ class MultitaskingService(BaseService):
         """
         Generate concurrency list for shift demands in a given period.
 
+        Filters out demands with count 0 as they don't require staffing.
+
         Args:
             team_id: The team ID
             start_date: Start date of the period
@@ -50,8 +52,14 @@ class MultitaskingService(BaseService):
                     end_date=end_date,
                 )
             )
+
+            # Filter out demands with count 0 - no staffing needed
+            active_shift_demands = [
+                demand for demand in shift_demands if demand.count > 0
+            ]
+
             shifts = self.collection.shift_db.get_shifts_not_deleted(team_id=team_id)
-            if not shift_demands or not shifts:
+            if not active_shift_demands or not shifts:
                 return ShiftDemandConcurrencyResponse(
                     team_id=team_id,
                     start_date=start_date,
@@ -60,7 +68,7 @@ class MultitaskingService(BaseService):
                 )
 
             # Calculate concurrency based on business rules
-            concurrency_list = self._calculate_concurrency(shift_demands, shifts)
+            concurrency_list = self._calculate_concurrency(active_shift_demands, shifts)
 
             return ShiftDemandConcurrencyResponse(
                 team_id=team_id,
@@ -115,17 +123,8 @@ class MultitaskingService(BaseService):
                 )
             )
 
-        # Group enriched demands by date for efficient comparison
-        demands_by_date: Dict[str, List[EnrichedDemand]] = {}
-        for enriched_demand in enriched_demands:
-            date_key = enriched_demand.demand.date.isoformat()
-            if date_key not in demands_by_date:
-                demands_by_date[date_key] = []
-            demands_by_date[date_key].append(enriched_demand)
-
-        # Calculate concurrency for each date
-        for date_demands in demands_by_date.values():
-            self._calculate_concurrency_for_date(date_demands, concurrency_map)
+        # Calculate concurrency for all demands
+        concurrency_map = self._calculate_concurrency_for_date(enriched_demands)
 
         # Convert to ShiftDemandConcurrency objects
         result: List[ShiftDemandConcurrency] = []
@@ -142,9 +141,15 @@ class MultitaskingService(BaseService):
     def _calculate_concurrency_for_date(
         self,
         demands: List[EnrichedDemand],
-        concurrency_map: Dict[str, Set[str]],
-    ) -> None:
-        """Calculate concurrency for enriched demands on the same date."""
+    ) -> Dict[str, Set[str]]:
+        """
+        Calculate concurrency for enriched demands on the same date.
+
+        For each demand, check all the other overlapping demands and return
+        a concurrency map.
+        """
+        concurrency_map: Dict[str, Set[str]] = {}
+
         for i, enriched_demand1 in enumerate(demands):
             demand1_id = enriched_demand1.demand.id
             if not demand1_id:
@@ -153,7 +158,11 @@ class MultitaskingService(BaseService):
             if demand1_id not in concurrency_map:
                 concurrency_map[demand1_id] = set()
 
-            for enriched_demand2 in demands[i + 1 :]:
+            # Check all other demands for overlaps
+            for j, enriched_demand2 in enumerate(demands):
+                if i == j:  # Skip self-comparison
+                    continue
+
                 demand2_id = enriched_demand2.demand.id
                 if not demand2_id:
                     continue  # Skip if demand ID is None
@@ -162,11 +171,12 @@ class MultitaskingService(BaseService):
                     concurrency_map[demand2_id] = set()
 
                 # Check if shifts can be worked concurrently
-                if self._can_work_concurrently_enriched(
+                if self._is_eligible_for_multitasking(
                     enriched_demand1, enriched_demand2
                 ):
                     concurrency_map[demand1_id].add(demand2_id)
-                    concurrency_map[demand2_id].add(demand1_id)
+
+        return concurrency_map
 
     def _can_work_concurrently_enriched(
         self,
@@ -239,3 +249,40 @@ class MultitaskingService(BaseService):
             A datetime object combining the date and time
         """
         return datetime.combine(date_obj, time_obj.time(), tzinfo=timezone.utc)
+
+    def _is_eligible_for_multitasking(
+        self,
+        demand1: EnrichedDemand,
+        demand2: EnrichedDemand,
+    ) -> bool:
+        """
+        Returns True if two shifts are eligible for multitasking:
+        - They overlap in time
+        - They share at least one specialty
+        """
+        if (
+            demand1.demand.id == '684adfd99963edcada794b45'
+            and demand2.demand.id == '684adfd99963edcada794b46'
+        ):
+            print("stop here")
+        # 1. Check time overlap
+        if not (
+            demand1.start_datetime < demand2.end_datetime
+            and demand2.start_datetime < demand1.end_datetime
+        ):
+            return False
+
+        # 2. Check for at least one shared specialty
+        specialties1 = set(
+            staff.specialty_id for staff in demand1.shift.staffing if staff.staffing > 0
+        )
+        specialties2 = set(
+            staff.specialty_id for staff in demand2.shift.staffing if staff.staffing > 0
+        )
+        if not specialties1 or not specialties2:
+            return False
+
+        if specialties1.isdisjoint(specialties2):
+            return False
+
+        return True

@@ -444,6 +444,8 @@ function ShiftDemandTabInternal({
           (id) => concurrencyMap[id].length > 0
         );
 
+        console.log(availableIds);
+
         setMultitaskingState({
           isActive: true,
           selectedShiftDemandIds: [],

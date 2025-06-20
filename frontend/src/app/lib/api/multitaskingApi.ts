@@ -148,17 +148,17 @@ export class MultitaskingApi {
       const response = await axios.post<any>(
         `${API_BASE_URL}/multitasking/shift-demand-concurrency`,
         {
-          team_id: request.teamId,
-          start_date: request.startDate,
-          end_date: request.endDate,
+          teamId: request.teamId,
+          startDate: request.startDate,
+          endDate: request.endDate,
         }
       );
 
-      // Convert snake_case response to camelCase for frontend
+      // Response should now be in camelCase format
       const concurrencyList: ShiftDemandConcurrency[] =
-        response.data.concurrency_list?.map((item: any) => ({
-          shiftDemandId: item.shift_demand_id,
-          concurrentShiftDemandIds: item.concurrent_shift_demand_ids,
+        response.data.concurrencyList?.map((item: any) => ({
+          shiftDemandId: item.shiftDemandId,
+          concurrentShiftDemandIds: item.concurrentShiftDemandIds,
         })) || [];
 
       console.log(

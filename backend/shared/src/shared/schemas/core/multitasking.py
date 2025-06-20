@@ -34,7 +34,9 @@ class ConcurrentCombination:
     def __post_init__(self):
         """Validate the concurrent combination data."""
         if not 0 <= self.day_of_week <= 6:
-            raise ValueError("Day of week must be between 0 (Monday) and 6 (Sunday)")
+            raise ValueError(
+                "Day of week must be between 0 (Monday) and 6 (Sunday)"
+            )
         if self.week_number < 1:
             raise ValueError("Week number must be positive")
         if not self.shift_id:
@@ -48,7 +50,9 @@ class ConcurrentCombination:
         return validator.validate_python(as_dict)
 
     @classmethod
-    def from_dto(cls, data: ConcurrentCombinationDTO) -> "ConcurrentCombination":
+    def from_dto(
+        cls, data: ConcurrentCombinationDTO
+    ) -> "ConcurrentCombination":
         """Create instance from DTO."""
         data_dict = data.model_dump()
         data_dict = humps.decamelize(data_dict)
@@ -61,8 +65,12 @@ class ShiftDemandConcurrency:
 
     shift_demand_id: str
     concurrent_shift_demand_ids: List[str] = field(default_factory=list)
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: datetime = field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
 
     def __post_init__(self):
         """Validate the shift demand concurrency data."""
@@ -105,7 +113,9 @@ class ShiftDemandConcurrency:
         return validator.validate_python(as_dict)
 
     @classmethod
-    def from_dto(cls, data: ShiftDemandConcurrencyDTO) -> "ShiftDemandConcurrency":
+    def from_dto(
+        cls, data: ShiftDemandConcurrencyDTO
+    ) -> "ShiftDemandConcurrency":
         """Create instance from DTO."""
         data_dict = data.model_dump()
         data_dict = humps.decamelize(data_dict)
@@ -125,20 +135,30 @@ class TemplateConcurrency:
     week_number: int
     day_of_week: int
     shift_id: str
-    concurrent_combinations: List[ConcurrentCombination] = field(default_factory=list)
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    concurrent_combinations: List[ConcurrentCombination] = field(
+        default_factory=list
+    )
+    created_at: datetime = field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: datetime = field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
 
     def __post_init__(self):
         """Validate the template concurrency data."""
         if not 0 <= self.day_of_week <= 6:
-            raise ValueError("Day of week must be between 0 (Monday) and 6 (Sunday)")
+            raise ValueError(
+                "Day of week must be between 0 (Monday) and 6 (Sunday)"
+            )
         if self.week_number < 1:
             raise ValueError("Week number must be positive")
         if not self.shift_id:
             raise ValueError("Shift ID cannot be empty")
 
-    def add_concurrent_combination(self, combination: ConcurrentCombination) -> None:
+    def add_concurrent_combination(
+        self, combination: ConcurrentCombination
+    ) -> None:
         """Add a concurrent combination if not already present."""
         # Check for duplicates
         for existing in self.concurrent_combinations:
@@ -229,7 +249,9 @@ class ShiftDemandConcurrencyResponse:
     team_id: str
     start_date: date_type
     end_date: date_type
-    concurrency_list: List[ShiftDemandConcurrency] = field(default_factory=list)
+    concurrency_list: List[ShiftDemandConcurrency] = field(
+        default_factory=list
+    )
 
     def __post_init__(self):
         """Validate the response data."""
@@ -249,7 +271,9 @@ class ShiftDemandConcurrencyResponse:
         data["end_date"] = int(end_datetime.timestamp())
 
         # Convert concurrency list to DTOs
-        data["concurrency_list"] = [item.to_dto() for item in self.concurrency_list]
+        data["concurrency_list"] = [
+            item.to_dto() for item in self.concurrency_list
+        ]
 
         as_dict = humps.camelize(data)
         validator = TypeAdapter(ShiftDemandConcurrencyResponseDTO)
@@ -266,7 +290,9 @@ class ShiftDemandConcurrencyResponse:
         # Convert timestamps to dates
         start_timestamp = data_dict["start_date"]
         end_timestamp = data_dict["end_date"]
-        data_dict["start_date"] = datetime.fromtimestamp(start_timestamp).date()
+        data_dict["start_date"] = datetime.fromtimestamp(
+            start_timestamp
+        ).date()
         data_dict["end_date"] = datetime.fromtimestamp(end_timestamp).date()
 
         # Convert concurrency list from DTOs
@@ -275,10 +301,14 @@ class ShiftDemandConcurrencyResponse:
             if isinstance(item_data, dict):
                 # Create DTO first, then convert to core
                 item_dto = ShiftDemandConcurrencyDTO(**item_data)
-                concurrency_list.append(ShiftDemandConcurrency.from_dto(item_dto))
+                concurrency_list.append(
+                    ShiftDemandConcurrency.from_dto(item_dto)
+                )
             elif hasattr(item_data, "model_dump"):
                 # Already a DTO
-                concurrency_list.append(ShiftDemandConcurrency.from_dto(item_data))
+                concurrency_list.append(
+                    ShiftDemandConcurrency.from_dto(item_data)
+                )
 
         data_dict["concurrency_list"] = concurrency_list
 
@@ -305,7 +335,9 @@ class TemplateConcurrencyResponse:
         data = asdict(self)
 
         # Convert concurrency list to DTOs
-        data["concurrency_list"] = [item.to_dto() for item in self.concurrency_list]
+        data["concurrency_list"] = [
+            item.to_dto() for item in self.concurrency_list
+        ]
 
         as_dict = humps.camelize(data)
         validator = TypeAdapter(TemplateConcurrencyResponseDTO)
@@ -328,7 +360,9 @@ class TemplateConcurrencyResponse:
                 concurrency_list.append(TemplateConcurrency.from_dto(item_dto))
             elif hasattr(item_data, "model_dump"):
                 # Already a DTO
-                concurrency_list.append(TemplateConcurrency.from_dto(item_data))
+                concurrency_list.append(
+                    TemplateConcurrency.from_dto(item_data)
+                )
 
         data_dict["concurrency_list"] = concurrency_list
 
@@ -357,19 +391,31 @@ class ShiftDemandConcurrencyRequest:
         start_datetime = datetime.combine(self.start_date, datetime.min.time())
         end_datetime = datetime.combine(self.end_date, datetime.min.time())
 
-        return ShiftDemandConcurrencyRequestDTO(
-            team_id=self.team_id,
-            start_date=int(start_datetime.timestamp()),
-            end_date=int(end_datetime.timestamp()),
-        )
+        data = {
+            "team_id": self.team_id,
+            "start_date": int(start_datetime.timestamp()),
+            "end_date": int(end_datetime.timestamp()),
+        }
+
+        # Convert to camelCase for DTO
+        as_dict = humps.camelize(data)
+        validator = TypeAdapter(ShiftDemandConcurrencyRequestDTO)
+        return validator.validate_python(as_dict)
 
     @classmethod
     def from_dto(
         cls, dto: ShiftDemandConcurrencyRequestDTO
     ) -> "ShiftDemandConcurrencyRequest":
         """Create from DTO."""
+        data_dict = dto.model_dump()
+        data_dict = humps.decamelize(data_dict)
+
         return cls(
-            team_id=dto.team_id,
-            start_date=datetime.fromtimestamp(dto.start_date, tz=timezone.utc).date(),
-            end_date=datetime.fromtimestamp(dto.end_date, tz=timezone.utc).date(),
+            team_id=data_dict["team_id"],
+            start_date=datetime.fromtimestamp(
+                data_dict["start_date"], tz=timezone.utc
+            ).date(),
+            end_date=datetime.fromtimestamp(
+                data_dict["end_date"], tz=timezone.utc
+            ).date(),
         )
