@@ -31,6 +31,14 @@ class ShiftDemandNewSchema(DocumentBaseSchema):
             raise ValueError(f"Invalid shift demand source: {v}")
         return v
 
+    @field_validator("count")
+    @classmethod
+    def validate_count(cls, v: int) -> int:
+        """Ensure count is greater than 0."""
+        if v <= 0:
+            raise ValueError("Shift demand count must be greater than 0")
+        return v
+
     def to_mongo(self) -> Dict[str, Any]:
         """Convert to MongoDB document format."""
         out = super().to_mongo()

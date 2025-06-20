@@ -15,12 +15,15 @@ from src.services.base_service import BaseService
 
 @dataclass
 class EnrichedDemand:
-    """Local schema for enriched shift demand with calculated datetimes."""
+    """
+    Local schema for enriched shift demand with calculated datetimes and unique id.
+    """
 
     demand: ShiftDemandNew
     shift: Shift
     start_datetime: datetime
     end_datetime: datetime
+    id: str  # Unique id in the format shift_id-YYYY-MM-DD
 
 
 # pylint: disable=too-few-public-methods
@@ -114,12 +117,16 @@ class MultitaskingService(BaseService):
             if end_datetime <= start_datetime:
                 end_datetime = end_datetime.replace(day=end_datetime.day + 1)
 
+            # Generate unique id: shift_id-YYYY-MM-DD
+            id_str = f"{shift.id}-{demand.date.strftime('%Y-%m-%d')}"
+
             enriched_demands.append(
                 EnrichedDemand(
                     demand=demand,
                     shift=shift,
                     start_datetime=start_datetime,
                     end_datetime=end_datetime,
+                    id=id_str,
                 )
             )
 
@@ -151,9 +158,9 @@ class MultitaskingService(BaseService):
         concurrency_map: Dict[str, Set[str]] = {}
 
         for i, enriched_demand1 in enumerate(demands):
-            demand1_id = enriched_demand1.demand.id
+            demand1_id = enriched_demand1.id  # Use enriched id
             if not demand1_id:
-                continue  # Skip if demand ID is None
+                continue  # Skip if id is None
 
             if demand1_id not in concurrency_map:
                 concurrency_map[demand1_id] = set()
@@ -163,9 +170,9 @@ class MultitaskingService(BaseService):
                 if i == j:  # Skip self-comparison
                     continue
 
-                demand2_id = enriched_demand2.demand.id
+                demand2_id = enriched_demand2.id  # Use enriched id
                 if not demand2_id:
-                    continue  # Skip if demand ID is None
+                    continue  # Skip if id is None
 
                 if demand2_id not in concurrency_map:
                     concurrency_map[demand2_id] = set()
@@ -279,8 +286,13 @@ class MultitaskingService(BaseService):
         specialties2 = set(
             staff.specialty_id for staff in demand2.shift.staffing if staff.staffing > 0
         )
+
         if not specialties1 or not specialties2:
             return False
+
+        # If either set contains None, it means any specialty can do the job
+        if None in specialties1 or None in specialties2:
+            return True
 
         if specialties1.isdisjoint(specialties2):
             return False
