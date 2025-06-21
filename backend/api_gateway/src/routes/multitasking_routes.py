@@ -1,10 +1,8 @@
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from shared.logger import log_info
-from shared.schemas.core import (
-    ShiftDemandConcurrencyRequest,
-)
+from shared.schemas.core import ShiftDemandConcurrencyRequest
 from shared.schemas.dto import (
     ShiftDemandConcurrencyRequestDTO,
     ShiftDemandConcurrencyResponseDTO,
@@ -131,7 +129,6 @@ async def create_multitasking_group(
 )
 async def update_multitasking_group(
     team_id: str,
-    group_id: str,
     request: UpdateMultitaskingGroupRequest,
     session: SessionContainerType = Depends(authn_verify_session()),
     service: MultitaskingService = Depends(get_multitasking_service),
@@ -173,7 +170,7 @@ async def update_multitasking_group(
 )
 async def get_multitasking_groups(
     team_id: str,
-    template_id: str = None,
+    template_id: Optional[str] = None,
     session: SessionContainerType = Depends(authn_verify_session()),
     service: MultitaskingService = Depends(get_multitasking_service),
 ) -> List[MultitaskingGroupDTO]:
