@@ -61,12 +61,8 @@ class ShiftDemandNewSchema(DocumentBaseSchema):
             notes=self.notes,
             source=ShiftDemandSource(self.source),
             source_id=self.source_id,
-            created_at=datetime.fromtimestamp(
-                self.created_at, tz=timezone.utc
-            ),
-            updated_at=datetime.fromtimestamp(
-                self.updated_at, tz=timezone.utc
-            ),
+            created_at=datetime.fromtimestamp(self.created_at, tz=timezone.utc),
+            updated_at=datetime.fromtimestamp(self.updated_at, tz=timezone.utc),
         )
 
     @classmethod

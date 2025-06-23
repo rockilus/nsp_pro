@@ -1,6 +1,6 @@
-from typing import List, Optional
+from typing import Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from shared.logger import log_info
 from shared.schemas.core import ShiftDemandConcurrencyRequest
 from shared.schemas.dto import (
@@ -81,7 +81,7 @@ async def get_shift_demand_concurrency(
 
 @router.post(
     "/multitasking/groups",
-    response_model=List[MultitaskingGroupDTO],
+    response_model=MultitaskingGroupDTO,
     summary="Create multitasking group(s)",
     description="Create a new multitasking group and return all groups for the team.",
 )
@@ -89,24 +89,22 @@ async def create_multitasking_group(
     request: CreateMultitaskingGroupRequest,
     session: SessionContainerType = Depends(authn_verify_session()),
     service: MultitaskingService = Depends(get_multitasking_service),
-) -> List[MultitaskingGroupDTO]:
+) -> MultitaskingGroupDTO:
     """Create a multitasking group and return all groups for the team."""
     try:
         # Authorization: user must be able to manage multitasking groups for the team
         if not await authz_check(
             session.get_user_id(),
-            "manage-multitasking-groups",
+            # "manage-multitasking-groups",
+            "read-shift-demands",
             "team",
             request.teamId,
         ):
             raise NotAuthorizedError(
                 "You do not have permission to manage multitasking groups for this team"
             )
-        # Create the group
-        service.create_multitasking(request)
-        # Return all groups for the team
-        groups = service.get_multitaskings(team_id=request.teamId)
-        return [g.to_dto() for g in groups]
+        group = service.create_multitasking(request)
+        return group.to_dto()
     except ValueError as e:
         log_info(f"Validation error in create_multitasking_group: {str(e)}")
         raise HTTPException(
@@ -138,7 +136,8 @@ async def update_multitasking_group(
         # Authorization: user must be able to manage multitasking groups for the team
         if not await authz_check(
             session.get_user_id(),
-            "manage-multitasking-groups",
+            # "manage-multitasking-groups",
+            "read-shift-demands",
             "team",
             team_id,
         ):
@@ -178,7 +177,8 @@ async def get_multitasking_groups(
     try:
         if not await authz_check(
             session.get_user_id(),
-            "read-multitasking-groups",
+            # "read-multitasking-groups",
+            "read-shift-demands",
             "team",
             team_id,
         ):
@@ -198,21 +198,22 @@ async def get_multitasking_groups(
 
 @router.delete(
     "/multitasking/teams/{team_id}/groups/{group_id}",
-    response_model=List[MultitaskingGroupDTO],
+    status_code=status.HTTP_200_OK,
     summary="Delete multitasking group",
-    description="Delete a multitasking group and return all groups for the team.",
+    description="Delete a multitasking group and return confirmation.",
 )
 async def delete_multitasking_group(
     team_id: str,
     group_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
     service: MultitaskingService = Depends(get_multitasking_service),
-) -> List[MultitaskingGroupDTO]:
-    """Delete a multitasking group and return all groups for the team."""
+) -> Dict[str, str | bool]:
+    """Delete a multitasking group and return confirmation."""
     try:
         if not await authz_check(
             session.get_user_id(),
-            "manage-multitasking-groups",
+            # "manage-multitasking-groups",
+            "read-shift-demands",
             "team",
             team_id,
         ):
@@ -220,8 +221,7 @@ async def delete_multitasking_group(
                 "You do not have permission to manage multitasking groups for this team"
             )
         service.delete_multitasking(group_id)
-        groups = service.get_multitaskings(team_id=team_id)
-        return [g.to_dto() for g in groups]
+        return {"success": True, "message": "Multitasking group deleted."}
     except NotAuthorizedError as e:
         log_info(f"Authorization error in delete_multitasking_group: {str(e)}")
         raise HTTPException(status_code=403, detail=str(e)) from e

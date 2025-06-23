@@ -4,119 +4,96 @@
 
 import axios from "axios";
 import {
+  MultitaskingGroupDTO,
   MultitaskingGroup,
+  MultitaskingGroupType,
+  CreateMultitaskingGroupRequest,
+  UpdateMultitaskingGroupRequest,
   ShiftDemandConcurrency,
   ShiftDemandConcurrencyRequest,
   ShiftDemandConcurrencyResponse,
-  CreateMultitaskingGroupRequest,
-  UpdateMultitaskingGroupRequest,
+  toMultitaskingGroup,
 } from "@/types/multitasking";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export class MultitaskingApi {
   /**
-   * Get all multitasking groups for a team
+   * Get all multitasking groups for a team (optionally filtered by templateId)
    */
   static async getMultitaskingGroups(
-    teamId: string
+    teamId: string,
+    templateId?: string
   ): Promise<MultitaskingGroup[]> {
-    console.log("MultitaskingApi.getMultitaskingGroups called with:", {
-      teamId,
+    const url = new URL(`${API_BASE_URL}/multitasking/teams/${teamId}/groups`);
+    if (templateId) url.searchParams.append("template_id", templateId);
+    const res = await fetch(url.toString(), {
+      credentials: "include",
     });
-
-    // Mock data for development
-    const mockGroups: MultitaskingGroup[] = [
-      {
-        id: "group-1",
-        teamId,
-        shiftDemandIds: ["demand-1", "demand-2"],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    ];
-
-    console.log("MultitaskingApi.getMultitaskingGroups response:", mockGroups);
-    return Promise.resolve(mockGroups);
+    if (!res.ok)
+      throw new Error(`Failed to fetch multitasking groups: ${res.status}`);
+    const data: MultitaskingGroupDTO[] = await res.json();
+    return data.map(toMultitaskingGroup);
   }
 
   /**
-   * Create a new multitasking group
+   * Create a new multitasking group and return the created group
    */
   static async createMultitaskingGroup(
     data: CreateMultitaskingGroupRequest
   ): Promise<MultitaskingGroup> {
-    console.log("MultitaskingApi.createMultitaskingGroup called with:", data);
-
-    const mockGroup: MultitaskingGroup = {
-      id: `group-${Date.now()}`,
-      teamId: data.teamId,
-      shiftDemandIds: data.shiftDemandIds,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    console.log("MultitaskingApi.createMultitaskingGroup response:", mockGroup);
-    return Promise.resolve(mockGroup);
+    const res = await fetch(`${API_BASE_URL}/multitasking/groups`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(data),
+    });
+    if (!res.ok)
+      throw new Error(`Failed to create multitasking group: ${res.status}`);
+    const dto: MultitaskingGroupDTO = await res.json();
+    return toMultitaskingGroup(dto);
   }
 
   /**
-   * Update an existing multitasking group
+   * Update an existing multitasking group and return all groups for the team
    */
   static async updateMultitaskingGroup(
+    teamId: string,
     groupId: string,
     data: UpdateMultitaskingGroupRequest
-  ): Promise<MultitaskingGroup> {
-    console.log("MultitaskingApi.updateMultitaskingGroup called with:", {
-      groupId,
-      data,
-    });
-
-    const mockGroup: MultitaskingGroup = {
-      id: groupId,
-      teamId: "mock-team",
-      shiftDemandIds: data.shiftDemandIds,
-      createdAt: new Date(Date.now() - 86400000), // Yesterday
-      updatedAt: new Date(),
-    };
-
-    console.log("MultitaskingApi.updateMultitaskingGroup response:", mockGroup);
-    return Promise.resolve(mockGroup);
-  }
-
-  /**
-   * Delete a multitasking group
-   */
-  static async deleteMultitaskingGroup(groupId: string): Promise<void> {
-    console.log("MultitaskingApi.deleteMultitaskingGroup called with:", {
-      groupId,
-    });
-    return Promise.resolve();
-  }
-
-  /**
-   * Get concurrent shift demands for a specific shift demand
-   */
-  static async getConcurrentShiftDemands(
-    teamId: string,
-    shiftDemandId: string
-  ): Promise<string[]> {
-    console.log("MultitaskingApi.getConcurrentShiftDemands called with:", {
-      teamId,
-      shiftDemandId,
-    });
-
-    // Mock logic: return some concurrent shift demand IDs
-    const mockConcurrentIds = [
-      `concurrent-${shiftDemandId}-1`,
-      `concurrent-${shiftDemandId}-2`,
-    ];
-
-    console.log(
-      "MultitaskingApi.getConcurrentShiftDemands response:",
-      mockConcurrentIds
+  ): Promise<MultitaskingGroup[]> {
+    const res = await fetch(
+      `${API_BASE_URL}/multitasking/teams/${teamId}/groups/${groupId}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(data),
+      }
     );
-    return Promise.resolve(mockConcurrentIds);
+    if (!res.ok)
+      throw new Error(`Failed to update multitasking group: ${res.status}`);
+    const dtos: MultitaskingGroupDTO[] = await res.json();
+    return dtos.map(toMultitaskingGroup);
+  }
+
+  /**
+   * Delete a multitasking group and return confirmation
+   */
+  static async deleteMultitaskingGroup(
+    teamId: string,
+    groupId: string
+  ): Promise<{ success: boolean; message: string }> {
+    const res = await fetch(
+      `${API_BASE_URL}/multitasking/teams/${teamId}/groups/${groupId}`,
+      {
+        method: "DELETE",
+        credentials: "include",
+      }
+    );
+    if (!res.ok)
+      throw new Error(`Failed to delete multitasking group: ${res.status}`);
+    return res.json();
   }
 
   /**

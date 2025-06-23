@@ -87,15 +87,9 @@ class TestMultitaskingGroupRepository:
         assert result is None
 
     def test_get_groups_by_team_id(self):
-        group1 = self._create_test_group(
-            team_id="team1", related_ids=["a", "b"]
-        )
-        group2 = self._create_test_group(
-            team_id="team1", related_ids=["c", "d"]
-        )
-        group3 = self._create_test_group(
-            team_id="team2", related_ids=["e", "f"]
-        )
+        group1 = self._create_test_group(team_id="team1", related_ids=["a", "b"])
+        group2 = self._create_test_group(team_id="team1", related_ids=["c", "d"])
+        group3 = self._create_test_group(team_id="team2", related_ids=["e", "f"])
         self.repo.create_group(group1)
         self.repo.create_group(group2)
         self.repo.create_group(group3)
@@ -179,3 +173,88 @@ class TestMultitaskingGroupRepository:
                 updated_at=datetime.now(timezone.utc),
                 notes=None,
             )
+
+    def test_get_group_by_team_type_related_ids(self):
+        # Create groups with different combinations
+        group1 = self._create_test_group(
+            team_id="team1",
+            group_type=MultitaskingGroupType.SHIFT_DEMAND,
+            related_ids=["a", "b"],
+        )
+        group2 = self._create_test_group(
+            team_id="team1",
+            group_type=MultitaskingGroupType.SHIFT_DEMAND,
+            related_ids=["b", "c"],
+        )
+        group3 = self._create_test_group(
+            team_id="team2",
+            group_type=MultitaskingGroupType.SHIFT_DEMAND,
+            related_ids=["a", "b"],
+        )
+        group4 = self._create_test_group(
+            team_id="team1",
+            group_type=MultitaskingGroupType.SHIFT_DEMAND_TEMPLATE,
+            related_ids=["a", "b"],
+            shift_demand_template_id="template1",
+        )
+        self.repo.create_group(group1)
+        self.repo.create_group(group2)
+        self.repo.create_group(group3)
+        self.repo.create_group(group4)
+
+        # Should find group1 by team, type, related_ids (order-insensitive)
+        result = self.repo.get_group_by_team_type_related_ids(
+            team_id="team1",
+            group_type=MultitaskingGroupType.SHIFT_DEMAND,
+            related_ids=["b", "a"],
+        )
+        assert result is not None
+        assert set(result.related_ids) == {"a", "b"}
+        assert result.team_id == "team1"
+        assert result.type == MultitaskingGroupType.SHIFT_DEMAND
+
+        # Should find group4 by team, type, related_ids, and template id
+        result2 = self.repo.get_group_by_team_type_related_ids(
+            team_id="team1",
+            group_type=MultitaskingGroupType.SHIFT_DEMAND_TEMPLATE,
+            related_ids=["a", "b"],
+            shift_demand_template_id="template1",
+        )
+        assert result2 is not None
+        assert set(result2.related_ids) == {"a", "b"}
+        assert result2.team_id == "team1"
+        assert result2.type == MultitaskingGroupType.SHIFT_DEMAND_TEMPLATE
+        assert result2.shift_demand_template_id == "template1"
+
+        # Should not find a group with wrong team
+        result3 = self.repo.get_group_by_team_type_related_ids(
+            team_id="teamX",
+            group_type=MultitaskingGroupType.SHIFT_DEMAND,
+            related_ids=["a", "b"],
+        )
+        assert result3 is None
+
+        # Should not find a group with wrong type
+        result4 = self.repo.get_group_by_team_type_related_ids(
+            team_id="team1",
+            group_type=MultitaskingGroupType.ASSIGNMENT,
+            related_ids=["a", "b"],
+        )
+        assert result4 is None
+
+        # Should not find a group with wrong related_ids
+        result5 = self.repo.get_group_by_team_type_related_ids(
+            team_id="team1",
+            group_type=MultitaskingGroupType.SHIFT_DEMAND,
+            related_ids=["a", "c"],
+        )
+        assert result5 is None
+
+        # Should not find a group if template id does not match
+        result6 = self.repo.get_group_by_team_type_related_ids(
+            team_id="team1",
+            group_type=MultitaskingGroupType.SHIFT_DEMAND_TEMPLATE,
+            related_ids=["a", "b"],
+            shift_demand_template_id="templateX",
+        )
+        assert result6 is None

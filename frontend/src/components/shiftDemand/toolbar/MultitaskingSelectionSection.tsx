@@ -36,7 +36,7 @@ export function MultitaskingSelectionSection({
           {multitaskingGroups.map((group: MultitaskingGroup, index: number) => (
             <Chip
               key={group.id}
-              label={`Group ${index + 1} (${group.shiftDemandIds.length})`}
+              label={`Group ${index + 1} (${group.relatedIds.length})`}
               size="small"
               color="primary"
               variant="outlined"

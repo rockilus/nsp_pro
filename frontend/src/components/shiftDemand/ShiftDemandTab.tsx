@@ -424,13 +424,19 @@ function ShiftDemandTabInternal({
     if (!selectedTeamId) return;
 
     if (!multitaskingState.isActive) {
-      // Entering multitasking mode - fetch concurrency data
+      // Entering multitasking mode - fetch concurrency data and multitasking groups
       try {
-        const concurrencyList = await MultitaskingApi.getShiftDemandConcurrency(
-          selectedTeamId,
-          startDate.toDate(),
-          endDate.toDate()
-        );
+        const [concurrencyList, groups] = await Promise.all([
+          MultitaskingApi.getShiftDemandConcurrency(
+            selectedTeamId,
+            startDate.toDate(),
+            endDate.toDate()
+          ),
+          MultitaskingApi.getMultitaskingGroups(selectedTeamId),
+        ]);
+
+        console.log("Multitasking concurrency data:", concurrencyList);
+        console.log("Multitasking groups:", groups);
 
         // Convert array to lookup object
         const concurrencyMap: Record<string, string[]> = {};
@@ -438,13 +444,12 @@ function ShiftDemandTabInternal({
           concurrencyMap[item.shiftDemandId] = item.concurrentShiftDemandIds;
         });
         setConcurrencyData(concurrencyMap);
+        setMultitaskingGroups(groups);
 
         // Update available shift demands based on concurrency
         const availableIds = Object.keys(concurrencyMap).filter(
           (id) => concurrencyMap[id].length > 0
         );
-
-        console.log(availableIds);
 
         setMultitaskingState({
           isActive: true,
@@ -453,7 +458,7 @@ function ShiftDemandTabInternal({
           mode: "selecting",
         });
       } catch (error) {
-        console.error("Failed to fetch concurrency data:", error);
+        console.error("Failed to load multitasking data:", error);
         setError("Failed to load multitasking data. Please try again.");
       }
     } else {
@@ -528,12 +533,11 @@ function ShiftDemandTabInternal({
 
     try {
       const newGroup = await MultitaskingApi.createMultitaskingGroup({
+        type: "shift_demand",
         teamId: selectedTeamId,
-        shiftDemandIds: multitaskingState.selectedShiftDemandIds,
+        relatedIds: multitaskingState.selectedShiftDemandIds,
       });
-
       setMultitaskingGroups((prev) => [...prev, newGroup]);
-
       // Reset selection but stay in multitasking mode
       setMultitaskingState((prev) => ({
         ...prev,

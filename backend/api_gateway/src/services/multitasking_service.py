@@ -309,9 +309,24 @@ class MultitaskingService(BaseService):
         self, group_data: CreateMultitaskingGroupRequest
     ) -> MultitaskingGroup:
         """Create a new multitasking group."""
+        new_group_type = MultitaskingGroupType(group_data.type)
+        existing_group = (
+            self.collection.multitasking_db.get_group_by_team_type_related_ids(
+                team_id=group_data.teamId,
+                group_type=new_group_type,
+                related_ids=group_data.relatedIds,
+                shift_demand_template_id=group_data.shiftDemandTemplateId,
+            )
+        )
+        if existing_group:
+            raise ValueError(
+                f"Multitasking group with team_id {group_data.teamId}, "
+                f"type {group_data.type}, and related_ids {group_data.relatedIds} "
+                "already exists."
+            )
         group = MultitaskingGroup(
             id=None,
-            type=MultitaskingGroupType(group_data.type),
+            type=new_group_type,
             team_id=group_data.teamId,
             related_ids=group_data.relatedIds,
             shift_demand_template_id=group_data.shiftDemandTemplateId,
