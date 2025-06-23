@@ -27,6 +27,7 @@ export interface MultitaskingSelectionProps {
   onConfirmMultitasking: () => void;
   onEditMultitasking: () => void;
   onCancelMultitaskingMode: () => void;
+  onDeleteGroup?: (groupId: string) => Promise<void>;
 }
 
 export interface ShiftDemandActionToolbarProps

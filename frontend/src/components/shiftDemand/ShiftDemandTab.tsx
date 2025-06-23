@@ -557,6 +557,21 @@ function ShiftDemandTabInternal({
     console.log("Edit multitasking groups (placeholder)");
   };
 
+  const handleDeleteMultitaskingGroup = async (groupId: string) => {
+    if (!selectedTeamId) return;
+
+    try {
+      await MultitaskingApi.deleteMultitaskingGroup(selectedTeamId, groupId);
+      // Remove the deleted group from the local state
+      setMultitaskingGroups((prev) =>
+        prev.filter((group) => group.id !== groupId)
+      );
+    } catch (error) {
+      console.error("Failed to delete multitasking group:", error);
+      setError("Failed to delete multitasking group. Please try again.");
+    }
+  };
+
   const isShiftDemandSelectable = (shiftId: string, date: Dayjs): boolean => {
     if (!multitaskingState.isActive) return true;
 
@@ -859,6 +874,7 @@ function ShiftDemandTabInternal({
             onConfirmMultitasking: confirmMultitasking,
             onEditMultitasking: editMultitasking,
             onCancelMultitaskingMode: toggleMultitaskingMode,
+            onDeleteGroup: handleDeleteMultitaskingGroup,
           }}
           // Filter/Sort props
           filters={shiftTableState.filters}
