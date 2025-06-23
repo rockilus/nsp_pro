@@ -1,5 +1,6 @@
 import { ColumnFilter, TableSort } from "../../../types/filter";
 import { MultitaskingGroup } from "../../../types/multitasking";
+import { ShiftT } from "../../../types/shift";
 
 export interface FilterSortProps {
   lng: string;
@@ -24,6 +25,7 @@ export interface MultitaskingSelectionProps {
   lng: string;
   selectedShiftDemandsCount: number;
   multitaskingGroups: MultitaskingGroup[];
+  shifts: ShiftT[];
   onConfirmMultitasking: () => void;
   onEditMultitasking: () => void;
   onCancelMultitaskingMode: () => void;

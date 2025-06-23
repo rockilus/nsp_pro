@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import dayjs from "dayjs";
 import {
   Dialog,
   DialogTitle,
@@ -20,23 +21,64 @@ import {
   Delete as DeleteIcon,
   CalendarToday as DateIcon,
   Work as ShiftIcon,
+  Schedule as TimeIcon,
 } from "@mui/icons-material";
 import { MultitaskingGroup } from "../../../types/multitasking";
+import { ShiftT } from "../../../types/shift";
 
 interface ParsedRelatedId {
   shiftId: string;
   date: string; // YYYY-MM-DD format
+  shiftName?: string;
+  startTime?: string;
+  endTime?: string;
+  endsNextDay?: boolean;
 }
 
 interface MultitaskingGroupsDialogProps {
   open: boolean;
   onClose: () => void;
   groups: MultitaskingGroup[];
+  shifts: ShiftT[];
   lng: string;
   onDeleteGroup: (groupId: string) => Promise<void>;
 }
 
-// Utility function to parse related IDs
+// Utility function to format time from dayjs to display format
+function formatTime(time: dayjs.Dayjs): string {
+  return time.format("h:mm A");
+}
+
+// Check if shift ends the next day
+function isNextDay(startTime: dayjs.Dayjs, endTime: dayjs.Dayjs): boolean {
+  return endTime.isBefore(startTime) || endTime.hour() < startTime.hour();
+}
+
+// Utility function to parse related IDs with shift data
+function parseRelatedIdWithShiftData(
+  relatedId: string,
+  shifts: ShiftT[]
+): ParsedRelatedId | null {
+  const parts = relatedId.split("-");
+  if (parts.length < 4) return null; // shiftId-YYYY-MM-DD minimum
+
+  const date = parts.slice(-3).join("-"); // Last 3 parts are YYYY-MM-DD
+  const shiftId = parts.slice(0, -3).join("-"); // Everything before date
+
+  // Find shift details
+  const shift = shifts.find((s) => s.id === shiftId);
+
+  return {
+    shiftId,
+    date,
+    shiftName: shift?.name || "Unknown Shift",
+    startTime: shift ? formatTime(shift.startTime) : undefined,
+    endTime: shift ? formatTime(shift.endTime) : undefined,
+    endsNextDay: shift ? isNextDay(shift.startTime, shift.endTime) : false,
+  };
+}
+
+// Utility function to parse related IDs (legacy function for backward compatibility)
 function parseRelatedId(relatedId: string): ParsedRelatedId | null {
   const parts = relatedId.split("-");
   if (parts.length < 4) return null; // shiftId-YYYY-MM-DD minimum
@@ -47,20 +89,15 @@ function parseRelatedId(relatedId: string): ParsedRelatedId | null {
   return { shiftId, date };
 }
 
-// Process groups to extract shift and date information
-function processMultitaskingGroup(group: MultitaskingGroup) {
+// Process groups to extract shift and date information with shift details
+function processMultitaskingGroup(group: MultitaskingGroup, shifts: ShiftT[]) {
   const parsedRelatedIds = group.relatedIds
-    .map(parseRelatedId)
+    .map((relatedId) => parseRelatedIdWithShiftData(relatedId, shifts))
     .filter(Boolean) as ParsedRelatedId[];
-
-  const uniqueDates = [...new Set(parsedRelatedIds.map((p) => p.date))].sort();
-  const uniqueShiftIds = [...new Set(parsedRelatedIds.map((p) => p.shiftId))];
 
   return {
     ...group,
     parsedRelatedIds,
-    uniqueDates,
-    uniqueShiftIds,
   };
 }
 
@@ -69,14 +106,16 @@ function MultitaskingGroupItem({
   index,
   onDelete,
   isDeleting = false,
+  shifts,
 }: {
   group: MultitaskingGroup;
   index: number;
   onDelete: () => void;
   isDeleting?: boolean;
+  shifts: ShiftT[];
 }) {
   const [deleteConfirm, setDeleteConfirm] = useState(false);
-  const processedGroup = processMultitaskingGroup(group);
+  const processedGroup = processMultitaskingGroup(group, shifts);
 
   return (
     <ListItem
@@ -141,44 +180,87 @@ function MultitaskingGroupItem({
         </Box>
       </Box>
 
-      {/* Group Details */}
-      <Box mt={1}>
-        {/* Dates */}
-        <Box display="flex" alignItems="center" gap={1} mb={1}>
-          <DateIcon fontSize="small" color="primary" />
-          <Typography variant="body2" color="text.secondary">
-            Dates:
-          </Typography>
-          <Box display="flex" flexWrap="wrap" gap={0.5}>
-            {processedGroup.uniqueDates.map((date) => (
-              <Chip
-                key={date}
-                label={new Date(date).toLocaleDateString()}
-                size="small"
-                variant="outlined"
-              />
-            ))}
-          </Box>
-        </Box>
+      {/* Shift Details List */}
+      <Box mt={1} width="100%">
+        <Typography variant="body2" color="text.secondary" gutterBottom>
+          Shift Demands:
+        </Typography>
 
-        {/* Shifts */}
-        <Box display="flex" alignItems="center" gap={1}>
-          <ShiftIcon fontSize="small" color="primary" />
-          <Typography variant="body2" color="text.secondary">
-            Shifts:
-          </Typography>
-          <Box display="flex" flexWrap="wrap" gap={0.5}>
-            {processedGroup.uniqueShiftIds.map((shiftId) => (
-              <Chip
-                key={shiftId}
-                label={shiftId.substring(0, 8) + "..."} // Show first 8 chars + ellipsis
-                size="small"
-                variant="outlined"
-                title={shiftId} // Full ID on hover
+        <List
+          dense
+          sx={{
+            borderRadius: 1,
+            py: 0,
+          }}
+        >
+          {processedGroup.parsedRelatedIds.map((item, idx) => (
+            <ListItem
+              key={`${item.shiftId}-${item.date}-${idx}`}
+              sx={{ py: 0.5 }}
+            >
+              <ListItemText
+                primary={
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    gap={1}
+                    flexWrap="wrap"
+                  >
+                    {/* Date */}
+                    <Chip
+                      size="small"
+                      icon={<DateIcon fontSize="small" />}
+                      label={new Date(item.date).toLocaleDateString()}
+                      variant="outlined"
+                      color="primary"
+                    />
+
+                    {/* Shift Name */}
+                    <Chip
+                      size="small"
+                      icon={<ShiftIcon fontSize="small" />}
+                      label={item.shiftName}
+                      variant="outlined"
+                      color="secondary"
+                    />
+
+                    {/* Time Range */}
+                    {item.startTime && item.endTime && (
+                      <Chip
+                        size="small"
+                        icon={<TimeIcon fontSize="small" />}
+                        label={`${item.startTime} - ${item.endTime}${
+                          item.endsNextDay ? " +1" : ""
+                        }`}
+                        variant="outlined"
+                        sx={{
+                          bgcolor: item.endsNextDay
+                            ? "warning.light"
+                            : "transparent",
+                          color: item.endsNextDay
+                            ? "warning.contrastText"
+                            : "inherit",
+                          "& .MuiChip-icon": {
+                            color: item.endsNextDay
+                              ? "warning.contrastText"
+                              : "inherit",
+                          },
+                        }}
+                      />
+                    )}
+                  </Box>
+                }
+                secondary={
+                  item.endsNextDay ? (
+                    <Typography variant="caption" color="warning.main">
+                      Shift ends next day
+                    </Typography>
+                  ) : null
+                }
               />
-            ))}
-          </Box>
-        </Box>
+            </ListItem>
+          ))}
+        </List>
 
         {/* Notes if available */}
         {group.notes && (
@@ -197,6 +279,7 @@ export function MultitaskingGroupsDialog({
   open,
   onClose,
   groups,
+  shifts,
   lng,
   onDeleteGroup,
 }: MultitaskingGroupsDialogProps) {
@@ -248,6 +331,7 @@ export function MultitaskingGroupsDialog({
                   key={group.id || index}
                   group={group}
                   index={index}
+                  shifts={shifts}
                   onDelete={() => handleDeleteGroup(group.id!)}
                   isDeleting={deletingGroupId === group.id}
                 />

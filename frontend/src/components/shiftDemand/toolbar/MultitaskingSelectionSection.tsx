@@ -15,6 +15,7 @@ export function MultitaskingSelectionSection({
   lng,
   selectedShiftDemandsCount,
   multitaskingGroups,
+  shifts,
   onConfirmMultitasking,
   onEditMultitasking,
   onCancelMultitaskingMode,
@@ -70,6 +71,7 @@ export function MultitaskingSelectionSection({
         open={groupsDialogOpen}
         onClose={() => setGroupsDialogOpen(false)}
         groups={multitaskingGroups}
+        shifts={shifts}
         lng={lng}
         onDeleteGroup={async (groupId: string) => {
           if (onDeleteGroup) {

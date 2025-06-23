@@ -871,6 +871,7 @@ function ShiftDemandTabInternal({
             selectedShiftDemandsCount:
               multitaskingState.selectedShiftDemandIds.length,
             multitaskingGroups,
+            shifts,
             onConfirmMultitasking: confirmMultitasking,
             onEditMultitasking: editMultitasking,
             onCancelMultitaskingMode: toggleMultitaskingMode,
