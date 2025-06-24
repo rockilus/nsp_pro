@@ -2,9 +2,9 @@ from typing import Dict, List, Tuple
 
 from shared.schemas.core import (
     Assignment,
-    DailyShiftDemand,
     Request,
     Shift,
+    ShiftDemandNew,
     ShiftLeaveType,
     ShiftType,
     Worker,
@@ -18,7 +18,7 @@ def core_to_engine_fixed_values(
     workers_not_deleted: List[Worker],
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shifts: List[Shift],
-    daily_shift_demands: List[DailyShiftDemand],
+    daily_shift_demands: List[ShiftDemandNew],
     assignments: List[Assignment],
     requests: List[Request],
 ) -> Dict[Tuple[str, str, str], int]:

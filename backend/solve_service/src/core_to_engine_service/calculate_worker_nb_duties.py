@@ -4,10 +4,10 @@ from datetime import date
 from typing import Dict, List, Tuple
 
 from shared.schemas.core import (
-    DailyShiftDemand,
     Request,
     Schedule,
     Shift,
+    ShiftDemandNew,
     ShiftType,
     Worker,
     WorkerDates,
@@ -84,7 +84,7 @@ def calculate_worker_nb_duties(
     workers: List[Worker],
     shifts: List[Shift],
     requests: List[Request],
-    shift_demands: List[DailyShiftDemand],
+    shift_demands: List[ShiftDemandNew],
     periods: List[List[date]],
 ) -> Dict[str, Dict[str, List[int]]]:
     # [
@@ -144,7 +144,7 @@ def calculate_worker_nb_duties(
 def calculate_proportional_nb_duties(
     workers: List[Worker],
     shifts: List[Shift],
-    shift_demands: List[DailyShiftDemand],
+    shift_demands: List[ShiftDemandNew],
     periods: List[List[date]],
     w_id_to_coef: Dict[str, List[float]],
 ) -> Dict[str, List[int]]:

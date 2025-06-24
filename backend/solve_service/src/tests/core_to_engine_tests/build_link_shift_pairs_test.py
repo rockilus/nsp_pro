@@ -53,7 +53,7 @@ class TestBuildLinkShiftPairs:
             schedule, workers, fixed_assignments, dates_campaign
         )
         shifts_not_deleted = [shift for shift in shifts if not shift.deleted]
-        dsds = sample_data_fixture.daily_shift_demands
+        dsds = sample_data_fixture.shift_demands
 
         # Call the method under test
         ls_pairs = build_link_shift_pairs(
@@ -141,7 +141,7 @@ class TestBuildLinkShiftPairs:
             worker_ids_to_worker_dates,
             shifts_not_deleted,
             link_shifts,
-            sample_data_fixture.daily_shift_demands,
+            sample_data_fixture.shift_demands,
             sample_data_fixture.penalties.configuration_constraint.link_shift,
         )
 
@@ -187,7 +187,7 @@ class TestBuildLinkShiftPairs:
             worker_ids_to_worker_dates,
             [],
             link_shifts,
-            sample_data_fixture.daily_shift_demands,
+            sample_data_fixture.shift_demands,
             sample_data_fixture.penalties.configuration_constraint.link_shift,
         )
 
@@ -237,7 +237,7 @@ class TestBuildLinkShiftPairs:
             worker_ids_to_worker_dates,
             shifts_not_deleted,
             link_shifts,
-            sample_data_fixture.daily_shift_demands,
+            sample_data_fixture.shift_demands,
             sample_data_fixture.penalties.configuration_constraint.link_shift,
         )
 
@@ -279,7 +279,7 @@ class TestBuildLinkShiftPairs:
             worker_ids_to_worker_dates,
             shifts_not_deleted,
             link_shifts,
-            sample_data_fixture.daily_shift_demands,
+            sample_data_fixture.shift_demands,
             sample_data_fixture.penalties.configuration_constraint.link_shift,
         )
 

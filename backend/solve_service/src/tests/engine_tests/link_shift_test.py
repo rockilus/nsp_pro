@@ -52,7 +52,7 @@ class TestDutyRecupConstraint:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dsds = sample_data_fixture.daily_shift_demands
+        dsds = sample_data_fixture.shift_demands
 
         # Check target shifts assigned
         for d in dates:
@@ -182,7 +182,7 @@ class TestDutyRecupConstraint:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dsds = sample_data_fixture.daily_shift_demands
+        dsds = sample_data_fixture.shift_demands
 
         # Check target shifts assigned
         for d in dates:

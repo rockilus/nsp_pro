@@ -32,12 +32,12 @@ class TestCoverage:
         shift_ids_normal = [shift.id for shift in shifts_normal]
         sample_data.shifts = shifts_normal
 
-        dsds = sample_data.daily_shift_demands
+        dsds = sample_data.shift_demands
         dsds_normal = [dsd for dsd in dsds if dsd.shift_id in shift_ids_normal]
         if not dsds_normal:
             return
         dsds_normal[0].count = target_random
-        sample_data.daily_shift_demands = dsds_normal
+        sample_data.shift_demands = dsds_normal
 
         outputs = engine_solve_engine_inputs(sample_data)
 
@@ -91,9 +91,9 @@ class TestCoverage:
         shift_ids_normal = [shift.id for shift in shifts_normal]
         sample_data.shifts = shifts_normal
 
-        dsds = sample_data.daily_shift_demands
+        dsds = sample_data.shift_demands
         dsds_normal = [dsd for dsd in dsds if dsd.shift_id in shift_ids_normal]
-        sample_data.daily_shift_demands = dsds_normal
+        sample_data.shift_demands = dsds_normal
 
         workers = sample_data.workers
         target_num_specialists = 5
@@ -158,9 +158,9 @@ class TestCoverage:
         ]
         sample_data.shifts = [shift_target]
 
-        dsds = sample_data.daily_shift_demands
+        dsds = sample_data.shift_demands
         dsds_shift_target = [dsd for dsd in dsds if dsd.shift_id == shift_target.id]
-        sample_data.daily_shift_demands = dsds_shift_target
+        sample_data.shift_demands = dsds_shift_target
 
         workers = sample_data.workers
         target_num_specialists = 5
@@ -222,9 +222,9 @@ class TestCoverage:
         shift_ids_normal = [shift.id for shift in shifts_normal]
         sample_data.shifts = shifts_normal
 
-        dsds = sample_data.daily_shift_demands
+        dsds = sample_data.shift_demands
         dsds_normal = [dsd for dsd in dsds if dsd.shift_id in shift_ids_normal]
-        sample_data.daily_shift_demands = dsds_normal
+        sample_data.shift_demands = dsds_normal
 
         workers = sample_data.workers
         target_num_specialists_spe_1 = 3
@@ -327,9 +327,9 @@ class TestCoverage:
         shift_ids_normal = [shift.id for shift in shifts_normal]
         sample_data.shifts = shifts_normal
 
-        dsds = sample_data.daily_shift_demands
+        dsds = sample_data.shift_demands
         dsds_normal = [dsd for dsd in dsds if dsd.shift_id in shift_ids_normal]
-        sample_data.daily_shift_demands = dsds_normal
+        sample_data.shift_demands = dsds_normal
 
         workers = sample_data.workers
         target_num_qualified_spe_1 = target_random_spe_1 - 1
@@ -449,9 +449,9 @@ class TestCoverage:
         shift_ids_normal = [shift.id for shift in shifts_normal]
         sample_data.shifts = shifts_normal
 
-        dsds = sample_data.daily_shift_demands
+        dsds = sample_data.shift_demands
         dsds_normal = [dsd for dsd in dsds if dsd.shift_id in shift_ids_normal]
-        sample_data.daily_shift_demands = dsds_normal
+        sample_data.shift_demands = dsds_normal
 
         workers = sample_data.workers
         target_num_specialists_spe_1 = 3
@@ -552,9 +552,9 @@ class TestCoverage:
         shift_ids_normal = [shift.id for shift in shifts_normal]
         sample_data.shifts = shifts_normal
 
-        dsds = sample_data.daily_shift_demands
+        dsds = sample_data.shift_demands
         dsds_normal = [dsd for dsd in dsds if dsd.shift_id in shift_ids_normal]
-        sample_data.daily_shift_demands = dsds_normal
+        sample_data.shift_demands = dsds_normal
 
         workers = sample_data.workers
         target_num_qualified_spe_1 = target_random_spe_1
@@ -702,9 +702,9 @@ class TestCoverage:
         shift_ids_normal = [shift.id for shift in shifts_normal]
         sample_data.shifts = shifts_normal
 
-        dsds = sample_data.daily_shift_demands
+        dsds = sample_data.shift_demands
         dsds_normal = [dsd for dsd in dsds if dsd.shift_id in shift_ids_normal]
-        sample_data.daily_shift_demands = dsds_normal
+        sample_data.shift_demands = dsds_normal
 
         workers = sample_data.workers
         target_num_qualified_spe_1 = target_random_spe_1
@@ -847,7 +847,7 @@ class TestCoverage:
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_expected_assignments_all(self, sample_data: EngineInputsAugmented) -> None:
         shifts = sample_data.shifts
-        dsds = sample_data.daily_shift_demands
+        dsds = sample_data.shift_demands
 
         outputs = engine_solve_engine_inputs(sample_data)
 

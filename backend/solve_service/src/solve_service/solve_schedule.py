@@ -40,7 +40,7 @@ def solve_schedule(engine_inputs: EngineInputs) -> EngineOutputs:
         engine_inputs.workers,
         engine_inputs.shifts,
         engine_inputs.link_shifts,
-        engine_inputs.daily_shift_demands,
+        engine_inputs.shift_demands,
         engine_inputs.requests_work,
         engine_inputs.as_hist,
         processing_cache,

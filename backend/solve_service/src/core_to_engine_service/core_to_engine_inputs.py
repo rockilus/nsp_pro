@@ -134,7 +134,7 @@ def core_to_engine_inputs(
         workers_not_deleted,
         shifts_not_deleted,
         engine_inputs.requests_leave,
-        engine_inputs.daily_shift_demands,
+        engine_inputs.shift_demands,
         periods_weekly,
     )
 
@@ -143,7 +143,7 @@ def core_to_engine_inputs(
         workers_not_deleted,
         shifts_not_deleted,
         engine_inputs.requests_leave,
-        engine_inputs.daily_shift_demands,
+        engine_inputs.shift_demands,
         periods_monthly,
     )
 
@@ -185,7 +185,7 @@ def core_to_engine_inputs(
                 workers_not_deleted,
                 worker_ids_to_worker_dates,
                 engine_inputs.shifts,
-                engine_inputs.daily_shift_demands,
+                engine_inputs.shift_demands,
                 fixed_assignments,
                 engine_inputs.requests_leave,
             ),
@@ -227,7 +227,7 @@ def core_to_engine_inputs(
                 dates_campaign,
                 worker_ids_to_worker_dates,
                 shifts_not_deleted,
-                engine_inputs.daily_shift_demands,
+                engine_inputs.shift_demands,
                 engine_inputs.penalties.configuration_constraint.coverage,
             ),
             requests=build_engine_requests(
@@ -251,7 +251,7 @@ def core_to_engine_inputs(
                 worker_ids_to_worker_dates,
                 shifts_not_deleted,
                 engine_inputs.link_shifts,
-                engine_inputs.daily_shift_demands,
+                engine_inputs.shift_demands,
                 engine_inputs.penalties.configuration_constraint.link_shift,
             ),
             worker_shift_filters=build_worker_shift_filters(
@@ -306,7 +306,7 @@ def core_to_engine_inputs(
                     dates_campaign,
                     engine_inputs.shifts,
                     engine_inputs.requests_leave,
-                    engine_inputs.daily_shift_demands,
+                    engine_inputs.shift_demands,
                     fixed_assignments,
                     # fmt: off
                     engine_inputs.penalties.system_constraint

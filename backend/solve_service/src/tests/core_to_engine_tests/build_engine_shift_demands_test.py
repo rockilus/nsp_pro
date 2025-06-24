@@ -23,7 +23,7 @@ class TestBuildEngineShiftDemands:
         workers = sample_data.workers
         shifts = sample_data.shifts
         schedule = sample_data.schedule
-        daily_shift_demands = sample_data.daily_shift_demands
+        daily_shift_demands = sample_data.shift_demands
         fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
 
         # Build necessary inputs
@@ -57,7 +57,7 @@ class TestBuildEngineShiftDemands:
         workers: List[Worker] = []
         shifts = sample_data.shifts
         schedule = sample_data.schedule
-        daily_shift_demands = sample_data.daily_shift_demands
+        daily_shift_demands = sample_data.shift_demands
         fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
 
         # Build necessary inputs
@@ -92,7 +92,7 @@ class TestBuildEngineShiftDemands:
         workers = sample_data.workers
         shifts: List[Shift] = []
         schedule = sample_data.schedule
-        daily_shift_demands = sample_data.daily_shift_demands
+        daily_shift_demands = sample_data.shift_demands
         fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
 
         # Build necessary inputs
@@ -130,7 +130,7 @@ class TestBuildEngineShiftDemands:
         workers = sample_data.workers
         shifts = sample_data.shifts
         schedule = sample_data.schedule
-        daily_shift_demands = sample_data.daily_shift_demands
+        daily_shift_demands = sample_data.shift_demands
         fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
 
         # Build necessary inputs
@@ -193,7 +193,7 @@ class TestBuildEngineShiftDemands:
         shifts = sample_data.shifts
         shifts[0].staffing[0].specialty_id = "spe1"
         schedule = sample_data.schedule
-        daily_shift_demands = sample_data.daily_shift_demands
+        daily_shift_demands = sample_data.shift_demands
         fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
 
         # Build necessary inputs
@@ -270,7 +270,7 @@ class TestBuildEngineShiftDemands:
         workers = sample_data_benoit_case_fixture.workers
         shifts = sample_data_benoit_case_fixture.shifts
         schedule = sample_data_benoit_case_fixture.schedule
-        daily_shift_demands = sample_data_benoit_case_fixture.daily_shift_demands
+        daily_shift_demands = sample_data_benoit_case_fixture.shift_demands
         fixed_assignments = (
             sample_data_benoit_case_fixture.as_hist
             + sample_data_benoit_case_fixture.as_wip_fixed
@@ -309,7 +309,7 @@ class TestBuildEngineShiftDemands:
         workers = sample_data_benoit_case_fixture.workers
         shifts = sample_data_benoit_case_fixture.shifts
         schedule = sample_data_benoit_case_fixture.schedule
-        daily_shift_demands = sample_data_benoit_case_fixture.daily_shift_demands
+        daily_shift_demands = sample_data_benoit_case_fixture.shift_demands
         fixed_assignments = (
             sample_data_benoit_case_fixture.as_hist
             + sample_data_benoit_case_fixture.as_wip_fixed
@@ -370,7 +370,7 @@ class TestBuildEngineShiftDemands:
         workers = sample_data_benoit_case_fixture.workers
         shifts = sample_data_benoit_case_fixture.shifts
         schedule = sample_data_benoit_case_fixture.schedule
-        daily_shift_demands = sample_data_benoit_case_fixture.daily_shift_demands
+        daily_shift_demands = sample_data_benoit_case_fixture.shift_demands
         fixed_assignments = (
             sample_data_benoit_case_fixture.as_hist
             + sample_data_benoit_case_fixture.as_wip_fixed

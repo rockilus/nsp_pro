@@ -32,10 +32,10 @@ def get_engine_inputs(
         collections,
     )
     link_shifts = get_link_shifts(schedule.team_id, shifts, collections)
-    daily_shift_demands = (
-        collections.daily_shift_demand_db.get_daily_shift_demands_by_schedule_id(
-            schedule.id
-        )
+    shift_demands = collections.shift_demand_new_db.get_shift_demands_by_date_range(
+        team_id=schedule.team_id,
+        start_date=schedule.start_date,
+        end_date=schedule.end_date,
     )
     requests_work, requests_leave = get_requests_by_dates(
         start_date=schedule.start_date,
@@ -60,7 +60,7 @@ def get_engine_inputs(
         as_hist=as_hist,
         as_wip_fixed=as_wip_fixed,
         cbs_augmented=cbs_augmented,
-        daily_shift_demands=daily_shift_demands,
+        shift_demands=shift_demands,
         requests_work=requests_work,
         requests_leave=requests_leave,
         model_output=model_output,

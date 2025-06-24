@@ -2,9 +2,9 @@ from datetime import date
 from typing import Dict, List, Tuple
 
 from shared.schemas.core import (
-    DailyShiftDemand,
     LinkShift,
     Shift,
+    ShiftDemandNew,
     Worker,
     WorkerDates,
 )
@@ -16,7 +16,7 @@ def build_link_shift_pairs(
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shifts_not_deleted: List[Shift],
     link_shifts: List[LinkShift],
-    daily_shift_demands: List[DailyShiftDemand],
+    daily_shift_demands: List[ShiftDemandNew],
     penalty: int,
 ) -> List[Tuple[Tuple[str, str, str], Tuple[str, str, str], str, int]]:
     out: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], str, int]] = []

@@ -68,7 +68,7 @@ class TestBuildEngineWorkLoads:
             workers_not_deleted,
             shifts_not_deleted,
             sample_data.requests_leave,
-            sample_data.daily_shift_demands,
+            sample_data.shift_demands,
             periods_weekly,
         )
         w_to_nb_duties = calculate_worker_nb_duties(
@@ -76,7 +76,7 @@ class TestBuildEngineWorkLoads:
             workers_not_deleted,
             shifts_not_deleted,
             sample_data.requests_leave,
-            sample_data.daily_shift_demands,
+            sample_data.shift_demands,
             periods_monthly,
         )
 
@@ -151,7 +151,7 @@ class TestBuildEngineWorkLoads:
             workers_not_deleted,
             shifts_not_deleted,
             sample_data.requests_leave,
-            sample_data.daily_shift_demands,
+            sample_data.shift_demands,
             periods_weekly,
         )
         w_to_nb_duties = calculate_worker_nb_duties(
@@ -159,7 +159,7 @@ class TestBuildEngineWorkLoads:
             workers_not_deleted,
             shifts_not_deleted,
             sample_data.requests_leave,
-            sample_data.daily_shift_demands,
+            sample_data.shift_demands,
             periods_monthly,
         )
 
@@ -222,7 +222,7 @@ class TestBuildEngineWorkLoads:
             workers_not_deleted,
             shifts_not_deleted,
             sample_data.requests_leave,
-            sample_data.daily_shift_demands,
+            sample_data.shift_demands,
             periods_weekly,
         )
         w_to_nb_duties = calculate_worker_nb_duties(
@@ -230,7 +230,7 @@ class TestBuildEngineWorkLoads:
             workers_not_deleted,
             shifts_not_deleted,
             sample_data.requests_leave,
-            sample_data.daily_shift_demands,
+            sample_data.shift_demands,
             periods_monthly,
         )
 
@@ -308,7 +308,7 @@ class TestBuildEngineWorkLoads:
             workers_not_deleted,
             shifts_not_deleted,
             sample_data.requests_leave,
-            sample_data.daily_shift_demands,
+            sample_data.shift_demands,
             periods_weekly,
         )
         w_to_nb_duties = calculate_worker_nb_duties(
@@ -316,7 +316,7 @@ class TestBuildEngineWorkLoads:
             workers_not_deleted,
             shifts_not_deleted,
             sample_data.requests_leave,
-            sample_data.daily_shift_demands,
+            sample_data.shift_demands,
             periods_monthly,
         )
 
@@ -407,7 +407,7 @@ class TestBuildEngineWorkLoads:
             workers_not_deleted,
             shifts_not_deleted,
             sample_data.requests_leave,
-            sample_data.daily_shift_demands,
+            sample_data.shift_demands,
             periods_weekly,
         )
         w_to_nb_duties = calculate_worker_nb_duties(
@@ -415,7 +415,7 @@ class TestBuildEngineWorkLoads:
             workers_not_deleted,
             shifts_not_deleted,
             sample_data.requests_leave,
-            sample_data.daily_shift_demands,
+            sample_data.shift_demands,
             periods_monthly,
         )
 
@@ -501,7 +501,7 @@ class TestBuildEngineWorkLoads:
             workers_not_deleted,
             shifts_not_deleted,
             sample_data.requests_leave,
-            sample_data.daily_shift_demands,
+            sample_data.shift_demands,
             periods_weekly,
         )
         w_to_nb_duties = calculate_worker_nb_duties(
@@ -509,7 +509,7 @@ class TestBuildEngineWorkLoads:
             workers_not_deleted,
             shifts_not_deleted,
             sample_data.requests_leave,
-            sample_data.daily_shift_demands,
+            sample_data.shift_demands,
             periods_monthly,
         )
 

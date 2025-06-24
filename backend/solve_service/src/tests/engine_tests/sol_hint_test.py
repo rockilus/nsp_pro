@@ -3,7 +3,7 @@
 
 # import pytest
 # from shared.schemas.core import (
-#     DailyShiftDemand,
+#     ShiftDemandNew,
 #     DSDSourceType,
 #     EngineInputsAugmented,
 #     ModelConfig,
@@ -142,7 +142,7 @@
 #             current_date = schedule.start_date
 #             while current_date <= schedule.end_date:
 #                 daily_shift_demands.append(
-#                     DailyShiftDemand(
+#                     ShiftDemandNew(
 #                         id=f"dsd_{shift.id}_{current_date}",
 #                         team_id="t0",
 #                         schedule_id=schedule.id,

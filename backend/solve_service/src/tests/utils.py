@@ -34,7 +34,7 @@ def engine_inputs_to_engine_inputs_augmented(
         as_hist=engine_inputs.as_hist,
         as_wip_fixed=engine_inputs.as_wip_fixed,
         cbs_augmented=engine_inputs.cbs_augmented,
-        daily_shift_demands=engine_inputs.daily_shift_demands,
+        shift_demands=engine_inputs.shift_demands,
         requests_work=engine_inputs.requests_work,
         requests_leave=engine_inputs.requests_leave,
         model_output=engine_inputs.model_output,

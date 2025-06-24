@@ -18,12 +18,10 @@ from shared.schemas.core import (
     ConstraintSeq,
     ConstraintSum,
     ConstraintType,
-    DailyShiftDemand,
     Dimension,
     DimensionEntryType,
     DimensionType,
     DimEntry,
-    DSDSourceType,
     EngineInputs,
     EngineInputsAugmented,
     ModelConfig,
@@ -32,6 +30,8 @@ from shared.schemas.core import (
     ScheduleSolveStatus,
     ScheduleStatus,
     Shift,
+    ShiftDemandNew,
+    ShiftDemandSource,
     ShiftLeaveType,
     ShiftRestType,
     ShiftType,
@@ -391,13 +391,13 @@ def attributes(
     return a_loc + a_block + a_60plus + a_intense
 
 
-# DailyShiftDemands
+# ShiftDemands
 # pylint: disable=redefined-outer-name
 @pytest.fixture
 def daily_shift_demands_shifts_3n_2d(
     shifts_3n_2d: List[Shift],  # noqa: F811
     schedule: Schedule,  # noqa: F811
-) -> List[DailyShiftDemand]:
+) -> List[ShiftDemandNew]:
     daily_shift_demands = []
     # Create daily shift demands for every weekday for shifts s0 to s2
     for shift in [s for s in shifts_3n_2d if s.shift_type == ShiftType.NORMAL]:
@@ -405,16 +405,17 @@ def daily_shift_demands_shifts_3n_2d(
         while current_date <= schedule.end_date:
             if current_date.weekday() < 5:  # Weekdays only
                 daily_shift_demands.append(
-                    DailyShiftDemand(
-                        id=f"dsd_{shift.id}_{current_date}",
-                        team_id="t0",
-                        schedule_id=schedule.id,
-                        shift_demand_id=None,
-                        source_type=DSDSourceType.SHIFT_DEMAND,
+                    ShiftDemandNew(
                         date=current_date,
                         shift_id=shift.id,
+                        team_id="t0",
                         count=1,
-                        coverage_selector_id=None,
+                        notes=None,
+                        source=ShiftDemandSource.MANUAL,
+                        source_id=None,
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
+                        id=f"dsd_{shift.id}_{current_date}",
                     )
                 )
             current_date += timedelta(days=1)
@@ -424,16 +425,17 @@ def daily_shift_demands_shifts_3n_2d(
         current_date = schedule.start_date
         while current_date <= schedule.end_date:
             daily_shift_demands.append(
-                DailyShiftDemand(
-                    id=f"dsd_{shift.id}_{current_date}",
-                    team_id="t0",
-                    schedule_id="sch1",
-                    shift_demand_id=None,
-                    source_type=DSDSourceType.SHIFT_DEMAND,
+                ShiftDemandNew(
                     date=current_date,
                     shift_id=shift.id,
+                    team_id="t0",
                     count=1,
-                    coverage_selector_id=None,
+                    notes=None,
+                    source=ShiftDemandSource.MANUAL,
+                    source_id=None,
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
+                    id=f"dsd_{shift.id}_{current_date}",
                 )
             )
             current_date += timedelta(days=1)
@@ -461,7 +463,7 @@ def engine_inputs(
     dimensions: List[Dimension],  # noqa: F811
     dim_entries: List[DimEntry],  # noqa: F811
     attributes: List[Attribute],  # noqa: F811
-    daily_shift_demands_shifts_3n_2d: List[DailyShiftDemand],  # noqa: F811
+    daily_shift_demands_shifts_3n_2d: List[ShiftDemandNew],  # noqa: F811
     penalties_fix: Penalties,  # noqa: F811
     model_config_fix: ModelConfig,  # noqa: F811
 ) -> EngineInputsAugmented:
@@ -476,7 +478,7 @@ def engine_inputs(
         as_hist=[],
         as_wip_fixed=[],
         cbs_augmented=[],
-        daily_shift_demands=daily_shift_demands_shifts_3n_2d,
+        shift_demands=daily_shift_demands_shifts_3n_2d,
         requests_work=[],
         requests_leave=[],
         model_output=None,

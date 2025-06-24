@@ -4,13 +4,13 @@ from typing import List, Tuple
 from shared.schemas.core import (
     Assignment,
     Breach,
-    DailyShiftDemand,
     LinkShift,
     ModelOutput,
     ModelOutputStatus,
     RequestAugmented,
     Schedule,
     Shift,
+    ShiftDemandNew,
     Worker,
 )
 
@@ -34,7 +34,7 @@ def engine_to_core(
     workers: List[Worker],
     shifts: List[Shift],
     link_shifts: List[LinkShift],
-    daily_shift_demand: List[DailyShiftDemand],
+    daily_shift_demand: List[ShiftDemandNew],
     requests: List[RequestAugmented],
     as_hist: List[Assignment],
     processing_cache: ProcessingCache,

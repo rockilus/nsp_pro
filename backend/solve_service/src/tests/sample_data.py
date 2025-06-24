@@ -10,13 +10,14 @@ from shared.schemas.core import (
     DailyShiftDemand,
     Dimension,
     DimEntry,
-    DSDSourceType,
     EngineInputs,
     EngineInputsAugmented,
     Schedule,
     ScheduleSolveStatus,
     ScheduleStatus,
     Shift,
+    ShiftDemandNew,
+    ShiftDemandSource,
     ShiftLeaveType,
     ShiftRestType,
     ShiftType,
@@ -38,7 +39,7 @@ from solve_service.penalties import penalties
 # Attributes: 0
 # FixedAssignments: 0
 # CbsAugmented: 0
-# DailyShiftDemands:
+# ShiftDemands:
 #     - Every weekday for shifts s0 to s2
 #     - Every days for shifts s3 and s4
 # Requests: 0
@@ -214,16 +215,17 @@ def sample_data_fixture() -> EngineInputsAugmented:
         while current_date <= schedule.end_date:
             if current_date.weekday() < 5:  # Weekdays only
                 daily_shift_demands.append(
-                    DailyShiftDemand(
-                        id=f"dsd_{shift_id}_{current_date}",
-                        team_id="t0",
-                        schedule_id="sch1",
-                        shift_demand_id=None,
-                        coverage_selector_id=None,  # Added argument
-                        source_type=DSDSourceType.SHIFT_DEMAND,
+                    ShiftDemandNew(
                         date=current_date,
                         shift_id=shift_id,
+                        team_id="t0",
                         count=1,
+                        notes=None,
+                        source=ShiftDemandSource.MANUAL,
+                        source_id=None,
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
+                        id=f"dsd_{shift_id}_{current_date}",
                     )
                 )
             current_date += timedelta(days=1)
@@ -233,16 +235,17 @@ def sample_data_fixture() -> EngineInputsAugmented:
         current_date = schedule.start_date
         while current_date <= schedule.end_date:
             daily_shift_demands.append(
-                DailyShiftDemand(
-                    id=f"dsd_{shift_id}_{current_date}",
-                    team_id="t0",
-                    schedule_id="sch1",
-                    shift_demand_id=None,
-                    coverage_selector_id=None,  # Added argument
-                    source_type=DSDSourceType.SHIFT_DEMAND,
+                ShiftDemandNew(
                     date=current_date,
                     shift_id=shift_id,
+                    team_id="t0",
                     count=1,
+                    notes=None,
+                    source=ShiftDemandSource.MANUAL,
+                    source_id=None,
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
+                    id=f"dsd_{shift_id}_{current_date}",
                 )
             )
             current_date += timedelta(days=1)
@@ -263,7 +266,7 @@ def sample_data_fixture() -> EngineInputsAugmented:
         as_hist=[],
         as_wip_fixed=[],
         cbs_augmented=cbs_augmented,
-        daily_shift_demands=daily_shift_demands,
+        shift_demands=daily_shift_demands,
         requests_work=[],
         requests_leave=[],
         model_output=None,
@@ -439,16 +442,17 @@ def sample_data() -> EngineInputsAugmented:
         while current_date <= schedule.end_date:
             if current_date.weekday() < 5:  # Weekdays only
                 daily_shift_demands.append(
-                    DailyShiftDemand(
-                        id=f"dsd_{shift_id}_{current_date}",
-                        team_id="t0",
-                        schedule_id="sch1",
-                        shift_demand_id=None,
-                        coverage_selector_id=None,  # Added argument
-                        source_type=DSDSourceType.SHIFT_DEMAND,
+                    ShiftDemandNew(
                         date=current_date,
                         shift_id=shift_id,
+                        team_id="t0",
                         count=1,
+                        notes=None,
+                        source=ShiftDemandSource.MANUAL,
+                        source_id=None,
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
+                        id=f"dsd_{shift_id}_{current_date}",
                     )
                 )
             current_date += timedelta(days=1)
@@ -458,16 +462,17 @@ def sample_data() -> EngineInputsAugmented:
         current_date = schedule.start_date
         while current_date <= schedule.end_date:
             daily_shift_demands.append(
-                DailyShiftDemand(
-                    id=f"dsd_{shift_id}_{current_date}",
-                    team_id="t0",
-                    schedule_id="sch1",
-                    shift_demand_id=None,
-                    coverage_selector_id=None,  # Added argument
-                    source_type=DSDSourceType.SHIFT_DEMAND,
+                ShiftDemandNew(
                     date=current_date,
                     shift_id=shift_id,
+                    team_id="t0",
                     count=1,
+                    notes=None,
+                    source=ShiftDemandSource.MANUAL,
+                    source_id=None,
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
+                    id=f"dsd_{shift_id}_{current_date}",
                 )
             )
             current_date += timedelta(days=1)
@@ -488,7 +493,7 @@ def sample_data() -> EngineInputsAugmented:
         as_hist=[],
         as_wip_fixed=[],
         cbs_augmented=cbs_augmented,
-        daily_shift_demands=daily_shift_demands,
+        shift_demands=daily_shift_demands,
         requests_work=[],
         requests_leave=[],
         model_output=None,
@@ -612,16 +617,17 @@ def sample_data_astrid_case() -> EngineInputsAugmented:
         current_date = schedule.start_date
         while current_date <= schedule.end_date:
             daily_shift_demands.append(
-                DailyShiftDemand(
-                    id=f"dsd_{shift_id}_{current_date}",
-                    team_id="t0",
-                    schedule_id="sch1",
-                    shift_demand_id=None,
-                    coverage_selector_id=None,  # Added argument
-                    source_type=DSDSourceType.SHIFT_DEMAND,
+                ShiftDemandNew(
                     date=current_date,
                     shift_id=shift_id,
+                    team_id="t0",
                     count=1,
+                    notes=None,
+                    source=ShiftDemandSource.MANUAL,
+                    source_id=None,
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
+                    id=f"dsd_{shift_id}_{current_date}",
                 )
             )
             current_date += timedelta(days=1)
@@ -642,7 +648,7 @@ def sample_data_astrid_case() -> EngineInputsAugmented:
         as_hist=[],
         as_wip_fixed=[],
         cbs_augmented=cbs_augmented,
-        daily_shift_demands=daily_shift_demands,
+        shift_demands=daily_shift_demands,
         requests_work=[],
         requests_leave=[],
         model_output=None,
@@ -661,6 +667,28 @@ def load_json_from_file(filename: str) -> Dict:
 
 def load_engine_inputs_from_file(filename: str) -> EngineInputsAugmented:
     data_dict = load_json_from_file(filename)
+
+    # Convert DailyShiftDemand to ShiftDemandNew
+    dsds_dict = data_dict.pop("daily_shift_demands", [])
+    dsds = [DailyShiftDemand.from_dict(dsd_dict) for dsd_dict in dsds_dict]
+    shift_demands_from_dsds = [
+        ShiftDemandNew(
+            date=dsd.date,
+            shift_id=dsd.shift_id,
+            team_id=dsd.team_id,
+            count=dsd.count,
+            notes=None,
+            source=ShiftDemandSource.MANUAL,
+            source_id=None,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            id=dsd.id,
+        )
+        for dsd in dsds
+        if dsd.count > 0
+    ]
+    data_dict["shift_demands"] = [sd.to_dict() for sd in shift_demands_from_dsds]
+
     ei = EngineInputs.from_dict(data_dict)
     return EngineInputsAugmented(
         schedule=ei.schedule,
@@ -673,7 +701,7 @@ def load_engine_inputs_from_file(filename: str) -> EngineInputsAugmented:
         as_hist=ei.as_hist,
         as_wip_fixed=ei.as_wip_fixed,
         cbs_augmented=ei.cbs_augmented,
-        daily_shift_demands=ei.daily_shift_demands,
+        shift_demands=ei.shift_demands,
         requests_work=ei.requests_work,
         requests_leave=ei.requests_leave,
         model_output=ei.model_output,
