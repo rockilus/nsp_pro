@@ -282,7 +282,8 @@ export default function ScheduleTabMember({
               scheduleCampaign={null}
               periodDates={periodDates}
               assignments={assignments}
-              dailyShiftDemands={[]}
+              shiftDemands={[]}
+              shiftDemandMatrix={{}}
               recurrences={[]}
               breaches={[]}
               workers={workers}
@@ -291,8 +292,9 @@ export default function ScheduleTabMember({
               scheduleViewSettings={scheduleViewSettings}
               handleAssignmentSelection={handleAssignmentSelection}
               handleDemandSelection={handleDemandSelection}
-              handleCreateDSD={handleCreateDSD}
-              handleUpdateDSD={handleUpdateDSD}
+              handleCreateShiftDemand={async () => {}}
+              handleUpdateShiftDemand={async () => {}}
+              handleDeleteShiftDemand={async () => {}}
               handleExportSchedule={handleExportSchedule}
               handleOpenCreateAssignment={handleOpenCreateAssignment}
             />

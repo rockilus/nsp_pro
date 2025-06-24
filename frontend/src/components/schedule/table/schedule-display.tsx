@@ -14,7 +14,7 @@ import {
   ScheduleViewSettingsT,
 } from "../../../types/schedule";
 import { BreachT } from "@/types/breach";
-import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { ShiftDemandDTO, ShiftDemandMatrix } from "@/types/shiftDemand";
 import { AssignmentT, CreateAssignmentT } from "@/types/assignment";
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
@@ -30,7 +30,8 @@ export default function ScheduleDisplay({
   scheduleCampaign,
   periodDates,
   assignments,
-  dailyShiftDemands,
+  shiftDemands,
+  shiftDemandMatrix,
   recurrences,
   breaches,
   workers,
@@ -39,8 +40,9 @@ export default function ScheduleDisplay({
   scheduleViewSettings,
   handleAssignmentSelection,
   handleDemandSelection,
-  handleCreateDSD,
-  handleUpdateDSD,
+  handleCreateShiftDemand,
+  handleUpdateShiftDemand,
+  handleDeleteShiftDemand,
   handleExportSchedule,
   handleOpenCreateAssignment,
 }: {
@@ -49,7 +51,8 @@ export default function ScheduleDisplay({
   scheduleCampaign: ScheduleT | null;
   periodDates: periodDateT[];
   assignments: AssignmentT[];
-  dailyShiftDemands: DailyShiftDemandT[];
+  shiftDemands: ShiftDemandDTO[];
+  shiftDemandMatrix: ShiftDemandMatrix;
   recurrences: RecurrenceRuleT[];
   breaches: BreachT[];
   workers: WorkerT[];
@@ -58,8 +61,17 @@ export default function ScheduleDisplay({
   scheduleViewSettings: ScheduleViewSettingsT;
   handleAssignmentSelection: (selectedAssignment: AssignmentDataT) => void;
   handleDemandSelection: (scheduleCellData: ScheduleCellDataT) => void;
-  handleCreateDSD: (dsd: DailyShiftDemandT) => void;
-  handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
+  handleCreateShiftDemand: (
+    shiftId: string,
+    date: dayjs.Dayjs,
+    count: number,
+    notes?: string
+  ) => Promise<void>;
+  handleUpdateShiftDemand: (
+    demandId: string,
+    updates: Partial<{ count: number; notes: string | null }>
+  ) => Promise<void>;
+  handleDeleteShiftDemand: (demandId: string) => Promise<void>;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
@@ -72,7 +84,8 @@ export default function ScheduleDisplay({
         workers={workers}
         requests={requests}
         assignments={assignments}
-        dailyShiftDemands={dailyShiftDemands}
+        shiftDemands={shiftDemands}
+        shiftDemandMatrix={shiftDemandMatrix}
         recurrences={recurrences}
         scheduleCampaign={scheduleCampaign}
         periodDates={periodDates}
@@ -80,8 +93,9 @@ export default function ScheduleDisplay({
         scheduleViewSettings={scheduleViewSettings}
         handleAssignmentSelection={handleAssignmentSelection}
         handleDemandSelection={handleDemandSelection}
-        handleCreateDSD={handleCreateDSD}
-        handleUpdateDSD={handleUpdateDSD}
+        handleCreateShiftDemand={handleCreateShiftDemand}
+        handleUpdateShiftDemand={handleUpdateShiftDemand}
+        handleDeleteShiftDemand={handleDeleteShiftDemand}
         handleExportSchedule={handleExportSchedule}
         handleOpenCreateAssignment={handleOpenCreateAssignment}
       />
@@ -94,15 +108,17 @@ export default function ScheduleDisplay({
         workers={workers}
         requests={requests}
         assignments={assignments}
-        dailyShiftDemands={dailyShiftDemands}
+        shiftDemands={shiftDemands}
+        shiftDemandMatrix={shiftDemandMatrix}
         recurrences={recurrences}
         scheduleCampaign={scheduleCampaign}
         periodDates={periodDates}
         breaches={breaches}
         scheduleViewSettings={scheduleViewSettings}
         handleAssignmentSelection={handleAssignmentSelection}
-        handleCreateDSD={handleCreateDSD}
-        handleUpdateDSD={handleUpdateDSD}
+        handleCreateShiftDemand={handleCreateShiftDemand}
+        handleUpdateShiftDemand={handleUpdateShiftDemand}
+        handleDeleteShiftDemand={handleDeleteShiftDemand}
         handleExportSchedule={handleExportSchedule}
         handleOpenCreateAssignment={handleOpenCreateAssignment}
       />

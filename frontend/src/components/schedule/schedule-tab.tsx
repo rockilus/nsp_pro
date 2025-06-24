@@ -930,9 +930,9 @@ export default function ScheduleTab({
           onClose={handleCloseLHS}
           handleUpdateAssignment={handleUpdateAssignment}
           handleDeleteAssignment={handleDeleteAssignment}
-          handleCreateDSD={handleCreateDSD}
-          handleUpdateDSD={handleUpdateDSD}
-          handleDeleteDSDs={handleDeleteDSDs}
+          handleCreateShiftDemand={handleCreateShiftDemand}
+          handleUpdateShiftDemand={handleUpdateShiftDemand}
+          handleDeleteShiftDemand={handleDeleteShiftDemand}
         />
       ),
     },
@@ -955,30 +955,11 @@ export default function ScheduleTab({
           }
           onClose={handleCloseLHS}
           handleCreateAssignment={handleCreateAssignment}
-          handleCreateDSD={handleCreateDSD}
+          handleCreateShiftDemand={handleCreateShiftDemand}
         />
       ) : null,
     },
   ];
-
-  // Temporary converter function to transform new ShiftDemandDTO to legacy DailyShiftDemandT format
-  // This maintains compatibility with existing components during migration
-  const convertShiftDemandsToLegacyFormat = (
-    demands: ShiftDemandDTO[]
-  ): any[] => {
-    return demands.map((demand) => ({
-      id: demand.id,
-      teamId: demand.teamId,
-      scheduleId: scheduleCampaign?.id || "", // Use current campaign schedule
-      shiftDemandId: null, // Legacy field, not used in new implementation
-      coverageSelectorId: null, // Legacy field, not used in new implementation
-      sourceType: 0, // DSDSourceType.SHIFT_DEMAND
-      date: dayjs.unix(demand.date), // Convert unix timestamp to dayjs
-      shiftId: demand.shiftId,
-      count: demand.count,
-      notes: demand.notes,
-    }));
-  };
 
   return (
     <div className="tab-container-ultrawide">
@@ -1042,9 +1023,8 @@ export default function ScheduleTab({
               scheduleCampaign={scheduleCampaign as ScheduleT}
               periodDates={periodDates}
               assignments={assignments}
-              dailyShiftDemands={convertShiftDemandsToLegacyFormat(
-                shiftDemands
-              )}
+              shiftDemands={shiftDemands}
+              shiftDemandMatrix={shiftDemandMatrix}
               recurrences={recurrences}
               breaches={breaches}
               workers={workers}
@@ -1053,8 +1033,9 @@ export default function ScheduleTab({
               scheduleViewSettings={scheduleViewSettings}
               handleAssignmentSelection={handleAssignmentSelection}
               handleDemandSelection={handleDemandSelection}
-              handleCreateDSD={handleCreateDSD}
-              handleUpdateDSD={handleUpdateDSD}
+              handleCreateShiftDemand={handleCreateShiftDemand}
+              handleUpdateShiftDemand={handleUpdateShiftDemand}
+              handleDeleteShiftDemand={handleDeleteShiftDemand}
               handleExportSchedule={handleExportSchedule}
               handleOpenCreateAssignment={handleOpenCreateAssignment}
             />

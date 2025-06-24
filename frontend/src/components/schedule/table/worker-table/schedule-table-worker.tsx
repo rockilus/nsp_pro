@@ -1,4 +1,5 @@
 import React from "react";
+import dayjs from "dayjs";
 // MUI
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
@@ -21,7 +22,7 @@ import {
   ScheduleViewSettingsT,
 } from "../../../../types/schedule";
 import { BreachT } from "@/types/breach";
-import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { ShiftDemandDTO, ShiftDemandMatrix } from "@/types/shiftDemand";
 import { CreateAssignmentT } from "@/types/assignment";
 import { AssignmentDataDictT } from "@/types/assignment";
 import { AssignmentT } from "@/types/assignment";
@@ -37,15 +38,17 @@ export default function ScheduleTableWorker({
   workers,
   requests,
   assignments,
-  dailyShiftDemands,
+  shiftDemands,
+  shiftDemandMatrix,
   recurrences,
   scheduleCampaign,
   periodDates,
   breaches,
   scheduleViewSettings,
   handleAssignmentSelection,
-  handleCreateDSD,
-  handleUpdateDSD,
+  handleCreateShiftDemand,
+  handleUpdateShiftDemand,
+  handleDeleteShiftDemand,
   handleExportSchedule,
   handleOpenCreateAssignment,
 }: {
@@ -55,15 +58,25 @@ export default function ScheduleTableWorker({
   workers: WorkerT[];
   requests: RequestT[];
   assignments: AssignmentT[];
-  dailyShiftDemands: DailyShiftDemandT[];
+  shiftDemands: ShiftDemandDTO[];
+  shiftDemandMatrix: ShiftDemandMatrix;
   recurrences: RecurrenceRuleT[];
   scheduleCampaign: ScheduleT | null;
   periodDates: periodDateT[];
   breaches: BreachT[];
   scheduleViewSettings: ScheduleViewSettingsT;
   handleAssignmentSelection: (selectedCell: AssignmentDataDictT) => void;
-  handleCreateDSD: (dsd: DailyShiftDemandT) => void;
-  handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
+  handleCreateShiftDemand: (
+    shiftId: string,
+    date: dayjs.Dayjs,
+    count: number,
+    notes?: string
+  ) => Promise<void>;
+  handleUpdateShiftDemand: (
+    demandId: string,
+    updates: Partial<{ count: number; notes: string | null }>
+  ) => Promise<void>;
+  handleDeleteShiftDemand: (demandId: string) => Promise<void>;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
@@ -72,6 +85,42 @@ export default function ScheduleTableWorker({
     assignments,
     scheduleCampaign
   );
+
+  // Temporary converter function for legacy compatibility
+  const convertToLegacyFormat = (demands: ShiftDemandDTO[]) => {
+    return demands.map((demand) => ({
+      id: demand.id,
+      teamId: demand.teamId,
+      scheduleId: scheduleCampaign?.id || "",
+      shiftDemandId: null,
+      coverageSelectorId: null,
+      sourceType: 0, // DSDSourceType.SHIFT_DEMAND
+      date: dayjs.unix(demand.date),
+      shiftId: demand.shiftId,
+      count: demand.count,
+      notes: demand.notes,
+    }));
+  };
+
+  const dailyShiftDemands = convertToLegacyFormat(shiftDemands);
+
+  // Legacy handler converters
+  const handleCreateDSD = async (legacyDemand: any) => {
+    const shiftId = legacyDemand.shiftId;
+    const date = legacyDemand.date;
+    const count = legacyDemand.count;
+    const notes = legacyDemand.notes || "";
+    await handleCreateShiftDemand(shiftId, date, count, notes);
+  };
+
+  const handleUpdateDSD = async (legacyDemand: any) => {
+    const demandId = legacyDemand.id;
+    const updates = {
+      count: legacyDemand.count,
+      notes: legacyDemand.notes || null,
+    };
+    await handleUpdateShiftDemand(demandId, updates);
+  };
 
   const scheduleCellDict = buildScheduleCellDict(
     AttributeOwnerType.WORKER,

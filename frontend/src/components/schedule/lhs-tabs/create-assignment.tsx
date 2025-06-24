@@ -16,7 +16,7 @@ import { WorkerT } from "../../../types/worker";
 import { ShiftT } from "../../../types/shift";
 import { AssignmentT } from "@/types/assignment";
 import { RecurrenceRuleT } from "@/types/recurrence";
-import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { ShiftDemandDTO } from "@/types/shiftDemand";
 import { TeamWithMembership } from "@/types/team";
 
 dayjs.extend(utc);
@@ -36,7 +36,12 @@ interface CreateAssignmentProps {
     newAssignment: AssignmentT,
     newRecurrence: RecurrenceRuleT | null
   ) => void;
-  handleCreateDSD: (dsd: DailyShiftDemandT) => void;
+  handleCreateShiftDemand: (
+    shiftId: string,
+    date: dayjs.Dayjs,
+    count: number,
+    notes?: string
+  ) => Promise<void>;
 }
 
 const CreateAssignment: React.FC<CreateAssignmentProps> = ({
@@ -51,13 +56,22 @@ const CreateAssignment: React.FC<CreateAssignmentProps> = ({
   addDemandActive,
   onClose,
   handleCreateAssignment,
-  handleCreateDSD,
+  handleCreateShiftDemand,
 }) => {
   const { t } = useTranslation(lng, "schedule-page");
 
   const [isCreatingDemand, setIsCreatingDemand] = useState<boolean>(false);
 
   const shift = shifts.find((s) => s.id === shiftSelectedId);
+
+  // Legacy compatibility function
+  const handleCreateDSD = async (legacyDemand: any) => {
+    const shiftId = legacyDemand.shiftId;
+    const date = legacyDemand.date;
+    const count = legacyDemand.count;
+    const notes = legacyDemand.notes || "";
+    await handleCreateShiftDemand(shiftId, date, count, notes);
+  };
 
   const handleSetIsCreatingDemand = () => {
     if (!scheduleId || !shift || !dateSelected || !addDemandActive) {

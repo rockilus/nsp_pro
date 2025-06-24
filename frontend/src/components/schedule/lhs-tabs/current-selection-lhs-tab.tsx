@@ -17,7 +17,7 @@ import {
 } from "../../../types/schedule";
 import { AssignmentT } from "@/types/assignment";
 import { RecurrenceRuleT, RecurrenceUpdateScope } from "@/types/recurrence";
-import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { ShiftDemandDTO, ShiftDemandUpdateDTO } from "@/types/shiftDemand";
 import { SpecialtyT } from "@/types/specialty";
 
 export default function CurrentSelectionLHSTab({
@@ -33,9 +33,9 @@ export default function CurrentSelectionLHSTab({
   onClose,
   handleUpdateAssignment,
   handleDeleteAssignment,
-  handleCreateDSD,
-  handleUpdateDSD,
-  handleDeleteDSDs,
+  handleCreateShiftDemand,
+  handleUpdateShiftDemand,
+  handleDeleteShiftDemand,
 }: {
   lng: string;
   teamId: string;
@@ -57,15 +57,49 @@ export default function CurrentSelectionLHSTab({
     recurrenceId: string | null,
     recurrenceUpdateScope: RecurrenceUpdateScope | null
   ) => void;
-  handleCreateDSD: (dsd: DailyShiftDemandT) => void;
-  handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
-  handleDeleteDSDs: (
+  handleCreateShiftDemand: (
+    shiftId: string,
+    date: dayjs.Dayjs,
+    count: number,
+    notes?: string
+  ) => Promise<void>;
+  handleUpdateShiftDemand: (
+    demandId: string,
+    updates: Partial<ShiftDemandUpdateDTO>
+  ) => Promise<void>;
+  handleDeleteShiftDemand: (demandId: string) => Promise<void>;
+}) {
+  const { t } = useTranslation(lng, "schedule-page");
+
+  // Legacy handler converters for DemandSelection component
+  const handleCreateDSD = async (legacyDemand: any) => {
+    const shiftId = legacyDemand.shiftId;
+    const date = legacyDemand.date;
+    const count = legacyDemand.count;
+    const notes = legacyDemand.notes || "";
+    await handleCreateShiftDemand(shiftId, date, count, notes);
+  };
+
+  const handleUpdateDSD = async (legacyDemand: any) => {
+    const demandId = legacyDemand.id;
+    const updates = {
+      count: legacyDemand.count,
+      notes: legacyDemand.notes || null,
+    };
+    await handleUpdateShiftDemand(demandId, updates);
+  };
+
+  const handleDeleteDSDs = async (
     teamId: string,
     shiftId: string,
     date: dayjs.Dayjs
-  ) => void;
-}) {
-  const { t } = useTranslation(lng, "schedule-page");
+  ) => {
+    // This will be updated when DemandSelection component is migrated
+    // For now, we need to find the demand by shiftId and date, then delete it
+    console.warn(
+      "handleDeleteDSDs needs to be updated to work with new shift demand implementation"
+    );
+  };
 
   return (
     <div className="assignment-options-container">
