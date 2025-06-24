@@ -71,35 +71,51 @@ export default function CurrentSelectionLHSTab({
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
-  // Legacy handler converters for DemandSelection component
-  const handleCreateDSD = async (legacyDemand: any) => {
-    const shiftId = legacyDemand.shiftId;
-    const date = legacyDemand.date;
-    const count = legacyDemand.count;
-    const notes = legacyDemand.notes || "";
-    await handleCreateShiftDemand(shiftId, date, count, notes);
-  };
+  // Extract data from legacy ScheduleCellDataT structure for new DemandSelection component
+  const getDemandSelectionProps = () => {
+    if (!selectedDemand?.dailyShiftDemandsData) {
+      return null;
+    }
 
-  const handleUpdateDSD = async (legacyDemand: any) => {
-    const demandId = legacyDemand.id;
-    const updates = {
-      count: legacyDemand.count,
-      notes: legacyDemand.notes || null,
-    };
-    await handleUpdateShiftDemand(demandId, updates);
-  };
+    const { dailyShiftDemandsData } = selectedDemand;
+    const shift = dailyShiftDemandsData.shift;
+    const date = dailyShiftDemandsData.dailyShiftDemands[0]?.date;
 
-  const handleDeleteDSDs = async (
-    teamId: string,
-    shiftId: string,
-    date: dayjs.Dayjs
-  ) => {
-    // This will be updated when DemandSelection component is migrated
-    // For now, we need to find the demand by shiftId and date, then delete it
-    console.warn(
-      "handleDeleteDSDs needs to be updated to work with new shift demand implementation"
+    if (!date) {
+      return null;
+    }
+
+    // Convert legacy DailyShiftDemandT[] to ShiftDemandDTO[]
+    const shiftDemands: ShiftDemandDTO[] =
+      dailyShiftDemandsData.dailyShiftDemands.map((dsd) => ({
+        id: dsd.id || "", // Handle cases where id might be empty for new demands
+        date: typeof dsd.date === "number" ? dsd.date : dsd.date.unix(),
+        shiftId: dsd.shiftId,
+        teamId: dsd.teamId,
+        count: dsd.count,
+        notes: null, // Legacy DSDs don't have notes
+        source: "manual" as const, // Map legacy DIRECT_REQUIREMENT to manual
+        sourceId: null,
+        createdAt: 0, // Not available in legacy structure
+        updatedAt: 0, // Not available in legacy structure
+      }));
+
+    // Convert legacy AssignmentDataT[] to AssignmentT[]
+    const assignments: AssignmentT[] = selectedDemand.assignmentsData.map(
+      (assignmentData) => assignmentData.assignment
     );
+
+    return {
+      shift,
+      date,
+      shiftDemands,
+      assignments,
+      campaignStartDate: campaign ? dayjs(campaign.startDate) : dayjs(),
+      campaignEndDate: campaign ? dayjs(campaign.endDate) : dayjs(),
+    };
   };
+
+  const demandProps = getDemandSelectionProps();
 
   return (
     <div className="assignment-options-container">
@@ -115,16 +131,33 @@ export default function CurrentSelectionLHSTab({
           handleDeleteAssignment={handleDeleteAssignment}
         />
       )}
-      {selectedDemand && (
+      {selectedDemand && demandProps && (
         <DemandSelection
           lng={lng}
           teamId={teamId}
-          campaign={campaign}
-          selectedDemand={selectedDemand}
+          shift={demandProps.shift}
+          date={demandProps.date}
+          shiftDemands={demandProps.shiftDemands}
+          assignments={demandProps.assignments}
           specialties={specialties}
-          handleCreateDSD={handleCreateDSD}
-          handleUpdateDSD={handleUpdateDSD}
-          handleDeleteDSDs={handleDeleteDSDs}
+          campaignStartDate={demandProps.campaignStartDate}
+          campaignEndDate={demandProps.campaignEndDate}
+          handleCreateShiftDemand={handleCreateShiftDemand}
+          handleUpdateShiftDemand={handleUpdateShiftDemand}
+          handleDeleteShiftDemands={async (
+            shiftId: string,
+            date: dayjs.Dayjs
+          ) => {
+            // For now, just call handleDeleteShiftDemand for all demands for this shift/date
+            // This is a simplified implementation - in a full migration, we'd have better handling
+            const demandsToDelete = demandProps.shiftDemands.filter(
+              (d) =>
+                d.shiftId === shiftId && dayjs.unix(d.date).isSame(date, "day")
+            );
+            for (const demand of demandsToDelete) {
+              await handleDeleteShiftDemand(demand.id);
+            }
+          }}
         />
       )}
     </div>
