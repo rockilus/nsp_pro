@@ -17,7 +17,7 @@ import LHSTab from "./lhs-tabs/lhs-tab";
 import CreateAssignment from "./lhs-tabs/create-assignment";
 import {
   buildAssignmentsDataByOwnerAndDate,
-  buildDailyShiftDemandsDataByShiftAndDate,
+  buildShiftDemandsDataByShiftAndDate,
   buildScheduleCellDict,
 } from "./table/shared/assignment-utils";
 import { getPeriodStartEndDates } from "./schedule-utils";

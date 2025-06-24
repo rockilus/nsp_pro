@@ -71,36 +71,24 @@ export default function CurrentSelectionLHSTab({
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
-  // Extract data from legacy ScheduleCellDataT structure for new DemandSelection component
+  // Extract data from ScheduleCellDataT structure for DemandSelection component
   const getDemandSelectionProps = () => {
-    if (!selectedDemand?.dailyShiftDemandsData) {
+    if (!selectedDemand?.shiftDemandsData) {
       return null;
     }
 
-    const { dailyShiftDemandsData } = selectedDemand;
-    const shift = dailyShiftDemandsData.shift;
-    const date = dailyShiftDemandsData.dailyShiftDemands[0]?.date;
+    const { shiftDemandsData } = selectedDemand;
+    const shift = shiftDemandsData.shift;
+    const shiftDemands = shiftDemandsData.shiftDemands;
 
-    if (!date) {
+    if (!shiftDemands.length) {
       return null;
     }
 
-    // Convert legacy DailyShiftDemandT[] to ShiftDemandDTO[]
-    const shiftDemands: ShiftDemandDTO[] =
-      dailyShiftDemandsData.dailyShiftDemands.map((dsd) => ({
-        id: dsd.id || "", // Handle cases where id might be empty for new demands
-        date: typeof dsd.date === "number" ? dsd.date : dsd.date.unix(),
-        shiftId: dsd.shiftId,
-        teamId: dsd.teamId,
-        count: dsd.count,
-        notes: null, // Legacy DSDs don't have notes
-        source: "manual" as const, // Map legacy DIRECT_REQUIREMENT to manual
-        sourceId: null,
-        createdAt: 0, // Not available in legacy structure
-        updatedAt: 0, // Not available in legacy structure
-      }));
+    // Get date from first shift demand (they should all be for the same date)
+    const date = dayjs.unix(shiftDemands[0].date);
 
-    // Convert legacy AssignmentDataT[] to AssignmentT[]
+    // Convert AssignmentDataT[] to AssignmentT[]
     const assignments: AssignmentT[] = selectedDemand.assignmentsData.map(
       (assignmentData) => assignmentData.assignment
     );

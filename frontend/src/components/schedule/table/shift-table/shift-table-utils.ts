@@ -1,6 +1,5 @@
 // Types
 import { ShiftT, ShiftType } from "../../../../types/shift";
-import { DailyShiftDemandT } from "@/types/daily-shift-demand";
 import { AssignmentT } from "@/types/assignment";
 
 // Sorts an array of shifts with the following order:

@@ -15,14 +15,14 @@ export default function DailyShiftDemandCell({
 }) {
   const assignmentsCount = scheduleCellData.assignmentsData.length;
   const shiftStaffingTotal =
-    scheduleCellData.dailyShiftDemandsData?.shift.staffing.reduce(
+    scheduleCellData.shiftDemandsData?.shift.staffing.reduce(
       (sum, staffing) => sum + staffing.staffing,
       0
     ) || 0;
 
   const countActual = Math.floor(assignmentsCount / shiftStaffingTotal);
   const countTarget =
-    scheduleCellData.dailyShiftDemandsData?.dailyShiftDemands.reduce(
+    scheduleCellData.shiftDemandsData?.shiftDemands.reduce(
       (sum, demand) => sum + demand.count,
       0
     ) || 0;

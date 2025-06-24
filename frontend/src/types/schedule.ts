@@ -15,6 +15,7 @@ import {
   DemandsResultT,
   toDemandsResultT,
 } from "./daily-shift-demand";
+import { ShiftDemandDTO } from "./shiftDemand";
 import { WorkerT } from "./worker";
 import { RecurrenceRuleT } from "./recurrence";
 
@@ -159,9 +160,30 @@ export type DailyShiftDemandsDictT = {
   [key: string]: DailyShiftDemandsDataT;
 };
 
+// New ShiftDemandDTO-based types
+export type ShiftDemandsDataT = {
+  shiftDemands: ShiftDemandDTO[];
+  shift: ShiftT;
+};
+
+export type ShiftDemandsDictT = {
+  [key: string]: ShiftDemandsDataT;
+};
+
+// Updated ScheduleCellDataT that could work with both legacy and new types
+export type ScheduleCellDataNewT = {
+  assignmentsData: AssignmentDataT[];
+  shiftDemandsData: ShiftDemandsDataT | null;
+  requests: RequestT[];
+};
+
+export type ScheduleCellsNewDictT = {
+  [key: string]: ScheduleCellDataNewT;
+};
+
 export type ScheduleCellDataT = {
   assignmentsData: AssignmentDataT[];
-  dailyShiftDemandsData: DailyShiftDemandsDataT | null;
+  shiftDemandsData: ShiftDemandsDataT | null;
   requests: RequestT[];
 };
 
