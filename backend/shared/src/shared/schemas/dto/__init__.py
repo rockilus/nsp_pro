@@ -24,6 +24,13 @@ from shared.schemas.dto.dimension import (
 )
 from shared.schemas.dto.export_options import ExportOptionsDTO
 from shared.schemas.dto.link_shift import LinkShiftDTO
+from shared.schemas.dto.multitasking import (
+    CreateMultitaskingGroupRequest,
+    ShiftDemandConcurrencyDTO,
+    ShiftDemandConcurrencyRequestDTO,
+    ShiftDemandConcurrencyResponseDTO,
+    UpdateMultitaskingGroupRequest,
+)
 from shared.schemas.dto.recurrence import OccurrenceInfoDTO, RecurrenceRuleDTO
 from shared.schemas.dto.request import RequestDTO
 from shared.schemas.dto.schedule import (
@@ -94,6 +101,11 @@ __all__ = [
     "NewDimensionDTO",
     "ExportOptionsDTO",
     "LinkShiftDTO",
+    "CreateMultitaskingGroupRequest",
+    "ShiftDemandConcurrencyDTO",
+    "ShiftDemandConcurrencyRequestDTO",
+    "ShiftDemandConcurrencyResponseDTO",
+    "UpdateMultitaskingGroupRequest",
     "OccurrenceInfoDTO",
     "RecurrenceRuleDTO",
     "RequestDTO",

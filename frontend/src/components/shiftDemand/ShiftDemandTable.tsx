@@ -15,6 +15,7 @@ import {
 import { Add, Remove } from "@mui/icons-material";
 import { useTranslation } from "../../app/i18n/client";
 import { ShiftT, ShiftType } from "../../types/shift";
+import { MultitaskingSelectionState } from "../../types/multitasking";
 import { ShiftColorMappings } from "../../constants/constants";
 import { ColumnDefinition, ColumnFilter, TableSort } from "../../types/filter";
 import ColumnSortFilterMenu from "../table/ColumnSortFilterMenu";
@@ -37,6 +38,12 @@ interface ShiftDemandTableProps {
   shifts: ShiftT[];
   dates: Dayjs[];
   bulkChangeState: BulkChangeState;
+  // Multitasking props
+  multitaskingState?: MultitaskingSelectionState;
+  onToggleShiftDemandSelection?: (shiftDemandId: string) => void;
+  isShiftDemandSelectable?: (shiftId: string, date: Dayjs) => boolean;
+  isShiftDemandSelected?: (shiftId: string, date: Dayjs) => boolean;
+  // Regular props
   getDemandValue: (shiftId: string, date: Dayjs) => number;
   handleCellChange: (
     shiftId: string,
@@ -71,8 +78,13 @@ interface ShiftDemandCellProps {
   isBulkMode: boolean;
   isSaving: boolean;
   shift: ShiftT; // Add shift object to get color information
+  // Multitasking props
+  isMultitaskingMode?: boolean;
+  isSelectable?: boolean;
+  isMultitaskingSelected?: boolean;
   onCellChange: (shiftId: string, date: Dayjs, value: string) => Promise<void>;
   onToggleSelection: (shiftId: string, date: Dayjs) => void;
+  onToggleMultitaskingSelection?: (shiftDemandId: string) => void;
 }
 
 function ShiftDemandCell({
@@ -84,8 +96,12 @@ function ShiftDemandCell({
   isBulkMode,
   isSaving,
   shift, // Add shift prop
+  isMultitaskingMode = false,
+  isSelectable = true,
+  isMultitaskingSelected = false,
   onCellChange,
   onToggleSelection,
+  onToggleMultitaskingSelection,
 }: ShiftDemandCellProps) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -114,9 +130,33 @@ function ShiftDemandCell({
     await onCellChange(shiftId, date, String(newValue));
   };
 
+  const handleCellClick = () => {
+    if (isMultitaskingMode && onToggleMultitaskingSelection) {
+      const shiftDemandId = `${shiftId}-${date.format("YYYY-MM-DD")}`;
+      onToggleMultitaskingSelection(shiftDemandId);
+    } else if (value === 0) {
+      handleAddDemand();
+    }
+  };
+
+  // Apply multitasking styling
+  const getCellClassName = () => {
+    let className = `shift-demand-cell ${isWeekend ? "weekend" : ""}`;
+    if (isMultitaskingMode) {
+      if (!isSelectable) {
+        className += " multitasking-disabled";
+      } else if (isMultitaskingSelected) {
+        className += " multitasking-selected";
+      } else {
+        className += " multitasking-available";
+      }
+    }
+    return className;
+  };
+
   return (
     <TableCell
-      className={`shift-demand-cell ${isWeekend ? "weekend" : ""}`}
+      className={getCellClassName()}
       style={
         {
           "--shift-bg-color": background,
@@ -124,6 +164,15 @@ function ShiftDemandCell({
           "--shift-text-color": text,
         } as React.CSSProperties
       }
+      onClick={isMultitaskingMode ? handleCellClick : undefined}
+      sx={{
+        cursor: isMultitaskingMode
+          ? isSelectable
+            ? "pointer"
+            : "not-allowed"
+          : "default",
+        opacity: isMultitaskingMode && !isSelectable ? 0.5 : 1,
+      }}
     >
       {isBulkMode ? (
         <div className={`shift-demand-bulk ${isSelected ? "selected" : ""}`}>
@@ -148,7 +197,7 @@ function ShiftDemandCell({
             // Empty state with shift color theming
             <div
               className={`shift-demand-empty ${isHovered ? "hovered" : ""}`}
-              onClick={handleAddDemand}
+              onClick={!isMultitaskingMode ? handleAddDemand : undefined}
             >
               {isSaving ? (
                 <CircularProgress size={16} />
@@ -168,7 +217,7 @@ function ShiftDemandCell({
               )}
 
               {/* Decrement button */}
-              {isHovered && !isSaving && (
+              {isHovered && !isSaving && !isMultitaskingMode && (
                 <button
                   onClick={handleDecrement}
                   className="shift-demand-button decrement"
@@ -188,7 +237,7 @@ function ShiftDemandCell({
               </span>
 
               {/* Increment button */}
-              {isHovered && !isSaving && (
+              {isHovered && !isSaving && !isMultitaskingMode && (
                 <button
                   onClick={handleIncrement}
                   className="shift-demand-button increment"
@@ -300,6 +349,12 @@ interface ShiftDemandRowProps {
   shift: ShiftT;
   dates: Dayjs[];
   bulkChangeState: BulkChangeState;
+  // Multitasking props
+  multitaskingState?: MultitaskingSelectionState;
+  onToggleShiftDemandSelection?: (shiftDemandId: string) => void;
+  isShiftDemandSelectable?: (shiftId: string, date: Dayjs) => boolean;
+  isShiftDemandSelected?: (shiftId: string, date: Dayjs) => boolean;
+  // Regular props
   getDemandValue: (shiftId: string, date: Dayjs) => number;
   handleCellChange: (
     shiftId: string,
@@ -317,6 +372,12 @@ function ShiftDemandRow({
   shift,
   dates,
   bulkChangeState,
+  // Multitasking props
+  multitaskingState,
+  onToggleShiftDemandSelection,
+  isShiftDemandSelectable,
+  isShiftDemandSelected,
+  // Regular props
   getDemandValue,
   handleCellChange,
   isCellSelected,
@@ -356,8 +417,21 @@ function ShiftDemandRow({
             isBulkMode={bulkChangeState.isActive}
             isSaving={isSaving}
             shift={shift} // Pass the shift object
+            // Multitasking props
+            isMultitaskingMode={multitaskingState?.isActive || false}
+            isSelectable={
+              isShiftDemandSelectable
+                ? isShiftDemandSelectable(shift.id, date)
+                : true
+            }
+            isMultitaskingSelected={
+              isShiftDemandSelected
+                ? isShiftDemandSelected(shift.id, date)
+                : false
+            }
             onCellChange={handleCellChange}
             onToggleSelection={toggleCellSelection}
+            onToggleMultitaskingSelection={onToggleShiftDemandSelection}
           />
         );
       })}
@@ -479,6 +553,12 @@ interface ShiftDemandTableBodyProps {
   shifts: ShiftT[];
   dates: Dayjs[];
   bulkChangeState: BulkChangeState;
+  // Multitasking props
+  multitaskingState?: MultitaskingSelectionState;
+  onToggleShiftDemandSelection?: (shiftDemandId: string) => void;
+  isShiftDemandSelectable?: (shiftId: string, date: Dayjs) => boolean;
+  isShiftDemandSelected?: (shiftId: string, date: Dayjs) => boolean;
+  // Regular props
   getDemandValue: (shiftId: string, date: Dayjs) => number;
   handleCellChange: (
     shiftId: string,
@@ -497,6 +577,12 @@ function ShiftDemandTableBody({
   shifts,
   dates,
   bulkChangeState,
+  // Multitasking props
+  multitaskingState,
+  onToggleShiftDemandSelection,
+  isShiftDemandSelectable,
+  isShiftDemandSelected,
+  // Regular props
   getDemandValue,
   handleCellChange,
   isCellSelected,
@@ -513,6 +599,12 @@ function ShiftDemandTableBody({
           shift={shift}
           dates={dates}
           bulkChangeState={bulkChangeState}
+          // Multitasking props
+          multitaskingState={multitaskingState}
+          onToggleShiftDemandSelection={onToggleShiftDemandSelection}
+          isShiftDemandSelectable={isShiftDemandSelectable}
+          isShiftDemandSelected={isShiftDemandSelected}
+          // Regular props
           getDemandValue={getDemandValue}
           handleCellChange={handleCellChange}
           isCellSelected={isCellSelected}
@@ -532,6 +624,12 @@ export default function ShiftDemandTable({
   shifts,
   dates,
   bulkChangeState,
+  // Multitasking props
+  multitaskingState,
+  onToggleShiftDemandSelection,
+  isShiftDemandSelectable,
+  isShiftDemandSelected,
+  // Regular props
   getDemandValue,
   handleCellChange,
   isCellSelected,
@@ -617,6 +715,12 @@ export default function ShiftDemandTable({
           shifts={shifts}
           dates={dates}
           bulkChangeState={bulkChangeState}
+          // Multitasking props
+          multitaskingState={multitaskingState}
+          onToggleShiftDemandSelection={onToggleShiftDemandSelection}
+          isShiftDemandSelectable={isShiftDemandSelectable}
+          isShiftDemandSelected={isShiftDemandSelected}
+          // Regular props
           getDemandValue={getDemandValue}
           handleCellChange={handleCellChange}
           isCellSelected={isCellSelected}

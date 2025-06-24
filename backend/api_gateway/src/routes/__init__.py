@@ -12,6 +12,7 @@ from src.routes.dimension_routes import router as router_dimension
 from src.routes.export_routes import router as router_export
 from src.routes.health_routes import router as router_health
 from src.routes.link_shift_routes import router as router_link_shift
+from src.routes.multitasking_routes import router as router_multitasking
 from src.routes.request_routes import router as router_request
 from src.routes.schedule_routes import router as router_schedule
 from src.routes.shift_demand_new_routes import router as router_shift_demand_new
@@ -43,6 +44,7 @@ __all__ = [
     "router_export",
     "router_health",
     "router_link_shift",
+    "router_multitasking",
     "router_request",
     "router_schedule",
     "router_shift_demand",

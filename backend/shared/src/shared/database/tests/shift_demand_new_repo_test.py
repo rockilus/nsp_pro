@@ -388,12 +388,13 @@ class TestShiftDemandNewRepository:
         assert len(results) == 2
 
     def test_shift_demand_with_zero_count(self):
-        """Test creating a shift demand with zero count."""
+        """
+        Test that creating a shift demand with zero count raises a validation error.
+        """
         shift_demand = self._create_test_shift_demand(count=0)
 
-        result = self.repo.create_shift_demand(shift_demand)
-
-        assert result.count == 0
+        with pytest.raises(ValueError, match="count must be greater than 0"):
+            self.repo.create_shift_demand(shift_demand)
 
     def test_shift_demand_with_large_count(self):
         """Test creating a shift demand with a large count."""

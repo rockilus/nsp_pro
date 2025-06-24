@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "shared"
-version = "0.1.263"
+version = "0.1.272"
 description = ""
 authors = ["Felipe Kharaba"]
 readme = "README.md"
@@ -24,6 +24,7 @@ dotenv = "^0.9.9"
 isort = "^6.0.1"
 pymongo = {extras = ["aws"], version = "^4.11.3"}
 pyhumps = "^3.8.0"
+pydantic = "^2.11.7"
 
 
 [build-system]

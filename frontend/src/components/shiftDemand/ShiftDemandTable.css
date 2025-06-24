@@ -9,6 +9,30 @@
   background-color: #fafafa !important; /* grey.50 equivalent */
 }
 
+/* Multitasking mode styles */
+.shift-demand-cell.multitasking-disabled {
+  opacity: 0.4 !important;
+  pointer-events: none;
+  background-color: #f5f5f5 !important;
+}
+
+.shift-demand-cell.multitasking-available {
+  border: 2px solid #e3f2fd !important;
+  cursor: pointer !important;
+  background-color: #fafafa !important;
+}
+
+.shift-demand-cell.multitasking-available:hover {
+  border-color: #2196f3 !important;
+  background-color: #e3f2fd !important;
+}
+
+.shift-demand-cell.multitasking-selected {
+  border: 2px solid #2196f3 !important;
+  background-color: #e3f2fd !important;
+  box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2) !important;
+}
+
 .shift-demand-cell-content {
   height: 100%;
   display: flex;

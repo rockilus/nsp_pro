@@ -71,6 +71,13 @@ from shared.schemas.core.export_options import (
 )
 from shared.schemas.core.link_shift import LinkShift, LSChange
 from shared.schemas.core.model_output import ModelOutput, ModelOutputStatus
+from shared.schemas.core.multitasking import (
+    MultitaskingGroup,
+    MultitaskingGroupType,
+    ShiftDemandConcurrency,
+    ShiftDemandConcurrencyRequest,
+    ShiftDemandConcurrencyResponse,
+)
 from shared.schemas.core.recurrence import (
     FrequencyType,
     MonthRepeatType,
@@ -262,6 +269,11 @@ __all__ = [
     "WorkTimeTableData",
     "LinkShift",
     "LSChange",
+    "MultitaskingGroup",
+    "MultitaskingGroupType",
+    "ShiftDemandConcurrency",
+    "ShiftDemandConcurrencyRequest",
+    "ShiftDemandConcurrencyResponse",
     "Shift",
     "ShiftLeaveType",
     "ShiftRestType",
