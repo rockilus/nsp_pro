@@ -86,40 +86,35 @@ export default function ScheduleTableWorker({
     scheduleCampaign
   );
 
-  // Temporary converter function for legacy compatibility
-  const convertToLegacyFormat = (demands: ShiftDemandDTO[]) => {
-    return demands.map((demand) => ({
-      id: demand.id,
-      teamId: demand.teamId,
-      scheduleId: scheduleCampaign?.id || "",
-      shiftDemandId: null,
-      coverageSelectorId: null,
-      sourceType: 0, // DSDSourceType.SHIFT_DEMAND
-      date: dayjs.unix(demand.date),
-      shiftId: demand.shiftId,
-      count: demand.count,
-      notes: demand.notes,
-    }));
-  };
+  // Convert ShiftDemandDTO to legacy format for compatibility with existing utility functions
+  const dailyShiftDemands = shiftDemands.map((demand) => ({
+    id: demand.id,
+    teamId: demand.teamId,
+    scheduleId: scheduleCampaign?.id || "",
+    shiftDemandId: null,
+    coverageSelectorId: null,
+    sourceType: 0, // DSDSourceType.SHIFT_DEMAND
+    date: dayjs.unix(demand.date),
+    shiftId: demand.shiftId,
+    count: demand.count,
+    notes: demand.notes,
+  }));
 
-  const dailyShiftDemands = convertToLegacyFormat(shiftDemands);
-
-  // Legacy handler converters
+  // Handler converters for legacy compatibility
   const handleCreateDSD = async (legacyDemand: any) => {
-    const shiftId = legacyDemand.shiftId;
-    const date = legacyDemand.date;
-    const count = legacyDemand.count;
-    const notes = legacyDemand.notes || "";
-    await handleCreateShiftDemand(shiftId, date, count, notes);
+    await handleCreateShiftDemand(
+      legacyDemand.shiftId,
+      legacyDemand.date,
+      legacyDemand.count,
+      legacyDemand.notes || ""
+    );
   };
 
   const handleUpdateDSD = async (legacyDemand: any) => {
-    const demandId = legacyDemand.id;
-    const updates = {
+    await handleUpdateShiftDemand(legacyDemand.id, {
       count: legacyDemand.count,
       notes: legacyDemand.notes || null,
-    };
-    await handleUpdateShiftDemand(demandId, updates);
+    });
   };
 
   const scheduleCellDict = buildScheduleCellDict(

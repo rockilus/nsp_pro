@@ -1,16 +1,36 @@
 import dayjs from "dayjs";
 // Types
 import { ScheduleStatus, periodDateT } from "../../../../types/schedule";
-import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { ShiftDemandDTO } from "@/types/shiftDemand";
 import { AssignmentT } from "@/types/assignment";
 import { ShiftT, ShiftType } from "../../../../types/shift";
+
+/**
+ * Utility to convert ShiftDemandDTO to DailyShiftDemand-like structure for count calculations
+ */
+interface DailyShiftDemand {
+  shiftId: string;
+  date: dayjs.Dayjs;
+  count: number;
+}
+
+function convertShiftDemandsToDailyFormat(
+  shiftDemands: ShiftDemandDTO[]
+): DailyShiftDemand[] {
+  return shiftDemands.map((demand) => ({
+    shiftId: demand.shiftId,
+    date: dayjs.unix(demand.date),
+    count: demand.count,
+  }));
+}
 
 export const countShifts = (
   shifts: ShiftT[],
   assignments: AssignmentT[],
-  dsds: DailyShiftDemandT[],
+  shiftDemands: ShiftDemandDTO[],
   periodDates: periodDateT[]
 ) => {
+  const dsds = convertShiftDemandsToDailyFormat(shiftDemands);
   const out: {
     [date: string]: {
       [id: string]: {
@@ -92,10 +112,11 @@ export const countShifts = (
 export const countShiftsTotalPeriod = (
   shifts: ShiftT[],
   assignments: AssignmentT[],
-  dsds: DailyShiftDemandT[],
+  shiftDemands: ShiftDemandDTO[],
   startDate: dayjs.Dayjs,
   endDate: dayjs.Dayjs
 ) => {
+  const dsds = convertShiftDemandsToDailyFormat(shiftDemands);
   const shiftsWorkNotDeleted = shifts.filter(
     (s) =>
       [ShiftType.NORMAL, ShiftType.DUTY].includes(s.shiftType) && !s.deleted
@@ -139,10 +160,11 @@ export const countShiftsTotalPeriod = (
 export const countStaffings = (
   shifts: ShiftT[],
   assignments: AssignmentT[],
-  dsds: DailyShiftDemandT[],
+  shiftDemands: ShiftDemandDTO[],
   periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[]
 ) => {
   console.log("countStaffings called");
+  const dsds = convertShiftDemandsToDailyFormat(shiftDemands);
 
   const out: {
     [date: string]: {

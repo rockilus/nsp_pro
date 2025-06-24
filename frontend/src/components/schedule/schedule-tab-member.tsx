@@ -29,7 +29,7 @@ import {
   ScheduleCellDataT,
   ScheduleViewSettingsT,
 } from "../../types/schedule";
-import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { ShiftDemandDTO } from "@/types/shiftDemand";
 import { AssignmentT, CreateAssignmentT } from "@/types/assignment";
 import { TeamWithMembership } from "@/types/team";
 
@@ -124,9 +124,9 @@ export default function ScheduleTabMember({
   // Daily Shift Demand Actions
   //////////////////////////
 
-  const handleCreateDSD = async (dailyShiftDemand: DailyShiftDemandT) => {};
+  const handleCreateDSD = async () => {};
 
-  const handleUpdateDSD = async (dailyShiftDemand: DailyShiftDemandT) => {};
+  const handleUpdateDSD = async () => {};
 
   //////////////////////////
   // Assignment Actions

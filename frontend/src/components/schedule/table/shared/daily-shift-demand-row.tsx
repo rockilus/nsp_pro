@@ -16,6 +16,7 @@ import {
   ScheduleViewSettingsT,
 } from "../../../../types/schedule";
 import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { ShiftDemandDTO } from "@/types/shiftDemand";
 import { AssignmentT } from "@/types/assignment";
 
 export default function DailyShiftDemandRow({
@@ -59,10 +60,31 @@ export default function DailyShiftDemandRow({
   }>({});
 
   useEffect(() => {
+    // Convert DailyShiftDemandT to ShiftDemandDTO for count methods
+    const convertedShiftDemands: ShiftDemandDTO[] = dailyShiftDemands.map(
+      (dsd) => ({
+        id: dsd.id,
+        date: dsd.date.unix(),
+        shiftId: dsd.shiftId,
+        teamId: dsd.teamId,
+        count: dsd.count,
+        notes: null, // DailyShiftDemandT doesn't have notes
+        source: "manual" as const,
+        sourceId: null,
+        createdAt: Date.now() / 1000,
+        updatedAt: Date.now() / 1000,
+      })
+    );
+
     const newCounts =
       scheduleViewSettings.groupBy === "shift"
-        ? countShifts(shifts, assignments, dailyShiftDemands, periodDates)
-        : countStaffings(shifts, assignments, dailyShiftDemands, periodDates);
+        ? countShifts(shifts, assignments, convertedShiftDemands, periodDates)
+        : countStaffings(
+            shifts,
+            assignments,
+            convertedShiftDemands,
+            periodDates
+          );
     setCounts(newCounts);
   }, [
     shifts,

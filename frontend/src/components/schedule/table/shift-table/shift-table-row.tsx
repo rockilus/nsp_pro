@@ -15,7 +15,7 @@ import {
   ScheduleCellsDictT,
   ScheduleViewSettingsT,
 } from "../../../../types/schedule";
-import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { ShiftDemandDTO } from "@/types/shiftDemand";
 import { CreateAssignmentT } from "@/types/assignment";
 import { AssignmentT } from "@/types/assignment";
 import { TeamWithMembership } from "@/types/team";
@@ -24,7 +24,7 @@ export default function ShiftTableRow({
   teamWithMembership,
   shift,
   assignments,
-  dailyShiftDemands,
+  shiftDemands,
   periodDates,
   scheduleCampaign,
   scheduleCellsDict,
@@ -36,7 +36,7 @@ export default function ShiftTableRow({
   teamWithMembership: TeamWithMembership;
   shift: ShiftT;
   assignments: AssignmentT[];
-  dailyShiftDemands: DailyShiftDemandT[];
+  shiftDemands: ShiftDemandDTO[];
   periodDates: periodDateT[];
   scheduleCampaign: ScheduleT | null;
   scheduleCellsDict: ScheduleCellsDictT;
@@ -51,7 +51,7 @@ export default function ShiftTableRow({
         teamWithMembership={teamWithMembership}
         shift={shift}
         assignments={assignments}
-        dailyShiftDemands={dailyShiftDemands}
+        shiftDemands={shiftDemands}
         scheduleCampaign={scheduleCampaign}
       />
       {periodDates.map((pDate, dateIndex) => {
