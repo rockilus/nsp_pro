@@ -13,7 +13,6 @@ import "./create-demand.css";
 // Types
 import { ShiftT } from "../../../types/shift";
 import { RecurrenceRuleT } from "../../../types/recurrence";
-import { DailyShiftDemandT, DSDSourceType } from "@/types/daily-shift-demand";
 
 dayjs.extend(utc);
 
@@ -23,7 +22,12 @@ interface CreateDemandProps {
   scheduleId: string;
   shift: ShiftT;
   dateSelected: Dayjs;
-  handleCreateDSD: (dsd: DailyShiftDemandT) => void;
+  handleCreateDSD: (
+    shiftId: string,
+    date: dayjs.Dayjs,
+    count: number,
+    notes?: string
+  ) => Promise<void>;
   handleCancel: () => void;
   recurrence?: RecurrenceRuleT | null;
 }
@@ -44,18 +48,7 @@ const CreateDemand: React.FC<CreateDemandProps> = ({
 
   const handleCreateClick = async () => {
     setIsSubmitting(true);
-    const newDsd: DailyShiftDemandT = {
-      id: "",
-      teamId: teamId,
-      scheduleId: scheduleId,
-      shiftDemandId: null,
-      coverageSelectorId: null,
-      sourceType: DSDSourceType.DIRECT_REQUIREMENT,
-      date: dateSelected,
-      shiftId: shift.id,
-      count: 1,
-    };
-    await handleCreateDSD(newDsd);
+    await handleCreateDSD(shift.id, dateSelected, 1, "Direct requirement");
     setIsSubmitting(false);
   };
 

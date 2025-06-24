@@ -64,15 +64,6 @@ const CreateAssignment: React.FC<CreateAssignmentProps> = ({
 
   const shift = shifts.find((s) => s.id === shiftSelectedId);
 
-  // Legacy compatibility function
-  const handleCreateDSD = async (legacyDemand: any) => {
-    const shiftId = legacyDemand.shiftId;
-    const date = legacyDemand.date;
-    const count = legacyDemand.count;
-    const notes = legacyDemand.notes || "";
-    await handleCreateShiftDemand(shiftId, date, count, notes);
-  };
-
   const handleSetIsCreatingDemand = () => {
     if (!scheduleId || !shift || !dateSelected || !addDemandActive) {
       return;
@@ -94,7 +85,7 @@ const CreateAssignment: React.FC<CreateAssignmentProps> = ({
           scheduleId={scheduleId}
           shift={shift}
           dateSelected={dateSelected}
-          handleCreateDSD={handleCreateDSD}
+          handleCreateDSD={handleCreateShiftDemand}
           handleCancel={() => setIsCreatingDemand(false)}
           recurrence={null}
         />

@@ -8,8 +8,12 @@ import "./demand-selection.css";
 // Types
 import { ScheduleT, ScheduleCellDataT } from "../../../types/schedule";
 import { RecurrenceRuleT, RecurrenceUpdateScope } from "@/types/recurrence";
-import { DailyShiftDemandT, DSDSourceType } from "@/types/daily-shift-demand";
 import { SpecialtyT } from "@/types/specialty";
+import { DSDSourceType, DailyShiftDemandT } from "@/types/daily-shift-demand";
+
+// TODO: This component still uses legacy ScheduleCellDataT and DailyShiftDemandT types
+// It needs a full refactor to work with the new ShiftDemandDTO approach
+// The selectedDemand prop structure and all handlers need to be updated
 
 export default function DemandSelection({
   lng,
@@ -26,8 +30,8 @@ export default function DemandSelection({
   campaign: ScheduleT | null;
   selectedDemand: ScheduleCellDataT;
   specialties: SpecialtyT[];
-  handleCreateDSD: (dsd: DailyShiftDemandT) => void;
-  handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
+  handleCreateDSD: (dsd: DailyShiftDemandT) => Promise<void>; // Legacy signature - needs refactor
+  handleUpdateDSD: (dsd: DailyShiftDemandT) => Promise<void>; // Legacy signature - needs refactor
   handleDeleteDSDs: (
     teamId: string,
     shiftId: string,
