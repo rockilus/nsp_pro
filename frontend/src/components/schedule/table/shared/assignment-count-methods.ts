@@ -5,32 +5,12 @@ import { ShiftDemandDTO } from "@/types/shiftDemand";
 import { AssignmentT } from "@/types/assignment";
 import { ShiftT, ShiftType } from "../../../../types/shift";
 
-/**
- * Utility to convert ShiftDemandDTO to DailyShiftDemand-like structure for count calculations
- */
-interface DailyShiftDemand {
-  shiftId: string;
-  date: dayjs.Dayjs;
-  count: number;
-}
-
-function convertShiftDemandsToDailyFormat(
-  shiftDemands: ShiftDemandDTO[]
-): DailyShiftDemand[] {
-  return shiftDemands.map((demand) => ({
-    shiftId: demand.shiftId,
-    date: dayjs.unix(demand.date),
-    count: demand.count,
-  }));
-}
-
 export const countShifts = (
   shifts: ShiftT[],
   assignments: AssignmentT[],
   shiftDemands: ShiftDemandDTO[],
   periodDates: periodDateT[]
 ) => {
-  const dsds = convertShiftDemandsToDailyFormat(shiftDemands);
   const out: {
     [date: string]: {
       [id: string]: {
@@ -88,14 +68,15 @@ export const countShifts = (
       out[dateStr][shift.id].actual += shiftActualCount;
       totalActual += shiftActualCount;
 
-      dsds
+      shiftDemands
         .filter(
-          (dsd) =>
-            dsd.shiftId === shift.id && dsd.date.isSame(periodDate.date, "day")
+          (demand) =>
+            demand.shiftId === shift.id &&
+            dayjs.unix(demand.date).isSame(periodDate.date, "day")
         )
-        .forEach((dsd) => {
-          out[dateStr][shift.id].target += dsd.count;
-          totalTarget += dsd.count;
+        .forEach((demand) => {
+          out[dateStr][shift.id].target += demand.count;
+          totalTarget += demand.count;
         });
 
       totalStaffing += shiftStaffingTotal;
@@ -116,20 +97,19 @@ export const countShiftsTotalPeriod = (
   startDate: dayjs.Dayjs,
   endDate: dayjs.Dayjs
 ) => {
-  const dsds = convertShiftDemandsToDailyFormat(shiftDemands);
   const shiftsWorkNotDeleted = shifts.filter(
     (s) =>
       [ShiftType.NORMAL, ShiftType.DUTY].includes(s.shiftType) && !s.deleted
   );
   const countTarget = shiftsWorkNotDeleted.reduce((totalSum, shift) => {
-    const shiftSum = dsds
+    const shiftSum = shiftDemands
       .filter(
-        (dsd) =>
-          dsd.shiftId === shift.id &&
-          dsd.date.isSameOrAfter(startDate, "day") &&
-          dsd.date.isSameOrBefore(endDate, "day")
+        (demand) =>
+          demand.shiftId === shift.id &&
+          dayjs.unix(demand.date).isSameOrAfter(startDate, "day") &&
+          dayjs.unix(demand.date).isSameOrBefore(endDate, "day")
       )
-      .reduce((sum, dsd) => sum + dsd.count, 0);
+      .reduce((sum, demand) => sum + demand.count, 0);
     return totalSum + shiftSum;
   }, 0);
 
@@ -164,7 +144,6 @@ export const countStaffings = (
   periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[]
 ) => {
   console.log("countStaffings called");
-  const dsds = convertShiftDemandsToDailyFormat(shiftDemands);
 
   const out: {
     [date: string]: {
@@ -228,13 +207,14 @@ export const countStaffings = (
       out[dateStr][shift.id].actual += shiftActualCount;
       totalActual += shiftActualCount;
 
-      dsds
+      shiftDemands
         .filter(
-          (dsd) =>
-            dsd.shiftId === shift.id && dsd.date.isSame(periodDate.date, "day")
+          (demand) =>
+            demand.shiftId === shift.id &&
+            dayjs.unix(demand.date).isSame(periodDate.date, "day")
         )
-        .forEach((dsd) => {
-          const shift = shiftMap[dsd.shiftId];
+        .forEach((demand) => {
+          const shift = shiftMap[demand.shiftId];
           if (shift && shift.staffing.length > 0) {
             // Sum all staffing counts for this shift
             const shiftTarget =
@@ -242,7 +222,7 @@ export const countStaffings = (
                 (shiftTotal, staffingEntry) =>
                   shiftTotal + staffingEntry.staffing,
                 0
-              ) * dsd.count;
+              ) * demand.count;
             out[dateStr][shift.id].target += shiftTarget;
             totalTarget += shiftTarget;
           }

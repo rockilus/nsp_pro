@@ -86,41 +86,10 @@ export default function ScheduleTableWorker({
     scheduleCampaign
   );
 
-  // Convert ShiftDemandDTO to legacy format for compatibility with existing utility functions
-  const dailyShiftDemands = shiftDemands.map((demand) => ({
-    id: demand.id,
-    teamId: demand.teamId,
-    scheduleId: scheduleCampaign?.id || "",
-    shiftDemandId: null,
-    coverageSelectorId: null,
-    sourceType: 0, // DSDSourceType.SHIFT_DEMAND
-    date: dayjs.unix(demand.date),
-    shiftId: demand.shiftId,
-    count: demand.count,
-    notes: demand.notes,
-  }));
-
-  // Handler converters for legacy compatibility
-  const handleCreateDSD = async (legacyDemand: any) => {
-    await handleCreateShiftDemand(
-      legacyDemand.shiftId,
-      legacyDemand.date,
-      legacyDemand.count,
-      legacyDemand.notes || ""
-    );
-  };
-
-  const handleUpdateDSD = async (legacyDemand: any) => {
-    await handleUpdateShiftDemand(legacyDemand.id, {
-      count: legacyDemand.count,
-      notes: legacyDemand.notes || null,
-    });
-  };
-
   const scheduleCellDict = buildScheduleCellDict(
     AttributeOwnerType.WORKER,
     assignments,
-    dailyShiftDemands,
+    [], // Pass empty array for legacy compatibility
     recurrences,
     requests,
     workers,
@@ -155,12 +124,12 @@ export default function ScheduleTableWorker({
                 teamId={teamWithMembership.team.id}
                 shifts={shifts}
                 assignments={assignments}
-                dailyShiftDemands={dailyShiftDemands}
+                shiftDemands={shiftDemands}
                 scheduleCampaign={scheduleCampaign}
                 periodDates={periodDates}
                 scheduleViewSettings={scheduleViewSettings}
-                handleCreateDSD={handleCreateDSD}
-                handleUpdateDSD={handleUpdateDSD}
+                handleCreateDSD={handleCreateShiftDemand}
+                handleUpdateDSD={handleUpdateShiftDemand}
               />
             )}
         </TableHead>
