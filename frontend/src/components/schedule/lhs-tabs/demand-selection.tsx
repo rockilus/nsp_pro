@@ -13,20 +13,11 @@ import { AssignmentT } from "@/types/assignment";
 
 interface DemandSelectionProps {
   lng: string;
-  teamId: string;
   shift: ShiftT;
   date: dayjs.Dayjs;
-  shiftDemand: ShiftDemandDTO | null;
+  shiftDemand: ShiftDemandDTO;
   assignments: AssignmentT[];
   specialties: SpecialtyT[];
-  campaignStartDate: dayjs.Dayjs;
-  campaignEndDate: dayjs.Dayjs;
-  handleCreateShiftDemand: (
-    shiftId: string,
-    date: dayjs.Dayjs,
-    count: number,
-    notes?: string
-  ) => Promise<void>;
   handleUpdateShiftDemand: (
     demandId: string,
     updates: Partial<ShiftDemandUpdateDTO>
@@ -36,15 +27,11 @@ interface DemandSelectionProps {
 
 export default function DemandSelection({
   lng,
-  teamId,
   shift,
   date,
   shiftDemand,
   assignments,
   specialties,
-  campaignStartDate,
-  campaignEndDate,
-  handleCreateShiftDemand,
   handleUpdateShiftDemand,
   handleDeleteShiftDemand,
 }: DemandSelectionProps) {
@@ -58,42 +45,25 @@ export default function DemandSelection({
   );
 
   const countActual = Math.floor(assignmentsCount / shiftStaffingTotal);
-  const countTarget = shiftDemand?.count || 0;
-
-  // Check if we have a manual shift demand (equivalent to legacy DIRECT_REQUIREMENT)
-  const manualDemand = shiftDemand?.source === "manual" ? shiftDemand : null;
 
   const handleDecreaseDSD = async () => {
-    if (countTarget <= 0 || !manualDemand) {
+    if (shiftDemand.count <= 1) {
       return;
     }
 
-    // Update existing manual demand
-    await handleUpdateShiftDemand(manualDemand.id, {
-      count: Math.max(0, manualDemand.count - 1),
+    await handleUpdateShiftDemand(shiftDemand.id, {
+      count: shiftDemand.count - 1,
     });
   };
 
   const handleIncreaseDSD = async () => {
-    if (date.isBefore(campaignStartDate) || date.isAfter(campaignEndDate)) {
-      return;
-    }
-
-    if (manualDemand) {
-      // Update existing manual demand
-      await handleUpdateShiftDemand(manualDemand.id, {
-        count: manualDemand.count + 1,
-      });
-    } else {
-      // Create new manual demand
-      await handleCreateShiftDemand(shift.id, date, 1, "Direct requirement");
-    }
+    await handleUpdateShiftDemand(shiftDemand.id, {
+      count: shiftDemand.count + 1,
+    });
   };
 
   const handleDeleteDemands = async () => {
-    if (shiftDemand) {
-      await handleDeleteShiftDemand(shiftDemand.id);
-    }
+    await handleDeleteShiftDemand(shiftDemand.id);
   };
 
   const AdjustStaffingButtons = () => {
@@ -122,7 +92,7 @@ export default function DemandSelection({
         <div className="demand-selection-first-row">
           <span className="demand-selection-shift-name">{shift.name}</span>
           <div className="demand-selection-shift-status">
-            <span className="dsd-stats dsd-stats-actual">{`${countActual} / ${countTarget}`}</span>
+            <span className="dsd-stats dsd-stats-actual">{`${countActual} / ${shiftDemand.count}`}</span>
           </div>
         </div>
         <span className="demand-selection-date-time">
@@ -135,7 +105,9 @@ export default function DemandSelection({
         </span>
         <div className="demand-selection-daily-shift-demand">
           <span className="demand-selection-dsd-label">{t("demand")}</span>
-          <span className="demand-selection-dsd-target">{countTarget}</span>
+          <span className="demand-selection-dsd-target">
+            {shiftDemand.count}
+          </span>
           <AdjustStaffingButtons />
         </div>
         <div className="demand-selection-staffing-required">
@@ -156,7 +128,7 @@ export default function DemandSelection({
                 {`(${staffing.staffing})`}
               </span>
               <span className="demand-selection-staffing-required-count">
-                {staffing.staffing * countTarget}
+                {staffing.staffing * shiftDemand.count}
               </span>
             </div>
           ))}
@@ -170,7 +142,7 @@ export default function DemandSelection({
               {shift.staffing.reduce(
                 (sum: number, staffing) => sum + staffing.staffing,
                 0
-              ) * countTarget}
+              ) * shiftDemand.count}
             </span>
           </div>
         </div>

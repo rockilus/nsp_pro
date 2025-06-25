@@ -22,27 +22,22 @@ import { SpecialtyT } from "@/types/specialty";
 
 export default function CurrentSelectionLHSTab({
   lng,
-  teamId,
   workers,
   shifts,
   schedules,
-  campaign,
   selectedAssignment,
   selectedDemand,
   specialties,
   onClose,
   handleUpdateAssignment,
   handleDeleteAssignment,
-  handleCreateShiftDemand,
   handleUpdateShiftDemand,
   handleDeleteShiftDemand,
 }: {
   lng: string;
-  teamId: string;
   workers: WorkerT[];
   shifts: ShiftT[];
   schedules: ScheduleT[];
-  campaign: ScheduleT | null;
   selectedAssignment: AssignmentDataT | null;
   selectedDemand: ScheduleCellDataT | null;
   specialties: SpecialtyT[];
@@ -57,12 +52,6 @@ export default function CurrentSelectionLHSTab({
     recurrenceId: string | null,
     recurrenceUpdateScope: RecurrenceUpdateScope | null
   ) => void;
-  handleCreateShiftDemand: (
-    shiftId: string,
-    date: dayjs.Dayjs,
-    count: number,
-    notes?: string
-  ) => Promise<void>;
   handleUpdateShiftDemand: (
     demandId: string,
     updates: Partial<ShiftDemandUpdateDTO>
@@ -73,17 +62,13 @@ export default function CurrentSelectionLHSTab({
 
   // Extract data from ScheduleCellDataT structure for DemandSelection component
   const getDemandSelectionProps = () => {
-    if (!selectedDemand?.shiftDemandsData) {
+    if (!selectedDemand?.shiftDemandsData?.shiftDemand) {
       return null;
     }
 
     const { shiftDemandsData } = selectedDemand;
     const shift = shiftDemandsData.shift;
     const shiftDemand = shiftDemandsData.shiftDemand;
-
-    if (!shiftDemand) {
-      return null;
-    }
 
     // Get date from shift demand
     const date = dayjs.unix(shiftDemand.date);
@@ -98,8 +83,6 @@ export default function CurrentSelectionLHSTab({
       date,
       shiftDemand: shiftDemand,
       assignments,
-      campaignStartDate: campaign ? dayjs(campaign.startDate) : dayjs(),
-      campaignEndDate: campaign ? dayjs(campaign.endDate) : dayjs(),
     };
   };
 
@@ -122,15 +105,11 @@ export default function CurrentSelectionLHSTab({
       {selectedDemand && demandProps && (
         <DemandSelection
           lng={lng}
-          teamId={teamId}
           shift={demandProps.shift}
           date={demandProps.date}
           shiftDemand={demandProps.shiftDemand}
           assignments={demandProps.assignments}
           specialties={specialties}
-          campaignStartDate={demandProps.campaignStartDate}
-          campaignEndDate={demandProps.campaignEndDate}
-          handleCreateShiftDemand={handleCreateShiftDemand}
           handleUpdateShiftDemand={handleUpdateShiftDemand}
           handleDeleteShiftDemand={handleDeleteShiftDemand}
         />

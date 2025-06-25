@@ -876,21 +876,18 @@ export default function ScheduleTab({
       content: (
         <CurrentSelectionLHSTab
           lng={lng}
-          teamId={teamWithMembership.team.id}
           workers={workers.filter((w) => !w.deleted)}
           shifts={shifts.filter((s) => !s.deleted)}
           schedules={[
             ...(scheduleCampaign ? [scheduleCampaign] : []),
             ...schedulesValidated,
           ]}
-          campaign={scheduleCampaign}
           selectedAssignment={selectedAssignment}
           selectedDemand={selectedDemand}
           specialties={specialties}
           onClose={handleCloseLHS}
           handleUpdateAssignment={handleUpdateAssignment}
           handleDeleteAssignment={handleDeleteAssignment}
-          handleCreateShiftDemand={handleCreateShiftDemand}
           handleUpdateShiftDemand={handleUpdateShiftDemand}
           handleDeleteShiftDemand={handleDeleteShiftDemand}
         />
