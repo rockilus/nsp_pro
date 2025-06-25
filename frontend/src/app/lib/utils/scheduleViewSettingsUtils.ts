@@ -72,6 +72,20 @@ export function validateScheduleViewSettings(
     periodStartDate = now.startOf(timeFrame === "month" ? "month" : "isoWeek");
   }
 
+  // Validate that periodStartDate aligns with the timeFrame boundary
+  const expectedStartBoundary = timeFrame === "month" ? "month" : "isoWeek";
+  const alignedStartDate = periodStartDate.startOf(expectedStartBoundary).utc();
+
+  // If the periodStartDate is not at the correct boundary, adjust it
+  if (!periodStartDate.isSame(alignedStartDate, "day")) {
+    console.warn(
+      `Period start date ${periodStartDate.format("YYYY-MM-DD")} ` +
+        `is not aligned with ${timeFrame} boundary. ` +
+        `Adjusting to ${alignedStartDate.format("YYYY-MM-DD")}.`
+    );
+    periodStartDate = alignedStartDate;
+  }
+
   // Ensure final date is UTC
   periodStartDate = periodStartDate.utc();
 
