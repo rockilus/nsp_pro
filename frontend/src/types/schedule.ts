@@ -9,12 +9,7 @@ import {
   toAssignmentsRecurrencesResultT,
 } from "./assignment";
 import { BreachT } from "./breach";
-import { OccurrenceType } from "./recurrence";
-import {
-  DailyShiftDemandT,
-  DemandsResultT,
-  toDemandsResultT,
-} from "./daily-shift-demand";
+import { DemandsResultT } from "./shiftDemand";
 import { ShiftDemandDTO } from "./shiftDemand";
 import { WorkerT } from "./worker";
 import { RecurrenceRuleT } from "./recurrence";
@@ -151,15 +146,6 @@ export type AssignmentsDictT = {
   [key: string]: AssignmentDataT[];
 };
 
-export type DailyShiftDemandsDataT = {
-  dailyShiftDemands: DailyShiftDemandT[];
-  shift: ShiftT;
-};
-
-export type DailyShiftDemandsDictT = {
-  [key: string]: DailyShiftDemandsDataT;
-};
-
 // New ShiftDemandDTO-based types
 export type ShiftDemandsDataT = {
   shiftDemand: ShiftDemandDTO;
@@ -275,6 +261,6 @@ export const toDuplicateResultT = (data: any): DuplicateResultT => {
     assignments: data.assignments
       ? toAssignmentsRecurrencesResultT(data.assignments)
       : null,
-    demands: data.demands ? toDemandsResultT(data.demands) : null,
+    demands: data.demands ? data.demands : null,
   };
 };

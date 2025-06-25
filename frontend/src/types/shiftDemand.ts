@@ -90,6 +90,13 @@ export interface ShiftDemandErrorResponse {
   context?: Record<string, any>;
 }
 
+export type DemandsResultT = {
+  demandsCreated: ShiftDemandDTO[];
+  demandsRead: ShiftDemandDTO[];
+  demandsUpdated: ShiftDemandDTO[];
+  demandsDeletedIds: string[];
+};
+
 /**
  * Legacy API error interface for backward compatibility
  */

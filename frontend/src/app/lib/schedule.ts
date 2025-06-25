@@ -8,7 +8,6 @@ import { getRequests } from "./request";
 import { getAllWorkers } from "./worker";
 import { getAllShifts } from "./shift";
 import { getStats } from "./stats";
-import { getDailyShiftDemands } from "./daily-shift-demand";
 import { toCoverageSelectorT } from "./campaign";
 import { getSpecialties } from "./specialty";
 // Types
@@ -24,11 +23,7 @@ import {
   DuplicateResultT,
   toDuplicateResultT,
 } from "../../types/schedule";
-import {
-  AssignmentT,
-  AssignmentsRecurrencesResultT,
-  toAssignmentsRecurrencesResultT,
-} from "@/types/assignment";
+import { AssignmentT } from "@/types/assignment";
 import {
   StatsOptionsT,
   StatsUnitOptions,
@@ -39,7 +34,6 @@ import { ShiftT } from "../../types/shift";
 import { CoverageSelectorT } from "../../types/coverage-selector";
 import { WorkerT } from "@/types/worker";
 import { RecurrenceRuleT } from "@/types/recurrence";
-import { DailyShiftDemandT } from "@/types/daily-shift-demand";
 // Env Vars
 import { API_URL } from "./env";
 
@@ -294,21 +288,18 @@ export async function getScheduleAssignmentsData(teamId: string): Promise<{
   recurrences: RecurrenceRuleT[];
   shifts: ShiftT[];
   workers: WorkerT[];
-  dailyShiftDemands: DailyShiftDemandT[];
 }> {
   try {
     const campaignTabData = await Promise.all([
       getAssignmentsByDates(teamId),
       getAllShifts(teamId),
       getAllWorkers(teamId),
-      getDailyShiftDemands(teamId),
     ]);
     return {
       assignments: campaignTabData[0].assignmentsRead,
       recurrences: campaignTabData[0].recurrencesRead,
       shifts: campaignTabData[1],
       workers: campaignTabData[2],
-      dailyShiftDemands: campaignTabData[3],
     };
   } catch (error) {
     console.error("Failed to fetch schedule assignments data:", error);
