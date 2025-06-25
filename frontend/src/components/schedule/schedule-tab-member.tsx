@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import isoWeek from "dayjs/plugin/isoWeek";
@@ -15,6 +15,11 @@ import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
 // Actions
 import { getScheduleAssignmentsDataMember } from "../../app/lib/schedule";
 import { exportSchedule } from "../../app/lib/export-schedule";
+import { useScheduleViewSettings } from "../../app/lib/hooks/useScheduleViewSettings";
+import {
+  getDefaultScheduleViewSettings,
+  computePeriodEndDate,
+} from "../../app/lib/utils/scheduleViewSettingsUtils";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "./schedule-tab.css";
@@ -29,7 +34,7 @@ import {
   ScheduleCellDataT,
   ScheduleViewSettingsT,
 } from "../../types/schedule";
-import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { ShiftDemandDTO } from "@/types/shiftDemand";
 import { AssignmentT, CreateAssignmentT } from "@/types/assignment";
 import { TeamWithMembership } from "@/types/team";
 
@@ -52,15 +57,14 @@ export default function ScheduleTabMember({
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [assignments, setAssignments] = useState<AssignmentT[]>([]);
 
-  const [scheduleViewSettings, setScheduleViewSettings] =
-    useState<ScheduleViewSettingsT>({
-      timeFrame: "week",
-      groupBy: "shift",
-      showBreaches: true,
-      showAssignments: true,
-      showDailyShiftDemands: true,
-      showRequests: true,
-    });
+  // Use persistent schedule view settings (member version)
+  const defaultSettings = getDefaultScheduleViewSettings(true); // Members can see demands
+
+  const [
+    scheduleViewSettings,
+    updateScheduleViewSettings,
+    resetScheduleViewSettings,
+  ] = useScheduleViewSettings(teamWithMembership.team.id, defaultSettings);
 
   const buildDates = useCallback(
     (startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) => {
@@ -80,19 +84,22 @@ export default function ScheduleTabMember({
     []
   );
 
-  const initialStartDate = dayjs
-    .utc()
-    .startOf(scheduleViewSettings.timeFrame === "month" ? "month" : "isoWeek");
-  const initialEndDate = dayjs
-    .utc()
-    .endOf(scheduleViewSettings.timeFrame === "month" ? "month" : "isoWeek");
-  const intialPeriodDates = buildDates(initialStartDate, initialEndDate);
-  const [periodStartDate, setPeriodStartDate] =
-    useState<dayjs.Dayjs>(initialStartDate);
-  const [periodEndDate, setPeriodEndDate] =
-    useState<dayjs.Dayjs>(initialEndDate);
-  const [periodDates, setPeriodDates] =
-    useState<periodDateT[]>(intialPeriodDates);
+  // Compute periodDates from the centralized date state
+  const periodDates = useMemo(
+    () =>
+      buildDates(
+        scheduleViewSettings.periodStartDate,
+        computePeriodEndDate(
+          scheduleViewSettings.periodStartDate,
+          scheduleViewSettings.timeFrame
+        )
+      ),
+    [
+      scheduleViewSettings.periodStartDate,
+      scheduleViewSettings.timeFrame,
+      buildDates,
+    ]
+  );
 
   const handleAssignmentSelection = (selectedAssignment: AssignmentDataT) => {};
 
@@ -100,11 +107,7 @@ export default function ScheduleTabMember({
     selectedScheduleCellData: ScheduleCellDataT
   ) => {};
 
-  const updateScheduleViewSettings = (
-    updates: Partial<ScheduleViewSettingsT>
-  ) => {
-    setScheduleViewSettings((prev) => ({ ...prev, ...updates }));
-  };
+  // updateScheduleViewSettings is now provided by the useScheduleViewSettings hook
 
   //////////////////////////
   // Schedule Actions
@@ -124,9 +127,9 @@ export default function ScheduleTabMember({
   // Daily Shift Demand Actions
   //////////////////////////
 
-  const handleCreateDSD = async (dailyShiftDemand: DailyShiftDemandT) => {};
+  const handleCreateDSD = async () => {};
 
-  const handleUpdateDSD = async (dailyShiftDemand: DailyShiftDemandT) => {};
+  const handleUpdateDSD = async () => {};
 
   //////////////////////////
   // Assignment Actions
@@ -140,9 +143,10 @@ export default function ScheduleTabMember({
     newPeriodStart: dayjs.Dayjs,
     newPeriodEnd: dayjs.Dayjs
   ) => {
-    setPeriodStartDate(newPeriodStart);
-    setPeriodEndDate(newPeriodEnd);
-    setPeriodDates(buildDates(newPeriodStart, newPeriodEnd));
+    updateScheduleViewSettings({
+      periodStartDate: newPeriodStart,
+    });
+    // No need to setPeriodDates since it's now computed
   };
 
   const handleToday = async () => {
@@ -162,36 +166,42 @@ export default function ScheduleTabMember({
   };
 
   const handlePreviousPeriod = async () => {
-    const newPeriodStart = periodStartDate.subtract(
+    const newPeriodStart = scheduleViewSettings.periodStartDate.subtract(
       1,
       scheduleViewSettings.timeFrame === "month" ? "month" : "week"
     );
-    const newPeriodEnd = periodEndDate.subtract(
-      1,
-      scheduleViewSettings.timeFrame === "month" ? "month" : "week"
+    const newPeriodEnd = computePeriodEndDate(
+      newPeriodStart,
+      scheduleViewSettings.timeFrame
     );
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
 
   const handleNextPeriod = async () => {
-    const newPeriodStart = periodStartDate.add(
+    const newPeriodStart = scheduleViewSettings.periodStartDate.add(
       1,
       scheduleViewSettings.timeFrame === "month" ? "month" : "week"
     );
-    const newPeriodEnd = periodEndDate.add(
-      1,
-      scheduleViewSettings.timeFrame === "month" ? "month" : "week"
+    const newPeriodEnd = computePeriodEndDate(
+      newPeriodStart,
+      scheduleViewSettings.timeFrame
     );
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
 
   const handleChangeTimeFrame = async (newTimeFrame: "week" | "month") => {
-    setScheduleViewSettings({
-      ...scheduleViewSettings,
+    updateScheduleViewSettings({
       timeFrame: newTimeFrame,
     });
     const { firstDate: newPeriodStart, lastDate: newPeriodEnd } =
-      getPeriodStartEndDates(newTimeFrame, periodStartDate, periodEndDate);
+      getPeriodStartEndDates(
+        newTimeFrame,
+        scheduleViewSettings.periodStartDate,
+        computePeriodEndDate(
+          scheduleViewSettings.periodStartDate,
+          scheduleViewSettings.timeFrame
+        )
+      );
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
 
@@ -229,9 +239,7 @@ export default function ScheduleTabMember({
     fetchData();
   }, [teamWithMembership]);
 
-  useEffect(() => {
-    setPeriodDates(buildDates(periodStartDate, periodEndDate));
-  }, [periodStartDate, periodEndDate, buildDates]);
+  // periodDates is now computed automatically from scheduleViewSettings
 
   return (
     <div className="tab-container-ultrawide">
@@ -239,8 +247,11 @@ export default function ScheduleTabMember({
         <ScheduleNavBar
           lng={lng}
           teamWithMembership={teamWithMembership}
-          currentPeriodStart={periodStartDate}
-          currentPeriodEnd={periodEndDate}
+          currentPeriodStart={scheduleViewSettings.periodStartDate}
+          currentPeriodEnd={computePeriodEndDate(
+            scheduleViewSettings.periodStartDate,
+            scheduleViewSettings.timeFrame
+          )}
           scheduleCampaign={null}
           solveStatus={null}
           scheduleViewSettings={scheduleViewSettings}
@@ -282,7 +293,7 @@ export default function ScheduleTabMember({
               scheduleCampaign={null}
               periodDates={periodDates}
               assignments={assignments}
-              dailyShiftDemands={[]}
+              shiftDemands={[]}
               recurrences={[]}
               breaches={[]}
               workers={workers}
@@ -291,8 +302,6 @@ export default function ScheduleTabMember({
               scheduleViewSettings={scheduleViewSettings}
               handleAssignmentSelection={handleAssignmentSelection}
               handleDemandSelection={handleDemandSelection}
-              handleCreateDSD={handleCreateDSD}
-              handleUpdateDSD={handleUpdateDSD}
               handleExportSchedule={handleExportSchedule}
               handleOpenCreateAssignment={handleOpenCreateAssignment}
             />

@@ -8,7 +8,7 @@ import "./shift-row-header-cell.css";
 // Types
 import { ShiftT, ShiftType } from "../../../../types/shift";
 import { ScheduleT } from "../../../../types/schedule";
-import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { ShiftDemandDTO } from "@/types/shiftDemand";
 import { AssignmentT } from "@/types/assignment";
 // Constants
 import { ShiftColorMappings } from "../../../../constants/constants";
@@ -18,13 +18,13 @@ export default function ShiftRowHeaderCell({
   teamWithMembership,
   shift,
   assignments,
-  dailyShiftDemands,
+  shiftDemands,
   scheduleCampaign: scheduleCampaign,
 }: {
   teamWithMembership: TeamWithMembership;
   shift: ShiftT;
   assignments: AssignmentT[];
-  dailyShiftDemands: DailyShiftDemandT[];
+  shiftDemands: ShiftDemandDTO[];
   scheduleCampaign: ScheduleT | null;
 }) {
   const { background, sample, text } = ShiftColorMappings[shift.color] || {
@@ -38,7 +38,7 @@ export default function ShiftRowHeaderCell({
       ? countShiftsTotalPeriod(
           [shift],
           assignments,
-          dailyShiftDemands,
+          shiftDemands,
           scheduleCampaign.startDate,
           scheduleCampaign.endDate
         )

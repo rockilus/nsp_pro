@@ -6,12 +6,10 @@ import pytest
 from shared.schemas.core import (
     Attribute,
     AttributeOwnerType,
-    DailyShiftDemand,
     Dimension,
     DimensionEntryType,
     DimensionType,
     DimEntry,
-    DSDSourceType,
     EngineInputsAugmented,
     ModelConfig,
     Penalties,
@@ -19,6 +17,8 @@ from shared.schemas.core import (
     ScheduleSolveStatus,
     ScheduleStatus,
     Shift,
+    ShiftDemandNew,
+    ShiftDemandSource,
     ShiftLeaveType,
     ShiftRestType,
     ShiftType,
@@ -302,16 +302,17 @@ class TestTargetWorkTimeConstraints:
             current_date = schedule.start_date
             while current_date <= schedule.end_date:
                 daily_shift_demands.append(
-                    DailyShiftDemand(
-                        id=f"dsd_{shift.id}_{current_date}",
-                        team_id="t0",
-                        schedule_id=schedule.id,
-                        shift_demand_id=None,
-                        source_type=DSDSourceType.SHIFT_DEMAND,
+                    ShiftDemandNew(
                         date=current_date,
                         shift_id=shift.id,
+                        team_id="t0",
                         count=1,
-                        coverage_selector_id=None,
+                        notes=None,
+                        source=ShiftDemandSource.MANUAL,
+                        source_id=None,
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
+                        id=f"dsd_{shift.id}_{current_date}",
                     )
                 )
                 current_date += timedelta(days=1)
@@ -330,7 +331,7 @@ class TestTargetWorkTimeConstraints:
             as_hist=[],
             as_wip_fixed=[],
             cbs_augmented=[],
-            daily_shift_demands=daily_shift_demands,
+            shift_demands=daily_shift_demands,
             requests_work=[],
             requests_leave=[],
             model_output=None,
@@ -367,7 +368,7 @@ class TestTargetWorkTimeConstraints:
             engine_inputs_nb_duties.workers,
             engine_inputs_nb_duties.shifts,
             engine_inputs_nb_duties.requests_leave,
-            engine_inputs_nb_duties.daily_shift_demands,
+            engine_inputs_nb_duties.shift_demands,
             periods_monthly,
         )
         breaches = _parse_breaches_engine(
@@ -422,7 +423,7 @@ class TestTargetWorkTimeConstraints:
             engine_inputs_nb_duties.workers,
             engine_inputs_nb_duties.shifts,
             engine_inputs_nb_duties.requests_leave,
-            engine_inputs_nb_duties.daily_shift_demands,
+            engine_inputs_nb_duties.shift_demands,
             periods_monthly,
         )
         breaches = _parse_breaches_engine(
@@ -486,7 +487,7 @@ class TestTargetWorkTimeConstraints:
             engine_inputs_nb_duties.workers,
             engine_inputs_nb_duties.shifts,
             engine_inputs_nb_duties.requests_leave,
-            engine_inputs_nb_duties.daily_shift_demands,
+            engine_inputs_nb_duties.shift_demands,
             periods_monthly,
         )
         breaches = _parse_breaches_engine(
@@ -583,7 +584,7 @@ class TestTargetWorkTimeConstraints:
             engine_inputs_nb_duties.workers,
             engine_inputs_nb_duties.shifts,
             engine_inputs_nb_duties.requests_leave,
-            engine_inputs_nb_duties.daily_shift_demands,
+            engine_inputs_nb_duties.shift_demands,
             periods_monthly,
         )
         breaches = _parse_breaches_engine(

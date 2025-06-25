@@ -9,12 +9,8 @@ import {
   toAssignmentsRecurrencesResultT,
 } from "./assignment";
 import { BreachT } from "./breach";
-import { OccurrenceType } from "./recurrence";
-import {
-  DailyShiftDemandT,
-  DemandsResultT,
-  toDemandsResultT,
-} from "./daily-shift-demand";
+import { DemandsResultT } from "./shiftDemand";
+import { ShiftDemandDTO } from "./shiftDemand";
 import { WorkerT } from "./worker";
 import { RecurrenceRuleT } from "./recurrence";
 
@@ -150,18 +146,30 @@ export type AssignmentsDictT = {
   [key: string]: AssignmentDataT[];
 };
 
-export type DailyShiftDemandsDataT = {
-  dailyShiftDemands: DailyShiftDemandT[];
+// New ShiftDemandDTO-based types
+export type ShiftDemandsDataT = {
+  shiftDemand: ShiftDemandDTO;
   shift: ShiftT;
 };
 
-export type DailyShiftDemandsDictT = {
-  [key: string]: DailyShiftDemandsDataT;
+export type ShiftDemandsDictT = {
+  [key: string]: ShiftDemandsDataT;
+};
+
+// Updated ScheduleCellDataT that could work with both legacy and new types
+export type ScheduleCellDataNewT = {
+  assignmentsData: AssignmentDataT[];
+  shiftDemandsData: ShiftDemandsDataT | null;
+  requests: RequestT[];
+};
+
+export type ScheduleCellsNewDictT = {
+  [key: string]: ScheduleCellDataNewT;
 };
 
 export type ScheduleCellDataT = {
   assignmentsData: AssignmentDataT[];
-  dailyShiftDemandsData: DailyShiftDemandsDataT | null;
+  shiftDemandsData: ShiftDemandsDataT | null;
   requests: RequestT[];
 };
 
@@ -176,6 +184,7 @@ export type ScheduleViewSettingsT = {
   showAssignments: boolean;
   showDailyShiftDemands: boolean;
   showRequests: boolean;
+  periodStartDate: dayjs.Dayjs;
 };
 
 export type DuplicateResultT = {
@@ -252,6 +261,6 @@ export const toDuplicateResultT = (data: any): DuplicateResultT => {
     assignments: data.assignments
       ? toAssignmentsRecurrencesResultT(data.assignments)
       : null,
-    demands: data.demands ? toDemandsResultT(data.demands) : null,
+    demands: data.demands ? data.demands : null,
   };
 };

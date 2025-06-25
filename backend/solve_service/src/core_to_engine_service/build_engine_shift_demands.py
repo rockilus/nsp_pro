@@ -3,8 +3,8 @@ from typing import Dict, List, Tuple
 
 from shared.schemas.core import (
     CoveragePenalty,
-    DailyShiftDemand,
     Shift,
+    ShiftDemandNew,
     ShiftType,
     Worker,
     WorkerDates,
@@ -19,7 +19,7 @@ def build_engine_shift_demands(
     dates_campaign: List[date],
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shifts_not_deleted: List[Shift],
-    daily_shift_demands: List[DailyShiftDemand],
+    daily_shift_demands: List[ShiftDemandNew],
     c_penalty: CoveragePenalty,
 ) -> List[ShiftDemandEngine]:
     out: List[ShiftDemandEngine] = []

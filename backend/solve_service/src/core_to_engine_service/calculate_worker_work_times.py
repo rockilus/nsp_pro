@@ -3,10 +3,10 @@ from datetime import date, timedelta
 from typing import Dict, List, Tuple
 
 from shared.schemas.core import (
-    DailyShiftDemand,
     Request,
     Schedule,
     Shift,
+    ShiftDemandNew,
     ShiftType,
     Worker,
     WorkerDates,
@@ -105,7 +105,7 @@ def calculate_worker_work_times(
     workers: List[Worker],
     shifts: List[Shift],
     requests: List[Request],
-    shift_demands: List[DailyShiftDemand],
+    shift_demands: List[ShiftDemandNew],
     periods: List[List[date]],
 ) -> Dict[str, Dict[str, List[int]]]:
     # [
@@ -249,7 +249,7 @@ def calculate_time_off_days(
 
 
 def calculate_total_work_time_minutes(
-    daily_shift_demands: List[DailyShiftDemand], shifts: List[Shift]
+    daily_shift_demands: List[ShiftDemandNew], shifts: List[Shift]
 ) -> int:
     total_work_time = 0.0
 
@@ -277,7 +277,7 @@ def calculate_total_work_time_minutes(
 def calculate_proportional_times(
     workers: List[Worker],
     shifts: List[Shift],
-    shift_demands: List[DailyShiftDemand],
+    shift_demands: List[ShiftDemandNew],
     periods: List[List[date]],
     w_id_to_coef: Dict[str, List[float]],
 ) -> Dict[str, List[int]]:

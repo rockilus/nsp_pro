@@ -6,160 +6,64 @@ import Button from "@mui/material/Button";
 // Styles
 import "./demand-selection.css";
 // Types
-import { ScheduleT, ScheduleCellDataT } from "../../../types/schedule";
-import { RecurrenceRuleT, RecurrenceUpdateScope } from "@/types/recurrence";
-import { DailyShiftDemandT, DSDSourceType } from "@/types/daily-shift-demand";
+import { ShiftT } from "../../../types/shift";
 import { SpecialtyT } from "@/types/specialty";
+import { ShiftDemandDTO, ShiftDemandUpdateDTO } from "@/types/shiftDemand";
+import { AssignmentT } from "@/types/assignment";
+
+interface DemandSelectionProps {
+  lng: string;
+  shift: ShiftT;
+  date: dayjs.Dayjs;
+  shiftDemand: ShiftDemandDTO;
+  assignments: AssignmentT[];
+  specialties: SpecialtyT[];
+  handleUpdateShiftDemand: (
+    demandId: string,
+    updates: Partial<ShiftDemandUpdateDTO>
+  ) => Promise<void>;
+  handleDeleteShiftDemand: (demandId: string) => Promise<void>;
+}
 
 export default function DemandSelection({
   lng,
-  teamId,
-  campaign,
-  selectedDemand,
+  shift,
+  date,
+  shiftDemand,
+  assignments,
   specialties,
-  handleCreateDSD,
-  handleUpdateDSD,
-  handleDeleteDSDs,
-}: {
-  lng: string;
-  teamId: string;
-  campaign: ScheduleT | null;
-  selectedDemand: ScheduleCellDataT;
-  specialties: SpecialtyT[];
-  handleCreateDSD: (dsd: DailyShiftDemandT) => void;
-  handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
-  handleDeleteDSDs: (
-    teamId: string,
-    shiftId: string,
-    date: dayjs.Dayjs
-  ) => void;
-}) {
+  handleUpdateShiftDemand,
+  handleDeleteShiftDemand,
+}: DemandSelectionProps) {
   const { t } = useTranslation(lng, "schedule-page");
 
-  const date =
-    selectedDemand.dailyShiftDemandsData?.dailyShiftDemands[0].date || null;
-
-  const assignmentsCount = selectedDemand.assignmentsData.length;
-  const shiftStaffingTotal =
-    selectedDemand.dailyShiftDemandsData?.shift.staffing.reduce(
-      (sum, staffing) => sum + staffing.staffing,
-      0
-    ) || 0;
+  // Calculate counts based on new data structure
+  const assignmentsCount = assignments.length;
+  const shiftStaffingTotal = shift.staffing.reduce(
+    (sum: number, staffing) => sum + staffing.staffing,
+    0
+  );
 
   const countActual = Math.floor(assignmentsCount / shiftStaffingTotal);
-  const countTarget =
-    selectedDemand.dailyShiftDemandsData?.dailyShiftDemands.reduce(
-      (sum, demand) => sum + demand.count,
-      0
-    ) || 0;
 
-  const handleDecreaseDSD = () => {
-    if (
-      !date ||
-      !campaign ||
-      !selectedDemand.dailyShiftDemandsData ||
-      !selectedDemand.dailyShiftDemandsData.dailyShiftDemands
-    ) {
+  const handleDecreaseDSD = async () => {
+    if (shiftDemand.count <= 1) {
       return;
     }
 
-    if (
-      dayjs(date).isBefore(dayjs(campaign.startDate)) ||
-      dayjs(date).isAfter(dayjs(campaign.endDate))
-    ) {
-      return;
-    }
-
-    const dsdShiftDemand =
-      selectedDemand.dailyShiftDemandsData.dailyShiftDemands.find(
-        (dsd) => dsd.sourceType === DSDSourceType.SHIFT_DEMAND && dsd.count > 0
-      );
-    const dsdDirectReq =
-      selectedDemand.dailyShiftDemandsData.dailyShiftDemands.find(
-        (dsd) => dsd.sourceType === DSDSourceType.DIRECT_REQUIREMENT
-      );
-    const dsdIsGreaterThanZero =
-      (dsdShiftDemand ? dsdShiftDemand.count : 0) +
-        (dsdDirectReq ? dsdDirectReq.count : 0) >
-      0;
-    if (!dsdIsGreaterThanZero) {
-      return;
-    }
-    if (dsdDirectReq) {
-      handleUpdateDSD({
-        ...dsdDirectReq,
-        count: dsdDirectReq.count - 1,
-      });
-    } else {
-      const newDsd: DailyShiftDemandT = {
-        id: "",
-        teamId: teamId,
-        scheduleId: campaign.id,
-        shiftDemandId: null,
-        coverageSelectorId: null,
-        sourceType: DSDSourceType.DIRECT_REQUIREMENT,
-        date: date,
-        shiftId: selectedDemand.dailyShiftDemandsData.shift.id,
-        count: -1,
-      };
-      handleCreateDSD(newDsd);
-    }
+    await handleUpdateShiftDemand(shiftDemand.id, {
+      count: shiftDemand.count - 1,
+    });
   };
 
-  const handleIncreaseDSD = () => {
-    if (
-      !date ||
-      !campaign ||
-      !selectedDemand.dailyShiftDemandsData ||
-      !selectedDemand.dailyShiftDemandsData.dailyShiftDemands
-    ) {
-      return;
-    }
-
-    if (
-      dayjs(date).isBefore(dayjs(campaign.startDate)) ||
-      dayjs(date).isAfter(dayjs(campaign.endDate))
-    ) {
-      return;
-    }
-    const dsdDirectReq =
-      selectedDemand.dailyShiftDemandsData.dailyShiftDemands.find(
-        (dsd) => dsd.sourceType === DSDSourceType.DIRECT_REQUIREMENT
-      );
-    if (dsdDirectReq) {
-      handleUpdateDSD({
-        ...dsdDirectReq,
-        count: dsdDirectReq.count + 1,
-      });
-    } else {
-      const newDsd: DailyShiftDemandT = {
-        id: "",
-        teamId: teamId,
-        scheduleId: campaign.id,
-        shiftDemandId: null,
-        coverageSelectorId: null,
-        sourceType: DSDSourceType.DIRECT_REQUIREMENT,
-        date: date,
-        shiftId: selectedDemand.dailyShiftDemandsData.shift.id,
-        count: 1,
-      };
-      handleCreateDSD(newDsd);
-    }
+  const handleIncreaseDSD = async () => {
+    await handleUpdateShiftDemand(shiftDemand.id, {
+      count: shiftDemand.count + 1,
+    });
   };
 
-  const handleDeleteDemands = () => {
-    if (
-      !date ||
-      !selectedDemand.dailyShiftDemandsData ||
-      !selectedDemand.dailyShiftDemandsData.dailyShiftDemands
-    ) {
-      return;
-    }
-    handleDeleteDSDs(
-      teamId,
-      selectedDemand.dailyShiftDemandsData.shift.id,
-      date
-    );
+  const handleDeleteDemands = async () => {
+    await handleDeleteShiftDemand(shiftDemand.id);
   };
 
   const AdjustStaffingButtons = () => {
@@ -184,80 +88,65 @@ export default function DemandSelection({
   return (
     <div className="demand-selection-container">
       {/* <span className="demand-selection-title">{t("demand")}</span> */}
-      {selectedDemand.dailyShiftDemandsData &&
-        selectedDemand.dailyShiftDemandsData.dailyShiftDemands && (
-          <div className="demand-selection-content">
-            <div className="demand-selection-first-row">
-              <span className="demand-selection-shift-name">
-                {selectedDemand.dailyShiftDemandsData.shift.name}
-              </span>
-              <div className="demand-selection-shift-status">
-                <span className="dsd-stats dsd-stats-actual">{`${countActual} / ${countTarget}`}</span>
-              </div>
-            </div>
-            <span className="demand-selection-date-time">
-              {selectedDemand.dailyShiftDemandsData.dailyShiftDemands[0].date.format(
-                "D MMMM YYYY"
-              )}
-              {" ⋅ "}
-              {selectedDemand.dailyShiftDemandsData.shift.startTime.format(
-                "HH:mm"
-              )}
-              {" - "}
-              {selectedDemand.dailyShiftDemandsData.shift.endTime.format(
-                "HH:mm"
-              )}
-              {!selectedDemand.dailyShiftDemandsData.shift.endTime.isSame(
-                selectedDemand.dailyShiftDemandsData.shift.startTime,
-                "day"
-              ) && <sup>+1</sup>}
-            </span>
-            <div className="demand-selection-daily-shift-demand">
-              <span className="demand-selection-dsd-label">{t("demand")}</span>
-              <span className="demand-selection-dsd-target">{countTarget}</span>
-              <AdjustStaffingButtons />
-            </div>
-            <div className="demand-selection-staffing-required">
-              <span className="demand-selection-staffing-required-label">
-                {t("staffing_required")}
-              </span>
-              {selectedDemand.dailyShiftDemandsData.shift.staffing.map(
-                (staffing, index) => (
-                  <div
-                    key={`${staffing.specialtyId}-${index}`}
-                    className="demand-selection-staffing-required-item"
-                  >
-                    <span className="demand-selection-staffing-required-name">
-                      {staffing.specialtyId
-                        ? specialties.find((s) => s.id == staffing.specialtyId)
-                            ?.name
-                        : t("any")}
-                    </span>
-                    <span className="demand-selection-staffing-required-count-per-shift">
-                      {`(${staffing.staffing})`}
-                    </span>
-                    <span className="demand-selection-staffing-required-count">
-                      {staffing.staffing * countTarget}
-                    </span>
-                  </div>
-                )
-              )}
-              <div className="demand-selection-sum-line" />
-              <div className="demand-selection-staffing-required-item">
-                <span className="demand-selection-staffing-required-name">
-                  {t("total")}
-                </span>
-                <span className="demand-selection-staffing-required-count-per-shift"></span>
-                <span className="demand-selection-staffing-required-count">
-                  {selectedDemand.dailyShiftDemandsData.shift.staffing.reduce(
-                    (sum, staffing) => sum + staffing.staffing,
-                    0
-                  ) * countTarget}
-                </span>
-              </div>
-            </div>
+      <div className="demand-selection-content">
+        <div className="demand-selection-first-row">
+          <span className="demand-selection-shift-name">{shift.name}</span>
+          <div className="demand-selection-shift-status">
+            <span className="dsd-stats dsd-stats-actual">{`${countActual} / ${shiftDemand.count}`}</span>
           </div>
-        )}
+        </div>
+        <span className="demand-selection-date-time">
+          {date.format("D MMMM YYYY")}
+          {" ⋅ "}
+          {shift.startTime.format("HH:mm")}
+          {" - "}
+          {shift.endTime.format("HH:mm")}
+          {!shift.endTime.isSame(shift.startTime, "day") && <sup>+1</sup>}
+        </span>
+        <div className="demand-selection-daily-shift-demand">
+          <span className="demand-selection-dsd-label">{t("demand")}</span>
+          <span className="demand-selection-dsd-target">
+            {shiftDemand.count}
+          </span>
+          <AdjustStaffingButtons />
+        </div>
+        <div className="demand-selection-staffing-required">
+          <span className="demand-selection-staffing-required-label">
+            {t("staffing_required")}
+          </span>
+          {shift.staffing.map((staffing, index) => (
+            <div
+              key={`${staffing.specialtyId}-${index}`}
+              className="demand-selection-staffing-required-item"
+            >
+              <span className="demand-selection-staffing-required-name">
+                {staffing.specialtyId
+                  ? specialties.find((s) => s.id == staffing.specialtyId)?.name
+                  : t("any")}
+              </span>
+              <span className="demand-selection-staffing-required-count-per-shift">
+                {`(${staffing.staffing})`}
+              </span>
+              <span className="demand-selection-staffing-required-count">
+                {staffing.staffing * shiftDemand.count}
+              </span>
+            </div>
+          ))}
+          <div className="demand-selection-sum-line" />
+          <div className="demand-selection-staffing-required-item">
+            <span className="demand-selection-staffing-required-name">
+              {t("total")}
+            </span>
+            <span className="demand-selection-staffing-required-count-per-shift"></span>
+            <span className="demand-selection-staffing-required-count">
+              {shift.staffing.reduce(
+                (sum: number, staffing) => sum + staffing.staffing,
+                0
+              ) * shiftDemand.count}
+            </span>
+          </div>
+        </div>
+      </div>
       <div className="demand-selection-buttons-container">
         <Button
           variant="outlined"

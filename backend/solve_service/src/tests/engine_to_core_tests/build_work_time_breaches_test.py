@@ -6,8 +6,6 @@ import pytest
 from shared.schemas.core import (
     Breach,
     Constraints,
-    DailyShiftDemand,
-    DSDSourceType,
     EngineInputsAugmented,
     ModelConfig,
     ObjectiveCategory,
@@ -16,6 +14,8 @@ from shared.schemas.core import (
     ScheduleSolveStatus,
     ScheduleStatus,
     Shift,
+    ShiftDemandNew,
+    ShiftDemandSource,
     ShiftLeaveType,
     ShiftRestType,
     ShiftType,
@@ -163,16 +163,17 @@ class TestTargetWorkTimeConstraints:
             current_date = schedule.start_date
             while current_date <= schedule.end_date:
                 daily_shift_demands.append(
-                    DailyShiftDemand(
-                        id=f"dsd_{shift.id}_{current_date}",
-                        team_id="t0",
-                        schedule_id=schedule.id,
-                        shift_demand_id=None,
-                        coverage_selector_id=None,
-                        source_type=DSDSourceType.SHIFT_DEMAND,
+                    ShiftDemandNew(
                         date=current_date,
                         shift_id=shift.id,
+                        team_id="t0",
                         count=1,
+                        notes=None,
+                        source=ShiftDemandSource.MANUAL,
+                        source_id=None,
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
+                        id=f"dsd_{shift.id}_{current_date}",
                     )
                 )
                 current_date += timedelta(days=1)
@@ -191,7 +192,7 @@ class TestTargetWorkTimeConstraints:
             as_hist=[],
             as_wip_fixed=[],
             cbs_augmented=[],
-            daily_shift_demands=daily_shift_demands,
+            shift_demands=daily_shift_demands,
             requests_work=[],
             requests_leave=[],
             model_output=None,
@@ -240,7 +241,7 @@ class TestTargetWorkTimeConstraints:
             ei_work_times.workers,
             ei_work_times.shifts,
             ei_work_times.requests_leave,
-            ei_work_times.daily_shift_demands,
+            ei_work_times.shift_demands,
             periods_weekly,
         )
         breaches = _parse_breaches_engine(ei_work_times.schedule, engine_out.breaches)
@@ -352,7 +353,7 @@ class TestTargetWorkTimeConstraints:
             ei_work_times.workers,
             ei_work_times.shifts,
             ei_work_times.requests_leave,
-            ei_work_times.daily_shift_demands,
+            ei_work_times.shift_demands,
             periods_weekly,
         )
         breaches = _parse_breaches_engine(ei_work_times.schedule, engine_out.breaches)

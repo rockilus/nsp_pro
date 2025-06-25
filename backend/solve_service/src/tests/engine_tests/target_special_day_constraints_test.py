@@ -7,12 +7,10 @@ import pytest
 from shared.schemas.core import (
     Attribute,
     AttributeOwnerType,
-    DailyShiftDemand,
     Dimension,
     DimensionEntryType,
     DimensionType,
     DimEntry,
-    DSDSourceType,
     EngineInputsAugmented,
     ModelConfig,
     Penalties,
@@ -20,6 +18,8 @@ from shared.schemas.core import (
     ScheduleSolveStatus,
     ScheduleStatus,
     Shift,
+    ShiftDemandNew,
+    ShiftDemandSource,
     ShiftLeaveType,
     ShiftRestType,
     ShiftType,
@@ -326,16 +326,17 @@ class TestSpecialDayConstraints:
             current_date = schedule.start_date
             while current_date <= schedule.end_date:
                 daily_shift_demands.append(
-                    DailyShiftDemand(
-                        id=f"dsd_{shift.id}_{current_date}",
-                        team_id="t0",
-                        schedule_id=schedule.id,
-                        shift_demand_id=None,
-                        coverage_selector_id=None,
-                        source_type=DSDSourceType.SHIFT_DEMAND,
+                    ShiftDemandNew(
                         date=current_date,
                         shift_id=shift.id,
+                        team_id="t0",
                         count=1,
+                        notes=None,
+                        source=ShiftDemandSource.MANUAL,
+                        source_id=None,
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
+                        id=f"dsd_{shift.id}_{current_date}",
                     )
                 )
                 current_date += timedelta(days=1)
@@ -354,7 +355,7 @@ class TestSpecialDayConstraints:
             as_hist=[],
             as_wip_fixed=[],
             cbs_augmented=[],
-            daily_shift_demands=daily_shift_demands,
+            shift_demands=daily_shift_demands,
             requests_work=[],
             requests_leave=[],
             model_output=None,
@@ -399,7 +400,7 @@ class TestSpecialDayConstraints:
             dates_campaign=dates_campaign,
             shifts=engine_inputs_special_days.shifts,
             requests=engine_inputs_special_days.requests_leave,
-            daily_shift_demands=engine_inputs_special_days.daily_shift_demands,
+            daily_shift_demands=engine_inputs_special_days.shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
             + engine_inputs_special_days.as_wip_fixed,
         )
@@ -504,7 +505,7 @@ class TestSpecialDayConstraints:
             dates_campaign=dates_campaign,
             shifts=engine_inputs_special_days.shifts,
             requests=engine_inputs_special_days.requests_leave,
-            daily_shift_demands=engine_inputs_special_days.daily_shift_demands,
+            daily_shift_demands=engine_inputs_special_days.shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
             + engine_inputs_special_days.as_wip_fixed,
             # fmt: off

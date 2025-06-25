@@ -3,9 +3,9 @@ from typing import Dict, List
 
 from shared.schemas.core import (
     Assignment,
-    DailyShiftDemand,
     Request,
     Shift,
+    ShiftDemandNew,
     ShiftType,
     Worker,
     WorkerDates,
@@ -26,7 +26,7 @@ def build_duty_special_days_constraints(
     dates_campaign: List[date],
     shifts: List[Shift],
     requests: List[Request],
-    daily_shift_demands: List[DailyShiftDemand],
+    daily_shift_demands: List[ShiftDemandNew],
     fixed_assignments: List[Assignment],
     penalty: int,
 ) -> List[GroupsAssignmentsTargetConstraint]:
@@ -87,7 +87,7 @@ def calculate_worker_speacial_days(
     dates_campaign: List[date],
     shifts: List[Shift],
     requests: List[Request],
-    daily_shift_demands: List[DailyShiftDemand],
+    daily_shift_demands: List[ShiftDemandNew],
     fixed_assignments: List[Assignment],
 ) -> Dict[str, Dict[str, Dict[str, int | List[date]]]]:
     # [

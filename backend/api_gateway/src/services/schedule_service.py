@@ -7,7 +7,6 @@ from openpyxl import Workbook
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
     CoverageSelector,
-    DSDSourceType,
     DuplicateRequest,
     DuplicateResult,
     ExportOptions,
@@ -25,7 +24,6 @@ from shared.schemas.core import (
 from src.config import config
 from src.services.assignment_service import AssignmentService
 from src.services.base_service import BaseService
-from src.services.daily_shift_demand_service import DailyShiftDemandService
 from src.utils.excel_utils import core_to_excel_schedule
 
 
@@ -37,13 +35,11 @@ class ScheduleService(BaseService):
         celery_app: Celery,
         submit_solve_problem_task: Callable[[Schedule], str],
         assignment_service: AssignmentService,
-        daily_shift_demand_service: DailyShiftDemandService,
     ) -> None:
         super().__init__(collection)
         self.celery_app = celery_app
         self.submit_solve_problem_task = submit_solve_problem_task
         self.assignment_service = assignment_service
-        self.daily_shift_demand_service = daily_shift_demand_service
 
     def get_schedule_campaign(self, team_id: str) -> Schedule:
         schedules = self.collection.schedule_db.get_schedules(team_id)
@@ -216,28 +212,16 @@ class ScheduleService(BaseService):
     def build_worktime_data(self, schedule_id: str) -> WorkTimeTable:
         schedule = self.collection.schedule_db.get_schedule_by_id(schedule_id)
         workers = self.collection.worker_db.get_workers_not_deleted(schedule.team_id)
-        coverage_selectors = (
-            self.collection.coverage_selector_db.get_coverage_selectors(schedule.id)
-        )
         shift_demands = (
-            self.collection.shift_demand_db.get_shift_demands_by_coverage_ids(
-                [cs.coverage_id for cs in coverage_selectors if cs.coverage_id]
+            self.collection.shift_demand_new_db.get_shift_demands_by_date_range(
+                team_id=schedule.team_id,
+                start_date=schedule.start_date,
+                end_date=schedule.end_date,
             )
         )
-        # fmt: off
-        daily_shift_demands = self.collection.daily_shift_demand_db\
-            .get_daily_shift_demands_by_schedule_id(
-                schedule.id
-            )
-        # fmt: on
 
         # Params
         nb_weeks = ((schedule.end_date - schedule.start_date).days + 1) / 7
-
-        dates_campaign = [
-            schedule.start_date + timedelta(days=i)
-            for i in range((schedule.end_date - schedule.start_date).days + 1)
-        ]
 
         # Workers
         workers_data = WorkTimeTableData(
@@ -250,34 +234,11 @@ class ScheduleService(BaseService):
         # Shift count
         shift_count: Dict[str, int] = {}
 
-        # in coverage selectors
-        for cs in coverage_selectors:
-            dates_cs = dates_campaign
-            if not cs.full_period:
-                dates_cs = [
-                    date
-                    for date in dates_campaign
-                    if cs.start_date <= date <= cs.end_date
-                ]
-            for current_date in dates_cs:
-                for shift_demand in shift_demands:
-                    if (
-                        shift_demand.coverage_id == cs.coverage_id
-                        and shift_demand.day_index == current_date.weekday()
-                    ):
-                        if shift_demand.shift_id not in shift_count:
-                            shift_count[shift_demand.shift_id] = 0
-                        shift_count[shift_demand.shift_id] += 1
-
-        # in daily shift demands
-        for dsd in daily_shift_demands:
-            if (
-                dsd.date in dates_campaign
-                and dsd.source_type != DSDSourceType.SHIFT_DEMAND
-            ):
-                if dsd.shift_id not in shift_count:
-                    shift_count[dsd.shift_id] = 0
-                shift_count[dsd.shift_id] += dsd.count
+        # in shift demands
+        for sd in shift_demands:
+            if sd.shift_id not in shift_count:
+                shift_count[sd.shift_id] = 0
+            shift_count[sd.shift_id] += sd.count
 
         # Shifts
         shifts = self.collection.shift_db.get_shifts_by_ids(list(shift_count.keys()))
@@ -333,9 +294,6 @@ class ScheduleService(BaseService):
     def delete_schedule(self, schedule_id: str) -> None:
         self.collection.assignment_db.delete_assignments_by_schedule_id(schedule_id)
         self.collection.breach_db.delete_breaches_by_schedule_id(schedule_id)
-        self.collection.daily_shift_demand_db.delete_daily_shift_demands_by_schedule_id(
-            schedule_id
-        )
         # fmt: off
         self.collection.shift_demand_exclusion_db\
             .delete_shift_demand_exclusions_by_schedule_id(
@@ -422,8 +380,5 @@ class ScheduleService(BaseService):
             )
             duplicate_result.assignments = ar_result
         if duplicate.options.copy_demands:
-            d_result = self.daily_shift_demand_service.duplicate_period(
-                campaign=schedule, duplicate=duplicate
-            )
-            duplicate_result.demands = d_result
+            print("Duplicating demands not implemented yet")
         return duplicate_result

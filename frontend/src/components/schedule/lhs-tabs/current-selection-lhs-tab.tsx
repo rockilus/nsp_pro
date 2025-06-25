@@ -17,32 +17,27 @@ import {
 } from "../../../types/schedule";
 import { AssignmentT } from "@/types/assignment";
 import { RecurrenceRuleT, RecurrenceUpdateScope } from "@/types/recurrence";
-import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { ShiftDemandDTO, ShiftDemandUpdateDTO } from "@/types/shiftDemand";
 import { SpecialtyT } from "@/types/specialty";
 
 export default function CurrentSelectionLHSTab({
   lng,
-  teamId,
   workers,
   shifts,
   schedules,
-  campaign,
   selectedAssignment,
   selectedDemand,
   specialties,
   onClose,
   handleUpdateAssignment,
   handleDeleteAssignment,
-  handleCreateDSD,
-  handleUpdateDSD,
-  handleDeleteDSDs,
+  handleUpdateShiftDemand,
+  handleDeleteShiftDemand,
 }: {
   lng: string;
-  teamId: string;
   workers: WorkerT[];
   shifts: ShiftT[];
   schedules: ScheduleT[];
-  campaign: ScheduleT | null;
   selectedAssignment: AssignmentDataT | null;
   selectedDemand: ScheduleCellDataT | null;
   specialties: SpecialtyT[];
@@ -57,15 +52,41 @@ export default function CurrentSelectionLHSTab({
     recurrenceId: string | null,
     recurrenceUpdateScope: RecurrenceUpdateScope | null
   ) => void;
-  handleCreateDSD: (dsd: DailyShiftDemandT) => void;
-  handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
-  handleDeleteDSDs: (
-    teamId: string,
-    shiftId: string,
-    date: dayjs.Dayjs
-  ) => void;
+  handleUpdateShiftDemand: (
+    demandId: string,
+    updates: Partial<ShiftDemandUpdateDTO>
+  ) => Promise<void>;
+  handleDeleteShiftDemand: (demandId: string) => Promise<void>;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
+
+  // Extract data from ScheduleCellDataT structure for DemandSelection component
+  const getDemandSelectionProps = () => {
+    if (!selectedDemand?.shiftDemandsData?.shiftDemand) {
+      return null;
+    }
+
+    const { shiftDemandsData } = selectedDemand;
+    const shift = shiftDemandsData.shift;
+    const shiftDemand = shiftDemandsData.shiftDemand;
+
+    // Get date from shift demand
+    const date = dayjs.unix(shiftDemand.date);
+
+    // Convert AssignmentDataT[] to AssignmentT[]
+    const assignments: AssignmentT[] = selectedDemand.assignmentsData.map(
+      (assignmentData) => assignmentData.assignment
+    );
+
+    return {
+      shift,
+      date,
+      shiftDemand: shiftDemand,
+      assignments,
+    };
+  };
+
+  const demandProps = getDemandSelectionProps();
 
   return (
     <div className="assignment-options-container">
@@ -81,16 +102,16 @@ export default function CurrentSelectionLHSTab({
           handleDeleteAssignment={handleDeleteAssignment}
         />
       )}
-      {selectedDemand && (
+      {selectedDemand && demandProps && (
         <DemandSelection
           lng={lng}
-          teamId={teamId}
-          campaign={campaign}
-          selectedDemand={selectedDemand}
+          shift={demandProps.shift}
+          date={demandProps.date}
+          shiftDemand={demandProps.shiftDemand}
+          assignments={demandProps.assignments}
           specialties={specialties}
-          handleCreateDSD={handleCreateDSD}
-          handleUpdateDSD={handleUpdateDSD}
-          handleDeleteDSDs={handleDeleteDSDs}
+          handleUpdateShiftDemand={handleUpdateShiftDemand}
+          handleDeleteShiftDemand={handleDeleteShiftDemand}
         />
       )}
     </div>

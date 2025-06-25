@@ -7,8 +7,8 @@ from shared.schemas.dto.assignment import (
     AssignmentsRecurrencesResultDTO,
 )
 from shared.schemas.dto.breach import BreachDTO
-from shared.schemas.dto.daily_shift_demand import DemandsResultDTO
 from shared.schemas.dto.request import RequestDTO
+from shared.schemas.dto.shift_demand_new import ShiftDemandsResultDTO
 
 
 class QuickStaffingDTO(BaseModel):
@@ -69,7 +69,7 @@ class DuplicateRequestDTO(BaseModel):
 
 class DuplicateResultDTO(BaseModel):
     assignments: AssignmentsRecurrencesResultDTO | None
-    demands: DemandsResultDTO | None
+    demands: ShiftDemandsResultDTO | None
 
 
 class WorkTimeTableDataDTO(BaseModel):

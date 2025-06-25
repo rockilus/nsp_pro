@@ -12,12 +12,12 @@ from shared.schemas.core import (
     Constraints,
     ConstraintSeq,
     ConstraintSum,
-    DailyShiftDemand,
     LinkShift,
     ObjectiveCategory,
     RequestAugmented,
     Schedule,
     Shift,
+    ShiftDemandNew,
     ShiftType,
     Variable,
     Worker,
@@ -33,7 +33,7 @@ def build_breaches_model(
     workers: List[Worker],
     shifts: List[Shift],
     link_shifts: List[LinkShift],
-    daily_shift_demands: List[DailyShiftDemand],
+    daily_shift_demands: List[ShiftDemandNew],
     assignments: List[Assignment],
     constraints: Constraints,
     requests: List[RequestAugmented],
@@ -543,7 +543,7 @@ def _build_description_link_shift_breach(
 def _build_daily_shift_demand_breaches(
     schedule: Schedule,
     shifts: List[Shift],
-    daily_shift_demands: List[DailyShiftDemand],
+    daily_shift_demands: List[ShiftDemandNew],
     assignments: List[Assignment],
 ) -> List[Breach]:
     out: List[Breach] = []

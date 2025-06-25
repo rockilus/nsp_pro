@@ -1,4 +1,5 @@
 import React from "react";
+import dayjs from "dayjs";
 // MUI
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
@@ -23,7 +24,7 @@ import {
   ScheduleViewSettingsT,
 } from "../../../../types/schedule";
 import { BreachT } from "@/types/breach";
-import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { ShiftDemandDTO } from "@/types/shiftDemand";
 import { AssignmentT, CreateAssignmentT } from "@/types/assignment";
 import { RequestT } from "../../../../types/request";
 import { AttributeOwnerType } from "../../../../types/attribute";
@@ -38,7 +39,7 @@ export default function ScheduleTableShift({
   requests,
   assignments,
   // scheduleId,
-  dailyShiftDemands,
+  shiftDemands,
   recurrences,
   scheduleCampaign,
   periodDates,
@@ -46,8 +47,6 @@ export default function ScheduleTableShift({
   scheduleViewSettings,
   handleAssignmentSelection,
   handleDemandSelection,
-  handleCreateDSD,
-  handleUpdateDSD,
   handleExportSchedule,
   handleOpenCreateAssignment,
 }: {
@@ -57,7 +56,7 @@ export default function ScheduleTableShift({
   workers: WorkerT[];
   requests: RequestT[];
   assignments: AssignmentT[];
-  dailyShiftDemands: DailyShiftDemandT[];
+  shiftDemands: ShiftDemandDTO[];
   recurrences: RecurrenceRuleT[];
   scheduleCampaign: ScheduleT | null;
   periodDates: periodDateT[];
@@ -65,16 +64,15 @@ export default function ScheduleTableShift({
   scheduleViewSettings: ScheduleViewSettingsT;
   handleAssignmentSelection: (selectedAssignment: AssignmentDataT) => void;
   handleDemandSelection: (scheduleCellData: ScheduleCellDataT) => void;
-  handleCreateDSD: (dsd: DailyShiftDemandT) => void;
-  handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
   const shiftsForHeader = getRelevantShifts(shifts, assignments);
+
   const scheduleCellDict = buildScheduleCellDict(
     AttributeOwnerType.SHIFT,
     assignments,
-    dailyShiftDemands,
+    shiftDemands,
     recurrences,
     requests,
     workers,
@@ -106,15 +104,11 @@ export default function ScheduleTableShift({
             teamWithMembership.team.useSolver && (
               <DailyShiftDemandRow
                 lng={lng}
-                teamId={teamWithMembership.team.id}
                 shifts={shifts}
                 assignments={assignments}
-                dailyShiftDemands={dailyShiftDemands}
-                scheduleCampaign={scheduleCampaign}
+                shiftDemands={shiftDemands}
                 periodDates={periodDates}
                 scheduleViewSettings={scheduleViewSettings}
-                handleCreateDSD={handleCreateDSD}
-                handleUpdateDSD={handleUpdateDSD}
               />
             )}
         </TableHead>
@@ -125,7 +119,7 @@ export default function ScheduleTableShift({
               teamWithMembership={teamWithMembership}
               shift={shift}
               assignments={assignments}
-              dailyShiftDemands={dailyShiftDemands}
+              shiftDemands={shiftDemands}
               periodDates={periodDates}
               scheduleCampaign={scheduleCampaign}
               scheduleCellsDict={scheduleCellDict}

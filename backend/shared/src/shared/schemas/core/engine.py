@@ -9,7 +9,6 @@ from shared.schemas.core.constraint import (
     ConstraintBuildAugmented,
     Penalties,
 )
-from shared.schemas.core.daily_shift_demand import DailyShiftDemand
 from shared.schemas.core.dim_entry import DimEntry
 from shared.schemas.core.dimension import Dimension
 from shared.schemas.core.link_shift import LinkShift
@@ -17,6 +16,7 @@ from shared.schemas.core.model_output import ModelOutput
 from shared.schemas.core.request import Request, RequestAugmented
 from shared.schemas.core.schedule import Schedule
 from shared.schemas.core.shift import Shift
+from shared.schemas.core.shift_demand_new import ShiftDemandNew
 from shared.schemas.core.worker import Worker
 
 ##############################
@@ -161,7 +161,7 @@ class EngineInputs:
     as_hist: List[Assignment]
     as_wip_fixed: List[Assignment]
     cbs_augmented: List[ConstraintBuildAugmented]
-    daily_shift_demands: List[DailyShiftDemand]
+    shift_demands: List[ShiftDemandNew]
     requests_work: List[RequestAugmented]
     requests_leave: List[Request]
     model_output: ModelOutput | None
@@ -180,9 +180,7 @@ class EngineInputs:
             "cbs_augmented": [
                 constraint.to_dict() for constraint in self.cbs_augmented
             ],
-            "daily_shift_demands": [
-                demand.to_dict() for demand in self.daily_shift_demands
-            ],
+            "shift_demands": [demand.to_dict() for demand in self.shift_demands],
             "requests_work": [request.to_dict() for request in self.requests_work],
             "requests_leave": [request.to_dict() for request in self.requests_leave],
             "model_output": (
@@ -210,9 +208,8 @@ class EngineInputs:
                 ConstraintBuildAugmented.from_dict(constraint)
                 for constraint in data["cbs_augmented"]
             ],
-            daily_shift_demands=[
-                DailyShiftDemand.from_dict(demand)
-                for demand in data["daily_shift_demands"]
+            shift_demands=[
+                ShiftDemandNew.from_dict(demand) for demand in data["shift_demands"]
             ],
             requests_work=[
                 RequestAugmented.from_dict(request) for request in data["requests"]
@@ -251,7 +248,7 @@ class EngineInputsAugmented(EngineInputs):
             as_hist=engine_inputs.as_hist,
             as_wip_fixed=engine_inputs.as_wip_fixed,
             cbs_augmented=engine_inputs.cbs_augmented,
-            daily_shift_demands=engine_inputs.daily_shift_demands,
+            shift_demands=engine_inputs.shift_demands,
             requests_work=engine_inputs.requests_work,
             requests_leave=engine_inputs.requests_leave,
             model_output=engine_inputs.model_output,

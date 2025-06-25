@@ -21,9 +21,9 @@ class TestDutyRecupConstraint:
         shift_ids_recup = [shift.id for shift in shifts_recup]
         sample_data.shifts = shifts_duty + shifts_recup
 
-        dsds = sample_data.daily_shift_demands
+        dsds = sample_data.shift_demands
         dsds_duty = [dsd for dsd in dsds if dsd.shift_id in shift_ids_duty]
-        sample_data.daily_shift_demands = dsds_duty
+        sample_data.shift_demands = dsds_duty
 
         outputs = engine_solve_engine_inputs(sample_data)
 
@@ -90,9 +90,9 @@ class TestDutyRecupConstraint:
         shift_ids_recup = [shift.id for shift in shifts_recup]
         sample_data.shifts = shifts_duty + shifts_recup
 
-        dsds = sample_data.daily_shift_demands
+        dsds = sample_data.shift_demands
         dsds_duty = [dsd for dsd in dsds if dsd.shift_id in shift_ids_target]
-        sample_data.daily_shift_demands = dsds_duty
+        sample_data.shift_demands = dsds_duty
 
         outputs = engine_solve_engine_inputs(sample_data)
 

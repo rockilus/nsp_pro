@@ -16,7 +16,7 @@ import { WorkerT } from "../../../types/worker";
 import { ShiftT } from "../../../types/shift";
 import { AssignmentT } from "@/types/assignment";
 import { RecurrenceRuleT } from "@/types/recurrence";
-import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { ShiftDemandDTO } from "@/types/shiftDemand";
 import { TeamWithMembership } from "@/types/team";
 
 dayjs.extend(utc);
@@ -36,7 +36,12 @@ interface CreateAssignmentProps {
     newAssignment: AssignmentT,
     newRecurrence: RecurrenceRuleT | null
   ) => void;
-  handleCreateDSD: (dsd: DailyShiftDemandT) => void;
+  handleCreateShiftDemand: (
+    shiftId: string,
+    date: dayjs.Dayjs,
+    count: number,
+    notes?: string
+  ) => Promise<void>;
 }
 
 const CreateAssignment: React.FC<CreateAssignmentProps> = ({
@@ -51,7 +56,7 @@ const CreateAssignment: React.FC<CreateAssignmentProps> = ({
   addDemandActive,
   onClose,
   handleCreateAssignment,
-  handleCreateDSD,
+  handleCreateShiftDemand,
 }) => {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -59,52 +64,50 @@ const CreateAssignment: React.FC<CreateAssignmentProps> = ({
 
   const shift = shifts.find((s) => s.id === shiftSelectedId);
 
+  const canCreateDemand = addDemandActive && shift && dateSelected;
+
   const handleSetIsCreatingDemand = () => {
-    if (!scheduleId || !shift || !dateSelected || !addDemandActive) {
+    console.log("handleSetIsCreatingDemand called");
+
+    if (!canCreateDemand) {
+      console.warn(
+        "Cannot create demand: missing shift, dateSelected, or addDemandActive is false"
+      );
       return;
     }
+    console.log("Setting isCreatingDemand to true");
     setIsCreatingDemand(true);
   };
 
   return (
     <div className="create-assignment-container">
       <LHSHEader lhsHeaderTitle={t("create_assignment")} onClose={onClose} />
-      {isCreatingDemand &&
-      addDemandActive &&
-      scheduleId &&
-      shift &&
-      dateSelected ? (
+      {isCreatingDemand && canCreateDemand ? (
         <CreateDemand
           lng={lng}
-          teamId={teamWithMembership.team.id}
-          scheduleId={scheduleId}
           shift={shift}
           dateSelected={dateSelected}
-          handleCreateDSD={handleCreateDSD}
+          handleCreateShiftDemand={handleCreateShiftDemand}
           handleCancel={() => setIsCreatingDemand(false)}
           recurrence={null}
         />
       ) : (
         <div>
-          {teamWithMembership.team.useSolver &&
-            addDemandActive &&
-            scheduleId &&
-            shift &&
-            dateSelected && (
-              <Button
-                variant="contained"
-                color="info"
-                onClick={handleSetIsCreatingDemand}
-                sx={{
-                  height: "20px",
-                  width: "130px",
-                  fontSize: "0.8rem",
-                  textTransform: "none",
-                }}
-              >
-                {t("create_demand")}
-              </Button>
-            )}
+          {teamWithMembership.team.useSolver && canCreateDemand && (
+            <Button
+              variant="contained"
+              color="info"
+              onClick={handleSetIsCreatingDemand}
+              sx={{
+                height: "20px",
+                width: "130px",
+                fontSize: "0.8rem",
+                textTransform: "none",
+              }}
+            >
+              {t("create_demand")}
+            </Button>
+          )}
           <EditAssignment
             lng={lng}
             teamId={teamWithMembership.team.id}

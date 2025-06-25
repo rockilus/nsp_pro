@@ -45,7 +45,7 @@ class TestCalculateWorkerWorkTimes:
             engine_inputs.workers,
             engine_inputs.shifts,
             engine_inputs.requests_leave,
-            engine_inputs.daily_shift_demands,
+            engine_inputs.shift_demands,
             periods_weekly,
         )
 
@@ -84,7 +84,7 @@ class TestCalculateWorkerWorkTimes:
             engine_inputs.workers,
             engine_inputs.shifts,
             engine_inputs.requests_leave,
-            engine_inputs.daily_shift_demands,
+            engine_inputs.shift_demands,
             periods_weekly,
         )
 
@@ -130,7 +130,7 @@ class TestCalculateWorkerWorkTimes:
         for i, period in enumerate(periods_weekly):
             dsds_period = [
                 dsd
-                for dsd in engine_inputs.daily_shift_demands
+                for dsd in engine_inputs.shift_demands
                 if dsd.date in period and dsd.shift_id in shift_work_ids
             ]
             work_time_period = 0.0
@@ -359,7 +359,7 @@ class TestCalculateWorkerWorkTimes:
             engine_inputs.workers,
             engine_inputs.shifts,
             engine_inputs.requests_leave,
-            engine_inputs.daily_shift_demands,
+            engine_inputs.shift_demands,
             periods_weekly,
         )
 
@@ -405,7 +405,7 @@ class TestCalculateWorkerWorkTimes:
             for s in shifts
         }
         target_total_expected = 0
-        for dsd in engine_inputs.daily_shift_demands:
+        for dsd in engine_inputs.shift_demands:
             if dsd.shift_id in s_id_to_duration:
                 target_total_expected += dsd.count * s_id_to_duration[dsd.shift_id]
         target_total_actual = sum(
@@ -434,7 +434,7 @@ class TestBuildWorkTimeConstraints:
             engine_inputs.workers,
             engine_inputs.shifts,
             engine_inputs.requests_leave,
-            engine_inputs.daily_shift_demands,
+            engine_inputs.shift_demands,
             periods_weekly,
         )
 
@@ -494,7 +494,7 @@ class TestBuildWorkTimeConstraints:
             engine_inputs.workers,
             engine_inputs.shifts,
             engine_inputs.requests_leave,
-            engine_inputs.daily_shift_demands,
+            engine_inputs.shift_demands,
             periods_weekly,
         )
 

@@ -3,11 +3,11 @@ from typing import List
 from shared.schemas.core import (
     Assignment,
     Breach,
-    DailyShiftDemand,
     LinkShift,
     RequestAugmented,
     Schedule,
     Shift,
+    ShiftDemandNew,
     Worker,
 )
 
@@ -27,7 +27,7 @@ def build_breaches(
     workers: List[Worker],
     shifts: List[Shift],
     link_shifts: List[LinkShift],
-    daily_shift_demand: List[DailyShiftDemand],
+    daily_shift_demand: List[ShiftDemandNew],
     assignments: List[Assignment],
     requests: List[RequestAugmented],
     breaches_engine: List[BreachEngine],

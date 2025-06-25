@@ -9,35 +9,18 @@ import TableCell from "@mui/material/TableCell";
 import "./demands-header-cell.css";
 import "../../../../styles/text-styles.css";
 // Types
-import {
-  ScheduleT,
-  ScheduleStatus,
-  periodDateT,
-  ScheduleViewSettingsT,
-} from "../../../../types/schedule";
-import { DSDSourceType } from "@/types/daily-shift-demand";
-import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { periodDateT, ScheduleViewSettingsT } from "../../../../types/schedule";
 import { ShiftT, ShiftType } from "../../../../types/shift";
 
 dayjs.extend(utc);
 
 export default function DemandsHeaderCell({
   lng,
-  teamId,
-  scheduleCampaign,
-  periodDate,
-  dailyShiftDemands,
   shifts,
   counts,
   scheduleViewSettings,
-  handleCreateDSD,
-  handleUpdateDSD,
 }: {
   lng: string;
-  teamId: string;
-  scheduleCampaign: ScheduleT | null;
-  periodDate: periodDateT;
-  dailyShiftDemands: DailyShiftDemandT[];
   shifts: ShiftT[];
   counts: {
     [id: string]: {
@@ -52,8 +35,6 @@ export default function DemandsHeaderCell({
     };
   };
   scheduleViewSettings: ScheduleViewSettingsT;
-  handleCreateDSD: (dsd: DailyShiftDemandT) => void;
-  handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -71,104 +52,6 @@ export default function DemandsHeaderCell({
 
   const handleClose = () => {
     setAnchorEl(null);
-  };
-
-  const handleDecreaseDSD = (shift: ShiftT) => {
-    if (
-      !scheduleCampaign ||
-      periodDate.scheduleStatus !== ScheduleStatus.CAMPAIGN
-    ) {
-      return;
-    }
-    const dsdShiftDemand = dailyShiftDemands.find(
-      (dsd) =>
-        dsd.shiftId === shift.id &&
-        dsd.sourceType === DSDSourceType.SHIFT_DEMAND &&
-        dsd.count > 0
-    );
-    const dsdDirectReq = dailyShiftDemands.find(
-      (dsd) =>
-        dsd.shiftId === shift.id &&
-        dsd.sourceType === DSDSourceType.DIRECT_REQUIREMENT
-    );
-    const dsdIsGreaterThanZero =
-      (dsdShiftDemand ? dsdShiftDemand.count : 0) +
-        (dsdDirectReq ? dsdDirectReq.count : 0) >
-      0;
-    if (!dsdIsGreaterThanZero) {
-      return;
-    }
-    if (dsdDirectReq) {
-      handleUpdateDSD({
-        ...dsdDirectReq,
-        count: dsdDirectReq.count - 1,
-      });
-    } else {
-      const newDsd: DailyShiftDemandT = {
-        id: "",
-        teamId: teamId,
-        scheduleId: scheduleCampaign.id,
-        shiftDemandId: null,
-        coverageSelectorId: null,
-        sourceType: DSDSourceType.DIRECT_REQUIREMENT,
-        date: periodDate.date,
-        shiftId: shift.id,
-        count: -1,
-      };
-      handleCreateDSD(newDsd);
-    }
-  };
-
-  const handleIncreaseDSD = (shift: ShiftT) => {
-    if (
-      !scheduleCampaign ||
-      periodDate.scheduleStatus !== ScheduleStatus.CAMPAIGN
-    ) {
-      return;
-    }
-    const dsdDirectReq = dailyShiftDemands.find(
-      (dsd) =>
-        dsd.shiftId === shift.id &&
-        dsd.sourceType === DSDSourceType.DIRECT_REQUIREMENT
-    );
-    if (dsdDirectReq) {
-      handleUpdateDSD({
-        ...dsdDirectReq,
-        count: dsdDirectReq.count + 1,
-      });
-    } else {
-      const newDsd: DailyShiftDemandT = {
-        id: "",
-        teamId: teamId,
-        scheduleId: scheduleCampaign.id,
-        shiftDemandId: null,
-        coverageSelectorId: null,
-        sourceType: DSDSourceType.DIRECT_REQUIREMENT,
-        date: periodDate.date,
-        shiftId: shift.id,
-        count: 1,
-      };
-      handleCreateDSD(newDsd);
-    }
-  };
-
-  const AdjustStaffingButtons = ({ shift }: { shift: ShiftT }) => {
-    return (
-      <div className="adjust-dsd-buttons">
-        <button
-          className="adjust-button adjust-button-left"
-          onClick={() => handleDecreaseDSD(shift)}
-        >
-          –
-        </button>
-        <button
-          className="adjust-button adjust-button-right"
-          onClick={() => handleIncreaseDSD(shift)}
-        >
-          +
-        </button>
-      </div>
-    );
   };
 
   const DSDPopoverButton = () => {
@@ -217,11 +100,6 @@ export default function DemandsHeaderCell({
                   </span>
                 </div>
               </div>
-              {periodDate.scheduleStatus === ScheduleStatus.CAMPAIGN && (
-                <div className="container-dsd-adjust-buttons">
-                  <AdjustStaffingButtons shift={shift} />
-                </div>
-              )}
             </div>
           );
         })}
@@ -244,34 +122,32 @@ export default function DemandsHeaderCell({
         borderRight: "1px solid #e0e0e07d",
       }}
     >
-      {periodDate.scheduleStatus !== null && (
-        <div className="container-dsd-cell">
-          <button onClick={handleClick}>
-            <DSDPopoverButton />
-          </button>
-          <Popover
-            id={id}
-            open={open}
-            anchorEl={anchorEl}
-            onClose={handleClose}
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "left",
-            }}
-            slotProps={{
-              paper: {
-                style: {
-                  boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
-                  padding: 20,
-                  width: 300,
-                },
+      <div className="container-dsd-cell">
+        <button onClick={handleClick}>
+          <DSDPopoverButton />
+        </button>
+        <Popover
+          id={id}
+          open={open}
+          anchorEl={anchorEl}
+          onClose={handleClose}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "left",
+          }}
+          slotProps={{
+            paper: {
+              style: {
+                boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
+                padding: 20,
+                width: 300,
               },
-            }}
-          >
-            <PopoverContent />
-          </Popover>
-        </div>
-      )}
+            },
+          }}
+        >
+          <PopoverContent />
+        </Popover>
+      </div>
     </TableCell>
   );
 }

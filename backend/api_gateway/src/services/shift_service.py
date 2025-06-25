@@ -559,8 +559,8 @@ class ShiftService(BaseService):
         ls_change = self.link_shift_service.update_link_shift_upon_shift_delete(shift)
         self._delete_shift_from_schedule_quick_staffing(shift_id)
         self.collection.shift_demand_db.delete_shift_demands_by_shift_id(shift_id)
-        self.collection.daily_shift_demand_db.delete_daily_shift_demands_by_shift_id(
-            shift_id
+        self.collection.shift_demand_new_db.delete_shift_demands_by_shift_id(
+            team_id=shift.team_id, shift_id=shift_id
         )
         if shift.shift_type == ShiftType.DUTY:
             self._handle_delete_recup_shift_and_its_assignments(shift)

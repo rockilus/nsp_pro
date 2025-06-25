@@ -7,8 +7,6 @@ from shared.constraint_parser import (
     build_dim_to_attr_value_to_owner,
 )
 from shared.schemas.core import (
-    DailyShiftDemand,
-    DSDSourceType,
     EngineInputsAugmented,
     FulfillmentStatus,
     Request,
@@ -17,6 +15,8 @@ from shared.schemas.core import (
     RequestType,
     Schedule,
     Shift,
+    ShiftDemandNew,
+    ShiftDemandSource,
     ShiftLeaveType,
     ShiftRestType,
     ShiftType,
@@ -313,21 +313,22 @@ class TestBuildRequests:
             deleted=False,
         )
         dsds_target_shift = [
-            DailyShiftDemand(
-                id=f"dsd_{target_shift.id}_{d.isoformat()}",
-                team_id="t0",
-                schedule_id="sch1",
-                shift_demand_id=None,
-                source_type=DSDSourceType.SHIFT_DEMAND,
+            ShiftDemandNew(
                 date=d,
                 shift_id=target_shift.id,
+                team_id="t0",
                 count=1,
-                coverage_selector_id=None,
+                notes=None,
+                source=ShiftDemandSource.MANUAL,
+                source_id=None,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
+                id=f"dsd_{target_shift.id}_{d.isoformat()}",
             )
             for d in dates_campaign
         ]
         sample_data.shifts.append(target_shift)
-        sample_data.daily_shift_demands += dsds_target_shift
+        sample_data.shift_demands += dsds_target_shift
 
         workers: List[Worker] = sample_data.workers
         target_worker = workers[0]

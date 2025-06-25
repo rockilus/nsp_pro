@@ -12,9 +12,6 @@ from shared.database.repositories.coverage import CoverageRepository
 from shared.database.repositories.coverage_selector import (
     CoverageSelectorRepository,
 )
-from shared.database.repositories.daily_shift_demand import (
-    DailyShiftDemandRepository,
-)
 from shared.database.repositories.dim_entry import DimEntryRepository
 from shared.database.repositories.dimension import DimensionRepository
 from shared.database.repositories.link_shift import LinkShiftRepository
@@ -62,7 +59,6 @@ class DatabaseCollections:
     constraint_build_db: ConstraintBuildRepository
     coverage_db: CoverageRepository
     coverage_selector_db: CoverageSelectorRepository
-    daily_shift_demand_db: DailyShiftDemandRepository
     dim_entry_db: DimEntryRepository
     dimension_db: DimensionRepository
     link_shift_db: LinkShiftRepository
@@ -95,7 +91,6 @@ class DatabaseCollections:
         self.constraint_build_db = ConstraintBuildRepository()
         self.coverage_db = CoverageRepository()
         self.coverage_selector_db = CoverageSelectorRepository()
-        self.daily_shift_demand_db = DailyShiftDemandRepository()
         self.dim_entry_db = DimEntryRepository()
         self.dimension_db = DimensionRepository()
         self.link_shift_db = LinkShiftRepository()

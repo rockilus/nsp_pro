@@ -861,8 +861,6 @@ def test_delete_shift_normal_shift(
     # fmt: off
     mock_collection.shift_demand_db.delete_shift_demands_by_shift_id\
         .assert_called_once_with(shift.id)
-    mock_collection.daily_shift_demand_db.delete_daily_shift_demands_by_shift_id\
-        .assert_called_once_with(shift.id)
     # fmt: on
     mock_collection.shift_db.logical_delete_shift.assert_called_once_with(shift.id)
 
@@ -925,8 +923,6 @@ def test_delete_shift_duty_shift(
     # fmt: off
     mock_collection.shift_demand_db.delete_shift_demands_by_shift_id\
         .assert_called_once_with(shift.id)
-    mock_collection.daily_shift_demand_db\
-        .delete_daily_shift_demands_by_shift_id.assert_called_once_with(shift.id)
     # fmt: on
     mock_collection.shift_db.logical_delete_shift.assert_has_calls(
         [call(shift_recup.id), call(shift.id)]

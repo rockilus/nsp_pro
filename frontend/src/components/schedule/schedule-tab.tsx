@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import isoWeek from "dayjs/plugin/isoWeek";
@@ -15,12 +21,9 @@ import ScheduleDisplay from "./table/schedule-display";
 import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
 import LHSTab from "./lhs-tabs/lhs-tab";
 import CreateAssignment from "./lhs-tabs/create-assignment";
-import {
-  buildAssignmentsDataByOwnerAndDate,
-  buildDailyShiftDemandsDataByShiftAndDate,
-  buildScheduleCellDict,
-} from "./table/shared/assignment-utils";
+import { buildAssignmentsDataByOwnerAndDate } from "./table/shared/assignment-utils";
 import { getPeriodStartEndDates } from "./schedule-utils";
+import { computePeriodEndDate } from "../../app/lib/utils/scheduleViewSettingsUtils";
 // Skeletons
 import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
 import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
@@ -41,11 +44,6 @@ import {
   deleteAssignment,
 } from "../../app/lib/assignment";
 import { getStats } from "../../app/lib/stats";
-import {
-  addDailyShiftDemand,
-  updateDailyShiftDemand,
-  deleteDailyShiftDemands,
-} from "../../app/lib/daily-shift-demand";
 import { exportSchedule } from "../../app/lib/export-schedule";
 import { SSEManager } from "../../app/lib/sse";
 // Styles
@@ -64,11 +62,13 @@ import {
   DuplicateRequestT,
   AssignmentDataT,
   ScheduleCellDataT,
-  ScheduleViewSettingsT,
   DuplicateResultT,
 } from "../../types/schedule";
 import { BreachT } from "@/types/breach";
-import { DailyShiftDemandT, DemandsResultT } from "@/types/daily-shift-demand";
+import {
+  ShiftDemandCreateDTO,
+  ShiftDemandUpdateDTO,
+} from "@/types/shiftDemand";
 import {
   AssignmentT,
   AssignmentsRecurrencesResultT,
@@ -85,6 +85,12 @@ import { AttributeOwnerType } from "../../types/attribute";
 import { RecurrenceRuleT, RecurrenceUpdateScope } from "@/types/recurrence";
 import { SpecialtyT } from "@/types/specialty";
 import { TeamWithMembership } from "@/types/team";
+import {
+  useShiftDemands,
+  useShiftDemandMutations,
+} from "../../app/lib/hooks/useShiftDemands";
+import { useScheduleViewSettings } from "../../app/lib/hooks/useScheduleViewSettings";
+import { getDefaultScheduleViewSettings } from "../../app/lib/utils/scheduleViewSettingsUtils";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -113,22 +119,23 @@ export default function ScheduleTab({
   );
   const [assignments, setAssignments] = useState<AssignmentT[]>([]);
   const [recurrences, setRecurrences] = useState<RecurrenceRuleT[]>([]);
-  const [dailyShiftDemands, setDailyShiftDemands] = useState<
-    DailyShiftDemandT[]
-  >([]);
   const [breaches, setBreaches] = useState<BreachT[]>([]);
   const [stats, setStats] = useState<StatsT | null>(null);
   const [specialties, setSpecialties] = useState<SpecialtyT[]>([]);
 
-  const [scheduleViewSettings, setScheduleViewSettings] =
-    useState<ScheduleViewSettingsT>({
-      timeFrame: "week",
-      groupBy: "shift",
-      showBreaches: true,
-      showAssignments: true,
-      showDailyShiftDemands: teamWithMembership.team.useSolver,
-      showRequests: true,
-    });
+  // Use persistent schedule view settings
+  const defaultSettings = getDefaultScheduleViewSettings(
+    teamWithMembership.team.useSolver
+  );
+
+  const [
+    scheduleViewSettings,
+    updateScheduleViewSettings,
+    resetScheduleViewSettings,
+  ] = useScheduleViewSettings(teamWithMembership.team.id, defaultSettings);
+
+  // resetScheduleViewSettings can be called to reset all settings to defaults
+  // Example: resetScheduleViewSettings() - useful for settings reset UI
   const [selectedAssignment, setSelectedAssignment] =
     useState<AssignmentDataT | null>(null);
   const [selectedDemand, setSelectedDemand] =
@@ -139,6 +146,31 @@ export default function ScheduleTab({
   >(null);
 
   const hasConnectedRef = useRef(false);
+
+  // React Query hooks for shift demands - use dates from settings
+  const {
+    demands: shiftDemands,
+    demandsById: shiftDemandsById,
+    matrix: shiftDemandMatrix,
+    isLoading: isLoadingShiftDemands,
+    error: shiftDemandError,
+  } = useShiftDemands(
+    teamWithMembership.team.id,
+    scheduleViewSettings.periodStartDate.toDate(),
+    computePeriodEndDate(
+      scheduleViewSettings.periodStartDate,
+      scheduleViewSettings.timeFrame
+    ).toDate(),
+    {
+      enabled: teamWithMembership.team.useSolver,
+      bufferDays: 7, // Load extra days for better UX
+    }
+  );
+
+  // Mutation hooks for shift demands
+  const shiftDemandMutations = useShiftDemandMutations(
+    teamWithMembership.team.id
+  );
 
   const getScheduleFromDate = useCallback(
     (date: dayjs.Dayjs) => {
@@ -185,19 +217,22 @@ export default function ScheduleTab({
     [getScheduleFromDate]
   );
 
-  const initialStartDate = dayjs
-    .utc()
-    .startOf(scheduleViewSettings.timeFrame === "month" ? "month" : "isoWeek");
-  const initialEndDate = dayjs
-    .utc()
-    .endOf(scheduleViewSettings.timeFrame === "month" ? "month" : "isoWeek");
-  const intialPeriodDates = buildDates(initialStartDate, initialEndDate);
-  const [periodStartDate, setPeriodStartDate] =
-    useState<dayjs.Dayjs>(initialStartDate);
-  const [periodEndDate, setPeriodEndDate] =
-    useState<dayjs.Dayjs>(initialEndDate);
-  const [periodDates, setPeriodDates] =
-    useState<periodDateT[]>(intialPeriodDates);
+  // Compute periodDates from the centralized date state
+  const periodDates = useMemo(
+    () =>
+      buildDates(
+        scheduleViewSettings.periodStartDate,
+        computePeriodEndDate(
+          scheduleViewSettings.periodStartDate,
+          scheduleViewSettings.timeFrame
+        )
+      ),
+    [
+      scheduleViewSettings.periodStartDate,
+      scheduleViewSettings.timeFrame,
+      buildDates,
+    ]
+  );
 
   const [selectedTab, setSelectedTab] = useState<string | null>(null);
   const [createAssignmentData, setCreateAssignmentData] =
@@ -228,11 +263,7 @@ export default function ScheduleTab({
     setSelectedTab("selection");
   };
 
-  const updateScheduleViewSettings = (
-    updates: Partial<ScheduleViewSettingsT>
-  ) => {
-    setScheduleViewSettings((prev) => ({ ...prev, ...updates }));
-  };
+  // updateScheduleViewSettings is now provided by the useScheduleViewSettings hook
 
   //////////////////////////
   // Schedule Actions
@@ -283,9 +314,8 @@ export default function ScheduleTab({
     if (duplicateResult.assignments) {
       updateAssignmentsAndRecurrencesStates(duplicateResult.assignments);
     }
-    if (duplicateResult.demands) {
-      updateDemandsStates(duplicateResult.demands);
-    }
+    // Note: Shift demands will be automatically updated via React Query
+    // when the duplicate operation affects shift demands
   };
 
   const handleSendDuplicateRequest = async (
@@ -301,93 +331,79 @@ export default function ScheduleTab({
   };
 
   //////////////////////////
-  // Daily Shift Demand Actions
+  // Shift Demand Actions (New Implementation)
   //////////////////////////
 
-  const updateDemandsStates = (DemandsResult: DemandsResultT) => {
-    setDailyShiftDemands((prev) => {
-      let updatedDemands = prev.map(
-        (d) =>
-          DemandsResult.demandsUpdated.find((updated) => updated.id === d.id) ||
-          d
-      );
-
-      if (DemandsResult.demandsCreated.length > 0) {
-        updatedDemands = [...updatedDemands, ...DemandsResult.demandsCreated];
-      }
-
-      if (DemandsResult.demandsDeletedIds.length > 0) {
-        updatedDemands = updatedDemands.filter(
-          (d) => !DemandsResult.demandsDeletedIds.includes(d.id)
-        );
-      }
-
-      return updatedDemands;
-    });
-  };
-
-  const handleCreateDSD = async (dailyShiftDemand: DailyShiftDemandT) => {
-    const newDailyShiftDemand = await addDailyShiftDemand(dailyShiftDemand);
-    setDailyShiftDemands([...dailyShiftDemands, newDailyShiftDemand]);
-    setSelectedTab("selection");
-    const newDSDList = [
-      ...(
-        selectedDemand?.dailyShiftDemandsData?.dailyShiftDemands || []
-      ).filter((dsd) => dsd.id !== newDailyShiftDemand.id),
-      newDailyShiftDemand,
-    ];
-    const scheduleCellDict = buildScheduleCellDict(
-      AttributeOwnerType.SHIFT,
-      assignments.filter((a) => a.date === newDailyShiftDemand.date),
-      newDSDList,
-      recurrences,
-      requests,
-      workers,
-      shifts,
-      breaches
-    );
-    const newSelectedDemand = Object.values(scheduleCellDict)[0];
-    setSelectedDemand(newSelectedDemand);
-  };
-
-  const handleUpdateDSD = async (dailyShiftDemand: DailyShiftDemandT) => {
-    const newDailyShiftDemand = await updateDailyShiftDemand(dailyShiftDemand);
-    setDailyShiftDemands(
-      dailyShiftDemands.map((dsd) =>
-        dsd.id === newDailyShiftDemand.id ? newDailyShiftDemand : dsd
-      )
-    );
-    if (selectedDemand) {
-      const newDSDList = [
-        ...(
-          selectedDemand.dailyShiftDemandsData?.dailyShiftDemands || []
-        ).filter((dsd) => dsd.id !== newDailyShiftDemand.id),
-        newDailyShiftDemand,
-      ];
-
-      const demandDict = buildDailyShiftDemandsDataByShiftAndDate(
-        newDSDList,
-        shifts
-      );
-      const newDailyShiftDemandsData = Object.values(demandDict)[0];
-      const newSelectedDemand = {
-        ...selectedDemand,
-        dailyShiftDemandsData: newDailyShiftDemandsData,
+  const handleCreateShiftDemand = async (
+    shiftId: string,
+    date: dayjs.Dayjs,
+    count: number,
+    notes?: string
+  ) => {
+    try {
+      const demandData: Omit<ShiftDemandCreateDTO, "teamId"> = {
+        shiftId,
+        date: date.unix(),
+        count,
+        notes: notes || null,
+        source: "manual",
+        sourceId: null,
       };
-      setSelectedDemand(newSelectedDemand);
+
+      await shiftDemandMutations.create.mutateAsync({ demand: demandData });
+
+      // Update selected demand if applicable
+      setSelectedTab("selection");
+
+      // Note: React Query will handle state updates automatically
+      // No need to manually update local state
+    } catch (error) {
+      console.error("Failed to create shift demand:", error);
+      // Error handling will be managed by React Query
     }
   };
 
-  const handleDeleteDSDs = async (
-    teamId: string,
-    shiftId: string,
-    date: dayjs.Dayjs
+  const handleUpdateShiftDemand = async (
+    demandId: string,
+    updates: Partial<ShiftDemandUpdateDTO>
   ) => {
-    const dsdDeletedIds = await deleteDailyShiftDemands(teamId, shiftId, date);
-    setDailyShiftDemands(
-      dailyShiftDemands.filter((dsd) => !dsdDeletedIds.includes(dsd.id))
-    );
-    setSelectedDemand(null);
+    try {
+      // Get the updated shift demand from the mutation response
+      const updatedShiftDemand = await shiftDemandMutations.update.mutateAsync({
+        demandId,
+        demand: updates,
+      });
+
+      // Update selectedDemand with fresh data if it was the updated demand
+      if (selectedDemand?.shiftDemandsData?.shiftDemand?.id === demandId) {
+        if (updatedShiftDemand) {
+          // Create updated ScheduleCellDataT with new shift demand data
+          const updatedSelectedDemand: ScheduleCellDataT = {
+            ...selectedDemand,
+            shiftDemandsData: {
+              ...selectedDemand.shiftDemandsData,
+              shiftDemand: updatedShiftDemand,
+            },
+          };
+          setSelectedDemand(updatedSelectedDemand);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to update shift demand:", error);
+    }
+  };
+
+  const handleDeleteShiftDemand = async (demandId: string) => {
+    try {
+      await shiftDemandMutations.delete.mutateAsync(demandId);
+
+      // Clear selection if deleted demand was selected
+      if (selectedDemand) {
+        setSelectedDemand(null);
+      }
+    } catch (error) {
+      console.error("Failed to delete shift demand:", error);
+    }
   };
 
   //////////////////////////
@@ -536,9 +552,10 @@ export default function ScheduleTab({
     newPeriodStart: dayjs.Dayjs,
     newPeriodEnd: dayjs.Dayjs
   ) => {
-    setPeriodStartDate(newPeriodStart);
-    setPeriodEndDate(newPeriodEnd);
-    setPeriodDates(buildDates(newPeriodStart, newPeriodEnd));
+    updateScheduleViewSettings({
+      periodStartDate: newPeriodStart,
+    });
+    // No need to setPeriodDates since it's now computed
   };
 
   const handleToday = async () => {
@@ -559,33 +576,46 @@ export default function ScheduleTab({
 
   const handlePreviousPeriod = async () => {
     const isMonth = scheduleViewSettings.timeFrame === "month";
-    const newPeriodStart = periodStartDate.subtract(
+    const newPeriodStart = scheduleViewSettings.periodStartDate.subtract(
       1,
       isMonth ? "month" : "week"
     );
-    const newPeriodEnd = isMonth
-      ? newPeriodStart.endOf("month")
-      : periodEndDate.subtract(1, "week");
+    const newPeriodEnd = computePeriodEndDate(
+      newPeriodStart,
+      scheduleViewSettings.timeFrame
+    );
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
 
   const handleNextPeriod = async () => {
     const isMonth = scheduleViewSettings.timeFrame === "month";
-    const newPeriodStart = periodStartDate.add(1, isMonth ? "month" : "week");
-    const newPeriodEnd = isMonth
-      ? newPeriodStart.endOf("month")
-      : periodEndDate.add(1, "week");
+    const newPeriodStart = scheduleViewSettings.periodStartDate.add(
+      1,
+      isMonth ? "month" : "week"
+    );
+    const newPeriodEnd = computePeriodEndDate(
+      newPeriodStart,
+      scheduleViewSettings.timeFrame
+    );
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
 
   const handleChangeTimeFrame = async (newTimeFrame: "week" | "month") => {
-    setScheduleViewSettings({
-      ...scheduleViewSettings,
-      timeFrame: newTimeFrame,
-    });
+    console.log("Changing time frame to:", newTimeFrame);
+
+    // Step 1: Get the new period dates using the NEW timeFrame
     const { firstDate: newPeriodStart, lastDate: newPeriodEnd } =
-      getPeriodStartEndDates(newTimeFrame, periodStartDate, periodEndDate);
-    updateSelectedPeriod(newPeriodStart, newPeriodEnd);
+      getPeriodStartEndDates(
+        newTimeFrame,
+        scheduleViewSettings.periodStartDate,
+        computePeriodEndDate(scheduleViewSettings.periodStartDate, newTimeFrame)
+      );
+
+    // Step 2: Update schedule view settings with both new timeFrame and new start date
+    updateScheduleViewSettings({
+      timeFrame: newTimeFrame,
+      periodStartDate: newPeriodStart,
+    });
   };
 
   //////////////////////////
@@ -744,13 +774,12 @@ export default function ScheduleTab({
             recurrences: fetchedRecurrences,
             workers: fetchedWorkers,
             shifts: fetchedShifts,
-            dailyShiftDemands: fetchedDailyShiftDemands,
           } = await getScheduleAssignmentsData(teamWithMembership.team.id);
           setAssignments(fetchedAssignments);
           setRecurrences(fetchedRecurrences);
           setWorkers(fetchedWorkers);
           setShifts(fetchedShifts);
-          setDailyShiftDemands(fetchedDailyShiftDemands);
+          // Note: Shift demands are now loaded via React Query hook
         } else {
           const {
             assignments: fetchedAssignments,
@@ -802,15 +831,7 @@ export default function ScheduleTab({
     fetchData();
   }, [teamWithMembership]);
 
-  useEffect(() => {
-    setPeriodDates(buildDates(periodStartDate, periodEndDate));
-  }, [
-    periodStartDate,
-    periodEndDate,
-    buildDates,
-    scheduleCampaign,
-    schedulesValidated,
-  ]);
+  // React Query hooks automatically handle refetching when scheduleViewSettings.periodStartDate/timeFrame change
 
   useEffect(() => {
     if (
@@ -873,23 +894,20 @@ export default function ScheduleTab({
       content: (
         <CurrentSelectionLHSTab
           lng={lng}
-          teamId={teamWithMembership.team.id}
           workers={workers.filter((w) => !w.deleted)}
           shifts={shifts.filter((s) => !s.deleted)}
           schedules={[
             ...(scheduleCampaign ? [scheduleCampaign] : []),
             ...schedulesValidated,
           ]}
-          campaign={scheduleCampaign}
           selectedAssignment={selectedAssignment}
           selectedDemand={selectedDemand}
           specialties={specialties}
           onClose={handleCloseLHS}
           handleUpdateAssignment={handleUpdateAssignment}
           handleDeleteAssignment={handleDeleteAssignment}
-          handleCreateDSD={handleCreateDSD}
-          handleUpdateDSD={handleUpdateDSD}
-          handleDeleteDSDs={handleDeleteDSDs}
+          handleUpdateShiftDemand={handleUpdateShiftDemand}
+          handleDeleteShiftDemand={handleDeleteShiftDemand}
         />
       ),
     },
@@ -912,7 +930,7 @@ export default function ScheduleTab({
           }
           onClose={handleCloseLHS}
           handleCreateAssignment={handleCreateAssignment}
-          handleCreateDSD={handleCreateDSD}
+          handleCreateShiftDemand={handleCreateShiftDemand}
         />
       ) : null,
     },
@@ -929,8 +947,11 @@ export default function ScheduleTab({
           <ScheduleNavBar
             lng={lng}
             teamWithMembership={teamWithMembership}
-            currentPeriodStart={periodStartDate}
-            currentPeriodEnd={periodEndDate}
+            currentPeriodStart={scheduleViewSettings.periodStartDate}
+            currentPeriodEnd={computePeriodEndDate(
+              scheduleViewSettings.periodStartDate,
+              scheduleViewSettings.timeFrame
+            )}
             scheduleCampaign={scheduleCampaign}
             solveStatus={solveStatus}
             scheduleViewSettings={scheduleViewSettings}
@@ -952,7 +973,8 @@ export default function ScheduleTab({
             selectedTab={selectedTab}
             toggleTab={toggleTab}
           />
-          {isLoadingAssignments ? (
+          {isLoadingAssignments ||
+          (teamWithMembership.team.useSolver && isLoadingShiftDemands) ? (
             <ScheduleTableSkeleton />
           ) : assignments.length === 0 && !scheduleCampaign ? (
             <Box
@@ -979,7 +1001,7 @@ export default function ScheduleTab({
               scheduleCampaign={scheduleCampaign as ScheduleT}
               periodDates={periodDates}
               assignments={assignments}
-              dailyShiftDemands={dailyShiftDemands}
+              shiftDemands={shiftDemands}
               recurrences={recurrences}
               breaches={breaches}
               workers={workers}
@@ -988,8 +1010,6 @@ export default function ScheduleTab({
               scheduleViewSettings={scheduleViewSettings}
               handleAssignmentSelection={handleAssignmentSelection}
               handleDemandSelection={handleDemandSelection}
-              handleCreateDSD={handleCreateDSD}
-              handleUpdateDSD={handleUpdateDSD}
               handleExportSchedule={handleExportSchedule}
               handleOpenCreateAssignment={handleOpenCreateAssignment}
             />

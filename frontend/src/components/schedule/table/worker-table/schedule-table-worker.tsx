@@ -21,7 +21,7 @@ import {
   ScheduleViewSettingsT,
 } from "../../../../types/schedule";
 import { BreachT } from "@/types/breach";
-import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { ShiftDemandDTO } from "@/types/shiftDemand";
 import { CreateAssignmentT } from "@/types/assignment";
 import { AssignmentDataDictT } from "@/types/assignment";
 import { AssignmentT } from "@/types/assignment";
@@ -37,15 +37,13 @@ export default function ScheduleTableWorker({
   workers,
   requests,
   assignments,
-  dailyShiftDemands,
+  shiftDemands,
   recurrences,
   scheduleCampaign,
   periodDates,
   breaches,
   scheduleViewSettings,
   handleAssignmentSelection,
-  handleCreateDSD,
-  handleUpdateDSD,
   handleExportSchedule,
   handleOpenCreateAssignment,
 }: {
@@ -55,15 +53,13 @@ export default function ScheduleTableWorker({
   workers: WorkerT[];
   requests: RequestT[];
   assignments: AssignmentT[];
-  dailyShiftDemands: DailyShiftDemandT[];
+  shiftDemands: ShiftDemandDTO[];
   recurrences: RecurrenceRuleT[];
   scheduleCampaign: ScheduleT | null;
   periodDates: periodDateT[];
   breaches: BreachT[];
   scheduleViewSettings: ScheduleViewSettingsT;
   handleAssignmentSelection: (selectedCell: AssignmentDataDictT) => void;
-  handleCreateDSD: (dsd: DailyShiftDemandT) => void;
-  handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
@@ -76,7 +72,7 @@ export default function ScheduleTableWorker({
   const scheduleCellDict = buildScheduleCellDict(
     AttributeOwnerType.WORKER,
     assignments,
-    dailyShiftDemands,
+    shiftDemands,
     recurrences,
     requests,
     workers,
@@ -108,15 +104,11 @@ export default function ScheduleTableWorker({
             teamWithMembership.team.useSolver && (
               <DailyShiftDemandRow
                 lng={lng}
-                teamId={teamWithMembership.team.id}
                 shifts={shifts}
                 assignments={assignments}
-                dailyShiftDemands={dailyShiftDemands}
-                scheduleCampaign={scheduleCampaign}
+                shiftDemands={shiftDemands}
                 periodDates={periodDates}
                 scheduleViewSettings={scheduleViewSettings}
-                handleCreateDSD={handleCreateDSD}
-                handleUpdateDSD={handleUpdateDSD}
               />
             )}
         </TableHead>

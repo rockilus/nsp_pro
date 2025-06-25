@@ -9,6 +9,7 @@ import "dayjs/locale/es";
 import ScheduleTab from "../../../../components/schedule/schedule-tab";
 import ScheduleTabMember from "@/components/schedule/schedule-tab-member";
 import { RoleBased } from "@/components/access/role-based";
+import ReactQueryProvider from "@/components/providers/ReactQueryProvider";
 // Context
 import { useTeam } from "@/context/TeamContext";
 import { useUser } from "@/context/UserContext";
@@ -36,16 +37,23 @@ export default function Page({
         allowedRoles={PageRolePermissions.schedule}
       >
         <div className="page-layout">
-          <LocalizationProvider
-            dateAdapter={AdapterDayjs}
-            adapterLocale={lng === "en" ? "en-gb" : lng === "es" ? "es" : "fr"}
-          >
-            {selectedTeam.membership.role === TeamMembershipRole.OWNER ? (
-              <ScheduleTab lng={lng} teamWithMembership={selectedTeam} />
-            ) : (
-              <ScheduleTabMember lng={lng} teamWithMembership={selectedTeam} />
-            )}
-          </LocalizationProvider>
+          <ReactQueryProvider>
+            <LocalizationProvider
+              dateAdapter={AdapterDayjs}
+              adapterLocale={
+                lng === "en" ? "en-gb" : lng === "es" ? "es" : "fr"
+              }
+            >
+              {selectedTeam.membership.role === TeamMembershipRole.OWNER ? (
+                <ScheduleTab lng={lng} teamWithMembership={selectedTeam} />
+              ) : (
+                <ScheduleTabMember
+                  lng={lng}
+                  teamWithMembership={selectedTeam}
+                />
+              )}
+            </LocalizationProvider>
+          </ReactQueryProvider>
         </div>
       </RoleBased>
     )

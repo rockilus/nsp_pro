@@ -47,7 +47,7 @@ class TestCalculateWorkerNbDuties:
             engine_inputs.workers,
             engine_inputs.shifts,
             engine_inputs.requests_leave,
-            engine_inputs.daily_shift_demands,
+            engine_inputs.shift_demands,
             periods_monthly,
         )
 
@@ -93,7 +93,7 @@ class TestCalculateWorkerNbDuties:
             engine_inputs.workers,
             engine_inputs.shifts,
             engine_inputs.requests_leave,
-            engine_inputs.daily_shift_demands,
+            engine_inputs.shift_demands,
             periods_monthly,
         )
 
@@ -120,7 +120,7 @@ class TestCalculateWorkerNbDuties:
         for i, period in enumerate(periods_monthly):
             dsds_period = [
                 dsd
-                for dsd in engine_inputs.daily_shift_demands
+                for dsd in engine_inputs.shift_demands
                 if dsd.date in period and dsd.shift_id in shift_duty_ids
             ]
             nb_duties_periods[i] = sum(dsd.count for dsd in dsds_period)
@@ -268,7 +268,7 @@ class TestBuildNbDutiesConstraints:
             engine_inputs.workers,
             engine_inputs.shifts,
             engine_inputs.requests_leave,
-            engine_inputs.daily_shift_demands,
+            engine_inputs.shift_demands,
             periods_monthly,
         )
 
@@ -319,7 +319,7 @@ class TestBuildNbDutiesConstraints:
             engine_inputs.workers,
             engine_inputs.shifts,
             engine_inputs.requests_leave,
-            engine_inputs.daily_shift_demands,
+            engine_inputs.shift_demands,
             periods_monthly,
         )
 

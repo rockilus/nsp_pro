@@ -80,6 +80,25 @@ class ShiftDemandNewRepository(BaseRepository[ShiftDemandNewSchema]):
         """Delete a shift demand by its ID."""
         return self.delete(shift_demand_id)
 
+    def delete_shift_demands_by_shift_id(self, team_id: str, shift_id: str) -> int:
+        """
+        Delete all shift demands for a specific shift.
+
+        Args:
+            team_id: Team identifier
+            shift_id: Shift identifier
+
+        Returns:
+            Number of demands deleted
+        """
+        filter_query: Dict[str, Any] = {
+            "team": team_id,
+            "shift": shift_id,
+        }
+
+        result = self.collection.delete_many(filter_query)
+        return result.deleted_count
+
     def bulk_create_shift_demands(
         self, shift_demands: List[ShiftDemandNew]
     ) -> List[ShiftDemandNew]:
