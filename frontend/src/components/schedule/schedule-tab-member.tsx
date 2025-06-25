@@ -15,6 +15,8 @@ import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
 // Actions
 import { getScheduleAssignmentsDataMember } from "../../app/lib/schedule";
 import { exportSchedule } from "../../app/lib/export-schedule";
+import { useScheduleViewSettings } from "../../app/lib/hooks/useScheduleViewSettings";
+import { getDefaultScheduleViewSettings } from "../../app/lib/utils/scheduleViewSettingsUtils";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "./schedule-tab.css";
@@ -52,21 +54,14 @@ export default function ScheduleTabMember({
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [assignments, setAssignments] = useState<AssignmentT[]>([]);
 
-  // Calculate initial dates for the period based on current time
-  const defaultStartDate = dayjs.utc().startOf("isoWeek");
-  const defaultEndDate = dayjs.utc().endOf("isoWeek");
+  // Use persistent schedule view settings (member version)
+  const defaultSettings = getDefaultScheduleViewSettings(true); // Members can see demands
 
-  const [scheduleViewSettings, setScheduleViewSettings] =
-    useState<ScheduleViewSettingsT>({
-      timeFrame: "week",
-      groupBy: "shift",
-      showBreaches: true,
-      showAssignments: true,
-      showDailyShiftDemands: true,
-      showRequests: true,
-      periodStartDate: defaultStartDate,
-      periodEndDate: defaultEndDate,
-    });
+  const [
+    scheduleViewSettings,
+    updateScheduleViewSettings,
+    resetScheduleViewSettings,
+  ] = useScheduleViewSettings(teamWithMembership.team.id, defaultSettings);
 
   const buildDates = useCallback(
     (startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) => {
@@ -106,11 +101,7 @@ export default function ScheduleTabMember({
     selectedScheduleCellData: ScheduleCellDataT
   ) => {};
 
-  const updateScheduleViewSettings = (
-    updates: Partial<ScheduleViewSettingsT>
-  ) => {
-    setScheduleViewSettings((prev) => ({ ...prev, ...updates }));
-  };
+  // updateScheduleViewSettings is now provided by the useScheduleViewSettings hook
 
   //////////////////////////
   // Schedule Actions
@@ -194,8 +185,7 @@ export default function ScheduleTabMember({
   };
 
   const handleChangeTimeFrame = async (newTimeFrame: "week" | "month") => {
-    setScheduleViewSettings({
-      ...scheduleViewSettings,
+    updateScheduleViewSettings({
       timeFrame: newTimeFrame,
     });
     const { firstDate: newPeriodStart, lastDate: newPeriodEnd } =
