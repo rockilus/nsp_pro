@@ -16,7 +16,7 @@ interface DemandSelectionProps {
   teamId: string;
   shift: ShiftT;
   date: dayjs.Dayjs;
-  shiftDemands: ShiftDemandDTO[];
+  shiftDemand: ShiftDemandDTO | null;
   assignments: AssignmentT[];
   specialties: SpecialtyT[];
   campaignStartDate: dayjs.Dayjs;
@@ -31,10 +31,7 @@ interface DemandSelectionProps {
     demandId: string,
     updates: Partial<ShiftDemandUpdateDTO>
   ) => Promise<void>;
-  handleDeleteShiftDemands: (
-    shiftId: string,
-    date: dayjs.Dayjs
-  ) => Promise<void>;
+  handleDeleteShiftDemand: (demandId: string) => Promise<void>;
 }
 
 export default function DemandSelection({
@@ -42,14 +39,14 @@ export default function DemandSelection({
   teamId,
   shift,
   date,
-  shiftDemands,
+  shiftDemand,
   assignments,
   specialties,
   campaignStartDate,
   campaignEndDate,
   handleCreateShiftDemand,
   handleUpdateShiftDemand,
-  handleDeleteShiftDemands,
+  handleDeleteShiftDemand,
 }: DemandSelectionProps) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -61,18 +58,13 @@ export default function DemandSelection({
   );
 
   const countActual = Math.floor(assignmentsCount / shiftStaffingTotal);
-  const countTarget = shiftDemands.reduce(
-    (sum: number, demand) => sum + demand.count,
-    0
-  );
+  const countTarget = shiftDemand?.count || 0;
 
-  // Find manual shift demands (equivalent to legacy DIRECT_REQUIREMENT)
-  const manualDemand = shiftDemands.find(
-    (demand) => demand.source === "manual" && demand.count > 0
-  );
+  // Check if we have a manual shift demand (equivalent to legacy DIRECT_REQUIREMENT)
+  const manualDemand = shiftDemand?.source === "manual" ? shiftDemand : null;
 
   const handleDecreaseDSD = async () => {
-    if (countTarget <= 0) {
+    if (countTarget <= 0 || !manualDemand) {
       return;
     }
 
@@ -99,7 +91,9 @@ export default function DemandSelection({
   };
 
   const handleDeleteDemands = async () => {
-    await handleDeleteShiftDemands(shift.id, date);
+    if (shiftDemand) {
+      await handleDeleteShiftDemand(shiftDemand.id);
+    }
   };
 
   const AdjustStaffingButtons = () => {

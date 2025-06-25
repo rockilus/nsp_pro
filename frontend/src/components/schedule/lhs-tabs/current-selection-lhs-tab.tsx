@@ -96,7 +96,7 @@ export default function CurrentSelectionLHSTab({
     return {
       shift,
       date,
-      shiftDemands: [shiftDemand], // Convert single demand to array for backward compatibility
+      shiftDemand: shiftDemand,
       assignments,
       campaignStartDate: campaign ? dayjs(campaign.startDate) : dayjs(),
       campaignEndDate: campaign ? dayjs(campaign.endDate) : dayjs(),
@@ -125,27 +125,14 @@ export default function CurrentSelectionLHSTab({
           teamId={teamId}
           shift={demandProps.shift}
           date={demandProps.date}
-          shiftDemands={demandProps.shiftDemands}
+          shiftDemand={demandProps.shiftDemand}
           assignments={demandProps.assignments}
           specialties={specialties}
           campaignStartDate={demandProps.campaignStartDate}
           campaignEndDate={demandProps.campaignEndDate}
           handleCreateShiftDemand={handleCreateShiftDemand}
           handleUpdateShiftDemand={handleUpdateShiftDemand}
-          handleDeleteShiftDemands={async (
-            shiftId: string,
-            date: dayjs.Dayjs
-          ) => {
-            // For now, just call handleDeleteShiftDemand for all demands for this shift/date
-            // This is a simplified implementation - in a full migration, we'd have better handling
-            const demandsToDelete = demandProps.shiftDemands.filter(
-              (d) =>
-                d.shiftId === shiftId && dayjs.unix(d.date).isSame(date, "day")
-            );
-            for (const demand of demandsToDelete) {
-              await handleDeleteShiftDemand(demand.id);
-            }
-          }}
+          handleDeleteShiftDemand={handleDeleteShiftDemand}
         />
       )}
     </div>
