@@ -18,10 +18,6 @@ export function computePeriodEndDate(
   periodStartDate: dayjs.Dayjs,
   timeFrame: "week" | "month"
 ): dayjs.Dayjs {
-  console.log(
-    `Computing period end date for start: ${periodStartDate.format()} and timeFrame: ${timeFrame}`
-  );
-
   return periodStartDate.endOf(timeFrame === "month" ? "month" : "isoWeek");
 }
 

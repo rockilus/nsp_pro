@@ -609,19 +609,21 @@ export default function ScheduleTab({
   };
 
   const handleChangeTimeFrame = async (newTimeFrame: "week" | "month") => {
-    updateScheduleViewSettings({
-      timeFrame: newTimeFrame,
-    });
+    console.log("Changing time frame to:", newTimeFrame);
+
+    // Step 1: Get the new period dates using the NEW timeFrame
     const { firstDate: newPeriodStart, lastDate: newPeriodEnd } =
       getPeriodStartEndDates(
         newTimeFrame,
         scheduleViewSettings.periodStartDate,
-        computePeriodEndDate(
-          scheduleViewSettings.periodStartDate,
-          scheduleViewSettings.timeFrame
-        )
+        computePeriodEndDate(scheduleViewSettings.periodStartDate, newTimeFrame)
       );
-    updateSelectedPeriod(newPeriodStart, newPeriodEnd);
+
+    // Step 2: Update schedule view settings with both new timeFrame and new start date
+    updateScheduleViewSettings({
+      timeFrame: newTimeFrame,
+      periodStartDate: newPeriodStart,
+    });
   };
 
   //////////////////////////
