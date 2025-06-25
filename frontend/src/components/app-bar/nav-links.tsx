@@ -45,6 +45,12 @@ export default function NavLinks({
       route: "/coverages",
     },
     {
+      name: "shift-demands",
+      label: t("shift_demands"),
+      href: `/${lng}/plan/shift-demands`,
+      route: "/shift-demands",
+    },
+    {
       name: "constraints",
       label: t("constraints"),
       href: `/${lng}/plan/constraints`,
@@ -67,12 +73,6 @@ export default function NavLinks({
       label: t("schedule"),
       href: `/${lng}/plan/schedule`,
       route: "/schedule",
-    },
-    {
-      name: "shift-demands",
-      label: t("shift_demands"),
-      href: `/${lng}/plan/shift-demands`,
-      route: "/shift-demands",
     },
     {
       name: "stats",
