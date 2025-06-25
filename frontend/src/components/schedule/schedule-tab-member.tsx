@@ -294,7 +294,6 @@ export default function ScheduleTabMember({
               periodDates={periodDates}
               assignments={assignments}
               shiftDemands={[]}
-              shiftDemandMatrix={{}}
               recurrences={[]}
               breaches={[]}
               workers={workers}
@@ -303,9 +302,6 @@ export default function ScheduleTabMember({
               scheduleViewSettings={scheduleViewSettings}
               handleAssignmentSelection={handleAssignmentSelection}
               handleDemandSelection={handleDemandSelection}
-              handleCreateShiftDemand={async () => {}}
-              handleUpdateShiftDemand={async () => {}}
-              handleDeleteShiftDemand={async () => {}}
               handleExportSchedule={handleExportSchedule}
               handleOpenCreateAssignment={handleOpenCreateAssignment}
             />

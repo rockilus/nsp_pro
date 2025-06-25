@@ -1,5 +1,4 @@
 import React from "react";
-import dayjs from "dayjs";
 // MUI
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
@@ -22,7 +21,7 @@ import {
   ScheduleViewSettingsT,
 } from "../../../../types/schedule";
 import { BreachT } from "@/types/breach";
-import { ShiftDemandDTO, ShiftDemandMatrix } from "@/types/shiftDemand";
+import { ShiftDemandDTO } from "@/types/shiftDemand";
 import { CreateAssignmentT } from "@/types/assignment";
 import { AssignmentDataDictT } from "@/types/assignment";
 import { AssignmentT } from "@/types/assignment";
@@ -39,16 +38,12 @@ export default function ScheduleTableWorker({
   requests,
   assignments,
   shiftDemands,
-  shiftDemandMatrix,
   recurrences,
   scheduleCampaign,
   periodDates,
   breaches,
   scheduleViewSettings,
   handleAssignmentSelection,
-  handleCreateShiftDemand,
-  handleUpdateShiftDemand,
-  handleDeleteShiftDemand,
   handleExportSchedule,
   handleOpenCreateAssignment,
 }: {
@@ -59,24 +54,12 @@ export default function ScheduleTableWorker({
   requests: RequestT[];
   assignments: AssignmentT[];
   shiftDemands: ShiftDemandDTO[];
-  shiftDemandMatrix: ShiftDemandMatrix;
   recurrences: RecurrenceRuleT[];
   scheduleCampaign: ScheduleT | null;
   periodDates: periodDateT[];
   breaches: BreachT[];
   scheduleViewSettings: ScheduleViewSettingsT;
   handleAssignmentSelection: (selectedCell: AssignmentDataDictT) => void;
-  handleCreateShiftDemand: (
-    shiftId: string,
-    date: dayjs.Dayjs,
-    count: number,
-    notes?: string
-  ) => Promise<void>;
-  handleUpdateShiftDemand: (
-    demandId: string,
-    updates: Partial<{ count: number; notes: string | null }>
-  ) => Promise<void>;
-  handleDeleteShiftDemand: (demandId: string) => Promise<void>;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
@@ -121,15 +104,11 @@ export default function ScheduleTableWorker({
             teamWithMembership.team.useSolver && (
               <DailyShiftDemandRow
                 lng={lng}
-                teamId={teamWithMembership.team.id}
                 shifts={shifts}
                 assignments={assignments}
                 shiftDemands={shiftDemands}
-                scheduleCampaign={scheduleCampaign}
                 periodDates={periodDates}
                 scheduleViewSettings={scheduleViewSettings}
-                handleCreateDSD={handleCreateShiftDemand}
-                handleUpdateDSD={handleUpdateShiftDemand}
               />
             )}
         </TableHead>

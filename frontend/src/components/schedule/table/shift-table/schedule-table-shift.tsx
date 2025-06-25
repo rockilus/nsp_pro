@@ -24,7 +24,7 @@ import {
   ScheduleViewSettingsT,
 } from "../../../../types/schedule";
 import { BreachT } from "@/types/breach";
-import { ShiftDemandDTO, ShiftDemandMatrix } from "@/types/shiftDemand";
+import { ShiftDemandDTO } from "@/types/shiftDemand";
 import { AssignmentT, CreateAssignmentT } from "@/types/assignment";
 import { RequestT } from "../../../../types/request";
 import { AttributeOwnerType } from "../../../../types/attribute";
@@ -40,7 +40,6 @@ export default function ScheduleTableShift({
   assignments,
   // scheduleId,
   shiftDemands,
-  shiftDemandMatrix,
   recurrences,
   scheduleCampaign,
   periodDates,
@@ -48,9 +47,6 @@ export default function ScheduleTableShift({
   scheduleViewSettings,
   handleAssignmentSelection,
   handleDemandSelection,
-  handleCreateShiftDemand,
-  handleUpdateShiftDemand,
-  handleDeleteShiftDemand,
   handleExportSchedule,
   handleOpenCreateAssignment,
 }: {
@@ -61,7 +57,6 @@ export default function ScheduleTableShift({
   requests: RequestT[];
   assignments: AssignmentT[];
   shiftDemands: ShiftDemandDTO[];
-  shiftDemandMatrix: ShiftDemandMatrix;
   recurrences: RecurrenceRuleT[];
   scheduleCampaign: ScheduleT | null;
   periodDates: periodDateT[];
@@ -69,17 +64,6 @@ export default function ScheduleTableShift({
   scheduleViewSettings: ScheduleViewSettingsT;
   handleAssignmentSelection: (selectedAssignment: AssignmentDataT) => void;
   handleDemandSelection: (scheduleCellData: ScheduleCellDataT) => void;
-  handleCreateShiftDemand: (
-    shiftId: string,
-    date: dayjs.Dayjs,
-    count: number,
-    notes?: string
-  ) => Promise<void>;
-  handleUpdateShiftDemand: (
-    demandId: string,
-    updates: Partial<{ count: number; notes: string | null }>
-  ) => Promise<void>;
-  handleDeleteShiftDemand: (demandId: string) => Promise<void>;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
@@ -120,15 +104,11 @@ export default function ScheduleTableShift({
             teamWithMembership.team.useSolver && (
               <DailyShiftDemandRow
                 lng={lng}
-                teamId={teamWithMembership.team.id}
                 shifts={shifts}
                 assignments={assignments}
                 shiftDemands={shiftDemands}
-                scheduleCampaign={scheduleCampaign}
                 periodDates={periodDates}
                 scheduleViewSettings={scheduleViewSettings}
-                handleCreateDSD={handleCreateShiftDemand}
-                handleUpdateDSD={handleUpdateShiftDemand}
               />
             )}
         </TableHead>

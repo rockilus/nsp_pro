@@ -21,11 +21,7 @@ import ScheduleDisplay from "./table/schedule-display";
 import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
 import LHSTab from "./lhs-tabs/lhs-tab";
 import CreateAssignment from "./lhs-tabs/create-assignment";
-import {
-  buildAssignmentsDataByOwnerAndDate,
-  buildShiftDemandsDataByShiftAndDate,
-  buildScheduleCellDict,
-} from "./table/shared/assignment-utils";
+import { buildAssignmentsDataByOwnerAndDate } from "./table/shared/assignment-utils";
 import { getPeriodStartEndDates } from "./schedule-utils";
 import { computePeriodEndDate } from "../../app/lib/utils/scheduleViewSettingsUtils";
 // Skeletons
@@ -66,16 +62,12 @@ import {
   DuplicateRequestT,
   AssignmentDataT,
   ScheduleCellDataT,
-  ScheduleViewSettingsT,
   DuplicateResultT,
 } from "../../types/schedule";
 import { BreachT } from "@/types/breach";
 import {
-  ShiftDemandDTO,
   ShiftDemandCreateDTO,
   ShiftDemandUpdateDTO,
-  ShiftDemandMatrix,
-  BulkUpsertResponse,
 } from "@/types/shiftDemand";
 import {
   AssignmentT,
@@ -1010,7 +1002,6 @@ export default function ScheduleTab({
               periodDates={periodDates}
               assignments={assignments}
               shiftDemands={shiftDemands}
-              shiftDemandMatrix={shiftDemandMatrix}
               recurrences={recurrences}
               breaches={breaches}
               workers={workers}
@@ -1019,9 +1010,6 @@ export default function ScheduleTab({
               scheduleViewSettings={scheduleViewSettings}
               handleAssignmentSelection={handleAssignmentSelection}
               handleDemandSelection={handleDemandSelection}
-              handleCreateShiftDemand={handleCreateShiftDemand}
-              handleUpdateShiftDemand={handleUpdateShiftDemand}
-              handleDeleteShiftDemand={handleDeleteShiftDemand}
               handleExportSchedule={handleExportSchedule}
               handleOpenCreateAssignment={handleOpenCreateAssignment}
             />

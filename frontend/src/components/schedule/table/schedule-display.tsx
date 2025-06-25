@@ -14,13 +14,13 @@ import {
   ScheduleViewSettingsT,
 } from "../../../types/schedule";
 import { BreachT } from "@/types/breach";
-import { ShiftDemandDTO, ShiftDemandMatrix } from "@/types/shiftDemand";
+import { ShiftDemandDTO } from "@/types/shiftDemand";
 import { AssignmentT, CreateAssignmentT } from "@/types/assignment";
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
 import { RequestT } from "../../../types/request";
 import { RecurrenceRuleT } from "@/types/recurrence";
-import { TeamMembershipRole, TeamWithMembership } from "@/types/team";
+import { TeamWithMembership } from "@/types/team";
 
 dayjs.extend(utc);
 
@@ -31,7 +31,6 @@ export default function ScheduleDisplay({
   periodDates,
   assignments,
   shiftDemands,
-  shiftDemandMatrix,
   recurrences,
   breaches,
   workers,
@@ -40,9 +39,6 @@ export default function ScheduleDisplay({
   scheduleViewSettings,
   handleAssignmentSelection,
   handleDemandSelection,
-  handleCreateShiftDemand,
-  handleUpdateShiftDemand,
-  handleDeleteShiftDemand,
   handleExportSchedule,
   handleOpenCreateAssignment,
 }: {
@@ -52,7 +48,6 @@ export default function ScheduleDisplay({
   periodDates: periodDateT[];
   assignments: AssignmentT[];
   shiftDemands: ShiftDemandDTO[];
-  shiftDemandMatrix: ShiftDemandMatrix;
   recurrences: RecurrenceRuleT[];
   breaches: BreachT[];
   workers: WorkerT[];
@@ -61,17 +56,6 @@ export default function ScheduleDisplay({
   scheduleViewSettings: ScheduleViewSettingsT;
   handleAssignmentSelection: (selectedAssignment: AssignmentDataT) => void;
   handleDemandSelection: (scheduleCellData: ScheduleCellDataT) => void;
-  handleCreateShiftDemand: (
-    shiftId: string,
-    date: dayjs.Dayjs,
-    count: number,
-    notes?: string
-  ) => Promise<void>;
-  handleUpdateShiftDemand: (
-    demandId: string,
-    updates: Partial<{ count: number; notes: string | null }>
-  ) => Promise<void>;
-  handleDeleteShiftDemand: (demandId: string) => Promise<void>;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
@@ -85,7 +69,6 @@ export default function ScheduleDisplay({
         requests={requests}
         assignments={assignments}
         shiftDemands={shiftDemands}
-        shiftDemandMatrix={shiftDemandMatrix}
         recurrences={recurrences}
         scheduleCampaign={scheduleCampaign}
         periodDates={periodDates}
@@ -93,9 +76,6 @@ export default function ScheduleDisplay({
         scheduleViewSettings={scheduleViewSettings}
         handleAssignmentSelection={handleAssignmentSelection}
         handleDemandSelection={handleDemandSelection}
-        handleCreateShiftDemand={handleCreateShiftDemand}
-        handleUpdateShiftDemand={handleUpdateShiftDemand}
-        handleDeleteShiftDemand={handleDeleteShiftDemand}
         handleExportSchedule={handleExportSchedule}
         handleOpenCreateAssignment={handleOpenCreateAssignment}
       />
@@ -109,16 +89,12 @@ export default function ScheduleDisplay({
         requests={requests}
         assignments={assignments}
         shiftDemands={shiftDemands}
-        shiftDemandMatrix={shiftDemandMatrix}
         recurrences={recurrences}
         scheduleCampaign={scheduleCampaign}
         periodDates={periodDates}
         breaches={breaches}
         scheduleViewSettings={scheduleViewSettings}
         handleAssignmentSelection={handleAssignmentSelection}
-        handleCreateShiftDemand={handleCreateShiftDemand}
-        handleUpdateShiftDemand={handleUpdateShiftDemand}
-        handleDeleteShiftDemand={handleDeleteShiftDemand}
         handleExportSchedule={handleExportSchedule}
         handleOpenCreateAssignment={handleOpenCreateAssignment}
       />

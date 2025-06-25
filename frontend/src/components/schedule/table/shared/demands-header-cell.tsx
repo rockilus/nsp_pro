@@ -9,34 +9,18 @@ import TableCell from "@mui/material/TableCell";
 import "./demands-header-cell.css";
 import "../../../../styles/text-styles.css";
 // Types
-import {
-  ScheduleT,
-  ScheduleStatus,
-  periodDateT,
-  ScheduleViewSettingsT,
-} from "../../../../types/schedule";
-import { ShiftDemandDTO } from "@/types/shiftDemand";
+import { periodDateT, ScheduleViewSettingsT } from "../../../../types/schedule";
 import { ShiftT, ShiftType } from "../../../../types/shift";
 
 dayjs.extend(utc);
 
 export default function DemandsHeaderCell({
   lng,
-  teamId,
-  scheduleCampaign,
-  periodDate,
-  shiftDemands,
   shifts,
   counts,
   scheduleViewSettings,
-  handleCreateDSD,
-  handleUpdateDSD,
 }: {
   lng: string;
-  teamId: string;
-  scheduleCampaign: ScheduleT | null;
-  periodDate: periodDateT;
-  shiftDemands: ShiftDemandDTO[];
   shifts: ShiftT[];
   counts: {
     [id: string]: {
@@ -51,16 +35,6 @@ export default function DemandsHeaderCell({
     };
   };
   scheduleViewSettings: ScheduleViewSettingsT;
-  handleCreateDSD: (
-    shiftId: string,
-    date: dayjs.Dayjs,
-    count: number,
-    notes?: string
-  ) => Promise<void>;
-  handleUpdateDSD: (
-    demandId: string,
-    updates: Partial<{ count: number; notes: string | null }>
-  ) => Promise<void>;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -78,76 +52,6 @@ export default function DemandsHeaderCell({
 
   const handleClose = () => {
     setAnchorEl(null);
-  };
-
-  const handleDecreaseDSD = (shift: ShiftT) => {
-    if (
-      !scheduleCampaign ||
-      periodDate.scheduleStatus !== ScheduleStatus.CAMPAIGN
-    ) {
-      return;
-    }
-    const dsdShiftDemand = shiftDemands.find(
-      (dsd) =>
-        dsd.shiftId === shift.id &&
-        (dsd.source === "template" || dsd.source === "solver") &&
-        dsd.count > 0
-    );
-    const dsdDirectReq = shiftDemands.find(
-      (dsd) => dsd.shiftId === shift.id && dsd.source === "manual"
-    );
-    const dsdIsGreaterThanZero =
-      (dsdShiftDemand ? dsdShiftDemand.count : 0) +
-        (dsdDirectReq ? dsdDirectReq.count : 0) >
-      0;
-    if (!dsdIsGreaterThanZero) {
-      return;
-    }
-    if (dsdDirectReq) {
-      handleUpdateDSD(dsdDirectReq.id, {
-        count: dsdDirectReq.count - 1,
-      });
-    } else {
-      handleCreateDSD(shift.id, periodDate.date, -1);
-    }
-  };
-
-  const handleIncreaseDSD = (shift: ShiftT) => {
-    if (
-      !scheduleCampaign ||
-      periodDate.scheduleStatus !== ScheduleStatus.CAMPAIGN
-    ) {
-      return;
-    }
-    const dsdDirectReq = shiftDemands.find(
-      (dsd) => dsd.shiftId === shift.id && dsd.source === "manual"
-    );
-    if (dsdDirectReq) {
-      handleUpdateDSD(dsdDirectReq.id, {
-        count: dsdDirectReq.count + 1,
-      });
-    } else {
-      handleCreateDSD(shift.id, periodDate.date, 1);
-    }
-  };
-
-  const AdjustStaffingButtons = ({ shift }: { shift: ShiftT }) => {
-    return (
-      <div className="adjust-dsd-buttons">
-        <button
-          className="adjust-button adjust-button-left"
-          onClick={() => handleDecreaseDSD(shift)}
-        >
-          –
-        </button>
-        <button
-          className="adjust-button adjust-button-right"
-          onClick={() => handleIncreaseDSD(shift)}
-        >
-          +
-        </button>
-      </div>
-    );
   };
 
   const DSDPopoverButton = () => {
@@ -196,11 +100,6 @@ export default function DemandsHeaderCell({
                   </span>
                 </div>
               </div>
-              {periodDate.scheduleStatus === ScheduleStatus.CAMPAIGN && (
-                <div className="container-dsd-adjust-buttons">
-                  <AdjustStaffingButtons shift={shift} />
-                </div>
-              )}
             </div>
           );
         })}
@@ -223,34 +122,32 @@ export default function DemandsHeaderCell({
         borderRight: "1px solid #e0e0e07d",
       }}
     >
-      {periodDate.scheduleStatus !== null && (
-        <div className="container-dsd-cell">
-          <button onClick={handleClick}>
-            <DSDPopoverButton />
-          </button>
-          <Popover
-            id={id}
-            open={open}
-            anchorEl={anchorEl}
-            onClose={handleClose}
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "left",
-            }}
-            slotProps={{
-              paper: {
-                style: {
-                  boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
-                  padding: 20,
-                  width: 300,
-                },
+      <div className="container-dsd-cell">
+        <button onClick={handleClick}>
+          <DSDPopoverButton />
+        </button>
+        <Popover
+          id={id}
+          open={open}
+          anchorEl={anchorEl}
+          onClose={handleClose}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "left",
+          }}
+          slotProps={{
+            paper: {
+              style: {
+                boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
+                padding: 20,
+                width: 300,
               },
-            }}
-          >
-            <PopoverContent />
-          </Popover>
-        </div>
-      )}
+            },
+          }}
+        >
+          <PopoverContent />
+        </Popover>
+      </div>
     </TableCell>
   );
 }
