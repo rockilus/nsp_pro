@@ -13,14 +13,14 @@ type StatusColors = {
   [key: string]: string;
 };
 
-import { DailyShiftDemandT } from "../../types/daily-shift-demand";
+import { ShiftDemandDTO } from "../../types/shiftDemand";
 import { ShiftT } from "../../types/shift";
 
 type RequestCalendarProps = {
   workers: WorkerT[];
   requests: RequestT[];
   statusColors?: StatusColors;
-  demands?: DailyShiftDemandT[];
+  demands?: ShiftDemandDTO[];
   shifts?: ShiftT[];
 };
 
@@ -88,9 +88,13 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     shiftMap[shift.id] = shift;
   }
 
-  // Helper: get all demands for this month (memoized)
+  // Helper: get all demands for this month (memoized) - updated for ShiftDemandDTO
   const monthDemands = React.useMemo(
-    () => demands.filter((d) => d.date.isSame(currentMonth, "month")),
+    () =>
+      demands.filter((d) => {
+        const demandDate = dayjs.unix(d.date).utc();
+        return demandDate.isSame(currentMonth, "month");
+      }),
     [demands, currentMonth]
   );
 
@@ -147,12 +151,13 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
         }
         for (const day of days) {
           const dateKey = day.format("YYYY-MM-DD");
-          // Demand calculation
+          // Demand calculation - updated for ShiftDemandDTO
           let totalDemand = 0;
           for (const shift of shifts) {
-            const demandsForShift = monthDemands.filter(
-              (d) => d.date.isSame(day, "day") && d.shiftId === shift.id
-            );
+            const demandsForShift = monthDemands.filter((d) => {
+              const demandDate = dayjs.unix(d.date).utc();
+              return demandDate.isSame(day, "day") && d.shiftId === shift.id;
+            });
 
             const demandCount = demandsForShift.reduce(
               (sum, d) => sum + d.count,

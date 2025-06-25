@@ -2,7 +2,6 @@ import { unstable_noStore as noStore } from "next/cache";
 // Actions
 import { getAllShifts } from "./shift";
 import { getAllWorkers } from "./worker";
-import { getDailyShiftDemands } from "./daily-shift-demand";
 import { getShiftOptions } from "./stats";
 // Types
 import { RequestT, toRequestT, fromRequestT } from "../../types/request";
@@ -264,15 +263,13 @@ export async function getRequestsTabData(teamId: string) {
       getAllWorkers(teamId),
       getAllShifts(teamId),
       getRequests(teamId),
-      getDailyShiftDemands(teamId),
       getShiftOptions(teamId),
     ]);
     return {
       workers: requestsTabData[0],
       shifts: requestsTabData[1],
       requests: requestsTabData[2],
-      demands: requestsTabData[3],
-      shiftOptions: requestsTabData[4],
+      shiftOptions: requestsTabData[3],
     };
   } catch (error) {
     console.error("Failed to fetch requests tab data:", error);

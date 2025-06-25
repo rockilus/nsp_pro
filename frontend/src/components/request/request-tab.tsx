@@ -22,6 +22,8 @@ import {
   deleteRequest,
   rescindRequest,
 } from "@/app/lib/request";
+// Hooks
+import { useShiftDemands } from "../../app/lib/hooks/useShiftDemands";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "../../styles/text-styles.css";
@@ -30,7 +32,6 @@ import { RequestT } from "../../types/request";
 import { ShiftT } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
 import { TeamMembershipRole } from "@/types/team";
-import { DailyShiftDemandT } from "@/types/daily-shift-demand";
 import { ShiftWorkerOptionT } from "@/types/constraint";
 
 dayjs.extend(utc);
@@ -52,15 +53,31 @@ export default function RequestTab({
   const [requests, setRequests] = useState<RequestT[]>([]);
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
-  const [demands, setDemands] = useState<DailyShiftDemandT[]>([]);
   const [shiftOptions, setShiftOptions] = useState<ShiftWorkerOptionT[]>([]);
   const [showPastRequests, setShowPastRequests] = useState<boolean>(false);
+
+  // React Query hooks for shift demands - use broader date range for requests calendar
+  const {
+    demands: shiftDemands,
+    demandsById: shiftDemandsById,
+    matrix: shiftDemandMatrix,
+    isLoading: isLoadingShiftDemands,
+    error: shiftDemandError,
+  } = useShiftDemands(
+    teamId,
+    dayjs().utc().startOf("year").toDate(), // Start of current year
+    dayjs().utc().add(1, "year").endOf("year").toDate(), // End of next year
+    {
+      enabled: true,
+      bufferDays: 0, // No buffer needed for requests view
+    }
+  );
 
   const userWorker = workers.find((w) => w.userId === userId);
 
   // Filter requests based on past/future
   const { currentRequests, pastRequests } = useMemo(() => {
-    const now = new Date();
+    const now = dayjs().utc();
     const current: RequestT[] = [];
     const past: RequestT[] = [];
 
@@ -115,19 +132,16 @@ export default function RequestTab({
           workers: fetchedWorkers,
           shifts: fetchedShifts,
           requests: fetchedRequests,
-          demands: fetchedDemands,
           shiftOptions: fetchedShiftOptions,
         }: {
           workers: WorkerT[];
           shifts: ShiftT[];
           requests: RequestT[];
-          demands: DailyShiftDemandT[];
           shiftOptions: ShiftWorkerOptionT[];
         } = await getRequestsTabData(teamId);
         setWorkers(fetchedWorkers);
         setShifts(fetchedShifts);
         setRequests(fetchedRequests);
-        setDemands(fetchedDemands);
         setShiftOptions(fetchedShiftOptions);
         setIsLoading(false);
       }
@@ -140,9 +154,12 @@ export default function RequestTab({
   // Tabs for request status/calendar
   const [statusTab, setStatusTab] = useState(0);
 
+  // Combined loading state
+  const isLoadingData = isLoading || isLoadingShiftDemands;
+
   return (
     <div className="tab-container-wide">
-      {isLoading ? (
+      {isLoadingData ? (
         <TablesSkeleton numTables={1} numInternalRows={3} />
       ) : (
         <div>
@@ -224,7 +241,7 @@ export default function RequestTab({
               workers={workers}
               requests={requests}
               shifts={shifts}
-              demands={demands}
+              demands={shiftDemands}
             />
           )}
         </div>

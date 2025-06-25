@@ -9,6 +9,7 @@ import "dayjs/locale/es";
 // Components
 import RequestTab from "../../../../components/request/request-tab";
 import { RoleBased } from "@/components/access/role-based";
+import ReactQueryProvider from "@/components/providers/ReactQueryProvider";
 // Context
 import { useTeam } from "@/context/TeamContext";
 import { useUser } from "@/context/UserContext";
@@ -35,18 +36,21 @@ export default function Page({
         allowedRoles={PageRolePermissions.requests}
       >
         <div className="page-layout">
-          <LocalizationProvider
-            dateAdapter={AdapterDayjs}
-            adapterLocale={lng === "en" ? "en-gb" : lng === "es" ? "es" : "fr"}
-          >
-            <RequestTab
-              lng={lng}
-              teamId={selectedTeam.team.id}
-              userId={user.id}
-              userTeamRole={selectedTeam.membership.role}
-            />
-            ;
-          </LocalizationProvider>
+          <ReactQueryProvider>
+            <LocalizationProvider
+              dateAdapter={AdapterDayjs}
+              adapterLocale={
+                lng === "en" ? "en-gb" : lng === "es" ? "es" : "fr"
+              }
+            >
+              <RequestTab
+                lng={lng}
+                teamId={selectedTeam.team.id}
+                userId={user.id}
+                userTeamRole={selectedTeam.membership.role}
+              />
+            </LocalizationProvider>
+          </ReactQueryProvider>
         </div>
       </RoleBased>
     )
