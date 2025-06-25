@@ -18,11 +18,9 @@ dayjs.extend(utc);
 
 interface CreateDemandProps {
   lng: string;
-  teamId: string;
-  scheduleId: string;
   shift: ShiftT;
   dateSelected: Dayjs;
-  handleCreateDSD: (
+  handleCreateShiftDemand: (
     shiftId: string,
     date: dayjs.Dayjs,
     count: number,
@@ -34,11 +32,9 @@ interface CreateDemandProps {
 
 const CreateDemand: React.FC<CreateDemandProps> = ({
   lng,
-  teamId,
-  scheduleId,
   shift,
   dateSelected,
-  handleCreateDSD,
+  handleCreateShiftDemand,
   handleCancel,
   recurrence,
 }) => {
@@ -48,7 +44,12 @@ const CreateDemand: React.FC<CreateDemandProps> = ({
 
   const handleCreateClick = async () => {
     setIsSubmitting(true);
-    await handleCreateDSD(shift.id, dateSelected, 1, "Direct requirement");
+    await handleCreateShiftDemand(
+      shift.id,
+      dateSelected,
+      1,
+      "Direct requirement"
+    );
     setIsSubmitting(false);
   };
 

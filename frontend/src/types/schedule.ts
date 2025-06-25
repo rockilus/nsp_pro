@@ -198,6 +198,8 @@ export type ScheduleViewSettingsT = {
   showAssignments: boolean;
   showDailyShiftDemands: boolean;
   showRequests: boolean;
+  periodStartDate: dayjs.Dayjs;
+  periodEndDate: dayjs.Dayjs;
 };
 
 export type DuplicateResultT = {

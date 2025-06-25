@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import isoWeek from "dayjs/plugin/isoWeek";
@@ -122,6 +128,10 @@ export default function ScheduleTab({
   const [stats, setStats] = useState<StatsT | null>(null);
   const [specialties, setSpecialties] = useState<SpecialtyT[]>([]);
 
+  // Calculate initial dates for the period
+  const initialStartDate = dayjs.utc().startOf("isoWeek");
+  const initialEndDate = dayjs.utc().endOf("isoWeek");
+
   const [scheduleViewSettings, setScheduleViewSettings] =
     useState<ScheduleViewSettingsT>({
       timeFrame: "week",
@@ -130,6 +140,8 @@ export default function ScheduleTab({
       showAssignments: true,
       showDailyShiftDemands: teamWithMembership.team.useSolver,
       showRequests: true,
+      periodStartDate: initialStartDate,
+      periodEndDate: initialEndDate,
     });
   const [selectedAssignment, setSelectedAssignment] =
     useState<AssignmentDataT | null>(null);
@@ -142,20 +154,7 @@ export default function ScheduleTab({
 
   const hasConnectedRef = useRef(false);
 
-  // Calculate initial dates for the period
-  const initialStartDate = dayjs
-    .utc()
-    .startOf(scheduleViewSettings.timeFrame === "month" ? "month" : "isoWeek");
-  const initialEndDate = dayjs
-    .utc()
-    .endOf(scheduleViewSettings.timeFrame === "month" ? "month" : "isoWeek");
-
-  const [periodStartDate, setPeriodStartDate] =
-    useState<dayjs.Dayjs>(initialStartDate);
-  const [periodEndDate, setPeriodEndDate] =
-    useState<dayjs.Dayjs>(initialEndDate);
-
-  // React Query hooks for shift demands
+  // React Query hooks for shift demands - use dates from settings
   const {
     demands: shiftDemands,
     demandsById: shiftDemandsById,
@@ -164,8 +163,8 @@ export default function ScheduleTab({
     error: shiftDemandError,
   } = useShiftDemands(
     teamWithMembership.team.id,
-    periodStartDate.toDate(),
-    periodEndDate.toDate(),
+    scheduleViewSettings.periodStartDate.toDate(),
+    scheduleViewSettings.periodEndDate.toDate(),
     {
       enabled: teamWithMembership.team.useSolver,
       bufferDays: 7, // Load extra days for better UX
@@ -222,9 +221,19 @@ export default function ScheduleTab({
     [getScheduleFromDate]
   );
 
-  const intialPeriodDates = buildDates(initialStartDate, initialEndDate);
-  const [periodDates, setPeriodDates] =
-    useState<periodDateT[]>(intialPeriodDates);
+  // Compute periodDates from the centralized date state
+  const periodDates = useMemo(
+    () =>
+      buildDates(
+        scheduleViewSettings.periodStartDate,
+        scheduleViewSettings.periodEndDate
+      ),
+    [
+      scheduleViewSettings.periodStartDate,
+      scheduleViewSettings.periodEndDate,
+      buildDates,
+    ]
+  );
 
   const [selectedTab, setSelectedTab] = useState<string | null>(null);
   const [createAssignmentData, setCreateAssignmentData] =
@@ -548,9 +557,11 @@ export default function ScheduleTab({
     newPeriodStart: dayjs.Dayjs,
     newPeriodEnd: dayjs.Dayjs
   ) => {
-    setPeriodStartDate(newPeriodStart);
-    setPeriodEndDate(newPeriodEnd);
-    setPeriodDates(buildDates(newPeriodStart, newPeriodEnd));
+    updateScheduleViewSettings({
+      periodStartDate: newPeriodStart,
+      periodEndDate: newPeriodEnd,
+    });
+    // No need to setPeriodDates since it's now computed
   };
 
   const handleToday = async () => {
@@ -571,22 +582,25 @@ export default function ScheduleTab({
 
   const handlePreviousPeriod = async () => {
     const isMonth = scheduleViewSettings.timeFrame === "month";
-    const newPeriodStart = periodStartDate.subtract(
+    const newPeriodStart = scheduleViewSettings.periodStartDate.subtract(
       1,
       isMonth ? "month" : "week"
     );
     const newPeriodEnd = isMonth
       ? newPeriodStart.endOf("month")
-      : periodEndDate.subtract(1, "week");
+      : scheduleViewSettings.periodEndDate.subtract(1, "week");
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
 
   const handleNextPeriod = async () => {
     const isMonth = scheduleViewSettings.timeFrame === "month";
-    const newPeriodStart = periodStartDate.add(1, isMonth ? "month" : "week");
+    const newPeriodStart = scheduleViewSettings.periodStartDate.add(
+      1,
+      isMonth ? "month" : "week"
+    );
     const newPeriodEnd = isMonth
       ? newPeriodStart.endOf("month")
-      : periodEndDate.add(1, "week");
+      : scheduleViewSettings.periodEndDate.add(1, "week");
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
 
@@ -596,7 +610,11 @@ export default function ScheduleTab({
       timeFrame: newTimeFrame,
     });
     const { firstDate: newPeriodStart, lastDate: newPeriodEnd } =
-      getPeriodStartEndDates(newTimeFrame, periodStartDate, periodEndDate);
+      getPeriodStartEndDates(
+        newTimeFrame,
+        scheduleViewSettings.periodStartDate,
+        scheduleViewSettings.periodEndDate
+      );
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
 
@@ -813,21 +831,7 @@ export default function ScheduleTab({
     fetchData();
   }, [teamWithMembership]);
 
-  // Effect to handle period date changes for React Query
-  useEffect(() => {
-    // The useShiftDemands hook will automatically refetch when periodStartDate or periodEndDate change
-    // since they are dependencies in the hook
-  }, [periodStartDate, periodEndDate]);
-
-  useEffect(() => {
-    setPeriodDates(buildDates(periodStartDate, periodEndDate));
-  }, [
-    periodStartDate,
-    periodEndDate,
-    buildDates,
-    scheduleCampaign,
-    schedulesValidated,
-  ]);
+  // React Query hooks automatically handle refetching when scheduleViewSettings.periodStartDate/periodEndDate change
 
   useEffect(() => {
     if (
@@ -943,8 +947,8 @@ export default function ScheduleTab({
           <ScheduleNavBar
             lng={lng}
             teamWithMembership={teamWithMembership}
-            currentPeriodStart={periodStartDate}
-            currentPeriodEnd={periodEndDate}
+            currentPeriodStart={scheduleViewSettings.periodStartDate}
+            currentPeriodEnd={scheduleViewSettings.periodEndDate}
             scheduleCampaign={scheduleCampaign}
             solveStatus={solveStatus}
             scheduleViewSettings={scheduleViewSettings}
