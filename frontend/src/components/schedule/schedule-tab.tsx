@@ -364,12 +364,26 @@ export default function ScheduleTab({
     updates: Partial<ShiftDemandUpdateDTO>
   ) => {
     try {
-      await shiftDemandMutations.update.mutateAsync({
+      // Get the updated shift demand from the mutation response
+      const updatedShiftDemand = await shiftDemandMutations.update.mutateAsync({
         demandId,
         demand: updates,
       });
 
-      // Note: React Query will handle state updates automatically
+      // Update selectedDemand with fresh data if it was the updated demand
+      if (selectedDemand?.shiftDemandsData?.shiftDemand?.id === demandId) {
+        if (updatedShiftDemand) {
+          // Create updated ScheduleCellDataT with new shift demand data
+          const updatedSelectedDemand: ScheduleCellDataT = {
+            ...selectedDemand,
+            shiftDemandsData: {
+              ...selectedDemand.shiftDemandsData,
+              shiftDemand: updatedShiftDemand,
+            },
+          };
+          setSelectedDemand(updatedSelectedDemand);
+        }
+      }
     } catch (error) {
       console.error("Failed to update shift demand:", error);
     }
