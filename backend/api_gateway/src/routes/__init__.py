@@ -5,7 +5,6 @@ from src.routes.constraint_routes import router as router_constraint
 from src.routes.constraint_template_routes import router as router_constraint_template
 from src.routes.coverage_routes import router as router_coverage
 from src.routes.coverage_selector_routes import router as router_coverage_selector
-from src.routes.daily_shift_demand_routes import router as router_daily_shift_demand
 from src.routes.dashboard_routes import router as router_dashboard
 from src.routes.dim_entry_routes import router as router_dim_entry
 from src.routes.dimension_routes import router as router_dimension
@@ -37,7 +36,6 @@ __all__ = [
     "router_constraint_template",
     "router_coverage",
     "router_coverage_selector",
-    "router_daily_shift_demand",
     "router_dashboard",
     "router_dim_entry",
     "router_dimension",

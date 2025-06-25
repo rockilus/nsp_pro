@@ -1,13 +1,14 @@
 import json
 import os
-from datetime import date, datetime, timedelta
+from dataclasses import dataclass
+from datetime import date, datetime, timedelta, timezone
+from enum import Enum
 from typing import Dict, List
 
 import pytest
 from shared.schemas.core import (
     Attribute,
     ConstraintBuildAugmented,
-    DailyShiftDemand,
     Dimension,
     DimEntry,
     EngineInputs,
@@ -663,6 +664,38 @@ def load_json_from_file(filename: str) -> Dict:
     with open(file_path, "r", encoding="utf-8") as file:
         data = json.load(file)
     return data
+
+
+class DSDSourceType(Enum):
+    SHIFT_DEMAND = 0
+    DIRECT_REQUIREMENT = 1
+
+
+@dataclass
+class DailyShiftDemand:
+    id: str
+    team_id: str
+    schedule_id: str
+    shift_demand_id: str | None
+    coverage_selector_id: str | None
+    source_type: DSDSourceType
+    date: date
+    shift_id: str
+    count: int
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "DailyShiftDemand":
+        return cls(
+            id=data["id"],
+            team_id=data["team_id"],
+            schedule_id=data["schedule_id"],
+            shift_demand_id=data["shift_demand_id"],
+            coverage_selector_id=data["coverage_selector_id"],
+            source_type=DSDSourceType(data["source_type"]),
+            date=datetime.fromtimestamp(data["date"], tz=timezone.utc).date(),
+            shift_id=data["shift_id"],
+            count=data["count"],
+        )
 
 
 def load_engine_inputs_from_file(filename: str) -> EngineInputsAugmented:

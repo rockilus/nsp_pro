@@ -25,7 +25,6 @@ from shared.schemas.core import (
 from src.config import config
 from src.services.assignment_service import AssignmentService
 from src.services.base_service import BaseService
-from src.services.daily_shift_demand_service import DailyShiftDemandService
 from src.utils.excel_utils import core_to_excel_schedule
 
 
@@ -37,13 +36,11 @@ class ScheduleService(BaseService):
         celery_app: Celery,
         submit_solve_problem_task: Callable[[Schedule], str],
         assignment_service: AssignmentService,
-        daily_shift_demand_service: DailyShiftDemandService,
     ) -> None:
         super().__init__(collection)
         self.celery_app = celery_app
         self.submit_solve_problem_task = submit_solve_problem_task
         self.assignment_service = assignment_service
-        self.daily_shift_demand_service = daily_shift_demand_service
 
     def get_schedule_campaign(self, team_id: str) -> Schedule:
         schedules = self.collection.schedule_db.get_schedules(team_id)
@@ -422,8 +419,5 @@ class ScheduleService(BaseService):
             )
             duplicate_result.assignments = ar_result
         if duplicate.options.copy_demands:
-            d_result = self.daily_shift_demand_service.duplicate_period(
-                campaign=schedule, duplicate=duplicate
-            )
-            duplicate_result.demands = d_result
+            print("Duplicating demands not implemented yet")
         return duplicate_result
