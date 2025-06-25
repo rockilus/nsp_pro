@@ -154,14 +154,11 @@ export const buildShiftDemandsDataByShiftAndDate = (
       dayjs.unix(shiftDemand.date)
     );
 
-    if (!shiftDemandDict[ownerDateKey]) {
-      shiftDemandDict[ownerDateKey] = {
-        shiftDemands: [shiftDemand],
-        shift: shift,
-      };
-    } else {
-      shiftDemandDict[ownerDateKey].shiftDemands.push(shiftDemand);
-    }
+    // Since there's only one demand per shift/date now, we can directly assign
+    shiftDemandDict[ownerDateKey] = {
+      shiftDemand: shiftDemand,
+      shift: shift,
+    };
   });
 
   return shiftDemandDict;

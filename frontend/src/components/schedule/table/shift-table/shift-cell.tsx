@@ -82,9 +82,7 @@ export default function ShiftCell({
             workerId: null,
             shiftId: shift.id,
             date: periodDate.date,
-            haveDemand: scheduleCellData?.shiftDemandsData?.shiftDemands?.length
-              ? scheduleCellData?.shiftDemandsData?.shiftDemands?.length > 0
-              : false || false,
+            haveDemand: !!scheduleCellData?.shiftDemandsData?.shiftDemand,
           })
         }
       >

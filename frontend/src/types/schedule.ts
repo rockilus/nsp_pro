@@ -162,7 +162,7 @@ export type DailyShiftDemandsDictT = {
 
 // New ShiftDemandDTO-based types
 export type ShiftDemandsDataT = {
-  shiftDemands: ShiftDemandDTO[];
+  shiftDemand: ShiftDemandDTO;
   shift: ShiftT;
 };
 

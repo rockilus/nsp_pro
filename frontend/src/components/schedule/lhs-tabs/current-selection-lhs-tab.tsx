@@ -79,14 +79,14 @@ export default function CurrentSelectionLHSTab({
 
     const { shiftDemandsData } = selectedDemand;
     const shift = shiftDemandsData.shift;
-    const shiftDemands = shiftDemandsData.shiftDemands;
+    const shiftDemand = shiftDemandsData.shiftDemand;
 
-    if (!shiftDemands.length) {
+    if (!shiftDemand) {
       return null;
     }
 
-    // Get date from first shift demand (they should all be for the same date)
-    const date = dayjs.unix(shiftDemands[0].date);
+    // Get date from shift demand
+    const date = dayjs.unix(shiftDemand.date);
 
     // Convert AssignmentDataT[] to AssignmentT[]
     const assignments: AssignmentT[] = selectedDemand.assignmentsData.map(
@@ -96,7 +96,7 @@ export default function CurrentSelectionLHSTab({
     return {
       shift,
       date,
-      shiftDemands,
+      shiftDemands: [shiftDemand], // Convert single demand to array for backward compatibility
       assignments,
       campaignStartDate: campaign ? dayjs(campaign.startDate) : dayjs(),
       campaignEndDate: campaign ? dayjs(campaign.endDate) : dayjs(),
