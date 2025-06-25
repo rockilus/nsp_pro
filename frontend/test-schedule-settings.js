@@ -19,23 +19,21 @@ console.log('Default settings:', defaultSettings);
 console.log('\n=== Testing Settings Validation ===');
 
 // Test with valid settings
-const validSettings: Partial<ScheduleViewSettingsT> = {
+const validSettings = {
   timeFrame: 'month',
   groupBy: 'worker',
   showBreaches: false,
   periodStartDate: dayjs.utc().startOf('month'),
-  periodEndDate: dayjs.utc().endOf('month'),
 };
 
 const validated = validateScheduleViewSettings(validSettings, true);
 console.log('Validated settings:', validated);
 
 // Test with invalid settings (should be corrected)
-const invalidSettings: Partial<ScheduleViewSettingsT> = {
-  timeFrame: 'invalid' as any,
-  groupBy: 'invalid' as any,
+const invalidSettings = {
+  timeFrame: 'invalid',
+  groupBy: 'invalid',
   periodStartDate: dayjs.utc().subtract(3, 'years'), // Too far in past
-  periodEndDate: dayjs.utc().subtract(3, 'years'),
 };
 
 const corrected = validateScheduleViewSettings(invalidSettings, false);

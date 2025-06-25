@@ -12,8 +12,8 @@ const scheduleViewSettingsSerializer = {
     try {
       const serialized: SerializedScheduleViewSettings = {
         ...settings,
-        periodStartDate: settings.periodStartDate.toISOString(),
-        periodEndDate: settings.periodEndDate.toISOString(),
+        // Ensure date is converted to UTC before serializing
+        periodStartDate: settings.periodStartDate.utc().toISOString(),
       };
       return JSON.stringify(serialized);
     } catch (error) {
@@ -27,14 +27,11 @@ const scheduleViewSettingsSerializer = {
     try {
       const parsed: Partial<SerializedScheduleViewSettings> = JSON.parse(value);
 
-      // Convert back to dayjs objects if they exist
+      // Convert back to UTC dayjs object if it exists
       const settings: Partial<ScheduleViewSettingsT> = {
         ...parsed,
         periodStartDate: parsed.periodStartDate
-          ? dayjs(parsed.periodStartDate)
-          : undefined,
-        periodEndDate: parsed.periodEndDate
-          ? dayjs(parsed.periodEndDate)
+          ? dayjs.utc(parsed.periodStartDate)
           : undefined,
       };
 

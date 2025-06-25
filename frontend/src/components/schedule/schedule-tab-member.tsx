@@ -16,7 +16,10 @@ import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
 import { getScheduleAssignmentsDataMember } from "../../app/lib/schedule";
 import { exportSchedule } from "../../app/lib/export-schedule";
 import { useScheduleViewSettings } from "../../app/lib/hooks/useScheduleViewSettings";
-import { getDefaultScheduleViewSettings } from "../../app/lib/utils/scheduleViewSettingsUtils";
+import {
+  getDefaultScheduleViewSettings,
+  computePeriodEndDate,
+} from "../../app/lib/utils/scheduleViewSettingsUtils";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "./schedule-tab.css";
@@ -86,11 +89,14 @@ export default function ScheduleTabMember({
     () =>
       buildDates(
         scheduleViewSettings.periodStartDate,
-        scheduleViewSettings.periodEndDate
+        computePeriodEndDate(
+          scheduleViewSettings.periodStartDate,
+          scheduleViewSettings.timeFrame
+        )
       ),
     [
       scheduleViewSettings.periodStartDate,
-      scheduleViewSettings.periodEndDate,
+      scheduleViewSettings.timeFrame,
       buildDates,
     ]
   );
@@ -139,7 +145,6 @@ export default function ScheduleTabMember({
   ) => {
     updateScheduleViewSettings({
       periodStartDate: newPeriodStart,
-      periodEndDate: newPeriodEnd,
     });
     // No need to setPeriodDates since it's now computed
   };
@@ -165,9 +170,9 @@ export default function ScheduleTabMember({
       1,
       scheduleViewSettings.timeFrame === "month" ? "month" : "week"
     );
-    const newPeriodEnd = scheduleViewSettings.periodEndDate.subtract(
-      1,
-      scheduleViewSettings.timeFrame === "month" ? "month" : "week"
+    const newPeriodEnd = computePeriodEndDate(
+      newPeriodStart,
+      scheduleViewSettings.timeFrame
     );
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
@@ -177,9 +182,9 @@ export default function ScheduleTabMember({
       1,
       scheduleViewSettings.timeFrame === "month" ? "month" : "week"
     );
-    const newPeriodEnd = scheduleViewSettings.periodEndDate.add(
-      1,
-      scheduleViewSettings.timeFrame === "month" ? "month" : "week"
+    const newPeriodEnd = computePeriodEndDate(
+      newPeriodStart,
+      scheduleViewSettings.timeFrame
     );
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
@@ -192,7 +197,10 @@ export default function ScheduleTabMember({
       getPeriodStartEndDates(
         newTimeFrame,
         scheduleViewSettings.periodStartDate,
-        scheduleViewSettings.periodEndDate
+        computePeriodEndDate(
+          scheduleViewSettings.periodStartDate,
+          scheduleViewSettings.timeFrame
+        )
       );
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
@@ -240,7 +248,10 @@ export default function ScheduleTabMember({
           lng={lng}
           teamWithMembership={teamWithMembership}
           currentPeriodStart={scheduleViewSettings.periodStartDate}
-          currentPeriodEnd={scheduleViewSettings.periodEndDate}
+          currentPeriodEnd={computePeriodEndDate(
+            scheduleViewSettings.periodStartDate,
+            scheduleViewSettings.timeFrame
+          )}
           scheduleCampaign={null}
           solveStatus={null}
           scheduleViewSettings={scheduleViewSettings}

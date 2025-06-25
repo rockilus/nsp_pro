@@ -27,6 +27,7 @@ import {
   buildScheduleCellDict,
 } from "./table/shared/assignment-utils";
 import { getPeriodStartEndDates } from "./schedule-utils";
+import { computePeriodEndDate } from "../../app/lib/utils/scheduleViewSettingsUtils";
 // Skeletons
 import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
 import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
@@ -164,7 +165,10 @@ export default function ScheduleTab({
   } = useShiftDemands(
     teamWithMembership.team.id,
     scheduleViewSettings.periodStartDate.toDate(),
-    scheduleViewSettings.periodEndDate.toDate(),
+    computePeriodEndDate(
+      scheduleViewSettings.periodStartDate,
+      scheduleViewSettings.timeFrame
+    ).toDate(),
     {
       enabled: teamWithMembership.team.useSolver,
       bufferDays: 7, // Load extra days for better UX
@@ -226,11 +230,14 @@ export default function ScheduleTab({
     () =>
       buildDates(
         scheduleViewSettings.periodStartDate,
-        scheduleViewSettings.periodEndDate
+        computePeriodEndDate(
+          scheduleViewSettings.periodStartDate,
+          scheduleViewSettings.timeFrame
+        )
       ),
     [
       scheduleViewSettings.periodStartDate,
-      scheduleViewSettings.periodEndDate,
+      scheduleViewSettings.timeFrame,
       buildDates,
     ]
   );
@@ -555,7 +562,6 @@ export default function ScheduleTab({
   ) => {
     updateScheduleViewSettings({
       periodStartDate: newPeriodStart,
-      periodEndDate: newPeriodEnd,
     });
     // No need to setPeriodDates since it's now computed
   };
@@ -582,9 +588,10 @@ export default function ScheduleTab({
       1,
       isMonth ? "month" : "week"
     );
-    const newPeriodEnd = isMonth
-      ? newPeriodStart.endOf("month")
-      : scheduleViewSettings.periodEndDate.subtract(1, "week");
+    const newPeriodEnd = computePeriodEndDate(
+      newPeriodStart,
+      scheduleViewSettings.timeFrame
+    );
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
 
@@ -594,9 +601,10 @@ export default function ScheduleTab({
       1,
       isMonth ? "month" : "week"
     );
-    const newPeriodEnd = isMonth
-      ? newPeriodStart.endOf("month")
-      : scheduleViewSettings.periodEndDate.add(1, "week");
+    const newPeriodEnd = computePeriodEndDate(
+      newPeriodStart,
+      scheduleViewSettings.timeFrame
+    );
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
 
@@ -608,7 +616,10 @@ export default function ScheduleTab({
       getPeriodStartEndDates(
         newTimeFrame,
         scheduleViewSettings.periodStartDate,
-        scheduleViewSettings.periodEndDate
+        computePeriodEndDate(
+          scheduleViewSettings.periodStartDate,
+          scheduleViewSettings.timeFrame
+        )
       );
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
@@ -826,7 +837,7 @@ export default function ScheduleTab({
     fetchData();
   }, [teamWithMembership]);
 
-  // React Query hooks automatically handle refetching when scheduleViewSettings.periodStartDate/periodEndDate change
+  // React Query hooks automatically handle refetching when scheduleViewSettings.periodStartDate/timeFrame change
 
   useEffect(() => {
     if (
@@ -943,7 +954,10 @@ export default function ScheduleTab({
             lng={lng}
             teamWithMembership={teamWithMembership}
             currentPeriodStart={scheduleViewSettings.periodStartDate}
-            currentPeriodEnd={scheduleViewSettings.periodEndDate}
+            currentPeriodEnd={computePeriodEndDate(
+              scheduleViewSettings.periodStartDate,
+              scheduleViewSettings.timeFrame
+            )}
             scheduleCampaign={scheduleCampaign}
             solveStatus={solveStatus}
             scheduleViewSettings={scheduleViewSettings}

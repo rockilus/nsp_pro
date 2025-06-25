@@ -9,7 +9,20 @@ export interface SerializedScheduleViewSettings {
   showDailyShiftDemands: boolean;
   showRequests: boolean;
   periodStartDate: string; // ISO string
-  periodEndDate: string; // ISO string
+}
+
+/**
+ * Computes the period end date from the start date and timeFrame
+ */
+export function computePeriodEndDate(
+  periodStartDate: dayjs.Dayjs,
+  timeFrame: "week" | "month"
+): dayjs.Dayjs {
+  console.log(
+    `Computing period end date for start: ${periodStartDate.format()} and timeFrame: ${timeFrame}`
+  );
+
+  return periodStartDate.endOf(timeFrame === "month" ? "month" : "isoWeek");
 }
 
 export function validateScheduleViewSettings(
@@ -28,39 +41,23 @@ export function validateScheduleViewSettings(
     ? (settings.groupBy as "shift" | "worker")
     : "shift";
 
-  // Validate dates - ensure they're valid and not too far in the past/future
+  // Validate periodStartDate - ensure it's valid and not too far in the past/future
   let periodStartDate: dayjs.Dayjs;
-  let periodEndDate: dayjs.Dayjs;
 
   // Check if periodStartDate is a valid dayjs object
   if (
     dayjs.isDayjs(settings.periodStartDate) &&
     settings.periodStartDate.isValid()
   ) {
-    periodStartDate = settings.periodStartDate;
+    // Ensure it's UTC
+    periodStartDate = settings.periodStartDate.utc();
   } else {
     // Try to parse as string if it's not a dayjs object
     try {
-      const parsed = dayjs(settings.periodStartDate);
+      const parsed = dayjs.utc(settings.periodStartDate);
       periodStartDate = parsed.isValid() ? parsed : now.startOf("isoWeek");
     } catch {
       periodStartDate = now.startOf("isoWeek");
-    }
-  }
-
-  // Check if periodEndDate is a valid dayjs object
-  if (
-    dayjs.isDayjs(settings.periodEndDate) &&
-    settings.periodEndDate.isValid()
-  ) {
-    periodEndDate = settings.periodEndDate;
-  } else {
-    // Try to parse as string if it's not a dayjs object
-    try {
-      const parsed = dayjs(settings.periodEndDate);
-      periodEndDate = parsed.isValid() ? parsed : now.endOf("isoWeek");
-    } catch {
-      periodEndDate = now.endOf("isoWeek");
     }
   }
 
@@ -75,25 +72,8 @@ export function validateScheduleViewSettings(
     periodStartDate = now.startOf(timeFrame === "month" ? "month" : "isoWeek");
   }
 
-  if (
-    periodEndDate.isBefore(twoYearsAgo) ||
-    periodEndDate.isAfter(twoYearsFromNow)
-  ) {
-    periodEndDate = now.endOf(timeFrame === "month" ? "month" : "isoWeek");
-  }
-
-  // Ensure start date is before end date
-  if (periodEndDate.isBefore(periodStartDate)) {
-    periodEndDate = periodStartDate.endOf(
-      timeFrame === "month" ? "month" : "isoWeek"
-    );
-  }
-
-  // Ensure the period isn't too long (max 2 months for performance)
-  const maxPeriodDays = 62; // ~2 months
-  if (periodEndDate.diff(periodStartDate, "days") > maxPeriodDays) {
-    periodEndDate = periodStartDate.add(maxPeriodDays, "days");
-  }
+  // Ensure final date is UTC
+  periodStartDate = periodStartDate.utc();
 
   return {
     timeFrame,
@@ -111,7 +91,6 @@ export function validateScheduleViewSettings(
     showRequests:
       typeof settings.showRequests === "boolean" ? settings.showRequests : true,
     periodStartDate,
-    periodEndDate,
   };
 }
 
@@ -128,6 +107,5 @@ export function getDefaultScheduleViewSettings(
     showDailyShiftDemands: teamUseSolver,
     showRequests: true,
     periodStartDate: now.startOf("isoWeek"),
-    periodEndDate: now.endOf("isoWeek"),
   };
 }
