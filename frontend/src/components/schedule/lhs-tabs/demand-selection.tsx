@@ -72,23 +72,14 @@ export default function DemandSelection({
   );
 
   const handleDecreaseDSD = async () => {
-    if (date.isBefore(campaignStartDate) || date.isAfter(campaignEndDate)) {
-      return;
-    }
-
     if (countTarget <= 0) {
       return;
     }
 
-    if (manualDemand) {
-      // Update existing manual demand
-      await handleUpdateShiftDemand(manualDemand.id, {
-        count: Math.max(0, manualDemand.count - 1),
-      });
-    } else {
-      // Create new manual demand with negative count
-      await handleCreateShiftDemand(shift.id, date, -1, "Direct requirement");
-    }
+    // Update existing manual demand
+    await handleUpdateShiftDemand(manualDemand.id, {
+      count: Math.max(0, manualDemand.count - 1),
+    });
   };
 
   const handleIncreaseDSD = async () => {

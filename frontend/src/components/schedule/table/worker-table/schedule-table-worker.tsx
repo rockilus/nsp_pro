@@ -89,7 +89,7 @@ export default function ScheduleTableWorker({
   const scheduleCellDict = buildScheduleCellDict(
     AttributeOwnerType.WORKER,
     assignments,
-    [], // Pass empty array for legacy compatibility
+    shiftDemands,
     recurrences,
     requests,
     workers,

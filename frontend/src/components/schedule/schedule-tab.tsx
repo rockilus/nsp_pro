@@ -388,46 +388,6 @@ export default function ScheduleTab({
     }
   };
 
-  // Legacy compatibility functions for components that haven't been migrated yet
-  const handleCreateDSD = async (legacyDemand: any) => {
-    // Convert legacy DailyShiftDemandT format to new ShiftDemandCreateDTO format
-    const shiftId = legacyDemand.shiftId;
-    const date = legacyDemand.date; // dayjs object
-    const count = legacyDemand.count;
-    const notes = legacyDemand.notes || "";
-
-    return handleCreateShiftDemand(shiftId, date, count, notes);
-  };
-
-  const handleUpdateDSD = async (legacyDemand: any) => {
-    // Convert legacy DailyShiftDemandT format to new ShiftDemandUpdateDTO format
-    const demandId = legacyDemand.id;
-    const updates: Partial<ShiftDemandUpdateDTO> = {
-      count: legacyDemand.count,
-      notes: legacyDemand.notes || null,
-    };
-
-    return handleUpdateShiftDemand(demandId, updates);
-  };
-
-  const handleDeleteDSDs = async (
-    teamId: string,
-    shiftId: string,
-    date: dayjs.Dayjs
-  ) => {
-    // Find shift demands that match the criteria and delete them
-    const demandsToDelete = shiftDemands.filter(
-      (demand) =>
-        demand.shiftId === shiftId &&
-        dayjs.unix(demand.date).isSame(date, "day")
-    );
-
-    // Delete each matching demand
-    for (const demand of demandsToDelete) {
-      await handleDeleteShiftDemand(demand.id);
-    }
-  };
-
   //////////////////////////
   // Assignment Actions
   //////////////////////////
