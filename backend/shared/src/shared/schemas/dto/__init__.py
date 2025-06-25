@@ -14,7 +14,6 @@ from shared.schemas.dto.constraint import (
 from shared.schemas.dto.daily_shift_demand import (
     DailyShiftDemandDTO,
     DeleteDailyShiftDemandRequestDTO,
-    DemandsResultDTO,
 )
 from shared.schemas.dto.dim_entry import DimEntryDTO
 from shared.schemas.dto.dimension import (
@@ -94,7 +93,6 @@ __all__ = [
     "TemplateDTO",
     "DailyShiftDemandDTO",
     "DeleteDailyShiftDemandRequestDTO",
-    "DemandsResultDTO",
     "DimEntryDTO",
     "DimensionDTO",
     "DimensionsAndDimEntriesDTO",

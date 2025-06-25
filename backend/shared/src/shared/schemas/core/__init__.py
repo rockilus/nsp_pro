@@ -38,12 +38,6 @@ from shared.schemas.core.constraint import (
 )
 from shared.schemas.core.coverage import Coverage
 from shared.schemas.core.coverage_selector import CoverageSelector
-from shared.schemas.core.daily_shift_demand import (
-    DailyShiftDemand,
-    DeleteDailyShiftDemandRequest,
-    DemandsResult,
-    DSDSourceType,
-)
 from shared.schemas.core.dim_entry import DimEntry
 from shared.schemas.core.dimension import (
     Dimension,
@@ -120,6 +114,7 @@ from shared.schemas.core.shift import (
 from shared.schemas.core.shift_demand import ShiftDemand
 from shared.schemas.core.shift_demand_exclusion import ShiftDemandExclusion
 from shared.schemas.core.shift_demand_new import (
+    DemandsResult,
     ShiftDemandNew,
     ShiftDemandSource,
 )
@@ -205,12 +200,9 @@ __all__ = [
     "VarWorkerSelectorOptions",
     "Coverage",
     "CoverageSelector",
-    "DailyShiftDemand",
-    "DeleteDailyShiftDemandRequest",
-    "DemandsResult",
-    "DSDSourceType",
     "ShiftDemand",
     "ShiftDemandExclusion",
+    "DemandsResult",
     "ShiftDemandNew",
     "ShiftDemandSource",
     "ShiftDemandTemplate",

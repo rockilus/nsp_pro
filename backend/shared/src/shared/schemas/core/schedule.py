@@ -11,8 +11,8 @@ from shared.schemas.core.assignment import (
     AssignmentsRecurrencesResult,
 )
 from shared.schemas.core.breach import Breach
-from shared.schemas.core.daily_shift_demand import DemandsResult
 from shared.schemas.core.request import RequestAugmented
+from shared.schemas.core.shift_demand_new import DemandsResult
 from shared.schemas.dto.schedule import (
     DuplicateOptionsDTO,
     DuplicateRequestDTO,
