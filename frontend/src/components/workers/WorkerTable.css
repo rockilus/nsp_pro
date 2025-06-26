@@ -140,20 +140,43 @@
 .worker-name-text {
   font-weight: 500;
   color: #1976d2;
-  margin-right: 8px;
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.worker-acronym {
-  background-color: #e3f2fd;
-  color: #1976d2;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.75rem;
+/* Enhanced styling for worker name cell editing */
+.worker-name-cell .MuiTextField-root {
+  margin: 0;
+  width: 100%;
+}
+
+.worker-name-cell .MuiInputBase-root {
   font-weight: 500;
-  white-space: nowrap;
+  color: #1976d2;
+  font-size: inherit;
+}
+
+.worker-name-cell .MuiInputBase-root:before {
+  border-bottom: 1px solid #ccc;
+}
+
+.worker-name-cell .MuiInputBase-root:after {
+  border-bottom: 2px solid #1976d2;
+}
+
+.worker-name-cell .MuiInputBase-root.Mui-focused {
+  background-color: rgba(25, 118, 210, 0.05);
+  border-radius: 4px;
+  padding: 4px 8px;
+}
+
+/* Hover effect for clickable name */
+.worker-table-first-column:hover .worker-name-text {
+  background-color: rgba(25, 118, 210, 0.08);
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin: -4px -8px;
 }
 
 /* Scrollbar styling */

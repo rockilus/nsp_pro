@@ -12,6 +12,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Tooltip from "@mui/material/Tooltip";
 import CircularProgress from "@mui/material/CircularProgress";
+import TextField from "@mui/material/TextField";
 // Components
 import NewDimensionForm from "../shift-worker-shared/dimension/new-dimension-form";
 import DimensionCell from "../shift-worker-shared/dimension/dimension-cell";
@@ -215,29 +216,71 @@ interface WorkerTableRowProps {
 
 interface WorkerNameCellProps {
   worker: WorkerT;
-  onDelete: (workerId: string) => void;
+  bodyEditing: { [key: string]: string };
+  setBodyEditing: React.Dispatch<
+    React.SetStateAction<{ [key: string]: string }>
+  >;
+  handleUpdateWorker: (updatedWorker: WorkerT) => void;
 }
 
 // Worker Name Cell Component (First Column)
-function WorkerNameCell({ worker, onDelete }: WorkerNameCellProps) {
+function WorkerNameCell({
+  worker,
+  bodyEditing,
+  setBodyEditing,
+  handleUpdateWorker,
+}: WorkerNameCellProps) {
+  const [valueState, setValueState] = useState<string>(worker.name);
+  const editing = bodyEditing[worker.id] === "name";
+
+  const handleEditConfirm = async () => {
+    if (valueState !== worker.name) {
+      handleUpdateWorker({
+        ...worker,
+        name: valueState,
+      });
+    }
+    setBodyEditing({});
+  };
+
+  const handleEditCancel = () => {
+    setBodyEditing({});
+    setValueState(worker.name);
+  };
+
   return (
-    <TableCell className="worker-table-first-column">
+    <TableCell
+      className="worker-table-first-column"
+      onClick={() => !editing && setBodyEditing({ [worker.id]: "name" })}
+      sx={{ cursor: editing ? "default" : "pointer" }}
+    >
       <div className="worker-name-cell">
-        <div className="worker-name-text">
-          <Tooltip title={worker.name || "Unnamed Worker"} placement="top">
-            <span>{worker.name || "Unnamed Worker"}</span>
-          </Tooltip>
-        </div>
-        {worker.acronym && (
-          <div className="worker-acronym">{worker.acronym}</div>
+        {editing ? (
+          <TextField
+            fullWidth
+            type="text"
+            name="Name"
+            value={valueState}
+            onChange={(e) => setValueState(e.target.value)}
+            onBlur={handleEditConfirm}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleEditConfirm();
+              } else if (e.key === "Escape") {
+                handleEditCancel();
+              }
+            }}
+            autoFocus
+            size="small"
+            variant="standard"
+          />
+        ) : (
+          <div className="worker-name-text">
+            <Tooltip title={worker.name || "Unnamed Worker"} placement="top">
+              <span>{worker.name || "Unnamed Worker"}</span>
+            </Tooltip>
+          </div>
         )}
-        <Button
-          size="small"
-          onClick={() => onDelete(worker.id)}
-          sx={{ minWidth: "auto", p: 0.5, ml: 1 }}
-        >
-          <DeleteIcon fontSize="small" />
-        </Button>
       </div>
     </TableCell>
   );
@@ -333,7 +376,12 @@ function WorkerTableRow({
   return (
     <TableRow className="worker-table-row">
       {/* First column - Worker name */}
-      <WorkerNameCell worker={worker} onDelete={handleDeleteWorker} />
+      <WorkerNameCell
+        worker={worker}
+        bodyEditing={bodyEditing}
+        setBodyEditing={setBodyEditing}
+        handleUpdateWorker={handleUpdateWorker}
+      />
 
       {/* Default worker fields (skip first one since it's in the name cell) */}
       {defaultWorkerFields.slice(1).map((field, index) => (
