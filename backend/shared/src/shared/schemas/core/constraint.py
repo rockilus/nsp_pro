@@ -140,8 +140,12 @@ class Block:
     def from_dto(cls, data: BlockDTO) -> "Block":
         data_snake = humps.decamelize(data.model_dump())
         value = data_snake["value"]
-        if data_snake["type"] == BlockTypeOptions.SHIFT_WORKER_OPTION.value:
-            value = [ShiftWorkerOption.from_dto(v) for v in data_snake["value"]]
+        if (
+            data_snake["type"] == BlockTypeOptions.SHIFT_WORKER_OPTION.value
+            and isinstance(data.value, list)
+            and all(isinstance(v, ShiftWorkerOptionDTO) for v in data.value)
+        ):
+            value = [ShiftWorkerOption.from_dto(v) for v in data.value]  # type: ignore
         return cls(
             name=BlockNameOptions(data_snake["name"]),
             type=BlockTypeOptions(data_snake["type"]),
@@ -249,7 +253,7 @@ class ConstraintBuild:
     def from_dto(cls, data: ConstraintBuildDTO) -> "ConstraintBuild":
         data_snake = humps.decamelize(data.model_dump())
         data_snake["constraint_type"] = ConstraintType(data_snake["constraint_type"])
-        data_snake["blocks"] = [Block.from_dto(block) for block in data_snake["blocks"]]
+        data_snake["blocks"] = [Block.from_dto(block) for block in data.blocks]
         data_snake.pop("text")
         data_snake.pop("active")
         data_snake.pop("missing_attributes")
