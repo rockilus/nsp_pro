@@ -19,13 +19,23 @@
   top: 0;
   z-index: 3;
   background-color: #fafafa;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .worker-table-header .MuiTableCell-root {
   background-color: #fafafa;
-  font-weight: 600;
-  border-bottom: 2px solid #e0e0e0;
+  font-weight: 500;
+  font-size: 0.8rem;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 6px 8px;
+  height: 36px;
+}
+
+/* Compact table header text */
+.worker-table-header .table-header-default {
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.2;
 }
 
 /* Sticky first column */
@@ -34,9 +44,10 @@
   left: 0;
   z-index: 2;
   background-color: #ffffff;
-  border-right: 2px solid #e0e0e0;
-  min-width: 200px;
-  max-width: 200px;
+  border-right: 1px solid #e0e0e0;
+  min-width: 150px;
+  max-width: 150px;
+  padding: 4px 8px;
 }
 
 /* First cell (intersection of sticky header and first column) */
@@ -46,15 +57,20 @@
   top: 0;
   z-index: 4;
   background-color: #fafafa;
-  border-right: 2px solid #e0e0e0;
-  border-bottom: 2px solid #e0e0e0;
-  min-width: 200px;
-  max-width: 200px;
+  border-right: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  min-width: 150px;
+  max-width: 150px;
+  padding: 6px 8px;
+  font-weight: 500;
+  font-size: 0.8rem;
+  height: 36px;
 }
 
 /* Row styling */
 .worker-table-row {
   border-bottom: 1px solid #e0e0e0;
+  height: 40px;
 }
 
 .worker-table-row:hover {
@@ -81,29 +97,14 @@
 
 /* Cell styling */
 .worker-table-cell {
-  min-width: 120px;
-  max-width: 200px;
-  padding: 8px 16px;
-  border-right: 1px solid #e0e0e0;
+  min-width: 80px;
+  max-width: 120px;
+  padding: 4px 8px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.worker-table-cell:last-child {
-  border-right: none;
-}
-
-/* Loading state */
-.worker-table-cell--loading {
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-/* Edit state */
-.worker-table-cell--editing {
-  background-color: #fff3e0;
-  border: 2px solid #ff9800;
+  font-size: 0.85rem;
+  height: 40px;
 }
 
 /* Actions column */
@@ -112,9 +113,11 @@
   right: 0;
   z-index: 2;
   background-color: #ffffff;
-  border-left: 2px solid #e0e0e0;
-  min-width: 110px;
-  max-width: 110px;
+  border-left: 1px solid #e0e0e0;
+  min-width: 80px;
+  max-width: 80px;
+  padding: 4px 8px;
+  height: 40px;
 }
 
 .worker-table-actions-header {
@@ -123,18 +126,22 @@
   top: 0;
   z-index: 4;
   background-color: #fafafa;
-  border-left: 2px solid #e0e0e0;
-  border-bottom: 2px solid #e0e0e0;
-  min-width: 110px;
-  max-width: 110px;
+  border-left: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  min-width: 80px;
+  max-width: 80px;
+  padding: 6px 8px;
+  font-weight: 500;
+  font-size: 0.8rem;
+  height: 36px;
 }
 
 /* Worker name cell styling */
 .worker-name-cell {
   display: flex;
   align-items: center;
-  padding: 8px 12px;
-  min-height: 56px;
+  padding: 4px 8px;
+  min-height: 40px;
 }
 
 .worker-name-text {
@@ -143,6 +150,7 @@
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 0.85rem;
 }
 
 /* Enhanced styling for worker name cell editing */
@@ -154,7 +162,7 @@
 .worker-name-cell .MuiInputBase-root {
   font-weight: 500;
   color: #1976d2;
-  font-size: inherit;
+  font-size: 0.85rem; /* Match smaller font size */
 }
 
 .worker-name-cell .MuiInputBase-root:before {
@@ -162,21 +170,21 @@
 }
 
 .worker-name-cell .MuiInputBase-root:after {
-  border-bottom: 2px solid #1976d2;
+  border-bottom: 1px solid #1976d2; /* Thinner border */
 }
 
 .worker-name-cell .MuiInputBase-root.Mui-focused {
   background-color: rgba(25, 118, 210, 0.05);
   border-radius: 4px;
-  padding: 4px 8px;
+  padding: 2px 4px; /* Smaller padding */
 }
 
 /* Hover effect for clickable name */
 .worker-table-first-column:hover .worker-name-text {
   background-color: rgba(25, 118, 210, 0.08);
   border-radius: 4px;
-  padding: 4px 8px;
-  margin: -4px -8px;
+  padding: 2px 4px; /* Smaller padding */
+  margin: -2px -4px; /* Adjusted margin */
 }
 
 /* Scrollbar styling */
@@ -209,35 +217,8 @@
 
 /* Add button container */
 .worker-add-button-container {
-  margin-top: 16px;
-  padding: 8px 0;
-}
-
-/* Worker field cells */
-.worker-field-cell {
-  min-width: 120px;
-  max-width: 200px;
-  padding: 8px 16px;
-  border-right: 1px solid #e0e0e0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.worker-field-cell input {
-  border: none;
-  background: transparent;
-  width: 100%;
-  font-size: inherit;
-  font-family: inherit;
-  padding: 4px 0;
-}
-
-.worker-field-cell input:focus {
-  outline: 2px solid #1976d2;
-  background-color: #fff;
-  border-radius: 4px;
-  padding: 4px 8px;
+  margin-top: 12px; /* Reduced margin */
+  padding: 6px 0; /* Reduced padding */
 }
 
 /* Empty state styling */
@@ -266,12 +247,24 @@
 
 /* Override default TableCell styling within worker table */
 .worker-table .MuiTableCell-root {
-  border-right: 1px solid #e0e0e0;
-  padding: 8px 16px;
+  border-right: none; /* Remove internal vertical borders */
+  padding: 4px 8px; /* More compact padding */
+  height: 40px; /* Consistent row height */
+  font-size: 0.85rem; /* Smaller font size */
 }
 
-.worker-table .MuiTableCell-root:last-child {
-  border-right: none;
+/* Keep only the first column border */
+.worker-table .worker-table-first-column {
+  border-right: 1px solid #e0e0e0;
+}
+
+/* Keep only the actions column border */
+.worker-table .worker-table-actions {
+  border-left: 1px solid #e0e0e0;
+}
+
+.worker-table .worker-table-actions-header {
+  border-left: 1px solid #e0e0e0;
 }
 
 /* Special styling for editable cells */
@@ -282,6 +275,7 @@
 .worker-table .MuiTextField-root .MuiInputBase-root {
   border: none;
   background: transparent;
+  font-size: 0.85rem;
 }
 
 .worker-table .MuiTextField-root .MuiInputBase-root:before,
@@ -292,7 +286,7 @@
 .worker-table .MuiTextField-root .MuiInputBase-root.Mui-focused {
   background-color: #fff3e0;
   border-radius: 4px;
-  border: 2px solid #ff9800;
+  border: 1px solid #ff9800;
 }
 
 /* Loading spinner for async operations */
@@ -306,7 +300,7 @@
 /* Improved button styling */
 .worker-table .MuiButton-root {
   min-width: auto;
-  padding: 8px;
+  padding: 4px; /* Smaller button padding */
   border-radius: 4px;
 }
 
@@ -316,7 +310,12 @@
 
 /* Better spacing for action buttons */
 .worker-table-actions .MuiButton-root {
-  margin: 0 4px;
+  margin: 0 2px; /* Reduced margin */
+}
+
+/* Make icons smaller */
+.worker-table .MuiSvgIcon-root {
+  font-size: 1rem; /* Smaller icons */
 }
 
 /* Title container spacing */
@@ -324,7 +323,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 12px; /* Reduced margin */
   padding: 0 8px;
 }
 
@@ -342,13 +341,29 @@
 
   .worker-table-first-column,
   .worker-table-first-header-cell {
-    min-width: 150px;
-    max-width: 150px;
+    min-width: 120px;
+    max-width: 120px;
   }
 
   .worker-table-cell {
-    min-width: 100px;
-    max-width: 150px;
-    padding: 6px 12px;
+    min-width: 60px;
+    max-width: 100px;
+    padding: 3px 6px;
+    font-size: 0.8rem;
+  }
+
+  .worker-table-actions,
+  .worker-table-actions-header {
+    min-width: 60px;
+    max-width: 60px;
+  }
+
+  .worker-table-row {
+    height: 36px;
+  }
+
+  .worker-table-header .MuiTableCell-root {
+    height: 32px;
+    padding: 4px 6px;
   }
 }
