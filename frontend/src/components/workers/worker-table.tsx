@@ -322,7 +322,9 @@ function WorkerTableHeader({
           }}
         >
           <div className="flex items-center justify-between">
-            <span className="table-header-default">{t("name")}</span>
+            <Tooltip title={t("name")} placement="top">
+              <span className="table-header-default">{t("name")}</span>
+            </Tooltip>
             {onSort && onFilter && (
               <ColumnSortFilterMenu
                 column={workerColumns.find((col) => col.id === "name")!}
@@ -361,7 +363,9 @@ function WorkerTableHeader({
           ) : (
             <TableCell key={index} className="worker-table-cell">
               <div className="flex items-center justify-between">
-                <span className="table-header-default">{field.label}</span>
+                <Tooltip title={field.label} placement="top">
+                  <span className="table-header-default">{field.label}</span>
+                </Tooltip>
                 {onSort && onFilter && (
                   <ColumnSortFilterMenu
                     column={workerColumns.find((col) => col.id === field.name)!}
@@ -415,7 +419,9 @@ function WorkerTableHeader({
 
         {/* Actions column header */}
         <TableCell className="worker-table-actions-header">
-          <span className="table-header-default">{t("actions")}</span>
+          <Tooltip title={t("actions")} placement="top">
+            <span className="table-header-default">{t("actions")}</span>
+          </Tooltip>
         </TableCell>
       </TableRow>
     </TableHead>

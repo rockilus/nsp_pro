@@ -5,6 +5,7 @@ import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import ListIcon from "@mui/icons-material/List";
 import NumbersIcon from "@mui/icons-material/Numbers";
 import TableCell from "@mui/material/TableCell";
+import Tooltip from "@mui/material/Tooltip";
 // Components
 import PopoverAnchorElBelow from "../../inputs/popover-anchor-el-below";
 import UpdateDimensionForm from "./update-dimension-form";
@@ -68,7 +69,9 @@ export default function DimensionCell({
   const cellContent = () => (
     <div className="table-header-default flex items-center justify-between">
       <div className="flex items-center gap-1">
-        <span>{dimension.name}</span>
+        <Tooltip title={dimension.name} placement="top">
+          <span>{dimension.name}</span>
+        </Tooltip>
         {iconsPrefix[dimension.entryType]}
       </div>
       {onSort && onFilter && column && (

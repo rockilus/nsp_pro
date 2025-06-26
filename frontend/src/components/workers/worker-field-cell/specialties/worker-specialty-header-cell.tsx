@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useTranslation } from "../../../../app/i18n/client";
 // MUI
 import TableCell from "@mui/material/TableCell";
+import Tooltip from "@mui/material/Tooltip";
 // Components
 import PopoverAnchorElBelow from "../../../inputs/popover-anchor-el-below";
 import UpdateSpecialtiesForm from "./update-specialties-form";
@@ -48,7 +49,9 @@ export default function WorkerSpecialtyHeaderCell({
 
   const cellContent = () => (
     <div className="table-header-default flex items-center justify-between">
-      <span>{t("specialties")}</span>
+      <Tooltip title={t("specialties")} placement="top">
+        <span>{t("specialties")}</span>
+      </Tooltip>
       <div className="flex items-center gap-1">
         {onSort && onFilter && column && (
           <div onClick={(e) => e.stopPropagation()}>
