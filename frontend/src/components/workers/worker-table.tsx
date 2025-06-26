@@ -74,7 +74,7 @@ export default function WorkerTable({
     <div>
       <div className="title-container">
         <span className="title">{t("workers")}</span>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: "flex", gap: "8px" }}>
           <TableAddButton text={t("worker")} handleClick={handleAddWorker} />
           <PopoverRHS
             title={t("new_property")}
