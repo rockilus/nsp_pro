@@ -11,7 +11,6 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Tooltip from "@mui/material/Tooltip";
-import CircularProgress from "@mui/material/CircularProgress";
 import TextField from "@mui/material/TextField";
 // Components
 import NewDimensionForm from "../shift-worker-shared/dimension/new-dimension-form";
@@ -308,8 +307,17 @@ function WorkerTableHeader({
     <TableHead className="worker-table-header">
       <TableRow>
         {/* First column header - Worker name */}
-        <TableCell className="worker-table-first-header-cell">
-          <span className="table-header-default">{t("worker")}</span>
+        <TableCell
+          className="worker-table-first-header-cell"
+          sx={{
+            textAlign: "left !important",
+            paddingLeft: "16px !important",
+            "& .table-header-default": {
+              justifyContent: "flex-start !important",
+            },
+          }}
+        >
+          <span className="table-header-default">{t("name")}</span>
         </TableCell>
 
         {/* Default worker fields */}
