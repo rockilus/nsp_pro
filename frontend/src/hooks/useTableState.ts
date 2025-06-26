@@ -238,9 +238,27 @@ export function useTableState<T>(
               .includes(String(filter.value).toLowerCase());
 
           case "select":
-            return Array.isArray(filter.value)
-              ? filter.value.includes(value)
-              : value === filter.value;
+            if (Array.isArray(filter.value)) {
+              // Multi-value filter (AND logic: worker must have ALL selected values)
+              if (Array.isArray(value)) {
+                // Column value is array (e.g., specialties, dim entries)
+                return filter.value.every((filterVal) =>
+                  value.includes(filterVal)
+                );
+              } else {
+                // Column value is single value
+                return filter.value.includes(value);
+              }
+            } else {
+              // Single value filter
+              if (Array.isArray(value)) {
+                // Column value is array: check if it contains the filter value
+                return value.includes(filter.value);
+              } else {
+                // Column value is single value: exact match
+                return value === filter.value;
+              }
+            }
 
           case "date":
             if (!filter.value.start || !filter.value.end) return true;

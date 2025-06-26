@@ -69,7 +69,7 @@ export const createWorkerColumns = (
       id: "specialties",
       label: t("specialties"),
       type: "select" as const,
-      getValue: (worker: WorkerT) => worker.specialtyIds.join(","),
+      getValue: (worker: WorkerT) => worker.specialtyIds, // Return array instead of string
       getDisplayValue: (worker: WorkerT) => {
         const workerSpecialties = specialties.filter((s) =>
           worker.specialtyIds.includes(s.id)
@@ -156,7 +156,7 @@ export const createWorkerColumns = (
           const attribute = worker.attributes.find(
             (a) => a.dimensionId === dimension.id
           );
-          if (!attribute) return "";
+          if (!attribute) return [];
           if (dimension.entryType === DimensionEntryType.BOOL) {
             return attribute.value ? "true" : "false";
           }
@@ -164,7 +164,7 @@ export const createWorkerColumns = (
             dimension.entryType === DimensionEntryType.DIM_ENTRIES &&
             attribute.dimEntryIds
           ) {
-            return attribute.dimEntryIds.join(",");
+            return attribute.dimEntryIds; // Return array instead of string
           }
           return attribute.value?.toString() || "";
         },
