@@ -18,6 +18,7 @@ export default function AttributeCell({
   editing,
   setEditing,
   handleUpdateAttribute,
+  className = "",
 }: {
   selectedTeamId: string;
   attribute: AttributeT;
@@ -26,6 +27,7 @@ export default function AttributeCell({
   editing: boolean;
   setEditing: Dispatch<SetStateAction<{}>>;
   handleUpdateAttribute: (attribute: AttributeT, teamId: string) => void;
+  className?: string;
 }) {
   const [valueState, setValueState] = useState<string | number | boolean>(
     attribute.value
@@ -62,6 +64,7 @@ export default function AttributeCell({
         key={dimension.id}
         component="th"
         scope="row"
+        className={className}
         onClick={() => setEditing({ [attribute.ownerId]: dimension.id })}
         sx={{
           paddingY: 0,
