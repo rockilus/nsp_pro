@@ -1,0 +1,331 @@
+/* WorkerTable CSS - Fixed positioning and scrolling */
+
+.worker-table-container {
+  position: relative;
+  height: calc(100vh - 200px); /* Fixed calculated height */
+  overflow: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+
+.worker-table {
+  position: relative;
+  min-width: 100%;
+}
+
+/* Sticky header */
+.worker-table-header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background-color: #fafafa;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.worker-table-header .MuiTableCell-root {
+  background-color: #fafafa;
+  font-weight: 600;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+/* Sticky first column */
+.worker-table-first-column {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background-color: #ffffff;
+  border-right: 2px solid #e0e0e0;
+  min-width: 200px;
+  max-width: 200px;
+}
+
+/* First cell (intersection of sticky header and first column) */
+.worker-table-first-header-cell {
+  position: sticky;
+  left: 0;
+  top: 0;
+  z-index: 4;
+  background-color: #fafafa;
+  border-right: 2px solid #e0e0e0;
+  border-bottom: 2px solid #e0e0e0;
+  min-width: 200px;
+  max-width: 200px;
+}
+
+/* Row styling */
+.worker-table-row {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.worker-table-row:hover {
+  background-color: #f5f5f5;
+}
+
+.worker-table-row:hover .MuiTableCell-root {
+  background-color: #f5f5f5;
+}
+
+.worker-table-row:hover .worker-table-first-column {
+  background-color: #f5f5f5;
+}
+
+.worker-table-row:hover .worker-table-actions {
+  background-color: #f5f5f5;
+}
+
+/* Focus states for better accessibility */
+.worker-table .MuiTableCell-root:focus-within {
+  outline: 2px solid #1976d2;
+  outline-offset: -2px;
+}
+
+/* Cell styling */
+.worker-table-cell {
+  min-width: 120px;
+  max-width: 200px;
+  padding: 8px 16px;
+  border-right: 1px solid #e0e0e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.worker-table-cell:last-child {
+  border-right: none;
+}
+
+/* Loading state */
+.worker-table-cell--loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Edit state */
+.worker-table-cell--editing {
+  background-color: #fff3e0;
+  border: 2px solid #ff9800;
+}
+
+/* Actions column */
+.worker-table-actions {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  background-color: #ffffff;
+  border-left: 2px solid #e0e0e0;
+  min-width: 110px;
+  max-width: 110px;
+}
+
+.worker-table-actions-header {
+  position: sticky;
+  right: 0;
+  top: 0;
+  z-index: 4;
+  background-color: #fafafa;
+  border-left: 2px solid #e0e0e0;
+  border-bottom: 2px solid #e0e0e0;
+  min-width: 110px;
+  max-width: 110px;
+}
+
+/* Worker name cell styling */
+.worker-name-cell {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  min-height: 56px;
+}
+
+.worker-name-text {
+  font-weight: 500;
+  color: #1976d2;
+  margin-right: 8px;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.worker-acronym {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Scrollbar styling */
+.worker-table-container::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.worker-table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 6px;
+}
+
+.worker-table-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 6px;
+}
+
+.worker-table-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Ensure scrollbars are always visible */
+.worker-table-container {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+}
+
+/* Add button container */
+.worker-add-button-container {
+  margin-top: 16px;
+  padding: 8px 0;
+}
+
+/* Worker field cells */
+.worker-field-cell {
+  min-width: 120px;
+  max-width: 200px;
+  padding: 8px 16px;
+  border-right: 1px solid #e0e0e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.worker-field-cell input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-size: inherit;
+  font-family: inherit;
+  padding: 4px 0;
+}
+
+.worker-field-cell input:focus {
+  outline: 2px solid #1976d2;
+  background-color: #fff;
+  border-radius: 4px;
+  padding: 4px 8px;
+}
+
+/* Empty state styling */
+.worker-table-empty {
+  text-align: center;
+  padding: 32px;
+  color: #666;
+}
+
+.worker-table-empty .empty-icon {
+  font-size: 48px;
+  color: #ccc;
+  margin-bottom: 16px;
+}
+
+.worker-table-empty .empty-text {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.worker-table-empty .empty-subtext {
+  font-size: 14px;
+  color: #999;
+}
+
+/* Override default TableCell styling within worker table */
+.worker-table .MuiTableCell-root {
+  border-right: 1px solid #e0e0e0;
+  padding: 8px 16px;
+}
+
+.worker-table .MuiTableCell-root:last-child {
+  border-right: none;
+}
+
+/* Special styling for editable cells */
+.worker-table .MuiTextField-root {
+  margin: 0;
+}
+
+.worker-table .MuiTextField-root .MuiInputBase-root {
+  border: none;
+  background: transparent;
+}
+
+.worker-table .MuiTextField-root .MuiInputBase-root:before,
+.worker-table .MuiTextField-root .MuiInputBase-root:after {
+  border-bottom: none;
+}
+
+.worker-table .MuiTextField-root .MuiInputBase-root.Mui-focused {
+  background-color: #fff3e0;
+  border-radius: 4px;
+  border: 2px solid #ff9800;
+}
+
+/* Loading spinner for async operations */
+.worker-table-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+/* Improved button styling */
+.worker-table .MuiButton-root {
+  min-width: auto;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.worker-table .MuiButton-root:hover {
+  background-color: rgba(25, 118, 210, 0.08);
+}
+
+/* Better spacing for action buttons */
+.worker-table-actions .MuiButton-root {
+  margin: 0 4px;
+}
+
+/* Title container spacing */
+.title-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 0 8px;
+}
+
+.title-container .title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1976d2;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .worker-table-container {
+    height: calc(100vh - 150px);
+  }
+
+  .worker-table-first-column,
+  .worker-table-first-header-cell {
+    min-width: 150px;
+    max-width: 150px;
+  }
+
+  .worker-table-cell {
+    min-width: 100px;
+    max-width: 150px;
+    padding: 6px 12px;
+  }
+}
