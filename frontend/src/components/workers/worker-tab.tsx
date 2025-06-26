@@ -106,8 +106,8 @@ export default function WorkerTab({
 
   // Worker column definitions for filtering/sorting
   const workerColumns = useMemo(() => {
-    return createWorkerColumns(t, specialties, dimensions, dimEntries);
-  }, [t, specialties, dimensions, dimEntries]);
+    return createWorkerColumns(t, specialties, dimensions, dimEntries, workers);
+  }, [t, specialties, dimensions, dimEntries, workers]);
 
   // Table state for worker filtering and sorting
   const {

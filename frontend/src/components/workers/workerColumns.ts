@@ -12,22 +12,40 @@ export const createWorkerColumns = (
   t: any,
   specialties: SpecialtyT[],
   dimensions: DimensionT[],
-  dimEntries: DimEntryT[]
+  dimEntries: DimEntryT[],
+  workers?: WorkerT[] // Optional workers data for dynamic options
 ): ColumnDefinition[] => {
   const baseColumns: ColumnDefinition[] = [
     {
       id: "name",
       label: t("name"),
-      type: "text" as const,
+      type: "select" as const,
       getValue: (worker: WorkerT) => worker.name,
       getDisplayValue: (worker: WorkerT) => worker.name || "Unnamed Worker",
+      getOptions: () => {
+        if (!workers) return [];
+        const uniqueNames = [
+          ...new Set(workers.map((w) => w.name).filter(Boolean)),
+        ];
+        return uniqueNames.map((name) => ({ value: name, label: name }));
+      },
     },
     {
       id: "acronym",
       label: t("acronym"),
-      type: "text" as const,
+      type: "select" as const,
       getValue: (worker: WorkerT) => worker.acronym,
       getDisplayValue: (worker: WorkerT) => worker.acronym,
+      getOptions: () => {
+        if (!workers) return [];
+        const uniqueAcronyms = [
+          ...new Set(workers.map((w) => w.acronym).filter(Boolean)),
+        ];
+        return uniqueAcronyms.map((acronym) => ({
+          value: acronym,
+          label: acronym,
+        }));
+      },
     },
     {
       id: "employmentStartDate",
@@ -67,31 +85,59 @@ export const createWorkerColumns = (
     {
       id: "weeklyHours",
       label: t("weekly_hours"),
-      type: "text" as const,
+      type: "select" as const,
       getValue: (worker: WorkerT) => worker.weeklyHours.toString(),
       getDisplayValue: (worker: WorkerT) => worker.weeklyHours.toString(),
+      getOptions: () => {
+        if (!workers) return [];
+        const uniqueValues = [
+          ...new Set(workers.map((w) => w.weeklyHours.toString())),
+        ];
+        return uniqueValues.map((value) => ({ value, label: value }));
+      },
     },
     {
       id: "weeklyHoursDesired",
       label: t("weekly_hours_desired"),
-      type: "text" as const,
+      type: "select" as const,
       getValue: (worker: WorkerT) => worker.weeklyHoursDesired.toString(),
       getDisplayValue: (worker: WorkerT) =>
         worker.weeklyHoursDesired.toString(),
+      getOptions: () => {
+        if (!workers) return [];
+        const uniqueValues = [
+          ...new Set(workers.map((w) => w.weeklyHoursDesired.toString())),
+        ];
+        return uniqueValues.map((value) => ({ value, label: value }));
+      },
     },
     {
       id: "dutiesPerMonth",
       label: t("duties_per_month"),
-      type: "text" as const,
+      type: "select" as const,
       getValue: (worker: WorkerT) => worker.dutiesPerMonth.toString(),
       getDisplayValue: (worker: WorkerT) => worker.dutiesPerMonth.toString(),
+      getOptions: () => {
+        if (!workers) return [];
+        const uniqueValues = [
+          ...new Set(workers.map((w) => w.dutiesPerMonth.toString())),
+        ];
+        return uniqueValues.map((value) => ({ value, label: value }));
+      },
     },
     {
       id: "annualLeave",
       label: t("annual_leave"),
-      type: "text" as const,
+      type: "select" as const,
       getValue: (worker: WorkerT) => worker.annualLeave.toString(),
       getDisplayValue: (worker: WorkerT) => worker.annualLeave.toString(),
+      getOptions: () => {
+        if (!workers) return [];
+        const uniqueValues = [
+          ...new Set(workers.map((w) => w.annualLeave.toString())),
+        ];
+        return uniqueValues.map((value) => ({ value, label: value }));
+      },
     },
   ];
 
@@ -104,10 +150,8 @@ export const createWorkerColumns = (
         label: dimension.name,
         type:
           dimension.entryType === DimensionEntryType.BOOL
-            ? "select"
-            : dimension.entryType === DimensionEntryType.INT
-            ? "text"
-            : "text",
+            ? "boolean"
+            : "select",
         getValue: (worker: WorkerT) => {
           const attribute = worker.attributes.find(
             (a) => a.dimensionId === dimension.id
@@ -157,7 +201,23 @@ export const createWorkerColumns = (
                     value: entry.id,
                     label: entry.name,
                   }))
-            : undefined,
+            : () => {
+                // For STR and INT types, generate options from actual worker data
+                if (!workers) return [];
+                const uniqueValues = [
+                  ...new Set(
+                    workers
+                      .map((worker) => {
+                        const attribute = worker.attributes.find(
+                          (a) => a.dimensionId === dimension.id
+                        );
+                        return attribute?.value?.toString() || "";
+                      })
+                      .filter((value) => value !== "")
+                  ),
+                ];
+                return uniqueValues.map((value) => ({ value, label: value }));
+              },
       })
     );
 
