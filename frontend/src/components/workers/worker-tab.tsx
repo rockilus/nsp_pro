@@ -52,6 +52,42 @@ import { log } from "console";
 
 dayjs.extend(utc);
 
+// Hook for dynamic height calculation
+const useTableHeight = (isFilterToolbarActive: boolean) => {
+  const [tableHeight, setTableHeight] = React.useState("70vh");
+
+  React.useEffect(() => {
+    const calculateHeight = () => {
+      // Calculate available height based on viewport and other elements
+      const viewportHeight = window.innerHeight;
+      const headerHeight = 65; // Header height (64px + 1px border)
+      const titleContainerHeight = 47; // Title container 35 height and 12 margin bottom
+      const filterToolbarHeight = isFilterToolbarActive ? 80 : 0; // Filter toolbar height (35px + 6px padding + 1px border)
+      const paddingAndMargins = 40; // Padding 20px top, 20 bottom
+
+      const availableHeight =
+        viewportHeight -
+        headerHeight -
+        titleContainerHeight -
+        filterToolbarHeight -
+        paddingAndMargins;
+      const maxHeight = Math.max(
+        300,
+        Math.min(availableHeight, viewportHeight)
+      );
+
+      setTableHeight(`${maxHeight}px`);
+    };
+
+    calculateHeight();
+    window.addEventListener("resize", calculateHeight);
+
+    return () => window.removeEventListener("resize", calculateHeight);
+  }, [isFilterToolbarActive]);
+
+  return tableHeight;
+};
+
 export default function WorkerTab({
   lng,
   selectedTeamId,
@@ -82,6 +118,13 @@ export default function WorkerTab({
     updateSort,
     resetAll,
   } = useTableState(workers, workerColumns, "nsp-pro-worker-table-state");
+
+  // Show filter toolbar when filters/sorting is applied
+  const showFilterToolbar =
+    tableState.filters.length > 0 || tableState.sort !== null;
+
+  // Dynamic table height accounts for filter toolbar
+  const tableHeight = useTableHeight(showFilterToolbar);
 
   // Memoize filtered dimensions for performance
   const dimensionsDisplayed = useMemo(
@@ -399,7 +442,7 @@ export default function WorkerTab({
             </div>
 
             {/* Filter/Sort toolbar */}
-            {(tableState.filters.length > 0 || tableState.sort !== null) && (
+            {showFilterToolbar && (
               <TableFilterBar
                 filters={tableState.filters}
                 sort={tableState.sort}
@@ -417,6 +460,7 @@ export default function WorkerTab({
               workers={filteredWorkers}
               specialties={specialties}
               defaultWorkerFields={DefaultWorkerFields}
+              tableHeight={tableHeight}
               // Table state props
               workerColumns={workerColumns}
               currentSort={tableState.sort}

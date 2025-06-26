@@ -43,6 +43,7 @@ export default function WorkerTable({
   workers,
   specialties,
   defaultWorkerFields,
+  tableHeight = "70vh",
   // New props for sorting/filtering
   workerColumns,
   currentSort,
@@ -75,7 +76,10 @@ export default function WorkerTable({
 
   return (
     <div>
-      <TableContainer className="worker-table-container">
+      <TableContainer
+        className="worker-table-container"
+        sx={{ height: tableHeight, overflow: "auto" }}
+      >
         <Table className="worker-table" aria-label="worker table">
           <WorkerTableHeader
             lng={lng}
@@ -144,6 +148,7 @@ interface WorkerTableProps {
   workers: WorkerT[];
   specialties: SpecialtyT[];
   defaultWorkerFields: Record<string, string>[];
+  tableHeight?: string;
   // New props for sorting/filtering
   workerColumns: ColumnDefinition[];
   currentSort?: TableSort | null;
