@@ -47,8 +47,8 @@ export default function DimensionCell({
   };
 
   const cellContent = () => (
-    <div className="table-header-custom-container">
-      <span className="table-header-custom">{dimension.name}</span>
+    <div className="table-header-default">
+      <span>{dimension.name}</span>
       {iconsPrefix[dimension.entryType]}
     </div>
   );
@@ -58,7 +58,16 @@ export default function DimensionCell({
       key={dimension.id}
       component="th"
       scope="row"
-      sx={{ paddingY: 0 }}
+      className="worker-table-header"
+      sx={{
+        paddingY: 0,
+        padding: "6px 8px",
+        height: "36px",
+        fontSize: "0.8rem",
+        fontWeight: 500,
+        backgroundColor: "#fafafa",
+        borderBottom: "1px solid #e0e0e0",
+      }}
     >
       <PopoverAnchorElBelow
         buttonContent={cellContent()}

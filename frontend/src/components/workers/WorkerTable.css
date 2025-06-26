@@ -36,6 +36,25 @@
   font-size: 0.8rem;
   font-weight: 500;
   line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Ensure specialty and dimension header cells align with other headers */
+.worker-table-header .table-header-default span {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.87);
+  margin-right: 4px;
+}
+
+.worker-table-header .table-header-default .MuiSvgIcon-root {
+  font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.54);
 }
 
 /* Sticky first column */
