@@ -95,9 +95,13 @@ export default function WorkerFieldEmploymentStart({
   }, [handleClickOutside, handleKeyDown, editing]);
 
   return (
-    <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
+    <TableCell
+      component="th"
+      scope="row"
+      sx={{ paddingY: 0, textAlign: "center" }}
+    >
       {editing ? (
-        <div>
+        <div style={{ display: "flex", justifyContent: "center" }}>
           <DatePicker
             className="custom-date-picker"
             value={valueState}
@@ -107,7 +111,15 @@ export default function WorkerFieldEmploymentStart({
           />
         </div>
       ) : (
-        <div onClick={() => setEditing({ [worker.id]: "employmentStartDate" })}>
+        <div
+          onClick={() => setEditing({ [worker.id]: "employmentStartDate" })}
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: 45,
+          }}
+        >
           <span>{worker.employmentStartDate.format("DD/MM/YYYY")}</span>
         </div>
       )}

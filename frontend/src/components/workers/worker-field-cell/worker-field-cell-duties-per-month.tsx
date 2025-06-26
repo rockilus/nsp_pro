@@ -43,7 +43,7 @@ export default function WorkerFieldCellDutiesPerMonth({
       component="th"
       scope="row"
       onClick={() => setEditing({ [worker.id]: "dutiesPerMonth" })}
-      sx={{ paddingY: 0 }}
+      sx={{ paddingY: 0, textAlign: "center" }}
     >
       {editing ? (
         <TextField
@@ -63,9 +63,17 @@ export default function WorkerFieldCellDutiesPerMonth({
             }
           }}
           autoFocus
+          inputProps={{ style: { textAlign: "center" } }}
         />
       ) : (
-        <Box sx={{ minHeight: 45, display: "flex", alignItems: "center" }}>
+        <Box
+          sx={{
+            minHeight: 45,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           {worker.dutiesPerMonth}
         </Box>
       )}

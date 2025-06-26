@@ -45,7 +45,7 @@ export default function WorkerFieldCellAcronym({
       component="th"
       scope="row"
       onClick={() => setEditing({ [worker.id]: "acronym" })}
-      sx={{ paddingY: 0 }}
+      sx={{ paddingY: 0, textAlign: "center" }}
     >
       {editing ? (
         <TextField
@@ -63,9 +63,17 @@ export default function WorkerFieldCellAcronym({
             }
           }}
           autoFocus
+          inputProps={{ style: { textAlign: "center" } }}
         />
       ) : (
-        <Box sx={{ minHeight: 45, display: "flex", alignItems: "center" }}>
+        <Box
+          sx={{
+            minHeight: 45,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           {worker.acronym}
         </Box>
       )}

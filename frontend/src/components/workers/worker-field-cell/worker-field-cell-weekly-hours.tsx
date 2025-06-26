@@ -41,7 +41,7 @@ export default function WorkerFieldCellWeeklyHours({
       component="th"
       scope="row"
       onClick={() => setEditing({ [worker.id]: "weeklyHours" })}
-      sx={{ paddingY: 0 }}
+      sx={{ paddingY: 0, textAlign: "center" }}
     >
       {editing ? (
         <TextField
@@ -61,9 +61,17 @@ export default function WorkerFieldCellWeeklyHours({
             }
           }}
           autoFocus
+          inputProps={{ style: { textAlign: "center" } }}
         />
       ) : (
-        <Box sx={{ minHeight: 45, display: "flex", alignItems: "center" }}>
+        <Box
+          sx={{
+            minHeight: 45,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           {worker.weeklyHours}
         </Box>
       )}

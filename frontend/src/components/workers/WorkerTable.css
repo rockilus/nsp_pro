@@ -333,6 +333,21 @@
   color: #1976d2;
 }
 
+/* Center content for specific worker field columns using individual component styling */
+.worker-field-center {
+  text-align: center;
+}
+
+.worker-field-center .MuiBox-root {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.worker-field-center .MuiTextField-root .MuiInputBase-input {
+  text-align: center;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .worker-table-container {

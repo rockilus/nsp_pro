@@ -115,9 +115,20 @@ export default function WorkerFieldEmploymentEnd({
   }, [handleClickOutside, handleKeyDown, editing]);
 
   return (
-    <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
+    <TableCell
+      component="th"
+      scope="row"
+      sx={{ paddingY: 0, textAlign: "center" }}
+    >
       {editing ? (
-        <div ref={cellRef}>
+        <div
+          ref={cellRef}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
           <DatePicker
             className="custom-date-picker"
             disabled={valueState ? false : true}
@@ -136,7 +147,15 @@ export default function WorkerFieldEmploymentEnd({
           />
         </div>
       ) : (
-        <div onClick={() => setEditing({ [worker.id]: "employmentEndDate" })}>
+        <div
+          onClick={() => setEditing({ [worker.id]: "employmentEndDate" })}
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: 45,
+          }}
+        >
           <span>
             {worker.employmentEndDate
               ? worker.employmentEndDate.format("DD/MM/YYYY")
