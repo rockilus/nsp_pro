@@ -555,6 +555,8 @@ export default function RequestPanel({
                   lng={lng}
                   selectedShifts={requestState.shiftOptions}
                   statsShiftOptions={filterShiftOptions(shiftOptions, shifts)}
+                  workers={workers}
+                  shifts={shifts}
                   disabled={false}
                   handleEditSelectedShifts={(selected) => {
                     handleEditSelectedShifts(selected);
