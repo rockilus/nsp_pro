@@ -1,11 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
 // Components
 import WorkerTable from "./worker-table";
+import TableFilterBar from "../table/TableFilterBar";
+import TableAddButton from "../buttons/table-add-button";
+import PopoverRHS from "../inputs/popover-rhs";
+import NewDimensionForm from "../shift-worker-shared/dimension/new-dimension-form";
 // Skeletons
 import TablesSkeleton from "../skeletons/tables-skeleton";
 // Actions
@@ -31,18 +35,58 @@ import {
   updateSpecialty,
   deleteSpecialty,
 } from "../../app/lib/specialty";
+// Hooks
+import { useTableState } from "../../hooks/useTableState";
+// Utils
+import { createWorkerColumns } from "./workerColumns";
 // Styles
 import "../../styles/text-styles.css";
 import "../../styles/tab-container-styles.css";
 // Types
 import { WorkerT } from "../../types/worker";
-import { DimensionT } from "../../types/dimension";
+import { DimensionT, DimensionType } from "../../types/dimension";
 import { DimEntryT } from "@/types/dim-entry";
 import { AttributeT } from "../../types/attribute";
 import { SpecialtyT } from "@/types/specialty";
 import { log } from "console";
 
 dayjs.extend(utc);
+
+// Hook for dynamic height calculation
+const useTableHeight = (isFilterToolbarActive: boolean) => {
+  const [tableHeight, setTableHeight] = React.useState("70vh");
+
+  React.useEffect(() => {
+    const calculateHeight = () => {
+      // Calculate available height based on viewport and other elements
+      const viewportHeight = window.innerHeight;
+      const headerHeight = 65; // Header height (64px + 1px border)
+      const titleContainerHeight = 47; // Title container 35 height and 12 margin bottom
+      const filterToolbarHeight = isFilterToolbarActive ? 80 : 0; // Filter toolbar height (35px + 6px padding + 1px border)
+      const paddingAndMargins = 40; // Padding 20px top, 20 bottom
+
+      const availableHeight =
+        viewportHeight -
+        headerHeight -
+        titleContainerHeight -
+        filterToolbarHeight -
+        paddingAndMargins;
+      const maxHeight = Math.max(
+        300,
+        Math.min(availableHeight, viewportHeight)
+      );
+
+      setTableHeight(`${maxHeight}px`);
+    };
+
+    calculateHeight();
+    window.addEventListener("resize", calculateHeight);
+
+    return () => window.removeEventListener("resize", calculateHeight);
+  }, [isFilterToolbarActive]);
+
+  return tableHeight;
+};
 
 export default function WorkerTab({
   lng,
@@ -58,6 +102,36 @@ export default function WorkerTab({
   const [dimensions, setDimensions] = useState<DimensionT[]>([]);
   const [dimEntries, setDimEntries] = useState<DimEntryT[]>([]);
   const [specialties, setSpecialties] = useState<SpecialtyT[]>([]);
+  const [popoverRhsOpen, setPopoverRhsOpen] = useState(false);
+
+  // Worker column definitions for filtering/sorting
+  const workerColumns = useMemo(() => {
+    return createWorkerColumns(t, specialties, dimensions, dimEntries, workers);
+  }, [t, specialties, dimensions, dimEntries, workers]);
+
+  // Table state for worker filtering and sorting
+  const {
+    tableState,
+    filteredAndSortedData: filteredWorkers,
+    addFilter,
+    removeFilter,
+    updateSort,
+    resetAll,
+  } = useTableState(workers, workerColumns, "nsp-pro-worker-table-state");
+
+  // Show filter toolbar when filters/sorting is applied
+  const showFilterToolbar =
+    tableState.filters.length > 0 || tableState.sort !== null;
+
+  // Dynamic table height accounts for filter toolbar
+  const tableHeight = useTableHeight(showFilterToolbar);
+
+  // Memoize filtered dimensions for performance
+  const dimensionsDisplayed = useMemo(
+    () =>
+      dimensions.filter((dim) => dim.dimTypes.includes(DimensionType.WORKER)),
+    [dimensions]
+  );
 
   const DefaultWorkerFields: Record<string, string>[] = [
     { name: "name", label: t("name") },
@@ -337,28 +411,76 @@ export default function WorkerTab({
         <TablesSkeleton numTables={1} numInternalRows={3} />
       ) : (
         selectedTeamId && (
-          <WorkerTable
-            lng={lng}
-            selectedTeamId={selectedTeamId}
-            dimensions={dimensions}
-            dimEntries={dimEntries}
-            workers={workers}
-            specialties={specialties}
-            defaultWorkerFields={DefaultWorkerFields}
-            handleAddWorker={handleAddWorker}
-            handleUpdateWorker={handleUpdateWorker}
-            handleDeleteWorker={handleDeleteWorker}
-            handleAddDimension={handleAddDimension}
-            handleUpdateDimension={handleUpdateDimension}
-            handleDeleteDimension={handleDeleteDimension}
-            handleAddDimEntry={handleAddDimEntry}
-            handleUpdateDimEntry={handleUpdateDimEntry}
-            handleDeleteDimEntry={handleDeleteDimEntry}
-            handleUpdateAttribute={handleUpdateAttribute}
-            handleAddSpecialty={handleAddSpecialty}
-            handleUpdateSpecialty={handleUpdateSpecialty}
-            handleDeleteSpecialty={handleDeleteSpecialty}
-          />
+          <div>
+            {/* Title container */}
+            <div className="title-container">
+              <span className="title">{t("workers")}</span>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <TableAddButton
+                  text={t("worker")}
+                  handleClick={handleAddWorker}
+                />
+                <PopoverRHS
+                  title={t("new_property")}
+                  buttonContent={<TableAddButton text={t("property")} />}
+                  content={
+                    <NewDimensionForm
+                      lng={lng}
+                      selectedTeamId={selectedTeamId}
+                      dimensionType={DimensionType.WORKER}
+                      dimensions={dimensions}
+                      dimEntries={dimEntries}
+                      setOpenParent={setPopoverRhsOpen}
+                      handleAddDimension={handleAddDimension}
+                      handleUpdateDimension={handleUpdateDimension}
+                    />
+                  }
+                  open={popoverRhsOpen}
+                  setOpen={setPopoverRhsOpen}
+                />
+              </div>
+            </div>
+
+            {/* Filter/Sort toolbar */}
+            {showFilterToolbar && (
+              <TableFilterBar
+                filters={tableState.filters}
+                sort={tableState.sort}
+                onRemoveFilter={removeFilter}
+                onRemoveSort={() => updateSort(null)}
+                onResetAll={resetAll}
+              />
+            )}
+
+            <WorkerTable
+              lng={lng}
+              selectedTeamId={selectedTeamId}
+              dimensions={dimensions}
+              dimEntries={dimEntries}
+              workers={filteredWorkers}
+              specialties={specialties}
+              defaultWorkerFields={DefaultWorkerFields}
+              tableHeight={tableHeight}
+              // Table state props
+              workerColumns={workerColumns}
+              currentSort={tableState.sort}
+              onSort={updateSort}
+              onFilter={addFilter}
+              handleAddWorker={handleAddWorker}
+              handleUpdateWorker={handleUpdateWorker}
+              handleDeleteWorker={handleDeleteWorker}
+              handleAddDimension={handleAddDimension}
+              handleUpdateDimension={handleUpdateDimension}
+              handleDeleteDimension={handleDeleteDimension}
+              handleAddDimEntry={handleAddDimEntry}
+              handleUpdateDimEntry={handleUpdateDimEntry}
+              handleDeleteDimEntry={handleDeleteDimEntry}
+              handleUpdateAttribute={handleUpdateAttribute}
+              handleAddSpecialty={handleAddSpecialty}
+              handleUpdateSpecialty={handleUpdateSpecialty}
+              handleDeleteSpecialty={handleDeleteSpecialty}
+            />
+          </div>
         )
       )}
     </div>

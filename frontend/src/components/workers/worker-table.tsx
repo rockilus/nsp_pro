@@ -16,10 +16,9 @@ import TextField from "@mui/material/TextField";
 import NewDimensionForm from "../shift-worker-shared/dimension/new-dimension-form";
 import DimensionCell from "../shift-worker-shared/dimension/dimension-cell";
 import AttributeCell from "../shift-worker-shared/attribute/attribute-cell";
-import PopoverRHS from "../inputs/popover-rhs";
-import TableAddButton from "../buttons/table-add-button";
 import WorkerFieldCell from "./worker-field-cell/worker-field-cell";
 import WorkerSpecialtyHeaderCell from "./worker-field-cell/specialties/worker-specialty-header-cell";
+import ColumnSortFilterMenu from "../table/ColumnSortFilterMenu";
 // Styles
 import "../../styles/text-styles.css";
 import "../../styles/table-styles.css";
@@ -34,6 +33,7 @@ import {
 import { DimEntryT } from "@/types/dim-entry";
 import { AttributeT, AttributeOwnerType } from "../../types/attribute";
 import { SpecialtyT } from "@/types/specialty";
+import { ColumnDefinition, ColumnFilter, TableSort } from "../../types/filter";
 
 export default function WorkerTable({
   lng,
@@ -43,6 +43,12 @@ export default function WorkerTable({
   workers,
   specialties,
   defaultWorkerFields,
+  tableHeight = "70vh",
+  // New props for sorting/filtering
+  workerColumns,
+  currentSort,
+  onSort,
+  onFilter,
   handleAddWorker,
   handleUpdateWorker,
   handleDeleteWorker,
@@ -60,7 +66,6 @@ export default function WorkerTable({
   const { t } = useTranslation(lng, "worker-page");
 
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
-  const [popoverRhsOpen, setPopoverRhsOpen] = useState(false);
 
   // Memoize filtered dimensions for performance
   const dimensionsDisplayed = useMemo(
@@ -71,32 +76,10 @@ export default function WorkerTable({
 
   return (
     <div>
-      <div className="title-container">
-        <span className="title">{t("workers")}</span>
-        <div style={{ display: "flex", gap: "8px" }}>
-          <TableAddButton text={t("worker")} handleClick={handleAddWorker} />
-          <PopoverRHS
-            title={t("new_property")}
-            buttonContent={<TableAddButton text={t("property")} />}
-            content={
-              <NewDimensionForm
-                lng={lng}
-                selectedTeamId={selectedTeamId}
-                dimensionType={DimensionType.WORKER}
-                dimensions={dimensions}
-                dimEntries={dimEntries}
-                setOpenParent={setPopoverRhsOpen}
-                handleAddDimension={handleAddDimension}
-                handleUpdateDimension={handleUpdateDimension}
-              />
-            }
-            open={popoverRhsOpen}
-            setOpen={setPopoverRhsOpen}
-          />
-        </div>
-      </div>
-
-      <TableContainer className="worker-table-container">
+      <TableContainer
+        className="worker-table-container"
+        sx={{ height: tableHeight, overflow: "auto" }}
+      >
         <Table className="worker-table" aria-label="worker table">
           <WorkerTableHeader
             lng={lng}
@@ -105,6 +88,11 @@ export default function WorkerTable({
             defaultWorkerFields={defaultWorkerFields}
             dimensionsDisplayed={dimensionsDisplayed}
             dimEntries={dimEntries}
+            // New props for sorting/filtering
+            workerColumns={workerColumns}
+            currentSort={currentSort}
+            onSort={onSort}
+            onFilter={onFilter}
             handleAddSpecialty={handleAddSpecialty}
             handleUpdateSpecialty={handleUpdateSpecialty}
             handleDeleteSpecialty={handleDeleteSpecialty}
@@ -160,6 +148,12 @@ interface WorkerTableProps {
   workers: WorkerT[];
   specialties: SpecialtyT[];
   defaultWorkerFields: Record<string, string>[];
+  tableHeight?: string;
+  // New props for sorting/filtering
+  workerColumns: ColumnDefinition[];
+  currentSort?: TableSort | null;
+  onSort?: (sort: TableSort | null) => void;
+  onFilter?: (filter: ColumnFilter) => void;
   handleAddWorker: () => void;
   handleUpdateWorker: (updatedWorker: WorkerT) => void;
   handleDeleteWorker: (workerId: string) => void;
@@ -185,6 +179,11 @@ interface WorkerTableHeaderProps {
   defaultWorkerFields: Record<string, string>[];
   dimensionsDisplayed: DimensionT[];
   dimEntries: DimEntryT[];
+  // New props for sorting/filtering
+  workerColumns: ColumnDefinition[];
+  currentSort?: TableSort | null;
+  onSort?: (sort: TableSort | null) => void;
+  onFilter?: (filter: ColumnFilter) => void;
   handleAddSpecialty: (specialty: SpecialtyT) => void;
   handleUpdateSpecialty: (specialty: SpecialtyT) => void;
   handleDeleteSpecialty: (specialtyId: string) => void;
@@ -292,6 +291,11 @@ function WorkerTableHeader({
   defaultWorkerFields,
   dimensionsDisplayed,
   dimEntries,
+  // New props
+  workerColumns,
+  currentSort,
+  onSort,
+  onFilter,
   handleAddSpecialty,
   handleUpdateSpecialty,
   handleDeleteSpecialty,
@@ -317,7 +321,22 @@ function WorkerTableHeader({
             },
           }}
         >
-          <span className="table-header-default">{t("name")}</span>
+          <div className="flex items-center justify-between">
+            <Tooltip title={t("name")} placement="top">
+              <span className="table-header-default">{t("name")}</span>
+            </Tooltip>
+            {onSort && onFilter && (
+              <ColumnSortFilterMenu
+                column={workerColumns.find((col) => col.id === "name")!}
+                currentSort={
+                  currentSort?.columnId === "name" ? currentSort : undefined
+                }
+                currentFilter={undefined}
+                onSort={onSort}
+                onFilter={onFilter}
+              />
+            )}
+          </div>
         </TableCell>
 
         {/* Default worker fields */}
@@ -328,13 +347,39 @@ function WorkerTableHeader({
               lng={lng}
               teamId={selectedTeamId}
               specialties={specialties}
+              // Add sorting/filtering props
+              column={workerColumns.find((col) => col.id === "specialties")}
+              currentSort={
+                currentSort?.columnId === "specialties"
+                  ? currentSort
+                  : undefined
+              }
+              onSort={onSort}
+              onFilter={onFilter}
               handleAddSpecialty={handleAddSpecialty}
               handleUpdateSpecialty={handleUpdateSpecialty}
               handleDeleteSpecialty={handleDeleteSpecialty}
             />
           ) : (
             <TableCell key={index} className="worker-table-cell">
-              <span className="table-header-default">{field.label}</span>
+              <div className="flex items-center justify-between">
+                <Tooltip title={field.label} placement="top">
+                  <span className="table-header-default">{field.label}</span>
+                </Tooltip>
+                {onSort && onFilter && (
+                  <ColumnSortFilterMenu
+                    column={workerColumns.find((col) => col.id === field.name)!}
+                    currentSort={
+                      currentSort?.columnId === field.name
+                        ? currentSort
+                        : undefined
+                    }
+                    currentFilter={undefined}
+                    onSort={onSort}
+                    onFilter={onFilter}
+                  />
+                )}
+              </div>
             </TableCell>
           )
         )}
@@ -348,6 +393,17 @@ function WorkerTableHeader({
             dimensionTypeTable={DimensionType.WORKER}
             dimension={dim}
             dimEntries={dimEntries.filter((de) => de.dimensionId === dim.id)}
+            // Add sorting/filtering props
+            column={workerColumns.find(
+              (col) => col.id === `dimension_${dim.id}`
+            )}
+            currentSort={
+              currentSort?.columnId === `dimension_${dim.id}`
+                ? currentSort
+                : undefined
+            }
+            onSort={onSort}
+            onFilter={onFilter}
             handleUpdateDimension={handleUpdateDimension}
             handleDeleteDimension={handleDeleteDimension}
             handleAddDimEntry={handleAddDimEntry}
@@ -363,7 +419,9 @@ function WorkerTableHeader({
 
         {/* Actions column header */}
         <TableCell className="worker-table-actions-header">
-          <span className="table-header-default">{t("actions")}</span>
+          <Tooltip title={t("actions")} placement="top">
+            <span className="table-header-default">{t("actions")}</span>
+          </Tooltip>
         </TableCell>
       </TableRow>
     </TableHead>

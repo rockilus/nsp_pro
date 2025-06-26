@@ -2,36 +2,69 @@ import React, { useState } from "react";
 import { useTranslation } from "../../../../app/i18n/client";
 // MUI
 import TableCell from "@mui/material/TableCell";
+import Tooltip from "@mui/material/Tooltip";
 // Components
 import PopoverAnchorElBelow from "../../../inputs/popover-anchor-el-below";
 import UpdateSpecialtiesForm from "./update-specialties-form";
+import ColumnSortFilterMenu from "../../../table/ColumnSortFilterMenu";
 // Styles
 import "../../../../styles/table-styles.css";
 //Types
 import { SpecialtyT } from "@/types/specialty";
+import {
+  ColumnDefinition,
+  ColumnFilter,
+  TableSort,
+} from "../../../../types/filter";
+
+interface WorkerSpecialtyHeaderCellProps {
+  lng: string;
+  teamId: string;
+  specialties: SpecialtyT[];
+  // New props for sorting/filtering
+  column?: ColumnDefinition;
+  currentSort?: TableSort;
+  onSort?: (sort: TableSort | null) => void;
+  onFilter?: (filter: ColumnFilter) => void;
+  handleAddSpecialty: (specialty: SpecialtyT) => void;
+  handleUpdateSpecialty: (specialty: SpecialtyT) => void;
+  handleDeleteSpecialty: (specialtyId: string) => void;
+}
 
 export default function WorkerSpecialtyHeaderCell({
   lng,
   teamId,
   specialties,
+  column,
+  currentSort,
+  onSort,
+  onFilter,
   handleAddSpecialty,
   handleUpdateSpecialty,
   handleDeleteSpecialty,
-}: {
-  lng: string;
-  teamId: string;
-  specialties: SpecialtyT[];
-  handleAddSpecialty: (specialty: SpecialtyT) => void;
-  handleUpdateSpecialty: (specialty: SpecialtyT) => void;
-  handleDeleteSpecialty: (specialtyId: string) => void;
-}) {
+}: WorkerSpecialtyHeaderCellProps) {
   const { t } = useTranslation(lng, "worker-page");
 
   const [popoverAnchorOpen, setPopoverAnchorOpen] = useState(false);
 
   const cellContent = () => (
-    <div className="table-header-default">
-      <span>{t("specialties")}</span>
+    <div className="table-header-default flex items-center justify-between">
+      <Tooltip title={t("specialties")} placement="top">
+        <span>{t("specialties")}</span>
+      </Tooltip>
+      <div className="flex items-center gap-1">
+        {onSort && onFilter && column && (
+          <div onClick={(e) => e.stopPropagation()}>
+            <ColumnSortFilterMenu
+              column={column}
+              currentSort={currentSort}
+              currentFilter={undefined}
+              onSort={onSort}
+              onFilter={onFilter}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 
