@@ -9,7 +9,7 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import ListSubheader from "@mui/material/ListSubheader";
 // Utils
-import { getShiftWorkerOptionDisplayName } from "../../constraints/shift-worker-option-utils/shift-worker-option-utils";
+import { getShiftWorkerOptionDisplayText } from "../../../utils/shift-worker-option-display";
 // Types
 import { ShiftWorkerOptionT } from "../../../types/constraint";
 // Constants
@@ -37,21 +37,21 @@ export default function ShiftOptionsEdit({
       options: ShiftWorkerOptionT[]
     ): ShiftWorkerOptionT[] => {
       const selectedArray: string[] = selectedOptions.map((item) =>
-        getShiftWorkerOptionDisplayName(item, t("not"))
+        getShiftWorkerOptionDisplayText(item, [], [], t("not"))
       );
       return searchQuery === ""
         ? options.filter(
             (option) =>
               !selectedArray.includes(
-                getShiftWorkerOptionDisplayName(option, t("not"))
+                getShiftWorkerOptionDisplayText(option, [], [], t("not"))
               )
           )
         : options.filter(
             (option) =>
               !selectedArray.includes(
-                getShiftWorkerOptionDisplayName(option, t("not"))
+                getShiftWorkerOptionDisplayText(option, [], [], t("not"))
               ) &&
-              getShiftWorkerOptionDisplayName(option, t("not"))
+              getShiftWorkerOptionDisplayText(option, [], [], t("not"))
                 .toLowerCase()
                 .includes(searchQuery.toLowerCase())
           );
@@ -336,8 +336,10 @@ export default function ShiftOptionsEdit({
                       >
                         <ListItem sx={{ padding: "0 16px 0 16px" }}>
                           <ListItemText
-                            primary={getShiftWorkerOptionDisplayName(
+                            primary={getShiftWorkerOptionDisplayText(
                               option,
+                              [],
+                              [],
                               t("not")
                             )}
                             style={{ color: ConstraintDefaultColors.shade3 }}

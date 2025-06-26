@@ -8,10 +8,10 @@ import { blockDislayValue } from "./block-display";
 import ShiftOptionsEdit from "./shift-options-edit";
 // Utils
 import {
-  getShiftWorkerOptionDisplayName,
   expandBoolDimOptions,
   groupByCategoryName,
 } from "../../constraints/shift-worker-option-utils/shift-worker-option-utils";
+import { getShiftWorkerOptionDisplayText } from "../../../utils/shift-worker-option-display";
 // Types
 import { ShiftWorkerOptionT } from "../../../types/constraint";
 
@@ -42,7 +42,7 @@ export default function ShiftOptionsDisplay({
               selectedShiftsState
                 .map((item) =>
                   typeof item === "object" && "name" in item
-                    ? getShiftWorkerOptionDisplayName(item, t("not"))
+                    ? getShiftWorkerOptionDisplayText(item, [], [], t("not"))
                     : ""
                 )
                 .join(", "),

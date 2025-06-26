@@ -11,10 +11,10 @@ import {
 } from "../../../data-display/block-display";
 // Utils
 import {
-  getShiftWorkerOptionDisplayName,
   expandBoolDimOptions,
   groupByCategoryName,
 } from "../../shift-worker-option-utils/shift-worker-option-utils";
+import { getShiftWorkerOptionDisplayText } from "../../../../utils/shift-worker-option-display";
 // Types
 import {
   TemplateBlockT,
@@ -66,22 +66,13 @@ export default function BlockDisplayShiftWorkerOption({
   };
 
   const swoDisplayString = (swo: ShiftWorkerOptionT): string => {
-    if (swo.idType === SWOIdTypes.WORKER) {
-      const worker = workers.find((w) => w.id === swo.id);
-      if (worker) {
-        return worker.name;
-      }
-    } else if (swo.idType === SWOIdTypes.SHIFT) {
-      const shift = shifts.find((s) => s.id === swo.id);
-      if (shift) {
-        return shift.name;
-      }
-    } else {
-      return translateOptionName(
-        getShiftWorkerOptionDisplayName(swo, t("not"))
-      );
-    }
-    return "";
+    const displayText = getShiftWorkerOptionDisplayText(
+      swo,
+      workers,
+      shifts,
+      t("not")
+    );
+    return translateOptionName(displayText);
   };
 
   const blockDisplay = () => {
