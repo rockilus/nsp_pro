@@ -367,6 +367,15 @@
   text-align: center;
 }
 
+/* Border between default and custom columns */
+.worker-table .first-custom-column {
+  border-left: 2px solid #e0e0e0 !important;
+}
+
+.worker-table-header .first-custom-column {
+  border-left: 2px solid #e0e0e0 !important;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .worker-table-container {

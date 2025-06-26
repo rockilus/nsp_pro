@@ -25,6 +25,7 @@ export default function DimensionCell({
   handleAddDimEntry,
   handleUpdateDimEntry,
   handleDeleteDimEntry,
+  className = "",
 }: {
   lng: string;
   selectedTeamId: string;
@@ -36,6 +37,7 @@ export default function DimensionCell({
   handleAddDimEntry: (dimEntry: DimEntryT) => void;
   handleUpdateDimEntry: (dimEntry: DimEntryT) => void;
   handleDeleteDimEntry: (dimEntryId: string) => void;
+  className?: string;
 }) {
   const [popoverAnchorOpen, setPopoverAnchorOpen] = useState(false);
 
@@ -58,7 +60,7 @@ export default function DimensionCell({
       key={dimension.id}
       component="th"
       scope="row"
-      className="worker-table-header"
+      className={`worker-table-header ${className}`.trim()}
       sx={{
         paddingY: 0,
         padding: "6px 8px",

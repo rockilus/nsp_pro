@@ -346,6 +346,11 @@ function WorkerTableHeader({
             handleAddDimEntry={handleAddDimEntry}
             handleUpdateDimEntry={handleUpdateDimEntry}
             handleDeleteDimEntry={handleDeleteDimEntry}
+            className={
+              dIndex === 0 && dimensionsDisplayed.length > 0
+                ? "first-custom-column"
+                : ""
+            }
           />
         ))}
 
@@ -424,6 +429,11 @@ function WorkerTableRow({
             editing={bodyEditing[worker.id] === dim.id}
             setEditing={setBodyEditing}
             handleUpdateAttribute={handleUpdateAttribute}
+            className={
+              dIndex === 0 && dimensionsDisplayed.length > 0
+                ? "first-custom-column"
+                : ""
+            }
           />
         );
       })}
