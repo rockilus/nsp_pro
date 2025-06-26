@@ -20,6 +20,7 @@ import PopoverRHS from "../inputs/popover-rhs";
 import TableAddButton from "../buttons/table-add-button";
 import WorkerFieldCell from "./worker-field-cell/worker-field-cell";
 import WorkerSpecialtyHeaderCell from "./worker-field-cell/specialties/worker-specialty-header-cell";
+import ColumnSortFilterMenu from "../table/ColumnSortFilterMenu";
 // Styles
 import "../../styles/text-styles.css";
 import "../../styles/table-styles.css";
@@ -34,6 +35,7 @@ import {
 import { DimEntryT } from "@/types/dim-entry";
 import { AttributeT, AttributeOwnerType } from "../../types/attribute";
 import { SpecialtyT } from "@/types/specialty";
+import { ColumnDefinition, ColumnFilter, TableSort } from "../../types/filter";
 
 export default function WorkerTable({
   lng,
@@ -43,6 +45,11 @@ export default function WorkerTable({
   workers,
   specialties,
   defaultWorkerFields,
+  // New props for sorting/filtering
+  workerColumns,
+  currentSort,
+  onSort,
+  onFilter,
   handleAddWorker,
   handleUpdateWorker,
   handleDeleteWorker,
@@ -105,6 +112,11 @@ export default function WorkerTable({
             defaultWorkerFields={defaultWorkerFields}
             dimensionsDisplayed={dimensionsDisplayed}
             dimEntries={dimEntries}
+            // New props for sorting/filtering
+            workerColumns={workerColumns}
+            currentSort={currentSort}
+            onSort={onSort}
+            onFilter={onFilter}
             handleAddSpecialty={handleAddSpecialty}
             handleUpdateSpecialty={handleUpdateSpecialty}
             handleDeleteSpecialty={handleDeleteSpecialty}
@@ -160,6 +172,11 @@ interface WorkerTableProps {
   workers: WorkerT[];
   specialties: SpecialtyT[];
   defaultWorkerFields: Record<string, string>[];
+  // New props for sorting/filtering
+  workerColumns: ColumnDefinition[];
+  currentSort?: TableSort | null;
+  onSort?: (sort: TableSort | null) => void;
+  onFilter?: (filter: ColumnFilter) => void;
   handleAddWorker: () => void;
   handleUpdateWorker: (updatedWorker: WorkerT) => void;
   handleDeleteWorker: (workerId: string) => void;
@@ -185,6 +202,11 @@ interface WorkerTableHeaderProps {
   defaultWorkerFields: Record<string, string>[];
   dimensionsDisplayed: DimensionT[];
   dimEntries: DimEntryT[];
+  // New props for sorting/filtering
+  workerColumns: ColumnDefinition[];
+  currentSort?: TableSort | null;
+  onSort?: (sort: TableSort | null) => void;
+  onFilter?: (filter: ColumnFilter) => void;
   handleAddSpecialty: (specialty: SpecialtyT) => void;
   handleUpdateSpecialty: (specialty: SpecialtyT) => void;
   handleDeleteSpecialty: (specialtyId: string) => void;
@@ -292,6 +314,11 @@ function WorkerTableHeader({
   defaultWorkerFields,
   dimensionsDisplayed,
   dimEntries,
+  // New props
+  workerColumns,
+  currentSort,
+  onSort,
+  onFilter,
   handleAddSpecialty,
   handleUpdateSpecialty,
   handleDeleteSpecialty,
@@ -317,7 +344,20 @@ function WorkerTableHeader({
             },
           }}
         >
-          <span className="table-header-default">{t("name")}</span>
+          <div className="flex items-center justify-between">
+            <span className="table-header-default">{t("name")}</span>
+            {onSort && onFilter && (
+              <ColumnSortFilterMenu
+                column={workerColumns.find((col) => col.id === "name")!}
+                currentSort={
+                  currentSort?.columnId === "name" ? currentSort : undefined
+                }
+                currentFilter={undefined}
+                onSort={onSort}
+                onFilter={onFilter}
+              />
+            )}
+          </div>
         </TableCell>
 
         {/* Default worker fields */}
@@ -328,13 +368,37 @@ function WorkerTableHeader({
               lng={lng}
               teamId={selectedTeamId}
               specialties={specialties}
+              // Add sorting/filtering props
+              column={workerColumns.find((col) => col.id === "specialties")}
+              currentSort={
+                currentSort?.columnId === "specialties"
+                  ? currentSort
+                  : undefined
+              }
+              onSort={onSort}
+              onFilter={onFilter}
               handleAddSpecialty={handleAddSpecialty}
               handleUpdateSpecialty={handleUpdateSpecialty}
               handleDeleteSpecialty={handleDeleteSpecialty}
             />
           ) : (
             <TableCell key={index} className="worker-table-cell">
-              <span className="table-header-default">{field.label}</span>
+              <div className="flex items-center justify-between">
+                <span className="table-header-default">{field.label}</span>
+                {onSort && onFilter && (
+                  <ColumnSortFilterMenu
+                    column={workerColumns.find((col) => col.id === field.name)!}
+                    currentSort={
+                      currentSort?.columnId === field.name
+                        ? currentSort
+                        : undefined
+                    }
+                    currentFilter={undefined}
+                    onSort={onSort}
+                    onFilter={onFilter}
+                  />
+                )}
+              </div>
             </TableCell>
           )
         )}
@@ -348,6 +412,17 @@ function WorkerTableHeader({
             dimensionTypeTable={DimensionType.WORKER}
             dimension={dim}
             dimEntries={dimEntries.filter((de) => de.dimensionId === dim.id)}
+            // Add sorting/filtering props
+            column={workerColumns.find(
+              (col) => col.id === `dimension_${dim.id}`
+            )}
+            currentSort={
+              currentSort?.columnId === `dimension_${dim.id}`
+                ? currentSort
+                : undefined
+            }
+            onSort={onSort}
+            onFilter={onFilter}
             handleUpdateDimension={handleUpdateDimension}
             handleDeleteDimension={handleDeleteDimension}
             handleAddDimEntry={handleAddDimEntry}

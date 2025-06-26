@@ -8,11 +8,36 @@ import TableCell from "@mui/material/TableCell";
 // Components
 import PopoverAnchorElBelow from "../../inputs/popover-anchor-el-below";
 import UpdateDimensionForm from "./update-dimension-form";
+import ColumnSortFilterMenu from "../../table/ColumnSortFilterMenu";
 // Styles
 import "../../../styles/table-styles.css";
 //Types
 import { DimensionT, DimensionType } from "../../../types/dimension";
 import { DimEntryT } from "@/types/dim-entry";
+import {
+  ColumnDefinition,
+  ColumnFilter,
+  TableSort,
+} from "../../../types/filter";
+
+interface DimensionCellProps {
+  lng: string;
+  selectedTeamId: string;
+  dimensionTypeTable: DimensionType;
+  dimension: DimensionT;
+  dimEntries: DimEntryT[];
+  // New props for sorting/filtering
+  column?: ColumnDefinition;
+  currentSort?: TableSort;
+  onSort?: (sort: TableSort | null) => void;
+  onFilter?: (filter: ColumnFilter) => void;
+  handleUpdateDimension: (dimension: DimensionT) => void;
+  handleDeleteDimension: (dimensionId: string) => void;
+  handleAddDimEntry: (dimEntry: DimEntryT) => void;
+  handleUpdateDimEntry: (dimEntry: DimEntryT) => void;
+  handleDeleteDimEntry: (dimEntryId: string) => void;
+  className?: string;
+}
 
 export default function DimensionCell({
   lng,
@@ -20,25 +45,17 @@ export default function DimensionCell({
   dimensionTypeTable,
   dimension,
   dimEntries,
+  column,
+  currentSort,
+  onSort,
+  onFilter,
   handleUpdateDimension,
   handleDeleteDimension,
   handleAddDimEntry,
   handleUpdateDimEntry,
   handleDeleteDimEntry,
   className = "",
-}: {
-  lng: string;
-  selectedTeamId: string;
-  dimensionTypeTable: DimensionType;
-  dimension: DimensionT;
-  dimEntries: DimEntryT[];
-  handleUpdateDimension: (dimension: DimensionT) => void;
-  handleDeleteDimension: (dimensionId: string) => void;
-  handleAddDimEntry: (dimEntry: DimEntryT) => void;
-  handleUpdateDimEntry: (dimEntry: DimEntryT) => void;
-  handleDeleteDimEntry: (dimEntryId: string) => void;
-  className?: string;
-}) {
+}: DimensionCellProps) {
   const [popoverAnchorOpen, setPopoverAnchorOpen] = useState(false);
 
   const iconsPrefix: Record<string, React.ReactNode> = {
@@ -49,9 +66,20 @@ export default function DimensionCell({
   };
 
   const cellContent = () => (
-    <div className="table-header-default">
-      <span>{dimension.name}</span>
-      {iconsPrefix[dimension.entryType]}
+    <div className="table-header-default flex items-center justify-between">
+      <div className="flex items-center gap-1">
+        <span>{dimension.name}</span>
+        {iconsPrefix[dimension.entryType]}
+      </div>
+      {onSort && onFilter && column && (
+        <ColumnSortFilterMenu
+          column={column}
+          currentSort={currentSort}
+          currentFilter={undefined}
+          onSort={onSort}
+          onFilter={onFilter}
+        />
+      )}
     </div>
   );
 

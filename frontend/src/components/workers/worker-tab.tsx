@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
 // Components
 import WorkerTable from "./worker-table";
+import TableFilterBar from "../table/TableFilterBar";
 // Skeletons
 import TablesSkeleton from "../skeletons/tables-skeleton";
 // Actions
@@ -31,12 +32,16 @@ import {
   updateSpecialty,
   deleteSpecialty,
 } from "../../app/lib/specialty";
+// Hooks
+import { useTableState } from "../../hooks/useTableState";
+// Utils
+import { createWorkerColumns } from "./workerColumns";
 // Styles
 import "../../styles/text-styles.css";
 import "../../styles/tab-container-styles.css";
 // Types
 import { WorkerT } from "../../types/worker";
-import { DimensionT } from "../../types/dimension";
+import { DimensionT, DimensionType } from "../../types/dimension";
 import { DimEntryT } from "@/types/dim-entry";
 import { AttributeT } from "../../types/attribute";
 import { SpecialtyT } from "@/types/specialty";
@@ -58,6 +63,28 @@ export default function WorkerTab({
   const [dimensions, setDimensions] = useState<DimensionT[]>([]);
   const [dimEntries, setDimEntries] = useState<DimEntryT[]>([]);
   const [specialties, setSpecialties] = useState<SpecialtyT[]>([]);
+
+  // Worker column definitions for filtering/sorting
+  const workerColumns = useMemo(() => {
+    return createWorkerColumns(t, specialties, dimensions, dimEntries);
+  }, [t, specialties, dimensions, dimEntries]);
+
+  // Table state for worker filtering and sorting
+  const {
+    tableState,
+    filteredAndSortedData: filteredWorkers,
+    addFilter,
+    removeFilter,
+    updateSort,
+    resetAll,
+  } = useTableState(workers, workerColumns, "nsp-pro-worker-table-state");
+
+  // Memoize filtered dimensions for performance
+  const dimensionsDisplayed = useMemo(
+    () =>
+      dimensions.filter((dim) => dim.dimTypes.includes(DimensionType.WORKER)),
+    [dimensions]
+  );
 
   const DefaultWorkerFields: Record<string, string>[] = [
     { name: "name", label: t("name") },
@@ -337,28 +364,46 @@ export default function WorkerTab({
         <TablesSkeleton numTables={1} numInternalRows={3} />
       ) : (
         selectedTeamId && (
-          <WorkerTable
-            lng={lng}
-            selectedTeamId={selectedTeamId}
-            dimensions={dimensions}
-            dimEntries={dimEntries}
-            workers={workers}
-            specialties={specialties}
-            defaultWorkerFields={DefaultWorkerFields}
-            handleAddWorker={handleAddWorker}
-            handleUpdateWorker={handleUpdateWorker}
-            handleDeleteWorker={handleDeleteWorker}
-            handleAddDimension={handleAddDimension}
-            handleUpdateDimension={handleUpdateDimension}
-            handleDeleteDimension={handleDeleteDimension}
-            handleAddDimEntry={handleAddDimEntry}
-            handleUpdateDimEntry={handleUpdateDimEntry}
-            handleDeleteDimEntry={handleDeleteDimEntry}
-            handleUpdateAttribute={handleUpdateAttribute}
-            handleAddSpecialty={handleAddSpecialty}
-            handleUpdateSpecialty={handleUpdateSpecialty}
-            handleDeleteSpecialty={handleDeleteSpecialty}
-          />
+          <div>
+            {/* Filter/Sort toolbar */}
+            {(tableState.filters.length > 0 || tableState.sort !== null) && (
+              <TableFilterBar
+                filters={tableState.filters}
+                sort={tableState.sort}
+                onRemoveFilter={removeFilter}
+                onRemoveSort={() => updateSort(null)}
+                onResetAll={resetAll}
+              />
+            )}
+
+            <WorkerTable
+              lng={lng}
+              selectedTeamId={selectedTeamId}
+              dimensions={dimensions}
+              dimEntries={dimEntries}
+              workers={filteredWorkers}
+              specialties={specialties}
+              defaultWorkerFields={DefaultWorkerFields}
+              // Table state props
+              workerColumns={workerColumns}
+              currentSort={tableState.sort}
+              onSort={updateSort}
+              onFilter={addFilter}
+              handleAddWorker={handleAddWorker}
+              handleUpdateWorker={handleUpdateWorker}
+              handleDeleteWorker={handleDeleteWorker}
+              handleAddDimension={handleAddDimension}
+              handleUpdateDimension={handleUpdateDimension}
+              handleDeleteDimension={handleDeleteDimension}
+              handleAddDimEntry={handleAddDimEntry}
+              handleUpdateDimEntry={handleUpdateDimEntry}
+              handleDeleteDimEntry={handleDeleteDimEntry}
+              handleUpdateAttribute={handleUpdateAttribute}
+              handleAddSpecialty={handleAddSpecialty}
+              handleUpdateSpecialty={handleUpdateSpecialty}
+              handleDeleteSpecialty={handleDeleteSpecialty}
+            />
+          </div>
         )
       )}
     </div>
