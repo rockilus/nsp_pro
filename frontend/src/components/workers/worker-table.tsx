@@ -346,11 +346,11 @@ function WorkerTableHeader({
             handleAddDimEntry={handleAddDimEntry}
             handleUpdateDimEntry={handleUpdateDimEntry}
             handleDeleteDimEntry={handleDeleteDimEntry}
-            className={
+            className={`custom-column ${
               dIndex === 0 && dimensionsDisplayed.length > 0
                 ? "first-custom-column"
                 : ""
-            }
+            }`.trim()}
           />
         ))}
 

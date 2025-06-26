@@ -376,6 +376,15 @@
   border-left: 2px solid #e0e0e0 !important;
 }
 
+/* Custom column headers styling */
+.worker-table-header .custom-column {
+  background-color: #e3f2fd !important; /* Light blue background */
+}
+
+.worker-table-header .custom-column .MuiTableCell-root {
+  background-color: #e3f2fd !important; /* Light blue background */
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .worker-table-container {
