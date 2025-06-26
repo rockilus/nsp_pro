@@ -37,6 +37,15 @@ export const getShiftWorkerOptionDisplayText = (
     }
   }
 
+  // Handle duty type (behaves like boolean dimension)
+  if (swo.idType === SWOIdTypes.DUTY) {
+    if (swo.name === true) {
+      return swo.categoryName;
+    } else if (swo.name === false) {
+      return `${notTranslation} ${swo.categoryName.toLowerCase()}`;
+    }
+  }
+
   // Handle other dimension types and fallback
   return swo.name as string;
 };
