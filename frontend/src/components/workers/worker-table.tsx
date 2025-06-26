@@ -74,24 +74,27 @@ export default function WorkerTable({
     <div>
       <div className="title-container">
         <span className="title">{t("workers")}</span>
-        <PopoverRHS
-          title={t("new_property")}
-          buttonContent={<TableAddButton text={t("property")} />}
-          content={
-            <NewDimensionForm
-              lng={lng}
-              selectedTeamId={selectedTeamId}
-              dimensionType={DimensionType.WORKER}
-              dimensions={dimensions}
-              dimEntries={dimEntries}
-              setOpenParent={setPopoverRhsOpen}
-              handleAddDimension={handleAddDimension}
-              handleUpdateDimension={handleUpdateDimension}
-            />
-          }
-          open={popoverRhsOpen}
-          setOpen={setPopoverRhsOpen}
-        />
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <TableAddButton text={t("worker")} handleClick={handleAddWorker} />
+          <PopoverRHS
+            title={t("new_property")}
+            buttonContent={<TableAddButton text={t("property")} />}
+            content={
+              <NewDimensionForm
+                lng={lng}
+                selectedTeamId={selectedTeamId}
+                dimensionType={DimensionType.WORKER}
+                dimensions={dimensions}
+                dimEntries={dimEntries}
+                setOpenParent={setPopoverRhsOpen}
+                handleAddDimension={handleAddDimension}
+                handleUpdateDimension={handleUpdateDimension}
+              />
+            }
+            open={popoverRhsOpen}
+            setOpen={setPopoverRhsOpen}
+          />
+        </div>
       </div>
 
       <TableContainer className="worker-table-container">
@@ -145,10 +148,6 @@ export default function WorkerTable({
           </TableBody>
         </Table>
       </TableContainer>
-
-      <div className="worker-add-button-container">
-        <TableAddButton text={t("worker")} handleClick={handleAddWorker} />
-      </div>
     </div>
   );
 }
