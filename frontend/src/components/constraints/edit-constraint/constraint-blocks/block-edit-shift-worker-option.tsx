@@ -15,7 +15,7 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import ListSubheader from "@mui/material/ListSubheader";
 // Utils
-import { getShiftWorkerOptionDisplayName } from "../../shift-worker-option-utils/shift-worker-option-utils";
+import { getShiftWorkerOptionDisplayText } from "../../../../utils/shift-worker-option-display";
 // Types
 import {
   BlockT,
@@ -128,22 +128,17 @@ export default function BlockEditShiftWorkerOption({
 
       return searchQuery === ""
         ? options.filter(
-            (option) =>
-              !selectedArray.includes(
-                getShiftWorkerOptionDisplayName(option, t("not"))
-              )
+            (option) => !selectedArray.includes(swoDisplayString(option))
           )
         : options.filter(
             (option) =>
-              !selectedArray.includes(
-                getShiftWorkerOptionDisplayName(option, t("not"))
-              ) &&
-              getShiftWorkerOptionDisplayName(option, t("not"))
+              !selectedArray.includes(swoDisplayString(option)) &&
+              swoDisplayString(option)
                 .toLowerCase()
                 .includes(searchQuery.toLowerCase())
           );
     },
-    [swoDisplayString, t]
+    [swoDisplayString]
   );
 
   const filterOptions = useCallback(
@@ -444,7 +439,7 @@ export default function BlockEditShiftWorkerOption({
                         <ListItem sx={{ padding: "0 16px 0 16px" }}>
                           <ListItemText
                             primary={translateOptionName(
-                              getShiftWorkerOptionDisplayName(option, t("not"))
+                              swoDisplayString(option)
                             )}
                             style={{ color: ConstraintDefaultColors.shade3 }}
                           />

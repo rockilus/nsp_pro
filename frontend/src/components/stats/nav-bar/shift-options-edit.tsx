@@ -9,9 +9,11 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import ListSubheader from "@mui/material/ListSubheader";
 // Utils
-import { getShiftWorkerOptionDisplayName } from "../../constraints/shift-worker-option-utils/shift-worker-option-utils";
+import { getShiftWorkerOptionDisplayText } from "../../../utils/shift-worker-option-display";
 // Types
 import { ShiftWorkerOptionT } from "../../../types/constraint";
+import { WorkerT } from "../../../types/worker";
+import { ShiftT } from "../../../types/shift";
 // Constants
 import { ConstraintDefaultColors } from "../../../constants/constants";
 
@@ -19,12 +21,16 @@ export default function ShiftOptionsEdit({
   lng,
   selectedShifts,
   statsShiftOptions,
+  workers,
+  shifts,
   handleConfirmEditSelectedShifts,
   handleEditSelectedShiftsState,
 }: {
   lng: string;
   selectedShifts: ShiftWorkerOptionT[];
   statsShiftOptions: { [key: string]: ShiftWorkerOptionT[] };
+  workers: WorkerT[];
+  shifts: ShiftT[];
   handleConfirmEditSelectedShifts: () => void;
   handleEditSelectedShiftsState: (selectedShifts: ShiftWorkerOptionT[]) => void;
 }) {
@@ -37,26 +43,36 @@ export default function ShiftOptionsEdit({
       options: ShiftWorkerOptionT[]
     ): ShiftWorkerOptionT[] => {
       const selectedArray: string[] = selectedOptions.map((item) =>
-        getShiftWorkerOptionDisplayName(item, t("not"))
+        getShiftWorkerOptionDisplayText(item, workers, shifts, t("not"))
       );
       return searchQuery === ""
         ? options.filter(
             (option) =>
               !selectedArray.includes(
-                getShiftWorkerOptionDisplayName(option, t("not"))
+                getShiftWorkerOptionDisplayText(
+                  option,
+                  workers,
+                  shifts,
+                  t("not")
+                )
               )
           )
         : options.filter(
             (option) =>
               !selectedArray.includes(
-                getShiftWorkerOptionDisplayName(option, t("not"))
+                getShiftWorkerOptionDisplayText(
+                  option,
+                  workers,
+                  shifts,
+                  t("not")
+                )
               ) &&
-              getShiftWorkerOptionDisplayName(option, t("not"))
+              getShiftWorkerOptionDisplayText(option, workers, shifts, t("not"))
                 .toLowerCase()
                 .includes(searchQuery.toLowerCase())
           );
     },
-    [t]
+    [t, workers, shifts]
   );
 
   const filterOptions = useCallback(
@@ -255,7 +271,12 @@ export default function ShiftOptionsEdit({
           {selectedShifts.map((option, index) => (
             <Chip
               key={index}
-              label={option.name}
+              label={getShiftWorkerOptionDisplayText(
+                option,
+                workers,
+                shifts,
+                t("not")
+              )}
               onDelete={() => handleDeleteFromSelected(option)}
               deleteIcon={
                 <ClearIcon
@@ -336,8 +357,10 @@ export default function ShiftOptionsEdit({
                       >
                         <ListItem sx={{ padding: "0 16px 0 16px" }}>
                           <ListItemText
-                            primary={getShiftWorkerOptionDisplayName(
+                            primary={getShiftWorkerOptionDisplayText(
                               option,
+                              workers,
+                              shifts,
                               t("not")
                             )}
                             style={{ color: ConstraintDefaultColors.shade3 }}

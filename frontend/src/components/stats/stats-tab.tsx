@@ -229,6 +229,8 @@ export default function StatsTab({
             statsOptions={statsOptions}
             statsUnitOptions={statsUnitOptions}
             shiftOptions={shiftOptions}
+            workers={workers}
+            shifts={shifts}
             handleUpdateStatsOptions={handleUpdateStatsOptions}
           />
         )}

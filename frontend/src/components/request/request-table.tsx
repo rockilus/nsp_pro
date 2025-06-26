@@ -19,6 +19,8 @@ import ColumnSortFilterMenu from "../table/ColumnSortFilterMenu";
 import TableFilterBar from "../table/TableFilterBar";
 // Hooks
 import { useTableState } from "../../hooks/useTableState";
+// Utils
+import { getShiftWorkerOptionDisplayText } from "../../utils/shift-worker-option-display";
 // Styles
 import "../../styles/table-styles.css";
 // Types
@@ -56,9 +58,13 @@ const WorkerCell = ({
 const ShiftCell = ({
   request,
   shifts,
+  workers,
+  t,
 }: {
   request: RequestT;
   shifts: ShiftT[];
+  workers: WorkerT[];
+  t: any;
 }) => {
   if (request.requestType === RequestType.LEAVE) {
     if (!request.shiftId) {
@@ -83,7 +89,12 @@ const ShiftCell = ({
         {request.shiftOptions.map((option, index) => (
           <Chip
             key={index}
-            label={`${option.name} ${request.negative ? "❌" : "✅"}`}
+            label={`${getShiftWorkerOptionDisplayText(
+              option,
+              workers,
+              shifts,
+              t("not")
+            )} ${request.negative ? "❌" : "✅"}`}
             size="small"
             variant="filled"
             color={request.negative ? "error" : "success"}
@@ -549,7 +560,12 @@ export default function RequestTable({
                     </div>
                   </TableCell>
                   <TableCell>
-                    <ShiftCell request={request} shifts={shifts} />
+                    <ShiftCell
+                      request={request}
+                      shifts={shifts}
+                      workers={workers}
+                      t={t}
+                    />
                   </TableCell>
                   <TableCell>
                     <DateCell request={request} />

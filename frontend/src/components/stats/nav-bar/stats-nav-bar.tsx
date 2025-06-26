@@ -25,6 +25,8 @@ import {
 } from "../../../types/stats";
 import { ShiftWorkerOptionT } from "../../../types/constraint";
 import { ScheduleT } from "../../../types/schedule";
+import { WorkerT } from "../../../types/worker";
+import { ShiftT } from "../../../types/shift";
 
 export default function StatsNavBar({
   lng,
@@ -32,6 +34,8 @@ export default function StatsNavBar({
   statsOptions,
   statsUnitOptions,
   shiftOptions,
+  workers,
+  shifts,
   handleUpdateStatsOptions,
 }: {
   lng: string;
@@ -43,6 +47,8 @@ export default function StatsNavBar({
     description: string;
   }[];
   shiftOptions: ShiftWorkerOptionT[];
+  workers: WorkerT[];
+  shifts: ShiftT[];
   handleUpdateStatsOptions: (statsOptions: StatsOptionsT) => void;
 }) {
   const { t } = useTranslation(lng, "stats-page");
@@ -271,6 +277,8 @@ export default function StatsNavBar({
             lng={lng}
             selectedShifts={statsOptions.selectedShifts}
             statsShiftOptions={shiftOptions}
+            workers={workers}
+            shifts={shifts}
             disabled={statsOptions.showFavorites}
             handleEditSelectedShifts={handleEditSelectedShifts}
           />

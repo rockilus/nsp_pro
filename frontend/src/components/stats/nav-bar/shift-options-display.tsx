@@ -8,23 +8,29 @@ import { blockDislayValue } from "./block-display";
 import ShiftOptionsEdit from "./shift-options-edit";
 // Utils
 import {
-  getShiftWorkerOptionDisplayName,
   expandBoolDimOptions,
   groupByCategoryName,
 } from "../../constraints/shift-worker-option-utils/shift-worker-option-utils";
+import { getShiftWorkerOptionDisplayText } from "../../../utils/shift-worker-option-display";
 // Types
 import { ShiftWorkerOptionT } from "../../../types/constraint";
+import { WorkerT } from "../../../types/worker";
+import { ShiftT } from "../../../types/shift";
 
 export default function ShiftOptionsDisplay({
   lng,
   selectedShifts,
   statsShiftOptions,
+  workers,
+  shifts,
   disabled,
   handleEditSelectedShifts,
 }: {
   lng: string;
   selectedShifts: ShiftWorkerOptionT[];
   statsShiftOptions: ShiftWorkerOptionT[];
+  workers: WorkerT[];
+  shifts: ShiftT[];
   disabled: boolean;
   handleEditSelectedShifts: (selectedShifts: ShiftWorkerOptionT[]) => void;
 }) {
@@ -42,7 +48,12 @@ export default function ShiftOptionsDisplay({
               selectedShiftsState
                 .map((item) =>
                   typeof item === "object" && "name" in item
-                    ? getShiftWorkerOptionDisplayName(item, t("not"))
+                    ? getShiftWorkerOptionDisplayText(
+                        item,
+                        workers,
+                        shifts,
+                        t("not")
+                      )
                     : ""
                 )
                 .join(", "),
@@ -92,6 +103,8 @@ export default function ShiftOptionsDisplay({
           statsShiftOptions={groupByCategoryName(
             expandBoolDimOptions(statsShiftOptions)
           )}
+          workers={workers}
+          shifts={shifts}
           handleConfirmEditSelectedShifts={handleConfirmEditSelectedShifts}
           handleEditSelectedShiftsState={handleEditSelectedShiftsState}
         />

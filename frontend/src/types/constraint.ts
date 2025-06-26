@@ -7,6 +7,7 @@ export enum SWOIdTypes {
   SHIFT = 2,
   DIMENSION = 3,
   SPECIALTY = 4,
+  DUTY = 5,
 }
 
 export type ShiftWorkerOptionT = {
