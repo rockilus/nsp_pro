@@ -51,13 +51,15 @@ export default function WorkerSpecialtyHeaderCell({
       <span>{t("specialties")}</span>
       <div className="flex items-center gap-1">
         {onSort && onFilter && column && (
-          <ColumnSortFilterMenu
-            column={column}
-            currentSort={currentSort}
-            currentFilter={undefined}
-            onSort={onSort}
-            onFilter={onFilter}
-          />
+          <div onClick={(e) => e.stopPropagation()}>
+            <ColumnSortFilterMenu
+              column={column}
+              currentSort={currentSort}
+              currentFilter={undefined}
+              onSort={onSort}
+              onFilter={onFilter}
+            />
+          </div>
         )}
       </div>
     </div>

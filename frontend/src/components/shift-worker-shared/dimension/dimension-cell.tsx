@@ -72,13 +72,15 @@ export default function DimensionCell({
         {iconsPrefix[dimension.entryType]}
       </div>
       {onSort && onFilter && column && (
-        <ColumnSortFilterMenu
-          column={column}
-          currentSort={currentSort}
-          currentFilter={undefined}
-          onSort={onSort}
-          onFilter={onFilter}
-        />
+        <div onClick={(e) => e.stopPropagation()}>
+          <ColumnSortFilterMenu
+            column={column}
+            currentSort={currentSort}
+            currentFilter={undefined}
+            onSort={onSort}
+            onFilter={onFilter}
+          />
+        </div>
       )}
     </div>
   );
