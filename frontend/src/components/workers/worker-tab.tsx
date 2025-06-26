@@ -7,6 +7,9 @@ import { useTranslation } from "../../app/i18n/client";
 // Components
 import WorkerTable from "./worker-table";
 import TableFilterBar from "../table/TableFilterBar";
+import TableAddButton from "../buttons/table-add-button";
+import PopoverRHS from "../inputs/popover-rhs";
+import NewDimensionForm from "../shift-worker-shared/dimension/new-dimension-form";
 // Skeletons
 import TablesSkeleton from "../skeletons/tables-skeleton";
 // Actions
@@ -63,6 +66,7 @@ export default function WorkerTab({
   const [dimensions, setDimensions] = useState<DimensionT[]>([]);
   const [dimEntries, setDimEntries] = useState<DimEntryT[]>([]);
   const [specialties, setSpecialties] = useState<SpecialtyT[]>([]);
+  const [popoverRhsOpen, setPopoverRhsOpen] = useState(false);
 
   // Worker column definitions for filtering/sorting
   const workerColumns = useMemo(() => {
@@ -365,6 +369,35 @@ export default function WorkerTab({
       ) : (
         selectedTeamId && (
           <div>
+            {/* Title container */}
+            <div className="title-container">
+              <span className="title">{t("workers")}</span>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <TableAddButton
+                  text={t("worker")}
+                  handleClick={handleAddWorker}
+                />
+                <PopoverRHS
+                  title={t("new_property")}
+                  buttonContent={<TableAddButton text={t("property")} />}
+                  content={
+                    <NewDimensionForm
+                      lng={lng}
+                      selectedTeamId={selectedTeamId}
+                      dimensionType={DimensionType.WORKER}
+                      dimensions={dimensions}
+                      dimEntries={dimEntries}
+                      setOpenParent={setPopoverRhsOpen}
+                      handleAddDimension={handleAddDimension}
+                      handleUpdateDimension={handleUpdateDimension}
+                    />
+                  }
+                  open={popoverRhsOpen}
+                  setOpen={setPopoverRhsOpen}
+                />
+              </div>
+            </div>
+
             {/* Filter/Sort toolbar */}
             {(tableState.filters.length > 0 || tableState.sort !== null) && (
               <TableFilterBar

@@ -16,8 +16,6 @@ import TextField from "@mui/material/TextField";
 import NewDimensionForm from "../shift-worker-shared/dimension/new-dimension-form";
 import DimensionCell from "../shift-worker-shared/dimension/dimension-cell";
 import AttributeCell from "../shift-worker-shared/attribute/attribute-cell";
-import PopoverRHS from "../inputs/popover-rhs";
-import TableAddButton from "../buttons/table-add-button";
 import WorkerFieldCell from "./worker-field-cell/worker-field-cell";
 import WorkerSpecialtyHeaderCell from "./worker-field-cell/specialties/worker-specialty-header-cell";
 import ColumnSortFilterMenu from "../table/ColumnSortFilterMenu";
@@ -67,7 +65,6 @@ export default function WorkerTable({
   const { t } = useTranslation(lng, "worker-page");
 
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
-  const [popoverRhsOpen, setPopoverRhsOpen] = useState(false);
 
   // Memoize filtered dimensions for performance
   const dimensionsDisplayed = useMemo(
@@ -78,31 +75,6 @@ export default function WorkerTable({
 
   return (
     <div>
-      <div className="title-container">
-        <span className="title">{t("workers")}</span>
-        <div style={{ display: "flex", gap: "8px" }}>
-          <TableAddButton text={t("worker")} handleClick={handleAddWorker} />
-          <PopoverRHS
-            title={t("new_property")}
-            buttonContent={<TableAddButton text={t("property")} />}
-            content={
-              <NewDimensionForm
-                lng={lng}
-                selectedTeamId={selectedTeamId}
-                dimensionType={DimensionType.WORKER}
-                dimensions={dimensions}
-                dimEntries={dimEntries}
-                setOpenParent={setPopoverRhsOpen}
-                handleAddDimension={handleAddDimension}
-                handleUpdateDimension={handleUpdateDimension}
-              />
-            }
-            open={popoverRhsOpen}
-            setOpen={setPopoverRhsOpen}
-          />
-        </div>
-      </div>
-
       <TableContainer className="worker-table-container">
         <Table className="worker-table" aria-label="worker table">
           <WorkerTableHeader
