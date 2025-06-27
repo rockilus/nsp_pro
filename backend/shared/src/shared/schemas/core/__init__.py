@@ -37,7 +37,6 @@ from shared.schemas.core.constraint import (
     VarWorkerSelectorOptions,
 )
 from shared.schemas.core.coverage import Coverage
-from shared.schemas.core.coverage_selector import CoverageSelector
 from shared.schemas.core.dim_entry import DimEntry
 from shared.schemas.core.dimension import (
     Dimension,
@@ -199,7 +198,6 @@ __all__ = [
     "VarShiftSelectorOptions",
     "VarWorkerSelectorOptions",
     "Coverage",
-    "CoverageSelector",
     "ShiftDemand",
     "ShiftDemandExclusion",
     "DemandsResult",
