@@ -270,7 +270,7 @@ export default function ScheduleTab({
   //////////////////////////
 
   const handleUpdateSchedule = async (schedule: ScheduleT) => {
-    const { schedule: newSchedule } = await updateSchedule(schedule);
+    const newSchedule = await updateSchedule(schedule);
     setScheduleCampaign(newSchedule);
   };
 

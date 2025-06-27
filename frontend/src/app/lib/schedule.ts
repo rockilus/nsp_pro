@@ -8,7 +8,6 @@ import { getRequests } from "./request";
 import { getAllWorkers } from "./worker";
 import { getAllShifts } from "./shift";
 import { getStats } from "./stats";
-import { toCoverageSelectorT } from "./campaign";
 import { getSpecialties } from "./specialty";
 // Types
 import {
@@ -31,7 +30,6 @@ import {
   StatsTimeFrameOptions,
 } from "../../types/stats";
 import { ShiftT } from "../../types/shift";
-import { CoverageSelectorT } from "../../types/coverage-selector";
 import { WorkerT } from "@/types/worker";
 import { RecurrenceRuleT } from "@/types/recurrence";
 // Env Vars
@@ -177,12 +175,7 @@ export async function updateSchedule(schedule: ScheduleT) {
     if (!response.ok) {
       throw new Error("Failed to update schedule: " + responseData.detail);
     }
-    return {
-      schedule: toScheduleT(responseData[0]),
-      coverageSelectors: responseData[1].map(
-        toCoverageSelectorT
-      ) as CoverageSelectorT[],
-    };
+    return toScheduleT(responseData);
   } catch (error) {
     console.error("Failed to update schedule:", error);
     throw new Error("Failed to update schedule, please try again later");

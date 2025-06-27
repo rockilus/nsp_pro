@@ -3,10 +3,7 @@ from typing import Dict, List, Tuple
 from fastapi import APIRouter, Depends
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
-from shared.schemas.core import (
-    DuplicateRequest,
-    Schedule,
-)
+from shared.schemas.core import DuplicateRequest, Schedule
 from shared.schemas.dto import (
     DuplicateRequestDTO,
     DuplicateResultDTO,
@@ -15,17 +12,12 @@ from shared.schemas.dto import (
 )
 
 from src.dependencies import get_db_collections, get_schedule_service
-from src.errors import (
-    NotAuthorizedError,
-    handle_routes_errors,
-)
+from src.errors import NotAuthorizedError, handle_routes_errors
 from src.integrations.authentication import (
     SessionContainerType,
     authn_verify_session,
 )
 from src.integrations.authorization import authz_check
-from src.routes.api_model import CoverageSelectorMessage
-from src.routes.coverage_selector_routes import core_to_msg_coverage_selector
 from src.services.schedule_service import ScheduleService
 
 router = APIRouter()
@@ -175,7 +167,9 @@ async def duplicate_period(
     return response
 
 
-@router.post("/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201)
+@router.post(
+    "/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201
+)
 async def validate_schedule(
     schedule_id: str,
     team_id: str,
@@ -207,7 +201,7 @@ async def update_schedule(
     schedule_service: ScheduleService = Depends(
         get_schedule_service,
     ),
-) -> Tuple[ScheduleDTO, List[CoverageSelectorMessage]]:
+) -> ScheduleDTO:
     try:
         if not await authz_check(
             session.get_user_id(), "update-schedule", "team", team_id
@@ -216,11 +210,8 @@ async def update_schedule(
                 "You do not have permission to update a schedule",
             )
         schedule_data = Schedule.from_dto(schedule_api)
-        schedule_updated, css_updated = schedule_service.update_schedule(schedule_data)
-        response = (
-            schedule_updated.to_dto(),
-            [core_to_msg_coverage_selector(cs) for cs in css_updated],
-        )
+        schedule_updated = schedule_service.update_schedule(schedule_data)
+        response = schedule_updated.to_dto()
     except Exception as e:
         log_info("Failed to update schedule")
         handle_routes_errors(e)
