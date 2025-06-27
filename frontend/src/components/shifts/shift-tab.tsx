@@ -72,7 +72,7 @@ export default function ShiftTab({
       specialties,
       dimensions,
       dimEntries,
-      shifts,
+      filterWorkShifts(shifts),
       false
     );
   }, [t, specialties, dimensions, dimEntries, shifts]);
@@ -83,7 +83,7 @@ export default function ShiftTab({
       specialties,
       dimensions,
       dimEntries,
-      shifts,
+      filterRestShifts(shifts),
       true
     );
   }, [t, specialties, dimensions, dimEntries, shifts]);
