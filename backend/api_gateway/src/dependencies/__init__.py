@@ -3,9 +3,6 @@ from src.dependencies.attribute_service import get_attribute_service
 from src.dependencies.constraint_build_service import (
     get_constraint_build_service,
 )
-from src.dependencies.coverage_selector_service import (
-    get_coverage_selector_service,
-)
 from src.dependencies.coverage_service import get_coverage_service
 from src.dependencies.data_fetching_service import get_data_fetching_service
 from src.dependencies.database import get_db_collections
@@ -35,7 +32,6 @@ __all__ = [
     "get_assignment_service",
     "get_attribute_service",
     "get_constraint_build_service",
-    "get_coverage_selector_service",
     "get_coverage_service",
     "get_data_fetching_service",
     "get_db_collections",
