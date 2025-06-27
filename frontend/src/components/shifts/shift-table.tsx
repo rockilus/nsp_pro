@@ -165,10 +165,15 @@ export default function ShiftTable({
         </div>
       </div>
       <TableContainer
-        style={{ width: "100%", height: tableHeight, overflow: "auto" }}
+        className="shared-table-container"
+        style={{ height: tableHeight }}
       >
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
+        <Table
+          className="shared-table"
+          sx={{ minWidth: 650 }}
+          aria-label="simple table"
+        >
+          <TableHead className="shared-table-header">
             <TableRow>
               {defaultShiftFields.map(
                 (field: Record<string, string>, index: number) => (
@@ -226,20 +231,24 @@ export default function ShiftTable({
                   handleDeleteDimEntry={handleDeleteDimEntry}
                 />
               ))}
-              <TableCell sx={{ padding: 0, width: 110 }}></TableCell>
+              <TableCell
+                className="shared-table-actions"
+                sx={{ padding: 0 }}
+              ></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {displayedShifts.map((shift: ShiftT, shiftIndex: number) => (
               <TableRow
                 key={shiftIndex}
+                className="shared-table-row"
                 sx={{
                   "&:last-child td, &:last-child th": { border: 0 },
                   backgroundColor:
                     shift.leaveType !== ShiftLeaveType.NONE ||
                     shift.restType === ShiftRestType.OFF
-                      ? "#1a0dab0a"
-                      : "None",
+                      ? "#1a0dab0a !important"
+                      : "inherit",
                 }}
               >
                 {defaultShiftFields.map(
@@ -289,7 +298,12 @@ export default function ShiftTable({
                     />
                   );
                 })}
-                <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
+                <TableCell
+                  component="th"
+                  scope="row"
+                  className="shared-table-actions"
+                  sx={{ paddingY: 0 }}
+                >
                   <Box sx={{ display: "flex" }}>
                     <Button
                       disabled={
@@ -304,6 +318,18 @@ export default function ShiftTable({
                 </TableCell>
               </TableRow>
             ))}
+            {displayedShifts.length === 0 && (
+              <TableRow>
+                <TableCell
+                  colSpan={
+                    defaultShiftFields.length + displayedDimensions.length + 1
+                  }
+                  sx={{ textAlign: "center", py: 4, color: "text.secondary" }}
+                >
+                  {t(isRest ? "no_rest_shifts_found" : "no_shifts_found")}
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>
