@@ -524,21 +524,6 @@
   font-size: 1rem;
 }
 
-/* Field center alignment for specific columns */
-.shared-field-center {
-  text-align: center;
-}
-
-.shared-field-center .MuiBox-root {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.shared-field-center .MuiTextField-root .MuiInputBase-input {
-  text-align: center;
-}
-
 /* Border between default and custom columns */
 .shared-table .first-custom-column {
   border-left: 2px solid #e0e0e0 !important;
@@ -555,6 +540,25 @@
 
 .shared-table-header .custom-column .MuiTableCell-root {
   background-color: #e3f2fd !important;
+}
+
+/* Field center alignment for specific dimension types (BOOL and INT) */
+.shared-field-center {
+  text-align: center;
+}
+
+.shared-field-center .MuiBox-root {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.shared-field-center .MuiTextField-root .MuiInputBase-input {
+  text-align: center;
+}
+
+.shared-field-center .MuiCheckbox-root {
+  padding: 4px;
 }
 
 /* Responsive adjustments for shared tables */
