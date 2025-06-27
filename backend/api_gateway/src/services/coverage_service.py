@@ -15,7 +15,4 @@ class CoverageService(BaseService):
                 shift_demand_ids=sd_deleted_ids
             )
         # fmt: on
-        self.collection.coverage_selector_db.delete_coverage_selectors_by_coverage_id(
-            coverage_id
-        )
         self.collection.coverage_db.delete_coverage(coverage_id)
