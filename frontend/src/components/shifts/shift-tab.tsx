@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "../../app/i18n/client";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+// MUI
+import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 // Components
 import ShiftTable from "./shift-table";
 import TableFilterBar from "../table/TableFilterBar";
@@ -71,6 +73,7 @@ export default function ShiftTab({
   const [linkShifts, setLinkShifts] = useState<LinkShiftT[]>([]);
   const [workPopoverRhsOpen, setWorkPopoverRhsOpen] = useState(false);
   const [restPopoverRhsOpen, setRestPopoverRhsOpen] = useState(false);
+  const [shiftView, setShiftView] = useState<"work" | "rest">("work");
 
   // Create shift columns for both work and rest shifts
   const workShiftColumns = useMemo(() => {
@@ -132,6 +135,19 @@ export default function ShiftTab({
   // Dynamic table heights
   const workTableHeight = useTableHeight(showWorkFilterToolbar);
   const restTableHeight = useTableHeight(showRestFilterToolbar);
+
+  // Toggle handler with state reset
+  const handleShiftViewChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newView: "work" | "rest"
+  ) => {
+    if (newView !== null) {
+      setShiftView(newView);
+      // Reset both table states when switching views
+      resetWorkAll();
+      resetRestAll();
+    }
+  };
 
   const DefaultWorkShiftFields: Record<string, string>[] = [
     { name: "color", label: t("color") },
@@ -428,24 +444,43 @@ export default function ShiftTab({
       ) : (
         selectedTeamId && (
           <div>
-            {/* Work Shifts Section */}
+            {/* Consolidated Shifts Section with Toggle */}
             <div className="title-container">
-              <div>
+              <div className="title-with-toggle">
                 <span className="title">{t("shifts")}</span>
+                <ToggleButtonGroup
+                  value={shiftView}
+                  exclusive
+                  onChange={handleShiftViewChange}
+                  size="small"
+                  sx={{ ml: 2 }}
+                >
+                  <ToggleButton value="work">{t("shifts")}</ToggleButton>
+                  <ToggleButton value="rest">{t("rest")}</ToggleButton>
+                </ToggleButtonGroup>
               </div>
               <div className="shift-actions-container">
-                <LinkShiftDialog
-                  lng={lng}
-                  teamId={selectedTeamId}
-                  shifts={shifts}
-                  linkShifts={linkShifts}
-                  handleAddLinkShift={handleAddLinkShift}
-                  handleDeleteLinkShift={handleDeleteLinkShift}
-                />
-                <TableAddButton
-                  text={t("shift")}
-                  handleClick={() => handleAddShift(false)}
-                />
+                {shiftView === "work" ? (
+                  <>
+                    <LinkShiftDialog
+                      lng={lng}
+                      teamId={selectedTeamId}
+                      shifts={shifts}
+                      linkShifts={linkShifts}
+                      handleAddLinkShift={handleAddLinkShift}
+                      handleDeleteLinkShift={handleDeleteLinkShift}
+                    />
+                    <TableAddButton
+                      text={t("shift")}
+                      handleClick={() => handleAddShift(false)}
+                    />
+                  </>
+                ) : (
+                  <TableAddButton
+                    text={t("rest")}
+                    handleClick={() => handleAddShift(true)}
+                  />
+                )}
                 <PopoverRHS
                   title={t("new_property")}
                   buttonContent={<TableAddButton text={t("property")} />}
@@ -453,111 +488,90 @@ export default function ShiftTab({
                     <NewDimensionForm
                       lng={lng}
                       selectedTeamId={selectedTeamId}
-                      dimensionType={DimensionType.SHIFT}
+                      dimensionType={
+                        shiftView === "work"
+                          ? DimensionType.SHIFT
+                          : DimensionType.REST_SHIFT
+                      }
                       dimensions={dimensions}
                       dimEntries={dimEntries}
-                      setOpenParent={setWorkPopoverRhsOpen}
+                      setOpenParent={
+                        shiftView === "work"
+                          ? setWorkPopoverRhsOpen
+                          : setRestPopoverRhsOpen
+                      }
                       handleAddDimension={handleAddDimension}
                       handleUpdateDimension={handleUpdateDimension}
                     />
                   }
-                  open={workPopoverRhsOpen}
-                  setOpen={setWorkPopoverRhsOpen}
-                />
-              </div>
-            </div>
-            {showWorkFilterToolbar && (
-              <TableFilterBar
-                filters={workTableState.filters}
-                sort={workTableState.sort}
-                onRemoveFilter={removeWorkFilter}
-                onRemoveSort={() => updateWorkSort(null)}
-                onResetAll={resetWorkAll}
-              />
-            )}
-            <ShiftTable
-              lng={lng}
-              selectedTeamId={selectedTeamId}
-              isRest={false}
-              dimensions={dimensions}
-              dimEntries={dimEntries}
-              shifts={filteredWorkShifts}
-              specialties={specialties}
-              linkShifts={linkShifts}
-              defaultShiftFields={DefaultWorkShiftFields}
-              tableHeight={workTableHeight}
-              // New props for sorting/filtering
-              shiftColumns={workShiftColumns}
-              currentSort={workTableState.sort}
-              onSort={updateWorkSort}
-              onFilter={addWorkFilter}
-              handleUpdateShift={handleUpdateShift}
-              handleDeleteShift={handleDeleteShift}
-              handleUpdateDimension={handleUpdateDimension}
-              handleDeleteDimension={handleDeleteDimension}
-              handleAddDimEntry={handleAddDimEntry}
-              handleUpdateDimEntry={handleUpdateDimEntry}
-              handleDeleteDimEntry={handleDeleteDimEntry}
-              handleUpdateAttribute={handleUpdateAttribute}
-            />
-
-            <div className="divider" />
-
-            {/* Rest Shifts Section */}
-            <div className="title-container">
-              <div>
-                <span className="title">{t("rest_shifts")}</span>
-              </div>
-              <div className="shift-actions-container">
-                <TableAddButton
-                  text={t("rest")}
-                  handleClick={() => handleAddShift(true)}
-                />
-                <PopoverRHS
-                  title={t("new_property")}
-                  buttonContent={<TableAddButton text={t("property")} />}
-                  content={
-                    <NewDimensionForm
-                      lng={lng}
-                      selectedTeamId={selectedTeamId}
-                      dimensionType={DimensionType.REST_SHIFT}
-                      dimensions={dimensions}
-                      dimEntries={dimEntries}
-                      setOpenParent={setRestPopoverRhsOpen}
-                      handleAddDimension={handleAddDimension}
-                      handleUpdateDimension={handleUpdateDimension}
-                    />
+                  open={
+                    shiftView === "work"
+                      ? workPopoverRhsOpen
+                      : restPopoverRhsOpen
                   }
-                  open={restPopoverRhsOpen}
-                  setOpen={setRestPopoverRhsOpen}
+                  setOpen={
+                    shiftView === "work"
+                      ? setWorkPopoverRhsOpen
+                      : setRestPopoverRhsOpen
+                  }
                 />
               </div>
             </div>
-            {showRestFilterToolbar && (
+
+            {/* Conditional filter bar */}
+            {((shiftView === "work" && showWorkFilterToolbar) ||
+              (shiftView === "rest" && showRestFilterToolbar)) && (
               <TableFilterBar
-                filters={restTableState.filters}
-                sort={restTableState.sort}
-                onRemoveFilter={removeRestFilter}
-                onRemoveSort={() => updateRestSort(null)}
-                onResetAll={resetRestAll}
+                filters={
+                  shiftView === "work"
+                    ? workTableState.filters
+                    : restTableState.filters
+                }
+                sort={
+                  shiftView === "work"
+                    ? workTableState.sort
+                    : restTableState.sort
+                }
+                onRemoveFilter={
+                  shiftView === "work" ? removeWorkFilter : removeRestFilter
+                }
+                onRemoveSort={() =>
+                  shiftView === "work"
+                    ? updateWorkSort(null)
+                    : updateRestSort(null)
+                }
+                onResetAll={shiftView === "work" ? resetWorkAll : resetRestAll}
               />
             )}
+
+            {/* Single conditional table */}
             <ShiftTable
               lng={lng}
               selectedTeamId={selectedTeamId}
-              isRest={true}
+              isRest={shiftView === "rest"}
               dimensions={dimensions}
               dimEntries={dimEntries}
-              shifts={filteredRestShifts}
-              specialties={[]}
-              linkShifts={[]}
-              defaultShiftFields={DefaultRestShiftFields}
-              tableHeight={restTableHeight}
-              // New props for sorting/filtering
-              shiftColumns={restShiftColumns}
-              currentSort={restTableState.sort}
-              onSort={updateRestSort}
-              onFilter={addRestFilter}
+              shifts={
+                shiftView === "work" ? filteredWorkShifts : filteredRestShifts
+              }
+              specialties={shiftView === "work" ? specialties : []}
+              linkShifts={shiftView === "work" ? linkShifts : []}
+              defaultShiftFields={
+                shiftView === "work"
+                  ? DefaultWorkShiftFields
+                  : DefaultRestShiftFields
+              }
+              tableHeight={
+                shiftView === "work" ? workTableHeight : restTableHeight
+              }
+              shiftColumns={
+                shiftView === "work" ? workShiftColumns : restShiftColumns
+              }
+              currentSort={
+                shiftView === "work" ? workTableState.sort : restTableState.sort
+              }
+              onSort={shiftView === "work" ? updateWorkSort : updateRestSort}
+              onFilter={shiftView === "work" ? addWorkFilter : addRestFilter}
               handleUpdateShift={handleUpdateShift}
               handleDeleteShift={handleDeleteShift}
               handleUpdateDimension={handleUpdateDimension}

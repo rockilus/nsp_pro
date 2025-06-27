@@ -1006,3 +1006,13 @@
   padding: 2px 4px;
   margin: -2px -4px;
 }
+
+/* Title with toggle styles */
+.title-with-toggle {
+  display: flex;
+  align-items: center;
+}
+
+.title-with-toggle .title {
+  margin-right: 0; /* Remove right margin since toggle has its own margin */
+}
