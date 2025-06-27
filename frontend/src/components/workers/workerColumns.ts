@@ -156,17 +156,16 @@ export const createWorkerColumns = (
           const attribute = worker.attributes.find(
             (a) => a.dimensionId === dimension.id
           );
-          if (!attribute) return [];
           if (dimension.entryType === DimensionEntryType.BOOL) {
-            return attribute.value ? "true" : "false";
+            return attribute?.value ? "true" : "false";
           }
           if (
             dimension.entryType === DimensionEntryType.DIM_ENTRIES &&
-            attribute.dimEntryIds
+            attribute?.dimEntryIds
           ) {
             return attribute.dimEntryIds; // Return array instead of string
           }
-          return attribute.value?.toString() || "";
+          return attribute?.value?.toString() || "";
         },
         getDisplayValue: (worker: WorkerT) => {
           const attribute = worker.attributes.find(

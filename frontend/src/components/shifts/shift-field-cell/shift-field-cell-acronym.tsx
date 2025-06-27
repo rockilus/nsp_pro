@@ -73,7 +73,14 @@ export default function ShiftFieldCellAcronym({
           autoFocus
         />
       ) : (
-        <Box sx={{ minHeight: 45, display: "flex", alignItems: "center" }}>
+        <Box
+          sx={{
+            minHeight: 45,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           {shift.acronym}
         </Box>
       )}

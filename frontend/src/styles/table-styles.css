@@ -33,3 +33,986 @@
 .add-row-button-container {
   margin-top: 10px;
 }
+
+/* Enhanced shared table styles for consistent formatting across worker and shift tables */
+
+.table-container-enhanced {
+  height: 70vh;
+  overflow: auto;
+}
+
+.table-header-enhanced {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: #f5f5f5;
+}
+
+.table-first-column {
+  position: sticky;
+  left: 0;
+  background-color: white;
+  z-index: 1;
+  border-right: 1px solid #e0e0e0;
+}
+
+.table-actions-column {
+  width: 110px;
+  text-align: center;
+}
+
+.custom-column.first-custom-column {
+  border-left: 2px solid #e0e0e0;
+}
+
+.table-cell-editing {
+  background-color: #f0f8ff !important;
+}
+
+.table-cell-first-column {
+  position: sticky;
+  left: 0;
+  background-color: white;
+  z-index: 1;
+  border-right: 1px solid #e0e0e0;
+  min-width: 150px;
+}
+
+.table-cell-actions {
+  width: 110px;
+  text-align: center;
+  position: sticky;
+  right: 0;
+  background-color: white;
+  z-index: 1;
+  border-left: 1px solid #e0e0e0;
+}
+
+.table-sort-filter-menu {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.table-row-hover:hover {
+  background-color: #f9f9f9;
+}
+
+/* =================================================================== */
+/* SHARED TABLE COMPONENTS - Reusable across Worker, Shift, and other tables */
+/* =================================================================== */
+
+/* Base table container with sticky positioning and scrolling */
+.shared-table-container {
+  position: relative;
+  overflow: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+}
+
+.shared-table {
+  position: relative;
+  min-width: 100%;
+}
+
+/* Sticky first and second columns for shift table using nth-child selectors */
+.shared-table tbody tr td:nth-child(1),
+.shared-table tbody tr th:nth-child(1) {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background-color: #ffffff;
+  border-right: 1px solid #e0e0e0;
+  min-width: 60px;
+  max-width: 60px;
+}
+
+.shared-table tbody tr td:nth-child(2),
+.shared-table tbody tr th:nth-child(2) {
+  position: sticky;
+  left: 60px;
+  z-index: 2;
+  background-color: #ffffff;
+  border-right: 1px solid #e0e0e0;
+  min-width: 150px;
+  max-width: 150px;
+}
+
+/* Header cells for first two columns */
+.shared-table thead tr th:nth-child(1) {
+  position: sticky;
+  left: 0;
+  top: 0;
+  z-index: 4;
+  background-color: #fafafa;
+  border-right: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  min-width: 60px;
+  max-width: 60px;
+}
+
+.shared-table thead tr th:nth-child(2) {
+  position: sticky;
+  left: 60px;
+  top: 0;
+  z-index: 4;
+  background-color: #fafafa;
+  border-right: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  min-width: 150px;
+  max-width: 150px;
+}
+
+/* Hover effects for sticky columns */
+.shared-table-row:hover td:nth-child(1),
+.shared-table-row:hover th:nth-child(1),
+.shared-table-row:hover td:nth-child(2),
+.shared-table-row:hover th:nth-child(2) {
+  background-color: #f5f5f5;
+}
+
+/* Webkit scrollbar styling for shared tables */
+.shared-table-container::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.shared-table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 6px;
+}
+
+.shared-table-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 6px;
+}
+
+.shared-table-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Sticky header styling */
+.shared-table-header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background-color: #fafafa;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.shared-table-header .MuiTableCell-root {
+  background-color: #fafafa;
+  font-weight: 500;
+  font-size: 0.8rem;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 6px 8px;
+  height: 36px;
+}
+
+/* Compact table header text styling */
+.shared-table-header .table-header-default {
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Shared header content styling */
+.shared-table-header .table-header-default span {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.87);
+  margin-right: 4px;
+}
+
+.shared-table-header .table-header-default .MuiSvgIcon-root {
+  font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.54);
+}
+
+/* Sticky first column */
+.shared-table-first-column {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background-color: #ffffff;
+  border-right: 1px solid #e0e0e0;
+  min-width: 150px;
+  max-width: 150px;
+  padding: 4px 8px;
+}
+
+/* Sticky second column */
+.shared-table-second-column {
+  position: sticky;
+  left: 150px; /* Position after first column */
+  z-index: 2;
+  background-color: #ffffff;
+  border-right: 1px solid #e0e0e0;
+  min-width: 150px;
+  max-width: 150px;
+  padding: 4px 8px;
+}
+
+/* First header cell (intersection of sticky header and first column) */
+.shared-table-first-header-cell {
+  position: sticky;
+  left: 0;
+  top: 0;
+  z-index: 4;
+  background-color: #fafafa;
+  border-right: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  min-width: 150px;
+  max-width: 150px;
+  padding: 6px 8px;
+  font-weight: 500;
+  font-size: 0.8rem;
+  height: 36px;
+}
+
+/* Second header cell (intersection of sticky header and second column) */
+.shared-table-second-header-cell {
+  position: sticky;
+  left: 150px;
+  top: 0;
+  z-index: 4;
+  background-color: #fafafa;
+  border-right: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  min-width: 150px;
+  max-width: 150px;
+  padding: 6px 8px;
+  font-weight: 500;
+  font-size: 0.8rem;
+  height: 36px;
+}
+
+/* Row styling */
+.shared-table-row {
+  border-bottom: 1px solid #e0e0e0;
+  height: 40px;
+}
+
+.shared-table-row:hover {
+  background-color: #f5f5f5;
+}
+
+.shared-table-row:hover .MuiTableCell-root {
+  background-color: #f5f5f5;
+}
+
+.shared-table-row:hover .shared-table-first-column {
+  background-color: #f5f5f5;
+}
+
+.shared-table-row:hover .shared-table-second-column {
+  background-color: #f5f5f5;
+}
+
+.shared-table-row:hover .shared-table-actions {
+  background-color: #f5f5f5;
+}
+
+/* Focus states for accessibility */
+.shared-table .MuiTableCell-root:focus-within {
+  outline: 2px solid #1976d2;
+  outline-offset: -2px;
+}
+
+/* General cell styling */
+.shared-table-cell {
+  min-width: 80px;
+  max-width: 120px;
+  padding: 4px 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.85rem;
+  height: 40px;
+}
+
+/* Actions column styling */
+.shared-table-actions {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  background-color: #ffffff;
+  border-left: 1px solid #e0e0e0;
+  min-width: 80px;
+  max-width: 80px;
+  padding: 4px 8px;
+  height: 40px;
+}
+
+.shared-table-actions-header {
+  position: sticky;
+  right: 0;
+  top: 0;
+  z-index: 4;
+  background-color: #fafafa;
+  border-left: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  min-width: 80px;
+  max-width: 80px;
+  padding: 6px 8px;
+  font-weight: 500;
+  font-size: 0.8rem;
+  height: 36px;
+}
+
+/* Name cell styling (first column content) */
+.shared-name-cell {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  min-height: 40px;
+}
+
+.shared-name-text {
+  font-weight: 500;
+  color: #1976d2;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.85rem;
+}
+
+/* Enhanced styling for name cell editing */
+.shared-name-cell .MuiTextField-root {
+  margin: 0;
+  width: 100%;
+}
+
+.shared-name-cell .MuiInputBase-root {
+  font-weight: 500;
+  color: #1976d2;
+  font-size: 0.85rem;
+}
+
+.shared-name-cell .MuiInputBase-root:before {
+  border-bottom: 1px solid #ccc;
+}
+
+.shared-name-cell .MuiInputBase-root:after {
+  border-bottom: 1px solid #1976d2;
+}
+
+.shared-name-cell .MuiInputBase-root.Mui-focused {
+  background-color: rgba(25, 118, 210, 0.05);
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+/* Hover effect for clickable names */
+.shared-table-first-column:hover .shared-name-text {
+  background-color: rgba(25, 118, 210, 0.08);
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+}
+
+/* Add button container */
+.shared-add-button-container {
+  margin-top: 12px;
+  padding: 6px 0;
+}
+
+/* Empty state styling */
+.shared-table-empty {
+  text-align: center;
+  padding: 32px;
+  color: #666;
+}
+
+.shared-table-empty .empty-icon {
+  font-size: 48px;
+  color: #ccc;
+  margin-bottom: 16px;
+}
+
+.shared-table-empty .empty-text {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.shared-table-empty .empty-subtext {
+  font-size: 14px;
+  color: #999;
+}
+
+/* Override default TableCell styling within shared tables */
+.shared-table .MuiTableCell-root {
+  border-right: none; /* Remove internal vertical borders */
+  padding: 4px 8px;
+  height: 40px;
+  font-size: 0.85rem;
+}
+
+/* Keep only the first column border */
+.shared-table .shared-table-first-column {
+  border-right: 1px solid #e0e0e0;
+}
+
+/* Keep only the actions column border */
+.shared-table .shared-table-actions {
+  border-left: 1px solid #e0e0e0;
+}
+
+.shared-table .shared-table-actions-header {
+  border-left: 1px solid #e0e0e0;
+}
+
+/* Special styling for editable cells */
+.shared-table .MuiTextField-root {
+  margin: 0;
+}
+
+.shared-table .MuiTextField-root .MuiInputBase-root {
+  border: none;
+  background: transparent;
+  font-size: 0.85rem;
+}
+
+.shared-table .MuiTextField-root .MuiInputBase-root:before,
+.shared-table .MuiTextField-root .MuiInputBase-root:after {
+  border-bottom: none;
+}
+
+.shared-table .MuiTextField-root .MuiInputBase-root.Mui-focused {
+  background-color: #fff3e0;
+  border-radius: 4px;
+  border: 1px solid #ff9800;
+}
+
+/* Loading spinner for async operations */
+.shared-table-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+/* Button styling */
+.shared-table .MuiButton-root {
+  min-width: auto;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.shared-table .MuiButton-root:hover {
+  background-color: rgba(25, 118, 210, 0.08);
+}
+
+/* Better spacing for action buttons */
+.shared-table-actions .MuiButton-root {
+  margin: 0 2px;
+}
+
+/* Icon sizing */
+.shared-table .MuiSvgIcon-root {
+  font-size: 1rem;
+}
+
+/* Border between default and custom columns */
+.shared-table .first-custom-column {
+  border-left: 2px solid #e0e0e0 !important;
+}
+
+.shared-table-header .first-custom-column {
+  border-left: 2px solid #e0e0e0 !important;
+}
+
+/* Custom column headers styling */
+.shared-table-header .custom-column {
+  background-color: #e3f2fd !important;
+}
+
+.shared-table-header .custom-column .MuiTableCell-root {
+  background-color: #e3f2fd !important;
+}
+
+/* Field center alignment for specific dimension types (BOOL and INT) */
+.shared-field-center {
+  text-align: center;
+}
+
+.shared-field-center .MuiBox-root {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.shared-field-center .MuiTextField-root .MuiInputBase-input {
+  text-align: center;
+}
+
+.shared-field-center .MuiCheckbox-root {
+  padding: 4px;
+}
+
+/* Responsive adjustments for shared tables */
+@media (max-width: 768px) {
+  .shared-table-container {
+    height: calc(100vh - 150px);
+  }
+
+  .shared-table-first-column,
+  .shared-table-first-header-cell {
+    min-width: 120px;
+    max-width: 120px;
+  }
+
+  .shared-table-cell {
+    min-width: 60px;
+    max-width: 100px;
+    padding: 3px 6px;
+    font-size: 0.8rem;
+  }
+
+  .shared-table-actions,
+  .shared-table-actions-header {
+    min-width: 60px;
+    max-width: 60px;
+  }
+
+  .shared-table-row {
+    height: 36px;
+  }
+
+  .shared-table-header .MuiTableCell-root {
+    height: 32px;
+    padding: 4px 6px;
+  }
+}
+
+/* =================================================================== */
+/* WORKER TABLE SPECIFIC STYLES - Keep existing class names for backward compatibility */
+/* =================================================================== */
+
+/* Worker table uses shared styles with specific class names for compatibility */
+.worker-table-container {
+  position: relative;
+  overflow: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+}
+
+.worker-table {
+  position: relative;
+  min-width: 100%;
+}
+
+.worker-table-container::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.worker-table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 6px;
+}
+
+.worker-table-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 6px;
+}
+
+.worker-table-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.worker-table-header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background-color: #fafafa;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.worker-table-header .MuiTableCell-root {
+  background-color: #fafafa;
+  font-weight: 500;
+  font-size: 0.8rem;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 6px 8px;
+  height: 36px;
+}
+
+.worker-table-header .table-header-default {
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.worker-table-header .table-header-default span {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.87);
+  margin-right: 4px;
+}
+
+.worker-table-header .table-header-default .MuiSvgIcon-root {
+  font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.54);
+}
+
+.worker-table-first-column {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background-color: #ffffff;
+  border-right: 1px solid #e0e0e0;
+  min-width: 150px;
+  max-width: 150px;
+  padding: 4px 8px;
+}
+
+.worker-table-first-header-cell {
+  position: sticky;
+  left: 0;
+  top: 0;
+  z-index: 4;
+  background-color: #fafafa;
+  border-right: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  min-width: 150px;
+  max-width: 150px;
+  padding: 6px 8px;
+  font-weight: 500;
+  font-size: 0.8rem;
+  height: 36px;
+}
+
+.worker-table-row {
+  border-bottom: 1px solid #e0e0e0;
+  height: 40px;
+}
+
+.worker-table-row:hover {
+  background-color: #f5f5f5;
+}
+
+.worker-table-row:hover .MuiTableCell-root {
+  background-color: #f5f5f5;
+}
+
+.worker-table-row:hover .worker-table-first-column {
+  background-color: #f5f5f5;
+}
+
+.worker-table-row:hover .worker-table-actions {
+  background-color: #f5f5f5;
+}
+
+.worker-table .MuiTableCell-root:focus-within {
+  outline: 2px solid #1976d2;
+  outline-offset: -2px;
+}
+
+.worker-table-cell {
+  min-width: 80px;
+  max-width: 120px;
+  padding: 4px 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.85rem;
+  height: 40px;
+}
+
+.worker-table-actions {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  background-color: #ffffff;
+  border-left: 1px solid #e0e0e0;
+  min-width: 80px;
+  max-width: 80px;
+  padding: 4px 8px;
+  height: 40px;
+}
+
+.worker-table-actions-header {
+  position: sticky;
+  right: 0;
+  top: 0;
+  z-index: 4;
+  background-color: #fafafa;
+  border-left: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  min-width: 80px;
+  max-width: 80px;
+  padding: 6px 8px;
+  font-weight: 500;
+  font-size: 0.8rem;
+  height: 36px;
+}
+
+.worker-name-cell {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  min-height: 40px;
+}
+
+.worker-name-text {
+  font-weight: 500;
+  color: #1976d2;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.85rem;
+}
+
+.worker-name-cell .MuiTextField-root {
+  margin: 0;
+  width: 100%;
+}
+
+.worker-name-cell .MuiInputBase-root {
+  font-weight: 500;
+  color: #1976d2;
+  font-size: 0.85rem;
+}
+
+.worker-name-cell .MuiInputBase-root:before {
+  border-bottom: 1px solid #ccc;
+}
+
+.worker-name-cell .MuiInputBase-root:after {
+  border-bottom: 1px solid #1976d2;
+}
+
+.worker-name-cell .MuiInputBase-root.Mui-focused {
+  background-color: rgba(25, 118, 210, 0.05);
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+.worker-table-first-column:hover .worker-name-text {
+  background-color: rgba(25, 118, 210, 0.08);
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+}
+
+.worker-add-button-container {
+  margin-top: 12px;
+  padding: 6px 0;
+}
+
+.worker-table-empty {
+  text-align: center;
+  padding: 32px;
+  color: #666;
+}
+
+.worker-table-empty .empty-icon {
+  font-size: 48px;
+  color: #ccc;
+  margin-bottom: 16px;
+}
+
+.worker-table-empty .empty-text {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.worker-table-empty .empty-subtext {
+  font-size: 14px;
+  color: #999;
+}
+
+.worker-table .MuiTableCell-root {
+  border-right: none;
+  padding: 4px 8px;
+  height: 40px;
+  font-size: 0.85rem;
+}
+
+.worker-table .worker-table-first-column {
+  border-right: 1px solid #e0e0e0;
+}
+
+.worker-table .worker-table-actions {
+  border-left: 1px solid #e0e0e0;
+}
+
+.worker-table .worker-table-actions-header {
+  border-left: 1px solid #e0e0e0;
+}
+
+.worker-table .MuiTextField-root {
+  margin: 0;
+}
+
+.worker-table .MuiTextField-root .MuiInputBase-root {
+  border: none;
+  background: transparent;
+  font-size: 0.85rem;
+}
+
+.worker-table .MuiTextField-root .MuiInputBase-root:before,
+.worker-table .MuiTextField-root .MuiInputBase-root:after {
+  border-bottom: none;
+}
+
+.worker-table .MuiTextField-root .MuiInputBase-root.Mui-focused {
+  background-color: #fff3e0;
+  border-radius: 4px;
+  border: 1px solid #ff9800;
+}
+
+.worker-table-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.worker-table .MuiButton-root {
+  min-width: auto;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.worker-table .MuiButton-root:hover {
+  background-color: rgba(25, 118, 210, 0.08);
+}
+
+.worker-table-actions .MuiButton-root {
+  margin: 0 2px;
+}
+
+.worker-table .MuiSvgIcon-root {
+  font-size: 1rem;
+}
+
+.worker-field-center {
+  text-align: center;
+}
+
+.worker-field-center .MuiBox-root {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.worker-field-center .MuiTextField-root .MuiInputBase-input {
+  text-align: center;
+}
+
+.worker-table .first-custom-column {
+  border-left: 2px solid #e0e0e0 !important;
+}
+
+.worker-table-header .first-custom-column {
+  border-left: 2px solid #e0e0e0 !important;
+}
+
+.worker-table-header .custom-column {
+  background-color: #e3f2fd !important;
+}
+
+.worker-table-header .custom-column .MuiTableCell-root {
+  background-color: #e3f2fd !important;
+}
+
+/* Title container shared styling */
+.table-title-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 0 8px;
+}
+
+.table-title-container .title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1976d2;
+}
+
+/* =================================================================== */
+
+/* Shift Name Cell Styles (matching Worker Name styles) */
+.shift-name-cell {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  min-height: 40px;
+}
+
+.shift-name-text {
+  font-weight: 500;
+  color: #1976d2;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.85rem;
+}
+
+.shift-name-cell .MuiTextField-root {
+  margin: 0;
+  width: 100%;
+}
+
+.shift-name-cell .MuiInputBase-root {
+  font-weight: 500;
+  color: #1976d2;
+  font-size: 0.85rem;
+}
+
+.shift-name-cell .MuiInputBase-root:before {
+  border-bottom: 1px solid #ccc;
+}
+
+.shift-name-cell .MuiInputBase-root:after {
+  border-bottom: 1px solid #1976d2;
+}
+
+.shift-name-cell .MuiInputBase-root.Mui-focused {
+  background-color: rgba(25, 118, 210, 0.05);
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+/* Hover effect for shift name cells */
+.shared-table-row:hover .shift-name-text {
+  background-color: rgba(25, 118, 210, 0.08);
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+}
+
+/* Title with toggle styles */
+.title-with-toggle {
+  display: flex;
+  align-items: center;
+}
+
+.title-with-toggle .title {
+  margin-right: 0; /* Remove right margin since toggle has its own margin */
+}

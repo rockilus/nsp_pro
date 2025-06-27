@@ -1,5 +1,6 @@
 import React, { Dispatch, SetStateAction, useState } from "react";
 // MUI
+import Box from "@mui/material/Box";
 import Checkbox from "@mui/material/Checkbox";
 import TableCell from "@mui/material/TableCell";
 import TextField from "@mui/material/TextField";
@@ -58,13 +59,20 @@ export default function AttributeCell({
     setValueState(attribute.value);
   };
 
+  const shouldCenter =
+    dimension.entryType === DimensionEntryType.BOOL ||
+    dimension.entryType === DimensionEntryType.INT;
+  const cellClassName = shouldCenter
+    ? `${className} shared-field-center`.trim()
+    : className;
+
   return (
     <>
       <TableCell
         key={dimension.id}
         component="th"
         scope="row"
-        className={className}
+        className={cellClassName}
         onClick={() => setEditing({ [attribute.ownerId]: dimension.id })}
         sx={{
           paddingY: 0,
@@ -119,14 +127,22 @@ export default function AttributeCell({
             />
           )
         ) : dimension.entryType === DimensionEntryType.BOOL ? (
-          <Checkbox
-            checked={
-              typeof attribute.value === "boolean"
-                ? attribute.value
-                : attribute.value === 1
-            }
-            onClick={handleToggle}
-          />
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Checkbox
+              checked={
+                typeof attribute.value === "boolean"
+                  ? attribute.value
+                  : attribute.value === 1
+              }
+              onClick={handleToggle}
+            />
+          </Box>
         ) : (
           attribute.value
         )}
