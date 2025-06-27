@@ -941,7 +941,7 @@
 }
 
 /* Title container shared styling */
-.title-container {
+.table-title-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -949,7 +949,7 @@
   padding: 0 8px;
 }
 
-.title-container .title {
+.table-title-container .title {
   font-size: 1.25rem;
   font-weight: 600;
   color: #1976d2;

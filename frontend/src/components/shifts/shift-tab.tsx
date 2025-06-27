@@ -40,6 +40,7 @@ import { updateAttribute } from "../../app/lib/attribute";
 import { addLinkShift, deleteLinkShift } from "../../app/lib/link-shift";
 // Styles
 import "../../styles/tab-container-styles.css";
+import "../../styles/table-styles.css";
 // Types
 import {
   ShiftT,
@@ -442,9 +443,9 @@ export default function ShiftTab({
         selectedTeamId && (
           <div>
             {/* Consolidated Shifts Section with Toggle */}
-            <div className="title-container">
+            <div className="table-title-container">
+              <span className="title">{t("shifts")}</span>
               <div className="title-with-toggle">
-                <span className="title">{t("shifts")}</span>
                 <ToggleButtonGroup
                   value={shiftView}
                   exclusive

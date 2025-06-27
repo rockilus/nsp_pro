@@ -42,6 +42,7 @@ import { createWorkerColumns } from "./workerColumns";
 // Styles
 import "../../styles/text-styles.css";
 import "../../styles/tab-container-styles.css";
+import "../../styles/table-styles.css";
 // Types
 import { WorkerT } from "../../types/worker";
 import { DimensionT, DimensionType } from "../../types/dimension";
@@ -413,7 +414,7 @@ export default function WorkerTab({
         selectedTeamId && (
           <div>
             {/* Title container */}
-            <div className="title-container">
+            <div className="table-title-container">
               <span className="title">{t("workers")}</span>
               <div style={{ display: "flex", gap: "8px" }}>
                 <TableAddButton
