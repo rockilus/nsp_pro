@@ -5,6 +5,10 @@ import utc from "dayjs/plugin/utc";
 // Components
 import ShiftTable from "./shift-table";
 import TableFilterBar from "../table/TableFilterBar";
+import NewDimensionForm from "../shift-worker-shared/dimension/new-dimension-form";
+import PopoverRHS from "../inputs/popover-rhs";
+import TableAddButton from "../buttons/table-add-button";
+import LinkShiftDialog from "./link-shift/link-shift-dialog";
 // Skeletons
 import TablesSkeleton from "../skeletons/tables-skeleton";
 // Hooks
@@ -46,6 +50,7 @@ import { DimensionT } from "../../types/dimension";
 import { DimEntryT } from "@/types/dim-entry";
 import { AttributeT } from "../../types/attribute";
 import { SpecialtyT } from "@/types/specialty";
+import { DimensionType } from "../../types/dimension";
 
 dayjs.extend(utc);
 
@@ -64,6 +69,8 @@ export default function ShiftTab({
   const [dimEntries, setDimEntries] = useState<DimEntryT[]>([]);
   const [specialties, setSpecialties] = useState<SpecialtyT[]>([]);
   const [linkShifts, setLinkShifts] = useState<LinkShiftT[]>([]);
+  const [workPopoverRhsOpen, setWorkPopoverRhsOpen] = useState(false);
+  const [restPopoverRhsOpen, setRestPopoverRhsOpen] = useState(false);
 
   // Create shift columns for both work and rest shifts
   const workShiftColumns = useMemo(() => {
@@ -422,6 +429,43 @@ export default function ShiftTab({
         selectedTeamId && (
           <div>
             {/* Work Shifts Section */}
+            <div className="title-container">
+              <div>
+                <span className="title">{t("shifts")}</span>
+              </div>
+              <div className="shift-actions-container">
+                <LinkShiftDialog
+                  lng={lng}
+                  teamId={selectedTeamId}
+                  shifts={shifts}
+                  linkShifts={linkShifts}
+                  handleAddLinkShift={handleAddLinkShift}
+                  handleDeleteLinkShift={handleDeleteLinkShift}
+                />
+                <TableAddButton
+                  text={t("shift")}
+                  handleClick={() => handleAddShift(false)}
+                />
+                <PopoverRHS
+                  title={t("new_property")}
+                  buttonContent={<TableAddButton text={t("property")} />}
+                  content={
+                    <NewDimensionForm
+                      lng={lng}
+                      selectedTeamId={selectedTeamId}
+                      dimensionType={DimensionType.SHIFT}
+                      dimensions={dimensions}
+                      dimEntries={dimEntries}
+                      setOpenParent={setWorkPopoverRhsOpen}
+                      handleAddDimension={handleAddDimension}
+                      handleUpdateDimension={handleUpdateDimension}
+                    />
+                  }
+                  open={workPopoverRhsOpen}
+                  setOpen={setWorkPopoverRhsOpen}
+                />
+              </div>
+            </div>
             {showWorkFilterToolbar && (
               <TableFilterBar
                 filters={workTableState.filters}
@@ -447,23 +491,48 @@ export default function ShiftTab({
               currentSort={workTableState.sort}
               onSort={updateWorkSort}
               onFilter={addWorkFilter}
-              handleAddShift={handleAddShift}
               handleUpdateShift={handleUpdateShift}
               handleDeleteShift={handleDeleteShift}
-              handleAddDimension={handleAddDimension}
               handleUpdateDimension={handleUpdateDimension}
               handleDeleteDimension={handleDeleteDimension}
               handleAddDimEntry={handleAddDimEntry}
               handleUpdateDimEntry={handleUpdateDimEntry}
               handleDeleteDimEntry={handleDeleteDimEntry}
               handleUpdateAttribute={handleUpdateAttribute}
-              handleAddLinkShift={handleAddLinkShift}
-              handleDeleteLinkShift={handleDeleteLinkShift}
             />
 
             <div className="divider" />
 
             {/* Rest Shifts Section */}
+            <div className="title-container">
+              <div>
+                <span className="title">{t("rest_shifts")}</span>
+              </div>
+              <div className="shift-actions-container">
+                <TableAddButton
+                  text={t("rest")}
+                  handleClick={() => handleAddShift(true)}
+                />
+                <PopoverRHS
+                  title={t("new_property")}
+                  buttonContent={<TableAddButton text={t("property")} />}
+                  content={
+                    <NewDimensionForm
+                      lng={lng}
+                      selectedTeamId={selectedTeamId}
+                      dimensionType={DimensionType.REST_SHIFT}
+                      dimensions={dimensions}
+                      dimEntries={dimEntries}
+                      setOpenParent={setRestPopoverRhsOpen}
+                      handleAddDimension={handleAddDimension}
+                      handleUpdateDimension={handleUpdateDimension}
+                    />
+                  }
+                  open={restPopoverRhsOpen}
+                  setOpen={setRestPopoverRhsOpen}
+                />
+              </div>
+            </div>
             {showRestFilterToolbar && (
               <TableFilterBar
                 filters={restTableState.filters}
@@ -489,18 +558,14 @@ export default function ShiftTab({
               currentSort={restTableState.sort}
               onSort={updateRestSort}
               onFilter={addRestFilter}
-              handleAddShift={handleAddShift}
               handleUpdateShift={handleUpdateShift}
               handleDeleteShift={handleDeleteShift}
-              handleAddDimension={handleAddDimension}
               handleUpdateDimension={handleUpdateDimension}
               handleDeleteDimension={handleDeleteDimension}
               handleAddDimEntry={handleAddDimEntry}
               handleUpdateDimEntry={handleUpdateDimEntry}
               handleDeleteDimEntry={handleDeleteDimEntry}
               handleUpdateAttribute={handleUpdateAttribute}
-              handleAddLinkShift={handleAddLinkShift}
-              handleDeleteLinkShift={handleDeleteLinkShift}
             />
           </div>
         )

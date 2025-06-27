@@ -14,31 +14,22 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Tooltip from "@mui/material/Tooltip";
 // Components
-import NewDimensionForm from "../shift-worker-shared/dimension/new-dimension-form";
-import PopoverRHS from "../inputs/popover-rhs";
 import DimensionCell from "../shift-worker-shared/dimension/dimension-cell";
 import ShiftFieldCell from "./shift-field-cell/shift-field-cell";
 import AttributeCell from "../shift-worker-shared/attribute/attribute-cell";
-import TableAddButton from "../buttons/table-add-button";
 import ColumnSortFilterMenu from "../table/ColumnSortFilterMenu";
 import {
   filterWorkShifts,
   filterRestShifts,
   filterRestShiftsNonDefault,
 } from "./shift-utils/shift-utils";
-import LinkShiftDialog from "./link-shift/link-shift-dialog";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "../../styles/text-styles.css";
 import "../../styles/table-styles.css";
 import "./shift-table.css";
 // Types
-import {
-  ShiftT,
-  ShiftLeaveType,
-  ShiftRestType,
-  LinkShiftT,
-} from "../../types/shift";
+import { ShiftT, ShiftLeaveType, ShiftRestType } from "../../types/shift";
 import { DimensionType } from "../../types/dimension";
 import { DimensionEntryType } from "../../types/dimension";
 import { DimEntryT } from "@/types/dim-entry";
@@ -66,24 +57,19 @@ export default function ShiftTable({
   currentSort,
   onSort,
   onFilter,
-  handleAddShift,
   handleUpdateShift,
   handleDeleteShift,
-  handleAddDimension,
   handleUpdateDimension,
   handleDeleteDimension,
   handleAddDimEntry,
   handleUpdateDimEntry,
   handleDeleteDimEntry,
   handleUpdateAttribute,
-  handleAddLinkShift,
-  handleDeleteLinkShift,
 }: ShiftTableProps) {
   const { t } = useTranslation(lng, "shift-page");
 
   const [showDefaults, setShowDefaults] = useState(false);
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
-  const [popoverRhsOpen, setPopoverRhsOpen] = useState(false);
 
   const displayedShifts: ShiftT[] = isRest
     ? showDefaults
@@ -110,60 +96,6 @@ export default function ShiftTable({
 
   return (
     <div>
-      <div className="title-container">
-        <div>
-          <span className="title">
-            {isRest ? t("rest_shifts") : t("shifts")}
-          </span>
-          {/* {isRest && (
-            <ToggleButton
-              value="breaches"
-              sx={{
-                textTransform: "none",
-                height: "35px",
-                fontSize: "0.9rem",
-                marginLeft: "20px",
-              }}
-              selected={showDefaults}
-              onClick={() => setShowDefaults(!showDefaults)}
-            >
-              {t("show_default_shifts")}
-            </ToggleButton>
-          )} */}
-        </div>
-        <div className="shift-actions-container">
-          {!isRest && (
-            <LinkShiftDialog
-              lng={lng}
-              teamId={selectedTeamId}
-              shifts={shifts}
-              linkShifts={linkShifts}
-              handleAddLinkShift={handleAddLinkShift}
-              handleDeleteLinkShift={handleDeleteLinkShift}
-            />
-          )}
-          <PopoverRHS
-            title={t("new_property")}
-            buttonContent={<TableAddButton text={t("property")} />}
-            content={
-              <NewDimensionForm
-                lng={lng}
-                selectedTeamId={selectedTeamId}
-                dimensionType={
-                  isRest ? DimensionType.REST_SHIFT : DimensionType.SHIFT
-                }
-                dimensions={dimensions}
-                dimEntries={dimEntries}
-                setOpenParent={setPopoverRhsOpen}
-                handleAddDimension={handleAddDimension}
-                handleUpdateDimension={handleUpdateDimension}
-              />
-            }
-            open={popoverRhsOpen}
-            setOpen={setPopoverRhsOpen}
-          />
-        </div>
-      </div>
       <TableContainer
         className="shared-table-container"
         style={{ height: tableHeight }}
@@ -374,12 +306,6 @@ export default function ShiftTable({
           </TableBody>
         </Table>
       </TableContainer>
-      <div className="add-row-button-container">
-        <TableAddButton
-          text={isRest ? t("rest") : t("shift")}
-          handleClick={() => handleAddShift(isRest)}
-        />
-      </div>
     </div>
   );
 }
@@ -393,7 +319,7 @@ interface ShiftTableProps {
   dimEntries: DimEntryT[];
   shifts: ShiftT[];
   specialties: SpecialtyT[];
-  linkShifts: LinkShiftT[];
+  linkShifts: any[]; // Keep for compatibility but not used in actions
   defaultShiftFields: Record<string, string>[];
   tableHeight?: string;
   // New props for sorting/filtering
@@ -401,21 +327,14 @@ interface ShiftTableProps {
   currentSort?: TableSort | null;
   onSort?: (sort: TableSort | null) => void;
   onFilter?: (filter: ColumnFilter) => void;
-  handleAddShift: (isRest: boolean) => void;
   handleUpdateShift: (updatedShift: ShiftT) => void;
   handleDeleteShift: (shiftId: string) => void;
-  handleAddDimension: (
-    newDimension: DimensionT,
-    newDimEntries: DimEntryT[]
-  ) => Promise<boolean>;
   handleUpdateDimension: (dimension: DimensionT) => void;
   handleDeleteDimension: (dimensionId: string) => void;
   handleAddDimEntry: (dimEntry: DimEntryT) => void;
   handleUpdateDimEntry: (dimEntry: DimEntryT) => void;
   handleDeleteDimEntry: (dimEntryId: string) => void;
   handleUpdateAttribute: (attribute: AttributeT, teamId: string) => void;
-  handleAddLinkShift: (linkShift: LinkShiftT) => void;
-  handleDeleteLinkShift: (linkShiftId: string) => void;
 }
 
 interface ShiftTableHeaderProps {
