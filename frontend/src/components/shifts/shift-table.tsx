@@ -229,6 +229,11 @@ export default function ShiftTable({
                   handleAddDimEntry={handleAddDimEntry}
                   handleUpdateDimEntry={handleUpdateDimEntry}
                   handleDeleteDimEntry={handleDeleteDimEntry}
+                  className={`custom-column ${
+                    dIndex === 0 && displayedDimensions.length > 0
+                      ? "first-custom-column"
+                      : ""
+                  }`.trim()}
                 />
               ))}
               <TableCell
@@ -299,6 +304,11 @@ export default function ShiftTable({
                       editing={bodyEditing[shift.id] === dim.id}
                       setEditing={setBodyEditing}
                       handleUpdateAttribute={handleUpdateAttribute}
+                      className={
+                        dIndex === 0 && displayedDimensions.length > 0
+                          ? "first-custom-column"
+                          : ""
+                      }
                     />
                   );
                 })}
