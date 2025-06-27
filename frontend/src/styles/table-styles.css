@@ -956,3 +956,53 @@
 }
 
 /* =================================================================== */
+
+/* Shift Name Cell Styles (matching Worker Name styles) */
+.shift-name-cell {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  min-height: 40px;
+}
+
+.shift-name-text {
+  font-weight: 500;
+  color: #1976d2;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.85rem;
+}
+
+.shift-name-cell .MuiTextField-root {
+  margin: 0;
+  width: 100%;
+}
+
+.shift-name-cell .MuiInputBase-root {
+  font-weight: 500;
+  color: #1976d2;
+  font-size: 0.85rem;
+}
+
+.shift-name-cell .MuiInputBase-root:before {
+  border-bottom: 1px solid #ccc;
+}
+
+.shift-name-cell .MuiInputBase-root:after {
+  border-bottom: 1px solid #1976d2;
+}
+
+.shift-name-cell .MuiInputBase-root.Mui-focused {
+  background-color: rgba(25, 118, 210, 0.05);
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+/* Hover effect for shift name cells */
+.shared-table-row:hover .shift-name-text {
+  background-color: rgba(25, 118, 210, 0.08);
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+}

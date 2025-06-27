@@ -1,8 +1,8 @@
 import React, { Dispatch, SetStateAction, useState } from "react";
 // MUI
-import Box from "@mui/material/Box";
 import TableCell from "@mui/material/TableCell";
 import TextField from "@mui/material/TextField";
+import Tooltip from "@mui/material/Tooltip";
 // Components
 import {
   useLeaveNameDisplayed,
@@ -63,32 +63,49 @@ export default function ShiftFieldCellName({
             : "default",
       }}
     >
-      {editing ? (
-        <TextField
-          fullWidth
-          type="text"
-          name="Name"
-          value={valueState}
-          onChange={(e) => setValueState(e.target.value)}
-          onBlur={handleEditConfirm}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              handleEditConfirm();
-            } else if (e.key === "Escape") {
-              handleEditCancel();
-            }
-          }}
-          autoFocus
-        />
-      ) : (
-        <Box sx={{ minHeight: 45, display: "flex", alignItems: "center" }}>
-          {shift.restType === ShiftRestType.OFF
-            ? getRestNameDisplayed(shift.restType)
-            : shift.leaveType !== ShiftLeaveType.NONE
-            ? getLeaveNameDisplayed(shift.leaveType)
-            : shift.name}
-        </Box>
-      )}
+      <div className="shift-name-cell">
+        {editing ? (
+          <TextField
+            fullWidth
+            type="text"
+            name="Name"
+            value={valueState}
+            onChange={(e) => setValueState(e.target.value)}
+            onBlur={handleEditConfirm}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleEditConfirm();
+              } else if (e.key === "Escape") {
+                handleEditCancel();
+              }
+            }}
+            autoFocus
+            size="small"
+            variant="standard"
+          />
+        ) : (
+          <div className="shift-name-text">
+            <Tooltip
+              title={
+                shift.restType === ShiftRestType.OFF
+                  ? getRestNameDisplayed(shift.restType)
+                  : shift.leaveType !== ShiftLeaveType.NONE
+                  ? getLeaveNameDisplayed(shift.leaveType)
+                  : shift.name || "Unnamed Shift"
+              }
+              placement="top"
+            >
+              <span>
+                {shift.restType === ShiftRestType.OFF
+                  ? getRestNameDisplayed(shift.restType)
+                  : shift.leaveType !== ShiftLeaveType.NONE
+                  ? getLeaveNameDisplayed(shift.leaveType)
+                  : shift.name || "Unnamed Shift"}
+              </span>
+            </Tooltip>
+          </div>
+        )}
+      </div>
     </TableCell>
   );
 }
