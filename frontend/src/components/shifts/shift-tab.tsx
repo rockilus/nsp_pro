@@ -136,16 +136,13 @@ export default function ShiftTab({
   const workTableHeight = useTableHeight(showWorkFilterToolbar);
   const restTableHeight = useTableHeight(showRestFilterToolbar);
 
-  // Toggle handler with state reset
+  // Toggle handler
   const handleShiftViewChange = (
     event: React.MouseEvent<HTMLElement>,
     newView: "work" | "rest"
   ) => {
     if (newView !== null) {
       setShiftView(newView);
-      // Reset both table states when switching views
-      resetWorkAll();
-      resetRestAll();
     }
   };
 
