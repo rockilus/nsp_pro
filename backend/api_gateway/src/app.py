@@ -21,7 +21,6 @@ from src.routes import (
     router_constraint,
     router_constraint_template,
     router_coverage,
-    router_coverage_selector,
     router_dashboard,
     router_dim_entry,
     router_dimension,
@@ -67,7 +66,6 @@ def create_app(db_collections: DatabaseCollections) -> FastAPI:
     app.include_router(router_constraint)
     app.include_router(router_constraint_template)
     app.include_router(router_coverage)
-    app.include_router(router_coverage_selector)
     app.include_router(router_dashboard)
     app.include_router(router_dim_entry)
     app.include_router(router_dimension)

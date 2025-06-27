@@ -3,7 +3,6 @@ import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Button from "@mui/material/Button";
 // Components
-import CoverageCampaignConfig from "./coverage-campaign-config";
 import ScheduleSelector from "./schedule-selector";
 import ConstraintSelector from "./constraint-selector";
 // Skeletons
@@ -12,9 +11,6 @@ import TablesSkeleton from "../skeletons/tables-skeleton";
 import {
   getCampaignTabData,
   getCampaignTabDataNoSolver,
-  addCoverageSelector,
-  updateCoverageSelector,
-  deleteCoverageSelector,
 } from "../../app/lib/campaign";
 import {
   addSchedule,
@@ -24,8 +20,6 @@ import {
 // Styles
 import "../../styles/tab-container-styles.css";
 // Types
-import { CoverageSelectorT } from "../../types/coverage-selector";
-import { CoverageT } from "../../types/coverage";
 import { ScheduleT, WorkTimeTableT } from "../../types/schedule";
 import { ConstraintT } from "../../types/constraint";
 import { TeamWithMembership } from "@/types/team";
@@ -44,11 +38,7 @@ export default function CampaignTab({
     null
   );
   const [schedulesValidated, setSchedulesValidated] = useState<ScheduleT[]>([]);
-  const [coverages, setCoverages] = useState<CoverageT[]>([]);
   const [constraints, setConstraints] = useState<ConstraintT[]>([]);
-  const [coverageSelectors, setCoverageSelectors] = useState<
-    CoverageSelectorT[]
-  >([]);
   const [workTimeTable, setWorkTimeTable] = useState<WorkTimeTableT | null>(
     null
   );
@@ -68,79 +58,13 @@ export default function CampaignTab({
   };
 
   const handleUpdateSchedule = async (schedule: ScheduleT) => {
-    const { schedule: newSchedule, coverageSelectors: newCoverageSelectors } =
-      await updateSchedule(schedule);
+    const newSchedule = await updateSchedule(schedule);
     setScheduleCampaign(newSchedule);
-    setCoverageSelectors((prevCSs) =>
-      prevCSs.map((cs) => {
-        const newCS = newCoverageSelectors.find((newCS) => newCS.id === cs.id);
-        return newCS ? newCS : cs;
-      })
-    );
     const newWorkTimeTable = await getWorkTimeTable(
       newSchedule.id,
       newSchedule.teamId
     );
     setWorkTimeTable(newWorkTimeTable);
-  };
-
-  //////////////////////////
-  // Coverage Selector Actions
-  //////////////////////////
-
-  const handleAddCoverageSelector = async (
-    coverageSelector: CoverageSelectorT
-  ) => {
-    const newCoverageSelector = await addCoverageSelector(
-      coverageSelector,
-      teamWithMembership.team.id
-    );
-    setCoverageSelectors([...coverageSelectors, newCoverageSelector]);
-    const newWorkTimeTable = await getWorkTimeTable(
-      newCoverageSelector.scheduleId,
-      teamWithMembership.team.id
-    );
-    setWorkTimeTable(newWorkTimeTable);
-  };
-
-  const handleUpdateCoverageSelector = async (
-    coverageSelector: CoverageSelectorT
-  ) => {
-    const newCoverageSelector = await updateCoverageSelector(
-      coverageSelector,
-      teamWithMembership.team.id
-    );
-    setCoverageSelectors((prevCoverageSelectors) =>
-      prevCoverageSelectors.map((coverageSelector) =>
-        coverageSelector.id === newCoverageSelector.id
-          ? newCoverageSelector
-          : coverageSelector
-      )
-    );
-    const newWorkTimeTable = await getWorkTimeTable(
-      newCoverageSelector.scheduleId,
-      teamWithMembership.team.id
-    );
-    setWorkTimeTable(newWorkTimeTable);
-  };
-
-  const handleDeleteCoverageSelector = async (coverageSelectorId: string) => {
-    await deleteCoverageSelector(
-      coverageSelectorId,
-      teamWithMembership.team.id
-    );
-    setCoverageSelectors((prevCoverageSelectors) =>
-      prevCoverageSelectors.filter(
-        (coverageSelector) => coverageSelector.id !== coverageSelectorId
-      )
-    );
-    if (scheduleCampaign) {
-      const newWorkTimeTable = await getWorkTimeTable(
-        scheduleCampaign.id,
-        teamWithMembership.team.id
-      );
-      setWorkTimeTable(newWorkTimeTable);
-    }
   };
 
   useEffect(() => {
@@ -151,15 +75,11 @@ export default function CampaignTab({
         const {
           scheduleCampaign: fetchedScheduleCampaign,
           schedulesValidated: fetchedSchedulesValidated,
-          coverages: fetchedCoverages,
           constraints: fetchedConstraints,
-          coverageSelectors: fetchedCoverageSelectors,
         } = await getCampaignTabData(teamWithMembership.team.id);
         setScheduleCampaign(fetchedScheduleCampaign);
         setSchedulesValidated(fetchedSchedulesValidated);
-        setCoverages(fetchedCoverages);
         setConstraints(fetchedConstraints);
-        setCoverageSelectors(fetchedCoverageSelectors);
       } else {
         const {
           scheduleCampaign: fetchedScheduleCampaign,
@@ -202,16 +122,6 @@ export default function CampaignTab({
           />
           {teamWithMembership.team.useSolver && (
             <>
-              <div className="divider" />
-              <CoverageCampaignConfig
-                lng={lng}
-                schedule={scheduleCampaign}
-                coverageSelectors={coverageSelectors}
-                coverages={coverages}
-                handleAddCoverageSelector={handleAddCoverageSelector}
-                handleUpdateCoverageSelector={handleUpdateCoverageSelector}
-                handleDeleteCoverageSelector={handleDeleteCoverageSelector}
-              />
               <div className="divider" />
               <ConstraintSelector
                 lng={lng}

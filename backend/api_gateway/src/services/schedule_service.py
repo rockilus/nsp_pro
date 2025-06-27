@@ -1,12 +1,11 @@
 from datetime import date, datetime, timedelta, timezone
-from typing import Callable, Dict, List, Tuple
+from typing import Callable, Dict
 
 from celery import Celery  # type: ignore
 from celery.result import AsyncResult  # type: ignore
 from openpyxl import Workbook
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
-    CoverageSelector,
     DuplicateRequest,
     DuplicateResult,
     ExportOptions,
@@ -150,35 +149,17 @@ class ScheduleService(BaseService):
     def update_schedule(
         self,
         schedule_new: Schedule,
-    ) -> Tuple[Schedule, List[CoverageSelector]]:
+    ) -> Schedule:
         schedule_old = self.collection.schedule_db.get_schedule_by_id(schedule_new.id)
         self.assignment_service.update_assignments_for_schedule_dates_change(
             schedule_new=schedule_new, schedule_old=schedule_old
         )
-        css_updated: List[CoverageSelector] = []
         if (
             schedule_old.start_date != schedule_new.start_date
             or schedule_old.end_date != schedule_new.end_date
         ):
             schedule_new.last_modified_dates = datetime.now(timezone.utc)
-            # fmt: off
-            css_full_period = self.collection.coverage_selector_db\
-                .get_coverage_selectors_by_schedule_id_full_period(
-                    schedule_new.id
-                )
-            # fmt: on
-            for cs in css_full_period:
-                cs.start_date = schedule_new.start_date
-                cs.end_date = schedule_new.end_date
-            css_updated = (
-                self.collection.coverage_selector_db.update_coverage_selectors(
-                    css_full_period
-                )
-            )
-        return (
-            self.collection.schedule_db.update_schedule(schedule_new),
-            css_updated,
-        )
+        return self.collection.schedule_db.update_schedule(schedule_new)
 
     def update_schedule_solve_details_failure(
         self, schedule_id: str, error: str, task_id: str
