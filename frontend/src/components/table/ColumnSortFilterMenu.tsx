@@ -99,6 +99,18 @@ export default function ColumnSortFilterMenu({
           />
         );
 
+      case "boolean":
+        return (
+          <SelectFilter
+            onApply={onFilter}
+            onClose={handleFilterClose}
+            columnId={column.id}
+            label={column.label}
+            options={column.getOptions?.() || []}
+            currentValue={currentFilter?.value}
+          />
+        );
+
       case "date":
         return (
           <DateFilter
