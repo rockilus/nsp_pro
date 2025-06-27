@@ -15,7 +15,6 @@ import LinkShiftList from "./link-shift-list";
 import TableAddButton from "../../buttons/table-add-button";
 // Styles
 import "../../../styles/text-styles.css";
-import "./link-shift-dialog.css";
 // Types
 import { LinkShiftT, ShiftT } from "../../../types/shift";
 

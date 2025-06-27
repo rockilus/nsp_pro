@@ -450,7 +450,7 @@ export default function ShiftTab({
                   exclusive
                   onChange={handleShiftViewChange}
                   size="small"
-                  sx={{ ml: 2 }}
+                  sx={{ ml: 2, height: "35px" }}
                 >
                   <ToggleButton value="work">{t("shifts")}</ToggleButton>
                   <ToggleButton value="rest">{t("rest")}</ToggleButton>
