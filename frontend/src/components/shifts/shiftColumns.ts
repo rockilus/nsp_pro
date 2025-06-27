@@ -128,16 +128,13 @@ export const createShiftColumns = (
       label: t("staffing"),
       type: "select" as const,
       getValue: (shift: ShiftT) => {
-        return shift.staffing
-          .map((s) => {
-            if (s.specialtyId === null) {
-              return `Any: ${s.staffing}`;
-            }
-            const specialty = specialties.find((sp) => sp.id === s.specialtyId);
-            const specialtyName = specialty ? specialty.name : "General";
-            return `${specialtyName}: ${s.staffing}`;
-          })
-          .join(", ");
+        return shift.staffing.map((s) => {
+          if (s.specialtyId === null) {
+            return "Any";
+          }
+          const specialty = specialties.find((sp) => sp.id === s.specialtyId);
+          return specialty ? specialty.name : "General";
+        });
       },
       getDisplayValue: (shift: ShiftT) => {
         return shift.staffing
