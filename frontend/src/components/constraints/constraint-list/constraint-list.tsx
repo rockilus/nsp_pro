@@ -55,7 +55,7 @@ export default function ConstraintList({
         spacing={0}
         sx={{ backgroundColor: "white", borderRadius: 2 }}
       >
-        {constraints.map((constraint) => (
+        {constraints.map((constraint, index) => (
           <ConstraintListItem
             key={constraint.id}
             lng={lng}
@@ -66,6 +66,7 @@ export default function ConstraintList({
             handleAddConstraint={handleAddConstraint}
             handleUpdateConstraint={handleUpdateConstraint}
             handleDeleteConstraint={handleDeleteConstraint}
+            isLast={index === constraints.length - 1}
           />
         ))}
       </Grid>
