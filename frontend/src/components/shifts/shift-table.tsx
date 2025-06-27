@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
@@ -12,7 +12,7 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-// import ToggleButton from "@mui/material/ToggleButton";
+import Tooltip from "@mui/material/Tooltip";
 // Components
 import NewDimensionForm from "../shift-worker-shared/dimension/new-dimension-form";
 import PopoverRHS from "../inputs/popover-rhs";
@@ -20,6 +20,7 @@ import DimensionCell from "../shift-worker-shared/dimension/dimension-cell";
 import ShiftFieldCell from "./shift-field-cell/shift-field-cell";
 import AttributeCell from "../shift-worker-shared/attribute/attribute-cell";
 import TableAddButton from "../buttons/table-add-button";
+import ColumnSortFilterMenu from "../table/ColumnSortFilterMenu";
 import {
   filterWorkShifts,
   filterRestShifts,
@@ -45,6 +46,7 @@ import { DimensionT } from "../../types/dimension";
 import { AttributeOwnerType } from "../../types/attribute";
 import { AttributeT } from "../../types/attribute";
 import { SpecialtyT } from "@/types/specialty";
+import { ColumnDefinition, ColumnFilter, TableSort } from "../../types/filter";
 
 dayjs.extend(utc);
 
@@ -58,6 +60,12 @@ export default function ShiftTable({
   specialties,
   linkShifts,
   defaultShiftFields,
+  tableHeight = "70vh",
+  // New props for sorting/filtering
+  shiftColumns,
+  currentSort,
+  onSort,
+  onFilter,
   handleAddShift,
   handleUpdateShift,
   handleDeleteShift,
@@ -70,32 +78,7 @@ export default function ShiftTable({
   handleUpdateAttribute,
   handleAddLinkShift,
   handleDeleteLinkShift,
-}: {
-  lng: string;
-  selectedTeamId: string;
-  isRest: boolean;
-  dimensions: DimensionT[];
-  dimEntries: DimEntryT[];
-  shifts: ShiftT[];
-  specialties: SpecialtyT[];
-  linkShifts: LinkShiftT[];
-  defaultShiftFields: Record<string, string>[];
-  handleAddShift: (isRest: boolean) => void;
-  handleUpdateShift: (updatedShift: ShiftT) => void;
-  handleDeleteShift: (shiftId: string) => void;
-  handleAddDimension: (
-    newDimension: DimensionT,
-    newDimEntries: DimEntryT[]
-  ) => Promise<boolean>;
-  handleUpdateDimension: (dimension: DimensionT) => void;
-  handleDeleteDimension: (dimensionId: string) => void;
-  handleAddDimEntry: (dimEntry: DimEntryT) => void;
-  handleUpdateDimEntry: (dimEntry: DimEntryT) => void;
-  handleDeleteDimEntry: (dimEntryId: string) => void;
-  handleUpdateAttribute: (attribute: AttributeT, teamId: string) => void;
-  handleAddLinkShift: (linkShift: LinkShiftT) => void;
-  handleDeleteLinkShift: (linkShiftId: string) => void;
-}) {
+}: ShiftTableProps) {
   const { t } = useTranslation(lng, "shift-page");
 
   const [showDefaults, setShowDefaults] = useState(false);
@@ -108,10 +91,21 @@ export default function ShiftTable({
       : filterRestShiftsNonDefault(shifts)
     : filterWorkShifts(shifts);
 
-  const dimensionsDisplayed = dimensions.filter((dim) =>
+  const dimensionsDisplayed = dimensions.filter((dim: DimensionT) =>
     isRest
       ? dim.dimTypes.includes(DimensionType.REST_SHIFT)
       : dim.dimTypes.includes(DimensionType.SHIFT)
+  );
+
+  // Memoize filtered dimensions for performance
+  const displayedDimensions = React.useMemo(
+    () =>
+      dimensions.filter((dim: DimensionT) =>
+        isRest
+          ? dim.dimTypes.includes(DimensionType.REST_SHIFT)
+          : dim.dimTypes.includes(DimensionType.SHIFT)
+      ),
+    [dimensions, isRest]
   );
 
   return (
@@ -170,16 +164,50 @@ export default function ShiftTable({
           />
         </div>
       </div>
-      <TableContainer style={{ width: "100%" }}>
+      <TableContainer
+        style={{ width: "100%", height: tableHeight, overflow: "auto" }}
+      >
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
-              {defaultShiftFields.map((field, index) => (
-                <TableCell key={index} sx={{ paddingY: 0, fontWeight: "bold" }}>
-                  <span className="table-header-default">{field.label}</span>
-                </TableCell>
-              ))}
-              {dimensionsDisplayed.map((dim, dIndex) => (
+              {defaultShiftFields.map(
+                (field: Record<string, string>, index: number) => (
+                  <TableCell
+                    key={index}
+                    sx={{ paddingY: 0, fontWeight: "bold" }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <Tooltip title={field.label} placement="top">
+                        <span className="table-header-default">
+                          {field.label}
+                        </span>
+                      </Tooltip>
+                      {onSort &&
+                        onFilter &&
+                        shiftColumns &&
+                        (() => {
+                          const column = shiftColumns.find(
+                            (col) => col.id === field.name
+                          );
+                          return column ? (
+                            <ColumnSortFilterMenu
+                              column={column}
+                              currentSort={
+                                currentSort?.columnId === field.name
+                                  ? currentSort
+                                  : undefined
+                              }
+                              currentFilter={undefined}
+                              onSort={onSort}
+                              onFilter={onFilter}
+                            />
+                          ) : null;
+                        })()}
+                    </div>
+                  </TableCell>
+                )
+              )}
+              {displayedDimensions.map((dim: DimensionT, dIndex: number) => (
                 <DimensionCell
                   key={dIndex}
                   lng={lng}
@@ -189,7 +217,7 @@ export default function ShiftTable({
                   }
                   dimension={dim}
                   dimEntries={dimEntries.filter(
-                    (de) => de.dimensionId === dim.id
+                    (de: DimEntryT) => de.dimensionId === dim.id
                   )}
                   handleUpdateDimension={handleUpdateDimension}
                   handleDeleteDimension={handleDeleteDimension}
@@ -202,7 +230,7 @@ export default function ShiftTable({
             </TableRow>
           </TableHead>
           <TableBody>
-            {displayedShifts.map((shift, shiftIndex) => (
+            {displayedShifts.map((shift: ShiftT, shiftIndex: number) => (
               <TableRow
                 key={shiftIndex}
                 sx={{
@@ -214,21 +242,23 @@ export default function ShiftTable({
                       : "None",
                 }}
               >
-                {defaultShiftFields.map((field, index) => (
-                  <ShiftFieldCell
-                    key={index}
-                    lng={lng}
-                    shift={shift}
-                    specialties={specialties}
-                    shiftField={field.name}
-                    editing={bodyEditing}
-                    setEditing={setBodyEditing}
-                    handleUpdateShift={handleUpdateShift}
-                  />
-                ))}
-                {dimensionsDisplayed.map((dim, dIndex) => {
+                {defaultShiftFields.map(
+                  (field: Record<string, string>, index: number) => (
+                    <ShiftFieldCell
+                      key={index}
+                      lng={lng}
+                      shift={shift}
+                      specialties={specialties}
+                      shiftField={field.name}
+                      editing={bodyEditing}
+                      setEditing={setBodyEditing}
+                      handleUpdateShift={handleUpdateShift}
+                    />
+                  )
+                )}
+                {displayedDimensions.map((dim: DimensionT, dIndex: number) => {
                   const attribute = shift.attributes.find(
-                    (a) => a.dimensionId === dim.id
+                    (a: AttributeT) => a.dimensionId === dim.id
                   );
                   return (
                     <AttributeCell
@@ -251,7 +281,7 @@ export default function ShiftTable({
                       }
                       dimension={dim}
                       dimEntries={dimEntries.filter(
-                        (de) => de.dimensionId === dim.id
+                        (de: DimEntryT) => de.dimensionId === dim.id
                       )}
                       editing={bodyEditing[shift.id] === dim.id}
                       setEditing={setBodyEditing}
@@ -285,4 +315,83 @@ export default function ShiftTable({
       </div>
     </div>
   );
+}
+
+// Types for the main component and sub-components
+interface ShiftTableProps {
+  lng: string;
+  selectedTeamId: string;
+  isRest: boolean;
+  dimensions: DimensionT[];
+  dimEntries: DimEntryT[];
+  shifts: ShiftT[];
+  specialties: SpecialtyT[];
+  linkShifts: LinkShiftT[];
+  defaultShiftFields: Record<string, string>[];
+  tableHeight?: string;
+  // New props for sorting/filtering
+  shiftColumns?: ColumnDefinition[];
+  currentSort?: TableSort | null;
+  onSort?: (sort: TableSort | null) => void;
+  onFilter?: (filter: ColumnFilter) => void;
+  handleAddShift: (isRest: boolean) => void;
+  handleUpdateShift: (updatedShift: ShiftT) => void;
+  handleDeleteShift: (shiftId: string) => void;
+  handleAddDimension: (
+    newDimension: DimensionT,
+    newDimEntries: DimEntryT[]
+  ) => Promise<boolean>;
+  handleUpdateDimension: (dimension: DimensionT) => void;
+  handleDeleteDimension: (dimensionId: string) => void;
+  handleAddDimEntry: (dimEntry: DimEntryT) => void;
+  handleUpdateDimEntry: (dimEntry: DimEntryT) => void;
+  handleDeleteDimEntry: (dimEntryId: string) => void;
+  handleUpdateAttribute: (attribute: AttributeT, teamId: string) => void;
+  handleAddLinkShift: (linkShift: LinkShiftT) => void;
+  handleDeleteLinkShift: (linkShiftId: string) => void;
+}
+
+interface ShiftTableHeaderProps {
+  lng: string;
+  selectedTeamId: string;
+  isRest: boolean;
+  specialties: SpecialtyT[];
+  defaultShiftFields: Record<string, string>[];
+  displayedDimensions: DimensionT[];
+  dimEntries: DimEntryT[];
+  shiftColumns?: ColumnDefinition[];
+  currentSort?: TableSort | null;
+  onSort?: (sort: TableSort | null) => void;
+  onFilter?: (filter: ColumnFilter) => void;
+  handleUpdateDimension: (dimension: DimensionT) => void;
+  handleDeleteDimension: (dimensionId: string) => void;
+  handleAddDimEntry: (dimEntry: DimEntryT) => void;
+  handleUpdateDimEntry: (dimEntry: DimEntryT) => void;
+  handleDeleteDimEntry: (dimEntryId: string) => void;
+}
+
+interface ShiftTableRowProps {
+  lng: string;
+  selectedTeamId: string;
+  shift: ShiftT;
+  specialties: SpecialtyT[];
+  defaultShiftFields: Record<string, string>[];
+  displayedDimensions: DimensionT[];
+  dimEntries: DimEntryT[];
+  bodyEditing: { [key: string]: string };
+  setBodyEditing: React.Dispatch<
+    React.SetStateAction<{ [key: string]: string }>
+  >;
+  handleUpdateShift: (updatedShift: ShiftT) => void;
+  handleDeleteShift: (shiftId: string) => void;
+  handleUpdateAttribute: (attribute: AttributeT, teamId: string) => void;
+}
+
+interface ShiftNameCellProps {
+  shift: ShiftT;
+  bodyEditing: { [key: string]: string };
+  setBodyEditing: React.Dispatch<
+    React.SetStateAction<{ [key: string]: string }>
+  >;
+  handleUpdateShift: (updatedShift: ShiftT) => void;
 }

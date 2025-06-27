@@ -1,11 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "../../app/i18n/client";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Components
 import ShiftTable from "./shift-table";
+import TableFilterBar from "../table/TableFilterBar";
 // Skeletons
 import TablesSkeleton from "../skeletons/tables-skeleton";
+// Hooks
+import { useTableState } from "../../hooks/useTableState";
+import { useTableHeight } from "../../hooks/useTableHeight";
+// Utils
+import { createShiftColumns } from "./shiftColumns";
+import { filterWorkShifts, filterRestShifts } from "./shift-utils/shift-utils";
 // Actions
 import {
   getShiftsTabData,
@@ -57,6 +64,67 @@ export default function ShiftTab({
   const [dimEntries, setDimEntries] = useState<DimEntryT[]>([]);
   const [specialties, setSpecialties] = useState<SpecialtyT[]>([]);
   const [linkShifts, setLinkShifts] = useState<LinkShiftT[]>([]);
+
+  // Create shift columns for both work and rest shifts
+  const workShiftColumns = useMemo(() => {
+    return createShiftColumns(
+      t,
+      specialties,
+      dimensions,
+      dimEntries,
+      shifts,
+      false
+    );
+  }, [t, specialties, dimensions, dimEntries, shifts]);
+
+  const restShiftColumns = useMemo(() => {
+    return createShiftColumns(
+      t,
+      specialties,
+      dimensions,
+      dimEntries,
+      shifts,
+      true
+    );
+  }, [t, specialties, dimensions, dimEntries, shifts]);
+
+  // Table state for work shifts
+  const {
+    tableState: workTableState,
+    filteredAndSortedData: filteredWorkShifts,
+    addFilter: addWorkFilter,
+    removeFilter: removeWorkFilter,
+    updateSort: updateWorkSort,
+    resetAll: resetWorkAll,
+  } = useTableState(
+    filterWorkShifts(shifts),
+    workShiftColumns,
+    "nsp-pro-work-shift-table-state"
+  );
+
+  // Table state for rest shifts
+  const {
+    tableState: restTableState,
+    filteredAndSortedData: filteredRestShifts,
+    addFilter: addRestFilter,
+    removeFilter: removeRestFilter,
+    updateSort: updateRestSort,
+    resetAll: resetRestAll,
+  } = useTableState(
+    filterRestShifts(shifts),
+    restShiftColumns,
+    "nsp-pro-rest-shift-table-state"
+  );
+
+  // Show filter toolbars
+  const showWorkFilterToolbar =
+    workTableState.filters.length > 0 || workTableState.sort !== null;
+  const showRestFilterToolbar =
+    restTableState.filters.length > 0 || restTableState.sort !== null;
+
+  // Dynamic table heights
+  const workTableHeight = useTableHeight(showWorkFilterToolbar);
+  const restTableHeight = useTableHeight(showRestFilterToolbar);
 
   const DefaultWorkShiftFields: Record<string, string>[] = [
     { name: "color", label: t("color") },
@@ -353,16 +421,32 @@ export default function ShiftTab({
       ) : (
         selectedTeamId && (
           <div>
+            {/* Work Shifts Section */}
+            {showWorkFilterToolbar && (
+              <TableFilterBar
+                filters={workTableState.filters}
+                sort={workTableState.sort}
+                onRemoveFilter={removeWorkFilter}
+                onRemoveSort={() => updateWorkSort(null)}
+                onResetAll={resetWorkAll}
+              />
+            )}
             <ShiftTable
               lng={lng}
               selectedTeamId={selectedTeamId}
               isRest={false}
               dimensions={dimensions}
               dimEntries={dimEntries}
-              shifts={shifts}
+              shifts={filteredWorkShifts}
               specialties={specialties}
               linkShifts={linkShifts}
               defaultShiftFields={DefaultWorkShiftFields}
+              tableHeight={workTableHeight}
+              // New props for sorting/filtering
+              shiftColumns={workShiftColumns}
+              currentSort={workTableState.sort}
+              onSort={updateWorkSort}
+              onFilter={addWorkFilter}
               handleAddShift={handleAddShift}
               handleUpdateShift={handleUpdateShift}
               handleDeleteShift={handleDeleteShift}
@@ -376,17 +460,35 @@ export default function ShiftTab({
               handleAddLinkShift={handleAddLinkShift}
               handleDeleteLinkShift={handleDeleteLinkShift}
             />
+
             <div className="divider" />
+
+            {/* Rest Shifts Section */}
+            {showRestFilterToolbar && (
+              <TableFilterBar
+                filters={restTableState.filters}
+                sort={restTableState.sort}
+                onRemoveFilter={removeRestFilter}
+                onRemoveSort={() => updateRestSort(null)}
+                onResetAll={resetRestAll}
+              />
+            )}
             <ShiftTable
               lng={lng}
               selectedTeamId={selectedTeamId}
               isRest={true}
               dimensions={dimensions}
               dimEntries={dimEntries}
-              shifts={shifts}
+              shifts={filteredRestShifts}
               specialties={[]}
               linkShifts={[]}
               defaultShiftFields={DefaultRestShiftFields}
+              tableHeight={restTableHeight}
+              // New props for sorting/filtering
+              shiftColumns={restShiftColumns}
+              currentSort={restTableState.sort}
+              onSort={updateRestSort}
+              onFilter={addRestFilter}
               handleAddShift={handleAddShift}
               handleUpdateShift={handleUpdateShift}
               handleDeleteShift={handleDeleteShift}
