@@ -119,6 +119,62 @@
   min-width: 100%;
 }
 
+/* Sticky first and second columns for shift table using nth-child selectors */
+.shared-table tbody tr td:nth-child(1),
+.shared-table tbody tr th:nth-child(1) {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background-color: #ffffff;
+  border-right: 1px solid #e0e0e0;
+  min-width: 60px;
+  max-width: 60px;
+}
+
+.shared-table tbody tr td:nth-child(2),
+.shared-table tbody tr th:nth-child(2) {
+  position: sticky;
+  left: 60px;
+  z-index: 2;
+  background-color: #ffffff;
+  border-right: 1px solid #e0e0e0;
+  min-width: 150px;
+  max-width: 150px;
+}
+
+/* Header cells for first two columns */
+.shared-table thead tr th:nth-child(1) {
+  position: sticky;
+  left: 0;
+  top: 0;
+  z-index: 4;
+  background-color: #fafafa;
+  border-right: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  min-width: 60px;
+  max-width: 60px;
+}
+
+.shared-table thead tr th:nth-child(2) {
+  position: sticky;
+  left: 60px;
+  top: 0;
+  z-index: 4;
+  background-color: #fafafa;
+  border-right: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  min-width: 150px;
+  max-width: 150px;
+}
+
+/* Hover effects for sticky columns */
+.shared-table-row:hover td:nth-child(1),
+.shared-table-row:hover th:nth-child(1),
+.shared-table-row:hover td:nth-child(2),
+.shared-table-row:hover th:nth-child(2) {
+  background-color: #f5f5f5;
+}
+
 /* Webkit scrollbar styling for shared tables */
 .shared-table-container::-webkit-scrollbar {
   width: 12px;
@@ -195,10 +251,39 @@
   padding: 4px 8px;
 }
 
+/* Sticky second column */
+.shared-table-second-column {
+  position: sticky;
+  left: 150px; /* Position after first column */
+  z-index: 2;
+  background-color: #ffffff;
+  border-right: 1px solid #e0e0e0;
+  min-width: 150px;
+  max-width: 150px;
+  padding: 4px 8px;
+}
+
 /* First header cell (intersection of sticky header and first column) */
 .shared-table-first-header-cell {
   position: sticky;
   left: 0;
+  top: 0;
+  z-index: 4;
+  background-color: #fafafa;
+  border-right: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  min-width: 150px;
+  max-width: 150px;
+  padding: 6px 8px;
+  font-weight: 500;
+  font-size: 0.8rem;
+  height: 36px;
+}
+
+/* Second header cell (intersection of sticky header and second column) */
+.shared-table-second-header-cell {
+  position: sticky;
+  left: 150px;
   top: 0;
   z-index: 4;
   background-color: #fafafa;
@@ -227,6 +312,10 @@
 }
 
 .shared-table-row:hover .shared-table-first-column {
+  background-color: #f5f5f5;
+}
+
+.shared-table-row:hover .shared-table-second-column {
   background-color: #f5f5f5;
 }
 
