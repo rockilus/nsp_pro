@@ -224,6 +224,17 @@ export default function ShiftTable({
                   dimEntries={dimEntries.filter(
                     (de: DimEntryT) => de.dimensionId === dim.id
                   )}
+                  // Add sorting/filtering props
+                  column={shiftColumns?.find(
+                    (col) => col.id === `dimension_${dim.id}`
+                  )}
+                  currentSort={
+                    currentSort?.columnId === `dimension_${dim.id}`
+                      ? currentSort
+                      : undefined
+                  }
+                  onSort={onSort}
+                  onFilter={onFilter}
                   handleUpdateDimension={handleUpdateDimension}
                   handleDeleteDimension={handleDeleteDimension}
                   handleAddDimEntry={handleAddDimEntry}
