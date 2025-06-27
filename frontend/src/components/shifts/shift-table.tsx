@@ -232,9 +232,13 @@ export default function ShiftTable({
                 />
               ))}
               <TableCell
-                className="shared-table-actions"
+                className="shared-table-actions-header"
                 sx={{ padding: 0 }}
-              ></TableCell>
+              >
+                <Tooltip title={t("actions")} placement="top">
+                  <span className="table-header-default">{t("actions")}</span>
+                </Tooltip>
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -304,16 +308,20 @@ export default function ShiftTable({
                   className="shared-table-actions"
                   sx={{ paddingY: 0 }}
                 >
-                  <Box sx={{ display: "flex" }}>
-                    <Button
-                      disabled={
-                        shift.leaveType !== ShiftLeaveType.NONE ||
-                        shift.restType === ShiftRestType.OFF
-                      }
-                      onClick={() => handleDeleteShift(shift.id)}
-                    >
-                      <DeleteIcon />
-                    </Button>
+                  <Box sx={{ display: "flex", justifyContent: "center" }}>
+                    <Tooltip title="Delete Shift">
+                      <Button
+                        disabled={
+                          shift.leaveType !== ShiftLeaveType.NONE ||
+                          shift.restType === ShiftRestType.OFF
+                        }
+                        onClick={() => handleDeleteShift(shift.id)}
+                        size="small"
+                        sx={{ minWidth: "auto", p: 0.5 }}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </Button>
+                    </Tooltip>
                   </Box>
                 </TableCell>
               </TableRow>
