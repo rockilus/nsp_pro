@@ -55,6 +55,7 @@ export default function ShiftFieldCellRecuperation({
       }
       sx={{
         paddingY: 0,
+        textAlign: "center",
         cursor: shift.shiftType === ShiftType.DUTY ? "pointer" : "default",
       }}
     >

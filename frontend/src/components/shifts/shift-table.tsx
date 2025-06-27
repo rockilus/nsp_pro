@@ -179,7 +179,19 @@ export default function ShiftTable({
                 (field: Record<string, string>, index: number) => (
                   <TableCell
                     key={index}
-                    sx={{ paddingY: 0, fontWeight: "bold" }}
+                    sx={{
+                      paddingY: 0,
+                      fontWeight: "bold",
+                      textAlign: [
+                        "acronym",
+                        "duty",
+                        "recuperation",
+                        "start_time",
+                        "end_time",
+                      ].includes(field.name)
+                        ? "center"
+                        : "left",
+                    }}
                   >
                     <div className="flex items-center justify-between">
                       <Tooltip title={field.label} placement="top">

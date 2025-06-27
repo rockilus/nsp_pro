@@ -84,6 +84,7 @@ export default function ShiftFieldCellStartTime({
       }
       sx={{
         paddingY: 0,
+        textAlign: "center",
         cursor:
           shift.leaveType === ShiftLeaveType.NONE &&
           shift.restType !== ShiftRestType.OFF
