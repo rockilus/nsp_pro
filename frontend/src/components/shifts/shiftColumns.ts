@@ -1,5 +1,5 @@
 import { ColumnDefinition } from "../../types/filter";
-import { ShiftT } from "../../types/shift";
+import { ShiftT, ShiftType } from "../../types/shift";
 import {
   DimensionT,
   DimensionType,
@@ -62,16 +62,28 @@ export const createShiftColumns = (
     {
       id: "start_time",
       label: t("start_time"),
-      type: "text" as const,
+      type: "select" as const,
       getValue: (shift: ShiftT) => shift.startTime.format("HH:mm"),
       getDisplayValue: (shift: ShiftT) => shift.startTime.format("HH:mm"),
+      getOptions: () => {
+        const uniqueTimes = [
+          ...new Set(shifts.map((s) => s.startTime.format("HH:mm"))),
+        ];
+        return uniqueTimes.map((time) => ({ value: time, label: time }));
+      },
     },
     {
       id: "end_time",
       label: t("end_time"),
-      type: "text" as const,
+      type: "select" as const,
       getValue: (shift: ShiftT) => shift.endTime.format("HH:mm"),
       getDisplayValue: (shift: ShiftT) => shift.endTime.format("HH:mm"),
+      getOptions: () => {
+        const uniqueTimes = [
+          ...new Set(shifts.map((s) => s.endTime.format("HH:mm"))),
+        ];
+        return uniqueTimes.map((time) => ({ value: time, label: time }));
+      },
     },
   ];
 
@@ -83,18 +95,15 @@ export const createShiftColumns = (
       {
         id: "duty",
         label: t("duty"),
-        type: "select" as const,
-        getValue: (shift: ShiftT) => shift.recuperationTime?.toString() || "0",
+        type: "boolean" as const,
+        getValue: (shift: ShiftT) =>
+          shift.shiftType === ShiftType.DUTY ? "true" : "false",
         getDisplayValue: (shift: ShiftT) =>
-          shift.recuperationTime?.toString() || "0",
-        getOptions: () => {
-          const uniqueValues = [
-            ...new Set(
-              shifts.map((s) => s.recuperationTime?.toString() || "0")
-            ),
-          ];
-          return uniqueValues.map((value) => ({ value, label: value }));
-        },
+          shift.shiftType === ShiftType.DUTY ? "Yes" : "No",
+        getOptions: () => [
+          { value: "true", label: "Yes" },
+          { value: "false", label: "No" },
+        ],
       },
       {
         id: "recuperation",
@@ -117,11 +126,52 @@ export const createShiftColumns = (
     baseColumns.push({
       id: "staffing",
       label: t("staffing"),
-      type: "text" as const,
-      getValue: (shift: ShiftT) =>
-        shift.staffing.map((s) => s.staffing).join(", "),
-      getDisplayValue: (shift: ShiftT) =>
-        shift.staffing.map((s) => s.staffing).join(", "),
+      type: "select" as const,
+      getValue: (shift: ShiftT) => {
+        return shift.staffing
+          .map((s) => {
+            if (s.specialtyId === null) {
+              return `Any: ${s.staffing}`;
+            }
+            const specialty = specialties.find((sp) => sp.id === s.specialtyId);
+            const specialtyName = specialty ? specialty.name : "General";
+            return `${specialtyName}: ${s.staffing}`;
+          })
+          .join(", ");
+      },
+      getDisplayValue: (shift: ShiftT) => {
+        return shift.staffing
+          .map((s) => {
+            if (s.specialtyId === null) {
+              return `Any: ${s.staffing}`;
+            }
+            const specialty = specialties.find((sp) => sp.id === s.specialtyId);
+            const specialtyName = specialty ? specialty.name : "General";
+            return `${specialtyName}: ${s.staffing}`;
+          })
+          .join(", ");
+      },
+      getOptions: () => {
+        const uniqueSpecialties = [
+          ...new Set(
+            shifts.flatMap((s) =>
+              s.staffing.map((st) => {
+                if (st.specialtyId === null) {
+                  return "Any";
+                }
+                const specialty = specialties.find(
+                  (sp) => sp.id === st.specialtyId
+                );
+                return specialty ? specialty.name : "General";
+              })
+            )
+          ),
+        ];
+        return uniqueSpecialties.map((specialtyName) => ({
+          value: specialtyName,
+          label: specialtyName,
+        }));
+      },
     });
   }
 
