@@ -13,6 +13,7 @@ import ReactQueryProvider from "@/components/providers/ReactQueryProvider";
 // Context
 import { useTeam } from "@/context/TeamContext";
 import { useUser } from "@/context/UserContext";
+import { SqsSolveProvider } from "../../../../app/lib/contexts/SqsSolveContext";
 // Styles
 import "../../../../styles/page.css";
 // Types
@@ -38,21 +39,23 @@ export default function Page({
       >
         <div className="page-layout">
           <ReactQueryProvider>
-            <LocalizationProvider
-              dateAdapter={AdapterDayjs}
-              adapterLocale={
-                lng === "en" ? "en-gb" : lng === "es" ? "es" : "fr"
-              }
-            >
-              {selectedTeam.membership.role === TeamMembershipRole.OWNER ? (
-                <ScheduleTab lng={lng} teamWithMembership={selectedTeam} />
-              ) : (
-                <ScheduleTabMember
-                  lng={lng}
-                  teamWithMembership={selectedTeam}
-                />
-              )}
-            </LocalizationProvider>
+            <SqsSolveProvider>
+              <LocalizationProvider
+                dateAdapter={AdapterDayjs}
+                adapterLocale={
+                  lng === "en" ? "en-gb" : lng === "es" ? "es" : "fr"
+                }
+              >
+                {selectedTeam.membership.role === TeamMembershipRole.OWNER ? (
+                  <ScheduleTab lng={lng} teamWithMembership={selectedTeam} />
+                ) : (
+                  <ScheduleTabMember
+                    lng={lng}
+                    teamWithMembership={selectedTeam}
+                  />
+                )}
+              </LocalizationProvider>
+            </SqsSolveProvider>
           </ReactQueryProvider>
         </div>
       </RoleBased>

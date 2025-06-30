@@ -6,6 +6,7 @@ import { useTranslation } from "../../../app/i18n/client";
 import DataViewSelector from "./data-view-selector";
 import TimeViewSelector from "./time-view-selector";
 import CampaignInfo from "./campaign-info";
+import CampaignInfoSqs from "./campaign-info-sqs";
 import ScheduleSettings from "./schedule-settings";
 // Types
 import {
@@ -33,6 +34,7 @@ export default function ScheduleNavBar({
   updateScheduleViewSettings,
   handleChangeTimeFrame,
   handleOpenLHS,
+  useSqsWorkflow = false, // Feature flag for SQS workflow
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -54,6 +56,7 @@ export default function ScheduleNavBar({
   updateScheduleViewSettings: (newSettings: ScheduleViewSettingsT) => void;
   handleChangeTimeFrame: (newTimeFrame: "week" | "month") => void;
   handleOpenLHS: (tabName: string) => void;
+  useSqsWorkflow?: boolean;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -97,15 +100,28 @@ export default function ScheduleNavBar({
       />
       {teamWithMembership.membership.role === TeamMembershipRole.OWNER &&
         (scheduleCampaign ? (
-          <CampaignInfo
-            lng={lng}
-            teamWithMembership={teamWithMembership}
-            scheduleCampaign={scheduleCampaign}
-            solveStatus={solveStatus}
-            handleSolveSchedule={handleSolveSchedule}
-            handleValidateSchedule={handleValidateSchedule}
-            handleOpenLHS={handleOpenLHS}
-          />
+          useSqsWorkflow ? (
+            <CampaignInfoSqs
+              lng={lng}
+              teamWithMembership={teamWithMembership}
+              scheduleCampaign={scheduleCampaign}
+              solveStatus={solveStatus}
+              handleSolveSchedule={handleSolveSchedule}
+              handleValidateSchedule={handleValidateSchedule}
+              handleOpenLHS={handleOpenLHS}
+              useSqsWorkflow={useSqsWorkflow}
+            />
+          ) : (
+            <CampaignInfo
+              lng={lng}
+              teamWithMembership={teamWithMembership}
+              scheduleCampaign={scheduleCampaign}
+              solveStatus={solveStatus}
+              handleSolveSchedule={handleSolveSchedule}
+              handleValidateSchedule={handleValidateSchedule}
+              handleOpenLHS={handleOpenLHS}
+            />
+          )
         ) : (
           <div
             style={{

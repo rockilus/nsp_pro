@@ -46,6 +46,7 @@ import {
 import { getStats } from "../../app/lib/stats";
 import { exportSchedule } from "../../app/lib/export-schedule";
 import { SSEManager } from "../../app/lib/sse";
+import { USE_SQS_SOLVE } from "../../app/lib/env";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "./schedule-tab.css";
@@ -964,6 +965,7 @@ export default function ScheduleTab({
             updateScheduleViewSettings={updateScheduleViewSettings}
             handleChangeTimeFrame={handleChangeTimeFrame}
             handleOpenLHS={setSelectedTab}
+            useSqsWorkflow={USE_SQS_SOLVE}
           />
         )}
         <div style={{ display: "flex", flexDirection: "row" }}>
