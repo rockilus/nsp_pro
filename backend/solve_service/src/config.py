@@ -13,11 +13,26 @@ from pydantic_settings import BaseSettings
 class AppConfig(BaseSettings):
     db_uri: str = Field(..., description="Database connection URL")
     redis_url: str = Field(..., description="Redis connection URL")
-    result_backend: str = Field(..., description="Redis URL for result backend")
+    result_backend: str = Field(
+        ..., description="Redis URL for result backend"
+    )
     log_level: str = Field(
         "INFO",
         description="Logging level",
         pattern=r"^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$",
+    )
+
+    # SQS Configuration
+    aws_region: str = Field("eu-west-3", description="AWS region for SQS")
+    sqs_queue_name: str = Field(
+        "nsp-pro-solve-queue", description="SQS queue name for solve requests"
+    )
+    sqs_visibility_timeout: int = Field(
+        300, description="SQS message visibility timeout in seconds"
+    )
+    sqs_max_receive_count: int = Field(
+        3,
+        description="Maximum number of times a message can be received before moving to DLQ",
     )
 
     # pylint: disable=too-few-public-methods
@@ -76,7 +91,9 @@ def initialize_environment() -> AppConfig:
             secret_name = "DB_URI"
             secret = get_secret(secret_name, region_name=region)
             if secret:
-                os.environ["SECRET_VALUE"] = secret  # Store in environment variables
+                os.environ["SECRET_VALUE"] = (
+                    secret  # Store in environment variables
+                )
 
         # Fetch AWS credentials
         session = boto3.Session()
@@ -89,7 +106,9 @@ def initialize_environment() -> AppConfig:
             # Replace placeholders in the DB_URI with actual AWS credentials
             db_uri_template = os.getenv("DB_URI")
             if not db_uri_template:
-                raise ValueError("DB_URI template not found in environment variables.")
+                raise ValueError(
+                    "DB_URI template not found in environment variables."
+                )
             db_uri = (
                 db_uri_template.replace("<AWS access key>", access_key_id)
                 .replace("<AWS secret key>", secret_access_key)
@@ -108,7 +127,9 @@ def initialize_environment() -> AppConfig:
             print(f"Missing required environment variables: {missing_vars}")
             # Retrieve .env file from S3
             bucket_name = "nsp-pro-bucket"
-            file_key = ".data_fetcher.env"  # Replace with the key of your .env file
+            file_key = (
+                ".data_fetcher.env"  # Replace with the key of your .env file
+            )
             env_file_path = download_env_file_from_s3(
                 bucket_name, file_key, region_name=region
             )
@@ -118,7 +139,9 @@ def initialize_environment() -> AppConfig:
     else:
         print("Running in development mode.")
         # Load local .env file
-        local_env_file = os.path.join(os.path.dirname(__file__), ".env.development")
+        local_env_file = os.path.join(
+            os.path.dirname(__file__), ".env.development"
+        )
         load_dotenv(local_env_file)
         AppConfig.Config.env_file = local_env_file
 
