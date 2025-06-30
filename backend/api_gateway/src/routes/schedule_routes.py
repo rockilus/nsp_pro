@@ -19,6 +19,11 @@ from src.integrations.authentication import (
 )
 from src.integrations.authorization import authz_check
 from src.services.schedule_service import ScheduleService
+from shared.schemas.sqs_messages import SolveRequestPriority
+from src.dependencies.sqs_solve_service import (
+    get_sqs_solve_service,
+)
+
 
 router = APIRouter()
 
@@ -121,10 +126,6 @@ async def solve_schedule(
         if use_sqs:
             # Use new SQS-based solve
             try:
-                from shared.schemas.sqs_messages import SolveRequestPriority
-                from src.dependencies.sqs_solve_service import (
-                    get_sqs_solve_service,
-                )
 
                 # Get SQS service
                 sqs_service = get_sqs_solve_service(schedule_service)
