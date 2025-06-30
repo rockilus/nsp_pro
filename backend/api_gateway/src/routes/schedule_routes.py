@@ -89,16 +89,27 @@ async def get_work_time_table(
     return response
 
 
-@router.post("/schedules/{schedule_id}/solve/teams/{team_id}", status_code=201)
+@router.post("/schedules/{schedule_id}/solve/teams/{team_id}", status_code=202)
 async def solve_schedule(
     schedule_id: str,
     team_id: str,
+    use_sqs: bool = False,  # Feature flag to enable SQS
     session: SessionContainerType = Depends(authn_verify_session()),
-    schedule_service: ScheduleService = Depends(
-        get_schedule_service,
-    ),
-) -> ScheduleDTO:
-    # ) -> SolutionMessage:
+    schedule_service: ScheduleService = Depends(get_schedule_service),
+) -> Dict:
+    """
+    Solve a schedule using either Celery (legacy) or SQS (new).
+
+    Args:
+        schedule_id: ID of the schedule to solve
+        team_id: Team ID for authorization
+        use_sqs: If True, use SQS instead of Celery
+        session: Authentication session
+        schedule_service: Schedule service
+
+    Returns:
+        Dictionary with solve status and method used
+    """
     try:
         if not await authz_check(
             session.get_user_id(), "solve-schedule", "team", team_id
@@ -106,12 +117,65 @@ async def solve_schedule(
             raise NotAuthorizedError(
                 "You do not have permission to solve a schedule",
             )
-        schedule = schedule_service.solve_schedule(schedule_id)
-        response = schedule.to_dto()
+
+        if use_sqs:
+            # Use new SQS-based solve
+            try:
+                from shared.schemas.sqs_messages import SolveRequestPriority
+                from src.dependencies.sqs_solve_service import (
+                    get_sqs_solve_service,
+                )
+
+                # Get SQS service
+                sqs_service = get_sqs_solve_service(schedule_service)
+
+                # Submit via SQS
+                result = await sqs_service.submit_solve_request(
+                    schedule_id=schedule_id,
+                    team_id=team_id,
+                    user_id=session.get_user_id(),
+                    priority=SolveRequestPriority.NORMAL,
+                )
+
+                # Get updated schedule
+                schedule = (
+                    schedule_service.collection.schedule_db.get_schedule_by_id(
+                        schedule_id
+                    )
+                )
+
+                return {
+                    "status": result["status"],
+                    "message_id": result["message_id"],
+                    "method": "SQS",
+                    "schedule": schedule.to_dto(),
+                }
+
+            except Exception as sqs_error:
+                log_info(
+                    f"SQS solve failed, falling back to Celery: {sqs_error}"
+                )
+                # Fall back to Celery on any error
+                schedule = schedule_service.solve_schedule(schedule_id)
+                return {
+                    "status": "PENDING",
+                    "method": "Celery (SQS fallback)",
+                    "schedule": schedule.to_dto(),
+                }
+        else:
+            # Use legacy Celery-based solve
+            schedule = schedule_service.solve_schedule(schedule_id)
+            return {
+                "status": "PENDING",
+                "method": "Celery",
+                "schedule": schedule.to_dto(),
+            }
+
     except Exception as e:
         log_info("Failed to solve schedule")
         handle_routes_errors(e)
-    return response
+
+    return {"error": "Failed to solve schedule"}
 
 
 # @router.post("/schedules/{schedule_id}/notifify-solved/teams/{team_id}")
@@ -167,7 +231,9 @@ async def duplicate_period(
     return response
 
 
-@router.post("/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201)
+@router.post(
+    "/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201
+)
 async def validate_schedule(
     schedule_id: str,
     team_id: str,
