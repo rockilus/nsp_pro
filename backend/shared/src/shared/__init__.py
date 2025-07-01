@@ -2,20 +2,18 @@
 
 # AWS components
 from .aws import AWSConfig, SQSClient
+
+# SQS message schemas
+from .schemas.core.sqs_messages import (
+    SolveStatus,
+    SQSHealthCheck,
+    SQSSolveMessage,
+    SQSSolveResponse,
+)
 from .services import (
     SQSSolveService,
     create_sqs_client,
     create_sqs_solve_service,
-)
-
-# SQS message schemas
-from .schemas.sqs_messages import (
-    SolveRequestPriority,
-    SolveRequestType,
-    SolveStatus,
-    SQSSolveMessage,
-    SQSSolveResponse,
-    SQSHealthCheck,
 )
 
 __all__ = [
@@ -26,8 +24,6 @@ __all__ = [
     "create_sqs_client",
     "create_sqs_solve_service",
     # Message schemas
-    "SolveRequestPriority",
-    "SolveRequestType",
     "SolveStatus",
     "SQSSolveMessage",
     "SQSSolveResponse",

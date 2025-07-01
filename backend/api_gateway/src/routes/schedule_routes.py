@@ -19,7 +19,7 @@ from src.integrations.authentication import (
 )
 from src.integrations.authorization import authz_check
 from src.services.schedule_service import ScheduleService
-from shared.schemas.sqs_messages import SolveRequestPriority
+from shared.schemas.core.sqs_messages import SolveRequestPriority
 from src.dependencies.sqs_solve_service import (
     get_sqs_solve_service,
 )

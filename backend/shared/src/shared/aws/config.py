@@ -1,16 +1,16 @@
 """AWS configuration for NSP Pro."""
 
 from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
+# pylint: disable=too-few-public-methods
 class AWSConfig(BaseModel):
     """AWS configuration settings."""
 
     region: str = Field(default="us-east-1", description="AWS region")
-    access_key_id: Optional[str] = Field(
-        default=None, description="AWS access key ID"
-    )
+    access_key_id: Optional[str] = Field(default=None, description="AWS access key ID")
     secret_access_key: Optional[str] = Field(
         default=None, description="AWS secret access key"
     )

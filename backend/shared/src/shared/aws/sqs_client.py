@@ -63,9 +63,7 @@ class SQSClient:
         """Ensure DLQ exists and get its URL."""
         try:
             # Try to get existing queue
-            response = self.sqs.get_queue_url(
-                QueueName=self.config.sqs_solve_dlq_name
-            )
+            response = self.sqs.get_queue_url(QueueName=self.config.sqs_solve_dlq_name)
             self.dlq_url = response["QueueUrl"]
             logger.info(f"Using existing DLQ: {self.dlq_url}")
 
@@ -122,9 +120,7 @@ class SQSClient:
                         "RedrivePolicy": json.dumps(
                             {
                                 "deadLetterTargetArn": dlq_arn,
-                                "maxReceiveCount": (
-                                    self.config.sqs_max_receive_count
-                                ),
+                                "maxReceiveCount": (self.config.sqs_max_receive_count),
                             }
                         ),
                     },
@@ -134,14 +130,11 @@ class SQSClient:
             else:
                 raise
 
-    async def send_solve_message(
-        self, message_body: Dict[str, Any], delay_seconds: int = 0
-    ) -> str:
+    async def send_solve_message(self, message_body: Dict[str, Any]) -> str:
         """Send solve request to SQS.
 
         Args:
             message_body: The solve request message body
-            delay_seconds: Delay before message becomes available
 
         Returns:
             Message ID
@@ -156,20 +149,9 @@ class SQSClient:
             response = self.sqs.send_message(
                 QueueUrl=self.solve_queue_url,
                 MessageBody=json.dumps(message_body),
-                DelaySeconds=delay_seconds,
                 MessageAttributes={
                     "ScheduleId": {
                         "StringValue": message_body.get("schedule_id", ""),
-                        "DataType": "String",
-                    },
-                    "Priority": {
-                        "StringValue": message_body.get("priority", "normal"),
-                        "DataType": "String",
-                    },
-                    "RequestType": {
-                        "StringValue": message_body.get(
-                            "request_type", "full_solve"
-                        ),
                         "DataType": "String",
                     },
                 },

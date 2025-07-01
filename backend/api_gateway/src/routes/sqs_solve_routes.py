@@ -5,12 +5,18 @@ This module provides endpoints for submitting solve requests via SQS
 and checking solve status.
 """
 
+from dataclasses import dataclass
 from typing import Dict
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from loguru import logger
+from pydantic import BaseModel
+from shared.schemas.core.sqs_messages import (
+    SolveRequestPriority,
+    SolveRequestType,
+)
+from shared.schemas.core import SqsSolveRequest
 
-from shared.schemas.sqs_messages import SolveRequestPriority, SolveRequestType
 from src.dependencies.sqs_solve_service import get_sqs_solve_service
 from src.errors import NotAuthorizedError, handle_routes_errors
 from src.integrations.authentication import (
@@ -26,22 +32,13 @@ router = APIRouter(prefix="/sqs", tags=["SQS Solve"])
 
 
 @router.post(
-    "/schedules/{schedule_id}/solve/teams/{team_id}",
+    "/sqs-solve/start",
     status_code=status.HTTP_202_ACCEPTED,
-    summary="Submit schedule solve request via SQS",
-    description="Submit a schedule for solving using the SQS queue system",
+    summary="Submit schedule solve request via SQS (frontend-aligned)",
+    description="Submit a schedule for solving using the SQS queue system. Accepts JSON body for compatibility with frontend API client.",
 )
 async def submit_solve_request(
-    schedule_id: str,
-    team_id: str,
-    priority: SolveRequestPriority = Query(
-        default=SolveRequestPriority.NORMAL,
-        description="Priority of the solve request",
-    ),
-    request_type: SolveRequestType = Query(
-        default=SolveRequestType.FULL_SOLVE,
-        description="Type of solve request",
-    ),
+    body: SqsSolveRequest,
     session: SessionContainerType = Depends(authn_verify_session()),
     sqs_solve_service: APIGatewaySQSSolveService = Depends(
         get_sqs_solve_service
@@ -55,10 +52,7 @@ async def submit_solve_request(
     using the status endpoint.
 
     Args:
-        schedule_id: ID of the schedule to solve
-        team_id: Team ID for authorization
-        priority: Priority of the solve request
-        request_type: Type of solve request
+        body: JSON body with schedule_id and team_id
         session: Authentication session
         sqs_solve_service: SQS solve service
 
@@ -69,6 +63,11 @@ async def submit_solve_request(
         HTTPException: If unauthorized or solve request fails
     """
     try:
+
+        # Validate and extract required fields
+        schedule_id = body.schedule_id
+        team_id = body.team_id
+
         # Check authorization
         if not await authz_check(
             session.get_user_id(), "solve-schedule", "team", team_id
@@ -77,13 +76,11 @@ async def submit_solve_request(
                 "You do not have permission to solve a schedule"
             )
 
-        # Submit solve request
+        # Submit solve request (defaults: NORMAL priority, FULL_SOLVE type)
         result = await sqs_solve_service.submit_solve_request(
             schedule_id=schedule_id,
             team_id=team_id,
             user_id=session.get_user_id(),
-            priority=priority,
-            request_type=request_type,
         )
 
         logger.info(

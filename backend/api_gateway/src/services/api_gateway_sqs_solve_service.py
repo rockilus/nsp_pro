@@ -14,7 +14,7 @@ from loguru import logger
 from shared.aws.config import AWSConfig
 from shared.aws.sqs_client import SQSClient
 from shared.schemas.core.schedule import SolveDetails, SolveDetailsStatus
-from shared.schemas.sqs_messages import (
+from shared.schemas.core.sqs_messages import (
     SolveRequestPriority,
     SolveRequestType,
     SQSSolveMessage,
@@ -49,14 +49,7 @@ class APIGatewaySQSSolveService:
         self.schedule_service = schedule_service
 
     async def submit_solve_request(
-        self,
-        schedule_id: str,
-        team_id: str,
-        user_id: str,
-        priority: SolveRequestPriority = SolveRequestPriority.NORMAL,
-        request_type: SolveRequestType = SolveRequestType.FULL_SOLVE,
-        constraints: Optional[Dict] = None,
-        metadata: Optional[Dict] = None,
+        self, schedule_id: str, team_id: str, user_id: str
     ) -> Dict[str, str]:
         """
         Submit a solve request via SQS.
@@ -79,7 +72,7 @@ class APIGatewaySQSSolveService:
         """
         logger.info(
             f"Submitting SQS solve request for schedule {schedule_id} "
-            f"by user {user_id} with priority {priority.value}"
+            f"by user {user_id}"
         )
 
         # Get the schedule and validate it exists
@@ -107,10 +100,6 @@ class APIGatewaySQSSolveService:
                 schedule_id=schedule_id,
                 team_id=team_id,
                 user_id=user_id,
-                request_type=request_type,
-                priority=priority,
-                constraints=constraints,
-                metadata=metadata,
             )
 
             # Update schedule status to pending

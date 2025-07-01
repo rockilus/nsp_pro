@@ -279,16 +279,11 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
     dispatch({ type: "POLLING_STOP" });
   };
 
-  const startSolve = async (
-    scheduleId: string,
-    teamId: string,
-    constraints?: string[]
-  ) => {
+  const startSolve = async (scheduleId: string, teamId: string) => {
     try {
       const response = await SqsSolveApi.startSolve({
         schedule_id: scheduleId,
         team_id: teamId,
-        constraints: constraints || [],
       });
 
       dispatch({

@@ -15,12 +15,8 @@ def get_aws_config_from_env() -> AWSConfig:
         region=os.getenv("AWS_REGION", "us-east-1"),
         access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
         secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-        sqs_solve_queue_name=os.getenv(
-            "AWS_SQS_SOLVE_QUEUE_NAME", "nsp-solve-queue"
-        ),
-        sqs_solve_dlq_name=os.getenv(
-            "AWS_SQS_SOLVE_DLQ_NAME", "nsp-solve-dlq"
-        ),
+        sqs_solve_queue_name=os.getenv("AWS_SQS_SOLVE_QUEUE_NAME", "nsp-solve-queue"),
+        sqs_solve_dlq_name=os.getenv("AWS_SQS_SOLVE_DLQ_NAME", "nsp-solve-dlq"),
         sqs_visibility_timeout_seconds=int(
             os.getenv("AWS_SQS_VISIBILITY_TIMEOUT_SECONDS", "900")
         ),
@@ -34,6 +30,7 @@ def get_aws_config_from_env() -> AWSConfig:
     )
 
 
+# pylint: disable=too-many-return-statements
 def validate_aws_config(config: AWSConfig) -> bool:
     """Validate AWS configuration.
 

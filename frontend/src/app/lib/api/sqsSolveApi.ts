@@ -5,7 +5,6 @@
 export interface SqsSolveRequest {
   schedule_id: string;
   team_id: string;
-  constraints?: string[];
 }
 
 export interface SqsSolveResponse {

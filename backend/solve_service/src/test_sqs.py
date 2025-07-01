@@ -12,7 +12,7 @@ from uuid import uuid4
 
 from loguru import logger
 
-from shared.schemas.sqs_messages import SolveRequestMessage, SolvePriority
+from shared.schemas.core.sqs_messages import SolveRequestMessage, SolvePriority
 from shared.services.factory import get_sqs_solve_service
 from sqs_consumer import create_sqs_consumer
 

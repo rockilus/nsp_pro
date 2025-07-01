@@ -1,16 +1,12 @@
 """SQS-based solve service for NSP Pro."""
 
-from datetime import datetime
-from typing import Any, Dict, Optional
+from datetime import datetime, timezone
+from typing import Any, Dict
 
 from loguru import logger
 
 from ..aws.sqs_client import SQSClient
-from ..schemas.sqs_messages import (
-    SolveRequestPriority,
-    SolveRequestType,
-    SQSSolveMessage,
-)
+from ..schemas.core.sqs_messages import SQSSolveMessage
 
 
 class SQSSolveService:
@@ -29,10 +25,6 @@ class SQSSolveService:
         schedule_id: str,
         team_id: str,
         user_id: str,
-        request_type: SolveRequestType = SolveRequestType.FULL_SOLVE,
-        priority: SolveRequestPriority = SolveRequestPriority.NORMAL,
-        constraints: Optional[Dict[str, Any]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
         timeout_seconds: int = 300,
     ) -> str:
         """Submit a solve request to SQS.
@@ -58,19 +50,14 @@ class SQSSolveService:
             schedule_id=schedule_id,
             team_id=team_id,
             user_id=user_id,
-            request_type=request_type,
-            priority=priority,
-            constraints=constraints or {},
-            metadata=metadata or {},
             timeout_seconds=timeout_seconds,
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
         )
 
         try:
             # Send to SQS with priority-based delay
-            delay_seconds = self._get_delay_by_priority(priority)
             message_id = await self.sqs_client.send_solve_message(
-                message_body=message.dict(), delay_seconds=delay_seconds
+                message_body=message.to_dict(),
             )
 
             logger.info(
@@ -81,27 +68,9 @@ class SQSSolveService:
 
         except Exception as e:
             logger.error(
-                f"Failed to submit solve request for schedule "
-                f"{schedule_id}: {e}"
+                f"Failed to submit solve request for schedule " f"{schedule_id}: {e}"
             )
             raise
-
-    def _get_delay_by_priority(self, priority: SolveRequestPriority) -> int:
-        """Get delay seconds based on priority.
-
-        Args:
-            priority: Request priority
-
-        Returns:
-            Delay in seconds
-        """
-        delays = {
-            SolveRequestPriority.URGENT: 0,
-            SolveRequestPriority.HIGH: 0,
-            SolveRequestPriority.NORMAL: 10,
-            SolveRequestPriority.LOW: 60,
-        }
-        return delays.get(priority, 10)
 
     async def get_queue_status(self) -> Dict[str, Any]:
         """Get current queue status.
@@ -120,9 +89,7 @@ class SQSSolveService:
                     attributes.get("ApproximateNumberOfMessages", "0")
                 ),
                 "messages_in_flight": int(
-                    attributes.get(
-                        "ApproximateNumberOfMessagesNotVisible", "0"
-                    )
+                    attributes.get("ApproximateNumberOfMessagesNotVisible", "0")
                 ),
                 "messages_delayed": int(
                     attributes.get("ApproximateNumberOfMessagesDelayed", "0")

@@ -12,7 +12,7 @@ from typing import Dict
 from loguru import logger
 
 from shared.schemas.core import Schedule
-from shared.schemas.sqs_messages import SolveRequestMessage
+from shared.schemas.core.sqs_messages import SolveRequestMessage
 from shared.services.factory import get_sqs_solve_service
 from shared.services.sqs_solve_service import SQSSolveService
 from db_operations.get_engine_inputs import get_engine_inputs

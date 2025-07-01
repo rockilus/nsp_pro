@@ -15,7 +15,7 @@ from loguru import logger
 from shared.aws.config import AWSConfig
 from shared.aws.sqs_client import SQSClient
 from shared.schemas.core.schedule import SolveDetails, SolveDetailsStatus
-from shared.schemas.sqs_messages import (
+from shared.schemas.core.sqs_messages import (
     SolveRequestPriority,
     SolveRequestType,
     SQSSolveMessage,

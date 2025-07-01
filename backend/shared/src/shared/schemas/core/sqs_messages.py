@@ -1,27 +1,10 @@
 """SQS message schemas for NSP Pro solve service."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, Field
-
-
-class SolveRequestPriority(str, Enum):
-    """Priority levels for solve requests."""
-
-    LOW = "low"
-    NORMAL = "normal"
-    HIGH = "high"
-    URGENT = "urgent"
-
-
-class SolveRequestType(str, Enum):
-    """Types of solve requests."""
-
-    FULL_SOLVE = "full_solve"
-    PARTIAL_SOLVE = "partial_solve"
-    VALIDATION = "validation"
 
 
 class SolveStatus(str, Enum):
@@ -35,42 +18,43 @@ class SolveStatus(str, Enum):
     TIMEOUT = "TIMEOUT"
 
 
+class SqsSolveRequest(BaseModel):
+    schedule_id: str
+    team_id: str
+
+
+# pylint: disable=too-few-public-methods
 class SQSSolveMessage(BaseModel):
     """Message schema for SQS solve requests."""
 
     schedule_id: str = Field(..., description="Schedule ID to solve")
     team_id: str = Field(..., description="Team ID for authorization")
     user_id: str = Field(..., description="User ID who initiated the request")
-    request_type: SolveRequestType = Field(
-        default=SolveRequestType.FULL_SOLVE,
-        description="Type of solve request",
-    )
-    priority: SolveRequestPriority = Field(
-        default=SolveRequestPriority.NORMAL,
-        description="Priority of the request",
-    )
-    constraints: Optional[Dict[str, Any]] = Field(
-        default=None, description="Additional constraints for solving"
-    )
-    metadata: Optional[Dict[str, Any]] = Field(
-        default=None, description="Additional metadata"
-    )
     timeout_seconds: int = Field(
         default=300, description="Timeout for solve operation in seconds"
     )
     created_at: datetime = Field(
-        default_factory=datetime.utcnow,
+        default_factory=lambda: datetime.now(timezone.utc),
         description="When the request was created",
     )
-    message_id: Optional[str] = Field(
-        default=None, description="SQS message ID"
-    )
+    message_id: Optional[str] = Field(default=None, description="SQS message ID")
 
     class Config:
         """Pydantic configuration."""
 
         use_enum_values = True
         json_encoders = {datetime: lambda v: v.isoformat()}
+
+    def to_dict(self) -> dict:
+        """
+        Return a dict representation of the message, suitable for SQS serialization.
+        Uses Pydantic's model_dump() with by_alias and proper datetime encoding.
+        Ensures created_at is a float timestamp (seconds since epoch, UTC).
+        """
+        data = self.model_dump(by_alias=True, exclude_none=True)
+        if "created_at" in data and isinstance(data["created_at"], datetime):
+            data["created_at"] = data["created_at"].timestamp()
+        return data
 
 
 class SQSSolveResponse(BaseModel):
@@ -116,9 +100,7 @@ class SQSHealthCheck(BaseModel):
     queue_messages_delayed: Optional[int] = Field(
         default=None, description="Number of delayed messages"
     )
-    error: Optional[str] = Field(
-        default=None, description="Error message if unhealthy"
-    )
+    error: Optional[str] = Field(default=None, description="Error message if unhealthy")
     timestamp: datetime = Field(
         default_factory=datetime.utcnow,
         description="When the health check was performed",
