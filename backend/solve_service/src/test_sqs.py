@@ -7,16 +7,14 @@ for testing and development purposes.
 """
 import asyncio
 import sys
-from datetime import datetime, timezone
-from uuid import uuid4
 
+from bson import ObjectId
 from loguru import logger
-
-from shared.schemas.core.solve_task_status import (
-    SolveRequestMessage,
-    SolvePriority,
+from shared.schemas.core import (
+    SQSSolveMessage,
 )
-from shared.services.factory import get_sqs_solve_service
+from shared.services.factory import create_sqs_solve_service
+
 from sqs_consumer import create_sqs_consumer
 
 
@@ -28,18 +26,21 @@ async def test_send_message():
 
     try:
         # Create SQS service
-        sqs_service = get_sqs_solve_service()
+        sqs_service = await create_sqs_solve_service()
 
         # Create a test message
-        test_message = SolveRequestMessage(
-            team_id=uuid4(),
-            schedule_id=uuid4(),
-            user_id=uuid4(),
-            priority=SolvePriority.HIGH,
+        test_message = SQSSolveMessage(
+            team_id=str(ObjectId()),
+            schedule_id=str(ObjectId()),
+            user_id=str(ObjectId()),
         )
 
         # Send the message
-        message_id = sqs_service.send_solve_request(test_message)
+        message_id = await sqs_service.submit_solve_request(
+            schedule_id=test_message.schedule_id,
+            team_id=test_message.team_id,
+            user_id=test_message.user_id,
+        )
         logger.info(f"Successfully sent test message with ID: {message_id}")
 
         return message_id

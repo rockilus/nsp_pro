@@ -7,14 +7,25 @@ for solve requests and processes them using the existing solve logic.
 
 import asyncio
 import time
-from typing import Dict
+from datetime import datetime, timezone
+from typing import List, Tuple
 
 from loguru import logger
-
-from shared.schemas.core import Schedule
-from shared.schemas.core.solve_task_status import SolveRequestMessage
-from shared.services.factory import get_sqs_solve_service
+from shared.schemas.core import (
+    Assignment,
+    Breach,
+    SQSSolveMessage,
+    SQSSolveQueueMessage,
+)
+from shared.schemas.core.solve_task_status import (
+    ResultModel,
+    ScheduleSolveStatus,
+    SolveRequestStatus,
+    SolverOutputMetadata,
+)
+from shared.services.factory import create_sqs_solve_service
 from shared.services.sqs_solve_service import SQSSolveService
+
 from db_operations.get_engine_inputs import get_engine_inputs
 from db_operations.save_engine_outputs import save_engine_outputs
 from db_operations.setup_database import get_collections
@@ -49,7 +60,7 @@ class SQSSolveConsumer:
         while self.running:
             try:
                 # Poll for messages
-                messages = self.sqs_solve_service.receive_solve_requests(
+                messages = await self.sqs_solve_service.receive_solve_requests(
                     max_messages=1, wait_time_seconds=20  # Long polling
                 )
 
@@ -67,15 +78,16 @@ class SQSSolveConsumer:
                 logger.error(f"Error in SQS consumer loop: {e}")
                 await asyncio.sleep(5)  # Wait before retrying
 
-    async def _process_message(self, message_data: dict):
+    async def _process_message(self, message_data: SQSSolveQueueMessage) -> None:
         """
         Process a single solve request message.
 
         Args:
             message_data: Dictionary containing message content and metadata
         """
-        message_content = message_data["message"]
-        receipt_handle = message_data["receipt_handle"]
+        message_content = message_data.message
+        receipt_handle = message_data.receipt_handle
+        message_id = message_data.message_id
 
         logger.info(
             f"Processing solve request for schedule {message_content.schedule_id}"
@@ -83,15 +95,23 @@ class SQSSolveConsumer:
 
         try:
             # Process the solve request
-            result = await self._solve_schedule(message_content)
+            schedule_solve_status, assignments, breaches, solver_output = (
+                await self._solve_schedule(
+                    message=message_content, message_id=message_id
+                )
+            )
 
             # Update schedule with success
-            await self._update_schedule_success(
-                message_content.schedule_id, result, message_content.message_id
+            await self._update_solve_task_status_success(
+                message_id=message_id,
+                solve_status=schedule_solve_status,
+                assignments=assignments,
+                breaches=breaches,
+                solver_outputs=solver_output,
             )
 
             # Delete message from queue
-            self.sqs_solve_service.delete_message(receipt_handle)
+            await self.sqs_solve_service.delete_message(receipt_handle=receipt_handle)
 
             logger.info(
                 f"Successfully processed solve request for schedule "
@@ -105,14 +125,17 @@ class SQSSolveConsumer:
             )
 
             # Update schedule with failure
-            await self._update_schedule_failure(
-                message_content.schedule_id, str(e), message_content.message_id
-            )
+            await self._update_schedule_failure(message_id=message_id, error=str(e))
 
             # Delete message to prevent retry (or implement retry logic)
-            self.sqs_solve_service.delete_message(receipt_handle)
+            await self.sqs_solve_service.delete_message(receipt_handle)
 
-    async def _solve_schedule(self, message: SolveRequestMessage) -> Dict:
+    async def _solve_schedule(self, message: SQSSolveMessage, message_id: str) -> Tuple[
+        ScheduleSolveStatus,
+        List[Assignment],
+        List[Breach],
+        SolverOutputMetadata,
+    ]:
         """
         Execute the solve operation for a schedule.
 
@@ -123,40 +146,69 @@ class SQSSolveConsumer:
             Dictionary containing the solve results
         """
         start_time = time.time()
-
-        # Get the schedule from the database
-        schedule = self.collections.schedule_db.get_schedule_by_id(
-            str(message.schedule_id)
+        collections = get_collections()
+        schedule = collections.schedule_db.get_schedule_by_id(
+            schedule_id=message.schedule_id
         )
-
         if not schedule:
-            raise ValueError(f"Schedule {message.schedule_id} not found")
-
-        # Get engine inputs
-        engine_inputs = get_engine_inputs(schedule, self.collections)
-
-        # Solve the schedule
-        engine_outputs = solve_schedule(engine_inputs)
-
-        # Save the outputs
-        eo_augmented = save_engine_outputs(
-            engine_inputs,
-            engine_outputs,
-            message.message_id,  # Use SQS message ID as task ID
-            self.collections,
+            raise ValueError("Schedule not found")
+        engine_inputs = get_engine_inputs(schedule=schedule, collections=collections)
+        engine_outputs = solve_schedule(engine_inputs=engine_inputs)
+        schedule_solve_status, assignments, breaches, solver_output = (
+            save_engine_outputs(
+                schedule=schedule,
+                engine_intputs=engine_inputs,
+                engine_outputs=engine_outputs,
+                collections=collections,
+            )
         )
-
         end_time = time.time()
         total_time = end_time - start_time
+        print("solve campaign time:  " + f"{total_time:.2f}s")
+        print("TASK COMPLETE - SOLVE CAMPAIGN: ", message_id)
+        return schedule_solve_status, assignments, breaches, solver_output
 
-        logger.info(
-            f"Solve completed in {total_time:.2f}s for schedule {message.schedule_id}"
-        )
+        # start_time = time.time()
 
-        return {"eo_augmented": eo_augmented.to_dict()}
+        # # Get the schedule from the database
+        # schedule = self.collections.schedule_db.get_schedule_by_id(
+        #     str(message.schedule_id)
+        # )
 
-    async def _update_schedule_success(
-        self, schedule_id: str, result: Dict, task_id: str
+        # if not schedule:
+        #     raise ValueError(f"Schedule {message.schedule_id} not found")
+
+        # # Get engine inputs
+        # engine_inputs = get_engine_inputs(schedule, self.collections)
+
+        # # Solve the schedule
+        # engine_outputs = solve_schedule(engine_inputs)
+
+        # # Save the outputs
+        # eo_augmented = save_engine_outputs(
+        #     engine_inputs,
+        #     engine_outputs,
+        #     message.message_id,  # Use SQS message ID as task ID
+        #     self.collections,
+        # )
+
+        # end_time = time.time()
+        # total_time = end_time - start_time
+
+        # logger.info(
+        #     f"Solve completed in {total_time:.2f}s for schedule {message.schedule_id}"
+        # )
+
+        # return {"eo_augmented": eo_augmented.to_dict()}
+
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
+    async def _update_solve_task_status_success(
+        self,
+        message_id: str,
+        solve_status: ScheduleSolveStatus,
+        assignments: List[Assignment],
+        breaches: List[Breach],
+        solver_outputs: SolverOutputMetadata,
     ):
         """
         Update the schedule with successful solve results.
@@ -166,25 +218,27 @@ class SQSSolveConsumer:
             result: The solve results
             task_id: The task/message ID
         """
-        from shared.schemas.core.schedule import (
-            SolveDetails,
-            SolveDetailsStatus,
-        )
-        from datetime import datetime, timezone
-
-        schedule = self.collections.schedule_db.get_schedule_by_id(schedule_id)
-        if schedule:
-            schedule.solve_details = SolveDetails(
-                task_id=task_id,
-                status=SolveDetailsStatus.SUCCESS,
-                updated_at=datetime.now(tz=timezone.utc),
-                result=result,
+        solve_task_status = (
+            self.collections.solve_task_status_db.get_solve_task_status_by_solve_id(
+                solve_id=message_id
             )
-            self.collections.schedule_db.update_schedule(schedule)
+        )
+        if not solve_task_status:
+            raise ValueError(f"Solve task with id {message_id} not found")
+        solve_task_status.request_status = SolveRequestStatus.COMPLETED
+        solve_task_status.solve_status = solve_status
+        solve_task_status.completed_at = datetime.now(tz=timezone.utc)
+        solve_task_status.result = ResultModel(
+            assignments=assignments,
+            breaches=breaches,
+            requests=[],
+        )
+        solve_task_status.solver_output_metadata = solver_outputs
+        self.collections.solve_task_status_db.update_solve_task_status(
+            solve_task_status=solve_task_status
+        )
 
-    async def _update_schedule_failure(
-        self, schedule_id: str, error: str, task_id: str
-    ):
+    async def _update_schedule_failure(self, message_id: str, error: str):
         """
         Update the schedule with failure information.
 
@@ -193,21 +247,19 @@ class SQSSolveConsumer:
             error: The error message
             task_id: The task/message ID
         """
-        from shared.schemas.core.schedule import (
-            SolveDetails,
-            SolveDetailsStatus,
-        )
-        from datetime import datetime, timezone
-
-        schedule = self.collections.schedule_db.get_schedule_by_id(schedule_id)
-        if schedule:
-            schedule.solve_details = SolveDetails(
-                task_id=task_id,
-                status=SolveDetailsStatus.FAILURE,
-                updated_at=datetime.now(tz=timezone.utc),
-                result={"error": error},
+        solve_task_status = (
+            self.collections.solve_task_status_db.get_solve_task_status_by_solve_id(
+                solve_id=message_id
             )
-            self.collections.schedule_db.update_schedule(schedule)
+        )
+        if not solve_task_status:
+            raise ValueError(f"Solve task with id {message_id} not found")
+        solve_task_status.request_status = SolveRequestStatus.FAILED
+        solve_task_status.completed_at = datetime.now(tz=timezone.utc)
+        solve_task_status.error_message = error
+        self.collections.solve_task_status_db.update_solve_task_status(
+            solve_task_status=solve_task_status
+        )
 
     def stop_consuming(self):
         """
@@ -224,5 +276,5 @@ async def create_sqs_consumer() -> SQSSolveConsumer:
     Returns:
         Configured SQSSolveConsumer instance
     """
-    sqs_solve_service = get_sqs_solve_service()
+    sqs_solve_service = await create_sqs_solve_service()
     return SQSSolveConsumer(sqs_solve_service)

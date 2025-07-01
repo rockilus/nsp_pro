@@ -17,6 +17,10 @@ from shared.schemas.core.request import Request, RequestAugmented
 from shared.schemas.core.schedule import Schedule
 from shared.schemas.core.shift import Shift
 from shared.schemas.core.shift_demand_new import ShiftDemandNew
+from shared.schemas.core.solve_task_status import (
+    ScheduleSolveStatus,
+    SolverOutputMetadata,
+)
 from shared.schemas.core.worker import Worker
 
 ##############################
@@ -264,34 +268,11 @@ class EngineInputsAugmented(EngineInputs):
 
 @dataclass
 class EngineOutputs:
-    schedule: Schedule
+    schedule_solve_status: ScheduleSolveStatus
     assignments: List[Assignment]
     breaches: List[Breach]
     requests: List[RequestAugmented]
-    model_output: ModelOutput
-
-    def to_dict(self) -> Dict:
-        return {
-            "schedule": self.schedule.to_dict(),
-            "assignments": [assignment.to_dict() for assignment in self.assignments],
-            "breaches": [breach.to_dict() for breach in self.breaches],
-            "requests": [request.to_dict() for request in self.requests],
-            "model_output": self.model_output.to_dict(),
-        }
-
-    @classmethod
-    def from_dict(cls, data: Dict) -> "EngineOutputs":
-        return cls(
-            schedule=Schedule.from_dict(data["schedule"]),
-            assignments=[
-                Assignment.from_dict(assignment) for assignment in data["assignments"]
-            ],
-            breaches=[Breach.from_dict(breach) for breach in data["breaches"]],
-            requests=[
-                RequestAugmented.from_dict(request) for request in data["requests"]
-            ],
-            model_output=ModelOutput.from_dict(data["model_output"]),
-        )
+    model_output: SolverOutputMetadata
 
 
 @dataclass

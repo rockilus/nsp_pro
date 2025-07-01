@@ -1,24 +1,20 @@
 """SQS message schemas for NSP Pro solve service."""
 
+from dataclasses import asdict
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
+
 import humps
-from pydantic import TypeAdapter
-from pydantic import BaseModel, Field
-from dataclasses import asdict
+from pydantic import BaseModel, Field, TypeAdapter
 
 from shared.schemas.core.assignment import Assignment
 from shared.schemas.core.breach import Breach
-from shared.schemas.core.request import Request
+from shared.schemas.core.request import Request, RequestAugmented
 from shared.schemas.dto.solve_task_status import (
-    SolveTaskStatusResponseDTO,
     ResultModelDTO,
+    SolveTaskStatusResponseDTO,
 )
-from shared.schemas.dto.assignment import AssignmentDTO
-from shared.schemas.dto.breach import BreachDTO
-from shared.schemas.dto.request import RequestDTO
-from shared.schemas.core.request import RequestAugmented
 
 
 class SolveStatus(str, Enum):
@@ -51,9 +47,7 @@ class SQSSolveMessage(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc),
         description="When the request was created",
     )
-    message_id: Optional[str] = Field(
-        default=None, description="SQS message ID"
-    )
+    message_id: Optional[str] = Field(default=None, description="SQS message ID")
 
     class Config:
         """Pydantic configuration."""
@@ -71,6 +65,28 @@ class SQSSolveMessage(BaseModel):
         if "created_at" in data and isinstance(data["created_at"], datetime):
             data["created_at"] = data["created_at"].timestamp()
         return data
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "SQSSolveMessage":
+        """
+        Create an instance from a dict representation.
+        Converts created_at from float timestamp back to datetime.
+        """
+        if "created_at" in data and isinstance(data["created_at"], (int, float)):
+            data["created_at"] = datetime.fromtimestamp(
+                data["created_at"], tz=timezone.utc
+            )
+        return cls(**data)
+
+
+class SQSSolveQueueMessage(BaseModel):
+    """
+    Wrapper for a solve request message received from SQS, including metadata.
+    """
+
+    message: SQSSolveMessage
+    receipt_handle: str
+    message_id: str
 
 
 class SQSSolveResponse(BaseModel):
@@ -116,9 +132,7 @@ class SQSHealthCheck(BaseModel):
     queue_messages_delayed: Optional[int] = Field(
         default=None, description="Number of delayed messages"
     )
-    error: Optional[str] = Field(
-        default=None, description="Error message if unhealthy"
-    )
+    error: Optional[str] = Field(default=None, description="Error message if unhealthy")
     timestamp: datetime = Field(
         default_factory=datetime.utcnow,
         description="When the health check was performed",
@@ -133,7 +147,6 @@ class SQSHealthCheck(BaseModel):
 class SolveRequestStatus(str, Enum):
     """
     Status object for SQS solve requests, suitable for database storage.
-    Mirrors the frontend SqsSolveStatusResponse interface.
     """
 
     PENDING = "PENDING"
@@ -143,7 +156,6 @@ class SolveRequestStatus(str, Enum):
 
 
 # Status object for SQS solve requests, suitable for database storage.
-# Mirrors the frontend SqsSolveStatusResponse interface.
 
 
 class ScheduleSolveStatus(Enum):
@@ -167,9 +179,7 @@ class ResultModel(BaseModel):
             assignments=[a.to_dto() for a in self.assignments],
             breaches=[b.to_dto() for b in self.breaches],
             requests=(
-                [r.to_dto() for r in requests_augmented]
-                if requests_augmented
-                else []
+                [r.to_dto() for r in requests_augmented] if requests_augmented else []
             ),
         )
 
@@ -180,6 +190,28 @@ class SolverOutputStatus(str, Enum):
     FEASIBLE = "FEASIBLE"
     INFEASIBLE = "INFEASIBLE"
     OPTIMAL = "OPTIMAL"
+
+    @classmethod
+    def from_int(cls, value: int) -> "SolverOutputStatus":
+        """
+        Map an integer value to the corresponding SolverOutputStatus enum.
+        0: UNKNOWN
+        1: MODEL_INVALID
+        2: FEASIBLE
+        3: INFEASIBLE
+        4: OPTIMAL
+        Raises ValueError for invalid values.
+        """
+        mapping = {
+            0: cls.UNKNOWN,
+            1: cls.MODEL_INVALID,
+            2: cls.FEASIBLE,
+            3: cls.INFEASIBLE,
+            4: cls.OPTIMAL,
+        }
+        if value not in mapping:
+            raise ValueError(f"Invalid solver output status int: {value}")
+        return mapping[value]
 
 
 class SolverOutputMetadata(BaseModel):
@@ -192,7 +224,6 @@ class SolverOutputMetadata(BaseModel):
 class SolveTaskStatus(BaseModel):
     """
     Status object for SQS solve requests, suitable for database storage.
-    Mirrors the frontend SqsSolveStatusResponse interface.
     """
 
     solve_id: str
@@ -219,9 +250,7 @@ class SolveTaskStatus(BaseModel):
         Convert this SolveTaskStatus to a SolveTaskStatusResponseDTO for API responses.
         """
         data = asdict(self)
-        data["started_at"] = (
-            self.started_at.timestamp() if self.started_at else None
-        )
+        data["started_at"] = self.started_at.timestamp() if self.started_at else None
         data["completed_at"] = (
             self.completed_at.timestamp() if self.completed_at else None
         )

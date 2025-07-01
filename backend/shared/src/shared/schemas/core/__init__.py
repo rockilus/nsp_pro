@@ -123,7 +123,6 @@ from shared.schemas.core.shift_demand_template import (
     TemplateWeekData,
     create_template_from_demands,
 )
-from shared.schemas.core.specialty import Specialty
 from shared.schemas.core.solve_task_status import (
     ResultModel,
     SolveRequest,
@@ -131,7 +130,10 @@ from shared.schemas.core.solve_task_status import (
     SolverOutputMetadata,
     SolverOutputStatus,
     SolveTaskStatus,
+    SQSSolveMessage,
+    SQSSolveQueueMessage,
 )
+from shared.schemas.core.specialty import Specialty
 from shared.schemas.core.stats import (
     HeaderUnitOptions,
     Stats,
@@ -292,6 +294,8 @@ __all__ = [
     "SolverOutputMetadata",
     "SolverOutputStatus",
     "SolveTaskStatus",
+    "SQSSolveMessage",
+    "SQSSolveQueueMessage",
     "TeamWithMembership",
     "Team",
     "MembershipForTeamWithMembership",

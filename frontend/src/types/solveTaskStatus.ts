@@ -7,6 +7,11 @@ import { RequestT, toRequestT } from "./request";
 
 dayjs.extend(utc);
 
+export interface SolveRequestT {
+  schedule_id: string;
+  team_id: string;
+}
+
 export enum SolveRequestStatus {
   PENDING = "PENDING",
   IN_PROGRESS = "IN_PROGRESS",

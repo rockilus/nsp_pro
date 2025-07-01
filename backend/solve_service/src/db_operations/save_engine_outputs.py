@@ -1,28 +1,29 @@
 import time
-from datetime import datetime, timezone
+from typing import List, Tuple
 
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
+    Assignment,
+    Breach,
     EngineInputs,
     EngineOutputs,
-    EngineOutputsAugmented,
-    SolveDetails,
-    SolveDetailsStatus,
+    Schedule,
+    SolverOutputMetadata,
 )
+from shared.schemas.core.solve_task_status import ScheduleSolveStatus
 
 from db_operations.assignment_services import save_assignments
 from db_operations.save_breaches import save_breaches
-from db_operations.save_model_output import save_model_output
 
 # from db_operations.get_request import update_requests
 
 
 def save_engine_outputs(
+    schedule: Schedule,
     engine_intputs: EngineInputs,
     engine_outputs: EngineOutputs,
-    task_id: str,
     collections: DatabaseCollections,
-) -> EngineOutputsAugmented:
+) -> Tuple[ScheduleSolveStatus, List[Assignment], List[Breach], SolverOutputMetadata]:
     start_time_update_db = time.time()
     # requests_aug_saved = update_requests(
     #     engine_intputs.requests,
@@ -30,34 +31,33 @@ def save_engine_outputs(
     #     engine_intputs.shifts,
     #     collections,
     # )
-    engine_outputs.schedule.solve_details = SolveDetails(
-        task_id=task_id,
-        status=SolveDetailsStatus.SUCCESS,
-        updated_at=datetime.now(tz=timezone.utc),
-        result={"output": engine_outputs.schedule.to_dict()},
-    )
-
-    schedule_saved = collections.schedule_db.update_schedule(engine_outputs.schedule)
-    if not schedule_saved:
-        raise ValueError("Failed to save schedule")
     assignments_saved = save_assignments(
-        engine_outputs.assignments,
-        engine_outputs.schedule,
-        engine_intputs.as_wip_fixed,
-        engine_intputs.shifts,
-        collections,
+        assignments=engine_outputs.assignments,
+        schedule=schedule,
+        fixed_assignments=engine_intputs.as_wip_fixed,
+        shifts=engine_intputs.shifts,
+        collections=collections,
     )
     breaches_saved = save_breaches(
-        engine_outputs.schedule, engine_outputs.breaches, collections
+        schedule=schedule,
+        breaches=engine_outputs.breaches,
+        collections=collections,
     )
-    _ = save_model_output(engine_outputs.model_output, collections)
+
     end_time_update_db = time.time()
     # time stats
     total_time_update_db = end_time_update_db - start_time_update_db
     print("update db time:       " + f"{total_time_update_db:.2f}s")
-    return EngineOutputsAugmented(
-        schedule=schedule_saved,
-        assignments=assignments_saved,
-        breaches=breaches_saved,
-        requests=engine_intputs.requests_work,  # Not updating requests for now
+
+    return (
+        engine_outputs.schedule_solve_status,
+        assignments_saved,
+        breaches_saved,
+        engine_outputs.model_output,
     )
+
+
+# schedule_solve_status=ScheduleSolveStatus,
+# assignments: List[Assignment],
+# breaches: List[Breach],
+# solver_outputs: SolverOutputMetadata,

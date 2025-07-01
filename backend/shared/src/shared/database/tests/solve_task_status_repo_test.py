@@ -102,16 +102,12 @@ class TestSolveTaskStatusRepository:
         # Use get_by_schedule_id to fetch all for a team (simulate isolation)
         teamA_statuses = [
             s
-            for s in self.repo.get_solve_task_status_by_schedule_id(
-                status1.schedule_id
-            )
+            for s in self.repo.get_solve_task_status_by_schedule_id(status1.schedule_id)
             if s.team_id == "teamA"
         ]
         teamB_statuses = [
             s
-            for s in self.repo.get_solve_task_status_by_schedule_id(
-                status2.schedule_id
-            )
+            for s in self.repo.get_solve_task_status_by_schedule_id(status2.schedule_id)
             if s.team_id == "teamB"
         ]
         assert len(teamA_statuses) == 1
@@ -121,15 +117,9 @@ class TestSolveTaskStatusRepository:
 
     def test_get_pending_or_in_progress_by_schedule_id(self):
         # Create statuses with different request_status for the same schedule
-        status_pending = make_test_status(
-            solve_id="solveP", schedule_id="schedZ"
-        )
-        status_in_progress = make_test_status(
-            solve_id="solveI", schedule_id="schedZ"
-        )
-        status_completed = make_test_status(
-            solve_id="solveC", schedule_id="schedZ"
-        )
+        status_pending = make_test_status(solve_id="solveP", schedule_id="schedZ")
+        status_in_progress = make_test_status(solve_id="solveI", schedule_id="schedZ")
+        status_completed = make_test_status(solve_id="solveC", schedule_id="schedZ")
         status_in_progress.request_status = SolveRequestStatus.IN_PROGRESS
         status_completed.request_status = SolveRequestStatus.COMPLETED
         self.repo.create_solve_task_status(status_pending)
