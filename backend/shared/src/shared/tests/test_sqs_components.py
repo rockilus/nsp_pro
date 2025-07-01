@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 
 from shared.aws.config import AWSConfig
 from shared.aws.sqs_client import SQSClient
-from shared.schemas.core.sqs_messages import SQSSolveMessage
+from shared.schemas.core.solve_task_status import SQSSolveMessage
 
 
 def test_aws_config_creation():

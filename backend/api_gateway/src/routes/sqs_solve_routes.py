@@ -5,11 +5,10 @@ This module provides endpoints for submitting solve requests via SQS
 and checking solve status.
 """
 
-from typing import Dict
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from loguru import logger
-from shared.schemas.core import SqsSolveRequest
+from shared.schemas.core import SolveRequest
+from shared.schemas.dto import SolveTaskStatusResponseDTO
 
 from src.dependencies.sqs_solve_service import get_sqs_solve_service
 from src.errors import NotAuthorizedError, handle_routes_errors
@@ -18,9 +17,7 @@ from src.integrations.authentication import (
     authn_verify_session,
 )
 from src.integrations.authorization import authz_check
-from src.services.sqs_solve_service import (
-    APIGatewaySQSSolveService,
-)
+from src.services.sqs_solve_service import APIGatewaySQSSolveService
 
 router = APIRouter(prefix="/sqs", tags=["SQS Solve"])
 
@@ -33,10 +30,10 @@ router = APIRouter(prefix="/sqs", tags=["SQS Solve"])
     + "Accepts JSON body for compatibility with frontend API client.",
 )
 async def submit_solve_request(
-    body: SqsSolveRequest,
+    body: SolveRequest,
     session: SessionContainerType = Depends(authn_verify_session()),
     sqs_solve_service: APIGatewaySQSSolveService = Depends(get_sqs_solve_service),
-) -> Dict[str, str]:
+) -> SolveTaskStatusResponseDTO:
     """
     Submit a solve request via SQS.
 
@@ -78,8 +75,8 @@ async def submit_solve_request(
             f"SQS solve request submitted for schedule {schedule_id} "
             f"by user {session.get_user_id()}"
         )
-
-        return result
+        response = result.to_response_dto()
+        return response
 
     except ValueError as ve:
         logger.warning(f"Invalid solve request: {ve}")
@@ -99,22 +96,21 @@ async def submit_solve_request(
 
 
 @router.get(
-    "/schedules/{schedule_id}/solve-status/teams/{team_id}",
-    summary="Get solve status for a schedule",
-    description="Get the current solve status and details for a schedule",
+    "/sqs-solve/{solve_id}/status",
+    summary="Get solve status by solve_id (frontend-aligned)",
+    description="Get the current solve status and details for a solve request "
+    + "by solve_id.",
 )
-async def get_solve_status(
-    schedule_id: str,
-    team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+async def get_solve_status_by_id(
+    solve_id: str,
+    _: SessionContainerType = Depends(authn_verify_session()),
     sqs_solve_service: APIGatewaySQSSolveService = Depends(get_sqs_solve_service),
-) -> Dict[str, str]:
+) -> SolveTaskStatusResponseDTO:
     """
-    Get the current solve status for a schedule.
+    Get the current solve status for a solve request by solve_id.
 
     Args:
-        schedule_id: ID of the schedule
-        team_id: Team ID for authorization
+        solve_id: ID of the solve request
         session: Authentication session
         sqs_solve_service: SQS solve service
 
@@ -122,32 +118,23 @@ async def get_solve_status(
         Dictionary with status information
 
     Raises:
-        HTTPException: If unauthorized or schedule not found
+        HTTPException: If unauthorized or solve not found
     """
     try:
-        # Check authorization
-        if not await authz_check(
-            session.get_user_id(), "read-schedule", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to read schedule status"
-            )
-
-        # Get solve status
-        result = await sqs_solve_service.get_solve_status(schedule_id)
-
-        return result
-
+        # Get solve status (will raise if not found or not authorized)
+        result = await sqs_solve_service.get_solve_status(solve_id=solve_id)
+        response = result.to_response_dto()
+        return response
+    except NotAuthorizedError:
+        raise
     except ValueError as ve:
-        logger.warning(f"Invalid status request: {ve}")
+        logger.warning(f"Invalid solve status request: {ve}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(ve),
         ) from ve
-    except NotAuthorizedError:
-        raise
     except Exception as e:
-        logger.error(f"Failed to get solve status: {e}")
+        logger.error(f"Failed to get solve status by id: {e}")
         handle_routes_errors(e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

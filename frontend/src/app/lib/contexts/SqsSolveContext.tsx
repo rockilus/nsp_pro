@@ -1,27 +1,35 @@
 /**
  * Context and provider for managing SQS solve state
  */
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 
-import React, {
-  createContext,
-  useContext,
-  useReducer,
-  useEffect,
-  ReactNode,
-} from "react";
-import { SqsSolveApi, SqsSolveStatusResponse } from "../api/sqsSolveApi";
-import { SqsSolvePollingService } from "../services/sqsSolvePollingService";
-import { ScheduleT } from "@/types/schedule";
 import { AssignmentT } from "@/types/assignment";
 import { BreachT } from "@/types/breach";
 import { RequestT } from "@/types/request";
+import { ScheduleT } from "@/types/schedule";
+import {
+  SolveRequestStatus,
+  SolveTaskStatusResponseT,
+} from "@/types/solveTaskStatus";
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useReducer,
+} from "react";
+import { SqsSolveApi } from "../api/sqsSolveApi";
+import { SolvePollingService } from "../services/solvePollingService";
+
+dayjs.extend(utc);
 
 export interface SqsSolveState {
   // Current solve session
   solveId: string | null;
-  status: "IDLE" | "PENDING" | "IN_PROGRESS" | "COMPLETED" | "FAILED";
-  startedAt: string | null;
-  completedAt: string | null;
+  status: SolveRequestStatus;
+  startedAt: dayjs.Dayjs | null;
+  completedAt: dayjs.Dayjs | null;
   errorMessage: string | null;
 
   // Solve results
@@ -40,8 +48,8 @@ export interface SqsSolveState {
 
 type SqsSolveAction =
   | { type: "SOLVE_START"; payload: { solveId: string } }
-  | { type: "SOLVE_STATUS_UPDATE"; payload: SqsSolveStatusResponse }
-  | { type: "SOLVE_COMPLETE"; payload: SqsSolveStatusResponse }
+  | { type: "SOLVE_STATUS_UPDATE"; payload: SolveTaskStatusResponseT }
+  | { type: "SOLVE_COMPLETE"; payload: SolveTaskStatusResponseT }
   | { type: "SOLVE_FAILED"; payload: { error: string } }
   | { type: "SOLVE_ERROR"; payload: { error: string } }
   | { type: "POLLING_START" }
@@ -51,7 +59,7 @@ type SqsSolveAction =
 
 const initialState: SqsSolveState = {
   solveId: null,
-  status: "IDLE",
+  status: SolveRequestStatus.PENDING,
   startedAt: null,
   completedAt: null,
   errorMessage: null,
@@ -70,8 +78,8 @@ function sqsSolveReducer(
       return {
         ...state,
         solveId: action.payload.solveId,
-        status: "PENDING",
-        startedAt: new Date().toISOString(),
+        status: SolveRequestStatus.PENDING,
+        startedAt: dayjs().utc(),
         completedAt: null,
         errorMessage: null,
         result: null,
@@ -82,18 +90,18 @@ function sqsSolveReducer(
     case "SOLVE_STATUS_UPDATE":
       return {
         ...state,
-        status: action.payload.status,
-        startedAt: action.payload.started_at || state.startedAt,
-        completedAt: action.payload.completed_at || state.completedAt,
-        errorMessage: action.payload.error_message || state.errorMessage,
+        status: action.payload.requestStatus,
+        startedAt: action.payload.startedAt || state.startedAt,
+        completedAt: action.payload.completedAt || state.completedAt,
+        errorMessage: action.payload.errorMessage || state.errorMessage,
         result: action.payload.result || state.result,
       };
 
     case "SOLVE_COMPLETE":
       return {
         ...state,
-        status: "COMPLETED",
-        completedAt: action.payload.completed_at || new Date().toISOString(),
+        status: SolveRequestStatus.COMPLETED,
+        completedAt: action.payload.completedAt || dayjs().utc(),
         result: action.payload.result || state.result,
         isPolling: false,
       };
@@ -101,9 +109,9 @@ function sqsSolveReducer(
     case "SOLVE_FAILED":
       return {
         ...state,
-        status: "FAILED",
+        status: SolveRequestStatus.FAILED,
         errorMessage: action.payload.error,
-        completedAt: new Date().toISOString(),
+        completedAt: dayjs().utc(),
         isPolling: false,
       };
 
@@ -175,7 +183,7 @@ interface SqsSolveProviderProps {
 export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
   const [state, dispatch] = useReducer(sqsSolveReducer, initialState);
   const [pollingService, setPollingService] =
-    React.useState<SqsSolvePollingService | null>(null);
+    React.useState<SolvePollingService | null>(null);
 
   // Load persisted state on mount
   useEffect(() => {
@@ -195,7 +203,7 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
               pollingService.stop();
             }
 
-            const newPollingService = new SqsSolvePollingService(solveId, {
+            const newPollingService = new SolvePollingService(solveId, {
               onStatusChange: (status) => {
                 dispatch({ type: "SOLVE_STATUS_UPDATE", payload: status });
               },
@@ -251,7 +259,7 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
       pollingService.stop();
     }
 
-    const newPollingService = new SqsSolvePollingService(solveId, {
+    const newPollingService = new SolvePollingService(solveId, {
       onStatusChange: (status) => {
         dispatch({ type: "SOLVE_STATUS_UPDATE", payload: status });
       },
@@ -288,9 +296,9 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
 
       dispatch({
         type: "SOLVE_START",
-        payload: { solveId: response.solve_id },
+        payload: { solveId: response.solveId },
       });
-      startPolling(response.solve_id);
+      startPolling(response.solveId);
     } catch (error) {
       dispatch({
         type: "SOLVE_ERROR",

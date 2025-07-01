@@ -1,4 +1,7 @@
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+
+dayjs.extend(utc);
 
 export type VariableT = {
   workerId: string | null;
@@ -25,4 +28,17 @@ export type BreachT = {
   variables: VariableT[];
   description: string;
   hardToSoft: boolean | null;
+};
+
+export const toBreachT = (data: any): BreachT => {
+  return {
+    ...data,
+    variables: data.variables.map((variable: any) => {
+      const variableT: VariableT = {
+        ...variable,
+        date: dayjs.utc(variable.date),
+      };
+      return variableT;
+    }),
+  };
 };

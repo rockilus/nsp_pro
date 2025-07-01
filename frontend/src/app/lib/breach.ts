@@ -1,28 +1,10 @@
 import { unstable_noStore as noStore } from "next/cache";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
 // Types
-import { BreachT } from "@/types/breach";
-import { VariableT } from "@/types/breach";
+import { BreachT, toBreachT } from "@/types/breach";
 // Env Vars
 import { API_URL } from "./env";
 
-dayjs.extend(utc);
-
 const apiUrlBreach = API_URL + "/breaches";
-
-export const toBreachT = (data: any): BreachT => {
-  return {
-    ...data,
-    variables: data.variables.map((variable: any) => {
-      const variableT: VariableT = {
-        ...variable,
-        date: dayjs.utc(variable.date),
-      };
-      return variableT;
-    }),
-  };
-};
 
 //////////////////////////
 // Breach //

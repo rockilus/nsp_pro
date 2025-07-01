@@ -1,6 +1,6 @@
 // Actions
 import { toAssignmentT } from "@/types/assignment";
-import { toBreachT } from "./breach";
+import { toBreachT } from "@/types/breach";
 // Types
 import { SolveDetailsStatus, toScheduleT } from "../../types/schedule";
 import { toRequestT } from "@/types/request";

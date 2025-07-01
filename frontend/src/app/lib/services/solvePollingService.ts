@@ -2,18 +2,22 @@
  * Polling service for monitoring SQS solve status
  */
 
-import { SqsSolveApi, SqsSolveStatusResponse } from "../api/sqsSolveApi";
+import {
+  SolveTaskStatusResponseT,
+  SolveRequestStatus,
+} from "@/types/solveTaskStatus";
+import { SqsSolveApi } from "../api/sqsSolveApi";
 
 export interface PollingOptions {
   interval?: number; // polling interval in milliseconds (default: 2000)
   maxRetries?: number; // max retries on network errors (default: 5)
-  onStatusChange?: (status: SqsSolveStatusResponse) => void;
+  onStatusChange?: (status: SolveTaskStatusResponseT) => void;
   onError?: (error: Error) => void;
-  onComplete?: (result: SqsSolveStatusResponse) => void;
+  onComplete?: (result: SolveTaskStatusResponseT) => void;
   onFailed?: (error: string) => void;
 }
 
-export class SqsSolvePollingService {
+export class SolvePollingService {
   private solveId: string;
   private options: Required<PollingOptions>;
   private timeoutId: NodeJS.Timeout | null = null;
@@ -87,20 +91,23 @@ export class SqsSolvePollingService {
       this.options.onStatusChange(status);
 
       // Check if we should continue polling
-      if (status.status === "COMPLETED") {
+      if (status.requestStatus === SolveRequestStatus.COMPLETED) {
         this.options.onComplete(status);
         this.stop();
         return;
       }
 
-      if (status.status === "FAILED") {
-        this.options.onFailed(status.error_message || "Solve failed");
+      if (status.requestStatus === SolveRequestStatus.FAILED) {
+        this.options.onFailed(status.errorMessage || "Solve failed");
         this.stop();
         return;
       }
 
       // Continue polling for PENDING and IN_PROGRESS
-      if (status.status === "PENDING" || status.status === "IN_PROGRESS") {
+      if (
+        status.requestStatus === SolveRequestStatus.PENDING ||
+        status.requestStatus === SolveRequestStatus.IN_PROGRESS
+      ) {
         this.scheduleNextPoll();
       }
     } catch (error) {

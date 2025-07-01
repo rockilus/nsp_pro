@@ -3,12 +3,22 @@
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
-
+import humps
+from pydantic import TypeAdapter
 from pydantic import BaseModel, Field
+from dataclasses import asdict
 
 from shared.schemas.core.assignment import Assignment
 from shared.schemas.core.breach import Breach
 from shared.schemas.core.request import Request
+from shared.schemas.dto.solve_task_status import (
+    SolveTaskStatusResponseDTO,
+    ResultModelDTO,
+)
+from shared.schemas.dto.assignment import AssignmentDTO
+from shared.schemas.dto.breach import BreachDTO
+from shared.schemas.dto.request import RequestDTO
+from shared.schemas.core.request import RequestAugmented
 
 
 class SolveStatus(str, Enum):
@@ -22,7 +32,7 @@ class SolveStatus(str, Enum):
     TIMEOUT = "TIMEOUT"
 
 
-class SqsSolveRequest(BaseModel):
+class SolveRequest(BaseModel):
     schedule_id: str
     team_id: str
 
@@ -41,7 +51,9 @@ class SQSSolveMessage(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc),
         description="When the request was created",
     )
-    message_id: Optional[str] = Field(default=None, description="SQS message ID")
+    message_id: Optional[str] = Field(
+        default=None, description="SQS message ID"
+    )
 
     class Config:
         """Pydantic configuration."""
@@ -104,7 +116,9 @@ class SQSHealthCheck(BaseModel):
     queue_messages_delayed: Optional[int] = Field(
         default=None, description="Number of delayed messages"
     )
-    error: Optional[str] = Field(default=None, description="Error message if unhealthy")
+    error: Optional[str] = Field(
+        default=None, description="Error message if unhealthy"
+    )
     timestamp: datetime = Field(
         default_factory=datetime.utcnow,
         description="When the health check was performed",
@@ -145,6 +159,20 @@ class ResultModel(BaseModel):
     breaches: List[Breach]
     requests: List[Request]
 
+    def to_dto(
+        self, requests_augmented: Optional[List[RequestAugmented]] = None
+    ) -> ResultModelDTO:
+        """Convert this ResultModel to a ResultModelDTO for API responses."""
+        return ResultModelDTO(
+            assignments=[a.to_dto() for a in self.assignments],
+            breaches=[b.to_dto() for b in self.breaches],
+            requests=(
+                [r.to_dto() for r in requests_augmented]
+                if requests_augmented
+                else []
+            ),
+        )
+
 
 class SolverOutputStatus(str, Enum):
     UNKNOWN = "UNKNOWN"
@@ -178,8 +206,30 @@ class SolveTaskStatus(BaseModel):
     error_message: Optional[str] = None
     result: Optional[ResultModel] = None
     solver_output_metadata: Optional[SolverOutputMetadata] = None
-    id: Optional[str] = Field(default=None, alias="_id")
+    id: Optional[str]
 
     class Config:
         use_enum_values = True
         json_encoders = {datetime: lambda v: v.isoformat()}
+
+    def to_response_dto(
+        self, requests_augmented: Optional[List[RequestAugmented]] = None
+    ) -> SolveTaskStatusResponseDTO:
+        """
+        Convert this SolveTaskStatus to a SolveTaskStatusResponseDTO for API responses.
+        """
+        data = asdict(self)
+        data["started_at"] = (
+            self.started_at.timestamp() if self.started_at else None
+        )
+        data["completed_at"] = (
+            self.completed_at.timestamp() if self.completed_at else None
+        )
+        data["result"] = (
+            self.result.to_dto(requests_augmented=requests_augmented)
+            if self.result
+            else None
+        )
+        as_dict = humps.camelize(data)
+        validator = TypeAdapter(SolveTaskStatusResponseDTO)
+        return validator.validate_python(as_dict)

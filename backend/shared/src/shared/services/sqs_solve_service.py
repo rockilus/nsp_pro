@@ -6,7 +6,7 @@ from typing import Any, Dict
 from loguru import logger
 
 from ..aws.sqs_client import SQSClient
-from ..schemas.core.sqs_messages import SQSSolveMessage
+from ..schemas.core.solve_task_status import SQSSolveMessage
 
 
 class SQSSolveService:
@@ -68,7 +68,8 @@ class SQSSolveService:
 
         except Exception as e:
             logger.error(
-                f"Failed to submit solve request for schedule " f"{schedule_id}: {e}"
+                f"Failed to submit solve request for schedule "
+                f"{schedule_id}: {e}"
             )
             raise
 
@@ -89,7 +90,9 @@ class SQSSolveService:
                     attributes.get("ApproximateNumberOfMessages", "0")
                 ),
                 "messages_in_flight": int(
-                    attributes.get("ApproximateNumberOfMessagesNotVisible", "0")
+                    attributes.get(
+                        "ApproximateNumberOfMessagesNotVisible", "0"
+                    )
                 ),
                 "messages_delayed": int(
                     attributes.get("ApproximateNumberOfMessagesDelayed", "0")

@@ -2,6 +2,11 @@
  * API client for SQS-based solve operations
  */
 
+import {
+  SolveTaskStatusResponseT,
+  toSolveTaskStatusResponseT,
+} from "@/types/solveTaskStatus";
+
 export interface SqsSolveRequest {
   schedule_id: string;
   team_id: string;
@@ -41,7 +46,9 @@ export class SqsSolveApi {
   /**
    * Start a new solve request using SQS
    */
-  static async startSolve(request: SqsSolveRequest): Promise<SqsSolveResponse> {
+  static async startSolve(
+    request: SqsSolveRequest
+  ): Promise<SolveTaskStatusResponseT> {
     const response = await fetch(`${API_BASE_URL}/sqs-solve/start`, {
       method: "POST",
       headers: {
@@ -59,8 +66,8 @@ export class SqsSolveApi {
         }`
       );
     }
-
-    return await response.json();
+    const data = await response.json();
+    return toSolveTaskStatusResponseT(data);
   }
 
   /**
@@ -68,7 +75,7 @@ export class SqsSolveApi {
    */
   static async getSolveStatus(
     solveId: string
-  ): Promise<SqsSolveStatusResponse> {
+  ): Promise<SolveTaskStatusResponseT> {
     const response = await fetch(
       `${API_BASE_URL}/sqs-solve/${solveId}/status`,
       {
@@ -86,33 +93,8 @@ export class SqsSolveApi {
       );
     }
 
-    return await response.json();
-  }
-
-  /**
-   * Get the result of a completed solve request
-   */
-  static async getSolveResult(
-    solveId: string
-  ): Promise<SqsSolveResultResponse> {
-    const response = await fetch(
-      `${API_BASE_URL}/sqs-solve/${solveId}/result`,
-      {
-        method: "GET",
-        credentials: "include",
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        `Failed to get solve result: ${response.status} - ${
-          errorData.detail || response.statusText
-        }`
-      );
-    }
-
-    return await response.json();
+    const data = await response.json();
+    return toSolveTaskStatusResponseT(data);
   }
 
   /**

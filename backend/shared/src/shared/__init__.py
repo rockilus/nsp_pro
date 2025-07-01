@@ -4,7 +4,7 @@
 from .aws import AWSConfig, SQSClient
 
 # SQS message schemas
-from .schemas.core.sqs_messages import (
+from .schemas.core.solve_task_status import (
     SolveStatus,
     SQSHealthCheck,
     SQSSolveMessage,

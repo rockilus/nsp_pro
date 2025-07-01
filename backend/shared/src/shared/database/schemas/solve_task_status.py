@@ -15,14 +15,14 @@ from shared.database.schemas.breach import BreachSchema
 from shared.database.schemas.request import RequestSchema
 
 # Correct imports from core and db schemas
-from shared.schemas.core.sqs_messages import (
+from shared.schemas.core.solve_task_status import (
     ResultModel,
     ScheduleSolveStatus,
     SolveRequestStatus,
     SolverOutputMetadata,
     SolverOutputStatus,
+    SolveTaskStatus,
 )
-from shared.schemas.core.sqs_messages import SolveTaskStatus as CoreSolveTaskStatus
 
 # Import core models and enums
 
@@ -50,7 +50,9 @@ class ResultModelSchema(BaseModel):
         Convert from core ResultModel (Pydantic) to MongoDB schema.
         """
         return cls(
-            assignments=[AssignmentSchema.from_core(a) for a in core.assignments],
+            assignments=[
+                AssignmentSchema.from_core(a) for a in core.assignments
+            ],
             breaches=[BreachSchema.from_core(b) for b in core.breaches],
             requests=[RequestSchema.from_core(r) for r in core.requests],
         )
@@ -81,7 +83,9 @@ class SolverOutputMetadataSchema(BaseModel):
         )
 
     @classmethod
-    def from_core(cls, core: SolverOutputMetadata) -> "SolverOutputMetadataSchema":
+    def from_core(
+        cls, core: SolverOutputMetadata
+    ) -> "SolverOutputMetadataSchema":
         """
         Convert from core SolverOutputMetadata (Pydantic) to MongoDB schema.
         """
@@ -90,7 +94,9 @@ class SolverOutputMetadataSchema(BaseModel):
             objective_value=core.objective_value,
             wall_time=core.wall_time,
             output_time=(
-                core.output_time.timestamp() if core.output_time is not None else None
+                core.output_time.timestamp()
+                if core.output_time is not None
+                else None
             ),
         )
 
@@ -120,7 +126,7 @@ class SolveTaskStatusSchema(DocumentBaseSchema):
         allow_population_by_field_name = True
 
     @classmethod
-    def from_core(cls, core: CoreSolveTaskStatus) -> "SolveTaskStatusSchema":
+    def from_core(cls, core: SolveTaskStatus) -> "SolveTaskStatusSchema":
         """
         Convert from core SolveTaskStatus (Pydantic) to MongoDB schema.
         """
@@ -142,27 +148,34 @@ class SolveTaskStatusSchema(DocumentBaseSchema):
                 else str(core.solve_status)
             ),
             started_at=(
-                core.started_at.timestamp() if core.started_at is not None else None
+                core.started_at.timestamp()
+                if core.started_at is not None
+                else None
             ),
             completed_at=(
-                core.completed_at.timestamp() if core.completed_at is not None else None
+                core.completed_at.timestamp()
+                if core.completed_at is not None
+                else None
             ),
             error_message=core.error_message,
             result=ResultModelSchema.from_core(result) if result else None,
             solver_output_status=(
-                SolverOutputMetadataSchema.from_core(core.solver_output_metadata)
+                SolverOutputMetadataSchema.from_core(
+                    core.solver_output_metadata
+                )
                 if core.solver_output_metadata
                 else None
             ),
             id=str(core.id) if core.id else None,
         )
 
-    def to_core(self) -> CoreSolveTaskStatus:
+    def to_core(self) -> SolveTaskStatus:
         """
         Convert from MongoDB schema to core SolveTaskStatus (Pydantic).
         """
 
-        return CoreSolveTaskStatus(
+        return SolveTaskStatus(
+            id=self.id or None,
             solve_id=self.solve_id,
             schedule_id=self.schedule_id,
             team_id=self.team_id,
