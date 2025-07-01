@@ -5,16 +5,10 @@ This module provides endpoints for submitting solve requests via SQS
 and checking solve status.
 """
 
-from dataclasses import dataclass
 from typing import Dict
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from loguru import logger
-from pydantic import BaseModel
-from shared.schemas.core.sqs_messages import (
-    SolveRequestPriority,
-    SolveRequestType,
-)
 from shared.schemas.core import SqsSolveRequest
 
 from src.dependencies.sqs_solve_service import get_sqs_solve_service
@@ -24,7 +18,7 @@ from src.integrations.authentication import (
     authn_verify_session,
 )
 from src.integrations.authorization import authz_check
-from src.services.api_gateway_sqs_solve_service import (
+from src.services.sqs_solve_service import (
     APIGatewaySQSSolveService,
 )
 
@@ -35,14 +29,13 @@ router = APIRouter(prefix="/sqs", tags=["SQS Solve"])
     "/sqs-solve/start",
     status_code=status.HTTP_202_ACCEPTED,
     summary="Submit schedule solve request via SQS (frontend-aligned)",
-    description="Submit a schedule for solving using the SQS queue system. Accepts JSON body for compatibility with frontend API client.",
+    description="Submit a schedule for solving using the SQS queue system. "
+    + "Accepts JSON body for compatibility with frontend API client.",
 )
 async def submit_solve_request(
     body: SqsSolveRequest,
     session: SessionContainerType = Depends(authn_verify_session()),
-    sqs_solve_service: APIGatewaySQSSolveService = Depends(
-        get_sqs_solve_service
-    ),
+    sqs_solve_service: APIGatewaySQSSolveService = Depends(get_sqs_solve_service),
 ) -> Dict[str, str]:
     """
     Submit a solve request via SQS.
@@ -72,9 +65,7 @@ async def submit_solve_request(
         if not await authz_check(
             session.get_user_id(), "solve-schedule", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to solve a schedule"
-            )
+            raise NotAuthorizedError("You do not have permission to solve a schedule")
 
         # Submit solve request (defaults: NORMAL priority, FULL_SOLVE type)
         result = await sqs_solve_service.submit_solve_request(
@@ -116,9 +107,7 @@ async def get_solve_status(
     schedule_id: str,
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
-    sqs_solve_service: APIGatewaySQSSolveService = Depends(
-        get_sqs_solve_service
-    ),
+    sqs_solve_service: APIGatewaySQSSolveService = Depends(get_sqs_solve_service),
 ) -> Dict[str, str]:
     """
     Get the current solve status for a schedule.

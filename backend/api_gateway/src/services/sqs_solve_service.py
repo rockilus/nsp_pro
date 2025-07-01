@@ -7,20 +7,14 @@ the shared SQS service.
 """
 
 from datetime import datetime, timezone
-from typing import Dict, Optional
-from uuid import UUID
+from typing import Dict
 
 from loguru import logger
-
 from shared.aws.config import AWSConfig
 from shared.aws.sqs_client import SQSClient
 from shared.schemas.core.schedule import SolveDetails, SolveDetailsStatus
-from shared.schemas.core.sqs_messages import (
-    SolveRequestPriority,
-    SolveRequestType,
-    SQSSolveMessage,
-)
 from shared.services.sqs_solve_service import SQSSolveService
+
 from src.services.schedule_service import ScheduleService
 
 
@@ -50,14 +44,7 @@ class APIGatewaySQSSolveService:
         self.schedule_service = schedule_service
 
     async def submit_solve_request(
-        self,
-        schedule_id: str,
-        team_id: str,
-        user_id: str,
-        priority: SolveRequestPriority = SolveRequestPriority.NORMAL,
-        request_type: SolveRequestType = SolveRequestType.FULL_SOLVE,
-        constraints: Optional[Dict] = None,
-        metadata: Optional[Dict] = None,
+        self, schedule_id: str, team_id: str, user_id: str
     ) -> Dict[str, str]:
         """
         Submit a solve request via SQS.
@@ -66,10 +53,6 @@ class APIGatewaySQSSolveService:
             schedule_id: ID of the schedule to solve
             team_id: Team ID for authorization
             user_id: User ID who initiated the request
-            priority: Priority of the solve request
-            request_type: Type of solve request
-            constraints: Additional constraints for solving
-            metadata: Additional metadata
 
         Returns:
             Dictionary containing message_id and status
@@ -80,14 +63,12 @@ class APIGatewaySQSSolveService:
         """
         logger.info(
             f"Submitting SQS solve request for schedule {schedule_id} "
-            f"by user {user_id} with priority {priority.value}"
+            f"by user {user_id}"
         )
 
         # Get the schedule and validate it exists
-        schedule = (
-            self.schedule_service.collection.schedule_db.get_schedule_by_id(
-                schedule_id
-            )
+        schedule = self.schedule_service.collection.schedule_db.get_schedule_by_id(
+            schedule_id
         )
         if not schedule:
             raise ValueError(f"Schedule {schedule_id} not found")
@@ -108,10 +89,6 @@ class APIGatewaySQSSolveService:
                 schedule_id=schedule_id,
                 team_id=team_id,
                 user_id=user_id,
-                request_type=request_type,
-                priority=priority,
-                constraints=constraints,
-                metadata=metadata,
             )
 
             # Update schedule status to pending
@@ -121,9 +98,7 @@ class APIGatewaySQSSolveService:
                 updated_at=datetime.now(tz=timezone.utc),
                 result=None,
             )
-            self.schedule_service.collection.schedule_db.update_schedule(
-                schedule
-            )
+            self.schedule_service.collection.schedule_db.update_schedule(schedule)
 
             logger.info(
                 f"Successfully submitted solve request for schedule {schedule_id}. "
@@ -154,10 +129,8 @@ class APIGatewaySQSSolveService:
         Returns:
             Dictionary containing status information
         """
-        schedule = (
-            self.schedule_service.collection.schedule_db.get_schedule_by_id(
-                schedule_id
-            )
+        schedule = self.schedule_service.collection.schedule_db.get_schedule_by_id(
+            schedule_id
         )
         if not schedule:
             raise ValueError(f"Schedule {schedule_id} not found")

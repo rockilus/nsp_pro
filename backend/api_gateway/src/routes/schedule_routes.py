@@ -12,6 +12,9 @@ from shared.schemas.dto import (
 )
 
 from src.dependencies import get_db_collections, get_schedule_service
+from src.dependencies.sqs_solve_service import (
+    get_sqs_solve_service,
+)
 from src.errors import NotAuthorizedError, handle_routes_errors
 from src.integrations.authentication import (
     SessionContainerType,
@@ -19,11 +22,6 @@ from src.integrations.authentication import (
 )
 from src.integrations.authorization import authz_check
 from src.services.schedule_service import ScheduleService
-from shared.schemas.core.sqs_messages import SolveRequestPriority
-from src.dependencies.sqs_solve_service import (
-    get_sqs_solve_service,
-)
-
 
 router = APIRouter()
 
@@ -135,14 +133,11 @@ async def solve_schedule(
                     schedule_id=schedule_id,
                     team_id=team_id,
                     user_id=session.get_user_id(),
-                    priority=SolveRequestPriority.NORMAL,
                 )
 
                 # Get updated schedule
-                schedule = (
-                    schedule_service.collection.schedule_db.get_schedule_by_id(
-                        schedule_id
-                    )
+                schedule = schedule_service.collection.schedule_db.get_schedule_by_id(
+                    schedule_id
                 )
 
                 return {
@@ -153,9 +148,7 @@ async def solve_schedule(
                 }
 
             except Exception as sqs_error:
-                log_info(
-                    f"SQS solve failed, falling back to Celery: {sqs_error}"
-                )
+                log_info(f"SQS solve failed, falling back to Celery: {sqs_error}")
                 # Fall back to Celery on any error
                 schedule = schedule_service.solve_schedule(schedule_id)
                 return {
@@ -232,9 +225,7 @@ async def duplicate_period(
     return response
 
 
-@router.post(
-    "/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201
-)
+@router.post("/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201)
 async def validate_schedule(
     schedule_id: str,
     team_id: str,
