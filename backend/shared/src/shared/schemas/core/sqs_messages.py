@@ -2,9 +2,13 @@
 
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+
+from shared.schemas.core.assignment import Assignment
+from shared.schemas.core.breach import Breach
+from shared.schemas.core.request import Request
 
 
 class SolveStatus(str, Enum):
@@ -109,4 +113,73 @@ class SQSHealthCheck(BaseModel):
     class Config:
         """Pydantic configuration."""
 
+        json_encoders = {datetime: lambda v: v.isoformat()}
+
+
+class SolveRequestStatus(str, Enum):
+    """
+    Status object for SQS solve requests, suitable for database storage.
+    Mirrors the frontend SqsSolveStatusResponse interface.
+    """
+
+    PENDING = "PENDING"
+    IN_PROGRESS = "IN_PROGRESS"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
+
+# Status object for SQS solve requests, suitable for database storage.
+# Mirrors the frontend SqsSolveStatusResponse interface.
+
+
+class ScheduleSolveStatus(Enum):
+    NOT_SOLVED = "NOT_SOLVED"
+    SOLVED_NO_BREACH = "SOLVED_NO_BREACH"
+    SOLVED_HARD_BREACHED = "SOLVED_HARD_BREACHED"
+    SOLVED_SOFT_BREACHED = "SOLVED_SOFT_BREACHED"
+    NO_SOLUTION = "NO_SOLUTION"
+
+
+class ResultModel(BaseModel):
+    assignments: List[Assignment]
+    breaches: List[Breach]
+    requests: List[Request]
+
+
+class SolverOutputStatus(str, Enum):
+    UNKNOWN = "UNKNOWN"
+    MODEL_INVALID = "MODEL_INVALID"
+    FEASIBLE = "FEASIBLE"
+    INFEASIBLE = "INFEASIBLE"
+    OPTIMAL = "OPTIMAL"
+
+
+class SolverOutputMetadata(BaseModel):
+    status: SolverOutputStatus
+    objective_value: Optional[float] = None
+    wall_time: Optional[float] = None
+    output_time: Optional[datetime] = None
+
+
+class SolveTaskStatus(BaseModel):
+    """
+    Status object for SQS solve requests, suitable for database storage.
+    Mirrors the frontend SqsSolveStatusResponse interface.
+    """
+
+    solve_id: str
+    schedule_id: str
+    team_id: str
+    user_id: str
+    request_status: SolveRequestStatus
+    solve_status: ScheduleSolveStatus
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    error_message: Optional[str] = None
+    result: Optional[ResultModel] = None
+    solver_output_metadata: Optional[SolverOutputMetadata] = None
+    id: Optional[str] = Field(default=None, alias="_id")
+
+    class Config:
+        use_enum_values = True
         json_encoders = {datetime: lambda v: v.isoformat()}

@@ -112,8 +112,8 @@ class Schedule:
     start_date: date
     end_date: date
     last_modified_dates: datetime
-    solve_details: SolveDetails | None
-    solve_status: ScheduleSolveStatus
+    solve_details: SolveDetails | None  # to be removed
+    solve_status: ScheduleSolveStatus  # to be removed
     status: ScheduleStatus
     missing_coverage_dates: List[date]
     constraint_build_ids: List[str]
