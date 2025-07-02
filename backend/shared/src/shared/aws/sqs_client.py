@@ -28,20 +28,29 @@ class SQSClient:
     @property
     def sqs(self) -> Any:
         """Get SQS client instance."""
+        # if self._sqs_client is None:
+        #     # session = boto3.Session(
+        #     #     aws_access_key_id=self.config.access_key_id,
+        #     #     aws_secret_access_key=self.config.secret_access_key,
+        #     #     region_name=self.config.region,
+        #     # )
+        #     # self._sqs_client = session.client("sqs")
+        #     self._sqs_client = boto3.client(
+        #         "sqs",
+        #         region_name=self.config.region,
+        #         aws_access_key_id=self.config.access_key_id,
+        #         aws_secret_access_key=self.config.secret_access_key,
+        #         endpoint_url=self.config.endpoint_url,
+        #     )
         if self._sqs_client is None:
-            # session = boto3.Session(
-            #     aws_access_key_id=self.config.access_key_id,
-            #     aws_secret_access_key=self.config.secret_access_key,
-            #     region_name=self.config.region,
-            # )
-            # self._sqs_client = session.client("sqs")
-            self._sqs_client = boto3.client(
-                "sqs",
-                region_name=self.config.region,
-                aws_access_key_id=self.config.access_key_id,
-                aws_secret_access_key=self.config.secret_access_key,
-                endpoint_url=self.config.endpoint_url,
-            )
+            client_kwargs = {
+                "region_name": self.config.region,
+                "aws_access_key_id": self.config.access_key_id,
+                "aws_secret_access_key": self.config.secret_access_key,
+            }
+            if self.config.endpoint_url is not None:
+                client_kwargs["endpoint_url"] = self.config.endpoint_url
+            self._sqs_client = boto3.client("sqs", **client_kwargs)
         return self._sqs_client
 
     async def initialize_queues(self) -> None:

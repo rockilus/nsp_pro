@@ -47,7 +47,7 @@ def test_sqs_client_initialization(mock_boto3):
         aws_access_key_id=None,
         aws_secret_access_key=None,
         region_name="us-east-1",
-        endpoint_url=None,
+        # endpoint_url=None,
     )
 
 

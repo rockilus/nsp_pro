@@ -112,18 +112,18 @@ def initialize_environment() -> AppConfig:
         session = boto3.Session()
         credentials = session.get_credentials()
         if credentials:
-            access_key_id = quote(credentials.access_key, safe="")
-            secret_access_key = quote(credentials.secret_key, safe="")
-            session_token = quote(credentials.token, safe="")
+            aws_access_key_id = quote(credentials.access_key, safe="")
+            aws_secret_access_key = quote(credentials.secret_key, safe="")
+            aws_session_token = quote(credentials.token, safe="")
 
             # Replace placeholders in the DB_URI with actual AWS credentials
             db_uri_template = os.getenv("DB_URI")
             if not db_uri_template:
                 raise ValueError("DB_URI template not found in environment variables.")
             db_uri = (
-                db_uri_template.replace("<AWS access key>", access_key_id)
-                .replace("<AWS secret key>", secret_access_key)
-                .replace("<session token (for AWS IAM Roles)>", session_token)
+                db_uri_template.replace("<AWS access key>", aws_access_key_id)
+                .replace("<AWS secret key>", aws_secret_access_key)
+                .replace("<session token (for AWS IAM Roles)>", aws_session_token)
             )
             os.environ["DB_URI"] = db_uri
 
@@ -167,6 +167,10 @@ def initialize_environment() -> AppConfig:
     # Load config
     try:
         out = AppConfig()  # type: ignore
+        if environment == "production" and credentials:
+            # If in production, ensure AWS credentials are set
+            out.aws_access_key_id = aws_access_key_id
+            out.aws_secret_access_key = aws_secret_access_key
         print(f"Configuration loaded: {out}")
         return out
     except ValidationError as e:

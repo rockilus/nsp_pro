@@ -289,7 +289,9 @@ async def create_sqs_consumer() -> SQSSolveConsumer:
         region=config.aws_region,
         access_key_id=config.aws_access_key_id,
         secret_access_key=config.aws_secret_access_key,
-        endpoint_url=config.endpoint_url,
+        endpoint_url=(
+            config.endpoint_url if config.environment == "development" else None
+        ),
     )
     sqs_solve_service = await create_sqs_solve_service(config=aws_config)
     return SQSSolveConsumer(sqs_solve_service)

@@ -152,7 +152,9 @@ def create_sqs_solve_service(
         region=config.aws_region,
         access_key_id=config.aws_access_key_id,
         secret_access_key=config.aws_secret_access_key,
-        endpoint_url=config.endpoint_url,
+        endpoint_url=(
+            config.endpoint_url if config.environment == "development" else None
+        ),
     )
     sqs_client = SQSClient(aws_config)
 
