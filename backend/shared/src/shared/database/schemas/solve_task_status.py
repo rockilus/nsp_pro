@@ -50,7 +50,9 @@ class ResultModelSchema(BaseModel):
         Convert from core ResultModel (Pydantic) to MongoDB schema.
         """
         return cls(
-            assignments=[AssignmentSchema.from_core(a) for a in core.assignments],
+            assignments=[
+                AssignmentSchema.from_core(a) for a in core.assignments
+            ],
             breaches=[BreachSchema.from_core(b) for b in core.breaches],
             requests=[RequestSchema.from_core(r) for r in core.requests],
         )
@@ -81,16 +83,20 @@ class SolverOutputMetadataSchema(BaseModel):
         )
 
     @classmethod
-    def from_core(cls, core: SolverOutputMetadata) -> "SolverOutputMetadataSchema":
+    def from_core(
+        cls, core: SolverOutputMetadata
+    ) -> "SolverOutputMetadataSchema":
         """
         Convert from core SolverOutputMetadata (Pydantic) to MongoDB schema.
         """
         return cls(
-            status=str(core.status),
+            status=core.status.value,
             objective_value=core.objective_value,
             wall_time=core.wall_time,
             output_time=(
-                core.output_time.timestamp() if core.output_time is not None else None
+                core.output_time.timestamp()
+                if core.output_time is not None
+                else None
             ),
         )
 
@@ -108,7 +114,8 @@ class SolveTaskStatusSchema(DocumentBaseSchema):
     user_id: str
     request_status: str
     solve_status: str
-    started_at: Optional[float] = None  # UTC timestamp
+    started_at: float  # UTC timestamp
+    ttl_seconds: int = 180  # Default TTL of 3 minutes
     completed_at: Optional[float] = None  # UTC timestamp
     error_message: Optional[str] = None
     result: Optional[ResultModelSchema] = None
@@ -141,16 +148,19 @@ class SolveTaskStatusSchema(DocumentBaseSchema):
                 if hasattr(core.solve_status, "value")
                 else str(core.solve_status)
             ),
-            started_at=(
-                core.started_at.timestamp() if core.started_at is not None else None
-            ),
+            started_at=core.started_at.timestamp(),
+            ttl_seconds=core.ttl_seconds,
             completed_at=(
-                core.completed_at.timestamp() if core.completed_at is not None else None
+                core.completed_at.timestamp()
+                if core.completed_at is not None
+                else None
             ),
             error_message=core.error_message,
             result=ResultModelSchema.from_core(result) if result else None,
             solver_output_status=(
-                SolverOutputMetadataSchema.from_core(core.solver_output_metadata)
+                SolverOutputMetadataSchema.from_core(
+                    core.solver_output_metadata
+                )
                 if core.solver_output_metadata
                 else None
             ),
@@ -172,9 +182,8 @@ class SolveTaskStatusSchema(DocumentBaseSchema):
             solve_status=ScheduleSolveStatus(self.solve_status),
             started_at=(
                 datetime.fromtimestamp(self.started_at, tz=timezone.utc)
-                if self.started_at is not None
-                else None
             ),
+            ttl_seconds=self.ttl_seconds,
             completed_at=(
                 datetime.fromtimestamp(self.completed_at, tz=timezone.utc)
                 if self.completed_at is not None

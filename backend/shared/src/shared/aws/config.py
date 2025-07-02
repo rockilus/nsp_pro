@@ -14,6 +14,9 @@ class AWSConfig(BaseModel):
     secret_access_key: Optional[str] = Field(
         default=None, description="AWS secret access key"
     )
+    endpoint_url: Optional[str] = Field(
+        default=None, description="Custom endpoint URL for local AWS services"
+    )
 
     # SQS Configuration
     sqs_solve_queue_name: str = Field(

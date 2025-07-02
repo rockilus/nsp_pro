@@ -19,7 +19,10 @@ from src.integrations.authentication import (
 from src.integrations.authorization import authz_check
 from src.services.sqs_solve_service import APIGatewaySQSSolveService
 
-router = APIRouter(prefix="/sqs", tags=["SQS Solve"])
+router = APIRouter(
+    # prefix="/sqs",
+    tags=["SQS Solve"]
+)
 
 
 @router.post(
@@ -32,7 +35,9 @@ router = APIRouter(prefix="/sqs", tags=["SQS Solve"])
 async def submit_solve_request(
     body: SolveRequest,
     session: SessionContainerType = Depends(authn_verify_session()),
-    sqs_solve_service: APIGatewaySQSSolveService = Depends(get_sqs_solve_service),
+    sqs_solve_service: APIGatewaySQSSolveService = Depends(
+        get_sqs_solve_service
+    ),
 ) -> SolveTaskStatusResponseDTO:
     """
     Submit a solve request via SQS.
@@ -62,7 +67,9 @@ async def submit_solve_request(
         if not await authz_check(
             session.get_user_id(), "solve-schedule", "team", team_id
         ):
-            raise NotAuthorizedError("You do not have permission to solve a schedule")
+            raise NotAuthorizedError(
+                "You do not have permission to solve a schedule"
+            )
 
         # Submit solve request (defaults: NORMAL priority, FULL_SOLVE type)
         result = await sqs_solve_service.submit_solve_request(
@@ -104,7 +111,9 @@ async def submit_solve_request(
 async def get_solve_status_by_id(
     solve_id: str,
     _: SessionContainerType = Depends(authn_verify_session()),
-    sqs_solve_service: APIGatewaySQSSolveService = Depends(get_sqs_solve_service),
+    sqs_solve_service: APIGatewaySQSSolveService = Depends(
+        get_sqs_solve_service
+    ),
 ) -> SolveTaskStatusResponseDTO:
     """
     Get the current solve status for a solve request by solve_id.

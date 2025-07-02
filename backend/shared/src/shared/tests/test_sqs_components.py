@@ -33,7 +33,7 @@ def test_sqs_message_creation():
 def test_sqs_client_initialization(mock_boto3):
     """Test SQS client initialization."""
     mock_sqs = Mock()
-    mock_boto3.Session.return_value.client.return_value = mock_sqs
+    mock_boto3.client.return_value = mock_sqs
 
     config = AWSConfig()
     client = SQSClient(config)
@@ -42,10 +42,12 @@ def test_sqs_client_initialization(mock_boto3):
     sqs = client.sqs
     assert sqs is mock_sqs
 
-    mock_boto3.Session.assert_called_once_with(
+    mock_boto3.client.assert_called_once_with(
+        "sqs",
         aws_access_key_id=None,
         aws_secret_access_key=None,
         region_name="us-east-1",
+        endpoint_url=None,
     )
 
 

@@ -16,6 +16,7 @@ from shared.schemas.core import SolveRequestStatus, SolveTaskStatus
 from shared.schemas.core.solve_task_status import ScheduleSolveStatus
 from shared.services.sqs_solve_service import SQSSolveService
 
+from src.config import config
 from src.services.base_service import BaseService
 
 
@@ -44,7 +45,9 @@ class APIGatewaySQSSolveService(BaseService):
         super().__init__(collection)
         self.sqs_solve_service = sqs_solve_service
 
-    async def submit_solve_request(self, schedule_id: str, team_id: str, user_id: str):
+    async def submit_solve_request(
+        self, schedule_id: str, team_id: str, user_id: str
+    ):
         """
         Submit a solve request via SQS and create a SolveTaskStatus object.
         Returns the SolveTaskStatusSchema object (MongoDB schema).
@@ -67,8 +70,16 @@ class APIGatewaySQSSolveService(BaseService):
                 schedule_id=schedule_id
             )
         # fmt: on
-        if existing_statuses:
-            raise ValueError(f"Schedule {schedule_id} is already being solved ")
+        for existing_status in existing_statuses:
+            if existing_status.is_expired():
+                # If expired, we can safely remove it
+                self.collection.solve_task_status_db.delete_solve_task_status(
+                    solve_id=existing_status.solve_id
+                )
+            else:
+                raise ValueError(
+                    f"Schedule {schedule_id} is already being solved "
+                )
 
         try:
             # Submit to SQS
@@ -76,6 +87,7 @@ class APIGatewaySQSSolveService(BaseService):
                 schedule_id=schedule_id,
                 team_id=team_id,
                 user_id=user_id,
+                timeout_seconds=config.task_expiration,
             )
 
             # Create SolveTaskStatus object (PENDING)
@@ -88,13 +100,16 @@ class APIGatewaySQSSolveService(BaseService):
                 request_status=SolveRequestStatus.PENDING,
                 solve_status=ScheduleSolveStatus.NOT_SOLVED,
                 started_at=datetime.now(tz=timezone.utc),
+                ttl_seconds=config.task_expiration,
                 completed_at=None,
                 error_message=None,
                 result=None,
                 solver_output_metadata=None,
             )
-            sts_saved = self.collection.solve_task_status_db.create_solve_task_status(
-                solve_task_status=solve_task_status
+            sts_saved = (
+                self.collection.solve_task_status_db.create_solve_task_status(
+                    solve_task_status=solve_task_status
+                )
             )
 
             logger.info(
@@ -115,10 +130,8 @@ class APIGatewaySQSSolveService(BaseService):
         Get the current solve status for a solve task by solve_id.
         Returns the SolveTaskStatusResponseDTO or raises if not found.
         """
-        solve_task_status = (
-            self.collection.solve_task_status_db.get_solve_task_status_by_solve_id(
-                solve_id
-            )
+        solve_task_status = self.collection.solve_task_status_db.get_solve_task_status_by_solve_id(
+            solve_id
         )
         if not solve_task_status:
             raise ValueError(f"Solve task with id {solve_id} not found")
@@ -138,7 +151,12 @@ def create_sqs_solve_service(
         Configured APIGatewaySQSSolveService
     """
     # Create AWS config and SQS client
-    aws_config = AWSConfig()
+    aws_config = AWSConfig(
+        region=config.aws_region,
+        access_key_id=config.aws_access_key_id,
+        secret_access_key=config.aws_secret_access_key,
+        endpoint_url=config.endpoint_url,
+    )
     sqs_client = SQSClient(aws_config)
 
     # Create shared SQS solve service

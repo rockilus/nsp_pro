@@ -27,7 +27,7 @@ dayjs.extend(utc);
 export interface SqsSolveState {
   // Current solve session
   solveId: string | null;
-  status: SolveRequestStatus;
+  status: SolveRequestStatus | "IDDLE";
   startedAt: dayjs.Dayjs | null;
   completedAt: dayjs.Dayjs | null;
   errorMessage: string | null;
@@ -59,7 +59,7 @@ type SqsSolveAction =
 
 const initialState: SqsSolveState = {
   solveId: null,
-  status: SolveRequestStatus.PENDING,
+  status: "IDDLE",
   startedAt: null,
   completedAt: null,
   errorMessage: null,

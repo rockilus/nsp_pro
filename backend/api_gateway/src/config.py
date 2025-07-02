@@ -35,6 +35,20 @@ class AppConfig(BaseSettings):
     redis_url: str = Field(..., description="Redis connection URL")
     result_backend: str = Field(..., description="Redis URL for result backend")
     task_expiration: int = Field(..., description="Task expiration time in seconds")
+    aws_region: str = Field(
+        "eu-west-3",
+        description="AWS region for services like SQS and Secrets Manager",
+    )
+    aws_access_key_id: str = Field(
+        ..., description="AWS access key ID for authentication"
+    )
+    aws_secret_access_key: str = Field(
+        ..., description="AWS secret access key for authentication"
+    )
+    endpoint_url: str = Field(
+        "http://localhost:4566",
+        description="Endpoint URL for local AWS services",
+    )
 
     # pylint: disable=too-few-public-methods
     class Config:

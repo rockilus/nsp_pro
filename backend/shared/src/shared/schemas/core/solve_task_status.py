@@ -1,7 +1,7 @@
 """SQS message schemas for NSP Pro solve service."""
 
-from dataclasses import asdict
-from datetime import datetime, timezone
+import json
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -77,6 +77,15 @@ class SQSSolveMessage(BaseModel):
                 data["created_at"], tz=timezone.utc
             )
         return cls(**data)
+
+    @classmethod
+    def from_json(cls, json_str: str) -> "SQSSolveMessage":
+        """
+        Create an instance from a JSON string representation.
+        Converts created_at from float timestamp back to datetime if needed.
+        """
+        data = json.loads(json_str)
+        return cls.from_dict(data)
 
 
 class SQSSolveQueueMessage(BaseModel):
@@ -232,7 +241,8 @@ class SolveTaskStatus(BaseModel):
     user_id: str
     request_status: SolveRequestStatus
     solve_status: ScheduleSolveStatus
-    started_at: Optional[datetime] = None
+    started_at: datetime
+    ttl_seconds: int = 180  # Default TTL of 3 minutes
     completed_at: Optional[datetime] = None
     error_message: Optional[str] = None
     result: Optional[ResultModel] = None
@@ -249,7 +259,7 @@ class SolveTaskStatus(BaseModel):
         """
         Convert this SolveTaskStatus to a SolveTaskStatusResponseDTO for API responses.
         """
-        data = asdict(self)
+        data = self.model_dump()
         data["started_at"] = self.started_at.timestamp() if self.started_at else None
         data["completed_at"] = (
             self.completed_at.timestamp() if self.completed_at else None
@@ -262,3 +272,12 @@ class SolveTaskStatus(BaseModel):
         as_dict = humps.camelize(data)
         validator = TypeAdapter(SolveTaskStatusResponseDTO)
         return validator.validate_python(as_dict)
+
+    def is_expired(self) -> bool:
+        """
+        Check if the solve task has expired based on started_at and ttl_seconds.
+        Returns True if expired, False otherwise. Uses UTC times.
+        """
+        now_utc = datetime.now(timezone.utc)
+        expiry_time = self.started_at + timedelta(seconds=self.ttl_seconds)
+        return now_utc > expiry_time

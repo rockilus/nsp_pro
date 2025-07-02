@@ -29,12 +29,19 @@ class SQSClient:
     def sqs(self) -> Any:
         """Get SQS client instance."""
         if self._sqs_client is None:
-            session = boto3.Session(
+            # session = boto3.Session(
+            #     aws_access_key_id=self.config.access_key_id,
+            #     aws_secret_access_key=self.config.secret_access_key,
+            #     region_name=self.config.region,
+            # )
+            # self._sqs_client = session.client("sqs")
+            self._sqs_client = boto3.client(
+                "sqs",
+                region_name=self.config.region,
                 aws_access_key_id=self.config.access_key_id,
                 aws_secret_access_key=self.config.secret_access_key,
-                region_name=self.config.region,
+                endpoint_url=self.config.endpoint_url,
             )
-            self._sqs_client = session.client("sqs")
         return self._sqs_client
 
     async def initialize_queues(self) -> None:
@@ -73,12 +80,12 @@ class SQSClient:
                 # Create new DLQ
                 response = self.sqs.create_queue(
                     QueueName=self.config.sqs_solve_dlq_name,
-                    Attributes={
-                        "MessageRetentionPeriod": str(
-                            self.config.sqs_message_retention_period
-                        ),
-                        "VisibilityTimeoutSeconds": "60",
-                    },
+                    # Attributes={
+                    #     "MessageRetentionPeriod": str(
+                    #         self.config.sqs_message_retention_period
+                    #     ),
+                    #     "VisibilityTimeoutSeconds": "60",
+                    # },
                 )
                 self.dlq_url = response["QueueUrl"]
                 logger.info(f"Created new DLQ: {self.dlq_url}")
@@ -99,31 +106,33 @@ class SQSClient:
             error_code = e.response["Error"]["Code"]
             if error_code == "AWS.SimpleQueueService.NonExistentQueue":
                 # Get DLQ ARN for redrive policy
-                dlq_attributes = self.sqs.get_queue_attributes(
-                    QueueUrl=self.dlq_url, AttributeNames=["QueueArn"]
-                )
-                dlq_arn = dlq_attributes["Attributes"]["QueueArn"]
+                # dlq_attributes = self.sqs.get_queue_attributes(
+                #     QueueUrl=self.dlq_url, AttributeNames=["QueueArn"]
+                # )
+                # dlq_arn = dlq_attributes["Attributes"]["QueueArn"]
 
                 # Create new solve queue with DLQ
                 response = self.sqs.create_queue(
                     QueueName=self.config.sqs_solve_queue_name,
-                    Attributes={
-                        "VisibilityTimeoutSeconds": str(
-                            self.config.sqs_visibility_timeout_seconds
-                        ),
-                        "MessageRetentionPeriod": str(
-                            self.config.sqs_message_retention_period
-                        ),
-                        "ReceiveMessageWaitTimeSeconds": str(
-                            self.config.sqs_receive_message_wait_time
-                        ),
-                        "RedrivePolicy": json.dumps(
-                            {
-                                "deadLetterTargetArn": dlq_arn,
-                                "maxReceiveCount": (self.config.sqs_max_receive_count),
-                            }
-                        ),
-                    },
+                    # Attributes={
+                    #     "VisibilityTimeoutSeconds": str(
+                    #         self.config.sqs_visibility_timeout_seconds
+                    #     ),
+                    #     "MessageRetentionPeriod": str(
+                    #         self.config.sqs_message_retention_period
+                    #     ),
+                    #     "ReceiveMessageWaitTimeSeconds": str(
+                    #         self.config.sqs_receive_message_wait_time
+                    #     ),
+                    #     "RedrivePolicy": json.dumps(
+                    #         {
+                    #             "deadLetterTargetArn": dlq_arn,
+                    #             "maxReceiveCount": (
+                    #                 self.config.sqs_max_receive_count
+                    #             ),
+                    #         }
+                    #     ),
+                    # },
                 )
                 self.solve_queue_url = response["QueueUrl"]
                 logger.info(f"Created new solve queue: {self.solve_queue_url}")

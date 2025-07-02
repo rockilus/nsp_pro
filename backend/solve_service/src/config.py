@@ -21,17 +21,31 @@ class AppConfig(BaseSettings):
     )
 
     # SQS Configuration
-    aws_region: str = Field("eu-west-3", description="AWS region for SQS")
-    sqs_queue_name: str = Field(
-        "nsp-pro-solve-queue", description="SQS queue name for solve requests"
+    # aws_region: str = Field("eu-west-3", description="AWS region for SQS")
+    # sqs_queue_name: str = Field(
+    #     "nsp-pro-solve-queue", description="SQS queue name for solve requests"
+    # )
+    # sqs_visibility_timeout: int = Field(
+    #     300, description="SQS message visibility timeout in seconds"
+    # )
+    # sqs_max_receive_count: int = Field(
+    #     3,
+    #     description="Maximum number of times a message can be received before "
+    #     + "moving to DLQ",
+    # )
+    aws_region: str = Field(
+        "eu-west-3",
+        description="AWS region for services like SQS and Secrets Manager",
     )
-    sqs_visibility_timeout: int = Field(
-        300, description="SQS message visibility timeout in seconds"
+    aws_access_key_id: str = Field(
+        ..., description="AWS access key ID for authentication"
     )
-    sqs_max_receive_count: int = Field(
-        3,
-        description="Maximum number of times a message can be received before "
-        + "moving to DLQ",
+    aws_secret_access_key: str = Field(
+        ..., description="AWS secret access key for authentication"
+    )
+    endpoint_url: str = Field(
+        "http://localhost:4566",
+        description="Endpoint URL for local AWS services",
     )
 
     # pylint: disable=too-few-public-methods

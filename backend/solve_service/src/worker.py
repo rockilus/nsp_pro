@@ -39,7 +39,9 @@ class SQSWorker:
 
         try:
             # Start consuming in the background
-            consumer_task = asyncio.create_task(self.consumer.start_consuming())
+            consumer_task = asyncio.create_task(
+                self.consumer.start_consuming()
+            )
 
             # Wait for shutdown signal
             await self.shutdown_event.wait()
