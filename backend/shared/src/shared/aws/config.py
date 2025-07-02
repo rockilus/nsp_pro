@@ -9,8 +9,10 @@ from pydantic import BaseModel, Field
 class AWSConfig(BaseModel):
     """AWS configuration settings."""
 
-    region: str = Field(default="us-east-1", description="AWS region")
-    access_key_id: Optional[str] = Field(default=None, description="AWS access key ID")
+    region: str = Field(default="eu-west-3", description="AWS region")
+    access_key_id: Optional[str] = Field(
+        default=None, description="AWS access key ID"
+    )
     secret_access_key: Optional[str] = Field(
         default=None, description="AWS secret access key"
     )
@@ -20,7 +22,7 @@ class AWSConfig(BaseModel):
 
     # SQS Configuration
     sqs_solve_queue_name: str = Field(
-        default="nsp-solve-queue", description="SQS solve queue name"
+        default="nsp-pro-dev-solve-queue", description="SQS solve queue name"
     )
     sqs_solve_dlq_name: str = Field(
         default="nsp-solve-dlq", description="SQS solve DLQ name"
