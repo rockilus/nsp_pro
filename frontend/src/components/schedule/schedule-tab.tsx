@@ -105,8 +105,6 @@ export default function ScheduleTab({
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
-  console.log("USE_SQS_SOLVE:", USE_SQS_SOLVE);
-
   const [isLoadingSchedule, setIsLoadingSchedule] = useState<boolean>(true);
   const [isLoadingAssignments, setIsLoadingAssignments] =
     useState<boolean>(true);

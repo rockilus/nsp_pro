@@ -188,6 +188,8 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
   // Load persisted state on mount
   useEffect(() => {
     const persistedState = localStorage.getItem("sqs-solve-state");
+    console.log("Restoring SQS solve state from localStorage:", persistedState);
+
     if (persistedState) {
       try {
         const parsed = JSON.parse(persistedState);
@@ -256,6 +258,8 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
 
   const startPolling = (solveId: string) => {
     if (pollingService) {
+      console.log("Stopping existing polling service before starting new one");
+
       pollingService.stop();
     }
 
@@ -339,14 +343,16 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
     state.status === "PENDING" || state.status === "IN_PROGRESS";
 
   // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (pollingService) {
-        pollingService.stop();
-        setPollingService(null);
-      }
-    };
-  }, [pollingService]);
+  // useEffect(() => {
+  //   return () => {
+  //     if (pollingService) {
+  //       console.log("Stopping polling service on unmount");
+
+  //       pollingService.stop();
+  //       setPollingService(null);
+  //     }
+  //   };
+  // }, [pollingService]);
 
   const contextValue: SqsSolveContextType = {
     state,

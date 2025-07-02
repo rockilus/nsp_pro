@@ -281,7 +281,7 @@ export default function CampaignInfo({
                   width: useSqsWorkflow && isSolving ? "120px" : "65px",
                 }}
               >
-                {getSolveButtonContent()}
+                {isSolving ? animatedSolve : t("solve")}
               </Button>
               {useSqsWorkflow && isSolving && (
                 <Tooltip title={t("cancelSolve")}>

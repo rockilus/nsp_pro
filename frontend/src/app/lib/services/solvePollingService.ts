@@ -54,6 +54,10 @@ export class SolvePollingService {
    * Stop polling
    */
   stop(): void {
+    console.log(
+      "[stop() #1] Stopping polling for solve status (direct call on instance)..."
+    );
+
     if (this.timeoutId) {
       clearTimeout(this.timeoutId);
       this.timeoutId = null;
@@ -77,12 +81,20 @@ export class SolvePollingService {
   }
 
   private async poll(): Promise<void> {
+    console.log("Polling for solve status...", this.isActive);
+
     if (!this.isActive) {
       return;
     }
 
     try {
       const status = await SqsSolveApi.getSolveStatus(this.solveId);
+      console.log(`Polling status for solve ID ${this.solveId}:`, status);
+      console.log(
+        `Current request status: ${status.requestStatus}, ${
+          status.requestStatus === "PENDING"
+        },  ${status.requestStatus === SolveRequestStatus.PENDING}`
+      );
 
       // Reset retry count on successful request
       this.retryCount = 0;
@@ -93,12 +105,14 @@ export class SolvePollingService {
       // Check if we should continue polling
       if (status.requestStatus === SolveRequestStatus.COMPLETED) {
         this.options.onComplete(status);
+        console.log("[stop() #2] Stopping polling after COMPLETED status.");
         this.stop();
         return;
       }
 
       if (status.requestStatus === SolveRequestStatus.FAILED) {
         this.options.onFailed(status.errorMessage || "Solve failed");
+        console.log("[stop() #3] Stopping polling after FAILED status.");
         this.stop();
         return;
       }
@@ -108,6 +122,8 @@ export class SolvePollingService {
         status.requestStatus === SolveRequestStatus.PENDING ||
         status.requestStatus === SolveRequestStatus.IN_PROGRESS
       ) {
+        console.log("Scheduling next poll...");
+
         this.scheduleNextPoll();
       }
     } catch (error) {
@@ -124,6 +140,7 @@ export class SolvePollingService {
           `Polling failed after ${this.options.maxRetries} retries. Last error: ${error.message}`
         )
       );
+      console.log("[stop() #4] Stopping polling after max retries reached.");
       this.stop();
       return;
     }
@@ -143,6 +160,8 @@ export class SolvePollingService {
   }
 
   private scheduleNextPoll(): void {
+    console.log("Scheduling next poll timeout to:", this.options.interval);
+
     this.timeoutId = setTimeout(() => {
       this.poll();
     }, this.options.interval);
