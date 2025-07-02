@@ -80,9 +80,7 @@ class SQSSolveConsumer:
                 logger.error(f"Error in SQS consumer loop: {e}")
                 await asyncio.sleep(5)  # Wait before retrying
 
-    async def _process_message(
-        self, message_data: SQSSolveQueueMessage
-    ) -> None:
+    async def _process_message(self, message_data: SQSSolveQueueMessage) -> None:
         """
         Process a single solve request message.
 
@@ -115,9 +113,7 @@ class SQSSolveConsumer:
             )
 
             # Delete message from queue
-            await self.sqs_solve_service.delete_message(
-                receipt_handle=receipt_handle
-            )
+            await self.sqs_solve_service.delete_message(receipt_handle=receipt_handle)
 
             logger.info(
                 f"Successfully processed solve request for schedule "
@@ -132,20 +128,17 @@ class SQSSolveConsumer:
 
             # Try to update schedule with failure, but always delete the message
             try:
-                await self._update_schedule_failure(
-                    message_id=message_id, error=str(e)
-                )
+                await self._update_schedule_failure(message_id=message_id, error=str(e))
             except Exception as update_exc:
                 logger.error(
-                    f"Failed to update schedule failure for message {message_id}: {update_exc}"
+                    f"Failed to update schedule failure for message {message_id}: "
+                    + f"{update_exc}"
                 )
             finally:
                 # Always delete message to prevent retry (or implement retry logic)
                 await self.sqs_solve_service.delete_message(receipt_handle)
 
-    async def _solve_schedule(
-        self, message: SQSSolveMessage, message_id: str
-    ) -> Tuple[
+    async def _solve_schedule(self, message: SQSSolveMessage, message_id: str) -> Tuple[
         ScheduleSolveStatus,
         List[Assignment],
         List[Breach],
@@ -167,9 +160,7 @@ class SQSSolveConsumer:
         )
         if not schedule:
             raise ValueError("Schedule not found")
-        engine_inputs = get_engine_inputs(
-            schedule=schedule, collections=collections
-        )
+        engine_inputs = get_engine_inputs(schedule=schedule, collections=collections)
         engine_outputs = solve_schedule(engine_inputs=engine_inputs)
         schedule_solve_status, assignments, breaches, solver_output = (
             save_engine_outputs(
@@ -235,8 +226,10 @@ class SQSSolveConsumer:
             result: The solve results
             task_id: The task/message ID
         """
-        solve_task_status = self.collections.solve_task_status_db.get_solve_task_status_by_solve_id(
-            solve_id=message_id
+        solve_task_status = (
+            self.collections.solve_task_status_db.get_solve_task_status_by_solve_id(
+                solve_id=message_id
+            )
         )
         if not solve_task_status:
             raise ValueError(f"Solve task with id {message_id} not found")
@@ -262,8 +255,10 @@ class SQSSolveConsumer:
             error: The error message
             task_id: The task/message ID
         """
-        solve_task_status = self.collections.solve_task_status_db.get_solve_task_status_by_solve_id(
-            solve_id=message_id
+        solve_task_status = (
+            self.collections.solve_task_status_db.get_solve_task_status_by_solve_id(
+                solve_id=message_id
+            )
         )
         if not solve_task_status:
             raise ValueError(f"Solve task with id {message_id} not found")

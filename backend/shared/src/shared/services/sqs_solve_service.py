@@ -67,8 +67,7 @@ class SQSSolveService:
 
         except Exception as e:
             logger.error(
-                f"Failed to submit solve request for schedule "
-                f"{schedule_id}: {e}"
+                f"Failed to submit solve request for schedule " f"{schedule_id}: {e}"
             )
             raise
 
@@ -89,9 +88,7 @@ class SQSSolveService:
                     attributes.get("ApproximateNumberOfMessages", "0")
                 ),
                 "messages_in_flight": int(
-                    attributes.get(
-                        "ApproximateNumberOfMessagesNotVisible", "0"
-                    )
+                    attributes.get("ApproximateNumberOfMessagesNotVisible", "0")
                 ),
                 "messages_delayed": int(
                     attributes.get("ApproximateNumberOfMessagesDelayed", "0")
@@ -186,9 +183,7 @@ class SQSSolveService:
                     # Skip malformed messages - they'll be retried or go to DLQ
                     continue
 
-            logger.debug(
-                f"Received {len(processed_messages)} solve requests from SQS"
-            )
+            logger.debug(f"Received {len(processed_messages)} solve requests from SQS")
             return processed_messages
 
         except Exception as e:
@@ -206,9 +201,7 @@ class SQSSolveService:
         """
         try:
             await self.sqs_client.delete_message(receipt_handle)
-            logger.debug(
-                f"Deleted message with receipt handle: {receipt_handle}"
-            )
+            logger.debug(f"Deleted message with receipt handle: {receipt_handle}")
 
         except Exception as e:
             logger.error(f"Failed to delete SQS message: {e}")

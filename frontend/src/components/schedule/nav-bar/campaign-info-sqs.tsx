@@ -32,7 +32,7 @@ export default function CampaignInfo({
   handleSolveSchedule,
   handleValidateSchedule,
   handleOpenLHS,
-  useSqsWorkflow = false, // Feature flag for SQS workflow
+  useSqsWorkflow = true, // Feature flag for SQS workflow
   onSqsSolveComplete, // Add this to destructuring
 }: {
   lng: string;

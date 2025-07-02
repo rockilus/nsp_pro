@@ -132,3 +132,22 @@ class TestSolveTaskStatusRepository:
         assert SolveRequestStatus.PENDING in returned_statuses
         assert SolveRequestStatus.IN_PROGRESS in returned_statuses
         assert SolveRequestStatus.COMPLETED not in returned_statuses
+
+    def test_delete_solve_task_status(self):
+        # Create and insert a status
+        status = make_test_status(solve_id="delete_me", schedule_id="schedD")
+        created = self.repo.create_solve_task_status(status)
+        # Ensure it exists
+        found = self.repo.get_solve_task_status_by_solve_id("delete_me")
+        assert found is not None
+        assert created.id is not None
+        # Delete by MongoDB _id
+        self.repo.delete_solve_task_status(created.id)
+        # Should not be found anymore
+        found_after = self.repo.get_solve_task_status_by_id(created.id)
+        assert found_after is None
+
+    def test_delete_solve_task_status_not_found(self):
+        # Try deleting a non-existent id, should raise ValueError
+        with pytest.raises(ValueError):
+            self.repo.delete_solve_task_status("nonexistentid1234567890")

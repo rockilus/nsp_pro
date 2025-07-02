@@ -73,3 +73,9 @@ class SolveTaskStatusRepository(BaseRepository[SolveTaskStatusSchema]):
         schema = SolveTaskStatusSchema.from_core(solve_task_status)
         updated = super().update(schema)
         return updated.to_core() if updated else None
+
+    def delete_solve_task_status(self, task_status_id: str) -> None:
+        """Delete a solve task status document by its MongoDB _id."""
+        result = self.delete(task_status_id)
+        if not result:
+            raise ValueError(f"SolveTaskStatus with id {task_status_id} not found")
