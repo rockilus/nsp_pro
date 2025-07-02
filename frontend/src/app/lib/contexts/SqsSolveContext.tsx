@@ -156,7 +156,8 @@ interface SqsSolveContextType {
   startSolve: (
     scheduleId: string,
     teamId: string,
-    constraints?: string[]
+    constraints?: string[],
+    onComplete?: (result: SolveTaskStatusResponseT) => void
   ) => Promise<void>;
   cancelSolve: () => Promise<void>;
   clearError: () => void;
@@ -185,6 +186,11 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
   const [pollingService, setPollingService] =
     React.useState<SolvePollingService | null>(null);
 
+  // Use useRef instead of useState to avoid closure issues
+  const onCompleteCallbackRef = React.useRef<
+    ((result: SolveTaskStatusResponseT) => void) | null
+  >(null);
+
   // Load persisted state on mount
   useEffect(() => {
     const persistedState = localStorage.getItem("sqs-solve-state");
@@ -211,6 +217,14 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
               },
               onComplete: (result) => {
                 dispatch({ type: "SOLVE_COMPLETE", payload: result });
+                // Use ref to get current callback
+                if (onCompleteCallbackRef.current) {
+                  console.log(
+                    "Calling onComplete callback with result:",
+                    result
+                  );
+                  onCompleteCallbackRef.current(result);
+                }
               },
               onFailed: (error) => {
                 dispatch({ type: "SOLVE_FAILED", payload: { error } });
@@ -255,11 +269,9 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
       localStorage.removeItem("sqs-solve-state");
     }
   }, [state]);
-
   const startPolling = (solveId: string) => {
     if (pollingService) {
       console.log("Stopping existing polling service before starting new one");
-
       pollingService.stop();
     }
 
@@ -269,6 +281,11 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
       },
       onComplete: (result) => {
         dispatch({ type: "SOLVE_COMPLETE", payload: result });
+        // Call the completion callback if provided
+        if (onCompleteCallbackRef.current) {
+          console.log("Calling onComplete callback with result:", result);
+          onCompleteCallbackRef.current(result);
+        }
       },
       onFailed: (error) => {
         dispatch({ type: "SOLVE_FAILED", payload: { error } });
@@ -291,8 +308,16 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
     dispatch({ type: "POLLING_STOP" });
   };
 
-  const startSolve = async (scheduleId: string, teamId: string) => {
+  const startSolve = async (
+    scheduleId: string,
+    teamId: string,
+    constraints?: string[],
+    onComplete?: (result: SolveTaskStatusResponseT) => void
+  ) => {
     try {
+      // Set the callback in the ref immediately
+      onCompleteCallbackRef.current = onComplete || null;
+
       const response = await SqsSolveApi.startSolve({
         schedule_id: scheduleId,
         team_id: teamId,
@@ -320,6 +345,7 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
     try {
       await SqsSolveApi.cancelSolve(state.solveId);
       stopPolling();
+      onCompleteCallbackRef.current = null; // Clear the callback
       dispatch({ type: "RESET" });
     } catch (error) {
       dispatch({
@@ -336,6 +362,7 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
 
   const reset = () => {
     stopPolling();
+    onCompleteCallbackRef.current = null; // Clear the callback
     dispatch({ type: "RESET" });
   };
 

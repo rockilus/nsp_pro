@@ -86,6 +86,7 @@ import { AttributeOwnerType } from "../../types/attribute";
 import { RecurrenceRuleT, RecurrenceUpdateScope } from "@/types/recurrence";
 import { SpecialtyT } from "@/types/specialty";
 import { TeamWithMembership } from "@/types/team";
+import { SolveTaskStatusResponseT } from "@/types/solveTaskStatus";
 import {
   useShiftDemands,
   useShiftDemandMutations,
@@ -652,6 +653,60 @@ export default function ScheduleTab({
   };
 
   //////////////////////////
+  // SQS Solve Actions
+  //////////////////////////
+
+  const handleSqsSolveComplete = useCallback(
+    (result: SolveTaskStatusResponseT) => {
+      console.log("SQS Solve completed, updating schedule data...");
+
+      if (result.result) {
+        const {
+          assignments: newAssignments,
+          breaches: newBreaches,
+          requests: newRequests,
+        } = result.result;
+
+        // Update schedule campaign (use existing scheduleCampaign as the schedule itself doesn't change structure)
+        // The solve status will be reflected in the campaign state
+        if (scheduleCampaign) {
+          const updatedSchedule = {
+            ...scheduleCampaign,
+            // Update any schedule-level properties if needed
+          };
+          setScheduleCampaign(updatedSchedule);
+        }
+
+        // Update assignments (same logic as handleOutputEventSuccessSolution)
+        if (newAssignments && scheduleCampaign) {
+          setAssignments((prev) => [
+            ...prev.filter((a) => a.scheduleId !== scheduleCampaign.id),
+            ...newAssignments,
+          ]);
+        }
+
+        // Update breaches
+        if (newBreaches) {
+          setBreaches(newBreaches);
+        }
+
+        // Update requests
+        if (newRequests) {
+          setRequests((prev) =>
+            prev.map(
+              (r) => newRequests.find((nr: RequestT) => nr.id === r.id) || r
+            )
+          );
+        }
+
+        // Update solve status
+        setSolveStatus(SolveDetailsStatus.SUCCESS);
+      }
+    },
+    [scheduleCampaign]
+  );
+
+  //////////////////////////
   // SSE Actions
   //////////////////////////
 
@@ -966,6 +1021,7 @@ export default function ScheduleTab({
             handleChangeTimeFrame={handleChangeTimeFrame}
             handleOpenLHS={setSelectedTab}
             useSqsWorkflow={USE_SQS_SOLVE}
+            onSqsSolveComplete={handleSqsSolveComplete}
           />
         )}
         <div style={{ display: "flex", flexDirection: "row" }}>

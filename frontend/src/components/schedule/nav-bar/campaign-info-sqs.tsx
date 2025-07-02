@@ -17,6 +17,7 @@ import ScheduleDialogValidate from "../schedule-options/schedule-dialog-validate
 import { GetStatusLabel } from "../../data-display/get-status-label";
 // Types
 import { ScheduleT, SolveDetailsStatus } from "../../../types/schedule";
+import { SolveTaskStatusResponseT } from "../../../types/solveTaskStatus";
 //Constants
 import { SolveStatusColors } from "../../../constants/constants";
 import { TeamWithMembership } from "@/types/team";
@@ -32,6 +33,7 @@ export default function CampaignInfo({
   handleValidateSchedule,
   handleOpenLHS,
   useSqsWorkflow = false, // Feature flag for SQS workflow
+  onSqsSolveComplete, // Add this to destructuring
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -41,6 +43,7 @@ export default function CampaignInfo({
   handleValidateSchedule: (scheduleId: string) => void;
   handleOpenLHS: (tabName: string) => void;
   useSqsWorkflow?: boolean;
+  onSqsSolveComplete?: (result: SolveTaskStatusResponseT) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
   const {
@@ -79,7 +82,12 @@ export default function CampaignInfo({
   const handleSolve = async () => {
     if (useSqsWorkflow) {
       try {
-        await startSolve(scheduleCampaign.id, teamWithMembership.team.id);
+        await startSolve(
+          scheduleCampaign.id,
+          teamWithMembership.team.id,
+          undefined, // constraints
+          onSqsSolveComplete // Pass the completion callback
+        );
       } catch (error) {
         console.error("Failed to start SQS solve:", error);
         setLastError((error as Error).message);

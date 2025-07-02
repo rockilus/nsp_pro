@@ -16,6 +16,7 @@ import {
   ScheduleViewSettingsT,
 } from "../../../types/schedule";
 import { TeamMembershipRole, TeamWithMembership } from "../../../types/team";
+import { SolveTaskStatusResponseT } from "../../../types/solveTaskStatus";
 
 export default function ScheduleNavBar({
   lng,
@@ -35,6 +36,7 @@ export default function ScheduleNavBar({
   handleChangeTimeFrame,
   handleOpenLHS,
   useSqsWorkflow = false, // Feature flag for SQS workflow
+  onSqsSolveComplete,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -57,6 +59,7 @@ export default function ScheduleNavBar({
   handleChangeTimeFrame: (newTimeFrame: "week" | "month") => void;
   handleOpenLHS: (tabName: string) => void;
   useSqsWorkflow?: boolean;
+  onSqsSolveComplete?: (result: SolveTaskStatusResponseT) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -110,6 +113,7 @@ export default function ScheduleNavBar({
               handleValidateSchedule={handleValidateSchedule}
               handleOpenLHS={handleOpenLHS}
               useSqsWorkflow={useSqsWorkflow}
+              onSqsSolveComplete={onSqsSolveComplete}
             />
           ) : (
             <CampaignInfo
