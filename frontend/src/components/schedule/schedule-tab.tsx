@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  useMemo,
-} from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import isoWeek from "dayjs/plugin/isoWeek";
@@ -29,7 +23,6 @@ import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
 import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
 // Actions
 import {
-  solveSchedule,
   validateSchedule,
   updateSchedule,
   getSchedules,
@@ -45,7 +38,6 @@ import {
 } from "../../app/lib/assignment";
 import { getStats } from "../../app/lib/stats";
 import { exportSchedule } from "../../app/lib/export-schedule";
-import { SSEManager } from "../../app/lib/sse";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "./schedule-tab.css";
@@ -56,7 +48,6 @@ import {
   ScheduleT,
   ExportOptionsT,
   ScheduleStatus,
-  SolveDetailsStatus,
   LHSTabContentT,
   periodDateT,
   DuplicateRequestT,
@@ -85,6 +76,7 @@ import { AttributeOwnerType } from "../../types/attribute";
 import { RecurrenceRuleT, RecurrenceUpdateScope } from "@/types/recurrence";
 import { SpecialtyT } from "@/types/specialty";
 import { TeamWithMembership } from "@/types/team";
+import { SolveTaskStatusResponseT } from "@/types/solveTaskStatus";
 import {
   useShiftDemands,
   useShiftDemandMutations,
@@ -107,8 +99,6 @@ export default function ScheduleTab({
   const [isLoadingSchedule, setIsLoadingSchedule] = useState<boolean>(true);
   const [isLoadingAssignments, setIsLoadingAssignments] =
     useState<boolean>(true);
-  const [isLoadingLHS, setIsLoadingLHS] = useState<boolean>(true);
-  const [isConnected, setIsConnected] = useState(false);
 
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
@@ -140,12 +130,6 @@ export default function ScheduleTab({
     useState<AssignmentDataT | null>(null);
   const [selectedDemand, setSelectedDemand] =
     useState<ScheduleCellDataT | null>(null);
-
-  const [solveStatus, setSolveStatus] = useState<
-    SolveDetailsStatus | null | "error"
-  >(null);
-
-  const hasConnectedRef = useRef(false);
 
   // React Query hooks for shift demands - use dates from settings
   const {
@@ -272,32 +256,6 @@ export default function ScheduleTab({
   const handleUpdateSchedule = async (schedule: ScheduleT) => {
     const newSchedule = await updateSchedule(schedule);
     setScheduleCampaign(newSchedule);
-  };
-
-  const handleSolveSchedule = async (scheduleId: string) => {
-    const newSchedule = await solveSchedule(
-      scheduleId,
-      teamWithMembership.team.id
-    );
-    console.log("Connected to SSE in handleSolveSchedule...");
-
-    if (newSchedule.solveDetails) {
-      connectSSE(newSchedule.solveDetails.taskId, newSchedule.id);
-    }
-    setScheduleCampaign(newSchedule);
-    // setAssignments((prev) => [
-    //   ...prev.filter((a) => a.scheduleId !== scheduleId),
-    //   ...newAssignments,
-    // ]);
-    // setBreaches(newBreaches);
-    // setRequests((prev) =>
-    //   prev.map((r) => newRequests.find((nr) => nr.id === r.id) || r)
-    // );
-    // setShifts((prev) =>
-    //   prev
-    //     .filter((s) => !newShifts.find((ns) => ns.id === s.id))
-    //     .concat(newShifts)
-    // );
   };
 
   const handleValidateSchedule = async (scheduleId: string) => {
@@ -651,106 +609,60 @@ export default function ScheduleTab({
   };
 
   //////////////////////////
-  // SSE Actions
+  // SQS Solve Actions
   //////////////////////////
 
-  const connectSSE = useCallback(
-    (taskId?: string, scheduleId?: string) => {
-      if (hasConnectedRef.current) return;
+  const handleSqsSolveComplete = useCallback(
+    (result: SolveTaskStatusResponseT) => {
+      console.log("SQS Solve completed, updating schedule data...");
 
-      setIsConnected(true);
-      hasConnectedRef.current = true;
+      if (result.result) {
+        const {
+          assignments: newAssignments,
+          breaches: newBreaches,
+          requests: newRequests,
+        } = result.result;
 
-      const sseManager = new SSEManager();
+        // Update schedule campaign (use existing scheduleCampaign as the schedule itself doesn't change structure)
+        // The solve status will be reflected in the campaign state
+        if (scheduleCampaign) {
+          const updatedSchedule = {
+            ...scheduleCampaign,
+            // Update any schedule-level properties if needed
+          };
+          setScheduleCampaign(updatedSchedule);
+        }
 
-      const handleTaskStatusEvent = (status: SolveDetailsStatus) => {
-        setSolveStatus(status);
-      };
+        // Update assignments (same logic as handleOutputEventSuccessSolution)
+        if (newAssignments && scheduleCampaign) {
+          setAssignments((prev) => [
+            ...prev.filter((a) => a.scheduleId !== scheduleCampaign.id),
+            ...newAssignments,
+          ]);
+        }
 
-      const handleOutputEventSuccessSolution = ({
-        newSchedule,
-        newAssignments,
-        newBreaches,
-        newRequests,
-      }: {
-        newSchedule: ScheduleT;
-        newAssignments: AssignmentT[];
-        newBreaches: BreachT[];
-        newRequests: RequestT[];
-      }) => {
-        console.log("Updating schedule data...");
+        // Update breaches
+        if (newBreaches) {
+          setBreaches(newBreaches);
+        }
 
-        setScheduleCampaign(newSchedule);
-        setAssignments((prev) => [
-          ...prev.filter((a) => a.scheduleId !== newSchedule.id),
-          ...newAssignments,
-        ]);
-        setBreaches(newBreaches);
-        setRequests((prev) =>
-          prev.map((r) => newRequests.find((nr) => nr.id === r.id) || r)
-        );
-        setSolveStatus(SolveDetailsStatus.SUCCESS);
-        // Disconnect from SSE after receiving the data
-        sseManager.close();
-        setIsConnected(false);
-        hasConnectedRef.current = false;
-      };
-
-      const handleOutputEventSuccessSchedule = ({
-        newSchedule,
-      }: {
-        newSchedule: ScheduleT;
-      }) => {
-        console.log("Updating schedule data...");
-
-        setScheduleCampaign(newSchedule);
-        setSolveStatus(SolveDetailsStatus.SUCCESS);
-        // Disconnect from SSE after receiving the data
-        sseManager.close();
-        setIsConnected(false);
-        hasConnectedRef.current = false;
-      };
-
-      const handleOutputEventFailure = ({
-        newSchedule,
-      }: {
-        newSchedule: ScheduleT;
-      }) => {
-        console.log("Updating schedule data...");
-
-        setScheduleCampaign(newSchedule);
-        setSolveStatus(SolveDetailsStatus.FAILURE);
-        // Disconnect from SSE after receiving the data
-        sseManager.close();
-        setIsConnected(false);
-        hasConnectedRef.current = false;
-      };
-
-      const handleSSEError = () => {
-        console.error("SSE connection error.");
-        setSolveStatus("error");
-        setIsConnected(false);
-        hasConnectedRef.current = false;
-      };
-
-      sseManager.connect(
-        handleTaskStatusEvent,
-        handleOutputEventSuccessSolution,
-        handleOutputEventSuccessSchedule,
-        handleOutputEventFailure,
-        handleSSEError,
-        taskId,
-        scheduleId
-      );
+        // Update requests
+        if (newRequests) {
+          setRequests((prev) =>
+            prev.map(
+              (r) => newRequests.find((nr: RequestT) => nr.id === r.id) || r
+            )
+          );
+        }
+      }
     },
-    [hasConnectedRef]
+    [scheduleCampaign]
   );
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoadingSchedule(true);
       setIsLoadingAssignments(true);
-      setIsLoadingLHS(true);
 
       // console.log("fetchData useEffect started");
       // const startTime = dayjs();
@@ -809,8 +721,6 @@ export default function ScheduleTab({
         setStats(fetchedStats);
         setSpecialties(fetchedSpecialties);
 
-        setIsLoadingLHS(false);
-
         // const endTime = dayjs();
         // console.log("fetchData useEffect ended");
         // console.log(
@@ -824,31 +734,11 @@ export default function ScheduleTab({
       } finally {
         setIsLoadingSchedule(false);
         setIsLoadingAssignments(false);
-        setIsLoadingLHS(false);
       }
     };
 
     fetchData();
   }, [teamWithMembership]);
-
-  // React Query hooks automatically handle refetching when scheduleViewSettings.periodStartDate/timeFrame change
-
-  useEffect(() => {
-    if (
-      !hasConnectedRef.current &&
-      scheduleCampaign &&
-      scheduleCampaign.solveDetails &&
-      (scheduleCampaign.solveDetails.status === SolveDetailsStatus.PENDING ||
-        scheduleCampaign.solveDetails.status === SolveDetailsStatus.STARTED ||
-        scheduleCampaign.solveDetails.status === SolveDetailsStatus.RETRY)
-    ) {
-      console.log("Connecting to SSE in useEffect...");
-
-      connectSSE(scheduleCampaign.solveDetails.taskId, scheduleCampaign.id);
-      hasConnectedRef.current = true;
-      setSolveStatus(scheduleCampaign.solveDetails.status);
-    }
-  }, [scheduleCampaign, connectSSE]);
 
   const lhsTabContent: LHSTabContentT[] = [
     {
@@ -953,17 +843,18 @@ export default function ScheduleTab({
               scheduleViewSettings.timeFrame
             )}
             scheduleCampaign={scheduleCampaign}
-            solveStatus={solveStatus}
             scheduleViewSettings={scheduleViewSettings}
             handleToday={handleToday}
             handlePreviousPeriod={handlePreviousPeriod}
             handleNextPeriod={handleNextPeriod}
-            handleSolveSchedule={handleSolveSchedule}
             handleValidateSchedule={handleValidateSchedule}
             handleSendDuplicateRequest={handleSendDuplicateRequest}
             updateScheduleViewSettings={updateScheduleViewSettings}
             handleChangeTimeFrame={handleChangeTimeFrame}
             handleOpenLHS={setSelectedTab}
+            // useSqsWorkflow={USE_SQS_SOLVE}
+            useSqsWorkflow={true}
+            onSqsSolveComplete={handleSqsSolveComplete}
           />
         )}
         <div style={{ display: "flex", flexDirection: "row" }}>

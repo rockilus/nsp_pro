@@ -30,13 +30,14 @@ async def create_schedule(
     schedule_service: ScheduleService = Depends(get_schedule_service),
 ) -> ScheduleDTO:
     try:
-        if not await authz_check(
-            session.get_user_id(), "create-schedule", "team", team_id
-        ):
+        user_id = session.get_user_id()
+        if not await authz_check(user_id, "create-schedule", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to create a schedule",
             )
-        schedule_wip = schedule_service.get_schedule_campaign(team_id)
+        schedule_wip = schedule_service.get_schedule_campaign(
+            team_id=team_id, user_id=user_id
+        )
         response = schedule_wip.to_dto()
     except Exception as e:
         log_info("Failed to create schedule")
@@ -87,52 +88,6 @@ async def get_work_time_table(
         log_info("Failed to get work time table")
         handle_routes_errors(e)
     return response
-
-
-@router.post("/schedules/{schedule_id}/solve/teams/{team_id}", status_code=201)
-async def solve_schedule(
-    schedule_id: str,
-    team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
-    schedule_service: ScheduleService = Depends(
-        get_schedule_service,
-    ),
-) -> ScheduleDTO:
-    # ) -> SolutionMessage:
-    try:
-        if not await authz_check(
-            session.get_user_id(), "solve-schedule", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to solve a schedule",
-            )
-        schedule = schedule_service.solve_schedule(schedule_id)
-        response = schedule.to_dto()
-    except Exception as e:
-        log_info("Failed to solve schedule")
-        handle_routes_errors(e)
-    return response
-
-
-# @router.post("/schedules/{schedule_id}/notifify-solved/teams/{team_id}")
-# async def notify_solved_schedule(schedule_id: str, team_id: str, data: Dict) -> str:
-#     try:
-#         if "eo_augmented" not in data:
-#             raise MessageTypeError("eo_augmented not in data")
-#         eo_augmented = EngineOutputsAugmented.from_dict(data["eo_augmented"])
-#         solution = Solution(
-#             schedule=eo_augmented.schedule,
-#             assignments=eo_augmented.assignments,
-#             breaches=eo_augmented.breaches,
-#             requests=eo_augmented.requests,
-#         )
-#         # Broadcast the data to all SSE clients
-#         event_manager.broadcast(solution.to_dto().model_dump())
-#         print(f"schedule_id notified as solved: {schedule_id}, {team_id}")
-#     except Exception as e:
-#         log_info("Failed to notify solved schedule")
-#         handle_routes_errors(e)
-#     return "Task ID"
 
 
 @router.post("/schedules/{schedule_id}/duplicate-period/teams/{team_id}")

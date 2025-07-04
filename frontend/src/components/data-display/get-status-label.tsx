@@ -1,15 +1,15 @@
 import { useTranslation } from "../../app/i18n/client";
 // Types
-import { ScheduleSolveStatus } from "../../types/schedule";
+import { ScheduleSolveStatus } from "@/types/solveTaskStatus";
 
 export const GetStatusLabel = (lng: string, status: ScheduleSolveStatus) => {
   const { t } = useTranslation(lng, "campaign-page");
   const statusOptions: { name: ScheduleSolveStatus; label: string }[] = [
     { name: ScheduleSolveStatus.NOT_SOLVED, label: t("not_solved") },
-    { name: ScheduleSolveStatus.SOLVED, label: t("solved") },
+    { name: ScheduleSolveStatus.SOLVED_NO_BREACH, label: t("solved") },
     { name: ScheduleSolveStatus.NO_SOLUTION, label: t("no_solution") },
-    { name: ScheduleSolveStatus.SOFT_BREACHED, label: t("soft_breach") },
-    { name: ScheduleSolveStatus.HARD_BREACHED, label: t("hard_breach") },
+    { name: ScheduleSolveStatus.SOLVED_SOFT_BREACHED, label: t("soft_breach") },
+    { name: ScheduleSolveStatus.SOLVED_HARD_BREACHED, label: t("hard_breach") },
   ];
   return statusOptions.find((option) => option.name === status)?.label || "";
 };
@@ -21,10 +21,16 @@ const useStatusLabel = (lng: string) => {
   const getStatusLabel = (status: ScheduleSolveStatus): string => {
     const statusOptions: { name: ScheduleSolveStatus; label: string }[] = [
       { name: ScheduleSolveStatus.NOT_SOLVED, label: t("not_solved") },
-      { name: ScheduleSolveStatus.SOLVED, label: t("solved") },
+      { name: ScheduleSolveStatus.SOLVED_NO_BREACH, label: t("solved") },
       { name: ScheduleSolveStatus.NO_SOLUTION, label: t("no_solution") },
-      { name: ScheduleSolveStatus.SOFT_BREACHED, label: t("soft_breach") },
-      { name: ScheduleSolveStatus.HARD_BREACHED, label: t("hard_breach") },
+      {
+        name: ScheduleSolveStatus.SOLVED_SOFT_BREACHED,
+        label: t("soft_breach"),
+      },
+      {
+        name: ScheduleSolveStatus.SOLVED_HARD_BREACHED,
+        label: t("hard_breach"),
+      },
     ];
     return statusOptions.find((option) => option.name === status)?.label || "";
   };

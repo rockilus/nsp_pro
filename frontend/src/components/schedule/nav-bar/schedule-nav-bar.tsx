@@ -10,11 +10,11 @@ import ScheduleSettings from "./schedule-settings";
 // Types
 import {
   ScheduleT,
-  SolveDetailsStatus,
   DuplicateRequestT,
   ScheduleViewSettingsT,
 } from "../../../types/schedule";
 import { TeamMembershipRole, TeamWithMembership } from "../../../types/team";
+import { SolveTaskStatusResponseT } from "../../../types/solveTaskStatus";
 
 export default function ScheduleNavBar({
   lng,
@@ -22,29 +22,27 @@ export default function ScheduleNavBar({
   currentPeriodStart,
   currentPeriodEnd,
   scheduleCampaign,
-  solveStatus,
   scheduleViewSettings,
   handleToday,
   handlePreviousPeriod,
   handleNextPeriod,
-  handleSolveSchedule,
   handleValidateSchedule,
   handleSendDuplicateRequest,
   updateScheduleViewSettings,
   handleChangeTimeFrame,
   handleOpenLHS,
+  useSqsWorkflow = false, // Feature flag for SQS workflow
+  onSqsSolveComplete,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
   currentPeriodStart: dayjs.Dayjs;
   currentPeriodEnd: dayjs.Dayjs;
   scheduleCampaign: ScheduleT | null;
-  solveStatus: SolveDetailsStatus | null | "error";
   scheduleViewSettings: ScheduleViewSettingsT;
   handleToday: () => void;
   handlePreviousPeriod: () => void;
   handleNextPeriod: () => void;
-  handleSolveSchedule: (scheduleId: string) => void;
   handleValidateSchedule: (scheduleId: string) => void;
   handleSendDuplicateRequest: (
     request: DuplicateRequestT,
@@ -54,6 +52,8 @@ export default function ScheduleNavBar({
   updateScheduleViewSettings: (newSettings: ScheduleViewSettingsT) => void;
   handleChangeTimeFrame: (newTimeFrame: "week" | "month") => void;
   handleOpenLHS: (tabName: string) => void;
+  useSqsWorkflow?: boolean;
+  onSqsSolveComplete?: (result: SolveTaskStatusResponseT) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -101,10 +101,10 @@ export default function ScheduleNavBar({
             lng={lng}
             teamWithMembership={teamWithMembership}
             scheduleCampaign={scheduleCampaign}
-            solveStatus={solveStatus}
-            handleSolveSchedule={handleSolveSchedule}
             handleValidateSchedule={handleValidateSchedule}
             handleOpenLHS={handleOpenLHS}
+            useSqsWorkflow={useSqsWorkflow}
+            onSqsSolveComplete={onSqsSolveComplete}
           />
         ) : (
           <div

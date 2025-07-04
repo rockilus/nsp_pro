@@ -34,7 +34,13 @@ def solve_schedule(engine_inputs: EngineInputs) -> EngineOutputs:
     outputs = engine.solve(inputs)
     end_time_engine = time.time()
     start_time_engine_to_core = time.time()
-    schedule, a_campaign, breaches, updated_requests, model_output = engine_to_core(
+    (
+        schedule_solve_status,
+        a_campaign,
+        breaches,
+        updated_requests,
+        model_output,
+    ) = engine_to_core(
         engine_inputs.schedule,
         outputs,
         engine_inputs.workers,
@@ -54,7 +60,7 @@ def solve_schedule(engine_inputs: EngineInputs) -> EngineOutputs:
     print("engine time:          " + f"{total_time_engine:.2f}s")
     print("process outputs time: " + f"{total_time_engine_to_core:.2f}s")
     return EngineOutputs(
-        schedule=schedule,
+        schedule_solve_status=schedule_solve_status,
         assignments=a_campaign,
         breaches=breaches,
         requests=updated_requests,

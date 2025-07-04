@@ -32,9 +32,7 @@ import {
   DuplicateRequestT,
   AssignmentDataT,
   ScheduleCellDataT,
-  ScheduleViewSettingsT,
 } from "../../types/schedule";
-import { ShiftDemandDTO } from "@/types/shiftDemand";
 import { AssignmentT, CreateAssignmentT } from "@/types/assignment";
 import { TeamWithMembership } from "@/types/team";
 
@@ -113,8 +111,6 @@ export default function ScheduleTabMember({
   // Schedule Actions
   //////////////////////////
 
-  const handleSolveSchedule = async (scheduleId: string) => {};
-
   const handleValidateSchedule = async (scheduleId: string) => {};
 
   const handleSendDuplicateRequest = async (
@@ -122,14 +118,6 @@ export default function ScheduleTabMember({
     campaignId: string,
     teamId: string
   ) => {};
-
-  //////////////////////////
-  // Daily Shift Demand Actions
-  //////////////////////////
-
-  const handleCreateDSD = async () => {};
-
-  const handleUpdateDSD = async () => {};
 
   //////////////////////////
   // Assignment Actions
@@ -253,12 +241,10 @@ export default function ScheduleTabMember({
             scheduleViewSettings.timeFrame
           )}
           scheduleCampaign={null}
-          solveStatus={null}
           scheduleViewSettings={scheduleViewSettings}
           handleToday={handleToday}
           handlePreviousPeriod={handlePreviousPeriod}
           handleNextPeriod={handleNextPeriod}
-          handleSolveSchedule={handleSolveSchedule}
           handleValidateSchedule={handleValidateSchedule}
           handleSendDuplicateRequest={handleSendDuplicateRequest}
           updateScheduleViewSettings={updateScheduleViewSettings}

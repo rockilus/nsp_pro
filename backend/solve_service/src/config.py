@@ -1,5 +1,6 @@
 import os
 import tempfile
+from typing import List
 from urllib.parse import quote
 
 import boto3  # type: ignore
@@ -11,13 +12,27 @@ from pydantic_settings import BaseSettings
 
 # Step 1: Define your Pydantic Config Class
 class AppConfig(BaseSettings):
+    environment: str = Field(
+        "development", description="Environment (development or production)"
+    )
     db_uri: str = Field(..., description="Database connection URL")
-    redis_url: str = Field(..., description="Redis connection URL")
-    result_backend: str = Field(..., description="Redis URL for result backend")
-    log_level: str = Field(
-        "INFO",
-        description="Logging level",
-        pattern=r"^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$",
+    aws_region: str = Field(
+        "eu-west-3",
+        description="AWS region for services like SQS and Secrets Manager",
+    )
+    aws_access_key_id: str = Field(
+        ..., description="AWS access key ID for authentication"
+    )
+    aws_secret_access_key: str = Field(
+        ..., description="AWS secret access key for authentication"
+    )
+    aws_session_token: str | None = Field(
+        None,
+        description="AWS session token for temporary credentials (optional)",
+    )
+    endpoint_url: str | None = Field(
+        None,
+        description="Endpoint URL for local AWS services",
     )
 
     # pylint: disable=too-few-public-methods
@@ -82,26 +97,37 @@ def initialize_environment() -> AppConfig:
         session = boto3.Session()
         credentials = session.get_credentials()
         if credentials:
-            access_key_id = quote(credentials.access_key, safe="")
-            secret_access_key = quote(credentials.secret_key, safe="")
-            session_token = quote(credentials.token, safe="")
+            aws_access_key_id = credentials.access_key
+            aws_secret_access_key = credentials.secret_key
+            aws_session_token = credentials.token
+
+            # Set AWS credentials in environment variables for Pydantic
+            os.environ["AWS_ACCESS_KEY_ID"] = aws_access_key_id
+            os.environ["AWS_SECRET_ACCESS_KEY"] = aws_secret_access_key
+            os.environ["AWS_SESSION_TOKEN"] = aws_session_token
+
+            # Set endpoint_url to None for production (use real AWS services)
+            # os.environ["ENDPOINT_URL"] = ""  # Empty string = None for Pydantic
+
+            print("AWS credentials retrieved and set from boto3 session")
 
             # Replace placeholders in the DB_URI with actual AWS credentials
             db_uri_template = os.getenv("DB_URI")
             if not db_uri_template:
                 raise ValueError("DB_URI template not found in environment variables.")
             db_uri = (
-                db_uri_template.replace("<AWS access key>", access_key_id)
-                .replace("<AWS secret key>", secret_access_key)
-                .replace("<session token (for AWS IAM Roles)>", session_token)
+                db_uri_template.replace(
+                    "<AWS access key>", quote(aws_access_key_id, safe="")
+                )
+                .replace("<AWS secret key>", quote(aws_secret_access_key, safe=""))
+                .replace(
+                    "<session token (for AWS IAM Roles)>",
+                    quote(aws_session_token, safe=""),
+                )
             )
             os.environ["DB_URI"] = db_uri
 
-        required_env_vars = [
-            "REDIS_URL",
-            "RESULT_BACKEND",
-            "LOG_LEVEL",
-        ]
+        required_env_vars: List[str] = []
         missing_vars = [var for var in required_env_vars if not os.getenv(var)]
 
         if missing_vars:

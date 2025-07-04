@@ -5,14 +5,15 @@ from shared.schemas.core import (
     Assignment,
     Breach,
     LinkShift,
-    ModelOutput,
-    ModelOutputStatus,
     RequestAugmented,
     Schedule,
     Shift,
     ShiftDemandNew,
+    SolverOutputMetadata,
+    SolverOutputStatus,
     Worker,
 )
+from shared.schemas.core.solve_task_status import ScheduleSolveStatus
 
 from engine import Outputs as OutputsEngine
 from engine import ProcessingCache
@@ -20,7 +21,7 @@ from engine_to_core_service.build_breaches.build_breaches import build_breaches
 from engine_to_core_service.build_campaign_assignments import (
     build_campaign_assignments,
 )
-from engine_to_core_service.update_schedule import update_schedule_status
+from engine_to_core_service.update_schedule import get_schedule_status
 
 # from engine_to_core_service.update_requests import (
 #     update_requests_and_build_request_breaches,
@@ -39,11 +40,11 @@ def engine_to_core(
     as_hist: List[Assignment],
     processing_cache: ProcessingCache,
 ) -> Tuple[
-    Schedule,
+    ScheduleSolveStatus,
     List[Assignment],
     List[Breach],
     List[RequestAugmented],
-    ModelOutput,
+    SolverOutputMetadata,
 ]:
     as_campaign = build_campaign_assignments(schedule, outputs.assignments)
     assignments = as_hist + as_campaign
@@ -58,20 +59,18 @@ def engine_to_core(
         outputs.breaches,
         processing_cache,
     )
-    schedule = update_schedule_status(schedule, outputs.is_solution, breaches)
+    schedule_solve_status = get_schedule_status(
+        is_solution=outputs.is_solution, breaches=breaches
+    )
     # requests = update_requests_and_build_request_breaches(assignments, requests)
-    model_output = ModelOutput(
-        id="",
-        schedule_id=schedule.id,
-        status=ModelOutputStatus(outputs.status),
-        var_sol=outputs.var_sol,
-        var_spe_sol=outputs.var_spe_sol,
+    model_output = SolverOutputMetadata(
+        status=SolverOutputStatus.from_int(outputs.status),
         objective_value=outputs.objective_value,
         wall_time=outputs.wall_time,
         output_time=datetime.now(timezone.utc),
     )
     return (
-        schedule,
+        schedule_solve_status,
         as_campaign,
         breaches,
         requests,

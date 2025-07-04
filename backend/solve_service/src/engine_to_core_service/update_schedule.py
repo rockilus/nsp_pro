@@ -1,19 +1,16 @@
 from typing import List
 
-from shared.schemas.core import Breach, Schedule, ScheduleSolveStatus
+from shared.schemas.core import Breach
+from shared.schemas.core.solve_task_status import ScheduleSolveStatus
 
 
-def update_schedule_status(
-    schedule: Schedule, is_solution: bool, breaches: List[Breach]
-) -> Schedule:
+def get_schedule_status(
+    is_solution: bool, breaches: List[Breach]
+) -> ScheduleSolveStatus:
     if is_solution:
         if len(breaches) == 0:
-            schedule.solve_status = ScheduleSolveStatus.SOLVED
-        else:
-            if any(b.hard_to_soft for b in breaches):
-                schedule.solve_status = ScheduleSolveStatus.HARD_BREACHED
-            else:
-                schedule.solve_status = ScheduleSolveStatus.SOFT_BREACHED
-    else:
-        schedule.solve_status = ScheduleSolveStatus.NO_SOLUTION
-    return schedule
+            return ScheduleSolveStatus.SOLVED_NO_BREACH
+        if any(b.hard_to_soft for b in breaches):
+            return ScheduleSolveStatus.SOLVED_HARD_BREACHED
+        return ScheduleSolveStatus.SOLVED_SOFT_BREACHED
+    return ScheduleSolveStatus.NO_SOLUTION

@@ -27,7 +27,6 @@ from shared.schemas.core import (
     ModelConfig,
     Penalties,
     Schedule,
-    ScheduleSolveStatus,
     ScheduleStatus,
     Shift,
     ShiftDemandNew,
@@ -63,14 +62,13 @@ def schedule() -> Schedule:
         team_id="t0",
         start_date=date(2025, 1, 1),
         end_date=date(2025, 1, 31),
-        solve_details=None,
-        solve_status=ScheduleSolveStatus.NOT_SOLVED,
         status=ScheduleStatus.CAMPAIGN,
         missing_coverage_dates=[],
         constraint_build_ids=[],
         quick_staffings=[],
-        last_modified_dates=datetime.now(),
-        last_updated_dsds=datetime.now(),
+        created_by="test_user",
+        created_at=datetime(2025, 1, 1, 0, 0),
+        updated_at=datetime(2025, 1, 1, 0, 0),
     )
 
 

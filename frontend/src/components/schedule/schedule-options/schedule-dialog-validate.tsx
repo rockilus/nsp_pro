@@ -9,7 +9,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 // Types
-import { ScheduleT, ScheduleSolveStatus } from "../../../types/schedule";
+import { ScheduleT } from "../../../types/schedule";
 
 export default function ScheduleDialogValidate({
   lng,
@@ -35,9 +35,6 @@ export default function ScheduleDialogValidate({
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
       <Button
-        disabled={
-          scheduleCampaign.solveStatus === ScheduleSolveStatus.NOT_SOLVED
-        }
         variant="outlined"
         onClick={handleClickOpen}
         sx={{

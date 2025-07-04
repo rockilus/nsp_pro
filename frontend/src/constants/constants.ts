@@ -178,13 +178,13 @@ export const SolveStatusList: string[] = [
   "Soft breached",
   "Hard breached",
 ];
-export const SolveStatusColors: string[] = [
-  "default",
-  "success",
-  "error",
-  "warning",
-  "error",
-];
+export const SolveStatusColors: Record<string, string> = {
+  NOT_SOLVED: "default",
+  SOLVED_NO_BREACH: "success",
+  SOLVED_HARD_BREACHED: "error",
+  SOLVED_SOFT_BREACHED: "warning",
+  NO_SOLUTION: "error",
+};
 export const ColorNoCoverage: string = "#E0E0E0";
 export const ColorPast: string = "#D5A8DC";
 export const ColorValidated: string = "#AFDCA8";

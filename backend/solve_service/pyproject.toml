@@ -13,9 +13,7 @@ pylint = "^3.3.5"
 autoflake = "^2.3.1"
 isort = "^6.0.1"
 flake8 = "^7.1.2"
-celery = "^5.4.0"
 pydantic = "^2.10.6"
-redis = "^5.2.1"
 black = {extras = ["jupyter"], version = "^25.1.0"}
 shared = {path = "../shared"}
 boto3 = "^1.37.10"

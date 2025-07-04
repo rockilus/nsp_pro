@@ -14,7 +14,6 @@ from shared.schemas.core import (
     EngineInputs,
     EngineInputsAugmented,
     Schedule,
-    ScheduleSolveStatus,
     ScheduleStatus,
     Shift,
     ShiftDemandNew,
@@ -55,14 +54,13 @@ def sample_data_fixture() -> EngineInputsAugmented:
         team_id="t0",
         start_date=date(2025, 1, 1),
         end_date=date(2025, 1, 31),
-        last_modified_dates=datetime(2025, 1, 1, 0, 0),
-        last_updated_dsds=None,
-        solve_details=None,
-        solve_status=ScheduleSolveStatus.NOT_SOLVED,
         status=ScheduleStatus.CAMPAIGN,
         missing_coverage_dates=[],
         constraint_build_ids=[],
         quick_staffings=[],
+        created_by="user1",
+        created_at=datetime(2025, 1, 1, 0, 0),
+        updated_at=datetime(2025, 1, 1, 0, 0),
     )
 
     workers = [
@@ -282,14 +280,13 @@ def sample_data() -> EngineInputsAugmented:
         team_id="t0",
         start_date=date(2025, 1, 1),
         end_date=date(2025, 1, 31),
-        last_modified_dates=datetime(2025, 1, 1, 0, 0),
-        last_updated_dsds=None,
-        solve_details=None,
-        solve_status=ScheduleSolveStatus.NOT_SOLVED,
         status=ScheduleStatus.CAMPAIGN,
         missing_coverage_dates=[],
         constraint_build_ids=[],
         quick_staffings=[],
+        created_by="user1",
+        created_at=datetime(2025, 1, 1, 0, 0),
+        updated_at=datetime(2025, 1, 1, 0, 0),
     )
 
     workers = [
@@ -510,14 +507,13 @@ def sample_data_astrid_case() -> EngineInputsAugmented:
         team_id="t0",
         start_date=date(2025, 1, 13),
         end_date=date(2025, 2, 16),
-        last_modified_dates=datetime(2025, 1, 13, 0, 0),
-        last_updated_dsds=None,
-        solve_details=None,
-        solve_status=ScheduleSolveStatus.NOT_SOLVED,
         status=ScheduleStatus.CAMPAIGN,
         missing_coverage_dates=[],
         constraint_build_ids=[],
         quick_staffings=[],
+        created_by="user1",
+        created_at=datetime(2025, 1, 13, 0, 0),
+        updated_at=datetime(2025, 1, 13, 0, 0),
     )
 
     workers = [

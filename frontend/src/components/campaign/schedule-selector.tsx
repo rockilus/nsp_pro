@@ -102,7 +102,7 @@ export default function ScheduleSelector({
             <div className="row-label-container">
               <span className="row-label">{t("status")}</span>
             </div>
-            <div className="row-value-container">
+            {/* <div className="row-value-container">
               {
                 <Chip
                   className="status-chip"
@@ -116,7 +116,7 @@ export default function ScheduleSelector({
                   }
                 />
               }
-            </div>
+            </div> */}
           </div>
         </div>
 

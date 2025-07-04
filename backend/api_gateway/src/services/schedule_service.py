@@ -1,8 +1,6 @@
 from datetime import date, datetime, timedelta, timezone
-from typing import Callable, Dict
+from typing import Dict
 
-from celery import Celery  # type: ignore
-from celery.result import AsyncResult  # type: ignore
 from openpyxl import Workbook
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
@@ -11,16 +9,12 @@ from shared.schemas.core import (
     ExportOptions,
     ExportPeriodOptions,
     Schedule,
-    ScheduleSolveStatus,
     ScheduleStatus,
     ShiftType,
-    SolveDetails,
-    SolveDetailsStatus,
     WorkTimeTable,
     WorkTimeTableData,
 )
 
-from src.config import config
 from src.services.assignment_service import AssignmentService
 from src.services.base_service import BaseService
 from src.utils.excel_utils import core_to_excel_schedule
@@ -31,16 +25,12 @@ class ScheduleService(BaseService):
     def __init__(
         self,
         collection: DatabaseCollections,
-        celery_app: Celery,
-        submit_solve_problem_task: Callable[[Schedule], str],
         assignment_service: AssignmentService,
     ) -> None:
         super().__init__(collection)
-        self.celery_app = celery_app
-        self.submit_solve_problem_task = submit_solve_problem_task
         self.assignment_service = assignment_service
 
-    def get_schedule_campaign(self, team_id: str) -> Schedule:
+    def get_schedule_campaign(self, team_id: str, user_id: str) -> Schedule:
         schedules = self.collection.schedule_db.get_schedules(team_id)
         schedule_campaign = next(
             (s for s in schedules if s.status == ScheduleStatus.CAMPAIGN), None
@@ -62,14 +52,13 @@ class ScheduleService(BaseService):
                 team_id=team_id,
                 start_date=start_date,
                 end_date=end_date,
-                last_modified_dates=datetime.now(timezone.utc),
-                solve_details=None,
-                solve_status=ScheduleSolveStatus.NOT_SOLVED,
                 status=ScheduleStatus.CAMPAIGN,
                 missing_coverage_dates=[],
                 constraint_build_ids=[cb.id for cb in cbs],
                 quick_staffings=[],
-                last_updated_dsds=None,
+                created_by=user_id,
+                created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc),
             )
         )
         self.assignment_service.update_assignments_for_schedule_dates_change(
@@ -77,117 +66,22 @@ class ScheduleService(BaseService):
         )
         return campaign_created
 
-    def solve_schedule(self, schedule_id: str) -> Schedule:
-        schedule = self.collection.schedule_db.get_schedule_by_id(schedule_id)
-        if schedule.solve_details and schedule.solve_details.status in [
-            SolveDetailsStatus.PENDING,
-            SolveDetailsStatus.STARTED,
-            SolveDetailsStatus.RETRY,
-        ]:
-            async_result = AsyncResult(
-                schedule.solve_details.task_id, app=self.celery_app
-            )
-            # test_status = async_result.status
-            # test_task_id = schedule.solve_details.task_id
-
-            async_result_ok = True
-            try:
-                async_result.status
-            except Exception:
-                async_result_ok = False
-
-            if async_result_ok:
-                try:
-                    string = (
-                        f"Task {schedule.solve_details.task_id} is "
-                        + f"{async_result.status}"
-                    )
-                    print(string)
-                    if not async_result.ready():
-                        if datetime.now(
-                            tz=timezone.utc
-                        ) - schedule.solve_details.updated_at > timedelta(
-                            seconds=config.task_expiration
-                        ):
-                            async_result.revoke()
-                            # schedule.solve_details.status = SolveDetailsStatus.FAILURE
-                            # schedule.solve_details.updated_at = datetime.now(
-                            #     tz=timezone.utc
-                            # )
-                            # schedule = schedule_db.update_schedule(schedule)
-                        else:
-                            raise ValueError(
-                                f"Schedule is already being solved: {string}"
-                            )
-                except Exception as e:
-                    print(e)
-                    raise ValueError(
-                        f"Error with task {schedule.solve_details.task_id} and "
-                        + "async_result:",
-                        e,
-                    ) from e
-        task_id = self.submit_solve_problem_task(schedule)
-        schedule.solve_details = SolveDetails(
-            task_id=task_id,
-            status=SolveDetailsStatus.PENDING,
-            updated_at=datetime.now(tz=timezone.utc),
-            result=None,
-        )
-        schedule = self.collection.schedule_db.update_schedule(schedule)
-        return schedule
-
     def validate_schedule(self, schedule_id: str) -> Schedule:
         schedule = self.collection.schedule_db.get_schedule_by_id(schedule_id)
         if not schedule:
             raise ValueError(f"Schedule with id {schedule_id} not found")
-        if schedule.status == ScheduleSolveStatus.NOT_SOLVED:
-            raise ValueError(f"Schedule with id {schedule_id} not solved")
         schedule.status = ScheduleStatus.VALIDATED
+        schedule.updated_at = datetime.now(timezone.utc)
         schedule = self.collection.schedule_db.update_schedule(schedule)
         return schedule
 
-    def update_schedule(
-        self,
-        schedule_new: Schedule,
-    ) -> Schedule:
+    def update_schedule(self, schedule_new: Schedule) -> Schedule:
         schedule_old = self.collection.schedule_db.get_schedule_by_id(schedule_new.id)
         self.assignment_service.update_assignments_for_schedule_dates_change(
             schedule_new=schedule_new, schedule_old=schedule_old
         )
-        if (
-            schedule_old.start_date != schedule_new.start_date
-            or schedule_old.end_date != schedule_new.end_date
-        ):
-            schedule_new.last_modified_dates = datetime.now(timezone.utc)
+        schedule_new.updated_at = datetime.now(timezone.utc)
         return self.collection.schedule_db.update_schedule(schedule_new)
-
-    def update_schedule_solve_details_failure(
-        self, schedule_id: str, error: str, task_id: str
-    ) -> Schedule:
-        schedule = self.collection.schedule_db.get_schedule_by_id(schedule_id)
-        solve_details = SolveDetails(
-            task_id=task_id,
-            status=SolveDetailsStatus.FAILURE,
-            updated_at=datetime.now(timezone.utc),
-            result={"error": error},
-        )
-        schedule.solve_details = solve_details
-        schedule = self.collection.schedule_db.update_schedule(schedule)
-        return schedule
-
-    def update_schedule_solve_details_success(
-        self, schedule_id: str, result: str, task_id: str
-    ) -> Schedule:
-        schedule = self.collection.schedule_db.get_schedule_by_id(schedule_id)
-        solve_details = SolveDetails(
-            task_id=task_id,
-            status=SolveDetailsStatus.SUCCESS,
-            updated_at=datetime.now(tz=timezone.utc),
-            result={"output": result},
-        )
-        schedule.solve_details = solve_details
-        schedule = self.collection.schedule_db.update_schedule(schedule)
-        return schedule
 
     # pylint: disable=too-many-locals
     def build_worktime_data(self, schedule_id: str) -> WorkTimeTable:

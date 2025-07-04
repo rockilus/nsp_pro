@@ -13,7 +13,6 @@ from shared.schemas.core import (
     RequestStatus,
     RequestType,
     Schedule,
-    ScheduleSolveStatus,
     ScheduleStatus,
     Shift,
     ShiftDemandNew,
@@ -50,14 +49,13 @@ def engine_inputs_special_days(
         team_id="t0",
         start_date=date(2025, 1, 1),
         end_date=date(2025, 3, 31),
-        last_modified_dates=datetime(2025, 1, 1, 0, 0),
-        last_updated_dsds=None,
-        solve_details=None,
-        solve_status=ScheduleSolveStatus.NOT_SOLVED,
         status=ScheduleStatus.CAMPAIGN,
         missing_coverage_dates=[],
         constraint_build_ids=[],
         quick_staffings=[],
+        created_by="user1",
+        created_at=datetime(2025, 1, 1, 0, 0),
+        updated_at=datetime(2025, 1, 1, 0, 0),
     )
 
     # 16 workers

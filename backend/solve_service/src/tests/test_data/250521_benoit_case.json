@@ -4,39 +4,13 @@
         "team_id": "667d626f02d5723648a0f1fc",
         "start_date": 1740960000.0,
         "end_date": 1752364800.0,
-        "last_modified_dates": 1745397611.245333,
-        "solve_details": {
-            "task_id": "36ffecc4-bb96-4130-9ed4-d090d604b1fd",
-            "status": 4,
-            "updated_at": 1747238072.489986,
-            "result": {
-                "output": {
-                    "id": "677e684e0e6bd11bc4897fd2",
-                    "team_id": "667d626f02d5723648a0f1fc",
-                    "start_date": 1740960000.0,
-                    "end_date": 1752364800.0,
-                    "last_modified_dates": 1745397611.245333,
-                    "solve_details": {
-                        "task_id": "e11267ba-e570-47b1-ae87-ce6d861b0ee5",
-                        "status": 0,
-                        "updated_at": 1747237355.45689,
-                        "result": null
-                    },
-                    "solve_status": 2,
-                    "status": 0,
-                    "missing_coverage_dates": [],
-                    "constraint_build_ids": [],
-                    "quick_staffings": [],
-                    "last_updated_dsds": 1747237460.556236
-                }
-            }
-        },
-        "solve_status": 2,
         "status": 0,
         "missing_coverage_dates": [],
         "constraint_build_ids": [],
         "quick_staffings": [],
-        "last_updated_dsds": 1747841230.723959
+        "created_at": 1747841230.723959,
+        "updated_at": 1747841230.723959,
+        "created_by": "c4a2bab4-d76d-411d-b298-f870b06fde12"
     },
     "workers": [
         {

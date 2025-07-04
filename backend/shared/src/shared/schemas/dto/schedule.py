@@ -1,13 +1,8 @@
-from typing import Dict, List
+from typing import List
 
 from pydantic import BaseModel
 
-from shared.schemas.dto.assignment import (
-    AssignmentDTO,
-    AssignmentsRecurrencesResultDTO,
-)
-from shared.schemas.dto.breach import BreachDTO
-from shared.schemas.dto.request import RequestDTO
+from shared.schemas.dto.assignment import AssignmentsRecurrencesResultDTO
 from shared.schemas.dto.shift_demand_new import ShiftDemandsResultDTO
 
 
@@ -17,33 +12,18 @@ class QuickStaffingDTO(BaseModel):
     target: int
 
 
-class SolveDetailsDTO(BaseModel):
-    taskId: str
-    status: int
-    updatedAt: float
-    result: Dict | None
-
-
 class ScheduleDTO(BaseModel):
     id: str
     teamId: str
     startDate: float
     endDate: float
-    lastModifiedDates: float
-    solveDetails: SolveDetailsDTO | None
-    solveStatus: int
     status: int
     missingCoverageDates: List[float]
     constraintBuildIds: List[str]
     quickStaffings: List[QuickStaffingDTO]
-    lastUpdatedDsds: float | None
-
-
-class SolutionDTO(BaseModel):
-    schedule: ScheduleDTO
-    assignments: List[AssignmentDTO]
-    breaches: List[BreachDTO]
-    requests: List[RequestDTO]
+    createdAt: float
+    updatedAt: float
+    createdBy: str
 
 
 class PeriodDTO(BaseModel):
