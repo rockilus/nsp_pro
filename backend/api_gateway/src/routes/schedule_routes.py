@@ -30,13 +30,14 @@ async def create_schedule(
     schedule_service: ScheduleService = Depends(get_schedule_service),
 ) -> ScheduleDTO:
     try:
-        if not await authz_check(
-            session.get_user_id(), "create-schedule", "team", team_id
-        ):
+        user_id = session.get_user_id()
+        if not await authz_check(user_id, "create-schedule", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to create a schedule",
             )
-        schedule_wip = schedule_service.get_schedule_campaign(team_id)
+        schedule_wip = schedule_service.get_schedule_campaign(
+            team_id=team_id, user_id=user_id
+        )
         response = schedule_wip.to_dto()
     except Exception as e:
         log_info("Failed to create schedule")

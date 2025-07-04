@@ -38,7 +38,6 @@ from shared.schemas.dto.schedule import (
     DuplicateResultDTO,
     PeriodDTO,
     ScheduleDTO,
-    SolutionDTO,
     WorkTimeTableDataDTO,
     WorkTimeTableDTO,
 )
@@ -113,7 +112,6 @@ __all__ = [
     "DuplicateResultDTO",
     "PeriodDTO",
     "ScheduleDTO",
-    "SolutionDTO",
     "WorkTimeTableDataDTO",
     "WorkTimeTableDTO",
     "ShiftDTO",

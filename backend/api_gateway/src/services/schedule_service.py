@@ -9,11 +9,8 @@ from shared.schemas.core import (
     ExportOptions,
     ExportPeriodOptions,
     Schedule,
-    ScheduleSolveStatus,
     ScheduleStatus,
     ShiftType,
-    SolveDetails,
-    SolveDetailsStatus,
     WorkTimeTable,
     WorkTimeTableData,
 )
@@ -33,7 +30,7 @@ class ScheduleService(BaseService):
         super().__init__(collection)
         self.assignment_service = assignment_service
 
-    def get_schedule_campaign(self, team_id: str) -> Schedule:
+    def get_schedule_campaign(self, team_id: str, user_id: str) -> Schedule:
         schedules = self.collection.schedule_db.get_schedules(team_id)
         schedule_campaign = next(
             (s for s in schedules if s.status == ScheduleStatus.CAMPAIGN), None
@@ -55,14 +52,13 @@ class ScheduleService(BaseService):
                 team_id=team_id,
                 start_date=start_date,
                 end_date=end_date,
-                last_modified_dates=datetime.now(timezone.utc),
-                solve_details=None,
-                solve_status=ScheduleSolveStatus.NOT_SOLVED,
                 status=ScheduleStatus.CAMPAIGN,
                 missing_coverage_dates=[],
                 constraint_build_ids=[cb.id for cb in cbs],
                 quick_staffings=[],
-                last_updated_dsds=None,
+                created_by=user_id,
+                created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc),
             )
         )
         self.assignment_service.update_assignments_for_schedule_dates_change(
@@ -74,54 +70,18 @@ class ScheduleService(BaseService):
         schedule = self.collection.schedule_db.get_schedule_by_id(schedule_id)
         if not schedule:
             raise ValueError(f"Schedule with id {schedule_id} not found")
-        if schedule.status == ScheduleSolveStatus.NOT_SOLVED:
-            raise ValueError(f"Schedule with id {schedule_id} not solved")
         schedule.status = ScheduleStatus.VALIDATED
+        schedule.updated_at = datetime.now(timezone.utc)
         schedule = self.collection.schedule_db.update_schedule(schedule)
         return schedule
 
-    def update_schedule(
-        self,
-        schedule_new: Schedule,
-    ) -> Schedule:
+    def update_schedule(self, schedule_new: Schedule) -> Schedule:
         schedule_old = self.collection.schedule_db.get_schedule_by_id(schedule_new.id)
         self.assignment_service.update_assignments_for_schedule_dates_change(
             schedule_new=schedule_new, schedule_old=schedule_old
         )
-        if (
-            schedule_old.start_date != schedule_new.start_date
-            or schedule_old.end_date != schedule_new.end_date
-        ):
-            schedule_new.last_modified_dates = datetime.now(timezone.utc)
+        schedule_new.updated_at = datetime.now(timezone.utc)
         return self.collection.schedule_db.update_schedule(schedule_new)
-
-    def update_schedule_solve_details_failure(
-        self, schedule_id: str, error: str, task_id: str
-    ) -> Schedule:
-        schedule = self.collection.schedule_db.get_schedule_by_id(schedule_id)
-        solve_details = SolveDetails(
-            task_id=task_id,
-            status=SolveDetailsStatus.FAILURE,
-            updated_at=datetime.now(timezone.utc),
-            result={"error": error},
-        )
-        schedule.solve_details = solve_details
-        schedule = self.collection.schedule_db.update_schedule(schedule)
-        return schedule
-
-    def update_schedule_solve_details_success(
-        self, schedule_id: str, result: str, task_id: str
-    ) -> Schedule:
-        schedule = self.collection.schedule_db.get_schedule_by_id(schedule_id)
-        solve_details = SolveDetails(
-            task_id=task_id,
-            status=SolveDetailsStatus.SUCCESS,
-            updated_at=datetime.now(tz=timezone.utc),
-            result={"output": result},
-        )
-        schedule.solve_details = solve_details
-        schedule = self.collection.schedule_db.update_schedule(schedule)
-        return schedule
 
     # pylint: disable=too-many-locals
     def build_worktime_data(self, schedule_id: str) -> WorkTimeTable:

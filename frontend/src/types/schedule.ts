@@ -21,21 +21,6 @@ export type QuickStaffingT = {
   target: number;
 };
 
-export enum SolveDetailsStatus {
-  PENDING = 0,
-  STARTED = 1,
-  RETRY = 2,
-  FAILURE = 3,
-  SUCCESS = 4,
-}
-
-export type SolveDetailsT = {
-  taskId: string;
-  status: SolveDetailsStatus;
-  updatedAt: dayjs.Dayjs;
-  result: { [key: string]: any } | null;
-};
-
 export enum ScheduleSolveStatus {
   NOT_SOLVED = 0,
   SOLVED = 1,
@@ -55,13 +40,11 @@ export type ScheduleT = {
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
   lastModifiedDates: number;
-  solveDetails: SolveDetailsT | null;
   solveStatus: ScheduleSolveStatus;
   status: ScheduleStatus;
   missingCoverageDates: dayjs.Dayjs[];
   constraintBuildIds: string[];
   quickStaffings: QuickStaffingT[];
-  lastUpdatedDsds: number | null;
 };
 
 // Solution
@@ -192,26 +175,11 @@ export type DuplicateResultT = {
   demands: DemandsResultT | null;
 };
 
-export const toSolveDetailsT = (data: any): SolveDetailsT => {
-  return {
-    ...data,
-    updatedAt: dayjs.unix(data.updatedAt).utc(),
-  };
-};
-
-export const fromSolveDetailsT = (data: SolveDetailsT): any => {
-  return {
-    ...data,
-    updatedAt: data.updatedAt.unix(),
-  };
-};
-
 export const toScheduleT = (data: any): ScheduleT => {
   return {
     ...data,
     startDate: dayjs.unix(data.startDate).utc(),
     endDate: dayjs.unix(data.endDate).utc(),
-    solveDetails: data.solveDetails ? toSolveDetailsT(data.solveDetails) : null,
     missingCoverageDates: data.missingCoverageDates.map((timeStamp: number) =>
       dayjs.unix(timeStamp).utc()
     ),
@@ -223,9 +191,6 @@ export const fromScheduleT = (data: ScheduleT): any => {
     ...data,
     startDate: data.startDate.unix(),
     endDate: data.endDate.unix(),
-    solveDetails: data.solveDetails
-      ? fromSolveDetailsT(data.solveDetails)
-      : null,
     missingCoverageDates: data.missingCoverageDates.map((date: dayjs.Dayjs) =>
       date.unix()
     ),

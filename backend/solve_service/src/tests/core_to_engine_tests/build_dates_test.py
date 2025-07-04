@@ -6,7 +6,6 @@ from shared.schemas.core import (
     AssignmentSource,
     EngineInputsAugmented,
     Schedule,
-    ScheduleSolveStatus,
     ScheduleStatus,
     WorkerDates,
 )
@@ -89,14 +88,13 @@ class TestBuildDates:
             team_id="t0",
             start_date=date(2025, 1, 1),
             end_date=date(2025, 1, 1),
-            solve_details=None,
-            solve_status=ScheduleSolveStatus.NOT_SOLVED,
             status=ScheduleStatus.CAMPAIGN,
             missing_coverage_dates=[],
             constraint_build_ids=[],
             quick_staffings=[],
-            last_modified_dates=datetime.now(timezone.utc),
-            last_updated_dsds=None,
+            created_by="user1",
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
         )
         fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
 

@@ -11,7 +11,6 @@ from shared.schemas.core import (
     ObjectiveCategory,
     Penalties,
     Schedule,
-    ScheduleSolveStatus,
     ScheduleStatus,
     Shift,
     ShiftDemandNew,
@@ -53,14 +52,13 @@ class TestTargetWorkTimeConstraints:
             team_id="t0",
             start_date=date(2025, 2, 10),
             end_date=date(2025, 3, 9),
-            last_modified_dates=datetime.now(),
-            solve_details=None,
-            solve_status=ScheduleSolveStatus.NOT_SOLVED,
             status=ScheduleStatus.CAMPAIGN,
             missing_coverage_dates=[],
             constraint_build_ids=[],
             quick_staffings=[],
-            last_updated_dsds=None,
+            created_by="user1",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
 
         # 4 workers
