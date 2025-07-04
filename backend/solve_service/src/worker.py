@@ -2,7 +2,7 @@
 SQS Worker for the solve service.
 
 This module provides the main entry point for running the SQS-based
-solve worker that replaces the Celery worker.
+solve worker.
 """
 
 import asyncio

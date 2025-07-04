@@ -1,5 +1,6 @@
 import os
 import tempfile
+from typing import List
 from urllib.parse import quote
 
 import boto3  # type: ignore
@@ -15,27 +16,6 @@ class AppConfig(BaseSettings):
         "development", description="Environment (development or production)"
     )
     db_uri: str = Field(..., description="Database connection URL")
-    redis_url: str = Field(..., description="Redis connection URL")
-    result_backend: str = Field(..., description="Redis URL for result backend")
-    log_level: str = Field(
-        "INFO",
-        description="Logging level",
-        pattern=r"^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$",
-    )
-
-    # SQS Configuration
-    # aws_region: str = Field("eu-west-3", description="AWS region for SQS")
-    # sqs_queue_name: str = Field(
-    #     "nsp-pro-solve-queue", description="SQS queue name for solve requests"
-    # )
-    # sqs_visibility_timeout: int = Field(
-    #     300, description="SQS message visibility timeout in seconds"
-    # )
-    # sqs_max_receive_count: int = Field(
-    #     3,
-    #     description="Maximum number of times a message can be received before "
-    #     + "moving to DLQ",
-    # )
     aws_region: str = Field(
         "eu-west-3",
         description="AWS region for services like SQS and Secrets Manager",
@@ -147,11 +127,7 @@ def initialize_environment() -> AppConfig:
             )
             os.environ["DB_URI"] = db_uri
 
-        required_env_vars = [
-            "REDIS_URL",
-            "RESULT_BACKEND",
-            "LOG_LEVEL",
-        ]
+        required_env_vars: List[str] = []
         missing_vars = [var for var in required_env_vars if not os.getenv(var)]
 
         if missing_vars:
