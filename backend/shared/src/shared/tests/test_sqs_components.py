@@ -9,9 +9,15 @@ from shared.schemas.core.solve_task_status import SQSSolveMessage
 
 def test_aws_config_creation():
     """Test AWS configuration creation."""
-    config = AWSConfig()
-    assert config.region == "us-east-1"
-    assert config.sqs_solve_queue_name == "nsp-solve-queue"
+    config = AWSConfig(
+        region="eu-west-3",
+        aws_access_key_id="test_access_key",
+        aws_secret_access_key="test_secret_key",
+        sqs_solve_queue_name="nsp-pro-dev-solve-queue",
+        sqs_solve_dlq_name="nsp-solve-dlq",
+    )
+    assert config.region == "eu-west-3"
+    assert config.sqs_solve_queue_name == "nsp-pro-dev-solve-queue"
     assert config.sqs_solve_dlq_name == "nsp-solve-dlq"
 
 
@@ -35,7 +41,13 @@ def test_sqs_client_initialization(mock_boto3):
     mock_sqs = Mock()
     mock_boto3.client.return_value = mock_sqs
 
-    config = AWSConfig()
+    config = AWSConfig(
+        region="eu-west-3",
+        aws_access_key_id="test_access_key",
+        aws_secret_access_key="test_secret_key",
+        sqs_solve_queue_name="nsp-pro-dev-solve-queue",
+        sqs_solve_dlq_name="nsp-solve-dlq",
+    )
     client = SQSClient(config)
 
     # Test that SQS client is created when accessed
@@ -44,10 +56,11 @@ def test_sqs_client_initialization(mock_boto3):
 
     mock_boto3.client.assert_called_once_with(
         "sqs",
-        aws_access_key_id=None,
-        aws_secret_access_key=None,
-        region_name="us-east-1",
-        # endpoint_url=None,
+        region_name=config.region,
+        aws_access_key_id=config.aws_access_key_id,
+        aws_secret_access_key=config.aws_secret_access_key,
+        aws_session_token=None,
+        endpoint_url=None,
     )
 
 

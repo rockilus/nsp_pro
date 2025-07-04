@@ -13,13 +13,13 @@ from .config import AWSConfig
 class SQSClient:
     """AWS SQS client for managing solve requests."""
 
-    def __init__(self, config: Optional[AWSConfig] = None):
+    def __init__(self, config: AWSConfig):
         """Initialize SQS client.
 
         Args:
             config: AWS configuration. If None, uses default config.
         """
-        self.config = config or AWSConfig()
+        self.config = config
         self._sqs_client: Optional[Any] = None
         self.solve_queue_url: Optional[str] = None
         self.dlq_url: Optional[str] = None
@@ -45,12 +45,20 @@ class SQSClient:
         if self._sqs_client is None:
             client_kwargs = {
                 "region_name": self.config.region,
-                "aws_access_key_id": self.config.access_key_id,
-                "aws_secret_access_key": self.config.secret_access_key,
+                "aws_access_key_id": self.config.aws_access_key_id,
+                "aws_secret_access_key": self.config.aws_secret_access_key,
+                "aws_session_token": self.config.aws_session_token,
+                "endpoint_url": self.config.endpoint_url,
             }
-            if self.config.endpoint_url is not None:
-                client_kwargs["endpoint_url"] = self.config.endpoint_url
             self._sqs_client = boto3.client("sqs", **client_kwargs)
+            logger.debug(f"Initialized SQS client with config: {client_kwargs}")
+            try:
+                # Try listing queues as a simple connectivity/auth test
+                response = self.sqs.list_queues(MaxResults=10)
+                queue_urls = response.get("QueueUrls", [])
+                logger.info(f"Successfully connected to AWS SQS. Queues: {queue_urls}")
+            except ClientError as e:
+                logger.error(f"Failed to connect to AWS SQS: {e}")
         return self._sqs_client
 
     async def initialize_queues(self) -> None:
@@ -59,10 +67,13 @@ class SQSClient:
             return
 
         try:
-            # Create or get DLQ first
-            await self._ensure_dlq_exists()
+            # Create or get DLQ first if configured
+            if self.config.sqs_solve_dlq_name is not None:
+                logger.info("Ensuring DLQ exists...")
+                await self._ensure_dlq_exists()
 
             # Create or get main solve queue with DLQ
+            logger.info("Ensuring solve queue exists...")
             await self._ensure_solve_queue_exists()
 
             self._initialized = True
@@ -79,6 +90,7 @@ class SQSClient:
         """Ensure DLQ exists and get its URL."""
         try:
             # Try to get existing queue
+            logger.debug(f"Checking if {self.config.sqs_solve_dlq_name} DLQ exists...")
             response = self.sqs.get_queue_url(QueueName=self.config.sqs_solve_dlq_name)
             self.dlq_url = response["QueueUrl"]
             logger.info(f"Using existing DLQ: {self.dlq_url}")
@@ -105,6 +117,9 @@ class SQSClient:
         """Ensure solve queue exists and get its URL."""
         try:
             # Try to get existing queue
+            logger.debug(
+                f"Checking if {self.config.sqs_solve_queue_name} solve queue exists..."
+            )
             response = self.sqs.get_queue_url(
                 QueueName=self.config.sqs_solve_queue_name
             )

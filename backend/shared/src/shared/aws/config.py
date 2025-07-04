@@ -10,22 +10,20 @@ class AWSConfig(BaseModel):
     """AWS configuration settings."""
 
     region: str = Field(default="eu-west-3", description="AWS region")
-    access_key_id: Optional[str] = Field(
-        default=None, description="AWS access key ID"
-    )
-    secret_access_key: Optional[str] = Field(
-        default=None, description="AWS secret access key"
+    aws_access_key_id: str = Field(..., description="AWS access key ID")
+    aws_secret_access_key: str = Field(..., description="AWS secret access key")
+    aws_session_token: Optional[str] = Field(
+        default=None,
+        description="AWS session token (optional for temporary credentials)",
     )
     endpoint_url: Optional[str] = Field(
         default=None, description="Custom endpoint URL for local AWS services"
     )
 
     # SQS Configuration
-    sqs_solve_queue_name: str = Field(
-        default="nsp-pro-dev-solve-queue", description="SQS solve queue name"
-    )
-    sqs_solve_dlq_name: str = Field(
-        default="nsp-solve-dlq", description="SQS solve DLQ name"
+    sqs_solve_queue_name: str = Field(..., description="SQS solve queue name")
+    sqs_solve_dlq_name: Optional[str] = Field(
+        default=None, description="SQS solve DLQ name"
     )
     sqs_visibility_timeout_seconds: int = Field(
         default=900, description="SQS visibility timeout in seconds"

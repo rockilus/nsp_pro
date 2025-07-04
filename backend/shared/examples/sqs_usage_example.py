@@ -21,6 +21,8 @@ async def example_basic_usage():
     # Method 1: Manual configuration
     config = AWSConfig(
         region="us-east-1",
+        aws_access_key_id="test_access_key",
+        aws_secret_access_key="test_secret_key",
         sqs_solve_queue_name="nsp-dev-solve-queue",
         sqs_solve_dlq_name="nsp-dev-solve-dlq",
     )

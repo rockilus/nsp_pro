@@ -13,8 +13,8 @@ def get_aws_config_from_env() -> AWSConfig:
     """
     return AWSConfig(
         region=os.getenv("AWS_REGION", "us-east-1"),
-        access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
-        secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+        aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID", "test_access_key"),
+        aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY", "test_secret_key"),
         sqs_solve_queue_name=os.getenv("AWS_SQS_SOLVE_QUEUE_NAME", "nsp-solve-queue"),
         sqs_solve_dlq_name=os.getenv("AWS_SQS_SOLVE_DLQ_NAME", "nsp-solve-dlq"),
         sqs_visibility_timeout_seconds=int(
@@ -42,13 +42,14 @@ def validate_aws_config(config: AWSConfig) -> bool:
     """
     # For production, we might want to require credentials
     # For development, we can use IAM roles or default profiles
-    if config.access_key_id and not config.secret_access_key:
+    if config.aws_access_key_id and not config.aws_secret_access_key:
         return False
-    if config.secret_access_key and not config.access_key_id:
+    if config.aws_secret_access_key and not config.aws_access_key_id:
         return False
 
     # Validate queue names
-    if not config.sqs_solve_queue_name or not config.sqs_solve_dlq_name:
+    # if not config.sqs_solve_queue_name or not config.sqs_solve_dlq_name:
+    if not config.sqs_solve_queue_name:
         return False
 
     # Validate numeric values

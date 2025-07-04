@@ -287,11 +287,12 @@ async def create_sqs_consumer() -> SQSSolveConsumer:
     # Create AWS config and SQS client
     aws_config = AWSConfig(
         region=config.aws_region,
-        access_key_id=config.aws_access_key_id,
-        secret_access_key=config.aws_secret_access_key,
-        endpoint_url=(
-            config.endpoint_url if config.environment == "development" else None
-        ),
+        aws_access_key_id=config.aws_access_key_id,
+        aws_secret_access_key=config.aws_secret_access_key,
+        aws_session_token=config.aws_session_token,
+        endpoint_url=config.endpoint_url,
+        sqs_solve_queue_name="nsp-pro-dev-solve-queue",
+        # sqs_solve_dlq_name="nsp-solve-dlq",
     )
     sqs_solve_service = await create_sqs_solve_service(config=aws_config)
     return SQSSolveConsumer(sqs_solve_service)
