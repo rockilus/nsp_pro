@@ -39,8 +39,6 @@ export type ScheduleT = {
   teamId: string;
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
-  lastModifiedDates: number;
-  solveStatus: ScheduleSolveStatus;
   status: ScheduleStatus;
   missingCoverageDates: dayjs.Dayjs[];
   constraintBuildIds: string[];
