@@ -16,12 +16,17 @@ import ScheduleDialogValidate from "../schedule-options/schedule-dialog-validate
 import { GetStatusLabel } from "../../data-display/get-status-label";
 // Types
 import { ScheduleT } from "../../../types/schedule";
-import { SolveTaskStatusResponseT } from "../../../types/solveTaskStatus";
+import {
+  SolveTaskStatusResponseT,
+  ScheduleSolveStatus,
+} from "../../../types/solveTaskStatus";
 //Constants
 import { SolveStatusColors } from "../../../constants/constants";
 import { TeamWithMembership } from "@/types/team";
 // SQS Solve
 import { useSqsSolve } from "../../../app/lib/contexts/SqsSolveContext";
+// Hooks
+import { useCampaignSolveStatus } from "../../../app/lib/hooks/useCampaignSolveStatus";
 
 export default function CampaignInfo({
   lng,
@@ -48,6 +53,9 @@ export default function CampaignInfo({
     clearError,
     isActiveSolve,
   } = useSqsSolve();
+
+  // Get current campaign's solve status
+  const currentSolveStatus = useCampaignSolveStatus(scheduleCampaign);
 
   const spaceBetween: string = "8px";
 
@@ -197,10 +205,10 @@ export default function CampaignInfo({
         {teamWithMembership.team.useSolver && (
           <>
             <Chip
-              label={GetStatusLabel(lng, scheduleCampaign.solveStatus)}
+              label={GetStatusLabel(lng, currentSolveStatus)}
               onClick={() => handleOpenLHS("breaches")}
               color={
-                (SolveStatusColors[scheduleCampaign.solveStatus] as
+                (SolveStatusColors[currentSolveStatus] as
                   | "default"
                   | "success"
                   | "error"

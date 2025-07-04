@@ -122,9 +122,7 @@ async def duplicate_period(
     return response
 
 
-@router.post(
-    "/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201
-)
+@router.post("/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201)
 async def validate_schedule(
     schedule_id: str,
     team_id: str,

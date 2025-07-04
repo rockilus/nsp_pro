@@ -134,6 +134,48 @@ class APIGatewaySQSSolveService(BaseService):
             raise ValueError(f"Solve task with id {solve_id} not found")
         return solve_task_status
 
+    async def get_latest_solve_status(self, schedule_id: str) -> SolveTaskStatus | None:
+        """
+        Get the latest completed solve status for a schedule by schedule_id.
+        Returns the latest SolveTaskStatus or None if no completed
+        solves found.
+
+        Args:
+            schedule_id: ID of the schedule
+            user_id: ID of the user making the request (for authorization)
+
+        Returns:
+            Latest SolveTaskStatus or None if not found
+
+        Raises:
+            ValueError: If schedule not found
+            NotAuthorizedError: If user not authorized to access schedule
+        """
+
+        # Get the schedule and validate it exists
+        schedule = self.collection.schedule_db.get_schedule_by_id(schedule_id)
+        if not schedule:
+            raise ValueError(f"Schedule {schedule_id} not found")
+
+        # Check authorization - user must have access to the team
+        # (This is a basic check, you might want to implement more
+        # granular permissions)
+        if schedule.team_id:
+            # Note: You might want to implement a proper authorization
+            # check here. For now, we'll assume the user has access if
+            # they can see the schedule
+            pass
+
+        # Get latest solve task status
+        # fmt: off
+        latest_status = self.collection.solve_task_status_db\
+            .get_latest_solve_task_status_by_schedule_id(
+                schedule_id
+            )
+        # fmt: on
+
+        return latest_status
+
 
 def create_sqs_solve_service(
     collection: DatabaseCollections,

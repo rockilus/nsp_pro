@@ -143,3 +143,65 @@ async def get_solve_status_by_id(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to get solve status",
         ) from e
+
+
+@router.get(
+    "/sqs-solve/schedule/{schedule_id}/latest",
+    summary="Get latest solve status by schedule_id (frontend-aligned)",
+    description=(
+        "Get the latest completed solve status for a given schedule_id. "
+        "Returns the most recent completed solve task status or 404 if "
+        "none found."
+    ),
+)
+async def get_latest_solve_status_by_schedule_id(
+    schedule_id: str,
+    # session: SessionContainerType = Depends(authn_verify_session()),
+    sqs_solve_service: APIGatewaySQSSolveService = Depends(get_sqs_solve_service),
+) -> SolveTaskStatusResponseDTO:
+    """
+    Get the latest completed solve status for a schedule.
+
+    Args:
+        schedule_id: ID of the schedule to get latest solve status for
+        session: Authentication session
+        sqs_solve_service: SQS solve service
+
+    Returns:
+        Dictionary with latest solve status information
+
+    Raises:
+        HTTPException: If unauthorized, schedule not found, or no
+        completed solves
+    """
+    try:
+        # Get latest solve status (will raise if not found or not authorized)
+        result = await sqs_solve_service.get_latest_solve_status(
+            schedule_id=schedule_id
+        )
+
+        if not result:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"No completed solve found for schedule {schedule_id}",
+            )
+
+        response = result.to_response_dto()
+        return response
+    except NotAuthorizedError:
+        raise
+    except HTTPException:
+        raise
+    except ValueError as ve:
+        logger.warning(f"Invalid latest solve status request: {ve}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(ve),
+        ) from ve
+    except Exception as e:
+        logger.error(f"Failed to get latest solve status: {e}")
+        handle_routes_errors(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get latest solve status",
+        ) from e

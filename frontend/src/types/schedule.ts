@@ -43,6 +43,9 @@ export type ScheduleT = {
   missingCoverageDates: dayjs.Dayjs[];
   constraintBuildIds: string[];
   quickStaffings: QuickStaffingT[];
+  createdAt: dayjs.Dayjs;
+  updatedAt: dayjs.Dayjs;
+  createdBy: string;
 };
 
 // Solution
@@ -181,6 +184,8 @@ export const toScheduleT = (data: any): ScheduleT => {
     missingCoverageDates: data.missingCoverageDates.map((timeStamp: number) =>
       dayjs.unix(timeStamp).utc()
     ),
+    createdAt: dayjs.unix(data.createdAt).utc(),
+    updatedAt: dayjs.unix(data.updatedAt).utc(),
   };
 };
 
@@ -192,6 +197,8 @@ export const fromScheduleT = (data: ScheduleT): any => {
     missingCoverageDates: data.missingCoverageDates.map((date: dayjs.Dayjs) =>
       date.unix()
     ),
+    createdAt: data.createdAt.unix(),
+    updatedAt: data.updatedAt.unix(),
   };
 };
 

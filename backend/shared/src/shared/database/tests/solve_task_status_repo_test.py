@@ -151,3 +151,33 @@ class TestSolveTaskStatusRepository:
         # Try deleting a non-existent id, should raise ValueError
         with pytest.raises(ValueError):
             self.repo.delete_solve_task_status("nonexistentid1234567890")
+
+    def test_get_latest_solve_task_status_by_schedule_id(self):
+        # Create multiple statuses for the same schedule with different completed_at
+        now = datetime.now(timezone.utc)
+        status1 = make_test_status(solve_id="solve1", schedule_id="schedL")
+        status2 = make_test_status(solve_id="solve2", schedule_id="schedL")
+        status3 = make_test_status(solve_id="solve3", schedule_id="schedL")
+        # Only status2 and status3 are completed
+        status2.request_status = SolveRequestStatus.COMPLETED
+        status2.completed_at = now
+        status3.request_status = SolveRequestStatus.COMPLETED
+        status3.completed_at = now.replace(microsecond=0)  # slightly earlier
+        self.repo.create_solve_task_status(status1)
+        self.repo.create_solve_task_status(status2)
+        self.repo.create_solve_task_status(status3)
+        # status2 is the latest completed
+        latest = self.repo.get_latest_solve_task_status_by_schedule_id("schedL")
+        assert latest is not None
+        assert latest.solve_id == "solve2"
+        assert latest.completed_at == status2.completed_at
+
+    def test_get_latest_solve_task_status_by_schedule_id_none(self):
+        # No completed solves for this schedule
+        status1 = make_test_status(solve_id="solveA", schedule_id="schedM")
+        status2 = make_test_status(solve_id="solveB", schedule_id="schedM")
+        # Both are not completed
+        self.repo.create_solve_task_status(status1)
+        self.repo.create_solve_task_status(status2)
+        latest = self.repo.get_latest_solve_task_status_by_schedule_id("schedM")
+        assert latest is None

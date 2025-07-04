@@ -21,6 +21,9 @@ class ScheduleDTO(BaseModel):
     missingCoverageDates: List[float]
     constraintBuildIds: List[str]
     quickStaffings: List[QuickStaffingDTO]
+    createdAt: float
+    updatedAt: float
+    createdBy: str
 
 
 class PeriodDTO(BaseModel):
