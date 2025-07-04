@@ -21,7 +21,6 @@ from src.routes.shift_demand_template_routes import (
 from src.routes.shift_routes import router as router_shift
 from src.routes.specialty_routes import router as router_specialty
 from src.routes.sqs_solve_routes import router as router_sqs_solve
-from src.routes.sse import router as router_sse
 from src.routes.stats_routes import router as router_stats
 from src.routes.team_invitation_routes import router as router_team_invitation
 from src.routes.team_routes import router as router_team
@@ -50,7 +49,6 @@ __all__ = [
     "router_shift",
     "router_specialty",
     "router_sqs_solve",
-    "router_sse",
     "router_stats",
     "router_team_invitation",
     "router_team",

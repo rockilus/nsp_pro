@@ -1,7 +1,6 @@
 from typing import Dict
 
 import httpx
-import redis
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from shared.database.database_collections import DatabaseCollections
@@ -86,50 +85,6 @@ async def check_authz_health(
         ) from e
 
 
-@router.get("/check-redis-health")
-async def check_redis_health(
-    redis_url: str = Query(..., description="The URL of the Redis server")
-):
-    try:
-        client = redis.StrictRedis.from_url(redis_url)
-        response = client.ping()
-        if response is not True:
-            raise HTTPException(
-                status_code=503,
-                detail="Redis health check failed: PING command did not return PONG",
-            )
-        return {"status": "success"}
-    except redis.ConnectionError as e:
-        raise HTTPException(
-            status_code=503, detail=f"Redis health check failed: {str(e)}"
-        ) from e
-
-
-@router.get("/check-data-fetcher-health")
-async def check_data_fetcher_health(
-    data_fetcher_url: str = Query(
-        ..., description="The URL of the data-fetcher service"
-    )
-):
-    try:
-        async with httpx.AsyncClient(timeout=20.0) as client:
-            response = await client.get(f"{data_fetcher_url}/health")
-            response.raise_for_status()
-            return {
-                "status": "success",
-                "data_fetcher_status": response.json(),
-            }
-    except httpx.HTTPStatusError as e:
-        raise HTTPException(
-            status_code=e.response.status_code,
-            detail=f"Data Fetcher health check failed: {e.response.text}",
-        ) from e
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Unexpected error: {str(e)}"
-        ) from e
-
-
 @router.get("/check-processing-engine-health")
 async def check_processing_engine_health(
     processing_engine_url: str = Query(
@@ -148,31 +103,6 @@ async def check_processing_engine_health(
         raise HTTPException(
             status_code=e.response.status_code,
             detail=f"Processing Engine health check failed: {e.response.text}",
-        ) from e
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Unexpected error: {str(e)}"
-        ) from e
-
-
-@router.get("/check-storage-service-health")
-async def check_storage_service_health(
-    storage_service_url: str = Query(
-        ..., description="The URL of the storage-service service"
-    )
-):
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(f"{storage_service_url}/health")
-            response.raise_for_status()
-            return {
-                "status": "success",
-                "storage_service_status": response.json(),
-            }
-    except httpx.HTTPStatusError as e:
-        raise HTTPException(
-            status_code=e.response.status_code,
-            detail=f"Storage Service health check failed: {e.response.text}",
         ) from e
     except Exception as e:
         raise HTTPException(

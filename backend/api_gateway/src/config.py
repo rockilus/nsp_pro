@@ -32,8 +32,6 @@ class AppConfig(BaseSettings):
         False,
         description="Enable Uvicorn auto-reload",
     )
-    redis_url: str = Field(..., description="Redis connection URL")
-    result_backend: str = Field(..., description="Redis URL for result backend")
     task_expiration: int = Field(..., description="Task expiration time in seconds")
     aws_region: str = Field(
         "eu-west-3",
@@ -159,8 +157,6 @@ def initialize_environment() -> AppConfig:
             "PDP_URL",
             "PDP_API_KEY",
             "UVICORN_RELOAD",
-            "REDIS_URL",
-            "RESULT_BACKEND",
             "TASK_EXPIRATION",
         ]
         missing_vars = [var for var in required_env_vars if not os.getenv(var)]
@@ -230,8 +226,6 @@ config = initialize_environment()
 #         False,
 #         description="Enable Uvicorn auto-reload",
 #     )
-#     redis_url: str = Field(..., description="Redis connection URL")
-#     result_backend: str = Field(..., description="Redis URL for result backend")
 #     task_expiration: int = Field(..., description="Task expiration time in seconds")
 #     aws_region: str = Field(
 #         "eu-west-3",
@@ -368,8 +362,6 @@ config = initialize_environment()
 #             "ST_COOKIE_DOMAIN",
 #             "PDP_URL",
 #             "PDP_API_KEY",
-#             "REDIS_URL",
-#             "RESULT_BACKEND",
 #             "TASK_EXPIRATION",
 #         ]
 
