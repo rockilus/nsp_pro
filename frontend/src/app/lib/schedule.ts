@@ -63,29 +63,6 @@ export async function addSchedule(teamId: string) {
   }
 }
 
-export async function solveSchedule(scheduleId: string, teamId: string) {
-  const options: RequestInit = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlSchedule}/${scheduleId}/solve/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to solve schedule: " + responseData.detail);
-    }
-    return toScheduleT(responseData) as ScheduleT;
-  } catch (error) {
-    console.error("Failed to solve schedule:", error);
-    throw new Error("Failed to solve schedule, please try again later");
-  }
-}
-
 export async function validateSchedule(scheduleId: string, teamId: string) {
   const options: RequestInit = {
     method: "POST",
