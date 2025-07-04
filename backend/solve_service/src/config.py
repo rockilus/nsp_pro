@@ -16,9 +16,7 @@ class AppConfig(BaseSettings):
     )
     db_uri: str = Field(..., description="Database connection URL")
     redis_url: str = Field(..., description="Redis connection URL")
-    result_backend: str = Field(
-        ..., description="Redis URL for result backend"
-    )
+    result_backend: str = Field(..., description="Redis URL for result backend")
     log_level: str = Field(
         "INFO",
         description="Logging level",
@@ -113,9 +111,7 @@ def initialize_environment() -> AppConfig:
             secret_name = "DB_URI"
             secret = get_secret(secret_name, region_name=region)
             if secret:
-                os.environ["SECRET_VALUE"] = (
-                    secret  # Store in environment variables
-                )
+                os.environ["SECRET_VALUE"] = secret  # Store in environment variables
 
         # Fetch AWS credentials
         session = boto3.Session()
@@ -138,16 +134,12 @@ def initialize_environment() -> AppConfig:
             # Replace placeholders in the DB_URI with actual AWS credentials
             db_uri_template = os.getenv("DB_URI")
             if not db_uri_template:
-                raise ValueError(
-                    "DB_URI template not found in environment variables."
-                )
+                raise ValueError("DB_URI template not found in environment variables.")
             db_uri = (
                 db_uri_template.replace(
                     "<AWS access key>", quote(aws_access_key_id, safe="")
                 )
-                .replace(
-                    "<AWS secret key>", quote(aws_secret_access_key, safe="")
-                )
+                .replace("<AWS secret key>", quote(aws_secret_access_key, safe=""))
                 .replace(
                     "<session token (for AWS IAM Roles)>",
                     quote(aws_session_token, safe=""),
@@ -166,9 +158,7 @@ def initialize_environment() -> AppConfig:
             print(f"Missing required environment variables: {missing_vars}")
             # Retrieve .env file from S3
             bucket_name = "nsp-pro-bucket"
-            file_key = (
-                ".data_fetcher.env"  # Replace with the key of your .env file
-            )
+            file_key = ".data_fetcher.env"  # Replace with the key of your .env file
             env_file_path = download_env_file_from_s3(
                 bucket_name, file_key, region_name=region
             )
@@ -178,9 +168,7 @@ def initialize_environment() -> AppConfig:
     else:
         print("Running in development mode.")
         # Load local .env file
-        local_env_file = os.path.join(
-            os.path.dirname(__file__), ".env.development"
-        )
+        local_env_file = os.path.join(os.path.dirname(__file__), ".env.development")
         load_dotenv(local_env_file)
         AppConfig.Config.env_file = local_env_file
 
