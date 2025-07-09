@@ -23,11 +23,9 @@ import { TeamT } from "@/types/team";
 
 export default function TeamGeneralTab({
   lng,
-  teamId,
   selectedTeamId,
 }: {
   lng: string;
-  teamId?: string;
   selectedTeamId: string | null;
 }) {
   const { t } = useTranslation(lng, "teams-page");
