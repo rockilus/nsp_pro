@@ -4,6 +4,10 @@ import NavAppBarAuth from "../../../components/user-authentication/nav-app-bar-a
 // Styles
 import "../../../styles/page.css";
 
+export async function generateStaticParams() {
+  return languages.map((lng) => ({ lng }));
+}
+
 export default function Layout({
   children,
   params: { lng },

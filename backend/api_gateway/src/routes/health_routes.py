@@ -1,7 +1,7 @@
 from typing import Dict
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Query, status, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel
 from shared.database.database_collections import DatabaseCollections
 
@@ -60,9 +60,7 @@ async def health_check(
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             # detail=health_status,
-            detail={
-                key: value.model_dump() for key, value in health_status.items()
-            },
+            detail={key: value.model_dump() for key, value in health_status.items()},
         )
     return HealthCheck(status=overall_status, services=health_status)
 
@@ -75,9 +73,7 @@ async def check_authz_health(
     try:
         print(f"Full incoming request URL: {request.url}")
         print(f"Raw query parameters from request object: {request.url.query}")
-        print(
-            f"Parsed query parameters from request object: {request.query_params}"
-        )
+        print(f"Parsed query parameters from request object: {request.query_params}")
         pdp_url = request.query_params.get("pdp_url", None)
         if not pdp_url:
             raise HTTPException(

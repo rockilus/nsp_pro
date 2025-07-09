@@ -1,5 +1,4 @@
 import React from "react";
-import Image from "next/image";
 // MUI
 import TableCell from "@mui/material/TableCell";
 // Styles
@@ -24,30 +23,27 @@ export default function SavedCell({
     <TableCell>
       <div className="saved-cell-container">
         {mongo && (
-          <Image
+          <img
             src="/mongodb_logo.png"
             alt="MongoDB logo"
             width={logoWidth}
             height={logoHeight}
-            priority
           />
         )}
         {supertokens && (
-          <Image
+          <img
             src="/supertokens_logo.png"
             alt="SuperTokens logo"
             width={logoWidth}
             height={logoHeight}
-            priority
           />
         )}
         {permit && (
-          <Image
+          <img
             src="/permit_logo.jpeg"
             alt="Permit.io logo"
             width={logoWidth}
             height={logoHeight}
-            priority
           />
         )}
       </div>

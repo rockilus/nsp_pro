@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import i18next from "i18next";
@@ -45,12 +44,11 @@ const NavAppBarAuth = ({ lng }: { lng: string }) => {
           alignItems="center"
         >
           <Link href={links[lng] || links["en"]} passHref>
-            <Image
+            <img
               src="/rockilus_logo_blue.jpg"
               alt="logo"
               width={logoWidth}
               height={logoHeight}
-              priority
             />
           </Link>
           <Box sx={{ display: "flex" }}>
