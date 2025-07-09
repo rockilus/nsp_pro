@@ -1,7 +1,7 @@
 from typing import Dict
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Request
 from pydantic import BaseModel
 from shared.database.database_collections import DatabaseCollections
 
@@ -60,16 +60,30 @@ async def health_check(
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             # detail=health_status,
-            detail={key: value.model_dump() for key, value in health_status.items()},
+            detail={
+                key: value.model_dump() for key, value in health_status.items()
+            },
         )
     return HealthCheck(status=overall_status, services=health_status)
 
 
 @router.get("/check-authn-health")
 async def check_authz_health(
-    pdp_url: str = Query(..., description="The URL of the Permit PDP")
+    request: Request,
+    # pdp_url: str = Query(..., description="The URL of the Permit PDP")
 ):
     try:
+        print(f"Full incoming request URL: {request.url}")
+        print(f"Raw query parameters from request object: {request.url.query}")
+        print(
+            f"Parsed query parameters from request object: {request.query_params}"
+        )
+        pdp_url = request.query_params.get("pdp_url", None)
+        if not pdp_url:
+            raise HTTPException(
+                status_code=400,
+                detail="Missing required query parameter: pdp_url",
+            )
         print("Tenants request with pdp url: ", pdp_url)
         permit = authz_connect(pdp_url, config.pdp_api_key)
         resource_instance = "team: 667d626f02d5723648a0f1fc"
