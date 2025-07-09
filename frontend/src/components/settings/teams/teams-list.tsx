@@ -59,11 +59,13 @@ export default function TeamsList({
         <div className="team-list-item-actions">
           <Button
             variant="outlined"
-            component={Link}
             disabled={
               teamWithMembership.membership.role !== TeamMembershipRole.OWNER
             }
-            href={`/${lng}/plan/teams/${teamWithMembership.team.id}/settings/general`}
+            onClick={() => {
+              setSelectedTeamId(teamWithMembership.team.id);
+              router.push(`/${lng}/plan/settings/teams/general`);
+            }}
             sx={{
               textTransform: "none",
               marginRight: "8px",

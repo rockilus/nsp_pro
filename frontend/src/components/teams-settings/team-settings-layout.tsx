@@ -18,23 +18,28 @@ export default function TeamSettingsLayout({
   children: React.ReactNode;
   params: {
     lng: string;
-    teamId: string;
+    teamId?: string;
   };
 }) {
   const { t } = useTranslation(lng, "teams-page");
 
   const pathname = usePathname();
 
+  // Use the new settings path structure
+  const basePath = teamId
+    ? `/${lng}/plan/teams/${teamId}/settings`
+    : `/${lng}/plan/settings/teams`;
+
   const links: { name: string; label: string; href: string }[] = [
     {
       name: "general",
       label: t("general"),
-      href: `/${lng}/plan/teams/${teamId}/settings/general`,
+      href: `${basePath}/general`,
     },
     {
       name: "members",
       label: t("members"),
-      href: `/${lng}/plan/teams/${teamId}/settings/members`,
+      href: `${basePath}/members`,
     },
   ];
 

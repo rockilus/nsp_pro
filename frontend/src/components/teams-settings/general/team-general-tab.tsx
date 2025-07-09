@@ -27,7 +27,7 @@ export default function TeamGeneralTab({
   selectedTeamId,
 }: {
   lng: string;
-  teamId: string;
+  teamId?: string;
   selectedTeamId: string | null;
 }) {
   const { t } = useTranslation(lng, "teams-page");
@@ -50,14 +50,16 @@ export default function TeamGeneralTab({
   //////////////////////////
 
   const handleGetTeam = useCallback(async () => {
+    if (!selectedTeamId) return;
     setIsLoading(true);
-    const fetchedTeam = await getTeamById(teamId);
+    const fetchedTeam = await getTeamById(selectedTeamId);
     setTeam(fetchedTeam);
     setIsLoading(false);
-  }, [teamId]);
+  }, [selectedTeamId]);
 
   const handleUpdateTeam = async (updatedTeam: TeamT) => {
-    const newTeam = await updateTeamById(teamId, updatedTeam);
+    if (!selectedTeamId) return;
+    const newTeam = await updateTeamById(selectedTeamId, updatedTeam);
     setTeam(newTeam);
     updateTeamInContext(newTeam);
   };
