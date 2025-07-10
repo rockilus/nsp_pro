@@ -852,7 +852,6 @@ export default function ScheduleTab({
             updateScheduleViewSettings={updateScheduleViewSettings}
             handleChangeTimeFrame={handleChangeTimeFrame}
             handleOpenLHS={setSelectedTab}
-            // useSqsWorkflow={USE_SQS_SOLVE}
             useSqsWorkflow={true}
             onSqsSolveComplete={handleSqsSolveComplete}
           />

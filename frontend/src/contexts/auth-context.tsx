@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useAuth as useOidcAuth, ErrorContext } from "react-oidc-context";
 import { User } from "oidc-client-ts";
-import { cognitoAuthConfig, cognitoDomain } from "../config/cognito";
+import { cognitoAuthConfig, cognitoDomain, logoutUri } from "../config/cognito";
 
 interface AuthContextType {
   user: User | undefined | null;
@@ -42,7 +42,7 @@ export function AuthContextProvider({
   }, [auth.isLoading]);
 
   const signOutRedirect = () => {
-    const logoutUri = cognitoAuthConfig.post_logout_redirect_uri;
+    // const logoutUri = cognitoAuthConfig.post_logout_redirect_uri;
     window.location.href = `${cognitoDomain}/logout?client_id=${
       cognitoAuthConfig.client_id
     }&logout_uri=${encodeURIComponent(logoutUri)}`;
