@@ -3,6 +3,7 @@ import { languages } from "../../i18n/settings";
 import CssBaseline from "@mui/material/CssBaseline";
 // Components
 import NavAppBar from "../../../components/app-bar/nav-app-bar";
+import ProtectedRoute from "../../../components/auth/protected-route";
 // Context
 import { TeamProvider } from "@/context/TeamProvider";
 import { UserProvider } from "@/context/UserProvider";
@@ -21,16 +22,18 @@ export default function Layout({
   };
 }) {
   return (
-    <UserProvider>
-      <TeamProvider>
-        <div style={{ overflow: "hidden", height: "100vh" }}>
-          <CssBaseline />
-          <header>
-            <NavAppBar lng={lng} />
-          </header>
-          <main>{children}</main>
-        </div>
-      </TeamProvider>
-    </UserProvider>
+    <ProtectedRoute requireAuth={true}>
+      <UserProvider>
+        <TeamProvider>
+          <div style={{ overflow: "hidden", height: "100vh" }}>
+            <CssBaseline />
+            <header>
+              <NavAppBar lng={lng} />
+            </header>
+            <main>{children}</main>
+          </div>
+        </TeamProvider>
+      </UserProvider>
+    </ProtectedRoute>
   );
 }
