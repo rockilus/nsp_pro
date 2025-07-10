@@ -1,4 +1,4 @@
-import { User } from "react-oidc-context";
+import { User } from "oidc-client-ts";
 import { API_URL } from "./env";
 
 class APIClient {

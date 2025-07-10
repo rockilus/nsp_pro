@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useAuth } from "../../../../contexts/auth-context";
+import { useAuth } from "../../../contexts/auth-context";
 import {
   Container,
   Box,
@@ -13,7 +13,7 @@ import {
   Stack,
   Paper,
 } from "@mui/material";
-import ProtectedRoute from "../../../../components/auth/protected-route";
+import ProtectedRoute from "../../../components/auth/protected-route";
 
 export default function AuthTestPage() {
   const { user, isAuthenticated, accessToken, signOut, signOutRedirect } =

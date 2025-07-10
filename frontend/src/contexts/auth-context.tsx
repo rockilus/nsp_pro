@@ -1,13 +1,14 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { User, useAuth as useOidcAuth } from "react-oidc-context";
+import { useAuth as useOidcAuth, ErrorContext } from "react-oidc-context";
+import { User } from "oidc-client-ts";
 import { cognitoAuthConfig, cognitoDomain } from "../config/cognito";
 
 interface AuthContextType {
-  user: User | null;
+  user: User | undefined | null;
   loading: boolean;
-  error: Error | null;
+  error: ErrorContext | undefined;
   isAuthenticated: boolean;
   accessToken: string | null;
   signIn: () => Promise<void>;
