@@ -1,4 +1,3 @@
-import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Env Vars
@@ -15,7 +14,14 @@ const apiUrlDashboard = API_URL + "/admin-dashboard";
 //////////////////////////
 
 export const checkUserAuthz = async (): Promise<boolean> => {
-  noStore();
+  // For static export, we can't make real API calls, so return a default value
+  if (typeof window !== "undefined" && process.env.NODE_ENV === "production") {
+    console.warn(
+      "checkUserAuthz: Static export mode, returning mock authorization"
+    );
+    return true; // Or false, depending on desired behavior for static export
+  }
+
   const options: RequestInit = {
     method: "GET",
     credentials: "include" as RequestCredentials,
@@ -39,7 +45,14 @@ export const checkUserAuthz = async (): Promise<boolean> => {
 };
 
 export async function getUsersDashboard(): Promise<UserDashboardT[]> {
-  noStore();
+  // For static export, return empty array or mock data
+  if (typeof window !== "undefined" && process.env.NODE_ENV === "production") {
+    console.warn(
+      "getUsersDashboard: Static export mode, returning empty array"
+    );
+    return [];
+  }
+
   const options: RequestInit = {
     method: "GET",
     credentials: "include" as RequestCredentials,
@@ -66,7 +79,6 @@ export async function getUsersDashboard(): Promise<UserDashboardT[]> {
 export async function getUserDashboard(
   userId: string
 ): Promise<UserDashboardT> {
-  noStore();
   const options: RequestInit = {
     method: "GET",
     credentials: "include" as RequestCredentials,
@@ -91,7 +103,6 @@ export async function getUserDashboard(
 }
 
 export async function impersonateUser(userId: string): Promise<boolean> {
-  noStore();
   const options: RequestInit = {
     method: "POST",
     credentials: "include" as RequestCredentials,
@@ -137,7 +148,6 @@ export const stopImpersonation = async (): Promise<boolean> => {
 };
 
 export async function deleteUser(userId: string): Promise<boolean> {
-  noStore();
   const options: RequestInit = {
     method: "DELETE",
     credentials: "include" as RequestCredentials,

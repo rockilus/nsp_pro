@@ -1,4 +1,3 @@
-import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Types
@@ -51,7 +50,6 @@ export async function getDimensions(
   teamId: string,
   dimTypes?: DimensionType[]
 ) {
-  noStore();
   const options: RequestInit = {
     method: "GET",
     credentials: "include" as RequestCredentials,

@@ -1,4 +1,3 @@
-import { unstable_noStore as noStore } from "next/cache";
 // Actions
 import { getAllShifts } from "./shift";
 import { getAllWorkers } from "./worker";
@@ -36,7 +35,6 @@ export async function addRequest(request: RequestT, teamId: string) {
 }
 
 export async function getRequests(teamId: string) {
-  noStore();
   const options: RequestInit = {
     method: "GET",
     credentials: "include" as RequestCredentials,

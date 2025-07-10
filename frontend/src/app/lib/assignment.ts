@@ -1,4 +1,3 @@
-import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Types
@@ -60,7 +59,6 @@ export async function getAssignmentsByDates(
   startDate?: dayjs.Dayjs,
   endDate?: dayjs.Dayjs
 ): Promise<AssignmentsRecurrencesResultT> {
-  noStore();
   const options: RequestInit = {
     method: "GET",
     credentials: "include" as RequestCredentials,

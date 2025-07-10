@@ -1,4 +1,3 @@
-import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Actions
@@ -87,7 +86,6 @@ export async function validateSchedule(scheduleId: string, teamId: string) {
 }
 
 export async function getSchedules(teamId: string) {
-  noStore();
   const options: RequestInit = {
     method: "GET",
     credentials: "include" as RequestCredentials,
@@ -109,7 +107,6 @@ export async function getSchedules(teamId: string) {
 }
 
 export async function getWorkTimeTable(scheduleId: string, teamId: string) {
-  noStore();
   const options: RequestInit = {
     method: "GET",
     credentials: "include" as RequestCredentials,

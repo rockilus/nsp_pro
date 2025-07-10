@@ -1,4 +1,3 @@
-import { unstable_noStore as noStore } from "next/cache";
 // Actions
 import { getWorkers } from "./worker";
 import { getShifts } from "./shift";
@@ -17,7 +16,6 @@ const apiUrlStats = API_URL + "/stats";
 //////////////////////////
 
 export async function getStats(statsOptions: StatsOptionsT, teamId: string) {
-  noStore();
   const options: RequestInit = {
     method: "POST",
     credentials: "include" as RequestCredentials,
@@ -94,7 +92,6 @@ export async function deleteHeader(headerId: string, teamId: string) {
 //////////////////////////
 
 export async function getShiftOptions(teamId: string) {
-  noStore();
   const options: RequestInit = {
     method: "GET",
     credentials: "include" as RequestCredentials,

@@ -1,5 +1,4 @@
 import axios from "axios";
-import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Actions
@@ -63,7 +62,6 @@ export async function addWorker(worker: WorkerT) {
 }
 
 export async function getWorkers(teamId: string) {
-  noStore();
   const options: RequestInit = {
     method: "GET",
     credentials: "include" as RequestCredentials,
@@ -85,7 +83,6 @@ export async function getWorkers(teamId: string) {
 }
 
 export async function getAllWorkers(teamId: string) {
-  noStore();
   const options: RequestInit = {
     method: "GET",
     credentials: "include" as RequestCredentials,

@@ -1,4 +1,3 @@
-import { unstable_noStore as noStore } from "next/cache";
 // Actions
 import { getWorkShifts } from "./shift";
 import { getShiftDemands } from "./shift-demand";
@@ -39,7 +38,6 @@ export async function addCoverage(coverage: CoverageT) {
 }
 
 export async function getCoverages(teamId: string) {
-  noStore();
   const options: RequestInit = {
     method: "GET",
     credentials: "include" as RequestCredentials,

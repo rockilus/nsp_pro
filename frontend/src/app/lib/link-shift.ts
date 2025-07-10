@@ -1,4 +1,3 @@
-import { unstable_noStore as noStore } from "next/cache";
 // Types
 import { LinkShiftT } from "../../types/shift";
 // Env Vars
@@ -35,7 +34,6 @@ export async function addLinkShift(linkShift: LinkShiftT) {
 }
 
 export async function getLinkShifts(teamId: string) {
-  noStore();
   const options: RequestInit = {
     method: "GET",
     credentials: "include" as RequestCredentials,

@@ -1,4 +1,3 @@
-import { unstable_noStore as noStore } from "next/cache";
 // Types
 import { BreachT, toBreachT } from "@/types/breach";
 // Env Vars
@@ -11,7 +10,6 @@ const apiUrlBreach = API_URL + "/breaches";
 //////////////////////////
 
 export async function getBreaches(teamId: string) {
-  noStore();
   const options: RequestInit = {
     method: "GET",
     credentials: "include" as RequestCredentials,

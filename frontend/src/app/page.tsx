@@ -1,10 +1,20 @@
-// Components
-import { HomePage } from "../components/home";
+"use client";
 
-export default async function Home() {
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { detectLanguage } from "./lib/language-detection";
+
+export default function RootPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const detectedLang = detectLanguage();
+    router.replace(`/${detectedLang}/`);
+  }, [router]);
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <HomePage />x
-    </main>
+    <div className="flex items-center justify-center min-h-screen">
+      <div>Redirecting...</div>
+    </div>
   );
 }

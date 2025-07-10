@@ -5,12 +5,15 @@
 	"scripts": {
 		"dev": "next dev -H 0.0.0.0",
 		"build": "next build",
+		"build:static": "next build",
 		"start": "next start",
 		"lint": "next lint",
 		"test": "jest",
 		"test:watch": "jest --watch",
 		"test:coverage": "jest --coverage",
-		"test:ci": "jest --ci --coverage --watchAll=false"
+		"test:ci": "jest --ci --coverage --watchAll=false",
+		"deploy:s3": "aws s3 sync out/ s3://your-bucket-name --delete",
+		"deploy": "npm run build:static && npm run deploy:s3"
 	},
 	"dependencies": {
 		"@emotion/cache": "^11.13.1",

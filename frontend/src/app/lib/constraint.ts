@@ -1,4 +1,3 @@
-import { unstable_noStore as noStore } from "next/cache";
 // Actions
 import { getWorkers } from "./worker";
 import { getShifts } from "./shift";
@@ -39,7 +38,6 @@ export async function addConstraint(constraint: ConstraintT) {
 }
 
 export async function getConstraints(teamId: string) {
-  noStore();
   const options: RequestInit = {
     method: "GET",
     credentials: "include" as RequestCredentials,
@@ -114,7 +112,6 @@ export async function deleteConstraint(constraintId: string, teamId: string) {
 //////////////////////////
 
 export async function getTemplates(teamId: string) {
-  noStore();
   const options: RequestInit = {
     method: "GET",
     credentials: "include" as RequestCredentials,

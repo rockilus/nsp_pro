@@ -1,4 +1,3 @@
-import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Types
@@ -15,7 +14,6 @@ const apiUrlUsers = API_URL + "/users";
 //////////////////////////
 
 export async function getUser() {
-  noStore();
   const options: RequestInit = {
     method: "GET",
     credentials: "include" as RequestCredentials,
