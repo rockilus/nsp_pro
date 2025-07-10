@@ -1,8 +1,6 @@
 /**
  * API client for multitasking operations
  */
-
-import axios from "axios";
 import {
   MultitaskingGroupDTO,
   MultitaskingGroup,
@@ -122,18 +120,31 @@ export class MultitaskingApi {
         request,
       });
 
-      const response = await axios.post<any>(
+      const response = await fetch(
         `${API_BASE_URL}/multitasking/shift-demand-concurrency`,
         {
-          teamId: request.teamId,
-          startDate: request.startDate,
-          endDate: request.endDate,
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            teamId: request.teamId,
+            startDate: request.startDate,
+            endDate: request.endDate,
+          }),
         }
       );
 
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch shift demand concurrency: ${response.status}`
+        );
+      }
+
+      const data = await response.json();
+
       // Response should now be in camelCase format
       const concurrencyList: ShiftDemandConcurrency[] =
-        response.data.concurrencyList?.map((item: any) => ({
+        data.concurrencyList?.map((item: any) => ({
           shiftDemandId: item.shiftDemandId,
           concurrentShiftDemandIds: item.concurrentShiftDemandIds,
         })) || [];
@@ -147,11 +158,9 @@ export class MultitaskingApi {
     } catch (error) {
       console.error("Error fetching shift demand concurrency:", error);
 
-      // Check if it's an axios error with response data
-      if (axios.isAxiosError(error) && error.response) {
-        const errorMessage =
-          error.response.data?.detail || "Failed to fetch concurrency data";
-        throw new Error(`API Error: ${errorMessage}`);
+      // Check if it's a fetch error with a response
+      if (error instanceof Error) {
+        throw new Error(`API Error: ${error.message}`);
       }
 
       throw new Error("Failed to fetch shift demand concurrency data");

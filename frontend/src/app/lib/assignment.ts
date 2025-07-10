@@ -15,7 +15,6 @@ import {
 } from "../../types/recurrence";
 // Env Vars
 import { API_URL } from "./env";
-import axios from "axios";
 
 dayjs.extend(utc);
 
@@ -96,18 +95,27 @@ export async function getValidatedAssignments(
   const endDateStr = endDate ? endDate.format("YYYY-MM-DD") : undefined;
 
   try {
-    const response = await axios.get<AssignmentT[]>(
-      `${apiUrlAssignment}/validated/teams/${teamId}`,
-      {
-        params: {
-          start_date: startDateStr,
-          end_date: endDateStr,
-        },
-        withCredentials: true,
-      }
-    );
+    const url = new URL(`${apiUrlAssignment}/validated/teams/${teamId}`);
+    if (startDateStr) url.searchParams.append("start_date", startDateStr);
+    if (endDateStr) url.searchParams.append("end_date", endDateStr);
 
-    return response.data.map(toAssignmentT);
+    const response = await fetch(url.toString(), {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        "Failed to fetch validated assignments: " + errorData.detail
+      );
+    }
+
+    const data = await response.json();
+    return data.map(toAssignmentT);
   } catch (error) {
     console.error("Failed to fetch validated assignments:", error);
     throw new Error(

@@ -1,4 +1,3 @@
-import axios from "axios";
 // Types
 import {
   TeamT,
@@ -22,10 +21,22 @@ export const createTeam = async (
   teamName: string
 ): Promise<TeamWithMembership> => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/teams`, {
-      team_name: teamName,
+    const response = await fetch(`${API_BASE_URL}/teams`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ team_name: teamName }),
     });
-    return toTeamWithMembership(response.data);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error("Failed to create team: " + errorData.detail);
+    }
+
+    const data = await response.json();
+    return toTeamWithMembership(data);
   } catch (error) {
     console.error("Error creating team:", error);
     throw error;
@@ -39,8 +50,21 @@ export const createTeam = async (
  */
 export const getTeamById = async (teamId: string): Promise<TeamT> => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/teams/${teamId}`);
-    return toTeamtT(response.data);
+    const response = await fetch(`${API_BASE_URL}/teams/${teamId}`, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error("Failed to fetch team: " + errorData.detail);
+    }
+
+    const data = await response.json();
+    return toTeamtT(data);
   } catch (error) {
     console.error("Error fetching team by ID:", error);
     throw error;
@@ -55,8 +79,21 @@ export const getUserTeamsWithMemberships = async (): Promise<
   TeamWithMembership[]
 > => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/teams/with-memberships`);
-    return response.data.map((team: any) => toTeamWithMembership(team));
+    const response = await fetch(`${API_BASE_URL}/teams/with-memberships`, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error("Failed to fetch user teams: " + errorData.detail);
+    }
+
+    const data = await response.json();
+    return data.map((team: any) => toTeamWithMembership(team));
   } catch (error) {
     console.error("Error fetching user teams with memberships:", error);
     throw error;
@@ -72,8 +109,21 @@ export const getTeamUsersWithMemberships = async (
   teamId: string
 ): Promise<UserWithMembership[]> => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/teams/${teamId}/users`);
-    return response.data.map((user: any) => toUserWithMembership(user));
+    const response = await fetch(`${API_BASE_URL}/teams/${teamId}/users`, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error("Failed to fetch team users: " + errorData.detail);
+    }
+
+    const data = await response.json();
+    return data.map((user: any) => toUserWithMembership(user));
   } catch (error) {
     console.error("Error fetching team users with memberships:", error);
     throw error;
@@ -91,11 +141,22 @@ export const updateTeamById = async (
   teamData: TeamT
 ): Promise<TeamT> => {
   try {
-    const response = await axios.put(
-      `${API_BASE_URL}/teams/${teamId}`,
-      fromTeamT(teamData)
-    );
-    return toTeamtT(response.data);
+    const response = await fetch(`${API_BASE_URL}/teams/${teamId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(fromTeamT(teamData)),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error("Failed to update team: " + errorData.detail);
+    }
+
+    const data = await response.json();
+    return toTeamtT(data);
   } catch (error) {
     console.error("Error updating team by ID:", error);
     throw error;
@@ -109,8 +170,15 @@ export const updateTeamById = async (
  */
 export const leaveTeam = async (teamId: string): Promise<boolean> => {
   try {
-    await axios.delete(`${API_BASE_URL}/teams/${teamId}/leave`);
-    return true;
+    const response = await fetch(`${API_BASE_URL}/teams/${teamId}/leave`, {
+      method: "DELETE",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    return response.ok;
   } catch (error) {
     console.error("Error leaving team:", error);
     return false;
@@ -128,8 +196,18 @@ export const removeUserFromTeam = async (
   userId: string
 ): Promise<boolean> => {
   try {
-    await axios.delete(`${API_BASE_URL}/teams/${teamId}/users/${userId}`);
-    return true;
+    const response = await fetch(
+      `${API_BASE_URL}/teams/${teamId}/users/${userId}`,
+      {
+        method: "DELETE",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return response.ok;
   } catch (error) {
     console.error("Error removing user from team:", error);
     return false;

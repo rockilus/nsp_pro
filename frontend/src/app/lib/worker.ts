@@ -1,4 +1,3 @@
-import axios from "axios";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Actions
@@ -143,14 +142,27 @@ export const attachUserToWorker = async (
   teamId: string
 ): Promise<WorkerT> => {
   try {
-    const response = await axios.post(
+    const response = await fetch(
       `${apiUrlWorkers}/${workerId}/attach_user/teams/${teamId}`,
       {
-        user_id: userId,
-        // team_id: teamId,
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          user_id: userId,
+        }),
       }
     );
-    return response.data.map(toWorkerT);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error("Failed to attach user to worker: " + errorData.detail);
+    }
+
+    const data = await response.json();
+    return toWorkerT(data);
   } catch (error) {
     console.error("Error adding user to worker:", error);
     throw error;
