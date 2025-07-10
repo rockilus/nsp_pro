@@ -4,9 +4,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v13-appRouter";
 // Components
-import { SuperTokensProvider } from "../components/supertokensProvider";
-
-import ImpersonationBanner from "../components/app-bar/impersonation-banner";
+// import ImpersonationBanner from "../components/app-bar/impersonation-banner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,14 +20,12 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <SuperTokensProvider>
-        <AppRouterCacheProvider>
-          <body className={inter.className}>
-            <ImpersonationBanner />
-            {children}
-          </body>
-        </AppRouterCacheProvider>
-      </SuperTokensProvider>
+      <AppRouterCacheProvider>
+        <body className={inter.className}>
+          {/* <ImpersonationBanner /> */}
+          {children}
+        </body>
+      </AppRouterCacheProvider>
     </html>
   );
 }

@@ -5,13 +5,13 @@ import TableCell from "@mui/material/TableCell";
 import "./saved-cell.css";
 
 export default function SavedCell({
-  mongo,
-  supertokens,
-  permit,
+  database,
+  authn,
+  authz,
 }: {
-  mongo: boolean;
-  supertokens: boolean;
-  permit: boolean;
+  database: boolean;
+  authn: boolean;
+  authz: boolean;
 }) {
   const logoWidthOriginal = 512;
   const logoHeightOriginal = 512;
@@ -22,7 +22,7 @@ export default function SavedCell({
   return (
     <TableCell>
       <div className="saved-cell-container">
-        {mongo && (
+        {database && (
           <img
             src="/mongodb_logo.png"
             alt="MongoDB logo"
@@ -30,7 +30,7 @@ export default function SavedCell({
             height={logoHeight}
           />
         )}
-        {supertokens && (
+        {authn && (
           <img
             src="/supertokens_logo.png"
             alt="SuperTokens logo"
@@ -38,7 +38,7 @@ export default function SavedCell({
             height={logoHeight}
           />
         )}
-        {permit && (
+        {authz && (
           <img
             src="/permit_logo.jpeg"
             alt="Permit.io logo"

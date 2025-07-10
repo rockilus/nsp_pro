@@ -1,6 +1,3 @@
-// Components
-import { HomePageClient } from "../../components/home-client";
-
 // Force static export for this page
 export const dynamic = "force-static";
 
@@ -19,7 +16,7 @@ export async function generateStaticParams() {
 export default function Home({ params }: HomePageProps) {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <HomePageClient lng={params.lng} />
+      <p>Home Page</p>
     </main>
   );
 }

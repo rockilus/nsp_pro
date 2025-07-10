@@ -108,9 +108,9 @@ export default function DashboardTab({ lng }: { lng: string }) {
                       header.name === "saved" ? (
                         <SavedCell
                           key={ud.user?.id + header.name}
-                          mongo={true}
-                          supertokens={ud.userAuthn !== null}
-                          permit={ud.userAuthz !== null}
+                          database={true}
+                          authn={ud.userAuthn !== null}
+                          authz={ud.userAuthz !== null}
                         />
                       ) : header.name === "actions" ? (
                         <ActionsCell
@@ -138,9 +138,9 @@ export default function DashboardTab({ lng }: { lng: string }) {
                       header.name === "saved" ? (
                         <SavedCell
                           key={userAuth.id + header.name}
-                          mongo={false}
-                          supertokens={ud.userAuthn !== null}
-                          permit={ud.userAuthz !== null}
+                          database={false}
+                          authn={ud.userAuthn !== null}
+                          authz={ud.userAuthz !== null}
                         />
                       ) : header.name === "actions" ? (
                         <ActionsNotInDBCell

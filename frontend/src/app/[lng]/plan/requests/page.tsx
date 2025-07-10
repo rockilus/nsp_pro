@@ -2,7 +2,6 @@
 
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-// import { getSSRSessionHelper } from "@/components/home";
 import "dayjs/locale/en-gb";
 import "dayjs/locale/fr";
 import "dayjs/locale/es";

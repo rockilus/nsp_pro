@@ -3,7 +3,6 @@ import { languages } from "../../i18n/settings";
 import CssBaseline from "@mui/material/CssBaseline";
 // Components
 import NavAppBar from "../../../components/app-bar/nav-app-bar";
-import SessionHandler from "../../../components/session-handler";
 // Context
 import { TeamProvider } from "@/context/TeamProvider";
 import { UserProvider } from "@/context/UserProvider";
@@ -22,18 +21,16 @@ export default function Layout({
   };
 }) {
   return (
-    <SessionHandler>
-      <UserProvider>
-        <TeamProvider>
-          <div style={{ overflow: "hidden", height: "100vh" }}>
-            <CssBaseline />
-            <header>
-              <NavAppBar lng={lng} />
-            </header>
-            <main>{children}</main>
-          </div>
-        </TeamProvider>
-      </UserProvider>
-    </SessionHandler>
+    <UserProvider>
+      <TeamProvider>
+        <div style={{ overflow: "hidden", height: "100vh" }}>
+          <CssBaseline />
+          <header>
+            <NavAppBar lng={lng} />
+          </header>
+          <main>{children}</main>
+        </div>
+      </TeamProvider>
+    </UserProvider>
   );
 }

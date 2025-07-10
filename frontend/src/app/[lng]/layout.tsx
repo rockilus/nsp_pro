@@ -5,9 +5,8 @@ import { Inter } from "next/font/google";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v13-appRouter";
 import { notFound } from "next/navigation";
 // Components
-import { SuperTokensProvider } from "../../components/supertokensProvider";
 import { LanguageProvider } from "../../components/providers/LanguageProvider";
-import ImpersonationBanner from "../../components/app-bar/impersonation-banner";
+// import ImpersonationBanner from "../../components/app-bar/impersonation-banner";
 import { languages } from "../i18n/settings";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -34,16 +33,14 @@ export default function RootLayout({ children, params }: RootLayoutProps) {
 
   return (
     <html lang={params.lng}>
-      <SuperTokensProvider>
-        <AppRouterCacheProvider>
-          <body className={inter.className}>
-            <LanguageProvider initialLanguage={params.lng}>
-              <ImpersonationBanner />
-              {children}
-            </LanguageProvider>
-          </body>
-        </AppRouterCacheProvider>
-      </SuperTokensProvider>
+      <AppRouterCacheProvider>
+        <body className={inter.className}>
+          <LanguageProvider initialLanguage={params.lng}>
+            {/* <ImpersonationBanner /> */}
+            {children}
+          </LanguageProvider>
+        </body>
+      </AppRouterCacheProvider>
     </html>
   );
 }

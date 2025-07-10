@@ -1,8 +1,6 @@
 "use client";
 
 import * as React from "react";
-import SessionReact from "supertokens-auth-react/recipe/session";
-import SuperTokensReact from "supertokens-auth-react";
 import { useTranslation } from "@/app/i18n/client";
 import Link from "next/link";
 // MUI
@@ -30,9 +28,7 @@ export default function AccountMenu({ lng }: { lng: string }) {
   ];
 
   const handleLogout = async () => {
-    await SessionReact.signOut();
-    // clearTeams();
-    SuperTokensReact.redirectToAuth();
+    console.log("Logging out");
   };
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
