@@ -29,5 +29,30 @@ backend/processing_engine/src/solver_parameter_tuning/analysis_output
 backend/solve_service/src/engine/saved/
 backend/solve_service/src/solver_parameter_tuning/parameter_test_output
 backend/solve_service/src/solver_parameter_tuning/analysis_output
+
 # Environments
 venv_nsp
+
+# Terraform state files
+*.tfstate
+*.tfstate.backup
+
+# Terraform crash logs
+crash.log
+
+# Terraform variable overrides
+*.tfvars
+*.tfvars.json
+
+# .terraform directory (provider plugins, modules, etc.)
+.terraform/
+
+# Terraform plan output
+*.tfplan
+
+# Local override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
