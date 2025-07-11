@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useAuth } from "../../contexts/auth-context";
 import {
   Box,
@@ -21,6 +21,13 @@ export default function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { isAuthenticated, loading, error, signIn } = useAuth();
 
+  // Immediate redirect for unauthenticated users
+  useEffect(() => {
+    if (requireAuth && !loading && !error && !isAuthenticated) {
+      signIn();
+    }
+  }, [requireAuth, loading, error, isAuthenticated, signIn]);
+
   if (loading) {
     return (
       <Container maxWidth="sm">
@@ -34,7 +41,7 @@ export default function ProtectedRoute({
         >
           <CircularProgress />
           <Typography variant="h6" color="text.secondary">
-            Loading...
+            Securing your session...
           </Typography>
         </Box>
       </Container>
@@ -58,9 +65,10 @@ export default function ProtectedRoute({
           <Typography variant="body1" color="text.secondary">
             {error.message}
           </Typography>
-          <Button variant="contained" onClick={signIn}>
-            Try Again
-          </Button>
+          <Typography variant="body2" color="text.secondary">
+            Attempting to redirect...
+          </Typography>
+          <CircularProgress size={24} />
         </Box>
       </Container>
     );
@@ -77,20 +85,13 @@ export default function ProtectedRoute({
           minHeight="50vh"
           gap={2}
         >
-          <Typography variant="h4" component="h1" gutterBottom>
-            Welcome to Rockilus
+          <CircularProgress />
+          <Typography variant="h6" color="text.secondary">
+            Redirecting to secure authentication...
           </Typography>
-          <Typography variant="body1" color="text.secondary" textAlign="center">
-            Please sign in to access your healthcare scheduling platform.
+          <Typography variant="body2" color="text.secondary" textAlign="center">
+            NSP Pro Healthcare Scheduling Platform
           </Typography>
-          <Button
-            variant="contained"
-            size="large"
-            onClick={signIn}
-            sx={{ mt: 2, px: 4, py: 1.5 }}
-          >
-            Sign In
-          </Button>
         </Box>
       </Container>
     );
