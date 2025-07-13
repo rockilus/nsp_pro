@@ -17,12 +17,13 @@ resource "aws_api_gateway_authorizer" "cognito" {
   #   authorizer_uri         = "arn:aws:apigateway:${var.aws_region}:cognito-idp:path/userpools/${var.cognito_user_pool_id}/authorizers"
   authorizer_credentials = null
   type                   = "COGNITO_USER_POOLS"
-  provider_arns          = ["arn:aws:cognito-idp:${var.aws_region}:${data.aws_caller_identity.current.account_id}:userpool/${var.cognito_user_pool_id}"]
+  provider_arns          = ["arn:aws:cognito-idp:${var.aws_region}:${local.effective_account_id}:userpool/${var.cognito_user_pool_id}"]
   identity_source        = "method.request.header.Authorization"
 }
 
 # VPC Link
 resource "aws_api_gateway_vpc_link" "main" {
+  count       = var.environment == "prod" ? 1 : 0
   name        = "apigateway-nlb-vpc-link"
   description = "VPC Link to connect the API Gateway to the network load balancer"
   target_arns = var.vpc_link_target_arns
@@ -50,17 +51,46 @@ resource "aws_api_gateway_method" "any_proxy" {
   }
 }
 
+resource "aws_api_gateway_method_response" "any_proxy_200" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.proxy.id
+  http_method = aws_api_gateway_method.any_proxy.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Credentials" = false
+    "method.response.header.Access-Control-Allow-Headers"     = false
+    "method.response.header.Access-Control-Allow-Methods"     = false
+    "method.response.header.Access-Control-Allow-Origin"      = false
+  }
+}
+
+resource "aws_api_gateway_method_response" "any_proxy_401" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.proxy.id
+  http_method = aws_api_gateway_method.any_proxy.http_method
+  status_code = "401"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Credentials" = false
+    "method.response.header.Access-Control-Allow-Headers"     = false
+    "method.response.header.Access-Control-Allow-Methods"     = false
+    "method.response.header.Access-Control-Allow-Origin"      = false
+  }
+}
+
 # Integration for ANY method
 resource "aws_api_gateway_integration" "any_proxy" {
   rest_api_id             = aws_api_gateway_rest_api.main.id
   resource_id             = aws_api_gateway_resource.proxy.id
   http_method             = aws_api_gateway_method.any_proxy.http_method
   integration_http_method = "ANY"
-  type                    = "HTTP_PROXY"
-  uri                     = var.vpc_link_endpoint_url
-  connection_type         = "VPC_LINK"
-  connection_id           = aws_api_gateway_vpc_link.main.id
-  passthrough_behavior    = "WHEN_NO_TEMPLATES"
+  # type                    = var.environment == "prod" ? "HTTP_PROXY" : "HTTP"
+  type                 = "HTTP_PROXY"
+  uri                  = var.vpc_link_endpoint_url
+  connection_type      = var.environment == "prod" ? "VPC_LINK" : "INTERNET"
+  connection_id        = var.environment == "prod" ? aws_api_gateway_vpc_link.main[0].id : null
+  passthrough_behavior = "WHEN_NO_TEMPLATES"
   request_parameters = {
     "integration.request.path.proxy"               = "method.request.path.proxy"
     "integration.request.header.X-Forwarded-For"   = "method.request.header.X-Forwarded-For"
@@ -68,6 +98,26 @@ resource "aws_api_gateway_integration" "any_proxy" {
     "integration.request.header.X-Forwarded-Proto" = "method.request.header.X-Forwarded-Proto"
   }
 }
+
+resource "aws_api_gateway_integration_response" "any_proxy_200" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.proxy.id
+  http_method = aws_api_gateway_method.any_proxy.http_method
+  status_code = "200"
+
+  response_templates = {
+    "application/json" = ""
+  }
+
+  depends_on = [
+    aws_api_gateway_integration.any_proxy
+  ]
+
+  # response_parameters = {
+  #   "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  # }
+}
+
 
 # OPTIONS method for CORS
 resource "aws_api_gateway_method" "options_proxy" {
@@ -116,6 +166,47 @@ resource "aws_api_gateway_integration_response" "options_proxy" {
     "method.response.header.Access-Control-Allow-Origin"      = "'${join(",", var.cors_allowed_origins)}'"
     "method.response.header.Access-Control-Allow-Credentials" = "'true'"
   }
+  depends_on = [
+    aws_api_gateway_integration.options_proxy
+  ]
+}
+
+# Default gateway responses
+
+resource "aws_api_gateway_gateway_response" "default_4xx" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  response_type = "DEFAULT_4XX"
+
+  response_parameters = {
+    "gatewayresponse.header.Access-Control-Allow-Origin"      = "'${join(",", var.cors_allowed_origins)}'"
+    "gatewayresponse.header.Access-Control-Allow-Headers"     = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,anti-csrf,fdi-version,rid,st-auth-mode,authorization'"
+    "gatewayresponse.header.Access-Control-Allow-Methods"     = "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
+    "gatewayresponse.header.Access-Control-Allow-Credentials" = "'true'"
+  }
+
+  response_templates = {
+    "application/json" = <<EOF
+{"message":$context.error.messageString}
+EOF
+  }
+}
+
+resource "aws_api_gateway_gateway_response" "default_5xx" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  response_type = "DEFAULT_5XX"
+
+  response_parameters = {
+    "gatewayresponse.header.Access-Control-Allow-Origin"      = "'${join(",", var.cors_allowed_origins)}'"
+    "gatewayresponse.header.Access-Control-Allow-Headers"     = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,anti-csrf,fdi-version,rid,st-auth-mode,authorization'"
+    "gatewayresponse.header.Access-Control-Allow-Methods"     = "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
+    "gatewayresponse.header.Access-Control-Allow-Credentials" = "'true'"
+  }
+
+  response_templates = {
+    "application/json" = <<EOF
+{"message":$context.error.messageString}
+EOF
+  }
 }
 
 # Deployment and Stage
@@ -138,4 +229,15 @@ resource "aws_api_gateway_stage" "main" {
 }
 
 # Data source for account id
-data "aws_caller_identity" "current" {}
+# data "aws_caller_identity" "current" {}
+
+data "aws_caller_identity" "current" {
+  count = var.environment == "prod" ? 1 : 0
+}
+
+locals {
+  effective_account_id = var.environment == "prod" ? data.aws_caller_identity.current[0].account_id : var.aws_account_id
+}
+
+
+

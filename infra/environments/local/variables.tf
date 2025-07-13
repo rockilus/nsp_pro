@@ -9,10 +9,10 @@ variable "aws_region" {
   type        = string
 }
 
-variable "aws_profile" {
-  description = "AWS CLI profile to use."
-  type        = string
-}
+# variable "aws_profile" {
+#   description = "AWS CLI profile to use."
+#   type        = string
+# }
 
 variable "aws_account_id" {
   description = "AWS Account ID (set to dummy value for local)"

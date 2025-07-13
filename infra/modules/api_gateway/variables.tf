@@ -13,6 +13,11 @@ variable "aws_region" {
   type        = string
 }
 
+variable "aws_account_id" {
+  description = "AWS Account ID (set to dummy value for local)"
+  type        = string
+}
+
 variable "cors_allowed_origins" {
   description = "List of allowed origins for CORS."
   type        = list(string)

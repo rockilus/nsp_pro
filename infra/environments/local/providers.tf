@@ -1,8 +1,7 @@
 terraform {
   required_providers {
     aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
+      source = "hashicorp/aws"
     }
   }
 }
@@ -16,9 +15,10 @@ provider "aws" {
   skip_requesting_account_id  = true
 
   endpoints {
-    apigatewayv2 = "http://localhost:4566"
-    cognito-idp  = "http://localhost:4566"
-    ec2          = "http://localhost:4566"
-    elbv2        = "http://localhost:4566"
+    apigateway = "http://localhost:4566"
+    ec2        = "http://localhost:4566"
+    elbv2      = "http://localhost:4566"
+    sts        = "http://localhost:4566"
+
   }
 }

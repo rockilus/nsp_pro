@@ -44,14 +44,14 @@ async def create_worker(
 @router.get("/workers/teams/{team_id}")
 async def get_workers(
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    # session: SessionContainerType = Depends(authn_verify_session()),
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[WorkerDTO]:
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-workers", "team", team_id
-        ):
-            raise NotAuthorizedError("You do not have permission to get workers")
+        # if not await authz_check(
+        #     session.get_user_id(), "read-workers", "team", team_id
+        # ):
+        #     raise NotAuthorizedError("You do not have permission to get workers")
         workers = db_collections.worker_db.get_workers_not_deleted(team_id)
         attributes = [
             db_collections.attribute_db.get_attributes_by_owner_id(worker.id)
