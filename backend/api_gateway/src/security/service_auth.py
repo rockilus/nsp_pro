@@ -3,11 +3,12 @@ Service authentication module for validating API Gateway requests.
 Implements secure service-to-service authentication using API keys.
 """
 
+import logging
 import os
-import boto3
 from functools import lru_cache
 from typing import Optional
-import logging
+
+import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
 
 logger = logging.getLogger(__name__)
@@ -15,8 +16,6 @@ logger = logging.getLogger(__name__)
 
 class ServiceAuthError(Exception):
     """Custom exception for service authentication errors"""
-
-    pass
 
 
 @lru_cache(maxsize=1)
@@ -59,14 +58,9 @@ def get_expected_api_key() -> str:
         error_code = e.response["Error"]["Code"]
         if error_code == "ParameterNotFound":
             logger.error("API key parameter not found: %s", parameter_name)
-            raise ServiceAuthError(
-                "Service authentication not configured"
-            ) from e
-        else:
-            logger.error("AWS SSM error: %s", e)
-            raise ServiceAuthError(
-                "Failed to retrieve service configuration"
-            ) from e
+            raise ServiceAuthError("Service authentication not configured") from e
+        logger.error("AWS SSM error: %s", e)
+        raise ServiceAuthError("Failed to retrieve service configuration") from e
     except Exception as e:
         logger.error("Failed to retrieve API key from SSM: %s", e)
         raise ServiceAuthError("Service configuration error") from e
@@ -102,6 +96,4 @@ def validate_service_api_key(provided_key: Optional[str]) -> bool:
         raise
     except Exception as e:
         logger.error("Unexpected error during API key validation: %s", e)
-        raise ServiceAuthError(
-            "Service authentication validation failed"
-        ) from e
+        raise ServiceAuthError("Service authentication validation failed") from e

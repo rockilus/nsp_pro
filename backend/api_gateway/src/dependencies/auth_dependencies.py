@@ -3,14 +3,16 @@ FastAPI dependencies for service and user authentication.
 Replaces the current authentication system with API Gateway-based auth.
 """
 
-from fastapi import Header, HTTPException, Depends
-from typing import Optional
 import logging
+from typing import Optional
+
+from fastapi import Depends, Header, HTTPException
+
 from src.security.service_auth import (
-    validate_service_api_key,
     ServiceAuthError,
+    validate_service_api_key,
 )
-from src.security.user_context import extract_user_context, UserContext
+from src.security.user_context import UserContext, extract_user_context
 
 logger = logging.getLogger(__name__)
 

@@ -1,5 +1,5 @@
 # Security module for API Gateway service
-from .service_auth import validate_service_api_key, ServiceAuthError
+from .service_auth import ServiceAuthError, validate_service_api_key
 from .user_context import UserContext, extract_user_context
 
 __all__ = [
