@@ -7,7 +7,7 @@ from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas.core import Worker
 from shared.schemas.dto import WorkerDTO
-from shared.security.user_context import UserContext
+from src.security.user_context import UserContext
 
 from src.dependencies import get_db_collections, get_worker_service
 from src.dependencies.auth_dependencies import get_user_context

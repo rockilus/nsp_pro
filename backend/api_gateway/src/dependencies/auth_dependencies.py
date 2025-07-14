@@ -6,11 +6,11 @@ Replaces the current authentication system with API Gateway-based auth.
 from fastapi import Header, HTTPException, Depends
 from typing import Optional
 import logging
-from shared.security.service_auth import (
+from src.security.service_auth import (
     validate_service_api_key,
     ServiceAuthError,
 )
-from shared.security.user_context import extract_user_context, UserContext
+from src.security.user_context import extract_user_context, UserContext
 
 logger = logging.getLogger(__name__)
 

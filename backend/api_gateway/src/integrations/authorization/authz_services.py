@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 from permit import PermitApiError  # type: ignore
 from permit import Permit, PermitConnectionError, UserRead  # type: ignore
@@ -8,17 +8,8 @@ from shared.schemas.core import Team, User, UserAuth
 from src.config import config
 from src.errors import AuthzConnectionError, handle_permit_errors
 
-# Try to import UserContext for the new auth system
-try:
-    from shared.security.user_context import UserContext
-except ImportError:
-    # Define a minimal UserContext for compatibility
-    class UserContext:
-        def __init__(self, user_id: str):
-            self.user_id = user_id
-
-        def get_user_id(self) -> str:
-            return self.user_id
+# Import UserContext from the security module
+from src.security.user_context import UserContext
 
 
 # Permit API doc:
@@ -128,13 +119,13 @@ async def authz_role_assignment_get_user_team_ids(
 
 
 async def authz_check(
-    user_id_or_context,  # Can be str or UserContext
+    user_id_or_context: Union[str, UserContext],  # Can be str or UserContext
     action: str,
     resource: str,
     resource_id: str | None = None,
 ) -> bool:
     # Handle both old style (user_id string) and new style (UserContext)
-    if hasattr(user_id_or_context, 'get_user_id'):
+    if isinstance(user_id_or_context, UserContext):
         # New style: UserContext object
         user_id = user_id_or_context.get_user_id()
     else:
