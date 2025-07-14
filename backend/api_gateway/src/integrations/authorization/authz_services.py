@@ -8,6 +8,19 @@ from shared.schemas.core import Team, User, UserAuth
 from src.config import config
 from src.errors import AuthzConnectionError, handle_permit_errors
 
+# Try to import UserContext for the new auth system
+try:
+    from shared.security.user_context import UserContext
+except ImportError:
+    # Define a minimal UserContext for compatibility
+    class UserContext:
+        def __init__(self, user_id: str):
+            self.user_id = user_id
+
+        def get_user_id(self) -> str:
+            return self.user_id
+
+
 # Permit API doc:
 # https://api.permit.io/v2/redoc#tag/Users
 
@@ -99,7 +112,9 @@ async def authz_role_assignment_unassign(
         handle_permit_errors(e)
 
 
-async def authz_role_assignment_get_user_team_ids(user_id: str, role: str) -> List[str]:
+async def authz_role_assignment_get_user_team_ids(
+    user_id: str, role: str
+) -> List[str]:
     try:
         team_permit = await permit.api.role_assignments.list(
             user_key=user_id,
@@ -113,12 +128,22 @@ async def authz_role_assignment_get_user_team_ids(user_id: str, role: str) -> Li
 
 
 async def authz_check(
-    user_id: str,
+    user_id_or_context,  # Can be str or UserContext
     action: str,
     resource: str,
     resource_id: str | None = None,
 ) -> bool:
-    resource_instance = f"{resource}:{resource_id}" if resource_id else resource
+    # Handle both old style (user_id string) and new style (UserContext)
+    if hasattr(user_id_or_context, 'get_user_id'):
+        # New style: UserContext object
+        user_id = user_id_or_context.get_user_id()
+    else:
+        # Old style: user_id string
+        user_id = user_id_or_context
+
+    resource_instance = (
+        f"{resource}:{resource_id}" if resource_id else resource
+    )
     try:
         out = await permit.check(
             user=user_id,
@@ -143,11 +168,15 @@ async def authz_check(
 async def authz_get_all_users() -> List[UserAuth]:
     users: List[UserRead] = []
     page = 1
-    per_page = 100  # Adjust this value based on the actual limit specified by the API
+    per_page = (
+        100  # Adjust this value based on the actual limit specified by the API
+    )
 
     try:
         while True:
-            response = await permit.api.users.list(page=page, per_page=per_page)
+            response = await permit.api.users.list(
+                page=page, per_page=per_page
+            )
             users.extend(response.data)
 
             # Check if there's another page of results

@@ -2,6 +2,27 @@
 
 # REST API Gateway configuration for proxy+ with Cognito authorizer, VPC link, and CORS
 
+# Generate a secure API key for service authentication
+resource "random_password" "backend_api_key" {
+  length  = 32
+  special = false # Avoid special chars for easier header handling
+  upper   = true
+  lower   = true
+  numeric = true
+}
+
+# Store API key securely
+resource "aws_ssm_parameter" "backend_api_key" {
+  name  = "/${var.project_name}/${var.environment}/backend-api-key"
+  type  = "SecureString"
+  value = random_password.backend_api_key.result
+
+  tags = {
+    Environment = var.environment
+    Project     = var.project_name
+  }
+}
+
 resource "aws_api_gateway_rest_api" "main" {
   name        = "${var.project_name}-api-gateway-${var.environment}"
   description = "REST API Gateway for ${var.project_name} in ${var.environment}, receive request from fontend and pass them through to the main service in the backend"
@@ -96,6 +117,15 @@ resource "aws_api_gateway_integration" "any_proxy" {
     "integration.request.header.X-Forwarded-For"   = "method.request.header.X-Forwarded-For"
     "integration.request.header.X-Forwarded-Host"  = "context.domainName"
     "integration.request.header.X-Forwarded-Proto" = "method.request.header.X-Forwarded-Proto"
+    # Service authentication
+    "integration.request.header.X-API-Key" = "'${random_password.backend_api_key.result}'"
+    # User context from Cognito
+    "integration.request.header.X-User-Sub"    = "context.authorizer.claims.sub"
+    "integration.request.header.X-User-Email"  = "context.authorizer.claims.email"
+    "integration.request.header.X-User-Groups" = "context.authorizer.claims['cognito:groups']"
+    # Request metadata
+    "integration.request.header.X-Request-ID" = "context.requestId"
+    "integration.request.header.X-Source-IP"  = "context.identity.sourceIp"
   }
 }
 
