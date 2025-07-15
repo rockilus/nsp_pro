@@ -10,6 +10,7 @@ from typing import Optional
 
 import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
+from src.config import config
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ def get_ssm_client():
     try:
         region = os.getenv("AWS_REGION", "eu-west-3")
         return boto3.client(
-            "ssm", region_name=region, endpoint_url="http://localhost:4566"
+            "ssm", region_name=region, endpoint_url=config.endpoint_url
         )
     except NoCredentialsError as exc:
         logger.error("AWS credentials not configured")
