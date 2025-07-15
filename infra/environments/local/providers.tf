@@ -19,6 +19,7 @@ provider "aws" {
     ec2        = "http://localhost:4566"
     elbv2      = "http://localhost:4566"
     sts        = "http://localhost:4566"
+    ssm        = "http://localhost:4566"
 
   }
 }

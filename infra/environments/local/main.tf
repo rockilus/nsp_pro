@@ -1,8 +1,9 @@
 module "api_gateway" {
   source = "../../modules/api_gateway"
 
-  project_name                  = var.project_name
-  environment                   = "local"
+  project_name = var.project_name
+  # environment                   = "local"
+  environment                   = "development"
   aws_region                    = var.aws_region
   aws_account_id                = var.aws_account_id
   cors_allowed_origins          = var.cors_allowed_origins
