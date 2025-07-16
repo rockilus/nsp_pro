@@ -1,4 +1,3 @@
-
 variable "project_name" {
   description = "Name of the project."
   type        = string
@@ -52,4 +51,22 @@ variable "vpc_link_endpoint_url" {
 variable "api_gateway_stage_name" {
   description = "Stage name for the API Gateway."
   type        = string
+}
+
+variable "frontend_domain_name" {
+  description = "Custom domain name for the frontend (optional)"
+  type        = string
+  default     = null
+}
+
+variable "frontend_certificate_arn" {
+  description = "SSL certificate ARN for frontend CloudFront (optional)"
+  type        = string
+  default     = null
+}
+
+variable "frontend_route53_zone_id" {
+  description = "Route53 hosted zone ID for frontend domain (optional)"
+  type        = string
+  default     = null
 }
