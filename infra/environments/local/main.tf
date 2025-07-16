@@ -37,3 +37,63 @@ module "frontend" {
 
   depends_on = [module.api_gateway]
 }
+
+# Environment-specific SSM parameters for frontend configuration
+resource "aws_ssm_parameter" "frontend_config" {
+  name = "/${var.project_name}/development/frontend/config"
+  type = "String"
+  value = jsonencode({
+    aws_region                  = var.aws_region
+    cognito_user_pool_id        = var.cognito_user_pool_id
+    cognito_user_pool_client_id = var.cognito_user_pool_clients_ids[0]
+    api_gateway_domain          = module.api_gateway.api_endpoint
+    environment                 = "development"
+    cloudfront_domain           = module.frontend.cloudfront_domain_name
+    s3_bucket                   = module.frontend.s3_bucket_id
+    website_url                 = module.frontend.website_url
+  })
+
+  description = "Frontend configuration for ${var.project_name} development environment"
+
+  tags = {
+    Environment = "development"
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+  }
+
+  depends_on = [module.frontend, module.api_gateway]
+}
+
+# SSM Parameter for CloudFront distribution ID (useful for deployment scripts)
+resource "aws_ssm_parameter" "frontend_cloudfront_distribution_id" {
+  name  = "/${var.project_name}/development/frontend/cloudfront-distribution-id"
+  type  = "String"
+  value = module.frontend.cloudfront_distribution_id
+
+  description = "CloudFront distribution ID for ${var.project_name} development environment"
+
+  tags = {
+    Environment = "development"
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+  }
+
+  depends_on = [module.frontend]
+}
+
+# SSM Parameter for S3 bucket name (useful for deployment scripts)
+resource "aws_ssm_parameter" "frontend_s3_bucket_name" {
+  name  = "/${var.project_name}/development/frontend/s3-bucket-name"
+  type  = "String"
+  value = module.frontend.s3_bucket_id
+
+  description = "S3 bucket name for ${var.project_name} development environment"
+
+  tags = {
+    Environment = "development"
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+  }
+
+  depends_on = [module.frontend]
+}

@@ -65,11 +65,6 @@ output "deployment_secret_access_key" {
   sensitive   = true
 }
 
-output "frontend_config_ssm_parameter" {
-  description = "SSM parameter containing frontend configuration"
-  value       = aws_ssm_parameter.frontend_config.name
-}
-
 output "route53_record_name" {
   description = "Route53 record name (if created)"
   value       = var.domain_name != null && var.route53_zone_id != null ? aws_route53_record.frontend[0].name : null

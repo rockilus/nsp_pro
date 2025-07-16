@@ -66,3 +66,19 @@ output "frontend_deployment_info" {
   }
   sensitive = false
 }
+
+# SSM Parameter outputs
+output "frontend_config_ssm_parameter" {
+  description = "SSM parameter containing frontend configuration"
+  value       = aws_ssm_parameter.frontend_config.name
+}
+
+output "frontend_cloudfront_ssm_parameter" {
+  description = "SSM parameter containing CloudFront distribution ID"
+  value       = aws_ssm_parameter.frontend_cloudfront_distribution_id.name
+}
+
+output "frontend_s3_bucket_ssm_parameter" {
+  description = "SSM parameter containing S3 bucket name"
+  value       = aws_ssm_parameter.frontend_s3_bucket_name.name
+}

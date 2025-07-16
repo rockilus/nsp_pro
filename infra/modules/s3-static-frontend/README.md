@@ -10,7 +10,6 @@ This Terraform module deploys a static frontend (Next.js) to AWS S3 with CloudFr
 - **Custom Domain**: Optional custom domain support with SSL/TLS
 - **Route53 Integration**: Automatic DNS records for custom domains
 - **IAM Roles**: Deployment automation roles and policies
-- **SSM Parameters**: Configuration storage for frontend builds
 - **SPA Support**: Proper routing configuration for Single Page Applications
 
 ## Architecture
@@ -24,10 +23,12 @@ This Terraform module deploys a static frontend (Next.js) to AWS S3 with CloudFr
          │                        │                        │
          ▼                        ▼                        ▼
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   SSL/TLS       │    │   IAM Roles     │    │   SSM Params    │
-│   Certificate   │    │   (Deployment)  │    │   (Config)      │
+│   SSL/TLS       │    │   IAM Roles     │    │   Environment   │
+│   Certificate   │    │   (Deployment)  │    │   Configuration │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
+
+**Note**: This is a pure infrastructure module. Environment-specific configuration (SSM parameters, environment variables) are managed at the environment level (local/prod).
 
 ## Usage
 
@@ -142,7 +143,10 @@ module "frontend" {
 | deployment_role_arn | ARN of the deployment IAM role |
 | deployment_access_key_id | Access key ID for deployment user (sensitive) |
 | deployment_secret_access_key | Secret access key for deployment user (sensitive) |
-| frontend_config_ssm_parameter | SSM parameter containing frontend configuration |
+| route53_record_name | Route53 record name (if created) |
+| route53_record_fqdn | Route53 record FQDN (if created) |
+
+**Note**: Environment-specific configuration (SSM parameters) are created at the environment level and available through environment outputs.
 
 ## Next.js Configuration
 
