@@ -1,4 +1,3 @@
-
 variable "project_name" {
   description = "Name of the project."
   type        = string
@@ -24,15 +23,16 @@ variable "cors_allowed_origins" {
   type        = list(string)
 }
 
-variable "cognito_user_pool_id" {
-  description = "Cognito User Pool ID."
-  type        = string
-}
-
-variable "cognito_user_pool_clients_ids" {
-  description = "List of Cognito User Pool Client IDs."
-  type        = list(string)
-}
+# DEPRECATED: These variables are no longer needed as Cognito is managed by the module
+# variable "cognito_user_pool_id" {
+#   description = "Cognito User Pool ID."
+#   type        = string
+# }
+# 
+# variable "cognito_user_pool_clients_ids" {
+#   description = "List of Cognito User Pool Client IDs."
+#   type        = list(string)
+# }
 
 variable "vpc_link_id" {
   description = "VPC Link ID for API Gateway integration."
