@@ -82,9 +82,11 @@ resource "aws_acm_certificate" "main" {
   }
 
   tags = merge(local.common_tags, {
-    Name    = "${var.project_name}-${var.environment}-ssl-certificate"
-    Domain  = var.domain_name
-    Purpose = "SSL/TLS Security"
+    Name       = "${var.project_name}-${var.environment}-ssl-certificate"
+    Domain     = var.domain_name
+    Purpose    = "SSL/TLS Security"
+    Components = "Landing,Frontend,API"
+    Compliance = "Healthcare"
   })
 }
 
@@ -96,6 +98,8 @@ resource "aws_route53_record" "certificate_validation" {
       record = dvo.resource_record_value
       type   = dvo.resource_record_type
     }
+    # Filter to only include domains we expect for NSP Pro
+    if contains(local.certificate_domains, dvo.domain_name)
   }
 
   allow_overwrite = true
