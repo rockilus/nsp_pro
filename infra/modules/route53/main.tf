@@ -85,7 +85,7 @@ resource "aws_acm_certificate" "main" {
     Name       = "${var.project_name}-${var.environment}-ssl-certificate"
     Domain     = var.domain_name
     Purpose    = "SSL/TLS Security"
-    Components = "Landing,Frontend,API"
+    Components = "Landing Frontend API"
     Compliance = "Healthcare"
   })
 }

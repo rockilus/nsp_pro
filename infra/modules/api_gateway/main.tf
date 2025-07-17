@@ -274,7 +274,7 @@ resource "aws_api_gateway_domain_name" "custom" {
   count       = var.custom_domain_name != null ? 1 : 0
   domain_name = var.custom_domain_name
 
-  certificate_arn = var.certificate_arn
+  regional_certificate_arn = var.certificate_arn
 
   security_policy = "TLS_1_2" # Healthcare compliance requirement
   endpoint_configuration {

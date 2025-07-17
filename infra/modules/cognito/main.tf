@@ -104,6 +104,10 @@ resource "aws_cognito_user_pool" "main" {
     default_email_option = "CONFIRM_WITH_CODE"
   }
 
+  lifecycle {
+    ignore_changes = [schema]
+  }
+
   depends_on = [module.post_confirmation_lambda]
 }
 
