@@ -101,6 +101,9 @@ def initialize_environment() -> AppConfig:
             aws_secret_access_key = credentials.secret_key
             aws_session_token = credentials.token
 
+            if aws_session_token is None:
+                raise ValueError("AWS access key ID is not set.")
+
             # Set AWS credentials in environment variables for Pydantic
             os.environ["AWS_ACCESS_KEY_ID"] = aws_access_key_id
             os.environ["AWS_SECRET_ACCESS_KEY"] = aws_secret_access_key
