@@ -101,7 +101,7 @@ resource "aws_cloudfront_distribution" "frontend" {
       cookies {
         forward = "all"
       }
-      headers = ["*"]
+      #   headers = ["*"]
     }
 
     min_ttl     = 0
@@ -110,15 +110,15 @@ resource "aws_cloudfront_distribution" "frontend" {
   }
 
   # Price class
-  price_class = var.price_class
+  price_class = var.cloudfront_price_class
 
   # Geographic restrictions
   restrictions {
     geo_restriction {
-      restriction_type = "none"
+      restriction_type = "whitelist"
+      locations        = ["FR"] # ISO 3166-1 alpha-2 country code for France
     }
   }
-
   # SSL/TLS certificate configuration
   viewer_certificate {
     # Use custom SSL certificate if domain is provided

@@ -64,29 +64,31 @@ module "route53" {
   }
 }
 
-# module "frontend" {
-#   source = "../../modules/s3-static-frontend"
+module "frontend" {
+  source = "../../modules/s3-static-frontend"
 
-#   project_name                = var.project_name
-#   environment                 = "prod"
-#   aws_region                  = var.aws_region
-#   api_gateway_domain          = var.api_gateway_domain
-#   cognito_user_pool_id        = module.cognito.user_pool_id
-#   cognito_user_pool_client_id = module.cognito.user_pool_client_id
+  project_name                = var.project_name
+  environment                 = "prod"
+  aws_region                  = var.aws_region
+  api_gateway_domain          = var.api_gateway_domain
+  cognito_user_pool_id        = module.cognito.user_pool_id
+  cognito_user_pool_client_id = module.cognito.user_pool_client_id
 
-#   # Use the specific frontend domain, not derived from hosted zone
-#   domain_name     = var.frontend_domain_name # app.rockilus.com
-#   certificate_arn = module.route53.certificate_arn
-#   route53_zone_id = module.route53.hosted_zone_id
+  # Use the specific frontend domain, not derived from hosted zone
+  domain_name     = var.frontend_domain_name # app.rockilus.com
+  certificate_arn = module.route53.certificate_arn
+  route53_zone_id = module.route53.hosted_zone_id
 
-#   tags = {
-#     Environment = "prod"
-#     Owner       = "DevOps Team"
-#     Compliance  = "Healthcare"
-#   }
+  cloudfront_price_class = var.cloudfront_price_class
 
-#   depends_on = [module.api_gateway, module.cognito, module.route53]
-# }
+  tags = {
+    Environment = "prod"
+    Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
+  }
+
+  depends_on = [module.api_gateway, module.cognito, module.route53]
+}
 
 # Environment-specific SSM parameters for frontend configuration
 # resource "aws_ssm_parameter" "frontend_config" {

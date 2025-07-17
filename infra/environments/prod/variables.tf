@@ -98,16 +98,14 @@ variable "api_gateway_domain_name" {
   }
 }
 
-# DEPRECATED: The following variables are now managed by the Route 53 module
-# When frontend_domain_name is provided, these are automatically handled
-variable "frontend_certificate_arn" {
-  description = "DEPRECATED: SSL certificate ARN is now managed by Route 53 module. Use frontend_domain_name instead."
+variable "cloudfront_price_class" {
+  description = "CloudFront price class for the local environment"
   type        = string
-  default     = null
-}
+  default     = "PriceClass_100"
 
-variable "frontend_route53_zone_id" {
-  description = "DEPRECATED: Route53 hosted zone ID is now managed by Route 53 module. Use frontend_domain_name instead."
-  type        = string
-  default     = null
+  validation {
+    condition     = contains(["PriceClass_All", "PriceClass_200", "PriceClass_100"], var.cloudfront_price_class)
+    error_message = "Price class must be one of: PriceClass_All, PriceClass_200, PriceClass_100."
+  }
+
 }

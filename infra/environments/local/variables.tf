@@ -70,14 +70,4 @@ variable "frontend_domain_name" {
   default     = null
 }
 
-variable "frontend_certificate_arn" {
-  description = "SSL certificate ARN for frontend CloudFront (optional)"
-  type        = string
-  default     = null
-}
 
-variable "frontend_route53_zone_id" {
-  description = "Route53 hosted zone ID for frontend domain (optional)"
-  type        = string
-  default     = null
-}

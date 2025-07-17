@@ -58,7 +58,7 @@ variable "tags" {
   default     = {}
 }
 
-variable "price_class" {
+variable "cloudfront_price_class" {
   description = "CloudFront price class"
   type        = string
   default     = "PriceClass_100"
@@ -67,7 +67,7 @@ variable "price_class" {
       "PriceClass_All",
       "PriceClass_200",
       "PriceClass_100"
-    ], var.price_class)
+    ], var.cloudfront_price_class)
     error_message = "Price class must be one of: PriceClass_All, PriceClass_200, PriceClass_100."
   }
 }

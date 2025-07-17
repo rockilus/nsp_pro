@@ -25,10 +25,9 @@ module "frontend" {
   cognito_user_pool_id        = var.cognito_user_pool_id
   cognito_user_pool_client_id = var.cognito_user_pool_clients_ids[0]
 
+
   # Optional custom domain configuration
-  domain_name     = var.frontend_domain_name
-  certificate_arn = var.frontend_certificate_arn
-  route53_zone_id = var.frontend_route53_zone_id
+  domain_name = var.frontend_domain_name
 
   tags = {
     Environment = "development"
