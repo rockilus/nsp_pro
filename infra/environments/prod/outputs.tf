@@ -121,13 +121,13 @@ output "ssl_certificate_status" {
 
 output "dns_deployment_info" {
   description = "DNS and SSL deployment information"
-  value = var.frontend_domain_name != null ? {
+  value = {
     domain_name        = module.route53.domain_name
     hosted_zone_id     = module.route53.hosted_zone_id
     name_servers       = module.route53.name_servers
     certificate_arn    = module.route53.certificate_arn
     certificate_status = module.route53.certificate_status
-    health_check_id    = module.route53.health_check_id
-  } : null
+    # health_check_id is not available in current Route53 module configuration
+  }
   sensitive = false
 }

@@ -65,21 +65,32 @@ variable "api_gateway_domain" {
   }
 }
 
-variable "frontend_domain_name" {
-  description = "Custom domain name for the frontend application (e.g., 'rockilus.com'). When provided, Route 53 hosted zone and SSL certificate will be automatically managed."
+variable "hosted_zone_domain" {
+  description = "The root domain for the hosted zone (e.g., rockilus.com)"
   type        = string
-  default     = null
+  default     = "rockilus.com"
 
   validation {
-    condition     = var.frontend_domain_name == null || can(regex("^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\\.[a-zA-Z]{2,}$", var.frontend_domain_name))
-    error_message = "Frontend domain name must be a valid domain format (e.g., 'example.com')."
+    condition     = can(regex("^[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", var.hosted_zone_domain))
+    error_message = "Hosted zone domain must be a valid root domain format for healthcare compliance."
+  }
+}
+
+variable "frontend_domain_name" {
+  description = "Custom domain name for the frontend application (e.g., app.rockilus.com)"
+  type        = string
+  default     = "app.rockilus.com"
+
+  validation {
+    condition     = var.frontend_domain_name == null || can(regex("^app\\.", var.frontend_domain_name))
+    error_message = "Frontend domain should follow the pattern 'app.domain.com' for security and organization."
   }
 }
 
 variable "api_gateway_domain_name" {
-  description = "Custom domain name for the API Gateway (e.g., api.rockilus.com). Leave null to use default AWS domain."
+  description = "Custom domain name for the API Gateway (e.g., api.rockilus.com)"
   type        = string
-  default     = null
+  default     = "api.rockilus.com"
 
   validation {
     condition     = var.api_gateway_domain_name == null || can(regex("^api\\.", var.api_gateway_domain_name))

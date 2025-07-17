@@ -18,25 +18,25 @@ output "name_servers" {
   value       = aws_route53_zone.main.name_servers
 }
 
-# output "certificate_arn" {
-#   description = "The ARN of the SSL certificate"
-#   value       = aws_acm_certificate_validation.main.certificate_arn
-# }
+output "certificate_arn" {
+  description = "The ARN of the SSL certificate"
+  value       = aws_acm_certificate_validation.main.certificate_arn
+}
 
-# output "certificate_domain_name" {
-#   description = "The domain name for which the certificate is issued"
-#   value       = aws_acm_certificate.main.domain_name
-# }
+output "certificate_domain_name" {
+  description = "The domain name for which the certificate is issued"
+  value       = aws_acm_certificate.main.domain_name
+}
 
-# output "certificate_status" {
-#   description = "Status of the certificate"
-#   value       = aws_acm_certificate.main.status
-# }
+output "certificate_status" {
+  description = "Status of the certificate"
+  value       = aws_acm_certificate.main.status
+}
 
-# output "certificate_subject_alternative_names" {
-#   description = "List of FQDNs covered by the certificate"
-#   value       = aws_acm_certificate.main.subject_alternative_names
-# }
+output "certificate_subject_alternative_names" {
+  description = "List of FQDNs covered by the certificate"
+  value       = aws_acm_certificate.main.subject_alternative_names
+}
 
 # output "dnssec_status" {
 #   description = "DNSSEC status information"

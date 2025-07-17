@@ -89,30 +89,36 @@ resource "aws_acm_certificate" "main" {
 }
 
 # DNS Validation Records for SSL Certificate
-# resource "aws_route53_record" "certificate_validation" {
-#   count = length(aws_acm_certificate.main.domain_validation_options)
+resource "aws_route53_record" "certificate_validation" {
+  for_each = {
+    for dvo in aws_acm_certificate.main.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
 
-#   allow_overwrite = true
-#   name            = aws_acm_certificate.main.domain_validation_options[count.index].resource_record_name
-#   records         = [aws_acm_certificate.main.domain_validation_options[count.index].resource_record_value]
-#   ttl             = 60
-#   type            = aws_acm_certificate.main.domain_validation_options[count.index].resource_record_type
-#   zone_id         = aws_route53_zone.main.zone_id
+  allow_overwrite = true
+  name            = each.value.name
+  records         = [each.value.record]
+  ttl             = 60
+  type            = each.value.type
+  zone_id         = aws_route53_zone.main.zone_id
 
-#   depends_on = [aws_route53_zone.main]
-# }
+  depends_on = [aws_route53_zone.main]
+}
 
 # Certificate Validation
-# resource "aws_acm_certificate_validation" "main" {
-#   certificate_arn         = aws_acm_certificate.main.arn
-#   validation_record_fqdns = [for record in aws_route53_record.certificate_validation : record.fqdn]
+resource "aws_acm_certificate_validation" "main" {
+  certificate_arn         = aws_acm_certificate.main.arn
+  validation_record_fqdns = [for record in aws_route53_record.certificate_validation : record.fqdn]
 
-#   timeouts {
-#     create = "10m"
-#   }
+  timeouts {
+    create = "10m"
+  }
 
-#   depends_on = [aws_route53_record.certificate_validation]
-# }
+  depends_on = [aws_route53_record.certificate_validation]
+}
 
 # Health Check for Primary Domain (optional)
 # resource "aws_route53_health_check" "main" {
