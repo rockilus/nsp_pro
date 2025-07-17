@@ -300,7 +300,14 @@ resource "aws_api_gateway_base_path_mapping" "custom" {
   depends_on = [aws_api_gateway_domain_name.custom, aws_api_gateway_stage.main]
 }
 
-# DNS Record for Custom Domain (conditional)
+# Data source to reliably fetch custom domain information
+data "aws_api_gateway_domain_name" "custom" {
+  count       = var.custom_domain_name != null && var.hosted_zone_id != null ? 1 : 0
+  domain_name = var.custom_domain_name
+  depends_on  = [aws_api_gateway_domain_name.custom]
+}
+
+# DNS Record for Custom Domain (conditional) - Updated to use data source
 resource "aws_route53_record" "api_domain" {
   count   = var.custom_domain_name != null && var.hosted_zone_id != null ? 1 : 0
   zone_id = var.hosted_zone_id
@@ -308,12 +315,12 @@ resource "aws_route53_record" "api_domain" {
   type    = "A"
 
   alias {
-    name                   = aws_api_gateway_domain_name.custom[0].cloudfront_domain_name
-    zone_id                = aws_api_gateway_domain_name.custom[0].cloudfront_zone_id
+    name                   = data.aws_api_gateway_domain_name.custom[0].regional_domain_name
+    zone_id                = data.aws_api_gateway_domain_name.custom[0].regional_zone_id
     evaluate_target_health = false
   }
 
-  depends_on = [aws_api_gateway_domain_name.custom]
+  depends_on = [aws_api_gateway_domain_name.custom, data.aws_api_gateway_domain_name.custom]
 }
 
 
