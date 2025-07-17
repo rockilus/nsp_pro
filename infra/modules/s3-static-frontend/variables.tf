@@ -20,7 +20,13 @@ variable "domain_name" {
 }
 
 variable "certificate_arn" {
-  description = "SSL certificate ARN for CloudFront (required if domain_name is provided)"
+  description = "SSL certificate ARN for CloudFront (deprecated, use cloudfront_certificate_arn)"
+  type        = string
+  default     = null
+}
+
+variable "cloudfront_certificate_arn" {
+  description = "CloudFront SSL certificate ARN (must be in us-east-1)"
   type        = string
   default     = null
 }

@@ -19,8 +19,13 @@ output "name_servers" {
 }
 
 output "certificate_arn" {
-  description = "The ARN of the SSL certificate"
+  description = "The ARN of the regional SSL certificate (for API Gateway, ALB, etc.)"
   value       = aws_acm_certificate_validation.main.certificate_arn
+}
+
+output "cloudfront_certificate_arn" {
+  description = "The ARN of the CloudFront SSL certificate (US-East-1)"
+  value       = aws_acm_certificate_validation.cloudfront.certificate_arn
 }
 
 output "certificate_domain_name" {
@@ -29,8 +34,13 @@ output "certificate_domain_name" {
 }
 
 output "certificate_status" {
-  description = "Status of the certificate"
+  description = "Status of the regional certificate"
   value       = aws_acm_certificate.main.status
+}
+
+output "cloudfront_certificate_status" {
+  description = "Status of the CloudFront certificate"
+  value       = aws_acm_certificate.cloudfront.status
 }
 
 output "certificate_subject_alternative_names" {

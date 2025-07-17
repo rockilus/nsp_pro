@@ -121,13 +121,13 @@ resource "aws_cloudfront_distribution" "frontend" {
   }
   # SSL/TLS certificate configuration
   viewer_certificate {
-    # Use custom SSL certificate if domain is provided
-    acm_certificate_arn      = var.certificate_arn
-    ssl_support_method       = var.certificate_arn != null ? "sni-only" : null
-    minimum_protocol_version = var.certificate_arn != null ? "TLSv1.2_2021" : null
+    # Use CloudFront-specific certificate if provided, otherwise fall back to certificate_arn
+    acm_certificate_arn      = var.cloudfront_certificate_arn != null ? var.cloudfront_certificate_arn : var.certificate_arn
+    ssl_support_method       = var.cloudfront_certificate_arn != null || var.certificate_arn != null ? "sni-only" : null
+    minimum_protocol_version = var.cloudfront_certificate_arn != null || var.certificate_arn != null ? "TLSv1.2_2021" : null
 
     # Use CloudFront default certificate if no custom domain
-    cloudfront_default_certificate = var.certificate_arn == null ? true : null
+    cloudfront_default_certificate = var.cloudfront_certificate_arn == null && var.certificate_arn == null ? true : null
   }
 
   # Custom error responses for SPA routing

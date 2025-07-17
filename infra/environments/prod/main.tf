@@ -35,6 +35,10 @@ module "api_gateway" {
 module "route53" {
   source = "../../modules/route53"
 
+  providers = {
+    aws.us_east_1 = aws.us_east_1
+  }
+
   project_name = var.project_name
   environment  = "prod"
   domain_name  = var.hosted_zone_domain # Use hosted zone domain, not frontend domain
@@ -75,9 +79,10 @@ module "frontend" {
   cognito_user_pool_client_id = module.cognito.user_pool_client_id
 
   # Use the specific frontend domain, not derived from hosted zone
-  domain_name     = var.frontend_domain_name # app.rockilus.com
-  certificate_arn = module.route53.certificate_arn
-  route53_zone_id = module.route53.hosted_zone_id
+  domain_name                = var.frontend_domain_name                  # app.rockilus.com
+  certificate_arn            = module.route53.certificate_arn            # Regional certificate (for backward compatibility)
+  cloudfront_certificate_arn = module.route53.cloudfront_certificate_arn # CloudFront certificate (US-East-1)
+  route53_zone_id            = module.route53.hosted_zone_id
 
   cloudfront_price_class = var.cloudfront_price_class
 

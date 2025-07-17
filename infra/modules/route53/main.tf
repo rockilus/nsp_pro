@@ -1,10 +1,9 @@
 # Route 53 Hosted Zone Module
 terraform {
-  #   required_version = ">= 1.0"
   required_providers {
     aws = {
-      source = "hashicorp/aws"
-      #   version = "~> 5.0"
+      source                = "hashicorp/aws"
+      configuration_aliases = [aws.us_east_1]
     }
   }
 }
@@ -66,7 +65,7 @@ resource "aws_route53_zone" "main" {
 #   zone_id                  = aws_route53_zone.main.zone_id
 # }
 
-# SSL Certificate (managed by AWS Certificate Manager)
+# SSL Certificate for Regional Services (EU-West-3)
 resource "aws_acm_certificate" "main" {
   domain_name               = var.domain_name
   subject_alternative_names = var.certificate_subject_alternative_names
@@ -85,8 +84,35 @@ resource "aws_acm_certificate" "main" {
     Name       = "${var.project_name}-${var.environment}-ssl-certificate"
     Domain     = var.domain_name
     Purpose    = "SSL/TLS Security"
-    Components = "Landing Frontend API"
+    Components = "API Gateway ALB Regional Services"
     Compliance = "Healthcare"
+    Region     = "eu-west-3"
+  })
+}
+
+# SSL Certificate for CloudFront (US-East-1)
+resource "aws_acm_certificate" "cloudfront" {
+  provider                  = aws.us_east_1
+  domain_name               = var.domain_name
+  subject_alternative_names = var.certificate_subject_alternative_names
+  validation_method         = "DNS"
+
+  # Certificate transparency logging for security compliance
+  options {
+    certificate_transparency_logging_preference = var.enable_certificate_transparency_logging ? "ENABLED" : "DISABLED"
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  tags = merge(local.common_tags, {
+    Name       = "${var.project_name}-${var.environment}-cloudfront-ssl-certificate"
+    Domain     = var.domain_name
+    Purpose    = "CloudFront SSL/TLS Security"
+    Components = "CloudFront CDN"
+    Compliance = "Healthcare"
+    Region     = "us-east-1"
   })
 }
 
@@ -112,9 +138,22 @@ resource "aws_route53_record" "certificate_validation" {
   depends_on = [aws_route53_zone.main]
 }
 
-# Certificate Validation
+# Certificate Validation (Regional)
 resource "aws_acm_certificate_validation" "main" {
   certificate_arn         = aws_acm_certificate.main.arn
+  validation_record_fqdns = [for record in aws_route53_record.certificate_validation : record.fqdn]
+
+  timeouts {
+    create = "10m"
+  }
+
+  depends_on = [aws_route53_record.certificate_validation]
+}
+
+# Certificate Validation (CloudFront)
+resource "aws_acm_certificate_validation" "cloudfront" {
+  provider                = aws.us_east_1
+  certificate_arn         = aws_acm_certificate.cloudfront.arn
   validation_record_fqdns = [for record in aws_route53_record.certificate_validation : record.fqdn]
 
   timeouts {
