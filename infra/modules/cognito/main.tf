@@ -1,7 +1,6 @@
 # Cognito User Pool
 resource "aws_cognito_user_pool" "main" {
-  #   name = "${var.project_name}-user-pool-${var.environment}"
-  name = "User pool - jrdglm"
+  name = "${var.project_name}-user-pool-${var.environment}"
 
   # User attributes configuration
   username_attributes = ["email"]
@@ -105,7 +104,8 @@ resource "aws_cognito_user_pool" "main" {
   }
 
   lifecycle {
-    ignore_changes = [schema]
+    prevent_destroy = true
+    ignore_changes  = [schema]
   }
 
   depends_on = [module.post_confirmation_lambda]
@@ -113,21 +113,20 @@ resource "aws_cognito_user_pool" "main" {
 
 # Cognito User Pool Client
 resource "aws_cognito_user_pool_client" "main" {
-  #   name         = "${var.project_name}-app-client-${var.environment}"
-  name         = "rockilus-cognito-email"
+  name         = "${var.project_name}-app-client-${var.environment}"
   user_pool_id = aws_cognito_user_pool.main.id
 
-  # Auth flows
+  # Auth flows - Updated for SPA
   explicit_auth_flows = [
     "ALLOW_USER_AUTH",
     "ALLOW_USER_SRP_AUTH",
     "ALLOW_REFRESH_TOKEN_AUTH"
   ]
 
-  # Token validity
+  # Token validity - Adjusted for SPA security best practices
   access_token_validity  = 60 # 1 hour
   id_token_validity      = 60 # 1 hour
-  refresh_token_validity = 5  # 30 days
+  refresh_token_validity = 30 # 30 days (typical for SPA)
   auth_session_validity  = 3
 
   token_validity_units {
@@ -139,34 +138,43 @@ resource "aws_cognito_user_pool_client" "main" {
   # Prevent user existence errors
   prevent_user_existence_errors = "ENABLED"
 
-  # Read and write attributes
-  #   read_attributes = [
-  #     "email",
-  #     "email_verified",
-  #     "given_name",
-  #     "family_name"
-  #   ]
+  # Required attributes for sign-up
+  read_attributes = [
+    "email",
+    "email_verified",
+    "given_name",
+    "family_name"
+  ]
 
-  #   write_attributes = [
-  #     "email",
-  #     "given_name",
-  #     "family_name"
-  #   ]
+  write_attributes = [
+    "email",
+    "given_name",
+    "family_name"
+  ]
 
-  # Security
-  #   generate_secret = false # For frontend apps, should be false
+  # Security - no client secret for single-page apps
+  # generate_secret = false
 
-  allowed_oauth_flows                           = ["code"]
-  allowed_oauth_flows_user_pool_client          = true
-  allowed_oauth_scopes                          = ["email", "openid", "phone"]
-  callback_urls                                 = ["http://localhost:3000"]
-  client_secret                                 = null
-  default_redirect_uri                          = null
-  enable_propagate_additional_user_context_data = false
+  # OAuth configuration for SPA
+  allowed_oauth_flows                  = ["code"]
+  allowed_oauth_flows_user_pool_client = true
+  # allowed_oauth_scopes                 = ["email", "openid", "profile"]
+  allowed_oauth_scopes         = ["email", "openid", "phone"]
+  callback_urls                = ["https://${var.frontend_domain_name}/fr/plan/workers"]
+  logout_urls                  = ["https://${var.frontend_domain_name}/fr/plan/workers"]
+  supported_identity_providers = ["COGNITO"]
+
+  # SPA-specific security settings
   enable_token_revocation                       = true
-  logout_urls                                   = ["http://localhost:3000"]
-  supported_identity_providers                  = ["COGNITO"]
+  enable_propagate_additional_user_context_data = false
 
+}
+
+# Cognito User Pool Domain - Required for hosted UI
+resource "aws_cognito_user_pool_domain" "main" {
+  # domain       = var.cognito_domain_prefix != null ? var.cognito_domain_prefix : "${var.project_name}-${var.environment}"
+  domain       = "eu-west-3pcg4vschn"
+  user_pool_id = aws_cognito_user_pool.main.id
 }
 
 # Post-confirmation Lambda module

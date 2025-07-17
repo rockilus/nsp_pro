@@ -6,6 +6,8 @@ module "cognito" {
   api_gateway_url           = var.api_gateway_domain_name != null ? "https://${var.api_gateway_domain_name}" : var.api_gateway_domain
   aws_region                = var.aws_region
   api_gateway_ssm_parameter = module.api_gateway.backend_api_key_parameter
+  frontend_domain_name      = var.frontend_domain_name
+  cognito_domain_prefix     = null # Use default: project_name-environment
 }
 
 module "api_gateway" {

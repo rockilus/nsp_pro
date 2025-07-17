@@ -12,7 +12,7 @@
 		"test:watch": "jest --watch",
 		"test:coverage": "jest --coverage",
 		"test:ci": "jest --ci --coverage --watchAll=false",
-		"deploy:s3": "aws s3 sync out/ s3://your-bucket-name --delete",
+		"deploy:s3": "aws s3 sync out/ s3://rockilus-frontend-prod --delete --profile felipe_kharaba",
 		"deploy": "npm run build:static && npm run deploy:s3"
 	},
 	"dependencies": {

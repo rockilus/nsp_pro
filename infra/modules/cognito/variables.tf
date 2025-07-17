@@ -23,3 +23,14 @@ variable "api_gateway_ssm_parameter" {
   type        = any
   default     = null
 }
+
+variable "frontend_domain_name" {
+  description = "Frontend domain name for Cognito OAuth redirect URLs"
+  type        = string
+}
+
+variable "cognito_domain_prefix" {
+  description = "Domain prefix for Cognito hosted UI"
+  type        = string
+  default     = null
+}

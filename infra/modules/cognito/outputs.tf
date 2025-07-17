@@ -19,6 +19,17 @@ output "user_pool_endpoint" {
 }
 
 output "user_pool_domain" {
-  description = "Domain of the user pool"
+  description = "Domain name of the user pool"
   value       = aws_cognito_user_pool.main.domain
 }
+
+output "cognito_hosted_ui_url" {
+  description = "URL of the Cognito hosted UI"
+  value       = "https://${aws_cognito_user_pool_domain.main.domain}.auth.${var.aws_region}.amazoncognito.com"
+}
+
+output "cognito_domain" {
+  description = "Cognito domain name"
+  value       = aws_cognito_user_pool_domain.main.domain
+}
+
