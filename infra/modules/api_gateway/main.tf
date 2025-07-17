@@ -269,5 +269,52 @@ locals {
   effective_account_id = var.environment == "prod" ? data.aws_caller_identity.current[0].account_id : var.aws_account_id
 }
 
+# Custom Domain Name (conditional)
+resource "aws_api_gateway_domain_name" "custom" {
+  count       = var.custom_domain_name != null ? 1 : 0
+  domain_name = var.custom_domain_name
+
+  certificate_arn = var.certificate_arn
+
+  security_policy = "TLS_1_2" # Healthcare compliance requirement
+  endpoint_configuration {
+    types = [var.endpoint_type]
+  }
+
+  tags = {
+    Environment = var.environment
+    Project     = var.project_name
+    Purpose     = "API Gateway Custom Domain"
+    Compliance  = "Healthcare"
+    ManagedBy   = "Terraform"
+  }
+}
+
+# Base Path Mapping
+resource "aws_api_gateway_base_path_mapping" "custom" {
+  count       = var.custom_domain_name != null ? 1 : 0
+  api_id      = aws_api_gateway_rest_api.main.id
+  stage_name  = aws_api_gateway_stage.main.stage_name
+  domain_name = aws_api_gateway_domain_name.custom[0].domain_name
+
+  depends_on = [aws_api_gateway_domain_name.custom, aws_api_gateway_stage.main]
+}
+
+# DNS Record for Custom Domain (conditional)
+resource "aws_route53_record" "api_domain" {
+  count   = var.custom_domain_name != null && var.hosted_zone_id != null ? 1 : 0
+  zone_id = var.hosted_zone_id
+  name    = var.custom_domain_name
+  type    = "A"
+
+  alias {
+    name                   = aws_api_gateway_domain_name.custom[0].cloudfront_domain_name
+    zone_id                = aws_api_gateway_domain_name.custom[0].cloudfront_zone_id
+    evaluate_target_health = false
+  }
+
+  depends_on = [aws_api_gateway_domain_name.custom]
+}
+
 
 

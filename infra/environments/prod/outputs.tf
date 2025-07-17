@@ -9,6 +9,16 @@ output "api_gateway_id" {
   value       = module.api_gateway.api_id
 }
 
+output "api_gateway_custom_domain_name" {
+  description = "Custom domain name for the API Gateway"
+  value       = module.api_gateway.custom_domain_name
+}
+
+output "api_gateway_custom_domain_cloudfront" {
+  description = "CloudFront domain for API Gateway custom domain"
+  value       = module.api_gateway.custom_domain_cloudfront_domain
+}
+
 # Cognito outputs
 output "cognito_user_pool_id" {
   description = "ID of the Cognito User Pool"

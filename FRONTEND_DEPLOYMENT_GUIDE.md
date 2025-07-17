@@ -462,3 +462,221 @@ aws s3api list-object-versions \
 - [Terraform AWS Provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
 
 For issues or questions, check the troubleshooting section above or consult the AWS documentation.
+
+## API Gateway Custom Domain Configuration
+
+### Overview
+
+The NSP Pro API Gateway now supports custom domain names for professional, healthcare-compliant API endpoints. This feature provides:
+
+- **Custom API URLs**: `https://api.rockilus.com` instead of AWS-generated URLs
+- **Security**: HTTPS-only with TLS 1.2+ and proper SSL certificates
+- **Healthcare Compliance**: DNSSEC, certificate transparency, and audit logging
+- **Brand Consistency**: Matches your frontend domain structure
+
+### Configuration Options
+
+#### Option 1: Use Default AWS Domain (Simple)
+
+```bash
+# Deploy without custom domain
+terraform apply
+# API will be available at: https://{api-id}.execute-api.{region}.amazonaws.com/{stage}
+```
+
+#### Option 2: Use Custom Domain (Recommended for Production)
+
+```bash
+# Configure custom domain in terraform.tfvars
+api_gateway_domain_name = "api.rockilus.com"
+
+# Deploy infrastructure
+terraform apply
+# API will be available at: https://api.rockilus.com
+```
+
+### Custom Domain Setup Process
+
+#### 1. Configure Variables
+
+In `infra/environments/prod/terraform.tfvars`:
+
+```hcl
+# Main domain for Route53 hosted zone
+frontend_domain_name = "rockilus.com"
+
+# API Gateway custom domain
+api_gateway_domain_name = "api.rockilus.com"
+```
+
+#### 2. Deploy Infrastructure
+
+```bash
+cd infra/environments/prod
+
+# Validate configuration
+terraform plan
+
+# Deploy Route53 and SSL certificates first
+terraform apply -target=module.route53
+
+# Deploy API Gateway with custom domain
+terraform apply
+```
+
+#### 3. Update DNS at Registrar
+
+```bash
+# Get Route53 name servers
+terraform output route53_name_servers
+
+# Update these at your domain registrar (e.g., GoDaddy, Cloudflare)
+# Example output:
+# [
+#   "ns-123.awsdns-12.com",
+#   "ns-456.awsdns-45.net", 
+#   "ns-789.awsdns-78.org",
+#   "ns-012.awsdns-01.co.uk"
+# ]
+```
+
+#### 4. Verify Domain Configuration
+
+```bash
+# Check API Gateway endpoint
+terraform output api_gateway_endpoint
+
+# Test SSL certificate
+curl -I https://api.rockilus.com
+
+# Check DNS resolution
+dig api.rockilus.com A
+```
+
+### Security Features
+
+#### Healthcare Compliance
+
+- **TLS 1.2+ Minimum**: Enforced at API Gateway level
+- **SSL Certificate Management**: Automatic provisioning and renewal
+- **Certificate Transparency**: Enabled for audit compliance
+- **DNSSEC**: DNS security for authenticity validation
+- **Query Logging**: DNS queries logged to CloudWatch for security analysis
+
+#### API Security Headers
+
+The custom domain configuration automatically includes:
+
+- **HTTPS Enforcement**: All HTTP requests redirected to HTTPS
+- **Security Headers**: Proper CORS and security response headers
+- **Certificate Validation**: DNS-based certificate validation
+- **Regional Endpoints**: Optimized for performance and compliance
+
+### Architecture Integration
+
+```
+Client Request (https://api.rockilus.com)
+        ↓
+Route53 DNS Resolution (A record)
+        ↓
+API Gateway Custom Domain
+        ↓
+SSL Certificate (*.rockilus.com)
+        ↓
+API Gateway REST API
+        ↓
+VPC Link (Production) / Internet (Local)
+        ↓
+Backend FastAPI Service
+```
+
+### Monitoring and Operations
+
+#### API Gateway Metrics
+
+```bash
+# Get custom domain information
+terraform output api_gateway_custom_domain_name
+terraform output api_gateway_custom_domain_cloudfront
+
+# Monitor API Gateway metrics in CloudWatch
+aws cloudwatch get-metric-statistics \
+  --namespace AWS/ApiGateway \
+  --metric-name Count \
+  --dimensions Name=ApiName,Value=rockilus-api-gateway-prod
+```
+
+#### SSL Certificate Monitoring
+
+```bash
+# Check certificate status
+aws acm describe-certificate \
+  --certificate-arn $(terraform output -raw ssl_certificate_arn)
+
+# Monitor certificate expiration (ACM auto-renews)
+aws acm list-certificates \
+  --certificate-statuses ISSUED \
+  --includes extendedKeyUsage=TLS_WEB_SERVER_AUTHENTICATION
+```
+
+### Troubleshooting
+
+#### Common Issues
+
+**1. DNS Not Resolving to Custom Domain**
+
+```bash
+# Check name servers are updated at registrar
+dig NS rockilus.com
+
+# Should match Route53 name servers
+terraform output route53_name_servers
+
+# Check A record for API domain
+dig api.rockilus.com A
+```
+
+**2. SSL Certificate Validation Issues**
+
+```bash
+# Check certificate validation status
+aws acm describe-certificate \
+  --certificate-arn $(terraform output -raw ssl_certificate_arn) \
+  --query 'Certificate.{Status:Status,DomainValidationOptions:DomainValidationOptions}'
+
+# Verify DNS validation records exist
+aws route53 list-resource-record-sets \
+  --hosted-zone-id $(terraform output -raw route53_hosted_zone_id) \
+  --query 'ResourceRecordSets[?Type==`CNAME`]'
+```
+
+**3. API Gateway Custom Domain Not Working**
+
+```bash
+# Check custom domain status
+aws apigateway get-domain-name --domain-name api.rockilus.com
+
+# Check base path mapping
+aws apigateway get-base-path-mappings --domain-name api.rockilus.com
+
+# Test direct API Gateway endpoint
+curl -I https://$(terraform output -raw api_gateway_id).execute-api.eu-west-3.amazonaws.com/dev_0/health
+```
+
+### Cost Considerations
+
+#### Route53 and API Gateway Costs
+
+- **Route53 Hosted Zone**: $0.50/month per domain
+- **DNS Queries**: $0.40/million queries
+- **API Gateway Custom Domain**: No additional cost
+- **SSL Certificate (ACM)**: Free with AWS Certificate Manager
+- **API Gateway Requests**: Standard API Gateway pricing applies
+
+#### Cost Optimization
+
+- **Regional Endpoints**: More cost-effective than Edge-optimized
+- **Caching**: Enable API Gateway caching for better performance and cost
+- **Request Filtering**: Use API Gateway request validation to reduce backend calls
+
+---

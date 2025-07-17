@@ -76,6 +76,17 @@ variable "frontend_domain_name" {
   }
 }
 
+variable "api_gateway_domain_name" {
+  description = "Custom domain name for the API Gateway (e.g., api.rockilus.com). Leave null to use default AWS domain."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.api_gateway_domain_name == null || can(regex("^api\\.", var.api_gateway_domain_name))
+    error_message = "API Gateway domain should follow the pattern 'api.domain.com' for security and organization."
+  }
+}
+
 # DEPRECATED: The following variables are now managed by the Route 53 module
 # When frontend_domain_name is provided, these are automatically handled
 variable "frontend_certificate_arn" {

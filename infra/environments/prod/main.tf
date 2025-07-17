@@ -3,7 +3,7 @@ module "cognito" {
 
   project_name              = var.project_name
   environment               = "prod"
-  api_gateway_url           = var.api_gateway_domain
+  api_gateway_url           = var.api_gateway_domain_name != null ? "https://${var.api_gateway_domain_name}" : var.api_gateway_domain
   aws_region                = var.aws_region
   api_gateway_ssm_parameter = module.api_gateway.backend_api_key_parameter
 }
@@ -22,6 +22,13 @@ module "api_gateway" {
   vpc_link_target_arns          = var.vpc_link_target_arns
   vpc_link_endpoint_url         = var.vpc_link_endpoint_url
   api_gateway_stage_name        = var.api_gateway_stage_name
+
+  # Custom domain configuration using Route53 module outputs
+  custom_domain_name = var.api_gateway_domain_name != null ? var.api_gateway_domain_name : null
+  certificate_arn    = var.api_gateway_domain_name != null ? module.route53.certificate_arn : null
+  hosted_zone_id     = var.api_gateway_domain_name != null ? module.route53.hosted_zone_id : null
+
+  depends_on = [module.route53]
 }
 
 # Route 53 DNS management with SSL certificates

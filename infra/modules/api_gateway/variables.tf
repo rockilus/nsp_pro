@@ -52,3 +52,43 @@ variable "api_gateway_stage_name" {
   description = "Stage name for the API Gateway."
   type        = string
 }
+
+# Custom Domain Configuration
+variable "custom_domain_name" {
+  description = "Custom domain name for the API Gateway (e.g., api.rockilus.com). Leave null to use default AWS domain."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.custom_domain_name == null || can(regex("^[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", var.custom_domain_name))
+    error_message = "Custom domain name must be a valid domain format for healthcare API security compliance."
+  }
+}
+
+variable "certificate_arn" {
+  description = "ARN of the SSL certificate for the custom domain. Required if custom_domain_name is provided."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.custom_domain_name == null || (var.certificate_arn != null && can(regex("^arn:aws:acm:", var.certificate_arn)))
+    error_message = "A valid ACM certificate ARN is required when using a custom domain for HTTPS security."
+  }
+}
+
+variable "hosted_zone_id" {
+  description = "Route 53 hosted zone ID for the custom domain. Required if custom_domain_name is provided."
+  type        = string
+  default     = null
+}
+
+variable "endpoint_type" {
+  description = "API Gateway endpoint configuration type"
+  type        = string
+  default     = "REGIONAL"
+
+  validation {
+    condition     = contains(["REGIONAL", "EDGE"], var.endpoint_type)
+    error_message = "Endpoint type must be REGIONAL or EDGE. REGIONAL is recommended for healthcare applications."
+  }
+}
