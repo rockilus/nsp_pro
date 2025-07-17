@@ -23,10 +23,7 @@ jest.mock('next/router', () => ({
   },
 }))
 
-// Mock SuperTokens
-jest.mock('supertokens-auth-react', () => ({
-  redirectToAuth: jest.fn(),
-}))
+
 
 // Global test utilities
 global.fetch = jest.fn()
