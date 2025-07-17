@@ -66,19 +66,26 @@ variable "api_gateway_domain" {
 }
 
 variable "frontend_domain_name" {
-  description = "Custom domain name for the frontend (optional)"
+  description = "Custom domain name for the frontend application (e.g., 'rockilus.com'). When provided, Route 53 hosted zone and SSL certificate will be automatically managed."
   type        = string
   default     = null
+
+  validation {
+    condition     = var.frontend_domain_name == null || can(regex("^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\\.[a-zA-Z]{2,}$", var.frontend_domain_name))
+    error_message = "Frontend domain name must be a valid domain format (e.g., 'example.com')."
+  }
 }
 
+# DEPRECATED: The following variables are now managed by the Route 53 module
+# When frontend_domain_name is provided, these are automatically handled
 variable "frontend_certificate_arn" {
-  description = "SSL certificate ARN for frontend CloudFront (optional)"
+  description = "DEPRECATED: SSL certificate ARN is now managed by Route 53 module. Use frontend_domain_name instead."
   type        = string
   default     = null
 }
 
 variable "frontend_route53_zone_id" {
-  description = "Route53 hosted zone ID for frontend domain (optional)"
+  description = "DEPRECATED: Route53 hosted zone ID is now managed by Route 53 module. Use frontend_domain_name instead."
   type        = string
   default     = null
 }

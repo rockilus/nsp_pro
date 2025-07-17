@@ -24,6 +24,36 @@ module "api_gateway" {
   api_gateway_stage_name        = var.api_gateway_stage_name
 }
 
+# Route 53 DNS management with SSL certificates
+module "route53" {
+  source = "../../modules/route53"
+
+  project_name = var.project_name
+  environment  = "prod"
+  domain_name  = var.frontend_domain_name != null ? var.frontend_domain_name : "rockilus.com"
+
+  # Security enhancements for healthcare compliance
+  enable_dnssec                           = true
+  enable_certificate_transparency_logging = true
+  enable_query_logging                    = true
+
+  # Multi-region health checks for high availability
+  health_check_regions = ["us-east-1", "us-west-2", "eu-west-1"]
+
+  # SSL certificate with wildcard support
+  certificate_subject_alternative_names = [
+    "*.rockilus.com",
+    "app.rockilus.com",
+    "api.rockilus.com"
+  ]
+
+  tags = {
+    Environment = "prod"
+    Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
+  }
+}
+
 module "frontend" {
   source = "../../modules/s3-static-frontend"
 
@@ -34,17 +64,18 @@ module "frontend" {
   cognito_user_pool_id        = module.cognito.user_pool_id
   cognito_user_pool_client_id = module.cognito.user_pool_client_id
 
-  # Optional custom domain configuration
-  domain_name     = var.frontend_domain_name
-  certificate_arn = var.frontend_certificate_arn
-  route53_zone_id = var.frontend_route53_zone_id
+  # Use Route 53 module outputs for domain configuration
+  domain_name     = var.frontend_domain_name != null ? "app.${module.route53.domain_name}" : null
+  certificate_arn = var.frontend_domain_name != null ? module.route53.certificate_arn : null
+  route53_zone_id = var.frontend_domain_name != null ? module.route53.hosted_zone_id : null
 
   tags = {
     Environment = "prod"
     Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
   }
 
-  depends_on = [module.api_gateway, module.cognito]
+  depends_on = [module.api_gateway, module.cognito, module.route53]
 }
 
 # Environment-specific SSM parameters for frontend configuration
@@ -61,6 +92,10 @@ resource "aws_ssm_parameter" "frontend_config" {
     cloudfront_domain           = module.frontend.cloudfront_domain_name
     s3_bucket                   = module.frontend.s3_bucket_id
     website_url                 = module.frontend.website_url
+    # Route 53 configuration
+    domain_name         = var.frontend_domain_name != null ? module.route53.domain_name : null
+    hosted_zone_id      = var.frontend_domain_name != null ? module.route53.hosted_zone_id : null
+    ssl_certificate_arn = var.frontend_domain_name != null ? module.route53.certificate_arn : null
   })
 
   description = "Frontend configuration for ${var.project_name} production environment"
@@ -69,9 +104,10 @@ resource "aws_ssm_parameter" "frontend_config" {
     Environment = "prod"
     Project     = var.project_name
     ManagedBy   = "Terraform"
+    Compliance  = "Healthcare"
   }
 
-  depends_on = [module.frontend, module.api_gateway, module.cognito]
+  depends_on = [module.frontend, module.api_gateway, module.cognito, module.route53]
 }
 
 # SSM Parameter for CloudFront distribution ID (useful for deployment scripts)
@@ -106,4 +142,62 @@ resource "aws_ssm_parameter" "frontend_s3_bucket_name" {
   }
 
   depends_on = [module.frontend]
+}
+
+# SSM Parameters for Route 53 configuration (when custom domain is enabled)
+resource "aws_ssm_parameter" "route53_hosted_zone_id" {
+  count = var.frontend_domain_name != null ? 1 : 0
+
+  name  = "/${var.project_name}/prod/route53/hosted-zone-id"
+  type  = "String"
+  value = module.route53.hosted_zone_id
+
+  description = "Route 53 hosted zone ID for ${var.project_name} production environment"
+
+  tags = {
+    Environment = "prod"
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+    Compliance  = "Healthcare"
+  }
+
+  depends_on = [module.route53]
+}
+
+resource "aws_ssm_parameter" "route53_name_servers" {
+  count = var.frontend_domain_name != null ? 1 : 0
+
+  name  = "/${var.project_name}/prod/route53/name-servers"
+  type  = "StringList"
+  value = join(",", module.route53.name_servers)
+
+  description = "Route 53 name servers for ${var.project_name} production environment"
+
+  tags = {
+    Environment = "prod"
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+    Compliance  = "Healthcare"
+  }
+
+  depends_on = [module.route53]
+}
+
+resource "aws_ssm_parameter" "ssl_certificate_arn" {
+  count = var.frontend_domain_name != null ? 1 : 0
+
+  name  = "/${var.project_name}/prod/ssl/certificate-arn"
+  type  = "String"
+  value = module.route53.certificate_arn
+
+  description = "SSL certificate ARN for ${var.project_name} production environment"
+
+  tags = {
+    Environment = "prod"
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+    Compliance  = "Healthcare"
+  }
+
+  depends_on = [module.route53]
 }

@@ -82,3 +82,42 @@ output "frontend_s3_bucket_ssm_parameter" {
   description = "SSM parameter containing S3 bucket name"
   value       = aws_ssm_parameter.frontend_s3_bucket_name.name
 }
+
+# Route 53 outputs (when custom domain is configured)
+output "route53_hosted_zone_id" {
+  description = "Route 53 hosted zone ID"
+  value       = var.frontend_domain_name != null ? module.route53.hosted_zone_id : null
+}
+
+output "route53_domain_name" {
+  description = "Route 53 domain name"
+  value       = var.frontend_domain_name != null ? module.route53.domain_name : null
+}
+
+output "route53_name_servers" {
+  description = "Route 53 name servers (update these at your domain registrar)"
+  value       = var.frontend_domain_name != null ? module.route53.name_servers : null
+}
+
+output "ssl_certificate_arn" {
+  description = "SSL certificate ARN"
+  value       = var.frontend_domain_name != null ? module.route53.certificate_arn : null
+}
+
+output "ssl_certificate_status" {
+  description = "SSL certificate validation status"
+  value       = var.frontend_domain_name != null ? module.route53.certificate_status : null
+}
+
+output "dns_deployment_info" {
+  description = "DNS and SSL deployment information"
+  value = var.frontend_domain_name != null ? {
+    domain_name        = module.route53.domain_name
+    hosted_zone_id     = module.route53.hosted_zone_id
+    name_servers       = module.route53.name_servers
+    certificate_arn    = module.route53.certificate_arn
+    certificate_status = module.route53.certificate_status
+    health_check_id    = module.route53.health_check_id
+  } : null
+  sensitive = false
+}

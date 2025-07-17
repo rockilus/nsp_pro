@@ -165,9 +165,23 @@ S3_BUCKET=$(get_terraform_output "frontend_s3_bucket")
 CLOUDFRONT_DISTRIBUTION_ID=$(get_terraform_output "frontend_cloudfront_distribution_id")
 WEBSITE_URL=$(get_terraform_output "frontend_url")
 
+# Get Route 53 information if available (for production environments with custom domains)
+ROUTE53_DOMAIN=$(get_terraform_output "route53_domain_name" 2>/dev/null || echo "")
+SSL_CERTIFICATE_ARN=$(get_terraform_output "ssl_certificate_arn" 2>/dev/null || echo "")
+SSL_CERTIFICATE_STATUS=$(get_terraform_output "ssl_certificate_status" 2>/dev/null || echo "")
+
 print_info "S3 Bucket: $S3_BUCKET"
 print_info "CloudFront Distribution ID: $CLOUDFRONT_DISTRIBUTION_ID"
 print_info "Website URL: $WEBSITE_URL"
+
+# Show Route 53 information if available
+if [[ -n "$ROUTE53_DOMAIN" ]]; then
+    print_info "Custom Domain: $ROUTE53_DOMAIN"
+    if [[ -n "$SSL_CERTIFICATE_ARN" ]]; then
+        print_info "SSL Certificate: ${SSL_CERTIFICATE_ARN##*/}"
+        print_info "Certificate Status: $SSL_CERTIFICATE_STATUS"
+    fi
+fi
 
 # Validate that we got the required information
 if [[ -z "$S3_BUCKET" || -z "$CLOUDFRONT_DISTRIBUTION_ID" ]]; then
