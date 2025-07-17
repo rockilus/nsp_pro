@@ -45,12 +45,12 @@ resource "aws_iam_role_policy" "ssm_access" {
 }
 
 # Get the existing backend API key from SSM
-data "aws_ssm_parameter" "backend_api_key" {
-  name = "/${var.project_name}/${var.environment}/backend-api-key"
+# data "aws_ssm_parameter" "backend_api_key" {
+#   name = "/${var.project_name}/${var.environment}/backend-api-key"
 
-  # Add explicit dependency to ensure parameter exists
-  depends_on = [var.ssm_parameter_dependency]
-}
+#   # Add explicit dependency to ensure parameter exists
+#   depends_on = [var.ssm_parameter_dependency]
+# }
 
 # Archive the Lambda code
 data "archive_file" "lambda_zip" {

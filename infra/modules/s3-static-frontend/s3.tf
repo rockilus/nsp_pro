@@ -81,6 +81,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "frontend" {
     id     = "frontend_lifecycle"
     status = "Enabled"
 
+    filter {
+      prefix = ""
+    }
+
     # Clean up incomplete multipart uploads
     abort_incomplete_multipart_upload {
       days_after_initiation = 7

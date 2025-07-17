@@ -54,6 +54,17 @@ variable "api_gateway_stage_name" {
   type        = string
 }
 
+variable "api_gateway_domain" {
+  description = "The API Gateway domain for the healthcare scheduling application"
+  type        = string
+  default     = "https://api.rockilus.com"
+
+  validation {
+    condition     = can(regex("^https://[a-zA-Z0-9.-]+", var.api_gateway_domain))
+    error_message = "The API Gateway domain must be a valid HTTPS URL for security compliance."
+  }
+}
+
 variable "frontend_domain_name" {
   description = "Custom domain name for the frontend (optional)"
   type        = string

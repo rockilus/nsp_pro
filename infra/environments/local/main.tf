@@ -21,7 +21,7 @@ module "frontend" {
   project_name                = var.project_name
   environment                 = "development"
   aws_region                  = var.aws_region
-  api_gateway_domain          = module.api_gateway.api_endpoint
+  api_gateway_domain          = var.api_gateway_domain
   cognito_user_pool_id        = var.cognito_user_pool_id
   cognito_user_pool_client_id = var.cognito_user_pool_clients_ids[0]
 
@@ -46,7 +46,7 @@ resource "aws_ssm_parameter" "frontend_config" {
     aws_region                  = var.aws_region
     cognito_user_pool_id        = var.cognito_user_pool_id
     cognito_user_pool_client_id = var.cognito_user_pool_clients_ids[0]
-    api_gateway_domain          = module.api_gateway.api_endpoint
+    api_gateway_domain          = var.api_gateway_domain
     environment                 = "development"
     cloudfront_domain           = module.frontend.cloudfront_domain_name
     s3_bucket                   = module.frontend.s3_bucket_id

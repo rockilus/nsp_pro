@@ -3,7 +3,7 @@ module "cognito" {
 
   project_name              = var.project_name
   environment               = "prod"
-  api_gateway_url           = "https://api.rockilus.com"
+  api_gateway_url           = var.api_gateway_domain
   aws_region                = var.aws_region
   api_gateway_ssm_parameter = module.api_gateway.backend_api_key_parameter
 }
@@ -30,7 +30,7 @@ module "frontend" {
   project_name                = var.project_name
   environment                 = "prod"
   aws_region                  = var.aws_region
-  api_gateway_domain          = module.api_gateway.api_endpoint
+  api_gateway_domain          = var.api_gateway_domain
   cognito_user_pool_id        = module.cognito.user_pool_id
   cognito_user_pool_client_id = module.cognito.user_pool_client_id
 
@@ -56,7 +56,7 @@ resource "aws_ssm_parameter" "frontend_config" {
     cognito_user_pool_id        = module.cognito.user_pool_id
     cognito_user_pool_client_id = module.cognito.user_pool_client_id
     cognito_identity_pool_id    = module.cognito.identity_pool_id
-    api_gateway_domain          = module.api_gateway.api_endpoint
+    api_gateway_domain          = var.api_gateway_domain
     environment                 = "prod"
     cloudfront_domain           = module.frontend.cloudfront_domain_name
     s3_bucket                   = module.frontend.s3_bucket_id

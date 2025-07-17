@@ -53,6 +53,17 @@ variable "api_gateway_stage_name" {
   type        = string
 }
 
+variable "api_gateway_domain" {
+  description = "The API Gateway domain for the local development environment"
+  type        = string
+  default     = "http://localhost:4000"
+
+  validation {
+    condition     = can(regex("^https?://[a-zA-Z0-9.-]+", var.api_gateway_domain))
+    error_message = "The API Gateway domain must be a valid HTTP or HTTPS URL."
+  }
+}
+
 variable "frontend_domain_name" {
   description = "Custom domain name for the frontend (optional)"
   type        = string
