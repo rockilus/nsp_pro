@@ -54,95 +54,95 @@ module "route53" {
   }
 }
 
-module "frontend" {
-  source = "../../modules/s3-static-frontend"
+# module "frontend" {
+#   source = "../../modules/s3-static-frontend"
 
-  project_name                = var.project_name
-  environment                 = "prod"
-  aws_region                  = var.aws_region
-  api_gateway_domain          = var.api_gateway_domain
-  cognito_user_pool_id        = module.cognito.user_pool_id
-  cognito_user_pool_client_id = module.cognito.user_pool_client_id
+#   project_name                = var.project_name
+#   environment                 = "prod"
+#   aws_region                  = var.aws_region
+#   api_gateway_domain          = var.api_gateway_domain
+#   cognito_user_pool_id        = module.cognito.user_pool_id
+#   cognito_user_pool_client_id = module.cognito.user_pool_client_id
 
-  # Use Route 53 module outputs for domain configuration
-  domain_name     = var.frontend_domain_name != null ? "app.${module.route53.domain_name}" : null
-  certificate_arn = var.frontend_domain_name != null ? module.route53.certificate_arn : null
-  route53_zone_id = var.frontend_domain_name != null ? module.route53.hosted_zone_id : null
+#   # Use Route 53 module outputs for domain configuration
+#   domain_name     = var.frontend_domain_name != null ? "app.${module.route53.domain_name}" : null
+#   certificate_arn = var.frontend_domain_name != null ? module.route53.certificate_arn : null
+#   route53_zone_id = var.frontend_domain_name != null ? module.route53.hosted_zone_id : null
 
-  tags = {
-    Environment = "prod"
-    Owner       = "DevOps Team"
-    Compliance  = "Healthcare"
-  }
+#   tags = {
+#     Environment = "prod"
+#     Owner       = "DevOps Team"
+#     Compliance  = "Healthcare"
+#   }
 
-  depends_on = [module.api_gateway, module.cognito, module.route53]
-}
+#   depends_on = [module.api_gateway, module.cognito, module.route53]
+# }
 
 # Environment-specific SSM parameters for frontend configuration
-resource "aws_ssm_parameter" "frontend_config" {
-  name = "/${var.project_name}/prod/frontend/config"
-  type = "String"
-  value = jsonencode({
-    aws_region                  = var.aws_region
-    cognito_user_pool_id        = module.cognito.user_pool_id
-    cognito_user_pool_client_id = module.cognito.user_pool_client_id
-    cognito_identity_pool_id    = module.cognito.identity_pool_id
-    api_gateway_domain          = var.api_gateway_domain
-    environment                 = "prod"
-    cloudfront_domain           = module.frontend.cloudfront_domain_name
-    s3_bucket                   = module.frontend.s3_bucket_id
-    website_url                 = module.frontend.website_url
-    # Route 53 configuration
-    domain_name         = var.frontend_domain_name != null ? module.route53.domain_name : null
-    hosted_zone_id      = var.frontend_domain_name != null ? module.route53.hosted_zone_id : null
-    ssl_certificate_arn = var.frontend_domain_name != null ? module.route53.certificate_arn : null
-  })
+# resource "aws_ssm_parameter" "frontend_config" {
+#   name = "/${var.project_name}/prod/frontend/config"
+#   type = "String"
+#   value = jsonencode({
+#     aws_region                  = var.aws_region
+#     cognito_user_pool_id        = module.cognito.user_pool_id
+#     cognito_user_pool_client_id = module.cognito.user_pool_client_id
+#     # cognito_identity_pool_id    = module.cognito.identity_pool_id
+#     api_gateway_domain = var.api_gateway_domain
+#     environment        = "prod"
+#     cloudfront_domain  = module.frontend.cloudfront_domain_name
+#     s3_bucket          = module.frontend.s3_bucket_id
+#     website_url        = module.frontend.website_url
+#     # Route 53 configuration
+#     domain_name         = var.frontend_domain_name != null ? module.route53.domain_name : null
+#     hosted_zone_id      = var.frontend_domain_name != null ? module.route53.hosted_zone_id : null
+#     ssl_certificate_arn = var.frontend_domain_name != null ? module.route53.certificate_arn : null
+#   })
 
-  description = "Frontend configuration for ${var.project_name} production environment"
+#   description = "Frontend configuration for ${var.project_name} production environment"
 
-  tags = {
-    Environment = "prod"
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-    Compliance  = "Healthcare"
-  }
+#   tags = {
+#     Environment = "prod"
+#     Project     = var.project_name
+#     ManagedBy   = "Terraform"
+#     Compliance  = "Healthcare"
+#   }
 
-  depends_on = [module.frontend, module.api_gateway, module.cognito, module.route53]
-}
+#   depends_on = [module.frontend, module.api_gateway, module.cognito, module.route53]
+# }
 
 # SSM Parameter for CloudFront distribution ID (useful for deployment scripts)
-resource "aws_ssm_parameter" "frontend_cloudfront_distribution_id" {
-  name  = "/${var.project_name}/prod/frontend/cloudfront-distribution-id"
-  type  = "String"
-  value = module.frontend.cloudfront_distribution_id
+# resource "aws_ssm_parameter" "frontend_cloudfront_distribution_id" {
+#   name  = "/${var.project_name}/prod/frontend/cloudfront-distribution-id"
+#   type  = "String"
+#   value = module.frontend.cloudfront_distribution_id
 
-  description = "CloudFront distribution ID for ${var.project_name} production environment"
+#   description = "CloudFront distribution ID for ${var.project_name} production environment"
 
-  tags = {
-    Environment = "prod"
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-  }
+#   tags = {
+#     Environment = "prod"
+#     Project     = var.project_name
+#     ManagedBy   = "Terraform"
+#   }
 
-  depends_on = [module.frontend]
-}
+#   depends_on = [module.frontend]
+# }
 
 # SSM Parameter for S3 bucket name (useful for deployment scripts)
-resource "aws_ssm_parameter" "frontend_s3_bucket_name" {
-  name  = "/${var.project_name}/prod/frontend/s3-bucket-name"
-  type  = "String"
-  value = module.frontend.s3_bucket_id
+# resource "aws_ssm_parameter" "frontend_s3_bucket_name" {
+#   name  = "/${var.project_name}/prod/frontend/s3-bucket-name"
+#   type  = "String"
+#   value = module.frontend.s3_bucket_id
 
-  description = "S3 bucket name for ${var.project_name} production environment"
+#   description = "S3 bucket name for ${var.project_name} production environment"
 
-  tags = {
-    Environment = "prod"
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-  }
+#   tags = {
+#     Environment = "prod"
+#     Project     = var.project_name
+#     ManagedBy   = "Terraform"
+#   }
 
-  depends_on = [module.frontend]
-}
+#   depends_on = [module.frontend]
+# }
 
 # SSM Parameters for Route 53 configuration (when custom domain is enabled)
 resource "aws_ssm_parameter" "route53_hosted_zone_id" {
@@ -183,21 +183,21 @@ resource "aws_ssm_parameter" "route53_name_servers" {
   depends_on = [module.route53]
 }
 
-resource "aws_ssm_parameter" "ssl_certificate_arn" {
-  count = var.frontend_domain_name != null ? 1 : 0
+# resource "aws_ssm_parameter" "ssl_certificate_arn" {
+#   count = var.frontend_domain_name != null ? 1 : 0
 
-  name  = "/${var.project_name}/prod/ssl/certificate-arn"
-  type  = "String"
-  value = module.route53.certificate_arn
+#   name = "/${var.project_name}/prod/ssl/certificate-arn"
+#   type = "String"
+#   value = module.route53.certificate_arn
 
-  description = "SSL certificate ARN for ${var.project_name} production environment"
+#   description = "SSL certificate ARN for ${var.project_name} production environment"
 
-  tags = {
-    Environment = "prod"
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-    Compliance  = "Healthcare"
-  }
+#   tags = {
+#     Environment = "prod"
+#     Project     = var.project_name
+#     ManagedBy   = "Terraform"
+#     Compliance  = "Healthcare"
+#   }
 
-  depends_on = [module.route53]
-}
+#   depends_on = [module.route53]
+# }
