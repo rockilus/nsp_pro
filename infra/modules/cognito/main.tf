@@ -126,7 +126,7 @@ resource "aws_cognito_user_pool_client" "main" {
   # Token validity - Adjusted for SPA security best practices
   access_token_validity  = 60 # 1 hour
   id_token_validity      = 60 # 1 hour
-  refresh_token_validity = 30 # 30 days (typical for SPA)
+  refresh_token_validity = 5  # 30 days (typical for SPA)
   auth_session_validity  = 3
 
   token_validity_units {
@@ -139,18 +139,18 @@ resource "aws_cognito_user_pool_client" "main" {
   prevent_user_existence_errors = "ENABLED"
 
   # Required attributes for sign-up
-  read_attributes = [
-    "email",
-    "email_verified",
-    "given_name",
-    "family_name"
-  ]
+  # read_attributes = [
+  #   "email",
+  #   "email_verified",
+  #   "given_name",
+  #   "family_name"
+  # ]
 
-  write_attributes = [
-    "email",
-    "given_name",
-    "family_name"
-  ]
+  # write_attributes = [
+  #   "email",
+  #   "given_name",
+  #   "family_name"
+  # ]
 
   # Security - no client secret for single-page apps
   # generate_secret = false
@@ -160,8 +160,8 @@ resource "aws_cognito_user_pool_client" "main" {
   allowed_oauth_flows_user_pool_client = true
   # allowed_oauth_scopes                 = ["email", "openid", "profile"]
   allowed_oauth_scopes         = ["email", "openid", "phone"]
-  callback_urls                = ["https://${var.frontend_domain_name}/fr/plan/workers"]
-  logout_urls                  = ["https://${var.frontend_domain_name}/fr/plan/workers"]
+  callback_urls                = ["https://${var.frontend_domain_name}/fr/plan/workers/"]
+  logout_urls                  = ["https://${var.frontend_domain_name}/fr/plan/workers/"]
   supported_identity_providers = ["COGNITO"]
 
   # SPA-specific security settings
@@ -173,7 +173,7 @@ resource "aws_cognito_user_pool_client" "main" {
 # Cognito User Pool Domain - Required for hosted UI
 resource "aws_cognito_user_pool_domain" "main" {
   # domain       = var.cognito_domain_prefix != null ? var.cognito_domain_prefix : "${var.project_name}-${var.environment}"
-  domain       = "eu-west-3pcg4vschn"
+  domain       = "eu-west-3odtk8otjs"
   user_pool_id = aws_cognito_user_pool.main.id
 }
 

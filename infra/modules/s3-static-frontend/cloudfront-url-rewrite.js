@@ -28,11 +28,23 @@ function handler(event) {
     
     // If URI doesn't end with / and doesn't have an extension, redirect to add trailing slash
     if (!uri.endsWith('/') && !uri.includes('.')) {
+        // Preserve query string in redirect
+        var queryString = request.querystring;
+        var redirectUri = uri + '/';
+        if (queryString && Object.keys(queryString).length > 0) {
+            var params = [];
+            for (var key in queryString) {
+                var value = queryString[key].value;
+                params.push(key + '=' + encodeURIComponent(value));
+            }
+            redirectUri += '?' + params.join('&');
+        }
+        
         return {
             statusCode: 301,
             statusDescription: 'Moved Permanently',
             headers: {
-                'location': { value: uri + '/' }
+                'location': { value: redirectUri }
             }
         };
     }
