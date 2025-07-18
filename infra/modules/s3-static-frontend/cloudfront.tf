@@ -7,6 +7,15 @@ resource "aws_cloudfront_origin_access_control" "frontend" {
   signing_protocol                  = "sigv4"
 }
 
+# CloudFront function to handle trailing slashes for Next.js static export
+resource "aws_cloudfront_function" "url_rewrite" {
+  name    = "${var.project_name}-url-rewrite-${var.environment}"
+  runtime = "cloudfront-js-1.0"
+  comment = "Handle trailing slash redirects for Next.js SPA with static export"
+  publish = true
+  code    = file("${path.module}/cloudfront-url-rewrite.js")
+}
+
 # CloudFront distribution
 resource "aws_cloudfront_distribution" "frontend" {
   origin {
@@ -24,9 +33,10 @@ resource "aws_cloudfront_distribution" "frontend" {
   # Configure custom domain if provided
   aliases = var.domain_name != null ? [var.domain_name] : []
 
-  # Default cache behavior for static assets
-  default_cache_behavior {
-    allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+  # Cache behavior for Next.js assets (highest priority)
+  ordered_cache_behavior {
+    path_pattern           = "/_next/static/*"
+    allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
     target_origin_id       = "S3-${aws_s3_bucket.frontend.id}"
     compress               = true
@@ -66,14 +76,19 @@ resource "aws_cloudfront_distribution" "frontend" {
     max_ttl     = 31536000 # 1 year
   }
 
-  # Cache behavior for Next.js assets
-  ordered_cache_behavior {
-    path_pattern           = "/_next/static/*"
-    allowed_methods        = ["GET", "HEAD"]
+  # Default cache behavior for SPA routing with URL rewrite function
+  default_cache_behavior {
+    allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods         = ["GET", "HEAD"]
     target_origin_id       = "S3-${aws_s3_bucket.frontend.id}"
     compress               = true
     viewer_protocol_policy = "redirect-to-https"
+
+    # Add the URL rewrite function
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.url_rewrite.arn
+    }
 
     forwarded_values {
       query_string = false
@@ -83,30 +98,8 @@ resource "aws_cloudfront_distribution" "frontend" {
     }
 
     min_ttl     = 0
-    default_ttl = 31536000 # 1 year (immutable assets)
-    max_ttl     = 31536000 # 1 year
-  }
-
-  # Cache behavior for API routes (should not be cached)
-  ordered_cache_behavior {
-    path_pattern           = "/api/*"
-    allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods         = ["GET", "HEAD"]
-    target_origin_id       = "S3-${aws_s3_bucket.frontend.id}"
-    compress               = true
-    viewer_protocol_policy = "redirect-to-https"
-
-    forwarded_values {
-      query_string = true
-      cookies {
-        forward = "all"
-      }
-      #   headers = ["*"]
-    }
-
-    min_ttl     = 0
-    default_ttl = 0
-    max_ttl     = 0
+    default_ttl = 300   # 5 minutes (shorter for HTML files)
+    max_ttl     = 86400 # 24 hours
   }
 
   # Price class
@@ -153,5 +146,8 @@ resource "aws_cloudfront_distribution" "frontend" {
   })
 
   # Wait for the OAC to be created
-  depends_on = [aws_cloudfront_origin_access_control.frontend]
+  depends_on = [
+    aws_cloudfront_origin_access_control.frontend,
+    aws_cloudfront_function.url_rewrite
+  ]
 }
