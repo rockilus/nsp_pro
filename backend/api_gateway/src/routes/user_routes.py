@@ -37,7 +37,9 @@ class NewUserInput(BaseModel):
     last_name: str
 
 
-@router.post("/users/onboard", dependencies=[Depends(verify_service_authentication)])
+@router.post(
+    "/users/onboard", dependencies=[Depends(verify_service_authentication)]
+)
 async def onboard_new_user(
     user_input: NewUserInput,
     user_service: UserService = Depends(get_user_service),
@@ -57,14 +59,17 @@ async def onboard_new_user(
 
 @router.get("/users/me")
 async def get_current_user(
-    session: SessionContainerType = Depends(authn_verify_session()),
     user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> UserDTO:
     try:
-        user_id = session.get_user_id()
-        if not await authz_check(user_context.user_id, "read", "user", user_id):
-            raise NotAuthorizedError("You do not have permission to read the user")
+        user_id = user_context.user_id
+        if not await authz_check(
+            user_context.user_id, "read", "user", user_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to read the user"
+            )
         user = db_collections.user_db.get_user_by_id(user_id)
         if user is None:
             raise HTTPException(status_code=404, detail="User not found")
@@ -84,12 +89,18 @@ async def update_user(
     user_service: UserService = Depends(get_user_service),
 ) -> UserDTO:
     try:
-        if not await authz_check(user_context.user_id, "update", "user", user_id):
-            raise NotAuthorizedError("You do not have permission to update a user")
+        if not await authz_check(
+            user_context.user_id, "update", "user", user_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to update a user"
+            )
         recipe_user_id = session.get_recipe_user_id()
         tenant_id = session.get_tenant_id()
         u_data = User.from_dto(user)
-        updated_user = await user_service.update_user(u_data, recipe_user_id, tenant_id)
+        updated_user = await user_service.update_user(
+            u_data, recipe_user_id, tenant_id
+        )
         response = updated_user.to_dto()
     except Exception as e:
         log_info("Failed to update user")
@@ -109,7 +120,9 @@ async def change_user_password(
         if not await authz_check(
             user_context.user_id, "change-password", "user", user_id
         ):
-            raise NotAuthorizedError("You do not have permission to update a user")
+            raise NotAuthorizedError(
+                "You do not have permission to update a user"
+            )
         recipe_user_id = session.get_recipe_user_id()
         tenant_id = session.get_tenant_id()
         p_data = PasswordData.from_dto(password_data)
