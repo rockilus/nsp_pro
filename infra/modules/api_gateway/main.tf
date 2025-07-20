@@ -364,9 +364,8 @@ resource "aws_api_gateway_method" "internal_onboard_post" {
   api_key_required = true   # Require API key instead
 
   request_parameters = {
-    "method.request.header.X-API-Key"         = true  # Required internal API key
-    "method.request.header.X-Service-API-Key" = false # Optional backend service key
-    "method.request.header.X-Service"         = false # Optional service identifier
+    "method.request.header.X-API-Key" = true  # Required internal API key
+    "method.request.header.X-Service" = false # Optional service identifier
   }
 }
 
@@ -419,22 +418,25 @@ resource "aws_api_gateway_method_response" "internal_onboard_500" {
   }
 }
 
-# Integration for internal onboard - HTTP_PROXY to backend
+# Integration for internal onboard - HTTP_PROXY to existing backend /users/onboard endpoint
 resource "aws_api_gateway_integration" "internal_onboard" {
   rest_api_id             = aws_api_gateway_rest_api.main.id
   resource_id             = aws_api_gateway_resource.internal_onboard.id
   http_method             = aws_api_gateway_method.internal_onboard_post.http_method
   integration_http_method = "POST"
   type                    = "HTTP_PROXY"
-  uri                     = "${var.vpc_link_endpoint_url}/internal/onboard"
+  uri                     = "${var.vpc_link_endpoint_url}/users/onboard" # Use existing endpoint
   connection_type         = var.environment == "prod" ? "VPC_LINK" : "INTERNET"
   connection_id           = var.environment == "prod" ? aws_api_gateway_vpc_link.main[0].id : null
   passthrough_behavior    = "WHEN_NO_TEMPLATES"
 
   request_parameters = {
-    "integration.request.header.X-API-Key"         = "'${random_password.backend_api_key.result}'"
-    "integration.request.header.X-Service-API-Key" = "method.request.header.X-Service-API-Key"
-    "integration.request.header.X-Service"         = "method.request.header.X-Service"
+    # Backend service authentication (same as regular endpoints)
+    "integration.request.header.X-API-Key" = "'${random_password.backend_api_key.result}'"
+    # Forward service identifier and metadata
+    "integration.request.header.X-Service"       = "method.request.header.X-Service"
+    "integration.request.header.X-Forwarded-For" = "context.identity.sourceIp"
+    "integration.request.header.X-Request-ID"    = "context.requestId"
   }
 
   depends_on = [aws_api_gateway_method.internal_onboard_post]

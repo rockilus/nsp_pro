@@ -26,7 +26,6 @@ from src.routes import (
     router_dimension,
     router_export,
     router_health,
-    router_internal,
     router_link_shift,
     router_multitasking,
     router_request,
@@ -72,7 +71,6 @@ def create_app(db_collections: DatabaseCollections) -> FastAPI:
     app.include_router(router_dimension)
     app.include_router(router_export)
     app.include_router(router_health)
-    app.include_router(router_internal)
     app.include_router(router_link_shift)
     app.include_router(router_multitasking)
     app.include_router(router_breach)
