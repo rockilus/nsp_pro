@@ -14,6 +14,8 @@ import {
   Paper,
 } from "@mui/material";
 import ProtectedRoute from "../../../components/auth/protected-route";
+import { AuthTestComponent } from "../../../components/debug/auth-test-component";
+import { AuthDebugComponent } from "../../../components/debug/auth-debug-component";
 
 export default function AuthTestPage() {
   const { user, isAuthenticated, accessToken, signOut, signOutRedirect } =
@@ -27,6 +29,9 @@ export default function AuthTestPage() {
         </Typography>
 
         <Stack spacing={3}>
+          {/* New API Test Component */}
+          <AuthTestComponent />
+
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -62,6 +67,27 @@ export default function AuthTestPage() {
             </Card>
           )}
 
+          {user?.id_token && (
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  ID Token (First 50 characters)
+                </Typography>
+                <Paper
+                  sx={{ p: 2, bgcolor: "grey.50", fontFamily: "monospace" }}
+                >
+                  {user.id_token.substring(0, 50)}...
+                </Paper>
+                <Typography
+                  variant="body2"
+                  sx={{ mt: 1, color: "text.secondary" }}
+                >
+                  Length: {user.id_token.length} characters
+                </Typography>
+              </CardContent>
+            </Card>
+          )}
+
           {accessToken && (
             <Card>
               <CardContent>
@@ -91,6 +117,9 @@ export default function AuthTestPage() {
           </Stack>
         </Stack>
       </Container>
+
+      {/* Debug Component - only shows in development */}
+      <AuthDebugComponent />
     </ProtectedRoute>
   );
 }
