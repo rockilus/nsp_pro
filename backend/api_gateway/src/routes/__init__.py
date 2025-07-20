@@ -2,18 +2,23 @@ from src.routes.assignment_routes import router as router_assignment
 from src.routes.attribute_routes import router as router_attribute
 from src.routes.breach_routes import router as router_breach
 from src.routes.constraint_routes import router as router_constraint
-from src.routes.constraint_template_routes import router as router_constraint_template
+from src.routes.constraint_template_routes import (
+    router as router_constraint_template,
+)
 from src.routes.coverage_routes import router as router_coverage
 from src.routes.dashboard_routes import router as router_dashboard
 from src.routes.dim_entry_routes import router as router_dim_entry
 from src.routes.dimension_routes import router as router_dimension
 from src.routes.export_routes import router as router_export
 from src.routes.health_routes import router as router_health
+from src.routes.internal_routes import router as router_internal
 from src.routes.link_shift_routes import router as router_link_shift
 from src.routes.multitasking_routes import router as router_multitasking
 from src.routes.request_routes import router as router_request
 from src.routes.schedule_routes import router as router_schedule
-from src.routes.shift_demand_new_routes import router as router_shift_demand_new
+from src.routes.shift_demand_new_routes import (
+    router as router_shift_demand_new,
+)
 from src.routes.shift_demand_routes import router as router_shift_demand
 from src.routes.shift_demand_template_routes import (
     router as router_shift_demand_template,
@@ -39,6 +44,7 @@ __all__ = [
     "router_dimension",
     "router_export",
     "router_health",
+    "router_internal",
     "router_link_shift",
     "router_multitasking",
     "router_request",

@@ -258,6 +258,218 @@ resource "aws_api_gateway_stage" "main" {
   xray_tracing_enabled = true
 }
 
+###########################################
+# Internal Service Communication
+###########################################
+
+# Generate separate API key for internal services (Lambda → API Gateway)
+resource "random_password" "internal_api_key" {
+  length  = 32
+  special = true
+  numeric = true
+  upper   = true
+  lower   = true
+
+  lifecycle {
+    ignore_changes = [length, special, numeric, upper, lower]
+  }
+}
+
+# Store internal API key in SSM Parameter Store
+resource "aws_ssm_parameter" "internal_api_key" {
+  name        = "/${var.project_name}/${var.environment}/internal-api-key"
+  description = "API key for internal service communication (Lambda to API Gateway)"
+  type        = "SecureString"
+  value       = random_password.internal_api_key.result
+
+  tags = {
+    Name        = "${var.project_name}-internal-api-key-${var.environment}"
+    Environment = var.environment
+    Project     = var.project_name
+    Purpose     = "internal-service-auth"
+  }
+}
+
+# API Gateway API key resource for internal services
+resource "aws_api_gateway_api_key" "internal" {
+  name        = "${var.project_name}-internal-${var.environment}"
+  description = "API key for internal service communication"
+  value       = random_password.internal_api_key.result
+
+  tags = {
+    Name        = "${var.project_name}-internal-api-key-${var.environment}"
+    Environment = var.environment
+    Project     = var.project_name
+  }
+}
+
+# Usage plan for internal API key with appropriate limits
+resource "aws_api_gateway_usage_plan" "internal" {
+  name        = "${var.project_name}-internal-${var.environment}"
+  description = "Usage plan for internal services"
+
+  api_stages {
+    api_id = aws_api_gateway_rest_api.main.id
+    stage  = aws_api_gateway_stage.main.stage_name
+  }
+
+  # Conservative limits for internal services
+  quota_settings {
+    limit  = 10000 # 10k requests per day
+    period = "DAY"
+  }
+
+  throttle_settings {
+    rate_limit  = 100 # 100 requests per second
+    burst_limit = 200 # 200 burst limit
+  }
+
+  tags = {
+    Environment = var.environment
+    Project     = var.project_name
+  }
+}
+
+# Link internal API key to usage plan
+resource "aws_api_gateway_usage_plan_key" "internal" {
+  key_id        = aws_api_gateway_api_key.internal.id
+  key_type      = "API_KEY"
+  usage_plan_id = aws_api_gateway_usage_plan.internal.id
+}
+
+###########################################
+# Internal Endpoints
+###########################################
+
+# /internal resource
+resource "aws_api_gateway_resource" "internal" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_rest_api.main.root_resource_id
+  path_part   = "internal"
+}
+
+# /internal/onboard resource
+resource "aws_api_gateway_resource" "internal_onboard" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.internal.id
+  path_part   = "onboard"
+}
+
+# POST method for /internal/onboard (no Cognito auth, API key required)
+resource "aws_api_gateway_method" "internal_onboard_post" {
+  rest_api_id      = aws_api_gateway_rest_api.main.id
+  resource_id      = aws_api_gateway_resource.internal_onboard.id
+  http_method      = "POST"
+  authorization    = "NONE" # No Cognito authorizer
+  api_key_required = true   # Require API key instead
+
+  request_parameters = {
+    "method.request.header.X-API-Key"         = true  # Required internal API key
+    "method.request.header.X-Service-API-Key" = false # Optional backend service key
+    "method.request.header.X-Service"         = false # Optional service identifier
+  }
+}
+
+# Method responses for internal onboard
+resource "aws_api_gateway_method_response" "internal_onboard_200" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.internal_onboard.id
+  http_method = aws_api_gateway_method.internal_onboard_post.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = false
+  }
+
+  response_models = {
+    "application/json" = "Empty"
+  }
+}
+
+resource "aws_api_gateway_method_response" "internal_onboard_400" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.internal_onboard.id
+  http_method = aws_api_gateway_method.internal_onboard_post.http_method
+  status_code = "400"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = false
+  }
+}
+
+resource "aws_api_gateway_method_response" "internal_onboard_401" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.internal_onboard.id
+  http_method = aws_api_gateway_method.internal_onboard_post.http_method
+  status_code = "401"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = false
+  }
+}
+
+resource "aws_api_gateway_method_response" "internal_onboard_500" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.internal_onboard.id
+  http_method = aws_api_gateway_method.internal_onboard_post.http_method
+  status_code = "500"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = false
+  }
+}
+
+# Integration for internal onboard - HTTP_PROXY to backend
+resource "aws_api_gateway_integration" "internal_onboard" {
+  rest_api_id             = aws_api_gateway_rest_api.main.id
+  resource_id             = aws_api_gateway_resource.internal_onboard.id
+  http_method             = aws_api_gateway_method.internal_onboard_post.http_method
+  integration_http_method = "POST"
+  type                    = "HTTP_PROXY"
+  uri                     = "${var.vpc_link_endpoint_url}/internal/onboard"
+  connection_type         = var.environment == "prod" ? "VPC_LINK" : "INTERNET"
+  connection_id           = var.environment == "prod" ? aws_api_gateway_vpc_link.main[0].id : null
+  passthrough_behavior    = "WHEN_NO_TEMPLATES"
+
+  request_parameters = {
+    "integration.request.header.X-API-Key"         = "'${random_password.backend_api_key.result}'"
+    "integration.request.header.X-Service-API-Key" = "method.request.header.X-Service-API-Key"
+    "integration.request.header.X-Service"         = "method.request.header.X-Service"
+  }
+
+  depends_on = [aws_api_gateway_method.internal_onboard_post]
+}
+
+# Integration responses for internal onboard
+resource "aws_api_gateway_integration_response" "internal_onboard_200" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.internal_onboard.id
+  http_method = aws_api_gateway_method.internal_onboard_post.http_method
+  status_code = aws_api_gateway_method_response.internal_onboard_200.status_code
+
+  depends_on = [aws_api_gateway_integration.internal_onboard]
+}
+
+resource "aws_api_gateway_integration_response" "internal_onboard_400" {
+  rest_api_id       = aws_api_gateway_rest_api.main.id
+  resource_id       = aws_api_gateway_resource.internal_onboard.id
+  http_method       = aws_api_gateway_method.internal_onboard_post.http_method
+  status_code       = aws_api_gateway_method_response.internal_onboard_400.status_code
+  selection_pattern = "4\\d{2}"
+
+  depends_on = [aws_api_gateway_integration.internal_onboard]
+}
+
+resource "aws_api_gateway_integration_response" "internal_onboard_500" {
+  rest_api_id       = aws_api_gateway_rest_api.main.id
+  resource_id       = aws_api_gateway_resource.internal_onboard.id
+  http_method       = aws_api_gateway_method.internal_onboard_post.http_method
+  status_code       = aws_api_gateway_method_response.internal_onboard_500.status_code
+  selection_pattern = "5\\d{2}"
+
+  depends_on = [aws_api_gateway_integration.internal_onboard]
+}
+
 # Data source for account id
 # data "aws_caller_identity" "current" {}
 
