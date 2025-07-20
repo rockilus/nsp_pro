@@ -27,7 +27,7 @@ def get_ssm_client():
     Get SSM client with proper region configuration.
     Cached to avoid creating multiple clients.
     """
-    region = os.environ.get("AWS_REGION", "eu-west-3")
+    region = os.environ.get("REGION", "eu-west-3")
     return boto3.client("ssm", region_name=region)
 
 
@@ -39,11 +39,10 @@ def get_internal_api_key() -> Optional[str]:
     """
     try:
         ssm = get_ssm_client()
-        # param_name = (
-        #     f"/{os.environ.get('ENVIRONMENT', 'dev')}"
-        #     "/nsp-pro/internal/api-key"
-        # )
-        param_name = "/nsp-pro/internal/api-key"
+        project_name = os.environ.get("PROJECT_NAME", "rockilus")
+        environment = os.environ.get("ENVIRONMENT", "prod")
+        param_name = f"/{project_name}/{environment}/internal-api-key"
+
         response = ssm.get_parameter(Name=param_name, WithDecryption=True)
         api_key = response.get("Parameter", {}).get("Value")
         if not api_key:
@@ -127,11 +126,10 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             return event
 
         # Get internal API Gateway endpoint
-        # api_gateway_url = os.environ.get(
-        #     "API_GATEWAY_URL", "https://api.rockilus.com"
-        # )
-        # internal_endpoint = f"{api_gateway_url}/internal/onboard"
-        internal_endpoint = "https://api.rockilus.com/internal/onboard"
+        api_base_url = os.environ.get(
+            "API_BASE_URL", "https://api.rockilus.com"
+        )
+        internal_endpoint = f"{api_base_url}/internal/onboard"
 
         # Get internal API key for Lambda -> API Gateway auth
         internal_api_key = get_internal_api_key()

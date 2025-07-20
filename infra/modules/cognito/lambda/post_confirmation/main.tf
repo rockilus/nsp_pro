@@ -38,18 +38,10 @@ resource "aws_iam_role_policy" "ssm_access" {
         Action = [
           "ssm:GetParameter"
         ]
-        Resource = "arn:aws:ssm:${var.aws_region}:*:parameter/${var.project_name}/${var.environment}/backend-api-key"
+        Resource = "arn:aws:ssm:${var.aws_region}:*:parameter/${var.project_name}/${var.environment}/internal-api-key"
       }
     ]
   })
-}
-
-# Get the existing backend API key from SSM
-data "aws_ssm_parameter" "backend_api_key" {
-  name = "/${var.project_name}/${var.environment}/backend-api-key"
-
-  # Add explicit dependency to ensure parameter exists
-  depends_on = [var.ssm_parameter_dependency]
 }
 
 # Archive the Lambda code
@@ -71,8 +63,10 @@ resource "aws_lambda_function" "post_confirmation_trigger" {
 
   environment {
     variables = {
-      API_ENDPOINT_URL = "${var.api_gateway_url}/users/onboard"
-      BACKEND_API_KEY  = data.aws_ssm_parameter.backend_api_key.value
+      PROJECT_NAME = var.project_name
+      ENVIRONMENT  = var.environment
+      REGION       = var.aws_region
+      API_BASE_URL = var.api_gateway_url
     }
   }
 
@@ -84,10 +78,10 @@ resource "aws_lambda_function" "post_confirmation_trigger" {
     Project     = var.project_name
   }
 
-  # Ensure Lambda is created after SSM parameter
+  # Ensure Lambda is created after IAM policies
   depends_on = [
-    data.aws_ssm_parameter.backend_api_key,
-    aws_iam_role_policy.ssm_access
+    aws_iam_role_policy.ssm_access,
+    aws_iam_role_policy_attachment.lambda_logs
   ]
 }
 
