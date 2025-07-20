@@ -32,37 +32,6 @@ def get_ssm_client():
 
 
 @lru_cache(maxsize=1)
-def get_backend_api_key() -> Optional[str]:
-    """
-    Retrieve the backend API key from SSM Parameter Store.
-    Cached to avoid repeated AWS API calls.
-    """
-    try:
-        ssm = get_ssm_client()
-        param_name = (
-            f"/{os.environ.get('ENVIRONMENT', 'dev')}"
-            "/nsp-pro/backend/api-key"
-        )
-        response = ssm.get_parameter(Name=param_name, WithDecryption=True)
-        api_key = response.get("Parameter", {}).get("Value")
-        if not api_key:
-            logger.error("Backend API key not found in SSM parameter")
-            return None
-        return api_key
-    except ClientError as e:
-        error_code = e.response.get("Error", {}).get("Code", "Unknown")
-        logger.error(
-            "Failed to retrieve backend API key from SSM: %s - %s",
-            error_code,
-            str(e),
-        )
-        return None
-    except Exception as e:  # pylint: disable=broad-except
-        logger.error("Unexpected error retrieving backend API key: %s", str(e))
-        return None
-
-
-@lru_cache(maxsize=1)
 def get_internal_api_key() -> Optional[str]:
     """
     Retrieve the internal API key from SSM Parameter Store.
@@ -70,10 +39,11 @@ def get_internal_api_key() -> Optional[str]:
     """
     try:
         ssm = get_ssm_client()
-        param_name = (
-            f"/{os.environ.get('ENVIRONMENT', 'dev')}"
-            "/nsp-pro/internal/api-key"
-        )
+        # param_name = (
+        #     f"/{os.environ.get('ENVIRONMENT', 'dev')}"
+        #     "/nsp-pro/internal/api-key"
+        # )
+        param_name = "/nsp-pro/internal/api-key"
         response = ssm.get_parameter(Name=param_name, WithDecryption=True)
         api_key = response.get("Parameter", {}).get("Value")
         if not api_key:
@@ -142,7 +112,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             "username": event.get("userName"),
             "first_name": user_attributes.get("given_name"),
             "last_name": user_attributes.get("family_name"),
-            "cognito_user_pool_id": event.get("userPoolId"),
+            # "cognito_user_pool_id": event.get("userPoolId"),
         }
 
         # Validate required fields
@@ -157,10 +127,11 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             return event
 
         # Get internal API Gateway endpoint
-        api_gateway_url = os.environ.get(
-            "API_GATEWAY_URL", "https://api.rockilus.com"
-        )
-        internal_endpoint = f"{api_gateway_url}/internal/onboard"
+        # api_gateway_url = os.environ.get(
+        #     "API_GATEWAY_URL", "https://api.rockilus.com"
+        # )
+        # internal_endpoint = f"{api_gateway_url}/internal/onboard"
+        internal_endpoint = "https://api.rockilus.com/internal/onboard"
 
         # Get internal API key for Lambda -> API Gateway auth
         internal_api_key = get_internal_api_key()
