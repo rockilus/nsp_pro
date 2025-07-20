@@ -39,9 +39,10 @@ def get_internal_api_key() -> Optional[str]:
     """
     try:
         ssm = get_ssm_client()
-        project_name = os.environ.get("PROJECT_NAME", "rockilus")
-        environment = os.environ.get("ENVIRONMENT", "prod")
-        param_name = f"/{project_name}/{environment}/internal-api-key"
+        # project_name = os.environ.get("PROJECT_NAME", "rockilus")
+        # environment = os.environ.get("ENVIRONMENT", "prod")
+        # param_name = f"/{project_name}/{environment}/internal-api-key"
+        param_name = "/rockilus/prod/internal-api-key"
 
         response = ssm.get_parameter(Name=param_name, WithDecryption=True)
         api_key = response.get("Parameter", {}).get("Value")
@@ -126,10 +127,11 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             return event
 
         # Get internal API Gateway endpoint
-        api_base_url = os.environ.get(
-            "API_BASE_URL", "https://api.rockilus.com"
-        )
-        internal_endpoint = f"{api_base_url}/internal/onboard"
+        # api_base_url = os.environ.get(
+        #     "API_BASE_URL", "https://api.rockilus.com"
+        # )
+        # internal_endpoint = f"{api_base_url}/internal/onboard"
+        internal_endpoint = "https://api.rockilus.com/internal/onboard"
 
         # Get internal API key for Lambda -> API Gateway auth
         internal_api_key = get_internal_api_key()
@@ -145,6 +147,9 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
         # Send request to internal API Gateway endpoint
         logger.info("Sending onboard request to: %s", internal_endpoint)
+
+        logger.info("Payload: %s", payload)
+        logger.info("Headers: %s", headers)
 
         response = http.request(
             "POST",

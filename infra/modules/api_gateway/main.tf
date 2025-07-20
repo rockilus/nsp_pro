@@ -108,7 +108,7 @@ resource "aws_api_gateway_integration" "any_proxy" {
   integration_http_method = "ANY"
   # type                    = var.environment == "prod" ? "HTTP_PROXY" : "HTTP"
   type                 = "HTTP_PROXY"
-  uri                  = var.vpc_link_endpoint_url
+  uri                  = "${var.vpc_link_endpoint_url}/{proxy}"
   connection_type      = var.environment == "prod" ? "VPC_LINK" : "INTERNET"
   connection_id        = var.environment == "prod" ? aws_api_gateway_vpc_link.main[0].id : null
   passthrough_behavior = "WHEN_NO_TEMPLATES"
@@ -425,10 +425,11 @@ resource "aws_api_gateway_integration" "internal_onboard" {
   http_method             = aws_api_gateway_method.internal_onboard_post.http_method
   integration_http_method = "POST"
   type                    = "HTTP_PROXY"
-  uri                     = "${var.vpc_link_endpoint_url}/users/onboard" # Use existing endpoint
-  connection_type         = var.environment == "prod" ? "VPC_LINK" : "INTERNET"
-  connection_id           = var.environment == "prod" ? aws_api_gateway_vpc_link.main[0].id : null
-  passthrough_behavior    = "WHEN_NO_TEMPLATES"
+  # Fix: Remove {proxy+} from URI to avoid "Illegal character in path" error
+  uri                  = "${var.vpc_link_endpoint_url}/users/onboard"
+  connection_type      = var.environment == "prod" ? "VPC_LINK" : "INTERNET"
+  connection_id        = var.environment == "prod" ? aws_api_gateway_vpc_link.main[0].id : null
+  passthrough_behavior = "WHEN_NO_TEMPLATES"
 
   request_parameters = {
     # Backend service authentication (same as regular endpoints)
