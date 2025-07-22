@@ -13,7 +13,7 @@ import { useTeam } from "@/context/TeamContext";
 // Skeletons
 import TablesSkeleton from "../../skeletons/tables-skeleton";
 // Actions
-import { getTeamById, updateTeamById } from "@/app/lib/team";
+import { useGetTeamById, useUpdateTeam } from "@/hooks/useTeam";
 // Styles
 import "./team-general-tab.css";
 import "../../../styles/text-styles.css";
@@ -37,6 +37,10 @@ export default function TeamGeneralTab({
   const [fieldEditing, setFieldEditing] = useState<string | null>(null);
   const [teamState, setTeamState] = useState<TeamT | null>(team);
 
+  // Hook functions
+  const getTeamByIdFn = useGetTeamById();
+  const updateTeamFn = useUpdateTeam();
+
   const editButton = (handleSetEditing: () => void): ReactElement => (
     <IconButton onClick={handleSetEditing}>
       <EditIcon />
@@ -50,16 +54,25 @@ export default function TeamGeneralTab({
   const handleGetTeam = useCallback(async () => {
     if (!selectedTeamId) return;
     setIsLoading(true);
-    const fetchedTeam = await getTeamById(selectedTeamId);
-    setTeam(fetchedTeam);
-    setIsLoading(false);
-  }, [selectedTeamId]);
+    try {
+      const fetchedTeam = await getTeamByIdFn(selectedTeamId);
+      setTeam(fetchedTeam);
+    } catch (error) {
+      console.error("Failed to fetch team:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedTeamId, getTeamByIdFn]);
 
   const handleUpdateTeam = async (updatedTeam: TeamT) => {
     if (!selectedTeamId) return;
-    const newTeam = await updateTeamById(selectedTeamId, updatedTeam);
-    setTeam(newTeam);
-    updateTeamInContext(newTeam);
+    try {
+      const newTeam = await updateTeamFn(selectedTeamId, updatedTeam);
+      setTeam(newTeam);
+      updateTeamInContext(newTeam);
+    } catch (error) {
+      console.error("Failed to update team:", error);
+    }
   };
 
   const handleChangeUseSolver = (e: React.ChangeEvent<HTMLInputElement>) => {

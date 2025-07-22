@@ -7,9 +7,9 @@ import InvitationsList from "./invitations-list";
 // Skeletons
 // Actions
 import {
-  getTeamUsersWithMemberships,
-  removeUserFromTeam,
-} from "@/app/lib/team";
+  useGetTeamUsersWithMemberships,
+  useRemoveUserFromTeam,
+} from "@/hooks/useTeam";
 import { getWorkers, attachUserToWorker } from "@/app/lib/worker";
 import {
   createTeamInvitation,
@@ -40,27 +40,40 @@ export default function MembersTab({
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [invitations, setInvitations] = useState<TeamInvitationT[]>([]);
 
+  // Hook functions
+  const getTeamUsersWithMembershipsFn = useGetTeamUsersWithMemberships();
+  const removeUserFromTeamFn = useRemoveUserFromTeam();
+
   //////////////////////////
   // Team Actions
   //////////////////////////
 
   const handleGetTeamUsersInvitationsAndWorkers = useCallback(async () => {
     setIsLoading(true);
-    const users = await getTeamUsersWithMemberships(teamId);
-    const workers = await getWorkers(teamId);
-    const invitations = await getTeamInvitations(teamId);
-    setUsers(users);
-    setWorkers(workers);
-    setInvitations(invitations);
-    setIsLoading(false);
-  }, [teamId]);
+    try {
+      const users = await getTeamUsersWithMembershipsFn(teamId);
+      const workers = await getWorkers(teamId);
+      const invitations = await getTeamInvitations(teamId);
+      setUsers(users);
+      setWorkers(workers);
+      setInvitations(invitations);
+    } catch (error) {
+      console.error("Failed to fetch team data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [teamId, getTeamUsersWithMembershipsFn]);
 
   const handleRemoveFromTeam = async (teamId: string, userId: string) => {
-    const success = await removeUserFromTeam(teamId, userId);
-    if (success) {
+    try {
+      await removeUserFromTeamFn(teamId, userId);
+      // If we get here, the removal was successful
       setUsers((prevUsers) =>
         prevUsers.filter((user) => user.user.id !== userId)
       );
+    } catch (error) {
+      console.error("Failed to remove user from team:", error);
+      // Handle error as needed (show notification, etc.)
     }
   };
 

@@ -7,10 +7,10 @@ import UserTeamInvitationsList from "./user-team-invitations-list";
 // Skeletons
 // Actions
 import {
-  createTeam,
-  getUserTeamsWithMemberships,
-  leaveTeam,
-} from "@/app/lib/team";
+  useCreateTeam,
+  useGetUserTeamsWithMemberships,
+  useLeaveTeam,
+} from "@/hooks/useTeam";
 import {
   getUserPendingInvitations,
   acceptTeamInvitation,
@@ -37,30 +37,30 @@ export default function TeamsTab({
   const [teams, setTeams] = useState<TeamWithMembership[]>([]);
   const [invitations, setInvitations] = useState<EnrichedTeamInvitationT[]>([]);
 
+  // Hook functions
+  const createTeamFn = useCreateTeam();
+  const getUserTeamsWithMembershipsFn = useGetUserTeamsWithMemberships();
+  const leaveTeamFn = useLeaveTeam();
+
   //////////////////////////
   // Team Actions
   //////////////////////////
 
   const handleCreateTeam = async (teamName: string) => {
-    const newTeam = await createTeam(teamName);
+    const newTeam = await createTeamFn(teamName);
     setTeams((prevTeams) => [...prevTeams, newTeam]);
   };
 
-  const handleGetUserTeams = async () => {
-    setIsLoading(true);
-    const teams = await getUserTeamsWithMemberships();
-    const invitations = await getUserPendingInvitations();
-    setTeams(teams);
-    setInvitations(invitations);
-    setIsLoading(false);
-  };
-
   const handleLeaveTeam = async (teamId: string) => {
-    const success = await leaveTeam(teamId);
-    if (success) {
+    try {
+      await leaveTeamFn(teamId);
+      // If we get here, the leave operation was successful
       setTeams((prevTeams) =>
         prevTeams.filter((team) => team.team.id !== teamId)
       );
+    } catch (error) {
+      console.error("Failed to leave team:", error);
+      // Handle error as needed (show notification, etc.)
     }
   };
 
@@ -86,8 +86,22 @@ export default function TeamsTab({
   };
 
   useEffect(() => {
-    handleGetUserTeams();
-  }, []);
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const teams = await getUserTeamsWithMembershipsFn();
+        const invitations = await getUserPendingInvitations();
+        setTeams(teams);
+        setInvitations(invitations);
+      } catch (error) {
+        console.error("Failed to fetch teams and invitations:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [getUserTeamsWithMembershipsFn]);
 
   return (
     <div className="tab-container-wide">

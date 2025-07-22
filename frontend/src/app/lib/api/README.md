@@ -1,6 +1,6 @@
-# User API Refactoring - New Architecture
+# API Refactoring - New Architecture
 
-This document explains the new unified API client architecture for user operations and how to migrate from the old patterns.
+This document explains the new unified API client architecture for user and team operations and how to migrate from the old patterns.
 
 ## Architecture Overview
 
@@ -9,12 +9,15 @@ This document explains the new unified API client architecture for user operatio
 ```
 frontend/src/
 ├── hooks/
-│   └── useUser.ts          # React hooks for user operations
+│   ├── useUser.ts         # React hooks for user operations
+│   └── useTeam.ts         # React hooks for team operations
 ├── app/lib/
 │   ├── user.ts            # Legacy functions + re-exports
+│   ├── team.ts            # Legacy functions + re-exports  
 │   └── api/
 │       ├── baseApi.ts     # Base API client with common functionality
-│       └── userApi.ts     # User-specific API methods
+│       ├── userApi.ts     # User-specific API methods
+│       └── teamApi.ts     # Team-specific API methods
 └── components/
     ├── debug/
     │   └── auth-test-component.tsx ✅ Updated
@@ -26,8 +29,8 @@ frontend/src/
 ### Key Components
 
 1. **BaseApi** - Abstract class with common API functionality
-2. **UserApi** - Concrete implementation for user operations  
-3. **useUser.ts** - React hooks that use the new API with authentication
+2. **UserApi & TeamApi** - Concrete implementations for specific operations  
+3. **useUser.ts & useTeam.ts** - React hooks that use the new API with authentication
 4. **Updated Components** - All components now use the new hooks
 
 ## Benefits

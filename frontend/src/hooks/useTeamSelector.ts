@@ -1,13 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 // import { useRouter } from "next/navigation";
 import { TeamWithMembership, TeamT } from "@/types/team";
-import { getUserTeamsWithMemberships } from "@/app/lib/team";
+import { useGetUserTeamsWithMemberships } from "./useTeam";
 
 export function useTeamSelector() {
   //   const router = useRouter();
+  const getUserTeamsWithMemberships = useGetUserTeamsWithMemberships();
   const [teams, setTeams] = useState<TeamWithMembership[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Use a ref to track if we've already fetched to prevent multiple calls
+  const hasFetched = useRef(false);
 
   const updateTeamInContext = (updatedTeam: TeamT) => {
     setTeams((prevTeams) =>
@@ -18,25 +23,42 @@ export function useTeamSelector() {
   };
 
   useEffect(() => {
+    // Prevent multiple simultaneous calls
+    if (hasFetched.current) {
+      return;
+    }
+
     const loadTeams = async () => {
-      setLoading(true);
-      const fetchedTeams = await getUserTeamsWithMemberships();
-      setTeams(fetchedTeams);
+      hasFetched.current = true;
 
-      // const urlTeamId = new URLSearchParams(window.location.search).get("team");
-      const storageTeamId = localStorage.getItem("selectedTeamId");
-      const fallbackTeamId = storageTeamId || fetchedTeams[0]?.team.id || null;
-      // const fallbackTeamId =
-      //   urlTeamId || storageTeamId || fetchedTeams[0]?.team.id || null;
+      try {
+        setLoading(true);
+        setError(null);
+        const fetchedTeams = await getUserTeamsWithMemberships();
+        setTeams(fetchedTeams);
 
-      if (fallbackTeamId) {
-        setSelectedTeamId(fallbackTeamId);
+        // const urlTeamId = new URLSearchParams(window.location.search).get("team");
+        const storageTeamId = localStorage.getItem("selectedTeamId");
+        const fallbackTeamId =
+          storageTeamId || fetchedTeams[0]?.team.id || null;
+        // const fallbackTeamId =
+        //   urlTeamId || storageTeamId || fetchedTeams[0]?.team.id || null;
+
+        if (fallbackTeamId) {
+          setSelectedTeamId(fallbackTeamId);
+        }
+      } catch (err) {
+        console.error("Failed to fetch teams:", err);
+        setError(err instanceof Error ? err.message : "Failed to fetch teams");
+        // Reset the flag on error to allow retry
+        hasFetched.current = false;
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     loadTeams();
-  }, []);
+  }, [getUserTeamsWithMemberships]); // getUserTeamsWithMemberships is now stable with useCallback
 
   // useEffect(() => {
   //   // const urlTeamId = new URLSearchParams(window.location.search).get("team");
@@ -64,7 +86,13 @@ export function useTeamSelector() {
     selectedTeam,
     setSelectedTeamId,
     loading,
+    error,
     updateTeamInContext,
+    // Add a manual refresh function for explicit updates
+    refresh: () => {
+      hasFetched.current = false;
+      setLoading(true);
+    },
   };
   // return { selectedTeam, setSelectedTeamId };
 }
