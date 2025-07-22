@@ -20,15 +20,38 @@ export function TeamProvider({
     updateTeamInContext,
   } = useTeamSelector();
   const pathname = usePathname();
-  const isTeamsPage = pathname.endsWith("/plan/settings/teams");
-  const isProfilePage = pathname.endsWith("/plan/settings/profile");
   const router = useRouter();
 
+  // Extract language from pathname (e.g., "/en/plan/settings/teams" -> "en")
+  const getLanguageFromPath = React.useCallback((): string => {
+    const segments = pathname.split("/").filter(Boolean);
+    // First segment should be the language code
+    return segments[0] || "en"; // Default to 'en' if no language found
+  }, [pathname]);
+
+  // Check if we're on specific pages that don't require team selection
+  const isTeamsPage = pathname.includes("/plan/settings/teams");
+  const isProfilePage = pathname.includes("/plan/settings/profile");
+
   React.useEffect(() => {
+    // Security: Only redirect authenticated users when necessary
     if (!loading && !selectedTeam && !isTeamsPage && !isProfilePage) {
-      router.replace("/plan/settings/teams");
+      const language = getLanguageFromPath();
+
+      // Construct the teams page URL with the current language
+      const teamsUrl = `/${language}/plan/settings/teams`;
+
+      router.replace(teamsUrl);
     }
-  }, [selectedTeam, isTeamsPage, isProfilePage, router, loading]);
+  }, [
+    selectedTeam,
+    isTeamsPage,
+    isProfilePage,
+    router,
+    loading,
+    pathname,
+    getLanguageFromPath,
+  ]);
 
   return (
     <TeamContext.Provider
