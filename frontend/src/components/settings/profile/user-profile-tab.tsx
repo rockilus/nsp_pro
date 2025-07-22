@@ -14,7 +14,11 @@ import UserProfileRow from "./user-profile-row";
 // Skeletons
 import TablesSkeleton from "../../skeletons/tables-skeleton";
 // Actions
-import { useGetUser, updateUser, updatePassword } from "../../../app/lib/user";
+import {
+  useGetUser,
+  useUpdateUser,
+  useUpdatePassword,
+} from "../../../hooks/useUser";
 // Styles
 import "./user-profile-tab.css";
 import "../../../styles/text-styles.css";
@@ -27,6 +31,8 @@ import { languages } from "../../../constants/constants";
 export default function UserProfileTab({ lng }: { lng: string }) {
   const { t } = useTranslation(lng, "profile-page");
   const getUser = useGetUser();
+  const updateUser = useUpdateUser();
+  const updatePassword = useUpdatePassword();
 
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<UserT | null>(null);

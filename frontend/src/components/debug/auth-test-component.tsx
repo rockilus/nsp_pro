@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { useGetUser } from "../../app/lib/user";
+import { useGetUser } from "../../hooks/useUser";
 import { useAuth } from "../../contexts/auth-context";
 import { StaticAuthGuard } from "../auth/static-auth-guard";
 

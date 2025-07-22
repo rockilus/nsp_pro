@@ -314,6 +314,7 @@ resource "aws_api_gateway_usage_plan" "internal" {
   }
 
   # Conservative limits for internal services
+  # Changer a la seconde ou a la minute: 10/secondes
   quota_settings {
     limit  = 10000 # 10k requests per day
     period = "DAY"

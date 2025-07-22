@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 // Actions
-import { useGetUser } from "@/app/lib/user";
+import { useGetUser } from "./useUser";
 // Types
 import { UserT } from "@/types/user";
 
