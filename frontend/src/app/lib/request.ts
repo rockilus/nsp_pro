@@ -1,261 +1,122 @@
+/**
+ * Legacy request API functions
+ *
+ * @deprecated These functions are deprecated and will be removed in a future version.
+ * Please use the new RequestApi class and useRequest hooks instead.
+ *
+ * Migration guide:
+ * - Replace direct function calls with appropriate hooks from useRequest.ts
+ * - Use RequestApi class for non-React contexts
+ * - Use useGetRequestsTabData() hook instead of getRequestsTabData()
+ */
+
 // Actions
 import { getAllShifts } from "./shift";
 import { getAllWorkers } from "./worker";
 import { getShiftOptions } from "./stats";
 // Types
 import { RequestT, toRequestT, fromRequestT } from "../../types/request";
+// New API Client
+import { RequestApi } from "./api/requestApi";
 // Env Vars
 import { API_URL } from "./env";
 
 const apiUrlRequests = API_URL + "/requests";
 
 //////////////////////////
-// Request //
+// Legacy Request Functions //
 //////////////////////////
 
+/**
+ * @deprecated Use RequestApi.addRequest() or useAddRequest() hook instead
+ */
 export async function addRequest(request: RequestT, teamId: string) {
-  const options: RequestInit = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(fromRequestT(request)),
-  };
-  try {
-    const response = await fetch(`${apiUrlRequests}/teams/${teamId}`, options);
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to add request: " + responseData.detail);
-    }
-    return toRequestT(responseData) as RequestT;
-  } catch (error) {
-    console.error("Failed to add request:", error);
-    throw new Error("Failed to add request, please try again later");
-  }
+  console.warn(
+    "⚠️ Using deprecated addRequest function. Please use RequestApi.addRequest() or useAddRequest() hook instead."
+  );
+  return RequestApi.addRequestLegacy(request, teamId);
 }
 
+/**
+ * @deprecated Use RequestApi.getRequests() or useGetRequests() hook instead
+ */
 export async function getRequests(teamId: string) {
-  const options: RequestInit = {
-    method: "GET",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(`${apiUrlRequests}/teams/${teamId}`, options);
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to fetch requests: " + responseData.detail);
-    }
-    return responseData.map(toRequestT) as RequestT[];
-  } catch (error) {
-    console.error("Failed to fetch requests:", error);
-    throw new Error("Failed to fetch requests, please try again later");
-  }
+  console.warn(
+    "⚠️ Using deprecated getRequests function. Please use RequestApi.getRequests() or useGetRequests() hook instead."
+  );
+  return RequestApi.getRequestsLegacy(teamId);
 }
 
+/**
+ * @deprecated Use RequestApi.updateRequest() or useUpdateRequest() hook instead
+ */
 export async function updateRequest(updatedRequest: RequestT, teamId: string) {
-  const options: RequestInit = {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(fromRequestT(updatedRequest)),
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlRequests}/${updatedRequest.id}/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to update request: " + responseData.detail);
-    }
-    return toRequestT(responseData) as RequestT;
-  } catch (error) {
-    console.error("Failed to update request:", error);
-    throw new Error("Failed to update request, please try again later");
-  }
+  console.warn(
+    "⚠️ Using deprecated updateRequest function. Please use RequestApi.updateRequest() or useUpdateRequest() hook instead."
+  );
+  return RequestApi.updateRequestLegacy(updatedRequest, teamId);
 }
 
-// Accept a request
+/**
+ * @deprecated Use RequestApi.acceptRequest() or useAcceptRequest() hook instead
+ */
 export async function acceptRequest(
   requestId: string,
   teamId: string
 ): Promise<RequestT> {
-  // Input validation
-  if (!requestId?.trim()) {
-    throw new Error("Request ID is required");
-  }
-  if (!teamId?.trim()) {
-    throw new Error("Team ID is required");
-  }
-
-  try {
-    const response = await fetch(
-      `${apiUrlRequests}/${requestId}/teams/${teamId}/accept`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const errorMessage = errorData.detail || `HTTP ${response.status}`;
-      throw new Error(`Failed to accept request: ${errorMessage}`);
-    }
-
-    const responseData = await response.json();
-    return toRequestT(responseData);
-  } catch (error) {
-    // Re-throw our custom errors
-    if (
-      error instanceof Error &&
-      error.message.startsWith("Failed to accept request:")
-    ) {
-      throw error;
-    }
-
-    // Handle network and other errors
-    console.error("Failed to accept request:", error);
-    throw new Error(
-      "Failed to accept request. Please check your connection and try again."
-    );
-  }
+  console.warn(
+    "⚠️ Using deprecated acceptRequest function. Please use RequestApi.acceptRequest() or useAcceptRequest() hook instead."
+  );
+  return RequestApi.acceptRequestLegacy(requestId, teamId);
 }
 
-// Deny a request
+/**
+ * @deprecated Use RequestApi.denyRequest() or useDenyRequest() hook instead
+ */
 export async function denyRequest(
   requestId: string,
   teamId: string
 ): Promise<RequestT> {
-  // Input validation
-  if (!requestId?.trim()) {
-    throw new Error("Request ID is required");
-  }
-  if (!teamId?.trim()) {
-    throw new Error("Team ID is required");
-  }
-
-  try {
-    const response = await fetch(
-      `${apiUrlRequests}/${requestId}/teams/${teamId}/deny`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const errorMessage = errorData.detail || `HTTP ${response.status}`;
-      throw new Error(`Failed to deny request: ${errorMessage}`);
-    }
-
-    const responseData = await response.json();
-    return toRequestT(responseData);
-  } catch (error) {
-    // Re-throw our custom errors
-    if (
-      error instanceof Error &&
-      error.message.startsWith("Failed to deny request:")
-    ) {
-      throw error;
-    }
-
-    // Handle network and other errors
-    console.error("Failed to deny request:", error);
-    throw new Error(
-      "Failed to deny request. Please check your connection and try again."
-    );
-  }
+  console.warn(
+    "⚠️ Using deprecated denyRequest function. Please use RequestApi.denyRequest() or useDenyRequest() hook instead."
+  );
+  return RequestApi.denyRequestLegacy(requestId, teamId);
 }
 
-// Rescind a request (revert approved/denied back to pending)
+/**
+ * @deprecated Use RequestApi.rescindRequest() or useRescindRequest() hook instead
+ */
 export async function rescindRequest(
   requestId: string,
   teamId: string
 ): Promise<RequestT> {
-  // Input validation
-  if (!requestId?.trim()) {
-    throw new Error("Request ID is required");
-  }
-  if (!teamId?.trim()) {
-    throw new Error("Team ID is required");
-  }
-
-  try {
-    const response = await fetch(
-      `${apiUrlRequests}/${requestId}/teams/${teamId}/rescind`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const errorMessage = errorData.detail || `HTTP ${response.status}`;
-      throw new Error(`Failed to rescind request: ${errorMessage}`);
-    }
-
-    const responseData = await response.json();
-    return toRequestT(responseData);
-  } catch (error) {
-    // Re-throw our custom errors
-    if (
-      error instanceof Error &&
-      error.message.startsWith("Failed to rescind request:")
-    ) {
-      throw error;
-    }
-
-    // Handle network and other errors
-    console.error("Failed to rescind request:", error);
-    throw new Error(
-      "Failed to rescind request. Please check your connection and try again."
-    );
-  }
+  console.warn(
+    "⚠️ Using deprecated rescindRequest function. Please use RequestApi.rescindRequest() or useRescindRequest() hook instead."
+  );
+  return RequestApi.rescindRequestLegacy(requestId, teamId);
 }
 
+/**
+ * @deprecated Use RequestApi.deleteRequest() or useDeleteRequest() hook instead
+ */
 export async function deleteRequest(requestId: string, teamId: string) {
-  const options: RequestInit = {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlRequests}/${requestId}/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to request shift: " + responseData.detail);
-    }
-  } catch (error) {
-    console.error("Failed to request shift:", error);
-    throw new Error("Failed to request shift, please try again later");
-  }
+  console.warn(
+    "⚠️ Using deprecated deleteRequest function. Please use RequestApi.deleteRequest() or useDeleteRequest() hook instead."
+  );
+  return RequestApi.deleteRequestLegacy(requestId, teamId);
 }
 
 //////////////////////////
-// Requests Tab Data //
+// Legacy Requests Tab Data //
 //////////////////////////
 
+/**
+ * @deprecated Use useGetRequestsTabData() hook instead
+ */
 export async function getRequestsTabData(teamId: string) {
+  console.warn(
+    "⚠️ Using deprecated getRequestsTabData function. Please use useGetRequestsTabData() hook instead."
+  );
   try {
     const requestsTabData = await Promise.all([
       getAllWorkers(teamId),
