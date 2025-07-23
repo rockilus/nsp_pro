@@ -15,13 +15,14 @@ from shared.schemas.dto import (
     StatsOptionsDTO,
 )
 
-from src.dependencies import get_db_collections, get_stats_service
-from src.errors import NotAuthorizedError, handle_routes_errors
-from src.integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
+from src.dependencies import (
+    get_db_collections,
+    get_stats_service,
+    get_user_context,
 )
+from src.errors import NotAuthorizedError, handle_routes_errors
 from src.integrations.authorization import authz_check
+from src.security.user_context import UserContext
 from src.services.stats_service import StatsService
 
 router = APIRouter()
@@ -31,13 +32,12 @@ router = APIRouter()
 async def create_stats_header(
     team_id: str,
     req: StatsHeaderDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> StatsHeaderDTO:
     try:
-        if not await authz_check(
-            session.get_user_id(), "create-stats-header", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "create-stats-header", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to create a stats header",
             )
@@ -54,13 +54,12 @@ async def create_stats_header(
 @router.get("/stats/shift-options/teams/{team_id}")
 async def get_shift_options(
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     stats_service: StatsService = Depends(get_stats_service),
 ) -> List[ShiftWorkerOptionDTO]:
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-shift-options", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "read-shift-options", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to get stats options",
             )
@@ -76,11 +75,12 @@ async def get_shift_options(
 async def calculate_stats(
     team_id: str,
     options: StatsOptionsDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     stats_service: StatsService = Depends(get_stats_service),
 ) -> StatsDTO:
     try:
-        if not await authz_check(session.get_user_id(), "read-stats", "team", team_id):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "read-stats", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to get stats options",
             )
@@ -101,13 +101,12 @@ async def calculate_stats(
 async def delete_stats_header(
     stats_header_id: str,
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> Dict:
     try:
-        if not await authz_check(
-            session.get_user_id(), "delete-stats-header", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "delete-stats-header", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to delete stats header",
             )

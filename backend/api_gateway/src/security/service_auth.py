@@ -28,9 +28,7 @@ def get_ssm_client():
     """
     try:
         region = os.getenv("AWS_REGION", "eu-west-3")
-        return boto3.client(
-            "ssm", region_name=region, endpoint_url=config.endpoint_url
-        )
+        return boto3.client("ssm", region_name=region, endpoint_url=config.endpoint_url)
     except NoCredentialsError as exc:
         logger.error("AWS credentials not configured")
         raise ServiceAuthError("AWS credentials not configured") from exc
@@ -69,13 +67,9 @@ def get_expected_api_key() -> str:
         error_code = e.response["Error"]["Code"]
         if error_code == "ParameterNotFound":
             logger.error("API key parameter not found: %s", parameter_name)
-            raise ServiceAuthError(
-                "Service authentication not configured"
-            ) from e
+            raise ServiceAuthError("Service authentication not configured") from e
         logger.error("AWS SSM error: %s", e)
-        raise ServiceAuthError(
-            "Failed to retrieve service configuration"
-        ) from e
+        raise ServiceAuthError("Failed to retrieve service configuration") from e
     except Exception as e:
         logger.error("Failed to retrieve API key from SSM: %s", e)
         raise ServiceAuthError("Service configuration error") from e
@@ -111,6 +105,4 @@ def validate_service_api_key(provided_key: Optional[str]) -> bool:
         raise
     except Exception as e:
         logger.error("Unexpected error during API key validation: %s", e)
-        raise ServiceAuthError(
-            "Service authentication validation failed"
-        ) from e
+        raise ServiceAuthError("Service authentication validation failed") from e

@@ -6,16 +6,17 @@ from shared.logger import log_info
 from shared.schemas.core import Specialty
 from shared.schemas.dto import SpecialtyDTO, WorkerDTO
 
-from src.dependencies import get_db_collections, get_specialty_service
+from src.dependencies import (
+    get_db_collections,
+    get_specialty_service,
+    get_user_context,
+)
 from src.errors import (
     NotAuthorizedError,
     handle_routes_errors,
 )
-from src.integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
 from src.integrations.authorization import authz_check
+from src.security.user_context import UserContext
 from src.services.specialty_service import SpecialtyService
 
 router = APIRouter()
@@ -25,13 +26,12 @@ router = APIRouter()
 async def create_specialty(
     team_id: str,
     specialty: SpecialtyDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> SpecialtyDTO:
     try:
-        if not await authz_check(
-            session.get_user_id(), "create-specialty", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "create-specialty", "team", team_id):
             raise NotAuthorizedError("You do not have permission to create a specialty")
         s_data = Specialty.from_dto(specialty)
         de_created = db_collections.specialty_db.create_specialty(s_data)
@@ -46,13 +46,12 @@ async def create_specialty(
 @router.get("/specialties/teams/{team_id}")
 async def get_specialties(
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[SpecialtyDTO]:
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-specialties", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "read-specialties", "team", team_id):
             raise NotAuthorizedError("You do not have permission to read specialties")
         specialties = db_collections.specialty_db.get_specialties_by_team_id(team_id)
         response = [sp.to_dto() for sp in specialties]
@@ -66,14 +65,13 @@ async def get_specialties(
 async def update_specialty(
     team_id: str,
     specialty: SpecialtyDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> SpecialtyDTO:
     # pylint: disable=R0801
     try:
-        if not await authz_check(
-            session.get_user_id(), "update-specialty", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "update-specialty", "team", team_id):
             raise NotAuthorizedError("You do not have permission to update a specialty")
         de_data = Specialty.from_dto(specialty)
         updated_de = db_collections.specialty_db.update_specialty(de_data)
@@ -88,14 +86,13 @@ async def update_specialty(
 async def delete_specialty(
     specialty_id: str,
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     specialty_service: SpecialtyService = Depends(get_specialty_service),
 ) -> List[WorkerDTO]:
     # pylint: disable=R0801
     try:
-        if not await authz_check(
-            session.get_user_id(), "delete-specialty", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "delete-specialty", "team", team_id):
             raise HTTPException(
                 status_code=403,
                 detail="You do not have permission to delete a specialty",

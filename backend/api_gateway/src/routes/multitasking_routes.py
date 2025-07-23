@@ -13,13 +13,10 @@ from shared.schemas.dto.multitasking import (
     UpdateMultitaskingGroupRequest,
 )
 
-from src.dependencies import get_multitasking_service
+from src.dependencies import get_multitasking_service, get_user_context
 from src.errors import NotAuthorizedError, handle_routes_errors
-from src.integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
 from src.integrations.authorization import authz_check
+from src.security.user_context import UserContext
 from src.services.multitasking_service import MultitaskingService
 
 router = APIRouter()
@@ -37,7 +34,7 @@ router = APIRouter()
 )
 async def get_shift_demand_concurrency(
     request: ShiftDemandConcurrencyRequestDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: MultitaskingService = Depends(get_multitasking_service),
 ) -> ShiftDemandConcurrencyResponseDTO:
     """Get shift demand concurrency data for a team within a date range."""
@@ -47,7 +44,7 @@ async def get_shift_demand_concurrency(
 
         # Check authorization
         if not await authz_check(
-            session.get_user_id(),
+            user_context.user_id,
             "read-shift-demands",
             "team",
             core_request.team_id,
@@ -87,14 +84,14 @@ async def get_shift_demand_concurrency(
 )
 async def create_multitasking_group(
     request: CreateMultitaskingGroupRequest,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: MultitaskingService = Depends(get_multitasking_service),
 ) -> MultitaskingGroupDTO:
     """Create a multitasking group and return all groups for the team."""
     try:
         # Authorization: user must be able to manage multitasking groups for the team
         if not await authz_check(
-            session.get_user_id(),
+            user_context.user_id,
             # "manage-multitasking-groups",
             "read-shift-demands",
             "team",
@@ -128,14 +125,14 @@ async def create_multitasking_group(
 async def update_multitasking_group(
     team_id: str,
     request: UpdateMultitaskingGroupRequest,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: MultitaskingService = Depends(get_multitasking_service),
 ) -> MultitaskingGroupDTO:
     """Update a multitasking group and return all groups for the team."""
     try:
         # Authorization: user must be able to manage multitasking groups for the team
         if not await authz_check(
-            session.get_user_id(),
+            user_context.user_id,
             # "manage-multitasking-groups",
             "read-shift-demands",
             "team",
@@ -170,13 +167,13 @@ async def update_multitasking_group(
 async def get_multitasking_groups(
     team_id: str,
     template_id: Optional[str] = None,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: MultitaskingService = Depends(get_multitasking_service),
 ) -> List[MultitaskingGroupDTO]:
     """Get all multitasking groups for a team, optionally filtered by template."""
     try:
         if not await authz_check(
-            session.get_user_id(),
+            user_context.user_id,
             # "read-multitasking-groups",
             "read-shift-demands",
             "team",
@@ -205,13 +202,13 @@ async def get_multitasking_groups(
 async def delete_multitasking_group(
     team_id: str,
     group_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: MultitaskingService = Depends(get_multitasking_service),
 ) -> Dict[str, str | bool]:
     """Delete a multitasking group and return confirmation."""
     try:
         if not await authz_check(
-            session.get_user_id(),
+            user_context.user_id,
             # "manage-multitasking-groups",
             "read-shift-demands",
             "team",

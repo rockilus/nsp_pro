@@ -15,13 +15,10 @@ from shared.schemas.dto import (
     RecurrenceRuleDTO,
 )
 
-from src.dependencies import get_assignment_service
+from src.dependencies import get_assignment_service, get_user_context
 from src.errors import NotAuthorizedError, handle_routes_errors
-from src.integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
 from src.integrations.authorization import authz_check
+from src.security.user_context import UserContext
 from src.services.assignment_service import AssignmentService
 
 router = APIRouter()
@@ -32,12 +29,12 @@ async def create_assignment(
     team_id: str,
     assignment: AssignmentDTO,
     recurrence: Optional[RecurrenceRuleDTO] = None,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(get_assignment_service),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
-            session.get_user_id(), "create-assignment", "team", team_id
+            user_context.user_id, "create-assignment", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to create an assignment",
@@ -59,14 +56,14 @@ async def get_assignments(
     team_id: str,
     start_date: Optional[date] = Query(None, alias="start_date"),
     end_date: Optional[date] = Query(None, alias="end_date"),
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(
         get_assignment_service,
     ),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
-            session.get_user_id(), "read-assignments", "team", team_id
+            user_context.user_id, "read-assignments", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to get assignments",
@@ -93,14 +90,14 @@ async def get_assignments_validated(
     team_id: str,
     start_date: Optional[date] = Query(None, alias="start_date"),
     end_date: Optional[date] = Query(None, alias="end_date"),
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(
         get_assignment_service,
     ),
 ) -> List[AssignmentDTO]:
     try:
         if not await authz_check(
-            session.get_user_id(),
+            user_context.user_id,
             "read-assignments-validated",
             "team",
             team_id,
@@ -129,12 +126,12 @@ async def update_assignment(
     recurrence_update_scope: Optional[int] = Query(
         None, alias="recurrence_update_scope"
     ),
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(get_assignment_service),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
-            session.get_user_id(), "update-assignment", "team", team_id
+            user_context.user_id, "update-assignment", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to update an assignment",
@@ -166,12 +163,12 @@ async def delete_assignment(
     recurrence_update_scope: Optional[int] = Query(
         None, alias="recurrence_update_scope"
     ),
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(get_assignment_service),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
-            session.get_user_id(), "delete-assignment", "team", team_id
+            user_context.user_id, "delete-assignment", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to delete an assignment",

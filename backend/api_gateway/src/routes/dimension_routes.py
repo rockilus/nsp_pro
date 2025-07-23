@@ -16,16 +16,13 @@ from shared.schemas.dto import (
     NewDimensionDTO,
 )
 
-from src.dependencies import get_db_collections, get_dimension_service
+from src.dependencies import get_db_collections, get_dimension_service, get_user_context
 from src.errors import (
     NotAuthorizedError,
     handle_routes_errors,
 )
-from src.integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
 from src.integrations.authorization import authz_check
+from src.security.user_context import UserContext
 from src.services.dimension_service import DimensionService
 
 router = APIRouter()
@@ -36,14 +33,14 @@ async def create_dimension(
     team_id: str,
     dimension: DimensionDTO,
     dim_entries: List[DimEntryDTO],
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     dimension_service: DimensionService = Depends(
         get_dimension_service,
     ),
 ) -> NewDimensionDTO:
     try:
         if not await authz_check(
-            session.get_user_id(), "create-dimension", "team", team_id
+            user_context.user_id, "create-dimension", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to create a dimension")
         d_data = Dimension.from_dto(dimension)
@@ -60,14 +57,14 @@ async def create_dimension(
 async def get_dimensions(
     team_id: str,
     dim_types_query: List[str] = Query(None, alias="dim_types"),
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(
         get_db_collections,
     ),
 ) -> DimensionsAndDimEntriesDTO:
     try:
         if not await authz_check(
-            session.get_user_id(), "read-dimensions", "team", team_id
+            user_context.user_id, "read-dimensions", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to read shift dimensions"
@@ -101,14 +98,14 @@ async def get_dimensions(
 async def update_dimension(
     team_id: str,
     dimension: DimensionDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(
         get_db_collections,
     ),
 ) -> DimensionDTO:
     try:
         if not await authz_check(
-            session.get_user_id(), "update-dimension", "team", team_id
+            user_context.user_id, "update-dimension", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to update a dimension")
         d_data = Dimension.from_dto(dimension)
@@ -124,14 +121,14 @@ async def update_dimension(
 async def delete_dimension(
     dimension_id: str,
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     dimension_service: DimensionService = Depends(
         get_dimension_service,
     ),
 ) -> Dict:
     try:
         if not await authz_check(
-            session.get_user_id(), "delete-dimension", "team", team_id
+            user_context.user_id, "delete-dimension", "team", team_id
         ):
             raise HTTPException(
                 status_code=403,

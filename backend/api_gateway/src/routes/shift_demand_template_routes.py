@@ -17,13 +17,13 @@ from shared.schemas.dto.shift_demand_template import (
     TemplateApplicationResult,
 )
 
-from src.dependencies import get_shift_demand_template_service
-from src.errors import NotAuthorizedError, handle_routes_errors
-from src.integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
+from src.dependencies import (
+    get_shift_demand_template_service,
+    get_user_context,
 )
+from src.errors import NotAuthorizedError, handle_routes_errors
 from src.integrations.authorization import authz_check
+from src.security.user_context import UserContext
 from src.services.shift_demand_template_service import (
     ShiftDemandTemplateService,
 )
@@ -36,14 +36,13 @@ router = APIRouter()
 async def create_template(
     team_id: str,
     template_dto: ShiftDemandTemplateCreateDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
 ) -> ShiftDemandTemplateDTO:
     """Create a new shift demand template."""
     try:
-        if not await authz_check(
-            session.get_user_id(), "create-shift-demand", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "create-shift-demand", "team", team_id):
             raise NotAuthorizedError("You do not have permission to create templates")
 
         # Create a basic template with minimal data
@@ -59,7 +58,7 @@ async def create_template(
             team_id=team_id,
             template_type=TemplateType.STANDARD,
             weeks_data=[empty_week],
-            created_by=session.get_user_id(),
+            created_by=user_id,
         )
 
         # Create through service
@@ -101,14 +100,13 @@ async def get_templates_by_team(
     template_type: Optional[str] = Query(
         None, description="Filter by template type (standard|even_odd)"
     ),
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
 ) -> List[ShiftDemandTemplateDTO]:
     """Get all templates for a team, optionally filtered by type."""
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-shift-demands", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "read-shift-demands", "team", team_id):
             raise NotAuthorizedError("You do not have permission to read templates")
 
         # Validate template_type if provided
@@ -139,14 +137,13 @@ async def get_templates_by_team(
 async def get_template_by_id(
     template_id: str,
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
 ) -> ShiftDemandTemplateDTO:
     """Get a specific template by ID."""
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-shift-demands", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "read-shift-demands", "team", team_id):
             raise NotAuthorizedError("You do not have permission to read templates")
 
         # Validate template belongs to team
@@ -193,14 +190,13 @@ async def update_template(
     template_id: str,
     team_id: str,
     template_dto: ShiftDemandTemplateUpdateDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
 ) -> ShiftDemandTemplateDTO:
     """Update an existing template."""
     try:
-        if not await authz_check(
-            session.get_user_id(), "update-shift-demand", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "update-shift-demand", "team", team_id):
             raise NotAuthorizedError("You do not have permission to update templates")
 
         # Get existing template for validation and update
@@ -269,14 +265,13 @@ async def update_template(
 async def delete_template(
     template_id: str,
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
 ) -> None:
     """Delete a template."""
     try:
-        if not await authz_check(
-            session.get_user_id(), "delete-shift-demand", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "delete-shift-demand", "team", team_id):
             raise NotAuthorizedError("You do not have permission to delete templates")
 
         # Validate template belongs to team
@@ -338,14 +333,13 @@ async def apply_demands_to_template_week(
     template_id: str,
     team_id: str,
     apply_dto: ApplyDemandsToTemplateWeekDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
 ) -> ShiftDemandTemplateDTO:
     """Apply existing shift demands from a source week to a template week."""
     try:
-        if not await authz_check(
-            session.get_user_id(), "update-shift-demand", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "update-shift-demand", "team", team_id):
             raise NotAuthorizedError("You do not have permission to update templates")
 
         # Convert timestamp to datetime
@@ -427,15 +421,14 @@ async def apply_template_to_date_range(
     template_id: str,
     team_id: str,
     apply_dto: ApplyTemplateToDateRangeDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
 ) -> TemplateApplicationResult:
     """Apply a template to a specific date range."""
     try:
         # Check permissions for creating shift demands
-        if not await authz_check(
-            session.get_user_id(), "create-shift-demand", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "create-shift-demand", "team", team_id):
             raise NotAuthorizedError("You do not have permission to apply templates")
 
         # Convert timestamps to date objects

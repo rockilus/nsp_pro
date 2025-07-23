@@ -7,16 +7,13 @@ from shared.logger import log_info
 from shared.schemas.core import Breach
 from shared.schemas.dto import BreachDTO
 
-from src.dependencies import get_db_collections
+from src.dependencies import get_db_collections, get_user_context
 from src.errors import (
     NotAuthorizedError,
     handle_routes_errors,
 )
-from src.integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
 from src.integrations.authorization import authz_check
+from src.security.user_context import UserContext
 
 router = APIRouter()
 
@@ -24,12 +21,12 @@ router = APIRouter()
 @router.get("/breaches/teams/{team_id}")
 async def get_objective_breaches(
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[BreachDTO]:
     try:
         if not await authz_check(
-            session.get_user_id(), "read-breaches", "team", team_id
+            user_context.user_id, "read-breaches", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to get objective breaches",
@@ -55,12 +52,12 @@ async def get_objective_breaches(
 async def update_objective_breach(
     team_id: str,
     objective_breach_api: BreachDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> BreachDTO:
     try:
         if not await authz_check(
-            session.get_user_id(), "update-breach", "team", team_id
+            user_context.user_id, "update-breach", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to update objective breaches",
@@ -78,12 +75,12 @@ async def update_objective_breach(
 async def delete_objective_breach(
     objective_breach_id: str,
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> Dict:
     try:
         if not await authz_check(
-            session.get_user_id(), "delete-breach", "team", team_id
+            user_context.user_id, "delete-breach", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to delete objective breaches",

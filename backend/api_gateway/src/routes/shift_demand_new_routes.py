@@ -11,16 +11,13 @@ from shared.schemas.dto import (
     ShiftDemandsResultDTO,
 )
 
-from src.dependencies import get_shift_demand_new_service
+from src.dependencies import get_shift_demand_new_service, get_user_context
 from src.errors import (
     NotAuthorizedError,
     handle_routes_errors,
 )
-from src.integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
 from src.integrations.authorization import authz_check
+from src.security.user_context import UserContext
 from src.services.shift_demand_new_service import ShiftDemandNewService
 
 router = APIRouter()
@@ -31,14 +28,13 @@ router = APIRouter()
 async def create_shift_demand(
     team_id: str,
     demand_dto: ShiftDemandNewCreateDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
 ) -> ShiftDemandNewDTO:
     """Create a new shift demand."""
     try:
-        if not await authz_check(
-            session.get_user_id(), "create-shift-demand", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "create-shift-demand", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to create shift demands"
             )
@@ -97,14 +93,13 @@ async def get_shift_demands_by_period(
     start_date: date = Query(..., description="Start date of the period (YYYY-MM-DD)"),
     end_date: date = Query(..., description="End date of the period (YYYY-MM-DD)"),
     buffer_days: int = Query(7, description="Buffer days for navigation"),
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
 ) -> List[ShiftDemandNewDTO]:
     """Get shift demands for a specific period with optional buffering."""
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-shift-demands", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "read-shift-demands", "team", team_id):
             raise NotAuthorizedError("You do not have permission to read shift demands")
 
         demands = service.get_shift_demands_by_period(
@@ -127,14 +122,13 @@ async def get_shift_demands_matrix(
     team_id: str,
     start_date: date = Query(..., description="Start date of the period (YYYY-MM-DD)"),
     end_date: date = Query(..., description="End date of the period (YYYY-MM-DD)"),
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
 ) -> Dict[str, Dict[str, int]]:
     """Get shift demands formatted as a matrix for grid display."""
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-shift-demands", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "read-shift-demands", "team", team_id):
             raise NotAuthorizedError("You do not have permission to read shift demands")
 
         return service.get_shift_demands_matrix(
@@ -154,14 +148,13 @@ async def update_shift_demand(
     team_id: str,
     demand_id: str,
     demand_dto: ShiftDemandNewUpdateDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
 ) -> ShiftDemandNewDTO:
     """Update an existing shift demand."""
     try:
-        if not await authz_check(
-            session.get_user_id(), "update-shift-demand", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "update-shift-demand", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to update shift demands"
             )
@@ -244,14 +237,13 @@ async def update_shift_demand(
 async def delete_shift_demand(
     team_id: str,
     demand_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
 ) -> None:
     """Delete a shift demand."""
     try:
-        if not await authz_check(
-            session.get_user_id(), "delete-shift-demand", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "delete-shift-demand", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to delete shift demands"
             )
@@ -272,14 +264,13 @@ async def delete_shift_demand(
 async def bulk_upsert_shift_demands(
     team_id: str,
     demands_dto: List[ShiftDemandNewCreateDTO],
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
 ) -> ShiftDemandsResultDTO:
     """Bulk upsert (create or update) shift demands."""
     try:
-        if not await authz_check(
-            session.get_user_id(), "create-shift-demand", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "create-shift-demand", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to create/update shift demands"
             )
@@ -359,14 +350,13 @@ async def copy_shift_demands_from_period(
     source_type: ShiftDemandSource = Query(
         ShiftDemandSource.TEMPLATE, description="Source type for tracking"
     ),
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
 ) -> List[ShiftDemandNewDTO]:
     """Copy shift demands from one period to another."""
     try:
-        if not await authz_check(
-            session.get_user_id(), "create-shift-demand", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "create-shift-demand", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to create shift demands"
             )
@@ -393,14 +383,13 @@ async def get_team_shift_summary(
     team_id: str,
     start_date: date = Query(..., description="Start date of the period"),
     end_date: date = Query(..., description="End date of the period"),
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
 ) -> Dict[str, Dict[str, int]]:
     """Get summary statistics for shift demands by shift."""
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-shift-demands", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "read-shift-demands", "team", team_id):
             raise NotAuthorizedError("You do not have permission to read shift demands")
 
         return service.get_team_shift_summary(
@@ -421,14 +410,13 @@ async def get_demands_by_shift_and_date_range(
     shift_id: str,
     start_date: date = Query(..., description="Start date of the period"),
     end_date: date = Query(..., description="End date of the period"),
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
 ) -> List[ShiftDemandNewDTO]:
     """Get demands for a specific shift within a date range."""
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-shift-demands", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "read-shift-demands", "team", team_id):
             raise NotAuthorizedError("You do not have permission to read shift demands")
 
         demands = service.get_demands_by_shift_and_date_range(
@@ -454,14 +442,13 @@ async def delete_demands_by_date_range(
     shift_ids: Optional[List[str]] = Query(
         None, description="Optional shift IDs to filter"
     ),
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
 ) -> Dict[str, int]:
     """Delete demands within a date range, optionally filtered by shifts."""
     try:
-        if not await authz_check(
-            session.get_user_id(), "delete-shift-demand", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "delete-shift-demand", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to delete shift demands"
             )
@@ -486,14 +473,13 @@ async def get_demands_by_source(
     team_id: str,
     source: ShiftDemandSource,
     source_id: Optional[str] = Query(None, description="Optional source ID"),
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
 ) -> List[ShiftDemandNewDTO]:
     """Get demands by source type and optional source ID."""
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-shift-demands", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "read-shift-demands", "team", team_id):
             raise NotAuthorizedError("You do not have permission to read shift demands")
 
         demands = service.get_demands_by_source(
@@ -516,14 +502,13 @@ async def prefetch_for_navigation(
     current_start: date = Query(..., description="Current period start date"),
     current_end: date = Query(..., description="Current period end date"),
     prefetch_periods: int = Query(2, description="Number of periods to prefetch"),
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
 ) -> Dict[str, str]:
     """Prefetch shift demands for adjacent periods to improve navigation UX."""
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-shift-demands", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "read-shift-demands", "team", team_id):
             raise NotAuthorizedError("You do not have permission to read shift demands")
 
         service.prefetch_for_navigation(

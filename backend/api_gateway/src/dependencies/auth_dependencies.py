@@ -109,13 +109,3 @@ async def get_user_context(
         raise HTTPException(
             status_code=500, detail="Failed to process user context"
         ) from e
-
-
-# Compatibility alias for existing code
-async def authn_verify_session() -> UserContext:
-    """
-    Compatibility function that mimics the old session verification.
-    Returns UserContext instead of SessionContainerType.
-    """
-    # This will be used with Depends() and will automatically call the deps
-    return await get_user_context()

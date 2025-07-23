@@ -6,16 +6,13 @@ from shared.logger import log_info
 from shared.schemas.core import DimEntry
 from shared.schemas.dto import AttributeDTO, DimEntryDTO
 
-from src.dependencies import get_db_collections, get_dim_entry_service
+from src.dependencies import get_db_collections, get_dim_entry_service, get_user_context
 from src.errors import (
     NotAuthorizedError,
     handle_routes_errors,
 )
-from src.integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
 from src.integrations.authorization import authz_check
+from src.security.user_context import UserContext
 from src.services.dim_entry_service import DimEntryService
 
 router = APIRouter()
@@ -25,12 +22,12 @@ router = APIRouter()
 async def create_dim_entry(
     team_id: str,
     dim_entry: DimEntryDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     dim_entry_service: DimEntryService = Depends(get_dim_entry_service),
 ) -> DimEntryDTO:
     try:
         if not await authz_check(
-            session.get_user_id(), "create-dim-entry", "team", team_id
+            user_context.user_id, "create-dim-entry", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to create a dim entry")
         de_data = DimEntry.from_dto(dim_entry)
@@ -46,7 +43,7 @@ async def create_dim_entry(
 async def update_dim_entry(
     team_id: str,
     dim_entry: DimEntryDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(
         get_db_collections,
     ),
@@ -54,7 +51,7 @@ async def update_dim_entry(
     # pylint: disable=R0801
     try:
         if not await authz_check(
-            session.get_user_id(), "update-dim-entry", "team", team_id
+            user_context.user_id, "update-dim-entry", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to update a dim_entry")
         de_data = DimEntry.from_dto(dim_entry)
@@ -70,13 +67,13 @@ async def update_dim_entry(
 async def delete_dim_entry(
     dim_entry_id: str,
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     dim_entry_service: DimEntryService = Depends(get_dim_entry_service),
 ) -> List[AttributeDTO]:
     # pylint: disable=R0801
     try:
         if not await authz_check(
-            session.get_user_id(), "delete-dim-entry", "team", team_id
+            user_context.user_id, "delete-dim-entry", "team", team_id
         ):
             raise HTTPException(
                 status_code=403,
