@@ -7,13 +7,14 @@ export const cognitoAuthConfig = {
   redirect_uri:
     process.env.NEXT_PUBLIC_REDIRECT_URI ||
     "https://app.rockilus.com/fr/plan/workers",
-  // post_logout_redirect_uri:
-  //   process.env.NEXT_PUBLIC_LOGOUT_REDIRECT_URI || "https://app.rockilus.com",
+  post_logout_redirect_uri:
+    process.env.NEXT_PUBLIC_LOGOUT_REDIRECT_URI || "https://www.rockilus.com",
   response_type: "code",
-  // scope: "email openid phone profile",
   scope: "email openid phone",
-  // automaticSilentRenew: true,
-  // includeIdTokenInSilentRenew: true,
+  automaticSilentRenew: true,
+  includeIdTokenInSilentRenew: true,
+  monitorSession: false,
+  checkSessionInterval: 10000,
 };
 
 export const cognitoDomain =
@@ -21,4 +22,4 @@ export const cognitoDomain =
   "https://eu-west-39tyn1ysf6.auth.eu-west-3.amazoncognito.com";
 
 export const logoutUri =
-  process.env.NEXT_PUBLIC_LOGOUT_REDIRECT_URI || "https://app.rockilus.com";
+  process.env.NEXT_PUBLIC_LOGOUT_REDIRECT_URI || "https://www.rockilus.com";
