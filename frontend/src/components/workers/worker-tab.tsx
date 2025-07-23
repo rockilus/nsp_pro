@@ -18,7 +18,6 @@ import {
   updateDimEntry,
   deleteDimEntry,
 } from "../../app/lib/dim-entry";
-import { updateAttribute } from "../../app/lib/attribute";
 // Hooks
 import { useTableState } from "../../hooks/useTableState";
 import {
@@ -37,6 +36,7 @@ import {
   useUpdateSpecialty,
   useDeleteSpecialty,
 } from "../../hooks/useSpecialty";
+import { useUpdateAttribute } from "../../hooks/useAttribute";
 // Utils
 import { createWorkerColumns } from "./workerColumns";
 // Styles
@@ -119,6 +119,9 @@ export default function WorkerTab({
   const addSpecialtyFn = useAddSpecialty();
   const updateSpecialtyFn = useUpdateSpecialty();
   const deleteSpecialtyFn = useDeleteSpecialty();
+
+  // Attribute hooks
+  const updateAttributeFn = useUpdateAttribute();
 
   // Worker column definitions for filtering/sorting
   const workerColumns = useMemo(() => {
@@ -324,7 +327,7 @@ export default function WorkerTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const updatedAttribute = await updateAttribute(attribute, selectedTeamId);
+    const updatedAttribute = await updateAttributeFn(attribute, selectedTeamId);
     setWorkers((prevWorkers) =>
       prevWorkers.map((worker) =>
         worker.id === updatedAttribute.ownerId

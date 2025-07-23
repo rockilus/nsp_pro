@@ -21,6 +21,7 @@ import {
   useUpdateDimension,
   useDeleteDimension,
 } from "../../hooks/useDimension";
+import { useUpdateAttribute } from "../../hooks/useAttribute";
 // Utils
 import { createShiftColumns } from "./shiftColumns";
 import { filterWorkShifts, filterRestShifts } from "./shift-utils/shift-utils";
@@ -36,7 +37,6 @@ import {
   updateDimEntry,
   deleteDimEntry,
 } from "../../app/lib/dim-entry";
-import { updateAttribute } from "../../app/lib/attribute";
 import { addLinkShift, deleteLinkShift } from "../../app/lib/link-shift";
 // Styles
 import "../../styles/tab-container-styles.css";
@@ -80,6 +80,9 @@ export default function ShiftTab({
   const addDimensionFn = useAddDimension();
   const updateDimensionFn = useUpdateDimension();
   const deleteDimensionFn = useDeleteDimension();
+
+  // Attribute hooks
+  const updateAttributeFn = useUpdateAttribute();
 
   // Create shift columns for both work and rest shifts
   const workShiftColumns = useMemo(() => {
@@ -378,7 +381,7 @@ export default function ShiftTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const updatedAttribute = await updateAttribute(attribute, selectedTeamId);
+    const updatedAttribute = await updateAttributeFn(attribute, selectedTeamId);
     setShifts((prevShifts) =>
       prevShifts.map((shift) =>
         shift.id === updatedAttribute.ownerId
