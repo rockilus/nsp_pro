@@ -12,11 +12,11 @@ import {
 } from "@/hooks/useTeam";
 import { getWorkers, attachUserToWorker } from "@/app/lib/worker";
 import {
-  createTeamInvitation,
-  getTeamInvitations,
-  resendTeamInvitationEmail,
-  deleteTeamInvitation,
-} from "@/app/lib/team-invitation";
+  useCreateTeamInvitation,
+  useGetTeamInvitations,
+  useResendTeamInvitationEmail,
+  useDeleteTeamInvitation,
+} from "@/hooks/useTeamInvitation";
 // Styles
 import "../../../styles/text-styles.css";
 import "../../../styles/tab-container-styles.css";
@@ -43,6 +43,10 @@ export default function MembersTab({
   // Hook functions
   const getTeamUsersWithMembershipsFn = useGetTeamUsersWithMemberships();
   const removeUserFromTeamFn = useRemoveUserFromTeam();
+  const createTeamInvitationFn = useCreateTeamInvitation();
+  const getTeamInvitationsFn = useGetTeamInvitations();
+  const resendTeamInvitationEmailFn = useResendTeamInvitationEmail();
+  const deleteTeamInvitationFn = useDeleteTeamInvitation();
 
   //////////////////////////
   // Team Actions
@@ -53,7 +57,7 @@ export default function MembersTab({
     try {
       const users = await getTeamUsersWithMembershipsFn(teamId);
       const workers = await getWorkers(teamId);
-      const invitations = await getTeamInvitations(teamId);
+      const invitations = await getTeamInvitationsFn(teamId);
       setUsers(users);
       setWorkers(workers);
       setInvitations(invitations);
@@ -62,7 +66,7 @@ export default function MembersTab({
     } finally {
       setIsLoading(false);
     }
-  }, [teamId, getTeamUsersWithMembershipsFn]);
+  }, [teamId, getTeamUsersWithMembershipsFn, getTeamInvitationsFn]);
 
   const handleRemoveFromTeam = async (teamId: string, userId: string) => {
     try {
@@ -99,25 +103,41 @@ export default function MembersTab({
   //////////////////////////
 
   const handleCreateTeamInvitation = async (invitation: TeamInvitationT) => {
-    const newInvitation = await createTeamInvitation(invitation, teamId);
-    setInvitations((prevInvitations) => [...prevInvitations, newInvitation]);
+    try {
+      const newInvitation = await createTeamInvitationFn(invitation, teamId);
+      setInvitations((prevInvitations) => [...prevInvitations, newInvitation]);
+    } catch (error) {
+      console.error("Failed to create team invitation:", error);
+      // Handle error as needed (show notification, etc.)
+    }
   };
 
   const handleResendTeamInvitationEmail = async (invitationId: string) => {
-    const newInvitation = await resendTeamInvitationEmail(invitationId, teamId);
-    setInvitations((prevInvitations) =>
-      prevInvitations.map((invitation) =>
-        invitation.id === newInvitation.id ? newInvitation : invitation
-      )
-    );
+    try {
+      const newInvitation = await resendTeamInvitationEmailFn(
+        invitationId,
+        teamId
+      );
+      setInvitations((prevInvitations) =>
+        prevInvitations.map((invitation) =>
+          invitation.id === newInvitation.id ? newInvitation : invitation
+        )
+      );
+    } catch (error) {
+      console.error("Failed to resend team invitation email:", error);
+      // Handle error as needed (show notification, etc.)
+    }
   };
 
   const handleDeleteTeamInvitation = async (invitationId: string) => {
-    const success = await deleteTeamInvitation(invitationId, teamId);
-    if (success) {
+    try {
+      await deleteTeamInvitationFn(invitationId, teamId);
       setInvitations((prevInvitations) =>
         prevInvitations.filter((invitation) => invitation.id !== invitationId)
       );
+    } catch (error) {
+      console.error("Failed to delete team invitation:", error);
+      // Handle error as needed (show notification, etc.)
     }
   };
 

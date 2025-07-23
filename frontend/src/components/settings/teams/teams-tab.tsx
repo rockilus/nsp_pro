@@ -12,10 +12,10 @@ import {
   useLeaveTeam,
 } from "@/hooks/useTeam";
 import {
-  getUserPendingInvitations,
-  acceptTeamInvitation,
-  rejectTeamInvitation,
-} from "@/app/lib/team-invitation";
+  useGetUserPendingInvitations,
+  useAcceptTeamInvitation,
+  useRejectTeamInvitation,
+} from "@/hooks/useTeamInvitation";
 // Styles
 import "../../../styles/text-styles.css";
 import "../../../styles/tab-container-styles.css";
@@ -41,6 +41,9 @@ export default function TeamsTab({
   const createTeamFn = useCreateTeam();
   const getUserTeamsWithMembershipsFn = useGetUserTeamsWithMemberships();
   const leaveTeamFn = useLeaveTeam();
+  const getUserPendingInvitationsFn = useGetUserPendingInvitations();
+  const acceptTeamInvitationFn = useAcceptTeamInvitation();
+  const rejectTeamInvitationFn = useRejectTeamInvitation();
 
   //////////////////////////
   // Team Actions
@@ -69,19 +72,27 @@ export default function TeamsTab({
   //////////////////////////
 
   const handleAcceptInvitation = async (token: string) => {
-    const newTeam = await acceptTeamInvitation(token);
-    setTeams((prevTeams) => [...prevTeams, newTeam]);
-    setInvitations((prevInvitations) =>
-      prevInvitations.filter((invitation) => invitation.token !== token)
-    );
-  };
-
-  const handleRejectInvitation = async (token: string) => {
-    const success = await rejectTeamInvitation(token);
-    if (success) {
+    try {
+      const newTeam = await acceptTeamInvitationFn(token);
+      setTeams((prevTeams) => [...prevTeams, newTeam]);
       setInvitations((prevInvitations) =>
         prevInvitations.filter((invitation) => invitation.token !== token)
       );
+    } catch (error) {
+      console.error("Failed to accept team invitation:", error);
+      // Handle error as needed (show notification, etc.)
+    }
+  };
+
+  const handleRejectInvitation = async (token: string) => {
+    try {
+      await rejectTeamInvitationFn(token);
+      setInvitations((prevInvitations) =>
+        prevInvitations.filter((invitation) => invitation.token !== token)
+      );
+    } catch (error) {
+      console.error("Failed to reject team invitation:", error);
+      // Handle error as needed (show notification, etc.)
     }
   };
 
@@ -90,7 +101,7 @@ export default function TeamsTab({
       setIsLoading(true);
       try {
         const teams = await getUserTeamsWithMembershipsFn();
-        const invitations = await getUserPendingInvitations();
+        const invitations = await getUserPendingInvitationsFn();
         setTeams(teams);
         setInvitations(invitations);
       } catch (error) {
@@ -101,7 +112,7 @@ export default function TeamsTab({
     };
 
     fetchData();
-  }, [getUserTeamsWithMembershipsFn]);
+  }, [getUserTeamsWithMembershipsFn, getUserPendingInvitationsFn]);
 
   return (
     <div className="tab-container-wide">
