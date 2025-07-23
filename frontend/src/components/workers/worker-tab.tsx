@@ -14,11 +14,6 @@ import NewDimensionForm from "../shift-worker-shared/dimension/new-dimension-for
 import TablesSkeleton from "../skeletons/tables-skeleton";
 // Actions
 import {
-  addDimension,
-  updateDimension,
-  deleteDimension,
-} from "../../app/lib/dimension";
-import {
   addDimEntry,
   updateDimEntry,
   deleteDimEntry,
@@ -37,6 +32,11 @@ import {
   useDeleteWorker,
   useGetWorkersTabData,
 } from "../../hooks/useWorker";
+import {
+  useAddDimension,
+  useUpdateDimension,
+  useDeleteDimension,
+} from "../../hooks/useDimension";
 // Utils
 import { createWorkerColumns } from "./workerColumns";
 // Styles
@@ -109,6 +109,11 @@ export default function WorkerTab({
   const updateWorkerFn = useUpdateWorker();
   const deleteWorkerFn = useDeleteWorker();
   const getWorkersTabDataFn = useGetWorkersTabData();
+
+  // Dimension hooks
+  const addDimensionFn = useAddDimension();
+  const updateDimensionFn = useUpdateDimension();
+  const deleteDimensionFn = useDeleteDimension();
 
   // Worker column definitions for filtering/sorting
   const workerColumns = useMemo(() => {
@@ -212,7 +217,7 @@ export default function WorkerTab({
       newDimension: newDimensionResponse,
       newDimEntries: newDimEntriesResponse,
       newAttributes: newAttributesResponse,
-    } = await addDimension(newDimension, newDimEntries);
+    } = await addDimensionFn(newDimension, newDimEntries);
     setDimensions([...dimensions, newDimensionResponse]);
     setDimEntries((prevDimEntries) => [
       ...prevDimEntries,
@@ -221,7 +226,7 @@ export default function WorkerTab({
     setWorkers((prevWorkers) =>
       prevWorkers.map((worker) => {
         const newAttributes = newAttributesResponse.filter(
-          (attribute) => attribute.ownerId === worker.id
+          (attribute: AttributeT) => attribute.ownerId === worker.id
         );
         return newAttributes
           ? {
@@ -238,7 +243,7 @@ export default function WorkerTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const updatedDimension = await updateDimension(dimension);
+    const updatedDimension = await updateDimensionFn(dimension);
     setDimensions((prevDimensions) =>
       prevDimensions.map((prevDim) =>
         prevDim.id === updatedDimension.id ? updatedDimension : prevDim
@@ -250,7 +255,7 @@ export default function WorkerTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    await deleteDimension(dimensionId, selectedTeamId);
+    await deleteDimensionFn(dimensionId, selectedTeamId);
     setDimensions(dimensions.filter((d) => d.id !== dimensionId));
   };
 

@@ -16,6 +16,11 @@ import TablesSkeleton from "../skeletons/tables-skeleton";
 // Hooks
 import { useTableState } from "../../hooks/useTableState";
 import { useTableHeight } from "../../hooks/useTableHeight";
+import {
+  useAddDimension,
+  useUpdateDimension,
+  useDeleteDimension,
+} from "../../hooks/useDimension";
 // Utils
 import { createShiftColumns } from "./shiftColumns";
 import { filterWorkShifts, filterRestShifts } from "./shift-utils/shift-utils";
@@ -26,11 +31,6 @@ import {
   deleteShift,
   updateShift,
 } from "../../app/lib/shift";
-import {
-  addDimension,
-  updateDimension,
-  deleteDimension,
-} from "../../app/lib/dimension";
 import {
   addDimEntry,
   updateDimEntry,
@@ -75,6 +75,11 @@ export default function ShiftTab({
   const [workPopoverRhsOpen, setWorkPopoverRhsOpen] = useState(false);
   const [restPopoverRhsOpen, setRestPopoverRhsOpen] = useState(false);
   const [shiftView, setShiftView] = useState<"work" | "rest">("work");
+
+  // Dimension hooks
+  const addDimensionFn = useAddDimension();
+  const updateDimensionFn = useUpdateDimension();
+  const deleteDimensionFn = useDeleteDimension();
 
   // Create shift columns for both work and rest shifts
   const workShiftColumns = useMemo(() => {
@@ -274,13 +279,13 @@ export default function ShiftTab({
       newDimension: newDimensionResponse,
       newDimEntries: newDimEntriesResponse,
       newAttributes: newAttributesResponse,
-    } = await addDimension(newDimension, newDimEntries);
+    } = await addDimensionFn(newDimension, newDimEntries);
     setDimensions([...dimensions, newDimensionResponse]);
     setDimEntries([...dimEntries, ...newDimEntriesResponse]);
     setShifts((prevShifts) =>
       prevShifts.map((shift) => {
         const newAttributes = newAttributesResponse.filter(
-          (attribute) => attribute.ownerId === shift.id
+          (attribute: AttributeT) => attribute.ownerId === shift.id
         );
         return newAttributes
           ? {
@@ -297,7 +302,7 @@ export default function ShiftTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const updatedDimension = await updateDimension(dimension);
+    const updatedDimension = await updateDimensionFn(dimension);
     setDimensions((prevDimensions) =>
       prevDimensions.map((prevDim) =>
         prevDim.id === updatedDimension.id ? updatedDimension : prevDim
@@ -309,7 +314,7 @@ export default function ShiftTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    await deleteDimension(dimensionId, selectedTeamId);
+    await deleteDimensionFn(dimensionId, selectedTeamId);
     setDimensions(dimensions.filter((d) => d.id !== dimensionId));
   };
 
