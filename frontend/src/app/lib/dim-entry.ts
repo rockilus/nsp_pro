@@ -11,10 +11,20 @@ dayjs.extend(utc);
 const apiUrlDimEntries = API_URL + "/dim-entries";
 
 //////////////////////////
-// DimEntries //
+// DimEntries - DEPRECATED //
 //////////////////////////
+// These functions are deprecated and will be removed in a future version.
+// Please use the new DimEntryApi class and useDimEntry hooks instead:
+// - Import: import { DimEntryApi } from './api/dimEntryApi';
+// - Import: import { useAddDimEntry, useUpdateDimEntry, useDeleteDimEntry } from '@/hooks/useDimEntry';
 
+/**
+ * @deprecated Use DimEntryApi.addDimEntry() or useAddDimEntry() hook instead
+ */
 export async function addDimEntry(dimEntry: DimEntryT, teamId: string) {
+  console.warn(
+    "⚠️ addDimEntry is deprecated. Please use DimEntryApi.addDimEntry() or useAddDimEntry() hook instead"
+  );
   const options: RequestInit = {
     method: "POST",
     headers: {
@@ -38,10 +48,16 @@ export async function addDimEntry(dimEntry: DimEntryT, teamId: string) {
   }
 }
 
+/**
+ * @deprecated Use DimEntryApi.updateDimEntry() or useUpdateDimEntry() hook instead
+ */
 export async function updateDimEntry(
   updatedDimEntry: DimEntryT,
   teamId: string
 ) {
+  console.warn(
+    "⚠️ updateDimEntry is deprecated. Please use DimEntryApi.updateDimEntry() or useUpdateDimEntry() hook instead"
+  );
   const options: RequestInit = {
     method: "PUT",
     headers: {
@@ -65,7 +81,13 @@ export async function updateDimEntry(
   }
 }
 
+/**
+ * @deprecated Use DimEntryApi.deleteDimEntry() or useDeleteDimEntry() hook instead
+ */
 export async function deleteDimEntry(dimEntryId: string, teamId: string) {
+  console.warn(
+    "⚠️ deleteDimEntry is deprecated. Please use DimEntryApi.deleteDimEntry() or useDeleteDimEntry() hook instead"
+  );
   const options: RequestInit = {
     method: "DELETE",
     headers: {

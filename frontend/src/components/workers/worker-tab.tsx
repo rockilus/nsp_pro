@@ -12,12 +12,6 @@ import PopoverRHS from "../inputs/popover-rhs";
 import NewDimensionForm from "../shift-worker-shared/dimension/new-dimension-form";
 // Skeletons
 import TablesSkeleton from "../skeletons/tables-skeleton";
-// Actions
-import {
-  addDimEntry,
-  updateDimEntry,
-  deleteDimEntry,
-} from "../../app/lib/dim-entry";
 // Hooks
 import { useTableState } from "../../hooks/useTableState";
 import {
@@ -37,6 +31,11 @@ import {
   useDeleteSpecialty,
 } from "../../hooks/useSpecialty";
 import { useUpdateAttribute } from "../../hooks/useAttribute";
+import {
+  useAddDimEntry,
+  useUpdateDimEntry,
+  useDeleteDimEntry,
+} from "../../hooks/useDimEntry";
 // Utils
 import { createWorkerColumns } from "./workerColumns";
 // Styles
@@ -122,6 +121,11 @@ export default function WorkerTab({
 
   // Attribute hooks
   const updateAttributeFn = useUpdateAttribute();
+
+  // DimEntry hooks
+  const addDimEntryFn = useAddDimEntry();
+  const updateDimEntryFn = useUpdateDimEntry();
+  const deleteDimEntryFn = useDeleteDimEntry();
 
   // Worker column definitions for filtering/sorting
   const workerColumns = useMemo(() => {
@@ -275,7 +279,7 @@ export default function WorkerTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const newDimEntry = await addDimEntry(dimEntry, selectedTeamId);
+    const newDimEntry = await addDimEntryFn(dimEntry, selectedTeamId);
     setDimEntries([...dimEntries, newDimEntry]);
   };
 
@@ -283,7 +287,7 @@ export default function WorkerTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const updatedDimEntry = await updateDimEntry(dimEntry, selectedTeamId);
+    const updatedDimEntry = await updateDimEntryFn(dimEntry, selectedTeamId);
     setDimEntries((prevDimEntries) =>
       prevDimEntries.map((de) =>
         de.id === updatedDimEntry.id ? updatedDimEntry : de
@@ -295,7 +299,10 @@ export default function WorkerTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const updatedAttributes = await deleteDimEntry(dimEntryId, selectedTeamId);
+    const updatedAttributes = await deleteDimEntryFn(
+      dimEntryId,
+      selectedTeamId
+    );
     setDimEntries(dimEntries.filter((dimEntry) => dimEntry.id !== dimEntryId));
     for (const updatedAttribute of updatedAttributes) {
       setWorkers((prevWorker) =>

@@ -22,6 +22,11 @@ import {
   useDeleteDimension,
 } from "../../hooks/useDimension";
 import { useUpdateAttribute } from "../../hooks/useAttribute";
+import {
+  useAddDimEntry,
+  useUpdateDimEntry,
+  useDeleteDimEntry,
+} from "../../hooks/useDimEntry";
 // Utils
 import { createShiftColumns } from "./shiftColumns";
 import { filterWorkShifts, filterRestShifts } from "./shift-utils/shift-utils";
@@ -32,11 +37,6 @@ import {
   deleteShift,
   updateShift,
 } from "../../app/lib/shift";
-import {
-  addDimEntry,
-  updateDimEntry,
-  deleteDimEntry,
-} from "../../app/lib/dim-entry";
 import { addLinkShift, deleteLinkShift } from "../../app/lib/link-shift";
 // Styles
 import "../../styles/tab-container-styles.css";
@@ -83,6 +83,11 @@ export default function ShiftTab({
 
   // Attribute hooks
   const updateAttributeFn = useUpdateAttribute();
+
+  // DimEntry hooks
+  const addDimEntryFn = useAddDimEntry();
+  const updateDimEntryFn = useUpdateDimEntry();
+  const deleteDimEntryFn = useDeleteDimEntry();
 
   // Create shift columns for both work and rest shifts
   const workShiftColumns = useMemo(() => {
@@ -329,7 +334,7 @@ export default function ShiftTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const newDimEntry = await addDimEntry(dimEntry, selectedTeamId);
+    const newDimEntry = await addDimEntryFn(dimEntry, selectedTeamId);
     setDimEntries([...dimEntries, newDimEntry]);
   };
 
@@ -337,7 +342,7 @@ export default function ShiftTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const updatedDimEntry = await updateDimEntry(dimEntry, selectedTeamId);
+    const updatedDimEntry = await updateDimEntryFn(dimEntry, selectedTeamId);
     setDimEntries((prevDimEntries) =>
       prevDimEntries.map((de) =>
         de.id === updatedDimEntry.id ? updatedDimEntry : de
@@ -349,7 +354,10 @@ export default function ShiftTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const updatedAttributes = await deleteDimEntry(dimEntryId, selectedTeamId);
+    const updatedAttributes = await deleteDimEntryFn(
+      dimEntryId,
+      selectedTeamId
+    );
     setDimEntries(dimEntries.filter((dimEntry) => dimEntry.id !== dimEntryId));
     for (const updatedAttribute of updatedAttributes) {
       setShifts((prevShifts) =>
