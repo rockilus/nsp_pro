@@ -19,11 +19,6 @@ import {
   deleteDimEntry,
 } from "../../app/lib/dim-entry";
 import { updateAttribute } from "../../app/lib/attribute";
-import {
-  addSpecialty,
-  updateSpecialty,
-  deleteSpecialty,
-} from "../../app/lib/specialty";
 // Hooks
 import { useTableState } from "../../hooks/useTableState";
 import {
@@ -37,6 +32,11 @@ import {
   useUpdateDimension,
   useDeleteDimension,
 } from "../../hooks/useDimension";
+import {
+  useAddSpecialty,
+  useUpdateSpecialty,
+  useDeleteSpecialty,
+} from "../../hooks/useSpecialty";
 // Utils
 import { createWorkerColumns } from "./workerColumns";
 // Styles
@@ -114,6 +114,11 @@ export default function WorkerTab({
   const addDimensionFn = useAddDimension();
   const updateDimensionFn = useUpdateDimension();
   const deleteDimensionFn = useDeleteDimension();
+
+  // Specialty hooks
+  const addSpecialtyFn = useAddSpecialty();
+  const updateSpecialtyFn = useUpdateSpecialty();
+  const deleteSpecialtyFn = useDeleteSpecialty();
 
   // Worker column definitions for filtering/sorting
   const workerColumns = useMemo(() => {
@@ -348,7 +353,7 @@ export default function WorkerTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const newSpecialty = await addSpecialty(specialty, selectedTeamId);
+    const newSpecialty = await addSpecialtyFn(specialty, selectedTeamId);
     setSpecialties([...specialties, newSpecialty]);
   };
 
@@ -356,7 +361,7 @@ export default function WorkerTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const updatedSpecialty = await updateSpecialty(specialty, selectedTeamId);
+    const updatedSpecialty = await updateSpecialtyFn(specialty, selectedTeamId);
     setSpecialties((prevSpecialties) =>
       prevSpecialties.map((de) =>
         de.id === updatedSpecialty.id ? updatedSpecialty : de
@@ -368,14 +373,16 @@ export default function WorkerTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const updatedWorkers = await deleteSpecialty(specialtyId, selectedTeamId);
+    const updatedWorkers = await deleteSpecialtyFn(specialtyId, selectedTeamId);
     setSpecialties(
       specialties.filter((specialty) => specialty.id !== specialtyId)
     );
 
     setWorkers((prevWorkers) =>
       prevWorkers.map((worker) => {
-        const updatedWorker = updatedWorkers.find((w) => w.id === worker.id);
+        const updatedWorker = updatedWorkers.find(
+          (w: WorkerT) => w.id === worker.id
+        );
         return updatedWorker ? updatedWorker : worker;
       })
     );

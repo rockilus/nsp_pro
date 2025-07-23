@@ -1,113 +1,53 @@
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
 // Types
 import { SpecialtyT } from "@/types/specialty";
 import { WorkerT } from "../../types/worker";
-// Env Vars
-import { API_URL } from "./env";
-
-dayjs.extend(utc);
-
-const apiUrlSpecialties = API_URL + "/specialties";
+// Modern API
+import { SpecialtyApi } from "./api/specialtyApi";
 
 //////////////////////////
-// Specialties //
+// Legacy Specialty Functions //
+// These are deprecated - use SpecialtyApi and useSpecialty hooks instead //
 //////////////////////////
 
+/**
+ * @deprecated Use SpecialtyApi.addSpecialty with authentication instead
+ */
 export async function addSpecialty(specialty: SpecialtyT, teamId: string) {
-  const options: RequestInit = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(specialty),
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlSpecialties}/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to add specialty: " + responseData.detail);
-    }
-    return responseData as SpecialtyT;
-  } catch (error) {
-    console.error("Failed to add specialty:", error);
-    throw new Error("Failed to add specialty, please try again later");
-  }
+  console.warn(
+    "⚠️ addSpecialty is deprecated. Use SpecialtyApi.addSpecialty with authentication instead."
+  );
+  return await SpecialtyApi.addSpecialtyLegacy(specialty, teamId);
 }
 
+/**
+ * @deprecated Use SpecialtyApi.getSpecialties with authentication instead
+ */
 export async function getSpecialties(teamId: string) {
-  const options: RequestInit = {
-    method: "GET",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlSpecialties}/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to fetch specialties: " + responseData.detail);
-    }
-    return responseData as SpecialtyT[];
-  } catch (error) {
-    console.error("Failed to fetch specialties:", error);
-    throw new Error("Failed to fetch specialties, please try again later");
-  }
+  console.warn(
+    "⚠️ getSpecialties is deprecated. Use SpecialtyApi.getSpecialties with authentication instead."
+  );
+  return await SpecialtyApi.getSpecialtiesLegacy(teamId);
 }
 
+/**
+ * @deprecated Use SpecialtyApi.updateSpecialty with authentication instead
+ */
 export async function updateSpecialty(
   updatedSpecialty: SpecialtyT,
   teamId: string
 ) {
-  const options: RequestInit = {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(updatedSpecialty),
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlSpecialties}/${updatedSpecialty.id}/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to update specialty: " + responseData.detail);
-    }
-    return responseData as SpecialtyT;
-  } catch (error) {
-    console.error("Failed to update specialty:", error);
-    throw new Error("Failed to update specialty, please try again later");
-  }
+  console.warn(
+    "⚠️ updateSpecialty is deprecated. Use SpecialtyApi.updateSpecialty with authentication instead."
+  );
+  return await SpecialtyApi.updateSpecialtyLegacy(updatedSpecialty, teamId);
 }
 
+/**
+ * @deprecated Use SpecialtyApi.deleteSpecialty with authentication instead
+ */
 export async function deleteSpecialty(specialtyId: string, teamId: string) {
-  const options: RequestInit = {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlSpecialties}/${specialtyId}/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to delete specialty: " + responseData.detail);
-    }
-    return responseData as WorkerT[];
-  } catch (error) {
-    console.error("Failed to delete specialty:", error);
-    throw new Error("Failed to delete specialty, please try again later");
-  }
+  console.warn(
+    "⚠️ deleteSpecialty is deprecated. Use SpecialtyApi.deleteSpecialty with authentication instead."
+  );
+  return await SpecialtyApi.deleteSpecialtyLegacy(specialtyId, teamId);
 }
