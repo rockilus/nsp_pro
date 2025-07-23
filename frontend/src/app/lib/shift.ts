@@ -6,6 +6,15 @@ import { getSpecialties } from "./specialty";
 import { getLinkShifts } from "./link-shift";
 // Types
 import { ShiftT, LinkShiftT } from "../../types/shift";
+// New API
+import {
+  ShiftApi,
+  toShiftT,
+  fromShiftT,
+  ShiftUpdateResponse,
+  ShiftDeleteResponse,
+  ShiftsTabDataResponse,
+} from "./api/shiftApi";
 // Env Vars
 import { API_URL } from "./env";
 
@@ -13,186 +22,88 @@ dayjs.extend(utc);
 
 const apiUrlShifts = API_URL + "/shifts";
 
-export const toShiftT = (data: any): ShiftT => {
-  return {
-    ...data,
-    startTime: dayjs.unix(data.startTime).utc(),
-    endTime: dayjs.unix(data.endTime).utc(),
-  };
-};
+// Re-export transformation functions for backward compatibility
+export { toShiftT, fromShiftT };
 
-export const fromShiftT = (data: ShiftT): any => {
-  return {
-    ...data,
-    startTime: data.startTime.unix(),
-    endTime: data.endTime.unix(),
-  };
-};
+// Re-export types for backward compatibility
+export type { ShiftUpdateResponse, ShiftDeleteResponse, ShiftsTabDataResponse };
 
 //////////////////////////
-// Shift //
+// Shift - DEPRECATED //
 //////////////////////////
+// ⚠️ These functions are deprecated. Use ShiftApi and useShift hooks instead.
 
+/**
+ * @deprecated Use ShiftApi.addShift with useAddShift hook instead
+ */
 export async function addShift(shift: ShiftT) {
-  const options: RequestInit = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(fromShiftT(shift)),
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlShifts}/teams/${shift.teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to add shift: " + responseData.detail);
-    }
-    return toShiftT(responseData) as ShiftT;
-  } catch (error) {
-    console.error("Failed to add shift:", error);
-    throw new Error("Failed to add shift, please try again later");
-  }
+  console.warn(
+    "⚠️ addShift is deprecated. Use ShiftApi.addShift with useAddShift hook instead"
+  );
+  return ShiftApi.addShiftLegacy(shift);
 }
 
+/**
+ * @deprecated Use ShiftApi.getShifts with useGetShifts hook instead
+ */
 export async function getShifts(teamId: string) {
-  const options: RequestInit = {
-    method: "GET",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(`${apiUrlShifts}/teams/${teamId}`, options);
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to fetch shifts: " + responseData.detail);
-    }
-    return responseData.map(toShiftT) as ShiftT[];
-  } catch (error) {
-    console.error("Failed to fetch shifts:", error);
-    throw new Error("Failed to fetch shifts, please try again later");
-  }
+  console.warn(
+    "⚠️ getShifts is deprecated. Use ShiftApi.getShifts with useGetShifts hook instead"
+  );
+  return ShiftApi.getShiftsLegacy(teamId);
 }
 
+/**
+ * @deprecated Use ShiftApi.getWorkShifts with useGetWorkShifts hook instead
+ */
 export async function getWorkShifts(teamId: string) {
-  const options: RequestInit = {
-    method: "GET",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlShifts}/work/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to fetch shifts: " + responseData.detail);
-    }
-    return responseData.map(toShiftT) as ShiftT[];
-  } catch (error) {
-    console.error("Failed to fetch shifts:", error);
-    throw new Error("Failed to fetch shifts, please try again later");
-  }
+  console.warn(
+    "⚠️ getWorkShifts is deprecated. Use ShiftApi.getWorkShifts with useGetWorkShifts hook instead"
+  );
+  return ShiftApi.getWorkShiftsLegacy(teamId);
 }
 
+/**
+ * @deprecated Use ShiftApi.getAllShifts with useGetAllShifts hook instead
+ */
 export async function getAllShifts(teamId: string) {
-  const options: RequestInit = {
-    method: "GET",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlShifts}/all/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to fetch shifts: " + responseData.detail);
-    }
-    return responseData.map(toShiftT) as ShiftT[];
-  } catch (error) {
-    console.error("Failed to fetch shifts:", error);
-    throw new Error("Failed to fetch shifts, please try again later");
-  }
+  console.warn(
+    "⚠️ getAllShifts is deprecated. Use ShiftApi.getAllShifts with useGetAllShifts hook instead"
+  );
+  return ShiftApi.getAllShiftsLegacy(teamId);
 }
 
+/**
+ * @deprecated Use ShiftApi.updateShift with useUpdateShift hook instead
+ */
 export async function updateShift(updatedShift: ShiftT) {
-  const options: RequestInit = {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(fromShiftT(updatedShift)),
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlShifts}/${updatedShift.id}/teams/${updatedShift.teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to update shift: " + responseData.detail);
-    }
-    return {
-      shiftUpdated: toShiftT(responseData.shift) as ShiftT,
-      linkShiftsUpdated: responseData.linkShifts.updated
-        ? (responseData.linkShifts.updated as LinkShiftT[])
-        : [],
-      linkShiftsIdsDeleted: responseData.linkShifts.deleted
-        ? responseData.linkShifts.deleted
-        : [],
-    };
-  } catch (error) {
-    console.error("Failed to update shift:", error);
-    throw new Error("Failed to update shift, please try again later");
-  }
+  console.warn(
+    "⚠️ updateShift is deprecated. Use ShiftApi.updateShift with useUpdateShift hook instead"
+  );
+  return ShiftApi.updateShiftLegacy(updatedShift);
 }
 
+/**
+ * @deprecated Use ShiftApi.deleteShift with useDeleteShift hook instead
+ */
 export async function deleteShift(shiftId: string, teamId: string) {
-  const options: RequestInit = {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlShifts}/${shiftId}/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to delete shift: " + responseData.detail);
-    }
-    return {
-      linkShiftsUpdated: responseData.linkShifts.updated
-        ? (responseData.linkShifts.updated as LinkShiftT[])
-        : [],
-      linkShiftsIdsDeleted: responseData.linkShifts.deleted
-        ? responseData.linkShifts.deleted
-        : [],
-    };
-  } catch (error) {
-    console.error("Failed to delete shift:", error);
-    throw new Error("Failed to delete shift, please try again later");
-  }
+  console.warn(
+    "⚠️ deleteShift is deprecated. Use ShiftApi.deleteShift with useDeleteShift hook instead"
+  );
+  return ShiftApi.deleteShiftLegacy(shiftId, teamId);
 }
 
 //////////////////////////
-// Shifts Tab Data //
+// Shifts Tab Data - DEPRECATED //
 //////////////////////////
 
+/**
+ * @deprecated Use ShiftApi.getShiftsTabData with useGetShiftsTabData hook instead
+ */
 export async function getShiftsTabData(teamId: string) {
+  console.warn(
+    "⚠️ getShiftsTabData is deprecated. Use ShiftApi.getShiftsTabData with useGetShiftsTabData hook instead"
+  );
   try {
     const shiftsTabData = await Promise.all([
       getShifts(teamId),

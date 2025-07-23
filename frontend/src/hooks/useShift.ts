@@ -1,32 +1,36 @@
 import { useCallback } from "react";
 // Types
-import { WorkerT } from "../types/worker";
-// API Client
-import { WorkerApi } from "../app/lib/api/workerApi";
+import { ShiftT } from "../types/shift";
+import {
+  ShiftApi,
+  ShiftUpdateResponse,
+  ShiftDeleteResponse,
+  ShiftsTabDataResponse,
+} from "../app/lib/api/shiftApi";
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
 
 //////////////////////////
-// Authenticated Worker Hooks //
+// Authenticated Shift Hooks //
 //////////////////////////
 
 /**
- * Hook for adding a new worker
+ * Hook for adding a new shift
  */
-export function useAddWorker() {
+export function useAddShift() {
   const apiClient = useApiClient();
   const { user, isAuthenticated, loading } = useAuth();
 
-  const addWorker = useCallback(
-    async (worker: WorkerT): Promise<WorkerT> => {
+  const addShift = useCallback(
+    async (shift: ShiftT): Promise<ShiftT> => {
       if (process.env.NODE_ENV === "development") {
-        console.log("🔍 useAddWorker called:", {
+        console.log("🔍 useAddShift called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
-          workerId: worker.id,
-          teamId: worker.teamId,
+          shiftId: shift.id,
+          teamId: shift.teamId,
         });
       }
 
@@ -40,20 +44,20 @@ export function useAddWorker() {
       }
 
       // Input validation
-      if (!worker || !worker.teamId) {
-        throw new Error("Invalid worker data provided");
+      if (!shift || !shift.teamId) {
+        throw new Error("Invalid shift data provided");
       }
 
       try {
-        const newWorker = await WorkerApi.addWorker(apiClient, worker);
+        const result = await ShiftApi.addShift(apiClient, shift);
 
         if (process.env.NODE_ENV === "development") {
-          console.log("✅ Worker added successfully");
+          console.log("✅ Shift added successfully");
         }
 
-        return newWorker;
+        return result;
       } catch (error) {
-        console.error("❌ Failed to add worker:", {
+        console.error("❌ Failed to add shift:", {
           error: error instanceof Error ? error.message : "Unknown error",
           timestamp: new Date().toISOString(),
         });
@@ -63,20 +67,20 @@ export function useAddWorker() {
     [apiClient, isAuthenticated, loading, user]
   );
 
-  return addWorker;
+  return addShift;
 }
 
 /**
- * Hook for getting workers by team ID
+ * Hook for getting shifts for a team
  */
-export function useGetWorkers() {
+export function useGetShifts() {
   const apiClient = useApiClient();
   const { user, isAuthenticated, loading } = useAuth();
 
-  const getWorkers = useCallback(
-    async (teamId: string): Promise<WorkerT[]> => {
+  const getShifts = useCallback(
+    async (teamId: string): Promise<ShiftT[]> => {
       if (process.env.NODE_ENV === "development") {
-        console.log("🔍 useGetWorkers called:", {
+        console.log("🔍 useGetShifts called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -94,9 +98,9 @@ export function useGetWorkers() {
       }
 
       try {
-        return await WorkerApi.getWorkers(apiClient, teamId);
+        return await ShiftApi.getShifts(apiClient, teamId);
       } catch (error) {
-        console.error("❌ Failed to get workers:", {
+        console.error("❌ Failed to get shifts:", {
           error: error instanceof Error ? error.message : "Unknown error",
           timestamp: new Date().toISOString(),
         });
@@ -106,20 +110,20 @@ export function useGetWorkers() {
     [apiClient, isAuthenticated, loading, user]
   );
 
-  return getWorkers;
+  return getShifts;
 }
 
 /**
- * Hook for getting all workers by team ID
+ * Hook for getting work shifts for a team
  */
-export function useGetAllWorkers() {
+export function useGetWorkShifts() {
   const apiClient = useApiClient();
   const { user, isAuthenticated, loading } = useAuth();
 
-  const getAllWorkers = useCallback(
-    async (teamId: string): Promise<WorkerT[]> => {
+  const getWorkShifts = useCallback(
+    async (teamId: string): Promise<ShiftT[]> => {
       if (process.env.NODE_ENV === "development") {
-        console.log("🔍 useGetAllWorkers called:", {
+        console.log("🔍 useGetWorkShifts called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -137,9 +141,9 @@ export function useGetAllWorkers() {
       }
 
       try {
-        return await WorkerApi.getAllWorkers(apiClient, teamId);
+        return await ShiftApi.getWorkShifts(apiClient, teamId);
       } catch (error) {
-        console.error("❌ Failed to get all workers:", {
+        console.error("❌ Failed to get work shifts:", {
           error: error instanceof Error ? error.message : "Unknown error",
           timestamp: new Date().toISOString(),
         });
@@ -149,18 +153,27 @@ export function useGetAllWorkers() {
     [apiClient, isAuthenticated, loading, user]
   );
 
-  return getAllWorkers;
+  return getWorkShifts;
 }
 
 /**
- * Hook for updating a worker
+ * Hook for getting all shifts for a team
  */
-export function useUpdateWorker() {
+export function useGetAllShifts() {
   const apiClient = useApiClient();
   const { user, isAuthenticated, loading } = useAuth();
 
-  const updateWorker = useCallback(
-    async (updatedWorker: WorkerT): Promise<WorkerT> => {
+  const getAllShifts = useCallback(
+    async (teamId: string): Promise<ShiftT[]> => {
+      if (process.env.NODE_ENV === "development") {
+        console.log("🔍 useGetAllShifts called:", {
+          timestamp: new Date().toISOString(),
+          isAuthenticated,
+          hasUser: !!user,
+          teamId,
+        });
+      }
+
       // Security: Validate authentication state
       if (loading) {
         throw new Error("Authentication still loading - please wait");
@@ -171,9 +184,9 @@ export function useUpdateWorker() {
       }
 
       try {
-        return await WorkerApi.updateWorker(apiClient, updatedWorker);
+        return await ShiftApi.getAllShifts(apiClient, teamId);
       } catch (error) {
-        console.error("❌ Failed to update worker:", {
+        console.error("❌ Failed to get all shifts:", {
           error: error instanceof Error ? error.message : "Unknown error",
           timestamp: new Date().toISOString(),
         });
@@ -183,22 +196,18 @@ export function useUpdateWorker() {
     [apiClient, isAuthenticated, loading, user]
   );
 
-  return updateWorker;
+  return getAllShifts;
 }
 
 /**
- * Hook for attaching a user to a worker
+ * Hook for updating a shift
  */
-export function useAttachUserToWorker() {
+export function useUpdateShift() {
   const apiClient = useApiClient();
   const { user, isAuthenticated, loading } = useAuth();
 
-  const attachUserToWorker = useCallback(
-    async (
-      workerId: string,
-      userId: string,
-      teamId: string
-    ): Promise<WorkerT> => {
+  const updateShift = useCallback(
+    async (updatedShift: ShiftT): Promise<ShiftUpdateResponse> => {
       // Security: Validate authentication state
       if (loading) {
         throw new Error("Authentication still loading - please wait");
@@ -209,14 +218,9 @@ export function useAttachUserToWorker() {
       }
 
       try {
-        return await WorkerApi.attachUserToWorker(
-          apiClient,
-          workerId,
-          userId,
-          teamId
-        );
+        return await ShiftApi.updateShift(apiClient, updatedShift);
       } catch (error) {
-        console.error("❌ Failed to attach user to worker:", {
+        console.error("❌ Failed to update shift:", {
           error: error instanceof Error ? error.message : "Unknown error",
           timestamp: new Date().toISOString(),
         });
@@ -226,18 +230,18 @@ export function useAttachUserToWorker() {
     [apiClient, isAuthenticated, loading, user]
   );
 
-  return attachUserToWorker;
+  return updateShift;
 }
 
 /**
- * Hook for deleting a worker
+ * Hook for deleting a shift
  */
-export function useDeleteWorker() {
+export function useDeleteShift() {
   const apiClient = useApiClient();
   const { user, isAuthenticated, loading } = useAuth();
 
-  const deleteWorker = useCallback(
-    async (workerId: string, teamId: string): Promise<void> => {
+  const deleteShift = useCallback(
+    async (shiftId: string, teamId: string): Promise<ShiftDeleteResponse> => {
       // Security: Validate authentication state
       if (loading) {
         throw new Error("Authentication still loading - please wait");
@@ -248,9 +252,9 @@ export function useDeleteWorker() {
       }
 
       try {
-        await WorkerApi.deleteWorker(apiClient, workerId, teamId);
+        return await ShiftApi.deleteShift(apiClient, shiftId, teamId);
       } catch (error) {
-        console.error("❌ Failed to delete worker:", {
+        console.error("❌ Failed to delete shift:", {
           error: error instanceof Error ? error.message : "Unknown error",
           timestamp: new Date().toISOString(),
         });
@@ -260,18 +264,27 @@ export function useDeleteWorker() {
     [apiClient, isAuthenticated, loading, user]
   );
 
-  return deleteWorker;
+  return deleteShift;
 }
 
 /**
- * Hook for getting workers tab data (workers, dimensions, specialties)
+ * Hook for getting shifts tab data
  */
-export function useGetWorkersTabData() {
+export function useGetShiftsTabData() {
   const apiClient = useApiClient();
   const { user, isAuthenticated, loading } = useAuth();
 
-  const getWorkersTabData = useCallback(
-    async (teamId: string) => {
+  const getShiftsTabData = useCallback(
+    async (teamId: string): Promise<ShiftsTabDataResponse> => {
+      if (process.env.NODE_ENV === "development") {
+        console.log("🔍 useGetShiftsTabData called:", {
+          timestamp: new Date().toISOString(),
+          isAuthenticated,
+          hasUser: !!user,
+          teamId,
+        });
+      }
+
       // Security: Validate authentication state
       if (loading) {
         throw new Error("Authentication still loading - please wait");
@@ -282,24 +295,9 @@ export function useGetWorkersTabData() {
       }
 
       try {
-        // Import the new API classes to use authenticated methods
-        const { DimensionApi } = await import("../app/lib/api/dimensionApi");
-        const { SpecialtyApi } = await import("../app/lib/api/specialtyApi");
-
-        const workersTabData = await Promise.all([
-          WorkerApi.getWorkers(apiClient, teamId),
-          DimensionApi.getDimensions(apiClient, teamId),
-          SpecialtyApi.getSpecialties(apiClient, teamId),
-        ]);
-
-        return {
-          workers: workersTabData[0],
-          dimensions: workersTabData[1].dimensions,
-          dimEntries: workersTabData[1].dimEntries,
-          specialties: workersTabData[2],
-        };
+        return await ShiftApi.getShiftsTabData(apiClient, teamId);
       } catch (error) {
-        console.error("❌ Failed to get workers tab data:", {
+        console.error("❌ Failed to get shifts tab data:", {
           error: error instanceof Error ? error.message : "Unknown error",
           timestamp: new Date().toISOString(),
         });
@@ -309,5 +307,5 @@ export function useGetWorkersTabData() {
     [apiClient, isAuthenticated, loading, user]
   );
 
-  return getWorkersTabData;
+  return getShiftsTabData;
 }
