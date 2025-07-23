@@ -36,7 +36,7 @@ import {
   updateAssignmentAndRecurrence,
   deleteAssignment,
 } from "../../app/lib/assignment";
-import { getStats } from "../../app/lib/stats";
+import { useGetStats } from "../../hooks/useStats";
 import { exportSchedule } from "../../app/lib/export-schedule";
 // Styles
 import "../../styles/tab-container-styles.css";
@@ -95,6 +95,9 @@ export default function ScheduleTab({
   teamWithMembership: TeamWithMembership;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
+
+  // Stats hook
+  const getStats = useGetStats();
 
   const [isLoadingSchedule, setIsLoadingSchedule] = useState<boolean>(true);
   const [isLoadingAssignments, setIsLoadingAssignments] =
@@ -593,8 +596,8 @@ export default function ScheduleTab({
       showFavorites: true,
     };
     const newStats = await getStats(
-      newStatsOptions,
-      teamWithMembership.team.id
+      teamWithMembership.team.id,
+      newStatsOptions
     );
     setStats(newStats);
     setSelectedQuickStatsTimeFrame(timeFrame);

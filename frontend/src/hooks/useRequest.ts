@@ -11,8 +11,8 @@ import { ShiftApi } from "../app/lib/api/shiftApi";
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
-// Legacy import for shift options (until statsApi is refactored)
-import { getShiftOptions } from "../app/lib/stats";
+// Stats hooks
+import { useGetShiftOptions } from "./useStats";
 
 //////////////////////////
 // Authenticated Request Hooks //
@@ -317,6 +317,7 @@ export interface RequestsTabData {
 export function useGetRequestsTabData() {
   const apiClient = useApiClient();
   const { user, isAuthenticated, loading } = useAuth();
+  const getShiftOptions = useGetShiftOptions();
 
   const getRequestsTabData = useCallback(
     async (teamId: string): Promise<RequestsTabData> => {
@@ -344,7 +345,7 @@ export function useGetRequestsTabData() {
           WorkerApi.getAllWorkers(apiClient, teamId),
           ShiftApi.getAllShifts(apiClient, teamId),
           RequestApi.getRequests(apiClient, teamId),
-          getShiftOptions(teamId), // Legacy call until statsApi is refactored
+          getShiftOptions(teamId),
         ]);
 
         return {
@@ -361,7 +362,7 @@ export function useGetRequestsTabData() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user, getShiftOptions]
   );
 
   return getRequestsTabData;

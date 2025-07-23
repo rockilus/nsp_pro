@@ -6,31 +6,19 @@ import { getSchedules } from "./schedule";
 import { StatsT, StatsHeaderT, StatsOptionsT } from "../../types/stats";
 import { ShiftWorkerOptionT } from "../../types/constraint";
 import { ScheduleT, ScheduleStatus } from "../../types/schedule";
-// Env Vars
-import { API_URL } from "./env";
-
-const apiUrlStats = API_URL + "/stats";
+// API
+import { StatsApi } from "./api/statsApi";
 
 //////////////////////////
 // Stats //
 //////////////////////////
 
+/**
+ * @deprecated Use useGetStats hook instead for authenticated requests
+ */
 export async function getStats(statsOptions: StatsOptionsT, teamId: string) {
-  const options: RequestInit = {
-    method: "POST",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(statsOptions),
-  };
   try {
-    const response = await fetch(`${apiUrlStats}/teams/${teamId}`, options);
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to fetch stats: " + responseData.detail);
-    }
-    return responseData as StatsT;
+    return await StatsApi.getStatsLegacy(statsOptions, teamId);
   } catch (error) {
     console.error("Failed to fetch stats:", error);
     throw new Error("Failed to fetch stats, please try again later");
@@ -41,46 +29,24 @@ export async function getStats(statsOptions: StatsOptionsT, teamId: string) {
 // Header //
 //////////////////////////
 
+/**
+ * @deprecated Use useAddHeader hook instead for authenticated requests
+ */
 export async function addHeader(header: StatsHeaderT) {
-  const options: RequestInit = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(header),
-  };
   try {
-    const response = await fetch(
-      `${apiUrlStats}/stats-headers/teams/${header.teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to add header: " + responseData.detail);
-    }
-    return responseData as StatsHeaderT;
+    return await StatsApi.addHeaderLegacy(header);
   } catch (error) {
     console.error("Failed to add header:", error);
     throw new Error("Failed to add header, please try again later");
   }
 }
 
+/**
+ * @deprecated Use useDeleteHeader hook instead for authenticated requests
+ */
 export async function deleteHeader(headerId: string, teamId: string) {
-  const options: RequestInit = {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
   try {
-    const response = await fetch(
-      `${apiUrlStats}/stats-headers/${headerId}/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to delete header: " + responseData.detail);
-    }
+    await StatsApi.deleteHeaderLegacy(headerId, teamId);
   } catch (error) {
     console.error("Failed to delete header:", error);
     throw new Error("Failed to delete header, please try again later");
@@ -91,24 +57,12 @@ export async function deleteHeader(headerId: string, teamId: string) {
 // Shift Options //
 //////////////////////////
 
+/**
+ * @deprecated Use useGetShiftOptions hook instead for authenticated requests
+ */
 export async function getShiftOptions(teamId: string) {
-  const options: RequestInit = {
-    method: "GET",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
   try {
-    const response = await fetch(
-      `${apiUrlStats}/shift-options/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to fetch shift options: " + responseData.detail);
-    }
-    return responseData as ShiftWorkerOptionT[];
+    return await StatsApi.getShiftOptionsLegacy(teamId);
   } catch (error) {
     console.error("Failed to fetch shift options:", error);
     throw new Error("Failed to fetch shift options, please try again later");
@@ -119,6 +73,9 @@ export async function getShiftOptions(teamId: string) {
 // Stats Tab Data //
 //////////////////////////
 
+/**
+ * @deprecated Use useGetStatsTabData hook instead for authenticated requests
+ */
 export async function getStatsTabData(teamId: string) {
   try {
     const statsTabData = await Promise.all([
