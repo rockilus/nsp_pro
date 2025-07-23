@@ -14,12 +14,6 @@ import NewDimensionForm from "../shift-worker-shared/dimension/new-dimension-for
 import TablesSkeleton from "../skeletons/tables-skeleton";
 // Actions
 import {
-  getWorkersTabData,
-  addWorker,
-  deleteWorker,
-  updateWorker,
-} from "../../app/lib/worker";
-import {
   addDimension,
   updateDimension,
   deleteDimension,
@@ -37,6 +31,12 @@ import {
 } from "../../app/lib/specialty";
 // Hooks
 import { useTableState } from "../../hooks/useTableState";
+import {
+  useAddWorker,
+  useUpdateWorker,
+  useDeleteWorker,
+  useGetWorkersTabData,
+} from "../../hooks/useWorker";
 // Utils
 import { createWorkerColumns } from "./workerColumns";
 // Styles
@@ -49,7 +49,6 @@ import { DimensionT, DimensionType } from "../../types/dimension";
 import { DimEntryT } from "@/types/dim-entry";
 import { AttributeT } from "../../types/attribute";
 import { SpecialtyT } from "@/types/specialty";
-import { log } from "console";
 
 dayjs.extend(utc);
 
@@ -105,6 +104,12 @@ export default function WorkerTab({
   const [specialties, setSpecialties] = useState<SpecialtyT[]>([]);
   const [popoverRhsOpen, setPopoverRhsOpen] = useState(false);
 
+  // Worker hooks
+  const addWorkerFn = useAddWorker();
+  const updateWorkerFn = useUpdateWorker();
+  const deleteWorkerFn = useDeleteWorker();
+  const getWorkersTabDataFn = useGetWorkersTabData();
+
   // Worker column definitions for filtering/sorting
   const workerColumns = useMemo(() => {
     return createWorkerColumns(t, specialties, dimensions, dimEntries, workers);
@@ -154,7 +159,7 @@ export default function WorkerTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const addedWorker = await addWorker({
+    const addedWorker = await addWorkerFn({
       id: "",
       teamId: selectedTeamId,
       name: "",
@@ -178,7 +183,7 @@ export default function WorkerTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const updatedWorker = await updateWorker(worker);
+    const updatedWorker = await updateWorkerFn(worker);
     setWorkers((prevWorkers) =>
       prevWorkers.map((w) => (w.id === updatedWorker.id ? updatedWorker : w))
     );
@@ -188,7 +193,7 @@ export default function WorkerTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    await deleteWorker(workerId, selectedTeamId);
+    await deleteWorkerFn(workerId, selectedTeamId);
     setWorkers(workers.filter((worker) => worker.id !== workerId));
   };
 
@@ -375,21 +380,26 @@ export default function WorkerTab({
     const fetchWorkersTabData = async () => {
       setIsLoading(true);
       if (selectedTeamId) {
-        const {
-          workers: fetchedWorkers,
-          dimensions: fetchedDimensions,
-          dimEntries: fetchedDimEntries,
-          specialties: fetchedSpecialties,
-        } = await getWorkersTabData(selectedTeamId);
-        setWorkers(fetchedWorkers);
-        setDimensions(fetchedDimensions);
-        setDimEntries(fetchedDimEntries);
-        setSpecialties(fetchedSpecialties);
-        setIsLoading(false);
+        try {
+          const {
+            workers: fetchedWorkers,
+            dimensions: fetchedDimensions,
+            dimEntries: fetchedDimEntries,
+            specialties: fetchedSpecialties,
+          } = await getWorkersTabDataFn(selectedTeamId);
+          setWorkers(fetchedWorkers);
+          setDimensions(fetchedDimensions);
+          setDimEntries(fetchedDimEntries);
+          setSpecialties(fetchedSpecialties);
+        } catch (error) {
+          console.error("Failed to fetch workers tab data:", error);
+        } finally {
+          setIsLoading(false);
+        }
       }
     };
     fetchWorkersTabData();
-  }, [selectedTeamId]);
+  }, [selectedTeamId, getWorkersTabDataFn]);
 
   // useEffect(() => {
   //   const fetchAccessTokenPayload = async () => {

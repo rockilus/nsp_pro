@@ -1,3 +1,14 @@
+/**
+ * Legacy worker API functions
+ *
+ * @deprecated These functions are deprecated and will be removed in a future version.
+ * Please use the new WorkerApi class and useWorker hooks instead.
+ *
+ * Migration guide:
+ * - Replace direct function calls with appropriate hooks from useWorker.ts
+ * - Use WorkerApi class for non-React contexts
+ */
+
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Actions
@@ -5,13 +16,12 @@ import { getDimensions } from "./dimension";
 import { getSpecialties } from "./specialty";
 // Types
 import { WorkerT } from "../../types/worker";
-// Env Vars
-import { API_URL } from "./env";
+// New API Client
+import { WorkerApi } from "./api/workerApi";
 
 dayjs.extend(utc);
 
-const apiUrlWorkers = API_URL + "/workers";
-
+// Legacy transformation functions - exported for backward compatibility
 export const toWorkerT = (data: any): WorkerT => {
   return {
     ...data,
@@ -33,161 +43,76 @@ export const fromWorkerT = (data: WorkerT): any => {
 };
 
 //////////////////////////
-// Worker //
+// Legacy Worker Functions //
 //////////////////////////
 
-export async function addWorker(worker: WorkerT) {
-  const options: RequestInit = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(fromWorkerT(worker)),
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlWorkers}/teams/${worker.teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to add worker: " + responseData.detail);
-    }
-    return toWorkerT(responseData) as WorkerT;
-  } catch (error) {
-    console.error("Failed to add worker:", error);
-    throw new Error("Failed to add worker, please try again later");
-  }
-}
-
-export async function getWorkers(teamId: string) {
-  const options: RequestInit = {
-    method: "GET",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(`${apiUrlWorkers}/teams/${teamId}`, options);
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to fetch workers: " + responseData.detail);
-    }
-    return responseData.map(toWorkerT);
-  } catch (error) {
-    console.error("Failed to fetch workers:", error);
-    throw new Error("Failed to fetch workers, please try again later");
-  }
-}
-
-export async function getAllWorkers(teamId: string) {
-  const options: RequestInit = {
-    method: "GET",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlWorkers}/all/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to fetch workers: " + responseData.detail);
-    }
-    return responseData.map(toWorkerT);
-  } catch (error) {
-    console.error("Failed to fetch workers:", error);
-    throw new Error("Failed to fetch workers, please try again later");
-  }
-}
-
-export async function updateWorker(updatedWorker: WorkerT) {
-  const options: RequestInit = {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(fromWorkerT(updatedWorker)),
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlWorkers}/${updatedWorker.id}/teams/${updatedWorker.teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to update worker: " + responseData.detail);
-    }
-    return toWorkerT(responseData) as WorkerT;
-  } catch (error) {
-    console.error("Failed to update worker:", error);
-    throw new Error("Failed to update worker, please try again later");
-  }
+/**
+ * @deprecated Use WorkerApi.addWorker() or useAddWorker() hook instead
+ */
+export async function addWorker(worker: WorkerT): Promise<WorkerT> {
+  console.warn(
+    "⚠️ addWorker is deprecated. Use WorkerApi.addWorker() or useAddWorker() hook instead"
+  );
+  return WorkerApi.addWorkerLegacy(worker);
 }
 
 /**
- * Sends a request to add a user to a worker.
- * @param {string} workerId - The ID of the worker.
- * @param {string} userId - The ID of the user to add.
- * @param {string} teamId - The ID of the team the worker belongs to.
- * @returns {Promise<WorkerDTO>} A promise resolving to the updated worker.
+ * @deprecated Use WorkerApi.getWorkers() or useGetWorkers() hook instead
+ */
+export async function getWorkers(teamId: string): Promise<WorkerT[]> {
+  console.warn(
+    "⚠️ getWorkers is deprecated. Use WorkerApi.getWorkers() or useGetWorkers() hook instead"
+  );
+  return WorkerApi.getWorkersLegacy(teamId);
+}
+
+/**
+ * @deprecated Use WorkerApi.getAllWorkers() or useGetAllWorkers() hook instead
+ */
+export async function getAllWorkers(teamId: string): Promise<WorkerT[]> {
+  console.warn(
+    "⚠️ getAllWorkers is deprecated. Use WorkerApi.getAllWorkers() or useGetAllWorkers() hook instead"
+  );
+  return WorkerApi.getAllWorkersLegacy(teamId);
+}
+
+/**
+ * @deprecated Use WorkerApi.updateWorker() or useUpdateWorker() hook instead
+ */
+export async function updateWorker(updatedWorker: WorkerT): Promise<WorkerT> {
+  console.warn(
+    "⚠️ updateWorker is deprecated. Use WorkerApi.updateWorker() or useUpdateWorker() hook instead"
+  );
+  return WorkerApi.updateWorkerLegacy(updatedWorker);
+}
+
+/**
+ * @deprecated Use WorkerApi.attachUserToWorker() or useAttachUserToWorker() hook instead
  */
 export const attachUserToWorker = async (
   workerId: string,
   userId: string,
   teamId: string
 ): Promise<WorkerT> => {
-  try {
-    const response = await fetch(
-      `${apiUrlWorkers}/${workerId}/attach_user/teams/${teamId}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          user_id: userId,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error("Failed to attach user to worker: " + errorData.detail);
-    }
-
-    const data = await response.json();
-    return toWorkerT(data);
-  } catch (error) {
-    console.error("Error adding user to worker:", error);
-    throw error;
-  }
+  console.warn(
+    "⚠️ attachUserToWorker is deprecated. Use WorkerApi.attachUserToWorker() or useAttachUserToWorker() hook instead"
+  );
+  return WorkerApi.attachUserToWorkerLegacy(workerId, userId, teamId);
 };
 
-export async function deleteWorker(workerId: string, teamId: string) {
-  const options: RequestInit = {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlWorkers}/${workerId}/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to delete worker: " + responseData.detail);
-    }
-  } catch (error) {
-    console.error("Failed to delete worker:", error);
-    throw new Error("Failed to delete worker, please try again later");
+/**
+ * @deprecated Use WorkerApi.deleteWorker() or useDeleteWorker() hook instead
+ */
+export async function deleteWorker(
+  workerId: string,
+  teamId: string
+): Promise<void> {
+  console.warn(
+    "⚠️ deleteWorker is deprecated. Use WorkerApi.deleteWorker() or useDeleteWorker() hook instead"
+  );
+  const success = await WorkerApi.deleteWorkerLegacy(workerId, teamId);
+  if (!success) {
+    throw new Error("Failed to delete worker");
   }
 }
 
@@ -195,7 +120,13 @@ export async function deleteWorker(workerId: string, teamId: string) {
 // Workers Tab Data //
 //////////////////////////
 
+/**
+ * @deprecated Use useGetWorkersTabData() hook instead
+ */
 export async function getWorkersTabData(teamId: string) {
+  console.warn(
+    "⚠️ getWorkersTabData is deprecated. Use useGetWorkersTabData() hook instead"
+  );
   try {
     const workersTabData = await Promise.all([
       getWorkers(teamId),

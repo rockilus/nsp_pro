@@ -10,7 +10,7 @@ import {
   useGetTeamUsersWithMemberships,
   useRemoveUserFromTeam,
 } from "@/hooks/useTeam";
-import { getWorkers, attachUserToWorker } from "@/app/lib/worker";
+import { useGetWorkers, useAttachUserToWorker } from "@/hooks/useWorker";
 import {
   useCreateTeamInvitation,
   useGetTeamInvitations,
@@ -43,6 +43,8 @@ export default function MembersTab({
   // Hook functions
   const getTeamUsersWithMembershipsFn = useGetTeamUsersWithMemberships();
   const removeUserFromTeamFn = useRemoveUserFromTeam();
+  const getWorkersFn = useGetWorkers();
+  const attachUserToWorkerFn = useAttachUserToWorker();
   const createTeamInvitationFn = useCreateTeamInvitation();
   const getTeamInvitationsFn = useGetTeamInvitations();
   const resendTeamInvitationEmailFn = useResendTeamInvitationEmail();
@@ -56,7 +58,7 @@ export default function MembersTab({
     setIsLoading(true);
     try {
       const users = await getTeamUsersWithMembershipsFn(teamId);
-      const workers = await getWorkers(teamId);
+      const workers = await getWorkersFn(teamId);
       const invitations = await getTeamInvitationsFn(teamId);
       setUsers(users);
       setWorkers(workers);
@@ -66,7 +68,12 @@ export default function MembersTab({
     } finally {
       setIsLoading(false);
     }
-  }, [teamId, getTeamUsersWithMembershipsFn, getTeamInvitationsFn]);
+  }, [
+    teamId,
+    getTeamUsersWithMembershipsFn,
+    getWorkersFn,
+    getTeamInvitationsFn,
+  ]);
 
   const handleRemoveFromTeam = async (teamId: string, userId: string) => {
     try {
@@ -90,7 +97,7 @@ export default function MembersTab({
     userId: string,
     teamId: string
   ) => {
-    const updatedWorkers = await attachUserToWorker(workerId, userId, teamId);
+    const updatedWorkers = await attachUserToWorkerFn(workerId, userId, teamId);
     setWorkers((prevWorkers) =>
       prevWorkers.map((worker) =>
         worker.id === updatedWorkers.id ? updatedWorkers : worker
