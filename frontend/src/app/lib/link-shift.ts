@@ -1,104 +1,65 @@
+/**
+ * @deprecated This file contains legacy API functions.
+ * Use LinkShiftApi class and useLinkShift hooks instead.
+ *
+ * Migrated functions:
+ * - addLinkShift() -> LinkShiftApi.createLinkShift() or useCreateLinkShift()
+ * - getLinkShifts() -> LinkShiftApi.getLinkShifts() or useGetLinkShifts()
+ * - updateLinkShift() -> LinkShiftApi.updateLinkShift() or useUpdateLinkShift()
+ * - deleteLinkShift() -> LinkShiftApi.deleteLinkShift() or useDeleteLinkShift()
+ */
+
 // Types
 import { LinkShiftT } from "../../types/shift";
-// Env Vars
-import { API_URL } from "./env";
-
-const apiUrlLinkShifts = API_URL + "/link-shifts";
+// New API
+import { LinkShiftApi } from "./api/linkShiftApi";
 
 //////////////////////////
-// LinkShift //
+// Legacy LinkShift Functions //
+// (Backward compatibility only) //
 //////////////////////////
 
-export async function addLinkShift(linkShift: LinkShiftT) {
-  const options: RequestInit = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(linkShift),
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlLinkShifts}/teams/${linkShift.teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to add link shift: " + responseData.detail);
-    }
-    return responseData as LinkShiftT;
-  } catch (error) {
-    console.error("Failed to add link shift:", error);
-    throw new Error("Failed to add link shift, please try again later");
-  }
+/**
+ * @deprecated Use LinkShiftApi.createLinkShift() or useCreateLinkShift() hook instead
+ */
+export async function addLinkShift(linkShift: LinkShiftT): Promise<LinkShiftT> {
+  console.warn(
+    "⚠️ addLinkShift() is deprecated. Use LinkShiftApi.createLinkShift() or useCreateLinkShift() hook instead."
+  );
+  return LinkShiftApi.createLinkShiftLegacy(linkShift);
 }
 
-export async function getLinkShifts(teamId: string) {
-  const options: RequestInit = {
-    method: "GET",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlLinkShifts}/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to fetch link shifts: " + responseData.detail);
-    }
-    return responseData as LinkShiftT[];
-  } catch (error) {
-    console.error("Failed to fetch link shifts:", error);
-    throw new Error("Failed to fetch link shifts, please try again later");
-  }
+/**
+ * @deprecated Use LinkShiftApi.getLinkShifts() or useGetLinkShifts() hook instead
+ */
+export async function getLinkShifts(teamId: string): Promise<LinkShiftT[]> {
+  console.warn(
+    "⚠️ getLinkShifts() is deprecated. Use LinkShiftApi.getLinkShifts() or useGetLinkShifts() hook instead."
+  );
+  return LinkShiftApi.getLinkShiftsLegacy(teamId);
 }
 
-export async function updateLinkShift(updatedLinkShift: LinkShiftT) {
-  const options: RequestInit = {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(updatedLinkShift),
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlLinkShifts}/${updatedLinkShift.id}/teams/${updatedLinkShift.teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to update link shift: " + responseData.detail);
-    }
-    return responseData as LinkShiftT;
-  } catch (error) {
-    console.error("Failed to update link shift:", error);
-    throw new Error("Failed to update link shift, please try again later");
-  }
+/**
+ * @deprecated Use LinkShiftApi.updateLinkShift() or useUpdateLinkShift() hook instead
+ */
+export async function updateLinkShift(
+  updatedLinkShift: LinkShiftT
+): Promise<LinkShiftT> {
+  console.warn(
+    "⚠️ updateLinkShift() is deprecated. Use LinkShiftApi.updateLinkShift() or useUpdateLinkShift() hook instead."
+  );
+  return LinkShiftApi.updateLinkShiftLegacy(updatedLinkShift);
 }
 
-export async function deleteLinkShift(linkShiftId: string, teamId: string) {
-  const options: RequestInit = {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlLinkShifts}/${linkShiftId}/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to delete link shift: " + responseData.detail);
-    }
-  } catch (error) {
-    console.error("Failed to delete link shift:", error);
-    throw new Error("Failed to delete link shift, please try again later");
-  }
+/**
+ * @deprecated Use LinkShiftApi.deleteLinkShift() or useDeleteLinkShift() hook instead
+ */
+export async function deleteLinkShift(
+  linkShiftId: string,
+  teamId: string
+): Promise<void> {
+  console.warn(
+    "⚠️ deleteLinkShift() is deprecated. Use LinkShiftApi.deleteLinkShift() or useDeleteLinkShift() hook instead."
+  );
+  await LinkShiftApi.deleteLinkShiftLegacy(linkShiftId, teamId);
 }

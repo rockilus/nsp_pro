@@ -196,7 +196,6 @@ export class ShiftApi extends BaseApi {
 
   /**
    * Get shifts tab data (authenticated)
-   * Note: This method will need to be updated once dimension, specialty, and link-shift APIs are refactored
    */
   static async getShiftsTabData(
     apiClient: AuthenticatedApiClient,
@@ -207,25 +206,25 @@ export class ShiftApi extends BaseApi {
       throw new Error("Team ID is required");
     }
 
-    // For now, we'll make individual calls since other APIs haven't been refactored yet
-    // This should be updated when dimension, specialty, and link-shift APIs are refactored
-    const shifts = await this.getShifts(apiClient, teamId);
+    // Import the new API classes
+    const { DimensionApi } = await import("./dimensionApi");
+    const { SpecialtyApi } = await import("./specialtyApi");
+    const { LinkShiftApi } = await import("./linkShiftApi");
 
-    // TODO: Replace these with authenticated API calls once refactored
-    const { getDimensions } = await import("../dimension");
-    const { getSpecialties } = await import("../specialty");
-    const { getLinkShifts } = await import("../link-shift");
-
-    const [dimensions, specialties, linkShifts] = await Promise.all([
-      getDimensions(teamId),
-      getSpecialties(teamId),
-      getLinkShifts(teamId),
-    ]);
+    // Use authenticated API calls for all data
+    const [shifts, dimensionsData, specialties, linkShifts] = await Promise.all(
+      [
+        this.getShifts(apiClient, teamId),
+        DimensionApi.getDimensions(apiClient, teamId),
+        SpecialtyApi.getSpecialties(apiClient, teamId),
+        LinkShiftApi.getLinkShifts(apiClient, teamId),
+      ]
+    );
 
     return {
       shifts,
-      dimensions: dimensions.dimensions,
-      dimEntries: dimensions.dimEntries,
+      dimensions: dimensionsData.dimensions,
+      dimEntries: dimensionsData.dimEntries,
       specialties,
       linkShifts,
     };

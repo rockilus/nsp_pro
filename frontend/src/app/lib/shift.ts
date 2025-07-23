@@ -3,7 +3,7 @@ import utc from "dayjs/plugin/utc";
 // Actions
 import { getDimensions } from "./dimension";
 import { getSpecialties } from "./specialty";
-import { getLinkShifts } from "./link-shift";
+import { LinkShiftApi } from "./api/linkShiftApi";
 // Types
 import { ShiftT, LinkShiftT } from "../../types/shift";
 // New API
@@ -109,7 +109,7 @@ export async function getShiftsTabData(teamId: string) {
       getShifts(teamId),
       getDimensions(teamId),
       getSpecialties(teamId),
-      getLinkShifts(teamId),
+      LinkShiftApi.getLinkShiftsLegacy(teamId),
     ]);
     return {
       shifts: shiftsTabData[0],

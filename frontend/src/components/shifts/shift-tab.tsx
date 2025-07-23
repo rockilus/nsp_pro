@@ -33,11 +33,13 @@ import {
   useDeleteShift,
   useGetShiftsTabData,
 } from "../../hooks/useShift";
+import {
+  useCreateLinkShift,
+  useDeleteLinkShift,
+} from "../../hooks/useLinkShift";
 // Utils
 import { createShiftColumns } from "./shiftColumns";
 import { filterWorkShifts, filterRestShifts } from "./shift-utils/shift-utils";
-// Actions
-import { addLinkShift, deleteLinkShift } from "../../app/lib/link-shift";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "../../styles/table-styles.css";
@@ -88,6 +90,10 @@ export default function ShiftTab({
   const addDimEntryFn = useAddDimEntry();
   const updateDimEntryFn = useUpdateDimEntry();
   const deleteDimEntryFn = useDeleteDimEntry();
+
+  // LinkShift hooks
+  const createLinkShiftFn = useCreateLinkShift();
+  const deleteLinkShiftFn = useDeleteLinkShift();
 
   // Shift hooks
   const addShiftFn = useAddShift();
@@ -438,7 +444,7 @@ export default function ShiftTab({
   //////////////////////////
 
   const handleAddLinkShift = async (linkShift: LinkShiftT) => {
-    const newLinkShift = await addLinkShift(linkShift);
+    const newLinkShift = await createLinkShiftFn(linkShift);
     setLinkShifts([...linkShifts, newLinkShift]);
   };
 
@@ -446,7 +452,7 @@ export default function ShiftTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    await deleteLinkShift(linkShiftId, selectedTeamId);
+    await deleteLinkShiftFn(linkShiftId, selectedTeamId);
     setLinkShifts(
       linkShifts.filter((linkShift) => linkShift.id !== linkShiftId)
     );
