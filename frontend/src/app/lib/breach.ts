@@ -1,31 +1,29 @@
+/**
+ * LEGACY BREACH API - DEPRECATED
+ *
+ * This file has been deprecated in favor of the new authenticated API pattern.
+ * Please use BreachApi and useBreach hook instead.
+ *
+ * New API: frontend/src/app/lib/api/breachApi.ts
+ * New Hook: frontend/src/hooks/useBreach.ts
+ */
+
 // Types
-import { BreachT, toBreachT } from "@/types/breach";
-// Env Vars
-import { API_URL } from "./env";
-
-const apiUrlBreach = API_URL + "/breaches";
+import { BreachT } from "@/types/breach";
+// New API
+import { BreachApi } from "./api/breachApi";
 
 //////////////////////////
-// Breach //
+// LEGACY Breach API //
 //////////////////////////
 
-export async function getBreaches(teamId: string) {
-  const options: RequestInit = {
-    method: "GET",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(`${apiUrlBreach}/teams/${teamId}`, options);
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to fetch breaches: " + responseData.detail);
-    }
-    return responseData.map(toBreachT) as BreachT[];
-  } catch (error) {
-    console.error("Failed to fetch breaches:", error);
-    throw new Error("Failed to fetch breaches, please try again later");
-  }
+/**
+ * @deprecated Use BreachApi.getBreachesLegacy() or useBreach hook instead
+ * Legacy function for getting breaches by team ID
+ */
+export async function getBreaches(teamId: string): Promise<BreachT[]> {
+  console.warn(
+    "⚠️ DEPRECATED: getBreaches() is deprecated. Use BreachApi.getBreaches() with authentication or useBreach hook instead."
+  );
+  return BreachApi.getBreachesLegacy(teamId);
 }

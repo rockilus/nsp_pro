@@ -34,8 +34,9 @@ import { ShiftApi } from "./shiftApi";
 import { RequestApi } from "./requestApi";
 import { StatsApi } from "./statsApi";
 import { SpecialtyApi } from "./specialtyApi";
+import { BreachApi } from "./breachApi";
 // Legacy imports (to be migrated)
-import { getBreaches } from "../breach";
+// import { getBreaches } from "../breach"; // Replaced with BreachApi
 
 dayjs.extend(utc);
 
@@ -262,7 +263,7 @@ export class ScheduleApi extends BaseApi {
 
       const campaignTabData = await Promise.all([
         AssignmentApi.getAssignmentsByDates(apiClient, teamId),
-        getBreaches(teamId), // TODO: Create BreachApi
+        BreachApi.getBreaches(apiClient, teamId),
         RequestApi.getRequests(apiClient, teamId),
         this.getSchedules(apiClient, teamId),
         ShiftApi.getAllShifts(apiClient, teamId),
@@ -406,7 +407,7 @@ export class ScheduleApi extends BaseApi {
       };
 
       const campaignTabData = await Promise.all([
-        getBreaches(teamId), // TODO: Create BreachApi
+        BreachApi.getBreaches(apiClient, teamId),
         RequestApi.getRequests(apiClient, teamId),
         StatsApi.getStats(apiClient, teamId, statsOptions),
         SpecialtyApi.getSpecialties(apiClient, teamId),
