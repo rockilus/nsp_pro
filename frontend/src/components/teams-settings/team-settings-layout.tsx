@@ -88,10 +88,7 @@ export default function TeamSettingsLayout({
         </div>
 
         {/* Navigation List */}
-        <List
-          dense={true}
-          sx={{ width: "20%", maxWidth: 360, borderRight: "1px solid #e5e7eb" }}
-        >
+        <List dense={true}>
           {teamLinks.map((link) => (
             <ListItem key={link.name} disablePadding>
               <ListItemButton
