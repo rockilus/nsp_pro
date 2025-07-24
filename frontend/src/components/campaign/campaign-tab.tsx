@@ -7,11 +7,11 @@ import ScheduleSelector from "./schedule-selector";
 import ConstraintSelector from "./constraint-selector";
 // Skeletons
 import TablesSkeleton from "../skeletons/tables-skeleton";
-// Actions
+// New hooks (authenticated)
 import {
-  getCampaignTabData,
-  getCampaignTabDataNoSolver,
-} from "../../app/lib/campaign";
+  useGetCampaignTabData,
+  useGetCampaignTabDataNoSolver,
+} from "../../hooks/useCampaign";
 // Hooks
 import {
   useCreateSchedule,
@@ -33,6 +33,10 @@ export default function CampaignTab({
   teamWithMembership: TeamWithMembership;
 }) {
   const { t } = useTranslation(lng, "campaign-page");
+
+  // Campaign hooks
+  const getCampaignTabData = useGetCampaignTabData();
+  const getCampaignTabDataNoSolver = useGetCampaignTabDataNoSolver();
 
   // Schedule hooks
   const createSchedule = useCreateSchedule();
@@ -64,7 +68,7 @@ export default function CampaignTab({
       setWorkTimeTable(newWorkTimeTable);
     } catch (error) {
       console.error("Failed to create schedule:", error);
-      // Handle error appropriately - could show a toast notification
+      // TODO: Add user-facing error notification
     }
   };
 
@@ -79,7 +83,7 @@ export default function CampaignTab({
       setWorkTimeTable(newWorkTimeTable);
     } catch (error) {
       console.error("Failed to update schedule:", error);
-      // Handle error appropriately - could show a toast notification
+      // TODO: Add user-facing error notification
     }
   };
 
@@ -87,28 +91,29 @@ export default function CampaignTab({
     const fetchCampaignTabData = async () => {
       setIsLoading(true);
 
-      if (teamWithMembership.team.useSolver) {
-        const {
-          scheduleCampaign: fetchedScheduleCampaign,
-          schedulesValidated: fetchedSchedulesValidated,
-          constraints: fetchedConstraints,
-        } = await getCampaignTabData(teamWithMembership.team.id);
-        setScheduleCampaign(fetchedScheduleCampaign);
-        setSchedulesValidated(fetchedSchedulesValidated);
-        setConstraints(fetchedConstraints);
-      } else {
-        const {
-          scheduleCampaign: fetchedScheduleCampaign,
-          schedulesValidated: fetchedSchedulesValidated,
-        } = await getCampaignTabDataNoSolver(teamWithMembership.team.id);
-        setScheduleCampaign(fetchedScheduleCampaign);
-        setSchedulesValidated(fetchedSchedulesValidated);
+      try {
+        if (teamWithMembership.team.useSolver) {
+          const data = await getCampaignTabData(teamWithMembership.team.id);
+          setScheduleCampaign(data.scheduleCampaign);
+          setSchedulesValidated(data.schedulesValidated);
+          setConstraints(data.constraints);
+        } else {
+          const data = await getCampaignTabDataNoSolver(
+            teamWithMembership.team.id
+          );
+          setScheduleCampaign(data.scheduleCampaign);
+          setSchedulesValidated(data.schedulesValidated);
+        }
+      } catch (error) {
+        console.error("Failed to fetch campaign tab data:", error);
+        // TODO: Add user-facing error notification
+      } finally {
+        setIsLoading(false);
       }
-
-      setIsLoading(false);
     };
+
     fetchCampaignTabData();
-  }, [teamWithMembership]);
+  }, [teamWithMembership, getCampaignTabData, getCampaignTabDataNoSolver]);
 
   useEffect(() => {
     if (scheduleCampaign && !workTimeTable) {
