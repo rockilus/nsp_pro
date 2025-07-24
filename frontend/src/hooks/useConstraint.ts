@@ -3,6 +3,8 @@ import { useCallback } from "react";
 import { ConstraintT, TemplateT } from "../types/constraint";
 // API Client
 import { ConstraintApi } from "../app/lib/api/constraintApi";
+import { WorkerApi } from "../app/lib/api/workerApi";
+import { ShiftApi } from "../app/lib/api/shiftApi";
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
@@ -242,16 +244,11 @@ export function useGetConstraintsTabData() {
       }
 
       try {
-        // Note: This assumes getWorkers and getShifts will also be refactored to use hooks
-        // For now, we'll import them from the original location
-        const { getWorkers } = await import("../app/lib/worker");
-        const { getShifts } = await import("../app/lib/shift");
-
         const constraintsTabData = await Promise.all([
           ConstraintApi.getTemplates(apiClient, teamId),
           ConstraintApi.getConstraints(apiClient, teamId),
-          getWorkers(teamId), // TODO: Replace with authenticated hook when available
-          getShifts(teamId), // TODO: Replace with authenticated hook when available
+          WorkerApi.getAllWorkers(apiClient, teamId),
+          ShiftApi.getShifts(apiClient, teamId),
         ]);
 
         return {

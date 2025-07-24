@@ -2,8 +2,12 @@ import { useCallback } from "react";
 // Types
 import { StatsT, StatsHeaderT, StatsOptionsT } from "../types/stats";
 import { ShiftWorkerOptionT } from "../types/constraint";
+import { ScheduleStatus } from "../types/schedule";
 // API Client
 import { StatsApi } from "../app/lib/api/statsApi";
+import { ScheduleApi } from "../app/lib/api/scheduleApi";
+import { WorkerApi } from "../app/lib/api/workerApi";
+import { ShiftApi } from "../app/lib/api/shiftApi";
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
@@ -235,16 +239,10 @@ export function useGetStatsTabData() {
       }
 
       try {
-        // Import these functions dynamically to avoid circular dependencies
-        const { getSchedules } = await import("../app/lib/schedule");
-        const { getShifts } = await import("../app/lib/shift");
-        const { getWorkers } = await import("../app/lib/worker");
-        const { ScheduleStatus } = await import("../types/schedule");
-
         const statsTabData = await Promise.all([
-          getSchedules(teamId),
-          getShifts(teamId),
-          getWorkers(teamId),
+          ScheduleApi.getSchedules(apiClient, teamId),
+          ShiftApi.getShifts(apiClient, teamId),
+          WorkerApi.getAllWorkers(apiClient, teamId),
           StatsApi.getShiftOptions(apiClient, teamId),
         ]);
 
