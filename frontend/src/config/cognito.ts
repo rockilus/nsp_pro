@@ -14,7 +14,13 @@ export const cognitoAuthConfig = {
   automaticSilentRenew: true,
   includeIdTokenInSilentRenew: true,
   monitorSession: false,
-  checkSessionInterval: 10000,
+  checkSessionInterval: 15000, // Increased interval to reduce concurrent requests
+  revokeAccessTokenOnSignout: true,
+  revokeRefreshTokenOnSignout: true,
+  validateSubOnSilentRenew: true,
+  // Enhanced settings for refresh token rotation
+  silentRequestTimeout: 30000, // Increased timeout for refresh operations
+  accessTokenExpiringNotificationTime: 60, // Notify 60 seconds before expiration
 };
 
 export const cognitoDomain =

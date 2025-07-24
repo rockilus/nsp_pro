@@ -26,6 +26,18 @@ export default function ProtectedRoute({
     if (requireAuth && !loading && !error && !isAuthenticated) {
       signIn();
     }
+
+    // Handle specific refresh token rotation errors
+    if (
+      error?.message?.includes("invalid_grant") ||
+      error?.message?.includes("refresh token") ||
+      error?.message?.includes("Token is not valid")
+    ) {
+      console.warn(
+        "Refresh token rotation error detected, forcing re-authentication"
+      );
+      signIn();
+    }
   }, [requireAuth, loading, error, isAuthenticated, signIn]);
 
   if (loading) {

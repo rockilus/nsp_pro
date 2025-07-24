@@ -52,7 +52,7 @@ const isValidLogoutUri = (uri: string): boolean => {
 
 /**
  * Securely clears authentication tokens from both localStorage and sessionStorage
- * This handles cases where oidc-client-ts might use either storage mechanism
+ * Enhanced for refresh token rotation support
  */
 const clearAuthTokens = (): void => {
   try {
@@ -62,11 +62,21 @@ const clearAuthTokens = (): void => {
     localStorage.removeItem(tokenKey);
     sessionStorage.removeItem(tokenKey);
 
+    // Also clear refresh token rotation specific keys
+    const refreshTokenKeys = [
+      `oidc.refresh_token:${cognitoAuthConfig.authority}:${cognitoAuthConfig.client_id}`,
+      `oidc.silent_renew:${cognitoAuthConfig.authority}:${cognitoAuthConfig.client_id}`,
+      `oidc.session_state:${cognitoAuthConfig.authority}:${cognitoAuthConfig.client_id}`,
+    ];
+
     // Clear any other OIDC-related items from both storages
     const storages = [localStorage, sessionStorage];
 
     storages.forEach((storage) => {
       try {
+        // Clear specific refresh token keys first
+        refreshTokenKeys.forEach((key) => storage.removeItem(key));
+
         const authKeys = Object.keys(storage).filter(
           (key) =>
             key.startsWith("oidc.") ||
@@ -105,7 +115,60 @@ export function AuthContextProvider({
     if (!auth.isLoading) {
       setLoading(false);
     }
-  }, [auth.isLoading]);
+
+    // Handle silent renew errors specific to refresh token rotation
+    const handleSilentRenewError = (error: any) => {
+      console.error("Silent renew failed:", error);
+
+      // Track refresh attempts for debugging
+      const attempts =
+        parseInt(localStorage.getItem("refreshAttempts") || "0") + 1;
+      localStorage.setItem("refreshAttempts", attempts.toString());
+      localStorage.setItem("lastRefreshAttempt", new Date().toISOString());
+
+      // Check if it's a refresh token rotation error
+      if (
+        error?.error === "invalid_grant" ||
+        error?.error_description?.includes("refresh token") ||
+        error?.error_description?.includes("Token is not valid")
+      ) {
+        console.warn(
+          "Refresh token rotation conflict detected, clearing auth state"
+        );
+        clearAuthTokens();
+        // Reset refresh attempt counter on rotation errors
+        localStorage.removeItem("refreshAttempts");
+        localStorage.removeItem("lastRefreshAttempt");
+        // Don't auto-redirect on rotation errors, let user manually sign in
+      }
+    };
+
+    // Handle access token expiring notification
+    const handleAccessTokenExpiring = () => {
+      console.log("Access token expiring soon, silent renew will be attempted");
+    };
+
+    // Handle successful silent renew
+    const handleSilentRenewSuccess = () => {
+      console.log("Silent renew successful, new tokens received");
+      // Reset refresh attempt counter on successful renewal
+      localStorage.removeItem("refreshAttempts");
+      localStorage.setItem("lastSuccessfulRefresh", new Date().toISOString());
+    };
+
+    // Listen for OIDC events if available
+    if (auth.events) {
+      auth.events.addSilentRenewError(handleSilentRenewError);
+      auth.events.addAccessTokenExpiring(handleAccessTokenExpiring);
+      auth.events.addUserSignedIn(handleSilentRenewSuccess);
+
+      return () => {
+        auth.events.removeSilentRenewError(handleSilentRenewError);
+        auth.events.removeAccessTokenExpiring(handleAccessTokenExpiring);
+        auth.events.removeUserSignedIn(handleSilentRenewSuccess);
+      };
+    }
+  }, [auth.isLoading, auth.events]);
 
   const signOutRedirect = async (): Promise<void> => {
     try {
