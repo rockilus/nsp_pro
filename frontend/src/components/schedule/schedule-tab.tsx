@@ -23,21 +23,23 @@ import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
 import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
 // Actions
 import {
-  validateSchedule,
-  updateSchedule,
-  getSchedules,
-  getScheduleAssignmentsData,
-  getScheduleAssignmentsDataNoSolver,
-  getScheduleLHSData,
-  duplicatePeriod,
-} from "../../app/lib/schedule";
-import {
   addAssignmentAndRecurrence,
   updateAssignmentAndRecurrence,
   deleteAssignment,
 } from "../../app/lib/assignment";
 import { useGetStats } from "../../hooks/useStats";
 import { exportSchedule } from "../../app/lib/export-schedule";
+// Hooks
+import {
+  useValidateSchedule,
+  useUpdateSchedule,
+  useGetSchedules,
+  useGetScheduleAssignmentsData,
+  useGetScheduleAssignmentsDataNoSolver,
+  useGetScheduleLHSData,
+  useDuplicatePeriod,
+  useExportSchedule,
+} from "../../hooks/useSchedule";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "./schedule-tab.css";
@@ -98,6 +100,17 @@ export default function ScheduleTab({
 
   // Stats hook
   const getStats = useGetStats();
+
+  // Schedule hooks
+  const validateSchedule = useValidateSchedule();
+  const updateSchedule = useUpdateSchedule();
+  const getSchedules = useGetSchedules();
+  const getScheduleAssignmentsData = useGetScheduleAssignmentsData();
+  const getScheduleAssignmentsDataNoSolver =
+    useGetScheduleAssignmentsDataNoSolver();
+  const getScheduleLHSData = useGetScheduleLHSData();
+  const duplicatePeriod = useDuplicatePeriod();
+  const exportScheduleHook = useExportSchedule();
 
   const [isLoadingSchedule, setIsLoadingSchedule] = useState<boolean>(true);
   const [isLoadingAssignments, setIsLoadingAssignments] =
@@ -257,18 +270,28 @@ export default function ScheduleTab({
   //////////////////////////
 
   const handleUpdateSchedule = async (schedule: ScheduleT) => {
-    const newSchedule = await updateSchedule(schedule);
-    setScheduleCampaign(newSchedule);
+    try {
+      const newSchedule = await updateSchedule(schedule);
+      setScheduleCampaign(newSchedule);
+    } catch (error) {
+      console.error("Failed to update schedule:", error);
+      // Handle error appropriately
+    }
   };
 
   const handleValidateSchedule = async (scheduleId: string) => {
-    const newSchedule = await validateSchedule(
-      scheduleId,
-      teamWithMembership.team.id
-    );
-    setScheduleCampaign(null);
-    setSchedulesValidated([...schedulesValidated, newSchedule]);
-    setBreaches([]);
+    try {
+      const newSchedule = await validateSchedule(
+        scheduleId,
+        teamWithMembership.team.id
+      );
+      setScheduleCampaign(null);
+      setSchedulesValidated([...schedulesValidated, newSchedule]);
+      setBreaches([]);
+    } catch (error) {
+      console.error("Failed to validate schedule:", error);
+      // Handle error appropriately
+    }
   };
 
   const handleDuplicateResult = (duplicateResult: DuplicateResultT) => {
@@ -284,11 +307,20 @@ export default function ScheduleTab({
     campaignId: string,
     teamId: string
   ) => {
-    const duplicateResult = await duplicatePeriod(request, campaignId, teamId);
-    handleDuplicateResult(duplicateResult);
-    const newPeriodStart = request.targetPeriod.startDate.startOf("isoWeek");
-    const newPeriodEnd = request.targetPeriod.startDate.endOf("isoWeek");
-    updateSelectedPeriod(newPeriodStart, newPeriodEnd);
+    try {
+      const duplicateResult = await duplicatePeriod(
+        request,
+        campaignId,
+        teamId
+      );
+      handleDuplicateResult(duplicateResult);
+      const newPeriodStart = request.targetPeriod.startDate.startOf("isoWeek");
+      const newPeriodEnd = request.targetPeriod.startDate.endOf("isoWeek");
+      updateSelectedPeriod(newPeriodStart, newPeriodEnd);
+    } catch (error) {
+      console.error("Failed to duplicate period:", error);
+      // Handle error appropriately
+    }
   };
 
   //////////////////////////
@@ -608,7 +640,12 @@ export default function ScheduleTab({
   //////////////////////////
 
   const handleExportSchedule = async (exportOptions: ExportOptionsT) => {
-    await exportSchedule(teamWithMembership.team.id, exportOptions);
+    try {
+      await exportScheduleHook(teamWithMembership.team.id, exportOptions);
+    } catch (error) {
+      console.error("Failed to export schedule:", error);
+      // Handle error appropriately
+    }
   };
 
   //////////////////////////
@@ -674,11 +711,14 @@ export default function ScheduleTab({
         // Fetch schedules
         const fetchedSchedule = await getSchedules(teamWithMembership.team.id);
         setScheduleCampaign(
-          fetchedSchedule.find((s) => s.status === ScheduleStatus.CAMPAIGN) ||
-            null
+          fetchedSchedule.find(
+            (s: ScheduleT) => s.status === ScheduleStatus.CAMPAIGN
+          ) || null
         );
         setSchedulesValidated(
-          fetchedSchedule.filter((s) => s.status === ScheduleStatus.VALIDATED)
+          fetchedSchedule.filter(
+            (s: ScheduleT) => s.status === ScheduleStatus.VALIDATED
+          )
         );
         setIsLoadingSchedule(false);
 
@@ -741,7 +781,13 @@ export default function ScheduleTab({
     };
 
     fetchData();
-  }, [teamWithMembership]);
+  }, [
+    teamWithMembership,
+    getSchedules,
+    getScheduleAssignmentsData,
+    getScheduleAssignmentsDataNoSolver,
+    getScheduleLHSData,
+  ]);
 
   const lhsTabContent: LHSTabContentT[] = [
     {
