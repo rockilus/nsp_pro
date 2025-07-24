@@ -29,6 +29,11 @@ variable "frontend_domain_name" {
   type        = string
 }
 
+variable "landing_page_domain_name" {
+  description = "Landing page domain name for Cognito OAuth redirect URLs"
+  type        = string
+}
+
 variable "cognito_domain_prefix" {
   description = "Domain prefix for Cognito hosted UI"
   type        = string

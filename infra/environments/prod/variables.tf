@@ -87,6 +87,17 @@ variable "frontend_domain_name" {
   }
 }
 
+variable "landing_page_domain_name" {
+  description = "Custom domain name for the landing page (e.g., landing.rockilus.com)"
+  type        = string
+  default     = "www.rockilus.com"
+
+  validation {
+    condition     = var.landing_page_domain_name == null || can(regex("^www\\.", var.landing_page_domain_name))
+    error_message = "Landing page domain should follow the pattern 'www.domain.com' for security and organization."
+  }
+}
+
 variable "api_gateway_domain_name" {
   description = "Custom domain name for the API Gateway (e.g., api.rockilus.com)"
   type        = string

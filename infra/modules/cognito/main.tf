@@ -161,7 +161,7 @@ resource "aws_cognito_user_pool_client" "main" {
   # allowed_oauth_scopes                 = ["email", "openid", "profile"]
   allowed_oauth_scopes         = ["email", "openid", "phone"]
   callback_urls                = ["https://${var.frontend_domain_name}/fr/plan/workers/"]
-  logout_urls                  = ["https://${var.frontend_domain_name}/fr/plan/workers/"]
+  logout_urls                  = ["https://${var.landing_page_domain_name}"]
   supported_identity_providers = ["COGNITO"]
 
   # SPA-specific security settings
