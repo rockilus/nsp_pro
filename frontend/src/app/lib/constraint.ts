@@ -3,148 +3,66 @@ import { getWorkers } from "./worker";
 import { getShifts } from "./shift";
 // Types
 import { ConstraintT, TemplateT } from "../../types/constraint";
-// Env Vars
-import { API_URL } from "./env";
-
-const apiUrlConstraints = API_URL + "/constraints";
-const apiUrlTemplates = API_URL + "/constraint-templates";
+// New API Client
+import { ConstraintApi } from "./api/constraintApi";
 
 //////////////////////////
-// Constraint //
+// Legacy Constraint API (Deprecated) //
 //////////////////////////
+// These functions are deprecated and maintained for backward compatibility only.
+// New code should use the authenticated ConstraintApi class and useConstraint hooks.
 
 export async function addConstraint(constraint: ConstraintT) {
-  const options: RequestInit = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(constraint),
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlConstraints}/teams/${constraint.teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to add constraint: " + responseData.detail);
-    }
-    return responseData as ConstraintT;
-  } catch (error) {
-    console.error("Failed to add constraint:", error);
-    throw new Error("Failed to add constraint, please try again later");
-  }
+  console.warn(
+    "⚠️ addConstraint is deprecated. Use useAddConstraint hook instead."
+  );
+  return ConstraintApi.addConstraintLegacy(constraint);
 }
 
 export async function getConstraints(teamId: string) {
-  const options: RequestInit = {
-    method: "GET",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlConstraints}/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to fetch constraints: " + responseData.detail);
-    }
-    return responseData as ConstraintT[];
-  } catch (error) {
-    console.error("Failed to fetch constraints:", error);
-    throw new Error("Failed to fetch constraints, please try again later");
-  }
+  console.warn(
+    "⚠️ getConstraints is deprecated. Use useGetConstraints hook instead."
+  );
+  return ConstraintApi.getConstraintsLegacy(teamId);
 }
 
 export async function updateConstraint(updatedConstraint: ConstraintT) {
-  const options: RequestInit = {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(updatedConstraint),
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlConstraints}/${updatedConstraint.id}/teams/${updatedConstraint.teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to update constraint: " + responseData.detail);
-    }
-    return responseData as ConstraintT;
-  } catch (error) {
-    console.error("Failed to update constraint:", error);
-    throw new Error("Failed to update constraint, please try again later");
-  }
+  console.warn(
+    "⚠️ updateConstraint is deprecated. Use useUpdateConstraint hook instead."
+  );
+  return ConstraintApi.updateConstraintLegacy(updatedConstraint);
 }
 
 export async function deleteConstraint(constraintId: string, teamId: string) {
-  const options: RequestInit = {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlConstraints}/${constraintId}/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to delete constraint: " + responseData.detail);
-    }
-  } catch (error) {
-    console.error("Failed to delete constraint:", error);
-    throw new Error("Failed to delete constraint, please try again later");
-  }
+  console.warn(
+    "⚠️ deleteConstraint is deprecated. Use useDeleteConstraint hook instead."
+  );
+  return ConstraintApi.deleteConstraintLegacy(constraintId, teamId);
 }
 
 //////////////////////////
-// Constraint Template //
+// Constraint Template (Deprecated) //
 //////////////////////////
 
 export async function getTemplates(teamId: string) {
-  const options: RequestInit = {
-    method: "GET",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(`${apiUrlTemplates}/teams/${teamId}`, options);
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error(
-        "Failed to fetch constraint templates: " + responseData.detail
-      );
-    }
-    return responseData as TemplateT[];
-  } catch (error) {
-    console.error("Failed to fetch constraint templates:", error);
-    throw new Error(
-      "Failed to fetch constraint templates, please try again later"
-    );
-  }
+  console.warn(
+    "⚠️ getTemplates is deprecated. Use useGetTemplates hook instead."
+  );
+  return ConstraintApi.getTemplatesLegacy(teamId);
 }
 
 //////////////////////////
-// Constraint Tab Data //
+// Constraint Tab Data (Deprecated) //
 //////////////////////////
 
 export async function getConstraintsTabData(teamId: string) {
+  console.warn(
+    "⚠️ getConstraintsTabData is deprecated. Use useGetConstraintsTabData hook instead."
+  );
   try {
     const constraintsTabData = await Promise.all([
-      getTemplates(teamId),
-      getConstraints(teamId),
+      ConstraintApi.getTemplatesLegacy(teamId),
+      ConstraintApi.getConstraintsLegacy(teamId),
       getWorkers(teamId),
       getShifts(teamId),
     ]);
