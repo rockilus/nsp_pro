@@ -27,14 +27,15 @@ import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
 import { RecurrenceRuleT } from "../../../types/recurrence";
 import { BaseApi, AuthenticatedApiClient } from "./baseApi";
-// Actions
-import { getAssignmentsByDates, getValidatedAssignments } from "../assignment";
+// API Classes
+import { AssignmentApi } from "./assignmentApi";
+import { WorkerApi } from "./workerApi";
+import { ShiftApi } from "./shiftApi";
+import { RequestApi } from "./requestApi";
+import { StatsApi } from "./statsApi";
+import { SpecialtyApi } from "./specialtyApi";
+// Legacy imports (to be migrated)
 import { getBreaches } from "../breach";
-import { getRequests } from "../request";
-import { getAllWorkers } from "../worker";
-import { getAllShifts } from "../shift";
-import { getStats } from "../stats";
-import { getSpecialties } from "../specialty";
 
 dayjs.extend(utc);
 
@@ -260,13 +261,13 @@ export class ScheduleApi extends BaseApi {
       };
 
       const campaignTabData = await Promise.all([
-        getAssignmentsByDates(teamId),
-        getBreaches(teamId),
-        getRequests(teamId),
+        AssignmentApi.getAssignmentsByDates(apiClient, teamId),
+        getBreaches(teamId), // TODO: Create BreachApi
+        RequestApi.getRequests(apiClient, teamId),
         this.getSchedules(apiClient, teamId),
-        getAllShifts(teamId),
-        getAllWorkers(teamId),
-        getStats(statsOptions, teamId),
+        ShiftApi.getAllShifts(apiClient, teamId),
+        WorkerApi.getAllWorkers(apiClient, teamId),
+        StatsApi.getStats(apiClient, teamId, statsOptions),
       ]);
 
       return {
@@ -305,9 +306,9 @@ export class ScheduleApi extends BaseApi {
 
     try {
       const campaignTabData = await Promise.all([
-        getAssignmentsByDates(teamId),
-        getAllShifts(teamId),
-        getAllWorkers(teamId),
+        AssignmentApi.getAssignmentsByDates(apiClient, teamId),
+        ShiftApi.getAllShifts(apiClient, teamId),
+        WorkerApi.getAllWorkers(apiClient, teamId),
       ]);
 
       return {
@@ -358,9 +359,9 @@ export class ScheduleApi extends BaseApi {
 
     try {
       const campaignTabData = await Promise.all([
-        getValidatedAssignments(teamId),
-        getAllShifts(teamId),
-        getAllWorkers(teamId),
+        AssignmentApi.getValidatedAssignments(apiClient, teamId),
+        ShiftApi.getAllShifts(apiClient, teamId),
+        WorkerApi.getAllWorkers(apiClient, teamId),
       ]);
 
       return {
@@ -405,10 +406,10 @@ export class ScheduleApi extends BaseApi {
       };
 
       const campaignTabData = await Promise.all([
-        getBreaches(teamId),
-        getRequests(teamId),
-        getStats(statsOptions, teamId),
-        getSpecialties(teamId),
+        getBreaches(teamId), // TODO: Create BreachApi
+        RequestApi.getRequests(apiClient, teamId),
+        StatsApi.getStats(apiClient, teamId, statsOptions),
+        SpecialtyApi.getSpecialties(apiClient, teamId),
       ]);
 
       return {
@@ -426,29 +427,22 @@ export class ScheduleApi extends BaseApi {
   }
 
   // Legacy methods for backward compatibility (discouraged)
+  // These methods throw errors since they require authentication
   static async createScheduleLegacy(teamId: string): Promise<ScheduleT> {
-    console.warn("⚠️ Using legacy unauthenticated API call");
-    return this.makeFetchRequest<ScheduleT>(`/schedules/teams/${teamId}`, {
-      method: "POST",
-    });
+    throw new Error(
+      "⚠️ Legacy method no longer supported. Use ScheduleApi.createSchedule() with authenticated API client instead."
+    );
   }
 
   static async getSchedulesLegacy(teamId: string): Promise<ScheduleT[]> {
-    console.warn("⚠️ Using legacy unauthenticated API call");
-    const data = await this.makeFetchRequest<any[]>(
-      `/schedules/teams/${teamId}`
+    throw new Error(
+      "⚠️ Legacy method no longer supported. Use ScheduleApi.getSchedules() with authenticated API client instead."
     );
-    return data.map(toScheduleT) as ScheduleT[];
   }
 
   static async updateScheduleLegacy(schedule: ScheduleT): Promise<ScheduleT> {
-    console.warn("⚠️ Using legacy unauthenticated API call");
-    return this.makeFetchRequest<ScheduleT>(
-      `/schedules/${schedule.id}/teams/${schedule.teamId}`,
-      {
-        method: "PUT",
-        body: JSON.stringify(fromScheduleT(schedule)),
-      }
+    throw new Error(
+      "⚠️ Legacy method no longer supported. Use ScheduleApi.updateSchedule() with authenticated API client instead."
     );
   }
 
@@ -456,31 +450,17 @@ export class ScheduleApi extends BaseApi {
     scheduleId: string,
     teamId: string
   ): Promise<boolean> {
-    console.warn("⚠️ Using legacy unauthenticated API call");
-    try {
-      await this.makeFetchRequest<void>(
-        `/schedules/${scheduleId}/teams/${teamId}`,
-        {
-          method: "DELETE",
-        }
-      );
-      return true;
-    } catch (error) {
-      console.error("Legacy delete schedule failed:", error);
-      return false;
-    }
+    throw new Error(
+      "⚠️ Legacy method no longer supported. Use ScheduleApi.deleteSchedule() with authenticated API client instead."
+    );
   }
 
   static async validateScheduleLegacy(
     scheduleId: string,
     teamId: string
   ): Promise<ScheduleT> {
-    console.warn("⚠️ Using legacy unauthenticated API call");
-    return this.makeFetchRequest<ScheduleT>(
-      `/schedules/${scheduleId}/validate/teams/${teamId}`,
-      {
-        method: "POST",
-      }
+    throw new Error(
+      "⚠️ Legacy method no longer supported. Use ScheduleApi.validateSchedule() with authenticated API client instead."
     );
   }
 
@@ -488,11 +468,9 @@ export class ScheduleApi extends BaseApi {
     teamId: string,
     exportOptions: ExportOptionsT
   ): Promise<any> {
-    console.warn("⚠️ Using legacy unauthenticated API call");
-    return this.makeFetchRequest<any>(`/schedules/export/teams/${teamId}`, {
-      method: "POST",
-      body: JSON.stringify(fromExportOptionsT(exportOptions)),
-    });
+    throw new Error(
+      "⚠️ Legacy method no longer supported. Use ScheduleApi.exportSchedule() with authenticated API client instead."
+    );
   }
 
   static async duplicatePeriodLegacy(
@@ -500,14 +478,8 @@ export class ScheduleApi extends BaseApi {
     campaignId: string,
     teamId: string
   ): Promise<DuplicateResultT> {
-    console.warn("⚠️ Using legacy unauthenticated API call");
-    const data = await this.makeFetchRequest<any>(
-      `/schedules/${campaignId}/duplicate-period/teams/${teamId}`,
-      {
-        method: "POST",
-        body: JSON.stringify(fromDuplicateRequestT(duplicateRequest)),
-      }
+    throw new Error(
+      "⚠️ Legacy method no longer supported. Use ScheduleApi.duplicatePeriod() with authenticated API client instead."
     );
-    return toDuplicateResultT(data) as DuplicateResultT;
   }
 }

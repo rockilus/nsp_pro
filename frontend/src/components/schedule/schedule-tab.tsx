@@ -22,13 +22,14 @@ import { computePeriodEndDate } from "../../app/lib/utils/scheduleViewSettingsUt
 import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
 import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
 // Actions
-import {
-  addAssignmentAndRecurrence,
-  updateAssignmentAndRecurrence,
-  deleteAssignment,
-} from "../../app/lib/assignment";
 import { useGetStats } from "../../hooks/useStats";
 import { exportSchedule } from "../../app/lib/export-schedule";
+// Assignment Hooks
+import {
+  useAddAssignmentAndRecurrence,
+  useUpdateAssignmentAndRecurrence,
+  useDeleteAssignment,
+} from "../../hooks/useAssignment";
 // Hooks
 import {
   useValidateSchedule,
@@ -111,6 +112,11 @@ export default function ScheduleTab({
   const getScheduleLHSData = useGetScheduleLHSData();
   const duplicatePeriod = useDuplicatePeriod();
   const exportScheduleHook = useExportSchedule();
+
+  // Assignment hooks
+  const addAssignmentAndRecurrence = useAddAssignmentAndRecurrence();
+  const updateAssignmentAndRecurrence = useUpdateAssignmentAndRecurrence();
+  const deleteAssignment = useDeleteAssignment();
 
   const [isLoadingSchedule, setIsLoadingSchedule] = useState<boolean>(true);
   const [isLoadingAssignments, setIsLoadingAssignments] =
