@@ -13,10 +13,8 @@ import { getPeriodStartEndDates } from "./schedule-utils";
 // Skeletons
 import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
 // Hooks
-import {
-  useGetScheduleAssignmentsDataMember,
-  useExportSchedule,
-} from "../../hooks/useSchedule";
+import { useGetScheduleAssignmentsDataMember } from "../../hooks/useSchedule";
+import { useExportSchedule } from "../../hooks/useExport";
 import { useScheduleViewSettings } from "../../app/lib/hooks/useScheduleViewSettings";
 import {
   getDefaultScheduleViewSettings,
@@ -53,7 +51,7 @@ export default function ScheduleTabMember({
   // Schedule hooks
   const getScheduleAssignmentsDataMember =
     useGetScheduleAssignmentsDataMember();
-  const exportScheduleHook = useExportSchedule();
+  const exportSchedule = useExportSchedule();
 
   const [isLoadingAssignments, setIsLoadingAssignments] =
     useState<boolean>(true);
@@ -205,7 +203,7 @@ export default function ScheduleTabMember({
   //////////////////////////
 
   const handleExportSchedule = async (exportOptions: ExportOptionsT) => {
-    await exportScheduleHook(teamWithMembership.team.id, exportOptions);
+    await exportSchedule(teamWithMembership.team.id, exportOptions);
   };
 
   useEffect(() => {

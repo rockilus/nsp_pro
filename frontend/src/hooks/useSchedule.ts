@@ -274,6 +274,8 @@ export function useValidateSchedule() {
 
 /**
  * Hook for exporting a schedule
+ * @deprecated Use useExportSchedule from '../hooks/useExport' instead.
+ * This hook will be removed in a future version.
  */
 export function useExportSchedule() {
   const apiClient = useApiClient();

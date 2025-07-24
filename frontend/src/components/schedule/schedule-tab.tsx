@@ -23,7 +23,6 @@ import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
 import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
 // Actions
 import { useGetStats } from "../../hooks/useStats";
-import { exportSchedule } from "../../app/lib/export-schedule";
 // Assignment Hooks
 import {
   useAddAssignmentAndRecurrence,
@@ -39,8 +38,8 @@ import {
   useGetScheduleAssignmentsDataNoSolver,
   useGetScheduleLHSData,
   useDuplicatePeriod,
-  useExportSchedule,
 } from "../../hooks/useSchedule";
+import { useExportSchedule } from "../../hooks/useExport";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "./schedule-tab.css";
@@ -111,7 +110,7 @@ export default function ScheduleTab({
     useGetScheduleAssignmentsDataNoSolver();
   const getScheduleLHSData = useGetScheduleLHSData();
   const duplicatePeriod = useDuplicatePeriod();
-  const exportScheduleHook = useExportSchedule();
+  const exportSchedule = useExportSchedule();
 
   // Assignment hooks
   const addAssignmentAndRecurrence = useAddAssignmentAndRecurrence();
@@ -647,7 +646,7 @@ export default function ScheduleTab({
 
   const handleExportSchedule = async (exportOptions: ExportOptionsT) => {
     try {
-      await exportScheduleHook(teamWithMembership.team.id, exportOptions);
+      await exportSchedule(teamWithMembership.team.id, exportOptions);
     } catch (error) {
       console.error("Failed to export schedule:", error);
       // Handle error appropriately
