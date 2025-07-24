@@ -64,7 +64,11 @@ export default function TeamsList({
             }
             onClick={() => {
               setSelectedTeamId(teamWithMembership.team.id);
-              router.push(`/${lng}/plan/settings/teams/general`);
+              router.push(
+                `/${lng}/plan/teams/general/?teamId=${encodeURIComponent(
+                  teamWithMembership.team.id
+                )}`
+              );
             }}
             sx={{
               textTransform: "none",

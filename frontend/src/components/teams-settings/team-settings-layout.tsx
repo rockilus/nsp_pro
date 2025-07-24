@@ -1,10 +1,15 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { useTranslation } from "@/app/i18n/client";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 // MUI
-import { Box, Tabs, Tab, Button } from "@mui/material";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemText from "@mui/material/ListItemText";
+import Button from "@mui/material/Button";
 import { ArrowBack } from "@mui/icons-material";
 // Context
 import { useTeam } from "@/context/TeamContext";
@@ -35,87 +40,70 @@ export default function TeamSettingsLayout({
     );
   }
 
-  // Extract current page from pathname
-  const getCurrentPage = (): string => {
-    if (pathname.includes("/general")) return "general";
-    if (pathname.includes("/members")) return "members";
-    return "general";
-  };
-
-  const currentPage = getCurrentPage();
   const teamId = selectedTeam.team.id;
-
-  // Navigation handler
-  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
-    // Security: Validate page value
-    const validPages = ["general", "members"];
-    if (!validPages.includes(newValue)) {
-      console.warn(`❌ Invalid page navigation attempted: ${newValue}`);
-      return;
-    }
-
-    // Navigate to new page with current teamId
-    const newUrl = `/${lng}/plan/teams/${newValue}?teamId=${teamId}`;
-    router.push(newUrl);
-  };
 
   // Back to teams selection
   const handleBackToTeams = () => {
     router.push(`/${lng}/plan/settings/teams`);
   };
 
+  // Navigation links for team settings
+  const teamLinks: { name: string; label: string; href: string }[] = [
+    {
+      name: "general",
+      label: t("general") || "General",
+      href: `/${lng}/plan/teams/general?teamId=${teamId}`,
+    },
+    {
+      name: "members",
+      label: t("members") || "Members",
+      href: `/${lng}/plan/teams/members?teamId=${teamId}`,
+    },
+  ];
+
   return (
-    <div className="team-settings-layout min-h-screen bg-gray-50">
-      {/* Header with Back Button */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center gap-4 mb-4">
+    <div className="team-settings-layout">
+      {/* Sidebar Navigation */}
+      <div className="team-settings-sidebar">
+        {/* Team Header */}
+        <div className="team-settings-header">
+          <h1 className="team-settings-title">{selectedTeam.team.name}</h1>
+        </div>
+
+        {/* Back Button */}
+        <div className="team-settings-back-section">
           <Button
             startIcon={<ArrowBack />}
             onClick={handleBackToTeams}
             variant="outlined"
             size="small"
+            fullWidth
+            sx={{
+              justifyContent: "flex-start",
+              textTransform: "none",
+            }}
           >
             {t("back_to_teams") || "Back to Teams"}
           </Button>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {selectedTeam.team.name}
-            </h1>
-            <p className="text-gray-600 mt-1">
-              {t("team_settings_subtitle") ||
-                "Manage team settings and members"}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation Tabs */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="px-6">
-          <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-            <Tabs
-              value={currentPage}
-              onChange={handleTabChange}
-              aria-label="team settings tabs"
-            >
-              <Tab
-                label={t("general") || "General"}
-                value="general"
-                id="team-tab-general"
-                aria-controls="team-tabpanel-general"
-              />
-              <Tab
-                label={t("members") || "Members"}
-                value="members"
-                id="team-tab-members"
-                aria-controls="team-tabpanel-members"
-              />
-            </Tabs>
-          </Box>
-        </div>
+        {/* Navigation List */}
+        <List
+          dense={true}
+          sx={{ width: "20%", maxWidth: 360, borderRight: "1px solid #e5e7eb" }}
+        >
+          {teamLinks.map((link) => (
+            <ListItem key={link.name} disablePadding>
+              <ListItemButton
+                selected={pathname.includes(link.name)}
+                LinkComponent={Link}
+                href={link.href}
+              >
+                <ListItemText primary={link.label} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
       </div>
 
       {/* Content Area */}

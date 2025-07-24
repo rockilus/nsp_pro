@@ -120,8 +120,8 @@ async def get_team(
     team_service: TeamService = Depends(get_team_service),
 ) -> TeamDTO:
     try:
-        if not await authz_check(user_context.user_id, "read-teams", "team", team_id):
-            raise NotAuthorizedError("You do not have permission to update a team")
+        if not await authz_check(user_context.user_id, "read-team", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to read a team")
         team = team_service.get_team_by_id(team_id=team_id)
         if not team:
             raise HTTPException(status_code=404, detail="Team not found")
