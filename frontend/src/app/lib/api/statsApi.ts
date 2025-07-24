@@ -95,49 +95,4 @@ export class StatsApi extends BaseApi {
     );
     return responseData;
   }
-
-  // Legacy methods for backward compatibility (discouraged)
-  static async getStatsLegacy(
-    statsOptions: StatsOptionsT,
-    teamId: string
-  ): Promise<StatsT> {
-    console.warn("⚠️ Using legacy unauthenticated API call");
-    return this.makeFetchRequest<StatsT>(`/stats/teams/${teamId}`, {
-      method: "POST",
-      body: JSON.stringify(statsOptions),
-    });
-  }
-
-  static async addHeaderLegacy(header: StatsHeaderT): Promise<StatsHeaderT> {
-    console.warn("⚠️ Using legacy unauthenticated API call");
-    return this.makeFetchRequest<StatsHeaderT>(
-      `/stats/stats-headers/teams/${header.teamId}`,
-      {
-        method: "POST",
-        body: JSON.stringify(header),
-      }
-    );
-  }
-
-  static async deleteHeaderLegacy(
-    headerId: string,
-    teamId: string
-  ): Promise<void> {
-    console.warn("⚠️ Using legacy unauthenticated API call");
-    await this.makeFetchRequest<void>(
-      `/stats/stats-headers/${headerId}/teams/${teamId}`,
-      {
-        method: "DELETE",
-      }
-    );
-  }
-
-  static async getShiftOptionsLegacy(
-    teamId: string
-  ): Promise<ShiftWorkerOptionT[]> {
-    console.warn("⚠️ Using legacy unauthenticated API call");
-    return this.makeFetchRequest<ShiftWorkerOptionT[]>(
-      `/stats/shift-options/teams/${teamId}`
-    );
-  }
 }

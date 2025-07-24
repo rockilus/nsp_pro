@@ -80,43 +80,4 @@ export class DimEntryApi extends BaseApi {
     );
     return responseData as AttributeT[];
   }
-
-  // Legacy methods for backward compatibility (discouraged)
-  static async addDimEntryLegacy(
-    dimEntry: DimEntryT,
-    teamId: string
-  ): Promise<DimEntryT> {
-    console.warn("⚠️ Using legacy unauthenticated API call");
-    return this.makeFetchRequest<DimEntryT>(`/dim-entries/teams/${teamId}`, {
-      method: "POST",
-      body: JSON.stringify(dimEntry),
-    });
-  }
-
-  static async updateDimEntryLegacy(
-    updatedDimEntry: DimEntryT,
-    teamId: string
-  ): Promise<DimEntryT> {
-    console.warn("⚠️ Using legacy unauthenticated API call");
-    return this.makeFetchRequest<DimEntryT>(
-      `/dim-entries/${updatedDimEntry.id}/teams/${teamId}`,
-      {
-        method: "PUT",
-        body: JSON.stringify(updatedDimEntry),
-      }
-    );
-  }
-
-  static async deleteDimEntryLegacy(
-    dimEntryId: string,
-    teamId: string
-  ): Promise<AttributeT[]> {
-    console.warn("⚠️ Using legacy unauthenticated API call");
-    return this.makeFetchRequest<AttributeT[]>(
-      `/dim-entries/${dimEntryId}/teams/${teamId}`,
-      {
-        method: "DELETE",
-      }
-    );
-  }
 }

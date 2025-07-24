@@ -35,8 +35,6 @@ import { RequestApi } from "./requestApi";
 import { StatsApi } from "./statsApi";
 import { SpecialtyApi } from "./specialtyApi";
 import { BreachApi } from "./breachApi";
-// Legacy imports (to be migrated)
-// import { getBreaches } from "../breach"; // Replaced with BreachApi
 
 dayjs.extend(utc);
 
@@ -425,62 +423,5 @@ export class ScheduleApi extends BaseApi {
         "Failed to fetch schedule LHS data, please try again later"
       );
     }
-  }
-
-  // Legacy methods for backward compatibility (discouraged)
-  // These methods throw errors since they require authentication
-  static async createScheduleLegacy(teamId: string): Promise<ScheduleT> {
-    throw new Error(
-      "⚠️ Legacy method no longer supported. Use ScheduleApi.createSchedule() with authenticated API client instead."
-    );
-  }
-
-  static async getSchedulesLegacy(teamId: string): Promise<ScheduleT[]> {
-    throw new Error(
-      "⚠️ Legacy method no longer supported. Use ScheduleApi.getSchedules() with authenticated API client instead."
-    );
-  }
-
-  static async updateScheduleLegacy(schedule: ScheduleT): Promise<ScheduleT> {
-    throw new Error(
-      "⚠️ Legacy method no longer supported. Use ScheduleApi.updateSchedule() with authenticated API client instead."
-    );
-  }
-
-  static async deleteScheduleLegacy(
-    scheduleId: string,
-    teamId: string
-  ): Promise<boolean> {
-    throw new Error(
-      "⚠️ Legacy method no longer supported. Use ScheduleApi.deleteSchedule() with authenticated API client instead."
-    );
-  }
-
-  static async validateScheduleLegacy(
-    scheduleId: string,
-    teamId: string
-  ): Promise<ScheduleT> {
-    throw new Error(
-      "⚠️ Legacy method no longer supported. Use ScheduleApi.validateSchedule() with authenticated API client instead."
-    );
-  }
-
-  static async exportScheduleLegacy(
-    teamId: string,
-    exportOptions: ExportOptionsT
-  ): Promise<any> {
-    throw new Error(
-      "⚠️ Legacy method no longer supported. Use ScheduleApi.exportSchedule() with authenticated API client instead."
-    );
-  }
-
-  static async duplicatePeriodLegacy(
-    duplicateRequest: DuplicateRequestT,
-    campaignId: string,
-    teamId: string
-  ): Promise<DuplicateResultT> {
-    throw new Error(
-      "⚠️ Legacy method no longer supported. Use ScheduleApi.duplicatePeriod() with authenticated API client instead."
-    );
   }
 }

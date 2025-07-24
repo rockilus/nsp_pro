@@ -73,10 +73,4 @@ export class UserApi extends BaseApi {
       passwordData
     );
   }
-
-  // Legacy methods for backward compatibility (discouraged)
-  static async getCurrentUserLegacy(): Promise<UserT> {
-    console.warn("⚠️ Using legacy unauthenticated API call");
-    return this.makeFetchRequest<UserT>("/users/me");
-  }
 }

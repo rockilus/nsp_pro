@@ -78,17 +78,6 @@ function parseRelatedIdWithShiftData(
   };
 }
 
-// Utility function to parse related IDs (legacy function for backward compatibility)
-function parseRelatedId(relatedId: string): ParsedRelatedId | null {
-  const parts = relatedId.split("-");
-  if (parts.length < 4) return null; // shiftId-YYYY-MM-DD minimum
-
-  const date = parts.slice(-3).join("-"); // Last 3 parts are YYYY-MM-DD
-  const shiftId = parts.slice(0, -3).join("-"); // Everything before date
-
-  return { shiftId, date };
-}
-
 // Process groups to extract shift and date information with shift details
 function processMultitaskingGroup(group: MultitaskingGroup, shifts: ShiftT[]) {
   const parsedRelatedIds = group.relatedIds
