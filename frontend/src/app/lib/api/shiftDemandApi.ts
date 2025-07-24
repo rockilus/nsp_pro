@@ -12,52 +12,14 @@ import {
   BulkUpsertResponse,
   ShiftDemandErrorResponse,
   SHIFT_DEMAND_CONSTRAINTS,
-} from "@/types/shiftDemand";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const SHIFT_DEMANDS_BASE = `${API_BASE_URL}/shift-demands-new`;
+} from "../../../types/shiftDemand";
+import { BaseApi, AuthenticatedApiClient } from "./baseApi";
 
 /**
  * Utility function to format dates for API calls
  */
 const formatDateForAPI = (date: Date): string => {
   return date.toISOString().split("T")[0]; // YYYY-MM-DD format
-};
-
-/**
- * Enhanced error handler that extracts structured error information
- */
-const handleAPIError = async (response: Response): Promise<never> => {
-  try {
-    const errorData: ShiftDemandErrorResponse = await response.json();
-
-    // Create user-friendly error message based on error type
-    let userMessage = errorData.message || "An unexpected error occurred";
-
-    switch (errorData.error) {
-      case "validation_error":
-        userMessage = `Validation failed: ${errorData.message}`;
-        break;
-      case "authorization_error":
-        userMessage = "You don't have permission to perform this action";
-        break;
-      case "team_id_mismatch":
-        userMessage = "Team ID mismatch in request";
-        break;
-      case "team_change_not_allowed":
-        userMessage = "Cannot change team through update operation";
-        break;
-      case "internal_error":
-      default:
-        userMessage = "A server error occurred. Please try again later.";
-        break;
-    }
-
-    throw new Error(userMessage);
-  } catch (parseError) {
-    // Fallback if response is not JSON
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-  }
 };
 
 /**
@@ -143,70 +105,70 @@ const validateUpdateRequest = (demand: ShiftDemandUpdateDTO): void => {
 /**
  * Main API client class for shift demand operations
  */
-export class ShiftDemandApi {
+export class ShiftDemandApi extends BaseApi {
   /**
-   * Get shift demands for a specific period with optional buffering
+   * Get shift demands for a specific period with optional buffering (authenticated)
    */
   static async getShiftDemandsByPeriod(
+    apiClient: AuthenticatedApiClient,
     teamId: string,
     startDate: Date,
     endDate: Date,
     bufferDays: number = 7
   ): Promise<ShiftDemandDTO[]> {
-    const url = new URL(`${SHIFT_DEMANDS_BASE}/teams/${teamId}/period`);
-    url.searchParams.append("start_date", formatDateForAPI(startDate));
-    url.searchParams.append("end_date", formatDateForAPI(endDate));
-    url.searchParams.append("buffer_days", bufferDays.toString());
-
-    const response = await fetch(url.toString(), {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include", // Include authentication cookies
-    });
-
-    if (!response.ok) {
-      await handleAPIError(response);
+    // Security: Input validation
+    if (!teamId) {
+      throw new Error("Team ID is required");
     }
 
-    return response.json();
+    const params = new URLSearchParams({
+      start_date: formatDateForAPI(startDate),
+      end_date: formatDateForAPI(endDate),
+      buffer_days: bufferDays.toString(),
+    });
+
+    const endpoint = `/shift-demands-new/teams/${teamId}/period?${params}`;
+
+    return this.makeRequest<ShiftDemandDTO[]>(apiClient, "get", endpoint);
   }
 
   /**
-   * Get shift demands formatted as a matrix for grid display
+   * Get shift demands formatted as a matrix for grid display (authenticated)
    */
   static async getShiftDemandsMatrix(
+    apiClient: AuthenticatedApiClient,
     teamId: string,
     startDate: Date,
     endDate: Date
   ): Promise<ShiftDemandMatrix> {
-    const url = new URL(`${SHIFT_DEMANDS_BASE}/teams/${teamId}/matrix`);
-    url.searchParams.append("start_date", formatDateForAPI(startDate));
-    url.searchParams.append("end_date", formatDateForAPI(endDate));
-
-    const response = await fetch(url.toString(), {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      await handleAPIError(response);
+    // Security: Input validation
+    if (!teamId) {
+      throw new Error("Team ID is required");
     }
 
-    return response.json();
+    const params = new URLSearchParams({
+      start_date: formatDateForAPI(startDate),
+      end_date: formatDateForAPI(endDate),
+    });
+
+    const endpoint = `/shift-demands-new/teams/${teamId}/matrix?${params}`;
+
+    return this.makeRequest<ShiftDemandMatrix>(apiClient, "get", endpoint);
   }
 
   /**
-   * Create a single shift demand with validation
+   * Create a single shift demand with validation (authenticated)
    */
   static async createShiftDemand(
+    apiClient: AuthenticatedApiClient,
     teamId: string,
     demand: Omit<ShiftDemandCreateDTO, "teamId">
   ): Promise<ShiftDemandDTO> {
+    // Security: Input validation
+    if (!teamId) {
+      throw new Error("Team ID is required");
+    }
+
     const demandWithTeam: ShiftDemandCreateDTO = {
       ...demand,
       teamId,
@@ -215,30 +177,33 @@ export class ShiftDemandApi {
     // Client-side validation
     validateCreateRequest(demandWithTeam);
 
-    const response = await fetch(`${SHIFT_DEMANDS_BASE}/teams/${teamId}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify(demandWithTeam),
-    });
+    const endpoint = `/shift-demands-new/teams/${teamId}`;
 
-    if (!response.ok) {
-      await handleAPIError(response);
-    }
-
-    return response.json();
+    return this.makeRequest<ShiftDemandDTO>(
+      apiClient,
+      "post",
+      endpoint,
+      demandWithTeam
+    );
   }
 
   /**
-   * Update an existing shift demand with validation
+   * Update an existing shift demand with validation (authenticated)
    */
   static async updateShiftDemand(
+    apiClient: AuthenticatedApiClient,
     teamId: string,
     demandId: string,
     demand: ShiftDemandUpdateDTO
   ): Promise<ShiftDemandDTO> {
+    // Security: Input validation
+    if (!teamId) {
+      throw new Error("Team ID is required");
+    }
+    if (!demandId) {
+      throw new Error("Demand ID is required");
+    }
+
     // Client-side validation
     validateUpdateRequest(demand);
 
@@ -246,52 +211,53 @@ export class ShiftDemandApi {
     const updateBody = { ...demand };
     delete updateBody.teamId;
 
-    const response = await fetch(
-      `${SHIFT_DEMANDS_BASE}/${demandId}/teams/${teamId}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(updateBody),
-      }
+    const endpoint = `/shift-demands-new/${demandId}/teams/${teamId}`;
+
+    return this.makeRequest<ShiftDemandDTO>(
+      apiClient,
+      "put",
+      endpoint,
+      updateBody
     );
-
-    if (!response.ok) {
-      await handleAPIError(response);
-    }
-
-    return response.json();
   }
 
   /**
-   * Delete a single shift demand
+   * Delete a single shift demand (authenticated)
    */
   static async deleteShiftDemand(
+    apiClient: AuthenticatedApiClient,
     teamId: string,
     demandId: string
   ): Promise<void> {
-    const response = await fetch(
-      `${SHIFT_DEMANDS_BASE}/${demandId}/teams/${teamId}`,
-      {
-        method: "DELETE",
-        credentials: "include",
-      }
-    );
-
-    if (!response.ok) {
-      await handleAPIError(response);
+    // Security: Input validation
+    if (!teamId) {
+      throw new Error("Team ID is required");
     }
+    if (!demandId) {
+      throw new Error("Demand ID is required");
+    }
+
+    const endpoint = `/shift-demands-new/${demandId}/teams/${teamId}`;
+
+    await this.makeRequest<void>(apiClient, "delete", endpoint);
   }
 
   /**
-   * Bulk upsert (create or update) shift demands with enhanced validation
+   * Bulk upsert (create or update) shift demands with enhanced validation (authenticated)
    */
   static async bulkUpsertShiftDemands(
+    apiClient: AuthenticatedApiClient,
     teamId: string,
     demands: Omit<ShiftDemandCreateDTO, "teamId">[]
   ): Promise<BulkUpsertResponse> {
+    // Security: Input validation
+    if (!teamId) {
+      throw new Error("Team ID is required");
+    }
+    if (!demands || demands.length === 0) {
+      throw new Error("At least one demand is required");
+    }
+
     const demandsWithTeam: ShiftDemandCreateDTO[] = demands.map((demand) => ({
       ...demand,
       teamId,
@@ -310,25 +276,141 @@ export class ShiftDemandApi {
       }
     });
 
-    const response = await fetch(
-      `${SHIFT_DEMANDS_BASE}/teams/${teamId}/bulk-upsert`,
+    const endpoint = `/shift-demands-new/teams/${teamId}/bulk-upsert`;
+
+    const result = await this.makeRequest<any>(
+      apiClient,
+      "post",
+      endpoint,
+      demandsWithTeam
+    );
+
+    // Transform backend response to match frontend interface
+    return {
+      created: result.demandsCreated || [],
+      updated: result.demandsUpdated || [],
+    };
+  }
+
+  // Legacy methods for backward compatibility (discouraged)
+  static async getShiftDemandsByPeriodLegacy(
+    teamId: string,
+    startDate: Date,
+    endDate: Date,
+    bufferDays: number = 7
+  ): Promise<ShiftDemandDTO[]> {
+    console.warn("⚠️ Using legacy unauthenticated API call");
+    const params = new URLSearchParams({
+      start_date: formatDateForAPI(startDate),
+      end_date: formatDateForAPI(endDate),
+      buffer_days: bufferDays.toString(),
+    });
+
+    return this.makeFetchRequest<ShiftDemandDTO[]>(
+      `/shift-demands-new/teams/${teamId}/period?${params}`
+    );
+  }
+
+  static async getShiftDemandsMatrixLegacy(
+    teamId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<ShiftDemandMatrix> {
+    console.warn("⚠️ Using legacy unauthenticated API call");
+    const params = new URLSearchParams({
+      start_date: formatDateForAPI(startDate),
+      end_date: formatDateForAPI(endDate),
+    });
+
+    return this.makeFetchRequest<ShiftDemandMatrix>(
+      `/shift-demands-new/teams/${teamId}/matrix?${params}`
+    );
+  }
+
+  static async createShiftDemandLegacy(
+    teamId: string,
+    demand: Omit<ShiftDemandCreateDTO, "teamId">
+  ): Promise<ShiftDemandDTO> {
+    console.warn("⚠️ Using legacy unauthenticated API call");
+    const demandWithTeam: ShiftDemandCreateDTO = {
+      ...demand,
+      teamId,
+    };
+
+    validateCreateRequest(demandWithTeam);
+
+    return this.makeFetchRequest<ShiftDemandDTO>(
+      `/shift-demands-new/teams/${teamId}`,
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
+        body: JSON.stringify(demandWithTeam),
+      }
+    );
+  }
+
+  static async updateShiftDemandLegacy(
+    teamId: string,
+    demandId: string,
+    demand: ShiftDemandUpdateDTO
+  ): Promise<ShiftDemandDTO> {
+    console.warn("⚠️ Using legacy unauthenticated API call");
+    validateUpdateRequest(demand);
+
+    const updateBody = { ...demand };
+    delete updateBody.teamId;
+
+    return this.makeFetchRequest<ShiftDemandDTO>(
+      `/shift-demands-new/${demandId}/teams/${teamId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(updateBody),
+      }
+    );
+  }
+
+  static async deleteShiftDemandLegacy(
+    teamId: string,
+    demandId: string
+  ): Promise<void> {
+    console.warn("⚠️ Using legacy unauthenticated API call");
+    await this.makeFetchRequest<void>(
+      `/shift-demands-new/${demandId}/teams/${teamId}`,
+      {
+        method: "DELETE",
+      }
+    );
+  }
+
+  static async bulkUpsertShiftDemandsLegacy(
+    teamId: string,
+    demands: Omit<ShiftDemandCreateDTO, "teamId">[]
+  ): Promise<BulkUpsertResponse> {
+    console.warn("⚠️ Using legacy unauthenticated API call");
+    const demandsWithTeam: ShiftDemandCreateDTO[] = demands.map((demand) => ({
+      ...demand,
+      teamId,
+    }));
+
+    demandsWithTeam.forEach((demand, index) => {
+      try {
+        validateCreateRequest(demand);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown validation error";
+        throw new Error(
+          `Validation failed for demand at index ${index}: ${errorMessage}`
+        );
+      }
+    });
+
+    const result = await this.makeFetchRequest<any>(
+      `/shift-demands-new/teams/${teamId}/bulk-upsert`,
+      {
+        method: "POST",
         body: JSON.stringify(demandsWithTeam),
       }
     );
 
-    if (!response.ok) {
-      await handleAPIError(response);
-    }
-
-    const result = await response.json();
-
-    // Transform backend response to match frontend interface
     return {
       created: result.demandsCreated || [],
       updated: result.demandsUpdated || [],

@@ -9,13 +9,15 @@ import {
   ShiftDemandDTO,
   ShiftDemandCreateDTO,
   ShiftDemandUpdateDTO,
+  ShiftDemandMatrix,
   ShiftDemandSource,
+  BulkUpsertResponse,
   UseShiftDemandsResult,
   UseShiftDemandMutationsResult,
-  BulkUpsertResponse,
-} from "@/types/shiftDemand";
-import { ShiftDemandApi } from "@/app/lib/api/shiftDemandApi";
-
+} from "../../../types/shiftDemand";
+import { ShiftDemandApi } from "../api/shiftDemandApi";
+import { useApiClient } from "../api-client";
+import { useAuth } from "../../../contexts/auth-context";
 /**
  * Query key factory for shift demands
  */
@@ -68,10 +70,14 @@ export const useShiftDemandsByPeriod = (
     enabled?: boolean;
   }
 ) => {
+  const apiClient = useApiClient();
+  const { isAuthenticated, user } = useAuth();
+
   return useQuery({
     queryKey: shiftDemandKeys.period(teamId, startDate, endDate),
     queryFn: () =>
       ShiftDemandApi.getShiftDemandsByPeriod(
+        apiClient,
         teamId,
         startDate,
         endDate,
@@ -80,7 +86,7 @@ export const useShiftDemandsByPeriod = (
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
     refetchInterval: options?.refetchInterval,
-    enabled: options?.enabled !== false,
+    enabled: options?.enabled !== false && isAuthenticated && !!user?.id_token,
     refetchOnWindowFocus: false,
   });
 };
@@ -96,13 +102,21 @@ export const useShiftDemandsMatrix = (
     enabled?: boolean;
   }
 ) => {
+  const apiClient = useApiClient();
+  const { isAuthenticated, user } = useAuth();
+
   return useQuery({
     queryKey: shiftDemandKeys.matrix(teamId, startDate, endDate),
     queryFn: () =>
-      ShiftDemandApi.getShiftDemandsMatrix(teamId, startDate, endDate),
+      ShiftDemandApi.getShiftDemandsMatrix(
+        apiClient,
+        teamId,
+        startDate,
+        endDate
+      ),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
-    enabled: options?.enabled !== false,
+    enabled: options?.enabled !== false && isAuthenticated && !!user?.id_token,
     refetchOnWindowFocus: false,
   });
 };
@@ -133,7 +147,7 @@ export const useShiftDemands = (
     options
   );
 
-  const demands = demandsQuery.data || [];
+  const demands = useMemo(() => demandsQuery.data || [], [demandsQuery.data]);
 
   // Create demandsById Map using shiftId-date combination for O(1) lookups
   const demandsById = useMemo(() => {
@@ -167,6 +181,8 @@ export const useShiftDemandMutations = (
   teamId: string
 ): UseShiftDemandMutationsResult => {
   const queryClient = useQueryClient();
+  const apiClient = useApiClient();
+  const { isAuthenticated, user } = useAuth();
 
   const invalidateQueries = () => {
     queryClient.invalidateQueries({ queryKey: shiftDemandKeys.teams(teamId) });
@@ -177,7 +193,10 @@ export const useShiftDemandMutations = (
     mutationFn: async (params: {
       demand: Omit<ShiftDemandCreateDTO, "teamId">;
     }) => {
-      return ShiftDemandApi.createShiftDemand(teamId, params.demand);
+      if (!isAuthenticated || !user?.id_token) {
+        throw new Error("User not authenticated - please sign in");
+      }
+      return ShiftDemandApi.createShiftDemand(apiClient, teamId, params.demand);
     },
     onMutate: async (variables) => {
       // Cancel any outgoing refetches
@@ -232,7 +251,11 @@ export const useShiftDemandMutations = (
       demandId: string;
       demand: ShiftDemandUpdateDTO;
     }) => {
+      if (!isAuthenticated || !user?.id_token) {
+        throw new Error("User not authenticated - please sign in");
+      }
       return ShiftDemandApi.updateShiftDemand(
+        apiClient,
         teamId,
         params.demandId,
         params.demand
@@ -282,7 +305,10 @@ export const useShiftDemandMutations = (
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (demandId: string) => {
-      await ShiftDemandApi.deleteShiftDemand(teamId, demandId);
+      if (!isAuthenticated || !user?.id_token) {
+        throw new Error("User not authenticated - please sign in");
+      }
+      await ShiftDemandApi.deleteShiftDemand(apiClient, teamId, demandId);
     },
     onSuccess: (_, deletedId) => {
       // Remove from cache
@@ -310,7 +336,10 @@ export const useShiftDemandMutations = (
   // Bulk upsert mutation (for bulk operations)
   const bulkUpsert = useMutation({
     mutationFn: async (demands: Omit<ShiftDemandCreateDTO, "teamId">[]) => {
-      return ShiftDemandApi.bulkUpsertShiftDemands(teamId, demands);
+      if (!isAuthenticated || !user?.id_token) {
+        throw new Error("User not authenticated - please sign in");
+      }
+      return ShiftDemandApi.bulkUpsertShiftDemands(apiClient, teamId, demands);
     },
     onSuccess: () => {
       invalidateQueries();
