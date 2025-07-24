@@ -11,13 +11,13 @@ import TableRow from "@mui/material/TableRow";
 import SavedCell from "./saved-cell";
 import ActionsCell from "./actions-cell";
 import ActionsNotInDBCell from "./actions-not-in-db-cell";
-// Actions
+// Hooks
 import {
-  getUsersDashboard,
-  getUserDashboard,
-  impersonateUser,
-  deleteUser,
-} from "../../app/lib/dashboard";
+  useGetUsersDashboard,
+  useGetUserDashboard,
+  useImpersonateUser,
+  useDeleteUser,
+} from "../../hooks/useDashboard";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "../../styles/text-styles.css";
@@ -30,6 +30,12 @@ export default function DashboardTab({ lng }: { lng: string }) {
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [usersDashboard, setUsersDashboard] = useState<UserDashboardT[]>([]);
+
+  // Dashboard hooks
+  const getUsersDashboard = useGetUsersDashboard();
+  const getUserDashboard = useGetUserDashboard();
+  const impersonateUser = useImpersonateUser();
+  const deleteUser = useDeleteUser();
 
   const tableHeaders: { name: string; label: string }[] = [
     { name: "firstName", label: t("first_name") },
@@ -44,46 +50,59 @@ export default function DashboardTab({ lng }: { lng: string }) {
   //////////////////////////
 
   const handleImpersonate = async (targetUser: UserT) => {
-    const impersonateSuccess = await impersonateUser(targetUser.id);
-    if (impersonateSuccess) {
-      window.location.href = `/${targetUser.language}/plan/workers`;
+    try {
+      const impersonateSuccess = await impersonateUser(targetUser.id);
+      if (impersonateSuccess) {
+        window.location.href = `/${targetUser.language}/plan/workers`;
+      }
+    } catch (error) {
+      console.error("Failed to impersonate user:", error);
     }
   };
 
   const handleDeleteUser = async (userId: string) => {
-    const deleteSuccess = await deleteUser(userId);
-    if (deleteSuccess) {
-      const updatedUsers = usersDashboard.filter(
-        (ud) =>
-          ud.user?.id !== userId &&
-          ud.userAuthn?.id !== userId &&
-          ud.userAuthz?.id !== userId
-      );
-      setUsersDashboard(updatedUsers);
-    } else {
-      const userToDelete = await getUserDashboard(userId);
-      if (userToDelete) {
-        const updatedUsers = usersDashboard.map((ud) =>
-          ud.user?.id === userId ||
-          ud.userAuthn?.id === userId ||
-          ud.userAuthz?.id === userId
-            ? userToDelete
-            : ud
+    try {
+      const deleteSuccess = await deleteUser(userId);
+      if (deleteSuccess) {
+        const updatedUsers = usersDashboard.filter(
+          (ud) =>
+            ud.user?.id !== userId &&
+            ud.userAuthn?.id !== userId &&
+            ud.userAuthz?.id !== userId
         );
         setUsersDashboard(updatedUsers);
+      } else {
+        const userToDelete = await getUserDashboard(userId);
+        if (userToDelete) {
+          const updatedUsers = usersDashboard.map((ud) =>
+            ud.user?.id === userId ||
+            ud.userAuthn?.id === userId ||
+            ud.userAuthz?.id === userId
+              ? userToDelete
+              : ud
+          );
+          setUsersDashboard(updatedUsers);
+        }
       }
+    } catch (error) {
+      console.error("Failed to delete user:", error);
     }
   };
 
   useEffect(() => {
     const fetchUsers = async () => {
-      setIsLoading(true);
-      const fetchedUsers = await getUsersDashboard();
-      setUsersDashboard(fetchedUsers);
-      setIsLoading(false);
+      try {
+        setIsLoading(true);
+        const fetchedUsers = await getUsersDashboard();
+        setUsersDashboard(fetchedUsers);
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchUsers();
-  }, []);
+  }, [getUsersDashboard]);
 
   return (
     <div className="tab-container-wide">
