@@ -20,7 +20,7 @@ import {
   useShiftDemands,
   useShiftDemandMutations,
 } from "../../app/lib/hooks/useShiftDemands";
-import { getWorkShifts } from "../../app/lib/shift";
+import { useGetWorkShifts } from "../../hooks/useShift";
 import { MultitaskingApi } from "../../app/lib/api/multitaskingApi";
 // Types
 import { ShiftT, ShiftType } from "../../types/shift";
@@ -642,6 +642,9 @@ function ShiftDemandTabInternal({
     selectedTeamId || ""
   );
 
+  // Get work shifts using authenticated hook
+  const getWorkShifts = useGetWorkShifts();
+
   // Load shifts when team changes
   React.useEffect(() => {
     const loadShifts = async () => {
@@ -657,7 +660,7 @@ function ShiftDemandTabInternal({
         const fetchedShifts = await getWorkShifts(selectedTeamId);
         // Filter to only normal and duty shifts for demand planning
         const workShifts = fetchedShifts.filter(
-          (shift) =>
+          (shift: ShiftT) =>
             shift.shiftType === ShiftType.NORMAL ||
             shift.shiftType === ShiftType.DUTY
         );
@@ -671,7 +674,7 @@ function ShiftDemandTabInternal({
     };
 
     loadShifts();
-  }, [selectedTeamId]);
+  }, [selectedTeamId, getWorkShifts]);
 
   // Navigation functions for PeriodNavigation component
   const handlePeriodChange = (start: Dayjs, end: Dayjs) => {

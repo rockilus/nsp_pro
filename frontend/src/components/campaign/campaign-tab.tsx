@@ -7,16 +7,17 @@ import ScheduleSelector from "./schedule-selector";
 import ConstraintSelector from "./constraint-selector";
 // Skeletons
 import TablesSkeleton from "../skeletons/tables-skeleton";
-// Actions
+// New hooks (authenticated)
 import {
-  getCampaignTabData,
-  getCampaignTabDataNoSolver,
-} from "../../app/lib/campaign";
+  useGetCampaignTabData,
+  useGetCampaignTabDataNoSolver,
+} from "../../hooks/useCampaign";
+// Hooks
 import {
-  addSchedule,
-  updateSchedule,
-  getWorkTimeTable,
-} from "../../app/lib/schedule";
+  useCreateSchedule,
+  useUpdateSchedule,
+  useGetWorkTimeTable,
+} from "../../hooks/useSchedule";
 // Styles
 import "../../styles/tab-container-styles.css";
 // Types
@@ -33,6 +34,15 @@ export default function CampaignTab({
 }) {
   const { t } = useTranslation(lng, "campaign-page");
 
+  // Campaign hooks
+  const getCampaignTabData = useGetCampaignTabData();
+  const getCampaignTabDataNoSolver = useGetCampaignTabDataNoSolver();
+
+  // Schedule hooks
+  const createSchedule = useCreateSchedule();
+  const updateSchedule = useUpdateSchedule();
+  const getWorkTimeTable = useGetWorkTimeTable();
+
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [scheduleCampaign, setScheduleCampaign] = useState<ScheduleT | null>(
     null
@@ -48,64 +58,80 @@ export default function CampaignTab({
   //////////////////////////
 
   const handleAddSchedule = async () => {
-    const newSchedule = await addSchedule(teamWithMembership.team.id);
-    setScheduleCampaign(newSchedule);
-    const newWorkTimeTable = await getWorkTimeTable(
-      newSchedule.id,
-      teamWithMembership.team.id
-    );
-    setWorkTimeTable(newWorkTimeTable);
+    try {
+      const newSchedule = await createSchedule(teamWithMembership.team.id);
+      setScheduleCampaign(newSchedule);
+      const newWorkTimeTable = await getWorkTimeTable(
+        newSchedule.id,
+        teamWithMembership.team.id
+      );
+      setWorkTimeTable(newWorkTimeTable);
+    } catch (error) {
+      console.error("Failed to create schedule:", error);
+      // TODO: Add user-facing error notification
+    }
   };
 
   const handleUpdateSchedule = async (schedule: ScheduleT) => {
-    const newSchedule = await updateSchedule(schedule);
-    setScheduleCampaign(newSchedule);
-    const newWorkTimeTable = await getWorkTimeTable(
-      newSchedule.id,
-      newSchedule.teamId
-    );
-    setWorkTimeTable(newWorkTimeTable);
+    try {
+      const newSchedule = await updateSchedule(schedule);
+      setScheduleCampaign(newSchedule);
+      const newWorkTimeTable = await getWorkTimeTable(
+        newSchedule.id,
+        newSchedule.teamId
+      );
+      setWorkTimeTable(newWorkTimeTable);
+    } catch (error) {
+      console.error("Failed to update schedule:", error);
+      // TODO: Add user-facing error notification
+    }
   };
 
   useEffect(() => {
     const fetchCampaignTabData = async () => {
       setIsLoading(true);
 
-      if (teamWithMembership.team.useSolver) {
-        const {
-          scheduleCampaign: fetchedScheduleCampaign,
-          schedulesValidated: fetchedSchedulesValidated,
-          constraints: fetchedConstraints,
-        } = await getCampaignTabData(teamWithMembership.team.id);
-        setScheduleCampaign(fetchedScheduleCampaign);
-        setSchedulesValidated(fetchedSchedulesValidated);
-        setConstraints(fetchedConstraints);
-      } else {
-        const {
-          scheduleCampaign: fetchedScheduleCampaign,
-          schedulesValidated: fetchedSchedulesValidated,
-        } = await getCampaignTabDataNoSolver(teamWithMembership.team.id);
-        setScheduleCampaign(fetchedScheduleCampaign);
-        setSchedulesValidated(fetchedSchedulesValidated);
+      try {
+        if (teamWithMembership.team.useSolver) {
+          const data = await getCampaignTabData(teamWithMembership.team.id);
+          setScheduleCampaign(data.scheduleCampaign);
+          setSchedulesValidated(data.schedulesValidated);
+          setConstraints(data.constraints);
+        } else {
+          const data = await getCampaignTabDataNoSolver(
+            teamWithMembership.team.id
+          );
+          setScheduleCampaign(data.scheduleCampaign);
+          setSchedulesValidated(data.schedulesValidated);
+        }
+      } catch (error) {
+        console.error("Failed to fetch campaign tab data:", error);
+        // TODO: Add user-facing error notification
+      } finally {
+        setIsLoading(false);
       }
-
-      setIsLoading(false);
     };
+
     fetchCampaignTabData();
-  }, [teamWithMembership]);
+  }, [teamWithMembership, getCampaignTabData, getCampaignTabDataNoSolver]);
 
   useEffect(() => {
     if (scheduleCampaign && !workTimeTable) {
       const fetchWorkTimeTable = async () => {
-        const newWorkTimeTable = await getWorkTimeTable(
-          scheduleCampaign.id,
-          teamWithMembership.team.id
-        );
-        setWorkTimeTable(newWorkTimeTable);
+        try {
+          const newWorkTimeTable = await getWorkTimeTable(
+            scheduleCampaign.id,
+            teamWithMembership.team.id
+          );
+          setWorkTimeTable(newWorkTimeTable);
+        } catch (error) {
+          console.error("Failed to fetch work time table:", error);
+          // Handle error appropriately
+        }
       };
       fetchWorkTimeTable();
     }
-  }, [scheduleCampaign, teamWithMembership, workTimeTable]);
+  }, [scheduleCampaign, teamWithMembership, workTimeTable, getWorkTimeTable]);
 
   return (
     <div className="tab-container">

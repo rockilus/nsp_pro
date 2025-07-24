@@ -15,12 +15,14 @@ As a healthcare application, reliability, security, and intuitive user experienc
 
 ## Architecture
 
+
 ### Frontend
 
 - **Framework**: Next.js (app directory) with React and TypeScript
 - **UI Libraries**: Material UI components with Tailwind CSS for styling
-- **Authentication**: SuperTokens
+- **Authentication**: AWS Cognito
 - **State Management**: React Context API
+- **Static Deployment**: The frontend must be implemented to support static export and deployment to Amazon S3. All routing, asset handling, and build configuration should be compatible with static hosting environments (e.g., using `next export` and avoiding server-only features).
 - **Key directories**:
   - `frontend/src/app` - Next.js pages and routes
   - `frontend/src/components` - Reusable React components
@@ -33,7 +35,7 @@ Microservice architecture with three main components:
 
 1. **API Gateway** (`backend/api_gateway`)
    - FastAPI server
-   - SuperTokens for authentication
+   - AWS Cognito for authentication (authentication is handled by AWS API Gateway)
    - Permit.io for authorization
    - Celery for task queue management
    - MongoDB for data storage
@@ -145,7 +147,7 @@ The application supports multiple languages through the `[lng]` parameter in rou
 ## Cyber Security and Production Best Practices
 
 Cyber security is a top priority for NSP Pro. All code must be written in accordance with industry best practices for production applications, including but not limited to:
-- Secure authentication and authorization (SuperTokens, Permit.io)
+- Secure authentication and authorization (AWS Cognito, Permit.io)
 - Proper validation and sanitization of all user input
 - Protection against common web vulnerabilities (XSS, CSRF, SQL/NoSQL injection, etc.)
 - Secure storage and handling of sensitive data

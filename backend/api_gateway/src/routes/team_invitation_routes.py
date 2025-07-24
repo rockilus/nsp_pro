@@ -9,12 +9,9 @@ from shared.schemas.dto import (
     TeamWithMembershipDTO,
 )
 
-from src.dependencies import get_team_invitation_service
-from src.integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from src.dependencies import get_team_invitation_service, get_user_context
 from src.integrations.authorization import authz_check
+from src.security.user_context import UserContext
 from src.services.team_invitation_service import TeamInvitationService
 
 router = APIRouter()
@@ -24,11 +21,11 @@ router = APIRouter()
 async def create_team_invitation(
     team_id: str,
     invitation: TeamInvitationDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ):
     try:
-        user_id = session.get_user_id()
+        user_id = user_context.user_id
         if not await authz_check(user_id, "create-team-invitation", "team", team_id):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -54,11 +51,11 @@ async def create_team_invitation(
 
 @router.get("/team-invitations/pending", response_model=List[EnrichedTeamInvitationDTO])
 async def get_user_pending_invitations(
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ):
     try:
-        user_id = session.get_user_id()
+        user_id = user_context.user_id
         if not await authz_check(user_id, "read-team-invitations", "user", user_id):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -77,11 +74,11 @@ async def get_user_pending_invitations(
 @router.get("/team-invitations/teams/{team_id}", response_model=List[TeamInvitationDTO])
 async def get_team_invitations(
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ):
     try:
-        user_id = session.get_user_id()
+        user_id = user_context.user_id
         if not await authz_check(user_id, "read-team-invitations", "team", team_id):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -104,11 +101,11 @@ class TeamInvitationResponseRequest(BaseModel):
 @router.post("/team-invitations/accept")
 async def accept_team_invitation(
     request: TeamInvitationResponseRequest,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ) -> TeamWithMembershipDTO:
     try:
-        user_id = session.get_user_id()
+        user_id = user_context.user_id
         if not await authz_check(user_id, "accept-team-invitation", "user", user_id):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -133,11 +130,11 @@ async def accept_team_invitation(
 @router.post("/team-invitations/reject")
 async def reject_team_invitation(
     request: TeamInvitationResponseRequest,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ):
     try:
-        user_id = session.get_user_id()
+        user_id = user_context.user_id
         if not await authz_check(user_id, "reject-team-invitation", "user", user_id):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -167,11 +164,11 @@ async def reject_team_invitation(
 async def resend_team_invitation_email(
     team_id: str,
     invitation_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ) -> TeamInvitationDTO:
     try:
-        user_id = session.get_user_id()
+        user_id = user_context.user_id
         if not await authz_check(user_id, "resend-team-invitation", "team", team_id):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -195,11 +192,11 @@ async def resend_team_invitation_email(
 @router.delete("/team-invitations/{invitation_id}/teams/{team_id}")
 async def delete_team_invitation(
     invitation_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ):
     try:
-        user_id = session.get_user_id()
+        user_id = user_context.user_id
         if not await authz_check(
             user_id, "delete-team-invitation", "team", invitation_id
         ):

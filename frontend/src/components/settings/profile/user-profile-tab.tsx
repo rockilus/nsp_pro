@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from "react";
+import React, { ReactElement, useEffect, useState, useRef } from "react";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
@@ -14,7 +14,11 @@ import UserProfileRow from "./user-profile-row";
 // Skeletons
 import TablesSkeleton from "../../skeletons/tables-skeleton";
 // Actions
-import { getUser, updateUser, updatePassword } from "../../../app/lib/user";
+import {
+  useGetUser,
+  useUpdateUser,
+  useUpdatePassword,
+} from "../../../hooks/useUser";
 // Styles
 import "./user-profile-tab.css";
 import "../../../styles/text-styles.css";
@@ -26,11 +30,17 @@ import { languages } from "../../../constants/constants";
 
 export default function UserProfileTab({ lng }: { lng: string }) {
   const { t } = useTranslation(lng, "profile-page");
+  const getUser = useGetUser();
+  const updateUser = useUpdateUser();
+  const updatePassword = useUpdatePassword();
 
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<UserT | null>(null);
   const [fieldEditing, setFieldEditing] = useState<string | null>(null);
   const [userState, setUserState] = useState<UserT | null>(user);
+
+  // Prevent multiple API calls
+  const hasFetched = useRef(false);
 
   const editButton = (handleSetEditing: () => void): ReactElement => (
     <IconButton onClick={handleSetEditing}>
@@ -91,20 +101,37 @@ export default function UserProfileTab({ lng }: { lng: string }) {
   };
 
   useEffect(() => {
-    const fetchUserTabData = async () => {
-      setIsLoading(true);
-      const fetchedUser = await getUser();
-      setUser(fetchedUser);
-      setIsLoading(false);
-    };
-    fetchUserTabData();
-  }, []);
+    // Prevent multiple calls during development hot reloads
+    if (hasFetched.current) {
+      return;
+    }
 
+    async function fetchUserData() {
+      hasFetched.current = true;
+
+      try {
+        setIsLoading(true);
+        const userData = await getUser();
+        setUser(userData);
+        setUserState(userData);
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+        // Reset flag on error to allow retry
+        hasFetched.current = false;
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchUserData();
+  }, [getUser]); // getUser is now stable
+
+  // Sync userState when user changes (but prevent loops)
   useEffect(() => {
-    if (user) {
+    if (user && !fieldEditing) {
       setUserState(user);
     }
-  }, [user]);
+  }, [user, fieldEditing]);
 
   return (
     <div className="tab-container-wide">

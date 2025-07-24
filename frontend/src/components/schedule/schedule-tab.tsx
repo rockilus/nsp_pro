@@ -22,22 +22,24 @@ import { computePeriodEndDate } from "../../app/lib/utils/scheduleViewSettingsUt
 import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
 import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
 // Actions
+import { useGetStats } from "../../hooks/useStats";
+// Assignment Hooks
 import {
-  validateSchedule,
-  updateSchedule,
-  getSchedules,
-  getScheduleAssignmentsData,
-  getScheduleAssignmentsDataNoSolver,
-  getScheduleLHSData,
-  duplicatePeriod,
-} from "../../app/lib/schedule";
+  useAddAssignmentAndRecurrence,
+  useUpdateAssignmentAndRecurrence,
+  useDeleteAssignment,
+} from "../../hooks/useAssignment";
+// Hooks
 import {
-  addAssignmentAndRecurrence,
-  updateAssignmentAndRecurrence,
-  deleteAssignment,
-} from "../../app/lib/assignment";
-import { getStats } from "../../app/lib/stats";
-import { exportSchedule } from "../../app/lib/export-schedule";
+  useValidateSchedule,
+  useUpdateSchedule,
+  useGetSchedules,
+  useGetScheduleAssignmentsData,
+  useGetScheduleAssignmentsDataNoSolver,
+  useGetScheduleLHSData,
+  useDuplicatePeriod,
+} from "../../hooks/useSchedule";
+import { useExportSchedule } from "../../hooks/useExport";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "./schedule-tab.css";
@@ -95,6 +97,25 @@ export default function ScheduleTab({
   teamWithMembership: TeamWithMembership;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
+
+  // Stats hook
+  const getStats = useGetStats();
+
+  // Schedule hooks
+  const validateSchedule = useValidateSchedule();
+  const updateSchedule = useUpdateSchedule();
+  const getSchedules = useGetSchedules();
+  const getScheduleAssignmentsData = useGetScheduleAssignmentsData();
+  const getScheduleAssignmentsDataNoSolver =
+    useGetScheduleAssignmentsDataNoSolver();
+  const getScheduleLHSData = useGetScheduleLHSData();
+  const duplicatePeriod = useDuplicatePeriod();
+  const exportSchedule = useExportSchedule();
+
+  // Assignment hooks
+  const addAssignmentAndRecurrence = useAddAssignmentAndRecurrence();
+  const updateAssignmentAndRecurrence = useUpdateAssignmentAndRecurrence();
+  const deleteAssignment = useDeleteAssignment();
 
   const [isLoadingSchedule, setIsLoadingSchedule] = useState<boolean>(true);
   const [isLoadingAssignments, setIsLoadingAssignments] =
@@ -254,18 +275,28 @@ export default function ScheduleTab({
   //////////////////////////
 
   const handleUpdateSchedule = async (schedule: ScheduleT) => {
-    const newSchedule = await updateSchedule(schedule);
-    setScheduleCampaign(newSchedule);
+    try {
+      const newSchedule = await updateSchedule(schedule);
+      setScheduleCampaign(newSchedule);
+    } catch (error) {
+      console.error("Failed to update schedule:", error);
+      // Handle error appropriately
+    }
   };
 
   const handleValidateSchedule = async (scheduleId: string) => {
-    const newSchedule = await validateSchedule(
-      scheduleId,
-      teamWithMembership.team.id
-    );
-    setScheduleCampaign(null);
-    setSchedulesValidated([...schedulesValidated, newSchedule]);
-    setBreaches([]);
+    try {
+      const newSchedule = await validateSchedule(
+        scheduleId,
+        teamWithMembership.team.id
+      );
+      setScheduleCampaign(null);
+      setSchedulesValidated([...schedulesValidated, newSchedule]);
+      setBreaches([]);
+    } catch (error) {
+      console.error("Failed to validate schedule:", error);
+      // Handle error appropriately
+    }
   };
 
   const handleDuplicateResult = (duplicateResult: DuplicateResultT) => {
@@ -281,11 +312,20 @@ export default function ScheduleTab({
     campaignId: string,
     teamId: string
   ) => {
-    const duplicateResult = await duplicatePeriod(request, campaignId, teamId);
-    handleDuplicateResult(duplicateResult);
-    const newPeriodStart = request.targetPeriod.startDate.startOf("isoWeek");
-    const newPeriodEnd = request.targetPeriod.startDate.endOf("isoWeek");
-    updateSelectedPeriod(newPeriodStart, newPeriodEnd);
+    try {
+      const duplicateResult = await duplicatePeriod(
+        request,
+        campaignId,
+        teamId
+      );
+      handleDuplicateResult(duplicateResult);
+      const newPeriodStart = request.targetPeriod.startDate.startOf("isoWeek");
+      const newPeriodEnd = request.targetPeriod.startDate.endOf("isoWeek");
+      updateSelectedPeriod(newPeriodStart, newPeriodEnd);
+    } catch (error) {
+      console.error("Failed to duplicate period:", error);
+      // Handle error appropriately
+    }
   };
 
   //////////////////////////
@@ -593,8 +633,8 @@ export default function ScheduleTab({
       showFavorites: true,
     };
     const newStats = await getStats(
-      newStatsOptions,
-      teamWithMembership.team.id
+      teamWithMembership.team.id,
+      newStatsOptions
     );
     setStats(newStats);
     setSelectedQuickStatsTimeFrame(timeFrame);
@@ -605,7 +645,12 @@ export default function ScheduleTab({
   //////////////////////////
 
   const handleExportSchedule = async (exportOptions: ExportOptionsT) => {
-    await exportSchedule(teamWithMembership.team.id, exportOptions);
+    try {
+      await exportSchedule(teamWithMembership.team.id, exportOptions);
+    } catch (error) {
+      console.error("Failed to export schedule:", error);
+      // Handle error appropriately
+    }
   };
 
   //////////////////////////
@@ -671,11 +716,14 @@ export default function ScheduleTab({
         // Fetch schedules
         const fetchedSchedule = await getSchedules(teamWithMembership.team.id);
         setScheduleCampaign(
-          fetchedSchedule.find((s) => s.status === ScheduleStatus.CAMPAIGN) ||
-            null
+          fetchedSchedule.find(
+            (s: ScheduleT) => s.status === ScheduleStatus.CAMPAIGN
+          ) || null
         );
         setSchedulesValidated(
-          fetchedSchedule.filter((s) => s.status === ScheduleStatus.VALIDATED)
+          fetchedSchedule.filter(
+            (s: ScheduleT) => s.status === ScheduleStatus.VALIDATED
+          )
         );
         setIsLoadingSchedule(false);
 
@@ -738,7 +786,13 @@ export default function ScheduleTab({
     };
 
     fetchData();
-  }, [teamWithMembership]);
+  }, [
+    teamWithMembership,
+    getSchedules,
+    getScheduleAssignmentsData,
+    getScheduleAssignmentsDataNoSolver,
+    getScheduleLHSData,
+  ]);
 
   const lhsTabContent: LHSTabContentT[] = [
     {
@@ -852,7 +906,6 @@ export default function ScheduleTab({
             updateScheduleViewSettings={updateScheduleViewSettings}
             handleChangeTimeFrame={handleChangeTimeFrame}
             handleOpenLHS={setSelectedTab}
-            // useSqsWorkflow={USE_SQS_SOLVE}
             useSqsWorkflow={true}
             onSqsSolveComplete={handleSqsSolveComplete}
           />

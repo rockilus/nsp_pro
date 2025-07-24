@@ -4,7 +4,6 @@ import * as React from "react";
 // MUI
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
-import Image from "next/image";
 //Components
 import AccountMenu from "./account-menu";
 import NavLinks from "./nav-links";
@@ -38,12 +37,11 @@ const NavAppBar = ({ lng }: { lng: string }) => {
         }}
       >
         <div className="app-bar-content-container">
-          <Image
+          <img
             src="/rockilus_logo_blue.jpg"
             alt="logo"
             width={logoWidth}
             height={logoHeight}
-            priority
           />
           <NavLinks lng={lng} selectedTeam={selectedTeam} />
           <AccountMenu lng={lng} />

@@ -6,16 +6,17 @@ from shared.logger import log_info
 from shared.schemas.core import LinkShift
 from shared.schemas.dto import LinkShiftDTO
 
-from src.dependencies import get_db_collections, get_link_shift_service
+from src.dependencies import (
+    get_db_collections,
+    get_link_shift_service,
+    get_user_context,
+)
 from src.errors import (
     NotAuthorizedError,
     handle_routes_errors,
 )
-from src.integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
 from src.integrations.authorization import authz_check
+from src.security.user_context import UserContext
 from src.services.link_shift_service import LinkShiftService
 
 router = APIRouter()
@@ -26,15 +27,14 @@ router = APIRouter()
 async def create_link_shift(
     team_id: str,
     link_shift: LinkShiftDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     link_shift_service: LinkShiftService = Depends(
         get_link_shift_service,
     ),
 ) -> LinkShiftDTO:
     try:
         if not await authz_check(
-            # session.get_user_id(), "create-link-shift", "team", team_id
-            session.get_user_id(),
+            user_context.user_id,
             "create-link-shift",
             "team",
             team_id,
@@ -54,15 +54,14 @@ async def create_link_shift(
 @router.get("/link-shifts/teams/{team_id}")
 async def get_link_shifts(
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(
         get_db_collections,
     ),
 ) -> List[LinkShiftDTO]:
     try:
         if not await authz_check(
-            # session.get_user_id(), "read-link-shifts", "team", team_id
-            session.get_user_id(),
+            user_context.user_id,
             "read-link-shifts",
             "team",
             team_id,
@@ -80,15 +79,14 @@ async def get_link_shifts(
 async def update_link_shift(
     team_id: str,
     link_shift: LinkShiftDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     link_shift_service: LinkShiftService = Depends(
         get_link_shift_service,
     ),
 ) -> LinkShiftDTO:
     try:
         if not await authz_check(
-            # session.get_user_id(), "update-link-shift", "team", team_id
-            session.get_user_id(),
+            user_context.user_id,
             "update-link-shift",
             "team",
             team_id,
@@ -109,15 +107,14 @@ async def update_link_shift(
 async def delete_link_shift(
     link_shift_id: str,
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(
         get_db_collections,
     ),
 ) -> Dict:
     try:
         if not await authz_check(
-            # session.get_user_id(), "delete-link-shift", "team", team_id
-            session.get_user_id(),
+            user_context.user_id,
             "delete-link-shift",
             "team",
             team_id,

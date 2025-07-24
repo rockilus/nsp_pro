@@ -6,13 +6,10 @@ from shared.logger import log_info
 from shared.schemas.core import ExportOptions
 from shared.schemas.dto import ExportOptionsDTO
 
-from src.dependencies import get_schedule_service
+from src.dependencies import get_schedule_service, get_user_context
 from src.errors import NotAuthorizedError, handle_routes_errors
-from src.integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
 from src.integrations.authorization import authz_check
+from src.security.user_context import UserContext
 from src.services.schedule_service import ScheduleService
 
 router = APIRouter()
@@ -23,12 +20,12 @@ router = APIRouter()
 async def export_schedule(
     team_id: str,
     export_options: ExportOptionsDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     schedule_service: ScheduleService = Depends(get_schedule_service),
 ) -> StreamingResponse:
     try:
         if not await authz_check(
-            session.get_user_id(), "create-schedule-export", "team", team_id
+            user_context.user_id, "create-schedule-export", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to export a schedule",

@@ -140,17 +140,6 @@ export type ShiftDemandsDictT = {
   [key: string]: ShiftDemandsDataT;
 };
 
-// Updated ScheduleCellDataT that could work with both legacy and new types
-export type ScheduleCellDataNewT = {
-  assignmentsData: AssignmentDataT[];
-  shiftDemandsData: ShiftDemandsDataT | null;
-  requests: RequestT[];
-};
-
-export type ScheduleCellsNewDictT = {
-  [key: string]: ScheduleCellDataNewT;
-};
-
 export type ScheduleCellDataT = {
   assignmentsData: AssignmentDataT[];
   shiftDemandsData: ShiftDemandsDataT | null;

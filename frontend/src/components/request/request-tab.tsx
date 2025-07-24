@@ -1,3 +1,16 @@
+/**
+ * RequestTab Component
+ *
+ * Manages the requests interface with tabs for list view and calendar view.
+ * Uses the new request hooks pattern for authenticated API calls.
+ *
+ * Features:
+ * - Add, update, delete, and rescind requests
+ * - Toggle between current and past requests
+ * - Calendar view for request visualization
+ * - Integrated with shift demands data
+ */
+
 import React, { useState, useEffect, useMemo } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
@@ -14,16 +27,15 @@ import RequestTable from "./request-table";
 import { RequestCalendar } from "./request-calendar";
 // Skeletons
 import TablesSkeleton from "../skeletons/tables-skeleton";
-// Actions
-import {
-  getRequestsTabData,
-  addRequest,
-  updateRequest,
-  deleteRequest,
-  rescindRequest,
-} from "@/app/lib/request";
 // Hooks
 import { useShiftDemands } from "../../app/lib/hooks/useShiftDemands";
+import {
+  useAddRequest,
+  useUpdateRequest,
+  useDeleteRequest,
+  useRescindRequest,
+  useGetRequestsTabData,
+} from "../../hooks/useRequest";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "../../styles/text-styles.css";
@@ -48,6 +60,13 @@ export default function RequestTab({
   userTeamRole: TeamMembershipRole;
 }) {
   const { t } = useTranslation(lng, "request-page");
+
+  // Request hooks
+  const addRequest = useAddRequest();
+  const updateRequest = useUpdateRequest();
+  const deleteRequest = useDeleteRequest();
+  const rescindRequest = useRescindRequest();
+  const getRequestsTabData = useGetRequestsTabData();
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [requests, setRequests] = useState<RequestT[]>([]);
@@ -101,53 +120,76 @@ export default function RequestTab({
   //////////////////////////
 
   const handleAddRequest = async (request: RequestT) => {
-    const newRequest = await addRequest(request, teamId);
-    setRequests([...requests, newRequest]);
+    try {
+      const newRequest = await addRequest(request, teamId);
+      setRequests([...requests, newRequest]);
+    } catch (error) {
+      console.error("Failed to add request:", error);
+      // Handle error appropriately (could show a toast notification)
+    }
   };
 
   const handleUpdateRequest = async (request: RequestT) => {
-    const updatedRequest = await updateRequest(request, teamId);
-    setRequests(
-      requests.map((r) => (r.id === updatedRequest.id ? updatedRequest : r))
-    );
+    try {
+      const updatedRequest = await updateRequest(request, teamId);
+      setRequests(
+        requests.map((r) => (r.id === updatedRequest.id ? updatedRequest : r))
+      );
+    } catch (error) {
+      console.error("Failed to update request:", error);
+      // Handle error appropriately
+    }
   };
 
   const handleDeleteRequest = async (requestId: string) => {
-    await deleteRequest(requestId, teamId);
-    setRequests(requests.filter((r) => r.id !== requestId));
+    try {
+      await deleteRequest(requestId, teamId);
+      setRequests(requests.filter((r) => r.id !== requestId));
+    } catch (error) {
+      console.error("Failed to delete request:", error);
+      // Handle error appropriately
+    }
   };
 
   const handleRescindRequest = async (requestId: string) => {
-    const rescindedRequest = await rescindRequest(requestId, teamId);
-    setRequests(
-      requests.map((r) => (r.id === rescindedRequest.id ? rescindedRequest : r))
-    );
+    try {
+      const rescindedRequest = await rescindRequest(requestId, teamId);
+      setRequests(
+        requests.map((r) =>
+          r.id === rescindedRequest.id ? rescindedRequest : r
+        )
+      );
+    } catch (error) {
+      console.error("Failed to rescind request:", error);
+      // Handle error appropriately
+    }
   };
 
   useEffect(() => {
     const fetchRequestsTabData = async () => {
       setIsLoading(true);
       if (teamId) {
-        const {
-          workers: fetchedWorkers,
-          shifts: fetchedShifts,
-          requests: fetchedRequests,
-          shiftOptions: fetchedShiftOptions,
-        }: {
-          workers: WorkerT[];
-          shifts: ShiftT[];
-          requests: RequestT[];
-          shiftOptions: ShiftWorkerOptionT[];
-        } = await getRequestsTabData(teamId);
-        setWorkers(fetchedWorkers);
-        setShifts(fetchedShifts);
-        setRequests(fetchedRequests);
-        setShiftOptions(fetchedShiftOptions);
-        setIsLoading(false);
+        try {
+          const {
+            workers: fetchedWorkers,
+            shifts: fetchedShifts,
+            requests: fetchedRequests,
+            shiftOptions: fetchedShiftOptions,
+          } = await getRequestsTabData(teamId);
+          setWorkers(fetchedWorkers);
+          setShifts(fetchedShifts);
+          setRequests(fetchedRequests);
+          setShiftOptions(fetchedShiftOptions);
+        } catch (error) {
+          console.error("Failed to fetch requests tab data:", error);
+          // Handle error appropriately
+        } finally {
+          setIsLoading(false);
+        }
       }
     };
     fetchRequestsTabData();
-  }, [teamId]);
+  }, [teamId, getRequestsTabData]);
 
   // ToggleButton state for request type
 

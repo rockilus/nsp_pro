@@ -12,9 +12,9 @@ import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
 import { getPeriodStartEndDates } from "./schedule-utils";
 // Skeletons
 import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
-// Actions
-import { getScheduleAssignmentsDataMember } from "../../app/lib/schedule";
-import { exportSchedule } from "../../app/lib/export-schedule";
+// Hooks
+import { useGetScheduleAssignmentsDataMember } from "../../hooks/useSchedule";
+import { useExportSchedule } from "../../hooks/useExport";
 import { useScheduleViewSettings } from "../../app/lib/hooks/useScheduleViewSettings";
 import {
   getDefaultScheduleViewSettings,
@@ -47,6 +47,11 @@ export default function ScheduleTabMember({
   teamWithMembership: TeamWithMembership;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
+
+  // Schedule hooks
+  const getScheduleAssignmentsDataMember =
+    useGetScheduleAssignmentsDataMember();
+  const exportSchedule = useExportSchedule();
 
   const [isLoadingAssignments, setIsLoadingAssignments] =
     useState<boolean>(true);
@@ -225,7 +230,7 @@ export default function ScheduleTabMember({
     };
 
     fetchData();
-  }, [teamWithMembership]);
+  }, [teamWithMembership, getScheduleAssignmentsDataMember]);
 
   // periodDates is now computed automatically from scheduleViewSettings
 

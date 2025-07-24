@@ -306,10 +306,3 @@ export interface TemplateUtils {
     demands: DemandEntryDTO[]
   ) => Record<number, DemandEntryDTO[]>;
 }
-
-// Legacy type aliases for backward compatibility
-/** @deprecated Use ShiftDemandTemplateDTO instead */
-export type ShiftDemandTemplateT = ShiftDemandTemplateDTO;
-
-/** @deprecated Use DemandEntryDTO instead */
-export type TemplateWeekDataT = DemandEntryDTO;

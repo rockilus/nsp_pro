@@ -6,33 +6,31 @@ from shared.logger import log_info
 from shared.schemas.core import Request
 from shared.schemas.dto import RequestDTO
 
-from src.dependencies import get_request_service
+from src.dependencies import get_request_service, get_user_context
 from src.errors import (
     NotAuthorizedError,
     handle_routes_errors,
-)
-from src.integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
 )
 from src.integrations.authorization import (
     authz_check,
     authz_role_assignments_list,
 )
+from src.security.user_context import UserContext
 from src.services.request_service import RequestService
 
 router = APIRouter()
 
 
+# pylint: disable=R0801
 @router.post("/requests/teams/{team_id}", status_code=201)
 async def create_request(
     team_id: str,
     req: RequestDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     request_service: RequestService = Depends(get_request_service),
 ) -> RequestDTO:
     try:
-        user_id = session.get_user_id()
+        user_id = user_context.user_id
         if not await authz_check(
             user_id=user_id,
             action="create-request",
@@ -64,12 +62,12 @@ async def create_request(
 @router.get("/requests/teams/{team_id}")
 async def get_requests(
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     request_service: RequestService = Depends(get_request_service),
 ) -> List[RequestDTO]:
     try:
         if not await authz_check(
-            session.get_user_id(), "read-requests", "team", team_id
+            user_context.user_id, "read-requests", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to get requests")
         start_time = time_module.time()
@@ -88,11 +86,11 @@ async def get_requests(
 async def update_request(
     team_id: str,
     updated_request: RequestDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     request_service: RequestService = Depends(get_request_service),
 ):
     try:
-        user_id = session.get_user_id()
+        user_id = user_context.user_id
         if not await authz_check(
             user_id=user_id,
             action="update-request",
@@ -124,11 +122,11 @@ async def update_request(
 async def accept_request(
     request_id: str,
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     request_service: RequestService = Depends(get_request_service),
 ) -> RequestDTO:
     try:
-        user_id = session.get_user_id()
+        user_id = user_context.user_id
         if not await authz_check(
             user_id=user_id,
             action="approve-request",
@@ -148,11 +146,11 @@ async def accept_request(
 async def deny_request(
     request_id: str,
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     request_service: RequestService = Depends(get_request_service),
 ) -> RequestDTO:
     try:
-        user_id = session.get_user_id()
+        user_id = user_context.user_id
         if not await authz_check(
             user_id=user_id,
             action="deny-request",
@@ -172,11 +170,11 @@ async def deny_request(
 async def rescind_request(
     request_id: str,
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     request_service: RequestService = Depends(get_request_service),
 ) -> RequestDTO:
     try:
-        user_id = session.get_user_id()
+        user_id = user_context.user_id
         if not await authz_check(
             user_id=user_id,
             action="rescind-request",
@@ -196,11 +194,11 @@ async def rescind_request(
 async def delete_request(
     request_id: str,
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     request_service: RequestService = Depends(get_request_service),
 ):
     try:
-        user_id = session.get_user_id()
+        user_id = user_context.user_id
         if not await authz_check(
             user_id=user_id,
             action="delete-request",

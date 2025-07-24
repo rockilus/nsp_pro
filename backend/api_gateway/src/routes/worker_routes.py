@@ -8,13 +8,14 @@ from shared.logger import log_info
 from shared.schemas.core import Worker
 from shared.schemas.dto import WorkerDTO
 
-from src.dependencies import get_db_collections, get_worker_service
-from src.errors import NotAuthorizedError, handle_routes_errors
-from src.integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
+from src.dependencies import (
+    get_db_collections,
+    get_user_context,
+    get_worker_service,
 )
+from src.errors import NotAuthorizedError, handle_routes_errors
 from src.integrations.authorization import authz_check
+from src.security.user_context import UserContext
 from src.services.worker_service import WorkerService
 
 router = APIRouter()
@@ -24,12 +25,12 @@ router = APIRouter()
 async def create_worker(
     team_id: str,
     worker: WorkerDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     worker_service: WorkerService = Depends(get_worker_service),
 ) -> WorkerDTO:
     try:
         if not await authz_check(
-            session.get_user_id(), "create-worker", "team", team_id
+            user_context.user_id, "create-worker", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to create a worker")
         w_data = Worker.from_dto(worker)
@@ -44,13 +45,11 @@ async def create_worker(
 @router.get("/workers/teams/{team_id}")
 async def get_workers(
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[WorkerDTO]:
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-workers", "team", team_id
-        ):
+        if not await authz_check(user_context.user_id, "read-workers", "team", team_id):
             raise NotAuthorizedError("You do not have permission to get workers")
         workers = db_collections.worker_db.get_workers_not_deleted(team_id)
         attributes = [
@@ -67,13 +66,11 @@ async def get_workers(
 @router.get("/workers/all/teams/{team_id}")
 async def get_all_workers(
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[WorkerDTO]:
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-workers", "team", team_id
-        ):
+        if not await authz_check(user_context.user_id, "read-workers", "team", team_id):
             raise NotAuthorizedError("You do not have permission to get workers")
         start_time = time_module.time()
         workers = db_collections.worker_db.get_workers(team_id)
@@ -95,13 +92,13 @@ async def get_all_workers(
 async def update_worker(
     team_id: str,
     worker: WorkerDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
     worker_service: WorkerService = Depends(get_worker_service),
 ) -> WorkerDTO:
     try:
         if not await authz_check(
-            session.get_user_id(), "update-worker", "team", team_id
+            user_context.user_id, "update-worker", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to update a worker")
         w_data = Worker.from_dto(worker)
@@ -128,17 +125,13 @@ async def attach_user_to_worker(
     request: WorkerAttachRequest,
     # user_id: str,
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     worker_service: WorkerService = Depends(get_worker_service),
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[WorkerDTO]:
     try:
         if not await authz_check(
-            # session.get_user_id(), "add-user-to-worker", "team", team_id
-            user_id=session.get_user_id(),
-            action="update-worker",
-            resource="team",
-            resource_id=team_id,
+            user_context.user_id, "update-worker", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to add a user to this worker"
@@ -162,12 +155,12 @@ async def attach_user_to_worker(
 async def delete_worker(
     worker_id: str,
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     worker_service: WorkerService = Depends(get_worker_service),
 ) -> Dict:
     try:
         if not await authz_check(
-            session.get_user_id(), "delete-worker", "team", team_id
+            user_context.user_id, "delete-worker", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to delete a worker")
         worker_service.delete_worker(worker_id)

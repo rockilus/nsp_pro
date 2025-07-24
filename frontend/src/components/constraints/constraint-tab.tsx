@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 // Components
 import ConstraintList from "./constraint-list/constraint-list";
 import NewConstraint from "./edit-constraint/new-constraint";
 // Skeletons
 import TablesSkeleton from "../skeletons/tables-skeleton";
-// Actions
+// New hooks (authenticated)
 import {
-  getConstraintsTabData,
-  addConstraint,
-  updateConstraint,
-  deleteConstraint,
-} from "../../app/lib/constraint";
+  useGetConstraintsTabData,
+  useAddConstraint,
+  useUpdateConstraint,
+  useDeleteConstraint,
+} from "../../hooks/useConstraint";
 // Styles
 import "../../styles/tab-container-styles.css";
 // Types
@@ -32,6 +32,12 @@ export default function ConstraintTab({
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
 
+  // Authenticated hooks
+  const getConstraintsTabData = useGetConstraintsTabData();
+  const addConstraint = useAddConstraint();
+  const updateConstraint = useUpdateConstraint();
+  const deleteConstraint = useDeleteConstraint();
+
   const handleOpenAddConstraint = () => {
     setAddingConstraint(true);
   };
@@ -40,81 +46,83 @@ export default function ConstraintTab({
     setAddingConstraint(false);
   };
 
+  // Load data when team changes
+  const loadConstraintsData = useCallback(async () => {
+    if (!selectedTeamId) return;
+
+    setIsLoading(true);
+    try {
+      const data = await getConstraintsTabData(selectedTeamId);
+      setTemplates(data.templates);
+      setConstraints(data.constraints);
+      setWorkers(data.workers);
+      setShifts(data.shifts);
+    } catch (error) {
+      console.error("Failed to load constraints data:", error);
+      // TODO: Add error handling/notification
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedTeamId, getConstraintsTabData]);
+
   //////////////////////////
   // Constraint Actions
   //////////////////////////
 
   const handleAddConstraint = async (constraint: ConstraintT) => {
-    const newConstraint = await addConstraint(constraint);
-    setConstraints([...constraints, newConstraint]);
+    try {
+      const newConstraint = await addConstraint(constraint);
+      setConstraints([...constraints, newConstraint]);
+      setAddingConstraint(false);
+    } catch (error) {
+      console.error("Failed to add constraint:", error);
+      // TODO: Add error handling/notification
+    }
   };
 
   const handleUpdateConstraint = async (updatedConstraint: ConstraintT) => {
-    const newConstraint = await updateConstraint(updatedConstraint);
-    setConstraints((prevConstraints) =>
-      prevConstraints.map((constraint) =>
-        constraint.id === newConstraint.id ? newConstraint : constraint
-      )
-    );
+    try {
+      const newConstraint = await updateConstraint(updatedConstraint);
+      setConstraints((prevConstraints) =>
+        prevConstraints.map((constraint) =>
+          constraint.id === newConstraint.id ? newConstraint : constraint
+        )
+      );
+      setAddingConstraint(false);
+    } catch (error) {
+      console.error("Failed to update constraint:", error);
+      // TODO: Add error handling/notification
+    }
   };
 
   const handleDeleteConstraint = async (constraintId: string) => {
-    if (!selectedTeamId) {
-      throw new Error("Team not selected");
+    if (!selectedTeamId) return;
+
+    try {
+      await deleteConstraint(constraintId, selectedTeamId);
+      setConstraints((prevConstraints) =>
+        prevConstraints.filter((constraint) => constraint.id !== constraintId)
+      );
+    } catch (error) {
+      console.error("Failed to delete constraint:", error);
+      // TODO: Add error handling/notification
     }
-    await deleteConstraint(constraintId, selectedTeamId);
-    setConstraints((prevConstraints) =>
-      prevConstraints.filter((constraint) => constraint.id !== constraintId)
-    );
   };
 
+  // Load data on mount and when selectedTeamId changes
   useEffect(() => {
-    const fetchConstraintsTabData = async () => {
-      setIsLoading(true);
-      if (selectedTeamId) {
-        const {
-          templates: fetchedTemplates,
-          constraints: fetchedConstraints,
-          workers: fetchedWorkers,
-          shifts: fetchedShifts,
-        }: {
-          templates: TemplateT[];
-          constraints: ConstraintT[];
-          workers: WorkerT[];
-          shifts: ShiftT[];
-        } = await getConstraintsTabData(selectedTeamId);
-        setTemplates(fetchedTemplates);
-        setConstraints(fetchedConstraints);
-        setWorkers(fetchedWorkers);
-        setShifts(fetchedShifts);
-      }
-      setIsLoading(false);
-    };
-    fetchConstraintsTabData();
-  }, [selectedTeamId]);
+    loadConstraintsData();
+  }, [loadConstraintsData]);
 
   return (
-    <div className="tab-container">
+    <>
       {isLoading ? (
-        <TablesSkeleton numTables={1} numInternalRows={3} />
+        <TablesSkeleton numTables={1} numInternalRows={5} />
+      ) : !selectedTeamId ? (
+        <div>Please select a team</div>
       ) : (
-        selectedTeamId && (
-          <div>
-            {addingConstraint && (
-              <div>
-                <NewConstraint
-                  lng={lng}
-                  workers={workers}
-                  shifts={shifts}
-                  selectedTeamId={selectedTeamId}
-                  templates={templates}
-                  handleCloseAddConstraint={handleCloseAddConstraint}
-                  handleAddConstraint={handleAddConstraint}
-                  handleUpdateConstraint={handleUpdateConstraint}
-                />
-                <div className="divider" />
-              </div>
-            )}
+        <>
+          <div className="tab-container">
             <ConstraintList
               lng={lng}
               workers={workers}
@@ -127,8 +135,20 @@ export default function ConstraintTab({
               handleDeleteConstraint={handleDeleteConstraint}
             />
           </div>
-        )
+          {addingConstraint && (
+            <NewConstraint
+              lng={lng}
+              workers={workers}
+              shifts={shifts}
+              selectedTeamId={selectedTeamId}
+              templates={templates}
+              handleCloseAddConstraint={handleCloseAddConstraint}
+              handleAddConstraint={handleAddConstraint}
+              handleUpdateConstraint={handleUpdateConstraint}
+            />
+          )}
+        </>
       )}
-    </div>
+    </>
   );
 }

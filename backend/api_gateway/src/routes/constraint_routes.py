@@ -9,16 +9,13 @@ from shared.schemas.dto import (
     ConstraintBuildDTO,
 )
 
-from src.dependencies import get_constraint_build_service
+from src.dependencies import get_constraint_build_service, get_user_context
 from src.errors import (
     NotAuthorizedError,
     handle_routes_errors,
 )
-from src.integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
 from src.integrations.authorization import authz_check
+from src.security.user_context import UserContext
 from src.services.constraint_build_service import ConstraintBuildService
 
 router = APIRouter()
@@ -28,14 +25,14 @@ router = APIRouter()
 async def create_constraint(
     team_id: str,
     req: ConstraintBuildDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     constraint_build_service: ConstraintBuildService = Depends(
         get_constraint_build_service,
     ),
 ) -> ConstraintBuildDTO:
     try:
         if not await authz_check(
-            session.get_user_id(), "create-constraint", "team", team_id
+            user_context.user_id, "create-constraint", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to create a constraint"
@@ -52,14 +49,14 @@ async def create_constraint(
 @router.get("/constraints/teams/{team_id}")
 async def get_constraints(
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     constraint_build_service: ConstraintBuildService = Depends(
         get_constraint_build_service,
     ),
 ) -> List[ConstraintBuildDTO]:
     try:
         if not await authz_check(
-            session.get_user_id(), "read-constraints", "team", team_id
+            user_context.user_id, "read-constraints", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to get constraints")
         constraint_builds = constraint_build_service.get_constraint_builds(team_id)
@@ -74,14 +71,14 @@ async def get_constraints(
 async def update_constraint(
     team_id: str,
     updated_constraint_build: ConstraintBuildDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     constraint_build_service: ConstraintBuildService = Depends(
         get_constraint_build_service,
     ),
 ) -> ConstraintBuildDTO:
     try:
         if not await authz_check(
-            session.get_user_id(), "update-constraint", "team", team_id
+            user_context.user_id, "update-constraint", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to update a constraint"
@@ -99,14 +96,14 @@ async def update_constraint(
 async def delete_constraint(
     constraint_build_id: str,
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     constraint_build_service: ConstraintBuildService = Depends(
         get_constraint_build_service,
     ),
 ):
     try:
         if not await authz_check(
-            session.get_user_id(), "delete-constraint", "team", team_id
+            user_context.user_id, "delete-constraint", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to delete a constraint"

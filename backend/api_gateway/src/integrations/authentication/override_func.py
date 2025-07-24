@@ -1,7 +1,6 @@
-from datetime import datetime, timezone
 from typing import Any, Coroutine, Dict, List
 
-from shared.schemas.core import Language, User
+from shared.schemas.core import Language
 from supertokens_python.recipe.emailpassword.constants import (
     FORM_FIELD_EMAIL_ID,
 )
@@ -135,15 +134,10 @@ def override_emailpassword_apis(original_implementation: APIInterface):
             email = result.user.emails[0]
             if result.user:
                 user = await user_service.create_user(
-                    User(
-                        id=user_id,
-                        email=email,
-                        first_name=first_name,
-                        last_name=last_name,
-                        language=language,  # type: ignore
-                        sign_up_at=datetime.now(timezone.utc),
-                        impersonating_user_id=None,
-                    )
+                    user_id=user_id,
+                    email=email,
+                    first_name=first_name,
+                    last_name=last_name,
                 )
                 email_verify_link = await create_link(
                     user_id=user.id,

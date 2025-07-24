@@ -10,13 +10,11 @@ from loguru import logger
 from shared.schemas.core import SolveRequest
 from shared.schemas.dto import SolveTaskStatusResponseDTO
 
+from src.dependencies import get_user_context
 from src.dependencies.sqs_solve_service import get_sqs_solve_service
 from src.errors import NotAuthorizedError, handle_routes_errors
-from src.integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
 from src.integrations.authorization import authz_check
+from src.security.user_context import UserContext
 from src.services.sqs_solve_service import APIGatewaySQSSolveService
 
 router = APIRouter(
@@ -34,7 +32,7 @@ router = APIRouter(
 )
 async def submit_solve_request(
     body: SolveRequest,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     sqs_solve_service: APIGatewaySQSSolveService = Depends(get_sqs_solve_service),
 ) -> SolveTaskStatusResponseDTO:
     """
@@ -62,21 +60,20 @@ async def submit_solve_request(
         team_id = body.team_id
 
         # Check authorization
-        if not await authz_check(
-            session.get_user_id(), "solve-schedule", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "solve-schedule", "team", team_id):
             raise NotAuthorizedError("You do not have permission to solve a schedule")
 
         # Submit solve request (defaults: NORMAL priority, FULL_SOLVE type)
         result = await sqs_solve_service.submit_solve_request(
             schedule_id=schedule_id,
             team_id=team_id,
-            user_id=session.get_user_id(),
+            user_id=user_id,
         )
 
         logger.info(
             f"SQS solve request submitted for schedule {schedule_id} "
-            f"by user {session.get_user_id()}"
+            f"by user {user_id}"
         )
         response = result.to_response_dto()
         return response
@@ -106,7 +103,7 @@ async def submit_solve_request(
 )
 async def get_solve_status_by_id(
     solve_id: str,
-    _: SessionContainerType = Depends(authn_verify_session()),
+    _: UserContext = Depends(get_user_context),
     sqs_solve_service: APIGatewaySQSSolveService = Depends(get_sqs_solve_service),
 ) -> SolveTaskStatusResponseDTO:
     """
@@ -156,7 +153,7 @@ async def get_solve_status_by_id(
 )
 async def get_latest_solve_status_by_schedule_id(
     schedule_id: str,
-    # session: SessionContainerType = Depends(authn_verify_session()),
+    _: UserContext = Depends(get_user_context),
     sqs_solve_service: APIGatewaySQSSolveService = Depends(get_sqs_solve_service),
 ) -> SolveTaskStatusResponseDTO:
     """

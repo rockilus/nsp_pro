@@ -7,16 +7,16 @@ import InvitationsList from "./invitations-list";
 // Skeletons
 // Actions
 import {
-  getTeamUsersWithMemberships,
-  removeUserFromTeam,
-} from "@/app/lib/team";
-import { getWorkers, attachUserToWorker } from "@/app/lib/worker";
+  useGetTeamUsersWithMemberships,
+  useRemoveUserFromTeam,
+} from "@/hooks/useTeam";
+import { useGetWorkers, useAttachUserToWorker } from "@/hooks/useWorker";
 import {
-  createTeamInvitation,
-  getTeamInvitations,
-  resendTeamInvitationEmail,
-  deleteTeamInvitation,
-} from "@/app/lib/team-invitation";
+  useCreateTeamInvitation,
+  useGetTeamInvitations,
+  useResendTeamInvitationEmail,
+  useDeleteTeamInvitation,
+} from "@/hooks/useTeamInvitation";
 // Styles
 import "../../../styles/text-styles.css";
 import "../../../styles/tab-container-styles.css";
@@ -40,27 +40,51 @@ export default function MembersTab({
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [invitations, setInvitations] = useState<TeamInvitationT[]>([]);
 
+  // Hook functions
+  const getTeamUsersWithMembershipsFn = useGetTeamUsersWithMemberships();
+  const removeUserFromTeamFn = useRemoveUserFromTeam();
+  const getWorkersFn = useGetWorkers();
+  const attachUserToWorkerFn = useAttachUserToWorker();
+  const createTeamInvitationFn = useCreateTeamInvitation();
+  const getTeamInvitationsFn = useGetTeamInvitations();
+  const resendTeamInvitationEmailFn = useResendTeamInvitationEmail();
+  const deleteTeamInvitationFn = useDeleteTeamInvitation();
+
   //////////////////////////
   // Team Actions
   //////////////////////////
 
   const handleGetTeamUsersInvitationsAndWorkers = useCallback(async () => {
     setIsLoading(true);
-    const users = await getTeamUsersWithMemberships(teamId);
-    const workers = await getWorkers(teamId);
-    const invitations = await getTeamInvitations(teamId);
-    setUsers(users);
-    setWorkers(workers);
-    setInvitations(invitations);
-    setIsLoading(false);
-  }, [teamId]);
+    try {
+      const users = await getTeamUsersWithMembershipsFn(teamId);
+      const workers = await getWorkersFn(teamId);
+      const invitations = await getTeamInvitationsFn(teamId);
+      setUsers(users);
+      setWorkers(workers);
+      setInvitations(invitations);
+    } catch (error) {
+      console.error("Failed to fetch team data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [
+    teamId,
+    getTeamUsersWithMembershipsFn,
+    getWorkersFn,
+    getTeamInvitationsFn,
+  ]);
 
   const handleRemoveFromTeam = async (teamId: string, userId: string) => {
-    const success = await removeUserFromTeam(teamId, userId);
-    if (success) {
+    try {
+      await removeUserFromTeamFn(teamId, userId);
+      // If we get here, the removal was successful
       setUsers((prevUsers) =>
         prevUsers.filter((user) => user.user.id !== userId)
       );
+    } catch (error) {
+      console.error("Failed to remove user from team:", error);
+      // Handle error as needed (show notification, etc.)
     }
   };
 
@@ -73,7 +97,7 @@ export default function MembersTab({
     userId: string,
     teamId: string
   ) => {
-    const updatedWorkers = await attachUserToWorker(workerId, userId, teamId);
+    const updatedWorkers = await attachUserToWorkerFn(workerId, userId, teamId);
     setWorkers((prevWorkers) =>
       prevWorkers.map((worker) =>
         worker.id === updatedWorkers.id ? updatedWorkers : worker
@@ -86,25 +110,41 @@ export default function MembersTab({
   //////////////////////////
 
   const handleCreateTeamInvitation = async (invitation: TeamInvitationT) => {
-    const newInvitation = await createTeamInvitation(invitation, teamId);
-    setInvitations((prevInvitations) => [...prevInvitations, newInvitation]);
+    try {
+      const newInvitation = await createTeamInvitationFn(invitation, teamId);
+      setInvitations((prevInvitations) => [...prevInvitations, newInvitation]);
+    } catch (error) {
+      console.error("Failed to create team invitation:", error);
+      // Handle error as needed (show notification, etc.)
+    }
   };
 
   const handleResendTeamInvitationEmail = async (invitationId: string) => {
-    const newInvitation = await resendTeamInvitationEmail(invitationId, teamId);
-    setInvitations((prevInvitations) =>
-      prevInvitations.map((invitation) =>
-        invitation.id === newInvitation.id ? newInvitation : invitation
-      )
-    );
+    try {
+      const newInvitation = await resendTeamInvitationEmailFn(
+        invitationId,
+        teamId
+      );
+      setInvitations((prevInvitations) =>
+        prevInvitations.map((invitation) =>
+          invitation.id === newInvitation.id ? newInvitation : invitation
+        )
+      );
+    } catch (error) {
+      console.error("Failed to resend team invitation email:", error);
+      // Handle error as needed (show notification, etc.)
+    }
   };
 
   const handleDeleteTeamInvitation = async (invitationId: string) => {
-    const success = await deleteTeamInvitation(invitationId, teamId);
-    if (success) {
+    try {
+      await deleteTeamInvitationFn(invitationId, teamId);
       setInvitations((prevInvitations) =>
         prevInvitations.filter((invitation) => invitation.id !== invitationId)
       );
+    } catch (error) {
+      console.error("Failed to delete team invitation:", error);
+      // Handle error as needed (show notification, etc.)
     }
   };
 

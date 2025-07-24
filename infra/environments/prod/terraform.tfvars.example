@@ -1,0 +1,47 @@
+# NSP Pro Production Environment Configuration Example
+# Copy this file to terraform.tfvars and customize for your deployment
+
+# Basic Configuration
+project_name = "rockilus"
+aws_region   = "eu-west-3"
+aws_profile  = "default"
+aws_account_id = "590183915149"
+
+# CORS Configuration
+cors_allowed_origins = [
+  "https://app.rockilus.com",
+  "https://rockilus.com",
+  "http://localhost:3000"  # For development
+]
+
+# VPC Link Configuration (for production backend connectivity)
+vpc_link_id           = "7y2yvb"
+vpc_link_target_arns  = ["arn:aws:elasticloadbalancing:eu-west-3:590183915149:loadbalancer/net/your-nlb"]
+vpc_link_endpoint_url = "https://your-backend-service.com"
+api_gateway_stage_name = "dev_0"
+
+# Custom Domain Configuration
+# Set these to enable custom domains with Route53 and SSL certificates
+
+# Frontend Domain Configuration
+frontend_domain_name = "rockilus.com"  # Main domain for Route53 hosted zone
+
+# API Gateway Domain Configuration  
+api_gateway_domain_name = "api.rockilus.com"  # Custom domain for API Gateway
+
+# Healthcare Compliance Notes:
+# - All domains will use HTTPS with TLS 1.2+ minimum
+# - SSL certificates are automatically managed by AWS ACM
+# - DNSSEC is enabled for DNS security
+# - Query logging is enabled for audit trails
+# - Certificate transparency logging is enabled for compliance
+
+# Deployment Options:
+# 1. Deploy without custom domains (CloudFront only):
+#    Comment out or set to null: frontend_domain_name and api_gateway_domain_name
+#
+# 2. Deploy with custom domains:
+#    Set the domain variables above and ensure:
+#    - You own the domain specified in frontend_domain_name
+#    - DNS will be managed by Route53 (name servers will need to be updated at registrar)
+#    - SSL certificates will be automatically provisioned and validated

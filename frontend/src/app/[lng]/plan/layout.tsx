@@ -3,7 +3,7 @@ import { languages } from "../../i18n/settings";
 import CssBaseline from "@mui/material/CssBaseline";
 // Components
 import NavAppBar from "../../../components/app-bar/nav-app-bar";
-import SessionHandler from "../../../components/session-handler";
+import ProtectedRoute from "../../../components/auth/protected-route";
 // Context
 import { TeamProvider } from "@/context/TeamProvider";
 import { UserProvider } from "@/context/UserProvider";
@@ -22,7 +22,7 @@ export default function Layout({
   };
 }) {
   return (
-    <SessionHandler>
+    <ProtectedRoute requireAuth={true}>
       <UserProvider>
         <TeamProvider>
           <div style={{ overflow: "hidden", height: "100vh" }}>
@@ -34,6 +34,6 @@ export default function Layout({
           </div>
         </TeamProvider>
       </UserProvider>
-    </SessionHandler>
+    </ProtectedRoute>
   );
 }

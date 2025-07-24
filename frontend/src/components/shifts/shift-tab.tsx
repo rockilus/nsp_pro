@@ -16,28 +16,30 @@ import TablesSkeleton from "../skeletons/tables-skeleton";
 // Hooks
 import { useTableState } from "../../hooks/useTableState";
 import { useTableHeight } from "../../hooks/useTableHeight";
+import {
+  useAddDimension,
+  useUpdateDimension,
+  useDeleteDimension,
+} from "../../hooks/useDimension";
+import { useUpdateAttribute } from "../../hooks/useAttribute";
+import {
+  useAddDimEntry,
+  useUpdateDimEntry,
+  useDeleteDimEntry,
+} from "../../hooks/useDimEntry";
+import {
+  useAddShift,
+  useUpdateShift,
+  useDeleteShift,
+  useGetShiftsTabData,
+} from "../../hooks/useShift";
+import {
+  useCreateLinkShift,
+  useDeleteLinkShift,
+} from "../../hooks/useLinkShift";
 // Utils
 import { createShiftColumns } from "./shiftColumns";
 import { filterWorkShifts, filterRestShifts } from "./shift-utils/shift-utils";
-// Actions
-import {
-  getShiftsTabData,
-  addShift,
-  deleteShift,
-  updateShift,
-} from "../../app/lib/shift";
-import {
-  addDimension,
-  updateDimension,
-  deleteDimension,
-} from "../../app/lib/dimension";
-import {
-  addDimEntry,
-  updateDimEntry,
-  deleteDimEntry,
-} from "../../app/lib/dim-entry";
-import { updateAttribute } from "../../app/lib/attribute";
-import { addLinkShift, deleteLinkShift } from "../../app/lib/link-shift";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "../../styles/table-styles.css";
@@ -75,6 +77,29 @@ export default function ShiftTab({
   const [workPopoverRhsOpen, setWorkPopoverRhsOpen] = useState(false);
   const [restPopoverRhsOpen, setRestPopoverRhsOpen] = useState(false);
   const [shiftView, setShiftView] = useState<"work" | "rest">("work");
+
+  // Dimension hooks
+  const addDimensionFn = useAddDimension();
+  const updateDimensionFn = useUpdateDimension();
+  const deleteDimensionFn = useDeleteDimension();
+
+  // Attribute hooks
+  const updateAttributeFn = useUpdateAttribute();
+
+  // DimEntry hooks
+  const addDimEntryFn = useAddDimEntry();
+  const updateDimEntryFn = useUpdateDimEntry();
+  const deleteDimEntryFn = useDeleteDimEntry();
+
+  // LinkShift hooks
+  const createLinkShiftFn = useCreateLinkShift();
+  const deleteLinkShiftFn = useDeleteLinkShift();
+
+  // Shift hooks
+  const addShiftFn = useAddShift();
+  const updateShiftFn = useUpdateShift();
+  const deleteShiftFn = useDeleteShift();
+  const getShiftsTabDataFn = useGetShiftsTabData();
 
   // Create shift columns for both work and rest shifts
   const workShiftColumns = useMemo(() => {
@@ -178,85 +203,102 @@ export default function ShiftTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const addedShift = await addShift({
-      id: "",
-      teamId: selectedTeamId,
-      name: "",
-      acronym: "",
-      acronymCustom: false,
-      startTime: roundTime(dayjs.utc()),
-      endTime: roundTime(dayjs.utc()),
-      staffing: [
-        {
-          specialtyId: null,
-          staffing: 1,
-        },
-      ],
-      color: "grey",
-      shiftType: isRest ? ShiftType.REST : ShiftType.NORMAL,
-      restType: ShiftRestType.NONE,
-      leaveType: ShiftLeaveType.NONE,
-      recuperationTime: 0,
-      recuperationDutyId: null,
-      deleted: false,
-      attributes: [],
-    });
-    setShifts([...shifts, addedShift]);
+    try {
+      const addedShift = await addShiftFn({
+        id: "",
+        teamId: selectedTeamId,
+        name: "",
+        acronym: "",
+        acronymCustom: false,
+        startTime: roundTime(dayjs.utc()),
+        endTime: roundTime(dayjs.utc()),
+        staffing: [
+          {
+            specialtyId: null,
+            staffing: 1,
+          },
+        ],
+        color: "grey",
+        shiftType: isRest ? ShiftType.REST : ShiftType.NORMAL,
+        restType: ShiftRestType.NONE,
+        leaveType: ShiftLeaveType.NONE,
+        recuperationTime: 0,
+        recuperationDutyId: null,
+        deleted: false,
+        attributes: [],
+      });
+      setShifts([...shifts, addedShift]);
+    } catch (error) {
+      console.error("Failed to add shift:", error);
+      throw error; // Re-throw for component-level handling
+    }
   };
 
   const handleUpdateShift = async (shift: ShiftT) => {
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const {
-      shiftUpdated: updatedShift,
-      linkShiftsUpdated,
-      linkShiftsIdsDeleted,
-    } = await updateShift(shift);
-    setShifts((prevShifts) =>
-      prevShifts.map((w) => (w.id === updatedShift.id ? updatedShift : w))
-    );
-    setLinkShifts((prevLinkShifts) => {
-      const filteredLinkShifts = prevLinkShifts.filter(
-        (linkShift) => !linkShiftsIdsDeleted.includes(linkShift.id)
+    try {
+      const {
+        shiftUpdated: updatedShift,
+        linkShiftsUpdated,
+        linkShiftsIdsDeleted,
+      } = await updateShiftFn(shift);
+      setShifts((prevShifts) =>
+        prevShifts.map((w) => (w.id === updatedShift.id ? updatedShift : w))
       );
-      const replacedLinkShifts = filteredLinkShifts.map((linkShift) => {
-        const lsUpdated = linkShiftsUpdated.find(
-          (ls) => ls.id === linkShift.id
+      setLinkShifts((prevLinkShifts) => {
+        const filteredLinkShifts = prevLinkShifts.filter(
+          (linkShift) => !linkShiftsIdsDeleted.includes(linkShift.id)
         );
-        return lsUpdated ? lsUpdated : linkShift;
+        const replacedLinkShifts = filteredLinkShifts.map((linkShift) => {
+          const lsUpdated = linkShiftsUpdated.find(
+            (ls: LinkShiftT) => ls.id === linkShift.id
+          );
+          return lsUpdated ? lsUpdated : linkShift;
+        });
+        const newLinkShifts = linkShiftsUpdated.filter(
+          (linkShift: LinkShiftT) =>
+            !filteredLinkShifts.some((ls: LinkShiftT) => ls.id === linkShift.id)
+        );
+        return replacedLinkShifts.concat(newLinkShifts);
       });
-      const newLinkShifts = linkShiftsUpdated.filter(
-        (linkShift) => !filteredLinkShifts.some((ls) => ls.id === linkShift.id)
-      );
-      return replacedLinkShifts.concat(newLinkShifts);
-    });
+    } catch (error) {
+      console.error("Failed to update shift:", error);
+      throw error; // Re-throw for component-level handling
+    }
   };
 
   const handleDeleteShift = async (shiftId: string) => {
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const { linkShiftsUpdated, linkShiftsIdsDeleted } = await deleteShift(
-      shiftId,
-      selectedTeamId
-    );
-    setShifts(shifts.filter((shift) => shift.id !== shiftId));
-    setLinkShifts((prevLinkShifts) => {
-      const filteredLinkShifts = prevLinkShifts.filter(
-        (linkShift) => !linkShiftsIdsDeleted.includes(linkShift.id)
+    try {
+      const { linkShiftsUpdated, linkShiftsIdsDeleted } = await deleteShiftFn(
+        shiftId,
+        selectedTeamId
       );
-      const replacedLinkShifts = filteredLinkShifts.map((linkShift) => {
-        const lsUpdated = linkShiftsUpdated.find(
-          (ls) => ls.id === linkShift.id
+      setShifts(shifts.filter((shift) => shift.id !== shiftId));
+      setLinkShifts((prevLinkShifts) => {
+        const filteredLinkShifts = prevLinkShifts.filter(
+          (linkShift) => !linkShiftsIdsDeleted.includes(linkShift.id)
         );
-        return lsUpdated ? lsUpdated : linkShift;
+        const replacedLinkShifts = filteredLinkShifts.map((linkShift) => {
+          const lsUpdated = linkShiftsUpdated.find(
+            (ls: LinkShiftT) => ls.id === linkShift.id
+          );
+          return lsUpdated ? lsUpdated : linkShift;
+        });
+        const newLinkShifts = linkShiftsUpdated.filter(
+          (linkShift: LinkShiftT) =>
+            !filteredLinkShifts.some((ls: LinkShiftT) => ls.id === linkShift.id)
+        );
+        return replacedLinkShifts.concat(newLinkShifts);
       });
-      const newLinkShifts = linkShiftsUpdated.filter(
-        (linkShift) => !filteredLinkShifts.some((ls) => ls.id === linkShift.id)
-      );
-      return replacedLinkShifts.concat(newLinkShifts);
-    });
+    } catch (error) {
+      console.error("Failed to delete shift:", error);
+      throw error; // Re-throw for component-level handling
+    }
   };
 
   //////////////////////////
@@ -274,13 +316,13 @@ export default function ShiftTab({
       newDimension: newDimensionResponse,
       newDimEntries: newDimEntriesResponse,
       newAttributes: newAttributesResponse,
-    } = await addDimension(newDimension, newDimEntries);
+    } = await addDimensionFn(newDimension, newDimEntries);
     setDimensions([...dimensions, newDimensionResponse]);
     setDimEntries([...dimEntries, ...newDimEntriesResponse]);
     setShifts((prevShifts) =>
       prevShifts.map((shift) => {
         const newAttributes = newAttributesResponse.filter(
-          (attribute) => attribute.ownerId === shift.id
+          (attribute: AttributeT) => attribute.ownerId === shift.id
         );
         return newAttributes
           ? {
@@ -297,7 +339,7 @@ export default function ShiftTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const updatedDimension = await updateDimension(dimension);
+    const updatedDimension = await updateDimensionFn(dimension);
     setDimensions((prevDimensions) =>
       prevDimensions.map((prevDim) =>
         prevDim.id === updatedDimension.id ? updatedDimension : prevDim
@@ -309,7 +351,7 @@ export default function ShiftTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    await deleteDimension(dimensionId, selectedTeamId);
+    await deleteDimensionFn(dimensionId, selectedTeamId);
     setDimensions(dimensions.filter((d) => d.id !== dimensionId));
   };
 
@@ -321,7 +363,7 @@ export default function ShiftTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const newDimEntry = await addDimEntry(dimEntry, selectedTeamId);
+    const newDimEntry = await addDimEntryFn(dimEntry, selectedTeamId);
     setDimEntries([...dimEntries, newDimEntry]);
   };
 
@@ -329,7 +371,7 @@ export default function ShiftTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const updatedDimEntry = await updateDimEntry(dimEntry, selectedTeamId);
+    const updatedDimEntry = await updateDimEntryFn(dimEntry, selectedTeamId);
     setDimEntries((prevDimEntries) =>
       prevDimEntries.map((de) =>
         de.id === updatedDimEntry.id ? updatedDimEntry : de
@@ -341,7 +383,10 @@ export default function ShiftTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const updatedAttributes = await deleteDimEntry(dimEntryId, selectedTeamId);
+    const updatedAttributes = await deleteDimEntryFn(
+      dimEntryId,
+      selectedTeamId
+    );
     setDimEntries(dimEntries.filter((dimEntry) => dimEntry.id !== dimEntryId));
     for (const updatedAttribute of updatedAttributes) {
       setShifts((prevShifts) =>
@@ -373,7 +418,7 @@ export default function ShiftTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const updatedAttribute = await updateAttribute(attribute, selectedTeamId);
+    const updatedAttribute = await updateAttributeFn(attribute, selectedTeamId);
     setShifts((prevShifts) =>
       prevShifts.map((shift) =>
         shift.id === updatedAttribute.ownerId
@@ -399,7 +444,7 @@ export default function ShiftTab({
   //////////////////////////
 
   const handleAddLinkShift = async (linkShift: LinkShiftT) => {
-    const newLinkShift = await addLinkShift(linkShift);
+    const newLinkShift = await createLinkShiftFn(linkShift);
     setLinkShifts([...linkShifts, newLinkShift]);
   };
 
@@ -407,7 +452,7 @@ export default function ShiftTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    await deleteLinkShift(linkShiftId, selectedTeamId);
+    await deleteLinkShiftFn(linkShiftId, selectedTeamId);
     setLinkShifts(
       linkShifts.filter((linkShift) => linkShift.id !== linkShiftId)
     );
@@ -417,23 +462,29 @@ export default function ShiftTab({
     const fetchShiftsTabData = async () => {
       setIsLoading(true);
       if (selectedTeamId) {
-        const {
-          shifts: fetchedShifts,
-          dimensions: fetchedDimensions,
-          dimEntries: fetchedDimEntries,
-          specialties: fetchedSpecialties,
-          linkShifts: fetchedLinkShifts,
-        } = await getShiftsTabData(selectedTeamId);
-        setShifts(fetchedShifts);
-        setDimensions(fetchedDimensions);
-        setDimEntries(fetchedDimEntries);
-        setSpecialties(fetchedSpecialties);
-        setLinkShifts(fetchedLinkShifts);
-        setIsLoading(false);
+        try {
+          const {
+            shifts: fetchedShifts,
+            dimensions: fetchedDimensions,
+            dimEntries: fetchedDimEntries,
+            specialties: fetchedSpecialties,
+            linkShifts: fetchedLinkShifts,
+          } = await getShiftsTabDataFn(selectedTeamId);
+          setShifts(fetchedShifts);
+          setDimensions(fetchedDimensions);
+          setDimEntries(fetchedDimEntries);
+          setSpecialties(fetchedSpecialties);
+          setLinkShifts(fetchedLinkShifts);
+        } catch (error) {
+          console.error("Failed to fetch shifts tab data:", error);
+          // Handle error appropriately - maybe show a toast or error message
+        } finally {
+          setIsLoading(false);
+        }
       }
     };
     fetchShiftsTabData();
-  }, [selectedTeamId]);
+  }, [selectedTeamId, getShiftsTabDataFn]);
 
   return (
     <div className="tab-container-wide">

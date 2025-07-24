@@ -7,15 +7,15 @@ import UserTeamInvitationsList from "./user-team-invitations-list";
 // Skeletons
 // Actions
 import {
-  createTeam,
-  getUserTeamsWithMemberships,
-  leaveTeam,
-} from "@/app/lib/team";
+  useCreateTeam,
+  useGetUserTeamsWithMemberships,
+  useLeaveTeam,
+} from "@/hooks/useTeam";
 import {
-  getUserPendingInvitations,
-  acceptTeamInvitation,
-  rejectTeamInvitation,
-} from "@/app/lib/team-invitation";
+  useGetUserPendingInvitations,
+  useAcceptTeamInvitation,
+  useRejectTeamInvitation,
+} from "@/hooks/useTeamInvitation";
 // Styles
 import "../../../styles/text-styles.css";
 import "../../../styles/tab-container-styles.css";
@@ -37,30 +37,33 @@ export default function TeamsTab({
   const [teams, setTeams] = useState<TeamWithMembership[]>([]);
   const [invitations, setInvitations] = useState<EnrichedTeamInvitationT[]>([]);
 
+  // Hook functions
+  const createTeamFn = useCreateTeam();
+  const getUserTeamsWithMembershipsFn = useGetUserTeamsWithMemberships();
+  const leaveTeamFn = useLeaveTeam();
+  const getUserPendingInvitationsFn = useGetUserPendingInvitations();
+  const acceptTeamInvitationFn = useAcceptTeamInvitation();
+  const rejectTeamInvitationFn = useRejectTeamInvitation();
+
   //////////////////////////
   // Team Actions
   //////////////////////////
 
   const handleCreateTeam = async (teamName: string) => {
-    const newTeam = await createTeam(teamName);
+    const newTeam = await createTeamFn(teamName);
     setTeams((prevTeams) => [...prevTeams, newTeam]);
   };
 
-  const handleGetUserTeams = async () => {
-    setIsLoading(true);
-    const teams = await getUserTeamsWithMemberships();
-    const invitations = await getUserPendingInvitations();
-    setTeams(teams);
-    setInvitations(invitations);
-    setIsLoading(false);
-  };
-
   const handleLeaveTeam = async (teamId: string) => {
-    const success = await leaveTeam(teamId);
-    if (success) {
+    try {
+      await leaveTeamFn(teamId);
+      // If we get here, the leave operation was successful
       setTeams((prevTeams) =>
         prevTeams.filter((team) => team.team.id !== teamId)
       );
+    } catch (error) {
+      console.error("Failed to leave team:", error);
+      // Handle error as needed (show notification, etc.)
     }
   };
 
@@ -69,25 +72,47 @@ export default function TeamsTab({
   //////////////////////////
 
   const handleAcceptInvitation = async (token: string) => {
-    const newTeam = await acceptTeamInvitation(token);
-    setTeams((prevTeams) => [...prevTeams, newTeam]);
-    setInvitations((prevInvitations) =>
-      prevInvitations.filter((invitation) => invitation.token !== token)
-    );
-  };
-
-  const handleRejectInvitation = async (token: string) => {
-    const success = await rejectTeamInvitation(token);
-    if (success) {
+    try {
+      const newTeam = await acceptTeamInvitationFn(token);
+      setTeams((prevTeams) => [...prevTeams, newTeam]);
       setInvitations((prevInvitations) =>
         prevInvitations.filter((invitation) => invitation.token !== token)
       );
+    } catch (error) {
+      console.error("Failed to accept team invitation:", error);
+      // Handle error as needed (show notification, etc.)
+    }
+  };
+
+  const handleRejectInvitation = async (token: string) => {
+    try {
+      await rejectTeamInvitationFn(token);
+      setInvitations((prevInvitations) =>
+        prevInvitations.filter((invitation) => invitation.token !== token)
+      );
+    } catch (error) {
+      console.error("Failed to reject team invitation:", error);
+      // Handle error as needed (show notification, etc.)
     }
   };
 
   useEffect(() => {
-    handleGetUserTeams();
-  }, []);
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const teams = await getUserTeamsWithMembershipsFn();
+        const invitations = await getUserPendingInvitationsFn();
+        setTeams(teams);
+        setInvitations(invitations);
+      } catch (error) {
+        console.error("Failed to fetch teams and invitations:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [getUserTeamsWithMembershipsFn, getUserPendingInvitationsFn]);
 
   return (
     <div className="tab-container-wide">

@@ -1,7 +1,8 @@
+from datetime import datetime, timezone
 from typing import Any, Callable, Coroutine
 
 from shared.database.database_collections import DatabaseCollections
-from shared.schemas.core import PasswordData, User
+from shared.schemas.core import Language, PasswordData, User
 from shared.schemas.errors import UserNotFoundError
 
 from src.errors import AuthnUpdateEmailError
@@ -32,7 +33,29 @@ class UserService(BaseService):
         self.authn_update_user_email = authn_update_user_email
         self.authn_change_password = authn_change_password
 
-    async def create_user(self, user: User) -> User:
+    async def create_user(
+        self, user_id: str, email: str, first_name: str, last_name: str
+    ) -> User:
+        # Check if user already exists to ensure idempotency
+        existing_user = self.collection.user_db.get_user_by_id(user_id)
+        if existing_user is not None:
+            raise UserNotFoundError(f"User with id {user_id} already exists")
+
+        user_language = "fr"
+        try:
+            language = Language(user_language)  # type: ignore[call-arg]
+        except ValueError as exc:
+            # pylint: disable=broad-exception-raised
+            raise Exception(f"Language {user_language} not supported") from exc
+        user = User(
+            id=user_id,
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            language=language,  # type: ignore
+            sign_up_at=datetime.now(timezone.utc),
+            impersonating_user_id=None,
+        )
         new_user = self.collection.user_db.create_user(user)
         await self.authz_user_sync(new_user)
         await self.authz_role_assignment_assign(

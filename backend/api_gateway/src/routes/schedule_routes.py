@@ -11,13 +11,14 @@ from shared.schemas.dto import (
     WorkTimeTableDTO,
 )
 
-from src.dependencies import get_db_collections, get_schedule_service
-from src.errors import NotAuthorizedError, handle_routes_errors
-from src.integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
+from src.dependencies import (
+    get_db_collections,
+    get_schedule_service,
+    get_user_context,
 )
+from src.errors import NotAuthorizedError, handle_routes_errors
 from src.integrations.authorization import authz_check
+from src.security.user_context import UserContext
 from src.services.schedule_service import ScheduleService
 
 router = APIRouter()
@@ -26,11 +27,11 @@ router = APIRouter()
 @router.post("/schedules/teams/{team_id}", status_code=201)
 async def create_schedule(
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     schedule_service: ScheduleService = Depends(get_schedule_service),
 ) -> ScheduleDTO:
     try:
-        user_id = session.get_user_id()
+        user_id = user_context.user_id
         if not await authz_check(user_id, "create-schedule", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to create a schedule",
@@ -48,13 +49,12 @@ async def create_schedule(
 @router.get("/schedules/teams/{team_id}")
 async def get_schedules(
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[ScheduleDTO]:
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-schedules", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "read-schedules", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to get schedules",
             )
@@ -70,15 +70,14 @@ async def get_schedules(
 async def get_work_time_table(
     schedule_id: str,
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     schedule_service: ScheduleService = Depends(
         get_schedule_service,
     ),
 ) -> WorkTimeTableDTO:
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-schedule-work-times", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "read-schedule-work-times", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to read a work time table",
             )
@@ -95,15 +94,15 @@ async def duplicate_period(
     schedule_id: str,
     team_id: str,
     duplicate_request: DuplicateRequestDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     schedule_service: ScheduleService = Depends(
         get_schedule_service,
     ),
 ) -> DuplicateResultDTO:
     try:
+        user_id = user_context.user_id
         if not await authz_check(
-            # session.get_user_id(), "duplicate-period", "team", team_id
-            session.get_user_id(),
+            user_id,
             "duplicate-period",
             "team",
             team_id,
@@ -126,15 +125,14 @@ async def duplicate_period(
 async def validate_schedule(
     schedule_id: str,
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     schedule_service: ScheduleService = Depends(
         get_schedule_service,
     ),
 ) -> ScheduleDTO:
     try:
-        if not await authz_check(
-            session.get_user_id(), "validate-schedule", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "validate-schedule", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to validate a schedule",
             )
@@ -150,15 +148,14 @@ async def validate_schedule(
 async def update_schedule(
     team_id: str,
     schedule_api: ScheduleDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     schedule_service: ScheduleService = Depends(
         get_schedule_service,
     ),
 ) -> ScheduleDTO:
     try:
-        if not await authz_check(
-            session.get_user_id(), "update-schedule", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "update-schedule", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to update a schedule",
             )
@@ -175,15 +172,14 @@ async def update_schedule(
 async def delete_schedule(
     schedule_id: str,
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     schedule_service: ScheduleService = Depends(
         get_schedule_service,
     ),
 ) -> Dict:
     try:
-        if not await authz_check(
-            session.get_user_id(), "delete-schedule", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "delete-schedule", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to delete a schedule",
             )

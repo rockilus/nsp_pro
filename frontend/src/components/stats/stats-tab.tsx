@@ -8,13 +8,13 @@ import StatsNavBar from "./nav-bar/stats-nav-bar";
 // Skeletons
 import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
 import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
-// Actions
+// Hooks
 import {
-  getStatsTabData,
-  getStats,
-  addHeader,
-  deleteHeader,
-} from "../../app/lib/stats";
+  useGetStatsTabData,
+  useGetStats,
+  useAddHeader,
+  useDeleteHeader,
+} from "../../hooks/useStats";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "./stats-tab.css";
@@ -42,6 +42,12 @@ export default function StatsTab({
   selectedTeamId: string | null;
 }) {
   const { t } = useTranslation(lng, "stats-page");
+
+  // Stats hooks
+  const getStatsTabData = useGetStatsTabData();
+  const getStats = useGetStats();
+  const addHeader = useAddHeader();
+  const deleteHeader = useDeleteHeader();
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLoadingStats, setIsLoadingStats] = useState<boolean>(false);
@@ -121,7 +127,7 @@ export default function StatsTab({
     if (!selectedTeamId) {
       throw new Error("No team selected");
     }
-    const newStats = await getStats(statsOptions, selectedTeamId);
+    const newStats = await getStats(selectedTeamId, statsOptions);
     setStats(newStats);
   };
 
@@ -207,13 +213,13 @@ export default function StatsTab({
           ],
           showFavorites: false,
         };
-        const newStats = await getStats(newStatsOptions, selectedTeamId);
+        const newStats = await getStats(selectedTeamId, newStatsOptions);
         setStatsOptions(newStatsOptions);
         setStats(newStats);
       }
     };
     fetchStatsTabData();
-  }, [selectedTeamId]);
+  }, [selectedTeamId, getStatsTabData, getStats]);
 
   return (
     <div className="tab-container-ultrawide">

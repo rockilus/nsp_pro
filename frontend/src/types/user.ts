@@ -1,9 +1,12 @@
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 // Types
 import {
   MembershipForTeamWithMembership,
   TeamMembershipRole,
 } from "@/types/team";
+
+dayjs.extend(utc);
 
 export type UserT = {
   id: string;
@@ -34,7 +37,7 @@ export type UserWithMembership = {
 export const toUserT = (data: any): UserT => {
   return {
     ...data,
-    signUpAt: dayjs.utc(data.signUpAt),
+    signUpAt: dayjs.unix(data.signUpAt).utc(),
   };
 };
 

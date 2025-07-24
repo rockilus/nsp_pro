@@ -113,10 +113,7 @@ async def authz_role_assignment_get_user_team_ids(user_id: str, role: str) -> Li
 
 
 async def authz_check(
-    user_id: str,
-    action: str,
-    resource: str,
-    resource_id: str | None = None,
+    user_id: str, action: str, resource: str, resource_id: str | None = None
 ) -> bool:
     resource_instance = f"{resource}:{resource_id}" if resource_id else resource
     try:

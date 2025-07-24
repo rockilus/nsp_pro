@@ -11,14 +11,11 @@ from shared.schemas.dto import (
     UserWithMembershipDTO,
 )
 
-from src.dependencies import get_team_service
+from src.dependencies import get_team_service, get_user_context
 from src.errors import NotAuthorizedError  # MessageTypeError,
 from src.errors import handle_routes_errors
-from src.integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
 from src.integrations.authorization import authz_check
+from src.security.user_context import UserContext
 from src.services.team_service import TeamService
 
 router = APIRouter()
@@ -32,13 +29,13 @@ class TeamCreateRequest(BaseModel):
 @router.post("/teams")
 async def create_team(
     req: TeamCreateRequest,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     team_service: TeamService = Depends(get_team_service),
 ) -> TeamWithMembershipDTO:
     try:
-        user_id = session.get_user_id()
+        user_id = user_context.user_id
         if not await authz_check(
-            user_id=user_id,
+            user_context.user_id,
             action="create-team",
             resource="user",
             resource_id=user_id,
@@ -60,14 +57,14 @@ async def create_team(
 
 @router.get("/teams")
 async def get_teams(
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     team_service: TeamService = Depends(get_team_service),
 ) -> List[TeamDTO]:
     start_time = time.time()
     try:
-        user_id = session.get_user_id()
+        user_id = user_context.user_id
         if not await authz_check(
-            user_id=user_id,
+            user_context.user_id,
             action="read-teams",
             resource="user",
             resource_id=user_id,
@@ -94,13 +91,13 @@ async def get_teams(
 
 @router.get("/teams/with-memberships")
 async def get_user_teams_with_memberships(
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     team_service: TeamService = Depends(get_team_service),
 ) -> List[TeamWithMembershipDTO]:
     try:
-        user_id = session.get_user_id()
+        user_id = user_context.user_id
         if not await authz_check(
-            user_id=user_id,
+            user_context.user_id,
             action="read-teams",
             resource="user",
             resource_id=user_id,
@@ -119,12 +116,12 @@ async def get_user_teams_with_memberships(
 @router.get("/teams/{team_id}")
 async def get_team(
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     team_service: TeamService = Depends(get_team_service),
 ) -> TeamDTO:
     try:
-        if not await authz_check(session.get_user_id(), "read-teams", "team", team_id):
-            raise NotAuthorizedError("You do not have permission to update a team")
+        if not await authz_check(user_context.user_id, "read-team", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to read a team")
         team = team_service.get_team_by_id(team_id=team_id)
         if not team:
             raise HTTPException(status_code=404, detail="Team not found")
@@ -138,12 +135,12 @@ async def get_team(
 @router.get("/teams/{team_id}/users")
 async def get_team_users_with_memberships(
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     team_service: TeamService = Depends(get_team_service),
 ) -> List[UserWithMembershipDTO]:
     try:
         if not await authz_check(
-            session.get_user_id(), "read-team-users", "team", team_id
+            user_context.user_id, "read-team-users", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to view team users")
         users_with_memberships = team_service.get_team_users_with_memberships(
@@ -160,11 +157,11 @@ async def get_team_users_with_memberships(
 async def update_team(
     team_id: str,
     team: TeamDTO,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     team_service: TeamService = Depends(get_team_service),
 ) -> TeamDTO:
     try:
-        if not await authz_check(session.get_user_id(), "update-team", "team", team_id):
+        if not await authz_check(user_context.user_id, "update-team", "team", team_id):
             raise NotAuthorizedError("You do not have permission to update a team")
         team_data = Team.from_dto(team)
         updated_team = team_service.update_team(team_data)
@@ -178,13 +175,13 @@ async def update_team(
 @router.delete("/teams/{team_id}/leave")
 async def leave_team(
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     team_service: TeamService = Depends(get_team_service),
 ):
     try:
-        user_id = session.get_user_id()
+        user_id = user_context.user_id
         if not await authz_check(
-            user_id=user_id,
+            user_context.user_id,
             action="leave-team",
             resource="user",
             resource_id=user_id,
@@ -201,11 +198,11 @@ async def leave_team(
 async def remove_user_from_team(
     team_id: str,
     user_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
     team_service: TeamService = Depends(get_team_service),
 ):
     try:
-        if not await authz_check(session.get_user_id(), "remove-user", "team", team_id):
+        if not await authz_check(user_context.user_id, "remove-user", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to remove a user from the team"
             )

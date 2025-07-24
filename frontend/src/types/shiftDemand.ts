@@ -98,14 +98,6 @@ export type DemandsResultT = {
 };
 
 /**
- * Legacy API error interface for backward compatibility
- */
-export interface APIError {
-  detail: string;
-  status_code: number;
-}
-
-/**
  * Hook return type for shift demand operations
  */
 export interface UseShiftDemandsResult {

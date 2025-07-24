@@ -44,8 +44,8 @@
 import React, { useState, useEffect } from "react";
 import { useCookies } from "react-cookie";
 import { cookieName } from "../../app/i18n/settings";
-// Actions
-import { checkUserAuthz } from "../../app/lib/dashboard";
+// Hooks
+import { useCheckUserAuthz } from "../../hooks/useDashboard";
 
 interface DashboardHOCProps {
   WrappedComponent: React.ComponentType<any>;
@@ -55,6 +55,7 @@ const DashboardHOC = (WrappedComponent: React.ComponentType<any>) => {
   const WithAdminAuth: React.FC<any> = (props) => {
     const [userAuthorized, setUserAuthorized] = useState<boolean>(false);
     const [cookies] = useCookies([cookieName]);
+    const checkUserAuthz = useCheckUserAuthz();
 
     useEffect(() => {
       const checkAuthz = async () => {
@@ -71,7 +72,7 @@ const DashboardHOC = (WrappedComponent: React.ComponentType<any>) => {
         }
       };
       checkAuthz();
-    }, [cookies.i18next]);
+    }, [cookies.i18next, checkUserAuthz]);
 
     if (!userAuthorized) {
       return null; // Render nothing while checking authorization
