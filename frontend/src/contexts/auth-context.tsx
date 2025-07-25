@@ -3,7 +3,12 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useAuth as useOidcAuth, ErrorContext } from "react-oidc-context";
 import { User } from "oidc-client-ts";
-import { cognitoAuthConfig, cognitoDomain, logoutUri } from "../config/cognito";
+import {
+  cognitoAuthConfig,
+  cognitoDomain,
+  logoutUri,
+  isNetworkError,
+} from "../config/cognito";
 
 interface AuthContextType {
   user: User | undefined | null;
@@ -97,8 +102,84 @@ const clearAuthTokens = (): void => {
         );
       }
     });
+
+    // Clear network error tracking
+    localStorage.removeItem("refreshAttempts");
+    localStorage.removeItem("lastRefreshAttempt");
+    localStorage.removeItem("networkErrorCount");
+    localStorage.removeItem("lastNetworkError");
   } catch (error) {
     console.error("Error clearing auth tokens:", error);
+  }
+};
+
+/**
+ * Network-aware retry mechanism for token refresh
+ */
+const handleNetworkAwareRefresh = async (auth: any): Promise<void> => {
+  const maxRetries = 3;
+  const retryDelay = 2000; // 2 seconds
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(
+        `🔄 Attempting token refresh (attempt ${attempt}/${maxRetries})`
+      );
+
+      // Check if we have a valid refresh token before attempting
+      if (!auth.user?.refresh_token) {
+        console.warn("❌ No refresh token available, skipping refresh");
+        throw new Error("No refresh token available");
+      }
+
+      await auth.signinSilent();
+      console.log("✅ Token refresh successful");
+
+      // Reset network error tracking on success
+      localStorage.removeItem("networkErrorCount");
+      localStorage.removeItem("lastNetworkError");
+      localStorage.setItem("lastSuccessfulRefresh", new Date().toISOString());
+
+      return;
+    } catch (error: any) {
+      console.error(`❌ Token refresh attempt ${attempt} failed:`, error);
+
+      if (isNetworkError(error)) {
+        const networkErrorCount =
+          parseInt(localStorage.getItem("networkErrorCount") || "0") + 1;
+        localStorage.setItem("networkErrorCount", networkErrorCount.toString());
+        localStorage.setItem("lastNetworkError", new Date().toISOString());
+
+        if (attempt < maxRetries) {
+          console.log(
+            `🔄 Network error detected, retrying in ${retryDelay}ms...`
+          );
+          await new Promise((resolve) => setTimeout(resolve, retryDelay));
+          continue;
+        } else {
+          console.error("❌ Max network retry attempts reached");
+          throw new Error(
+            "Network connectivity issues preventing token refresh"
+          );
+        }
+      }
+
+      // Handle refresh token rotation specific errors
+      if (
+        error?.error === "invalid_grant" ||
+        error?.error_description?.includes("refresh token") ||
+        error?.error_description?.includes("Token is not valid")
+      ) {
+        console.warn("🔄 Refresh token rotation conflict detected");
+        clearAuthTokens();
+        throw new Error(
+          "Refresh token rotation conflict - please sign in again"
+        );
+      }
+
+      // For other errors, don't retry
+      throw error;
+    }
   }
 };
 
@@ -109,6 +190,7 @@ export function AuthContextProvider({
 }): JSX.Element {
   const auth = useOidcAuth();
   const [loading, setLoading] = useState<boolean>(true);
+  const [retryingRefresh, setRetryingRefresh] = useState<boolean>(false);
 
   useEffect(() => {
     // Set loading to false once auth state is determined
@@ -116,15 +198,36 @@ export function AuthContextProvider({
       setLoading(false);
     }
 
-    // Handle silent renew errors specific to refresh token rotation
-    const handleSilentRenewError = (error: any) => {
-      console.error("Silent renew failed:", error);
+    // Handle silent renew errors with enhanced network awareness
+    const handleSilentRenewError = async (error: any) => {
+      console.error("🔴 Silent renew failed:", error);
+      setRetryingRefresh(false);
 
       // Track refresh attempts for debugging
       const attempts =
         parseInt(localStorage.getItem("refreshAttempts") || "0") + 1;
       localStorage.setItem("refreshAttempts", attempts.toString());
       localStorage.setItem("lastRefreshAttempt", new Date().toISOString());
+
+      // Handle network errors with retry logic
+      if (isNetworkError(error)) {
+        console.warn("🌐 Network error during token refresh");
+
+        // Don't clear tokens for network errors - retry instead
+        if (attempts <= 3) {
+          console.log("🔄 Attempting network-aware refresh retry...");
+          setRetryingRefresh(true);
+
+          try {
+            await handleNetworkAwareRefresh(auth);
+            setRetryingRefresh(false);
+            return;
+          } catch (retryError) {
+            console.error("❌ Network-aware refresh retry failed:", retryError);
+            setRetryingRefresh(false);
+          }
+        }
+      }
 
       // Check if it's a refresh token rotation error
       if (
@@ -133,27 +236,36 @@ export function AuthContextProvider({
         error?.error_description?.includes("Token is not valid")
       ) {
         console.warn(
-          "Refresh token rotation conflict detected, clearing auth state"
+          "🔄 Refresh token rotation conflict detected, clearing auth state"
         );
         clearAuthTokens();
         // Reset refresh attempt counter on rotation errors
         localStorage.removeItem("refreshAttempts");
         localStorage.removeItem("lastRefreshAttempt");
-        // Don't auto-redirect on rotation errors, let user manually sign in
+        // Don't force immediate redirect for rotation errors - let user decide
       }
     };
 
     // Handle access token expiring notification
     const handleAccessTokenExpiring = () => {
-      console.log("Access token expiring soon, silent renew will be attempted");
+      console.log(
+        "⏰ Access token expiring soon, silent renew will be attempted"
+      );
+
+      // Pre-emptively check network connectivity
+      if (!navigator.onLine) {
+        console.warn("🌐 Device appears offline, refresh may fail");
+      }
     };
 
     // Handle successful silent renew
     const handleSilentRenewSuccess = () => {
-      console.log("Silent renew successful, new tokens received");
-      // Reset refresh attempt counter on successful renewal
+      console.log("✅ Silent renew successful, new tokens received");
+      // Reset all error counters on successful renewal
       localStorage.removeItem("refreshAttempts");
+      localStorage.removeItem("networkErrorCount");
       localStorage.setItem("lastSuccessfulRefresh", new Date().toISOString());
+      setRetryingRefresh(false);
     };
 
     // Listen for OIDC events if available
@@ -163,12 +275,13 @@ export function AuthContextProvider({
       auth.events.addUserSignedIn(handleSilentRenewSuccess);
 
       return () => {
-        auth.events.removeSilentRenewError(handleSilentRenewError);
-        auth.events.removeAccessTokenExpiring(handleAccessTokenExpiring);
-        auth.events.removeUserSignedIn(handleSilentRenewSuccess);
+        // Clean up event listeners
+        auth.events?.removeSilentRenewError?.(handleSilentRenewError);
+        auth.events?.removeAccessTokenExpiring?.(handleAccessTokenExpiring);
+        auth.events?.removeUserSignedIn?.(handleSilentRenewSuccess);
       };
     }
-  }, [auth.isLoading, auth.events]);
+  }, [auth.isLoading, auth.events, auth]);
 
   const signOutRedirect = async (): Promise<void> => {
     try {
@@ -223,7 +336,7 @@ export function AuthContextProvider({
 
   const contextValue: AuthContextType = {
     user: auth.user,
-    loading: auth.isLoading || loading,
+    loading: auth.isLoading || loading || retryingRefresh,
     error: auth.error,
     isAuthenticated: auth.isAuthenticated,
     accessToken: auth.user?.access_token || null,
