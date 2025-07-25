@@ -239,24 +239,7 @@ EOF
   }
 }
 
-# Deployment and Stage
-resource "aws_api_gateway_deployment" "main" {
-  depends_on  = [aws_api_gateway_integration.any_proxy]
-  rest_api_id = aws_api_gateway_rest_api.main.id
-  triggers = {
-    redeployment = sha1(jsonencode(aws_api_gateway_rest_api.main.id))
-  }
-  lifecycle {
-    create_before_destroy = true
-  }
-}
 
-resource "aws_api_gateway_stage" "main" {
-  deployment_id        = aws_api_gateway_deployment.main.id
-  rest_api_id          = aws_api_gateway_rest_api.main.id
-  stage_name           = var.api_gateway_stage_name
-  xray_tracing_enabled = true
-}
 
 ###########################################
 # Internal Service Communication
@@ -539,5 +522,69 @@ resource "aws_route53_record" "api_domain" {
   depends_on = [aws_api_gateway_domain_name.custom, data.aws_api_gateway_domain_name.custom]
 }
 
+# Deployment and Stage
+resource "aws_api_gateway_deployment" "main" {
+  depends_on = [
+    aws_api_gateway_rest_api.main,
+    aws_api_gateway_authorizer.cognito,
+    aws_api_gateway_method.any_proxy,
+    aws_api_gateway_integration.any_proxy,
+    aws_api_gateway_method_response.any_proxy_200,
+    aws_api_gateway_method_response.any_proxy_401,
+    aws_api_gateway_integration_response.any_proxy_200,
+    aws_api_gateway_method.options_proxy,
+    aws_api_gateway_integration.options_proxy,
+    aws_api_gateway_method_response.options_proxy,
+    aws_api_gateway_integration_response.options_proxy,
+    aws_api_gateway_resource.proxy,
+    aws_api_gateway_resource.internal,
+    aws_api_gateway_resource.internal_onboard,
+    aws_api_gateway_method.internal_onboard_post,
+    aws_api_gateway_method_response.internal_onboard_200,
+    aws_api_gateway_method_response.internal_onboard_400,
+    aws_api_gateway_method_response.internal_onboard_401,
+    aws_api_gateway_method_response.internal_onboard_500,
+    aws_api_gateway_integration.internal_onboard,
+    aws_api_gateway_integration_response.internal_onboard_200,
+    aws_api_gateway_integration_response.internal_onboard_400,
+    aws_api_gateway_integration_response.internal_onboard_500,
+    aws_api_gateway_gateway_response.default_4xx,
+    aws_api_gateway_gateway_response.default_5xx
+  ]
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  triggers = {
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_rest_api.main.id,
+      aws_api_gateway_resource.proxy.id,
+      aws_api_gateway_resource.internal.id,
+      aws_api_gateway_resource.internal_onboard.id,
+      aws_api_gateway_method.any_proxy.id,
+      aws_api_gateway_method.internal_onboard_post.id,
+      aws_api_gateway_integration.any_proxy.id,
+      aws_api_gateway_integration.internal_onboard.id,
+      aws_api_gateway_method_response.any_proxy_200.id,
+      aws_api_gateway_method_response.any_proxy_401.id,
+      aws_api_gateway_method_response.internal_onboard_200.id,
+      aws_api_gateway_method_response.internal_onboard_400.id,
+      aws_api_gateway_method_response.internal_onboard_401.id,
+      aws_api_gateway_method_response.internal_onboard_500.id,
+      aws_api_gateway_integration_response.any_proxy_200.id,
+      aws_api_gateway_integration_response.internal_onboard_200.id,
+      aws_api_gateway_integration_response.internal_onboard_400.id,
+      aws_api_gateway_integration_response.internal_onboard_500.id,
+      aws_api_gateway_gateway_response.default_4xx.id,
+      aws_api_gateway_gateway_response.default_5xx.id
+    ]))
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
+}
 
+resource "aws_api_gateway_stage" "main" {
+  deployment_id        = aws_api_gateway_deployment.main.id
+  rest_api_id          = aws_api_gateway_rest_api.main.id
+  stage_name           = var.api_gateway_stage_name
+  xray_tracing_enabled = false
+}
 

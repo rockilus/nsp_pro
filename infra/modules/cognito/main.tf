@@ -120,7 +120,6 @@ resource "aws_cognito_user_pool_client" "main" {
   explicit_auth_flows = [
     "ALLOW_USER_AUTH",
     "ALLOW_USER_SRP_AUTH",
-    "ALLOW_REFRESH_TOKEN_AUTH"
   ]
 
   # Token validity - Adjusted for SPA security best practices
@@ -133,6 +132,11 @@ resource "aws_cognito_user_pool_client" "main" {
     access_token  = "minutes"
     id_token      = "minutes"
     refresh_token = "days"
+  }
+
+  refresh_token_rotation {
+    feature                    = "ENABLED"
+    retry_grace_period_seconds = 10
   }
 
   # Prevent user existence errors
@@ -161,7 +165,7 @@ resource "aws_cognito_user_pool_client" "main" {
   # allowed_oauth_scopes                 = ["email", "openid", "profile"]
   allowed_oauth_scopes         = ["email", "openid", "phone"]
   callback_urls                = ["https://${var.frontend_domain_name}/fr/plan/workers/"]
-  logout_urls                  = ["https://${var.frontend_domain_name}/fr/plan/workers/"]
+  logout_urls                  = ["https://${var.landing_page_domain_name}"]
   supported_identity_providers = ["COGNITO"]
 
   # SPA-specific security settings
