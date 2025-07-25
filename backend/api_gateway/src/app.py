@@ -49,14 +49,18 @@ def create_app(db_collections: DatabaseCollections) -> FastAPI:
 
     app.add_middleware(authn_get_middleware())
 
+    allowed_headers = ["Content-Type"]
+    if config.environment == "development":
+        allowed_headers.append("x-dev-user-id")
+        allowed_headers.append("x-api-key")
+
     app.add_middleware(
         CORSMiddleware,
         # allow_origins=list(ORIGINS),
         allow_origins=config.origins,
         allow_credentials=True,
         allow_methods=["GET", "PUT", "POST", "DELETE", "OPTIONS", "PATCH"],
-        allow_headers=["Content-Type"] + authn_get_cors_headers(),
-        # allow_headers=["*"] + authn_get_cors_headers(),
+        allow_headers=allowed_headers,
     )
     if config.environment == "development":
         app.add_middleware(BaseHTTPMiddleware, dispatch=log_middleware)

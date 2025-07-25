@@ -21,6 +21,8 @@ export interface EnvironmentConfig {
 function createEnvironmentConfig(): EnvironmentConfig {
   const isDevelopment = process.env.NODE_ENV === "development";
 
+  console.log("Environment Configuration:", process.env.NODE_ENV);
+
   return {
     isDevelopment,
 
