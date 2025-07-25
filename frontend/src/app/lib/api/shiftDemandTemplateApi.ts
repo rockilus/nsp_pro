@@ -1,6 +1,5 @@
 /**
  * API client for shift demand template management
- * Updated to match new backend DTO structure
  */
 
 import {
@@ -14,60 +13,15 @@ import {
   TemplateApplicationResult,
   TemplateValidationResult,
   BatchTemplateOperationResult,
-  TemplateErrorResponse,
   TEMPLATE_CONSTRAINTS,
-} from "@/types/shift-demand-template";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const TEMPLATES_BASE = `${API_BASE_URL}/shift-demand-templates`;
+} from "../../../types/shift-demand-template";
+import { BaseApi, AuthenticatedApiClient } from "./baseApi";
 
 /**
  * Utility function to format dates for API calls
  */
 const formatDateForAPI = (date: Date): string => {
   return date.toISOString().split("T")[0]; // YYYY-MM-DD format
-};
-
-/**
- * Enhanced error handler for template API responses
- */
-const handleTemplateAPIError = async (response: Response): Promise<never> => {
-  try {
-    const errorData: TemplateErrorResponse = await response.json();
-
-    // Create user-friendly error message based on error type
-    let userMessage = errorData.message || "An unexpected error occurred";
-
-    switch (errorData.error) {
-      case "validation_error":
-        userMessage = `Validation failed: ${errorData.message}`;
-        break;
-      case "template_not_found":
-        userMessage = "Template not found";
-        break;
-      case "authorization_error":
-        userMessage = "You don't have permission to perform this action";
-        break;
-      case "duplicate_name":
-        userMessage = "A template with this name already exists";
-        break;
-      case "template_limit_exceeded":
-        userMessage = `Cannot create more than ${TEMPLATE_CONSTRAINTS.MAX_TEMPLATES_PER_TEAM} templates`;
-        break;
-      case "invalid_date_range":
-        userMessage = "Invalid date range provided";
-        break;
-      case "internal_error":
-      default:
-        userMessage = "A server error occurred. Please try again later.";
-        break;
-    }
-
-    throw new Error(userMessage);
-  } catch (parseError) {
-    // Fallback if response is not JSON
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-  }
 };
 
 /**
@@ -118,301 +72,292 @@ const validateApplyTemplateRequest = (request: ApplyTemplateDTO): void => {
 };
 
 /**
- * Main API client class for template operations (updated)
+ * Main API client class for template operations
  */
-export class ShiftDemandTemplateApi {
+export class ShiftDemandTemplateApi extends BaseApi {
   /**
-   * Get all templates for a team (updated endpoint)
+   * Get all templates for a team (authenticated)
    */
-  static async getTemplates(teamId: string): Promise<ShiftDemandTemplateDTO[]> {
-    const response = await fetch(`${TEMPLATES_BASE}/teams/${teamId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      await handleTemplateAPIError(response);
+  static async getTemplates(
+    apiClient: AuthenticatedApiClient,
+    teamId: string
+  ): Promise<ShiftDemandTemplateDTO[]> {
+    // Security: Input validation
+    if (!teamId) {
+      throw new Error("Team ID is required");
     }
 
-    return response.json();
+    const responseData = await this.makeRequest<ShiftDemandTemplateDTO[]>(
+      apiClient,
+      "get",
+      `/shift-demand-templates/teams/${teamId}`
+    );
+    return responseData;
   }
 
   /**
-   * Get a specific template by ID (updated endpoint)
+   * Get a specific template by ID (authenticated)
    */
   static async getTemplate(
+    apiClient: AuthenticatedApiClient,
     templateId: string,
     teamId: string
   ): Promise<ShiftDemandTemplateDTO> {
-    const response = await fetch(
-      `${TEMPLATES_BASE}/${templateId}/teams/${teamId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      }
-    );
-
-    if (!response.ok) {
-      await handleTemplateAPIError(response);
+    // Security: Input validation
+    if (!templateId) {
+      throw new Error("Template ID is required");
+    }
+    if (!teamId) {
+      throw new Error("Team ID is required");
     }
 
-    return response.json();
+    const responseData = await this.makeRequest<ShiftDemandTemplateDTO>(
+      apiClient,
+      "get",
+      `/shift-demand-templates/${templateId}/teams/${teamId}`
+    );
+    return responseData;
   }
 
   /**
-   * Create a new template (simplified for new DTO structure)
+   * Create a new template (authenticated)
    */
   static async createTemplate(
+    apiClient: AuthenticatedApiClient,
     teamId: string,
     template: ShiftDemandTemplateCreateDTO
   ): Promise<ShiftDemandTemplateDTO> {
+    // Security: Input validation
+    if (!teamId) {
+      throw new Error("Team ID is required");
+    }
     validateTemplateCreateRequest(template);
 
-    const response = await fetch(`${TEMPLATES_BASE}/teams/${teamId}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify(template),
-    });
-
-    if (!response.ok) {
-      await handleTemplateAPIError(response);
-    }
-
-    return response.json();
+    const responseData = await this.makeRequest<ShiftDemandTemplateDTO>(
+      apiClient,
+      "post",
+      `/shift-demand-templates/teams/${teamId}`,
+      template
+    );
+    return responseData;
   }
 
   /**
-   * Create a template from existing demands in a date range
+   * Create a template from existing demands in a date range (authenticated)
    */
   static async createTemplateFromDateRange(
+    apiClient: AuthenticatedApiClient,
     teamId: string,
     template: TemplateFromDemandsDTO
   ): Promise<ShiftDemandTemplateDTO> {
-    const response = await fetch(
-      `${TEMPLATES_BASE}/teams/${teamId}/from-demands`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(template),
-      }
-    );
-
-    if (!response.ok) {
-      await handleTemplateAPIError(response);
+    // Security: Input validation
+    if (!teamId) {
+      throw new Error("Team ID is required");
+    }
+    if (!template || !template.name) {
+      throw new Error("Invalid template data provided");
     }
 
-    return response.json();
+    const responseData = await this.makeRequest<ShiftDemandTemplateDTO>(
+      apiClient,
+      "post",
+      `/shift-demand-templates/teams/${teamId}/from-demands`,
+      template
+    );
+    return responseData;
   }
 
   /**
-   * Update an existing template (updated endpoint)
+   * Update an existing template (authenticated)
    */
   static async updateTemplate(
+    apiClient: AuthenticatedApiClient,
     templateId: string,
     teamId: string,
     update: ShiftDemandTemplateUpdateDTO
   ): Promise<ShiftDemandTemplateDTO> {
-    const response = await fetch(
-      `${TEMPLATES_BASE}/${templateId}/teams/${teamId}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(update),
-      }
-    );
-
-    if (!response.ok) {
-      await handleTemplateAPIError(response);
+    // Security: Input validation
+    if (!templateId) {
+      throw new Error("Template ID is required");
+    }
+    if (!teamId) {
+      throw new Error("Team ID is required");
+    }
+    if (!update) {
+      throw new Error("Update data is required");
     }
 
-    return response.json();
+    const responseData = await this.makeRequest<ShiftDemandTemplateDTO>(
+      apiClient,
+      "put",
+      `/shift-demand-templates/${templateId}/teams/${teamId}`,
+      update
+    );
+    return responseData;
   }
 
   /**
-   * Delete a template (updated endpoint)
+   * Delete a template (authenticated)
    */
   static async deleteTemplate(
+    apiClient: AuthenticatedApiClient,
     templateId: string,
     teamId: string
   ): Promise<void> {
-    const response = await fetch(
-      `${TEMPLATES_BASE}/${templateId}/teams/${teamId}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      }
-    );
-
-    if (!response.ok) {
-      await handleTemplateAPIError(response);
+    // Security: Input validation
+    if (!templateId) {
+      throw new Error("Template ID is required");
     }
+    if (!teamId) {
+      throw new Error("Team ID is required");
+    }
+
+    await this.makeRequest<void>(
+      apiClient,
+      "delete",
+      `/shift-demand-templates/${templateId}/teams/${teamId}`
+    );
   }
 
   /**
-   * Apply template to a period
+   * Apply template to a period (authenticated)
    */
   static async applyTemplate(
+    apiClient: AuthenticatedApiClient,
     request: ApplyTemplateDTO
   ): Promise<TemplateApplicationResult> {
+    // Security: Input validation
     validateApplyTemplateRequest(request);
 
-    const response = await fetch(`${TEMPLATES_BASE}/apply`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify(request),
-    });
-
-    if (!response.ok) {
-      await handleTemplateAPIError(response);
-    }
-
-    return response.json();
+    const responseData = await this.makeRequest<TemplateApplicationResult>(
+      apiClient,
+      "post",
+      `/shift-demand-templates/apply`,
+      request
+    );
+    return responseData;
   }
 
   /**
-   * Validate template application without applying
+   * Validate template application without applying (authenticated)
    */
   static async validateTemplateApplication(
+    apiClient: AuthenticatedApiClient,
     request: ApplyTemplateDTO
   ): Promise<TemplateValidationResult> {
+    // Security: Input validation
     validateApplyTemplateRequest(request);
 
-    const response = await fetch(`${TEMPLATES_BASE}/validate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify(request),
-    });
-
-    if (!response.ok) {
-      await handleTemplateAPIError(response);
-    }
-
-    return response.json();
+    const responseData = await this.makeRequest<TemplateValidationResult>(
+      apiClient,
+      "post",
+      `/shift-demand-templates/validate`,
+      request
+    );
+    return responseData;
   }
 
   /**
-   * Batch delete templates
+   * Batch delete templates (authenticated)
    */
   static async batchDeleteTemplates(
+    apiClient: AuthenticatedApiClient,
     templateIds: string[]
   ): Promise<BatchTemplateOperationResult> {
-    const response = await fetch(`${TEMPLATES_BASE}/batch-delete`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        templateIds,
-      }),
-    });
-
-    if (!response.ok) {
-      await handleTemplateAPIError(response);
+    // Security: Input validation
+    if (!templateIds || templateIds.length === 0) {
+      throw new Error("Template IDs are required");
     }
 
-    return response.json();
+    const responseData = await this.makeRequest<BatchTemplateOperationResult>(
+      apiClient,
+      "post",
+      `/shift-demand-templates/batch-delete`,
+      { templateIds }
+    );
+    return responseData;
   }
 
   /**
-   * Get template usage analytics
+   * Get template usage analytics (authenticated)
    */
-  static async getTemplateAnalytics(templateId: string): Promise<{
+  static async getTemplateAnalytics(
+    apiClient: AuthenticatedApiClient,
+    templateId: string
+  ): Promise<{
     usageCount: number;
     lastUsed?: string;
     averageDemandsGenerated: number;
   }> {
-    const response = await fetch(`${TEMPLATES_BASE}/${templateId}/analytics`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      await handleTemplateAPIError(response);
+    // Security: Input validation
+    if (!templateId) {
+      throw new Error("Template ID is required");
     }
 
-    return response.json();
+    const responseData = await this.makeRequest<{
+      usageCount: number;
+      lastUsed?: string;
+      averageDemandsGenerated: number;
+    }>(apiClient, "get", `/shift-demand-templates/${templateId}/analytics`);
+    return responseData;
   }
 
   /**
-   * Apply existing demands to template week
+   * Apply existing demands to template week (authenticated)
    */
   static async applyDemandsToTemplateWeek(
+    apiClient: AuthenticatedApiClient,
     templateId: string,
     teamId: string,
     request: ApplyDemandsToTemplateWeekDTO
   ): Promise<ShiftDemandTemplateDTO> {
-    const response = await fetch(
-      `${TEMPLATES_BASE}/${templateId}/apply-demands/teams/${teamId}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(request),
-      }
-    );
-
-    if (!response.ok) {
-      await handleTemplateAPIError(response);
+    // Security: Input validation
+    if (!templateId) {
+      throw new Error("Template ID is required");
+    }
+    if (!teamId) {
+      throw new Error("Team ID is required");
+    }
+    if (!request) {
+      throw new Error("Request data is required");
     }
 
-    return response.json();
+    const responseData = await this.makeRequest<ShiftDemandTemplateDTO>(
+      apiClient,
+      "post",
+      `/shift-demand-templates/${templateId}/apply-demands/teams/${teamId}`,
+      request
+    );
+    return responseData;
   }
 
   /**
-   * Apply template to a specific date range
+   * Apply template to a specific date range (authenticated)
    */
   static async applyTemplateToDateRange(
+    apiClient: AuthenticatedApiClient,
     templateId: string,
     teamId: string,
     request: ApplyTemplateToDateRangeDTO
   ): Promise<TemplateApplicationResult> {
-    const response = await fetch(
-      `${TEMPLATES_BASE}/${templateId}/apply-to-range/teams/${teamId}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(request),
-      }
-    );
-
-    if (!response.ok) {
-      await handleTemplateAPIError(response);
+    // Security: Input validation
+    if (!templateId) {
+      throw new Error("Template ID is required");
+    }
+    if (!teamId) {
+      throw new Error("Team ID is required");
+    }
+    if (!request) {
+      throw new Error("Request data is required");
     }
 
-    return response.json();
+    const responseData = await this.makeRequest<TemplateApplicationResult>(
+      apiClient,
+      "post",
+      `/shift-demand-templates/${templateId}/apply-to-range/teams/${teamId}`,
+      request
+    );
+    return responseData;
   }
 }
 
