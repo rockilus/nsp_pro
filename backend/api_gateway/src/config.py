@@ -20,7 +20,9 @@ class AppConfig(BaseSettings):
     origins: list[str] = Field(..., description="Allowed origins for CORS")
     client_url: str = Field(..., description="Client URL")
     db_uri: str = Field(..., description="Database connection URL")
-    st_connection_uri: str = Field(..., description="Supertokens connection URI")
+    st_connection_uri: str = Field(
+        ..., description="Supertokens connection URI"
+    )
     st_api_key: str = Field(..., description="Supertokens API key")
     st_dashboard_admins: list[str] = Field(
         ..., description="SuperTokens dashboard admins"
@@ -32,7 +34,9 @@ class AppConfig(BaseSettings):
         False,
         description="Enable Uvicorn auto-reload",
     )
-    task_expiration: int = Field(..., description="Task expiration time in seconds")
+    task_expiration: int = Field(
+        ..., description="Task expiration time in seconds"
+    )
     aws_region: str = Field(
         "eu-west-3",
         description="AWS region for services like SQS and Secrets Manager",
@@ -108,7 +112,9 @@ def initialize_environment() -> AppConfig:
             secret_name = "DB_URI"
             secret = get_secret(secret_name, region_name=region)
             if secret:
-                os.environ["SECRET_VALUE"] = secret  # Store in environment variables
+                os.environ["SECRET_VALUE"] = (
+                    secret  # Store in environment variables
+                )
 
         # Fetch AWS credentials
         session = boto3.Session()
@@ -134,15 +140,23 @@ def initialize_environment() -> AppConfig:
             # Replace placeholders in the DB_URI with actual AWS credentials
             db_uri_template = os.getenv("DB_URI")
             if not db_uri_template:
-                raise ValueError("DB_URI template not found in environment variables.")
+                raise ValueError(
+                    "DB_URI template not found in environment variables."
+                )
             db_uri = (
                 db_uri_template.replace(
                     "<AWS access key>", quote(aws_access_key_id, safe="")
                 )
-                .replace("<AWS secret key>", quote(aws_secret_access_key, safe=""))
+                .replace(
+                    "<AWS secret key>", quote(aws_secret_access_key, safe="")
+                )
                 .replace(
                     "<session token (for AWS IAM Roles)>",
-                    (quote(aws_session_token, safe="") if aws_session_token else ""),
+                    (
+                        quote(aws_session_token, safe="")
+                        if aws_session_token
+                        else ""
+                    ),
                 )
             )
             os.environ["DB_URI"] = db_uri
@@ -178,7 +192,9 @@ def initialize_environment() -> AppConfig:
     else:
         print("Running in development mode.")
         # Load local .env file
-        local_env_file = os.path.join(os.path.dirname(__file__), ".env.development")
+        local_env_file = os.path.join(
+            os.path.dirname(__file__), ".env.development"
+        )
         load_dotenv(local_env_file)
         AppConfig.Config.env_file = local_env_file
 
