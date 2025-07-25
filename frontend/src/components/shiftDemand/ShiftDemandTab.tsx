@@ -21,7 +21,12 @@ import {
   useShiftDemandMutations,
 } from "../../app/lib/hooks/useShiftDemands";
 import { useGetWorkShifts } from "../../hooks/useShift";
-import { MultitaskingApi } from "../../app/lib/api/multitaskingApi";
+import {
+  useGetMultitaskingGroups,
+  useCreateMultitaskingGroup,
+  useDeleteMultitaskingGroup,
+  useGetShiftDemandConcurrency,
+} from "../../hooks/useMultitasking";
 // Types
 import { ShiftT, ShiftType } from "../../types/shift";
 import {
@@ -427,12 +432,12 @@ function ShiftDemandTabInternal({
       // Entering multitasking mode - fetch concurrency data and multitasking groups
       try {
         const [concurrencyList, groups] = await Promise.all([
-          MultitaskingApi.getShiftDemandConcurrency(
+          getShiftDemandConcurrency(
             selectedTeamId,
             startDate.toDate(),
             endDate.toDate()
           ),
-          MultitaskingApi.getMultitaskingGroups(selectedTeamId),
+          getMultitaskingGroups(selectedTeamId),
         ]);
 
         console.log("Multitasking concurrency data:", concurrencyList);
@@ -440,7 +445,7 @@ function ShiftDemandTabInternal({
 
         // Convert array to lookup object
         const concurrencyMap: Record<string, string[]> = {};
-        concurrencyList.forEach((item) => {
+        concurrencyList.forEach((item: ShiftDemandConcurrency) => {
           concurrencyMap[item.shiftDemandId] = item.concurrentShiftDemandIds;
         });
         setConcurrencyData(concurrencyMap);
@@ -532,7 +537,7 @@ function ShiftDemandTabInternal({
       return;
 
     try {
-      const newGroup = await MultitaskingApi.createMultitaskingGroup({
+      const newGroup = await createMultitaskingGroup({
         type: "shift_demand",
         teamId: selectedTeamId,
         relatedIds: multitaskingState.selectedShiftDemandIds,
@@ -561,7 +566,7 @@ function ShiftDemandTabInternal({
     if (!selectedTeamId) return;
 
     try {
-      await MultitaskingApi.deleteMultitaskingGroup(selectedTeamId, groupId);
+      await deleteMultitaskingGroup(selectedTeamId, groupId);
       // Remove the deleted group from the local state
       setMultitaskingGroups((prev) =>
         prev.filter((group) => group.id !== groupId)
@@ -644,6 +649,12 @@ function ShiftDemandTabInternal({
 
   // Get work shifts using authenticated hook
   const getWorkShifts = useGetWorkShifts();
+
+  // Multitasking hooks
+  const getMultitaskingGroups = useGetMultitaskingGroups();
+  const createMultitaskingGroup = useCreateMultitaskingGroup();
+  const deleteMultitaskingGroup = useDeleteMultitaskingGroup();
+  const getShiftDemandConcurrency = useGetShiftDemandConcurrency();
 
   // Load shifts when team changes
   React.useEffect(() => {
