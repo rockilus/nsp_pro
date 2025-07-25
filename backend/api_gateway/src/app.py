@@ -10,7 +10,6 @@ from src.config import config
 # pylint: disable=unused-import
 from src.integrations.authentication import authn_services  # noqa: F401
 from src.integrations.authentication import (
-    authn_get_cors_headers,
     authn_get_middleware,
 )
 from src.integrations.authorization import authz_services  # noqa: F401
