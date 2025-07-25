@@ -4,11 +4,11 @@ Replaces the current authentication system with API Gateway-based auth.
 """
 
 import logging
-import os
-from typing import Optional
+from typing import Annotated, Optional
 
-from fastapi import Depends, Header, HTTPException
+from fastapi import Header, HTTPException, Request
 
+from src.config import config
 from src.security.service_auth import (
     ServiceAuthError,
     validate_service_api_key,
@@ -57,79 +57,51 @@ async def verify_service_authentication(
 
 
 async def get_user_context(
-    x_user_sub: Optional[str] = Header(None, alias="X-User-Sub"),
-    x_user_email: Optional[str] = Header(None, alias="X-User-Email"),
-    x_user_groups: Optional[str] = Header(None, alias="X-User-Groups"),
-    x_request_id: Optional[str] = Header(None, alias="X-Request-ID"),
-    x_source_ip: Optional[str] = Header(None, alias="X-Source-IP"),
-    x_dev_user_id: Optional[str] = Header(None, alias="X-Dev-User-ID"),
-    _service_auth: bool = Depends(verify_service_authentication),
+    request: Request,
+    x_dev_user_id: Annotated[Optional[str], Header(alias="X-Dev-User-ID")] = None,
+    x_api_key: Annotated[Optional[str], Header(alias="X-API-Key")] = None,
 ) -> UserContext:
-    """
-    FastAPI dependency to extract user context from API Gateway headers.
-    In development mode, uses X-Dev-User-ID header instead of Cognito headers.
+    """Extract user context from request headers or token."""
 
-    Args:
-        x_user_sub: User ID from Cognito (production)
-        x_user_email: User email from Cognito (production)
-        x_user_groups: User groups from Cognito (production)
-        x_request_id: Request ID for tracing
-        x_source_ip: Source IP for logging
-        x_dev_user_id: Development user ID (development only)
-        _service_auth: Service authentication dependency
+    if config.environment == "development":
+        # Development mode: use headers for authentication
+        logger.debug("Development mode: using header-based authentication")
 
-    Returns:
-        UserContext: Extracted user context
-
-    Raises:
-        HTTPException: If user context is invalid
-    """
-    environment = os.getenv("ENVIRONMENT", "development").lower()
-
-    try:
-        if environment == "development":
-            # Development mode: use X-Dev-User-ID header or environment default
-            dev_user_id = x_dev_user_id or os.getenv(
-                "DEV_USER_ID", "dev-user-123"
-            )
-            dev_user_email = os.getenv("DEV_USER_EMAIL", "dev@nsp-pro.com")
-
-            logger.debug(f"Development mode: using dev user ID {dev_user_id}")
-
-            user_context = extract_user_context(
-                x_user_sub=dev_user_id,
-                x_user_email=dev_user_email,
-                x_user_groups="developers",
-                x_request_id=x_request_id or f"dev-request-{id({})}",
-                x_source_ip=x_source_ip or "127.0.0.1",
-            )
-        else:
-            # Production mode: use existing Cognito headers
-            user_context = extract_user_context(
-                x_user_sub=x_user_sub,
-                x_user_email=x_user_email,
-                x_user_groups=x_user_groups,
-                x_request_id=x_request_id,
-                x_source_ip=x_source_ip,
+        # Check for development API key
+        if x_api_key != config.dev_api_key:
+            logger.warning("Invalid or missing development API key")
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid or missing development API key",
             )
 
-        logger.info(
-            "User context extracted for request",
-            extra={
-                "user_id": user_context.user_id,
-                "request_id": user_context.request_id,
-                "source_ip": user_context.source_ip,
-                "environment": environment,
-            },
+        # Use provided user ID or default from config
+        user_id = x_dev_user_id or config.dev_user_id
+        user_email = config.dev_user_email
+
+        logger.debug("Development auth: user_id=%s, email=%s", user_id, user_email)
+
+        return UserContext(
+            user_id=user_id,
+            email=user_email,
+            groups=["user"],  # Default group for development
         )
 
-        return user_context
+    # Production mode: extract from Cognito headers via API Gateway
+    logger.debug("Production mode: using Cognito authentication")
 
-    except ValueError as e:
-        logger.warning("Invalid user context: %s", e)
-        raise HTTPException(status_code=401, detail=str(e)) from e
-    except Exception as e:
-        logger.error("Failed to extract user context: %s", e)
-        raise HTTPException(
-            status_code=500, detail="Failed to process user context"
-        ) from e
+    # Extract standard API Gateway headers for production
+    x_user_sub = request.headers.get("X-User-Sub")
+    x_user_email = request.headers.get("X-User-Email")
+    x_user_groups = request.headers.get("X-User-Groups")
+    x_request_id = request.headers.get("X-Request-ID")
+    x_source_ip = request.headers.get("X-Source-IP")
+
+    # Use the existing extract_user_context function for production
+    return extract_user_context(
+        x_user_sub=x_user_sub,
+        x_user_email=x_user_email,
+        x_user_groups=x_user_groups,
+        x_request_id=x_request_id,
+        x_source_ip=x_source_ip,
+    )
