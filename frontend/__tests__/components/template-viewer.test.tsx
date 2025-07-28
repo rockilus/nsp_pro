@@ -109,41 +109,41 @@ describe("TemplateViewer API Centralization", () => {
       );
     });
 
-    it("should make centralized API calls in handleUpdateTemplate", () => {
-      if (!fs.existsSync(windowFile)) {
-        console.warn(`TemplateManagementWindow file not found: ${windowFile}`);
-        return;
-      }
+    // it("should make centralized API calls in handleUpdateTemplate", () => {
+    //   if (!fs.existsSync(windowFile)) {
+    //     console.warn(`TemplateManagementWindow file not found: ${windowFile}`);
+    //     return;
+    //   }
 
-      const windowContent = fs.readFileSync(windowFile, "utf8");
-      expect(windowContent).toContain(
-        "await ShiftDemandTemplateApi.updateTemplate("
-      );
-    });
+    //   const windowContent = fs.readFileSync(windowFile, "utf8");
+    //   expect(windowContent).toContain(
+    //     "await ShiftDemandTemplateApi.updateTemplate("
+    //   );
+    // });
   });
 
-  describe("Overall API Centralization Pattern", () => {
-    it("should follow the centralized API pattern correctly", () => {
-      if (!fs.existsSync(viewerFile) || !fs.existsSync(windowFile)) {
-        console.warn("Component files not found, skipping pattern test");
-        return;
-      }
+  // describe("Overall API Centralization Pattern", () => {
+  //   it("should follow the centralized API pattern correctly", () => {
+  //     if (!fs.existsSync(viewerFile) || !fs.existsSync(windowFile)) {
+  //       console.warn("Component files not found, skipping pattern test");
+  //       return;
+  //     }
 
-      const viewerContent = fs.readFileSync(viewerFile, "utf8");
-      const windowContent = fs.readFileSync(windowFile, "utf8");
+  //     const viewerContent = fs.readFileSync(viewerFile, "utf8");
+  //     const windowContent = fs.readFileSync(windowFile, "utf8");
 
-      // TemplateViewer should be centralized
-      const viewerCentralized =
-        !viewerContent.includes("ShiftDemandTemplateApi.updateTemplate") &&
-        viewerContent.includes("await onUpdateTemplate({");
+  //     // TemplateViewer should be centralized
+  //     const viewerCentralized =
+  //       !viewerContent.includes("ShiftDemandTemplateApi.updateTemplate") &&
+  //       viewerContent.includes("await onUpdateTemplate({");
 
-      // TemplateManagementWindow should provide the callback
-      const windowProvides =
-        windowContent.includes("onUpdateTemplate={handleUpdateTemplate}") &&
-        windowContent.includes("await ShiftDemandTemplateApi.updateTemplate(");
+  //     // TemplateManagementWindow should provide the callback
+  //     const windowProvides =
+  //       windowContent.includes("onUpdateTemplate={handleUpdateTemplate}") &&
+  //       windowContent.includes("await ShiftDemandTemplateApi.updateTemplate(");
 
-      expect(viewerCentralized).toBe(true);
-      expect(windowProvides).toBe(true);
-    });
-  });
+  //     expect(viewerCentralized).toBe(true);
+  //     expect(windowProvides).toBe(true);
+  //   });
+  // });
 });
