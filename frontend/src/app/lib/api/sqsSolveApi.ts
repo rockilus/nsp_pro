@@ -7,114 +7,96 @@ import {
   SolveRequestT,
   toSolveTaskStatusResponseT,
 } from "@/types/solveTaskStatus";
+import { BaseApi, AuthenticatedApiClient } from "./baseApi";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-export class SqsSolveApi {
+export class SqsSolveApi extends BaseApi {
   /**
-   * Start a new solve request using SQS
+   * Start a new solve request using SQS (authenticated)
    */
   static async startSolve(
+    apiClient: AuthenticatedApiClient,
     request: SolveRequestT
   ): Promise<SolveTaskStatusResponseT> {
-    const response = await fetch(`${API_BASE_URL}/sqs-solve/start`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify(request),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+    // Security: Input validation
+    if (!request || !request.schedule_id || !request.team_id) {
       throw new Error(
-        `Failed to start solve: ${response.status} - ${
-          errorData.detail || response.statusText
-        }`
+        "Invalid solve request: schedule_id and team_id are required"
       );
     }
-    const data = await response.json();
-    return toSolveTaskStatusResponseT(data);
+
+    const responseData = await this.makeRequest<any>(
+      apiClient,
+      "post",
+      "/sqs-solve/start",
+      request
+    );
+    return toSolveTaskStatusResponseT(responseData);
   }
 
   /**
-   * Get the status of a solve request
+   * Get the status of a solve request (authenticated)
    */
   static async getSolveStatus(
+    apiClient: AuthenticatedApiClient,
     solveId: string
   ): Promise<SolveTaskStatusResponseT> {
-    const response = await fetch(
-      `${API_BASE_URL}/sqs-solve/${solveId}/status`,
-      {
-        method: "GET",
-        credentials: "include",
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        `Failed to get solve status: ${response.status} - ${
-          errorData.detail || response.statusText
-        }`
-      );
+    // Security: Input validation
+    if (!solveId) {
+      throw new Error("Solve ID is required");
     }
 
-    const data = await response.json();
-    return toSolveTaskStatusResponseT(data);
+    const responseData = await this.makeRequest<any>(
+      apiClient,
+      "get",
+      `/sqs-solve/${solveId}/status`
+    );
+    return toSolveTaskStatusResponseT(responseData);
   }
 
   /**
-   * Cancel a solve request
+   * Cancel a solve request (authenticated)
    */
-  static async cancelSolve(solveId: string): Promise<void> {
-    const response = await fetch(
-      `${API_BASE_URL}/sqs-solve/${solveId}/cancel`,
-      {
-        method: "POST",
-        credentials: "include",
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        `Failed to cancel solve: ${response.status} - ${
-          errorData.detail || response.statusText
-        }`
-      );
+  static async cancelSolve(
+    apiClient: AuthenticatedApiClient,
+    solveId: string
+  ): Promise<void> {
+    // Security: Input validation
+    if (!solveId) {
+      throw new Error("Solve ID is required");
     }
+
+    await this.makeRequest<void>(
+      apiClient,
+      "post",
+      `/sqs-solve/${solveId}/cancel`
+    );
   }
 
   /**
-   * Get the latest solve status for a specific schedule
+   * Get the latest solve status for a specific schedule (authenticated)
    */
   static async getLatestSolveStatus(
+    apiClient: AuthenticatedApiClient,
     scheduleId: string
   ): Promise<SolveTaskStatusResponseT | null> {
-    const response = await fetch(
-      `${API_BASE_URL}/sqs-solve/schedule/${scheduleId}/latest`,
-      {
-        method: "GET",
-        credentials: "include",
-      }
-    );
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        // No solve found for this schedule
-        return null;
-      }
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        `Failed to get latest solve status: ${response.status} - ${
-          errorData.detail || response.statusText
-        }`
-      );
+    // Security: Input validation
+    if (!scheduleId) {
+      throw new Error("Schedule ID is required");
     }
 
-    const data = await response.json();
-    return toSolveTaskStatusResponseT(data);
+    try {
+      const responseData = await this.makeRequest<any>(
+        apiClient,
+        "get",
+        `/sqs-solve/schedule/${scheduleId}/latest`
+      );
+      return toSolveTaskStatusResponseT(responseData);
+    } catch (error) {
+      // Check if it's a 404 error (no solve found for this schedule)
+      if (error instanceof Error && error.message.includes("not found")) {
+        return null;
+      }
+      throw error;
+    }
   }
 }

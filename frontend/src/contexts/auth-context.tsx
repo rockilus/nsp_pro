@@ -9,6 +9,7 @@ import {
   logoutUri,
   isNetworkError,
 } from "../config/cognito";
+import { env, isDevelopment } from "../config/env";
 
 interface AuthContextType {
   user: User | undefined | null;
@@ -114,80 +115,87 @@ const clearAuthTokens = (): void => {
 };
 
 /**
- * Network-aware retry mechanism for token refresh
+ * Development Auth Provider - Simple mock authentication for development
  */
-const handleNetworkAwareRefresh = async (auth: any): Promise<void> => {
-  const maxRetries = 3;
-  const retryDelay = 2000; // 2 seconds
+function DevelopmentAuthProvider({ children }: { children: React.ReactNode }) {
+  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      console.log(
-        `🔄 Attempting token refresh (attempt ${attempt}/${maxRetries})`
-      );
+  useEffect(() => {
+    // Auto-authenticate in development mode
+    setTimeout(() => {
+      setIsAuthenticated(true);
+      setLoading(false);
+      console.log("🔧 Development mode: Auto-authenticated");
+    }, 100);
+  }, []);
 
-      // Check if we have a valid refresh token before attempting
-      if (!auth.user?.refresh_token) {
-        console.warn("❌ No refresh token available, skipping refresh");
-        throw new Error("No refresh token available");
-      }
+  const signIn = async (): Promise<void> => {
+    setLoading(true);
+    setTimeout(() => {
+      setIsAuthenticated(true);
+      setLoading(false);
+      console.log("🔧 Development sign-in completed");
+    }, 500);
+  };
 
-      await auth.signinSilent();
-      console.log("✅ Token refresh successful");
+  const signOut = async (): Promise<void> => {
+    setIsAuthenticated(false);
+    console.log("🔧 Development sign-out completed");
+  };
 
-      // Reset network error tracking on success
-      localStorage.removeItem("networkErrorCount");
-      localStorage.removeItem("lastNetworkError");
-      localStorage.setItem("lastSuccessfulRefresh", new Date().toISOString());
+  const signOutRedirect = async (): Promise<void> => {
+    await signOut();
+    window.location.href = "/";
+  };
 
-      return;
-    } catch (error: any) {
-      console.error(`❌ Token refresh attempt ${attempt} failed:`, error);
+  // Create mock user object that matches OIDC structure
+  const mockUser = isAuthenticated
+    ? ({
+        profile: {
+          sub: env.devUserId,
+          email: "dev@nsp-pro.com",
+          name: "Development User",
+          aud: "dev-client",
+          exp: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
+          iat: Math.floor(Date.now() / 1000),
+          iss: "dev-issuer",
+        },
+        id_token: env.devUserId, // Use dev user ID as token
+        access_token: env.devUserId,
+        refresh_token: env.devUserId,
+        token_type: "Bearer",
+        scope: "openid profile email",
+        expires_at: Math.floor(Date.now() / 1000) + 3600,
+        expires_in: 3600,
+        expired: false,
+        scopes: ["openid", "profile", "email"],
+        toStorageString: () => JSON.stringify({}),
+        state: null,
+        session_state: null,
+      } as unknown as User)
+    : null;
 
-      if (isNetworkError(error)) {
-        const networkErrorCount =
-          parseInt(localStorage.getItem("networkErrorCount") || "0") + 1;
-        localStorage.setItem("networkErrorCount", networkErrorCount.toString());
-        localStorage.setItem("lastNetworkError", new Date().toISOString());
+  const contextValue: AuthContextType = {
+    user: mockUser,
+    loading,
+    error: undefined,
+    isAuthenticated,
+    accessToken: isAuthenticated ? env.devUserId : null,
+    signIn,
+    signOut,
+    signOutRedirect,
+  };
 
-        if (attempt < maxRetries) {
-          console.log(
-            `🔄 Network error detected, retrying in ${retryDelay}ms...`
-          );
-          await new Promise((resolve) => setTimeout(resolve, retryDelay));
-          continue;
-        } else {
-          console.error("❌ Max network retry attempts reached");
-          throw new Error(
-            "Network connectivity issues preventing token refresh"
-          );
-        }
-      }
+  return (
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+  );
+}
 
-      // Handle refresh token rotation specific errors
-      if (
-        error?.error === "invalid_grant" ||
-        error?.error_description?.includes("refresh token") ||
-        error?.error_description?.includes("Token is not valid")
-      ) {
-        console.warn("🔄 Refresh token rotation conflict detected");
-        clearAuthTokens();
-        throw new Error(
-          "Refresh token rotation conflict - please sign in again"
-        );
-      }
-
-      // For other errors, don't retry
-      throw error;
-    }
-  }
-};
-
-export function AuthContextProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}): JSX.Element {
+/**
+ * Production Auth Provider - Full Cognito OIDC authentication
+ */
+function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
   const auth = useOidcAuth();
   const [loading, setLoading] = useState<boolean>(true);
   const [retryingRefresh, setRetryingRefresh] = useState<boolean>(false);
@@ -292,7 +300,6 @@ export function AuthContextProvider({
 
       // Clear local auth state first
       clearAuthTokens();
-      // await auth.removeUser();
 
       // Use AWS recommended logout URL format
       const logoutUrl = `${cognitoDomain}/logout?client_id=${
@@ -348,4 +355,93 @@ export function AuthContextProvider({
   return (
     <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
+}
+
+/**
+ * Network-aware retry mechanism for token refresh
+ */
+const handleNetworkAwareRefresh = async (auth: any): Promise<void> => {
+  const maxRetries = 3;
+  const retryDelay = 2000; // 2 seconds
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(
+        `🔄 Attempting token refresh (attempt ${attempt}/${maxRetries})`
+      );
+
+      // Check if we have a valid refresh token before attempting
+      if (!auth.user?.refresh_token) {
+        console.warn("❌ No refresh token available, skipping refresh");
+        throw new Error("No refresh token available");
+      }
+
+      await auth.signinSilent();
+      console.log("✅ Token refresh successful");
+
+      // Reset network error tracking on success
+      localStorage.removeItem("networkErrorCount");
+      localStorage.removeItem("lastNetworkError");
+      localStorage.setItem("lastSuccessfulRefresh", new Date().toISOString());
+
+      return;
+    } catch (error: any) {
+      console.error(`❌ Token refresh attempt ${attempt} failed:`, error);
+
+      if (isNetworkError(error)) {
+        const networkErrorCount =
+          parseInt(localStorage.getItem("networkErrorCount") || "0") + 1;
+        localStorage.setItem("networkErrorCount", networkErrorCount.toString());
+        localStorage.setItem("lastNetworkError", new Date().toISOString());
+
+        if (attempt < maxRetries) {
+          console.log(
+            `🔄 Network error detected, retrying in ${retryDelay}ms...`
+          );
+          await new Promise((resolve) => setTimeout(resolve, retryDelay));
+          continue;
+        } else {
+          console.error("❌ Max network retry attempts reached");
+          throw new Error(
+            "Network connectivity issues preventing token refresh"
+          );
+        }
+      }
+
+      // Handle refresh token rotation specific errors
+      if (
+        error?.error === "invalid_grant" ||
+        error?.error_description?.includes("refresh token") ||
+        error?.error_description?.includes("Token is not valid")
+      ) {
+        console.warn("🔄 Refresh token rotation conflict detected");
+        clearAuthTokens();
+        throw new Error(
+          "Refresh token rotation conflict - please sign in again"
+        );
+      }
+
+      // For other errors, don't retry
+      throw error;
+    }
+  }
+};
+
+/**
+ * Unified Auth Context Provider - Automatically uses development or production auth
+ * based on environment configuration. Provides a single, consistent interface.
+ */
+export function AuthContextProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}): JSX.Element {
+  // Security: Default to production mode unless explicitly set to development
+  if (isDevelopment()) {
+    console.log("🔧 Using development authentication");
+    return <DevelopmentAuthProvider>{children}</DevelopmentAuthProvider>;
+  }
+
+  console.log("🔒 Using production authentication (Cognito OIDC)");
+  return <ProductionAuthProvider>{children}</ProductionAuthProvider>;
 }

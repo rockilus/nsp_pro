@@ -19,7 +19,11 @@ import React, {
   useEffect,
   useReducer,
 } from "react";
-import { SqsSolveApi } from "../api/sqsSolveApi";
+import {
+  useStartSolve,
+  useCancelSolve,
+  useGetSolveStatus,
+} from "../../../hooks/useSqsSolve";
 import { SolvePollingService } from "../services/solvePollingService";
 
 dayjs.extend(utc);
@@ -186,6 +190,11 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
   const [pollingService, setPollingService] =
     React.useState<SolvePollingService | null>(null);
 
+  // Authenticated hooks
+  const startSolveApi = useStartSolve();
+  const cancelSolveApi = useCancelSolve();
+  const getSolveStatusApi = useGetSolveStatus();
+
   // Use useRef instead of useState to avoid closure issues
   const onCompleteCallbackRef = React.useRef<
     ((result: SolveTaskStatusResponseT) => void) | null
@@ -211,31 +220,35 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
               pollingService.stop();
             }
 
-            const newPollingService = new SolvePollingService(solveId, {
-              onStatusChange: (status) => {
-                dispatch({ type: "SOLVE_STATUS_UPDATE", payload: status });
-              },
-              onComplete: (result) => {
-                dispatch({ type: "SOLVE_COMPLETE", payload: result });
-                // Use ref to get current callback
-                if (onCompleteCallbackRef.current) {
-                  console.log(
-                    "Calling onComplete callback with result:",
-                    result
-                  );
-                  onCompleteCallbackRef.current(result);
-                }
-              },
-              onFailed: (error) => {
-                dispatch({ type: "SOLVE_FAILED", payload: { error } });
-              },
-              onError: (error) => {
-                dispatch({
-                  type: "SOLVE_ERROR",
-                  payload: { error: error.message },
-                });
-              },
-            });
+            const newPollingService = new SolvePollingService(
+              solveId,
+              getSolveStatusApi,
+              {
+                onStatusChange: (status: SolveTaskStatusResponseT) => {
+                  dispatch({ type: "SOLVE_STATUS_UPDATE", payload: status });
+                },
+                onComplete: (result: SolveTaskStatusResponseT) => {
+                  dispatch({ type: "SOLVE_COMPLETE", payload: result });
+                  // Use ref to get current callback
+                  if (onCompleteCallbackRef.current) {
+                    console.log(
+                      "Calling onComplete callback with result:",
+                      result
+                    );
+                    onCompleteCallbackRef.current(result);
+                  }
+                },
+                onFailed: (error: string) => {
+                  dispatch({ type: "SOLVE_FAILED", payload: { error } });
+                },
+                onError: (error: Error) => {
+                  dispatch({
+                    type: "SOLVE_ERROR",
+                    payload: { error: error.message },
+                  });
+                },
+              }
+            );
 
             setPollingService(newPollingService);
             dispatch({ type: "POLLING_START" });
@@ -275,25 +288,29 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
       pollingService.stop();
     }
 
-    const newPollingService = new SolvePollingService(solveId, {
-      onStatusChange: (status) => {
-        dispatch({ type: "SOLVE_STATUS_UPDATE", payload: status });
-      },
-      onComplete: (result) => {
-        dispatch({ type: "SOLVE_COMPLETE", payload: result });
-        // Call the completion callback if provided
-        if (onCompleteCallbackRef.current) {
-          console.log("Calling onComplete callback with result:", result);
-          onCompleteCallbackRef.current(result);
-        }
-      },
-      onFailed: (error) => {
-        dispatch({ type: "SOLVE_FAILED", payload: { error } });
-      },
-      onError: (error) => {
-        dispatch({ type: "SOLVE_ERROR", payload: { error: error.message } });
-      },
-    });
+    const newPollingService = new SolvePollingService(
+      solveId,
+      getSolveStatusApi,
+      {
+        onStatusChange: (status: SolveTaskStatusResponseT) => {
+          dispatch({ type: "SOLVE_STATUS_UPDATE", payload: status });
+        },
+        onComplete: (result: SolveTaskStatusResponseT) => {
+          dispatch({ type: "SOLVE_COMPLETE", payload: result });
+          // Call the completion callback if provided
+          if (onCompleteCallbackRef.current) {
+            console.log("Calling onComplete callback with result:", result);
+            onCompleteCallbackRef.current(result);
+          }
+        },
+        onFailed: (error: string) => {
+          dispatch({ type: "SOLVE_FAILED", payload: { error } });
+        },
+        onError: (error: Error) => {
+          dispatch({ type: "SOLVE_ERROR", payload: { error: error.message } });
+        },
+      }
+    );
 
     setPollingService(newPollingService);
     dispatch({ type: "POLLING_START" });
@@ -318,7 +335,7 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
       // Set the callback in the ref immediately
       onCompleteCallbackRef.current = onComplete || null;
 
-      const response = await SqsSolveApi.startSolve({
+      const response = await startSolveApi({
         schedule_id: scheduleId,
         team_id: teamId,
       });
@@ -343,7 +360,7 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
     }
 
     try {
-      await SqsSolveApi.cancelSolve(state.solveId);
+      await cancelSolveApi(state.solveId);
       stopPolling();
       onCompleteCallbackRef.current = null; // Clear the callback
       dispatch({ type: "RESET" });

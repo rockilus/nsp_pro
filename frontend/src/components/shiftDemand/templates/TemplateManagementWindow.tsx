@@ -7,7 +7,7 @@
  * - Modal dialogs for creation and application
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -35,10 +35,16 @@ import {
   ApplyTemplateToDateRangeDTO,
   TemplateApplicationResult,
 } from "../../../types/shift-demand-template";
+import { TemplateUtils } from "../../../app/lib/api/shiftDemandTemplateApi";
 import {
-  ShiftDemandTemplateApi,
-  TemplateUtils,
-} from "../../../app/lib/api/shiftDemandTemplateApi";
+  useGetTemplates,
+  useGetTemplate,
+  useCreateTemplate,
+  useUpdateTemplate,
+  useDeleteTemplate,
+  useApplyTemplateToDateRange,
+  useApplyDemandsToTemplateWeek,
+} from "../../../hooks/useShiftDemandTemplate";
 
 // Import template components
 import { TemplateList } from "./TemplateList";
@@ -73,6 +79,15 @@ export default function TemplateManagementWindow({
   const { t } = useTranslation(lng, "shift-demand-templates");
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  // Initialize hooks
+  const getTemplates = useGetTemplates();
+  const getTemplate = useGetTemplate();
+  const createTemplate = useCreateTemplate();
+  const updateTemplate = useUpdateTemplate();
+  const deleteTemplate = useDeleteTemplate();
+  const applyTemplateToDateRange = useApplyTemplateToDateRange();
+  const applyDemandsToTemplateWeek = useApplyDemandsToTemplateWeek();
 
   // State management
   const [selectedTemplate, setSelectedTemplate] =
@@ -126,26 +141,26 @@ export default function TemplateManagementWindow({
   const toggleSidebar = () => {
     setSidebarVisible(!sidebarVisible);
   };
-  const handleTemplateSelect = async (template: TemplateListItem) => {
-    try {
-      // Load full template data from API
-      const fullTemplate = await ShiftDemandTemplateApi.getTemplate(
-        template.id,
-        teamId
-      );
-      setSelectedTemplate(fullTemplate);
-      setViewMode("view");
+  const handleTemplateSelect = useCallback(
+    async (template: TemplateListItem) => {
+      try {
+        // Load full template data from API using hook
+        const fullTemplate = await getTemplate(template.id, teamId);
+        setSelectedTemplate(fullTemplate);
+        setViewMode("view");
 
-      // Auto-hide sidebar on mobile after selection
-      if (isMobile) {
-        setSidebarVisible(false);
+        // Auto-hide sidebar on mobile after selection
+        if (isMobile) {
+          setSidebarVisible(false);
+        }
+      } catch (error) {
+        setError(
+          error instanceof Error ? error.message : t("error_loading_template")
+        );
       }
-    } catch (error) {
-      setError(
-        error instanceof Error ? error.message : t("error_loading_template")
-      );
-    }
-  };
+    },
+    [getTemplate, teamId, isMobile, t]
+  );
 
   const handleTemplateApply = async (templateId?: string) => {
     const idToUse = templateId || selectedTemplate?.id;
@@ -154,10 +169,7 @@ export default function TemplateManagementWindow({
         // Use the selected template if it's the same one, otherwise fetch it
         let templateToUse = selectedTemplate;
         if (!templateToUse || templateToUse.id !== idToUse) {
-          templateToUse = await ShiftDemandTemplateApi.getTemplate(
-            idToUse,
-            teamId
-          );
+          templateToUse = await getTemplate(idToUse, teamId);
         }
 
         setTemplateToApply(templateToUse);
@@ -170,23 +182,23 @@ export default function TemplateManagementWindow({
     }
   };
 
-  const handleTemplateDelete = (templateId: string) => {
-    setSelectedTemplate(null);
-    setViewMode("list");
-    setSuccessMessage(t("template_deleted_successfully"));
-    // Trigger template list refresh by updating templates state
-    setTemplates((prev) => prev.filter((t) => t.id !== templateId));
-  };
+  const handleTemplateDelete = useCallback(
+    (templateId: string) => {
+      setSelectedTemplate(null);
+      setViewMode("list");
+      setSuccessMessage(t("template_deleted_successfully"));
+      // Trigger template list refresh by updating templates state
+      setTemplates((prev) => prev.filter((t) => t.id !== templateId));
+    },
+    [t]
+  );
 
   const handleTemplateCreated = async (
     templateData: ShiftDemandTemplateCreateDTO
   ) => {
     try {
-      // Create the template via API client
-      const newTemplate = await ShiftDemandTemplateApi.createTemplate(
-        teamId,
-        templateData
-      );
+      // Create the template via hook
+      const newTemplate = await createTemplate(teamId, templateData);
 
       // Update UI state
       setShowCreationDialog(false);
@@ -251,7 +263,7 @@ export default function TemplateManagementWindow({
     }
 
     try {
-      return await ShiftDemandTemplateApi.applyTemplateToDateRange(
+      return await applyTemplateToDateRange(
         templateToApply.id,
         teamId,
         request
@@ -271,13 +283,13 @@ export default function TemplateManagementWindow({
     }
   };
 
-  const handleCreateNew = () => {
+  const handleCreateNew = useCallback(() => {
     setShowCreationDialog(true);
-  };
+  }, []);
 
-  const handleError = (errorMessage: string) => {
+  const handleError = useCallback((errorMessage: string) => {
     setError(errorMessage);
-  };
+  }, []);
 
   const handleCloseError = () => {
     setError(null);
@@ -287,27 +299,32 @@ export default function TemplateManagementWindow({
     setSuccessMessage(null);
   };
 
-  const handleTemplatesLoaded = (loadedTemplates: TemplateListItem[]) => {
-    setTemplates(loadedTemplates);
-  };
+  const handleTemplatesLoaded = useCallback(
+    (loadedTemplates: TemplateListItem[]) => {
+      setTemplates(loadedTemplates);
+    },
+    []
+  );
 
-  const handleLoadTemplates = async () => {
+  const handleLoadTemplates = useCallback(async () => {
     if (!teamId) return;
 
     try {
-      const templatesData = await ShiftDemandTemplateApi.getTemplates(teamId);
+      const templatesData = await getTemplates(teamId);
 
       // Convert to list items with calculated fields
-      const listItems: TemplateListItem[] = templatesData.map((template) => ({
-        id: template.id,
-        name: template.name,
-        description: template.description,
-        templateType: template.templateType as TemplateType,
-        createdBy: template.createdBy,
-        createdAt: dayjs(template.createdAt * 1000), // Convert timestamp to milliseconds
-        updatedAt: dayjs(template.updatedAt * 1000), // Convert timestamp to milliseconds
-        totalDemands: TemplateUtils.calculateTotalDemands(template),
-      }));
+      const listItems: TemplateListItem[] = templatesData.map(
+        (template: ShiftDemandTemplateDTO) => ({
+          id: template.id,
+          name: template.name,
+          description: template.description,
+          templateType: template.templateType as TemplateType,
+          createdBy: template.createdBy,
+          createdAt: dayjs(template.createdAt * 1000), // Convert timestamp to milliseconds
+          updatedAt: dayjs(template.updatedAt * 1000), // Convert timestamp to milliseconds
+          totalDemands: TemplateUtils.calculateTotalDemands(template),
+        })
+      );
 
       setTemplates(listItems);
     } catch (error) {
@@ -316,23 +333,23 @@ export default function TemplateManagementWindow({
         error instanceof Error ? error.message : "Failed to load templates"
       );
     }
-  };
+  }, [teamId, getTemplates]);
 
-  const handleDeleteTemplateRequest = async (
-    templateId: string,
-    templateName: string
-  ) => {
-    try {
-      await ShiftDemandTemplateApi.deleteTemplate(templateId, teamId);
-      handleTemplateDelete(templateId);
-    } catch (error) {
-      console.error("Failed to delete template:", error);
-      setError(
-        error instanceof Error ? error.message : "Failed to delete template"
-      );
-      throw error;
-    }
-  };
+  const handleDeleteTemplateRequest = useCallback(
+    async (templateId: string, templateName: string) => {
+      try {
+        await deleteTemplate(templateId, teamId);
+        handleTemplateDelete(templateId);
+      } catch (error) {
+        console.error("Failed to delete template:", error);
+        setError(
+          error instanceof Error ? error.message : "Failed to delete template"
+        );
+        throw error;
+      }
+    },
+    [deleteTemplate, teamId, handleTemplateDelete]
+  );
 
   // Centralized template update handlers
   const handleUpdateTemplate = async (
@@ -342,7 +359,7 @@ export default function TemplateManagementWindow({
 
     setTemplateUpdateLoading(true);
     try {
-      const updatedTemplate = await ShiftDemandTemplateApi.updateTemplate(
+      const updatedTemplate = await updateTemplate(
         selectedTemplate.id,
         teamId,
         updates
@@ -446,7 +463,7 @@ export default function TemplateManagementWindow({
 
   const handleDeleteTemplate = async (templateId: string) => {
     try {
-      await ShiftDemandTemplateApi.deleteTemplate(templateId, teamId);
+      await deleteTemplate(templateId, teamId);
       // The onDelete callback will handle UI updates
     } catch (error) {
       console.error("Failed to delete template:", error);
@@ -471,12 +488,11 @@ export default function TemplateManagementWindow({
         targetWeekNumber: targetWeekNumber,
       };
 
-      const updatedTemplate =
-        await ShiftDemandTemplateApi.applyDemandsToTemplateWeek(
-          selectedTemplate.id,
-          teamId,
-          request
-        );
+      const updatedTemplate = await applyDemandsToTemplateWeek(
+        selectedTemplate.id,
+        teamId,
+        request
+      );
 
       // Update local state
       setSelectedTemplate(updatedTemplate);

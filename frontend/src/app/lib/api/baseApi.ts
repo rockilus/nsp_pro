@@ -115,4 +115,47 @@ export abstract class BaseApi {
 
     return response.json();
   }
+
+  /**
+   * Make a blob request with authentication
+   * This is used for endpoints that return binary data (like file downloads)
+   */
+  protected static async makeBlobRequest(
+    authToken: string,
+    method: "post" | "get",
+    endpoint: string,
+    data?: any
+  ): Promise<Blob> {
+    if (!authToken) {
+      throw new Error("Authentication token is required");
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+        method: method.toUpperCase(),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: data ? JSON.stringify(data) : undefined,
+      });
+
+      if (!response.ok) {
+        const responseData = await response.json().catch(() => ({}));
+        throw new Error(
+          `Request failed: ${responseData.detail || response.statusText}`
+        );
+      }
+
+      return await response.blob();
+    } catch (error) {
+      if (process.env.NODE_ENV === "development") {
+        console.error(`❌ Blob ${method.toUpperCase()} ${endpoint} failed:`, {
+          error: error instanceof Error ? error.message : "Unknown error",
+          timestamp: new Date().toISOString(),
+        });
+      }
+      throw error;
+    }
+  }
 }

@@ -71,6 +71,8 @@ export function TemplateList({
 
   // Load templates on mount
   useEffect(() => {
+    console.log("🔄 Loading templates for team:", teamId);
+
     onLoadTemplates();
   }, [teamId, onLoadTemplates]);
 

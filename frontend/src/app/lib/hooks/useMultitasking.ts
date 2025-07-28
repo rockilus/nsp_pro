@@ -5,7 +5,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { ShiftDemandConcurrency } from "@/types/multitasking";
-import { MultitaskingApi } from "@/app/lib/api/multitaskingApi";
+import { useGetShiftDemandConcurrency } from "@/hooks/useMultitasking";
 
 /**
  * Query key factory for multitasking data
@@ -31,10 +31,11 @@ export const useShiftDemandConcurrency = (
   endDate: Date,
   enabled: boolean = true
 ) => {
+  const getShiftDemandConcurrency = useGetShiftDemandConcurrency();
+
   return useQuery({
     queryKey: multitaskingKeys.concurrency(teamId, startDate, endDate),
-    queryFn: () =>
-      MultitaskingApi.getShiftDemandConcurrency(teamId, startDate, endDate),
+    queryFn: () => getShiftDemandConcurrency(teamId, startDate, endDate),
     enabled: enabled && !!teamId && !!startDate && !!endDate,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,

@@ -6,7 +6,6 @@ import {
   SolveTaskStatusResponseT,
   SolveRequestStatus,
 } from "@/types/solveTaskStatus";
-import { SqsSolveApi } from "../api/sqsSolveApi";
 
 export interface PollingOptions {
   interval?: number; // polling interval in milliseconds (default: 2000)
@@ -23,9 +22,17 @@ export class SolvePollingService {
   private timeoutId: NodeJS.Timeout | null = null;
   private isActive = false;
   private retryCount = 0;
+  private getSolveStatusFn: (
+    solveId: string
+  ) => Promise<SolveTaskStatusResponseT>;
 
-  constructor(solveId: string, options: PollingOptions = {}) {
+  constructor(
+    solveId: string,
+    getSolveStatusFn: (solveId: string) => Promise<SolveTaskStatusResponseT>,
+    options: PollingOptions = {}
+  ) {
     this.solveId = solveId;
+    this.getSolveStatusFn = getSolveStatusFn;
     this.options = {
       interval: options.interval || 2000,
       maxRetries: options.maxRetries || 5,
@@ -88,7 +95,7 @@ export class SolvePollingService {
     }
 
     try {
-      const status = await SqsSolveApi.getSolveStatus(this.solveId);
+      const status = await this.getSolveStatusFn(this.solveId);
       console.log(`Polling status for solve ID ${this.solveId}:`, status);
       console.log(
         `Current request status: ${status.requestStatus}, ${

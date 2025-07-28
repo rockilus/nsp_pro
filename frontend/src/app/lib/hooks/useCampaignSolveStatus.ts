@@ -4,7 +4,7 @@ import {
   SolveTaskStatusResponseT,
   ScheduleSolveStatus,
 } from "@/types/solveTaskStatus";
-import { SqsSolveApi } from "../api/sqsSolveApi";
+import { useGetLatestSolveStatus } from "../../../hooks/useSqsSolve";
 import { useSqsSolve } from "../contexts/SqsSolveContext";
 
 /**
@@ -22,6 +22,7 @@ export function useCampaignSolveStatus(
   const [latestSolveData, setLatestSolveData] =
     useState<SolveTaskStatusResponseT | null>(null);
   const { state: sqsState } = useSqsSolve();
+  const getLatestSolveStatus = useGetLatestSolveStatus();
 
   // Fetch latest solve status when campaign changes
   useEffect(() => {
@@ -34,7 +35,7 @@ export function useCampaignSolveStatus(
 
     const fetchLatestSolveStatus = async () => {
       try {
-        const latestSolveStatus = await SqsSolveApi.getLatestSolveStatus(
+        const latestSolveStatus = await getLatestSolveStatus(
           scheduleCampaign.id
         );
 
@@ -54,7 +55,7 @@ export function useCampaignSolveStatus(
     return () => {
       isCancelled = true;
     };
-  }, [scheduleCampaign]);
+  }, [scheduleCampaign, getLatestSolveStatus]);
 
   // Return the appropriate solve status
   if (!scheduleCampaign) {
