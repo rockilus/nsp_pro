@@ -11,6 +11,27 @@ module "cognito" {
   cognito_domain_prefix     = null # Use default: project_name-environment
 }
 
+# Network Load Balancer for API Gateway VPC Link
+module "network_load_balancer" {
+  source = "../../modules/network-load-balancer"
+
+  project_name        = var.project_name
+  environment         = "prod"
+  vpc_id              = var.vpc_id
+  private_subnet_ids  = var.private_subnet_ids
+  backend_port        = var.backend_port
+  allowed_cidr_blocks = var.vpc_cidr_blocks
+  vpc_cidr_blocks     = var.vpc_cidr_blocks
+  target_instance_ids = var.backend_instance_ids
+
+  tags = {
+    Environment = "prod"
+    Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
+    Project     = "NSP Pro"
+  }
+}
+
 module "api_gateway" {
   source = "../../modules/api_gateway"
 
@@ -22,8 +43,8 @@ module "api_gateway" {
   cognito_user_pool_id          = module.cognito.user_pool_id
   cognito_user_pool_clients_ids = [module.cognito.user_pool_client_id]
   vpc_link_id                   = var.vpc_link_id
-  vpc_link_target_arns          = var.vpc_link_target_arns
-  vpc_link_endpoint_url         = var.vpc_link_endpoint_url
+  vpc_link_target_arns          = module.network_load_balancer.vpc_link_target_arns
+  vpc_link_endpoint_url         = module.network_load_balancer.vpc_link_endpoint_url
   api_gateway_stage_name        = var.api_gateway_stage_name
 
   # Custom domain configuration using Route53 module outputs
@@ -31,7 +52,7 @@ module "api_gateway" {
   certificate_arn    = var.api_gateway_domain_name != null ? module.route53.certificate_arn : null
   hosted_zone_id     = var.api_gateway_domain_name != null ? module.route53.hosted_zone_id : null
 
-  depends_on = [module.route53]
+  depends_on = [module.route53, module.network_load_balancer]
 }
 
 # Route 53 DNS management with SSL certificates

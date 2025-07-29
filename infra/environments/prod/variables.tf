@@ -120,3 +120,42 @@ variable "cloudfront_price_class" {
   }
 
 }
+
+# Network Load Balancer Configuration
+variable "vpc_id" {
+  description = "VPC ID for production environment"
+  type        = string
+}
+
+variable "private_subnet_ids" {
+  description = "List of private subnet IDs for NLB placement"
+  type        = list(string)
+}
+
+variable "vpc_cidr_blocks" {
+  description = "CIDR blocks for VPC internal communication"
+  type        = list(string)
+  default     = ["10.0.0.0/16"]
+
+  validation {
+    condition     = length(var.vpc_cidr_blocks) > 0
+    error_message = "At least one VPC CIDR block must be specified for healthcare security compliance."
+  }
+}
+
+variable "backend_port" {
+  description = "Port for backend API services"
+  type        = number
+  default     = 8000
+
+  validation {
+    condition     = var.backend_port > 1024 && var.backend_port < 65536
+    error_message = "Backend port must be between 1024 and 65535 for security compliance."
+  }
+}
+
+variable "backend_instance_ids" {
+  description = "EC2 instance IDs running backend services"
+  type        = list(string)
+  default     = []
+}
