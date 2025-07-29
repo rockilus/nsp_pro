@@ -85,9 +85,6 @@ st_connection_uri = "YOUR_SENDGRID_CONNECTION_URI_HERE"
 
 # MongoDB Atlas Configuration
 atlas_connection_uri = "mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority"
-atlas_username       = "YOUR_ATLAS_USERNAME"
-atlas_password       = "YOUR_ATLAS_PASSWORD"
-atlas_database_name  = "nsp_pro"
 
 # ECS Service Configuration
 main_service_desired_count  = 2

@@ -34,9 +34,6 @@ module "secrets" {
   st_api_key        = var.st_api_key
   st_connection_uri = var.st_connection_uri
   atlas_connection_uri    = var.atlas_connection_uri
-  atlas_username          = var.atlas_username
-  atlas_password          = var.atlas_password
-  atlas_database_name     = var.atlas_database_name
 
   # Optional configurations
   replica_region          = "us-west-2"

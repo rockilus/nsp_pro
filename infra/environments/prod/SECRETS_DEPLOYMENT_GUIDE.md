@@ -66,9 +66,6 @@ st_connection_uri = "smtp://apikey:SG....@smtp.st.net:587"
 
 # MongoDB Atlas Configuration
 atlas_connection_uri = "mongodb+srv://user:pass@cluster.mongodb.net/nsp_pro?retryWrites=true&w=majority"
-atlas_username       = "your-atlas-username"
-atlas_password       = "your-atlas-password"
-atlas_database_name  = "nsp_pro"
 ```
 
 ### 2. Initialize Terraform
@@ -137,8 +134,6 @@ For automated deployments, use environment variables instead of terraform.tfvars
 export TF_VAR_permit_api_key="permit_live_..."
 export TF_VAR_st_api_key="SG...."
 export TF_VAR_atlas_connection_uri="mongodb+srv://..."
-export TF_VAR_atlas_username="username"
-export TF_VAR_atlas_password="password"
 ```
 
 ## Troubleshooting

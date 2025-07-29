@@ -43,26 +43,26 @@ output "atlas_secret_name" {
 }
 
 # IAM resources for accessing secrets
-output "secrets_access_policy_arn" {
-  description = "ARN of the IAM policy for accessing secrets"
-  value       = aws_iam_policy.secrets_access.arn
-}
+# output "secrets_access_policy_arn" {
+#   description = "ARN of the IAM policy for accessing secrets"
+#   value       = aws_iam_policy.secrets_access.arn
+# }
 
-output "secrets_access_role_arn" {
-  description = "ARN of the IAM role for accessing secrets"
-  value       = aws_iam_role.secrets_access_role.arn
-}
+# output "secrets_access_role_arn" {
+#   description = "ARN of the IAM role for accessing secrets"
+#   value       = aws_iam_role.secrets_access_role.arn
+# }
 
-output "secrets_access_role_name" {
-  description = "Name of the IAM role for accessing secrets"
-  value       = aws_iam_role.secrets_access_role.name
-}
+# output "secrets_access_role_name" {
+#   description = "Name of the IAM role for accessing secrets"
+#   value       = aws_iam_role.secrets_access_role.name
+# }
 
 # CloudWatch log group for monitoring
-output "secrets_audit_log_group_name" {
-  description = "Name of the CloudWatch log group for secrets audit"
-  value       = aws_cloudwatch_log_group.secrets_audit.name
-}
+# output "secrets_audit_log_group_name" {
+#   description = "Name of the CloudWatch log group for secrets audit"
+#   value       = aws_cloudwatch_log_group.secrets_audit.name
+# }
 
 # All secret ARNs for bulk operations
 output "all_secret_arns" {

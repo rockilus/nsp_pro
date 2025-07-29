@@ -273,14 +273,14 @@ output "atlas_secret_arn" {
   sensitive   = false
 }
 
-output "secrets_access_role_arn" {
-  description = "ARN of the IAM role for accessing secrets"
-  value       = module.secrets.secrets_access_role_arn
-  sensitive   = false
-}
+# output "secrets_access_role_arn" {
+#   description = "ARN of the IAM role for accessing secrets"
+#   value       = module.secrets.secrets_access_role_arn
+#   sensitive   = false
+# }
 
-output "secrets_audit_log_group_name" {
-  description = "Name of the CloudWatch log group for secrets audit"
-  value       = module.secrets.secrets_audit_log_group_name
-  sensitive   = false
-}
+# output "secrets_audit_log_group_name" {
+#   description = "Name of the CloudWatch log group for secrets audit"
+#   value       = module.secrets.secrets_audit_log_group_name
+#   sensitive   = false
+# }

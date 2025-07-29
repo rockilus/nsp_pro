@@ -62,9 +62,6 @@ st_connection_uri = "smtp://apikey:SG....@smtp.st.net:587"
 
 # MongoDB Atlas Configuration
 atlas_connection_uri = "mongodb+srv://user:pass@cluster.mongodb.net/nsp_pro"
-atlas_username       = "your-atlas-username"
-atlas_password       = "your-atlas-password"
-atlas_database_name  = "nsp_pro"
 ```
 
 ## Deployment Instructions
