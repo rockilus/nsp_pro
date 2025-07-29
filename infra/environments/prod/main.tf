@@ -1,3 +1,22 @@
+# VPC Infrastructure
+module "vpc" {
+  source = "../../modules/vpc"
+
+  project_name = var.project_name
+  environment  = "prod"
+
+  vpc_cidr             = var.vpc_cidr
+  public_subnet_cidrs  = var.public_subnet_cidrs
+  private_subnet_cidrs = var.private_subnet_cidrs
+
+  tags = {
+    Environment = "prod"
+    Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
+    Project     = "NSP Pro"
+  }
+}
+
 module "cognito" {
   source = "../../modules/cognito"
 
@@ -17,11 +36,11 @@ module "network_load_balancer" {
 
   project_name        = var.project_name
   environment         = "prod"
-  vpc_id              = var.vpc_id
-  private_subnet_ids  = var.private_subnet_ids
+  vpc_id              = module.vpc.vpc_id
+  private_subnet_ids  = module.vpc.private_subnet_ids
   backend_port        = var.backend_port
-  allowed_cidr_blocks = var.vpc_cidr_blocks
-  vpc_cidr_blocks     = var.vpc_cidr_blocks
+  allowed_cidr_blocks = [module.vpc.vpc_cidr_block]
+  vpc_cidr_blocks     = [module.vpc.vpc_cidr_block]
   target_instance_ids = var.backend_instance_ids
 
   tags = {
@@ -30,6 +49,8 @@ module "network_load_balancer" {
     Compliance  = "Healthcare"
     Project     = "NSP Pro"
   }
+
+  depends_on = [module.vpc]
 }
 
 module "api_gateway" {

@@ -23,6 +23,54 @@ variable "cors_allowed_origins" {
   type        = list(string)
 }
 
+# VPC Configuration
+variable "vpc_cidr" {
+  description = "CIDR block for the VPC"
+  type        = string
+  default     = "10.0.0.0/16"
+
+  validation {
+    condition     = can(cidrhost(var.vpc_cidr, 0))
+    error_message = "VPC CIDR must be a valid IPv4 CIDR block."
+  }
+}
+
+variable "public_subnet_cidrs" {
+  description = "List of CIDR blocks for public subnets"
+  type        = list(string)
+  default     = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+
+  validation {
+    condition     = length(var.public_subnet_cidrs) == 3
+    error_message = "Exactly 3 public subnet CIDR blocks must be provided for high availability."
+  }
+
+  validation {
+    condition = alltrue([
+      for cidr in var.public_subnet_cidrs : can(cidrhost(cidr, 0))
+    ])
+    error_message = "All public subnet CIDRs must be valid IPv4 CIDR blocks."
+  }
+}
+
+variable "private_subnet_cidrs" {
+  description = "List of CIDR blocks for private subnets"
+  type        = list(string)
+  default     = ["10.0.10.0/24", "10.0.11.0/24", "10.0.12.0/24"]
+
+  validation {
+    condition     = length(var.private_subnet_cidrs) == 3
+    error_message = "Exactly 3 private subnet CIDR blocks must be provided for high availability."
+  }
+
+  validation {
+    condition = alltrue([
+      for cidr in var.private_subnet_cidrs : can(cidrhost(cidr, 0))
+    ])
+    error_message = "All private subnet CIDRs must be valid IPv4 CIDR blocks."
+  }
+}
+
 # DEPRECATED: These variables are no longer needed as Cognito is managed by the module
 # variable "cognito_user_pool_id" {
 #   description = "Cognito User Pool ID."
@@ -122,26 +170,27 @@ variable "cloudfront_price_class" {
 }
 
 # Network Load Balancer Configuration
-variable "vpc_id" {
-  description = "VPC ID for production environment"
-  type        = string
-}
+# DEPRECATED: These variables are now provided by the VPC module
+# variable "vpc_id" {
+#   description = "VPC ID for production environment"
+#   type        = string
+# }
 
-variable "private_subnet_ids" {
-  description = "List of private subnet IDs for NLB placement"
-  type        = list(string)
-}
+# variable "private_subnet_ids" {
+#   description = "List of private subnet IDs for NLB placement"
+#   type        = list(string)
+# }
 
-variable "vpc_cidr_blocks" {
-  description = "CIDR blocks for VPC internal communication"
-  type        = list(string)
-  default     = ["10.0.0.0/16"]
+# variable "vpc_cidr_blocks" {
+#   description = "CIDR blocks for VPC internal communication"
+#   type        = list(string)
+#   default     = ["10.0.0.0/16"]
 
-  validation {
-    condition     = length(var.vpc_cidr_blocks) > 0
-    error_message = "At least one VPC CIDR block must be specified for healthcare security compliance."
-  }
-}
+#   validation {
+#     condition     = length(var.vpc_cidr_blocks) > 0
+#     error_message = "At least one VPC CIDR block must be specified for healthcare security compliance."
+#   }
+# }
 
 variable "backend_port" {
   description = "Port for backend API services"

@@ -14,17 +14,31 @@ cors_allowed_origins = [
   "http://localhost:3000"  # For development
 ]
 
+# VPC Configuration
+vpc_cidr = "10.0.0.0/16"
+public_subnet_cidrs = [
+  "10.0.1.0/24",   # Public subnet in AZ-1
+  "10.0.2.0/24",   # Public subnet in AZ-2
+  "10.0.3.0/24"    # Public subnet in AZ-3
+]
+private_subnet_cidrs = [
+  "10.0.10.0/24",  # Private subnet in AZ-1
+  "10.0.11.0/24",  # Private subnet in AZ-2
+  "10.0.12.0/24"   # Private subnet in AZ-3
+]
+
 # VPC Link Configuration (for production backend connectivity)
 vpc_link_id           = "7y2yvb"
 api_gateway_stage_name = "dev_0"
 
 # Network Load Balancer Configuration
-vpc_id = "vpc-0123456789abcdef0"  # Your VPC ID
-private_subnet_ids = [
-  "subnet-0123456789abcdef0",     # Private subnet in AZ-1
-  "subnet-0987654321fedcba0"      # Private subnet in AZ-2
-]
-vpc_cidr_blocks = ["10.0.0.0/16"]  # Your VPC CIDR block
+# DEPRECATED: These are now provided by the VPC module
+# vpc_id = "vpc-0123456789abcdef0"  # Your VPC ID
+# private_subnet_ids = [
+#   "subnet-0123456789abcdef0",     # Private subnet in AZ-1
+#   "subnet-0987654321fedcba0"      # Private subnet in AZ-2
+# ]
+# vpc_cidr_blocks = ["10.0.0.0/16"]  # Your VPC CIDR block
 backend_port = 8000                  # Port your backend services listen on
 backend_instance_ids = [
   "i-0123456789abcdef0",           # EC2 instance running backend service
