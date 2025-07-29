@@ -53,6 +53,22 @@ module "network_load_balancer" {
   depends_on = [module.vpc]
 }
 
+# ECR repositories for container images
+module "ecr" {
+  source = "../../modules/ecr"
+
+  project_name   = var.project_name
+  environment    = "prod"
+  aws_account_id = var.aws_account_id
+
+  tags = {
+    Environment = "prod"
+    Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
+    Project     = "NSP Pro"
+  }
+}
+
 module "api_gateway" {
   source = "../../modules/api_gateway"
 

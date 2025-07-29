@@ -172,3 +172,35 @@ output "dns_deployment_info" {
   }
   sensitive = false
 }
+
+# ECR Repository outputs
+output "ecr_main_service_repository_url" {
+  description = "URL of the main service ECR repository"
+  value       = module.ecr.main_service_repository_url
+}
+
+output "ecr_solve_service_repository_url" {
+  description = "URL of the solve service ECR repository"
+  value       = module.ecr.solve_service_repository_url
+}
+
+output "ecr_repository_urls" {
+  description = "Map of all ECR repository URLs"
+  value       = module.ecr.repository_urls
+}
+
+output "ecr_repository_arns" {
+  description = "Map of all ECR repository ARNs"
+  value       = module.ecr.repository_arns
+}
+
+output "ecr_deployment_info" {
+  description = "ECR deployment information for CI/CD"
+  value = {
+    main_service_repository_url  = module.ecr.main_service_repository_url
+    solve_service_repository_url = module.ecr.solve_service_repository_url
+    registry_id                  = module.ecr.main_service_registry_id
+    aws_region                   = var.aws_region
+  }
+  sensitive = false
+}
