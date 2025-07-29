@@ -204,3 +204,83 @@ output "ecr_deployment_info" {
   }
   sensitive = false
 }
+
+# ECS Cluster and Services outputs
+output "ecs_cluster_name" {
+  description = "Name of the ECS cluster"
+  value       = module.ecs.ecs_cluster_name
+}
+
+output "ecs_cluster_arn" {
+  description = "ARN of the ECS cluster"
+  value       = module.ecs.ecs_cluster_arn
+}
+
+output "ecs_main_service_url" {
+  description = "Internal URL for the main service"
+  value       = module.ecs.main_service_internal_url
+}
+
+output "ecs_permit_pdp_url" {
+  description = "Internal URL for the Permit PDP service"
+  value       = module.ecs.permit_pdp_internal_url
+}
+
+output "ecs_service_discovery_namespace" {
+  description = "Service discovery namespace name"
+  value       = module.ecs.service_discovery_namespace_name
+}
+
+output "ecs_task_execution_role_arn" {
+  description = "ARN of the ECS task execution role"
+  value       = module.ecs.ecs_task_execution_role_arn
+}
+
+output "ecs_deployment_info" {
+  description = "ECS deployment information for CI/CD"
+  value       = module.ecs.ecs_deployment_info
+  sensitive   = false
+}
+
+# Secrets Manager outputs
+output "secrets_summary" {
+  description = "Summary of all secrets managed for the application"
+  value       = module.secrets.secrets_summary
+  sensitive   = false
+}
+
+output "permit_api_key_secret_arn" {
+  description = "ARN of the Permit.io API key secret"
+  value       = module.secrets.permit_api_key_secret_arn
+  sensitive   = false
+}
+
+output "st_api_key_secret_arn" {
+  description = "ARN of the SendGrid API key secret"
+  value       = module.secrets.st_api_key_secret_arn
+  sensitive   = false
+}
+
+output "st_connection_uri_secret_arn" {
+  description = "ARN of the SendGrid connection URI secret"
+  value       = module.secrets.st_connection_uri_secret_arn
+  sensitive   = false
+}
+
+output "atlas_secret_arn" {
+  description = "ARN of the MongoDB Atlas credentials secret"
+  value       = module.secrets.atlas_secret_arn
+  sensitive   = false
+}
+
+output "secrets_access_role_arn" {
+  description = "ARN of the IAM role for accessing secrets"
+  value       = module.secrets.secrets_access_role_arn
+  sensitive   = false
+}
+
+output "secrets_audit_log_group_name" {
+  description = "Name of the CloudWatch log group for secrets audit"
+  value       = module.secrets.secrets_audit_log_group_name
+  sensitive   = false
+}

@@ -35,14 +35,19 @@ venv_nsp
 
 # Terraform state files
 *.tfstate
+*.tfstate.*
 *.tfstate.backup
 
 # Terraform crash logs
 crash.log
 
 # Terraform variable overrides
+terraform.tfvars
+terraform.tfvars.json
 *.tfvars
 *.tfvars.json
+*.auto.tfvars
+*.auto.tfvars.json
 
 # .terraform directory (provider plugins, modules, etc.)
 .terraform/

@@ -70,3 +70,45 @@ api_gateway_domain_name = "api.rockilus.com"  # Custom domain for API Gateway
 #    - You own the domain specified in frontend_domain_name
 #    - DNS will be managed by Route53 (name servers will need to be updated at registrar)
 #    - SSL certificates will be automatically provisioned and validated
+
+# Secrets Configuration (SENSITIVE - DO NOT COMMIT TO VERSION CONTROL)
+# =====================================================================
+
+# Permit.io Configuration
+permit_api_key        = "YOUR_PERMIT_API_KEY_HERE"
+permit_project_id     = "YOUR_PERMIT_PROJECT_ID"
+permit_environment_id = "YOUR_PERMIT_ENVIRONMENT_ID"
+
+# SendGrid Configuration for Email Notifications
+st_api_key        = "YOUR_SENDGRID_API_KEY_HERE"
+st_connection_uri = "YOUR_SENDGRID_CONNECTION_URI_HERE"
+
+# MongoDB Atlas Configuration
+atlas_connection_uri = "mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority"
+atlas_username       = "YOUR_ATLAS_USERNAME"
+atlas_password       = "YOUR_ATLAS_PASSWORD"
+atlas_database_name  = "nsp_pro"
+
+# ECS Service Configuration
+main_service_desired_count  = 2
+solve_service_desired_count = 1
+permit_pdp_desired_count    = 1
+
+# Environment Variables for Services
+main_service_environment_variables = {
+  LOG_LEVEL = "INFO"
+  # Add other environment variables as needed
+}
+
+solve_service_environment_variables = {
+  LOG_LEVEL = "INFO"
+  # Add other environment variables as needed
+}
+
+# Security Notes for Secrets:
+# ===========================
+# 1. NEVER commit the actual terraform.tfvars file to version control
+# 2. Use environment variables for CI/CD: TF_VAR_permit_api_key, etc.
+# 3. Store secrets in a secure password manager
+# 4. Rotate secrets regularly according to healthcare compliance requirements
+# 5. Monitor CloudWatch logs for unauthorized access attempts

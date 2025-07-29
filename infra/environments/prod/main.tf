@@ -69,6 +69,79 @@ module "ecr" {
   }
 }
 
+# ECS infrastructure for container orchestration
+module "ecs" {
+  source = "../../modules/ecs"
+
+  project_name   = var.project_name
+  environment    = "prod"
+  aws_region     = var.aws_region
+  aws_account_id = var.aws_account_id
+
+  # VPC and network configuration
+  vpc_id                 = module.vpc.vpc_id
+  vpc_cidr_block         = module.vpc.vpc_cidr_block
+  private_subnet_ids     = module.vpc.private_subnet_ids
+  nlb_security_group_ids = [module.network_load_balancer.backend_security_group_id]
+
+  # ECR repository URLs
+  main_service_ecr_repository_url  = module.ecr.main_service_repository_url
+  solve_service_ecr_repository_url = module.ecr.solve_service_repository_url
+
+  # Service configuration
+  main_service_desired_count  = var.main_service_desired_count
+  solve_service_desired_count = var.solve_service_desired_count
+  permit_pdp_desired_count    = var.permit_pdp_desired_count
+
+  # Permit.io configuration
+  permit_api_key        = var.permit_api_key
+  permit_project_id     = var.permit_project_id
+  permit_environment_id = var.permit_environment_id
+
+  # Environment variables
+  main_service_environment_variables  = var.main_service_environment_variables
+  solve_service_environment_variables = var.solve_service_environment_variables
+
+  tags = {
+    Environment = "prod"
+    Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
+    Project     = "NSP Pro"
+  }
+
+  depends_on = [module.vpc, module.ecr, module.network_load_balancer]
+}
+
+# AWS Secrets Manager for sensitive configuration
+module "secrets" {
+  source = "../../modules/secrets"
+
+  project_name = var.project_name
+  environment  = "prod"
+  aws_region   = var.aws_region
+
+  # Secret values
+  permit_api_key       = var.permit_api_key
+  st_api_key           = var.st_api_key
+  st_connection_uri    = var.st_connection_uri
+  atlas_connection_uri = var.atlas_connection_uri
+  atlas_username       = var.atlas_username
+  atlas_password       = var.atlas_password
+  atlas_database_name  = var.atlas_database_name
+
+  # Healthcare compliance configuration
+  replica_region          = "us-west-2"
+  recovery_window_in_days = 30
+  log_retention_days      = 90
+
+  tags = {
+    Environment = "prod"
+    Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
+    Project     = "NSP Pro"
+  }
+}
+
 module "api_gateway" {
   source = "../../modules/api_gateway"
 

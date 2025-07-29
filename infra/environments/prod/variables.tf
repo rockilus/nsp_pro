@@ -208,3 +208,88 @@ variable "backend_instance_ids" {
   type        = list(string)
   default     = []
 }
+
+# ECS Configuration Variables
+variable "permit_api_key" {
+  description = "Permit.io API key for PDP configuration"
+  type        = string
+  sensitive   = true
+}
+
+variable "permit_project_id" {
+  description = "Permit.io project ID"
+  type        = string
+}
+
+variable "permit_environment_id" {
+  description = "Permit.io environment ID"
+  type        = string
+}
+
+# SendGrid Configuration Variables
+variable "st_api_key" {
+  description = "SendGrid API key for email notifications"
+  type        = string
+  sensitive   = true
+}
+
+variable "st_connection_uri" {
+  description = "SendGrid connection URI for email service"
+  type        = string
+  sensitive   = true
+}
+
+# MongoDB Atlas Configuration Variables
+variable "atlas_connection_uri" {
+  description = "MongoDB Atlas connection URI"
+  type        = string
+  sensitive   = true
+}
+
+variable "atlas_username" {
+  description = "MongoDB Atlas username"
+  type        = string
+  sensitive   = true
+}
+
+variable "atlas_password" {
+  description = "MongoDB Atlas password"
+  type        = string
+  sensitive   = true
+}
+
+variable "atlas_database_name" {
+  description = "MongoDB Atlas database name"
+  type        = string
+  default     = "nsp_pro"
+}
+
+variable "main_service_desired_count" {
+  description = "Desired number of main service tasks"
+  type        = number
+  default     = 2
+}
+
+variable "solve_service_desired_count" {
+  description = "Desired number of solve service tasks"
+  type        = number
+  default     = 1
+}
+
+variable "permit_pdp_desired_count" {
+  description = "Desired number of Permit.io PDP tasks"
+  type        = number
+  default     = 1
+}
+
+variable "main_service_environment_variables" {
+  description = "Environment variables for the main service"
+  type        = map(string)
+  default     = {}
+}
+
+variable "solve_service_environment_variables" {
+  description = "Environment variables for the solve service"
+  type        = map(string)
+  default     = {}
+}
