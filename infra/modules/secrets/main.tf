@@ -133,9 +133,6 @@ resource "aws_secretsmanager_secret_version" "atlas_secret" {
   secret_id = aws_secretsmanager_secret.atlas_secret.id
   secret_string = jsonencode({
     connection_uri = var.atlas_connection_uri
-    username       = var.atlas_username
-    password       = var.atlas_password
-    database_name  = var.atlas_database_name
   })
 
   lifecycle {

@@ -156,14 +156,6 @@ resource "aws_ecs_task_definition" "permit_pdp" {
           value = var.permit_api_key
         },
         {
-          name  = "PDP_PROJECT_ID"
-          value = var.permit_project_id
-        },
-        {
-          name  = "PDP_ENVIRONMENT_ID"
-          value = var.permit_environment_id
-        },
-        {
           name  = "PDP_DEBUG"
           value = var.environment == "prod" ? "false" : "true"
         }

@@ -94,9 +94,7 @@ module "ecs" {
   permit_pdp_desired_count    = var.permit_pdp_desired_count
 
   # Permit.io configuration
-  permit_api_key        = var.permit_api_key
-  permit_project_id     = var.permit_project_id
-  permit_environment_id = var.permit_environment_id
+  permit_api_key = var.permit_api_key
 
   # Environment variables
   main_service_environment_variables  = var.main_service_environment_variables
@@ -125,9 +123,6 @@ module "secrets" {
   st_api_key           = var.st_api_key
   st_connection_uri    = var.st_connection_uri
   atlas_connection_uri = var.atlas_connection_uri
-  atlas_username       = var.atlas_username
-  atlas_password       = var.atlas_password
-  atlas_database_name  = var.atlas_database_name
 
   # Healthcare compliance configuration
   replica_region          = "us-west-2"

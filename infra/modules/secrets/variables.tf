@@ -46,23 +46,6 @@ variable "atlas_connection_uri" {
   sensitive   = true
 }
 
-variable "atlas_username" {
-  description = "MongoDB Atlas username"
-  type        = string
-  sensitive   = true
-}
-
-variable "atlas_password" {
-  description = "MongoDB Atlas password"
-  type        = string
-  sensitive   = true
-}
-
-variable "atlas_database_name" {
-  description = "MongoDB Atlas database name"
-  type        = string
-  default     = "nsp_pro"
-}
 
 # KMS Configuration
 variable "kms_key_id" {

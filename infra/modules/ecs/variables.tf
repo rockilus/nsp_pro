@@ -133,15 +133,6 @@ variable "permit_api_key" {
   sensitive   = true
 }
 
-variable "permit_project_id" {
-  description = "Permit.io project ID"
-  type        = string
-}
-
-variable "permit_environment_id" {
-  description = "Permit.io environment ID"
-  type        = string
-}
 
 variable "main_service_environment_variables" {
   description = "Environment variables for the main service"

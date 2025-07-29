@@ -216,15 +216,7 @@ variable "permit_api_key" {
   sensitive   = true
 }
 
-variable "permit_project_id" {
-  description = "Permit.io project ID"
-  type        = string
-}
 
-variable "permit_environment_id" {
-  description = "Permit.io environment ID"
-  type        = string
-}
 
 # SendGrid Configuration Variables
 variable "st_api_key" {
@@ -246,23 +238,6 @@ variable "atlas_connection_uri" {
   sensitive   = true
 }
 
-variable "atlas_username" {
-  description = "MongoDB Atlas username"
-  type        = string
-  sensitive   = true
-}
-
-variable "atlas_password" {
-  description = "MongoDB Atlas password"
-  type        = string
-  sensitive   = true
-}
-
-variable "atlas_database_name" {
-  description = "MongoDB Atlas database name"
-  type        = string
-  default     = "nsp_pro"
-}
 
 variable "main_service_desired_count" {
   description = "Desired number of main service tasks"
