@@ -1,28 +1,42 @@
 # Network Load Balancer for API Gateway VPC Link
 resource "aws_lb" "api_nlb" {
-  name               = "${var.project_name}-${var.environment}-api-nlb"
+  name = "apigateway-mainservice-nlb"
+  # name               = "${var.project_name}-${var.environment}-api-nlb"
   internal           = true
   load_balancer_type = "network"
-  subnets            = var.private_subnet_ids
+
+  # Use subnet_mapping instead of subnets for more control
+  dynamic "subnet_mapping" {
+    for_each = var.private_subnet_ids
+    content {
+      subnet_id = subnet_mapping.value
+      # Optionally specify allocation_id for static IPs
+      # allocation_id = var.eip_allocation_ids[subnet_mapping.key]
+    }
+  }
 
   # Healthcare compliance - enable deletion protection in production
-  enable_deletion_protection = var.environment == "prod" ? true : false
+  # enable_deletion_protection = var.environment == "prod" ? true : false
+  enable_deletion_protection = false
 
   # Cross-zone load balancing for high availability
-  enable_cross_zone_load_balancing = true
+  enable_cross_zone_load_balancing = false
 
-  tags = merge(var.tags, {
-    Name        = "${var.project_name}-${var.environment}-api-nlb"
-    Component   = "NetworkLoadBalancer"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-  })
+  # tags = merge(
+  #   var.tags,
+  #   {
+  #     Name        = "${var.project_name}-${var.environment}-api-nlb"
+  #     Component   = "NetworkLoadBalancer"
+  #     Environment = var.environment
+  #     Project     = var.project_name
+  #     ManagedBy   = "Terraform"
+  # })
 }
 
 # Target Group for API Gateway backend services
 resource "aws_lb_target_group" "api_backend" {
-  name     = "${var.project_name}-${var.environment}-api-tg"
+  name = "apigateway-mainservice-nlb-tg-2"
+  # name     = "${var.project_name}-${var.environment}-api-tg"
   port     = var.backend_port
   protocol = "TCP"
   vpc_id   = var.vpc_id
@@ -30,11 +44,13 @@ resource "aws_lb_target_group" "api_backend" {
   # Health check configuration for backend services
   health_check {
     enabled             = true
-    healthy_threshold   = 2
+    healthy_threshold   = 5
     interval            = 30
+    matcher             = "200-399"
+    path                = "/health"
     port                = "traffic-port"
-    protocol            = "TCP"
-    timeout             = 10
+    protocol            = "HTTP"
+    timeout             = 6
     unhealthy_threshold = 2
   }
 
