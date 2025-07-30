@@ -37,9 +37,10 @@ resource "aws_lb" "api_nlb" {
 resource "aws_lb_target_group" "api_backend" {
   name = "apigateway-mainservice-nlb-tg-2"
   # name     = "${var.project_name}-${var.environment}-api-tg"
-  port     = var.backend_port
-  protocol = "TCP"
-  vpc_id   = var.vpc_id
+  port        = var.backend_port
+  protocol    = "TCP"
+  vpc_id      = var.vpc_id
+  target_type = "ip"
 
   # Health check configuration for backend services
   health_check {
@@ -55,18 +56,24 @@ resource "aws_lb_target_group" "api_backend" {
   }
 
   # Preserve client IP for security and compliance
-  preserve_client_ip = true
+  preserve_client_ip = false
 
   # Deregistration delay for graceful shutdown
   deregistration_delay = 300
 
-  tags = merge(var.tags, {
-    Name        = "${var.project_name}-${var.environment}-api-target-group"
-    Component   = "TargetGroup"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-  })
+  stickiness {
+    cookie_duration = 0
+    enabled         = false
+    type            = "source_ip"
+  }
+
+  # tags = merge(var.tags, {
+  #   Name        = "${var.project_name}-${var.environment}-api-target-group"
+  #   Component   = "TargetGroup"
+  #   Environment = var.environment
+  #   Project     = var.project_name
+  #   ManagedBy   = "Terraform"
+  # })
 }
 
 # NLB Listener
@@ -78,24 +85,30 @@ resource "aws_lb_listener" "api_backend" {
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.api_backend.arn
+    forward {
+      target_group {
+        arn    = aws_lb_target_group.api_backend.arn
+        weight = 0
+      }
+    }
   }
 
-  tags = merge(var.tags, {
-    Name        = "${var.project_name}-${var.environment}-api-listener"
-    Component   = "Listener"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-  })
+  # tags = merge(var.tags, {
+  #   Name        = "${var.project_name}-${var.environment}-api-listener"
+  #   Component   = "Listener"
+  #   Environment = var.environment
+  #   Project     = var.project_name
+  #   ManagedBy   = "Terraform"
+  # })
 }
 
 # Target Group Attachments for existing instances
-resource "aws_lb_target_group_attachment" "api_backend" {
-  count            = length(var.target_instance_ids)
-  target_group_arn = aws_lb_target_group.api_backend.arn
-  target_id        = var.target_instance_ids[count.index]
-  port             = var.backend_port
-}
+# resource "aws_lb_target_group_attachment" "api_backend" {
+#   count            = length(var.target_instance_ids)
+#   target_group_arn = aws_lb_target_group.api_backend.arn
+#   target_id        = var.target_instance_ids[count.index]
+#   port             = var.backend_port
+# }
 
 # Security Group for NLB (minimal rules for NLB)
 resource "aws_security_group" "nlb" {
@@ -172,73 +185,3 @@ resource "aws_security_group" "nlb" {
   }
 }
 
-# Security Group for backend services (targets)
-resource "aws_security_group" "backend_services" {
-  name_prefix = "${var.project_name}-${var.environment}-backend-"
-  description = "Security group for ${var.project_name} ${var.environment} backend services"
-  vpc_id      = var.vpc_id
-
-  # Allow traffic from NLB
-  ingress {
-    description     = "Traffic from Network Load Balancer"
-    from_port       = var.backend_port
-    to_port         = var.backend_port
-    protocol        = "tcp"
-    security_groups = [aws_security_group.nlb.id]
-  }
-
-  # Allow internal service communication
-  ingress {
-    description = "Internal service communication"
-    from_port   = var.backend_port
-    to_port     = var.backend_port
-    protocol    = "tcp"
-    cidr_blocks = var.vpc_cidr_blocks
-  }
-
-  # Outbound rules for database and external services
-  egress {
-    description = "Database communication"
-    from_port   = 27017
-    to_port     = 27017
-    protocol    = "tcp"
-    cidr_blocks = var.vpc_cidr_blocks
-  }
-
-  egress {
-    description = "Redis communication"
-    from_port   = 6379
-    to_port     = 6379
-    protocol    = "tcp"
-    cidr_blocks = var.vpc_cidr_blocks
-  }
-
-  egress {
-    description = "HTTPS for AWS services"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    description = "HTTP for internal services"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = var.vpc_cidr_blocks
-  }
-
-  tags = merge(var.tags, {
-    Name        = "${var.project_name}-${var.environment}-backend-sg"
-    Component   = "SecurityGroup"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-    Purpose     = "BackendServices"
-  })
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}

@@ -23,10 +23,6 @@ output "nlb_security_group_id" {
   value       = aws_security_group.nlb.id
 }
 
-output "backend_security_group_id" {
-  description = "Security group ID for backend services"
-  value       = aws_security_group.backend_services.id
-}
 
 output "vpc_link_target_arns" {
   description = "Target ARNs for VPC Link (NLB ARN)"

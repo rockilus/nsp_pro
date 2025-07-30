@@ -188,8 +188,8 @@ variable "backend_port" {
   default     = 8000
 
   validation {
-    condition     = var.backend_port > 1024 && var.backend_port < 65536
-    error_message = "Backend port must be between 1024 and 65535 for security compliance."
+    condition     = (var.solve_service_port == 80) || (var.backend_port > 1024 && var.backend_port < 65536)
+    error_message = "Backend port must be 80 or between 1024 and 65535 for security compliance."
   }
 }
 
