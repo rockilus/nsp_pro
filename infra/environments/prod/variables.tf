@@ -224,6 +224,28 @@ variable "main_service_port" {
   }
 }
 
+variable "main_service_cpu" {
+  description = "CPU units for the main service task"
+  type        = number
+  default     = 512
+
+  validation {
+    condition     = var.main_service_cpu >= 256 && var.main_service_cpu <= 4096
+    error_message = "Main service CPU must be between 256 and 4096 units for healthcare compliance."
+  }
+}
+
+variable "main_service_memory" {
+  description = "Memory (MiB) for the main service task"
+  type        = number
+  default     = 1024
+
+  validation {
+    condition     = var.main_service_memory >= 512 && var.main_service_memory <= 8192
+    error_message = "Main service memory must be between 512 and 8192 MiB for healthcare compliance."
+  }
+}
+
 # Solve Service Configuration
 variable "solve_service_desired_count" {
   description = "Desired number of solve service tasks"
@@ -242,6 +264,28 @@ variable "solve_service_port" {
   validation {
     condition     = var.solve_service_port > 1024 && var.solve_service_port < 65536
     error_message = "Solve service port must be between 1024 and 65535 for security compliance."
+  }
+}
+
+variable "solve_service_cpu" {
+  description = "CPU units for the solve service task"
+  type        = number
+  default     = 1024
+
+  validation {
+    condition     = var.solve_service_cpu >= 256 && var.solve_service_cpu <= 4096
+    error_message = "Solve service CPU must be between 256 and 4096 units for healthcare compliance."
+  }
+}
+
+variable "solve_service_memory" {
+  description = "Memory (MiB) for the solve service task"
+  type        = number
+  default     = 2048
+
+  validation {
+    condition     = var.solve_service_memory >= 512 && var.solve_service_memory <= 8192
+    error_message = "Solve service memory must be between 512 and 8192 MiB for healthcare compliance."
   }
 }
 
@@ -264,6 +308,28 @@ variable "permit_pdp_port" {
   validation {
     condition     = var.permit_pdp_port > 1024 && var.permit_pdp_port < 65536
     error_message = "Permit PDP port must be between 1024 and 65535 for security compliance."
+  }
+}
+
+variable "permit_pdp_cpu" {
+  description = "CPU units for the Permit PDP task"
+  type        = number
+  default     = 256
+
+  validation {
+    condition     = var.permit_pdp_cpu >= 128 && var.permit_pdp_cpu <= 2048
+    error_message = "Permit PDP CPU must be between 128 and 2048 units for healthcare compliance."
+  }
+}
+
+variable "permit_pdp_memory" {
+  description = "Memory (MiB) for the Permit PDP task"
+  type        = number
+  default     = 512
+
+  validation {
+    condition     = var.permit_pdp_memory >= 256 && var.permit_pdp_memory <= 4096
+    error_message = "Permit PDP memory must be between 256 and 4096 MiB for healthcare compliance."
   }
 }
 

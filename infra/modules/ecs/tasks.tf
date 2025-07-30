@@ -1,12 +1,14 @@
 # Main Service Task Definition
 resource "aws_ecs_task_definition" "main_service" {
-  family                   = "${var.project_name}-${var.environment}-main-service"
+  family = "nsp_pro-backend-task"
+  # family                   = "${var.project_name}-${var.environment}-main-service"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   cpu                      = var.main_service_cpu
   memory                   = var.main_service_memory
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   task_role_arn            = aws_iam_role.ecs_task_execution_role.arn
+  enable_fault_injection   = false
 
   container_definitions = jsonencode([
     {
@@ -60,6 +62,10 @@ resource "aws_ecs_task_definition" "main_service" {
         }
       ]
 
+      systemControls = []
+      ulimits        = []
+      volumesFrom    = []
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -85,14 +91,19 @@ resource "aws_ecs_task_definition" "main_service" {
     }
   ])
 
-  tags = merge(var.tags, {
-    Name        = "${var.project_name}-${var.environment}-main-service-task"
-    Component   = "ECS"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-    Service     = "MainService"
-  })
+  runtime_platform {
+    cpu_architecture        = "ARM64"
+    operating_system_family = "LINUX"
+  }
+
+  # tags = merge(var.tags, {
+  #   Name        = "${var.project_name}-${var.environment}-main-service-task"
+  #   Component   = "ECS"
+  #   Environment = var.environment
+  #   Project     = var.project_name
+  #   ManagedBy   = "Terraform"
+  #   Service     = "MainService"
+  # })
 }
 
 # Solve Service Task Definition
