@@ -286,11 +286,16 @@ resource "aws_ecs_task_definition" "permit_pdp" {
 
 # Main Service ECS Service
 resource "aws_ecs_service" "main_service" {
-  name            = "${var.project_name}-${var.environment}-main-service"
-  cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.main_service.arn
-  desired_count   = var.main_service_desired_count
-  launch_type     = "FARGATE"
+  name = "main-service"
+  # name                              = "${var.project_name}-${var.environment}-main-service"
+  cluster                           = aws_ecs_cluster.main.id
+  task_definition                   = aws_ecs_task_definition.main_service.arn
+  desired_count                     = var.main_service_desired_count
+  launch_type                       = "FARGATE"
+  availability_zone_rebalancing     = "ENABLED"
+  enable_ecs_managed_tags           = true
+  health_check_grace_period_seconds = 0
+  propagate_tags                    = "NONE"
 
   network_configuration {
     subnets          = var.private_subnet_ids
@@ -302,14 +307,14 @@ resource "aws_ecs_service" "main_service" {
     registry_arn = aws_service_discovery_service.main_service.arn
   }
 
-  tags = merge(var.tags, {
-    Name        = "${var.project_name}-${var.environment}-main-service"
-    Component   = "ECS"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-    Service     = "MainService"
-  })
+  # tags = merge(var.tags, {
+  #   Name        = "${var.project_name}-${var.environment}-main-service"
+  #   Component   = "ECS"
+  #   Environment = var.environment
+  #   Project     = var.project_name
+  #   ManagedBy   = "Terraform"
+  #   Service     = "MainService"
+  # })
 
   depends_on = [aws_iam_role_policy_attachment.ecs_task_execution_role_policy]
 }

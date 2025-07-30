@@ -1,30 +1,32 @@
 # ECS Cluster
 resource "aws_ecs_cluster" "main" {
-  name = "${var.project_name}-${var.environment}-cluster"
+  name = "rockilus-dev-architecture-jun2025"
+  # name = "${var.project_name}-${var.environment}-cluster"
 
-  configuration {
-    execute_command_configuration {
-      logging = "OVERRIDE"
-      log_configuration {
-        cloud_watch_log_group_name = aws_cloudwatch_log_group.ecs_cluster.name
-      }
-    }
-  }
+  # configuration {
+  #   execute_command_configuration {
+  #     logging = "OVERRIDE"
+  #     log_configuration {
+  #       cloud_watch_log_group_name = aws_cloudwatch_log_group.ecs_cluster.name
+  #     }
+  #   }
+  # }
 
   # Healthcare compliance - enable container insights
   setting {
     name  = "containerInsights"
-    value = "enabled"
+    value = "disabled"
+    # value = "enabled"
   }
 
-  tags = merge(var.tags, {
-    Name        = "${var.project_name}-${var.environment}-cluster"
-    Component   = "ECS"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-    Purpose     = "ContainerOrchestration"
-  })
+  # tags = merge(var.tags, {
+  #   Name        = "${var.project_name}-${var.environment}-cluster"
+  #   Component   = "ECS"
+  #   Environment = var.environment
+  #   Project     = var.project_name
+  #   ManagedBy   = "Terraform"
+  #   Purpose     = "ContainerOrchestration"
+  # })
 }
 
 # CloudWatch Log Group for ECS Cluster
