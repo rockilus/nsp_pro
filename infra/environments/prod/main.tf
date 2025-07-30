@@ -17,6 +17,22 @@ module "vpc" {
   }
 }
 
+# ECR repositories for container images
+module "ecr" {
+  source = "../../modules/ecr"
+
+  project_name   = var.project_name
+  environment    = "prod"
+  aws_account_id = var.aws_account_id
+
+  tags = {
+    Environment = "prod"
+    Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
+    Project     = "NSP Pro"
+  }
+}
+
 module "cognito" {
   source = "../../modules/cognito"
 
@@ -28,6 +44,70 @@ module "cognito" {
   frontend_domain_name      = var.frontend_domain_name
   landing_page_domain_name  = var.landing_page_domain_name
   cognito_domain_prefix     = null # Use default: project_name-environment
+}
+
+# AWS Secrets Manager for sensitive configuration
+module "secrets" {
+  source = "../../modules/secrets"
+
+  project_name = var.project_name
+  environment  = "prod"
+  aws_region   = var.aws_region
+
+  # Secret values
+  permit_api_key       = var.permit_api_key
+  st_api_key           = var.st_api_key
+  st_connection_uri    = var.st_connection_uri
+  atlas_connection_uri = var.atlas_connection_uri
+
+  # Healthcare compliance configuration
+  replica_region          = "us-west-2"
+  recovery_window_in_days = 30
+  log_retention_days      = 90
+
+  tags = {
+    Environment = "prod"
+    Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
+    Project     = "NSP Pro"
+  }
+}
+
+# Route 53 DNS management with SSL certificates
+module "route53" {
+  source = "../../modules/route53"
+
+  providers = {
+    aws.us_east_1 = aws.us_east_1
+  }
+
+  project_name = var.project_name
+  environment  = "prod"
+  domain_name  = var.hosted_zone_domain # Use hosted zone domain, not frontend domain
+
+  # Security enhancements for healthcare compliance
+  enable_dnssec                           = true
+  enable_certificate_transparency_logging = true
+  enable_query_logging                    = true
+
+  # Multi-region health checks for high availability
+  health_check_regions = ["us-east-1", "us-west-2", "eu-west-1"]
+
+  # SSL certificate with wildcard support for all NSP Pro subdomains
+  certificate_subject_alternative_names = [
+    "*.rockilus.com",    # Wildcard for all subdomains
+    "app.rockilus.com",  # Frontend application
+    "api.rockilus.com",  # API Gateway
+    "www.rockilus.com",  # Landing page alternative
+    "admin.rockilus.com" # Future admin portal
+  ]
+
+  tags = {
+    Environment = "prod"
+    Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
+    Project     = "NSP Pro"
+  }
 }
 
 # Network Load Balancer for API Gateway VPC Link
@@ -53,20 +133,54 @@ module "network_load_balancer" {
   depends_on = [module.vpc]
 }
 
-# ECR repositories for container images
-module "ecr" {
-  source = "../../modules/ecr"
+module "api_gateway" {
+  source = "../../modules/api_gateway"
 
-  project_name   = var.project_name
-  environment    = "prod"
-  aws_account_id = var.aws_account_id
+  project_name                  = var.project_name
+  environment                   = "prod"
+  aws_region                    = var.aws_region
+  aws_account_id                = var.aws_account_id
+  cors_allowed_origins          = var.cors_allowed_origins
+  cognito_user_pool_id          = module.cognito.user_pool_id
+  cognito_user_pool_clients_ids = [module.cognito.user_pool_client_id]
+  vpc_link_id                   = var.vpc_link_id
+  vpc_link_target_arns          = module.network_load_balancer.vpc_link_target_arns
+  vpc_link_endpoint_url         = module.network_load_balancer.vpc_link_endpoint_url
+  api_gateway_stage_name        = var.api_gateway_stage_name
+
+  # Custom domain configuration using Route53 module outputs
+  custom_domain_name = var.api_gateway_domain_name != null ? var.api_gateway_domain_name : null
+  certificate_arn    = var.api_gateway_domain_name != null ? module.route53.certificate_arn : null
+  hosted_zone_id     = var.api_gateway_domain_name != null ? module.route53.hosted_zone_id : null
+
+  depends_on = [module.route53, module.network_load_balancer]
+}
+
+module "frontend" {
+  source = "../../modules/s3-static-frontend"
+
+  project_name                = var.project_name
+  environment                 = "prod"
+  aws_region                  = var.aws_region
+  api_gateway_domain          = var.api_gateway_domain
+  cognito_user_pool_id        = module.cognito.user_pool_id
+  cognito_user_pool_client_id = module.cognito.user_pool_client_id
+
+  # Use the specific frontend domain, not derived from hosted zone
+  domain_name                = var.frontend_domain_name                  # app.rockilus.com
+  certificate_arn            = module.route53.certificate_arn            # Regional certificate (for backward compatibility)
+  cloudfront_certificate_arn = module.route53.cloudfront_certificate_arn # CloudFront certificate (US-East-1)
+  route53_zone_id            = module.route53.hosted_zone_id
+
+  cloudfront_price_class = var.cloudfront_price_class
 
   tags = {
     Environment = "prod"
     Owner       = "DevOps Team"
     Compliance  = "Healthcare"
-    Project     = "NSP Pro"
   }
+
+  depends_on = [module.api_gateway, module.cognito, module.route53]
 }
 
 # ECS infrastructure for container orchestration
@@ -140,32 +254,7 @@ module "ecs" {
   depends_on = [module.vpc, module.ecr, module.network_load_balancer, module.secrets, module.documentdb]
 }
 
-# AWS Secrets Manager for sensitive configuration
-module "secrets" {
-  source = "../../modules/secrets"
 
-  project_name = var.project_name
-  environment  = "prod"
-  aws_region   = var.aws_region
-
-  # Secret values
-  permit_api_key       = var.permit_api_key
-  st_api_key           = var.st_api_key
-  st_connection_uri    = var.st_connection_uri
-  atlas_connection_uri = var.atlas_connection_uri
-
-  # Healthcare compliance configuration
-  replica_region          = "us-west-2"
-  recovery_window_in_days = 30
-  log_retention_days      = 90
-
-  tags = {
-    Environment = "prod"
-    Owner       = "DevOps Team"
-    Compliance  = "Healthcare"
-    Project     = "NSP Pro"
-  }
-}
 
 # DocumentDB cluster for MongoDB-compatible database
 module "documentdb" {
@@ -203,92 +292,11 @@ module "documentdb" {
   depends_on = [module.vpc, module.ecs]
 }
 
-module "api_gateway" {
-  source = "../../modules/api_gateway"
 
-  project_name                  = var.project_name
-  environment                   = "prod"
-  aws_region                    = var.aws_region
-  aws_account_id                = var.aws_account_id
-  cors_allowed_origins          = var.cors_allowed_origins
-  cognito_user_pool_id          = module.cognito.user_pool_id
-  cognito_user_pool_clients_ids = [module.cognito.user_pool_client_id]
-  vpc_link_id                   = var.vpc_link_id
-  vpc_link_target_arns          = module.network_load_balancer.vpc_link_target_arns
-  vpc_link_endpoint_url         = module.network_load_balancer.vpc_link_endpoint_url
-  api_gateway_stage_name        = var.api_gateway_stage_name
 
-  # Custom domain configuration using Route53 module outputs
-  custom_domain_name = var.api_gateway_domain_name != null ? var.api_gateway_domain_name : null
-  certificate_arn    = var.api_gateway_domain_name != null ? module.route53.certificate_arn : null
-  hosted_zone_id     = var.api_gateway_domain_name != null ? module.route53.hosted_zone_id : null
 
-  depends_on = [module.route53, module.network_load_balancer]
-}
 
-# Route 53 DNS management with SSL certificates
-module "route53" {
-  source = "../../modules/route53"
 
-  providers = {
-    aws.us_east_1 = aws.us_east_1
-  }
-
-  project_name = var.project_name
-  environment  = "prod"
-  domain_name  = var.hosted_zone_domain # Use hosted zone domain, not frontend domain
-
-  # Security enhancements for healthcare compliance
-  enable_dnssec                           = true
-  enable_certificate_transparency_logging = true
-  enable_query_logging                    = true
-
-  # Multi-region health checks for high availability
-  health_check_regions = ["us-east-1", "us-west-2", "eu-west-1"]
-
-  # SSL certificate with wildcard support for all NSP Pro subdomains
-  certificate_subject_alternative_names = [
-    "*.rockilus.com",    # Wildcard for all subdomains
-    "app.rockilus.com",  # Frontend application
-    "api.rockilus.com",  # API Gateway
-    "www.rockilus.com",  # Landing page alternative
-    "admin.rockilus.com" # Future admin portal
-  ]
-
-  tags = {
-    Environment = "prod"
-    Owner       = "DevOps Team"
-    Compliance  = "Healthcare"
-    Project     = "NSP Pro"
-  }
-}
-
-module "frontend" {
-  source = "../../modules/s3-static-frontend"
-
-  project_name                = var.project_name
-  environment                 = "prod"
-  aws_region                  = var.aws_region
-  api_gateway_domain          = var.api_gateway_domain
-  cognito_user_pool_id        = module.cognito.user_pool_id
-  cognito_user_pool_client_id = module.cognito.user_pool_client_id
-
-  # Use the specific frontend domain, not derived from hosted zone
-  domain_name                = var.frontend_domain_name                  # app.rockilus.com
-  certificate_arn            = module.route53.certificate_arn            # Regional certificate (for backward compatibility)
-  cloudfront_certificate_arn = module.route53.cloudfront_certificate_arn # CloudFront certificate (US-East-1)
-  route53_zone_id            = module.route53.hosted_zone_id
-
-  cloudfront_price_class = var.cloudfront_price_class
-
-  tags = {
-    Environment = "prod"
-    Owner       = "DevOps Team"
-    Compliance  = "Healthcare"
-  }
-
-  depends_on = [module.api_gateway, module.cognito, module.route53]
-}
 
 # Environment-specific SSM parameters for frontend configuration
 # resource "aws_ssm_parameter" "frontend_config" {
