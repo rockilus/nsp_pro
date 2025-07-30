@@ -31,5 +31,6 @@ output "vpc_link_target_arns" {
 
 output "vpc_link_endpoint_url" {
   description = "Endpoint URL for VPC Link"
-  value       = "http://${aws_lb.api_nlb.dns_name}:${var.backend_port}"
+  value       = "http://${aws_lb.api_nlb.dns_name}"
+  # value       = "http://${aws_lb.api_nlb.dns_name}:${var.backend_port}"
 }
