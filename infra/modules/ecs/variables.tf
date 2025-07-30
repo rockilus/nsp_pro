@@ -44,6 +44,12 @@ variable "nlb_target_group_arn" {
   type        = string
 }
 
+variable "main_service_container_name" {
+  description = "Name of the container for the main service"
+  type        = string
+  default     = "backend-image"
+}
+
 variable "main_service_ecr_repository_url" {
   description = "ECR repository URL for the main service"
   type        = string

@@ -12,7 +12,7 @@ resource "aws_ecs_task_definition" "main_service" {
 
   container_definitions = jsonencode([
     {
-      name = "backend-image"
+      name = var.main_service_container_name
       # name  = "main-service"
       image = "${var.main_service_ecr_repository_url}:latest"
 
@@ -321,7 +321,7 @@ resource "aws_ecs_service" "main_service" {
   }
 
   load_balancer {
-    container_name   = "backend-image"
+    container_name   = var.main_service_container_name
     container_port   = var.main_service_port
     elb_name         = null
     target_group_arn = var.nlb_target_group_arn
@@ -381,56 +381,146 @@ resource "aws_ecs_service" "main_service" {
 
 # Solve Service ECS Service
 resource "aws_ecs_service" "solve_service" {
-  name            = "${var.project_name}-${var.environment}-solve-service"
-  cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.solve_service.arn
-  desired_count   = var.solve_service_desired_count
-  launch_type     = "FARGATE"
+  name = "solve-service"
+  # name            = "${var.project_name}-${var.environment}-solve-service"
+  cluster                           = aws_ecs_cluster.main.id
+  task_definition                   = aws_ecs_task_definition.solve_service.arn
+  desired_count                     = var.solve_service_desired_count
+  availability_zone_rebalancing     = "ENABLED"
+  enable_ecs_managed_tags           = true
+  health_check_grace_period_seconds = 0
+  iam_role                          = "/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
+  propagate_tags                    = "NONE"
 
   network_configuration {
     subnets          = var.private_subnet_ids
     security_groups  = [aws_security_group.solve_service.id]
-    assign_public_ip = false
+    assign_public_ip = true
   }
 
-  tags = merge(var.tags, {
-    Name        = "${var.project_name}-${var.environment}-solve-service"
-    Component   = "ECS"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-    Service     = "SolveService"
-  })
+  # network_configuration {
+  #   assign_public_ip = true -> false
+  #   security_groups  = [
+  #       "sg-0ce1fa8e7ef12ca02",
+  #     ] 
+  # }
+
+  alarms {
+    alarm_names = []
+    enable      = false
+    rollback    = false
+  }
+
+  capacity_provider_strategy {
+    base              = 0
+    capacity_provider = "FARGATE"
+    weight            = 1
+  }
+
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
+
+  deployment_controller {
+    type = "ECS"
+  }
+
+  # tags = merge(var.tags, {
+  #   Name        = "${var.project_name}-${var.environment}-solve-service"
+  #   Component   = "ECS"
+  #   Environment = var.environment
+  #   Project     = var.project_name
+  #   ManagedBy   = "Terraform"
+  #   Service     = "SolveService"
+  # })
 
   depends_on = [aws_iam_role_policy_attachment.ecs_task_execution_role_policy]
 }
 
 # Permit PDP ECS Service
 resource "aws_ecs_service" "permit_pdp" {
-  name            = "${var.project_name}-${var.environment}-permit-pdp"
-  cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.permit_pdp.arn
-  desired_count   = var.permit_pdp_desired_count
-  launch_type     = "FARGATE"
+  name = "permit-pdp"
+  # name                              = "${var.project_name}-${var.environment}-permit-pdp"
+  cluster                           = aws_ecs_cluster.main.id
+  task_definition                   = aws_ecs_task_definition.permit_pdp.arn
+  desired_count                     = var.permit_pdp_desired_count
+  availability_zone_rebalancing     = "ENABLED"
+  enable_ecs_managed_tags           = true
+  health_check_grace_period_seconds = 0
+  iam_role                          = "/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
+  propagate_tags                    = "NONE"
 
   network_configuration {
     subnets          = var.private_subnet_ids
     security_groups  = [aws_security_group.permit_pdp.id]
-    assign_public_ip = false
+    assign_public_ip = true
   }
 
-  service_registries {
-    registry_arn = aws_service_discovery_service.permit_pdp.arn
+  alarms {
+    alarm_names = []
+    enable      = false
+    rollback    = false
   }
 
-  tags = merge(var.tags, {
-    Name        = "${var.project_name}-${var.environment}-permit-pdp"
-    Component   = "ECS"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-    Service     = "PermitPDP"
-  })
+  capacity_provider_strategy {
+    base              = 0
+    capacity_provider = "FARGATE"
+    weight            = 1
+  }
+
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
+
+  deployment_controller {
+    type = "ECS"
+  }
+
+  # network_configuration {
+  #     assign_public_ip = true -> false
+  #     security_groups  = [
+  #         "sg-03edf2d02c7467810",
+  #       ] -> (known after apply)
+  #       # (1 unchanged attribute hidden)
+  #   }
+
+  service_connect_configuration {
+    enabled   = true
+    namespace = "arn:aws:servicediscovery:eu-west-3:590183915149:namespace/ns-yzprnzaq4ctfdqvt"
+
+    log_configuration {
+      log_driver = "awslogs"
+      options = {
+        "awslogs-create-group"  = "true"
+        "awslogs-group"         = "/ecs/permit-pdp"
+        "awslogs-region"        = "eu-west-3"
+        "awslogs-stream-prefix" = "ecs"
+      }
+    }
+
+    service {
+      discovery_name        = "permit-pdp-service"
+      ingress_port_override = 0
+      port_name             = "permit-image-7000-tcp"
+
+      client_alias {
+        dns_name = "permit-pdp"
+        port     = 7000
+      }
+    }
+  }
+
+  tags = {}
+  # tags = merge(var.tags, {
+  #   Name        = "${var.project_name}-${var.environment}-permit-pdp"
+  #   Component   = "ECS"
+  #   Environment = var.environment
+  #   Project     = var.project_name
+  #   ManagedBy   = "Terraform"
+  #   Service     = "PermitPDP"
+  # })
 
   depends_on = [aws_iam_role_policy_attachment.ecs_task_execution_role_policy]
 }

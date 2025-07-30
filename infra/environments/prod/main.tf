@@ -97,6 +97,7 @@ module "ecs" {
   main_service_memory                  = var.main_service_memory
   main_service_cpu_architecture        = var.main_service_cpu_architecture
   main_service_operating_system_family = var.main_service_operating_system_family
+  main_service_container_name          = var.main_service_container_name
 
 
   # Solve service

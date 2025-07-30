@@ -268,6 +268,17 @@ variable "main_service_operating_system_family" {
   }
 }
 
+variable "main_service_container_name" {
+  description = "Name of the container for the main service"
+  type        = string
+  default     = "backend-image"
+
+  validation {
+    condition     = can(regex("^[a-zA-Z0-9][a-zA-Z0-9_.-]*$", var.main_service_container_name))
+    error_message = "Main service container name must be a valid container name (alphanumeric, underscores, periods, and hyphens allowed)."
+  }
+}
+
 # Solve Service Configuration
 variable "solve_service_desired_count" {
   description = "Desired number of solve service tasks"
