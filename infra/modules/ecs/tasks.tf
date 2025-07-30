@@ -324,12 +324,12 @@ resource "aws_ecs_service" "main_service" {
     container_name   = "backend-image"
     container_port   = var.main_service_port
     elb_name         = null
-    target_group_arn = "arn:aws:elasticloadbalancing:eu-west-3:590183915149:targetgroup/apigateway-mainservice-nlb-tg-2/a155f069a1d4a13b"
+    target_group_arn = var.nlb_target_group_arn
   }
 
   service_connect_configuration {
     enabled   = true
-    namespace = "arn:aws:servicediscovery:eu-west-3:590183915149:namespace/ns-yzprnzaq4ctfdqvt"
+    namespace = aws_service_discovery_private_dns_namespace.main.arn
 
     service {
       discovery_name        = "main-service-backend"
@@ -338,7 +338,7 @@ resource "aws_ecs_service" "main_service" {
 
       client_alias {
         dns_name = "main-service"
-        port     = 4000
+        port     = var.main_service_port
       }
     }
   }
@@ -361,9 +361,9 @@ resource "aws_ecs_service" "main_service" {
   #   ]
   # }
 
-  service_registries {
-    registry_arn = aws_service_discovery_service.main_service.arn
-  }
+  # service_registries {
+  #   registry_arn = aws_service_discovery_service.main_service.arn
+  # }
 
 
   tags = {}

@@ -39,6 +39,11 @@ variable "nlb_security_group_ids" {
   default     = []
 }
 
+variable "nlb_target_group_arn" {
+  description = "ARN of the Network Load Balancer target group"
+  type        = string
+}
+
 variable "main_service_ecr_repository_url" {
   description = "ECR repository URL for the main service"
   type        = string

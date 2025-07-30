@@ -83,6 +83,7 @@ module "ecs" {
   vpc_cidr_block         = module.vpc.vpc_cidr_block
   private_subnet_ids     = module.vpc.private_subnet_ids
   nlb_security_group_ids = [module.network_load_balancer.nlb_security_group_id]
+  nlb_target_group_arn   = module.network_load_balancer.target_group_arn
 
   # ECR repository URLs
   main_service_ecr_repository_url  = module.ecr.main_service_repository_url
