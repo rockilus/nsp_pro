@@ -90,22 +90,29 @@ module "ecs" {
 
   # Service configuration
   # Main service
-  main_service_desired_count = var.main_service_desired_count
-  main_service_port          = var.main_service_port
-  main_service_cpu           = var.main_service_cpu
-  main_service_memory        = var.main_service_memory
+  main_service_desired_count           = var.main_service_desired_count
+  main_service_port                    = var.main_service_port
+  main_service_cpu                     = var.main_service_cpu
+  main_service_memory                  = var.main_service_memory
+  main_service_cpu_architecture        = var.main_service_cpu_architecture
+  main_service_operating_system_family = var.main_service_operating_system_family
+
 
   # Solve service
-  solve_service_desired_count = var.solve_service_desired_count
-  solve_service_port          = var.solve_service_port
-  solve_service_cpu           = var.solve_service_cpu
-  solve_service_memory        = var.solve_service_memory
+  solve_service_desired_count           = var.solve_service_desired_count
+  solve_service_port                    = var.solve_service_port
+  solve_service_cpu                     = var.solve_service_cpu
+  solve_service_memory                  = var.solve_service_memory
+  solve_service_cpu_architecture        = var.solve_service_cpu_architecture
+  solve_service_operating_system_family = var.solve_service_operating_system_family
 
   # Permit PDP service
-  permit_pdp_desired_count = var.permit_pdp_desired_count
-  permit_pdp_port          = var.permit_pdp_port
-  permit_pdp_cpu           = var.permit_pdp_cpu
-  permit_pdp_memory        = var.permit_pdp_memory
+  permit_pdp_desired_count           = var.permit_pdp_desired_count
+  permit_pdp_port                    = var.permit_pdp_port
+  permit_pdp_cpu                     = var.permit_pdp_cpu
+  permit_pdp_memory                  = var.permit_pdp_memory
+  permit_pdp_cpu_architecture        = var.permit_pdp_cpu_architecture
+  permit_pdp_operating_system_family = var.permit_pdp_operating_system_family
 
   # Permit.io configuration
   permit_api_key = var.permit_api_key

@@ -246,6 +246,28 @@ variable "main_service_memory" {
   }
 }
 
+variable "main_service_cpu_architecture" {
+  description = "CPU architecture for the main service task"
+  type        = string
+  default     = "x86_64"
+
+  validation {
+    condition     = contains(["x86_64", "arm64"], var.main_service_cpu_architecture)
+    error_message = "Main service CPU architecture must be either 'x86_64' or 'arm64' for compatibility."
+  }
+}
+
+variable "main_service_operating_system_family" {
+  description = "Operating system family for the main service task"
+  type        = string
+  default     = "LINUX"
+
+  validation {
+    condition     = contains(["LINUX", "WINDOWS"], var.main_service_operating_system_family)
+    error_message = "Main service operating system family must be either 'LINUX' or 'WINDOWS' for compatibility."
+  }
+}
+
 # Solve Service Configuration
 variable "solve_service_desired_count" {
   description = "Desired number of solve service tasks"
@@ -286,6 +308,28 @@ variable "solve_service_memory" {
   validation {
     condition     = var.solve_service_memory >= 512 && var.solve_service_memory <= 8192
     error_message = "Solve service memory must be between 512 and 8192 MiB for healthcare compliance."
+  }
+}
+
+variable "solve_service_cpu_architecture" {
+  description = "CPU architecture for the solve service task"
+  type        = string
+  default     = "x86_64"
+
+  validation {
+    condition     = contains(["x86_64", "arm64"], var.solve_service_cpu_architecture)
+    error_message = "Solve service CPU architecture must be either 'x86_64' or 'arm64' for compatibility."
+  }
+}
+
+variable "solve_service_operating_system_family" {
+  description = "Operating system family for the solve service task"
+  type        = string
+  default     = "LINUX"
+
+  validation {
+    condition     = contains(["LINUX", "WINDOWS"], var.solve_service_operating_system_family)
+    error_message = "Solve service operating system family must be either 'LINUX' or 'WINDOWS' for compatibility."
   }
 }
 
@@ -330,6 +374,28 @@ variable "permit_pdp_memory" {
   validation {
     condition     = var.permit_pdp_memory >= 256 && var.permit_pdp_memory <= 4096
     error_message = "Permit PDP memory must be between 256 and 4096 MiB for healthcare compliance."
+  }
+}
+
+variable "permit_pdp_cpu_architecture" {
+  description = "CPU architecture for the Permit PDP task"
+  type        = string
+  default     = "x86_64"
+
+  validation {
+    condition     = contains(["x86_64", "arm64"], var.permit_pdp_cpu_architecture)
+    error_message = "Permit PDP CPU architecture must be either 'x86_64' or 'arm64' for compatibility."
+  }
+}
+
+variable "permit_pdp_operating_system_family" {
+  description = "Operating system family for the Permit PDP task"
+  type        = string
+  default     = "LINUX"
+
+  validation {
+    condition     = contains(["LINUX", "WINDOWS"], var.permit_pdp_operating_system_family)
+    error_message = "Permit PDP operating system family must be either 'LINUX' or 'WINDOWS' for compatibility."
   }
 }
 

@@ -92,8 +92,8 @@ resource "aws_ecs_task_definition" "main_service" {
   ])
 
   runtime_platform {
-    cpu_architecture        = "ARM64"
-    operating_system_family = "LINUX"
+    cpu_architecture        = var.main_service_cpu_architecture
+    operating_system_family = var.main_service_operating_system_family
   }
 
   # tags = merge(var.tags, {

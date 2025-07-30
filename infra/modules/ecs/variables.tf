@@ -49,23 +49,20 @@ variable "solve_service_ecr_repository_url" {
   type        = string
 }
 
+
+# Main service configuration
+variable "main_service_desired_count" {
+  description = "Desired number of main service tasks"
+  type        = number
+  default     = 2
+}
+
 variable "main_service_port" {
   description = "Port number for the main service"
   type        = number
   default     = 8000
 }
 
-variable "solve_service_port" {
-  description = "Port number for the solve service"
-  type        = number
-  default     = 8001
-}
-
-variable "permit_pdp_port" {
-  description = "Port number for the Permit.io PDP service"
-  type        = number
-  default     = 7000
-}
 
 variable "main_service_cpu" {
   description = "CPU units for the main service task"
@@ -77,6 +74,31 @@ variable "main_service_memory" {
   description = "Memory (MiB) for the main service task"
   type        = number
   default     = 1024
+}
+
+variable "main_service_cpu_architecture" {
+  description = "CPU architecture for the main service ECS task runtime platform"
+  type        = string
+  default     = "ARM64" // Default value
+}
+
+variable "main_service_operating_system_family" {
+  description = "Operating system family for the main service ECS task runtime platform"
+  type        = string
+  default     = "LINUX" // Default value
+}
+
+# Solve service configuration
+variable "solve_service_desired_count" {
+  description = "Desired number of solve service tasks"
+  type        = number
+  default     = 1
+}
+
+variable "solve_service_port" {
+  description = "Port number for the solve service"
+  type        = number
+  default     = 8001
 }
 
 variable "solve_service_cpu" {
@@ -91,6 +113,25 @@ variable "solve_service_memory" {
   default     = 2048
 }
 
+variable "solve_service_cpu_architecture" {
+  description = "CPU architecture for the solve service ECS task runtime platform"
+  type        = string
+  default     = "ARM64" // Default value
+}
+
+variable "solve_service_operating_system_family" {
+  description = "Operating system family for the solve service ECS task runtime platform"
+  type        = string
+  default     = "LINUX" // Default value
+}
+
+# Permit.io PDP service configuration
+variable "permit_pdp_port" {
+  description = "Port number for the Permit.io PDP service"
+  type        = number
+  default     = 7000
+}
+
 variable "permit_pdp_cpu" {
   description = "CPU units for the Permit.io PDP task"
   type        = number
@@ -103,22 +144,22 @@ variable "permit_pdp_memory" {
   default     = 512
 }
 
-variable "main_service_desired_count" {
-  description = "Desired number of main service tasks"
-  type        = number
-  default     = 2
-}
-
-variable "solve_service_desired_count" {
-  description = "Desired number of solve service tasks"
-  type        = number
-  default     = 1
-}
-
 variable "permit_pdp_desired_count" {
   description = "Desired number of Permit.io PDP tasks"
   type        = number
   default     = 1
+}
+
+variable "permit_pdp_cpu_architecture" {
+  description = "CPU architecture for the Permit.io PDP ECS task runtime platform"
+  type        = string
+  default     = "ARM64" // Default value
+}
+
+variable "permit_pdp_operating_system_family" {
+  description = "Operating system family for the Permit.io PDP ECS task runtime platform"
+  type        = string
+  default     = "LINUX" // Default value
 }
 
 variable "log_retention_days" {
