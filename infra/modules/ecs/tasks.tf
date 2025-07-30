@@ -72,9 +72,8 @@ resource "aws_ecs_task_definition" "main_service" {
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-create-group" = "true"
-          "awslogs-group"        = "/ecs/nsp_pro-backend-task"
-          # "awslogs-group"         = aws_cloudwatch_log_group.main_service.name
+          "awslogs-create-group"  = "true"
+          "awslogs-group"         = aws_cloudwatch_log_group.main_service.name
           "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "ecs"
         }
@@ -149,9 +148,8 @@ resource "aws_ecs_task_definition" "solve_service" {
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-create-group" = "true"
-          "awslogs-group"        = "/ecs/backend-solve-service-task"
-          # "awslogs-group"         = aws_cloudwatch_log_group.solve_service.name
+          "awslogs-create-group"  = "true"
+          "awslogs-group"         = aws_cloudwatch_log_group.solve_service.name
           "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "ecs"
           "max-buffer-size"       = "25m"
@@ -233,9 +231,8 @@ resource "aws_ecs_task_definition" "permit_pdp" {
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-create-group" = "true"
-          "awslogs-group"        = "/ecs/backend-permit-pdp-task"
-          # "awslogs-group"         = aws_cloudwatch_log_group.permit_pdp.name
+          "awslogs-create-group"  = "true"
+          "awslogs-group"         = aws_cloudwatch_log_group.permit_pdp.name
           "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "ecs"
           "max-buffer-size"       = "25m"

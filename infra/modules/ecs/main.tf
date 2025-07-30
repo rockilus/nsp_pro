@@ -30,60 +30,69 @@ resource "aws_ecs_cluster" "main" {
 }
 
 # CloudWatch Log Group for ECS Cluster
-resource "aws_cloudwatch_log_group" "ecs_cluster" {
-  name              = "/aws/ecs/${var.project_name}-${var.environment}-cluster"
-  retention_in_days = var.log_retention_days
+# resource "aws_cloudwatch_log_group" "ecs_cluster" {
+#   name              = "/aws/ecs/${var.project_name}-${var.environment}-cluster"
+#   retention_in_days = var.log_retention_days
 
-  tags = merge(var.tags, {
-    Name        = "${var.project_name}-${var.environment}-cluster-logs"
-    Component   = "CloudWatch"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-  })
-}
+#   tags = merge(var.tags, {
+#     Name        = "${var.project_name}-${var.environment}-cluster-logs"
+#     Component   = "CloudWatch"
+#     Environment = var.environment
+#     Project     = var.project_name
+#     ManagedBy   = "Terraform"
+#   })
+# }
 
 # CloudWatch Log Groups for Services
 resource "aws_cloudwatch_log_group" "main_service" {
-  name              = "/aws/ecs/${var.project_name}-${var.environment}-main-service"
-  retention_in_days = var.log_retention_days
+  name = "/ecs/nsp_pro-backend-task"
+  # name              = "/aws/ecs/${var.project_name}-${var.environment}-main-service"
+  retention_in_days = 0
+  # retention_in_days = var.log_retention_days
+  log_group_class = "STANDARD"
 
-  tags = merge(var.tags, {
-    Name        = "${var.project_name}-${var.environment}-main-service-logs"
-    Component   = "CloudWatch"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-    Service     = "MainService"
-  })
+  # tags = merge(var.tags, {
+  #   Name        = "${var.project_name}-${var.environment}-main-service-logs"
+  #   Component   = "CloudWatch"
+  #   Environment = var.environment
+  #   Project     = var.project_name
+  #   ManagedBy   = "Terraform"
+  #   Service     = "MainService"
+  # })
 }
 
 resource "aws_cloudwatch_log_group" "solve_service" {
-  name              = "/aws/ecs/${var.project_name}-${var.environment}-solve-service"
-  retention_in_days = var.log_retention_days
+  name = "/ecs/backend-solve-service-task"
+  # name              = "/aws/ecs/${var.project_name}-${var.environment}-solve-service"
+  retention_in_days = 0
+  # retention_in_days = var.log_retention_days
+  log_group_class = "STANDARD"
 
-  tags = merge(var.tags, {
-    Name        = "${var.project_name}-${var.environment}-solve-service-logs"
-    Component   = "CloudWatch"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-    Service     = "SolveService"
-  })
+  # tags = merge(var.tags, {
+  #   Name        = "${var.project_name}-${var.environment}-solve-service-logs"
+  #   Component   = "CloudWatch"
+  #   Environment = var.environment
+  #   Project     = var.project_name
+  #   ManagedBy   = "Terraform"
+  #   Service     = "SolveService"
+  # })
 }
 
 resource "aws_cloudwatch_log_group" "permit_pdp" {
-  name              = "/aws/ecs/${var.project_name}-${var.environment}-permit-pdp"
-  retention_in_days = var.log_retention_days
+  name = "/ecs/backend-permit-pdp-task"
+  # name              = "/aws/ecs/${var.project_name}-${var.environment}-permit-pdp"
+  retention_in_days = 0
+  # retention_in_days = var.log_retention_days
+  log_group_class = "STANDARD"
 
-  tags = merge(var.tags, {
-    Name        = "${var.project_name}-${var.environment}-permit-pdp-logs"
-    Component   = "CloudWatch"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-    Service     = "PermitPDP"
-  })
+  # tags = merge(var.tags, {
+  #   Name        = "${var.project_name}-${var.environment}-permit-pdp-logs"
+  #   Component   = "CloudWatch"
+  #   Environment = var.environment
+  #   Project     = var.project_name
+  #   ManagedBy   = "Terraform"
+  #   Service     = "PermitPDP"
+  # })
 }
 
 # IAM Task Execution Role
@@ -122,35 +131,35 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
 }
 
 # Additional policy for ECR access
-resource "aws_iam_role_policy" "ecs_task_execution_ecr_policy" {
-  name = "${var.project_name}-${var.environment}-ecs-ecr-policy"
-  role = aws_iam_role.ecs_task_execution_role.id
+# resource "aws_iam_role_policy" "ecs_task_execution_ecr_policy" {
+#   name = "${var.project_name}-${var.environment}-ecs-ecr-policy"
+#   role = aws_iam_role.ecs_task_execution_role.id
 
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "ecr:GetAuthorizationToken",
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:BatchGetImage"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
-        ]
-        Resource = "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/aws/ecs/*"
-      }
-    ]
-  })
-}
+#   policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Effect = "Allow"
+#         Action = [
+#           "ecr:GetAuthorizationToken",
+#           "ecr:BatchCheckLayerAvailability",
+#           "ecr:GetDownloadUrlForLayer",
+#           "ecr:BatchGetImage"
+#         ]
+#         Resource = "*"
+#       },
+#       {
+#         Effect = "Allow"
+#         Action = [
+#           "logs:CreateLogGroup",
+#           "logs:CreateLogStream",
+#           "logs:PutLogEvents"
+#         ]
+#         Resource = "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/aws/ecs/*"
+#       }
+#     ]
+#   })
+# }
 
 # IAM Role for ECS Service
 resource "aws_iam_role" "ecs_service_role" {
@@ -464,50 +473,62 @@ resource "aws_service_discovery_private_dns_namespace" "main" {
 
 # Service Discovery Service for Main Service
 resource "aws_service_discovery_service" "main_service" {
-  name = "main-service"
+  name = "main-service-backend"
+  # name = "main-service"
+  description = "Managed by arn:aws:ecs:eu-west-3:590183915149:service/rockilus-dev-architecture-jun2025/main-service"
+  type        = "HTTP"
 
-  dns_config {
-    namespace_id = aws_service_discovery_private_dns_namespace.main.id
+  # dns_config {
+  #   namespace_id = aws_service_discovery_private_dns_namespace.main.id
 
-    dns_records {
-      ttl  = 10
-      type = "A"
-    }
+  #   dns_records {
+  #     ttl  = 10
+  #     type = "A"
+  #   }
 
-    routing_policy = "MULTIVALUE"
-  }
+  #   routing_policy = "MULTIVALUE"
+  # }
 
-  tags = merge(var.tags, {
-    Name        = "${var.project_name}-${var.environment}-main-service-discovery"
-    Component   = "ServiceDiscovery"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-    Service     = "MainService"
+  tags = merge(
+    # var.tags,
+    {
+      AmazonECSManaged = "true"
+      # Name        = "${var.project_name}-${var.environment}-main-service-discovery"
+      # Component   = "ServiceDiscovery"
+      # Environment = var.environment
+      # Project     = var.project_name
+      # ManagedBy   = "Terraform"
+      # Service     = "MainService"
   })
 }
 
 # Service Discovery Service for Permit PDP
 resource "aws_service_discovery_service" "permit_pdp" {
-  name = "permit-pdp"
+  name = "permit-pdp-service"
+  # name = "permit-pdp"
+  description = "Managed by arn:aws:ecs:eu-west-3:590183915149:service/rockilus-dev-architecture-jun2025/permit-pdp"
+  type        = "HTTP"
 
-  dns_config {
-    namespace_id = aws_service_discovery_private_dns_namespace.main.id
+  # dns_config {
+  #   namespace_id = aws_service_discovery_private_dns_namespace.main.id
 
-    dns_records {
-      ttl  = 10
-      type = "A"
-    }
+  #   dns_records {
+  #     ttl  = 10
+  #     type = "A"
+  #   }
 
-    routing_policy = "MULTIVALUE"
-  }
+  #   routing_policy = "MULTIVALUE"
+  # }
 
-  tags = merge(var.tags, {
-    Name        = "${var.project_name}-${var.environment}-permit-pdp-discovery"
-    Component   = "ServiceDiscovery"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-    Service     = "PermitPDP"
+  tags = merge(
+    # var.tags,
+    {
+      AmazonECSManaged = "true"
+      # Name        = "${var.project_name}-${var.environment}-permit-pdp-discovery"
+      # Component   = "ServiceDiscovery"
+      # Environment = var.environment
+      # Project     = var.project_name
+      # ManagedBy   = "Terraform"
+      # Service     = "PermitPDP"
   })
 }
