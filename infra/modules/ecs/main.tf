@@ -86,7 +86,9 @@ resource "aws_cloudwatch_log_group" "permit_pdp" {
 
 # IAM Task Execution Role
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "${var.project_name}-${var.environment}-ecs-task-execution-role"
+  name = "nsp_pro-ecs-task-role"
+  # name = "${var.project_name}-${var.environment}-ecs-task-execution-role"
+  description = "Allows ECS tasks to call AWS services on your behalf."
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -101,14 +103,14 @@ resource "aws_iam_role" "ecs_task_execution_role" {
     ]
   })
 
-  tags = merge(var.tags, {
-    Name        = "${var.project_name}-${var.environment}-ecs-task-execution-role"
-    Component   = "IAM"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-    Purpose     = "ECSTaskExecution"
-  })
+  # tags = merge(var.tags, {
+  #   Name        = "${var.project_name}-${var.environment}-ecs-task-execution-role"
+  #   Component   = "IAM"
+  #   Environment = var.environment
+  #   Project     = var.project_name
+  #   ManagedBy   = "Terraform"
+  #   Purpose     = "ECSTaskExecution"
+  # })
 }
 
 # Attach the Amazon ECS task execution role policy

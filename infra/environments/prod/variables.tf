@@ -252,8 +252,8 @@ variable "main_service_cpu_architecture" {
   default     = "x86_64"
 
   validation {
-    condition     = contains(["x86_64", "arm64"], var.main_service_cpu_architecture)
-    error_message = "Main service CPU architecture must be either 'x86_64' or 'arm64' for compatibility."
+    condition     = contains(["x86_64", "ARM64"], var.main_service_cpu_architecture)
+    error_message = "Main service CPU architecture must be either 'x86_64' or 'ARM64' for compatibility."
   }
 }
 
@@ -284,8 +284,8 @@ variable "solve_service_port" {
   default     = 8000
 
   validation {
-    condition     = var.solve_service_port > 1024 && var.solve_service_port < 65536
-    error_message = "Solve service port must be between 1024 and 65535 for security compliance."
+    condition     = (var.solve_service_port == 80) || (var.solve_service_port > 1024 && var.solve_service_port < 65536)
+    error_message = "Solve service port must be 80 or between 1024 and 65535 for security compliance."
   }
 }
 
@@ -317,8 +317,8 @@ variable "solve_service_cpu_architecture" {
   default     = "x86_64"
 
   validation {
-    condition     = contains(["x86_64", "arm64"], var.solve_service_cpu_architecture)
-    error_message = "Solve service CPU architecture must be either 'x86_64' or 'arm64' for compatibility."
+    condition     = contains(["x86_64", "ARM64"], var.solve_service_cpu_architecture)
+    error_message = "Solve service CPU architecture must be either 'x86_64' or 'ARM64' for compatibility."
   }
 }
 
@@ -383,8 +383,8 @@ variable "permit_pdp_cpu_architecture" {
   default     = "x86_64"
 
   validation {
-    condition     = contains(["x86_64", "arm64"], var.permit_pdp_cpu_architecture)
-    error_message = "Permit PDP CPU architecture must be either 'x86_64' or 'arm64' for compatibility."
+    condition     = contains(["x86_64", "ARM64"], var.permit_pdp_cpu_architecture)
+    error_message = "Permit PDP CPU architecture must be either 'x86_64' or 'ARM64' for compatibility."
   }
 }
 

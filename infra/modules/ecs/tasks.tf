@@ -18,6 +18,7 @@ resource "aws_ecs_task_definition" "main_service" {
 
       portMappings = [
         {
+          name          = "backend-image-4000-tcp"
           appProtocol   = "http"
           containerPort = var.main_service_port
           hostPort      = var.main_service_port
@@ -35,6 +36,8 @@ resource "aws_ecs_task_definition" "main_service" {
       #     value = value
       #   }
       # ]
+
+      environment = []
 
       environmentFiles = [
         {
@@ -69,8 +72,8 @@ resource "aws_ecs_task_definition" "main_service" {
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          awslogs-create-group = true
-          awslogs-group        = "/ecs/nsp_pro-backend-task"
+          "awslogs-create-group" = "true"
+          "awslogs-group"        = "/ecs/nsp_pro-backend-task"
           # "awslogs-group"         = aws_cloudwatch_log_group.main_service.name
           "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "ecs"
@@ -108,131 +111,177 @@ resource "aws_ecs_task_definition" "main_service" {
 
 # Solve Service Task Definition
 resource "aws_ecs_task_definition" "solve_service" {
-  family                   = "${var.project_name}-${var.environment}-solve-service"
+  family = "backend-solve-service-task"
+  # family                   = "${var.project_name}-${var.environment}-solve-service"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   cpu                      = var.solve_service_cpu
   memory                   = var.solve_service_memory
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   task_role_arn            = aws_iam_role.ecs_task_execution_role.arn
+  enable_fault_injection   = false
 
   container_definitions = jsonencode([
     {
-      name  = "solve-service"
+      name = "solve-service-image"
+      # name  = "solve-service"
       image = "${var.solve_service_ecr_repository_url}:latest"
 
       portMappings = [
         {
+          name          = "solve-service-port-80"
+          appProtocol   = "http"
           containerPort = var.solve_service_port
           hostPort      = var.solve_service_port
           protocol      = "tcp"
         }
       ]
 
-      environment = [
-        for key, value in merge(var.solve_service_environment_variables, {
-          "ENVIRONMENT" = var.environment
-          "AWS_REGION"  = var.aws_region
-          }) : {
-          name  = key
-          value = value
-        }
+      environment = []
+
+      environmentFiles = [
+        {
+          type  = "s3"
+          value = "arn:aws:s3:::nsp-pro-bucket/.data_fetcher.env"
+        },
       ]
 
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.solve_service.name
+          "awslogs-create-group" = "true"
+          "awslogs-group"        = "/ecs/backend-solve-service-task"
+          # "awslogs-group"         = aws_cloudwatch_log_group.solve_service.name
           "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "ecs"
+          "max-buffer-size"       = "25m"
+          "mode"                  = "non-blocking"
         }
+        secretOptions = []
       }
 
-      healthCheck = {
-        command     = ["CMD-SHELL", "curl -f http://localhost:${var.solve_service_port}/health || exit 1"]
-        interval    = 30
-        timeout     = 5
-        retries     = 3
-        startPeriod = 60
-      }
+      secrets = [
+        {
+          name      = "DB_URI"
+          valueFrom = var.atlas_secret_arn
+        },
+      ]
+
+      mountPoints    = []
+      systemControls = []
+      ulimits        = []
+      volumesFrom    = []
+
+      # healthCheck = {
+      #   command     = ["CMD-SHELL", "curl -f http://localhost:${var.solve_service_port}/health || exit 1"]
+      #   interval    = 30
+      #   timeout     = 5
+      #   retries     = 3
+      #   startPeriod = 60
+      # }
 
       essential = true
     }
   ])
 
-  tags = merge(var.tags, {
-    Name        = "${var.project_name}-${var.environment}-solve-service-task"
-    Component   = "ECS"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-    Service     = "SolveService"
-  })
+  runtime_platform {
+    cpu_architecture        = var.solve_service_cpu_architecture
+    operating_system_family = var.solve_service_operating_system_family
+  }
+
+  # tags = merge(var.tags, {
+  #   Name        = "${var.project_name}-${var.environment}-solve-service-task"
+  #   Component   = "ECS"
+  #   Environment = var.environment
+  #   Project     = var.project_name
+  #   ManagedBy   = "Terraform"
+  #   Service     = "SolveService"
+  # })
 }
 
 # Permit PDP Task Definition
 resource "aws_ecs_task_definition" "permit_pdp" {
-  family                   = "${var.project_name}-${var.environment}-permit-pdp"
+  family = "backend-permit-pdp-task"
+  # family                   = "${var.project_name}-${var.environment}-permit-pdp"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   cpu                      = var.permit_pdp_cpu
   memory                   = var.permit_pdp_memory
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   task_role_arn            = aws_iam_role.ecs_task_execution_role.arn
+  enable_fault_injection   = false
 
   container_definitions = jsonencode([
     {
-      name  = "permit-pdp"
+      name = "permit-pdp-image"
+      # name  = "permit-pdp"
       image = "permitio/pdp-v2:latest"
 
       portMappings = [
         {
+          appProtocol   = "http"
+          name          = "permit-image-7000-tcp"
           containerPort = var.permit_pdp_port
           hostPort      = var.permit_pdp_port
           protocol      = "tcp"
         }
       ]
 
-      environment = [
-        {
-          name  = "PDP_API_KEY"
-          value = var.permit_api_key
-        },
-        {
-          name  = "PDP_DEBUG"
-          value = var.environment == "prod" ? "false" : "true"
-        }
-      ]
+      environment      = []
+      environmentFiles = []
 
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.permit_pdp.name
+          "awslogs-create-group" = "true"
+          "awslogs-group"        = "/ecs/backend-permit-pdp-task"
+          # "awslogs-group"         = aws_cloudwatch_log_group.permit_pdp.name
           "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "ecs"
+          "max-buffer-size"       = "25m"
+          "mode"                  = "non-blocking"
         }
+        secretOptions = []
       }
 
-      healthCheck = {
-        command     = ["CMD-SHELL", "curl -f http://localhost:${var.permit_pdp_port}/v1/health || exit 1"]
-        interval    = 30
-        timeout     = 5
-        retries     = 3
-        startPeriod = 60
-      }
+      mountPoints = []
+
+      secrets = [
+        {
+          name      = "PDP_API_KEY"
+          valueFrom = var.permit_api_key_secret_arn
+        },
+      ]
+
+      # healthCheck = {
+      #   command     = ["CMD-SHELL", "curl -f http://localhost:${var.permit_pdp_port}/v1/health || exit 1"]
+      #   interval    = 30
+      #   timeout     = 5
+      #   retries     = 3
+      #   startPeriod = 60
+      # }
+
+      systemControls = []
+      ulimits        = []
+      volumesFrom    = []
 
       essential = true
     }
   ])
 
-  tags = merge(var.tags, {
-    Name        = "${var.project_name}-${var.environment}-permit-pdp-task"
-    Component   = "ECS"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-    Service     = "PermitPDP"
-  })
+  runtime_platform {
+    cpu_architecture        = var.solve_service_cpu_architecture
+    operating_system_family = var.solve_service_operating_system_family
+  }
+
+  # tags = merge(var.tags, {
+  #   Name        = "${var.project_name}-${var.environment}-permit-pdp-task"
+  #   Component   = "ECS"
+  #   Environment = var.environment
+  #   Project     = var.project_name
+  #   ManagedBy   = "Terraform"
+  #   Service     = "PermitPDP"
+  # })
 }
 
 # Main Service ECS Service
