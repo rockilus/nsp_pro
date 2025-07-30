@@ -1,3 +1,34 @@
+# VPC outputs
+output "vpc_id" {
+  description = "ID of the VPC"
+  value       = module.vpc.vpc_id
+}
+
+output "vpc_cidr_block" {
+  description = "CIDR block of the VPC"
+  value       = module.vpc.vpc_cidr_block
+}
+
+output "public_subnet_ids" {
+  description = "IDs of the public subnets"
+  value       = module.vpc.public_subnet_ids
+}
+
+output "private_subnet_ids" {
+  description = "IDs of the private subnets"
+  value       = module.vpc.private_subnet_ids
+}
+
+output "nat_gateway_public_ip" {
+  description = "Public IP of the NAT Gateway"
+  value       = module.vpc.nat_gateway_public_ip
+}
+
+output "availability_zones" {
+  description = "List of availability zones used"
+  value       = module.vpc.availability_zones
+}
+
 # API Gateway outputs
 output "api_gateway_endpoint" {
   description = "Endpoint configuration for the API Gateway"
@@ -141,3 +172,115 @@ output "dns_deployment_info" {
   }
   sensitive = false
 }
+
+# ECR Repository outputs
+output "ecr_main_service_repository_url" {
+  description = "URL of the main service ECR repository"
+  value       = module.ecr.main_service_repository_url
+}
+
+output "ecr_solve_service_repository_url" {
+  description = "URL of the solve service ECR repository"
+  value       = module.ecr.solve_service_repository_url
+}
+
+output "ecr_repository_urls" {
+  description = "Map of all ECR repository URLs"
+  value       = module.ecr.repository_urls
+}
+
+output "ecr_repository_arns" {
+  description = "Map of all ECR repository ARNs"
+  value       = module.ecr.repository_arns
+}
+
+output "ecr_deployment_info" {
+  description = "ECR deployment information for CI/CD"
+  value = {
+    main_service_repository_url  = module.ecr.main_service_repository_url
+    solve_service_repository_url = module.ecr.solve_service_repository_url
+    registry_id                  = module.ecr.main_service_registry_id
+    aws_region                   = var.aws_region
+  }
+  sensitive = false
+}
+
+# ECS Cluster and Services outputs
+output "ecs_cluster_name" {
+  description = "Name of the ECS cluster"
+  value       = module.ecs.ecs_cluster_name
+}
+
+output "ecs_cluster_arn" {
+  description = "ARN of the ECS cluster"
+  value       = module.ecs.ecs_cluster_arn
+}
+
+output "ecs_main_service_url" {
+  description = "Internal URL for the main service"
+  value       = module.ecs.main_service_internal_url
+}
+
+output "ecs_permit_pdp_url" {
+  description = "Internal URL for the Permit PDP service"
+  value       = module.ecs.permit_pdp_internal_url
+}
+
+output "ecs_service_discovery_namespace" {
+  description = "Service discovery namespace name"
+  value       = module.ecs.service_discovery_namespace_name
+}
+
+output "ecs_task_execution_role_arn" {
+  description = "ARN of the ECS task execution role"
+  value       = module.ecs.ecs_task_execution_role_arn
+}
+
+output "ecs_deployment_info" {
+  description = "ECS deployment information for CI/CD"
+  value       = module.ecs.ecs_deployment_info
+  sensitive   = false
+}
+
+# Secrets Manager outputs
+output "secrets_summary" {
+  description = "Summary of all secrets managed for the application"
+  value       = module.secrets.secrets_summary
+  sensitive   = false
+}
+
+output "permit_api_key_secret_arn" {
+  description = "ARN of the Permit.io API key secret"
+  value       = module.secrets.permit_api_key_secret_arn
+  sensitive   = false
+}
+
+output "st_api_key_secret_arn" {
+  description = "ARN of the SendGrid API key secret"
+  value       = module.secrets.st_api_key_secret_arn
+  sensitive   = false
+}
+
+output "st_connection_uri_secret_arn" {
+  description = "ARN of the SendGrid connection URI secret"
+  value       = module.secrets.st_connection_uri_secret_arn
+  sensitive   = false
+}
+
+output "atlas_secret_arn" {
+  description = "ARN of the MongoDB Atlas credentials secret"
+  value       = module.secrets.atlas_secret_arn
+  sensitive   = false
+}
+
+# output "secrets_access_role_arn" {
+#   description = "ARN of the IAM role for accessing secrets"
+#   value       = module.secrets.secrets_access_role_arn
+#   sensitive   = false
+# }
+
+# output "secrets_audit_log_group_name" {
+#   description = "Name of the CloudWatch log group for secrets audit"
+#   value       = module.secrets.secrets_audit_log_group_name
+#   sensitive   = false
+# }
