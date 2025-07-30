@@ -89,9 +89,17 @@ module "ecs" {
   solve_service_ecr_repository_url = module.ecr.solve_service_repository_url
 
   # Service configuration
-  main_service_desired_count  = var.main_service_desired_count
+  # Main service
+  main_service_desired_count = var.main_service_desired_count
+  main_service_port          = var.main_service_port
+
+  # Solve service
   solve_service_desired_count = var.solve_service_desired_count
-  permit_pdp_desired_count    = var.permit_pdp_desired_count
+  solve_service_port          = var.solve_service_port
+
+  # Permit PDP service
+  permit_pdp_desired_count = var.permit_pdp_desired_count
+  permit_pdp_port          = var.permit_pdp_port
 
   # Permit.io configuration
   permit_api_key = var.permit_api_key

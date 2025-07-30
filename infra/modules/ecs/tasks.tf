@@ -10,44 +10,57 @@ resource "aws_ecs_task_definition" "main_service" {
 
   container_definitions = jsonencode([
     {
-      name  = "main-service"
+      name = "backend-image"
+      # name  = "main-service"
       image = "${var.main_service_ecr_repository_url}:latest"
 
       portMappings = [
         {
+          appProtocol   = "http"
           containerPort = var.main_service_port
           hostPort      = var.main_service_port
           protocol      = "tcp"
         }
       ]
 
-      environment = [
-        for key, value in merge(var.main_service_environment_variables, {
-          "ENVIRONMENT"    = var.environment
-          "AWS_REGION"     = var.aws_region
-          "PERMIT_PDP_URL" = "http://permit-pdp.${var.project_name}-${var.environment}.local:${var.permit_pdp_port}"
-          }) : {
-          name  = key
-          value = value
-        }
+      # environment = [
+      #   for key, value in merge(var.main_service_environment_variables, {
+      #     "ENVIRONMENT"    = var.environment
+      #     "AWS_REGION"     = var.aws_region
+      #     "PERMIT_PDP_URL" = "http://permit-pdp.${var.project_name}-${var.environment}.local:${var.permit_pdp_port}"
+      #     }) : {
+      #     name  = key
+      #     value = value
+      #   }
+      # ]
+
+      environmentFiles = [
+        {
+          type  = "s3"
+          value = "arn:aws:s3:::nsp-pro-bucket/.env"
+        },
       ]
 
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.main_service.name
+          awslogs-create-group = true
+          awslogs-group        = "/ecs/nsp_pro-backend-task"
+          # "awslogs-group"         = aws_cloudwatch_log_group.main_service.name
           "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "ecs"
         }
+        secretOptions = []
       }
+      mountPoints = []
 
-      healthCheck = {
-        command     = ["CMD-SHELL", "curl -f http://localhost:${var.main_service_port}/health || exit 1"]
-        interval    = 30
-        timeout     = 5
-        retries     = 3
-        startPeriod = 60
-      }
+      # healthCheck = {
+      #   command     = ["CMD-SHELL", "curl -f http://localhost:${var.main_service_port}/health || exit 1"]
+      #   interval    = 30
+      #   timeout     = 5
+      #   retries     = 3
+      #   startPeriod = 60
+      # }
 
       essential = true
     }

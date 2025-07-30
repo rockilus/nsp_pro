@@ -71,16 +71,6 @@ variable "private_subnet_cidrs" {
   }
 }
 
-# DEPRECATED: These variables are no longer needed as Cognito is managed by the module
-# variable "cognito_user_pool_id" {
-#   description = "Cognito User Pool ID."
-#   type        = string
-# }
-# 
-# variable "cognito_user_pool_clients_ids" {
-#   description = "List of Cognito User Pool Client IDs."
-#   type        = list(string)
-# }
 
 variable "vpc_link_id" {
   description = "VPC Link ID for API Gateway integration."
@@ -210,13 +200,79 @@ variable "backend_instance_ids" {
 }
 
 # ECS Configuration Variables
+# Main Service Configuration
+variable "main_service_desired_count" {
+  description = "Desired number of main service tasks"
+  type        = number
+  default     = 1
+
+  validation {
+    condition     = var.main_service_desired_count >= 1 && var.main_service_desired_count <= 10
+    error_message = "Main service desired count must be between 1 and 10 for healthcare compliance."
+  }
+}
+
+
+variable "main_service_port" {
+  description = "Port for the main service"
+  type        = number
+  default     = 8000
+
+  validation {
+    condition     = var.main_service_port > 1024 && var.main_service_port < 65536
+    error_message = "Main service port must be between 1024 and 65535 for security compliance."
+  }
+}
+
+# Solve Service Configuration
+variable "solve_service_desired_count" {
+  description = "Desired number of solve service tasks"
+  type        = number
+  default     = 1
+  validation {
+    condition     = var.solve_service_desired_count >= 1 && var.solve_service_desired_count <= 10
+    error_message = "Solve service desired count must be between 1 and 10 for healthcare compliance."
+  }
+}
+variable "solve_service_port" {
+  description = "Port for the solve service"
+  type        = number
+  default     = 8000
+
+  validation {
+    condition     = var.solve_service_port > 1024 && var.solve_service_port < 65536
+    error_message = "Solve service port must be between 1024 and 65535 for security compliance."
+  }
+}
+
+# Permit PDP Service Configuration
+variable "permit_pdp_desired_count" {
+  description = "Desired number of Permit PDP tasks"
+  type        = number
+  default     = 1
+  validation {
+    condition     = var.permit_pdp_desired_count >= 1 && var.permit_pdp_desired_count <= 10
+    error_message = "Permit PDP desired count must be between 1 and 10 for healthcare compliance."
+  }
+}
+
+variable "permit_pdp_port" {
+  description = "Port for the Permit PDP service"
+  type        = number
+  default     = 3000
+
+  validation {
+    condition     = var.permit_pdp_port > 1024 && var.permit_pdp_port < 65536
+    error_message = "Permit PDP port must be between 1024 and 65535 for security compliance."
+  }
+}
+
+# Secrets Configuration Variables
 variable "permit_api_key" {
   description = "Permit.io API key for PDP configuration"
   type        = string
   sensitive   = true
 }
-
-
 
 # SendGrid Configuration Variables
 variable "st_api_key" {
