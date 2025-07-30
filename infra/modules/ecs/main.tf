@@ -201,18 +201,16 @@ resource "aws_security_group" "main_service" {
     self             = false
     to_port          = 443
   }
+
   ingress {
     cidr_blocks      = []
-    from_port        = 4000
+    from_port        = var.main_service_port
     ipv6_cidr_blocks = []
     prefix_list_ids  = []
     protocol         = "tcp"
-    security_groups = [
-      "sg-085fcfd0444d435f5",
-    ]
-    self    = false
-    to_port = 4000
-    # (1 unchanged attribute hidden)
+    security_groups  = var.nlb_security_group_ids
+    self             = false
+    to_port          = var.main_service_port
   }
 
   # # Allow inbound traffic from NLB

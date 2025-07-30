@@ -296,7 +296,8 @@ resource "aws_ecs_service" "main_service" {
   enable_ecs_managed_tags           = true
   health_check_grace_period_seconds = 0
   propagate_tags                    = "NONE"
-  iam_role                          = aws_iam_role.ecs_service_role.arn
+  iam_role                          = "/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
+  # iam_role                          = aws_iam_role.ecs_service_role.arn
 
   alarms {
     alarm_names = []
@@ -321,7 +322,7 @@ resource "aws_ecs_service" "main_service" {
 
   load_balancer {
     container_name   = "backend-image"
-    container_port   = 4000
+    container_port   = var.main_service_port
     elb_name         = null
     target_group_arn = "arn:aws:elasticloadbalancing:eu-west-3:590183915149:targetgroup/apigateway-mainservice-nlb-tg-2/a155f069a1d4a13b"
   }
