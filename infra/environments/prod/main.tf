@@ -185,6 +185,74 @@ module "frontend" {
 }
 
 # ECS infrastructure for container orchestration
+module "security_groups" {
+  source = "../../modules/security-groups"
+
+  project_name   = var.project_name
+  environment    = "prod"
+  vpc_id         = module.vpc.vpc_id
+  vpc_cidr_block = module.vpc.vpc_cidr_block
+
+  # Service ports
+  main_service_port  = var.main_service_port
+  solve_service_port = var.solve_service_port
+  permit_pdp_port    = var.permit_pdp_port
+
+  # Network Load Balancer security group IDs
+  nlb_security_group_ids = [module.network_load_balancer.nlb_security_group_id]
+
+  tags = {
+    Environment = "prod"
+    Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
+    Project     = "NSP Pro"
+  }
+
+  depends_on = [module.vpc, module.network_load_balancer]
+}
+
+
+
+
+
+# DocumentDB cluster for MongoDB-compatible database
+module "documentdb" {
+  source = "../../modules/documentdb"
+
+  project_name       = var.project_name
+  environment        = "prod"
+  vpc_id             = module.vpc.vpc_id
+  private_subnet_ids = module.vpc.private_subnet_ids
+  allowed_security_group_ids = [
+    module.security_groups.main_service_security_group_id,
+    module.security_groups.solve_service_security_group_id
+  ]
+
+  # Production configuration
+  master_username         = "docdbadmin"
+  engine_version          = "5.0.0"
+  instance_class          = "db.r5.large"
+  instance_count          = 3
+  backup_retention_period = 30
+  deletion_protection     = true
+
+  # Healthcare compliance configuration
+  log_retention_days      = 90
+  replica_region          = "us-west-2"
+  recovery_window_in_days = 30
+
+  tags = {
+    Environment = "prod"
+    Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
+    Project     = "NSP Pro"
+  }
+
+  depends_on = [module.vpc, module.security_groups]
+}
+
+
+
 module "ecs" {
   source = "../../modules/ecs"
 
@@ -199,6 +267,11 @@ module "ecs" {
   private_subnet_ids     = module.vpc.private_subnet_ids
   nlb_security_group_ids = [module.network_load_balancer.nlb_security_group_id]
   nlb_target_group_arn   = module.network_load_balancer.target_group_arn
+
+  # Security Group IDs from security groups module
+  main_service_security_group_id  = module.security_groups.main_service_security_group_id
+  solve_service_security_group_id = module.security_groups.solve_service_security_group_id
+  permit_pdp_security_group_id    = module.security_groups.permit_pdp_security_group_id
 
   # ECR repository URLs
   main_service_ecr_repository_url  = module.ecr.main_service_repository_url
@@ -252,50 +325,8 @@ module "ecs" {
     Project     = "NSP Pro"
   }
 
-  depends_on = [module.vpc, module.ecr, module.network_load_balancer, module.secrets, module.documentdb]
+  depends_on = [module.vpc, module.ecr, module.network_load_balancer, module.secrets, module.documentdb, module.security_groups]
 }
-
-
-
-# DocumentDB cluster for MongoDB-compatible database
-module "documentdb" {
-  source = "../../modules/documentdb"
-
-  project_name       = var.project_name
-  environment        = "prod"
-  vpc_id             = module.vpc.vpc_id
-  private_subnet_ids = module.vpc.private_subnet_ids
-  allowed_security_group_ids = [
-    module.ecs.main_service_security_group_id,
-    module.ecs.solve_service_security_group_id
-  ]
-
-  # Production configuration
-  master_username         = "docdbadmin"
-  engine_version          = "5.0.0"
-  instance_class          = "db.r5.large"
-  instance_count          = 3
-  backup_retention_period = 30
-  deletion_protection     = true
-
-  # Healthcare compliance configuration
-  log_retention_days      = 90
-  replica_region          = "us-west-2"
-  recovery_window_in_days = 30
-
-  tags = {
-    Environment = "prod"
-    Owner       = "DevOps Team"
-    Compliance  = "Healthcare"
-    Project     = "NSP Pro"
-  }
-
-  depends_on = [module.vpc, module.ecs]
-}
-
-
-
-
 
 
 

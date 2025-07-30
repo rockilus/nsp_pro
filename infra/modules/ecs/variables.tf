@@ -228,6 +228,21 @@ variable "solve_service_environment_variables" {
   default     = {}
 }
 
+variable "main_service_security_group_id" {
+  description = "Security group ID for the main service"
+  type        = string
+}
+
+variable "solve_service_security_group_id" {
+  description = "Security group ID for the solve service"
+  type        = string
+}
+
+variable "permit_pdp_security_group_id" {
+  description = "Security group ID for the Permit PDP service"
+  type        = string
+}
+
 variable "tags" {
   description = "A map of tags to assign to the resource"
   type        = map(string)

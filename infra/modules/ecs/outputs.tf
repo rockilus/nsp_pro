@@ -46,22 +46,6 @@ output "permit_pdp_service_id" {
   value       = aws_ecs_service.permit_pdp.id
 }
 
-# Security Group Outputs
-output "main_service_security_group_id" {
-  description = "ID of the main service security group"
-  value       = aws_security_group.main_service.id
-}
-
-output "solve_service_security_group_id" {
-  description = "ID of the solve service security group"
-  value       = aws_security_group.solve_service.id
-}
-
-output "permit_pdp_security_group_id" {
-  description = "ID of the Permit PDP security group"
-  value       = aws_security_group.permit_pdp.id
-}
-
 # IAM Role Outputs
 output "ecs_task_execution_role_arn" {
   description = "ARN of the ECS task execution role"
