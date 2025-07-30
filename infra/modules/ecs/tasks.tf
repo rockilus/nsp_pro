@@ -49,7 +49,7 @@ resource "aws_ecs_task_definition" "main_service" {
       secrets = [
         {
           name      = "DB_URI"
-          valueFrom = var.atlas_secret_arn
+          valueFrom = var.documentdb_secret_arn
         },
         {
           name      = "PDP_API_KEY"
@@ -161,7 +161,7 @@ resource "aws_ecs_task_definition" "solve_service" {
       secrets = [
         {
           name      = "DB_URI"
-          valueFrom = var.atlas_secret_arn
+          valueFrom = var.documentdb_secret_arn
         },
       ]
 

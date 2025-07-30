@@ -284,3 +284,34 @@ output "atlas_secret_arn" {
 #   value       = module.secrets.secrets_audit_log_group_name
 #   sensitive   = false
 # }
+
+# DocumentDB outputs
+output "documentdb_cluster_id" {
+  description = "DocumentDB cluster identifier"
+  value       = module.documentdb.cluster_id
+}
+
+output "documentdb_cluster_endpoint" {
+  description = "DocumentDB cluster endpoint"
+  value       = module.documentdb.cluster_endpoint
+}
+
+output "documentdb_cluster_reader_endpoint" {
+  description = "DocumentDB cluster reader endpoint"
+  value       = module.documentdb.cluster_reader_endpoint
+}
+
+output "documentdb_security_group_id" {
+  description = "Security group ID for DocumentDB cluster"
+  value       = module.documentdb.security_group_id
+}
+
+output "documentdb_credentials_secret_arn" {
+  description = "ARN of the secret containing DocumentDB credentials"
+  value       = module.documentdb.credentials_secret_arn
+}
+
+output "documentdb_credentials_secret_name" {
+  description = "Name of the secret containing DocumentDB credentials"
+  value       = module.documentdb.credentials_secret_name
+}

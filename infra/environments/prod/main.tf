@@ -124,6 +124,7 @@ module "ecs" {
   st_api_key_secret_arn        = module.secrets.st_api_key_secret_arn
   st_connection_uri_secret_arn = module.secrets.st_connection_uri_secret_arn
   atlas_secret_arn             = module.secrets.atlas_secret_arn
+  documentdb_secret_arn        = module.documentdb.credentials_secret_arn
 
   # Environment variables
   main_service_environment_variables  = var.main_service_environment_variables
@@ -136,7 +137,7 @@ module "ecs" {
     Project     = "NSP Pro"
   }
 
-  depends_on = [module.vpc, module.ecr, module.network_load_balancer, module.secrets]
+  depends_on = [module.vpc, module.ecr, module.network_load_balancer, module.secrets, module.documentdb]
 }
 
 # AWS Secrets Manager for sensitive configuration
@@ -164,6 +165,42 @@ module "secrets" {
     Compliance  = "Healthcare"
     Project     = "NSP Pro"
   }
+}
+
+# DocumentDB cluster for MongoDB-compatible database
+module "documentdb" {
+  source = "../../modules/documentdb"
+
+  project_name       = var.project_name
+  environment        = "prod"
+  vpc_id             = module.vpc.vpc_id
+  private_subnet_ids = module.vpc.private_subnet_ids
+  allowed_security_group_ids = [
+    module.ecs.main_service_security_group_id,
+    module.ecs.solve_service_security_group_id
+  ]
+
+  # Production configuration
+  master_username         = "docdbadmin"
+  engine_version          = "5.0.0"
+  instance_class          = "db.r5.large"
+  instance_count          = 3
+  backup_retention_period = 30
+  deletion_protection     = true
+
+  # Healthcare compliance configuration
+  log_retention_days      = 90
+  replica_region          = "us-west-2"
+  recovery_window_in_days = 30
+
+  tags = {
+    Environment = "prod"
+    Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
+    Project     = "NSP Pro"
+  }
+
+  depends_on = [module.vpc, module.ecs]
 }
 
 module "api_gateway" {

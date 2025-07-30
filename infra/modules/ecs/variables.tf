@@ -210,6 +210,12 @@ variable "atlas_secret_arn" {
   default     = ""
 }
 
+variable "documentdb_secret_arn" {
+  description = "ARN of the DocumentDB credentials secret"
+  type        = string
+  default     = ""
+}
+
 variable "main_service_environment_variables" {
   description = "Environment variables for the main service"
   type        = map(string)
