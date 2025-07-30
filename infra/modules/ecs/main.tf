@@ -152,71 +152,141 @@ resource "aws_iam_role_policy" "ecs_task_execution_ecr_policy" {
   })
 }
 
+# IAM Role for ECS Service
+resource "aws_iam_role" "ecs_service_role" {
+  name        = "AWSServiceRoleForECS"
+  description = "Role to enable Amazon ECS to manage your cluster."
+  path        = "/aws-service-role/ecs.amazonaws.com/"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ecs.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  # tags = merge(var.tags, {
+  #   Name        = "${var.project_name}-${var.environment}-ecs-service-role"
+  #   Component   = "IAM"
+  #   Environment = var.environment
+  #   Project     = var.project_name
+  #   ManagedBy   = "Terraform"
+  #   Purpose     = "ECSServiceRole"
+  # })
+}
+
 # Security Group for Main Service
 resource "aws_security_group" "main_service" {
-  name_prefix = "${var.project_name}-${var.environment}-main-service-"
-  description = "Security group for ${var.project_name} ${var.environment} main service"
-  vpc_id      = var.vpc_id
+  name = "backend-security-group"
+  # name_prefix = "${var.project_name}-${var.environment}-main-service-"
+  description = "backend security group"
+  # description = "Security group for ${var.project_name} ${var.environment} main service"
+  vpc_id = var.vpc_id
 
-  # Allow inbound traffic from NLB
   ingress {
-    description     = "Traffic from Network Load Balancer"
-    from_port       = var.main_service_port
-    to_port         = var.main_service_port
-    protocol        = "tcp"
-    security_groups = var.nlb_security_group_ids
+    cidr_blocks = [
+      "0.0.0.0/0",
+    ]
+    from_port        = 443
+    ipv6_cidr_blocks = []
+    prefix_list_ids  = []
+    protocol         = "tcp"
+    security_groups  = []
+    self             = false
+    to_port          = 443
+  }
+  ingress {
+    cidr_blocks      = []
+    from_port        = 4000
+    ipv6_cidr_blocks = []
+    prefix_list_ids  = []
+    protocol         = "tcp"
+    security_groups = [
+      "sg-085fcfd0444d435f5",
+    ]
+    self    = false
+    to_port = 4000
+    # (1 unchanged attribute hidden)
   }
 
-  # Allow internal service communication
-  ingress {
-    description = "Internal service communication"
-    from_port   = var.main_service_port
-    to_port     = var.main_service_port
-    protocol    = "tcp"
-    cidr_blocks = [var.vpc_cidr_block]
-  }
+  # # Allow inbound traffic from NLB
+  # ingress {
+  #   description     = "Traffic from Network Load Balancer"
+  #   from_port       = var.main_service_port
+  #   to_port         = var.main_service_port
+  #   protocol        = "tcp"
+  #   security_groups = var.nlb_security_group_ids
+  # }
+
+  # # Allow internal service communication
+  # ingress {
+  #   description = "Internal service communication"
+  #   from_port   = var.main_service_port
+  #   to_port     = var.main_service_port
+  #   protocol    = "tcp"
+  #   cidr_blocks = [var.vpc_cidr_block]
+  # }
 
   # Outbound rules for database and external services
   egress {
-    description = "MongoDB/DocumentDB communication"
-    from_port   = 27017
-    to_port     = 27017
-    protocol    = "tcp"
-    cidr_blocks = [var.vpc_cidr_block]
+    cidr_blocks = [
+      "0.0.0.0/0",
+    ]
+    from_port        = 0
+    ipv6_cidr_blocks = []
+    prefix_list_ids  = []
+    protocol         = "-1"
+    security_groups  = []
+    self             = false
+    to_port          = 0
   }
 
-  egress {
-    description = "Redis communication"
-    from_port   = 6379
-    to_port     = 6379
-    protocol    = "tcp"
-    cidr_blocks = [var.vpc_cidr_block]
-  }
+  # egress {
+  #   description = "MongoDB/DocumentDB communication"
+  #   from_port   = 27017
+  #   to_port     = 27017
+  #   protocol    = "tcp"
+  #   cidr_blocks = [var.vpc_cidr_block]
+  # }
 
-  egress {
-    description = "HTTPS for AWS services"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  # egress {
+  #   description = "Redis communication"
+  #   from_port   = 6379
+  #   to_port     = 6379
+  #   protocol    = "tcp"
+  #   cidr_blocks = [var.vpc_cidr_block]
+  # }
 
-  egress {
-    description = "Permit.io PDP communication"
-    from_port   = 7000
-    to_port     = 7000
-    protocol    = "tcp"
-    cidr_blocks = [var.vpc_cidr_block]
-  }
+  # egress {
+  #   description = "HTTPS for AWS services"
+  #   from_port   = 443
+  #   to_port     = 443
+  #   protocol    = "tcp"
+  #   cidr_blocks = ["0.0.0.0/0"]
+  # }
 
-  tags = merge(var.tags, {
-    Name        = "${var.project_name}-${var.environment}-main-service-sg"
-    Component   = "SecurityGroup"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-    Service     = "MainService"
-  })
+  # egress {
+  #   description = "Permit.io PDP communication"
+  #   from_port   = 7000
+  #   to_port     = 7000
+  #   protocol    = "tcp"
+  #   cidr_blocks = [var.vpc_cidr_block]
+  # }
+
+  # tags = merge(var.tags, {
+  #   Name        = "${var.project_name}-${var.environment}-main-service-sg"
+  #   Component   = "SecurityGroup"
+  #   Environment = var.environment
+  #   Project     = var.project_name
+  #   ManagedBy   = "Terraform"
+  #   Service     = "MainService"
+  # })
 
   lifecycle {
     create_before_destroy = true

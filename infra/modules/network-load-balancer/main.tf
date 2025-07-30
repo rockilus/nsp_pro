@@ -99,45 +99,73 @@ resource "aws_lb_target_group_attachment" "api_backend" {
 
 # Security Group for NLB (minimal rules for NLB)
 resource "aws_security_group" "nlb" {
-  name_prefix = "${var.project_name}-${var.environment}-nlb-"
-  description = "Security group for ${var.project_name} ${var.environment} Network Load Balancer"
-  vpc_id      = var.vpc_id
+  name = "apigateway-mainservice-nlb-sg"
+  # name_prefix = "${var.project_name}-${var.environment}-nlb-"
+  description = "Security group for network load balancer between api gateway and main service"
+  # description = "Security group for ${var.project_name} ${var.environment} Network Load Balancer"
+  vpc_id = var.vpc_id
 
-  # Inbound rules for API Gateway VPC Link
   ingress {
-    description = "API Gateway VPC Link traffic"
-    from_port   = var.backend_port
-    to_port     = var.backend_port
-    protocol    = "tcp"
-    cidr_blocks = var.allowed_cidr_blocks
+    cidr_blocks = [
+      "0.0.0.0/0",
+    ]
+    from_port        = 80
+    ipv6_cidr_blocks = []
+    prefix_list_ids  = []
+    protocol         = "tcp"
+    security_groups  = []
+    self             = false
+    to_port          = 80
   }
 
-  # Outbound rules for backend communication
+  # # Inbound rules for API Gateway VPC Link
+  # ingress {
+  #   description = "API Gateway VPC Link traffic"
+  #   from_port   = var.backend_port
+  #   to_port     = var.backend_port
+  #   protocol    = "tcp"
+  #   cidr_blocks = var.allowed_cidr_blocks
+  # }
+
   egress {
-    description = "Backend service communication"
-    from_port   = var.backend_port
-    to_port     = var.backend_port
-    protocol    = "tcp"
-    cidr_blocks = var.vpc_cidr_blocks
+    cidr_blocks = [
+      "0.0.0.0/0",
+    ]
+    from_port        = 0
+    ipv6_cidr_blocks = []
+    prefix_list_ids  = []
+    protocol         = "-1"
+    security_groups  = []
+    self             = false
+    to_port          = 0
   }
 
-  # Healthcare compliance - restrict outbound internet access
-  egress {
-    description = "HTTPS for health checks and AWS services"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  # # Outbound rules for backend communication
+  # egress {
+  #   description = "Backend service communication"
+  #   from_port   = var.backend_port
+  #   to_port     = var.backend_port
+  #   protocol    = "tcp"
+  #   cidr_blocks = var.vpc_cidr_blocks
+  # }
 
-  tags = merge(var.tags, {
-    Name        = "${var.project_name}-${var.environment}-nlb-sg"
-    Component   = "SecurityGroup"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-    Purpose     = "NetworkLoadBalancer"
-  })
+  # # Healthcare compliance - restrict outbound internet access
+  # egress {
+  #   description = "HTTPS for health checks and AWS services"
+  #   from_port   = 443
+  #   to_port     = 443
+  #   protocol    = "tcp"
+  #   cidr_blocks = ["0.0.0.0/0"]
+  # }
+
+  # tags = merge(var.tags, {
+  #   Name        = "${var.project_name}-${var.environment}-nlb-sg"
+  #   Component   = "SecurityGroup"
+  #   Environment = var.environment
+  #   Project     = var.project_name
+  #   ManagedBy   = "Terraform"
+  #   Purpose     = "NetworkLoadBalancer"
+  # })
 
   lifecycle {
     create_before_destroy = true

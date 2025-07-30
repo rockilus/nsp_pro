@@ -288,25 +288,84 @@ resource "aws_ecs_task_definition" "permit_pdp" {
 resource "aws_ecs_service" "main_service" {
   name = "main-service"
   # name                              = "${var.project_name}-${var.environment}-main-service"
-  cluster                           = aws_ecs_cluster.main.id
-  task_definition                   = aws_ecs_task_definition.main_service.arn
-  desired_count                     = var.main_service_desired_count
-  launch_type                       = "FARGATE"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.main_service.id
+  desired_count   = var.main_service_desired_count
+  # launch_type                       = "FARGATE"
   availability_zone_rebalancing     = "ENABLED"
   enable_ecs_managed_tags           = true
   health_check_grace_period_seconds = 0
   propagate_tags                    = "NONE"
+  iam_role                          = aws_iam_role.ecs_service_role.arn
+
+  alarms {
+    alarm_names = []
+    enable      = false
+    rollback    = false
+  }
+
+  capacity_provider_strategy {
+    base              = 0
+    capacity_provider = "FARGATE"
+    weight            = 1
+  }
+
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
+
+  deployment_controller {
+    type = "ECS"
+  }
+
+  load_balancer {
+    container_name   = "backend-image"
+    container_port   = 4000
+    elb_name         = null
+    target_group_arn = "arn:aws:elasticloadbalancing:eu-west-3:590183915149:targetgroup/apigateway-mainservice-nlb-tg-2/a155f069a1d4a13b"
+  }
+
+  service_connect_configuration {
+    enabled   = true
+    namespace = "arn:aws:servicediscovery:eu-west-3:590183915149:namespace/ns-yzprnzaq4ctfdqvt"
+
+    service {
+      discovery_name        = "main-service-backend"
+      ingress_port_override = 0
+      port_name             = "backend-image-4000-tcp"
+
+      client_alias {
+        dns_name = "main-service"
+        port     = 4000
+      }
+    }
+  }
 
   network_configuration {
     subnets          = var.private_subnet_ids
     security_groups  = [aws_security_group.main_service.id]
-    assign_public_ip = false
+    assign_public_ip = true
   }
+
+  # network_configuration {
+  #   assign_public_ip = true
+  #   security_groups = [
+  #     "sg-0bdbfd43e719c644f",
+  #   ]
+  #   subnets = [
+  #     "subnet-03ec39fe769f6c0c0",
+  #     "subnet-06501787d97c3e5b4",
+  #     "subnet-08ab5a474d2b109f0",
+  #   ]
+  # }
 
   service_registries {
     registry_arn = aws_service_discovery_service.main_service.arn
   }
 
+
+  tags = {}
   # tags = merge(var.tags, {
   #   Name        = "${var.project_name}-${var.environment}-main-service"
   #   Component   = "ECS"
