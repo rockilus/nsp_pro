@@ -294,25 +294,6 @@ variable "atlas_connection_uri" {
   sensitive   = true
 }
 
-
-variable "main_service_desired_count" {
-  description = "Desired number of main service tasks"
-  type        = number
-  default     = 2
-}
-
-variable "solve_service_desired_count" {
-  description = "Desired number of solve service tasks"
-  type        = number
-  default     = 1
-}
-
-variable "permit_pdp_desired_count" {
-  description = "Desired number of Permit.io PDP tasks"
-  type        = number
-  default     = 1
-}
-
 variable "main_service_environment_variables" {
   description = "Environment variables for the main service"
   type        = map(string)

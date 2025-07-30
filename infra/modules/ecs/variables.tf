@@ -133,6 +133,30 @@ variable "permit_api_key" {
   sensitive   = true
 }
 
+# Secret ARNs for ECS task definitions
+variable "permit_api_key_secret_arn" {
+  description = "ARN of the Permit.io API key secret"
+  type        = string
+  default     = ""
+}
+
+variable "st_api_key_secret_arn" {
+  description = "ARN of the SuperTokens API key secret"
+  type        = string
+  default     = ""
+}
+
+variable "st_connection_uri_secret_arn" {
+  description = "ARN of the SuperTokens connection URI secret"
+  type        = string
+  default     = ""
+}
+
+variable "atlas_secret_arn" {
+  description = "ARN of the MongoDB Atlas credentials secret"
+  type        = string
+  default     = ""
+}
 
 variable "main_service_environment_variables" {
   description = "Environment variables for the main service"

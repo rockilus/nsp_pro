@@ -104,6 +104,12 @@ module "ecs" {
   # Permit.io configuration
   permit_api_key = var.permit_api_key
 
+  # Secret ARNs from secrets module
+  permit_api_key_secret_arn    = module.secrets.permit_api_key_secret_arn
+  st_api_key_secret_arn        = module.secrets.st_api_key_secret_arn
+  st_connection_uri_secret_arn = module.secrets.st_connection_uri_secret_arn
+  atlas_secret_arn             = module.secrets.atlas_secret_arn
+
   # Environment variables
   main_service_environment_variables  = var.main_service_environment_variables
   solve_service_environment_variables = var.solve_service_environment_variables
@@ -115,7 +121,7 @@ module "ecs" {
     Project     = "NSP Pro"
   }
 
-  depends_on = [module.vpc, module.ecr, module.network_load_balancer]
+  depends_on = [module.vpc, module.ecr, module.network_load_balancer, module.secrets]
 }
 
 # AWS Secrets Manager for sensitive configuration

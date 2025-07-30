@@ -41,6 +41,25 @@ resource "aws_ecs_task_definition" "main_service" {
         },
       ]
 
+      secrets = [
+        {
+          name      = "DB_URI"
+          valueFrom = var.atlas_secret_arn
+        },
+        {
+          name      = "PDP_API_KEY"
+          valueFrom = var.permit_api_key_secret_arn
+        },
+        {
+          name      = "ST_API_KEY"
+          valueFrom = var.st_api_key_secret_arn
+        },
+        {
+          name      = "ST_CONNECTION_URI"
+          valueFrom = var.st_connection_uri_secret_arn
+        }
+      ]
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {
