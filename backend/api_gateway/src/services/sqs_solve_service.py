@@ -201,6 +201,11 @@ def create_sqs_solve_service(
     #     ),
     #     sqs_solve_queue_name="nsp-pro-dev-solve-queue",
     # )
+    if config.aws_access_key_id is None or config.aws_secret_access_key is None:
+        raise ValueError(
+            "AWS credentials are not set. Please check your configuration."
+        )
+
     aws_config = AWSConfig(
         region=config.aws_region,
         aws_access_key_id=config.aws_access_key_id,

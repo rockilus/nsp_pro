@@ -50,16 +50,16 @@ class AppConfig(BaseSettings):
         False,
         description="Enable Uvicorn auto-reload",
     )
-    task_expiration: int = Field(..., description="Task expiration time in seconds")
+    task_expiration: int = Field(90, description="Task expiration time in seconds")
     aws_region: str = Field(
         "eu-west-3",
         description="AWS region for services like SQS and Secrets Manager",
     )
-    aws_access_key_id: str = Field(
-        ..., description="AWS access key ID for authentication"
+    aws_access_key_id: str | None = Field(
+        None, description="AWS access key ID for authentication"
     )
-    aws_secret_access_key: str = Field(
-        ..., description="AWS secret access key for authentication"
+    aws_secret_access_key: str | None = Field(
+        None, description="AWS secret access key for authentication"
     )
     aws_session_token: str | None = Field(
         None,
