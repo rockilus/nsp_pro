@@ -2,7 +2,8 @@
 Database factory to create appropriate database connections.
 """
 
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
+
 from pymongo.database import Database
 
 from shared.database.database import MongoDB
@@ -13,6 +14,7 @@ from shared.logger import log_info
 class DatabaseFactory:
     """Factory class to create database connections based on configuration."""
 
+    # pylint: disable=too-many-arguments
     @staticmethod
     def create_connection(
         db_uri: str,
@@ -39,8 +41,7 @@ class DatabaseFactory:
         if use_documentdb:
             if not documentdb_credentials:
                 raise ValueError(
-                    "DocumentDB credentials are required when "
-                    "use_documentdb=True"
+                    "DocumentDB credentials are required when use_documentdb=True"
                 )
 
             log_info("Creating DocumentDB connection")
@@ -50,34 +51,30 @@ class DatabaseFactory:
                 ca_bundle_path=documentdb_ca_bundle_path,
                 timeoutMS=timeoutMS,
             )
-        else:
-            log_info("Creating MongoDB connection")
-            return MongoDB.connect(
-                uri=db_uri,
-                db_name=db_name,
-                timeoutMS=timeoutMS,
-            )
+        log_info("Creating MongoDB connection")
+        return MongoDB.connect(
+            uri=db_uri,
+            db_name=db_name,
+            timeoutMS=timeoutMS,
+        )
 
     @staticmethod
     def get_database(use_documentdb: bool = False) -> Database:
         """Get existing database connection."""
         if use_documentdb:
             return DocumentDB.get_database()
-        else:
-            return MongoDB.get_database()
+        return MongoDB.get_database()
 
     @staticmethod
     def close_connection(use_documentdb: bool = False) -> None:
         """Close database connection."""
         if use_documentdb:
             DocumentDB.close()
-        else:
-            MongoDB.close()
+        MongoDB.close()
 
     @staticmethod
     def check_health(use_documentdb: bool = False) -> bool:
         """Check database connection health."""
         if use_documentdb:
             return DocumentDB.check_health()
-        else:
-            return MongoDB.check_health()
+        return MongoDB.check_health()

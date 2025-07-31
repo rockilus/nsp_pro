@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from pymongo.database import Database
 
 from shared.database.database import MongoDB
 from shared.database.repositories.assignment import AssignmentRepository

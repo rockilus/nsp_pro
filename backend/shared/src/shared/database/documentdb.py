@@ -4,12 +4,13 @@ Handles secure connection to AWS DocumentDB with TLS and authentication.
 """
 
 import ssl
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 import pymongo
 from pymongo.database import Database
 from pymongo.errors import ConnectionFailure
 
-from shared.logger import log_info, log_error
+from shared.logger import log_error, log_info
 
 
 class DocumentDB:
@@ -60,9 +61,7 @@ class DocumentDB:
 
                 # Test connection with ping
                 cls._client.admin.command("ping")
-                log_info(
-                    f"Successfully connected to DocumentDB database: {db_name}"
-                )
+                log_info(f"Successfully connected to DocumentDB database: {db_name}")
 
             # pylint: disable=broad-except
             except (ConnectionFailure, Exception) as e:
