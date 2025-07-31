@@ -1,6 +1,9 @@
 import json
+import logging
 import os
+import ssl
 import tempfile
+import urllib.error
 import urllib.request
 from urllib.parse import quote
 
@@ -9,6 +12,18 @@ from botocore.exceptions import BotoCoreError, ClientError  # type: ignore
 from dotenv import load_dotenv
 from pydantic import Field, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Configure secure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+# Enhanced DocumentDB Security Features:
+# 1. Certificate validation for CA bundle downloads
+# 2. Secure connection URI building with proper escaping
+# 3. Enhanced error handling and logging
+# 4. Connection validation utility
+# 5. SSL verification for certificate downloads
 
 
 # Step 1: Define your Pydantic Config Class
@@ -38,9 +53,7 @@ class AppConfig(BaseSettings):
         description="Path to DocumentDB CA bundle certificate",
     )
 
-    st_connection_uri: str = Field(
-        ..., description="Supertokens connection URI"
-    )
+    st_connection_uri: str = Field(..., description="Supertokens connection URI")
     st_api_key: str = Field(..., description="Supertokens API key")
     st_dashboard_admins: list[str] = Field(
         ..., description="SuperTokens dashboard admins"
@@ -52,9 +65,7 @@ class AppConfig(BaseSettings):
         False,
         description="Enable Uvicorn auto-reload",
     )
-    task_expiration: int = Field(
-        90, description="Task expiration time in seconds"
-    )
+    task_expiration: int = Field(90, description="Task expiration time in seconds")
     aws_region: str = Field(
         "eu-west-3",
         description="AWS region for services like SQS and Secrets Manager",
@@ -90,9 +101,7 @@ class AppConfig(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_prefix="",  # No prefix; can adjust if needed
-        env_file=os.path.join(
-            os.path.dirname(__file__), "..", ".env.development"
-        ),
+        env_file=os.path.join(os.path.dirname(__file__), "..", ".env.development"),
         case_sensitive=False,
         extra="ignore",  # Ignore extra fields from env
     )
@@ -133,28 +142,76 @@ def get_documentdb_credentials(
 ) -> dict[str, str]:
     """Retrieve DocumentDB credentials from AWS Secrets Manager."""
 
+    if not secret_name or not region_name:
+        raise ValueError("Secret name and region are required")
+
     try:
         client = boto3.client("secretsmanager", region_name=region_name)
+
+        # Log access attempt (without sensitive data)
+        logger.info("Retrieving DocumentDB credentials from region %s", region_name)
+
         response = client.get_secret_value(SecretId=secret_name)
         secret_string = response["SecretString"]
         credentials = json.loads(secret_string)
+
+        # Validate required fields
+        required_fields = ["username", "password", "host", "port"]
+        missing_fields = [
+            field for field in required_fields if field not in credentials
+        ]
+        if missing_fields:
+            raise ValueError(f"Missing required credential fields: {missing_fields}")
+
+        logger.info("DocumentDB credentials retrieved successfully")
         return credentials
+
+    except json.JSONDecodeError as e:
+        logger.error("Failed to parse DocumentDB credentials JSON")
+        raise ValueError("Invalid credential format in Secrets Manager") from e
     except (BotoCoreError, ClientError) as error:
-        print(
-            f"Error retrieving DocumentDB credentials from "
-            f"{secret_name}: {error}"
+        error_code = (
+            getattr(error, 'response', {}).get('Error', {}).get('Code', 'Unknown')
         )
+        logger.error("AWS error retrieving DocumentDB credentials: %s", error_code)
         raise error
+    except Exception as e:
+        logger.error("Unexpected error retrieving DocumentDB credentials")
+        raise e
+
+
+def _validate_ca_content(content: bytes) -> bool:
+    """Validate that the content contains valid PEM certificates."""
+    try:
+        content_str = content.decode('utf-8')
+        # Basic validation: check for PEM certificate markers
+        return (
+            "-----BEGIN CERTIFICATE-----" in content_str
+            and "-----END CERTIFICATE-----" in content_str
+            and len(content_str) > 1000  # Reasonable minimum size
+        )
+    except (UnicodeDecodeError, ValueError):
+        return False
+
+
+def _validate_ca_bundle(ca_bundle_path: str) -> bool:
+    """Validate that the CA bundle file exists and contains certificates."""
+    try:
+        with open(ca_bundle_path, 'rb') as f:
+            content = f.read()
+        return _validate_ca_content(content)
+    except (OSError, IOError):
+        return False
 
 
 def download_documentdb_ca_bundle(
     ca_bundle_path: str = "/app/global-bundle.pem",
 ) -> None:
-    """Download DocumentDB CA bundle certificate."""
+    """Download DocumentDB CA bundle certificate with integrity validation."""
 
-    # Skip download if file already exists
-    if os.path.exists(ca_bundle_path):
-        print(f"DocumentDB CA bundle already exists at {ca_bundle_path}")
+    # Skip download if file already exists and is valid
+    if os.path.exists(ca_bundle_path) and _validate_ca_bundle(ca_bundle_path):
+        print(f"Valid DocumentDB CA bundle already exists at {ca_bundle_path}")
         return
 
     # For development, use a different path that we can write to
@@ -166,9 +223,7 @@ def download_documentdb_ca_bundle(
             )
             ca_bundle_path = os.path.abspath(ca_bundle_path)
 
-    ca_bundle_url = (
-        "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"
-    )
+    ca_bundle_url = "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"
 
     try:
         # Create directory if it doesn't exist and we have permission
@@ -178,22 +233,73 @@ def download_documentdb_ca_bundle(
                 os.makedirs(dir_path, exist_ok=True)
             except (OSError, PermissionError):
                 print(f"Cannot create directory {dir_path}, using temp")
-
                 ca_bundle_path = os.path.join(
                     tempfile.gettempdir(), "global-bundle.pem"
                 )
 
-        urllib.request.urlretrieve(ca_bundle_url, ca_bundle_path)
-        print(f"DocumentDB CA bundle downloaded to {ca_bundle_path}")
+        # Download with SSL verification
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = True
+        ssl_context.verify_mode = ssl.CERT_REQUIRED
 
+        with urllib.request.urlopen(ca_bundle_url, context=ssl_context) as response:
+            ca_content = response.read()
+
+        # Validate certificate content before writing
+        if not _validate_ca_content(ca_content):
+            raise ValueError("Downloaded CA bundle failed validation")
+
+        with open(ca_bundle_path, 'wb') as f:
+            f.write(ca_content)
+
+        print(f"DocumentDB CA bundle downloaded and validated: {ca_bundle_path}")
         # Update environment variable with actual path
         os.environ["DOCUMENTDB_CA_BUNDLE_PATH"] = ca_bundle_path
 
-    except Exception as e:
+    except (urllib.error.URLError, OSError, ValueError) as e:
         print(f"Error downloading DocumentDB CA bundle: {e}")
         # Don't raise in development, just warn
         if os.getenv("ENVIRONMENT", "production").lower() == "production":
             raise
+
+
+def build_documentdb_connection_uri(
+    credentials: dict[str, str],
+    ca_bundle_path: str,
+    database_name: str = "nsp_pro",
+) -> str:
+    """Build secure DocumentDB connection URI with proper escaping."""
+
+    # Validate inputs
+    required_fields = ["username", "password", "host", "port"]
+    for field in required_fields:
+        if field not in credentials:
+            raise ValueError(f"Missing required credential field: {field}")
+
+    if not os.path.exists(ca_bundle_path):
+        raise FileNotFoundError(f"CA bundle not found at {ca_bundle_path}")
+
+    # URL-encode credentials to handle special characters
+    username = quote(credentials["username"], safe="")
+    password = quote(credentials["password"], safe="")
+    host = credentials["host"]
+    port = credentials["port"]
+
+    # Build connection URI with security parameters
+    connection_uri = (
+        f"mongodb://{username}:{password}@{host}:{port}/{database_name}"
+        f"?tls=true"
+        f"&tlsCAFile={ca_bundle_path}"
+        f"&tlsAllowInvalidHostnames=false"
+        f"&tlsAllowInvalidCertificates=false"
+        f"&replicaSet=rs0"
+        f"&readPreference=secondaryPreferred"
+        f"&retryWrites=false"
+        f"&authSource=admin"
+        f"&ssl_cert_reqs=required"
+    )
+
+    return connection_uri
 
 
 # Step 3: Main function to initialize config
@@ -224,9 +330,7 @@ def initialize_environment() -> AppConfig:
             secret_name = "DB_URI"
             secret = get_secret(secret_name, region_name=region)
             if secret:
-                os.environ["SECRET_VALUE"] = (
-                    secret  # Store in environment variables
-                )
+                os.environ["SECRET_VALUE"] = secret  # Store in environment variables
 
         # Fetch AWS credentials
         session = boto3.Session()
@@ -252,23 +356,15 @@ def initialize_environment() -> AppConfig:
             # Replace placeholders in the DB_URI with actual AWS credentials
             db_uri_template = os.getenv("DB_URI")
             if not db_uri_template:
-                raise ValueError(
-                    "DB_URI template not found in environment variables."
-                )
+                raise ValueError("DB_URI template not found in environment variables.")
             db_uri = (
                 db_uri_template.replace(
                     "<AWS access key>", quote(aws_access_key_id, safe="")
                 )
-                .replace(
-                    "<AWS secret key>", quote(aws_secret_access_key, safe="")
-                )
+                .replace("<AWS secret key>", quote(aws_secret_access_key, safe=""))
                 .replace(
                     "<session token (for AWS IAM Roles)>",
-                    (
-                        quote(aws_session_token, safe="")
-                        if aws_session_token
-                        else ""
-                    ),
+                    (quote(aws_session_token, safe="") if aws_session_token else ""),
                 )
             )
             os.environ["DB_URI"] = db_uri
@@ -306,9 +402,7 @@ def initialize_environment() -> AppConfig:
         # Use MongoDB for development
         os.environ["USE_DOCUMENTDB"] = "false"
         # Load local .env file
-        local_env_file = os.path.join(
-            os.path.dirname(__file__), ".env.development"
-        )
+        local_env_file = os.path.join(os.path.dirname(__file__), ".env.development")
         load_dotenv(local_env_file)
         # Env file is already loaded, no need to set Config
 
