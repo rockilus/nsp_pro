@@ -8,10 +8,6 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from src.config import config
 
 # pylint: disable=unused-import
-from src.integrations.authentication import authn_services  # noqa: F401
-from src.integrations.authentication import (
-    authn_get_middleware,
-)
 from src.integrations.authorization import authz_services  # noqa: F401
 from src.routes import (
     router_assignment,
@@ -45,8 +41,6 @@ from src.routes import (
 
 def create_app(db_collections: DatabaseCollections) -> FastAPI:
     app = FastAPI()
-
-    app.add_middleware(authn_get_middleware())
 
     allowed_headers = ["Content-Type"]
     if config.environment == "development":

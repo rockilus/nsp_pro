@@ -6,8 +6,7 @@ from pydantic import BaseModel
 from shared.database.factory import DatabaseFactory
 
 from src.config import config
-from src.errors import AuthnConnectionError, AuthzConnectionError
-from src.integrations.authentication import authn_health_check
+from src.errors import AuthzConnectionError
 from src.integrations.authorization import authz_connect, authz_health_check
 
 router = APIRouter()
@@ -29,7 +28,6 @@ class HealthCheck(BaseModel):
 async def health_check() -> HealthCheck:
     health_status = {
         "database": ServiceStatus(status="ok", details=None),
-        "authn": ServiceStatus(status="ok", details=None),
         "authz": ServiceStatus(status="ok", details=None),
     }
     try:
@@ -41,12 +39,6 @@ async def health_check() -> HealthCheck:
     except Exception as e:
         health_status["database"].status = "error"
         health_status["database"].details = str(e)
-
-    try:
-        await authn_health_check()
-    except AuthnConnectionError as e:
-        health_status["authn"].status = "error"
-        health_status["authn"].details = str(e)
 
     try:
         await authz_health_check()
