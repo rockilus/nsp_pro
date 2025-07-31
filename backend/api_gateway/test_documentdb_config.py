@@ -3,16 +3,17 @@
 Test script to validate API Gateway DocumentDB configuration.
 """
 
-import sys
 import os
+import sys
 
 # Add the API Gateway source to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 try:
     # pylint: disable=import-outside-toplevel
-    from src.config import config
     from shared.database.factory import DatabaseFactory
+
+    from src.config import config
     from src.database_manager.setup_database import setup_database
 except ImportError as e:
     print(f"Import error: {e}")
@@ -45,9 +46,7 @@ def test_database_setup():
         print(f"Database type: {db_type}")
 
         # Test health check
-        health = DatabaseFactory.check_health(
-            use_documentdb=config.use_documentdb
-        )
+        health = DatabaseFactory.check_health(use_documentdb=config.use_documentdb)
         print(f"Database health: {health}")
 
     except Exception as e:  # pylint: disable=broad-except

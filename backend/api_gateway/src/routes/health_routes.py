@@ -1,13 +1,11 @@
 from typing import Dict
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, HTTPException, Query, Request, status
 from pydantic import BaseModel
-from shared.database.database_collections import DatabaseCollections
 from shared.database.factory import DatabaseFactory
 
 from src.config import config
-from src.dependencies import get_db_collections
 from src.errors import AuthnConnectionError, AuthzConnectionError
 from src.integrations.authentication import authn_health_check
 from src.integrations.authorization import authz_connect, authz_health_check
@@ -28,9 +26,7 @@ class HealthCheck(BaseModel):
 
 
 @router.get("/health", response_model=HealthCheck)
-async def health_check(
-    db_collections: DatabaseCollections = Depends(get_db_collections),
-) -> HealthCheck:
+async def health_check() -> HealthCheck:
     health_status = {
         "database": ServiceStatus(status="ok", details=None),
         "authn": ServiceStatus(status="ok", details=None),
@@ -38,9 +34,7 @@ async def health_check(
     }
     try:
         # Use the factory to check database health
-        is_healthy = DatabaseFactory.check_health(
-            use_documentdb=config.use_documentdb
-        )
+        is_healthy = DatabaseFactory.check_health(use_documentdb=config.use_documentdb)
         if not is_healthy:
             health_status["database"].status = "error"
             health_status["database"].details = "Database health check failed"
@@ -71,9 +65,7 @@ async def health_check(
     if overall_status == "error":
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail={
-                key: value.model_dump() for key, value in health_status.items()
-            },
+            detail={key: value.model_dump() for key, value in health_status.items()},
         )
     return HealthCheck(
         status=overall_status,
@@ -91,9 +83,7 @@ async def check_authz_health(
     try:
         print(f"Full incoming request URL: {request.url}")
         print(f"Raw query parameters from request object: {request.url.query}")
-        print(
-            f"Parsed query parameters from request object: {request.query_params}"
-        )
+        print(f"Parsed query parameters from request object: {request.query_params}")
         pdp_url = request.query_params.get("pdp_url", None)
         if not pdp_url:
             raise HTTPException(
