@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 import ssl
 import tempfile
@@ -12,11 +11,7 @@ from botocore.exceptions import BotoCoreError, ClientError  # type: ignore
 from dotenv import load_dotenv
 from pydantic import Field, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-# Configure secure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
+from shared.logger import log_error, log_info
 
 # Enhanced DocumentDB Security Features:
 # 1. Certificate validation for CA bundle downloads
@@ -149,7 +144,7 @@ def get_documentdb_credentials(
         client = boto3.client("secretsmanager", region_name=region_name)
 
         # Log access attempt (without sensitive data)
-        logger.info("Retrieving DocumentDB credentials from region %s", region_name)
+        log_info(f"Retrieving DocumentDB credentials from region {region_name}")
 
         response = client.get_secret_value(SecretId=secret_name)
         secret_string = response["SecretString"]
@@ -163,20 +158,20 @@ def get_documentdb_credentials(
         if missing_fields:
             raise ValueError(f"Missing required credential fields: {missing_fields}")
 
-        logger.info("DocumentDB credentials retrieved successfully")
+        log_info("DocumentDB credentials retrieved successfully")
         return credentials
 
     except json.JSONDecodeError as e:
-        logger.error("Failed to parse DocumentDB credentials JSON")
+        log_error("Failed to parse DocumentDB credentials JSON")
         raise ValueError("Invalid credential format in Secrets Manager") from e
     except (BotoCoreError, ClientError) as error:
         error_code = (
             getattr(error, 'response', {}).get('Error', {}).get('Code', 'Unknown')
         )
-        logger.error("AWS error retrieving DocumentDB credentials: %s", error_code)
+        log_error(f"AWS error retrieving DocumentDB credentials: {error_code}")
         raise error
     except Exception as e:
-        logger.error("Unexpected error retrieving DocumentDB credentials")
+        log_error("Unexpected error retrieving DocumentDB credentials")
         raise e
 
 
@@ -303,7 +298,7 @@ def build_documentdb_connection_uri(
 
 
 # Step 3: Main function to initialize config
-# pylint: disable=too-many-locals, too-many-statements
+# pylint: disable=too-many-locals, too-many-statements, too-many-branches
 def initialize_environment() -> AppConfig:
     # Determine environment (development or production)
     environment = os.getenv(
@@ -353,21 +348,81 @@ def initialize_environment() -> AppConfig:
 
             print("AWS credentials retrieved and set from boto3 session")
 
-            # Replace placeholders in the DB_URI with actual AWS credentials
-            db_uri_template = os.getenv("DB_URI")
-            if not db_uri_template:
-                raise ValueError("DB_URI template not found in environment variables.")
-            db_uri = (
-                db_uri_template.replace(
-                    "<AWS access key>", quote(aws_access_key_id, safe="")
+            # For DocumentDB, use enhanced credential retrieval and URI building
+            if os.getenv("USE_DOCUMENTDB", "false").lower() == "true":
+                try:
+                    # Get DocumentDB credentials using enhanced function
+                    documentdb_credentials = get_documentdb_credentials(
+                        documentdb_secret, region
+                    )
+
+                    # Get the CA bundle path
+                    ca_bundle_path = os.getenv(
+                        "DOCUMENTDB_CA_BUNDLE_PATH", "/app/global-bundle.pem"
+                    )
+
+                    # Build secure connection URI
+                    db_uri = build_documentdb_connection_uri(
+                        documentdb_credentials,
+                        ca_bundle_path,
+                        database_name="nsp_pro",
+                    )
+                    os.environ["DB_URI"] = db_uri
+                    log_info("DocumentDB connection URI built successfully")
+
+                except Exception as e:
+                    log_error(f"Failed to build DocumentDB URI: {str(e)}")
+                    # Fallback to template-based approach if enhanced method fails
+                    db_uri_template = os.getenv("DB_URI")
+                    if db_uri_template:
+                        db_uri = (
+                            db_uri_template.replace(
+                                "<AWS access key>",
+                                quote(aws_access_key_id, safe=""),
+                            )
+                            .replace(
+                                "<AWS secret key>",
+                                quote(aws_secret_access_key, safe=""),
+                            )
+                            .replace(
+                                "<session token (for AWS IAM Roles)>",
+                                (
+                                    quote(aws_session_token, safe="")
+                                    if aws_session_token
+                                    else ""
+                                ),
+                            )
+                        )
+                        os.environ["DB_URI"] = db_uri
+                    else:
+                        raise ValueError(
+                            "No valid DB_URI configuration available"
+                        ) from e
+            else:
+                # For MongoDB, use template-based approach
+                db_uri_template = os.getenv("DB_URI")
+                if not db_uri_template:
+                    raise ValueError(
+                        "DB_URI template not found in environment variables."
+                    )
+                db_uri = (
+                    db_uri_template.replace(
+                        "<AWS access key>", quote(aws_access_key_id, safe="")
+                    )
+                    .replace(
+                        "<AWS secret key>",
+                        quote(aws_secret_access_key, safe=""),
+                    )
+                    .replace(
+                        "<session token (for AWS IAM Roles)>",
+                        (
+                            quote(aws_session_token, safe="")
+                            if aws_session_token
+                            else ""
+                        ),
+                    )
                 )
-                .replace("<AWS secret key>", quote(aws_secret_access_key, safe=""))
-                .replace(
-                    "<session token (for AWS IAM Roles)>",
-                    (quote(aws_session_token, safe="") if aws_session_token else ""),
-                )
-            )
-            os.environ["DB_URI"] = db_uri
+                os.environ["DB_URI"] = db_uri
 
         required_env_vars = [
             "API_DOMAIN",
