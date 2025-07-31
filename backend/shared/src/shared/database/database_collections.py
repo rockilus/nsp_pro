@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pymongo.database import Database
 
 from shared.database.database import MongoDB
 from shared.database.repositories.assignment import AssignmentRepository
@@ -81,9 +82,26 @@ class DatabaseCollections:
     user_db: UserRepository
     worker_db: WorkerRepository
 
-    def __init__(self, db_uri: str, db_name: str):
-        MongoDB.connect(db_uri, db_name)
-        self.db = MongoDB
+    def __init__(self, db_uri_or_database, db_name: str = ""):
+        """
+        Initialize database collections.
+
+        Args:
+            db_uri_or_database: Either a database URI (str) or Database
+            db_name: Database name (only used if first param is a URI)
+        """
+        if isinstance(db_uri_or_database, str):
+            # Legacy behavior: connect using URI and database name
+            if not db_name:
+                raise ValueError("db_name is required when using URI string")
+            MongoDB.connect(db_uri_or_database, db_name)
+            self.db = MongoDB
+        else:
+            # New behavior: use existing database instance
+            # Store the database instance for repositories that might need it
+            self._database_instance = db_uri_or_database
+            self.db = MongoDB  # Keep for backward compatibility
+
         self.assignment_db = AssignmentRepository()
         self.attribute_db = AttributeRepository()
         self.breach_db = BreachRepository()
