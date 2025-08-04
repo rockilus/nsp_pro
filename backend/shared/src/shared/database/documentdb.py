@@ -5,6 +5,7 @@ Handles secure connection to AWS DocumentDB with TLS and authentication.
 
 import ssl
 from typing import Any, Dict, Optional
+from urllib.parse import quote
 
 import pymongo
 from pymongo.database import Database
@@ -24,7 +25,7 @@ class DocumentDB:
         cls,
         credentials: Dict[str, Any],
         db_name: str,
-        ca_bundle_path: str = "/app/global-bundle.pem",
+        ca_bundle_path: str = "global-bundle.pem",
         timeoutMS: Optional[int] = 30000,
     ) -> Database:
         """Connect to DocumentDB and return database instance."""
@@ -35,23 +36,61 @@ class DocumentDB:
                 password = credentials["password"]
                 host = credentials["host"]
                 port = credentials["port"]
+                print(
+                    f"Connecting to DocumentDB at {host}:{port} with user {username} and password {password[:4]}****"
+                )  # Mask password for security
+                print(f"Using CA bundle at {ca_bundle_path}")
 
+                # connection_uri = (
+                #     f"mongodb://{username}:{password}@{host}:{port}"
+                #     f"/?tls=true&tlsCAFile={ca_bundle_path}"
+                #     f"&replicaSet=rs0&readPreference=secondaryPreferred"
+                #     f"&retryWrites=false"
+                # )
                 connection_uri = (
-                    f"mongodb://{username}:{password}@{host}:{port}"
-                    f"/?tls=true&tlsCAFile={ca_bundle_path}"
-                    f"&replicaSet=rs0&readPreference=secondaryPreferred"
+                    f"mongodb://{username}:{quote(password)}@{host}:{port}/"
+                    f"?tls=true"
+                    f"&tlsCAFile={ca_bundle_path}"
+                    f"&replicaSet=rs0"
+                    f"&readPreference=secondaryPreferred"
                     f"&retryWrites=false"
                 )
+
+                print(f"Built connection URI: {connection_uri}")
+
+                # "mongodb://docdbadmin:<insertYourPassword>@rockilus-prod-docdb-cluster.cluster-ctocc0ma2lz7.eu-west-3.docdb.amazonaws.com:27017/"
+                # "?tls=true"
+                # "&tlsCAFile=global-bundle.pem"
+                # "&replicaSet=rs0"
+                # "&readPreference=secondaryPreferred"
+                # "&retryWrites=false"
+
+                # "mongodb://docdbadmin:[1#[0li3IMn7Xru9?{yq-U$<ih&#_kJi@rockilus-prod-docdb-cluster.cluster-ctocc0ma2lz7.eu-west-3.docdb.amazonaws.com:27017/
+                # "?tls=true"
+                # "&tlsCAFile=global-bundle.pem"
+                # "&replicaSet=rs0"
+                # "&readPreference=secondaryPreferred"
+                # "&retryWrites=false"
 
                 # Create MongoDB client with DocumentDB-specific TLS config
                 new_client = pymongo.MongoClient(
                     connection_uri,
                     ssl=True,
-                    ssl_ca_certs=ca_bundle_path,
-                    ssl_cert_reqs=ssl.CERT_REQUIRED,
-                    ssl_match_hostname=False,
+                    tls=True,
+                    tlsCAFile=ca_bundle_path,
+                    tlsAllowInvalidCertificates=False,
+                    tlsAllowInvalidHostnames=False,
+                    # ssl_ca_certs=ca_bundle_path,
+                    # ssl_cert_reqs=ssl.CERT_REQUIRED,
+                    # ssl_match_hostname=False,
                     connectTimeoutMS=timeoutMS,
                     serverSelectionTimeoutMS=timeoutMS,
+                )
+
+                # Debugging output for client and database
+                print(f"Client object: {new_client}")
+                print(
+                    f"Client object get database: {new_client.get_database()}"
                 )
 
                 # Connect to the specified database
@@ -61,7 +100,9 @@ class DocumentDB:
 
                 # Test connection with ping
                 cls._client.admin.command("ping")
-                log_info(f"Successfully connected to DocumentDB database: {db_name}")
+                log_info(
+                    f"Successfully connected to DocumentDB database: {db_name}"
+                )
 
             # pylint: disable=broad-except
             except (ConnectionFailure, Exception) as e:

@@ -21,7 +21,7 @@ class DatabaseFactory:
         db_name: str,
         use_documentdb: bool = False,
         documentdb_credentials: Optional[Dict[str, Any]] = None,
-        documentdb_ca_bundle_path: str = "/app/global-bundle.pem",
+        documentdb_ca_bundle_path: str = "global-bundle.pem",
         timeoutMS: Optional[int] = 30000,
     ) -> Database:
         """

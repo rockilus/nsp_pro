@@ -44,11 +44,13 @@ class AppConfig(BaseSettings):
         "nsp_pro", description="DocumentDB database name"
     )
     documentdb_ca_bundle_path: str = Field(
-        "/app/global-bundle.pem",
+        "global-bundle.pem",
         description="Path to DocumentDB CA bundle certificate",
     )
 
-    st_connection_uri: str = Field(..., description="Supertokens connection URI")
+    st_connection_uri: str = Field(
+        ..., description="Supertokens connection URI"
+    )
     st_api_key: str = Field(..., description="Supertokens API key")
     st_dashboard_admins: list[str] = Field(
         ..., description="SuperTokens dashboard admins"
@@ -60,7 +62,9 @@ class AppConfig(BaseSettings):
         False,
         description="Enable Uvicorn auto-reload",
     )
-    task_expiration: int = Field(90, description="Task expiration time in seconds")
+    task_expiration: int = Field(
+        90, description="Task expiration time in seconds"
+    )
     aws_region: str = Field(
         "eu-west-3",
         description="AWS region for services like SQS and Secrets Manager",
@@ -96,7 +100,9 @@ class AppConfig(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_prefix="",  # No prefix; can adjust if needed
-        env_file=os.path.join(os.path.dirname(__file__), "..", ".env.development"),
+        env_file=os.path.join(
+            os.path.dirname(__file__), "..", ".env.development"
+        ),
         case_sensitive=False,
         extra="ignore",  # Ignore extra fields from env
     )
@@ -144,11 +150,17 @@ def get_documentdb_credentials(
         client = boto3.client("secretsmanager", region_name=region_name)
 
         # Log access attempt (without sensitive data)
-        log_info(f"Retrieving DocumentDB credentials from region {region_name}")
+        log_info(
+            f"Retrieving DocumentDB credentials from region {region_name}"
+        )
 
         response = client.get_secret_value(SecretId=secret_name)
         secret_string = response["SecretString"]
+        print(f"Retrieved secret for {secret_name}: {secret_string[:50]}...")
         credentials = json.loads(secret_string)
+        print(
+            f"Retrieved DocumentDB credentials for {secret_name}: {credentials}"
+        )
 
         # Validate required fields
         required_fields = ["username", "password", "host", "port"]
@@ -156,7 +168,9 @@ def get_documentdb_credentials(
             field for field in required_fields if field not in credentials
         ]
         if missing_fields:
-            raise ValueError(f"Missing required credential fields: {missing_fields}")
+            raise ValueError(
+                f"Missing required credential fields: {missing_fields}"
+            )
 
         log_info("DocumentDB credentials retrieved successfully")
         return credentials
@@ -166,7 +180,9 @@ def get_documentdb_credentials(
         raise ValueError("Invalid credential format in Secrets Manager") from e
     except (BotoCoreError, ClientError) as error:
         error_code = (
-            getattr(error, 'response', {}).get('Error', {}).get('Code', 'Unknown')
+            getattr(error, 'response', {})
+            .get('Error', {})
+            .get('Code', 'Unknown')
         )
         log_error(f"AWS error retrieving DocumentDB credentials: {error_code}")
         raise error
@@ -200,9 +216,11 @@ def _validate_ca_bundle(ca_bundle_path: str) -> bool:
 
 
 def download_documentdb_ca_bundle(
-    ca_bundle_path: str = "/app/global-bundle.pem",
+    ca_bundle_path: str = "global-bundle.pem",
 ) -> None:
     """Download DocumentDB CA bundle certificate with integrity validation."""
+
+    print(f"Downloading DocumentDB CA bundle to {ca_bundle_path}")
 
     # Skip download if file already exists and is valid
     if os.path.exists(ca_bundle_path) and _validate_ca_bundle(ca_bundle_path):
@@ -218,7 +236,9 @@ def download_documentdb_ca_bundle(
             )
             ca_bundle_path = os.path.abspath(ca_bundle_path)
 
-    ca_bundle_url = "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"
+    ca_bundle_url = (
+        "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"
+    )
 
     try:
         # Create directory if it doesn't exist and we have permission
@@ -237,7 +257,9 @@ def download_documentdb_ca_bundle(
         ssl_context.check_hostname = True
         ssl_context.verify_mode = ssl.CERT_REQUIRED
 
-        with urllib.request.urlopen(ca_bundle_url, context=ssl_context) as response:
+        with urllib.request.urlopen(
+            ca_bundle_url, context=ssl_context
+        ) as response:
             ca_content = response.read()
 
         # Validate certificate content before writing
@@ -247,7 +269,9 @@ def download_documentdb_ca_bundle(
         with open(ca_bundle_path, 'wb') as f:
             f.write(ca_content)
 
-        print(f"DocumentDB CA bundle downloaded and validated: {ca_bundle_path}")
+        print(
+            f"DocumentDB CA bundle downloaded and validated: {ca_bundle_path}"
+        )
         # Update environment variable with actual path
         os.environ["DOCUMENTDB_CA_BUNDLE_PATH"] = ca_bundle_path
 
@@ -312,7 +336,8 @@ def initialize_environment() -> AppConfig:
 
         # Set DocumentDB configuration for production
         os.environ["USE_DOCUMENTDB"] = "true"
-        documentdb_secret = f"nsp-pro/{environment}/documentdb/credentials"
+        # documentdb_secret = f"nsp-pro/{environment}/documentdb/credentials"
+        documentdb_secret = "rockilus/prod/documentdb/credentials"
         os.environ["DOCUMENTDB_SECRET_NAME"] = documentdb_secret
         os.environ["DOCUMENTDB_DATABASE_NAME"] = "nsp_pro"
 
@@ -324,8 +349,11 @@ def initialize_environment() -> AppConfig:
             # Retrieve secret from Secrets Manager
             secret_name = "DB_URI"
             secret = get_secret(secret_name, region_name=region)
+            print(f"Retrieved DB_URI secret for {secret_name}: {secret}")
             if secret:
-                os.environ["SECRET_VALUE"] = secret  # Store in environment variables
+                os.environ["SECRET_VALUE"] = (
+                    secret  # Store in environment variables
+                )
 
         # Fetch AWS credentials
         session = boto3.Session()
@@ -358,7 +386,7 @@ def initialize_environment() -> AppConfig:
 
                     # Get the CA bundle path
                     ca_bundle_path = os.getenv(
-                        "DOCUMENTDB_CA_BUNDLE_PATH", "/app/global-bundle.pem"
+                        "DOCUMENTDB_CA_BUNDLE_PATH", "global-bundle.pem"
                     )
 
                     # Build secure connection URI
@@ -367,6 +395,7 @@ def initialize_environment() -> AppConfig:
                         ca_bundle_path,
                         database_name="nsp_pro",
                     )
+                    print(f"Built DocumentDB connection URI: {db_uri}")
                     os.environ["DB_URI"] = db_uri
                     log_info("DocumentDB connection URI built successfully")
 
@@ -457,7 +486,9 @@ def initialize_environment() -> AppConfig:
         # Use MongoDB for development
         os.environ["USE_DOCUMENTDB"] = "false"
         # Load local .env file
-        local_env_file = os.path.join(os.path.dirname(__file__), ".env.development")
+        local_env_file = os.path.join(
+            os.path.dirname(__file__), ".env.development"
+        )
         load_dotenv(local_env_file)
         # Env file is already loaded, no need to set Config
 

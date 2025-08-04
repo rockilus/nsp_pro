@@ -30,7 +30,7 @@ class AppConfig(BaseSettings):
         "nsp_pro", description="DocumentDB database name"
     )
     documentdb_ca_bundle_path: str = Field(
-        "/app/global-bundle.pem",
+        "global-bundle.pem",
         description="Path to DocumentDB CA bundle certificate",
     )
 
@@ -85,13 +85,14 @@ def get_documentdb_credentials(
         return credentials
     except (BotoCoreError, ClientError) as error:
         print(
-            f"Error retrieving DocumentDB credentials from " f"{secret_name}: {error}"
+            f"Error retrieving DocumentDB credentials from "
+            f"{secret_name}: {error}"
         )
         raise error
 
 
 def download_documentdb_ca_bundle(
-    ca_bundle_path: str = "/app/global-bundle.pem",
+    ca_bundle_path: str = "global-bundle.pem",
 ) -> None:
     """Download DocumentDB CA bundle certificate."""
 
@@ -109,7 +110,9 @@ def download_documentdb_ca_bundle(
             )
             ca_bundle_path = os.path.abspath(ca_bundle_path)
 
-    ca_bundle_url = "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"
+    ca_bundle_url = (
+        "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"
+    )
 
     try:
         # Create directory if it doesn't exist and we have permission
@@ -183,7 +186,9 @@ def initialize_environment() -> AppConfig:
             secret_name = "DB_URI"
             secret = get_secret(secret_name, region_name=region)
             if secret:
-                os.environ["SECRET_VALUE"] = secret  # Store in environment variables
+                os.environ["SECRET_VALUE"] = (
+                    secret  # Store in environment variables
+                )
 
         # Fetch AWS credentials
         session = boto3.Session()
@@ -209,12 +214,16 @@ def initialize_environment() -> AppConfig:
             # Replace placeholders in the DB_URI with actual AWS credentials
             db_uri_template = os.getenv("DB_URI")
             if not db_uri_template:
-                raise ValueError("DB_URI template not found in environment variables.")
+                raise ValueError(
+                    "DB_URI template not found in environment variables."
+                )
             db_uri = (
                 db_uri_template.replace(
                     "<AWS access key>", quote(aws_access_key_id, safe="")
                 )
-                .replace("<AWS secret key>", quote(aws_secret_access_key, safe=""))
+                .replace(
+                    "<AWS secret key>", quote(aws_secret_access_key, safe="")
+                )
                 .replace(
                     "<session token (for AWS IAM Roles)>",
                     quote(aws_session_token, safe=""),
@@ -229,7 +238,9 @@ def initialize_environment() -> AppConfig:
             print(f"Missing required environment variables: {missing_vars}")
             # Retrieve .env file from S3
             bucket_name = "nsp-pro-bucket"
-            file_key = ".data_fetcher.env"  # Replace with the key of your .env file
+            file_key = (
+                ".data_fetcher.env"  # Replace with the key of your .env file
+            )
             env_file_path = download_env_file_from_s3(
                 bucket_name, file_key, region_name=region
             )
@@ -241,7 +252,9 @@ def initialize_environment() -> AppConfig:
         # Use MongoDB for development
         os.environ["USE_DOCUMENTDB"] = "false"
         # Load local .env file
-        local_env_file = os.path.join(os.path.dirname(__file__), ".env.development")
+        local_env_file = os.path.join(
+            os.path.dirname(__file__), ".env.development"
+        )
         load_dotenv(local_env_file)
         AppConfig.Config.env_file = local_env_file
 
