@@ -1,8 +1,8 @@
 from datetime import date, datetime, timezone
 
-import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.shift_demand_exclusion import (
     ShiftDemandExclusionRepository,
 )
@@ -10,9 +10,6 @@ from shared.database.schemas.shift_demand_exclusion import (
     ShiftDemandExclusionSchema,
 )
 from shared.schemas.core.shift_demand_exclusion import ShiftDemandExclusion
-import pytest_asyncio
-
-from shared.database.interface import DatabaseInterface
 
 
 class TestShiftDemandExclusionRepository:
@@ -25,9 +22,7 @@ class TestShiftDemandExclusionRepository:
         db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = ShiftDemandExclusionRepository(
-            database_interface=mongodb_container
-        )
+        self.repo = ShiftDemandExclusionRepository(database_interface=mongodb_container)
 
         # Yield to test
         yield
@@ -129,10 +124,8 @@ class TestShiftDemandExclusionRepository:
         )
         self.repo.create(exclusion)
 
-        exclusions = (
-            self.repo.get_shift_demand_exclusions_by_coverage_selector_id(
-                "coverage1"
-            )
+        exclusions = self.repo.get_shift_demand_exclusions_by_coverage_selector_id(
+            "coverage1"
         )
         assert len(exclusions) == 1
         assert exclusions[0].coverage_selector_id == "coverage1"
@@ -147,9 +140,7 @@ class TestShiftDemandExclusionRepository:
         )
         self.repo.create(exclusion)
 
-        exclusions = self.repo.get_shift_demand_exclusions_by_shift_demand_id(
-            "demand1"
-        )
+        exclusions = self.repo.get_shift_demand_exclusions_by_shift_demand_id("demand1")
         assert len(exclusions) == 1
         assert exclusions[0].shift_demand_id == "demand1"
 
@@ -237,9 +228,7 @@ class TestShiftDemandExclusionRepository:
         ]
         self.repo.create_many(exclusions)
 
-        self.repo.delete_shift_demand_exclusions_by_coverage_selector_id(
-            "coverage1"
-        )
+        self.repo.delete_shift_demand_exclusions_by_coverage_selector_id("coverage1")
 
         remaining_count = self.repo.collection.count_documents(
             {"coverage_selector_id": "coverage1"}
@@ -289,9 +278,7 @@ class TestShiftDemandExclusionRepository:
         ]
         self.repo.create_many(exclusions)
 
-        results = self.repo.get_shift_demand_exclusions_by_schedule_id(
-            "schedule1"
-        )
+        results = self.repo.get_shift_demand_exclusions_by_schedule_id("schedule1")
 
         assert len(results) == 2
         assert results[0].schedule_id == "schedule1"

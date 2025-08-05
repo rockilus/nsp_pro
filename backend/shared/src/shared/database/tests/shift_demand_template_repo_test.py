@@ -1,14 +1,11 @@
 from datetime import datetime, timezone
 
-import pytest
-
-from shared.database.database import MongoDB
-from shared.database.repositories.shift_demand_template import (
-    ShiftDemandTemplateRepository,
-)
 import pytest_asyncio
 
 from shared.database.interface import DatabaseInterface
+from shared.database.repositories.shift_demand_template import (
+    ShiftDemandTemplateRepository,
+)
 
 
 # Simplified test - focus on database operations rather than domain logic
@@ -24,9 +21,7 @@ class TestShiftDemandTemplateRepository:
         db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = ShiftDemandTemplateRepository(
-            database_interface=mongodb_container
-        )
+        self.repo = ShiftDemandTemplateRepository(database_interface=mongodb_container)
 
         # Yield to test
         yield
@@ -96,9 +91,7 @@ class TestShiftDemandTemplateRepository:
         assert update_result.modified_count == 1
 
         # Test delete
-        delete_result = self.repo.collection.delete_one(
-            {"_id": result.inserted_id}
-        )
+        delete_result = self.repo.collection.delete_one({"_id": result.inserted_id})
         assert delete_result.acknowledged
         assert delete_result.deleted_count == 1
 

@@ -1,9 +1,9 @@
 from typing import List, Optional
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.user import UserSchema
 from shared.schemas.core.user import User
-from shared.database.interface import DatabaseInterface
 
 
 class UserRepository(BaseRepository[UserSchema]):
@@ -50,6 +50,4 @@ class UserRepository(BaseRepository[UserSchema]):
         """Delete a user by its ID."""
         result = self.delete(user_id)
         if result is False:
-            raise Exception(
-                f"User with id {user_id} not found or already deleted"
-            )
+            raise Exception(f"User with id {user_id} not found or already deleted")

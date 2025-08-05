@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta, timezone
 
-import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.recurrence import RecurrenceRepository
 from shared.database.schemas.recurrence import (
     OccurrenceInfoSchema,
@@ -15,9 +15,6 @@ from shared.schemas.core.recurrence import (
     RecurrenceEndType,
     RecurrenceRule,
 )
-import pytest_asyncio
-
-from shared.database.interface import DatabaseInterface
 
 
 class TestRecurrenceRepository:
@@ -449,6 +446,4 @@ class TestRecurrenceRepository:
         recurrence_in_ids = [recurrence.id for recurrence in recurrences_in]
 
         assert len(recurrences) == len(recurrences_in)
-        assert all(
-            recurrence.id in recurrence_in_ids for recurrence in recurrences
-        )
+        assert all(recurrence.id in recurrence_in_ids for recurrence in recurrences)

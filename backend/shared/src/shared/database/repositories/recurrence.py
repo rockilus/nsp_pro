@@ -1,19 +1,17 @@
 from datetime import date, datetime, time, timezone
 from typing import List
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.recurrence import RecurrenceRuleSchema
 from shared.schemas.core.recurrence import RecurrenceRule
-from shared.database.interface import DatabaseInterface
 
 
 class RecurrenceRepository(BaseRepository[RecurrenceRuleSchema]):
     """Repository for recurrence rules using PyMongo."""
 
     def __init__(self, database_interface: DatabaseInterface):
-        super().__init__(
-            database_interface, "recurrence_rules", RecurrenceRuleSchema
-        )
+        super().__init__(database_interface, "recurrence_rules", RecurrenceRuleSchema)
 
     def create_recurrence(self, recurrence: RecurrenceRule) -> RecurrenceRule:
         """Create a new recurrence rule."""
@@ -40,9 +38,7 @@ class RecurrenceRepository(BaseRepository[RecurrenceRuleSchema]):
         start_timestamp = datetime.combine(
             start_date, time.min, timezone.utc
         ).timestamp()
-        end_timestamp = datetime.combine(
-            end_date, time.max, timezone.utc
-        ).timestamp()
+        end_timestamp = datetime.combine(end_date, time.max, timezone.utc).timestamp()
         query = {
             "team_id": team_id,
             "start_date": {"$lte": end_timestamp},
@@ -59,9 +55,7 @@ class RecurrenceRepository(BaseRepository[RecurrenceRuleSchema]):
         recurrence_schema = RecurrenceRuleSchema.from_core(recurrence)
         updated_recurrence = self.update(recurrence_schema)
         if not updated_recurrence:
-            raise Exception(
-                f"Failed to update recurrence with id {recurrence.id}"
-            )
+            raise Exception(f"Failed to update recurrence with id {recurrence.id}")
         return updated_recurrence.to_core()
 
     def delete_recurrence(self, recurrence_id: str) -> None:

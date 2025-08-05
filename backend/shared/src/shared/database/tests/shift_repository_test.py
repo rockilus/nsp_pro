@@ -1,6 +1,5 @@
 from datetime import datetime, timezone
 
-import pytest
 import pytest_asyncio
 
 from shared.database.interface import DatabaseInterface
@@ -494,9 +493,7 @@ class TestShiftRepository:
 
         self.repo.logical_delete_shift_recup(created_duty.id)
 
-        from_db = self.repo.collection.find_one(
-            {"recuperation_duty": created_duty.id}
-        )
+        from_db = self.repo.collection.find_one({"recuperation_duty": created_duty.id})
         assert from_db["deleted"] is True
 
     def test_get_recuperation_shifts(self):

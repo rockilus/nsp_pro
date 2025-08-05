@@ -1,5 +1,6 @@
 from typing import Dict, List
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import (
     BaseRepository,
 )
@@ -9,16 +10,13 @@ from shared.database.schemas.shift_demand import (
 from shared.schemas.core.shift_demand import (
     ShiftDemand,
 )
-from shared.database.interface import DatabaseInterface
 
 
 class ShiftDemandRepository(BaseRepository[ShiftDemandSchema]):
     """Repository for shift demand documents using PyMongo."""
 
     def __init__(self, database_interface: DatabaseInterface):
-        super().__init__(
-            database_interface, "shift_demands", ShiftDemandSchema
-        )
+        super().__init__(database_interface, "shift_demands", ShiftDemandSchema)
 
     def create_shift_demand(self, shift_demand: ShiftDemand) -> ShiftDemand:
         """Create a new shift demand."""
@@ -33,9 +31,7 @@ class ShiftDemandRepository(BaseRepository[ShiftDemandSchema]):
         if not shift_demands:
             return []
 
-        shift_demand_schemas = [
-            ShiftDemandSchema.from_core(sd) for sd in shift_demands
-        ]
+        shift_demand_schemas = [ShiftDemandSchema.from_core(sd) for sd in shift_demands]
         result = self.create_many(shift_demand_schemas)
         return [sd.to_core() for sd in result]
 
@@ -43,9 +39,7 @@ class ShiftDemandRepository(BaseRepository[ShiftDemandSchema]):
         """Get a shift demand by its ID."""
         shift_demand = self.find_by_id(shift_demand_id)
         if not shift_demand:
-            raise Exception(
-                f"Shift demand with id {shift_demand_id} not found"
-            )
+            raise Exception(f"Shift demand with id {shift_demand_id} not found")
         return shift_demand.to_core()
 
     def get_shift_demands_by_coverage_ids(
@@ -84,9 +78,7 @@ class ShiftDemandRepository(BaseRepository[ShiftDemandSchema]):
                 f"Shift demand with id {shift_demand_id} not found or already deleted"
             )
 
-    def delete_shift_demands_by_coverage_id(
-        self, coverage_id: str
-    ) -> List[str]:
+    def delete_shift_demands_by_coverage_id(self, coverage_id: str) -> List[str]:
         """Delete shift demands by coverage ID and return their IDs."""
         shift_demands = self.find_all({"coverage": coverage_id})
         shift_demand_ids = [sd.id for sd in shift_demands if sd.id is not None]

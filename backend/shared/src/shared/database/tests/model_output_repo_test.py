@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 
-import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.model_output import (
     ModelOutputRepository,
 )
@@ -10,9 +10,6 @@ from shared.database.schemas.model_output import (
     ModelOutputSchema,
 )
 from shared.schemas.core.model_output import ModelOutput, ModelOutputStatus
-import pytest_asyncio
-
-from shared.database.interface import DatabaseInterface
 
 
 class TestModelOutputRepository:
@@ -71,9 +68,7 @@ class TestModelOutputRepository:
             var_spe_sol={str(("a", "b", "c", "d")): 2},
             objective_value=100.0,
             wall_time=10.0,
-            output_time=datetime(
-                2023, 1, 1, 12, 0, tzinfo=timezone.utc
-            ).timestamp(),
+            output_time=datetime(2023, 1, 1, 12, 0, tzinfo=timezone.utc).timestamp(),
         )
         created = self.repo.create(model_output)
 
@@ -92,9 +87,7 @@ class TestModelOutputRepository:
             var_spe_sol={str(("a", "b", "c", "d")): 2},
             objective_value=100.0,
             wall_time=10.0,
-            output_time=datetime(
-                2023, 1, 1, 12, 0, tzinfo=timezone.utc
-            ).timestamp(),
+            output_time=datetime(2023, 1, 1, 12, 0, tzinfo=timezone.utc).timestamp(),
         )
         created = self.repo.create(model_output)
 
@@ -127,9 +120,7 @@ class TestModelOutputRepository:
             var_spe_sol={str(("a", "b", "c", "d")): 2},
             objective_value=100.0,
             wall_time=10.0,
-            output_time=datetime(
-                2023, 1, 1, 12, 0, tzinfo=timezone.utc
-            ).timestamp(),
+            output_time=datetime(2023, 1, 1, 12, 0, tzinfo=timezone.utc).timestamp(),
         )
         created = self.repo.create(model_output)
 

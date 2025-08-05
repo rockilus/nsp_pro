@@ -1,6 +1,5 @@
 from datetime import datetime, timezone
 
-import pytest
 import pytest_asyncio
 
 from shared.database.interface import DatabaseInterface
@@ -128,9 +127,7 @@ class TestAttributeRepository:
         ]
         self.repo.create_many(attributes)
 
-        found_attributes = self.repo.get_attributes_by_owner_ids(
-            ["owner1", "owner2"]
-        )
+        found_attributes = self.repo.get_attributes_by_owner_ids(["owner1", "owner2"])
 
         assert len(found_attributes) == 2
         assert found_attributes[0].value == "value1"
@@ -401,9 +398,7 @@ class TestAttributeRepository:
         ]
         self.repo.create_many(attributes)
 
-        found_attributes = self.repo.get_attributes_by_dimension_id(
-            "dimension1"
-        )
+        found_attributes = self.repo.get_attributes_by_dimension_id("dimension1")
 
         assert len(found_attributes) == 2
         assert found_attributes[0].value == "value1"

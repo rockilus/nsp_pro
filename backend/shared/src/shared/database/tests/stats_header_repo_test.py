@@ -1,6 +1,6 @@
-import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.stats_header import (
     StatsHeaderRepository,
 )
@@ -13,9 +13,6 @@ from shared.schemas.core.stats import (
     StatsHeader,
     StatsUnitOptions,
 )
-import pytest_asyncio
-
-from shared.database.interface import DatabaseInterface
 
 
 class TestStatsHeaderRepository:

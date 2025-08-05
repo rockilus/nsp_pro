@@ -1,8 +1,8 @@
 from datetime import date, datetime, timezone
 
-import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.recurrence_exclusion import (
     RecurrenceExclusionRepository,
 )
@@ -10,9 +10,6 @@ from shared.database.schemas.recurrence_exclusion import (
     RecurrenceExclusionSchema,
 )
 from shared.schemas.core.recurrence import RecurrenceExclusion
-import pytest_asyncio
-
-from shared.database.interface import DatabaseInterface
 
 
 class TestRecurrenceExclusionRepository:
@@ -25,9 +22,7 @@ class TestRecurrenceExclusionRepository:
         db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = RecurrenceExclusionRepository(
-            database_interface=mongodb_container
-        )
+        self.repo = RecurrenceExclusionRepository(database_interface=mongodb_container)
 
         # Yield to test
         yield
@@ -104,9 +99,7 @@ class TestRecurrenceExclusionRepository:
         """Test getting a recurrence exclusion by ID."""
         exclusion = RecurrenceExclusionSchema(
             recurrence_rule_id="rule1",
-            excluded_date=datetime(
-                2025, 4, 15, tzinfo=timezone.utc
-            ).timestamp(),
+            excluded_date=datetime(2025, 4, 15, tzinfo=timezone.utc).timestamp(),
         )
         created = self.repo.create(exclusion)
 
@@ -117,9 +110,7 @@ class TestRecurrenceExclusionRepository:
         assert found.recurrence_rule_id == "rule1"
         assert (
             found.excluded_date
-            == datetime.fromtimestamp(
-                created.excluded_date, tz=timezone.utc
-            ).date()
+            == datetime.fromtimestamp(created.excluded_date, tz=timezone.utc).date()
         )
 
     def test_get_recurrence_exclusions_by_rule_id(self):
@@ -127,15 +118,11 @@ class TestRecurrenceExclusionRepository:
         exclusions = [
             RecurrenceExclusionSchema(
                 recurrence_rule_id="rule1",
-                excluded_date=datetime(
-                    2025, 4, 15, tzinfo=timezone.utc
-                ).timestamp(),
+                excluded_date=datetime(2025, 4, 15, tzinfo=timezone.utc).timestamp(),
             ),
             RecurrenceExclusionSchema(
                 recurrence_rule_id="rule1",
-                excluded_date=datetime(
-                    2025, 4, 16, tzinfo=timezone.utc
-                ).timestamp(),
+                excluded_date=datetime(2025, 4, 16, tzinfo=timezone.utc).timestamp(),
             ),
         ]
         self.repo.create_many(exclusions)
@@ -163,15 +150,11 @@ class TestRecurrenceExclusionRepository:
         exclusions = [
             RecurrenceExclusionSchema(
                 recurrence_rule_id="rule1",
-                excluded_date=datetime(
-                    2025, 4, 15, tzinfo=timezone.utc
-                ).timestamp(),
+                excluded_date=datetime(2025, 4, 15, tzinfo=timezone.utc).timestamp(),
             ),
             RecurrenceExclusionSchema(
                 recurrence_rule_id="rule1",
-                excluded_date=datetime(
-                    2025, 4, 16, tzinfo=timezone.utc
-                ).timestamp(),
+                excluded_date=datetime(2025, 4, 16, tzinfo=timezone.utc).timestamp(),
             ),
         ]
 
@@ -190,22 +173,16 @@ class TestRecurrenceExclusionRepository:
         exclusions = [
             RecurrenceExclusionSchema(
                 recurrence_rule_id="rule1",
-                excluded_date=datetime(
-                    2025, 4, 15, tzinfo=timezone.utc
-                ).timestamp(),
+                excluded_date=datetime(2025, 4, 15, tzinfo=timezone.utc).timestamp(),
             ),
             RecurrenceExclusionSchema(
                 recurrence_rule_id="rule2",
-                excluded_date=datetime(
-                    2025, 4, 16, tzinfo=timezone.utc
-                ).timestamp(),
+                excluded_date=datetime(2025, 4, 16, tzinfo=timezone.utc).timestamp(),
             ),
         ]
         self.repo.create_many(exclusions)
 
-        results = self.repo.get_recurrence_exclusions_by_rule_ids(
-            ["rule1", "rule2"]
-        )
+        results = self.repo.get_recurrence_exclusions_by_rule_ids(["rule1", "rule2"])
 
         assert len(results) == 2
         assert results[0].recurrence_rule_id in ["rule1", "rule2"]
@@ -227,15 +204,11 @@ class TestRecurrenceExclusionRepository:
         exclusions = [
             RecurrenceExclusionSchema(
                 recurrence_rule_id="rule1",
-                excluded_date=datetime(
-                    2025, 4, 15, tzinfo=timezone.utc
-                ).timestamp(),
+                excluded_date=datetime(2025, 4, 15, tzinfo=timezone.utc).timestamp(),
             ),
             RecurrenceExclusionSchema(
                 recurrence_rule_id="rule2",
-                excluded_date=datetime(
-                    2025, 4, 16, tzinfo=timezone.utc
-                ).timestamp(),
+                excluded_date=datetime(2025, 4, 16, tzinfo=timezone.utc).timestamp(),
             ),
         ]
         self.repo.create_many(exclusions)
@@ -253,9 +226,7 @@ class TestRecurrenceExclusionRepository:
         """Test updating a recurrence exclusion."""
         exclusion = RecurrenceExclusionSchema(
             recurrence_rule_id="rule1",
-            excluded_date=datetime(
-                2025, 4, 15, tzinfo=timezone.utc
-            ).timestamp(),
+            excluded_date=datetime(2025, 4, 15, tzinfo=timezone.utc).timestamp(),
         )
         created = self.repo.create(exclusion)
 
@@ -280,15 +251,11 @@ class TestRecurrenceExclusionRepository:
         exclusions = [
             RecurrenceExclusionSchema(
                 recurrence_rule_id="rule1",
-                excluded_date=datetime(
-                    2025, 4, 15, tzinfo=timezone.utc
-                ).timestamp(),
+                excluded_date=datetime(2025, 4, 15, tzinfo=timezone.utc).timestamp(),
             ),
             RecurrenceExclusionSchema(
                 recurrence_rule_id="rule2",
-                excluded_date=datetime(
-                    2025, 4, 16, tzinfo=timezone.utc
-                ).timestamp(),
+                excluded_date=datetime(2025, 4, 16, tzinfo=timezone.utc).timestamp(),
             ),
         ]
         created_exclusions = self.repo.create_many(exclusions)
@@ -312,17 +279,13 @@ class TestRecurrenceExclusionRepository:
         assert results[0].excluded_date == date(2025, 4, 17)
         assert results[1].excluded_date == date(2025, 4, 18)
 
-        from_db = self.repo.collection.find_one(
-            {"_id": created_exclusions[0].id}
-        )
+        from_db = self.repo.collection.find_one({"_id": created_exclusions[0].id})
         assert (
             from_db["excluded_date"]
             == datetime(2025, 4, 17, tzinfo=timezone.utc).timestamp()
         )
 
-        from_db = self.repo.collection.find_one(
-            {"_id": created_exclusions[1].id}
-        )
+        from_db = self.repo.collection.find_one({"_id": created_exclusions[1].id})
         assert (
             from_db["excluded_date"]
             == datetime(2025, 4, 18, tzinfo=timezone.utc).timestamp()
@@ -332,9 +295,7 @@ class TestRecurrenceExclusionRepository:
         """Test deleting a recurrence exclusion by ID."""
         exclusion = RecurrenceExclusionSchema(
             recurrence_rule_id="rule1",
-            excluded_date=datetime(
-                2025, 4, 15, tzinfo=timezone.utc
-            ).timestamp(),
+            excluded_date=datetime(2025, 4, 15, tzinfo=timezone.utc).timestamp(),
         )
         created = self.repo.create(exclusion)
 
@@ -347,15 +308,11 @@ class TestRecurrenceExclusionRepository:
         exclusions = [
             RecurrenceExclusionSchema(
                 recurrence_rule_id="rule1",
-                excluded_date=datetime(
-                    2025, 4, 15, tzinfo=timezone.utc
-                ).timestamp(),
+                excluded_date=datetime(2025, 4, 15, tzinfo=timezone.utc).timestamp(),
             ),
             RecurrenceExclusionSchema(
                 recurrence_rule_id="rule1",
-                excluded_date=datetime(
-                    2025, 4, 16, tzinfo=timezone.utc
-                ).timestamp(),
+                excluded_date=datetime(2025, 4, 16, tzinfo=timezone.utc).timestamp(),
             ),
         ]
         self.repo.create_many(exclusions)
@@ -363,37 +320,26 @@ class TestRecurrenceExclusionRepository:
         self.repo.delete_recurrence_exclusions_by_rule_id("rule1")
 
         assert (
-            self.repo.collection.count_documents(
-                {"recurrence_rule_id": "rule1"}
-            )
-            == 0
+            self.repo.collection.count_documents({"recurrence_rule_id": "rule1"}) == 0
         )
 
     def test_delete_recurrence_exclusions_by_rule_id_from_date(self):
         exclusions = [
             RecurrenceExclusionSchema(
                 recurrence_rule_id="rule1",
-                excluded_date=datetime(
-                    2025, 4, 15, tzinfo=timezone.utc
-                ).timestamp(),
+                excluded_date=datetime(2025, 4, 15, tzinfo=timezone.utc).timestamp(),
             ),
             RecurrenceExclusionSchema(
                 recurrence_rule_id="rule1",
-                excluded_date=datetime(
-                    2025, 4, 16, tzinfo=timezone.utc
-                ).timestamp(),
+                excluded_date=datetime(2025, 4, 16, tzinfo=timezone.utc).timestamp(),
             ),
         ]
         self.repo.create_many(exclusions)
 
         from_date = date(2025, 4, 16)
-        self.repo.delete_recurrence_exclusions_by_rule_id_from_date(
-            "rule1", from_date
-        )
+        self.repo.delete_recurrence_exclusions_by_rule_id_from_date("rule1", from_date)
 
-        remaining = self.repo.collection.find_one(
-            {"recurrence_rule_id": "rule1"}
-        )
+        remaining = self.repo.collection.find_one({"recurrence_rule_id": "rule1"})
         assert remaining is not None
         assert (
             remaining["excluded_date"]

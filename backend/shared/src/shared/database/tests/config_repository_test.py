@@ -1,11 +1,8 @@
-import pytest
-
-from shared.database.database import MongoDB
-from shared.database.repositories.config import ConfigRepository
-from shared.schemas.core.config import Config
 import pytest_asyncio
 
 from shared.database.interface import DatabaseInterface
+from shared.database.repositories.config import ConfigRepository
+from shared.schemas.core.config import Config
 
 
 class TestConfigRepository:

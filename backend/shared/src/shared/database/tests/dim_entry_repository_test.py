@@ -1,14 +1,11 @@
-import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.dim_entry import (
     DimEntryRepository,
 )
 from shared.database.schemas.dim_entry import DimEntrySchema
 from shared.schemas.core.dim_entry import DimEntry
-import pytest_asyncio
-
-from shared.database.interface import DatabaseInterface
 
 
 class TestDimEntryRepository:

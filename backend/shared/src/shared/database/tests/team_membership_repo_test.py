@@ -1,6 +1,6 @@
-import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.team_membership import (
     TeamMembershipRepository,
 )
@@ -9,9 +9,6 @@ from shared.schemas.core.team_membership import (
     TeamMembership,
     TeamMembershipRole,
 )
-import pytest_asyncio
-
-from shared.database.interface import DatabaseInterface
 
 
 class TestTeamMembershipRepository:
@@ -24,9 +21,7 @@ class TestTeamMembershipRepository:
         db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = TeamMembershipRepository(
-            database_interface=mongodb_container
-        )
+        self.repo = TeamMembershipRepository(database_interface=mongodb_container)
 
         # Yield to test
         yield

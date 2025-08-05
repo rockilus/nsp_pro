@@ -2,7 +2,9 @@ from datetime import datetime, timezone
 from typing import List, Optional
 
 import pytest
+import pytest_asyncio
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.multitasking import (
     MultitaskingGroupRepository,
 )
@@ -10,9 +12,6 @@ from shared.schemas.core.multitasking import (
     MultitaskingGroup,
     MultitaskingGroupType,
 )
-import pytest_asyncio
-
-from shared.database.interface import DatabaseInterface
 
 
 class TestMultitaskingGroupRepository:
@@ -27,9 +26,7 @@ class TestMultitaskingGroupRepository:
         db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = MultitaskingGroupRepository(
-            database_interface=mongodb_container
-        )
+        self.repo = MultitaskingGroupRepository(database_interface=mongodb_container)
 
         # Yield to test
         yield
@@ -105,15 +102,9 @@ class TestMultitaskingGroupRepository:
         assert result is None
 
     def test_get_groups_by_team_id(self):
-        group1 = self._create_test_group(
-            team_id="team1", related_ids=["a", "b"]
-        )
-        group2 = self._create_test_group(
-            team_id="team1", related_ids=["c", "d"]
-        )
-        group3 = self._create_test_group(
-            team_id="team2", related_ids=["e", "f"]
-        )
+        group1 = self._create_test_group(team_id="team1", related_ids=["a", "b"])
+        group2 = self._create_test_group(team_id="team1", related_ids=["c", "d"])
+        group3 = self._create_test_group(team_id="team2", related_ids=["e", "f"])
         self.repo.create_group(group1)
         self.repo.create_group(group2)
         self.repo.create_group(group3)

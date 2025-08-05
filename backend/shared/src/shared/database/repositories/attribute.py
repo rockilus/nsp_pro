@@ -24,16 +24,12 @@ class AttributeRepository(BaseRepository[AttributeSchema]):
         result = self.create(attribute_schema)
         return result.to_core()
 
-    def create_attributes(
-        self, attributes: List[Attribute]
-    ) -> List[Attribute]:
+    def create_attributes(self, attributes: List[Attribute]) -> List[Attribute]:
         """Create multiple attributes at once."""
         if not attributes:
             return []
 
-        attribute_schemas = [
-            AttributeSchema.from_core(attr) for attr in attributes
-        ]
+        attribute_schemas = [AttributeSchema.from_core(attr) for attr in attributes]
         result = self.create_many(attribute_schemas)
         return [attr.to_core() for attr in result]
 
@@ -42,16 +38,12 @@ class AttributeRepository(BaseRepository[AttributeSchema]):
         attributes = self.find_all({"owner": owner_id})
         return [attr.to_core() for attr in attributes]
 
-    def get_attributes_by_owner_ids(
-        self, owner_ids: List[str]
-    ) -> List[Attribute]:
+    def get_attributes_by_owner_ids(self, owner_ids: List[str]) -> List[Attribute]:
         """Get all attributes for multiple owners."""
         attributes = self.find_all({"owner": {"$in": owner_ids}})
         return [attr.to_core() for attr in attributes]
 
-    def get_attributes_by_dimension_id(
-        self, dimension_id: str
-    ) -> List[Attribute]:
+    def get_attributes_by_dimension_id(self, dimension_id: str) -> List[Attribute]:
         """Get all attributes for a dimension."""
         attributes = self.find_all({"dimension": dimension_id})
         return [attr.to_core() for attr in attributes]
@@ -104,9 +96,7 @@ class AttributeRepository(BaseRepository[AttributeSchema]):
                 r["shifts"],
             )
             attr_value_mod = (
-                attr_value.lower()
-                if not isinstance(attr_value, bool)
-                else attr_value
+                attr_value.lower() if not isinstance(attr_value, bool) else attr_value
             )
             if dim not in out:
                 out[dim] = {}
@@ -116,9 +106,7 @@ class AttributeRepository(BaseRepository[AttributeSchema]):
                 out[dim][attr_value_mod] += shifts
         return out
 
-    def get_attributes_by_dim_entry_id(
-        self, dim_entry_id: str
-    ) -> List[Attribute]:
+    def get_attributes_by_dim_entry_id(self, dim_entry_id: str) -> List[Attribute]:
         """Get all attributes for a dimension entry."""
         attributes = self.find_all({"dim_entries": {"$in": [dim_entry_id]}})
         return [attr.to_core() for attr in attributes]
@@ -130,9 +118,7 @@ class AttributeRepository(BaseRepository[AttributeSchema]):
         assert updated_attribute is not None
         return updated_attribute.to_core()
 
-    def update_attributes(
-        self, attributes: List[Attribute]
-    ) -> List[Attribute]:
+    def update_attributes(self, attributes: List[Attribute]) -> List[Attribute]:
         """Update multiple attributes."""
         if not attributes:
             return []

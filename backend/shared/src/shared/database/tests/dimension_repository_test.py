@@ -1,6 +1,6 @@
-import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.dimension import (
     DimensionRepository,
 )
@@ -10,8 +10,6 @@ from shared.schemas.core.dimension import (
     DimensionEntryType,
     DimensionType,
 )
-import pytest_asyncio
-from shared.database.interface import DatabaseInterface
 
 
 class TestDimensionRepository:

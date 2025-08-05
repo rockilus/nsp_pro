@@ -68,8 +68,7 @@ async def mongodb_container() -> AsyncGenerator[DatabaseInterface, None]:
             # return result.stdout.decode('utf-8')
         except subprocess.CalledProcessError as e:
             error_message = (
-                f"Command '{command}' failed with error: "
-                f"{e.stderr.decode('utf-8')}"
+                f"Command '{command}' failed with error: " f"{e.stderr.decode('utf-8')}"
             )
             raise RuntimeError(error_message) from e
 

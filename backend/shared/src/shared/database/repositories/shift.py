@@ -48,9 +48,7 @@ class ShiftRepository(BaseRepository[ShiftSchema]):
         shifts = self.find_all(
             {
                 "team": team_id,
-                "shift_type": {
-                    "$in": [ShiftType.NORMAL.value, ShiftType.DUTY.value]
-                },
+                "shift_type": {"$in": [ShiftType.NORMAL.value, ShiftType.DUTY.value]},
             }
         )
         return [shift.to_core() for shift in shifts]
@@ -60,9 +58,7 @@ class ShiftRepository(BaseRepository[ShiftSchema]):
         shifts = self.find_all(
             {
                 "team": team_id,
-                "shift_type": {
-                    "$in": [ShiftType.NORMAL.value, ShiftType.DUTY.value]
-                },
+                "shift_type": {"$in": [ShiftType.NORMAL.value, ShiftType.DUTY.value]},
                 "deleted": False,
             }
         )
@@ -73,9 +69,7 @@ class ShiftRepository(BaseRepository[ShiftSchema]):
         shifts = self.find_all(
             {
                 "team": team_id,
-                "shift_type": {
-                    "$in": [ShiftType.REST.value, ShiftType.LEAVE.value]
-                },
+                "shift_type": {"$in": [ShiftType.REST.value, ShiftType.LEAVE.value]},
             }
         )
         return [shift.to_core() for shift in shifts]
@@ -137,9 +131,7 @@ class ShiftRepository(BaseRepository[ShiftSchema]):
         """Delete a shift by its ID."""
         result = self.delete(shift_id)
         if result is False:
-            raise Exception(
-                f"Shift with id {shift_id} not found or already deleted"
-            )
+            raise Exception(f"Shift with id {shift_id} not found or already deleted")
 
     def logical_delete_shift(self, shift_id: str) -> Shift:
         """Mark a shift as deleted."""
@@ -152,9 +144,7 @@ class ShiftRepository(BaseRepository[ShiftSchema]):
 
         shift = self.find_by_id(shift_id)
         if not shift:
-            raise Exception(
-                f"Failed to retrieve updated shift with id {shift_id}"
-            )
+            raise Exception(f"Failed to retrieve updated shift with id {shift_id}")
 
         return shift.to_core()
 

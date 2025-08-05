@@ -1,17 +1,14 @@
 from datetime import datetime, timezone
 
-import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.breach import BreachRepository
 from shared.database.schemas.breach import (
     BreachSchema,
     VariableSchema,
 )
 from shared.schemas.core.breach import Breach, ObjectiveCategory, Variable
-import pytest_asyncio
-
-from shared.database.interface import DatabaseInterface
 
 
 class TestBreachRepository:

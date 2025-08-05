@@ -1,12 +1,12 @@
 from typing import List, Optional
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.solve_task_status import SolveTaskStatusSchema
 from shared.schemas.core.solve_task_status import (
     SolveRequestStatus,
     SolveTaskStatus,
 )
-from shared.database.interface import DatabaseInterface
 
 
 class SolveTaskStatusRepository(BaseRepository[SolveTaskStatusSchema]):
@@ -15,9 +15,7 @@ class SolveTaskStatusRepository(BaseRepository[SolveTaskStatusSchema]):
     """
 
     def __init__(self, database_interface: DatabaseInterface):
-        super().__init__(
-            database_interface, "solve_task_status", SolveTaskStatusSchema
-        )
+        super().__init__(database_interface, "solve_task_status", SolveTaskStatusSchema)
 
     def create_solve_task_status(
         self, solve_task_status: SolveTaskStatus
@@ -69,9 +67,7 @@ class SolveTaskStatusRepository(BaseRepository[SolveTaskStatusSchema]):
         }
 
         # Use collection directly to get sorting capability
-        cursor = (
-            self.collection.find(doc_filter).sort("completed_at", -1).limit(1)
-        )
+        cursor = self.collection.find(doc_filter).sort("completed_at", -1).limit(1)
         docs = list(cursor)
 
         if docs:
@@ -113,6 +109,4 @@ class SolveTaskStatusRepository(BaseRepository[SolveTaskStatusSchema]):
         """Delete a solve task status document by its MongoDB _id."""
         result = self.delete(task_status_id)
         if not result:
-            raise ValueError(
-                f"SolveTaskStatus with id {task_status_id} not found"
-            )
+            raise ValueError(f"SolveTaskStatus with id {task_status_id} not found")

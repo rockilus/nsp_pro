@@ -1,14 +1,12 @@
+import re
+
 import pytest
 from pymongo.database import Database
 from pymongo.errors import ConnectionFailure
 
-from shared.database.database import MongoDB
-import pytest_asyncio
-
+from shared.database.config import DatabaseConfig, DatabaseType
 from shared.database.interface import DatabaseInterface
 from shared.database.providers import MongoDBProvider
-from shared.database.config import DatabaseConfig, DatabaseType
-import re
 
 
 # pylint: disable=protected-access
@@ -51,9 +49,7 @@ class TestMongoDB:
         assert await provider.health_check() is True
 
     @pytest.mark.asyncio
-    async def test_connect_with_timeout(
-        self, mongodb_container: DatabaseInterface
-    ):
+    async def test_connect_with_timeout(self, mongodb_container: DatabaseInterface):
         """Test connection with timeout parameter."""
         config = DatabaseConfig(
             database_type=DatabaseType.MONGODB,
@@ -125,9 +121,7 @@ class TestMongoDB:
         assert provider._client is not None
         assert provider._database is not None
 
-    def test_get_database_without_connect(
-        self, mongodb_container: DatabaseInterface
-    ):
+    def test_get_database_without_connect(self, mongodb_container: DatabaseInterface):
         """Test get_database raises error if not connected."""
         config = DatabaseConfig(
             database_type=DatabaseType.MONGODB,

@@ -1,7 +1,7 @@
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.config import ConfigSchema
 from shared.schemas.core.config import Config
-from shared.database.interface import DatabaseInterface
 
 
 class ConfigRepository(BaseRepository[ConfigSchema]):

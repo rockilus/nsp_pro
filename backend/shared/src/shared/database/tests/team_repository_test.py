@@ -1,14 +1,11 @@
 from datetime import datetime, timezone
 
-import pytest
-
-from shared.database.database import MongoDB
-from shared.database.repositories.team import TeamRepository
-from shared.database.schemas.team import TeamSchema
-from shared.schemas.core.team import Team
 import pytest_asyncio
 
 from shared.database.interface import DatabaseInterface
+from shared.database.repositories.team import TeamRepository
+from shared.database.schemas.team import TeamSchema
+from shared.schemas.core.team import Team
 
 
 class TestTeamRepository:

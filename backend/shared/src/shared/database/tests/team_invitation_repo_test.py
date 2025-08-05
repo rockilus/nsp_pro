@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta, timezone
 
-import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.team_invitation import (
     TeamInvitationRepository,
 )
@@ -12,9 +12,6 @@ from shared.schemas.core.team_invitation import (
     TeamInvitationStatus,
     TeamInvitationType,
 )
-import pytest_asyncio
-
-from shared.database.interface import DatabaseInterface
 
 
 class TestTeamInvitationRepository:
@@ -27,9 +24,7 @@ class TestTeamInvitationRepository:
         db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = TeamInvitationRepository(
-            database_interface=mongodb_container
-        )
+        self.repo = TeamInvitationRepository(database_interface=mongodb_container)
 
         # Yield to test
         yield
@@ -167,15 +162,11 @@ class TestTeamInvitationRepository:
             token="token123",
             status=TeamInvitationStatus.PENDING.value,
             created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
-            expires_at=(
-                datetime.now(timezone.utc) + timedelta(days=1)
-            ).timestamp(),
+            expires_at=(datetime.now(timezone.utc) + timedelta(days=1)).timestamp(),
         )
         self.repo.create(invitation)
 
-        invitations = self.repo.get_pending_invitations_by_email(
-            "test@example.com"
-        )
+        invitations = self.repo.get_pending_invitations_by_email("test@example.com")
         assert len(invitations) == 1
         assert invitations[0].email == "test@example.com"
         assert invitations[0].status == TeamInvitationStatus.PENDING
@@ -199,9 +190,7 @@ class TestTeamInvitationRepository:
         assert found_invitation.token == "token123"
         assert found_invitation.email == "test@example.com"
 
-        not_found_invitation = self.repo.get_invitation_by_token(
-            "invalid_token"
-        )
+        not_found_invitation = self.repo.get_invitation_by_token("invalid_token")
         assert not_found_invitation is None
 
     def test_get_pending_invitations_by_team_id(self):
@@ -215,9 +204,7 @@ class TestTeamInvitationRepository:
             token="token123",
             status=TeamInvitationStatus.PENDING.value,
             created_at=datetime(2025, 5, 6, tzinfo=timezone.utc).timestamp(),
-            expires_at=(
-                datetime.now(timezone.utc) + timedelta(days=1)
-            ).timestamp(),
+            expires_at=(datetime.now(timezone.utc) + timedelta(days=1)).timestamp(),
         )
         self.repo.create(invitation)
 
@@ -253,9 +240,7 @@ class TestTeamInvitationRepository:
             token="token123",
             status=TeamInvitationStatus.PENDING.value,
             created_at=datetime(2025, 5, 6, tzinfo=timezone.utc).timestamp(),
-            expires_at=(
-                datetime.now(timezone.utc) + timedelta(days=1)
-            ).timestamp(),
+            expires_at=(datetime.now(timezone.utc) + timedelta(days=1)).timestamp(),
         )
         self.repo.create(invitation)
 
@@ -281,9 +266,7 @@ class TestTeamInvitationRepository:
             token="token789",
             status=TeamInvitationStatus.PENDING.value,
             created_at=datetime(2025, 5, 6, tzinfo=timezone.utc).timestamp(),
-            expires_at=(
-                datetime.now(timezone.utc) + timedelta(days=1)
-            ).timestamp(),
+            expires_at=(datetime.now(timezone.utc) + timedelta(days=1)).timestamp(),
         )
         self.repo.create(different_email_invitation)
 

@@ -1,11 +1,11 @@
 from typing import List, Optional
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.shift_demand_template import (
     ShiftDemandTemplateSchema,
 )
 from shared.schemas.core.shift_demand_template import ShiftDemandTemplate
-from shared.database.interface import DatabaseInterface
 
 
 class ShiftDemandTemplateRepository(BaseRepository[ShiftDemandTemplateSchema]):
@@ -18,26 +18,20 @@ class ShiftDemandTemplateRepository(BaseRepository[ShiftDemandTemplateSchema]):
             ShiftDemandTemplateSchema,
         )
 
-    def create_template(
-        self, template: ShiftDemandTemplate
-    ) -> ShiftDemandTemplate:
+    def create_template(self, template: ShiftDemandTemplate) -> ShiftDemandTemplate:
         """Create a new shift demand template."""
         template_schema = ShiftDemandTemplateSchema.from_core(template)
         result = self.create(template_schema)
         return result.to_core()
 
-    def get_template_by_id(
-        self, template_id: str
-    ) -> Optional[ShiftDemandTemplate]:
+    def get_template_by_id(self, template_id: str) -> Optional[ShiftDemandTemplate]:
         """Get a template by its ID."""
         template = self.find_by_id(template_id)
         if not template:
             return None
         return template.to_core()
 
-    def get_templates_by_team_id(
-        self, team_id: str
-    ) -> List[ShiftDemandTemplate]:
+    def get_templates_by_team_id(self, team_id: str) -> List[ShiftDemandTemplate]:
         """Get all templates for a team."""
         templates = self.find_all({"team": team_id})
         return [template.to_core() for template in templates]
@@ -46,14 +40,10 @@ class ShiftDemandTemplateRepository(BaseRepository[ShiftDemandTemplateSchema]):
         self, team_id: str, template_type: str
     ) -> List[ShiftDemandTemplate]:
         """Get templates for a team filtered by template type."""
-        templates = self.find_all(
-            {"team": team_id, "template_type": template_type}
-        )
+        templates = self.find_all({"team": team_id, "template_type": template_type})
         return [template.to_core() for template in templates]
 
-    def update_template(
-        self, template: ShiftDemandTemplate
-    ) -> ShiftDemandTemplate:
+    def update_template(self, template: ShiftDemandTemplate) -> ShiftDemandTemplate:
         """Update an existing template."""
         if not template.id:
             raise ValueError("Template ID is required for update")

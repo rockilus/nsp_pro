@@ -1,9 +1,9 @@
 from typing import List
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.worker import WorkerSchema
 from shared.schemas.core.worker import Worker
-from shared.database.interface import DatabaseInterface
 
 
 class WorkerRepository(BaseRepository[WorkerSchema]):
@@ -49,9 +49,7 @@ class WorkerRepository(BaseRepository[WorkerSchema]):
         workers = self.find_all({"specialties": {"$in": [specialty_id]}})
         return [worker.to_core() for worker in workers]
 
-    def get_workers_by_team_and_user(
-        self, team_id: str, user_id: str
-    ) -> List[Worker]:
+    def get_workers_by_team_and_user(self, team_id: str, user_id: str) -> List[Worker]:
         """Get all workers for a specific team and user."""
         workers = self.find_all({"team": team_id, "user_id": user_id})
         return [worker.to_core() for worker in workers]
@@ -79,9 +77,7 @@ class WorkerRepository(BaseRepository[WorkerSchema]):
         """Delete a worker by its ID."""
         result = self.delete(worker_id)
         if result is False:
-            raise Exception(
-                f"Worker with id {worker_id} not found or already deleted"
-            )
+            raise Exception(f"Worker with id {worker_id} not found or already deleted")
 
     def logical_delete_worker(self, worker_id: str) -> Worker:
         """Mark a worker as deleted."""
@@ -94,8 +90,6 @@ class WorkerRepository(BaseRepository[WorkerSchema]):
 
         worker = self.find_by_id(worker_id)
         if not worker:
-            raise Exception(
-                f"Failed to retrieve updated worker with id {worker_id}"
-            )
+            raise Exception(f"Failed to retrieve updated worker with id {worker_id}")
 
         return worker.to_core()

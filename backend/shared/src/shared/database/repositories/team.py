@@ -1,9 +1,9 @@
 from typing import List
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.team import TeamSchema
 from shared.schemas.core.team import Team
-from shared.database.interface import DatabaseInterface
 
 
 class TeamRepository(BaseRepository[TeamSchema]):
@@ -46,6 +46,4 @@ class TeamRepository(BaseRepository[TeamSchema]):
         """Delete a team by its ID."""
         result = self.delete(team_id)
         if result is False:
-            raise Exception(
-                f"Team with id {team_id} not found or already deleted"
-            )
+            raise Exception(f"Team with id {team_id} not found or already deleted")

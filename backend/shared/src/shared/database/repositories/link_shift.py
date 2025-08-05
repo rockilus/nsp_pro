@@ -1,9 +1,9 @@
 from typing import List
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.link_shift import LinkShiftSchema
 from shared.schemas.core.link_shift import LinkShift
-from shared.database.interface import DatabaseInterface
 
 
 class LinkShiftRepository(BaseRepository[LinkShiftSchema]):

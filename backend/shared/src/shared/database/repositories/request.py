@@ -1,6 +1,7 @@
 from datetime import date, datetime, timezone
 from typing import List
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.request import RequestSchema
 from shared.schemas.core.request import (
@@ -9,7 +10,6 @@ from shared.schemas.core.request import (
     RequestStatus,
     RequestType,
 )
-from shared.database.interface import DatabaseInterface
 
 
 class RequestRepository(BaseRepository[RequestSchema]):

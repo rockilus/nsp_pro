@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 
-import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.schedule import (
     ScheduleRepository,
 )
@@ -14,9 +14,6 @@ from shared.schemas.core.schedule import (
     Schedule,
     ScheduleStatus,
 )
-import pytest_asyncio
-
-from shared.database.interface import DatabaseInterface
 
 
 class TestScheduleRepository:
@@ -152,12 +149,8 @@ class TestScheduleRepository:
         schedules = [
             ScheduleSchema(
                 team="team1",
-                start_date=datetime(
-                    2023, 1, 1, tzinfo=timezone.utc
-                ).timestamp(),
-                end_date=datetime(
-                    2023, 1, 31, tzinfo=timezone.utc
-                ).timestamp(),
+                start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
                 status=ScheduleStatus.CAMPAIGN.value,
                 missing_coverage_dates=[],
                 constraint_builds=[],
@@ -168,12 +161,8 @@ class TestScheduleRepository:
             ),
             ScheduleSchema(
                 team="team1",
-                start_date=datetime(
-                    2023, 1, 1, tzinfo=timezone.utc
-                ).timestamp(),
-                end_date=datetime(
-                    2023, 1, 31, tzinfo=timezone.utc
-                ).timestamp(),
+                start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
                 status=ScheduleStatus.CAMPAIGN.value,
                 missing_coverage_dates=[],
                 constraint_builds=[],
@@ -226,9 +215,7 @@ class TestScheduleRepository:
         )
         self.repo.create(schedule)
 
-        result = self.repo.get_schedule_campaign_by_constraint_build_id(
-            "team1", "cb1"
-        )
+        result = self.repo.get_schedule_campaign_by_constraint_build_id("team1", "cb1")
 
         assert result is not None
         assert "cb1" in result.constraint_build_ids
@@ -238,12 +225,8 @@ class TestScheduleRepository:
         schedules = [
             ScheduleSchema(
                 team="team1",
-                start_date=datetime(
-                    2023, 1, 1, tzinfo=timezone.utc
-                ).timestamp(),
-                end_date=datetime(
-                    2023, 1, 31, tzinfo=timezone.utc
-                ).timestamp(),
+                start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
                 status=ScheduleStatus.CAMPAIGN.value,
                 missing_coverage_dates=[],
                 constraint_builds=[],
@@ -254,12 +237,8 @@ class TestScheduleRepository:
             ),
             ScheduleSchema(
                 team="team1",
-                start_date=datetime(
-                    2023, 1, 1, tzinfo=timezone.utc
-                ).timestamp(),
-                end_date=datetime(
-                    2023, 1, 31, tzinfo=timezone.utc
-                ).timestamp(),
+                start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
                 status=ScheduleStatus.CAMPAIGN.value,
                 missing_coverage_dates=[],
                 constraint_builds=[],
@@ -289,9 +268,7 @@ class TestScheduleRepository:
             missing_coverage_dates=[],
             constraint_builds=[],
             quick_staffings=[
-                QuickStaffingSchema(
-                    worker_id="worker1", shift_id="shift1", target=1
-                )
+                QuickStaffingSchema(worker_id="worker1", shift_id="shift1", target=1)
             ],
             created_at=datetime.now(timezone.utc).timestamp(),
             updated_at=datetime.now(timezone.utc).timestamp(),
@@ -299,9 +276,7 @@ class TestScheduleRepository:
         )
         self.repo.create(schedule)
 
-        result = self.repo.get_schedule_quick_staffing_contain_shift_id(
-            "shift1"
-        )
+        result = self.repo.get_schedule_quick_staffing_contain_shift_id("shift1")
 
         assert len(result) == 1
         assert result[0].quick_staffings[0].shift_id == "shift1"
@@ -318,9 +293,7 @@ class TestScheduleRepository:
             missing_coverage_dates=[],
             constraint_builds=[],
             quick_staffings=[
-                QuickStaffingSchema(
-                    worker_id="worker1", shift_id="shift1", target=1
-                )
+                QuickStaffingSchema(worker_id="worker1", shift_id="shift1", target=1)
             ],
             created_at=datetime.now(timezone.utc).timestamp(),
             updated_at=datetime.now(timezone.utc).timestamp(),
@@ -328,9 +301,7 @@ class TestScheduleRepository:
         )
         self.repo.create(schedule)
 
-        result = self.repo.get_schedule_quick_staffing_contain_worker_id(
-            "worker1"
-        )
+        result = self.repo.get_schedule_quick_staffing_contain_worker_id("worker1")
 
         assert len(result) == 1
         assert result[0].quick_staffings[0].worker_id == "worker1"

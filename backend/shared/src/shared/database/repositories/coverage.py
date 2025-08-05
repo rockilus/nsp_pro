@@ -1,9 +1,9 @@
 from typing import List
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.coverage import CoverageSchema
 from shared.schemas.core.coverage import Coverage
-from shared.database.interface import DatabaseInterface
 
 
 class CoverageRepository(BaseRepository[CoverageSchema]):

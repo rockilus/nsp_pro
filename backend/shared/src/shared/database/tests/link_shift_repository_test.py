@@ -1,14 +1,11 @@
-import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.link_shift import (
     LinkShiftRepository,
 )
 from shared.database.schemas.link_shift import LinkShiftSchema
 from shared.schemas.core.link_shift import LinkShift
-import pytest_asyncio
-
-from shared.database.interface import DatabaseInterface
 
 
 class TestLinkShiftRepository:
@@ -55,12 +52,8 @@ class TestLinkShiftRepository:
 
     def test_get_link_shifts(self):
         """Test getting all link shifts for a team."""
-        link_shift1 = LinkShiftSchema(
-            team="team1", shifts=["shift1", "shift2"]
-        )
-        link_shift2 = LinkShiftSchema(
-            team="team1", shifts=["shift3", "shift4"]
-        )
+        link_shift1 = LinkShiftSchema(team="team1", shifts=["shift1", "shift2"])
+        link_shift2 = LinkShiftSchema(team="team1", shifts=["shift3", "shift4"])
         self.repo.create(link_shift1)
         self.repo.create(link_shift2)
 
@@ -110,15 +103,9 @@ class TestLinkShiftRepository:
 
     def test_get_link_shifts_by_shift_id(self):
         """Test getting all link shifts associated with a specific shift ID."""
-        link_shift1 = LinkShiftSchema(
-            team="team1", shifts=["shift1", "shift2"]
-        )
-        link_shift2 = LinkShiftSchema(
-            team="team1", shifts=["shift2", "shift3"]
-        )
-        link_shift3 = LinkShiftSchema(
-            team="team2", shifts=["shift1", "shift4"]
-        )
+        link_shift1 = LinkShiftSchema(team="team1", shifts=["shift1", "shift2"])
+        link_shift2 = LinkShiftSchema(team="team1", shifts=["shift2", "shift3"])
+        link_shift3 = LinkShiftSchema(team="team2", shifts=["shift1", "shift4"])
         self.repo.create(link_shift1)
         self.repo.create(link_shift2)
         self.repo.create(link_shift3)

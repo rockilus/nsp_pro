@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 
-import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.shift_demand import (
     ShiftDemandRepository,
 )
@@ -10,9 +10,6 @@ from shared.database.schemas.shift_demand import (
     ShiftDemandSchema,
 )
 from shared.schemas.core.shift_demand import ShiftDemand
-import pytest_asyncio
-
-from shared.database.interface import DatabaseInterface
 
 
 class TestShiftDemandRepository:
@@ -236,10 +233,7 @@ class TestShiftDemandRepository:
 
         self.repo.delete_shift_demands_by_coverage_id("coverage1")
 
-        assert (
-            self.repo.collection.count_documents({"coverage": "coverage1"})
-            == 0
-        )
+        assert self.repo.collection.count_documents({"coverage": "coverage1"}) == 0
 
     def test_delete_shift_demands_by_shift_id(self):
         """Test deleting shift demands by shift ID."""

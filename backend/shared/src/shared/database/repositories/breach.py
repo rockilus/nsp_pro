@@ -1,9 +1,9 @@
 from typing import List
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.breach import BreachSchema
 from shared.schemas.core.breach import Breach
-from shared.database.interface import DatabaseInterface
 
 
 class BreachRepository(BaseRepository[BreachSchema]):
@@ -23,9 +23,7 @@ class BreachRepository(BaseRepository[BreachSchema]):
         if not breaches:
             return []
 
-        breach_schemas = [
-            BreachSchema.from_core(breach) for breach in breaches
-        ]
+        breach_schemas = [BreachSchema.from_core(breach) for breach in breaches]
         result = self.create_many(breach_schemas)
         return [breach.to_core() for breach in result]
 
@@ -67,9 +65,7 @@ class BreachRepository(BaseRepository[BreachSchema]):
         """Delete a breach by its ID."""
         result = self.delete(breach_id)
         if result is False:
-            raise Exception(
-                f"Breach with id {breach_id} not found or already deleted"
-            )
+            raise Exception(f"Breach with id {breach_id} not found or already deleted")
 
     def delete_breaches_by_schedule_id(self, schedule_id: str) -> None:
         """Delete all breaches for a specific schedule."""

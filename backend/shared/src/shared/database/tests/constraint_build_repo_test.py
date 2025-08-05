@@ -1,6 +1,6 @@
-import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.constraint_build import (
     ConstraintBuildRepository,
 )
@@ -15,9 +15,6 @@ from shared.schemas.core.constraint import (
     ConstraintBuild,
     ConstraintType,
 )
-import pytest_asyncio
-
-from shared.database.interface import DatabaseInterface
 
 
 class TestConstraintBuildRepository:
@@ -30,9 +27,7 @@ class TestConstraintBuildRepository:
         db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = ConstraintBuildRepository(
-            database_interface=mongodb_container
-        )
+        self.repo = ConstraintBuildRepository(database_interface=mongodb_container)
 
         # Yield to test
         yield

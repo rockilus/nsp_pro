@@ -1,10 +1,10 @@
 from datetime import date, datetime, timezone
 from typing import List, Optional
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.schedule import ScheduleSchema
 from shared.schemas.core.schedule import Schedule, ScheduleStatus
-from shared.database.interface import DatabaseInterface
 
 
 class ScheduleRepository(BaseRepository[ScheduleSchema]):
@@ -53,16 +53,12 @@ class ScheduleRepository(BaseRepository[ScheduleSchema]):
             raise Exception(f"Schedule with id {schedule_id} not found")
         return schedule.to_core()
 
-    def get_schedules_before_date(
-        self, s_date: date, team_id: str
-    ) -> List[Schedule]:
+    def get_schedules_before_date(self, s_date: date, team_id: str) -> List[Schedule]:
         """Get all schedules before a specific date for a team."""
         s_timestamp = datetime.combine(
             s_date, datetime.min.time(), tzinfo=timezone.utc
         ).timestamp()
-        schedules = self.find_all(
-            {"end_date": {"$lt": s_timestamp}, "team": team_id}
-        )
+        schedules = self.find_all({"end_date": {"$lt": s_timestamp}, "team": team_id})
         return [schedule.to_core() for schedule in schedules]
 
     def get_schedule_quick_staffing_contain_shift_id(
