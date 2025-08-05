@@ -6,6 +6,9 @@ from shared.database.database import MongoDB
 import pytest_asyncio
 
 from shared.database.interface import DatabaseInterface
+from shared.database.providers import MongoDBProvider
+from shared.database.config import DatabaseConfig, DatabaseType
+import re
 
 
 # pylint: disable=protected-access
@@ -22,67 +25,138 @@ class TestMongoDB:
     #     # Clean up after each test
     #     MongoDB.close()
 
-    def test_connect_success(self, mongodb_container):
+    @pytest.mark.asyncio
+    async def test_connect_success(self, mongodb_container: DatabaseInterface):
         """Test successful connection to MongoDB."""
         # Test connection
-        db = MongoDB.connect(mongodb_container, "test_db")
+        config = DatabaseConfig(
+            database_type=DatabaseType.MONGODB,
+            mongodb_uri=mongodb_container.config.mongodb_uri,
+            database_name="test_db",
+        )
+        provider = MongoDBProvider(config)
+        await provider.connect()
 
         # Verify connection was established
-        assert MongoDB._client is not None
-        assert MongoDB._db is not None
+        assert provider._client is not None
+        assert provider._database is not None
+
+        # Verify database name
+        db = provider.get_database()
+        assert db is not None
         assert isinstance(db, Database)
         assert db.name == "test_db"
 
         # Test health check
-        assert MongoDB.check_health() is True
+        assert await provider.health_check() is True
 
-    def test_connect_with_timeout(self, mongodb_container):
+    @pytest.mark.asyncio
+    async def test_connect_with_timeout(
+        self, mongodb_container: DatabaseInterface
+    ):
         """Test connection with timeout parameter."""
-        db = MongoDB.connect(mongodb_container, "test_db", timeoutMS=5000)
+        config = DatabaseConfig(
+            database_type=DatabaseType.MONGODB,
+            mongodb_uri=mongodb_container.config.mongodb_uri,
+            database_name="test_db",
+            connection_timeout_ms=5000,
+        )
+        provider = MongoDBProvider(config)
+        await provider.connect()
 
-        assert MongoDB._client is not None
-        assert MongoDB._db is not None
+        assert provider._client is not None
+        assert provider._database is not None
+
+        # Verify database name
+        db = provider.get_database()
+        assert db is not None
         assert isinstance(db, Database)
+        assert db.name == "test_db"
 
-    def test_double_connect_reuses_connection(self, mongodb_container):
+        # Test health check
+        assert await provider.health_check() is True
+
+    @pytest.mark.asyncio
+    async def test_double_connect_reuses_connection(
+        self, mongodb_container: DatabaseInterface
+    ):
         """Test that connecting twice reuses the existing connection."""
         # First connection
-        MongoDB.connect(mongodb_container, "test_db")
-        original_client = MongoDB._client
+        config = DatabaseConfig(
+            database_type=DatabaseType.MONGODB,
+            mongodb_uri=mongodb_container.config.mongodb_uri,
+            database_name="test_db",
+        )
+        provider_1 = MongoDBProvider(config)
+        await provider_1.connect()
+        original_client = provider_1._client
 
         # Second connection should reuse the client
-        MongoDB.connect(mongodb_container, "another_db")
+        config = DatabaseConfig(
+            database_type=DatabaseType.MONGODB,
+            mongodb_uri=mongodb_container.config.mongodb_uri,
+            database_name="another_db",
+        )
+        provider_2 = MongoDBProvider(config)
+        await provider_2.connect()
 
         # Client should be the same object
-        assert MongoDB._client is original_client
+        assert provider_1._client is original_client
         # But db should be updated to the latest call
         # assert MongoDB._db.name == "another_db"
-        assert MongoDB._db.name == "test_db"
+        assert provider_1._database.name == "test_db"
 
         # Clean up manually to reset state
-        MongoDB.close()
+        await provider_1.disconnect()
+        await provider_2.disconnect()
 
-    def test_connect_failure(self):
+    @pytest.mark.asyncio
+    async def test_connect_failure(self):
         """Test handling of connection failures."""
+        config = DatabaseConfig(
+            database_type=DatabaseType.MONGODB,
+            mongodb_uri="mongodb://invalid:27017",
+            database_name="test_db",
+            connection_timeout_ms=100,
+        )
+        provider = MongoDBProvider(config)
         with pytest.raises(ConnectionFailure):
-            MongoDB.connect(
-                "mongodb://invalid:27017", "test_db", timeoutMS=100
-            )
-        assert MongoDB._client is None
-        assert MongoDB._db is None
+            await provider.connect()
+        assert provider._client is not None
+        assert provider._database is not None
 
-    def test_get_database_without_connect(self):
+    def test_get_database_without_connect(
+        self, mongodb_container: DatabaseInterface
+    ):
         """Test get_database raises error if not connected."""
-        with pytest.raises(ValueError, match="No database connection"):
-            MongoDB.get_database()
+        config = DatabaseConfig(
+            database_type=DatabaseType.MONGODB,
+            mongodb_uri=mongodb_container.config.mongodb_uri,
+            database_name="test_db",
+        )
+        provider = MongoDBProvider(config)
+        with pytest.raises(
+            RuntimeError,
+            match=re.escape("Database not connected. Call connect() first."),
+        ):
+            provider.get_database()
 
-    def test_get_database_after_connect(self, mongodb_container):
+    @pytest.mark.asyncio
+    async def test_get_database_after_connect(
+        self, mongodb_container: DatabaseInterface
+    ):
         """Test get_database returns database after connection."""
+        config = DatabaseConfig(
+            database_type=DatabaseType.MONGODB,
+            mongodb_uri=mongodb_container.config.mongodb_uri,
+            database_name="test_db",
+        )
+        provider = MongoDBProvider(config)
         # Connect first
-        MongoDB.connect(mongodb_container, "test_db")
+        await provider.connect()
 
         # Get database
-        db = MongoDB.get_database()
+        db = provider.get_database()
 
         # Verify
         assert db is not None
@@ -131,10 +205,20 @@ class TestMongoDB:
     #     # Health check should return False
     #     assert MongoDB.check_health() is False
 
-    def test_connection_with_real_data(self, mongodb_container):
+    @pytest.mark.asyncio
+    async def test_connection_with_real_data(
+        self, mongodb_container: DatabaseInterface
+    ):
         """Test inserting and retrieving real data."""
+        config = DatabaseConfig(
+            database_type=DatabaseType.MONGODB,
+            mongodb_uri=mongodb_container.config.mongodb_uri,
+            database_name="test_db",
+        )
+        provider = MongoDBProvider(config)
         # Connect
-        db = MongoDB.connect(mongodb_container, "test_db")
+        await provider.connect()
+        db = provider.get_database()
 
         # Create a test collection
         collection = db.test_collection

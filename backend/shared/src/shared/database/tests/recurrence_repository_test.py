@@ -37,7 +37,7 @@ class TestRecurrenceRepository:
 
         # Cleanup
         try:
-            collection = db.get_collection("recurrences")
+            collection = db.get_collection("recurrence_rules")
             collection.delete_many({})
         except Exception:  # pylint: disable=broad-except
             # If collection doesn't exist, that's fine

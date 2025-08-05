@@ -109,6 +109,7 @@ async def mongodb_container() -> AsyncGenerator[DatabaseInterface, None]:
                 "-f",
                 file_path_compose,
                 "down",
+                "-v",
             ]
             try:
                 subprocess.run(cleanup_command, check=True)
