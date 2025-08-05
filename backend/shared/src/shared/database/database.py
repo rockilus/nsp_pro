@@ -10,17 +10,13 @@ from shared.database.interface import DatabaseInterface
 class MongoDBInstance(DatabaseInterface):
     """MongoDB database connection manager instance."""
 
-    def __init__(
-        self, uri: str, db_name: str, timeoutMS: Optional[int] = None
-    ):
+    def __init__(self, uri: str, db_name: str, timeoutMS: Optional[int] = None):
         """Initialize MongoDB connection."""
         self._client: Optional[MongoClient] = None
         self._db: Optional[Database] = None
         self._connect(uri, db_name, timeoutMS)
 
-    def _connect(
-        self, uri: str, db_name: str, timeoutMS: Optional[int] = None
-    ) -> None:
+    def _connect(self, uri: str, db_name: str, timeoutMS: Optional[int] = None) -> None:
         """Connect to MongoDB."""
         try:
             self._client = MongoClient(uri, timeoutMS=timeoutMS)

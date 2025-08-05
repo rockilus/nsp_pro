@@ -83,18 +83,14 @@ class DocumentDBInstance(DatabaseInterface):
 
             # Test connection with ping
             self._client.admin.command("ping")
-            log_info(
-                f"Successfully connected to DocumentDB database: {db_name}"
-            )
+            log_info(f"Successfully connected to DocumentDB database: {db_name}")
 
         # pylint: disable=broad-except
         except (ConnectionFailure, Exception) as e:
             self._client = None
             self._db = None
             log_error(f"Failed to connect to DocumentDB: {str(e)}")
-            raise ConnectionFailure(
-                f"Failed to connect to DocumentDB: {str(e)}"
-            ) from e
+            raise ConnectionFailure(f"Failed to connect to DocumentDB: {str(e)}") from e
 
     def get_database(self) -> Database:
         """Get database instance."""

@@ -2,41 +2,39 @@ from typing import Any, Dict, Generic, List, Optional, Type, TypeVar
 
 from bson import ObjectId
 from pymongo.collection import Collection
-from pymongo.database import Database
 from pymongo.results import DeleteResult, InsertOneResult, UpdateResult
 
+from shared.database.interface import DatabaseInterface
 from shared.database.schemas.base import DocumentBaseSchema
 
 T = TypeVar("T", bound=DocumentBaseSchema)
 
 
 class BaseRepository(Generic[T]):
-    """Base repository for MongoDB collections."""
+    """Base repository for document databases with modern interface."""
 
     def __init__(
         self,
+        database_interface: DatabaseInterface,
         collection_name: str,
         schema_cls: Type[T],
-        database: Optional[Database] = None,
     ):
         """
-        Initialize repository with collection name and schema class.
+        Initialize repository with database interface and schema.
 
         Args:
+            database_interface: Database interface instance
             collection_name: Name of the MongoDB collection
             schema_cls: Schema class for the documents
-            database: Database instance (if None, uses legacy singleton)
         """
-        if database is None:
-            # Fallback to legacy MongoDB singleton for backward compatibility
-            from shared.database.database import MongoDB
-
-            self.db = MongoDB.get_database()
-        else:
-            self.db = database
-
-        self.collection: Collection = self.db[collection_name]
+        self.database_interface = database_interface
+        self.collection_name = collection_name
         self.schema_cls = schema_cls
+
+    @property
+    def collection(self) -> Collection:
+        """Get collection instance from database."""
+        return self.database_interface.get_database()[self.collection_name]
 
     def create(self, schema: T) -> T:
         """Create a new document in the collection."""
@@ -73,9 +71,7 @@ class BaseRepository(Generic[T]):
         doc = self.collection.find_one({"_id": doc_id})
         return self.schema_cls.from_mongo(doc) if doc else None
 
-    def find_one(
-        self, doc_filter: Optional[Dict[str, Any]] = None
-    ) -> Optional[T]:
+    def find_one(self, doc_filter: Optional[Dict[str, Any]] = None) -> Optional[T]:
         """Find a single document matching the filter."""
         doc_filter = doc_filter or {}
         doc = self.collection.find_one(doc_filter)
@@ -94,7 +90,12 @@ class BaseRepository(Generic[T]):
         if limit > 0:
             cursor = cursor.limit(limit)
 
-        return [self.schema_cls.from_mongo(doc) for doc in cursor]
+        results = []
+        for doc in cursor:
+            schema_obj = self.schema_cls.from_mongo(doc)
+            if schema_obj is not None:
+                results.append(schema_obj)
+        return results
 
     def update(self, schema: T) -> Optional[T]:
         """Update a document by its ID."""

@@ -69,9 +69,7 @@ class BaseRepository(Repository[T], ABC):
         collection = await self._get_collection()
 
         # Convert string ID to ObjectId
-        object_id = (
-            ObjectId(entity_id) if isinstance(entity_id, str) else entity_id
-        )
+        object_id = ObjectId(entity_id) if isinstance(entity_id, str) else entity_id
 
         # Find document
         doc = await asyncio.to_thread(collection.find_one, {"_id": object_id})
@@ -136,14 +134,10 @@ class BaseRepository(Repository[T], ABC):
         collection = await self._get_collection()
 
         # Convert string ID to ObjectId
-        object_id = (
-            ObjectId(entity_id) if isinstance(entity_id, str) else entity_id
-        )
+        object_id = ObjectId(entity_id) if isinstance(entity_id, str) else entity_id
 
         # Delete document
-        result = await asyncio.to_thread(
-            collection.delete_one, {"_id": object_id}
-        )
+        result = await asyncio.to_thread(collection.delete_one, {"_id": object_id})
 
         return result.deleted_count > 0
 

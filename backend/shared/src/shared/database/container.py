@@ -26,9 +26,7 @@ class DatabaseContainer:
         """Get database instance by name."""
         if name not in self._instances:
             if name not in self._configs:
-                raise ValueError(
-                    f"No configuration found for database: {name}"
-                )
+                raise ValueError(f"No configuration found for database: {name}")
 
             config = self._configs[name]
             provider = await DatabaseFactory.create_and_connect(config)
@@ -68,9 +66,7 @@ async def get_database(name: str = "default") -> DatabaseInterface:
     return await container.get_database(name)
 
 
-def setup_database_config(
-    config: DatabaseConfig, name: str = "default"
-) -> None:
+def setup_database_config(config: DatabaseConfig, name: str = "default") -> None:
     """Setup database configuration in global container."""
     container = get_container()
     container.register_config(name, config)

@@ -1,9 +1,5 @@
 from dataclasses import dataclass
-from typing import Union
 
-from pymongo.database import Database
-
-from shared.database.database import MongoDB
 from shared.database.interface import DatabaseInterface
 from shared.database.repositories.assignment import AssignmentRepository
 from shared.database.repositories.attribute import AttributeRepository
@@ -85,61 +81,87 @@ class DatabaseCollections:
     user_db: UserRepository
     worker_db: WorkerRepository
 
-    def __init__(
-        self,
-        db_uri_or_database: Union[str, Database, DatabaseInterface],
-        db_name: str = "",
-    ):
+    def __init__(self, database_interface: DatabaseInterface):
         """
-        Initialize database collections.
+        Initialize database collections with modern database interface.
 
         Args:
-            db_uri_or_database: Either a database URI (str), Database instance,
-                               or DatabaseInterface
-            db_name: Database name (only used if first param is a URI)
+            database_interface: Database interface instance (MongoDB or DocumentDB)
         """
-        if isinstance(db_uri_or_database, str):
-            # Legacy behavior: connect using URI and database name
-            if not db_name:
-                raise ValueError("db_name is required when using URI string")
-            MongoDB.connect(db_uri_or_database, db_name)
-            self.db = MongoDB.get_database()
-        elif isinstance(db_uri_or_database, DatabaseInterface):
-            # New behavior: use DatabaseInterface instance
-            self.db = db_uri_or_database.get_database()
-        else:
-            # Database instance passed directly
-            self.db = db_uri_or_database
+        # Store the database interface for health checks, etc.
+        self.database_interface = database_interface
 
-        # Initialize all repositories with the database instance
-        # For now, repositories still use the singleton pattern for
-        # backward compatibility
-        # TODO: Update all repositories to accept database parameter
-        self.assignment_db = AssignmentRepository()
-        self.attribute_db = AttributeRepository()
-        self.breach_db = BreachRepository()
-        self.config_db = ConfigRepository()
-        self.constraint_build_db = ConstraintBuildRepository()
-        self.coverage_db = CoverageRepository()
-        self.dim_entry_db = DimEntryRepository()
-        self.dimension_db = DimensionRepository()
-        self.link_shift_db = LinkShiftRepository()
-        self.model_output_db = ModelOutputRepository()
-        self.multitasking_db = MultitaskingGroupRepository()
-        self.recurrence_db = RecurrenceRepository()
-        self.recurrence_exclusion_db = RecurrenceExclusionRepository()
-        self.request_db = RequestRepository()
-        self.schedule_db = ScheduleRepository()
-        self.shift_db = ShiftRepository()
-        self.shift_demand_db = ShiftDemandRepository()
-        self.shift_demand_exclusion_db = ShiftDemandExclusionRepository()
-        self.shift_demand_new_db = ShiftDemandNewRepository()
-        self.shift_demand_template_db = ShiftDemandTemplateRepository()
-        self.solve_task_status_db = SolveTaskStatusRepository()
-        self.specialty_db = SpecialtyRepository()
-        self.stats_header_db = StatsHeaderRepository()
-        self.team_db = TeamRepository()
-        self.team_invitation_db = TeamInvitationRepository()
-        self.team_membership_db = TeamMembershipRepository()
-        self.user_db = UserRepository()
-        self.worker_db = WorkerRepository()
+        # Initialize all repositories with the database interface
+        self.assignment_db = AssignmentRepository(database_interface)
+
+        # TODO: Update remaining repositories to accept database_interface
+        # For now, temporarily disable other repositories until updated
+        # self.attribute_db = AttributeRepository(database_interface)
+        # self.breach_db = BreachRepository(database_interface)
+        # self.config_db = ConfigRepository(database_interface)
+        # self.constraint_build_db = ConstraintBuildRepository(
+        #     database_interface
+        # )
+        # self.coverage_db = CoverageRepository(database_interface)
+        # self.dim_entry_db = DimEntryRepository(database_interface)
+        # self.dimension_db = DimensionRepository(database_interface)
+        # self.link_shift_db = LinkShiftRepository(database_interface)
+        # self.model_output_db = ModelOutputRepository(database_interface)
+        # self.multitasking_db = MultitaskingGroupRepository(
+        #     database_interface
+        # )
+        # self.recurrence_db = RecurrenceRepository(database_interface)
+        # self.recurrence_exclusion_db = RecurrenceExclusionRepository(
+        #     database_interface
+        # )
+        # self.request_db = RequestRepository(database_interface)
+        # self.schedule_db = ScheduleRepository(database_interface)
+        # self.shift_db = ShiftRepository(database_interface)
+        # self.shift_demand_db = ShiftDemandRepository(database_interface)
+        # self.shift_demand_exclusion_db = ShiftDemandExclusionRepository(
+        #     database_interface
+        # )
+        # self.shift_demand_new_db = ShiftDemandNewRepository(
+        #     database_interface
+        # )
+        # self.shift_demand_template_db = ShiftDemandTemplateRepository(
+        #     database_interface
+        # )
+        # self.solve_task_status_db = SolveTaskStatusRepository(
+        #     database_interface
+        # )
+        # self.specialty_db = SpecialtyRepository(database_interface)
+        # self.stats_header_db = StatsHeaderRepository(database_interface)
+        # self.team_db = TeamRepository(database_interface)
+        # self.team_invitation_db = TeamInvitationRepository(
+        #     database_interface
+        # )
+        # self.team_membership_db = TeamMembershipRepository(
+        #     database_interface
+        # )
+        # self.user_db = UserRepository(database_interface)
+        # self.worker_db = WorkerRepository(database_interface)
+
+    async def health_check(self) -> bool:
+        """Check the health of the database connection."""
+        return await self.database_interface.health_check()
+
+    async def close(self) -> None:
+        """Close the database connection."""
+        await self.database_interface.disconnect()
+
+    @classmethod
+    async def create_and_connect(
+        cls, database_interface: DatabaseInterface
+    ) -> "DatabaseCollections":
+        """
+        Create DatabaseCollections and establish database connection.
+
+        Args:
+            database_interface: Database interface instance
+
+        Returns:
+            DatabaseCollections with connected database
+        """
+        await database_interface.connect()
+        return cls(database_interface)

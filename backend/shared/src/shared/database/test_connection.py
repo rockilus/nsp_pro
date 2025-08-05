@@ -59,9 +59,7 @@ def test_database_connection(
 
         # Delete test document
         delete_result = test_collection.delete_one({"_id": result.inserted_id})
-        log_info(
-            f"✅ Test document deleted: {delete_result.deleted_count} documents"
-        )
+        log_info(f"✅ Test document deleted: {delete_result.deleted_count} documents")
 
         # Test health check
         health = DatabaseFactory.check_health(use_documentdb=use_documentdb)

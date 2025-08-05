@@ -9,7 +9,7 @@ from .config import DatabaseConfig, DatabaseType
 from .interface import DatabaseInterface
 
 if TYPE_CHECKING:
-    from .providers import DocumentDBProvider, MongoDBProvider
+    pass
 
 
 class DatabaseFactory:
@@ -27,14 +27,10 @@ class DatabaseFactory:
 
             return DocumentDBProvider(config)
         else:
-            raise ValueError(
-                f"Unsupported database type: {config.database_type}"
-            )
+            raise ValueError(f"Unsupported database type: {config.database_type}")
 
     @classmethod
-    async def create_and_connect(
-        cls, config: DatabaseConfig
-    ) -> DatabaseInterface:
+    async def create_and_connect(cls, config: DatabaseConfig) -> DatabaseInterface:
         """Create and connect database provider."""
         provider = cls.create_provider(config)
         await provider.connect()

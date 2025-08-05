@@ -32,24 +32,18 @@ class MongoDBProvider(DatabaseInterface):
                     raise ValueError("MongoDB URI not configured")
 
                 connection_params = {
-                    "serverSelectionTimeoutMS": (
-                        self.config.connection_timeout_ms
-                    ),
+                    "serverSelectionTimeoutMS": (self.config.connection_timeout_ms),
                     "maxPoolSize": self.config.max_pool_size,
                     "minPoolSize": self.config.min_pool_size,
                     "maxIdleTimeMS": 30000,
                 }
 
-                self._client = MongoClient(
-                    self.config.mongodb_uri, **connection_params
-                )
+                self._client = MongoClient(self.config.mongodb_uri, **connection_params)
                 self._database = self._client[self.config.database_name]
 
                 # Test connection
                 await asyncio.to_thread(self._client.admin.command, "ping")
-                logger.info(
-                    f"Connected to MongoDB: {self.config.database_name}"
-                )
+                logger.info(f"Connected to MongoDB: {self.config.database_name}")
 
         except Exception as e:
             logger.error(f"Failed to connect to MongoDB: {e}")
@@ -124,9 +118,7 @@ class DocumentDBProvider(DatabaseInterface):
                     )
 
                 connection_params = {
-                    "serverSelectionTimeoutMS": (
-                        self.config.connection_timeout_ms
-                    ),
+                    "serverSelectionTimeoutMS": (self.config.connection_timeout_ms),
                     "maxPoolSize": self.config.max_pool_size,
                     "minPoolSize": self.config.min_pool_size,
                     "maxIdleTimeMS": 30000,
@@ -137,16 +129,12 @@ class DocumentDBProvider(DatabaseInterface):
                     "retryWrites": False,
                 }
 
-                self._client = MongoClient(
-                    connection_string, **connection_params
-                )
+                self._client = MongoClient(connection_string, **connection_params)
                 self._database = self._client[self.config.database_name]
 
                 # Test connection
                 await asyncio.to_thread(self._client.admin.command, "ping")
-                logger.info(
-                    f"Connected to DocumentDB: {self.config.database_name}"
-                )
+                logger.info(f"Connected to DocumentDB: {self.config.database_name}")
 
         except Exception as e:
             logger.error(f"Failed to connect to DocumentDB: {e}")
