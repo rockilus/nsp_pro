@@ -1,6 +1,10 @@
 from dataclasses import dataclass
+from typing import Union
+
+from pymongo.database import Database
 
 from shared.database.database import MongoDB
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.assignment import AssignmentRepository
 from shared.database.repositories.attribute import AttributeRepository
 from shared.database.repositories.breach import BreachRepository
@@ -81,12 +85,17 @@ class DatabaseCollections:
     user_db: UserRepository
     worker_db: WorkerRepository
 
-    def __init__(self, db_uri_or_database, db_name: str = ""):
+    def __init__(
+        self,
+        db_uri_or_database: Union[str, Database, DatabaseInterface],
+        db_name: str = "",
+    ):
         """
         Initialize database collections.
 
         Args:
-            db_uri_or_database: Either a database URI (str) or Database
+            db_uri_or_database: Either a database URI (str), Database instance,
+                               or DatabaseInterface
             db_name: Database name (only used if first param is a URI)
         """
         if isinstance(db_uri_or_database, str):
@@ -94,13 +103,18 @@ class DatabaseCollections:
             if not db_name:
                 raise ValueError("db_name is required when using URI string")
             MongoDB.connect(db_uri_or_database, db_name)
-            self.db = MongoDB
+            self.db = MongoDB.get_database()
+        elif isinstance(db_uri_or_database, DatabaseInterface):
+            # New behavior: use DatabaseInterface instance
+            self.db = db_uri_or_database.get_database()
         else:
-            # New behavior: use existing database instance
-            # Store the database instance for repositories that might need it
-            self._database_instance = db_uri_or_database
-            self.db = MongoDB  # Keep for backward compatibility
+            # Database instance passed directly
+            self.db = db_uri_or_database
 
+        # Initialize all repositories with the database instance
+        # For now, repositories still use the singleton pattern for
+        # backward compatibility
+        # TODO: Update all repositories to accept database parameter
         self.assignment_db = AssignmentRepository()
         self.attribute_db = AttributeRepository()
         self.breach_db = BreachRepository()

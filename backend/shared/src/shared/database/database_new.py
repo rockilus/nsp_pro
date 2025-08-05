@@ -7,8 +7,8 @@ from pymongo.errors import ConnectionFailure
 from shared.database.interface import DatabaseInterface
 
 
-class MongoDBInstance(DatabaseInterface):
-    """MongoDB database connection manager instance."""
+class MongoDB(DatabaseInterface):
+    """MongoDB database connection manager."""
 
     def __init__(
         self, uri: str, db_name: str, timeoutMS: Optional[int] = None
@@ -40,7 +40,7 @@ class MongoDBInstance(DatabaseInterface):
     def close(self) -> None:
         """Close the database connection."""
         if self._client is not None:
-            self._client.close()  # type: ignore
+            self._client.close()
             self._client = None
             self._db = None
 
@@ -55,36 +55,43 @@ class MongoDBInstance(DatabaseInterface):
             return False
 
 
-class MongoDB:
-    """Legacy MongoDB singleton manager for backward compatibility."""
+class MongoDBSingleton:
+    """Singleton manager for MongoDB for backward compatibility."""
 
-    _singleton_instance: Optional[MongoDBInstance] = None
+    _instance: Optional[MongoDB] = None
 
     @classmethod
     def connect(
         cls, uri: str, db_name: str, timeoutMS: Optional[int] = None
     ) -> Database:
         """Legacy singleton connect method."""
-        cls._singleton_instance = MongoDBInstance(uri, db_name, timeoutMS)
-        return cls._singleton_instance.get_database()
+        cls._instance = MongoDB(uri, db_name, timeoutMS)
+        return cls._instance.get_database()
 
     @classmethod
     def get_database(cls) -> Database:
         """Legacy singleton get_database method."""
-        if cls._singleton_instance is None:
+        if cls._instance is None:
             raise ValueError("No database connection. Call connect() first.")
-        return cls._singleton_instance.get_database()
+        return cls._instance.get_database()
 
     @classmethod
     def close(cls) -> None:
         """Legacy singleton close method."""
-        if cls._singleton_instance is not None:
-            cls._singleton_instance.close()
-            cls._singleton_instance = None
+        if cls._instance is not None:
+            cls._instance.close()
+            cls._instance = None
 
     @classmethod
     def check_health(cls) -> bool:
         """Legacy singleton health check method."""
-        if cls._singleton_instance is None:
+        if cls._instance is None:
             return False
-        return cls._singleton_instance.check_health()
+        return cls._instance.check_health()
+
+
+# Monkey patch MongoDB class to maintain backward compatibility
+MongoDB.connect = MongoDBSingleton.connect
+MongoDB.get_database = MongoDBSingleton.get_database  # type: ignore
+MongoDB.close = MongoDBSingleton.close  # type: ignore
+MongoDB.check_health = MongoDBSingleton.check_health  # type: ignore
