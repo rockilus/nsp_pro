@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 from .config import DatabaseConfig, DatabaseType
 from .interface import DatabaseInterface
+from .providers import DocumentDBProvider, MongoDBProvider
 
 if TYPE_CHECKING:
     pass
@@ -19,15 +20,10 @@ class DatabaseFactory:
     def create_provider(config: DatabaseConfig) -> DatabaseInterface:
         """Create database provider based on configuration."""
         if config.database_type == DatabaseType.MONGODB:
-            from .providers import MongoDBProvider
-
             return MongoDBProvider(config)
-        elif config.database_type == DatabaseType.DOCUMENTDB:
-            from .providers import DocumentDBProvider
-
+        if config.database_type == DatabaseType.DOCUMENTDB:
             return DocumentDBProvider(config)
-        else:
-            raise ValueError(f"Unsupported database type: {config.database_type}")
+        raise ValueError(f"Unsupported database type: {config.database_type}")
 
     @classmethod
     async def create_and_connect(cls, config: DatabaseConfig) -> DatabaseInterface:

@@ -4,8 +4,8 @@ Provides MongoDB Atlas and AWS DocumentDB implementations with async support.
 """
 
 import asyncio
-import ssl
 from typing import Optional
+from urllib.parse import quote
 
 from loguru import logger
 from pymongo import MongoClient
@@ -102,11 +102,12 @@ class DocumentDBProvider(DatabaseInterface):
 
                 if username and password:
                     connection_string = (
-                        f"mongodb://{username}:{password}@{host}:{port}/"
-                        f"?ssl=true&ssl_ca_certs="
-                        f"{self.config.documentdb_ca_bundle_path}"
-                        "&replicaSet=rs0&readPreference=secondaryPreferred"
-                        "&retryWrites=false"
+                        f"mongodb://{username}:{quote(password)}@{host}:{port}/"
+                        f"?tls=true"
+                        f"&tlsCAFile={self.config.documentdb_ca_bundle_path}"
+                        f"&replicaSet=rs0"
+                        f"&readPreference=secondaryPreferred"
+                        f"&retryWrites=false"
                     )
                 else:
                     connection_string = (
@@ -118,15 +119,24 @@ class DocumentDBProvider(DatabaseInterface):
                     )
 
                 connection_params = {
-                    "serverSelectionTimeoutMS": (self.config.connection_timeout_ms),
-                    "maxPoolSize": self.config.max_pool_size,
-                    "minPoolSize": self.config.min_pool_size,
-                    "maxIdleTimeMS": 30000,
                     "ssl": True,
-                    "ssl_cert_reqs": ssl.CERT_REQUIRED,
-                    "ssl_ca_certs": self.config.documentdb_ca_bundle_path,
-                    # DocumentDB doesn't support retryWrites
-                    "retryWrites": False,
+                    "tls": True,
+                    "tlsCAFile": self.config.documentdb_ca_bundle_path,
+                    "tlsAllowInvalidCertificates": False,
+                    "tlsAllowInvalidHostnames": False,
+                    "connectTimeoutMS": self.config.connection_timeout_ms,
+                    "serverSelectionTimeoutMS": self.config.connection_timeout_ms,
+                    # "serverSelectionTimeoutMS": (
+                    #     self.config.connection_timeout_ms
+                    # ),
+                    # "maxPoolSize": self.config.max_pool_size,
+                    # "minPoolSize": self.config.min_pool_size,
+                    # "maxIdleTimeMS": 30000,
+                    # "ssl": True,
+                    # "ssl_cert_reqs": ssl.CERT_REQUIRED,
+                    # "ssl_ca_certs": self.config.documentdb_ca_bundle_path,
+                    # # DocumentDB doesn't support retryWrites
+                    # "retryWrites": False,
                 }
 
                 self._client = MongoClient(connection_string, **connection_params)

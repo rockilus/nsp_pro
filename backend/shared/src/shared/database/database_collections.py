@@ -93,54 +93,37 @@ class DatabaseCollections:
 
         # Initialize all repositories with the database interface
         self.assignment_db = AssignmentRepository(database_interface)
-
-        # TODO: Update remaining repositories to accept database_interface
-        # For now, temporarily disable other repositories until updated
-        # self.attribute_db = AttributeRepository(database_interface)
-        # self.breach_db = BreachRepository(database_interface)
-        # self.config_db = ConfigRepository(database_interface)
-        # self.constraint_build_db = ConstraintBuildRepository(
-        #     database_interface
-        # )
-        # self.coverage_db = CoverageRepository(database_interface)
-        # self.dim_entry_db = DimEntryRepository(database_interface)
-        # self.dimension_db = DimensionRepository(database_interface)
-        # self.link_shift_db = LinkShiftRepository(database_interface)
-        # self.model_output_db = ModelOutputRepository(database_interface)
-        # self.multitasking_db = MultitaskingGroupRepository(
-        #     database_interface
-        # )
-        # self.recurrence_db = RecurrenceRepository(database_interface)
-        # self.recurrence_exclusion_db = RecurrenceExclusionRepository(
-        #     database_interface
-        # )
-        # self.request_db = RequestRepository(database_interface)
-        # self.schedule_db = ScheduleRepository(database_interface)
-        # self.shift_db = ShiftRepository(database_interface)
-        # self.shift_demand_db = ShiftDemandRepository(database_interface)
-        # self.shift_demand_exclusion_db = ShiftDemandExclusionRepository(
-        #     database_interface
-        # )
-        # self.shift_demand_new_db = ShiftDemandNewRepository(
-        #     database_interface
-        # )
-        # self.shift_demand_template_db = ShiftDemandTemplateRepository(
-        #     database_interface
-        # )
-        # self.solve_task_status_db = SolveTaskStatusRepository(
-        #     database_interface
-        # )
-        # self.specialty_db = SpecialtyRepository(database_interface)
-        # self.stats_header_db = StatsHeaderRepository(database_interface)
-        # self.team_db = TeamRepository(database_interface)
-        # self.team_invitation_db = TeamInvitationRepository(
-        #     database_interface
-        # )
-        # self.team_membership_db = TeamMembershipRepository(
-        #     database_interface
-        # )
-        # self.user_db = UserRepository(database_interface)
-        # self.worker_db = WorkerRepository(database_interface)
+        self.attribute_db = AttributeRepository(database_interface)
+        self.breach_db = BreachRepository(database_interface)
+        self.config_db = ConfigRepository(database_interface)
+        self.constraint_build_db = ConstraintBuildRepository(database_interface)
+        self.coverage_db = CoverageRepository(database_interface)
+        self.dim_entry_db = DimEntryRepository(database_interface)
+        self.dimension_db = DimensionRepository(database_interface)
+        self.link_shift_db = LinkShiftRepository(database_interface)
+        self.model_output_db = ModelOutputRepository(database_interface)
+        self.multitasking_db = MultitaskingGroupRepository(database_interface)
+        self.recurrence_db = RecurrenceRepository(database_interface)
+        self.recurrence_exclusion_db = RecurrenceExclusionRepository(database_interface)
+        self.request_db = RequestRepository(database_interface)
+        self.schedule_db = ScheduleRepository(database_interface)
+        self.shift_db = ShiftRepository(database_interface)
+        self.shift_demand_db = ShiftDemandRepository(database_interface)
+        self.shift_demand_exclusion_db = ShiftDemandExclusionRepository(
+            database_interface
+        )
+        self.shift_demand_new_db = ShiftDemandNewRepository(database_interface)
+        self.shift_demand_template_db = ShiftDemandTemplateRepository(
+            database_interface
+        )
+        self.solve_task_status_db = SolveTaskStatusRepository(database_interface)
+        self.specialty_db = SpecialtyRepository(database_interface)
+        self.stats_header_db = StatsHeaderRepository(database_interface)
+        self.team_db = TeamRepository(database_interface)
+        self.team_invitation_db = TeamInvitationRepository(database_interface)
+        self.team_membership_db = TeamMembershipRepository(database_interface)
+        self.user_db = UserRepository(database_interface)
+        self.worker_db = WorkerRepository(database_interface)
 
     async def health_check(self) -> bool:
         """Check the health of the database connection."""

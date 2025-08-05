@@ -15,6 +15,7 @@ class DatabaseType(str, Enum):
     DOCUMENTDB = "documentdb"
 
 
+# pylint: disable=too-few-public-methods, too-many-instance-attributes
 @dataclass
 class DatabaseConfig:
     """Database configuration with validation."""

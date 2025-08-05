@@ -13,10 +13,24 @@ from .interface import DatabaseInterface
 class DatabaseContainer:
     """Container for managing database instances with dependency injection."""
 
+    _instance: Optional["DatabaseContainer"] = None  # Singleton instance
+
     def __init__(self):
         """Initialize database container."""
         self._instances: Dict[str, DatabaseInterface] = {}
         self._configs: Dict[str, DatabaseConfig] = {}
+
+    @classmethod
+    def get_instance(cls) -> "DatabaseContainer":
+        """Get or create the singleton instance of DatabaseContainer."""
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+
+    @classmethod
+    def reset_instance(cls) -> None:
+        """Reset the singleton instance."""
+        cls._instance = None
 
     def register_config(self, name: str, config: DatabaseConfig) -> None:
         """Register a database configuration."""
@@ -48,33 +62,20 @@ class DatabaseContainer:
         return results
 
 
-# Global container instance
-_container: Optional[DatabaseContainer] = None
-
-
-def get_container() -> DatabaseContainer:
-    """Get or create global database container."""
-    global _container
-    if _container is None:
-        _container = DatabaseContainer()
-    return _container
-
-
 async def get_database(name: str = "default") -> DatabaseInterface:
     """Get database instance from global container."""
-    container = get_container()
+    container = DatabaseContainer.get_instance()
     return await container.get_database(name)
 
 
 def setup_database_config(config: DatabaseConfig, name: str = "default") -> None:
     """Setup database configuration in global container."""
-    container = get_container()
+    container = DatabaseContainer.get_instance()
     container.register_config(name, config)
 
 
 async def shutdown_databases() -> None:
     """Shutdown all database connections."""
-    global _container
-    if _container:
-        await _container.disconnect_all()
-        _container = None
+    container = DatabaseContainer.get_instance()
+    await container.disconnect_all()
+    DatabaseContainer.reset_instance()
