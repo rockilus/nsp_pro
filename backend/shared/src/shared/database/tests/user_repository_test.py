@@ -6,25 +6,33 @@ from shared.database.database import MongoDB
 from shared.database.repositories.user import UserRepository
 from shared.database.schemas.user import UserSchema
 from shared.schemas.core.user import Language, User
+import pytest_asyncio
+
+from shared.database.interface import DatabaseInterface
 
 
 class TestUserRepository:
     repo: UserRepository
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
         """Setup test environment before each test."""
         assert mongodb_container is not None
-        db = MongoDB.get_database()
+        db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = UserRepository()
+        self.repo = UserRepository(database_interface=mongodb_container)
 
         # Yield to test
         yield
 
         # Cleanup
-        db.drop_collection(self.repo.collection)
+        try:
+            collection = db.get_collection("users")
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     def test_create_user(self):
         """Test creating a user."""

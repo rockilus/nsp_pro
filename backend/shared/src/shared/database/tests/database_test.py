@@ -3,6 +3,9 @@ from pymongo.database import Database
 from pymongo.errors import ConnectionFailure
 
 from shared.database.database import MongoDB
+import pytest_asyncio
+
+from shared.database.interface import DatabaseInterface
 
 
 # pylint: disable=protected-access
@@ -62,7 +65,9 @@ class TestMongoDB:
     def test_connect_failure(self):
         """Test handling of connection failures."""
         with pytest.raises(ConnectionFailure):
-            MongoDB.connect("mongodb://invalid:27017", "test_db", timeoutMS=100)
+            MongoDB.connect(
+                "mongodb://invalid:27017", "test_db", timeoutMS=100
+            )
         assert MongoDB._client is None
         assert MongoDB._db is None
 

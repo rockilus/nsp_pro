@@ -3,13 +3,14 @@ from typing import List
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.link_shift import LinkShiftSchema
 from shared.schemas.core.link_shift import LinkShift
+from shared.database.interface import DatabaseInterface
 
 
 class LinkShiftRepository(BaseRepository[LinkShiftSchema]):
     """Repository for link shift documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("link_shifts", LinkShiftSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(database_interface, "link_shifts", LinkShiftSchema)
 
     def create_link_shift(self, link_shift: LinkShift) -> LinkShift:
         """Create a new link shift."""

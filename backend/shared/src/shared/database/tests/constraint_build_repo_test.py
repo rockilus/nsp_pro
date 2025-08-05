@@ -15,25 +15,35 @@ from shared.schemas.core.constraint import (
     ConstraintBuild,
     ConstraintType,
 )
+import pytest_asyncio
+
+from shared.database.interface import DatabaseInterface
 
 
 class TestConstraintBuildRepository:
     repo: ConstraintBuildRepository
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
         """Setup test environment before each test."""
         assert mongodb_container is not None
-        db = MongoDB.get_database()
+        db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = ConstraintBuildRepository()
+        self.repo = ConstraintBuildRepository(
+            database_interface=mongodb_container
+        )
 
         # Yield to test
         yield
 
         # Cleanup
-        db.drop_collection(self.repo.collection)
+        try:
+            collection = db.get_collection("constraint_builds")
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     def test_create_constraint_build(self):
         """Test creating a constraint build."""

@@ -3,25 +3,33 @@ import pytest
 from shared.database.database import MongoDB
 from shared.database.repositories.config import ConfigRepository
 from shared.schemas.core.config import Config
+import pytest_asyncio
+
+from shared.database.interface import DatabaseInterface
 
 
 class TestConfigRepository:
     repo: ConfigRepository
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
         """Setup test environment before each test."""
         assert mongodb_container is not None
-        db = MongoDB.get_database()
+        db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = ConfigRepository()
+        self.repo = ConfigRepository(database_interface=mongodb_container)
 
         # Yield to test
         yield
 
         # Cleanup
-        db.drop_collection(self.repo.collection)
+        try:
+            collection = db.get_collection("config")
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     def test_create_config(self):
         """Test creating a config."""

@@ -10,25 +10,33 @@ from shared.database.schemas.model_output import (
     ModelOutputSchema,
 )
 from shared.schemas.core.model_output import ModelOutput, ModelOutputStatus
+import pytest_asyncio
+
+from shared.database.interface import DatabaseInterface
 
 
 class TestModelOutputRepository:
     repo: ModelOutputRepository
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
         """Setup test environment before each test."""
         assert mongodb_container is not None
-        db = MongoDB.get_database()
+        db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = ModelOutputRepository()
+        self.repo = ModelOutputRepository(database_interface=mongodb_container)
 
         # Yield to test
         yield
 
         # Cleanup
-        db.drop_collection(self.repo.collection)
+        try:
+            collection = db.get_collection("model_outputs")
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     def test_create_model_output(self):
         """Test creating a model output."""
@@ -63,7 +71,9 @@ class TestModelOutputRepository:
             var_spe_sol={str(("a", "b", "c", "d")): 2},
             objective_value=100.0,
             wall_time=10.0,
-            output_time=datetime(2023, 1, 1, 12, 0, tzinfo=timezone.utc).timestamp(),
+            output_time=datetime(
+                2023, 1, 1, 12, 0, tzinfo=timezone.utc
+            ).timestamp(),
         )
         created = self.repo.create(model_output)
 
@@ -82,7 +92,9 @@ class TestModelOutputRepository:
             var_spe_sol={str(("a", "b", "c", "d")): 2},
             objective_value=100.0,
             wall_time=10.0,
-            output_time=datetime(2023, 1, 1, 12, 0, tzinfo=timezone.utc).timestamp(),
+            output_time=datetime(
+                2023, 1, 1, 12, 0, tzinfo=timezone.utc
+            ).timestamp(),
         )
         created = self.repo.create(model_output)
 
@@ -115,7 +127,9 @@ class TestModelOutputRepository:
             var_spe_sol={str(("a", "b", "c", "d")): 2},
             objective_value=100.0,
             wall_time=10.0,
-            output_time=datetime(2023, 1, 1, 12, 0, tzinfo=timezone.utc).timestamp(),
+            output_time=datetime(
+                2023, 1, 1, 12, 0, tzinfo=timezone.utc
+            ).timestamp(),
         )
         created = self.repo.create(model_output)
 

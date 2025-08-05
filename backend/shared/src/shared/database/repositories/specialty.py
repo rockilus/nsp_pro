@@ -3,13 +3,14 @@ from typing import List
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.specialty import SpecialtySchema
 from shared.schemas.core.specialty import Specialty
+from shared.database.interface import DatabaseInterface
 
 
 class SpecialtyRepository(BaseRepository[SpecialtySchema]):
     """Repository for specialty documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("specialties", SpecialtySchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(database_interface, "specialties", SpecialtySchema)
 
     def create_specialty(self, specialty: Specialty) -> Specialty:
         """Create a new specialty."""
@@ -29,12 +30,16 @@ class SpecialtyRepository(BaseRepository[SpecialtySchema]):
         specialties = self.find_all({"team": team_id})
         return [specialty.to_core() for specialty in specialties]
 
-    def get_specialties_not_deleted_by_team_id(self, team_id: str) -> List[Specialty]:
+    def get_specialties_not_deleted_by_team_id(
+        self, team_id: str
+    ) -> List[Specialty]:
         """Get all non-deleted specialties for a team."""
         specialties = self.find_all({"team": team_id, "deleted": False})
         return [specialty.to_core() for specialty in specialties]
 
-    def get_specialties_by_team_ids(self, team_ids: List[str]) -> List[Specialty]:
+    def get_specialties_by_team_ids(
+        self, team_ids: List[str]
+    ) -> List[Specialty]:
         """Get multiple specialties by their team IDs."""
         specialties = self.find_all({"team": {"$in": team_ids}})
         return [specialty.to_core() for specialty in specialties]

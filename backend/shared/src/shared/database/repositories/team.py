@@ -3,13 +3,14 @@ from typing import List
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.team import TeamSchema
 from shared.schemas.core.team import Team
+from shared.database.interface import DatabaseInterface
 
 
 class TeamRepository(BaseRepository[TeamSchema]):
     """Repository for team documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("teams", TeamSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(database_interface, "teams", TeamSchema)
 
     def create_team(self, team: Team) -> Team:
         """Create a new team."""
@@ -45,4 +46,6 @@ class TeamRepository(BaseRepository[TeamSchema]):
         """Delete a team by its ID."""
         result = self.delete(team_id)
         if result is False:
-            raise Exception(f"Team with id {team_id} not found or already deleted")
+            raise Exception(
+                f"Team with id {team_id} not found or already deleted"
+            )

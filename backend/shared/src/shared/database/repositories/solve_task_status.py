@@ -6,6 +6,7 @@ from shared.schemas.core.solve_task_status import (
     SolveRequestStatus,
     SolveTaskStatus,
 )
+from shared.database.interface import DatabaseInterface
 
 
 class SolveTaskStatusRepository(BaseRepository[SolveTaskStatusSchema]):
@@ -13,8 +14,10 @@ class SolveTaskStatusRepository(BaseRepository[SolveTaskStatusSchema]):
     Repository for SolveTaskStatus documents in MongoDB.
     """
 
-    def __init__(self):
-        super().__init__("solve_task_status", SolveTaskStatusSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(
+            database_interface, "solve_task_status", SolveTaskStatusSchema
+        )
 
     def create_solve_task_status(
         self, solve_task_status: SolveTaskStatus
@@ -66,7 +69,9 @@ class SolveTaskStatusRepository(BaseRepository[SolveTaskStatusSchema]):
         }
 
         # Use collection directly to get sorting capability
-        cursor = self.collection.find(doc_filter).sort("completed_at", -1).limit(1)
+        cursor = (
+            self.collection.find(doc_filter).sort("completed_at", -1).limit(1)
+        )
         docs = list(cursor)
 
         if docs:
@@ -108,4 +113,6 @@ class SolveTaskStatusRepository(BaseRepository[SolveTaskStatusSchema]):
         """Delete a solve task status document by its MongoDB _id."""
         result = self.delete(task_status_id)
         if not result:
-            raise ValueError(f"SolveTaskStatus with id {task_status_id} not found")
+            raise ValueError(
+                f"SolveTaskStatus with id {task_status_id} not found"
+            )

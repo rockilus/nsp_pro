@@ -13,26 +13,34 @@ from shared.schemas.core.request import (
     RequestStatus,
     RequestType,
 )
+import pytest_asyncio
+
+from shared.database.interface import DatabaseInterface
 
 
 # pylint: disable=R0801
 class TestRequestRepository:
     repo: RequestRepository
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
         """Setup test environment before each test."""
         assert mongodb_container is not None
-        db = MongoDB.get_database()
+        db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = RequestRepository()
+        self.repo = RequestRepository(database_interface=mongodb_container)
 
         # Yield to test
         yield
 
         # Cleanup
-        db.drop_collection(self.repo.collection)
+        try:
+            collection = db.get_collection("requests")
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     def test_create_request(self):
         """Test creating a request."""
@@ -94,8 +102,12 @@ class TestRequestRepository:
         request = RequestSchema(
             team="team1",
             worker="worker1",
-            start_date=datetime(2023, 1, 1, 0, 0, tzinfo=timezone.utc).timestamp(),
-            end_date=datetime(2023, 1, 2, 0, 0, tzinfo=timezone.utc).timestamp(),
+            start_date=datetime(
+                2023, 1, 1, 0, 0, tzinfo=timezone.utc
+            ).timestamp(),
+            end_date=datetime(
+                2023, 1, 2, 0, 0, tzinfo=timezone.utc
+            ).timestamp(),
             shift="shift1",
             shift_options=[],
             negative=False,
@@ -127,7 +139,9 @@ class TestRequestRepository:
 
         result = self.repo.update_request(updated_request)
 
-        assert result.end_date == datetime(2023, 1, 3, tzinfo=timezone.utc).date()
+        assert (
+            result.end_date == datetime(2023, 1, 3, tzinfo=timezone.utc).date()
+        )
         assert result.negative is True
         assert result.status == RequestStatus.APPROVED
 
@@ -164,7 +178,9 @@ class TestRequestRepository:
             RequestSchema(
                 team="team1",
                 worker="worker1",
-                start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                start_date=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
                 end_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
                 shift="shift1",
                 shift_options=[],
@@ -174,12 +190,16 @@ class TestRequestRepository:
                 request_type=RequestType.LEAVE.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="test comment",
-                created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                created_at=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
             ),
             RequestSchema(
                 team="team1",
                 worker="worker2",
-                start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                start_date=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
                 end_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
                 shift="shift2",
                 shift_options=[],
@@ -189,7 +209,9 @@ class TestRequestRepository:
                 request_type=RequestType.LEAVE.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="test comment",
-                created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                created_at=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
             ),
         ]
         self.repo.create_many(requests)
@@ -203,7 +225,9 @@ class TestRequestRepository:
             RequestSchema(
                 team="team1",
                 worker="worker1",
-                start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                start_date=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
                 end_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
                 shift="shift1",
                 shift_options=[],
@@ -213,12 +237,16 @@ class TestRequestRepository:
                 request_type=RequestType.LEAVE.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="test comment",
-                created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                created_at=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
             ),
             RequestSchema(
                 team="team1",
                 worker="worker2",
-                start_date=datetime(2023, 1, 3, tzinfo=timezone.utc).timestamp(),
+                start_date=datetime(
+                    2023, 1, 3, tzinfo=timezone.utc
+                ).timestamp(),
                 end_date=datetime(2023, 1, 4, tzinfo=timezone.utc).timestamp(),
                 shift="shift2",
                 shift_options=[],
@@ -228,7 +256,9 @@ class TestRequestRepository:
                 request_type=RequestType.LEAVE.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="test comment",
-                created_at=datetime(2023, 1, 3, tzinfo=timezone.utc).timestamp(),
+                created_at=datetime(
+                    2023, 1, 3, tzinfo=timezone.utc
+                ).timestamp(),
             ),
         ]
         self.repo.create_many(requests)
@@ -246,7 +276,9 @@ class TestRequestRepository:
             RequestSchema(
                 team="team1",
                 worker="worker1",
-                start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                start_date=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
                 end_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
                 shift="shift1",
                 shift_options=[],
@@ -256,12 +288,16 @@ class TestRequestRepository:
                 request_type=RequestType.LEAVE.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="test comment",
-                created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                created_at=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
             ),
             RequestSchema(
                 team="team1",
                 worker="worker2",
-                start_date=datetime(2023, 1, 3, tzinfo=timezone.utc).timestamp(),
+                start_date=datetime(
+                    2023, 1, 3, tzinfo=timezone.utc
+                ).timestamp(),
                 end_date=datetime(2023, 1, 4, tzinfo=timezone.utc).timestamp(),
                 shift="shift2",
                 shift_options=[],
@@ -271,7 +307,9 @@ class TestRequestRepository:
                 request_type=RequestType.LEAVE.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="test comment",
-                created_at=datetime(2023, 1, 3, tzinfo=timezone.utc).timestamp(),
+                created_at=datetime(
+                    2023, 1, 3, tzinfo=timezone.utc
+                ).timestamp(),
             ),
         ]
         created_requests = self.repo.create_many(requests)
@@ -314,10 +352,16 @@ class TestRequestRepository:
         result = self.repo.update_requests(updated_requests)
 
         assert len(result) == 2
-        assert result[0].end_date == datetime(2023, 1, 3, tzinfo=timezone.utc).date()
+        assert (
+            result[0].end_date
+            == datetime(2023, 1, 3, tzinfo=timezone.utc).date()
+        )
         assert result[0].negative is True
         assert result[0].status == RequestStatus.APPROVED
-        assert result[1].end_date == datetime(2023, 1, 4, tzinfo=timezone.utc).date()
+        assert (
+            result[1].end_date
+            == datetime(2023, 1, 4, tzinfo=timezone.utc).date()
+        )
         assert result[1].negative is True
         assert result[1].status == RequestStatus.APPROVED
 
@@ -327,7 +371,9 @@ class TestRequestRepository:
             RequestSchema(
                 team="team1",
                 worker="worker1",
-                start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                start_date=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
                 end_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
                 shift="shift1",
                 shift_options=[],
@@ -337,12 +383,16 @@ class TestRequestRepository:
                 request_type=RequestType.LEAVE.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="test comment",
-                created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                created_at=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
             ),
             RequestSchema(
                 team="team1",
                 worker="worker2",
-                start_date=datetime(2023, 1, 3, tzinfo=timezone.utc).timestamp(),
+                start_date=datetime(
+                    2023, 1, 3, tzinfo=timezone.utc
+                ).timestamp(),
                 end_date=datetime(2023, 1, 4, tzinfo=timezone.utc).timestamp(),
                 shift="shift2",
                 shift_options=[],
@@ -352,7 +402,9 @@ class TestRequestRepository:
                 request_type=RequestType.LEAVE.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="test comment",
-                created_at=datetime(2023, 1, 3, tzinfo=timezone.utc).timestamp(),
+                created_at=datetime(
+                    2023, 1, 3, tzinfo=timezone.utc
+                ).timestamp(),
             ),
         ]
         self.repo.create_many(requests)
@@ -367,7 +419,9 @@ class TestRequestRepository:
             RequestSchema(
                 team="team1",
                 worker="worker1",
-                start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                start_date=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
                 end_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
                 shift="shift1",
                 shift_options=[],
@@ -377,12 +431,16 @@ class TestRequestRepository:
                 request_type=RequestType.LEAVE.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="test comment",
-                created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                created_at=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
             ),
             RequestSchema(
                 team="team1",
                 worker="worker2",
-                start_date=datetime(2023, 1, 3, tzinfo=timezone.utc).timestamp(),
+                start_date=datetime(
+                    2023, 1, 3, tzinfo=timezone.utc
+                ).timestamp(),
                 end_date=datetime(2023, 1, 4, tzinfo=timezone.utc).timestamp(),
                 shift="shift2",
                 shift_options=[],
@@ -392,7 +450,9 @@ class TestRequestRepository:
                 request_type=RequestType.LEAVE.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="test comment",
-                created_at=datetime(2023, 1, 3, tzinfo=timezone.utc).timestamp(),
+                created_at=datetime(
+                    2023, 1, 3, tzinfo=timezone.utc
+                ).timestamp(),
             ),
         ]
         self.repo.create_many(requests)
@@ -410,7 +470,9 @@ class TestRequestRepository:
             RequestSchema(
                 team="team1",
                 worker="worker1",
-                start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                start_date=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
                 end_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
                 shift=None,
                 shift_options=[
@@ -428,13 +490,17 @@ class TestRequestRepository:
                 request_type=RequestType.WORK_DEMAND.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="should match",
-                created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                created_at=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
             ),
             # Should not match: wrong status
             RequestSchema(
                 team="team1",
                 worker="worker1",
-                start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                start_date=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
                 end_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
                 shift=None,
                 shift_options=[
@@ -452,13 +518,17 @@ class TestRequestRepository:
                 request_type=RequestType.WORK_DEMAND.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="wrong status",
-                created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                created_at=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
             ),
             # Should not match: wrong fulfillment
             RequestSchema(
                 team="team1",
                 worker="worker1",
-                start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                start_date=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
                 end_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
                 shift=None,
                 shift_options=[
@@ -476,13 +546,17 @@ class TestRequestRepository:
                 request_type=RequestType.WORK_DEMAND.value,
                 fulfillment=FulfillmentStatus.FULFILLED.value,
                 comment="wrong fulfillment",
-                created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                created_at=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
             ),
             # Should not match: wrong type
             RequestSchema(
                 team="team1",
                 worker="worker1",
-                start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                start_date=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
                 end_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
                 shift="shift1",
                 shift_options=[],
@@ -492,14 +566,20 @@ class TestRequestRepository:
                 request_type=RequestType.LEAVE.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="wrong type",
-                created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                created_at=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
             ),
             # Should not match: out of date range
             RequestSchema(
                 team="team1",
                 worker="worker1",
-                start_date=datetime(2022, 12, 30, tzinfo=timezone.utc).timestamp(),
-                end_date=datetime(2022, 12, 31, tzinfo=timezone.utc).timestamp(),
+                start_date=datetime(
+                    2022, 12, 30, tzinfo=timezone.utc
+                ).timestamp(),
+                end_date=datetime(
+                    2022, 12, 31, tzinfo=timezone.utc
+                ).timestamp(),
                 shift=None,
                 shift_options=[
                     ShiftWorkerOptionSchema(
@@ -516,13 +596,17 @@ class TestRequestRepository:
                 request_type=RequestType.WORK_DEMAND.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="out of range",
-                created_at=datetime(2022, 12, 30, tzinfo=timezone.utc).timestamp(),
+                created_at=datetime(
+                    2022, 12, 30, tzinfo=timezone.utc
+                ).timestamp(),
             ),
             # Should match: work_demand, approved, not_processed, worker2
             RequestSchema(
                 team="team1",
                 worker="worker2",
-                start_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
+                start_date=datetime(
+                    2023, 1, 2, tzinfo=timezone.utc
+                ).timestamp(),
                 end_date=datetime(2023, 1, 3, tzinfo=timezone.utc).timestamp(),
                 shift=None,
                 shift_options=[
@@ -540,7 +624,9 @@ class TestRequestRepository:
                 request_type=RequestType.WORK_DEMAND.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="should match 2",
-                created_at=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
+                created_at=datetime(
+                    2023, 1, 2, tzinfo=timezone.utc
+                ).timestamp(),
             ),
         ]
         self.repo.create_many(requests)
@@ -570,7 +656,9 @@ class TestRequestRepository:
             RequestSchema(
                 team="team1",
                 worker="worker1",
-                start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                start_date=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
                 end_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
                 shift="shift1",
                 shift_options=[],
@@ -580,13 +668,17 @@ class TestRequestRepository:
                 request_type=RequestType.LEAVE.value,
                 fulfillment=FulfillmentStatus.FULFILLED.value,
                 comment="should match",
-                created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                created_at=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
             ),
             # Should not match: wrong status
             RequestSchema(
                 team="team1",
                 worker="worker1",
-                start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                start_date=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
                 end_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
                 shift="shift1",
                 shift_options=[],
@@ -596,13 +688,17 @@ class TestRequestRepository:
                 request_type=RequestType.LEAVE.value,
                 fulfillment=FulfillmentStatus.FULFILLED.value,
                 comment="wrong status",
-                created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                created_at=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
             ),
             # Should not match: wrong fulfillment
             RequestSchema(
                 team="team1",
                 worker="worker1",
-                start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                start_date=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
                 end_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
                 shift="shift1",
                 shift_options=[],
@@ -612,13 +708,17 @@ class TestRequestRepository:
                 request_type=RequestType.LEAVE.value,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED.value,
                 comment="wrong fulfillment",
-                created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                created_at=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
             ),
             # Should not match: wrong type
             RequestSchema(
                 team="team1",
                 worker="worker1",
-                start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                start_date=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
                 end_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
                 shift=None,
                 shift_options=[],
@@ -628,14 +728,20 @@ class TestRequestRepository:
                 request_type=RequestType.WORK_DEMAND.value,
                 fulfillment=FulfillmentStatus.FULFILLED.value,
                 comment="wrong type",
-                created_at=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                created_at=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
             ),
             # Should not match: out of date range
             RequestSchema(
                 team="team1",
                 worker="worker1",
-                start_date=datetime(2022, 12, 30, tzinfo=timezone.utc).timestamp(),
-                end_date=datetime(2022, 12, 31, tzinfo=timezone.utc).timestamp(),
+                start_date=datetime(
+                    2022, 12, 30, tzinfo=timezone.utc
+                ).timestamp(),
+                end_date=datetime(
+                    2022, 12, 31, tzinfo=timezone.utc
+                ).timestamp(),
                 shift="shift1",
                 shift_options=[],
                 negative=False,
@@ -644,13 +750,17 @@ class TestRequestRepository:
                 request_type=RequestType.LEAVE.value,
                 fulfillment=FulfillmentStatus.FULFILLED.value,
                 comment="out of range",
-                created_at=datetime(2022, 12, 30, tzinfo=timezone.utc).timestamp(),
+                created_at=datetime(
+                    2022, 12, 30, tzinfo=timezone.utc
+                ).timestamp(),
             ),
             # Should match: leave, approved, fulfilled, worker2
             RequestSchema(
                 team="team1",
                 worker="worker2",
-                start_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
+                start_date=datetime(
+                    2023, 1, 2, tzinfo=timezone.utc
+                ).timestamp(),
                 end_date=datetime(2023, 1, 3, tzinfo=timezone.utc).timestamp(),
                 shift="shift2",
                 shift_options=[],
@@ -660,7 +770,9 @@ class TestRequestRepository:
                 request_type=RequestType.LEAVE.value,
                 fulfillment=FulfillmentStatus.FULFILLED.value,
                 comment="should match 2",
-                created_at=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
+                created_at=datetime(
+                    2023, 1, 2, tzinfo=timezone.utc
+                ).timestamp(),
             ),
         ]
         self.repo.create_many(requests)

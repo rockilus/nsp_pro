@@ -6,25 +6,33 @@ from shared.database.repositories.link_shift import (
 )
 from shared.database.schemas.link_shift import LinkShiftSchema
 from shared.schemas.core.link_shift import LinkShift
+import pytest_asyncio
+
+from shared.database.interface import DatabaseInterface
 
 
 class TestLinkShiftRepository:
     repo: LinkShiftRepository
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
         """Setup test environment before each test."""
         assert mongodb_container is not None
-        db = MongoDB.get_database()
+        db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = LinkShiftRepository()
+        self.repo = LinkShiftRepository(database_interface=mongodb_container)
 
         # Yield to test
         yield
 
         # Cleanup
-        db.drop_collection(self.repo.collection)
+        try:
+            collection = db.get_collection("link_shifts")
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     def test_create_link_shift(self):
         """Test creating a link shift."""
@@ -47,8 +55,12 @@ class TestLinkShiftRepository:
 
     def test_get_link_shifts(self):
         """Test getting all link shifts for a team."""
-        link_shift1 = LinkShiftSchema(team="team1", shifts=["shift1", "shift2"])
-        link_shift2 = LinkShiftSchema(team="team1", shifts=["shift3", "shift4"])
+        link_shift1 = LinkShiftSchema(
+            team="team1", shifts=["shift1", "shift2"]
+        )
+        link_shift2 = LinkShiftSchema(
+            team="team1", shifts=["shift3", "shift4"]
+        )
         self.repo.create(link_shift1)
         self.repo.create(link_shift2)
 
@@ -98,9 +110,15 @@ class TestLinkShiftRepository:
 
     def test_get_link_shifts_by_shift_id(self):
         """Test getting all link shifts associated with a specific shift ID."""
-        link_shift1 = LinkShiftSchema(team="team1", shifts=["shift1", "shift2"])
-        link_shift2 = LinkShiftSchema(team="team1", shifts=["shift2", "shift3"])
-        link_shift3 = LinkShiftSchema(team="team2", shifts=["shift1", "shift4"])
+        link_shift1 = LinkShiftSchema(
+            team="team1", shifts=["shift1", "shift2"]
+        )
+        link_shift2 = LinkShiftSchema(
+            team="team1", shifts=["shift2", "shift3"]
+        )
+        link_shift3 = LinkShiftSchema(
+            team="team2", shifts=["shift1", "shift4"]
+        )
         self.repo.create(link_shift1)
         self.repo.create(link_shift2)
         self.repo.create(link_shift3)

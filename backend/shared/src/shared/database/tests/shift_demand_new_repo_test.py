@@ -10,6 +10,9 @@ from shared.schemas.core.shift_demand_new import (
     ShiftDemandNew,
     ShiftDemandSource,
 )
+import pytest_asyncio
+
+from shared.database.interface import DatabaseInterface
 
 
 # pylint: disable=too-many-public-methods
@@ -18,20 +21,27 @@ class TestShiftDemandNewRepository:
 
     repo: ShiftDemandNewRepository
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
         """Setup test environment before each test."""
         assert mongodb_container is not None
-        db = MongoDB.get_database()
+        db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = ShiftDemandNewRepository()
+        self.repo = ShiftDemandNewRepository(
+            database_interface=mongodb_container
+        )
 
         # Yield to test
         yield
 
         # Cleanup
-        db.drop_collection(self.repo.collection)
+        try:
+            collection = db.get_collection("shift_demands_new")
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def _create_test_shift_demand(
@@ -144,10 +154,18 @@ class TestShiftDemandNewRepository:
     def test_get_shift_demands_by_date_range(self):
         """Test getting shift demands for a team within a date range."""
         # Create shift demands on different dates
-        shift_demand1 = self._create_test_shift_demand(demand_date=date(2025, 1, 10))
-        shift_demand2 = self._create_test_shift_demand(demand_date=date(2025, 1, 15))
-        shift_demand3 = self._create_test_shift_demand(demand_date=date(2025, 1, 20))
-        shift_demand4 = self._create_test_shift_demand(demand_date=date(2025, 1, 25))
+        shift_demand1 = self._create_test_shift_demand(
+            demand_date=date(2025, 1, 10)
+        )
+        shift_demand2 = self._create_test_shift_demand(
+            demand_date=date(2025, 1, 15)
+        )
+        shift_demand3 = self._create_test_shift_demand(
+            demand_date=date(2025, 1, 20)
+        )
+        shift_demand4 = self._create_test_shift_demand(
+            demand_date=date(2025, 1, 25)
+        )
 
         self.repo.create_shift_demand(shift_demand1)
         self.repo.create_shift_demand(shift_demand2)
@@ -324,9 +342,15 @@ class TestShiftDemandNewRepository:
 
         # Now update them and add a new one
         update_demands = [
-            self._create_test_shift_demand(shift_id="shift1", count=5),  # Update
-            self._create_test_shift_demand(shift_id="shift2", count=6),  # Update
-            self._create_test_shift_demand(shift_id="shift3", count=4),  # Create new
+            self._create_test_shift_demand(
+                shift_id="shift1", count=5
+            ),  # Update
+            self._create_test_shift_demand(
+                shift_id="shift2", count=6
+            ),  # Update
+            self._create_test_shift_demand(
+                shift_id="shift3", count=4
+            ),  # Create new
         ]
 
         # Set IDs for update operations
@@ -361,7 +385,9 @@ class TestShiftDemandNewRepository:
                 shift_id=f"shift{i+1}",
                 source=source,
                 source_id=(
-                    f"source{i+1}" if source != ShiftDemandSource.MANUAL else None
+                    f"source{i+1}"
+                    if source != ShiftDemandSource.MANUAL
+                    else None
                 ),
             )
             result = self.repo.create_shift_demand(shift_demand)
@@ -372,8 +398,12 @@ class TestShiftDemandNewRepository:
     def test_shift_demand_date_edge_cases(self):
         """Test shift demands on edge case dates."""
         # Test year boundary
-        shift_demand1 = self._create_test_shift_demand(demand_date=date(2024, 12, 31))
-        shift_demand2 = self._create_test_shift_demand(demand_date=date(2025, 1, 1))
+        shift_demand1 = self._create_test_shift_demand(
+            demand_date=date(2024, 12, 31)
+        )
+        shift_demand2 = self._create_test_shift_demand(
+            demand_date=date(2025, 1, 1)
+        )
 
         result1 = self.repo.create_shift_demand(shift_demand1)
         result2 = self.repo.create_shift_demand(shift_demand2)
@@ -582,7 +612,9 @@ class TestShiftDemandNewRepository:
             self.repo.create_shift_demand(sd)
 
         # Delete all shift1 demands
-        deleted_count = self.repo.delete_shift_demands_by_shift_id("team1", "shift1")
+        deleted_count = self.repo.delete_shift_demands_by_shift_id(
+            "team1", "shift1"
+        )
 
         assert deleted_count == 2  # Only shift1 demands deleted
 
@@ -606,7 +638,9 @@ class TestShiftDemandNewRepository:
             self.repo.create_shift_demand(sd)
 
         # Try to delete demands for non-existent shift
-        deleted_count = self.repo.delete_shift_demands_by_shift_id("team1", "shift1")
+        deleted_count = self.repo.delete_shift_demands_by_shift_id(
+            "team1", "shift1"
+        )
 
         assert deleted_count == 0
 
@@ -646,7 +680,9 @@ class TestShiftDemandNewRepository:
             self.repo.create_shift_demand(sd)
 
         # Delete shift1 demands only for team1
-        deleted_count = self.repo.delete_shift_demands_by_shift_id("team1", "shift1")
+        deleted_count = self.repo.delete_shift_demands_by_shift_id(
+            "team1", "shift1"
+        )
 
         assert deleted_count == 2  # Only team1 demands deleted
 
@@ -693,7 +729,9 @@ class TestShiftDemandNewRepository:
             self.repo.create_shift_demand(sd)
 
         # Delete all shift1 demands regardless of source
-        deleted_count = self.repo.delete_shift_demands_by_shift_id("team1", "shift1")
+        deleted_count = self.repo.delete_shift_demands_by_shift_id(
+            "team1", "shift1"
+        )
 
         assert deleted_count == 3  # All shift1 demands deleted
 
@@ -704,7 +742,9 @@ class TestShiftDemandNewRepository:
 
     def test_delete_shift_demands_by_shift_id_empty_database(self):
         """Test deleting shift demands when database is empty."""
-        deleted_count = self.repo.delete_shift_demands_by_shift_id("team1", "shift1")
+        deleted_count = self.repo.delete_shift_demands_by_shift_id(
+            "team1", "shift1"
+        )
 
         assert deleted_count == 0
 
@@ -713,7 +753,9 @@ class TestShiftDemandNewRepository:
         shift_demand = self._create_test_shift_demand(shift_id="shift1")
         self.repo.create_shift_demand(shift_demand)
 
-        deleted_count = self.repo.delete_shift_demands_by_shift_id("team1", "shift1")
+        deleted_count = self.repo.delete_shift_demands_by_shift_id(
+            "team1", "shift1"
+        )
 
         assert deleted_count == 1
 

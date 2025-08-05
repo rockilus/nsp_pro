@@ -1,13 +1,14 @@
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.config import ConfigSchema
 from shared.schemas.core.config import Config
+from shared.database.interface import DatabaseInterface
 
 
 class ConfigRepository(BaseRepository[ConfigSchema]):
     """Repository for config documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("config", ConfigSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(database_interface, "config", ConfigSchema)
 
     def create_config(self, config: Config) -> Config:
         """Create a new config."""

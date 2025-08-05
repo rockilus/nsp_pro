@@ -10,6 +10,9 @@ from shared.schemas.core.multitasking import (
     MultitaskingGroup,
     MultitaskingGroupType,
 )
+import pytest_asyncio
+
+from shared.database.interface import DatabaseInterface
 
 
 class TestMultitaskingGroupRepository:
@@ -17,12 +20,27 @@ class TestMultitaskingGroupRepository:
 
     repo: MultitaskingGroupRepository
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
+        """Setup test environment before each test."""
         assert mongodb_container is not None
-        self.repo = MultitaskingGroupRepository()
-        # Optionally clear the collection before each test
-        self.repo.collection.delete_many({})
+        db = mongodb_container.get_database()
+
+        # Create repository
+        self.repo = MultitaskingGroupRepository(
+            database_interface=mongodb_container
+        )
+
+        # Yield to test
+        yield
+
+        # Cleanup
+        try:
+            collection = db.get_collection("multitasking_groups")
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def _create_test_group(
@@ -87,9 +105,15 @@ class TestMultitaskingGroupRepository:
         assert result is None
 
     def test_get_groups_by_team_id(self):
-        group1 = self._create_test_group(team_id="team1", related_ids=["a", "b"])
-        group2 = self._create_test_group(team_id="team1", related_ids=["c", "d"])
-        group3 = self._create_test_group(team_id="team2", related_ids=["e", "f"])
+        group1 = self._create_test_group(
+            team_id="team1", related_ids=["a", "b"]
+        )
+        group2 = self._create_test_group(
+            team_id="team1", related_ids=["c", "d"]
+        )
+        group3 = self._create_test_group(
+            team_id="team2", related_ids=["e", "f"]
+        )
         self.repo.create_group(group1)
         self.repo.create_group(group2)
         self.repo.create_group(group3)

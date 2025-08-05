@@ -11,6 +11,9 @@ from shared.schemas.core.solve_task_status import (
     SolveRequestStatus,
     SolveTaskStatus,
 )
+import pytest_asyncio
+
+from shared.database.interface import DatabaseInterface
 
 
 def make_test_status(
@@ -40,21 +43,34 @@ class TestSolveTaskStatusRepository:
 
     repo: SolveTaskStatusRepository
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
         """Setup test environment before each test."""
         assert mongodb_container is not None
-        db = MongoDB.get_database()
-        self.repo = SolveTaskStatusRepository()
+        db = mongodb_container.get_database()
+
+        # Create repository
+        self.repo = SolveTaskStatusRepository(
+            database_interface=mongodb_container
+        )
+
+        # Yield to test
         yield
-        db.drop_collection(self.repo.collection)
+
+        # Cleanup
+        try:
+            collection = db.get_collection("solve_task_status")
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     def test_repository_initialization(self):
         assert self.repo is not None
         assert self.repo.collection.name == "solve_task_status"
 
-    def test_database_connection(self):
-        db = MongoDB.get_database()
+    def test_database_connection(self, mongodb_container: DatabaseInterface):
+        db = mongodb_container.get_database()
         assert db is not None
         collection = db.solve_task_status
         assert collection is not None
@@ -102,12 +118,16 @@ class TestSolveTaskStatusRepository:
         # Use get_by_schedule_id to fetch all for a team (simulate isolation)
         teamA_statuses = [
             s
-            for s in self.repo.get_solve_task_status_by_schedule_id(status1.schedule_id)
+            for s in self.repo.get_solve_task_status_by_schedule_id(
+                status1.schedule_id
+            )
             if s.team_id == "teamA"
         ]
         teamB_statuses = [
             s
-            for s in self.repo.get_solve_task_status_by_schedule_id(status2.schedule_id)
+            for s in self.repo.get_solve_task_status_by_schedule_id(
+                status2.schedule_id
+            )
             if s.team_id == "teamB"
         ]
         assert len(teamA_statuses) == 1
@@ -117,9 +137,15 @@ class TestSolveTaskStatusRepository:
 
     def test_get_pending_or_in_progress_by_schedule_id(self):
         # Create statuses with different request_status for the same schedule
-        status_pending = make_test_status(solve_id="solveP", schedule_id="schedZ")
-        status_in_progress = make_test_status(solve_id="solveI", schedule_id="schedZ")
-        status_completed = make_test_status(solve_id="solveC", schedule_id="schedZ")
+        status_pending = make_test_status(
+            solve_id="solveP", schedule_id="schedZ"
+        )
+        status_in_progress = make_test_status(
+            solve_id="solveI", schedule_id="schedZ"
+        )
+        status_completed = make_test_status(
+            solve_id="solveC", schedule_id="schedZ"
+        )
         status_in_progress.request_status = SolveRequestStatus.IN_PROGRESS
         status_completed.request_status = SolveRequestStatus.COMPLETED
         self.repo.create_solve_task_status(status_pending)
@@ -167,7 +193,9 @@ class TestSolveTaskStatusRepository:
         self.repo.create_solve_task_status(status2)
         self.repo.create_solve_task_status(status3)
         # status2 is the latest completed
-        latest = self.repo.get_latest_solve_task_status_by_schedule_id("schedL")
+        latest = self.repo.get_latest_solve_task_status_by_schedule_id(
+            "schedL"
+        )
         assert latest is not None
         assert latest.solve_id == "solve2"
         assert latest.completed_at == status2.completed_at
@@ -179,5 +207,7 @@ class TestSolveTaskStatusRepository:
         # Both are not completed
         self.repo.create_solve_task_status(status1)
         self.repo.create_solve_task_status(status2)
-        latest = self.repo.get_latest_solve_task_status_by_schedule_id("schedM")
+        latest = self.repo.get_latest_solve_task_status_by_schedule_id(
+            "schedM"
+        )
         assert latest is None

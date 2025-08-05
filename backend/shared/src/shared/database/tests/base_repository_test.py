@@ -4,6 +4,9 @@ from bson import ObjectId
 from shared.database.database import MongoDB
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.base import DocumentBaseSchema
+import pytest_asyncio
+
+from shared.database.interface import DatabaseInterface
 
 
 class TestUserSchema(DocumentBaseSchema):
@@ -15,22 +18,32 @@ class TestUserSchema(DocumentBaseSchema):
 class TestBaseRepository:
     repo: BaseRepository[TestUserSchema]
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
         """Setup test environment before each test."""
         assert mongodb_container is not None
-        db = MongoDB.get_database()
+        db = mongodb_container.get_database()
+
         # Create test collection
         collection_name = "test_users"
 
         # Create repository
-        self.repo = BaseRepository(collection_name, TestUserSchema)
+        self.repo = BaseRepository(
+            database_interface=mongodb_container,
+            collection_name=collection_name,
+            schema_cls=TestUserSchema,
+        )
 
         # Yield to test
         yield
 
         # Cleanup
-        db.drop_collection(collection_name)
+        try:
+            collection = db.get_collection(collection_name)
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     def test_create(self):
         """Test creating a document."""
@@ -61,8 +74,12 @@ class TestBaseRepository:
         # Create test users
         users = [
             TestUserSchema(name="John Doe", email="john@example.com", age=30),
-            TestUserSchema(name="Jane Smith", email="jane@example.com", age=25),
-            TestUserSchema(name="Bob Johnson", email="bob@example.com", age=40),
+            TestUserSchema(
+                name="Jane Smith", email="jane@example.com", age=25
+            ),
+            TestUserSchema(
+                name="Bob Johnson", email="bob@example.com", age=40
+            ),
         ]
 
         # Save to database
@@ -85,7 +102,9 @@ class TestBaseRepository:
     def test_find_by_id(self):
         """Test finding a document by ID."""
         # Create test user
-        user = TestUserSchema(name="John Doe", email="john@example.com", age=30)
+        user = TestUserSchema(
+            name="John Doe", email="john@example.com", age=30
+        )
         created = self.repo.create(user)
 
         # Find by ID
@@ -107,10 +126,18 @@ class TestBaseRepository:
         # Create test users
         users = [
             TestUserSchema(name="John Doe", email="john@example.com", age=30),
-            TestUserSchema(name="Jane Smith", email="jane@example.com", age=25),
-            TestUserSchema(name="Bob Johnson", email="bob@example.com", age=40),
-            TestUserSchema(name="Alice Brown", email="alice@example.com", age=35),
-            TestUserSchema(name="Charlie Davis", email="charlie@example.com", age=45),
+            TestUserSchema(
+                name="Jane Smith", email="jane@example.com", age=25
+            ),
+            TestUserSchema(
+                name="Bob Johnson", email="bob@example.com", age=40
+            ),
+            TestUserSchema(
+                name="Alice Brown", email="alice@example.com", age=35
+            ),
+            TestUserSchema(
+                name="Charlie Davis", email="charlie@example.com", age=45
+            ),
         ]
         self.repo.create_many(users)
 
@@ -139,7 +166,9 @@ class TestBaseRepository:
     def test_update(self):
         """Test updating a document."""
         # Create test user
-        user = TestUserSchema(name="John Doe", email="john@example.com", age=30)
+        user = TestUserSchema(
+            name="John Doe", email="john@example.com", age=30
+        )
         created = self.repo.create(user)
 
         # Update user
@@ -161,7 +190,9 @@ class TestBaseRepository:
     def test_delete(self):
         """Test deleting a document."""
         # Create test user
-        user = TestUserSchema(name="John Doe", email="john@example.com", age=30)
+        user = TestUserSchema(
+            name="John Doe", email="john@example.com", age=30
+        )
         created = self.repo.create(user)
 
         # Delete user
@@ -180,8 +211,12 @@ class TestBaseRepository:
         # Create test users
         users = [
             TestUserSchema(name="John Doe", email="john@example.com", age=30),
-            TestUserSchema(name="Jane Smith", email="jane@example.com", age=25),
-            TestUserSchema(name="Bob Johnson", email="bob@example.com", age=40),
+            TestUserSchema(
+                name="Jane Smith", email="jane@example.com", age=25
+            ),
+            TestUserSchema(
+                name="Bob Johnson", email="bob@example.com", age=40
+            ),
         ]
         self.repo.create_many(users)
 
@@ -197,7 +232,9 @@ class TestBaseRepository:
         # Create test users
         users = [
             TestUserSchema(name="John Doe", email="john@example.com", age=30),
-            TestUserSchema(name="Jane Smith", email="jane@example.com", age=25),
+            TestUserSchema(
+                name="Jane Smith", email="jane@example.com", age=25
+            ),
         ]
         self.repo.create_many(users)
 

@@ -6,25 +6,33 @@ from shared.database.repositories.dim_entry import (
 )
 from shared.database.schemas.dim_entry import DimEntrySchema
 from shared.schemas.core.dim_entry import DimEntry
+import pytest_asyncio
+
+from shared.database.interface import DatabaseInterface
 
 
 class TestDimEntryRepository:
     repo: DimEntryRepository
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
         """Setup test environment before each test."""
         assert mongodb_container is not None
-        db = MongoDB.get_database()
+        db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = DimEntryRepository()
+        self.repo = DimEntryRepository(database_interface=mongodb_container)
 
         # Yield to test
         yield
 
         # Cleanup
-        db.drop_collection(self.repo.collection)
+        try:
+            collection = db.get_collection("dim_entries")
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     def test_create_dim_entry(self):
         """Test creating a dim entry."""

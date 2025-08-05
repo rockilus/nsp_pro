@@ -6,6 +6,9 @@ from shared.database.database import MongoDB
 from shared.database.repositories.shift_demand_template import (
     ShiftDemandTemplateRepository,
 )
+import pytest_asyncio
+
+from shared.database.interface import DatabaseInterface
 
 
 # Simplified test - focus on database operations rather than domain logic
@@ -14,30 +17,37 @@ class TestShiftDemandTemplateRepository:
 
     repo: ShiftDemandTemplateRepository
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
         """Setup test environment before each test."""
         assert mongodb_container is not None
-        db = MongoDB.get_database()
+        db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = ShiftDemandTemplateRepository()
+        self.repo = ShiftDemandTemplateRepository(
+            database_interface=mongodb_container
+        )
 
         # Yield to test
         yield
 
         # Cleanup
-        db.drop_collection(self.repo.collection)
+        try:
+            collection = db.get_collection("shift_demand_templates")
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     def test_repository_initialization(self):
         """Test that repository initializes correctly."""
         assert self.repo is not None
         assert self.repo.collection.name == "shift_demand_templates"
 
-    def test_database_connection(self):
+    def test_database_connection(self, mongodb_container: DatabaseInterface):
         """Test that database connection is working."""
         # Simple test to ensure MongoDB connection is available
-        db = MongoDB.get_database()
+        db = mongodb_container.get_database()
         assert db is not None
 
         # Test collection access
@@ -86,7 +96,9 @@ class TestShiftDemandTemplateRepository:
         assert update_result.modified_count == 1
 
         # Test delete
-        delete_result = self.repo.collection.delete_one({"_id": result.inserted_id})
+        delete_result = self.repo.collection.delete_one(
+            {"_id": result.inserted_id}
+        )
         assert delete_result.acknowledged
         assert delete_result.deleted_count == 1
 

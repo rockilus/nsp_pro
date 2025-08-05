@@ -7,28 +7,37 @@ from shared.schemas.core.shift_demand_new import (
     ShiftDemandNew,
     ShiftDemandSource,
 )
+from shared.database.interface import DatabaseInterface
 
 
 class ShiftDemandNewRepository(BaseRepository[ShiftDemandNewSchema]):
     """Repository for shift demand new documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("shift_demands_new", ShiftDemandNewSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(
+            database_interface, "shift_demands_new", ShiftDemandNewSchema
+        )
 
-    def create_shift_demand(self, shift_demand: ShiftDemandNew) -> ShiftDemandNew:
+    def create_shift_demand(
+        self, shift_demand: ShiftDemandNew
+    ) -> ShiftDemandNew:
         """Create a new shift demand."""
         shift_demand_schema = ShiftDemandNewSchema.from_core(shift_demand)
         result = self.create(shift_demand_schema)
         return result.to_core()
 
-    def get_shift_demand_by_id(self, shift_demand_id: str) -> Optional[ShiftDemandNew]:
+    def get_shift_demand_by_id(
+        self, shift_demand_id: str
+    ) -> Optional[ShiftDemandNew]:
         """Get a shift demand by its ID."""
         shift_demand = self.find_by_id(shift_demand_id)
         if not shift_demand:
             return None
         return shift_demand.to_core()
 
-    def get_shift_demands_by_team_id(self, team_id: str) -> List[ShiftDemandNew]:
+    def get_shift_demands_by_team_id(
+        self, team_id: str
+    ) -> List[ShiftDemandNew]:
         """Get all shift demands for a team."""
         shift_demands = self.find_all({"team": team_id})
         return [shift_demand.to_core() for shift_demand in shift_demands]
@@ -40,7 +49,9 @@ class ShiftDemandNewRepository(BaseRepository[ShiftDemandNewSchema]):
         start_timestamp = datetime.combine(
             start_date, time.min, timezone.utc
         ).timestamp()
-        end_timestamp = datetime.combine(end_date, time.max, timezone.utc).timestamp()
+        end_timestamp = datetime.combine(
+            end_date, time.max, timezone.utc
+        ).timestamp()
 
         filter_query: Dict[str, Any] = {
             "team": team_id,
@@ -57,7 +68,9 @@ class ShiftDemandNewRepository(BaseRepository[ShiftDemandNewSchema]):
         start_timestamp = datetime.combine(
             start_date, time.min, timezone.utc
         ).timestamp()
-        end_timestamp = datetime.combine(end_date, time.max, timezone.utc).timestamp()
+        end_timestamp = datetime.combine(
+            end_date, time.max, timezone.utc
+        ).timestamp()
 
         filter_query: Dict[str, Any] = {
             "team": team_id,
@@ -68,19 +81,25 @@ class ShiftDemandNewRepository(BaseRepository[ShiftDemandNewSchema]):
         shift_demands = self.find_all(filter_query)
         return [shift_demand.to_core() for shift_demand in shift_demands]
 
-    def update_shift_demand(self, shift_demand: ShiftDemandNew) -> ShiftDemandNew:
+    def update_shift_demand(
+        self, shift_demand: ShiftDemandNew
+    ) -> ShiftDemandNew:
         """Update a shift demand."""
         shift_demand_schema = ShiftDemandNewSchema.from_core(shift_demand)
         shift_demand_updated = self.update(shift_demand_schema)
         if not shift_demand_updated:
-            raise ValueError(f"Failed to update shift demand with id {shift_demand.id}")
+            raise ValueError(
+                f"Failed to update shift demand with id {shift_demand.id}"
+            )
         return shift_demand_updated.to_core()
 
     def delete_shift_demand(self, shift_demand_id: str) -> bool:
         """Delete a shift demand by its ID."""
         return self.delete(shift_demand_id)
 
-    def delete_shift_demands_by_shift_id(self, team_id: str, shift_id: str) -> int:
+    def delete_shift_demands_by_shift_id(
+        self, team_id: str, shift_id: str
+    ) -> int:
         """
         Delete all shift demands for a specific shift.
 
@@ -164,7 +183,9 @@ class ShiftDemandNewRepository(BaseRepository[ShiftDemandNewSchema]):
         start_timestamp = datetime.combine(
             start_date, time.min, timezone.utc
         ).timestamp()
-        end_timestamp = datetime.combine(end_date, time.max, timezone.utc).timestamp()
+        end_timestamp = datetime.combine(
+            end_date, time.max, timezone.utc
+        ).timestamp()
 
         filter_query: Dict[str, Any] = {
             "team": team_id,

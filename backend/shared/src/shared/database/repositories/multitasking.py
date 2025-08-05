@@ -6,13 +6,16 @@ from shared.schemas.core.multitasking import (
     MultitaskingGroup,
     MultitaskingGroupType,
 )
+from shared.database.interface import DatabaseInterface
 
 
 class MultitaskingGroupRepository(BaseRepository[MultitaskingGroupSchema]):
     """Repository for multitasking group documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("multitasking_groups", MultitaskingGroupSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(
+            database_interface, "multitasking_groups", MultitaskingGroupSchema
+        )
 
     def create_group(self, group: MultitaskingGroup) -> MultitaskingGroup:
         group_schema = MultitaskingGroupSchema.from_core(group)
@@ -33,17 +36,23 @@ class MultitaskingGroupRepository(BaseRepository[MultitaskingGroupSchema]):
         group_schema = MultitaskingGroupSchema.from_core(group)
         group_updated = self.update(group_schema)
         if not group_updated:
-            raise ValueError(f"Failed to update multitasking group with id {group.id}")
+            raise ValueError(
+                f"Failed to update multitasking group with id {group.id}"
+            )
         return group_updated.to_core()
 
     def delete_group(self, group_id: str) -> bool:
         return self.delete(group_id)
 
-    def get_groups_by_template_id(self, template_id: str) -> List[MultitaskingGroup]:
+    def get_groups_by_template_id(
+        self, template_id: str
+    ) -> List[MultitaskingGroup]:
         groups = self.find_all({"shift_demand_template_id": template_id})
         return [group.to_core() for group in groups]
 
-    def get_groups_by_related_id(self, related_id: str) -> List[MultitaskingGroup]:
+    def get_groups_by_related_id(
+        self, related_id: str
+    ) -> List[MultitaskingGroup]:
         groups = self.find_all({"related_ids": related_id})
         return [group.to_core() for group in groups]
 

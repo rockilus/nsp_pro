@@ -3,13 +3,14 @@ from typing import List, Optional
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.user import UserSchema
 from shared.schemas.core.user import User
+from shared.database.interface import DatabaseInterface
 
 
 class UserRepository(BaseRepository[UserSchema]):
     """Repository for user documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("users", UserSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(database_interface, "users", UserSchema)
 
     def create_user(self, user: User) -> User:
         """Create a new user."""
@@ -49,4 +50,6 @@ class UserRepository(BaseRepository[UserSchema]):
         """Delete a user by its ID."""
         result = self.delete(user_id)
         if result is False:
-            raise Exception(f"User with id {user_id} not found or already deleted")
+            raise Exception(
+                f"User with id {user_id} not found or already deleted"
+            )

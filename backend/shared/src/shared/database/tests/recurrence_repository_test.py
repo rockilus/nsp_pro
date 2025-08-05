@@ -15,25 +15,33 @@ from shared.schemas.core.recurrence import (
     RecurrenceEndType,
     RecurrenceRule,
 )
+import pytest_asyncio
+
+from shared.database.interface import DatabaseInterface
 
 
 class TestRecurrenceRepository:
     repo: RecurrenceRepository
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
         """Setup test environment before each test."""
         assert mongodb_container is not None
-        db = MongoDB.get_database()
+        db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = RecurrenceRepository()
+        self.repo = RecurrenceRepository(database_interface=mongodb_container)
 
         # Yield to test
         yield
 
         # Cleanup
-        db.drop_collection(self.repo.collection)
+        try:
+            collection = db.get_collection("recurrences")
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     def test_create_recurrence(self):
         """Test creating a recurrence rule."""
@@ -441,4 +449,6 @@ class TestRecurrenceRepository:
         recurrence_in_ids = [recurrence.id for recurrence in recurrences_in]
 
         assert len(recurrences) == len(recurrences_in)
-        assert all(recurrence.id in recurrence_in_ids for recurrence in recurrences)
+        assert all(
+            recurrence.id in recurrence_in_ids for recurrence in recurrences
+        )

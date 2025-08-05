@@ -3,13 +3,14 @@ from typing import List
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.dim_entry import DimEntrySchema
 from shared.schemas.core.dim_entry import DimEntry
+from shared.database.interface import DatabaseInterface
 
 
 class DimEntryRepository(BaseRepository[DimEntrySchema]):
     """Repository for dim entry documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("dim_entries", DimEntrySchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(database_interface, "dim_entries", DimEntrySchema)
 
     def create_dim_entry(self, dim_entry: DimEntry) -> DimEntry:
         """Create a new dim entry."""
@@ -29,7 +30,9 @@ class DimEntryRepository(BaseRepository[DimEntrySchema]):
         dim_entries = self.find_all({"dimension": dimension_id})
         return [dim_entry.to_core() for dim_entry in dim_entries]
 
-    def get_dim_entries_by_dim_ids(self, dimension_ids: List[str]) -> List[DimEntry]:
+    def get_dim_entries_by_dim_ids(
+        self, dimension_ids: List[str]
+    ) -> List[DimEntry]:
         """Get all dim entries for a list of dimension IDs."""
         dim_entries = self.find_all({"dimension": {"$in": dimension_ids}})
         return [dim_entry.to_core() for dim_entry in dim_entries]

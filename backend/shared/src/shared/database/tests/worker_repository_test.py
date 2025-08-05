@@ -6,25 +6,33 @@ from shared.database.database import MongoDB
 from shared.database.repositories.worker import WorkerRepository
 from shared.database.schemas.worker import WorkerSchema
 from shared.schemas.core.worker import Worker
+import pytest_asyncio
+
+from shared.database.interface import DatabaseInterface
 
 
 class TestWorkerRepository:
     repo: WorkerRepository
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
         """Setup test environment before each test."""
         assert mongodb_container is not None
-        db = MongoDB.get_database()
+        db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = WorkerRepository()
+        self.repo = WorkerRepository(database_interface=mongodb_container)
 
         # Yield to test
         yield
 
         # Cleanup
-        db.drop_collection(self.repo.collection)
+        try:
+            collection = db.get_collection("workers")
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     def test_create_worker(self):
         """Test creating a worker."""
@@ -129,7 +137,9 @@ class TestWorkerRepository:
             team="team1",
             acronym="JD",
             acronym_custom=False,
-            employment_start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+            employment_start_date=datetime(
+                2023, 1, 1, tzinfo=timezone.utc
+            ).timestamp(),
             employment_end_date=None,
             weekly_hours=40,
             weekly_hours_desired=40,
@@ -153,7 +163,9 @@ class TestWorkerRepository:
             team="team1",
             acronym="JD",
             acronym_custom=False,
-            employment_start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+            employment_start_date=datetime(
+                2023, 1, 1, tzinfo=timezone.utc
+            ).timestamp(),
             employment_end_date=None,
             weekly_hours=40,
             weekly_hours_desired=40,
@@ -300,7 +312,9 @@ class TestWorkerRepository:
             team="team1",
             acronym="JD",
             acronym_custom=False,
-            employment_start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+            employment_start_date=datetime(
+                2023, 1, 1, tzinfo=timezone.utc
+            ).timestamp(),
             employment_end_date=None,
             weekly_hours=40,
             weekly_hours_desired=40,
@@ -322,7 +336,9 @@ class TestWorkerRepository:
             team="team1",
             acronym="JD",
             acronym_custom=False,
-            employment_start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+            employment_start_date=datetime(
+                2023, 1, 1, tzinfo=timezone.utc
+            ).timestamp(),
             employment_end_date=None,
             weekly_hours=40,
             weekly_hours_desired=40,
@@ -577,14 +593,20 @@ class TestWorkerRepository:
         ]
         self.repo.create_many(workers)
 
-        team1_user1_workers = self.repo.get_workers_by_team_and_user("team1", "user1")
+        team1_user1_workers = self.repo.get_workers_by_team_and_user(
+            "team1", "user1"
+        )
         assert len(team1_user1_workers) == 1
         assert team1_user1_workers[0].name == "John Doe"
 
-        team1_user2_workers = self.repo.get_workers_by_team_and_user("team1", "user2")
+        team1_user2_workers = self.repo.get_workers_by_team_and_user(
+            "team1", "user2"
+        )
         assert len(team1_user2_workers) == 1
         assert team1_user2_workers[0].name == "Jane Smith"
 
-        team2_user1_workers = self.repo.get_workers_by_team_and_user("team2", "user1")
+        team2_user1_workers = self.repo.get_workers_by_team_and_user(
+            "team2", "user1"
+        )
         assert len(team2_user1_workers) == 1
         assert team2_user1_workers[0].name == "Bob Johnson"

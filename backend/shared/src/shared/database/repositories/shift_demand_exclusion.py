@@ -5,13 +5,20 @@ from shared.database.schemas.shift_demand_exclusion import (
     ShiftDemandExclusionSchema,
 )
 from shared.schemas.core.shift_demand_exclusion import ShiftDemandExclusion
+from shared.database.interface import DatabaseInterface
 
 
-class ShiftDemandExclusionRepository(BaseRepository[ShiftDemandExclusionSchema]):
+class ShiftDemandExclusionRepository(
+    BaseRepository[ShiftDemandExclusionSchema]
+):
     """Repository for shift demand exclusion documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("shift_demand_exclusions", ShiftDemandExclusionSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(
+            database_interface,
+            "shift_demand_exclusions",
+            ShiftDemandExclusionSchema,
+        )
 
     def create_shift_demand_exclusion(
         self, exclusion: ShiftDemandExclusion
@@ -29,7 +36,8 @@ class ShiftDemandExclusionRepository(BaseRepository[ShiftDemandExclusionSchema])
             return []
 
         exclusion_schemas = [
-            ShiftDemandExclusionSchema.from_core(exclusion) for exclusion in exclusions
+            ShiftDemandExclusionSchema.from_core(exclusion)
+            for exclusion in exclusions
         ]
         result = self.create_many(exclusion_schemas)
         return [exclusion.to_core() for exclusion in result]
@@ -40,13 +48,17 @@ class ShiftDemandExclusionRepository(BaseRepository[ShiftDemandExclusionSchema])
         """Get a shift demand exclusion by its ID."""
         exclusion = self.find_by_id(exclusion_id)
         if not exclusion:
-            raise Exception(f"ShiftDemandExclusion with id {exclusion_id} not found")
+            raise Exception(
+                f"ShiftDemandExclusion with id {exclusion_id} not found"
+            )
         return exclusion.to_core()
 
     def get_shift_demand_exclusions_by_coverage_selector_id(
         self, coverage_selector_id: str
     ) -> List[ShiftDemandExclusion]:
-        exclusions = self.find_all({"coverage_selector_id": coverage_selector_id})
+        exclusions = self.find_all(
+            {"coverage_selector_id": coverage_selector_id}
+        )
         return [exclusion.to_core() for exclusion in exclusions]
 
     def get_shift_demand_exclusions_by_shift_demand_id(
@@ -101,7 +113,9 @@ class ShiftDemandExclusionRepository(BaseRepository[ShiftDemandExclusionSchema])
     def delete_shift_demand_exclusions_by_coverage_selector_id(
         self, coverage_selector_id: str
     ) -> None:
-        self.collection.delete_many({"coverage_selector_id": coverage_selector_id})
+        self.collection.delete_many(
+            {"coverage_selector_id": coverage_selector_id}
+        )
 
     def delete_shift_demand_exclusions_by_shift_demand_id(
         self, shift_demand_id: str
@@ -116,8 +130,12 @@ class ShiftDemandExclusionRepository(BaseRepository[ShiftDemandExclusionSchema])
         if not shift_demand_ids:
             return
 
-        self.collection.delete_many({"shift_demand_id": {"$in": shift_demand_ids}})
+        self.collection.delete_many(
+            {"shift_demand_id": {"$in": shift_demand_ids}}
+        )
 
-    def delete_shift_demand_exclusions_by_schedule_id(self, schedule_id: str) -> None:
+    def delete_shift_demand_exclusions_by_schedule_id(
+        self, schedule_id: str
+    ) -> None:
         """Delete all shift demand exclusions by schedule ID."""
         self.collection.delete_many({"schedule_id": schedule_id})

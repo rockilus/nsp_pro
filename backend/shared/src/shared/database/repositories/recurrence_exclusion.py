@@ -6,13 +6,18 @@ from shared.database.schemas.recurrence_exclusion import (
     RecurrenceExclusionSchema,
 )
 from shared.schemas.core.recurrence import RecurrenceExclusion
+from shared.database.interface import DatabaseInterface
 
 
 class RecurrenceExclusionRepository(BaseRepository[RecurrenceExclusionSchema]):
     """Repository for recurrence exclusions using PyMongo."""
 
-    def __init__(self):
-        super().__init__("recurrence_exclusions", RecurrenceExclusionSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(
+            database_interface,
+            "recurrence_exclusions",
+            RecurrenceExclusionSchema,
+        )
 
     def create_recurrence_exclusion(
         self, exclusion: RecurrenceExclusion
@@ -27,7 +32,8 @@ class RecurrenceExclusionRepository(BaseRepository[RecurrenceExclusionSchema]):
     ) -> List[RecurrenceExclusion]:
         """Create multiple recurrence exclusions."""
         exclusion_schemas = [
-            RecurrenceExclusionSchema.from_core(exclusion) for exclusion in exclusions
+            RecurrenceExclusionSchema.from_core(exclusion)
+            for exclusion in exclusions
         ]
         created_schemas = self.create_many(exclusion_schemas)
         return [schema.to_core() for schema in created_schemas]
@@ -50,7 +56,9 @@ class RecurrenceExclusionRepository(BaseRepository[RecurrenceExclusionSchema]):
         self, rule_id: str, from_date: date
     ) -> List[RecurrenceExclusion]:
         """Get recurrence exclusions for a rule ID from a specific date onward."""
-        start_of_day = datetime.combine(from_date, time.min, tzinfo=timezone.utc)
+        start_of_day = datetime.combine(
+            from_date, time.min, tzinfo=timezone.utc
+        )
 
         exclusions = self.find_all(
             {
@@ -70,7 +78,9 @@ class RecurrenceExclusionRepository(BaseRepository[RecurrenceExclusionSchema]):
     def get_recurrence_exclusions_by_rule_ids_from_date(
         self, rule_ids: List[str], from_date: date
     ) -> List[RecurrenceExclusion]:
-        start_of_day = datetime.combine(from_date, time.min, tzinfo=timezone.utc)
+        start_of_day = datetime.combine(
+            from_date, time.min, tzinfo=timezone.utc
+        )
 
         exclusions = self.find_all(
             {
@@ -87,7 +97,9 @@ class RecurrenceExclusionRepository(BaseRepository[RecurrenceExclusionSchema]):
         exclusion_schema = RecurrenceExclusionSchema.from_core(exclusion)
         updated_exclusion = self.update(exclusion_schema)
         if not updated_exclusion:
-            raise ValueError(f"Failed to update exclusion with id {exclusion.id}")
+            raise ValueError(
+                f"Failed to update exclusion with id {exclusion.id}"
+            )
         return updated_exclusion.to_core()
 
     def update_recurrence_exclusions(
@@ -120,7 +132,9 @@ class RecurrenceExclusionRepository(BaseRepository[RecurrenceExclusionSchema]):
         self, rule_id: str, from_date: date
     ) -> None:
         """Delete recurrence exclusions for a rule ID from a specific date onward."""
-        start_of_day = datetime.combine(from_date, time.min, tzinfo=timezone.utc)
+        start_of_day = datetime.combine(
+            from_date, time.min, tzinfo=timezone.utc
+        )
 
         self.collection.delete_many(
             {
