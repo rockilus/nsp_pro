@@ -33,7 +33,7 @@ class TestShiftDemandNewRepository:
 
         # Cleanup
         try:
-            collection = db.get_collection("shift_demands_new")
+            collection = db.get_collection("shift_demands_new")  # type: ignore
             collection.delete_many({})
         except Exception:  # pylint: disable=broad-except
             # If collection doesn't exist, that's fine

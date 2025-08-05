@@ -25,7 +25,7 @@ class TestDimEntryRepository:
 
         # Cleanup
         try:
-            collection = db.get_collection("dim_entries")
+            collection = db.get_collection("dim_entries")  # type: ignore
             collection.delete_many({})
         except Exception:  # pylint: disable=broad-except
             # If collection doesn't exist, that's fine

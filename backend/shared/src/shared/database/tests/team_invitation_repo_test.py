@@ -31,7 +31,7 @@ class TestTeamInvitationRepository:
 
         # Cleanup
         try:
-            collection = db.get_collection("team_invitations")
+            collection = db.get_collection("team_invitations")  # type: ignore
             collection.delete_many({})
         except Exception:  # pylint: disable=broad-except
             # If collection doesn't exist, that's fine

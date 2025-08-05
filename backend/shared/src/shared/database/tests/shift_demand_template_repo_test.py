@@ -28,7 +28,7 @@ class TestShiftDemandTemplateRepository:
 
         # Cleanup
         try:
-            collection = db.get_collection("shift_demand_templates")
+            collection = db.get_collection("shift_demand_templates")  # type: ignore
             collection.delete_many({})
         except Exception:  # pylint: disable=broad-except
             # If collection doesn't exist, that's fine

@@ -25,7 +25,7 @@ class TestUserRepository:
 
         # Cleanup
         try:
-            collection = db.get_collection("users")
+            collection = db.get_collection("users")  # type: ignore
             collection.delete_many({})
         except Exception:  # pylint: disable=broad-except
             # If collection doesn't exist, that's fine

@@ -29,7 +29,7 @@ class TestRecurrenceExclusionRepository:
 
         # Cleanup
         try:
-            collection = db.get_collection("recurrence_exclusions")
+            collection = db.get_collection("recurrence_exclusions")  # type: ignore
             collection.delete_many({})
         except Exception:  # pylint: disable=broad-except
             # If collection doesn't exist, that's fine

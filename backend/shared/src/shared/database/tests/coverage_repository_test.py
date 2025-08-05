@@ -25,7 +25,7 @@ class TestCoverageRepository:
 
         # Cleanup
         try:
-            collection = db.get_collection("coverages")
+            collection = db.get_collection("coverages")  # type: ignore
             collection.delete_many({})
         except Exception:  # pylint: disable=broad-except
             # If collection doesn't exist, that's fine

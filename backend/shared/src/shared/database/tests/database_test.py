@@ -29,7 +29,7 @@ class TestMongoDB:
         # Test connection
         config = DatabaseConfig(
             database_type=DatabaseType.MONGODB,
-            mongodb_uri=mongodb_container.config.mongodb_uri,
+            mongodb_uri=mongodb_container.config.mongodb_uri,  # type: ignore
             database_name="test_db",
         )
         provider = MongoDBProvider(config)
@@ -53,7 +53,7 @@ class TestMongoDB:
         """Test connection with timeout parameter."""
         config = DatabaseConfig(
             database_type=DatabaseType.MONGODB,
-            mongodb_uri=mongodb_container.config.mongodb_uri,
+            mongodb_uri=mongodb_container.config.mongodb_uri,  # type: ignore
             database_name="test_db",
             connection_timeout_ms=5000,
         )
@@ -80,7 +80,7 @@ class TestMongoDB:
         # First connection
         config = DatabaseConfig(
             database_type=DatabaseType.MONGODB,
-            mongodb_uri=mongodb_container.config.mongodb_uri,
+            mongodb_uri=mongodb_container.config.mongodb_uri,  # type: ignore
             database_name="test_db",
         )
         provider_1 = MongoDBProvider(config)
@@ -90,7 +90,7 @@ class TestMongoDB:
         # Second connection should reuse the client
         config = DatabaseConfig(
             database_type=DatabaseType.MONGODB,
-            mongodb_uri=mongodb_container.config.mongodb_uri,
+            mongodb_uri=mongodb_container.config.mongodb_uri,  # type: ignore
             database_name="another_db",
         )
         provider_2 = MongoDBProvider(config)
@@ -100,7 +100,7 @@ class TestMongoDB:
         assert provider_1._client is original_client
         # But db should be updated to the latest call
         # assert MongoDB._db.name == "another_db"
-        assert provider_1._database.name == "test_db"
+        assert provider_1._database.name == "test_db"  # type: ignore
 
         # Clean up manually to reset state
         await provider_1.disconnect()
@@ -125,7 +125,7 @@ class TestMongoDB:
         """Test get_database raises error if not connected."""
         config = DatabaseConfig(
             database_type=DatabaseType.MONGODB,
-            mongodb_uri=mongodb_container.config.mongodb_uri,
+            mongodb_uri=mongodb_container.config.mongodb_uri,  # type: ignore
             database_name="test_db",
         )
         provider = MongoDBProvider(config)
@@ -142,7 +142,7 @@ class TestMongoDB:
         """Test get_database returns database after connection."""
         config = DatabaseConfig(
             database_type=DatabaseType.MONGODB,
-            mongodb_uri=mongodb_container.config.mongodb_uri,
+            mongodb_uri=mongodb_container.config.mongodb_uri,  # type: ignore
             database_name="test_db",
         )
         provider = MongoDBProvider(config)
@@ -206,7 +206,7 @@ class TestMongoDB:
         """Test inserting and retrieving real data."""
         config = DatabaseConfig(
             database_type=DatabaseType.MONGODB,
-            mongodb_uri=mongodb_container.config.mongodb_uri,
+            mongodb_uri=mongodb_container.config.mongodb_uri,  # type: ignore
             database_name="test_db",
         )
         provider = MongoDBProvider(config)

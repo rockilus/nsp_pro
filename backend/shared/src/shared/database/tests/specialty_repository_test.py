@@ -25,7 +25,7 @@ class TestSpecialtyRepository:
 
         # Cleanup
         try:
-            collection = db.get_collection("specialties")
+            collection = db.get_collection("specialties")  # type: ignore
             collection.delete_many({})
         except Exception:  # pylint: disable=broad-except
             # If collection doesn't exist, that's fine

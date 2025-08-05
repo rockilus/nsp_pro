@@ -25,7 +25,7 @@ class TestLinkShiftRepository:
 
         # Cleanup
         try:
-            collection = db.get_collection("link_shifts")
+            collection = db.get_collection("link_shifts")  # type: ignore
             collection.delete_many({})
         except Exception:  # pylint: disable=broad-except
             # If collection doesn't exist, that's fine

@@ -52,7 +52,7 @@ class TestAttributeRepository:
         ]
         try:
             for name in collection_names:
-                collection = db.get_collection(name)
+                collection = db.get_collection(name)  # type: ignore
                 collection.delete_many({})
         except Exception:  # pylint: disable=broad-except
             # If collection doesn't exist, that's fine

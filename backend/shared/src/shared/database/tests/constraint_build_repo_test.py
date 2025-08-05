@@ -34,7 +34,7 @@ class TestConstraintBuildRepository:
 
         # Cleanup
         try:
-            collection = db.get_collection("constraint_builds")
+            collection = db.get_collection("constraint_builds")  # type: ignore
             collection.delete_many({})
         except Exception:  # pylint: disable=broad-except
             # If collection doesn't exist, that's fine

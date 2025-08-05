@@ -25,7 +25,7 @@ class TestTeamRepository:
 
         # Cleanup
         try:
-            collection = db.get_collection("teams")
+            collection = db.get_collection("teams")  # type: ignore
             collection.delete_many({})
         except Exception:  # pylint: disable=broad-except
             # If collection doesn't exist, that's fine
