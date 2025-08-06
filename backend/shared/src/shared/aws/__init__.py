@@ -1,6 +1,12 @@
 """AWS integration module for NSP Pro."""
 
 from .config import AWSConfig
+from .exceptions import (
+    AWSServiceError,
+    DocumentDBCredentialsError,
+    SecretsManagerError,
+)
+from .secrets_manager import DocumentDBCredentials, SecretsManager
 from .sqs_client import SQSClient
 from .utils import (
     get_aws_config_from_env,
@@ -12,6 +18,11 @@ from .utils import (
 
 __all__ = [
     "AWSConfig",
+    "SecretsManager",
+    "DocumentDBCredentials",
+    "AWSServiceError",
+    "SecretsManagerError",
+    "DocumentDBCredentialsError",
     "SQSClient",
     "get_aws_config_from_env",
     "validate_aws_config",
