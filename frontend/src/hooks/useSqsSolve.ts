@@ -42,6 +42,11 @@ export function useStartSolve() {
       }
 
       try {
+        console.log("useStartSolve Debug:", {
+          apiClient,
+          request,
+        });
+
         const response = await SqsSolveApi.startSolve(apiClient, request);
 
         if (process.env.NODE_ENV === "development") {

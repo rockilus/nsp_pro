@@ -48,7 +48,7 @@ class AppConfig(BaseSettings):
         "", description="AWS Secrets Manager secret name for DocumentDB"
     )
     documentdb_database_name: str = Field(
-        "nsp_pro", description="DocumentDB database name"
+        "rockilus-prod", description="DocumentDB database name"
     )
     documentdb_ca_bundle_path: str = Field(
         "global-bundle.pem",

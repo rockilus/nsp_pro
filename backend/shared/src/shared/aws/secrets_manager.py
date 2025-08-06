@@ -57,9 +57,7 @@ class DocumentDBCredentials(BaseModel):
                                       or invalid
         """
         required_fields = ["username", "password", "host", "port"]
-        missing_fields = [
-            field for field in required_fields if field not in data
-        ]
+        missing_fields = [field for field in required_fields if field not in data]
 
         if missing_fields:
             raise DocumentDBCredentialsError(
@@ -107,9 +105,7 @@ class SecretsManager:
             Configured boto3 Secrets Manager client
         """
         if self._client is None:
-            self._client = self.aws_config.create_boto3_client(
-                "secretsmanager"
-            )
+            self._client = self.aws_config.create_boto3_client("secretsmanager")
         return self._client
 
     def get_secret(self, secret_name: str) -> str:
@@ -138,9 +134,7 @@ class SecretsManager:
 
         except (BotoCoreError, ClientError) as e:
             error_code = (
-                getattr(e, "response", {})
-                .get("Error", {})
-                .get("Code", "Unknown")
+                getattr(e, "response", {}).get("Error", {}).get("Code", "Unknown")
             )
             log_error(f"AWS error retrieving secret: {error_code}")
 
@@ -201,9 +195,7 @@ class SecretsManager:
             credentials_dict = self.get_secret_dict(secret_name)
             credentials = DocumentDBCredentials.from_dict(credentials_dict)
 
-            log_info(
-                "DocumentDB credentials retrieved and validated successfully"
-            )
+            log_info("DocumentDB credentials retrieved and validated successfully")
             return credentials
 
         except SecretsManagerError as e:
