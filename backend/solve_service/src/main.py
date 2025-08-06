@@ -75,8 +75,8 @@ class SolveService:
                 # Create AWS configuration
                 aws_config = AWSConfig(
                     region=config.aws_region,
-                    aws_access_key_id=config.aws_access_key_id or "",
-                    aws_secret_access_key=config.aws_secret_access_key or "",
+                    aws_access_key_id=config.aws_access_key_id,
+                    aws_secret_access_key=config.aws_secret_access_key,
                     aws_session_token=config.aws_session_token,
                     endpoint_url=config.endpoint_url,
                     sqs_solve_queue_name=config.sqs_queue_name,
@@ -115,7 +115,9 @@ class SolveService:
         """
 
         def signal_handler(signum, _):
-            logger.info(f"Received signal {signum}, initiating graceful shutdown...")
+            logger.info(
+                f"Received signal {signum}, initiating graceful shutdown..."
+            )
             self.shutdown_event.set()
 
         for sig in (signal.SIGTERM, signal.SIGINT):

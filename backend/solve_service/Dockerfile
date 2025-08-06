@@ -18,7 +18,7 @@ RUN poetry build
 WORKDIR /app
 RUN poetry install
 
-CMD ["poetry", "run", "python", "src/worker.py"]
+CMD ["poetry", "run", "python", "src/main.py"]
 
 
 
