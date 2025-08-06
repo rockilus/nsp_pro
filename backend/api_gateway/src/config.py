@@ -33,7 +33,7 @@ class AppConfig(BaseSettings):
     client_url: str = Field(..., description="Client URL")
 
     # MongoDB configuration
-    db_uri: str = Field(..., description="Database connection URL")
+    mongodb_uri: str | None = Field(None, description="Database connection URL")
     mongodb_database_name: str = Field("test", description="MongoDB database name")
 
     # DocumentDB configuration
@@ -108,9 +108,14 @@ class AppConfig(BaseSettings):
         """Create database configuration based on environment."""
         if self.environment == "development":
             log_info("Configuring MongoDB for development environment")
+            if not self.mongodb_uri:
+                raise ValueError(
+                    "MongoDB URI must be set in development mode. Please check "
+                    + "your .env.development file."
+                )
             return DatabaseConfig(
                 database_type=DatabaseType.MONGODB,
-                mongodb_uri=self.db_uri,
+                mongodb_uri=self.mongodb_uri,
                 database_name=self.mongodb_database_name,
             )
 
