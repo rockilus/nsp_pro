@@ -11,7 +11,7 @@ def setup_database() -> DatabaseCollections:
     """
     log_info("Setting up database connection...")
 
-    if config.use_documentdb:
+    if config.environment == "production":
         log_info("Using DocumentDB for database connection")
 
         # Get DocumentDB credentials from AWS Secrets Manager

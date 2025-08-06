@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from pydantic import Field, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from shared.logger import log_error, log_info
+from shared.database.config import DatabaseConfig, DatabaseType
 
 # Enhanced DocumentDB Security Features:
 # 1. Certificate validation for CA bundle downloads
@@ -106,6 +107,24 @@ class AppConfig(BaseSettings):
         case_sensitive=False,
         extra="ignore",  # Ignore extra fields from env
     )
+
+    def get_database_config(self) -> DatabaseConfig:
+        """Create database configuration based on environment."""
+        if self.environment == "development":
+            log_info("Configuring MongoDB for development environment")
+            return DatabaseConfig(
+                database_type=DatabaseType.MONGODB,
+                mongodb_uri=self.mongodb_uri,
+                database_name=self.database_name,
+            )
+        log_info("Configuring DocumentDB for production environment")
+        return DatabaseConfig(
+            database_type=DatabaseType.DOCUMENTDB,
+            documentdb_host=self.documentdb_host,
+            documentdb_username=self.documentdb_username,
+            documentdb_password=self.documentdb_password,
+            database_name=self.database_name,
+        )
 
 
 # Step 2: Functions to retrieve variables
