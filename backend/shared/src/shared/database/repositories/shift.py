@@ -1,15 +1,22 @@
-from typing import List
+from typing import List, Optional
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.shift import ShiftSchema
 from shared.schemas.core.shift import Shift, ShiftRestType, ShiftType
 
 
 class ShiftRepository(BaseRepository[ShiftSchema]):
-    """Repository for shift documents using PyMongo."""
+    """Repository for shift documents using modern database interface."""
 
-    def __init__(self):
-        super().__init__("shifts", ShiftSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        """
+        Initialize ShiftRepository.
+
+        Args:
+            database_interface: Database interface instance
+        """
+        super().__init__(database_interface, "shifts", ShiftSchema)
 
     def create_shift(self, shift: Shift) -> Shift:
         """Create a new shift."""
@@ -79,7 +86,7 @@ class ShiftRepository(BaseRepository[ShiftSchema]):
         shifts = self.find_all({"_id": {"$in": shift_ids}})
         return [shift.to_core() for shift in shifts]
 
-    def get_recuperation_shift(self, shift_id: str) -> Shift | None:
+    def get_recuperation_shift(self, shift_id: str) -> Optional[Shift]:
         """Get the recuperation shift associated with a given shift ID."""
         shift = self.collection.find_one(
             {
@@ -142,7 +149,9 @@ class ShiftRepository(BaseRepository[ShiftSchema]):
         return shift.to_core()
 
     def logical_delete_shift_recup(self, shift_id: str) -> None:
-        """Mark all recuperation shifts associated with a duty shift as deleted."""
+        """
+        Mark all recuperation shifts associated with a duty shift as deleted.
+        """
         self.collection.update_many(
             {"recuperation_duty": shift_id}, {"$set": {"deleted": True}}
         )

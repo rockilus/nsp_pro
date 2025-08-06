@@ -1,11 +1,9 @@
 from datetime import date, datetime, time, timedelta, timezone
 
-import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
-from shared.database.repositories.assignment import (
-    AssignmentRepository,
-)
+from shared.database.interface import DatabaseInterface
+from shared.database.repositories.assignment import AssignmentRepository
 from shared.database.schemas.assignment import AssignmentSchema
 from shared.schemas.core.assignment import Assignment, AssignmentSource
 
@@ -14,25 +12,30 @@ from shared.schemas.core.assignment import Assignment, AssignmentSource
 class TestAssignmentRepository:
     repo: AssignmentRepository
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
         """Setup test environment before each test."""
         assert mongodb_container is not None
-        db = MongoDB.get_database()
+        db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = AssignmentRepository()
+        self.repo = AssignmentRepository(database_interface=mongodb_container)
 
         # Yield to test
         yield
 
         # Cleanup
-        db.drop_collection(self.repo.collection)
+        try:
+            collection = db.get_collection("assignments")  # type: ignore
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     def test_create_assignment(self):
         """Test creating an assignment."""
         assignment = Assignment(
-            id=None,
+            id="",  # Will be set by repository
             team_id="team1",
             worker_id="worker1",
             schedule_id="schedule1",
@@ -66,6 +69,7 @@ class TestAssignmentRepository:
         )
         created = self.repo.create(assignment)
 
+        assert created.id is not None
         found = self.repo.get_assignment_by_id(created.id)
 
         assert found is not None
@@ -81,10 +85,11 @@ class TestAssignmentRepository:
             date=datetime(2023, 1, 1, tzinfo=timezone.utc),
             shift="shift1",
             fixed=False,
-            source=AssignmentSource.MANUAL,
+            source=AssignmentSource.MANUAL.value,
         )
         created = self.repo.create(assignment)
 
+        assert created.id is not None
         updated_assignment = Assignment(
             id=created.id,
             team_id="team1",
@@ -103,6 +108,7 @@ class TestAssignmentRepository:
         assert result.fixed is True
 
         from_db = self.repo.collection.find_one({"_id": created.id})
+        assert from_db is not None
         assert from_db["worker"] == "worker2"
         assert from_db["date"] == datetime(2023, 1, 2, 0, 0)
 
@@ -119,6 +125,7 @@ class TestAssignmentRepository:
         )
         created = self.repo.create(assignment)
 
+        assert created.id is not None
         self.repo.delete_assignment(created.id)
 
         assert self.repo.collection.find_one({"_id": created.id}) is None
@@ -508,7 +515,8 @@ class TestAssignmentRepository:
         assert len(other_team_assignments) == 1
 
     def test_get_assignment_by_worker_shift_team_and_date(self):
-        """Test getting an assignment by worker ID, shift ID, team ID, and date."""
+        """Test getting an assignment by worker ID, shift ID, team ID,
+        and date."""
         assignment = AssignmentSchema(
             team="team1",
             worker="worker1",
@@ -611,7 +619,8 @@ class TestAssignmentRepository:
         assert len(remaining) == 0
 
     def test_delete_assignments_by_source_id_from_date(self):
-        """Test deleting assignments by recurrence rule ID from a specific date."""
+        """Test deleting assignments by recurrence rule ID from a
+        specific date."""
         source_id = "rule123"
         today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
         assignments = [
@@ -786,7 +795,11 @@ class TestAssignmentRepository:
         ]
         created_assignments = self.repo.create_many(assignments)
 
-        assignment_ids = [assignment.id for assignment in created_assignments]
+        assignment_ids = [
+            assignment.id
+            for assignment in created_assignments
+            if assignment.id is not None
+        ]
 
         deleted_ids = self.repo.delete_assignments(assignment_ids)
 

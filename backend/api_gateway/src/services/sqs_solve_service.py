@@ -132,6 +132,13 @@ class APIGatewaySQSSolveService(BaseService):
         )
         if not solve_task_status:
             raise ValueError(f"Solve task with id {solve_id} not found")
+        if solve_task_status.id and solve_task_status.is_expired():
+            self.collection.solve_task_status_db.delete_solve_task_status(
+                task_status_id=solve_task_status.id
+            )
+            raise ValueError(
+                f"Solve task with id {solve_id} has expired and was deleted"
+            )
         return solve_task_status
 
     async def get_latest_solve_status(self, schedule_id: str) -> SolveTaskStatus | None:
@@ -201,6 +208,11 @@ def create_sqs_solve_service(
     #     ),
     #     sqs_solve_queue_name="nsp-pro-dev-solve-queue",
     # )
+    # if config.aws_access_key_id is None or config.aws_secret_access_key is None:
+    #     raise ValueError(
+    #         "AWS credentials are not set. Please check your configuration."
+    #     )
+
     aws_config = AWSConfig(
         region=config.aws_region,
         aws_access_key_id=config.aws_access_key_id,

@@ -1,5 +1,6 @@
 from typing import Dict, List, Optional
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.multitasking import MultitaskingGroupSchema
 from shared.schemas.core.multitasking import (
@@ -11,8 +12,10 @@ from shared.schemas.core.multitasking import (
 class MultitaskingGroupRepository(BaseRepository[MultitaskingGroupSchema]):
     """Repository for multitasking group documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("multitasking_groups", MultitaskingGroupSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(
+            database_interface, "multitasking_groups", MultitaskingGroupSchema
+        )
 
     def create_group(self, group: MultitaskingGroup) -> MultitaskingGroup:
         group_schema = MultitaskingGroupSchema.from_core(group)

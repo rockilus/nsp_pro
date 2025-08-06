@@ -1,8 +1,9 @@
 from datetime import datetime, timezone
 
 import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.solve_task_status import (
     SolveTaskStatusRepository,
 )
@@ -40,21 +41,32 @@ class TestSolveTaskStatusRepository:
 
     repo: SolveTaskStatusRepository
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
         """Setup test environment before each test."""
         assert mongodb_container is not None
-        db = MongoDB.get_database()
-        self.repo = SolveTaskStatusRepository()
+        db = mongodb_container.get_database()
+
+        # Create repository
+        self.repo = SolveTaskStatusRepository(database_interface=mongodb_container)
+
+        # Yield to test
         yield
-        db.drop_collection(self.repo.collection)
+
+        # Cleanup
+        try:
+            collection = db.get_collection("solve_task_status")  # type: ignore
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     def test_repository_initialization(self):
         assert self.repo is not None
         assert self.repo.collection.name == "solve_task_status"
 
-    def test_database_connection(self):
-        db = MongoDB.get_database()
+    def test_database_connection(self, mongodb_container: DatabaseInterface):
+        db = mongodb_container.get_database()
         assert db is not None
         collection = db.solve_task_status
         assert collection is not None

@@ -1,8 +1,9 @@
 from datetime import date, datetime, timezone
 
 import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.shift_demand_new import (
     ShiftDemandNewRepository,
 )
@@ -18,20 +19,25 @@ class TestShiftDemandNewRepository:
 
     repo: ShiftDemandNewRepository
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
         """Setup test environment before each test."""
         assert mongodb_container is not None
-        db = MongoDB.get_database()
+        db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = ShiftDemandNewRepository()
+        self.repo = ShiftDemandNewRepository(database_interface=mongodb_container)
 
         # Yield to test
         yield
 
         # Cleanup
-        db.drop_collection(self.repo.collection)
+        try:
+            collection = db.get_collection("shift_demands_new")  # type: ignore
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def _create_test_shift_demand(

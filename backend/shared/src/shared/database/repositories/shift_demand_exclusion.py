@@ -1,5 +1,6 @@
 from typing import List
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.shift_demand_exclusion import (
     ShiftDemandExclusionSchema,
@@ -10,8 +11,12 @@ from shared.schemas.core.shift_demand_exclusion import ShiftDemandExclusion
 class ShiftDemandExclusionRepository(BaseRepository[ShiftDemandExclusionSchema]):
     """Repository for shift demand exclusion documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("shift_demand_exclusions", ShiftDemandExclusionSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(
+            database_interface,
+            "shift_demand_exclusions",
+            ShiftDemandExclusionSchema,
+        )
 
     def create_shift_demand_exclusion(
         self, exclusion: ShiftDemandExclusion

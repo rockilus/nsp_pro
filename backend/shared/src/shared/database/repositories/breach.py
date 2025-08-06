@@ -1,5 +1,6 @@
 from typing import List
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.breach import BreachSchema
 from shared.schemas.core.breach import Breach
@@ -8,8 +9,8 @@ from shared.schemas.core.breach import Breach
 class BreachRepository(BaseRepository[BreachSchema]):
     """Repository for breach documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("breaches", BreachSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(database_interface, "breaches", BreachSchema)
 
     def create_breach(self, breach: Breach) -> Breach:
         """Create a new breach."""

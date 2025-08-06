@@ -1,6 +1,7 @@
 from datetime import date, datetime, time, timezone
 from typing import List
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.recurrence import RecurrenceRuleSchema
 from shared.schemas.core.recurrence import RecurrenceRule
@@ -9,8 +10,8 @@ from shared.schemas.core.recurrence import RecurrenceRule
 class RecurrenceRepository(BaseRepository[RecurrenceRuleSchema]):
     """Repository for recurrence rules using PyMongo."""
 
-    def __init__(self):
-        super().__init__("recurrence_rules", RecurrenceRuleSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(database_interface, "recurrence_rules", RecurrenceRuleSchema)
 
     def create_recurrence(self, recurrence: RecurrenceRule) -> RecurrenceRule:
         """Create a new recurrence rule."""

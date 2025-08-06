@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.team_invitation import TeamInvitationSchema
 from shared.schemas.core.team_invitation import (
@@ -11,8 +12,8 @@ from shared.schemas.core.team_invitation import (
 class TeamInvitationRepository(BaseRepository[TeamInvitationSchema]):
     """Repository for team invitation documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("team_invitations", TeamInvitationSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(database_interface, "team_invitations", TeamInvitationSchema)
 
     def create_invitation(self, invitation: TeamInvitation) -> TeamInvitation:
         """Create a new team invitation."""

@@ -17,6 +17,12 @@ export class SqsSolveApi extends BaseApi {
     apiClient: AuthenticatedApiClient,
     request: SolveRequestT
   ): Promise<SolveTaskStatusResponseT> {
+    console.log("🔍 SqsSolveApi.startSolve called:", {
+      timestamp: new Date().toISOString(),
+      apiClient,
+      request,
+    });
+
     // Security: Input validation
     if (!request || !request.schedule_id || !request.team_id) {
       throw new Error(

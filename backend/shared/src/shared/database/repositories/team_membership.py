@@ -1,5 +1,6 @@
 from typing import List
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.team_membership import TeamMembershipSchema
 from shared.schemas.core.team_membership import TeamMembership
@@ -8,8 +9,8 @@ from shared.schemas.core.team_membership import TeamMembership
 class TeamMembershipRepository(BaseRepository[TeamMembershipSchema]):
     """Repository for team membership documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("team_memberships", TeamMembershipSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(database_interface, "team_memberships", TeamMembershipSchema)
 
     def create_team_membership(self, membership: TeamMembership) -> TeamMembership:
         """Create a new team membership."""

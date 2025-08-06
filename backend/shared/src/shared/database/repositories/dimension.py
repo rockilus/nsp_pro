@@ -1,5 +1,6 @@
 from typing import List
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.dimension import DimensionSchema
 from shared.schemas.core.dimension import (
@@ -10,10 +11,16 @@ from shared.schemas.core.dimension import (
 
 
 class DimensionRepository(BaseRepository[DimensionSchema]):
-    """Repository for dimension documents using PyMongo."""
+    """Repository for dimension documents using modern database interface."""
 
-    def __init__(self):
-        super().__init__("dimensions", DimensionSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        """
+        Initialize DimensionRepository.
+
+        Args:
+            database_interface: Database interface instance
+        """
+        super().__init__(database_interface, "dimensions", DimensionSchema)
 
     def create_dimension(self, dimension: Dimension) -> Dimension:
         """Create a new dimension."""

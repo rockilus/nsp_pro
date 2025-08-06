@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "shared"
-version = "0.1.307"
+version = "0.1.317"
 description = ""
 authors = ["Felipe Kharaba"]
 readme = "README.md"
@@ -27,6 +27,7 @@ pyhumps = "^3.8.0"
 pydantic = "^2.11.7"
 boto3 = "^1.35.0"
 botocore = "^1.35.0"
+pytest-asyncio = "^1.1.0"
 
 
 [build-system]

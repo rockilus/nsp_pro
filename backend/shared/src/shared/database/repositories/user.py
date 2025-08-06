@@ -1,5 +1,6 @@
 from typing import List, Optional
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.user import UserSchema
 from shared.schemas.core.user import User
@@ -8,8 +9,8 @@ from shared.schemas.core.user import User
 class UserRepository(BaseRepository[UserSchema]):
     """Repository for user documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("users", UserSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(database_interface, "users", UserSchema)
 
     def create_user(self, user: User) -> User:
         """Create a new user."""

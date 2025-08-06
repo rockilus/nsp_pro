@@ -1,5 +1,6 @@
 from typing import List
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.worker import WorkerSchema
 from shared.schemas.core.worker import Worker
@@ -8,8 +9,8 @@ from shared.schemas.core.worker import Worker
 class WorkerRepository(BaseRepository[WorkerSchema]):
     """Repository for worker documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("workers", WorkerSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(database_interface, "workers", WorkerSchema)
 
     def create_worker(self, worker: Worker) -> Worker:
         """Create a new worker."""

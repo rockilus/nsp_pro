@@ -1,5 +1,6 @@
 from typing import Dict, List
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import (
     BaseRepository,
 )
@@ -14,8 +15,8 @@ from shared.schemas.core.shift_demand import (
 class ShiftDemandRepository(BaseRepository[ShiftDemandSchema]):
     """Repository for shift demand documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("shift_demands", ShiftDemandSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(database_interface, "shift_demands", ShiftDemandSchema)
 
     def create_shift_demand(self, shift_demand: ShiftDemand) -> ShiftDemand:
         """Create a new shift demand."""

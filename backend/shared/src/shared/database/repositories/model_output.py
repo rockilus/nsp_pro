@@ -1,5 +1,6 @@
 from typing import Optional
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.model_output import (
     ModelOutputSchema,
@@ -10,8 +11,8 @@ from shared.schemas.core.model_output import ModelOutput
 class ModelOutputRepository(BaseRepository[ModelOutputSchema]):
     """Repository for model output documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("model_outputs", ModelOutputSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(database_interface, "model_outputs", ModelOutputSchema)
 
     def create_model_output(self, model_output: ModelOutput) -> ModelOutput:
         """Create a new model output."""

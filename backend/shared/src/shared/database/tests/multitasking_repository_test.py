@@ -2,7 +2,9 @@ from datetime import datetime, timezone
 from typing import List, Optional
 
 import pytest
+import pytest_asyncio
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.multitasking import (
     MultitaskingGroupRepository,
 )
@@ -17,12 +19,25 @@ class TestMultitaskingGroupRepository:
 
     repo: MultitaskingGroupRepository
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
+        """Setup test environment before each test."""
         assert mongodb_container is not None
-        self.repo = MultitaskingGroupRepository()
-        # Optionally clear the collection before each test
-        self.repo.collection.delete_many({})
+        db = mongodb_container.get_database()
+
+        # Create repository
+        self.repo = MultitaskingGroupRepository(database_interface=mongodb_container)
+
+        # Yield to test
+        yield
+
+        # Cleanup
+        try:
+            collection = db.get_collection("multitasking_groups")  # type: ignore
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def _create_test_group(

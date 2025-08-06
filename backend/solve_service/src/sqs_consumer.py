@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from typing import List, Tuple
 
 from loguru import logger
-from shared.aws.config import AWSConfig
+from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
     Assignment,
     Breach,
@@ -24,13 +24,10 @@ from shared.schemas.core.solve_task_status import (
     SolveRequestStatus,
     SolverOutputMetadata,
 )
-from shared.services.factory import create_sqs_solve_service
 from shared.services.sqs_solve_service import SQSSolveService
 
-from config import config
 from db_operations.get_engine_inputs import get_engine_inputs
 from db_operations.save_engine_outputs import save_engine_outputs
-from db_operations.setup_database import get_collections
 from solve_service.solve_schedule import solve_schedule
 
 
@@ -45,9 +42,13 @@ class SQSSolveConsumer:
     - Handling errors and retries
     """
 
-    def __init__(self, sqs_solve_service: SQSSolveService):
+    def __init__(
+        self,
+        sqs_solve_service: SQSSolveService,
+        collections: DatabaseCollections,
+    ):
         self.sqs_solve_service = sqs_solve_service
-        self.collections = get_collections()
+        self.collections = collections
         self.running = False
 
     async def start_consuming(self):
@@ -154,20 +155,22 @@ class SQSSolveConsumer:
             Dictionary containing the solve results
         """
         start_time = time.time()
-        collections = get_collections()
-        schedule = collections.schedule_db.get_schedule_by_id(
+        # Use self.collections instead of creating new connections
+        schedule = self.collections.schedule_db.get_schedule_by_id(
             schedule_id=message.schedule_id
         )
         if not schedule:
             raise ValueError("Schedule not found")
-        engine_inputs = get_engine_inputs(schedule=schedule, collections=collections)
+        engine_inputs = get_engine_inputs(
+            schedule=schedule, collections=self.collections
+        )
         engine_outputs = solve_schedule(engine_inputs=engine_inputs)
         schedule_solve_status, assignments, breaches, solver_output = (
             save_engine_outputs(
                 schedule=schedule,
                 engine_intputs=engine_inputs,
                 engine_outputs=engine_outputs,
-                collections=collections,
+                collections=self.collections,
             )
         )
         end_time = time.time()
@@ -275,24 +278,3 @@ class SQSSolveConsumer:
         """
         logger.info("Stopping SQS solve consumer...")
         self.running = False
-
-
-async def create_sqs_consumer() -> SQSSolveConsumer:
-    """
-    Factory function to create an SQS consumer.
-
-    Returns:
-        Configured SQSSolveConsumer instance
-    """
-    # Create AWS config and SQS client
-    aws_config = AWSConfig(
-        region=config.aws_region,
-        aws_access_key_id=config.aws_access_key_id,
-        aws_secret_access_key=config.aws_secret_access_key,
-        aws_session_token=config.aws_session_token,
-        endpoint_url=config.endpoint_url,
-        sqs_solve_queue_name="nsp-pro-dev-solve-queue",
-        # sqs_solve_dlq_name="nsp-solve-dlq",
-    )
-    sqs_solve_service = await create_sqs_solve_service(config=aws_config)
-    return SQSSolveConsumer(sqs_solve_service)

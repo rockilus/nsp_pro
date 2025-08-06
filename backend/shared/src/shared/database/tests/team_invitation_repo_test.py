@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta, timezone
 
-import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.team_invitation import (
     TeamInvitationRepository,
 )
@@ -17,20 +17,25 @@ from shared.schemas.core.team_invitation import (
 class TestTeamInvitationRepository:
     repo: TeamInvitationRepository
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
         """Setup test environment before each test."""
         assert mongodb_container is not None
-        db = MongoDB.get_database()
+        db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = TeamInvitationRepository()
+        self.repo = TeamInvitationRepository(database_interface=mongodb_container)
 
         # Yield to test
         yield
 
         # Cleanup
-        db.drop_collection(self.repo.collection)
+        try:
+            collection = db.get_collection("team_invitations")  # type: ignore
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     def test_create_invitation(self):
         """Test creating a team invitation."""

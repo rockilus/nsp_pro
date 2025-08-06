@@ -1,26 +1,47 @@
 import os
 import subprocess
 import time
+from typing import AsyncGenerator
 
-import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
+from shared.database.config import DatabaseConfig, DatabaseType
+from shared.database.factory import DatabaseFactory
+from shared.database.interface import DatabaseInterface
+
+# from shared.database.database import MongoDB
 
 
-@pytest.fixture(scope="session")
-def mongodb_container():
+@pytest_asyncio.fixture(scope="session")
+async def mongodb_container() -> AsyncGenerator[DatabaseInterface, None]:
     """Provide MongoDB connection for testing."""
+
     # Check if running in GitHub Actions
     if "MONGO_URI" in os.environ:
         # Use the GitHub Actions service connection
         connection_string = os.environ["MONGO_URI"]
 
         # Test connection
-        MongoDB.connect(connection_string, "test_db")
-        if not MongoDB.check_health():
+        config = DatabaseConfig(
+            database_type=DatabaseType.MONGODB,
+            mongodb_uri=connection_string,
+            database_name="test_db",
+        )
+        provider = DatabaseFactory.create_provider(config)
+        await provider.connect()
+        if not await provider.health_check():
             raise ValueError("Failed to connect to MongoDB")
 
-        yield connection_string
+        try:
+            yield provider
+        finally:
+            await provider.disconnect()
+
+        # MongoDB.connect(connection_string, "test_db")
+        # if not MongoDB.check_health():
+        #     raise ValueError("Failed to connect to MongoDB")
+
+        # yield connection_string
 
     else:
         # Local development - start container
@@ -46,30 +67,56 @@ def mongodb_container():
             print(result.stdout.decode("utf-8"))
             # return result.stdout.decode('utf-8')
         except subprocess.CalledProcessError as e:
-            raise RuntimeError(
-                f"Command '{command}' failed with error: {e.stderr.decode('utf-8')}"
-            ) from e
+            error_message = (
+                f"Command '{command}' failed with error: " f"{e.stderr.decode('utf-8')}"
+            )
+            raise RuntimeError(error_message) from e
 
         # Wait for MongoDB to be ready
         connection_string = "mongodb://testuser:testpass@localhost:27017/"
         max_retries = 5
+        config = DatabaseConfig(
+            database_type=DatabaseType.MONGODB,
+            mongodb_uri=connection_string,
+            database_name="test_db",
+        )
+
+        provider = None
         for _ in range(max_retries):
-            MongoDB.connect(connection_string, "test_db")
-            if MongoDB.check_health():
-                break
+            try:
+                provider = DatabaseFactory.create_provider(config)
+                await provider.connect()
+                if await provider.health_check():
+                    break
+                await provider.disconnect()
+            except Exception:  # pylint: disable=broad-except
+                pass
             time.sleep(2)
 
-        yield connection_string
+        if not provider or not await provider.health_check():
+            raise RuntimeError("Failed to connect to MongoDB after retries")
 
-        # Cleanup
-        cleanup_command = ["docker-compose", "-f", file_path_compose, "down"]
         try:
-            subprocess.run(cleanup_command, check=True)
-        except subprocess.CalledProcessError as e:
-            raise RuntimeError(
-                f"Cleanup command '{cleanup_command}' "
-                + f"failed with error: {e.stderr.decode('utf-8')}"
-            ) from e
+            yield provider
+        finally:
+            if provider:
+                await provider.disconnect()
+
+            # Cleanup Docker container
+            cleanup_command = [
+                "docker-compose",
+                "-f",
+                file_path_compose,
+                "down",
+                "-v",
+            ]
+            try:
+                subprocess.run(cleanup_command, check=True)
+            except subprocess.CalledProcessError as e:
+                raise RuntimeError(
+                    f"Cleanup command '{cleanup_command}' "
+                    + f"failed with error: {e.stderr.decode('utf-8')}"
+                ) from e
 
 
 # @pytest.fixture(scope="module")

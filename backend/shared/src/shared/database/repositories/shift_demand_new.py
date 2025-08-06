@@ -1,6 +1,7 @@
 from datetime import date, datetime, time, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.shift_demand_new import ShiftDemandNewSchema
 from shared.schemas.core.shift_demand_new import (
@@ -12,8 +13,8 @@ from shared.schemas.core.shift_demand_new import (
 class ShiftDemandNewRepository(BaseRepository[ShiftDemandNewSchema]):
     """Repository for shift demand new documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("shift_demands_new", ShiftDemandNewSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(database_interface, "shift_demands_new", ShiftDemandNewSchema)
 
     def create_shift_demand(self, shift_demand: ShiftDemandNew) -> ShiftDemandNew:
         """Create a new shift demand."""

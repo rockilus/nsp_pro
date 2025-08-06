@@ -7,8 +7,7 @@ from shared.database.database_collections import DatabaseCollections
 
 from src.config import config
 from src.dependencies import get_db_collections
-from src.errors import AuthnConnectionError, AuthzConnectionError
-from src.integrations.authentication import authn_health_check
+from src.errors import AuthzConnectionError
 from src.integrations.authorization import authz_connect, authz_health_check
 
 router = APIRouter()
@@ -21,6 +20,8 @@ class ServiceStatus(BaseModel):
 
 class HealthCheck(BaseModel):
     status: str
+    database_type: str
+    environment: str
     services: Dict[str, ServiceStatus]
 
 
@@ -30,20 +31,17 @@ async def health_check(
 ) -> HealthCheck:
     health_status = {
         "database": ServiceStatus(status="ok", details=None),
-        "authn": ServiceStatus(status="ok", details=None),
         "authz": ServiceStatus(status="ok", details=None),
     }
     try:
-        db_collections.db.check_health()
+        # Use the factory to check database health
+        is_healthy = await db_collections.database_interface.health_check()
+        if not is_healthy:
+            health_status["database"].status = "error"
+            health_status["database"].details = "Database health check failed"
     except Exception as e:
         health_status["database"].status = "error"
         health_status["database"].details = str(e)
-
-    try:
-        await authn_health_check()
-    except AuthnConnectionError as e:
-        health_status["authn"].status = "error"
-        health_status["authn"].details = str(e)
 
     try:
         await authz_health_check()
@@ -56,13 +54,20 @@ async def health_check(
         if all(service.status == "ok" for service in health_status.values())
         else "error"
     )
+
+    db_type = "documentdb" if config.use_documentdb else "mongodb"
+
     if overall_status == "error":
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            # detail=health_status,
             detail={key: value.model_dump() for key, value in health_status.items()},
         )
-    return HealthCheck(status=overall_status, services=health_status)
+    return HealthCheck(
+        status=overall_status,
+        database_type=db_type,
+        environment=config.environment,
+        services=health_status,
+    )
 
 
 @router.get("/check-authn-health")

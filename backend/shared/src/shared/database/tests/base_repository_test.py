@@ -1,7 +1,7 @@
-import pytest
+import pytest_asyncio
 from bson import ObjectId
 
-from shared.database.database import MongoDB
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.base import DocumentBaseSchema
 
@@ -15,22 +15,32 @@ class TestUserSchema(DocumentBaseSchema):
 class TestBaseRepository:
     repo: BaseRepository[TestUserSchema]
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
         """Setup test environment before each test."""
         assert mongodb_container is not None
-        db = MongoDB.get_database()
+        db = mongodb_container.get_database()
+
         # Create test collection
         collection_name = "test_users"
 
         # Create repository
-        self.repo = BaseRepository(collection_name, TestUserSchema)
+        self.repo = BaseRepository(
+            database_interface=mongodb_container,
+            collection_name=collection_name,
+            schema_cls=TestUserSchema,
+        )
 
         # Yield to test
         yield
 
         # Cleanup
-        db.drop_collection(collection_name)
+        try:
+            collection = db.get_collection(collection_name)  # type: ignore
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     def test_create(self):
         """Test creating a document."""

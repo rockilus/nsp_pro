@@ -49,7 +49,7 @@ resource "aws_ecs_task_definition" "main_service" {
       secrets = [
         {
           name      = "DB_URI"
-          valueFrom = var.atlas_secret_arn
+          valueFrom = var.documentdb_secret_arn
         },
         {
           name      = "PDP_API_KEY"
@@ -161,7 +161,7 @@ resource "aws_ecs_task_definition" "solve_service" {
       secrets = [
         {
           name      = "DB_URI"
-          valueFrom = var.atlas_secret_arn
+          valueFrom = var.documentdb_secret_arn
         },
       ]
 
@@ -342,7 +342,7 @@ resource "aws_ecs_service" "main_service" {
 
   network_configuration {
     subnets          = var.private_subnet_ids
-    security_groups  = [aws_security_group.main_service.id]
+    security_groups  = [var.main_service_security_group_id]
     assign_public_ip = true
   }
 
@@ -391,7 +391,7 @@ resource "aws_ecs_service" "solve_service" {
 
   network_configuration {
     subnets          = var.private_subnet_ids
-    security_groups  = [aws_security_group.solve_service.id]
+    security_groups  = [var.solve_service_security_group_id]
     assign_public_ip = true
   }
 
@@ -450,7 +450,7 @@ resource "aws_ecs_service" "permit_pdp" {
 
   network_configuration {
     subnets          = var.private_subnet_ids
-    security_groups  = [aws_security_group.permit_pdp.id]
+    security_groups  = [var.permit_pdp_security_group_id]
     assign_public_ip = true
   }
 

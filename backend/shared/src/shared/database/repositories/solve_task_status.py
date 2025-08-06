@@ -1,5 +1,6 @@
 from typing import List, Optional
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.solve_task_status import SolveTaskStatusSchema
 from shared.schemas.core.solve_task_status import (
@@ -13,8 +14,8 @@ class SolveTaskStatusRepository(BaseRepository[SolveTaskStatusSchema]):
     Repository for SolveTaskStatus documents in MongoDB.
     """
 
-    def __init__(self):
-        super().__init__("solve_task_status", SolveTaskStatusSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(database_interface, "solve_task_status", SolveTaskStatusSchema)
 
     def create_solve_task_status(
         self, solve_task_status: SolveTaskStatus

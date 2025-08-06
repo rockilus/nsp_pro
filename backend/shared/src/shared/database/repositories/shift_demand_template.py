@@ -1,5 +1,6 @@
 from typing import List, Optional
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.shift_demand_template import (
     ShiftDemandTemplateSchema,
@@ -10,8 +11,12 @@ from shared.schemas.core.shift_demand_template import ShiftDemandTemplate
 class ShiftDemandTemplateRepository(BaseRepository[ShiftDemandTemplateSchema]):
     """Repository for shift demand template documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("shift_demand_templates", ShiftDemandTemplateSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(
+            database_interface,
+            "shift_demand_templates",
+            ShiftDemandTemplateSchema,
+        )
 
     def create_template(self, template: ShiftDemandTemplate) -> ShiftDemandTemplate:
         """Create a new shift demand template."""

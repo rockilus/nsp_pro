@@ -1,6 +1,7 @@
 from datetime import date, datetime, time, timezone
-from typing import List, Union
+from typing import List, Optional
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.assignment import AssignmentSchema
 from shared.schemas.core.assignment import Assignment
@@ -8,10 +9,16 @@ from shared.schemas.core.assignment import Assignment
 
 # pylint: disable=too-many-public-methods
 class AssignmentRepository(BaseRepository[AssignmentSchema]):
-    """Repository for assignment documents using PyMongo."""
+    """Repository for assignment documents using modern database interface."""
 
-    def __init__(self):
-        super().__init__("assignments", AssignmentSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        """
+        Initialize AssignmentRepository.
+
+        Args:
+            database_interface: Database interface instance
+        """
+        super().__init__(database_interface, "assignments", AssignmentSchema)
 
     def create_assignment(self, assignment: Assignment) -> Assignment:
         """Create a new assignment."""
@@ -33,16 +40,14 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         assignments = self.find_all({"team": team_id})
         return [a.to_core() for a in assignments]
 
-    def get_assignment_by_id(self, assignment_id: str) -> Assignment:
+    def get_assignment_by_id(self, assignment_id: str) -> Optional[Assignment]:
         """Get an assignment by its ID."""
         assignment = self.find_by_id(assignment_id)
-        if not assignment:
-            raise Exception(f"Assignment with id {assignment_id} not found")
-        return assignment.to_core()
+        return assignment.to_core() if assignment else None
 
     def get_assignment_by_worker_id_date_schedule_id(
         self, worker_id: str, a_date: date, schedule_id: str
-    ) -> Union[Assignment, None]:
+    ) -> Optional[Assignment]:
         """Get an assignment by worker, date, and schedule."""
         assignment = self.find_all(
             {
@@ -55,7 +60,7 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
 
     def get_assignment_by_worker_shift_team_and_date(
         self, worker_id: str, shift_id: str, team_id: str, a_date: date
-    ) -> Union[Assignment, None]:
+    ) -> Optional[Assignment]:
         """Get an assignment by worker ID, shift ID, team ID, and date."""
         assignment = self.find_all(
             {

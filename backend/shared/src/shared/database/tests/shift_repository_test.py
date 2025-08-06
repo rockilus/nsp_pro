@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 
-import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.shift import ShiftRepository
 from shared.database.schemas.shift import (
     ShiftSchema,
@@ -20,25 +20,30 @@ from shared.schemas.core.shift import (
 class TestShiftRepository:
     repo: ShiftRepository
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
         """Setup test environment before each test."""
         assert mongodb_container is not None
-        db = MongoDB.get_database()
+        db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = ShiftRepository()
+        self.repo = ShiftRepository(mongodb_container)
 
         # Yield to test
         yield
 
         # Cleanup
-        db.drop_collection(self.repo.collection)
+        try:
+            collection = db.get_collection("shifts")  # type: ignore
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     def test_create_shift(self):
         """Test creating a shift."""
         shift = Shift(
-            id=None,
+            id="shift1",
             team_id="team1",
             name="Morning Shift",
             acronym="MS",
@@ -86,6 +91,7 @@ class TestShiftRepository:
         )
         created = self.repo.create(shift)
 
+        assert created.id is not None
         found = self.repo.get_shift_by_id(created.id)
 
         assert found is not None

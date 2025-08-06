@@ -1,6 +1,7 @@
 from datetime import date, datetime, time, timezone
 from typing import List, Optional
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.recurrence_exclusion import (
     RecurrenceExclusionSchema,
@@ -11,8 +12,12 @@ from shared.schemas.core.recurrence import RecurrenceExclusion
 class RecurrenceExclusionRepository(BaseRepository[RecurrenceExclusionSchema]):
     """Repository for recurrence exclusions using PyMongo."""
 
-    def __init__(self):
-        super().__init__("recurrence_exclusions", RecurrenceExclusionSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(
+            database_interface,
+            "recurrence_exclusions",
+            RecurrenceExclusionSchema,
+        )
 
     def create_recurrence_exclusion(
         self, exclusion: RecurrenceExclusion

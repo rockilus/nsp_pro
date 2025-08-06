@@ -1,5 +1,6 @@
 from typing import List
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.constraint_build import (
     ConstraintBuildSchema,
@@ -10,8 +11,8 @@ from shared.schemas.core.constraint import ConstraintBuild
 class ConstraintBuildRepository(BaseRepository[ConstraintBuildSchema]):
     """Repository for constraint build documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("constraint_builds", ConstraintBuildSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(database_interface, "constraint_builds", ConstraintBuildSchema)
 
     def create_constraint_build(
         self, constraint_build: ConstraintBuild

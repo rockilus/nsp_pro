@@ -210,6 +210,12 @@ variable "atlas_secret_arn" {
   default     = ""
 }
 
+variable "documentdb_secret_arn" {
+  description = "ARN of the DocumentDB credentials secret"
+  type        = string
+  default     = ""
+}
+
 variable "main_service_environment_variables" {
   description = "Environment variables for the main service"
   type        = map(string)
@@ -220,6 +226,21 @@ variable "solve_service_environment_variables" {
   description = "Environment variables for the solve service"
   type        = map(string)
   default     = {}
+}
+
+variable "main_service_security_group_id" {
+  description = "Security group ID for the main service"
+  type        = string
+}
+
+variable "solve_service_security_group_id" {
+  description = "Security group ID for the solve service"
+  type        = string
+}
+
+variable "permit_pdp_security_group_id" {
+  description = "Security group ID for the Permit PDP service"
+  type        = string
 }
 
 variable "tags" {
