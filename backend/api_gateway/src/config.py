@@ -1,4 +1,3 @@
-import json
 import os
 import ssl
 import tempfile
@@ -11,8 +10,9 @@ from botocore.exceptions import BotoCoreError, ClientError  # type: ignore
 from dotenv import load_dotenv
 from pydantic import Field, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from shared.logger import log_error, log_info
+from shared.aws import DocumentDBCredentialsError, SecretsManager
 from shared.database.config import DatabaseConfig, DatabaseType
+from shared.logger import log_error, log_info
 
 # Enhanced DocumentDB Security Features:
 # 1. Certificate validation for CA bundle downloads
@@ -114,17 +114,43 @@ class AppConfig(BaseSettings):
             log_info("Configuring MongoDB for development environment")
             return DatabaseConfig(
                 database_type=DatabaseType.MONGODB,
-                mongodb_uri=self.mongodb_uri,
-                database_name=self.database_name,
+                # mongodb_uri=self.mongodb_uri,
+                # database_name=self.database_name,
             )
+
         log_info("Configuring DocumentDB for production environment")
-        return DatabaseConfig(
-            database_type=DatabaseType.DOCUMENTDB,
-            documentdb_host=self.documentdb_host,
-            documentdb_username=self.documentdb_username,
-            documentdb_password=self.documentdb_password,
-            database_name=self.database_name,
-        )
+
+        # Use the new AWS Secrets Manager to retrieve DocumentDB credentials
+        try:
+            secrets_manager = SecretsManager()
+            credentials = secrets_manager.get_documentdb_credentials(
+                self.documentdb_secret_name
+            )
+
+            log_info(
+                f"Retrieved DocumentDB credentials for host: "
+                f"{credentials.host}"
+            )
+
+            return DatabaseConfig(
+                database_type=DatabaseType.DOCUMENTDB,
+                documentdb_host=credentials.host,
+                documentdb_port=int(credentials.port),
+                documentdb_username=credentials.username,
+                documentdb_password=credentials.password,
+                database_name=self.documentdb_database_name,
+                documentdb_ca_bundle_path=self.documentdb_ca_bundle_path,
+            )
+
+        except DocumentDBCredentialsError as e:
+            log_error(
+                f"Failed to retrieve DocumentDB credentials: {e.message}"
+            )
+            if e.missing_fields:
+                log_error(f"Missing credential fields: {e.missing_fields}")
+            raise ValueError(
+                "Unable to configure DocumentDB: credential retrieval failed"
+            ) from e
 
 
 # Step 2: Functions to retrieve variables
@@ -160,53 +186,39 @@ def download_env_file_from_s3(
 def get_documentdb_credentials(
     secret_name: str, region_name: str = "eu-west-3"
 ) -> dict[str, str]:
-    """Retrieve DocumentDB credentials from AWS Secrets Manager."""
+    """Retrieve DocumentDB credentials from AWS Secrets Manager.
 
-    if not secret_name or not region_name:
-        raise ValueError("Secret name and region are required")
+    This function is kept for backward compatibility but now uses
+    the shared AWS module for consistency and better error handling.
+    """
+    from shared.aws import AWSConfig
 
     try:
-        client = boto3.client("secretsmanager", region_name=region_name)
+        # Create AWS configuration for the specific region
+        aws_config = AWSConfig.from_environment()
+        aws_config.region = region_name
+        aws_config.documentdb_secret_name = secret_name
 
-        # Log access attempt (without sensitive data)
-        log_info(
-            f"Retrieving DocumentDB credentials from region {region_name}"
-        )
-
-        response = client.get_secret_value(SecretId=secret_name)
-        secret_string = response["SecretString"]
-        print(f"Retrieved secret for {secret_name}: {secret_string[:50]}...")
-        credentials = json.loads(secret_string)
-        print(
-            f"Retrieved DocumentDB credentials for {secret_name}: {credentials}"
-        )
-
-        # Validate required fields
-        required_fields = ["username", "password", "host", "port"]
-        missing_fields = [
-            field for field in required_fields if field not in credentials
-        ]
-        if missing_fields:
-            raise ValueError(
-                f"Missing required credential fields: {missing_fields}"
-            )
+        # Use the shared AWS module
+        secrets_manager = SecretsManager(aws_config)
+        credentials = secrets_manager.get_documentdb_credentials()
 
         log_info("DocumentDB credentials retrieved successfully")
-        return credentials
 
-    except json.JSONDecodeError as e:
-        log_error("Failed to parse DocumentDB credentials JSON")
-        raise ValueError("Invalid credential format in Secrets Manager") from e
-    except (BotoCoreError, ClientError) as error:
-        error_code = (
-            getattr(error, 'response', {})
-            .get('Error', {})
-            .get('Code', 'Unknown')
-        )
-        log_error(f"AWS error retrieving DocumentDB credentials: {error_code}")
-        raise error
-    except Exception as e:
-        log_error("Unexpected error retrieving DocumentDB credentials")
+        return {
+            "username": credentials.username,
+            "password": credentials.password,
+            "host": credentials.host,
+            "port": credentials.port,
+        }
+
+    except DocumentDBCredentialsError as e:
+        log_error(f"Failed to retrieve DocumentDB credentials: {e.message}")
+        if e.missing_fields:
+            log_error(f"Missing credential fields: {e.missing_fields}")
+        raise e
+    except (BotoCoreError, ClientError) as e:
+        log_error("AWS service error retrieving DocumentDB credentials")
         raise e
 
 
@@ -395,7 +407,8 @@ def initialize_environment() -> AppConfig:
 
             print("AWS credentials retrieved and set from boto3 session")
 
-            # For DocumentDB, use enhanced credential retrieval and URI building
+            # For DocumentDB, use enhanced credential retrieval and
+            # URI building
             if os.getenv("USE_DOCUMENTDB", "false").lower() == "true":
                 try:
                     # Get DocumentDB credentials using enhanced function
@@ -418,9 +431,14 @@ def initialize_environment() -> AppConfig:
                     os.environ["DB_URI"] = db_uri
                     log_info("DocumentDB connection URI built successfully")
 
-                except Exception as e:
+                except (
+                    DocumentDBCredentialsError,
+                    ValueError,
+                    FileNotFoundError,
+                ) as e:
                     log_error(f"Failed to build DocumentDB URI: {str(e)}")
-                    # Fallback to template-based approach if enhanced method fails
+                    # Fallback to template-based approach if enhanced
+                    # method fails
                     db_uri_template = os.getenv("DB_URI")
                     if db_uri_template:
                         db_uri = (
