@@ -1,6 +1,10 @@
 """Database setup for API Gateway using modern shared database architecture."""
 
-from shared.database.container import DatabaseContainer, setup_database_config
+from shared.database.container import (
+    DatabaseContainer,
+    setup_database_config,
+    shutdown_databases,
+)
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_error, log_info
 
@@ -23,9 +27,7 @@ async def setup_database() -> DatabaseCollections:
         # Create DatabaseCollections with the interface
         db_collections = DatabaseCollections(database_interface)
 
-        log_info(
-            f"Database setup completed using {db_config.database_type.value}"
-        )
+        log_info(f"Database setup completed using {db_config.database_type.value}")
         return db_collections
 
     except Exception as e:
@@ -36,8 +38,6 @@ async def setup_database() -> DatabaseCollections:
 async def shutdown_database() -> None:
     """Shutdown database connections."""
     try:
-        from shared.database.container import shutdown_databases
-
         await shutdown_databases()
         log_info("Database connections closed successfully")
     except Exception as e:

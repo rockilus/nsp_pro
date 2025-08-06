@@ -1,11 +1,12 @@
 from typing import Dict
 
 import httpx
-from fastapi import APIRouter, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel
-from shared.database.factory import DatabaseFactory
+from shared.database.database_collections import DatabaseCollections
 
 from src.config import config
+from src.dependencies import get_db_collections
 from src.errors import AuthzConnectionError
 from src.integrations.authorization import authz_connect, authz_health_check
 
@@ -25,14 +26,16 @@ class HealthCheck(BaseModel):
 
 
 @router.get("/health", response_model=HealthCheck)
-async def health_check() -> HealthCheck:
+async def health_check(
+    db_collections: DatabaseCollections = Depends(get_db_collections),
+) -> HealthCheck:
     health_status = {
         "database": ServiceStatus(status="ok", details=None),
         "authz": ServiceStatus(status="ok", details=None),
     }
     try:
         # Use the factory to check database health
-        is_healthy = DatabaseFactory.check_health(use_documentdb=config.use_documentdb)
+        is_healthy = await db_collections.database_interface.health_check()
         if not is_healthy:
             health_status["database"].status = "error"
             health_status["database"].details = "Database health check failed"
