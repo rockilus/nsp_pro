@@ -17,6 +17,7 @@ import { ShiftDemandTemplateApi } from "../app/lib/api/shiftDemandTemplateApi";
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
+import { env } from "@/config/env";
 
 //////////////////////////
 // Authenticated Template Hooks //
@@ -31,7 +32,7 @@ export function useGetTemplates() {
 
   const getTemplates = useCallback(
     async (teamId: string): Promise<ShiftDemandTemplateDTO[]> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetTemplates called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -77,7 +78,7 @@ export function useGetTemplate() {
       templateId: string,
       teamId: string
     ): Promise<ShiftDemandTemplateDTO> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetTemplate called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -128,7 +129,7 @@ export function useCreateTemplate() {
       teamId: string,
       template: ShiftDemandTemplateCreateDTO
     ): Promise<ShiftDemandTemplateDTO> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useCreateTemplate called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -154,7 +155,7 @@ export function useCreateTemplate() {
           template
         );
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Template created successfully");
         }
 

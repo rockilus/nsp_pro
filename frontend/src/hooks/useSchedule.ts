@@ -16,6 +16,7 @@ import { ScheduleApi } from "../app/lib/api/scheduleApi";
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
+import { env } from "@/config/env";
 
 //////////////////////////
 // Authenticated Schedule Hooks //
@@ -30,7 +31,7 @@ export function useCreateSchedule() {
 
   const createSchedule = useCallback(
     async (teamId: string): Promise<ScheduleT> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useCreateSchedule called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -56,7 +57,7 @@ export function useCreateSchedule() {
       try {
         const schedule = await ScheduleApi.createSchedule(apiClient, teamId);
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Schedule created successfully");
         }
 
@@ -84,7 +85,7 @@ export function useGetSchedules() {
 
   const getSchedules = useCallback(
     async (teamId: string): Promise<ScheduleT[]> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetSchedules called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -127,7 +128,7 @@ export function useGetWorkTimeTable() {
 
   const getWorkTimeTable = useCallback(
     async (scheduleId: string, teamId: string): Promise<WorkTimeTableT> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetWorkTimeTable called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,

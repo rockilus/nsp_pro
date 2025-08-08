@@ -6,6 +6,7 @@ import { LinkShiftApi } from "../app/lib/api/linkShiftApi";
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
+import { env } from "@/config/env";
 
 //////////////////////////
 // Authenticated Link Shift Hooks //
@@ -20,7 +21,7 @@ export function useCreateLinkShift() {
 
   const createLinkShift = useCallback(
     async (linkShift: LinkShiftT): Promise<LinkShiftT> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useCreateLinkShift called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -46,7 +47,7 @@ export function useCreateLinkShift() {
       try {
         const result = await LinkShiftApi.createLinkShift(apiClient, linkShift);
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Link shift created successfully");
         }
 
@@ -74,7 +75,7 @@ export function useGetLinkShifts() {
 
   const getLinkShifts = useCallback(
     async (teamId: string): Promise<LinkShiftT[]> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetLinkShifts called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,

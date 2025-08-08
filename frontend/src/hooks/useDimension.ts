@@ -11,6 +11,7 @@ import {
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
+import { env } from "@/config/env";
 
 //////////////////////////
 // Authenticated Dimension Hooks //
@@ -28,7 +29,7 @@ export function useAddDimension() {
       dimension: DimensionT,
       dimEntries: DimEntryT[]
     ): Promise<AddDimensionResponse> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useAddDimension called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -61,7 +62,7 @@ export function useAddDimension() {
           dimEntries
         );
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Dimension added successfully");
         }
 
@@ -92,7 +93,7 @@ export function useGetDimensions() {
       teamId: string,
       dimTypes?: DimensionType[]
     ): Promise<GetDimensionsResponse> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetDimensions called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,

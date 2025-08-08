@@ -13,6 +13,7 @@ import {
   toMultitaskingGroup,
 } from "@/types/multitasking";
 import { BaseApi, AuthenticatedApiClient } from "./baseApi";
+import { env } from "../../../config/env";
 
 export class MultitaskingApi extends BaseApi {
   /**
@@ -157,7 +158,7 @@ export class MultitaskingApi extends BaseApi {
         endDate: endTimestamp,
       };
 
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("MultitaskingApi.getShiftDemandConcurrency called with:", {
           teamId,
           startDate: startDate.toISOString(),
@@ -184,7 +185,7 @@ export class MultitaskingApi extends BaseApi {
           concurrentShiftDemandIds: item.concurrentShiftDemandIds,
         })) || [];
 
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log(
           "MultitaskingApi.getShiftDemandConcurrency response:",
           concurrencyList

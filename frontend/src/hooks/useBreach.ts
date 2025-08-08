@@ -6,6 +6,7 @@ import { BreachApi } from "../app/lib/api/breachApi";
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
+import { env } from "@/config/env";
 
 //////////////////////////
 // Authenticated Breach Hooks //
@@ -20,7 +21,7 @@ export function useGetBreaches() {
 
   const getBreaches = useCallback(
     async (teamId: string): Promise<BreachT[]> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetBreaches called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,

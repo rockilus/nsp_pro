@@ -10,6 +10,7 @@ import {
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
+import { env } from "@/config/env";
 
 //////////////////////////
 // Authenticated Shift Hooks //
@@ -24,7 +25,7 @@ export function useAddShift() {
 
   const addShift = useCallback(
     async (shift: ShiftT): Promise<ShiftT> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useAddShift called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -51,7 +52,7 @@ export function useAddShift() {
       try {
         const result = await ShiftApi.addShift(apiClient, shift);
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Shift added successfully");
         }
 
@@ -79,7 +80,7 @@ export function useGetShifts() {
 
   const getShifts = useCallback(
     async (teamId: string): Promise<ShiftT[]> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetShifts called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -122,7 +123,7 @@ export function useGetWorkShifts() {
 
   const getWorkShifts = useCallback(
     async (teamId: string): Promise<ShiftT[]> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetWorkShifts called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -165,7 +166,7 @@ export function useGetAllShifts() {
 
   const getAllShifts = useCallback(
     async (teamId: string): Promise<ShiftT[]> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetAllShifts called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -276,7 +277,7 @@ export function useGetShiftsTabData() {
 
   const getShiftsTabData = useCallback(
     async (teamId: string): Promise<ShiftsTabDataResponse> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetShiftsTabData called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,

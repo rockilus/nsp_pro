@@ -5,6 +5,7 @@ import { ExportOptionsT } from "../types/schedule";
 import { ExportApi } from "../app/lib/api/exportApi";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
+import { env } from "@/config/env";
 
 //////////////////////////
 // Authenticated Export Hooks //
@@ -18,7 +19,7 @@ export function useExportSchedule() {
 
   const exportSchedule = useCallback(
     async (teamId: string, exportOptions: ExportOptionsT): Promise<void> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useExportSchedule called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -68,7 +69,7 @@ export function useExportSchedule() {
 
         ExportApi.downloadBlob(blob, filename);
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Schedule exported successfully");
         }
       } catch (error) {
@@ -93,7 +94,7 @@ export function useExportScheduleBlob() {
 
   const exportScheduleBlob = useCallback(
     async (teamId: string, exportOptions: ExportOptionsT): Promise<Blob> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useExportScheduleBlob called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,

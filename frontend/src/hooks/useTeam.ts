@@ -7,6 +7,7 @@ import { TeamApi } from "../app/lib/api/teamApi";
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
+import { env } from "@/config/env";
 
 //////////////////////////
 // Authenticated Team Hooks //
@@ -21,7 +22,7 @@ export function useCreateTeam() {
 
   const createTeam = useCallback(
     async (teamName: string): Promise<TeamWithMembership> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useCreateTeam called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -47,7 +48,7 @@ export function useCreateTeam() {
       try {
         const team = await TeamApi.createTeam(apiClient, teamName.trim());
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Team created successfully");
         }
 
@@ -75,7 +76,7 @@ export function useGetTeamById() {
 
   const getTeamById = useCallback(
     async (teamId: string): Promise<TeamT> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetTeamById called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -119,7 +120,7 @@ export function useGetUserTeamsWithMemberships() {
   const getUserTeamsWithMemberships = useCallback(async (): Promise<
     TeamWithMembership[]
   > => {
-    if (process.env.NODE_ENV === "development") {
+    if (env.isDevelopment) {
       console.log("🔍 useGetUserTeamsWithMemberships called:", {
         timestamp: new Date().toISOString(),
         isAuthenticated,
@@ -159,7 +160,7 @@ export function useGetTeamUsersWithMemberships() {
 
   const getTeamUsersWithMemberships = useCallback(
     async (teamId: string): Promise<UserWithMembership[]> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetTeamUsersWithMemberships called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,

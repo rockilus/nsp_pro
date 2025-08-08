@@ -1,0 +1,125 @@
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:5.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      # - mongodb_data:/data/db
+      - /data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # LocalStack (to emulate SQS)
+  localstack:
+    image: localstack/localstack
+    container_name: localstack
+    ports:
+      - "4566:4566"
+    # environment:
+    #   - SERVICES=sqs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localstack:4566/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Permit.io PDP
+  permit:
+    image: permitio/pdp-v2:latest
+    container_name: permit
+    ports:
+      - "7766:7000"
+    env_file:
+      - .env.docker-compose.permit
+    # environment:
+    #   - PDP_API_KEY=your_api_key_here # Replace with your actual API key
+    #   - PDP_DEBUG=True
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://permit:7766/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Backend
+  fastapi:
+    build:
+      context: ./backend
+      dockerfile: api_gateway/Dockerfile
+    container_name: fastapi
+    ports:
+      - "4000:4000"
+    env_file:
+      - .env.docker-compose.fastapi
+    # environment:
+    #   # Use the service names as hostnames within the Docker network
+    #   - MONGO_URI=mongodb://mongodb:27017
+    #   - SQS_QUEUE_URL=http://localstack:4566/000000000000/my-solve-queue
+    depends_on:
+      - mongodb
+      - localstack
+      - permit
+    # Add a health check to ensure it's ready before tests run
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://fastapi:4000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Solve Service
+  solve-service:
+    build:
+      context: ./backend
+      dockerfile: solve_service/Dockerfile
+    container_name: solve-service
+    env_file:
+      - .env.docker-compose.solve
+    depends_on:
+      - mongodb
+      - localstack
+    # Note: This service might need to wait for the SQS queue to be created.
+    # You might need a startup script to create the queue on localstack.
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:80"
+    # env_file:
+    #   - .env.docker-compose.frontend
+    # environment:
+    #   - NEXT_PUBLIC_NODE_ENV=development
+    #   # Point the Next.js app to the FastAPI service within the Docker network
+    #   - NEXT_PUBLIC_BACKEND_URL=http://fastapi:4000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://frontend:3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # # 6. Playwright E2E Test Runner (Optional but Recommended)
+  # e2e-tests:
+  #   build:
+  #     context: ./frontend # Or a separate test directory
+  #   container_name: e2e-tests
+  #   environment:
+  #     - PLAYWRIGHT_BASE_URL=http://frontend:3000
+  #   depends_on:
+  #     frontend:
+  #       condition: service_healthy
+  #     fastapi:
+  #       condition: service_healthy
+  #     solve-service:
+  #       condition: service_healthy
+  #   command: npm run test:e2e
+
+# volumes:
+#   mongodb_data:

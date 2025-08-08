@@ -6,6 +6,7 @@ import { WorkerApi } from "../app/lib/api/workerApi";
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
+import { env } from "@/config/env";
 
 //////////////////////////
 // Authenticated Worker Hooks //
@@ -20,7 +21,7 @@ export function useAddWorker() {
 
   const addWorker = useCallback(
     async (worker: WorkerT): Promise<WorkerT> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useAddWorker called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -47,7 +48,7 @@ export function useAddWorker() {
       try {
         const newWorker = await WorkerApi.addWorker(apiClient, worker);
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Worker added successfully");
         }
 
@@ -75,7 +76,7 @@ export function useGetWorkers() {
 
   const getWorkers = useCallback(
     async (teamId: string): Promise<WorkerT[]> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetWorkers called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -118,7 +119,7 @@ export function useGetAllWorkers() {
 
   const getAllWorkers = useCallback(
     async (teamId: string): Promise<WorkerT[]> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetAllWorkers called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,

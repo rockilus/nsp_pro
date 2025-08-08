@@ -2,15 +2,13 @@
 
 import React from "react";
 import { useAuth } from "../../contexts/auth-context";
+import { env } from "../../config/env";
 
 export function AuthDebugComponent() {
   const auth = useAuth();
 
   // Only show in development or when explicitly enabled
-  if (
-    process.env.NODE_ENV === "production" &&
-    !process.env.NEXT_PUBLIC_ENABLE_DEBUG
-  ) {
+  if (!env.isDevelopment) {
     return null;
   }
 

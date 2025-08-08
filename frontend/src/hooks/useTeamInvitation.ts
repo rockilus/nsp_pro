@@ -10,6 +10,7 @@ import { TeamInvitationApi } from "../app/lib/api/teamInvitationApi";
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
+import { env } from "@/config/env";
 
 //////////////////////////
 // Authenticated Team Invitation Hooks //
@@ -27,7 +28,7 @@ export function useCreateTeamInvitation() {
       invitation: TeamInvitationT,
       teamId: string
     ): Promise<TeamInvitationT> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useCreateTeamInvitation called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -62,7 +63,7 @@ export function useCreateTeamInvitation() {
           teamId
         );
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Team invitation created successfully");
         }
 
@@ -90,7 +91,7 @@ export function useGetTeamInvitations() {
 
   const getTeamInvitations = useCallback(
     async (teamId: string): Promise<TeamInvitationT[]> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetTeamInvitations called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -134,7 +135,7 @@ export function useGetUserPendingInvitations() {
   const getUserPendingInvitations = useCallback(async (): Promise<
     EnrichedTeamInvitationT[]
   > => {
-    if (process.env.NODE_ENV === "development") {
+    if (env.isDevelopment) {
       console.log("🔍 useGetUserPendingInvitations called:", {
         timestamp: new Date().toISOString(),
         isAuthenticated,
@@ -174,7 +175,7 @@ export function useAcceptTeamInvitation() {
 
   const acceptTeamInvitation = useCallback(
     async (token: string): Promise<TeamWithMembership> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useAcceptTeamInvitation called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -203,7 +204,7 @@ export function useAcceptTeamInvitation() {
           token
         );
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Team invitation accepted successfully");
         }
 
@@ -231,7 +232,7 @@ export function useRejectTeamInvitation() {
 
   const rejectTeamInvitation = useCallback(
     async (token: string): Promise<void> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useRejectTeamInvitation called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -257,7 +258,7 @@ export function useRejectTeamInvitation() {
       try {
         await TeamInvitationApi.rejectTeamInvitation(apiClient, token);
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Team invitation rejected successfully");
         }
       } catch (error) {
@@ -283,7 +284,7 @@ export function useResendTeamInvitationEmail() {
 
   const resendTeamInvitationEmail = useCallback(
     async (invitationId: string, teamId: string): Promise<TeamInvitationT> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useResendTeamInvitationEmail called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -309,7 +310,7 @@ export function useResendTeamInvitationEmail() {
           teamId
         );
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Team invitation email resent successfully");
         }
 
@@ -340,7 +341,7 @@ export function useDeleteTeamInvitation() {
       invitationId: string,
       teamId: string
     ): Promise<{ message: string }> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useDeleteTeamInvitation called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -366,7 +367,7 @@ export function useDeleteTeamInvitation() {
           teamId
         );
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Team invitation deleted successfully");
         }
 

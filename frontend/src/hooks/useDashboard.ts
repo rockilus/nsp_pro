@@ -6,6 +6,7 @@ import { DashboardApi } from "../app/lib/api/dashboardApi";
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
+import { env } from "@/config/env";
 
 //////////////////////////
 // Authenticated Dashboard Hooks //
@@ -19,7 +20,7 @@ export function useCheckUserAuthz() {
   const { user, isAuthenticated, loading } = useAuth();
 
   const checkUserAuthz = useCallback(async (): Promise<boolean> => {
-    if (process.env.NODE_ENV === "development") {
+    if (env.isDevelopment) {
       console.log("🔍 useCheckUserAuthz called:", {
         timestamp: new Date().toISOString(),
         isAuthenticated,
@@ -58,7 +59,7 @@ export function useGetUsersDashboard() {
   const { user, isAuthenticated, loading } = useAuth();
 
   const getUsersDashboard = useCallback(async (): Promise<UserDashboardT[]> => {
-    if (process.env.NODE_ENV === "development") {
+    if (env.isDevelopment) {
       console.log("🔍 useGetUsersDashboard called:", {
         timestamp: new Date().toISOString(),
         isAuthenticated,
@@ -98,7 +99,7 @@ export function useGetUserDashboard() {
 
   const getUserDashboard = useCallback(
     async (userId: string): Promise<UserDashboardT> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetUserDashboard called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -141,7 +142,7 @@ export function useImpersonateUser() {
 
   const impersonateUser = useCallback(
     async (userId: string): Promise<boolean> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useImpersonateUser called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -183,7 +184,7 @@ export function useStopImpersonation() {
   const { user, isAuthenticated, loading } = useAuth();
 
   const stopImpersonation = useCallback(async (): Promise<boolean> => {
-    if (process.env.NODE_ENV === "development") {
+    if (env.isDevelopment) {
       console.log("🔍 useStopImpersonation called:", {
         timestamp: new Date().toISOString(),
         isAuthenticated,
@@ -223,7 +224,7 @@ export function useDeleteUser() {
 
   const deleteUser = useCallback(
     async (userId: string): Promise<boolean> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useDeleteUser called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,

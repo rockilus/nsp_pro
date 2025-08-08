@@ -13,15 +13,16 @@ export interface EnvironmentConfig {
   cognitoClientId: string;
   redirectUri: string;
   logoutRedirectUri: string;
+  cognitoDomain: string;
 }
 
 /**
  * Extract and validate environment variables
  */
 function createEnvironmentConfig(): EnvironmentConfig {
-  const isDevelopment = process.env.NODE_ENV === "development";
+  const isDevelopment = process.env.NEXT_PUBLIC_NODE_ENV === "development";
 
-  console.log("Environment Configuration:", process.env.NODE_ENV);
+  console.log("Environment Configuration:", process.env.NEXT_PUBLIC_NODE_ENV);
 
   return {
     isDevelopment,
@@ -46,6 +47,9 @@ function createEnvironmentConfig(): EnvironmentConfig {
       "https://app.rockilus.com/fr/plan/workers",
     logoutRedirectUri:
       process.env.NEXT_PUBLIC_LOGOUT_REDIRECT_URI || "https://www.rockilus.com",
+    cognitoDomain:
+      process.env.NEXT_PUBLIC_COGNITO_DOMAIN ||
+      "https://eu-west-39tyn1ysf6.auth.eu-west-3.amazoncognito.com",
   };
 }
 
@@ -57,9 +61,9 @@ export const isDevelopment = () => env.isDevelopment;
 export const isProduction = () => !env.isDevelopment;
 
 // Log configuration on startup (development only)
-if (isDevelopment() && typeof window !== "undefined") {
+if (env.isDevelopment && typeof window !== "undefined") {
   console.log("Environment Configuration:", {
-    isDevelopment: isDevelopment(),
+    isDevelopment: env.isDevelopment,
     apiUrl: env.apiUrl,
     devUserId: env.devUserId,
   });

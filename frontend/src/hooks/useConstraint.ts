@@ -8,6 +8,7 @@ import { ShiftApi } from "../app/lib/api/shiftApi";
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
+import { env } from "@/config/env";
 
 //////////////////////////
 // Authenticated Constraint Hooks //
@@ -22,7 +23,7 @@ export function useAddConstraint() {
 
   const addConstraint = useCallback(
     async (constraint: ConstraintT): Promise<ConstraintT> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useAddConstraint called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -49,7 +50,7 @@ export function useAddConstraint() {
       try {
         const result = await ConstraintApi.addConstraint(apiClient, constraint);
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Constraint added successfully");
         }
 
@@ -77,7 +78,7 @@ export function useGetConstraints() {
 
   const getConstraints = useCallback(
     async (teamId: string): Promise<ConstraintT[]> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetConstraints called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -191,7 +192,7 @@ export function useGetTemplates() {
 
   const getTemplates = useCallback(
     async (teamId: string): Promise<TemplateT[]> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetTemplates called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,

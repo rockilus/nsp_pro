@@ -13,6 +13,7 @@ import { useApiClient } from "../app/lib/api-client";
 import { useAuth } from "../contexts/auth-context";
 // Stats hooks
 import { useGetShiftOptions } from "./useStats";
+import { env } from "@/config/env";
 
 //////////////////////////
 // Authenticated Request Hooks //
@@ -27,7 +28,7 @@ export function useAddRequest() {
 
   const addRequest = useCallback(
     async (request: RequestT, teamId: string): Promise<RequestT> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useAddRequest called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -61,7 +62,7 @@ export function useAddRequest() {
           teamId.trim()
         );
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Request added successfully");
         }
 
@@ -89,7 +90,7 @@ export function useGetRequests() {
 
   const getRequests = useCallback(
     async (teamId: string): Promise<RequestT[]> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetRequests called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -321,7 +322,7 @@ export function useGetRequestsTabData() {
 
   const getRequestsTabData = useCallback(
     async (teamId: string): Promise<RequestsTabData> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetRequestsTabData called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
