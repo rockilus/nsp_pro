@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from typing import Any, Callable, Coroutine
 
 from shared.database.database_collections import DatabaseCollections
+from shared.logger import log_info
 from shared.schemas.core import Language, PasswordData, User
 from shared.schemas.errors import UserNotFoundError
 
@@ -39,7 +40,12 @@ class UserService(BaseService):
         # Check if user already exists to ensure idempotency
         existing_user = self.collection.user_db.get_user_by_id(user_id)
         if existing_user is not None:
-            raise UserNotFoundError(f"User with id {user_id} already exists")
+            # Log for audit purposes
+            log_info(
+                f"User with id {user_id} already exists, "
+                f"returning existing user"
+            )
+            return existing_user
 
         user_language = "fr"
         try:

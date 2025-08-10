@@ -1,0 +1,8 @@
+FROM alpine:latest
+
+RUN apk add --no-cache curl bash
+
+COPY scripts/init-dev-user.sh /init-dev-user.sh
+RUN chmod +x /init-dev-user.sh
+
+CMD ["/init-dev-user.sh"]
