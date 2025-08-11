@@ -18,20 +18,11 @@ from shared.database.reset_service import (
 class TestDatabaseResetService:
     """Test suite for DatabaseResetService."""
 
-    # @pytest.fixture(autouse=True)
-    # async def cleanup_collections(self, mongodb_container: DatabaseInterface):
-    #     """Cleanup all collections after each test."""
-    #     db = mongodb_container.get_database()
-    #     for name in list(db.list_collection_names()):  # type: ignore
-    #         db.drop_collection(name)  # type: ignore
-    #     yield
-    #     # Cleanup again in case test created new collections
-    #     for name in list(db.list_collection_names()):  # type: ignore
-    #         db.drop_collection(name)  # type: ignore
-
     def test_init(self):
         """Test service initialization."""
-        os.environ["DB_MONGODB_URI"] = "mongodb://testuser:testpass@localhost:27017/"
+        os.environ["DB_MONGODB_URI"] = (
+            "mongodb://testuser:testpass@localhost:27017/"
+        )
         service = DatabaseResetService()
         assert service is not None
         assert service._db_provider is None
@@ -102,7 +93,9 @@ class TestDatabaseResetService:
         assert len(op_id) > 10  # Should contain timestamp
 
     @pytest.mark.asyncio
-    async def test_reset_all_collections(self, mongodb_container: DatabaseInterface):
+    async def test_reset_all_collections(
+        self, mongodb_container: DatabaseInterface
+    ):
         """Test resetting all collections."""
         db = mongodb_container.get_database()
 
@@ -131,7 +124,9 @@ class TestDatabaseResetService:
 
         # Verify collections were dropped
         remaining_collections = db.list_collection_names()  # type: ignore
-        assert not any(name in remaining_collections for name in collection_names)
+        assert not any(
+            name in remaining_collections for name in collection_names
+        )
 
     @pytest.mark.asyncio
     async def test_reset_specific_collections(
@@ -167,7 +162,9 @@ class TestDatabaseResetService:
         assert "shifts" in remaining_collections
 
     @pytest.mark.asyncio
-    async def test_get_all_collection_names(self, mongodb_container: DatabaseInterface):
+    async def test_get_all_collection_names(
+        self, mongodb_container: DatabaseInterface
+    ):
         """Test getting all collection names."""
         db = mongodb_container.get_database()
 
@@ -189,7 +186,9 @@ class TestDatabaseResetService:
         assert len(collections) >= 2  # At least teams and users should exist
 
     @pytest.mark.asyncio
-    async def test_drop_collections(self, mongodb_container: DatabaseInterface):
+    async def test_drop_collections(
+        self, mongodb_container: DatabaseInterface
+    ):
         """Test dropping specific collections."""
         db = mongodb_container.get_database()
 
@@ -213,7 +212,9 @@ class TestDatabaseResetService:
         assert "non_existent_collection" not in remaining_collections
 
     @pytest.mark.asyncio
-    async def test_get_collections_to_reset(self, mongodb_container: DatabaseInterface):
+    async def test_get_collections_to_reset(
+        self, mongodb_container: DatabaseInterface
+    ):
         """Test getting collections to reset."""
         db = mongodb_container.get_database()
 
