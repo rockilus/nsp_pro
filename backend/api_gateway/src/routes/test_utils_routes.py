@@ -53,7 +53,7 @@ async def get_test_environment_only() -> None:
     Raises:
         HTTPException: If not in test environment
     """
-    environment = config.environment.lower()
+    environment = str(config.environment).lower()
 
     # Check environment
     if environment not in ["test", "testing", "local", "development"]:
@@ -191,6 +191,6 @@ async def test_utils_health() -> dict:
     return {
         "status": "healthy",
         "environment": config.environment,
-        "test_utilities_available": config.environment.lower()
+        "test_utilities_available": config.environment
         in ["test", "testing", "local", "development"],
     }
