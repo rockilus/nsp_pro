@@ -1,9 +1,7 @@
-version: '3.8'
-
 services:
-  mongodb:
+  mongodb-shared-tests:
     image: mongo:5.0
-    container_name: mongodb
+    container_name: mongodb-shared-tests
     environment:
       MONGO_INITDB_ROOT_USERNAME: testuser
       MONGO_INITDB_ROOT_PASSWORD: testpass

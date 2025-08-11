@@ -9,19 +9,18 @@ WARNING: This should only be used in test environments.
 
 import asyncio
 import os
-from typing import Optional, List, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
+
 from loguru import logger
 
-from .interface import DatabaseInterface
-from .factory import DatabaseFactory
 from .config import DatabaseConfig
+from .factory import DatabaseFactory
+from .interface import DatabaseInterface
 
 
 class DatabaseResetError(Exception):
     """Exception raised when database reset operations fail."""
-
-    pass
 
 
 class DatabaseResetService:
@@ -75,14 +74,12 @@ class DatabaseResetService:
                     "success": True,
                     "message": "No collections found to reset",
                     "collections_reset": [],
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(tz=timezone.utc).isoformat(),
                     "operation_id": operation_id,
                 }
 
             # Drop all collections
-            dropped_collections = await self._drop_collections(
-                collection_names
-            )
+            dropped_collections = await self._drop_collections(collection_names)
 
             # Recreate collections with proper indexes
             await self._recreate_collections()
@@ -91,20 +88,16 @@ class DatabaseResetService:
                 "success": True,
                 "message": f"Successfully reset {len(dropped_collections)} collections",
                 "collections_reset": dropped_collections,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(tz=timezone.utc).isoformat(),
                 "operation_id": operation_id,
             }
 
-            logger.info(
-                f"Database reset completed successfully: {operation_id}"
-            )
+            logger.info(f"Database reset completed successfully: {operation_id}")
             return result
 
         except Exception as e:
             logger.error(f"Database reset failed: {str(e)}")
-            raise DatabaseResetError(
-                f"Failed to reset database: {str(e)}"
-            ) from e
+            raise DatabaseResetError(f"Failed to reset database: {str(e)}") from e
 
     async def reset_specific_collections(
         self, collection_names: List[str]
@@ -130,31 +123,29 @@ class DatabaseResetService:
             )
 
             # Drop specified collections
-            dropped_collections = await self._drop_collections(
-                collection_names
-            )
+            dropped_collections = await self._drop_collections(collection_names)
 
             # Recreate only the specified collections
             await self._recreate_specific_collections(collection_names)
 
             result = {
                 "success": True,
-                "message": f"Successfully reset {len(dropped_collections)} specific collections",
+                "message": f"Successfully reset {len(dropped_collections)} "
+                + "specific collections",
                 "collections_reset": dropped_collections,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(tz=timezone.utc).isoformat(),
                 "operation_id": operation_id,
             }
 
             logger.info(
-                f"Successfully reset collections: {dropped_collections} [{operation_id}]"
+                f"Successfully reset collections: {dropped_collections} "
+                + f"[{operation_id}]"
             )
             return result
 
         except Exception as e:
             logger.error(f"Failed to reset specific collections: {str(e)}")
-            raise DatabaseResetError(
-                f"Failed to reset collections: {str(e)}"
-            ) from e
+            raise DatabaseResetError(f"Failed to reset collections: {str(e)}") from e
 
     def _validate_test_environment(self) -> None:
         """
@@ -177,26 +168,27 @@ class DatabaseResetService:
         )
 
         is_production = (
-            "prod" in db_name
-            or "production" in environment
-            or environment == "prod"
+            "prod" in db_name or "production" in environment or environment == "prod"
         )
 
         if is_production:
             raise DatabaseResetError(
                 f"Database reset explicitly forbidden in production environment. "
-                f"Environment: '{environment}', Database: '{self._config.database_name}'"
+                f"Environment: '{environment}', "
+                + f"Database: '{self._config.database_name}'"
             )
 
         if not is_test_env:
             raise DatabaseResetError(
                 f"Database reset not allowed in environment '{environment}' "
                 f"with database '{self._config.database_name}'. "
-                f"Only test environments are allowed. Set ENVIRONMENT=test or use a database name containing 'test'."
+                f"Only test environments are allowed. Set ENVIRONMENT=test or "
+                + "use a database name containing 'test'."
             )
 
         logger.info(
-            f"Environment validation passed: {environment}, DB: {self._config.database_name}"
+            f"Environment validation passed: {environment}, "
+            + f"DB: {self._config.database_name}"
         )
 
     async def _get_all_collection_names(self) -> List[str]:
@@ -207,9 +199,7 @@ class DatabaseResetService:
             database = self.db_provider.get_database()
 
             # Get collection names (type ignore for PyMongo compatibility)
-            collection_names = list(
-                database.list_collection_names()  # type: ignore
-            )
+            collection_names = list(database.list_collection_names())  # type: ignore
 
             # Filter out system collections
             filtered_names = [
@@ -225,9 +215,7 @@ class DatabaseResetService:
             logger.error(f"Failed to get collection names: {str(e)}")
             raise
 
-    async def _drop_collections(
-        self, collection_names: List[str]
-    ) -> List[str]:
+    async def _drop_collections(self, collection_names: List[str]) -> List[str]:
         """
         Drop the specified collections.
 
@@ -244,13 +232,9 @@ class DatabaseResetService:
             try:
                 database.drop_collection(collection_name)  # type: ignore
                 dropped_collections.append(collection_name)
-                logger.debug(
-                    f"Successfully dropped collection: {collection_name}"
-                )
+                logger.debug(f"Successfully dropped collection: {collection_name}")
             except Exception as e:
-                logger.warning(
-                    f"Failed to drop collection {collection_name}: {str(e)}"
-                )
+                logger.warning(f"Failed to drop collection {collection_name}: {str(e)}")
                 # Continue with other collections even if one fails
 
         return dropped_collections
@@ -261,18 +245,14 @@ class DatabaseResetService:
             # For now, collections will be automatically created when
             # data is inserted. In the future, this can be enhanced
             # to create collections with specific schemas and indexes.
-            logger.debug(
-                "Collections will be created automatically when needed"
-            )
+            logger.debug("Collections will be created automatically when needed")
         except Exception as e:
             logger.error(f"Failed to recreate collections: {str(e)}")
             # For now, we'll just log the error and continue
             # In production, you might want to implement specific
             # collection recreation logic
 
-    async def _recreate_specific_collections(
-        self, collection_names: List[str]
-    ) -> None:
+    async def _recreate_specific_collections(self, collection_names: List[str]) -> None:
         """
         Recreate only specific collections with their indexes.
 
@@ -297,7 +277,7 @@ class DatabaseResetService:
 
     def _generate_operation_id(self) -> str:
         """Generate a unique operation ID for tracking."""
-        return f"reset_{datetime.utcnow().strftime('%Y%m%d_%H%M%S_%f')}"
+        return f"reset_{datetime.now(tz=timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}"
 
     async def get_collections_to_reset(
         self, collections: Optional[List[str]] = None
@@ -315,20 +295,15 @@ class DatabaseResetService:
         """
         if collections is None:
             return await self._get_all_collection_names()
-        else:
-            # Validate that the specified collections exist
-            all_collections = await self._get_all_collection_names()
-            existing_collections = [
-                c for c in collections if c in all_collections
-            ]
+        # Validate that the specified collections exist
+        all_collections = await self._get_all_collection_names()
+        existing_collections = [c for c in collections if c in all_collections]
 
-            if len(existing_collections) != len(collections):
-                missing = [c for c in collections if c not in all_collections]
-                logger.warning(
-                    f"Some requested collections don't exist: {missing}"
-                )
+        if len(existing_collections) != len(collections):
+            missing = [c for c in collections if c not in all_collections]
+            logger.warning(f"Some requested collections don't exist: {missing}")
 
-            return existing_collections
+        return existing_collections
 
 
 async def reset_database(
@@ -348,8 +323,7 @@ async def reset_database(
 
     if collections is None:
         return await reset_service.reset_all_collections()
-    else:
-        return await reset_service.reset_specific_collections(collections)
+    return await reset_service.reset_specific_collections(collections)
 
 
 def reset_database_sync(
@@ -369,16 +343,14 @@ def reset_database_sync(
 
 # CLI interface for manual testing
 if __name__ == "__main__":
-    import sys
     import argparse
+    import sys
 
     parser = argparse.ArgumentParser(description="Reset test database")
     parser.add_argument(
         "--collections", nargs="+", help="Specific collections to reset"
     )
-    parser.add_argument(
-        "--all", action="store_true", help="Reset all collections"
-    )
+    parser.add_argument("--all", action="store_true", help="Reset all collections")
     parser.add_argument(
         "--dry-run",
         action="store_true",

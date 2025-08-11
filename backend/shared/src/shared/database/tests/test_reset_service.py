@@ -2,14 +2,17 @@
 Test for database reset service.
 """
 
+from unittest.mock import AsyncMock, Mock
+
 import pytest
-from unittest.mock import Mock, AsyncMock
+
 from shared.database.reset_service import (
-    DatabaseResetService,
     DatabaseResetError,
+    DatabaseResetService,
 )
 
 
+# pylint: disable=protected-access
 class TestDatabaseResetService:
     """Test suite for DatabaseResetService."""
 

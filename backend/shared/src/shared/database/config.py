@@ -55,9 +55,7 @@ class DatabaseConfig:
         config = cls(
             database_type=db_type,
             database_name=os.getenv("DB_DATABASE_NAME", "nsp_pro"),
-            connection_timeout_ms=int(
-                os.getenv("DB_CONNECTION_TIMEOUT_MS", "30000")
-            ),
+            connection_timeout_ms=int(os.getenv("DB_CONNECTION_TIMEOUT_MS", "30000")),
             mongodb_uri=os.getenv("DB_MONGODB_URI"),
             documentdb_host=os.getenv("DB_DOCUMENTDB_HOST"),
             documentdb_port=int(os.getenv("DB_DOCUMENTDB_PORT", "27017")),
@@ -71,9 +69,7 @@ class DatabaseConfig:
             test_mongodb_uri=os.getenv(
                 "DB_TEST_MONGODB_URI", "mongodb://localhost:27017"
             ),
-            test_database_name=os.getenv(
-                "DB_TEST_DATABASE_NAME", "test_database"
-            ),
+            test_database_name=os.getenv("DB_TEST_DATABASE_NAME", "test_database"),
             environment=os.getenv("ENVIRONMENT", "development"),
         )
 
@@ -89,13 +85,9 @@ class DatabaseConfig:
             if not self.documentdb_host:
                 raise ValueError("documentdb_host is required for DocumentDB")
             if not self.documentdb_username:
-                raise ValueError(
-                    "documentdb_username is required for DocumentDB"
-                )
+                raise ValueError("documentdb_username is required for DocumentDB")
             if not self.documentdb_password:
-                raise ValueError(
-                    "documentdb_password is required for DocumentDB"
-                )
+                raise ValueError("documentdb_password is required for DocumentDB")
 
     @property
     def is_test_environment(self) -> bool:
