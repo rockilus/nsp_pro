@@ -18,6 +18,17 @@ from shared.database.reset_service import (
 class TestDatabaseResetService:
     """Test suite for DatabaseResetService."""
 
+    # @pytest.fixture(autouse=True)
+    # async def cleanup_collections(self, mongodb_container: DatabaseInterface):
+    #     """Cleanup all collections after each test."""
+    #     db = mongodb_container.get_database()
+    #     for name in list(db.list_collection_names()):  # type: ignore
+    #         db.drop_collection(name)  # type: ignore
+    #     yield
+    #     # Cleanup again in case test created new collections
+    #     for name in list(db.list_collection_names()):  # type: ignore
+    #         db.drop_collection(name)  # type: ignore
+
     def test_init(self):
         """Test service initialization."""
         os.environ["DB_MONGODB_URI"] = "mongodb://testuser:testpass@localhost:27017/"
@@ -95,6 +106,9 @@ class TestDatabaseResetService:
         """Test resetting all collections."""
         db = mongodb_container.get_database()
 
+        for name in list(db.list_collection_names()):  # type: ignore
+            db.drop_collection(name)  # type: ignore
+
         collection_names = ["teams", "users", "shifts"]
         for name in collection_names:
             if name not in db.list_collection_names():  # type: ignore
@@ -157,9 +171,14 @@ class TestDatabaseResetService:
         """Test getting all collection names."""
         db = mongodb_container.get_database()
 
+        for name in list(db.list_collection_names()):  # type: ignore
+            db.drop_collection(name)  # type: ignore
+
         # Create some collections
-        db.create_collection("teams")  # type: ignore
-        db.create_collection("users")  # type: ignore
+        collection_names = ["teams", "users"]
+        for name in collection_names:
+            if name not in db.list_collection_names():  # type: ignore
+                db.create_collection(name)  # type: ignore
 
         service = DatabaseResetService(mongodb_container)
         collections = await service._get_all_collection_names()
@@ -175,9 +194,10 @@ class TestDatabaseResetService:
         db = mongodb_container.get_database()
 
         # Create some collections
-        db.create_collection("teams")  # type: ignore
-        db.create_collection("users")  # type: ignore
-        db.create_collection("shifts")  # type: ignore
+        collection_names = ["teams", "users", "shifts"]
+        for name in collection_names:
+            if name not in db.list_collection_names():  # type: ignore
+                db.create_collection(name)  # type: ignore
 
         service = DatabaseResetService(mongodb_container)
         await service._drop_collections(["teams", "users"])
@@ -198,9 +218,10 @@ class TestDatabaseResetService:
         db = mongodb_container.get_database()
 
         # Create some collections
-        db.create_collection("teams")  # type: ignore
-        db.create_collection("users")  # type: ignore
-        db.create_collection("shifts")  # type: ignore
+        collection_names = ["teams", "users", "shifts"]
+        for name in collection_names:
+            if name not in db.list_collection_names():  # type: ignore
+                db.create_collection(name)  # type: ignore
 
         service = DatabaseResetService(mongodb_container)
         collections = await service.get_collections_to_reset()
