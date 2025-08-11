@@ -35,7 +35,11 @@ class DatabaseResetService:
                               create from config.
         """
         self._db_provider = database_provider
-        self._config = DatabaseConfig.from_env()
+        if database_provider is not None:
+            # Use the database provider's config if available
+            self._config = database_provider.config  # type: ignore
+        else:
+            self._config = DatabaseConfig.from_env()
 
     @property
     def db_provider(self) -> DatabaseInterface:

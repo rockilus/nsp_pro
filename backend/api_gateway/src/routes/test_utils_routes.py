@@ -7,14 +7,15 @@ production.
 """
 
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException, Depends, Request
-from pydantic import BaseModel
-from loguru import logger
 
+from fastapi import APIRouter, Depends, HTTPException, Request
+from loguru import logger
+from pydantic import BaseModel
 from shared.database.reset_service import (
-    DatabaseResetService,
     DatabaseResetError,
+    DatabaseResetService,
 )
+
 from src.config import config
 
 
@@ -56,9 +57,7 @@ async def get_test_environment_only() -> None:
 
     # Check environment
     if environment not in ["test", "testing", "local", "development"]:
-        logger.warning(
-            f"Test utilities access denied for environment: {environment}"
-        )
+        logger.warning(f"Test utilities access denied for environment: {environment}")
         raise HTTPException(
             status_code=403,
             detail="Test utilities are only available in test environments",
@@ -73,9 +72,7 @@ async def get_test_environment_only() -> None:
             detail="Cannot run test utilities against production database",
         )
 
-    logger.info(
-        f"Test utilities access granted for environment: {environment}"
-    )
+    logger.info(f"Test utilities access granted for environment: {environment}")
 
 
 @router.post("/reset-database", response_model=DatabaseResetResponse)
@@ -105,9 +102,7 @@ async def reset_database_endpoint(
         # Validate confirmation token
         if request.confirmation_token != "test-reset-confirm":
             logger.warning("Invalid confirmation token provided")
-            raise HTTPException(
-                status_code=400, detail="Invalid confirmation token"
-            )
+            raise HTTPException(status_code=400, detail="Invalid confirmation token")
 
         logger.info(
             f"Database reset requested: collections={request.collections}, "
@@ -121,9 +116,7 @@ async def reset_database_endpoint(
         if request.collections is None:
             result = await reset_service.reset_all_collections()
         else:
-            result = await reset_service.reset_specific_collections(
-                request.collections
-            )
+            result = await reset_service.reset_specific_collections(request.collections)
 
         logger.info(f"Database reset completed: {result['operation_id']}")
 
@@ -184,9 +177,7 @@ async def dry_run_reset_database(
 
     except Exception as e:
         logger.error(f"Dry run failed: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Dry run failed: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=500, detail=f"Dry run failed: {str(e)}") from e
 
 
 @router.get("/health")

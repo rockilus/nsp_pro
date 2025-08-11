@@ -42,8 +42,7 @@ class UserService(BaseService):
         if existing_user is not None:
             # Log for audit purposes
             log_info(
-                f"User with id {user_id} already exists, "
-                f"returning existing user"
+                f"User with id {user_id} already exists, " f"returning existing user"
             )
             return existing_user
 
