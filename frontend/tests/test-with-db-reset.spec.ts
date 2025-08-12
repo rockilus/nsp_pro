@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { DatabaseTestUtils } from "./utils/database-utils";
+import { testConfig } from "./config/test-config";
 
 const dbUtils = new DatabaseTestUtils();
 
@@ -30,8 +31,8 @@ test.describe("Teams Settings Page with Database Reset", () => {
       throw error;
     }
 
-    // Navigate to the page
-    await page.goto("http://localhost:3000/en/plan/settings/teams/");
+    // Navigate to the page using config
+    await page.goto(`${testConfig.frontendUrl}/en/plan/settings/teams/`);
 
     // Wait for the page to be loaded
     await expect(page.getByRole("heading", { name: "Teams" })).toBeVisible();
@@ -91,12 +92,12 @@ test.describe("Teams Settings Page with Database Reset", () => {
 
     // Click on the team name
     await Promise.all([
-      page.waitForURL("http://localhost:3000/en/plan/schedule/"),
+      page.waitForURL(`${testConfig.frontendUrl}/en/plan/schedule/`),
       newTeam.click(),
     ]);
 
     // Verify that the URL has changed to the team's schedule page
-    await expect(page).toHaveURL("http://localhost:3000/en/plan/schedule/");
+    await expect(page).toHaveURL(`${testConfig.frontendUrl}/en/plan/schedule/`);
   });
 
   test('should open the team settings when the "Settings" button is pressed', async ({
@@ -117,14 +118,24 @@ test.describe("Teams Settings Page with Database Reset", () => {
     const settingsButton = page.getByRole("button", { name: "Settings" });
     await Promise.all([
       page.waitForURL(
-        /http:\/\/localhost:3000\/en\/plan\/teams\/general\/\?teamId=[a-f0-9]+/
+        new RegExp(
+          `${testConfig.frontendUrl.replace(
+            /[.*+?^${}()|[\]\\]/g,
+            "\\$&"
+          )}/en/plan/teams/general/\\?teamId=[a-f0-9]+`
+        )
       ),
       settingsButton.click(),
     ]);
 
     // Verify that the settings page is displayed with correct teamId
     await expect(page).toHaveURL(
-      /http:\/\/localhost:3000\/en\/plan\/teams\/general\/\?teamId=[a-f0-9]+/
+      new RegExp(
+        `${testConfig.frontendUrl.replace(
+          /[.*+?^${}()|[\]\\]/g,
+          "\\$&"
+        )}/en/plan/teams/general/\\?teamId=[a-f0-9]+`
+      )
     );
 
     // Optional: Verify the team ID in URL matches the created team

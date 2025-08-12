@@ -8,6 +8,7 @@
 import { TeamApi } from "../../src/app/lib/api/teamApi";
 import { AuthenticatedApiClient } from "../../src/app/lib/api/baseApi";
 import { TeamWithMembership } from "../../src/types/team";
+import { testConfig } from "../config/test-config";
 
 export interface DatabaseResetOptions {
   collections?: string[];
@@ -30,22 +31,11 @@ export interface DryRunResponse {
 }
 
 export class DatabaseTestUtils {
-  private baseUrl: string;
-  private confirmationToken: string;
-  private testAuthToken: string;
-  private testApiClient: AuthenticatedApiClient | null = null;
+  private testApiClient: AuthenticatedApiClient;
 
-  constructor(baseUrl = "http://localhost:4000") {
-    this.baseUrl = baseUrl;
-    this.confirmationToken = "test-reset-confirm";
-
-    // Get test auth token from environment
-    this.testAuthToken = process.env.TEST_AUTH_TOKEN || "";
-
-    // Only create API client if token is available
-    if (this.testAuthToken) {
-      this.testApiClient = this.createTestApiClient();
-    }
+  constructor() {
+    // Use centralized test configuration
+    this.testApiClient = this.createTestApiClient();
   }
 
   /**
@@ -58,12 +48,12 @@ export class DatabaseTestUtils {
       data?: any,
       options: RequestInit = {}
     ): Promise<T> => {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      const response = await fetch(`${testConfig.apiUrl}${endpoint}`, {
         method: method.toUpperCase(),
         ...options,
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${this.testAuthToken}`,
+          Authorization: `Bearer ${testConfig.authToken}`,
           ...options.headers,
         },
         body: data ? JSON.stringify(data) : undefined,
@@ -101,17 +91,20 @@ export class DatabaseTestUtils {
   async resetDatabase(
     options: DatabaseResetOptions = {}
   ): Promise<DatabaseResetResponse> {
-    const response = await fetch(`${this.baseUrl}/test-utils/reset-database`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        collections: options.collections,
-        preserve_system_data: options.preserveSystemData ?? true,
-        confirmation_token: this.confirmationToken,
-      }),
-    });
+    const response = await fetch(
+      `${testConfig.apiUrl}/test-utils/reset-database`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          collections: options.collections,
+          preserve_system_data: options.preserveSystemData ?? true,
+          confirmation_token: testConfig.confirmationToken,
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response
@@ -131,7 +124,9 @@ export class DatabaseTestUtils {
    * Preview what collections would be reset without actually resetting them
    */
   async dryRunReset(collections?: string[]): Promise<DryRunResponse> {
-    const url = new URL(`${this.baseUrl}/test-utils/reset-database/dry-run`);
+    const url = new URL(
+      `${testConfig.apiUrl}/test-utils/reset-database/dry-run`
+    );
 
     if (collections && collections.length > 0) {
       url.searchParams.set("collections", collections.join(","));
@@ -160,7 +155,7 @@ export class DatabaseTestUtils {
     status: string;
     test_utilities_available: boolean;
   }> {
-    const response = await fetch(`${this.baseUrl}/test-utils/health`);
+    const response = await fetch(`${testConfig.apiUrl}/test-utils/health`);
 
     if (!response.ok) {
       throw new Error(`Health check failed: ${response.statusText}`);
@@ -172,10 +167,11 @@ export class DatabaseTestUtils {
   /**
    * Wait for the API server to be ready
    */
-  async waitForApiReady(timeoutMs = 10000): Promise<void> {
+  async waitForApiReady(timeoutMs?: number): Promise<void> {
+    const timeout = timeoutMs ?? testConfig.apiReadyTimeoutMs;
     const startTime = Date.now();
 
-    while (Date.now() - startTime < timeoutMs) {
+    while (Date.now() - startTime < timeout) {
       try {
         await this.checkHealth();
         return;
@@ -185,7 +181,7 @@ export class DatabaseTestUtils {
       }
     }
 
-    throw new Error(`API not ready within ${timeoutMs}ms timeout period`);
+    throw new Error(`API not ready within ${timeout}ms timeout period`);
   }
 
   /**
@@ -230,13 +226,6 @@ export class DatabaseTestUtils {
   async createTeam(teamData: {
     name: string;
   }): Promise<{ teamId: string; name: string }> {
-    if (!this.testApiClient) {
-      throw new Error(
-        "TEST_AUTH_TOKEN environment variable is required for API tests. " +
-          "Please set TEST_AUTH_TOKEN in your .env.test.local file or environment."
-      );
-    }
-
     try {
       // Use the existing TeamApi with our test client
       const result: TeamWithMembership = await TeamApi.createTeam(
