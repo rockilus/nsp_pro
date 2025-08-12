@@ -5,6 +5,22 @@
  * type-safe access to required environment variables.
  */
 
+import * as dotenv from "dotenv";
+import * as path from "path";
+
+// Load test environment variables from .env.test.local
+// This file should contain sensitive test credentials and not be committed
+const envPath = path.resolve(process.cwd(), ".env.test.local");
+const result = dotenv.config({ path: envPath });
+
+// Log configuration loading status (without exposing sensitive data)
+if (result.error) {
+  console.warn(`Warning: Could not load test environment file at ${envPath}`);
+  console.warn("Falling back to system environment variables");
+} else {
+  console.log("Test environment configuration loaded successfully");
+}
+
 export interface TestConfig {
   /** Base URL for the API server during testing */
   apiUrl: string;
@@ -18,25 +34,30 @@ export interface TestConfig {
   dbResetTimeoutMs: number;
   /** API ready check timeout in milliseconds */
   apiReadyTimeoutMs: number;
+  testUserId: string; // ID of the test user to be used in tests
+  testAPIKey: string; // API key for test user authentication
 }
 
 /**
  * Validates that required environment variables are present
+ * Follows security best practices by not logging sensitive values
  */
 function validateRequiredEnvVars(): void {
-  const required = ["TEST_AUTH_TOKEN"];
+  const required = ["TEST_AUTH_TOKEN", "TEST_USER_ID", "TEST_API_KEY"];
   const missing = required.filter((key) => !process.env[key]);
 
   if (missing.length > 0) {
     throw new Error(
       `Missing required test environment variables: ${missing.join(", ")}\n` +
-        "Please ensure these are set in your .env.test.local file or environment."
+        "Please ensure these are set in your .env.test.local file or environment.\n" +
+        "See TEST_AUTH_SETUP.md for configuration instructions."
     );
   }
 }
 
 /**
  * Load and validate test configuration from environment variables
+ * Implements secure configuration loading with proper validation
  */
 export function loadTestConfig(): TestConfig {
   // Validate required environment variables
@@ -56,12 +77,24 @@ export function loadTestConfig(): TestConfig {
       process.env.TEST_API_READY_TIMEOUT_MS || "10000",
       10
     ),
+    testUserId: process.env.TEST_USER_ID!,
+    testAPIKey: process.env.TEST_API!,
   };
 
   // Validate parsed configuration
   if (config.dbResetTimeoutMs <= 0 || config.apiReadyTimeoutMs <= 0) {
     throw new Error("Timeout values must be positive integers");
   }
+
+  // Security: Don't log sensitive configuration values
+  console.log("Environment Configuration:", {
+    apiUrl: config.apiUrl,
+    frontendUrl: config.frontendUrl,
+    confirmationToken: config.confirmationToken,
+    dbResetTimeoutMs: config.dbResetTimeoutMs,
+    apiReadyTimeoutMs: config.apiReadyTimeoutMs,
+    authTokenConfigured: !!config.authToken,
+  });
 
   return config;
 }
