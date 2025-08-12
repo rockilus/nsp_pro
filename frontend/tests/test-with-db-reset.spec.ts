@@ -73,30 +73,45 @@ test.describe.serial("Teams Settings Page with Database Reset", () => {
   test("should navigate to the team's schedule page when the team name is clicked", async ({
     page,
   }) => {
-    // First create a team to click on
-    await page.getByRole("button", { name: "New Team" }).click();
-    const teamNameInput = page.getByRole("textbox", { name: "Team name" });
-    await teamNameInput.fill("Test Team 1");
-    await page.getByRole("button", { name: "Create" }).click();
+    // Create a unique team via API instead of UI
+    const uniqueTeamName = `Test Team ${test.info().workerIndex}-${Date.now()}`;
+    const testTeam = await dbUtils.createTeam({ name: uniqueTeamName });
 
-    // Wait for the team to appear
-    const newTeam = page.getByText("Test Team 1");
-    await expect(newTeam).toBeVisible();
+    // Refresh the page to load the newly created team
+    await page.reload();
+    await expect(page.getByRole("heading", { name: "Teams" })).toBeVisible();
 
-    // Click on the team name
-    // await newTeam.click();
+    // Wait for the team to appear in the UI
+    const teamElement = page.getByText(testTeam.name, { exact: true });
+    await expect(teamElement).toBeVisible();
 
-    // Verify that the URL has changed to the team's schedule page
-    // await expect(page).toHaveURL("http://localhost:3000/en/plan/schedule/");
-
-    // Click on the team name
+    // Click on the team name and wait for navigation
     await Promise.all([
-      page.waitForURL(`${testConfig.frontendUrl}/en/plan/schedule/`),
-      newTeam.click(),
+      page.waitForURL(
+        new RegExp(
+          `${testConfig.frontendUrl.replace(
+            /[.*+?^${}()|[\]\\]/g,
+            "\\$&"
+          )}/en/plan/schedule/\?teamId=[a-f0-9]+`
+        )
+      ),
+      teamElement.click(),
     ]);
 
-    // Verify that the URL has changed to the team's schedule page
-    await expect(page).toHaveURL(`${testConfig.frontendUrl}/en/plan/schedule/`);
+    // Verify that the URL has changed to the team's schedule page with correct teamId
+    await expect(page).toHaveURL(
+      new RegExp(
+        `${testConfig.frontendUrl.replace(
+          /[.*+?^${}()|[\]\\]/g,
+          "\\$&"
+        )}/en/plan/schedule/\?teamId=[a-f0-9]+`
+      )
+    );
+
+    // Optional: Verify the team ID in URL matches the created team
+    const url = page.url();
+    const teamIdFromUrl = new URL(url).searchParams.get("teamId");
+    expect(teamIdFromUrl).toBe(testTeam.teamId);
   });
 
   test('should open the team settings when the "Settings" button is pressed', async ({
