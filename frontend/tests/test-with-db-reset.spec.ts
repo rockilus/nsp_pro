@@ -84,7 +84,16 @@ test.describe("Teams Settings Page with Database Reset", () => {
     await expect(newTeam).toBeVisible();
 
     // Click on the team name
-    await newTeam.click();
+    // await newTeam.click();
+
+    // Verify that the URL has changed to the team's schedule page
+    // await expect(page).toHaveURL("http://localhost:3000/en/plan/schedule/");
+
+    // Click on the team name
+    await Promise.all([
+      page.waitForURL("http://localhost:3000/en/plan/schedule/"),
+      newTeam.click(),
+    ]);
 
     // Verify that the URL has changed to the team's schedule page
     await expect(page).toHaveURL("http://localhost:3000/en/plan/schedule/");
@@ -105,7 +114,20 @@ test.describe("Teams Settings Page with Database Reset", () => {
 
     // Click the "Settings" button for the team
     const settingsButton = page.getByRole("button", { name: "Settings" });
-    await settingsButton.click();
+    // await settingsButton.click();
+
+    // Verify that the settings modal or page is displayed
+    // await expect(page).toHaveURL(
+    //   /http:\/\/localhost:3000\/en\/plan\/teams\/general\/\?teamId=[a-f0-9]+/
+    // );
+
+    // Click the "Settings" button for the team and wait for navigation
+    await Promise.all([
+      page.waitForURL(
+        /http:\/\/localhost:3000\/en\/plan\/teams\/general\/\?teamId=[a-f0-9]+/
+      ),
+      settingsButton.click(),
+    ]);
 
     // Verify that the settings modal or page is displayed
     await expect(page).toHaveURL(

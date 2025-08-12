@@ -29,7 +29,7 @@ export class DatabaseTestUtils {
   private baseUrl: string;
   private confirmationToken: string;
 
-  constructor(baseUrl = "http://localhost:8000") {
+  constructor(baseUrl = "http://localhost:4000") {
     this.baseUrl = baseUrl;
     this.confirmationToken = "test-reset-confirm";
   }
@@ -132,13 +132,7 @@ export class DatabaseTestUtils {
    */
   async resetTeamRelatedData(): Promise<DatabaseResetResponse> {
     return this.resetDatabase({
-      collections: [
-        "teams",
-        "team_memberships",
-        "team_invitations",
-        "users",
-        "workers",
-      ],
+      collections: ["teams", "team_memberships", "team_invitations", "workers"],
       preserveSystemData: true,
     });
   }
