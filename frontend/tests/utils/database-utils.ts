@@ -5,6 +5,10 @@
  * allowing Playwright tests to reset the database state before each test run.
  */
 
+import { TeamApi } from "../../src/app/lib/api/teamApi";
+import { AuthenticatedApiClient } from "../../src/app/lib/api/baseApi";
+import { TeamWithMembership } from "../../src/types/team";
+
 export interface DatabaseResetOptions {
   collections?: string[];
   preserveSystemData?: boolean;
@@ -28,10 +32,67 @@ export interface DryRunResponse {
 export class DatabaseTestUtils {
   private baseUrl: string;
   private confirmationToken: string;
+  private testAuthToken: string;
+  private testApiClient: AuthenticatedApiClient | null = null;
 
   constructor(baseUrl = "http://localhost:4000") {
     this.baseUrl = baseUrl;
     this.confirmationToken = "test-reset-confirm";
+
+    // Get test auth token from environment
+    this.testAuthToken = process.env.TEST_AUTH_TOKEN || "";
+
+    // Only create API client if token is available
+    if (this.testAuthToken) {
+      this.testApiClient = this.createTestApiClient();
+    }
+  }
+
+  /**
+   * Create an authenticated API client for testing
+   */
+  private createTestApiClient(): AuthenticatedApiClient {
+    const makeAuthenticatedRequest = async <T>(
+      method: string,
+      endpoint: string,
+      data?: any,
+      options: RequestInit = {}
+    ): Promise<T> => {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+        method: method.toUpperCase(),
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.testAuthToken}`,
+          ...options.headers,
+        },
+        body: data ? JSON.stringify(data) : undefined,
+      });
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ detail: "Unknown error" }));
+        throw new Error(
+          `API ${method} ${endpoint} failed: ${response.status} - ${
+            errorData.detail || response.statusText
+          }`
+        );
+      }
+
+      return response.json();
+    };
+
+    return {
+      get: <T>(endpoint: string, options?: RequestInit) =>
+        makeAuthenticatedRequest<T>("GET", endpoint, undefined, options),
+      post: <T>(endpoint: string, data?: any, options?: RequestInit) =>
+        makeAuthenticatedRequest<T>("POST", endpoint, data, options),
+      put: <T>(endpoint: string, data?: any, options?: RequestInit) =>
+        makeAuthenticatedRequest<T>("PUT", endpoint, data, options),
+      delete: <T>(endpoint: string, options?: RequestInit) =>
+        makeAuthenticatedRequest<T>("DELETE", endpoint, undefined, options),
+    };
   }
 
   /**
@@ -161,5 +222,42 @@ export class DatabaseTestUtils {
     return this.resetDatabase({
       preserveSystemData: true,
     });
+  }
+
+  /**
+   * Create a team using the existing TeamApi for consistent behavior
+   */
+  async createTeam(teamData: {
+    name: string;
+  }): Promise<{ teamId: string; name: string }> {
+    if (!this.testApiClient) {
+      throw new Error(
+        "TEST_AUTH_TOKEN environment variable is required for API tests. " +
+          "Please set TEST_AUTH_TOKEN in your .env.test.local file or environment."
+      );
+    }
+
+    try {
+      // Use the existing TeamApi with our test client
+      const result: TeamWithMembership = await TeamApi.createTeam(
+        this.testApiClient,
+        teamData.name
+      );
+
+      return {
+        teamId: result.team.id,
+        name: result.team.name,
+      };
+    } catch (error) {
+      // Enhanced error handling for test debugging
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to create team '${teamData.name}': ${error.message}`
+        );
+      }
+      throw new Error(
+        `Failed to create team '${teamData.name}': Unknown error`
+      );
+    }
   }
 }

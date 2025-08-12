@@ -102,26 +102,19 @@ test.describe("Teams Settings Page with Database Reset", () => {
   test('should open the team settings when the "Settings" button is pressed', async ({
     page,
   }) => {
-    // First create a team
-    await page.getByRole("button", { name: "New Team" }).click();
-    const teamNameInput = page.getByRole("textbox", { name: "Team name" });
-    await teamNameInput.fill("Test Team 1");
-    await page.getByRole("button", { name: "Create" }).click();
+    // Create a team via API instead of UI
+    const testTeam = await dbUtils.createTeam({ name: "Test Team 1" });
 
-    // Wait for the team to appear
-    const newTeam = page.getByText("Test Team 1");
-    await expect(newTeam).toBeVisible();
+    // Refresh the page to load the newly created team
+    await page.reload();
+    await expect(page.getByRole("heading", { name: "Teams" })).toBeVisible();
 
-    // Click the "Settings" button for the team
-    const settingsButton = page.getByRole("button", { name: "Settings" });
-    // await settingsButton.click();
-
-    // Verify that the settings modal or page is displayed
-    // await expect(page).toHaveURL(
-    //   /http:\/\/localhost:3000\/en\/plan\/teams\/general\/\?teamId=[a-f0-9]+/
-    // );
+    // Wait for the team to appear in the UI
+    const teamElement = page.getByText(testTeam.name);
+    await expect(teamElement).toBeVisible();
 
     // Click the "Settings" button for the team and wait for navigation
+    const settingsButton = page.getByRole("button", { name: "Settings" });
     await Promise.all([
       page.waitForURL(
         /http:\/\/localhost:3000\/en\/plan\/teams\/general\/\?teamId=[a-f0-9]+/
@@ -129,10 +122,15 @@ test.describe("Teams Settings Page with Database Reset", () => {
       settingsButton.click(),
     ]);
 
-    // Verify that the settings modal or page is displayed
+    // Verify that the settings page is displayed with correct teamId
     await expect(page).toHaveURL(
       /http:\/\/localhost:3000\/en\/plan\/teams\/general\/\?teamId=[a-f0-9]+/
     );
+
+    // Optional: Verify the team ID in URL matches the created team
+    const url = page.url();
+    const teamIdFromUrl = new URL(url).searchParams.get("teamId");
+    expect(teamIdFromUrl).toBe(testTeam.teamId);
   });
 
   test("should show isolated test data across test runs", async ({ page }) => {
