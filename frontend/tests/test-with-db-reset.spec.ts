@@ -87,31 +87,12 @@ test.describe.serial("Teams Settings Page with Database Reset", () => {
 
     // Click on the team name and wait for navigation
     await Promise.all([
-      page.waitForURL(
-        new RegExp(
-          `${testConfig.frontendUrl.replace(
-            /[.*+?^${}()|[\]\\]/g,
-            "\\$&"
-          )}/en/plan/schedule/\?teamId=[a-f0-9]+`
-        )
-      ),
+      page.waitForURL(`${testConfig.frontendUrl}/en/plan/schedule/`),
       teamElement.click(),
     ]);
 
-    // Verify that the URL has changed to the team's schedule page with correct teamId
-    await expect(page).toHaveURL(
-      new RegExp(
-        `${testConfig.frontendUrl.replace(
-          /[.*+?^${}()|[\]\\]/g,
-          "\\$&"
-        )}/en/plan/schedule/\?teamId=[a-f0-9]+`
-      )
-    );
-
-    // Optional: Verify the team ID in URL matches the created team
-    const url = page.url();
-    const teamIdFromUrl = new URL(url).searchParams.get("teamId");
-    expect(teamIdFromUrl).toBe(testTeam.teamId);
+    // Verify that the URL has changed to the team's schedule page (no teamId in URL)
+    await expect(page).toHaveURL(`${testConfig.frontendUrl}/en/plan/schedule/`);
   });
 
   test('should open the team settings when the "Settings" button is pressed', async ({
