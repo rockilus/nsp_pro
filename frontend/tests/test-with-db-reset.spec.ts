@@ -104,14 +104,16 @@ test.describe("Teams Settings Page with Database Reset", () => {
     page,
   }) => {
     // Create a team via API instead of UI
-    const testTeam = await dbUtils.createTeam({ name: "Test Team 1" });
+    // Create a unique team name per browser worker
+    const uniqueTeamName = `Test Team ${test.info().workerIndex}-${Date.now()}`;
+    const testTeam = await dbUtils.createTeam({ name: uniqueTeamName });
 
     // Refresh the page to load the newly created team
     await page.reload();
     await expect(page.getByRole("heading", { name: "Teams" })).toBeVisible();
 
     // Wait for the team to appear in the UI
-    const teamElement = page.getByText(testTeam.name);
+    const teamElement = page.getByText(testTeam.name, { exact: true });
     await expect(teamElement).toBeVisible();
 
     // Click the "Settings" button for the team and wait for navigation
