@@ -116,8 +116,13 @@ test.describe("Teams Settings Page with Database Reset", () => {
     const teamElement = page.getByText(testTeam.name, { exact: true });
     await expect(teamElement).toBeVisible();
 
-    // Click the "Settings" button for the team and wait for navigation
-    const settingsButton = page.getByRole("button", { name: "Settings" });
+    // Scope the Settings button to the correct team list item
+    const teamListItem = page.locator(".teams-list-item").filter({
+      has: teamElement,
+    });
+    const settingsButton = teamListItem.getByRole("button", {
+      name: "Settings",
+    });
     await Promise.all([
       page.waitForURL(
         new RegExp(
