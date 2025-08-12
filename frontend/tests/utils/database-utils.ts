@@ -39,7 +39,44 @@ export class DatabaseTestUtils {
   }
 
   /**
-   * Create an authenticated API client for testing
+   * Create environment-aware authentication headers
+   * Follows the same pattern as the main application
+   */
+  private getAuthHeaders(): Record<string, string> {
+    const baseHeaders: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+
+    if (testConfig.environment === "development") {
+      // Development mode: use X-Dev headers (same as main app)
+      if (!testConfig.devUserId || !testConfig.devApiKey) {
+        throw new Error(
+          "Development environment requires TEST_USER_ID and TEST_API_KEY to be set"
+        );
+      }
+
+      return {
+        ...baseHeaders,
+        "X-Dev-User-ID": testConfig.devUserId,
+        "X-API-Key": testConfig.devApiKey,
+      };
+    } else {
+      // Staging/Production: use Bearer token
+      if (!testConfig.authToken) {
+        throw new Error(
+          `${testConfig.environment} environment requires TEST_AUTH_TOKEN to be set`
+        );
+      }
+
+      return {
+        ...baseHeaders,
+        Authorization: `Bearer ${testConfig.authToken}`,
+      };
+    }
+  }
+
+  /**
+   * Create an authenticated API client for testing with environment-aware auth
    */
   private createTestApiClient(): AuthenticatedApiClient {
     const makeAuthenticatedRequest = async <T>(
@@ -48,12 +85,13 @@ export class DatabaseTestUtils {
       data?: any,
       options: RequestInit = {}
     ): Promise<T> => {
+      const authHeaders = this.getAuthHeaders();
+
       const response = await fetch(`${testConfig.apiUrl}${endpoint}`, {
         method: method.toUpperCase(),
         ...options,
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${testConfig.authToken}`,
+          ...authHeaders,
           ...options.headers,
         },
         body: data ? JSON.stringify(data) : undefined,
@@ -63,6 +101,16 @@ export class DatabaseTestUtils {
         const errorData = await response
           .json()
           .catch(() => ({ detail: "Unknown error" }));
+
+        // Enhanced error logging for test debugging
+        console.error(`❌ Test API ${method} ${endpoint} failed:`, {
+          status: response.status,
+          error: errorData.detail || response.statusText,
+          environment: testConfig.environment,
+          endpoint,
+          timestamp: new Date().toISOString(),
+        });
+
         throw new Error(
           `API ${method} ${endpoint} failed: ${response.status} - ${
             errorData.detail || response.statusText

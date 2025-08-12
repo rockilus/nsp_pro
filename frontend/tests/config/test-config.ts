@@ -28,27 +28,56 @@ export interface TestConfig {
   frontendUrl: string;
   /** Authentication token for API requests in tests */
   authToken: string;
+  /** Development User ID for X-Dev-User-ID header */
+  devUserId: string;
+  /** Development API Key for X-API-Key header */
+  devApiKey: string;
+  /** Test environment (development, staging, production) */
+  environment: "development" | "staging" | "production";
   /** Confirmation token for test utilities */
   confirmationToken: string;
   /** Database reset timeout in milliseconds */
   dbResetTimeoutMs: number;
   /** API ready check timeout in milliseconds */
   apiReadyTimeoutMs: number;
-  testUserId: string; // ID of the test user to be used in tests
-  testAPIKey: string; // API key for test user authentication
 }
 
 /**
- * Validates that required environment variables are present
+ * Determine test environment based on configuration
+ */
+function determineEnvironment(): "development" | "staging" | "production" {
+  const env = process.env.TEST_ENVIRONMENT?.toLowerCase();
+
+  if (env === "staging" || env === "production") {
+    return env as "staging" | "production";
+  }
+
+  // Default to development for local testing
+  return "development";
+}
+
+/**
+ * Validates environment-specific required variables
  * Follows security best practices by not logging sensitive values
  */
 function validateRequiredEnvVars(): void {
-  const required = ["TEST_AUTH_TOKEN", "TEST_USER_ID", "TEST_API_KEY"];
+  const environment = determineEnvironment();
+  const required: string[] = [];
+
+  if (environment === "development") {
+    required.push("TEST_USER_ID", "TEST_API_KEY");
+  } else {
+    required.push("TEST_AUTH_TOKEN");
+  }
+
   const missing = required.filter((key) => !process.env[key]);
 
   if (missing.length > 0) {
     throw new Error(
-      `Missing required test environment variables: ${missing.join(", ")}\n` +
+      `Missing required test environment variables for ${environment}: ${missing.join(
+        ", "
+      )}\n` +
+        `Environment: ${environment}\n` +
         "Please ensure these are set in your .env.test.local file or environment.\n" +
         "See TEST_AUTH_SETUP.md for configuration instructions."
     );
@@ -60,13 +89,16 @@ function validateRequiredEnvVars(): void {
  * Implements secure configuration loading with proper validation
  */
 export function loadTestConfig(): TestConfig {
-  // Validate required environment variables
+  const environment = determineEnvironment();
   validateRequiredEnvVars();
 
   const config: TestConfig = {
     apiUrl: process.env.TEST_API_URL || "http://localhost:4000",
     frontendUrl: process.env.TEST_FRONTEND_URL || "http://localhost:3000",
-    authToken: process.env.TEST_AUTH_TOKEN!,
+    environment,
+    authToken: process.env.TEST_AUTH_TOKEN || "",
+    devUserId: process.env.TEST_USER_ID || "",
+    devApiKey: process.env.TEST_API_KEY || "",
     confirmationToken:
       process.env.TEST_CONFIRMATION_TOKEN || "test-reset-confirm",
     dbResetTimeoutMs: parseInt(
@@ -77,8 +109,6 @@ export function loadTestConfig(): TestConfig {
       process.env.TEST_API_READY_TIMEOUT_MS || "10000",
       10
     ),
-    testUserId: process.env.TEST_USER_ID!,
-    testAPIKey: process.env.TEST_API!,
   };
 
   // Validate parsed configuration
@@ -87,13 +117,16 @@ export function loadTestConfig(): TestConfig {
   }
 
   // Security: Don't log sensitive configuration values
-  console.log("Environment Configuration:", {
+  console.log("Test Environment Configuration:", {
+    environment: config.environment,
     apiUrl: config.apiUrl,
     frontendUrl: config.frontendUrl,
     confirmationToken: config.confirmationToken,
     dbResetTimeoutMs: config.dbResetTimeoutMs,
     apiReadyTimeoutMs: config.apiReadyTimeoutMs,
     authTokenConfigured: !!config.authToken,
+    devUserIdConfigured: !!config.devUserId,
+    devApiKeyConfigured: !!config.devApiKey,
   });
 
   return config;
