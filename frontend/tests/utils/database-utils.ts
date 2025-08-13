@@ -6,9 +6,12 @@
  */
 
 import { TeamApi } from "../../src/app/lib/api/teamApi";
+import { WorkerApi } from "../../src/app/lib/api/workerApi";
 import { AuthenticatedApiClient } from "../../src/app/lib/api/baseApi";
 import { TeamWithMembership } from "../../src/types/team";
+import { WorkerT } from "../../src/types/worker";
 import { testConfig } from "./test-config";
+import dayjs from "dayjs";
 
 export interface DatabaseResetOptions {
   collections?: string[];
@@ -311,6 +314,70 @@ export class DatabaseTestUtils {
       }
       throw new Error(
         `Failed to create team '${teamData.name}': Unknown error`
+      );
+    }
+  }
+
+  /**
+   * Create a worker using the existing WorkerApi for consistent behavior
+   */
+  async createWorker(workerData: {
+    teamId: string;
+    name: string;
+    acronym?: string;
+    employmentStartDate?: Date;
+    employmentEndDate?: Date | null;
+    weeklyHours?: number;
+    weeklyHoursDesired?: number;
+    dutiesPerMonth?: number;
+    annualLeave?: number;
+    specialtyIds?: string[];
+  }): Promise<{ workerId: string; name: string; teamId: string }> {
+    try {
+      // Create a WorkerT object with defaults
+      const worker: WorkerT = {
+        id: "", // Will be set by the API
+        teamId: workerData.teamId,
+        name: workerData.name,
+        acronym:
+          workerData.acronym || workerData.name.substring(0, 3).toUpperCase(),
+        acronymCustom: Boolean(workerData.acronym),
+        employmentStartDate: workerData.employmentStartDate
+          ? dayjs(workerData.employmentStartDate).utc()
+          : dayjs().utc(),
+        employmentEndDate: workerData.employmentEndDate
+          ? dayjs(workerData.employmentEndDate).utc()
+          : null,
+        weeklyHours: workerData.weeklyHours ?? 40,
+        weeklyHoursDesired: workerData.weeklyHoursDesired ?? 40,
+        dutiesPerMonth: workerData.dutiesPerMonth ?? 0,
+        annualLeave: workerData.annualLeave ?? 25,
+        specialtyIds: workerData.specialtyIds ?? [],
+        deleted: false,
+        userId: null,
+        attributes: [],
+      };
+
+      // Use the existing WorkerApi with our test client
+      const result: WorkerT = await WorkerApi.addWorker(
+        this.testApiClient,
+        worker
+      );
+
+      return {
+        workerId: result.id,
+        name: result.name,
+        teamId: result.teamId,
+      };
+    } catch (error) {
+      // Enhanced error handling for test debugging
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to create worker '${workerData.name}': ${error.message}`
+        );
+      }
+      throw new Error(
+        `Failed to create worker '${workerData.name}': Unknown error`
       );
     }
   }
