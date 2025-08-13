@@ -35,6 +35,7 @@ from src.routes import (
     router_stats,
     router_team,
     router_team_invitation,
+    router_test_utils,
     router_user,
     router_worker,
 )
@@ -95,6 +96,7 @@ def create_app(
         router_stats,
         router_team,
         router_team_invitation,
+        router_test_utils,
         router_user,
         router_worker,
     ]

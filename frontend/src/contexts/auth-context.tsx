@@ -9,7 +9,7 @@ import {
   logoutUri,
   isNetworkError,
 } from "../config/cognito";
-import { env, isDevelopment } from "../config/env";
+import { env } from "../config/env";
 
 interface AuthContextType {
   user: User | undefined | null;
@@ -437,7 +437,7 @@ export function AuthContextProvider({
   children: React.ReactNode;
 }): JSX.Element {
   // Security: Default to production mode unless explicitly set to development
-  if (isDevelopment()) {
+  if (env.isDevelopment) {
     console.log("🔧 Using development authentication");
     return <DevelopmentAuthProvider>{children}</DevelopmentAuthProvider>;
   }

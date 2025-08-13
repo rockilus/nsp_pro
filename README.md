@@ -35,3 +35,7 @@ Lint and unit test
 ```
 cd backend && make check
 ```
+
+
+To run tests in local:
+docker-compose -f docker-compose.tests.local.yml up

@@ -7,6 +7,7 @@ import { SpecialtyApi } from "../app/lib/api/specialtyApi";
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
+import { env } from "@/config/env";
 
 //////////////////////////
 // Authenticated Specialty Hooks //
@@ -21,7 +22,7 @@ export function useAddSpecialty() {
 
   const addSpecialty = useCallback(
     async (specialty: SpecialtyT, teamId: string): Promise<SpecialtyT> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useAddSpecialty called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -56,7 +57,7 @@ export function useAddSpecialty() {
           teamId
         );
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Specialty added successfully");
         }
 
@@ -84,7 +85,7 @@ export function useGetSpecialties() {
 
   const getSpecialties = useCallback(
     async (teamId: string): Promise<SpecialtyT[]> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetSpecialties called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -135,7 +136,7 @@ export function useUpdateSpecialty() {
       updatedSpecialty: SpecialtyT,
       teamId: string
     ): Promise<SpecialtyT> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useUpdateSpecialty called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -175,7 +176,7 @@ export function useUpdateSpecialty() {
           teamId
         );
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Specialty updated successfully");
         }
 
@@ -203,7 +204,7 @@ export function useDeleteSpecialty() {
 
   const deleteSpecialty = useCallback(
     async (specialtyId: string, teamId: string): Promise<WorkerT[]> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useDeleteSpecialty called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -238,7 +239,7 @@ export function useDeleteSpecialty() {
           teamId
         );
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Specialty deleted successfully");
         }
 

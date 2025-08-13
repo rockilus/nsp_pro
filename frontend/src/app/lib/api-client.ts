@@ -1,5 +1,5 @@
 import { User } from "oidc-client-ts";
-import { env, isDevelopment } from "../../config/env";
+import { env } from "../../config/env";
 import { useAuth } from "../../contexts/auth-context";
 import { useMemo } from "react";
 
@@ -19,7 +19,7 @@ class APIClient {
       "Content-Type": "application/json",
     };
 
-    if (isDevelopment()) {
+    if (env.isDevelopment) {
       // Development mode: use simple headers
       headers["X-Dev-User-ID"] = env.devUserId;
       headers["X-API-Key"] = env.devApiKey;
@@ -30,10 +30,7 @@ class APIClient {
       }
     } else {
       // Production mode: use existing Cognito auth
-      if (
-        typeof window !== "undefined" &&
-        process.env.NODE_ENV === "development"
-      ) {
+      if (typeof window !== "undefined" && env.isDevelopment) {
         console.log("API Client Auth Debug:", {
           hasUser: !!user,
           hasIdToken: !!user?.id_token,
@@ -63,20 +60,17 @@ class APIClient {
     const headers = this.getAuthHeaders(user);
 
     // In development mode, be more lenient with auth requirements
-    if (requireAuth && !isDevelopment() && !user?.id_token) {
+    if (requireAuth && !env.isDevelopment && !user?.id_token) {
       throw new Error("User not authenticated");
     }
 
     // Debug logging for request details
-    if (
-      typeof window !== "undefined" &&
-      process.env.NODE_ENV === "development"
-    ) {
+    if (typeof window !== "undefined" && env.isDevelopment) {
       console.log("API Request Debug:", {
         endpoint,
         method: restOptions.method || "GET",
         baseURL: this.baseURL,
-        isDevelopment: isDevelopment(),
+        isDevelopment: env.isDevelopment,
         hasAuthHeader: "Authorization" in headers || "X-Dev-User-ID" in headers,
         requireAuth,
       });
@@ -89,7 +83,7 @@ class APIClient {
         ...restOptions.headers,
       },
       // In development, don't include credentials to avoid CORS issues
-      credentials: isDevelopment()
+      credentials: env.isDevelopment
         ? undefined
         : user?.id_token
         ? undefined
@@ -170,16 +164,13 @@ export function useApiClient() {
   // CRITICAL: Memoize the API client to prevent infinite loops
   return useMemo(() => {
     // Reduce debug logging spam in production
-    if (
-      process.env.NODE_ENV === "development" &&
-      typeof window !== "undefined"
-    ) {
+    if (env.isDevelopment && typeof window !== "undefined") {
       console.log("useApiClient Debug:", {
         isAuthenticated,
         loading,
         hasUser: !!user,
         hasIdToken: !!user?.id_token,
-        isDevelopment: isDevelopment(),
+        isDevelopment: env.isDevelopment,
       });
     }
 

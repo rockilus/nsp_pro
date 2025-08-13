@@ -7,6 +7,7 @@ import { DimEntryApi } from "../app/lib/api/dimEntryApi";
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
+import { env } from "@/config/env";
 
 //////////////////////////
 // Authenticated Dim Entry Hooks //
@@ -21,7 +22,7 @@ export function useAddDimEntry() {
 
   const addDimEntry = useCallback(
     async (dimEntry: DimEntryT, teamId: string): Promise<DimEntryT> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useAddDimEntry called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -56,7 +57,7 @@ export function useAddDimEntry() {
           teamId
         );
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Dim entry added successfully");
         }
 
@@ -84,7 +85,7 @@ export function useUpdateDimEntry() {
 
   const updateDimEntry = useCallback(
     async (updatedDimEntry: DimEntryT, teamId: string): Promise<DimEntryT> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useUpdateDimEntry called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -132,7 +133,7 @@ export function useDeleteDimEntry() {
 
   const deleteDimEntry = useCallback(
     async (dimEntryId: string, teamId: string): Promise<AttributeT[]> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useDeleteDimEntry called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,

@@ -54,7 +54,7 @@ async def mongodb_container() -> AsyncGenerator[DatabaseInterface, None]:
             file_path_compose,
             "up",
             "-d",
-            "mongodb",
+            "mongodb-shared-tests",
         ]
         try:
             result = subprocess.run(

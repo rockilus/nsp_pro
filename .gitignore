@@ -5,6 +5,7 @@ tsconfig.tsbuildinfo
 **redis.conf
 **/dump.rdb
 **.env
+**.env.*
 **/.env
 **/.env.dev
 **/.env.local

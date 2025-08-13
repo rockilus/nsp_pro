@@ -11,6 +11,7 @@ import { AssignmentApi } from "../app/lib/api/assignmentApi";
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
+import { env } from "@/config/env";
 
 //////////////////////////
 // Authenticated Assignment Hooks //
@@ -28,7 +29,7 @@ export function useAddAssignmentAndRecurrence() {
       assignment: AssignmentT,
       recurrence: RecurrenceRuleT | null = null
     ): Promise<AssignmentsRecurrencesResultT> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useAddAssignmentAndRecurrence called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -60,7 +61,7 @@ export function useAddAssignmentAndRecurrence() {
           recurrence
         );
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Assignment added successfully");
         }
 
@@ -92,7 +93,7 @@ export function useGetAssignmentsByDates() {
       startDate?: dayjs.Dayjs,
       endDate?: dayjs.Dayjs
     ): Promise<AssignmentsRecurrencesResultT> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetAssignmentsByDates called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -146,7 +147,7 @@ export function useGetValidatedAssignments() {
       startDate?: dayjs.Dayjs,
       endDate?: dayjs.Dayjs
     ): Promise<AssignmentT[]> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetValidatedAssignments called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,

@@ -4,14 +4,14 @@ import React from "react";
 import { AuthProvider as OidcAuthProvider } from "react-oidc-context";
 import { cognitoAuthConfig } from "../../config/cognito";
 import { AuthContextProvider } from "../../contexts/auth-context";
-import { isDevelopment } from "../../config/env";
+import { env } from "@/config/env";
 
 interface AuthProviderProps {
   children: React.ReactNode;
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  if (isDevelopment()) {
+  if (env.isDevelopment) {
     // Development mode: AuthContextProvider handles dev auth internally
     return <AuthContextProvider>{children}</AuthContextProvider>;
   }

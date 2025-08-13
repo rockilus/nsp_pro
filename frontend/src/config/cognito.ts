@@ -24,12 +24,9 @@ export const cognitoAuthConfig = {
   staleStateAge: 900, // 15 minutes before considering state stale
 };
 
-export const cognitoDomain =
-  process.env.NEXT_PUBLIC_COGNITO_DOMAIN ||
-  "https://eu-west-39tyn1ysf6.auth.eu-west-3.amazoncognito.com";
+export const cognitoDomain = env.cognitoDomain;
 
-export const logoutUri =
-  process.env.NEXT_PUBLIC_LOGOUT_REDIRECT_URI || "https://www.rockilus.com";
+export const logoutUri = env.logoutRedirectUri;
 
 // Network resilience helper
 export const isNetworkError = (error: any): boolean => {

@@ -11,6 +11,7 @@ import { ShiftApi } from "../app/lib/api/shiftApi";
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
+import { env } from "@/config/env";
 
 //////////////////////////
 // Authenticated Stats Hooks //
@@ -25,7 +26,7 @@ export function useGetStats() {
 
   const getStats = useCallback(
     async (teamId: string, statsOptions: StatsOptionsT): Promise<StatsT> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetStats called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -46,7 +47,7 @@ export function useGetStats() {
       try {
         const stats = await StatsApi.getStats(apiClient, teamId, statsOptions);
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Stats fetched successfully");
         }
 
@@ -74,7 +75,7 @@ export function useAddHeader() {
 
   const addHeader = useCallback(
     async (header: StatsHeaderT): Promise<StatsHeaderT> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useAddHeader called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -95,7 +96,7 @@ export function useAddHeader() {
       try {
         const addedHeader = await StatsApi.addHeader(apiClient, header);
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Header added successfully");
         }
 
@@ -123,7 +124,7 @@ export function useDeleteHeader() {
 
   const deleteHeader = useCallback(
     async (headerId: string, teamId: string): Promise<void> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useDeleteHeader called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -145,7 +146,7 @@ export function useDeleteHeader() {
       try {
         await StatsApi.deleteHeader(apiClient, headerId, teamId);
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Header deleted successfully");
         }
       } catch (error) {
@@ -171,7 +172,7 @@ export function useGetShiftOptions() {
 
   const getShiftOptions = useCallback(
     async (teamId: string): Promise<ShiftWorkerOptionT[]> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetShiftOptions called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -192,7 +193,7 @@ export function useGetShiftOptions() {
       try {
         const shiftOptions = await StatsApi.getShiftOptions(apiClient, teamId);
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Shift options fetched successfully");
         }
 
@@ -220,7 +221,7 @@ export function useGetStatsTabData() {
 
   const getStatsTabData = useCallback(
     async (teamId: string) => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetStatsTabData called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -256,7 +257,7 @@ export function useGetStatsTabData() {
           shiftOptions: statsTabData[3],
         };
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Stats tab data fetched successfully");
         }
 

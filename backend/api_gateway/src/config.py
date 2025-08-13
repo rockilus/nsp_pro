@@ -50,13 +50,6 @@ class AppConfig(BaseSettings):
         "global-bundle.pem",
         description="Path to DocumentDB CA bundle certificate",
     )
-
-    st_connection_uri: str = Field(..., description="Supertokens connection URI")
-    st_api_key: str = Field(..., description="Supertokens API key")
-    st_dashboard_admins: list[str] = Field(
-        ..., description="SuperTokens dashboard admins"
-    )
-    st_cookie_domain: str = Field(..., description="SuperTokens cookie domain")
     pdp_url: str = Field(..., description="Policy Decision Point URL")
     pdp_api_key: str = Field(..., description="Policy Decision Point API key")
     uvicorn_reload: bool = Field(

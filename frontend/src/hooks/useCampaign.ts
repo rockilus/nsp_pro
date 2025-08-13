@@ -11,6 +11,7 @@ import {
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
+import { env } from "@/config/env";
 
 //////////////////////////
 // Authenticated Campaign Hooks //
@@ -25,7 +26,7 @@ export function useGetCampaignTabData() {
 
   const getCampaignTabData = useCallback(
     async (teamId: string): Promise<CampaignTabData> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetCampaignTabData called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -46,7 +47,7 @@ export function useGetCampaignTabData() {
       try {
         const result = await CampaignApi.getCampaignTabData(apiClient, teamId);
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Campaign tab data fetched successfully");
         }
 
@@ -74,7 +75,7 @@ export function useGetCampaignTabDataNoSolver() {
 
   const getCampaignTabDataNoSolver = useCallback(
     async (teamId: string): Promise<CampaignTabDataNoSolver> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetCampaignTabDataNoSolver called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -98,7 +99,7 @@ export function useGetCampaignTabDataNoSolver() {
           teamId
         );
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Campaign tab data (no solver) fetched successfully");
         }
 

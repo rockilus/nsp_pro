@@ -6,6 +6,7 @@ import { UserApi } from "../app/lib/api/userApi";
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
+import { env } from "@/config/env";
 
 //////////////////////////
 // Authenticated User Hooks //
@@ -20,7 +21,7 @@ export function useGetUser() {
 
   const getUser = useCallback(async (): Promise<UserT> => {
     // Remove excessive debugging in production to reduce console spam
-    if (process.env.NODE_ENV === "development") {
+    if (env.isDevelopment) {
       console.log("🔍 useGetUser called:", {
         timestamp: new Date().toISOString(),
         isAuthenticated,
@@ -45,13 +46,13 @@ export function useGetUser() {
     }
 
     try {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("📡 Making authenticated API request to /users/me");
       }
 
       const userData = await UserApi.getCurrentUser(apiClient);
 
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("✅ User data fetched successfully");
       }
 

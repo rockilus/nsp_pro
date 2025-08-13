@@ -9,6 +9,7 @@ import { SqsSolveApi } from "../app/lib/api/sqsSolveApi";
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
+import { env } from "@/config/env";
 
 //////////////////////////
 // Authenticated SQS Solve Hooks //
@@ -23,7 +24,7 @@ export function useStartSolve() {
 
   const startSolve = useCallback(
     async (request: SolveRequestT): Promise<SolveTaskStatusResponseT> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useStartSolve called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -49,7 +50,7 @@ export function useStartSolve() {
 
         const response = await SqsSolveApi.startSolve(apiClient, request);
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Solve started successfully");
         }
 
@@ -77,7 +78,7 @@ export function useGetSolveStatus() {
 
   const getSolveStatus = useCallback(
     async (solveId: string): Promise<SolveTaskStatusResponseT> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetSolveStatus called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -120,7 +121,7 @@ export function useCancelSolve() {
 
   const cancelSolve = useCallback(
     async (solveId: string): Promise<void> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useCancelSolve called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -141,7 +142,7 @@ export function useCancelSolve() {
       try {
         await SqsSolveApi.cancelSolve(apiClient, solveId);
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Solve canceled successfully");
         }
       } catch (error) {
@@ -167,7 +168,7 @@ export function useGetLatestSolveStatus() {
 
   const getLatestSolveStatus = useCallback(
     async (scheduleId: string): Promise<SolveTaskStatusResponseT | null> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetLatestSolveStatus called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,

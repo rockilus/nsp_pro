@@ -3,6 +3,8 @@
  * Provides common functionality for all API clients
  */
 
+import { env } from "../../../config/env";
+
 export interface AuthenticatedApiClient {
   get: <T>(endpoint: string, options?: RequestInit) => Promise<T>;
   post: <T>(endpoint: string, data?: any, options?: RequestInit) => Promise<T>;
@@ -56,8 +58,7 @@ export const handleApiError = async (response: Response): Promise<never> => {
  * Base API client that can be used with or without React hooks
  */
 export abstract class BaseApi {
-  protected static readonly baseUrl =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  protected static readonly baseUrl = env.apiUrl;
 
   /**
    * Make an authenticated request using the provided API client
@@ -82,7 +83,7 @@ export abstract class BaseApi {
       }
     } catch (error) {
       // Log error for debugging while sanitizing sensitive information
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.error(`❌ API ${method.toUpperCase()} ${endpoint} failed:`, {
           error: error instanceof Error ? error.message : "Unknown error",
           timestamp: new Date().toISOString(),
@@ -149,7 +150,7 @@ export abstract class BaseApi {
 
       return await response.blob();
     } catch (error) {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.error(`❌ Blob ${method.toUpperCase()} ${endpoint} failed:`, {
           error: error instanceof Error ? error.message : "Unknown error",
           timestamp: new Date().toISOString(),

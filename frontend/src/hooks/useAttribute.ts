@@ -6,6 +6,7 @@ import { AttributeApi } from "../app/lib/api/attributeApi";
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
+import { env } from "@/config/env";
 
 //////////////////////////
 // Authenticated Attribute Hooks //
@@ -20,7 +21,7 @@ export function useUpdateAttribute() {
 
   const updateAttribute = useCallback(
     async (attribute: AttributeT, teamId: string): Promise<AttributeT> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useUpdateAttribute called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -55,7 +56,7 @@ export function useUpdateAttribute() {
           teamId.trim()
         );
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Attribute updated successfully");
         }
 
@@ -83,7 +84,7 @@ export function useGetAttributesByOwner() {
 
   const getAttributesByOwner = useCallback(
     async (ownerId: string, teamId: string): Promise<AttributeT[]> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetAttributesByOwner called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -143,7 +144,7 @@ export function useCreateAttribute() {
       attribute: Omit<AttributeT, "id">,
       teamId: string
     ): Promise<AttributeT> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useCreateAttribute called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -177,7 +178,7 @@ export function useCreateAttribute() {
           teamId.trim()
         );
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Attribute created successfully");
         }
 
@@ -205,7 +206,7 @@ export function useDeleteAttribute() {
 
   const deleteAttribute = useCallback(
     async (attributeId: string, teamId: string): Promise<void> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useDeleteAttribute called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -240,7 +241,7 @@ export function useDeleteAttribute() {
           teamId.trim()
         );
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Attribute deleted successfully");
         }
       } catch (error) {

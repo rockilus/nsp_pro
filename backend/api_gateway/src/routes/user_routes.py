@@ -43,10 +43,15 @@ async def onboard_new_user(
             first_name=user_input.first_name,
             last_name=user_input.last_name,
         )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
 
-    return {"status": "success", "message": "User onboarded successfully"}
+        log_info(
+            f"Successfully processed onboard request for user " f"{user_input.email}"
+        )
+        return {"status": "success", "message": "User onboarded successfully"}
+
+    except Exception as e:
+        log_info(f"Failed to onboard user {user_input.email}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.get("/users/me")

@@ -11,6 +11,7 @@ import { MultitaskingApi } from "../app/lib/api/multitaskingApi";
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
+import { env } from "@/config/env";
 
 //////////////////////////
 // Authenticated Multitasking Hooks //
@@ -28,7 +29,7 @@ export function useGetMultitaskingGroups() {
       teamId: string,
       templateId?: string
     ): Promise<MultitaskingGroup[]> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetMultitaskingGroups called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -78,7 +79,7 @@ export function useCreateMultitaskingGroup() {
     async (
       data: CreateMultitaskingGroupRequest
     ): Promise<MultitaskingGroup> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useCreateMultitaskingGroup called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -102,7 +103,7 @@ export function useCreateMultitaskingGroup() {
           data
         );
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Multitasking group created successfully");
         }
 
@@ -134,7 +135,7 @@ export function useUpdateMultitaskingGroup() {
       groupId: string,
       data: UpdateMultitaskingGroupRequest
     ): Promise<MultitaskingGroup[]> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useUpdateMultitaskingGroup called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -162,7 +163,7 @@ export function useUpdateMultitaskingGroup() {
           data
         );
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Multitasking group updated successfully");
         }
 
@@ -193,7 +194,7 @@ export function useDeleteMultitaskingGroup() {
       teamId: string,
       groupId: string
     ): Promise<{ success: boolean; message: string }> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useDeleteMultitaskingGroup called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
@@ -219,7 +220,7 @@ export function useDeleteMultitaskingGroup() {
           groupId
         );
 
-        if (process.env.NODE_ENV === "development") {
+        if (env.isDevelopment) {
           console.log("✅ Multitasking group deleted successfully");
         }
 
@@ -251,7 +252,7 @@ export function useGetShiftDemandConcurrency() {
       startDate: Date,
       endDate: Date
     ): Promise<ShiftDemandConcurrency[]> => {
-      if (process.env.NODE_ENV === "development") {
+      if (env.isDevelopment) {
         console.log("🔍 useGetShiftDemandConcurrency called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
