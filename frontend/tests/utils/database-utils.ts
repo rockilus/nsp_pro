@@ -237,7 +237,24 @@ export class DatabaseTestUtils {
    */
   async resetTeamRelatedData(): Promise<DatabaseResetResponse> {
     return this.resetDatabase({
-      collections: ["teams", "team_memberships", "team_invitations", "workers"],
+      collections: ["teams", "team_memberships"],
+      preserveSystemData: true,
+    });
+  }
+
+  /**
+   * Reset specific collections commonly used in workers tests
+   */
+  async resetWorkersRelatedData(): Promise<DatabaseResetResponse> {
+    return this.resetDatabase({
+      collections: [
+        "teams",
+        "team_memberships",
+        "workers",
+        "dimensions",
+        "attributes",
+        "specialties",
+      ],
       preserveSystemData: true,
     });
   }
