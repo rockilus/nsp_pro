@@ -8,7 +8,7 @@
 import { TeamApi } from "../../src/app/lib/api/teamApi";
 import { AuthenticatedApiClient } from "../../src/app/lib/api/baseApi";
 import { TeamWithMembership } from "../../src/types/team";
-import { testConfig } from "../config/test-config";
+import { testConfig } from "./test-config";
 
 export interface DatabaseResetOptions {
   collections?: string[];

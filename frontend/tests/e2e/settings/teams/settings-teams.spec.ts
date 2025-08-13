@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
-import { DatabaseTestUtils } from "./utils/database-utils";
-import { testConfig } from "./config/test-config";
+import { DatabaseTestUtils } from "../../../utils/database-utils";
+import { testConfig } from "../../../utils/test-config";
 
 const dbUtils = new DatabaseTestUtils();
 
