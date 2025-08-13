@@ -19,7 +19,8 @@ const customJestConfig = {
   testPathIgnorePatterns: [
     '<rootDir>/.next/', 
     '<rootDir>/node_modules/',
-    '<rootDir>/__tests__/utils/'
+    '<rootDir>/__tests__/utils/',
+    '<rootDir>/tests/e2e/', // Ignore Playwright tests
   ],
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
