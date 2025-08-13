@@ -7,7 +7,7 @@ import path from "path";
  * Ensures TemplateViewer uses callbacks instead of direct API calls
  */
 describe("TemplateViewer API Centralization", () => {
-  const frontendPath = path.resolve(__dirname, "../../src");
+  const frontendPath = path.join(process.cwd(), "src");
   const viewerFile = path.join(
     frontendPath,
     "components/shiftDemand/templates/TemplateViewer.tsx"

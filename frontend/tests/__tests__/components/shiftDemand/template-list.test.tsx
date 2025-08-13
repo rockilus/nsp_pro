@@ -7,7 +7,7 @@ import path from "path";
  * Ensures TemplateList uses callbacks instead of direct API calls
  */
 describe("TemplateList API Centralization", () => {
-  const frontendPath = path.resolve(__dirname, "../../src");
+  const frontendPath = path.resolve(__dirname, "../../../../src");
   const listFile = path.join(
     frontendPath,
     "components/shiftDemand/templates/TemplateList.tsx"
