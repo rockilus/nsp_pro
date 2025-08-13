@@ -1,78 +1,18 @@
 import { test, expect } from "@playwright/test";
-import { DatabaseTestUtils } from "../../utils/database-utils";
-import { testConfig } from "../../utils/test-config";
+import { WorkerTestBase } from "../../utils/worker-test-base";
 import dayjs from "dayjs";
 
-const dbUtils = new DatabaseTestUtils();
+const workerTestBase = new WorkerTestBase();
 
 test.describe.serial("Worker Creation with Database Reset", () => {
-  let testTeam: { teamId: string; name: string };
-
   test.beforeAll(async () => {
-    // Ensure the API is ready before running tests
-    await dbUtils.waitForApiReady();
-
-    // Verify test utilities are available
-    const health = await dbUtils.checkHealth();
-    if (!health.test_utilities_available) {
-      throw new Error(
-        "Test utilities are not available - check environment configuration"
-      );
-    }
-
-    // Reset database before tests for complete isolation
-    try {
-      const resetResult = await dbUtils.resetWorkersRelatedData();
-      console.log(`Database reset completed: ${resetResult.operation_id}`);
-      console.log(
-        `Reset collections: ${resetResult.collections_reset.join(", ")}`
-      );
-    } catch (error) {
-      console.error("Database reset failed:", error);
-      throw error;
-    }
-
-    // Create a test team for worker creation
-    const uniqueTeamName = `Worker Test Team ${
-      test.info().workerIndex
-    }-${Date.now()}`;
-    testTeam = await dbUtils.createTeam({ name: uniqueTeamName });
-    console.log(`Created test team: ${testTeam.name} (${testTeam.teamId})`);
+    // Setup the common worker test environment
+    await workerTestBase.setupWorkerTests(test.info().workerIndex);
   });
 
   test.beforeEach(async ({ page }) => {
-    // Step 1: Navigate to teams page
-    await page.goto(`${testConfig.frontendUrl}/en/plan/settings/teams/`);
-    await expect(page.getByRole("heading", { name: "Teams" })).toBeVisible();
-
-    // Step 2: Wait for our test team to appear in the UI
-    const teamElement = page.getByText(testTeam.name, { exact: true });
-    await expect(teamElement).toBeVisible();
-
-    // Step 3: Click on the team name to select it (this navigates to schedule page)
-    await Promise.all([
-      page.waitForURL(`${testConfig.frontendUrl}/en/plan/schedule/`),
-      teamElement.click(),
-    ]);
-
-    // Wait a bit for the team context to be fully set
-    await page.waitForTimeout(1000);
-
-    // Step 4: Look for Workers link in navigation - try multiple strategies
-    // First, let's check if any navigation links are visible at all
-    const navContainer = page.locator(".nav-links-container");
-    await expect(navContainer).toBeVisible();
-
-    // Try to find the Workers link by text
-    const workersLink = page.getByText("Workers").first();
-    await expect(workersLink).toBeVisible();
-    await workersLink.click();
-
-    // Wait for navigation to workers page
-    await page.waitForURL(`${testConfig.frontendUrl}/en/plan/workers/`);
-
-    // Wait for the workers page to be loaded
-    await expect(page.getByRole("heading", { name: "Workers" })).toBeVisible();
+    // Navigate to the workers page for each test
+    await workerTestBase.navigateToWorkersPage(page);
   });
 
   test("should start with an empty worker table", async ({ page }) => {
@@ -80,7 +20,7 @@ test.describe.serial("Worker Creation with Database Reset", () => {
     await page.waitForSelector('[aria-label="worker table"]');
 
     // The table should show a single row with the 'no_workers_found' message
-    const workerRows = page.locator('[aria-label="worker table"] tbody tr');
+    const workerRows = workerTestBase.getWorkerRows(page);
     await expect(workerRows).toHaveCount(1);
 
     // Check that the cell contains the expected empty state text
@@ -93,37 +33,16 @@ test.describe.serial("Worker Creation with Database Reset", () => {
   test('should create a new worker when "+Worker" button is pressed', async ({
     page,
   }) => {
-    // Find the "+Worker" button using the Worker text from translations
-    const addWorkerButton = page.getByRole("button", {
-      name: "Worker",
-      exact: true,
-    });
+    // Create a worker using the shared utility
+    await workerTestBase.createWorkerViaUI(page);
 
-    // Ensure the button is ready before clicking
-    await expect(addWorkerButton).toBeEnabled();
-
-    // Click the "+Worker" button
-    await addWorkerButton.click();
-
-    // Wait for the new worker to appear in the table
-    // Since new workers have empty name, we'll look for a row with empty name field
-    // and verify all the default values
-
-    // Check for the presence of a new worker row in the table
-    // The worker should have been added to the table with default values
-    await page.waitForSelector('[aria-label="worker table"]');
-
-    // Verify the worker table has at least one row (the new worker)
-    const workerRows = page.locator('[aria-label="worker table"] tbody tr');
-    await expect(workerRows).toHaveCount(1);
-
-    // Get the first (and only) worker row to verify its default values
-    const workerRow = workerRows.first();
+    // Get the newly created worker row to verify its default values
+    const workerRow = workerTestBase.getWorkerRow(page);
 
     // Verify default worker properties based on the specifications:
 
     // 1. Name should be empty (or "Unnamed Worker" if that's the default)
-    const nameCell = workerRow.locator("td").nth(0); // Assuming first column is name
+    const nameCell = workerTestBase.getWorkerNameCell(page);
     // The name field might be an input or text field - check both possibilities
     const nameInput = nameCell.locator("input");
     if (await nameInput.isVisible()) {
@@ -131,7 +50,7 @@ test.describe.serial("Worker Creation with Database Reset", () => {
     }
 
     // 2. Acronym should be empty
-    const acronymCell = workerRow.locator("td").nth(1); // Assuming second column is acronym
+    const acronymCell = workerTestBase.getWorkerAcronymCell(page);
     const acronymInput = acronymCell.locator("input");
     if (await acronymInput.isVisible()) {
       await expect(acronymInput).toHaveValue("");
@@ -179,22 +98,11 @@ test.describe.serial("Worker Creation with Database Reset", () => {
   });
 
   test("should allow editing the newly created worker", async ({ page }) => {
-    // First create a worker
-    const addWorkerButton = page.getByRole("button", {
-      name: "Worker",
-      exact: true,
-    });
-    await expect(addWorkerButton).toBeEnabled();
-    await addWorkerButton.click();
+    // First create a worker using the shared utility
+    await workerTestBase.createWorkerViaUI(page);
 
-    // Wait for the worker to be created
-    await page.waitForSelector('[aria-label="worker table"]');
-    const workerRows = page.locator('[aria-label="worker table"] tbody tr');
-    await expect(workerRows).toHaveCount(1);
-
-    // Get the worker row and edit the name
-    const workerRow = workerRows.first();
-    const nameCell = workerRow.locator("td").nth(0);
+    // Get the worker name cell and edit it
+    const nameCell = workerTestBase.getWorkerNameCell(page);
     const nameInput = nameCell.locator("input");
 
     if (await nameInput.isVisible()) {
@@ -213,9 +121,7 @@ test.describe.serial("Worker Creation with Database Reset", () => {
 
   test("should display the correct table headers", async ({ page }) => {
     // Verify that the worker table has the expected column headers
-    await page.waitForSelector('[aria-label="worker table"]');
-
-    const table = page.locator('[aria-label="worker table"]');
+    const table = workerTestBase.getWorkerTable(page);
     const headerRow = table.locator("thead tr");
 
     // Check for expected headers based on DefaultWorkerFields

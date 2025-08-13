@@ -1,0 +1,232 @@
+import { test, expect } from "@playwright/test";
+import { WorkerTestBase } from "../../utils/worker-test-base";
+
+const workerTestBase = new WorkerTestBase();
+
+test.describe.serial("Worker Property Updates", () => {
+  let testWorker: { workerId: string; name: string; teamId: string };
+
+  test.beforeAll(async () => {
+    // Setup the common worker test environment
+    await workerTestBase.setupWorkerTests(test.info().workerIndex);
+
+    // Create a test worker for our update tests
+    testWorker = await workerTestBase.createTestWorker({
+      name: "John Doe",
+      acronym: "JD",
+      weeklyHours: 40,
+      weeklyHoursDesired: 40,
+      dutiesPerMonth: 4,
+      annualLeave: 25,
+    });
+
+    console.log(
+      `Created test worker: ${testWorker.name} (${testWorker.workerId})`
+    );
+  });
+
+  test.beforeEach(async ({ page }) => {
+    // Navigate to the workers page for each test
+    await workerTestBase.navigateToWorkersPage(page);
+
+    // Wait for the worker table to load and our test worker to appear
+    await page.waitForSelector('[aria-label="worker table"]');
+
+    // Verify our test worker is visible in the table
+    const workerRows = workerTestBase.getWorkerRows(page);
+    await expect(workerRows).toHaveCount(1);
+
+    // Verify the worker name is displayed
+    const nameCell = workerTestBase.getWorkerNameCell(page);
+    await expect(nameCell).toContainText(testWorker.name);
+  });
+
+  test("should allow editing worker name by clicking on it", async ({
+    page,
+  }) => {
+    // Get the name cell of our test worker
+    const nameCell = workerTestBase.getWorkerNameCell(page);
+
+    // Initially, the name should be displayed as text (not in an input field)
+    await expect(nameCell).toContainText(testWorker.name);
+
+    // Click on the name to edit it
+    await nameCell.click();
+
+    // After clicking, the name cell should contain an input field with the current name
+    const nameInput = nameCell.locator("input");
+    await expect(nameInput).toBeVisible();
+    await expect(nameInput).toHaveValue(testWorker.name);
+
+    // Clear the input and type a new name
+    const newName = "Jane Smith";
+    await nameInput.fill(newName);
+
+    // Verify the input shows the new value
+    await expect(nameInput).toHaveValue(newName);
+
+    // Press Enter to save the changes
+    await nameInput.press("Enter");
+
+    // Wait a moment for the save operation to complete
+    await page.waitForTimeout(500);
+
+    // After saving, the input should be replaced with text showing the new name
+    // The input field should no longer be visible
+    await expect(nameInput).not.toBeVisible();
+
+    // The cell should now display the updated name
+    await expect(nameCell).toContainText(newName);
+
+    console.log(
+      `✅ Worker name updated from "${testWorker.name}" to "${newName}"`
+    );
+  });
+
+  test("should save worker name when clicking away (blur event)", async ({
+    page,
+  }) => {
+    // Get the name cell of our test worker
+    const nameCell = workerTestBase.getWorkerNameCell(page);
+
+    // Click on the name to edit it
+    await nameCell.click();
+
+    // Wait for the input field to appear
+    const nameInput = nameCell.locator("input");
+    await expect(nameInput).toBeVisible();
+
+    // Type a new name
+    const newName = "Bob Johnson";
+    await nameInput.fill(newName);
+
+    // Click somewhere else to trigger blur event (save)
+    // We'll click on the acronym cell of the same row
+    const acronymCell = workerTestBase.getWorkerAcronymCell(page);
+    await acronymCell.click();
+
+    // Wait a moment for the save operation to complete
+    await page.waitForTimeout(500);
+
+    // The name input should no longer be visible
+    await expect(nameInput).not.toBeVisible();
+
+    // The name cell should show the updated name
+    await expect(nameCell).toContainText(newName);
+
+    console.log(`✅ Worker name updated via blur event to "${newName}"`);
+  });
+
+  test("should cancel editing if Escape key is pressed", async ({ page }) => {
+    // Get the name cell of our test worker
+    const nameCell = workerTestBase.getWorkerNameCell(page);
+    const originalName = testWorker.name;
+
+    // Click on the name to edit it
+    await nameCell.click();
+
+    // Wait for the input field to appear
+    const nameInput = nameCell.locator("input");
+    await expect(nameInput).toBeVisible();
+    await expect(nameInput).toHaveValue(originalName);
+
+    // Type a new name (but don't save it)
+    const tempName = "Temporary Name";
+    await nameInput.fill(tempName);
+    await expect(nameInput).toHaveValue(tempName);
+
+    // Press Escape to cancel editing
+    await nameInput.press("Escape");
+
+    // Wait a moment for the cancel operation to complete
+    await page.waitForTimeout(500);
+
+    // The input should no longer be visible
+    await expect(nameInput).not.toBeVisible();
+
+    // The name cell should still show the original name (not the temporary one)
+    await expect(nameCell).toContainText(originalName);
+    await expect(nameCell).not.toContainText(tempName);
+
+    console.log(
+      `✅ Name edit canceled, reverted to original: "${originalName}"`
+    );
+  });
+
+  test("should handle empty name validation", async ({ page }) => {
+    // Get the name cell of our test worker
+    const nameCell = workerTestBase.getWorkerNameCell(page);
+    const originalName = testWorker.name;
+
+    // Click on the name to edit it
+    await nameCell.click();
+
+    // Wait for the input field to appear
+    const nameInput = nameCell.locator("input");
+    await expect(nameInput).toBeVisible();
+
+    // Clear the name (make it empty)
+    await nameInput.fill("");
+    await expect(nameInput).toHaveValue("");
+
+    // Try to save by pressing Enter
+    await nameInput.press("Enter");
+
+    // Wait a moment
+    await page.waitForTimeout(500);
+
+    // The system should either:
+    // 1. Prevent saving and keep the input visible with validation error, OR
+    // 2. Revert to the original name
+
+    // Check if input is still visible (validation prevented save)
+    const isInputStillVisible = await nameInput.isVisible();
+
+    if (isInputStillVisible) {
+      // If input is still visible, there should be some validation feedback
+      // This could be an error message or the input staying in edit mode
+      console.log(
+        "✅ Empty name validation prevented save (input still visible)"
+      );
+
+      // Cancel the edit to restore normal state
+      await nameInput.press("Escape");
+    } else {
+      // If input is hidden, the name should have reverted to original
+      await expect(nameCell).toContainText(originalName);
+      console.log("✅ Empty name reverted to original name");
+    }
+  });
+
+  test("should handle special characters in worker name", async ({ page }) => {
+    // Get the name cell of our test worker
+    const nameCell = workerTestBase.getWorkerNameCell(page);
+
+    // Click on the name to edit it
+    await nameCell.click();
+
+    // Wait for the input field to appear
+    const nameInput = nameCell.locator("input");
+    await expect(nameInput).toBeVisible();
+
+    // Test a name with special characters
+    const specialName = "Dr. María José O'Connor-Smith";
+    await nameInput.fill(specialName);
+
+    // Save by pressing Enter
+    await nameInput.press("Enter");
+
+    // Wait for save to complete
+    await page.waitForTimeout(500);
+
+    // The input should be hidden
+    await expect(nameInput).not.toBeVisible();
+
+    // The name should be displayed correctly with special characters
+    await expect(nameCell).toContainText(specialName);
+
+    console.log(
+      `✅ Special characters in name handled correctly: "${specialName}"`
+    );
+  });
+});
