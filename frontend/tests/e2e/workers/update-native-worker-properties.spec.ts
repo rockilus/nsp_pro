@@ -5,14 +5,18 @@ const workerTestBase = new WorkerTestBase();
 
 test.describe.serial("Worker Property Updates", () => {
   let testWorker: { workerId: string; name: string; teamId: string };
+  let initialWorkerName: string;
 
   test.beforeAll(async () => {
     // Setup the common worker test environment
     await workerTestBase.setupWorkerTests(test.info().workerIndex);
 
+    // Use a unique name per browser worker to avoid conflicts
+    initialWorkerName = `John Doe ${test.info().workerIndex}`;
+
     // Create a test worker for our update tests
     testWorker = await workerTestBase.createTestWorker({
-      name: "John Doe",
+      name: initialWorkerName,
       acronym: "JD",
       weeklyHours: 40,
       weeklyHoursDesired: 40,
@@ -26,6 +30,12 @@ test.describe.serial("Worker Property Updates", () => {
   });
 
   test.beforeEach(async ({ page }) => {
+    // Reset worker name to initial value before each test
+    await workerTestBase.updateTestWorkerName(
+      testWorker.workerId,
+      initialWorkerName
+    );
+
     // Navigate to the workers page for each test
     await workerTestBase.navigateToWorkersPage(page);
 
@@ -36,9 +46,9 @@ test.describe.serial("Worker Property Updates", () => {
     const workerRows = workerTestBase.getWorkerRows(page);
     await expect(workerRows).toHaveCount(1);
 
-    // Verify the worker name is displayed
+    // Verify the worker name is displayed (use initialWorkerName instead of testWorker.name)
     const nameCell = workerTestBase.getWorkerNameCell(page);
-    await expect(nameCell).toContainText(testWorker.name);
+    await expect(nameCell).toContainText(initialWorkerName);
   });
 
   test("should allow editing worker name by clicking on it", async ({
@@ -48,7 +58,7 @@ test.describe.serial("Worker Property Updates", () => {
     const nameCell = workerTestBase.getWorkerNameCell(page);
 
     // Initially, the name should be displayed as text (not in an input field)
-    await expect(nameCell).toContainText(testWorker.name);
+    await expect(nameCell).toContainText(initialWorkerName);
 
     // Click on the name to edit it
     await nameCell.click();
@@ -56,7 +66,7 @@ test.describe.serial("Worker Property Updates", () => {
     // After clicking, the name cell should contain an input field with the current name
     const nameInput = nameCell.locator("input");
     await expect(nameInput).toBeVisible();
-    await expect(nameInput).toHaveValue(testWorker.name);
+    await expect(nameInput).toHaveValue(initialWorkerName);
 
     // Clear the input and type a new name
     const newName = "Jane Smith";
@@ -79,7 +89,7 @@ test.describe.serial("Worker Property Updates", () => {
     await expect(nameCell).toContainText(newName);
 
     console.log(
-      `✅ Worker name updated from "${testWorker.name}" to "${newName}"`
+      `✅ Worker name updated from "${initialWorkerName}" to "${newName}"`
     );
   });
 
@@ -120,7 +130,7 @@ test.describe.serial("Worker Property Updates", () => {
   test("should cancel editing if Escape key is pressed", async ({ page }) => {
     // Get the name cell of our test worker
     const nameCell = workerTestBase.getWorkerNameCell(page);
-    const originalName = testWorker.name;
+    const originalName = initialWorkerName;
 
     // Click on the name to edit it
     await nameCell.click();
@@ -156,7 +166,7 @@ test.describe.serial("Worker Property Updates", () => {
   test("should handle empty name validation", async ({ page }) => {
     // Get the name cell of our test worker
     const nameCell = workerTestBase.getWorkerNameCell(page);
-    const originalName = testWorker.name;
+    const originalName = initialWorkerName;
 
     // Click on the name to edit it
     await nameCell.click();

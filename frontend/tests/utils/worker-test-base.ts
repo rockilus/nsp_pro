@@ -126,6 +126,45 @@ export class WorkerTestBase {
   }
 
   /**
+   * Updates a test worker using the API
+   */
+  async updateTestWorker(
+    workerId: string,
+    updates: {
+      name?: string;
+      acronym?: string;
+      weeklyHours?: number;
+      weeklyHoursDesired?: number;
+      dutiesPerMonth?: number;
+      annualLeave?: number;
+    }
+  ): Promise<{ workerId: string; name: string; teamId: string }> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupWorkerTests() first.");
+    }
+
+    return this.dbUtils.updateWorker(workerId, this.testTeam.teamId, updates);
+  }
+
+  /**
+   * Updates a test worker's name specifically (convenience method)
+   */
+  async updateTestWorkerName(
+    workerId: string,
+    newName: string
+  ): Promise<{ workerId: string; name: string; teamId: string }> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupWorkerTests() first.");
+    }
+
+    return this.dbUtils.updateWorkerName(
+      workerId,
+      this.testTeam.teamId,
+      newName
+    );
+  }
+
+  /**
    * Creates a worker via the UI by clicking the +Worker button
    */
   async createWorkerViaUI(page: Page): Promise<void> {

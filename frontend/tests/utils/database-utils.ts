@@ -381,4 +381,88 @@ export class DatabaseTestUtils {
       );
     }
   }
+
+  /**
+   * Update a worker using the existing WorkerApi for consistent behavior
+   */
+  async updateWorker(
+    workerId: string,
+    teamId: string,
+    updates: {
+      name?: string;
+      acronym?: string;
+      employmentStartDate?: Date;
+      employmentEndDate?: Date | null;
+      weeklyHours?: number;
+      weeklyHoursDesired?: number;
+      dutiesPerMonth?: number;
+      annualLeave?: number;
+      specialtyIds?: string[];
+    }
+  ): Promise<{ workerId: string; name: string; teamId: string }> {
+    try {
+      // First, get the current worker data
+      const workers = await WorkerApi.getWorkers(this.testApiClient, teamId);
+      const currentWorker = workers.find((w) => w.id === workerId);
+
+      if (!currentWorker) {
+        throw new Error(
+          `Worker with ID '${workerId}' not found in team '${teamId}'`
+        );
+      }
+
+      // Create updated worker object
+      const updatedWorker: WorkerT = {
+        ...currentWorker,
+        name: updates.name ?? currentWorker.name,
+        acronym: updates.acronym ?? currentWorker.acronym,
+        employmentStartDate: updates.employmentStartDate
+          ? dayjs(updates.employmentStartDate).utc()
+          : currentWorker.employmentStartDate,
+        employmentEndDate:
+          updates.employmentEndDate !== undefined
+            ? updates.employmentEndDate
+              ? dayjs(updates.employmentEndDate).utc()
+              : null
+            : currentWorker.employmentEndDate,
+        weeklyHours: updates.weeklyHours ?? currentWorker.weeklyHours,
+        weeklyHoursDesired:
+          updates.weeklyHoursDesired ?? currentWorker.weeklyHoursDesired,
+        dutiesPerMonth: updates.dutiesPerMonth ?? currentWorker.dutiesPerMonth,
+        annualLeave: updates.annualLeave ?? currentWorker.annualLeave,
+        specialtyIds: updates.specialtyIds ?? currentWorker.specialtyIds,
+      };
+
+      // Use the existing WorkerApi with our test client
+      const result: WorkerT = await WorkerApi.updateWorker(
+        this.testApiClient,
+        updatedWorker
+      );
+
+      return {
+        workerId: result.id,
+        name: result.name,
+        teamId: result.teamId,
+      };
+    } catch (error) {
+      // Enhanced error handling for test debugging
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to update worker '${workerId}': ${error.message}`
+        );
+      }
+      throw new Error(`Failed to update worker '${workerId}': Unknown error`);
+    }
+  }
+
+  /**
+   * Update worker name specifically (convenience method for tests)
+   */
+  async updateWorkerName(
+    workerId: string,
+    teamId: string,
+    newName: string
+  ): Promise<{ workerId: string; name: string; teamId: string }> {
+    return this.updateWorker(workerId, teamId, { name: newName });
+  }
 }
