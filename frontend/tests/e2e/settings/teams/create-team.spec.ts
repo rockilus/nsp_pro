@@ -4,31 +4,7 @@ import { testConfig } from "../../../utils/test-config";
 
 const dbUtils = new DatabaseTestUtils();
 
-test.describe.serial("Teams Settings Page with Database Reset", () => {
-  test.beforeAll(async () => {
-    // Ensure the API is ready before running tests
-    await dbUtils.waitForApiReady();
-
-    // Verify test utilities are available
-    const health = await dbUtils.checkHealth();
-    if (!health.test_utilities_available) {
-      throw new Error(
-        "Test utilities are not available - check environment configuration"
-      );
-    }
-    // Reset database before each test for complete isolation
-    try {
-      const resetResult = await dbUtils.resetTeamRelatedData();
-      console.log(`Database reset completed: ${resetResult.operation_id}`);
-      console.log(
-        `Reset collections: ${resetResult.collections_reset.join(", ")}`
-      );
-    } catch (error) {
-      console.error("Database reset failed:", error);
-      throw error;
-    }
-  });
-
+test.describe("Teams Settings Page with Database Reset", () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the page using config
     await page.goto(`${testConfig.frontendUrl}/en/plan/settings/teams/`);

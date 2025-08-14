@@ -33,6 +33,19 @@ export interface DryRunResponse {
   dry_run: boolean;
 }
 
+export interface TestUser {
+  user_id: string;
+  email: string;
+  username: string;
+  first_name: string;
+  last_name: string;
+}
+
+export interface UserCreationResult {
+  status: string;
+  message: string;
+}
+
 export class DatabaseTestUtils {
   private testApiClient: AuthenticatedApiClient;
 
@@ -225,6 +238,7 @@ export class DatabaseTestUtils {
     while (Date.now() - startTime < timeout) {
       try {
         await this.checkHealth();
+        console.log("✅ API is ready");
         return;
       } catch (error) {
         // Continue waiting
@@ -286,6 +300,82 @@ export class DatabaseTestUtils {
     return this.resetDatabase({
       preserveSystemData: true,
     });
+  }
+
+  /**
+   * Creates a test user via the onboard endpoint
+   * This mimics the functionality of init-dev-user.sh script
+   */
+  async createTestUser(user?: Partial<TestUser>): Promise<UserCreationResult> {
+    const defaultUser: TestUser = {
+      user_id: "64e9b7f1e13e4a1a9c8b4567",
+      email: "testuser@example.com",
+      username: "testuser",
+      first_name: "Test",
+      last_name: "User",
+    };
+
+    const testUser = { ...defaultUser, ...user };
+
+    try {
+      const response = await fetch(`${testConfig.apiUrl}/users/onboard`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": testConfig.devApiKey,
+        },
+        body: JSON.stringify(testUser),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to create test user (HTTP ${response.status}): ${errorText}`
+        );
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Test user creation failed: ${error.message}`);
+      }
+      throw new Error("Test user creation failed with unknown error");
+    }
+  }
+
+  /**
+   * Waits for required services (API and Permit.io) to be ready
+   * This ensures dependencies are available before user creation
+   */
+  async waitForServicesReady(timeout: number = 30000): Promise<void> {
+    const startTime = Date.now();
+
+    // Wait for API Gateway
+    await this.waitForApiReady(timeout);
+
+    // Wait for Permit.io PDP (if available)
+    while (Date.now() - startTime < timeout) {
+      try {
+        const response = await fetch(`${testConfig.permitUrl}/healthy`, {
+          method: "GET",
+          signal: AbortSignal.timeout(2000),
+        });
+
+        if (response.ok) {
+          console.log("✅ Permit.io PDP is ready");
+          return; // Both services are ready
+        }
+      } catch (error) {
+        // Permit.io might not be required in test environment
+        console.warn("⚠️ Permit.io PDP not available, continuing without it");
+        return;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+
+    throw new Error("Services did not become ready within timeout period");
   }
 
   /**
@@ -466,3 +556,14 @@ export class DatabaseTestUtils {
     return this.updateWorker(workerId, teamId, { name: newName });
   }
 }
+
+/**
+ * Default test user credentials for use across tests
+ */
+export const TEST_USER = {
+  user_id: "64e9b7f1e13e4a1a9c8b4567",
+  email: "testuser@example.com",
+  username: "testuser",
+  first_name: "Test",
+  last_name: "User",
+} as const;

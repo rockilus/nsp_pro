@@ -36,18 +36,6 @@ export class WorkerTestBase {
       );
     }
 
-    // Reset database before tests for complete isolation
-    try {
-      const resetResult = await this.dbUtils.resetWorkersRelatedData();
-      console.log(`Database reset completed: ${resetResult.operation_id}`);
-      console.log(
-        `Reset collections: ${resetResult.collections_reset.join(", ")}`
-      );
-    } catch (error) {
-      console.error("Database reset failed:", error);
-      throw error;
-    }
-
     // Create a test team for worker tests
     const uniqueTeamName = `Worker Test Team ${workerIndex}-${Date.now()}`;
     this.testTeam = await this.dbUtils.createTeam({ name: uniqueTeamName });

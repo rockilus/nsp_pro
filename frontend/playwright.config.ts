@@ -13,6 +13,10 @@ import { defineConfig, devices } from "@playwright/test";
  */
 export default defineConfig({
   testDir: "./tests",
+  /* Global setup for tests */
+  globalSetup: require.resolve("./tests/utils/global-setup.ts"),
+  /* Exclude Jest tests from Playwright */
+  testIgnore: ["**/tests/__tests__/**"],
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */

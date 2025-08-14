@@ -99,7 +99,9 @@ async def authz_role_assignment_unassign(
         handle_permit_errors(e)
 
 
-async def authz_role_assignment_get_user_team_ids(user_id: str, role: str) -> List[str]:
+async def authz_role_assignment_get_user_team_ids(
+    user_id: str, role: str
+) -> List[str]:
     try:
         team_permit = await permit.api.role_assignments.list(
             user_key=user_id,
@@ -115,7 +117,9 @@ async def authz_role_assignment_get_user_team_ids(user_id: str, role: str) -> Li
 async def authz_check(
     user_id: str, action: str, resource: str, resource_id: str | None = None
 ) -> bool:
-    resource_instance = f"{resource}:{resource_id}" if resource_id else resource
+    resource_instance = (
+        f"{resource}:{resource_id}" if resource_id else resource
+    )
     try:
         out = await permit.check(
             user=user_id,
@@ -140,11 +144,15 @@ async def authz_check(
 async def authz_get_all_users() -> List[UserAuth]:
     users: List[UserRead] = []
     page = 1
-    per_page = 100  # Adjust this value based on the actual limit specified by the API
+    per_page = (
+        100  # Adjust this value based on the actual limit specified by the API
+    )
 
     try:
         while True:
-            response = await permit.api.users.list(page=page, per_page=per_page)
+            response = await permit.api.users.list(
+                page=page, per_page=per_page
+            )
             users.extend(response.data)
 
             # Check if there's another page of results
@@ -178,6 +186,16 @@ async def authz_delete_user(user_id: str) -> None:
         await permit.api.users.delete(user_id)
     except Exception as e:
         log_info("Permit delete user error")
+        handle_permit_errors(e)
+
+
+async def authz_delete_all_users() -> None:
+    try:
+        users = await authz_get_all_users()
+        for user in users:
+            await authz_delete_user(user.id)
+    except Exception as e:
+        log_info("Permit delete all users error")
         handle_permit_errors(e)
 
 

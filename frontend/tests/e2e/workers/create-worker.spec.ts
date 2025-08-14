@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 
 const workerTestBase = new WorkerTestBase();
 
-test.describe.serial("Worker Creation with Database Reset", () => {
+test.describe("Worker Creation with Database Reset", () => {
   test.beforeAll(async () => {
     // Setup the common worker test environment
     await workerTestBase.setupWorkerTests(test.info().workerIndex);
