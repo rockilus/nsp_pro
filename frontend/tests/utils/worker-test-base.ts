@@ -222,7 +222,16 @@ export class WorkerTestBase {
    * Gets the acronym cell for a worker row
    */
   getWorkerAcronymCell(page: Page, rowIndex: number = 0) {
-    return this.getWorkerRow(page, rowIndex).locator("td").nth(1);
+    const row = this.getWorkerRow(page, rowIndex);
+
+    const byCellTestId = row.locator('[data-testid="worker-acronym-cell"]');
+    const byDisplayTestId = row.locator(
+      '[data-testid^="worker-acronym-display-"]'
+    );
+    const byInputTestId = row.locator('[data-testid^="worker-acronym-input-"]');
+    const secondCell = row.locator("td, th").nth(1);
+
+    return byCellTestId.or(byDisplayTestId).or(byInputTestId).or(secondCell);
   }
 
   /**
