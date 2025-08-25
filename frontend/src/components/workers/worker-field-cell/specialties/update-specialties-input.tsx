@@ -82,7 +82,7 @@ export default function UpdateSpecialtiesInput({
   };
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box sx={{ width: "100%" }} data-testid="update-specialties-input">
       <TextField
         label={t("property_new_option")}
         variant="outlined"
@@ -94,17 +94,22 @@ export default function UpdateSpecialtiesInput({
           error || listError ? t("property_new_option_helper_text") : ""
         }
         sx={{ width: "100%" }}
+        data-testid="new-specialty-input"
       />
-      <Box mt={2}>
+      <Box mt={2} data-testid="specialties-list">
         {specialties.map((de, index) => (
           <Box
             key={index}
             display="flex"
             alignItems="center"
             sx={{ paddingLeft: 0.5 }}
+            data-testid={`specialty-item-${de.id}`}
           >
             {SpecialtyEditing?.id === de.id ? (
-              <div className="edit-specialty">
+              <div
+                className="edit-specialty"
+                data-testid={`specialty-editing-${de.id}`}
+              >
                 <TextField
                   value={SpecialtyEditing.name}
                   onChange={(e) =>
@@ -122,21 +127,39 @@ export default function UpdateSpecialtiesInput({
                     errorEditing ? t("property_new_option_helper_text") : ""
                   }
                   sx={{ width: "100%" }}
+                  data-testid={`specialty-edit-input-${de.id}`}
                 />
-                <IconButton onClick={handleEditSpecialty}>
+                <IconButton
+                  onClick={handleEditSpecialty}
+                  data-testid={`specialty-confirm-edit-${de.id}`}
+                >
                   <CheckIcon />
                 </IconButton>
-                <IconButton onClick={() => setSpecialtyEditing(null)}>
+                <IconButton
+                  onClick={() => setSpecialtyEditing(null)}
+                  data-testid={`specialty-cancel-edit-${de.id}`}
+                >
                   <CloseIcon />
                 </IconButton>
               </div>
             ) : (
-              <div className="edit-specialty">
-                <Box flexGrow={1}>{de.name}</Box>
-                <IconButton onClick={() => setSpecialtyEditing(de)}>
+              <div
+                className="edit-specialty"
+                data-testid={`specialty-display-${de.id}`}
+              >
+                <Box flexGrow={1} data-testid={`specialty-name-${de.id}`}>
+                  {de.name}
+                </Box>
+                <IconButton
+                  onClick={() => setSpecialtyEditing(de)}
+                  data-testid={`specialty-edit-button-${de.id}`}
+                >
                   <EditIcon />
                 </IconButton>
-                <IconButton onClick={() => deleteSpecialty(de.id)}>
+                <IconButton
+                  onClick={() => deleteSpecialty(de.id)}
+                  data-testid={`specialty-delete-button-${de.id}`}
+                >
                   <DeleteIcon />
                 </IconButton>
               </div>

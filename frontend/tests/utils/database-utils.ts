@@ -7,9 +7,11 @@
 
 import { TeamApi } from "../../src/app/lib/api/teamApi";
 import { WorkerApi } from "../../src/app/lib/api/workerApi";
+import { SpecialtyApi } from "../../src/app/lib/api/specialtyApi";
 import { AuthenticatedApiClient } from "../../src/app/lib/api/baseApi";
 import { TeamWithMembership } from "../../src/types/team";
 import { WorkerT } from "../../src/types/worker";
+import { SpecialtyT } from "../../src/types/specialty";
 import { testConfig } from "./test-config";
 import dayjs from "dayjs";
 
@@ -571,6 +573,155 @@ export class DatabaseTestUtils {
         );
       }
       throw new Error(`Failed to delete worker '${workerId}': Unknown error`);
+    }
+  }
+
+  //////////////////////////
+  // Specialty Methods
+  //////////////////////////
+
+  /**
+   * Create a specialty using the existing SpecialtyApi for consistent behavior
+   */
+  async createSpecialty(specialtyData: {
+    teamId: string;
+    name: string;
+  }): Promise<{ specialtyId: string; name: string; teamId: string }> {
+    try {
+      // Create the specialty object
+      const newSpecialty: SpecialtyT = {
+        id: "",
+        teamId: specialtyData.teamId,
+        name: specialtyData.name,
+        deleted: false,
+      };
+
+      // Use the existing SpecialtyApi with our test client
+      const result: SpecialtyT = await SpecialtyApi.addSpecialty(
+        this.testApiClient,
+        newSpecialty,
+        specialtyData.teamId
+      );
+
+      return {
+        specialtyId: result.id,
+        name: result.name,
+        teamId: result.teamId,
+      };
+    } catch (error) {
+      // Enhanced error handling for test debugging
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to create specialty '${specialtyData.name}': ${error.message}`
+        );
+      }
+      throw new Error(
+        `Failed to create specialty '${specialtyData.name}': Unknown error`
+      );
+    }
+  }
+
+  /**
+   * Update a specialty using the existing SpecialtyApi for consistent behavior
+   */
+  async updateSpecialty(
+    specialtyId: string,
+    teamId: string,
+    updates: {
+      name?: string;
+    }
+  ): Promise<{ specialtyId: string; name: string; teamId: string }> {
+    try {
+      // First get the current specialty to merge with updates
+      const specialties = await SpecialtyApi.getSpecialties(
+        this.testApiClient,
+        teamId
+      );
+      const currentSpecialty = specialties.find((s) => s.id === specialtyId);
+
+      if (!currentSpecialty) {
+        throw new Error(
+          `Specialty with ID '${specialtyId}' not found in team '${teamId}'`
+        );
+      }
+
+      // Create updated specialty object
+      const updatedSpecialty: SpecialtyT = {
+        ...currentSpecialty,
+        name: updates.name ?? currentSpecialty.name,
+      };
+
+      // Use the existing SpecialtyApi with our test client
+      const result: SpecialtyT = await SpecialtyApi.updateSpecialty(
+        this.testApiClient,
+        updatedSpecialty,
+        teamId
+      );
+
+      return {
+        specialtyId: result.id,
+        name: result.name,
+        teamId: result.teamId,
+      };
+    } catch (error) {
+      // Enhanced error handling for test debugging
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to update specialty '${specialtyId}': ${error.message}`
+        );
+      }
+      throw new Error(
+        `Failed to update specialty '${specialtyId}': Unknown error`
+      );
+    }
+  }
+
+  /**
+   * Delete a specialty using the existing SpecialtyApi for consistent behavior
+   */
+  async deleteSpecialty(specialtyId: string, teamId: string): Promise<void> {
+    try {
+      // Use the existing SpecialtyApi with our test client
+      await SpecialtyApi.deleteSpecialty(
+        this.testApiClient,
+        specialtyId,
+        teamId
+      );
+    } catch (error) {
+      // Enhanced error handling for test debugging
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to delete specialty '${specialtyId}': ${error.message}`
+        );
+      }
+      throw new Error(
+        `Failed to delete specialty '${specialtyId}': Unknown error`
+      );
+    }
+  }
+
+  /**
+   * Get all specialties for a team using the existing SpecialtyApi
+   */
+  async getSpecialties(teamId: string): Promise<SpecialtyT[]> {
+    try {
+      // Use the existing SpecialtyApi with our test client
+      const result: SpecialtyT[] = await SpecialtyApi.getSpecialties(
+        this.testApiClient,
+        teamId
+      );
+
+      return result;
+    } catch (error) {
+      // Enhanced error handling for test debugging
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to get specialties for team '${teamId}': ${error.message}`
+        );
+      }
+      throw new Error(
+        `Failed to get specialties for team '${teamId}': Unknown error`
+      );
     }
   }
 }

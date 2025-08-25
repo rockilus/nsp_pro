@@ -74,6 +74,7 @@ export default function WorkerSpecialtyHeaderCell({
       component="th"
       scope="row"
       className="worker-table-header"
+      data-testid="worker-specialty-header-cell"
       sx={{
         paddingY: 0,
         padding: "6px 8px",

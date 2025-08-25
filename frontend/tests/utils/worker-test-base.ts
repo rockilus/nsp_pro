@@ -8,6 +8,7 @@
 import { Page, expect } from "@playwright/test";
 import { DatabaseTestUtils } from "./database-utils";
 import { testConfig } from "./test-config";
+import { SpecialtyT } from "../../src/types/specialty";
 
 export class WorkerTestBase {
   protected dbUtils: DatabaseTestUtils;
@@ -358,5 +359,67 @@ export class WorkerTestBase {
    */
   getTestTeam(): { teamId: string; name: string } | null {
     return this.testTeam;
+  }
+
+  //////////////////////////
+  // Specialty Methods
+  //////////////////////////
+
+  /**
+   * Creates a test specialty using the API
+   */
+  async createTestSpecialty(specialtyData: {
+    name: string;
+  }): Promise<{ specialtyId: string; name: string; teamId: string }> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupWorkerTests() first.");
+    }
+
+    return this.dbUtils.createSpecialty({
+      teamId: this.testTeam.teamId,
+      name: specialtyData.name,
+    });
+  }
+
+  /**
+   * Updates a test specialty using the API
+   */
+  async updateTestSpecialty(
+    specialtyId: string,
+    updates: {
+      name?: string;
+    }
+  ): Promise<{ specialtyId: string; name: string; teamId: string }> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupWorkerTests() first.");
+    }
+
+    return this.dbUtils.updateSpecialty(
+      specialtyId,
+      this.testTeam.teamId,
+      updates
+    );
+  }
+
+  /**
+   * Deletes a test specialty using the API
+   */
+  async deleteTestSpecialty(specialtyId: string): Promise<void> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupWorkerTests() first.");
+    }
+
+    return this.dbUtils.deleteSpecialty(specialtyId, this.testTeam.teamId);
+  }
+
+  /**
+   * Gets all specialties for the test team using the API
+   */
+  async getTestSpecialties(): Promise<SpecialtyT[]> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupWorkerTests() first.");
+    }
+
+    return this.dbUtils.getSpecialties(this.testTeam.teamId);
   }
 }
