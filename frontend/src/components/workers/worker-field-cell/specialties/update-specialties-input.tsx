@@ -94,7 +94,9 @@ export default function UpdateSpecialtiesInput({
           error || listError ? t("property_new_option_helper_text") : ""
         }
         sx={{ width: "100%" }}
-        data-testid="new-specialty-input"
+        inputProps={{
+          "data-testid": "new-specialty-input",
+        }}
       />
       <Box mt={2} data-testid="specialties-list">
         {specialties.map((de, index) => (
@@ -127,7 +129,9 @@ export default function UpdateSpecialtiesInput({
                     errorEditing ? t("property_new_option_helper_text") : ""
                   }
                   sx={{ width: "100%" }}
-                  data-testid={`specialty-edit-input-${de.id}`}
+                  inputProps={{
+                    "data-testid": `specialty-edit-input-${de.id}`,
+                  }}
                 />
                 <IconButton
                   onClick={handleEditSpecialty}

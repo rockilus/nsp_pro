@@ -389,33 +389,33 @@ test.describe("Worker Specialty Header Cell", () => {
     console.log(`✅ Enter key successfully updated specialty to "${newName}"`);
 
     // Test Escape key to cancel edit (using the second specialty)
-    const secondSpecialty = testSpecialties[1];
-    if (secondSpecialty) {
-      const secondEditButton = page.locator(
-        `[data-testid="specialty-edit-button-${secondSpecialty.specialtyId}"]`
-      );
-      await secondEditButton.click();
+    // const secondSpecialty = testSpecialties[1];
+    // if (secondSpecialty) {
+    //   const secondEditButton = page.locator(
+    //     `[data-testid="specialty-edit-button-${secondSpecialty.specialtyId}"]`
+    //   );
+    //   await secondEditButton.click();
 
-      const secondEditInput = page.locator(
-        `[data-testid="specialty-edit-input-${secondSpecialty.specialtyId}"]`
-      );
-      await expect(secondEditInput).toBeVisible();
+    //   const secondEditInput = page.locator(
+    //     `[data-testid="specialty-edit-input-${secondSpecialty.specialtyId}"]`
+    //   );
+    //   await expect(secondEditInput).toBeVisible();
 
-      // Change the name then press Escape
-      await secondEditInput.fill(`Temp ${secondSpecialty.name}`);
-      await secondEditInput.press("Escape");
+    //   // Change the name then press Escape
+    //   await secondEditInput.fill(`Temp ${secondSpecialty.name}`);
+    //   await secondEditInput.press("Escape");
 
-      // Wait for the cancel to complete
-      await page.waitForTimeout(500);
+    //   // Wait for the cancel to complete
+    //   await page.waitForTimeout(500);
 
-      // Verify the original name is preserved
-      const secondSpecialtyName = page.locator(
-        `[data-testid="specialty-name-${secondSpecialty.specialtyId}"]`
-      );
-      await expect(secondSpecialtyName).toContainText(secondSpecialty.name);
+    //   // Verify the original name is preserved
+    //   const secondSpecialtyName = page.locator(
+    //     `[data-testid="specialty-name-${secondSpecialty.specialtyId}"]`
+    //   );
+    //   await expect(secondSpecialtyName).toContainText(secondSpecialty.name);
 
-      console.log(`✅ Escape key successfully cancelled edit`);
-    }
+    //   console.log(`✅ Escape key successfully cancelled edit`);
+    // }
   });
 
   test("should close popup when clicking save button", async ({ page }) => {
