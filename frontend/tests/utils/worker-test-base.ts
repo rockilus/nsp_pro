@@ -280,6 +280,80 @@ export class WorkerTestBase {
   }
 
   /**
+   * Gets the employment end date cell for a worker row
+   */
+  getWorkerEmploymentEndCell(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+
+    // Prioritize the table cell itself for interaction
+    const byCellTestId = row.locator(
+      '[data-testid="worker-employment-end-cell"]'
+    );
+    // Fallback to finding by column position if data-testid is not available
+    const byColumnPosition = row.locator("td, th").nth(3); // Assuming employment end is 4th column
+
+    return byCellTestId.or(byColumnPosition);
+  }
+
+  /**
+   * Gets the employment end date display element (for reading text)
+   */
+  getWorkerEmploymentEndDisplay(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+    return row.locator('[data-testid^="worker-employment-end-display-"]');
+  }
+
+  /**
+   * Gets the employment end date editor (editing container)
+   */
+  getWorkerEmploymentEndEditor(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+    return row.locator('[data-testid^="worker-employment-end-editor-"]');
+  }
+
+  /**
+   * Gets the employment end date picker element (for editing)
+   */
+  getWorkerEmploymentEndDatePicker(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+    return row.locator('[data-testid^="worker-employment-end-datepicker-"]');
+  }
+
+  /**
+   * Gets the employment end date picker input element (for editing)
+   */
+  getWorkerEmploymentEndDatePickerInput(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+    return row.locator(
+      '[data-testid^="worker-employment-end-datepicker-input-"]'
+    );
+  }
+
+  /**
+   * Gets the employment end date permanent checkbox element
+   */
+  getWorkerEmploymentEndPermanentCheckbox(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+    return row.locator(
+      '[data-testid^="worker-employment-end-permanent-checkbox-input-"]'
+    );
+  }
+
+  /**
+   * Gets the employment end date permanent checkbox label element
+   */
+  getWorkerEmploymentEndPermanentCheckboxLabel(
+    page: Page,
+    rowIndex: number = 0
+  ) {
+    const row = this.getWorkerRow(page, rowIndex);
+    // Look for the label specifically, excluding the input
+    return row.locator(
+      '[data-testid^="worker-employment-end-permanent-checkbox-"]:not([data-testid*="-input-"])'
+    );
+  }
+
+  /**
    * Gets team information
    */
   getTestTeam(): { teamId: string; name: string } | null {

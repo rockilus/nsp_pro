@@ -118,11 +118,13 @@ export default function WorkerFieldEmploymentEnd({
     <TableCell
       component="th"
       scope="row"
+      data-testid="worker-employment-end-cell"
       sx={{ paddingY: 0, textAlign: "center" }}
     >
       {editing ? (
         <div
           ref={cellRef}
+          data-testid={`worker-employment-end-editor-${worker.id}`}
           style={{
             display: "flex",
             flexDirection: "column",
@@ -131,16 +133,26 @@ export default function WorkerFieldEmploymentEnd({
         >
           <DatePicker
             className="custom-date-picker"
+            data-testid={`worker-employment-end-datepicker-${worker.id}`}
             disabled={valueState ? false : true}
             value={valueState}
             onChange={(newValue) => handleUpdateState(newValue)}
             onOpen={() => setDatePickerOpen(true)}
+            slotProps={{
+              textField: {
+                inputProps: {
+                  "data-testid": `worker-employment-end-datepicker-input-${worker.id}`,
+                },
+              },
+            }}
           />
           <FormControlLabel
+            data-testid={`worker-employment-end-permanent-checkbox-${worker.id}`}
             control={
               <Checkbox
                 checked={valueState ? false : true}
                 onChange={handlePermanentChange}
+                data-testid={`worker-employment-end-permanent-checkbox-input-${worker.id}`}
               />
             }
             label={t("permanent")}
@@ -149,6 +161,7 @@ export default function WorkerFieldEmploymentEnd({
       ) : (
         <div
           onClick={() => setEditing({ [worker.id]: "employmentEndDate" })}
+          data-testid={`worker-employment-end-display-${worker.id}`}
           style={{
             display: "flex",
             justifyContent: "center",
