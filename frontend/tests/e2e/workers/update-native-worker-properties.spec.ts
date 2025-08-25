@@ -173,7 +173,6 @@ test.describe("Worker Property Updates", () => {
   test("should handle empty name validation", async ({ page }) => {
     // Get the name cell of our test worker
     const nameCell = workerTestBase.getWorkerNameCell(page);
-    const originalName = initialWorkerName;
 
     // Click on the name to edit it
     await nameCell.click();
@@ -189,30 +188,16 @@ test.describe("Worker Property Updates", () => {
     // Try to save by pressing Enter
     await nameInput.press("Enter");
 
-    // Wait a moment
+    // Wait a moment for the save operation to complete
     await page.waitForTimeout(500);
 
-    // The system should either:
-    // 1. Prevent saving and keep the input visible with validation error, OR
-    // 2. Revert to the original name
+    // The input should be hidden after saving
+    await expect(nameInput).not.toBeVisible();
 
-    // Check if input is still visible (validation prevented save)
-    const isInputStillVisible = await nameInput.isVisible();
+    // The name cell should display "Unnamed Worker" when the name is empty
+    await expect(nameCell).toContainText("Unnamed Worker");
 
-    if (isInputStillVisible) {
-      // If input is still visible, there should be some validation feedback
-      // This could be an error message or the input staying in edit mode
-      console.log(
-        "✅ Empty name validation prevented save (input still visible)"
-      );
-
-      // Cancel the edit to restore normal state
-      await nameInput.press("Escape");
-    } else {
-      // If input is hidden, the name should have reverted to original
-      await expect(nameCell).toContainText(originalName);
-      console.log("✅ Empty name reverted to original name");
-    }
+    console.log("✅ Empty name displays 'Unnamed Worker' as expected");
   });
 
   test("should handle special characters in worker name", async ({ page }) => {
