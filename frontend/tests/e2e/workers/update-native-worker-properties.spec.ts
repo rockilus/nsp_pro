@@ -118,9 +118,9 @@ test.describe("Worker Property Updates", () => {
     await nameInput.fill(newName);
 
     // Click somewhere else to trigger blur event (save)
-    // We'll click on the acronym cell of the same row
-    const acronymCell = workerTestBase.getWorkerAcronymCell(page);
-    await acronymCell.click();
+    // We'll click on the page title
+    const pageTitle = page.getByRole("heading", { name: "Workers" });
+    await pageTitle.click();
 
     // Wait a moment for the save operation to complete
     await page.waitForTimeout(500);
