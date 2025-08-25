@@ -132,6 +132,91 @@ async def authz_check(
     return out
 
 
+async def authz_check_with_retry(
+    user_id: str,
+    action: str,
+    resource: str,
+    resource_id: str | None = None,
+    max_retries: int = 3,
+    initial_delay: float = 0.5,
+) -> bool:
+    """
+    Authorization check with retry logic to handle policy sync timing issues.
+
+    Args:
+        user_id: User identifier
+        action: Action to check (e.g., "create-worker")
+        resource: Resource type (e.g., "team")
+        resource_id: Specific resource instance ID
+        max_retries: Maximum number of retry attempts (default: 3)
+        initial_delay: Initial delay in seconds before first retry
+                      (default: 0.5)
+
+    Returns:
+        bool: True if authorized, False otherwise
+
+    Raises:
+        Exception: If all retries fail with errors
+    """
+    import asyncio
+
+    resource_instance = (
+        f"{resource}:{resource_id}" if resource_id else resource
+    )
+
+    for attempt in range(max_retries + 1):
+        try:
+            log_debug(
+                f"Authorization attempt {attempt + 1}/{max_retries + 1}: "
+                f"user={user_id}, action={action}, "
+                f"resource={resource_instance}"
+            )
+
+            result = await authz_check(user_id, action, resource, resource_id)
+
+            if result:
+                if attempt > 0:
+                    log_info(
+                        f"Authorization succeeded on retry attempt "
+                        f"{attempt + 1} for {resource_instance}"
+                    )
+                return True
+
+            # If authorization failed and we have retries left, wait and retry
+            if attempt < max_retries:
+                delay = initial_delay * (2**attempt)  # Exponential backoff
+                log_info(
+                    f"Authorization denied, retrying in {delay}s "
+                    f"(attempt {attempt + 1}/{max_retries + 1}) "
+                    f"for {resource_instance}"
+                )
+                await asyncio.sleep(delay)
+            else:
+                log_info(
+                    f"Authorization denied after all {max_retries + 1} "
+                    f"attempts for {resource_instance}"
+                )
+                return False
+
+        except Exception as e:
+            if attempt == max_retries:
+                log_info(
+                    f"Authorization check failed after "
+                    f"{max_retries + 1} attempts for {resource_instance}: "
+                    f"{str(e)}"
+                )
+                raise
+
+            delay = initial_delay * (2**attempt)
+            log_info(
+                f"Authorization error on attempt {attempt + 1}, "
+                f"retrying in {delay}s: {str(e)}"
+            )
+            await asyncio.sleep(delay)
+
+    return False
+
+
 # async def authz_get_all_users():
 #     try:
 #         users = await permit.api.users.list()
