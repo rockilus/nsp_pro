@@ -126,6 +126,7 @@ export class WorkerTestBase {
       weeklyHoursDesired?: number;
       dutiesPerMonth?: number;
       annualLeave?: number;
+      specialtyIds?: string[];
     }
   ): Promise<{ workerId: string; name: string; teamId: string }> {
     if (!this.testTeam) {
