@@ -13,7 +13,6 @@ import TableRow from "@mui/material/TableRow";
 import Tooltip from "@mui/material/Tooltip";
 import TextField from "@mui/material/TextField";
 // Components
-import NewDimensionForm from "../shift-worker-shared/dimension/new-dimension-form";
 import DimensionCell from "../shift-worker-shared/dimension/dimension-cell";
 import AttributeCell from "../shift-worker-shared/attribute/attribute-cell";
 import WorkerFieldCell from "./worker-field-cell/worker-field-cell";

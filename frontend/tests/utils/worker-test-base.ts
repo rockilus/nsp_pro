@@ -205,7 +205,17 @@ export class WorkerTestBase {
    * Gets the name cell for a worker row
    */
   getWorkerNameCell(page: Page, rowIndex: number = 0) {
-    return this.getWorkerRow(page, rowIndex).locator("td").nth(0);
+    const row = this.getWorkerRow(page, rowIndex);
+
+    const byCellTestId = row.locator('[data-testid="worker-name-cell"]');
+    const byDisplayTestId = row.locator(
+      '[data-testid^="worker-name-display-"]'
+    );
+    const byInputTestId = row.locator('[data-testid^="worker-name-input-"]');
+    const firstCell = row.locator("td, th").first();
+
+    // Return a locator that resolves to whichever exists first
+    return byCellTestId.or(byDisplayTestId).or(byInputTestId).or(firstCell);
   }
 
   /**
