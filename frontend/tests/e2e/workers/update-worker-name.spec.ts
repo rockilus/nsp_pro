@@ -3,7 +3,7 @@ import { WorkerTestBase } from "../../utils/worker-test-base";
 
 const workerTestBase = new WorkerTestBase();
 
-test.describe("Worker Property Updates", () => {
+test.describe("Worker Name Updates", () => {
   let testWorker: { workerId: string; name: string; teamId: string };
   let initialWorkerName: string;
 

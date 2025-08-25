@@ -224,14 +224,27 @@ export class WorkerTestBase {
   getWorkerAcronymCell(page: Page, rowIndex: number = 0) {
     const row = this.getWorkerRow(page, rowIndex);
 
+    // Prioritize the table cell itself for interaction, not the inner elements
     const byCellTestId = row.locator('[data-testid="worker-acronym-cell"]');
-    const byDisplayTestId = row.locator(
-      '[data-testid^="worker-acronym-display-"]'
-    );
-    const byInputTestId = row.locator('[data-testid^="worker-acronym-input-"]');
     const secondCell = row.locator("td, th").nth(1);
 
-    return byCellTestId.or(byDisplayTestId).or(byInputTestId).or(secondCell);
+    return byCellTestId.or(secondCell);
+  }
+
+  /**
+   * Gets the acronym display element (for reading text)
+   */
+  getWorkerAcronymDisplay(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+    return row.locator('[data-testid^="worker-acronym-display-"]');
+  }
+
+  /**
+   * Gets the acronym input element (for editing)
+   */
+  getWorkerAcronymInput(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+    return row.locator('[data-testid^="worker-acronym-input-"]');
   }
 
   /**
