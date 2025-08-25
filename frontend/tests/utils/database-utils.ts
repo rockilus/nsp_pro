@@ -555,6 +555,24 @@ export class DatabaseTestUtils {
   ): Promise<{ workerId: string; name: string; teamId: string }> {
     return this.updateWorker(workerId, teamId, { name: newName });
   }
+
+  /**
+   * Delete a worker using the existing WorkerApi for consistent behavior
+   */
+  async deleteWorker(workerId: string, teamId: string): Promise<void> {
+    try {
+      // Use the existing WorkerApi with our test client
+      await WorkerApi.deleteWorker(this.testApiClient, workerId, teamId);
+    } catch (error) {
+      // Enhanced error handling for test debugging
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to delete worker '${workerId}': ${error.message}`
+        );
+      }
+      throw new Error(`Failed to delete worker '${workerId}': Unknown error`);
+    }
+  }
 }
 
 /**

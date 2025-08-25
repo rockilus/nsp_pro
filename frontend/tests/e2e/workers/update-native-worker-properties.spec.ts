@@ -3,18 +3,18 @@ import { WorkerTestBase } from "../../utils/worker-test-base";
 
 const workerTestBase = new WorkerTestBase();
 
-test.describe.serial("Worker Property Updates", () => {
+test.describe("Worker Property Updates", () => {
   let testWorker: { workerId: string; name: string; teamId: string };
   let initialWorkerName: string;
 
-  test.beforeAll(async () => {
+  test.beforeEach(async ({ page }) => {
     // Setup the common worker test environment
     await workerTestBase.setupWorkerTests(test.info().workerIndex);
 
-    // Use a unique name per browser worker to avoid conflicts
-    initialWorkerName = `John Doe ${test.info().workerIndex}`;
+    // Use a unique name per test to avoid conflicts
+    initialWorkerName = `John Doe ${test.info().workerIndex}-${Date.now()}`;
 
-    // Create a test worker for our update tests
+    // Create a fresh test worker for each test
     testWorker = await workerTestBase.createTestWorker({
       name: initialWorkerName,
       acronym: "JD",
@@ -27,16 +27,8 @@ test.describe.serial("Worker Property Updates", () => {
     console.log(
       `Created test worker: ${testWorker.name} (${testWorker.workerId})`
     );
-  });
 
-  test.beforeEach(async ({ page }) => {
-    // Reset worker name to initial value before each test
-    await workerTestBase.updateTestWorkerName(
-      testWorker.workerId,
-      initialWorkerName
-    );
-
-    // Navigate to the workers page for each test
+    // Navigate to the workers page
     await workerTestBase.navigateToWorkersPage(page);
 
     // Wait for the worker table to load and our test worker to appear
@@ -46,9 +38,24 @@ test.describe.serial("Worker Property Updates", () => {
     const workerRows = workerTestBase.getWorkerRows(page);
     await expect(workerRows).toHaveCount(1);
 
-    // Verify the worker name is displayed (use initialWorkerName instead of testWorker.name)
+    // Verify the worker name is displayed
     const nameCell = workerTestBase.getWorkerNameCell(page);
     await expect(nameCell).toContainText(initialWorkerName);
+  });
+
+  test.afterEach(async () => {
+    // Clean up: delete the worker created for this test
+    if (testWorker?.workerId) {
+      try {
+        await workerTestBase.deleteTestWorker(testWorker.workerId);
+        console.log(`Deleted test worker: ${testWorker.workerId}`);
+      } catch (error) {
+        console.warn(
+          `Failed to delete test worker ${testWorker.workerId}:`,
+          error
+        );
+      }
+    }
   });
 
   test("should allow editing worker name by clicking on it", async ({

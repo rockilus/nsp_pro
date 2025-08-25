@@ -153,6 +153,17 @@ export class WorkerTestBase {
   }
 
   /**
+   * Deletes a test worker using the API
+   */
+  async deleteTestWorker(workerId: string): Promise<void> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupWorkerTests() first.");
+    }
+
+    return this.dbUtils.deleteWorker(workerId, this.testTeam.teamId);
+  }
+
+  /**
    * Creates a worker via the UI by clicking the +Worker button
    */
   async createWorkerViaUI(page: Page): Promise<void> {
