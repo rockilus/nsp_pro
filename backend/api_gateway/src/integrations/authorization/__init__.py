@@ -1,6 +1,5 @@
 from src.integrations.authorization.authz_services import (
     authz_check,
-    authz_check_with_retry,
     authz_connect,
     authz_delete_all_users,
     authz_delete_user,
@@ -17,7 +16,6 @@ from src.integrations.authorization.authz_services import (
 
 __all__ = [
     "authz_check",
-    "authz_check_with_retry",
     "authz_connect",
     "authz_delete_all_users",
     "authz_delete_user",

@@ -1,3 +1,4 @@
+import asyncio
 from typing import List
 
 from permit import PermitApiError  # type: ignore
@@ -117,52 +118,47 @@ async def authz_role_assignment_get_user_team_ids(
 async def authz_check(
     user_id: str, action: str, resource: str, resource_id: str | None = None
 ) -> bool:
-    resource_instance = (
-        f"{resource}:{resource_id}" if resource_id else resource
-    )
-    try:
-        out = await permit.check(
-            user=user_id,
-            action=action,
-            resource=resource_instance,
-        )
-    except Exception as e:
-        log_info("Permit check error")
-        handle_permit_errors(e)
-    return out
-
-
-async def authz_check_with_retry(
-    user_id: str,
-    action: str,
-    resource: str,
-    resource_id: str | None = None,
-    max_retries: int = 3,
-    initial_delay: float = 0.5,
-) -> bool:
     """
-    Authorization check with retry logic to handle policy sync timing issues.
+    Check if a user is authorized to perform an action on a resource.
+
+    Includes automatic retry logic based on configuration settings to handle
+    policy sync timing issues with Permit.io. Retry behavior is controlled
+    by config.authz_enable_retry, config.authz_max_retries, and
+    config.authz_initial_delay.
 
     Args:
         user_id: User identifier
         action: Action to check (e.g., "create-worker")
         resource: Resource type (e.g., "team")
         resource_id: Specific resource instance ID
-        max_retries: Maximum number of retry attempts (default: 3)
-        initial_delay: Initial delay in seconds before first retry
-                      (default: 0.5)
 
     Returns:
         bool: True if authorized, False otherwise
 
     Raises:
-        Exception: If all retries fail with errors
+        Exception: If authorization check fails with errors after all retries
     """
-    import asyncio
-
     resource_instance = (
         f"{resource}:{resource_id}" if resource_id else resource
     )
+
+    # If retry is disabled, use the original single-check logic
+    if not config.authz_enable_retry:
+        try:
+            result = await permit.check(
+                user=user_id,
+                action=action,
+                resource=resource_instance,
+            )
+            return result
+        except Exception as e:
+            log_info("Permit check error")
+            handle_permit_errors(e)
+            return False
+
+    # Retry logic enabled - use config settings
+    max_retries = config.authz_max_retries
+    initial_delay = config.authz_initial_delay
 
     for attempt in range(max_retries + 1):
         try:
@@ -172,7 +168,11 @@ async def authz_check_with_retry(
                 f"resource={resource_instance}"
             )
 
-            result = await authz_check(user_id, action, resource, resource_id)
+            result = await permit.check(
+                user=user_id,
+                action=action,
+                resource=resource_instance,
+            )
 
             if result:
                 if attempt > 0:
@@ -184,13 +184,13 @@ async def authz_check_with_retry(
 
             # If authorization failed and we have retries left, wait and retry
             if attempt < max_retries:
-                delay = initial_delay * (2**attempt)  # Exponential backoff
+                backoff_delay = initial_delay * (2**attempt)
                 log_info(
-                    f"Authorization denied, retrying in {delay}s "
+                    f"Authorization denied, retrying in {backoff_delay}s "
                     f"(attempt {attempt + 1}/{max_retries + 1}) "
                     f"for {resource_instance}"
                 )
-                await asyncio.sleep(delay)
+                await asyncio.sleep(backoff_delay)
             else:
                 log_info(
                     f"Authorization denied after all {max_retries + 1} "
@@ -205,14 +205,15 @@ async def authz_check_with_retry(
                     f"{max_retries + 1} attempts for {resource_instance}: "
                     f"{str(e)}"
                 )
-                raise
+                handle_permit_errors(e)
+                return False
 
-            delay = initial_delay * (2**attempt)
+            backoff_delay = initial_delay * (2**attempt)
             log_info(
                 f"Authorization error on attempt {attempt + 1}, "
-                f"retrying in {delay}s: {str(e)}"
+                f"retrying in {backoff_delay}s: {str(e)}"
             )
-            await asyncio.sleep(delay)
+            await asyncio.sleep(backoff_delay)
 
     return False
 

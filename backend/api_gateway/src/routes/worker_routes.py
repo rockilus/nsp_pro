@@ -8,14 +8,13 @@ from shared.logger import log_info
 from shared.schemas.core import Worker
 from shared.schemas.dto import WorkerDTO
 
-from src.config import config
 from src.dependencies import (
     get_db_collections,
     get_user_context,
     get_worker_service,
 )
 from src.errors import NotAuthorizedError, handle_routes_errors
-from src.integrations.authorization import authz_check, authz_check_with_retry
+from src.integrations.authorization import authz_check
 from src.security.user_context import UserContext
 from src.services.worker_service import WorkerService
 
@@ -32,30 +31,18 @@ async def create_worker(
     """
     Create a new worker for the specified team.
 
-    This endpoint includes retry logic for authorization checks to handle
-    policy sync timing issues with Permit.io.
+    Authorization includes automatic retry logic based on configuration
+    to handle policy sync timing issues with Permit.io.
     """
     try:
         log_info(
             f"Creating worker for team {team_id}, user {user_context.user_id}"
         )
 
-        # Use retry logic for authorization if enabled, otherwise use standard
-        if config.authz_enable_retry:
-            authorized = await authz_check_with_retry(
-                user_context.user_id,
-                "create-worker",
-                "team",
-                team_id,
-                max_retries=config.authz_max_retries,
-                initial_delay=config.authz_initial_delay,
-            )
-        else:
-            authorized = await authz_check(
-                user_context.user_id, "create-worker", "team", team_id
-            )
-
-        if not authorized:
+        # Simple authorization check - retry logic is handled internally
+        if not await authz_check(
+            user_context.user_id, "create-worker", "team", team_id
+        ):
             log_info(
                 f"Authorization denied for user {user_context.user_id} "
                 f"to create worker in team {team_id}"
