@@ -6,7 +6,7 @@
 terraform {
   required_providers {
     permitio = {
-      source = "permitio/permit-io"
+      source  = "permitio/permit-io"
       version = "~> 0.0.12"
     }
   }
@@ -189,8 +189,8 @@ resource "permitio_resource" "team" {
     "duplicate-period" = {
       name = "duplicate-period"
     },
-    "updated-specialty" = {
-      name = "updated-specialty"
+    "update-specialty" = {
+      name = "update-specialty"
     },
     "create-shift" = {
       name = "create-shift"
@@ -425,9 +425,9 @@ resource "permitio_role" "leader" {
   key         = "leader"
   name        = "leader"
   resource    = permitio_resource.team.key
-  permissions = ["update-team", "create-link-shift", "read-fixed-assignments", "create-coverage-selector", "read-specialties", "update-coverage", "read-assignments-validated", "create-schedule-export", "delete-stats-header", "delete-assignment", "solve-schedule", "update-assignment", "update", "read-shift-options", "create-team-invitation", "update-dimension", "create-stats-header", "read-coverages", "delete-dimension", "read-shifts", "delete-breach", "create-dimension", "create-dim-entry", "read", "read-schedules", "read-coverage-selectors", "create-coverage", "read-bulk", "update-shift", "delete-coverage", "update-stats-header", "update-worker-property", "resend-team-invitation", "delete", "create-worker", "create-assignment", "updated-specialty", "create-specialty", "delete-shift-demand", "delete-specialty", "delete-dim-entry", "create-schedule", "create", "read-team-invitations", "update-link-shift", "read-team", "update-coverage-selector", "update-schedule", "read-workers", "delete-link-shift", "delete-shift", "delete-fixed-assignment", "update-breach", "update-attribute", "create-shift", "remove-user", "update-shift-demand", "update-demand", "delete-coverage-selector", "delete-team-invitation", "create-constraint", "update-request", "read-stats", "update-dim-entry", "delete-constraint", "validate-schedule", "read-demands", "create-shift-demand", "read-requests", "read-schedule-work-times", "update-fixed-assignment", "read-link-shifts", "create-fixed-assignment", "delete-worker", "delete-request", "read-dimensions", "read-team-users", "update-worker", "read-constraints", "update-constraint", "duplicate-period", "create-demand", "read-constraint-templates", "delete-schedule", "read-breaches", "read-assignments", "delete-demand", "create-request", "read-shift-demands"]
+  permissions = ["update-team", "create-link-shift", "read-fixed-assignments", "create-coverage-selector", "read-specialties", "update-coverage", "read-assignments-validated", "create-schedule-export", "delete-stats-header", "delete-assignment", "solve-schedule", "update-assignment", "update", "read-shift-options", "create-team-invitation", "update-dimension", "create-stats-header", "read-coverages", "delete-dimension", "read-shifts", "delete-breach", "create-dimension", "create-dim-entry", "read", "read-schedules", "read-coverage-selectors", "create-coverage", "read-bulk", "update-shift", "delete-coverage", "update-stats-header", "update-worker-property", "resend-team-invitation", "delete", "create-worker", "create-assignment", "update-specialty", "create-specialty", "delete-shift-demand", "delete-specialty", "delete-dim-entry", "create-schedule", "create", "read-team-invitations", "update-link-shift", "read-team", "update-coverage-selector", "update-schedule", "read-workers", "delete-link-shift", "delete-shift", "delete-fixed-assignment", "update-breach", "update-attribute", "create-shift", "remove-user", "update-shift-demand", "update-demand", "delete-coverage-selector", "delete-team-invitation", "create-constraint", "update-request", "read-stats", "update-dim-entry", "delete-constraint", "validate-schedule", "read-demands", "create-shift-demand", "read-requests", "read-schedule-work-times", "update-fixed-assignment", "read-link-shifts", "create-fixed-assignment", "delete-worker", "delete-request", "read-dimensions", "read-team-users", "update-worker", "read-constraints", "update-constraint", "duplicate-period", "create-demand", "read-constraint-templates", "delete-schedule", "read-breaches", "read-assignments", "delete-demand", "create-request", "read-shift-demands"]
 
-  depends_on  = [permitio_resource.team]
+  depends_on = [permitio_resource.team]
 }
 resource "permitio_role" "member" {
   key         = "member"
@@ -436,7 +436,7 @@ resource "permitio_role" "member" {
   permissions = ["read-workers", "update", "read-assignments-validated", "delete-request", "create-request", "update-request", "read-requests", "read", "read-shifts"]
   description = "Lala"
 
-  depends_on  = [permitio_resource.team]
+  depends_on = [permitio_resource.team]
 }
 resource "permitio_role" "owner" {
   key         = "owner"
@@ -444,38 +444,38 @@ resource "permitio_role" "owner" {
   resource    = permitio_resource.user.key
   permissions = ["update", "change-password", "read", "delete", "reject-team-invitation", "accept-team-invitation", "create", "read-team-invitations", "leave-team", "read-teams", "create-team"]
 
-  depends_on  = [permitio_resource.user]
+  depends_on = [permitio_resource.user]
 }
 resource "permitio_role" "super_admin" {
   key         = "super_admin"
   name        = "Super admin"
-  permissions = ["team:delete-dim-entry", "request:delete", "team:read-requests", "team:update-shift", "team:update-link-shift", "team:updated-specialty", "admin:delete-impersonation", "user:delete", "team:update-breach", "user:leave-team", "user:reject-team-invitation", "team:create-request", "team:delete-link-shift", "team:read-assignments", "team:delete-coverage-selector", "team:delete-stats-header", "team:read-dimensions", "team:create-worker", "admin:read-dashboard", "team:delete-team-invitation", "team:update-coverage", "team:read-breaches", "team:delete-shift", "team:read-workers", "team:validate-schedule", "team:read-team", "team:update", "team:update-fixed-assignment", "request:update", "user:accept-team-invitation", "team:create-specialty", "team:update-worker-property", "team:solve-schedule", "team:read-bulk", "team:update-team", "team:update-coverage-selector", "team:delete-assignment", "team:create", "team:delete-request", "user:create", "admin:delete-user", "team:read-link-shifts", "team:create-link-shift", "team:update-attribute", "user:read-teams", "admin:read-user", "worker:delete", "team:update-assignment", "user:create-team", "team:create-constraint", "request:read", "team:update-worker", "user:change-password", "team:create-shift", "team:read-team-invitations", "team:read-coverage-selectors", "team:read-schedules", "team:read-stats", "team:read-constraints", "team:create-dim-entry", "team:read-schedule-work-times", "admin:create-impersonation", "team:read-constraint-templates", "team:create-schedule-export", "team:delete-breach", "team:delete-demand", "worker:create", "team:create-schedule", "team:create-assignment", "team:resend-team-invitation", "team:delete-schedule", "team:read-shifts", "user:update", "team:update-request", "team:delete-specialty", "team:create-coverage-selector", "team:update-demand", "team:create-team-invitation", "team:delete-worker", "team:delete-shift-demand", "team:create-fixed-assignment", "team:create-stats-header", "team:create-coverage", "team:delete-constraint", "team:update-stats-header", "team:read-specialties", "worker:update", "team:update-schedule", "user:read", "team:read-coverages", "team:duplicate-period", "team:delete-fixed-assignment", "admin:read-users", "team:delete-dimension", "team:update-dimension", "team:update-shift-demand", "team:read-demands", "team:remove-user", "team:read-team-users", "team:read-shift-options", "team:read-assignments-validated", "team:read-shift-demands", "team:update-dim-entry", "team:delete-coverage", "team:update-constraint", "team:create-shift-demand", "team:read", "worker:read", "team:create-demand", "request:create", "team:create-dimension", "user:read-team-invitations", "team:delete", "team:read-fixed-assignments"]
+  permissions = ["team:delete-dim-entry", "request:delete", "team:read-requests", "team:update-shift", "team:update-link-shift", "team:update-specialty", "admin:delete-impersonation", "user:delete", "team:update-breach", "user:leave-team", "user:reject-team-invitation", "team:create-request", "team:delete-link-shift", "team:read-assignments", "team:delete-coverage-selector", "team:delete-stats-header", "team:read-dimensions", "team:create-worker", "admin:read-dashboard", "team:delete-team-invitation", "team:update-coverage", "team:read-breaches", "team:delete-shift", "team:read-workers", "team:validate-schedule", "team:read-team", "team:update", "team:update-fixed-assignment", "request:update", "user:accept-team-invitation", "team:create-specialty", "team:update-worker-property", "team:solve-schedule", "team:read-bulk", "team:update-team", "team:update-coverage-selector", "team:delete-assignment", "team:create", "team:delete-request", "user:create", "admin:delete-user", "team:read-link-shifts", "team:create-link-shift", "team:update-attribute", "user:read-teams", "admin:read-user", "worker:delete", "team:update-assignment", "user:create-team", "team:create-constraint", "request:read", "team:update-worker", "user:change-password", "team:create-shift", "team:read-team-invitations", "team:read-coverage-selectors", "team:read-schedules", "team:read-stats", "team:read-constraints", "team:create-dim-entry", "team:read-schedule-work-times", "admin:create-impersonation", "team:read-constraint-templates", "team:create-schedule-export", "team:delete-breach", "team:delete-demand", "worker:create", "team:create-schedule", "team:create-assignment", "team:resend-team-invitation", "team:delete-schedule", "team:read-shifts", "user:update", "team:update-request", "team:delete-specialty", "team:create-coverage-selector", "team:update-demand", "team:create-team-invitation", "team:delete-worker", "team:delete-shift-demand", "team:create-fixed-assignment", "team:create-stats-header", "team:create-coverage", "team:delete-constraint", "team:update-stats-header", "team:read-specialties", "worker:update", "team:update-schedule", "user:read", "team:read-coverages", "team:duplicate-period", "team:delete-fixed-assignment", "admin:read-users", "team:delete-dimension", "team:update-dimension", "team:update-shift-demand", "team:read-demands", "team:remove-user", "team:read-team-users", "team:read-shift-options", "team:read-assignments-validated", "team:read-shift-demands", "team:update-dim-entry", "team:delete-coverage", "team:update-constraint", "team:create-shift-demand", "team:read", "worker:read", "team:create-demand", "request:create", "team:create-dimension", "user:read-team-invitations", "team:delete", "team:read-fixed-assignments"]
   description = "Granted all permissions to provide support to clients"
 
-  depends_on  = [permitio_resource.team, permitio_resource.request, permitio_resource.admin, permitio_resource.user, permitio_resource.worker]
+  depends_on = [permitio_resource.team, permitio_resource.request, permitio_resource.admin, permitio_resource.user, permitio_resource.worker]
 }
 
 # Resource Sets
 resource "permitio_resource_set" "requests_created_by_the_user" {
-  name        = "Requests created by the user"
-  key         = "requests_created_by_the_user"
-  resource    = permitio_resource.request.key
-  conditions  = jsonencode({
-  "allOf": [
-    {
-      "allOf": [
-        {
-          "resource.created_by": {
-            "equals": {
-              "ref": "user.key"
+  name     = "Requests created by the user"
+  key      = "requests_created_by_the_user"
+  resource = permitio_resource.request.key
+  conditions = jsonencode({
+    "allOf" : [
+      {
+        "allOf" : [
+          {
+            "resource.created_by" : {
+              "equals" : {
+                "ref" : "user.key"
+              }
             }
           }
-        }
-      ]
-    }
-  ]
-})
-  depends_on  = [
+        ]
+      }
+    ]
+  })
+  depends_on = [
     permitio_resource.request
   ]
 }

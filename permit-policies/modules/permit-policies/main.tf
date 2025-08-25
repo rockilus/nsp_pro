@@ -175,8 +175,8 @@ resource "permitio_resource" "team" {
     "duplicate-period" = {
       name = "duplicate-period"
     },
-    "updated-specialty" = {
-      name = "updated-specialty"
+    "update-specialty" = {
+      name = "update-specialty"
     },
     "create-shift" = {
       name = "create-shift"

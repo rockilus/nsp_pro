@@ -29,7 +29,7 @@ variable "leader_permissions" {
     "read-coverages", "delete-dimension", "read-shifts", "delete-breach", "create-dimension",
     "create-dim-entry", "read", "read-schedules", "read-coverage-selectors", "create-coverage",
     "read-bulk", "update-shift", "delete-coverage", "update-stats-header", "update-worker-property",
-    "resend-team-invitation", "delete", "create-worker", "create-assignment", "updated-specialty",
+    "resend-team-invitation", "delete", "create-worker", "create-assignment", "update-specialty",
     "create-specialty", "delete-shift-demand", "delete-specialty", "delete-dim-entry",
     "create-schedule", "create", "read-team-invitations", "update-link-shift", "read-team",
     "update-coverage-selector", "update-schedule", "read-workers", "delete-link-shift",
@@ -81,7 +81,7 @@ variable "super_admin_permissions" {
   type        = list(string)
   default = [
     "team:delete-dim-entry", "request:delete", "team:read-requests", "team:update-shift",
-    "team:update-link-shift", "team:updated-specialty", "admin:delete-impersonation",
+    "team:update-link-shift", "team:update-specialty", "admin:delete-impersonation",
     "user:delete", "team:update-breach", "user:leave-team", "user:reject-team-invitation",
     "team:create-request", "team:delete-link-shift", "team:read-assignments",
     "team:delete-coverage-selector", "team:delete-stats-header", "team:read-dimensions",
