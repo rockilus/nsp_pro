@@ -313,11 +313,8 @@ test.describe("Worker Specialty Cell", () => {
     const popup = page.locator('[data-testid="worker-specialty-edit-popup"]');
     await expect(popup).toBeVisible();
 
-    // Click away from the popup (on the page title)
-    const pageTitle = page.getByRole("heading", { name: "Workers" });
-    await pageTitle.click();
-
-    // Verify the popup is closed
+    // Click away from popup to close it (using coordinate-based click)
+    await page.mouse.click(100, 100);
     await expect(popup).not.toBeVisible();
 
     console.log("✅ Popup closes when clicking away");
@@ -391,9 +388,8 @@ test.describe("Worker Specialty Cell", () => {
     );
     await option.click();
 
-    // Close popup by clicking away
-    const pageTitle = page.getByRole("heading", { name: "Workers" });
-    await pageTitle.click();
+    // Close popup by clicking away (using coordinate-based click)
+    await page.mouse.click(100, 100);
 
     // Wait for popup to close
     await expect(popup).not.toBeVisible();
@@ -444,9 +440,8 @@ test.describe("Worker Specialty Cell", () => {
     );
     await deleteButton.click();
 
-    // Close popup by clicking away
-    const pageTitle = page.getByRole("heading", { name: "Workers" });
-    await pageTitle.click();
+    // Close popup by clicking away (using coordinate-based click)
+    await page.mouse.click(100, 100);
 
     // Wait for popup to close
     await expect(popup).not.toBeVisible();
