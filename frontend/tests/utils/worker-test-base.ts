@@ -248,6 +248,38 @@ export class WorkerTestBase {
   }
 
   /**
+   * Gets the employment start date cell for a worker row
+   */
+  getWorkerEmploymentStartCell(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+
+    // Prioritize the table cell itself for interaction
+    const byCellTestId = row.locator(
+      '[data-testid="worker-employment-start-cell"]'
+    );
+    // Fallback to finding by column position if data-testid is not available
+    const byColumnPosition = row.locator("td, th").nth(2); // Assuming employment start is 3rd column
+
+    return byCellTestId.or(byColumnPosition);
+  }
+
+  /**
+   * Gets the employment start date display element (for reading text)
+   */
+  getWorkerEmploymentStartDisplay(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+    return row.locator('[data-testid^="worker-employment-start-display-"]');
+  }
+
+  /**
+   * Gets the employment start date input element (for editing)
+   */
+  getWorkerEmploymentStartInput(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+    return row.locator('[data-testid^="worker-employment-start-input-"]');
+  }
+
+  /**
    * Gets team information
    */
   getTestTeam(): { teamId: string; name: string } | null {

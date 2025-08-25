@@ -99,6 +99,7 @@ export default function WorkerFieldEmploymentStart({
       component="th"
       scope="row"
       sx={{ paddingY: 0, textAlign: "center" }}
+      data-testid="worker-employment-start-cell"
     >
       {editing ? (
         <div style={{ display: "flex", justifyContent: "center" }}>
@@ -108,6 +109,13 @@ export default function WorkerFieldEmploymentStart({
             ref={cellRef}
             onChange={(newValue) => handleUpdateState(newValue)}
             onOpen={() => setDatePickerOpen(true)}
+            slotProps={{
+              textField: {
+                inputProps: {
+                  "data-testid": `worker-employment-start-input-${worker.id}`,
+                },
+              },
+            }}
           />
         </div>
       ) : (
@@ -119,6 +127,7 @@ export default function WorkerFieldEmploymentStart({
             alignItems: "center",
             minHeight: 45,
           }}
+          data-testid={`worker-employment-start-display-${worker.id}`}
         >
           <span>{worker.employmentStartDate.format("DD/MM/YYYY")}</span>
         </div>
