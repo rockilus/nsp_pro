@@ -31,9 +31,8 @@ test.describe("DimensionCell Component", () => {
         `Created test dimension: ${testDimension.name} (${testDimension.dimensionId})`
       );
 
-      // Navigate directly to the workers page
-      await page.goto("http://localhost:3000/en/plan/workers/");
-      await page.waitForLoadState("networkidle");
+      // Navigate to the workers page for the correct team
+      await dimensionTestBase.navigateToWorkersPage(page);
 
       // Wait for the workers table to load and the dimension column to appear
       await dimensionTestBase.waitForNewColumn(page, testDimension.name);
@@ -185,9 +184,8 @@ test.describe("DimensionCell Component", () => {
             `Created test dimension: ${testDimension.name} (${testDimension.dimensionId})`
           );
 
-          // Navigate directly to the workers page
-          await page.goto("http://localhost:3000/en/plan/workers/");
-          await page.waitForLoadState("networkidle");
+          // Navigate to the workers page for the correct team
+          await dimensionTestBase.navigateToWorkersPage(page);
 
           // Wait for the dimension column to appear
           await dimensionTestBase.waitForNewColumn(page, testDimension.name);
@@ -454,9 +452,8 @@ test.describe("DimensionCell Component", () => {
         `Created test dimension: ${testDimension.name} (${testDimension.dimensionId})`
       );
 
-      // Navigate directly to the workers page
-      await page.goto("http://localhost:3000/en/plan/workers/");
-      await page.waitForLoadState("networkidle");
+      // Navigate to the workers page for the correct team
+      await dimensionTestBase.navigateToWorkersPage(page);
 
       // Wait for the dimension column to appear
       await dimensionTestBase.waitForNewColumn(page, testDimension.name);
