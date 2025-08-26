@@ -386,4 +386,141 @@ test.describe("NewDimensionForm Component", () => {
 
     console.log("✅ Form handles different dimension types correctly");
   });
+
+  test("should show new text field to create tags when selecting dimension type tags", async ({
+    page,
+  }) => {
+    // Open the popup
+    await dimensionTestBase.openNewDimensionPopup(page);
+    await dimensionTestBase.waitForPopupVisible(page);
+
+    // Initially, tags section should not be visible
+    const tagsSection = dimensionTestBase.getTagsSection(page);
+    await expect(tagsSection).not.toBeVisible();
+
+    // Select tags type
+    await dimensionTestBase.selectType(page, DimensionEntryType.DIM_ENTRIES);
+
+    // Verify tags section appears with text field
+    await expect(tagsSection).toBeVisible();
+
+    // Verify text field for adding tags exists
+    const tagInputField = page.locator(
+      '[data-testid="new-dimension-tags-section"] input[type="text"]'
+    );
+    await expect(tagInputField).toBeVisible();
+
+    console.log(
+      "✅ Text field for creating tags appears when tags type is selected"
+    );
+  });
+
+  test("should show error message when clicking add before entering any tag", async ({
+    page,
+  }) => {
+    // Open the popup
+    await dimensionTestBase.openNewDimensionPopup(page);
+    await dimensionTestBase.waitForPopupVisible(page);
+
+    // Fill name field and select tags type
+    await dimensionTestBase.fillNameField(page, "Test Tags Property");
+    await dimensionTestBase.selectType(page, DimensionEntryType.DIM_ENTRIES);
+
+    // Verify tags section is visible
+    const tagsSection = dimensionTestBase.getTagsSection(page);
+    await expect(tagsSection).toBeVisible();
+
+    // Click add button without entering any tags
+    await dimensionTestBase.clickAddButton(page);
+
+    // Verify error message appears for empty tags list
+    const tagsErrorMessage = page.locator(
+      '[data-testid="new-dimension-tags-section"] .MuiFormHelperText-root.Mui-error'
+    );
+    await expect(tagsErrorMessage).toBeVisible();
+
+    // Verify popup is still open (didn't close due to error)
+    const popup = dimensionTestBase.getNewDimensionPopup(page);
+    await expect(popup).toBeVisible();
+
+    console.log(
+      "✅ Error message appears when trying to add tags property without any tags"
+    );
+  });
+
+  test("should add new tag to list when entering tag name and pressing enter", async ({
+    page,
+  }) => {
+    // Open the popup
+    await dimensionTestBase.openNewDimensionPopup(page);
+    await dimensionTestBase.waitForPopupVisible(page);
+
+    // Fill name field and select tags type
+    await dimensionTestBase.fillNameField(page, "Test Tags Property");
+    await dimensionTestBase.selectType(page, DimensionEntryType.DIM_ENTRIES);
+
+    // Get the tag input field
+    const tagInputField = page.locator(
+      '[data-testid="new-dimension-tags-section"] input[type="text"]'
+    );
+    await expect(tagInputField).toBeVisible();
+
+    const tagName = "Test Tag";
+
+    // Type tag name and press enter
+    await tagInputField.fill(tagName);
+    await tagInputField.press("Enter");
+
+    // Verify tag appears in the tags list
+    const tagInList = page.locator(
+      `[data-testid="new-dimension-tags-section"] [data-testid*="tag-chip"]:has-text("${tagName}")`
+    );
+    await expect(tagInList).toBeVisible();
+
+    // Verify input field is cleared after adding tag
+    await expect(tagInputField).toHaveValue("");
+
+    console.log(
+      "✅ New tag is added to list when entering name and pressing enter"
+    );
+  });
+
+  test("should remove tag from list when clicking delete cross", async ({
+    page,
+  }) => {
+    // Open the popup
+    await dimensionTestBase.openNewDimensionPopup(page);
+    await dimensionTestBase.waitForPopupVisible(page);
+
+    // Fill name field and select tags type
+    await dimensionTestBase.fillNameField(page, "Test Tags Property");
+    await dimensionTestBase.selectType(page, DimensionEntryType.DIM_ENTRIES);
+
+    // Get the tag input field and add a tag
+    const tagInputField = page.locator(
+      '[data-testid="new-dimension-tags-section"] input[type="text"]'
+    );
+    const tagName = "Test Tag to Delete";
+
+    await tagInputField.fill(tagName);
+    await tagInputField.press("Enter");
+
+    // Verify tag appears in the list
+    const tagInList = page.locator(
+      `[data-testid="new-dimension-tags-section"] [data-testid*="tag-chip"]:has-text("${tagName}")`
+    );
+    await expect(tagInList).toBeVisible();
+
+    // Find and click the delete button for this tag
+    const deleteButton = page.locator(
+      `[data-testid="new-dimension-tags-section"] [data-testid*="tag-chip"]:has-text("${tagName}") [data-testid*="delete"]`
+    );
+    await expect(deleteButton).toBeVisible();
+    await deleteButton.click();
+
+    // Verify tag is removed from the list
+    await expect(tagInList).not.toBeVisible();
+
+    console.log("✅ Tag is removed from list when clicking delete cross");
+  });
 });
