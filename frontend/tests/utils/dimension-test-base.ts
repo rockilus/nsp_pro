@@ -329,10 +329,14 @@ export class DimensionTestBase extends WorkerTestBase {
   }
 
   /**
-   * Gets a table column header by name
+   * Gets a table column header by name - looks for worker dimension headers
    */
   getTableColumnHeader(page: Page, columnName: string) {
-    return page.locator(`[data-testid="table-header-${columnName}"]`);
+    // Use a more flexible selector that finds the dimension header by its text content
+    // since the data-testid uses the dimension ID which we don't know
+    return page
+      .locator(`[data-testid*="worker-dimension-"][data-testid*="header-cell"]`)
+      .filter({ hasText: columnName });
   }
 
   /**
