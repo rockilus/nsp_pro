@@ -312,6 +312,7 @@ function WorkerTableHeader({
         {/* First column header - Worker name */}
         <TableCell
           className="worker-table-first-header-cell"
+          data-testid="worker-name-header-cell"
           sx={{
             textAlign: "left !important",
             paddingLeft: "16px !important",
@@ -360,7 +361,11 @@ function WorkerTableHeader({
               handleDeleteSpecialty={handleDeleteSpecialty}
             />
           ) : (
-            <TableCell key={index} className="worker-table-cell">
+            <TableCell
+              key={index}
+              className="worker-table-cell"
+              data-testid={`worker-${field.name}-header-cell`}
+            >
               <div className="flex items-center justify-between">
                 <Tooltip title={field.label} placement="top">
                   <span className="table-header-default">{field.label}</span>
@@ -417,7 +422,10 @@ function WorkerTableHeader({
         ))}
 
         {/* Actions column header */}
-        <TableCell className="worker-table-actions-header">
+        <TableCell
+          className="worker-table-actions-header"
+          data-testid="worker-actions-header-cell"
+        >
           <Tooltip title={t("actions")} placement="top">
             <span className="table-header-default">{t("actions")}</span>
           </Tooltip>

@@ -94,6 +94,7 @@ export default function DimensionCell({
       component="th"
       scope="row"
       className={`worker-table-header ${className}`.trim()}
+      data-testid={`worker-dimension-${dimension.id}-header-cell`}
       sx={{
         paddingY: 0,
         padding: "6px 8px",

@@ -8,10 +8,17 @@
 import { TeamApi } from "../../src/app/lib/api/teamApi";
 import { WorkerApi } from "../../src/app/lib/api/workerApi";
 import { SpecialtyApi } from "../../src/app/lib/api/specialtyApi";
+import { DimensionApi } from "../../src/app/lib/api/dimensionApi";
 import { AuthenticatedApiClient } from "../../src/app/lib/api/baseApi";
 import { TeamWithMembership } from "../../src/types/team";
 import { WorkerT } from "../../src/types/worker";
 import { SpecialtyT } from "../../src/types/specialty";
+import {
+  DimensionT,
+  DimensionType,
+  DimensionEntryType,
+} from "../../src/types/dimension";
+import { DimEntryT } from "../../src/types/dim-entry";
 import { testConfig } from "./test-config";
 import dayjs from "dayjs";
 
@@ -721,6 +728,165 @@ export class DatabaseTestUtils {
       }
       throw new Error(
         `Failed to get specialties for team '${teamId}': Unknown error`
+      );
+    }
+  }
+
+  /**
+   * Reset a specific collection
+   */
+  async resetCollection(collection: string): Promise<DatabaseResetResponse> {
+    return this.resetDatabase({
+      collections: [collection],
+      preserveSystemData: true,
+    });
+  }
+
+  /**
+   * Create a dimension using the existing DimensionApi for consistent behavior
+   */
+  async createDimension(dimensionData: {
+    teamId: string;
+    name: string;
+    entryType: DimensionEntryType;
+    dimensionType: DimensionType;
+    dimEntries?: DimEntryT[];
+  }): Promise<{ dimensionId: string; name: string; teamId: string }> {
+    try {
+      // Create the dimension object
+      const newDimension: DimensionT = {
+        id: "",
+        teamId: dimensionData.teamId,
+        dimTypes: [dimensionData.dimensionType],
+        name: dimensionData.name,
+        entryType: dimensionData.entryType,
+        deleted: false,
+      };
+
+      // Use the existing DimensionApi with our test client
+      const result = await DimensionApi.addDimension(
+        this.testApiClient,
+        newDimension,
+        dimensionData.dimEntries || []
+      );
+
+      return {
+        dimensionId: result.newDimension.id,
+        name: result.newDimension.name,
+        teamId: result.newDimension.teamId,
+      };
+    } catch (error) {
+      // Enhanced error handling for test debugging
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to create dimension '${dimensionData.name}': ${error.message}`
+        );
+      }
+      throw new Error(
+        `Failed to create dimension '${dimensionData.name}': Unknown error`
+      );
+    }
+  }
+
+  /**
+   * Update a dimension using the existing DimensionApi
+   */
+  async updateDimension(
+    dimensionId: string,
+    updates: {
+      teamId: string;
+      name?: string;
+      entryType?: DimensionEntryType;
+    }
+  ): Promise<{ dimensionId: string; name: string; teamId: string }> {
+    try {
+      // First get the current dimension to merge updates
+      const dimensions = await this.getDimensions(updates.teamId);
+      const currentDimension = dimensions.find((d) => d.id === dimensionId);
+
+      if (!currentDimension) {
+        throw new Error(`Dimension with ID '${dimensionId}' not found`);
+      }
+
+      const updatedDimension: DimensionT = {
+        ...currentDimension,
+        name: updates.name ?? currentDimension.name,
+        entryType: updates.entryType ?? currentDimension.entryType,
+      };
+
+      // Use the existing DimensionApi with our test client
+      const result = await DimensionApi.updateDimension(
+        this.testApiClient,
+        updatedDimension
+      );
+
+      return {
+        dimensionId: result.id,
+        name: result.name,
+        teamId: result.teamId,
+      };
+    } catch (error) {
+      // Enhanced error handling for test debugging
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to update dimension '${dimensionId}': ${error.message}`
+        );
+      }
+      throw new Error(
+        `Failed to update dimension '${dimensionId}': Unknown error`
+      );
+    }
+  }
+
+  /**
+   * Delete a dimension using the existing DimensionApi
+   */
+  async deleteDimension(dimensionId: string, teamId: string): Promise<void> {
+    try {
+      // Use the existing DimensionApi with our test client
+      await DimensionApi.deleteDimension(
+        this.testApiClient,
+        dimensionId,
+        teamId
+      );
+    } catch (error) {
+      // Enhanced error handling for test debugging
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to delete dimension '${dimensionId}': ${error.message}`
+        );
+      }
+      throw new Error(
+        `Failed to delete dimension '${dimensionId}': Unknown error`
+      );
+    }
+  }
+
+  /**
+   * Get all dimensions for a team using the existing DimensionApi
+   */
+  async getDimensions(
+    teamId: string,
+    dimensionType?: DimensionType
+  ): Promise<DimensionT[]> {
+    try {
+      // Use the existing DimensionApi with our test client
+      const result = await DimensionApi.getDimensions(
+        this.testApiClient,
+        teamId,
+        dimensionType ? [dimensionType] : undefined
+      );
+
+      return result.dimensions;
+    } catch (error) {
+      // Enhanced error handling for test debugging
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to get dimensions for team '${teamId}': ${error.message}`
+        );
+      }
+      throw new Error(
+        `Failed to get dimensions for team '${teamId}': Unknown error`
       );
     }
   }
