@@ -68,6 +68,7 @@ export default function WorkerFieldCellWeeklyHoursDesired({
       scope="row"
       onClick={() => setEditing({ [worker.id]: "weeklyHoursDesired" })}
       sx={{ paddingY: 0, textAlign: "center" }}
+      data-testid="worker-weekly-hours-desired-cell"
     >
       {editing ? (
         <TextField
@@ -86,7 +87,10 @@ export default function WorkerFieldCellWeeklyHoursDesired({
           }}
           autoFocus
           error={!!error}
-          inputProps={{ style: { textAlign: "center" } }}
+          inputProps={{
+            style: { textAlign: "center" },
+            "data-testid": `worker-weekly-hours-desired-input-${worker.id}`,
+          }}
         />
       ) : (
         <Box
@@ -96,6 +100,7 @@ export default function WorkerFieldCellWeeklyHoursDesired({
             alignItems: "center",
             justifyContent: "center",
           }}
+          data-testid={`worker-weekly-hours-desired-display-${worker.id}`}
         >
           {worker.weeklyHoursDesired}
         </Box>
