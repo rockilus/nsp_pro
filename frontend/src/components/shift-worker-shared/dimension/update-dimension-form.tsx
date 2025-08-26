@@ -72,8 +72,17 @@ export default function UpdateDimensionForm({
       selectedTeamId
     ) {
       if (name !== dimension.name) {
-        const newDimension: DimensionT = { ...dimension, name: name };
-        await handleUpdateDimension(newDimension);
+        try {
+          const newDimension: DimensionT = { ...dimension, name: name };
+          await handleUpdateDimension(newDimension);
+          // Close the popup after successful update
+          if (setOpenParent) {
+            setOpenParent(false);
+          }
+        } catch (error) {
+          // Handle error - popup stays open
+          console.error("Failed to update dimension:", error);
+        }
       } else {
         if (setOpenParent) {
           setOpenParent(false);
