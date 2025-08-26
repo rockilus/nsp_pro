@@ -70,8 +70,9 @@ test.describe("NewDimensionForm Component", () => {
     const nameField = dimensionTestBase.getNameTextField(page);
     await expect(nameField).toBeVisible();
 
-    // Verify it's a text input
-    await expect(nameField).toHaveAttribute("type", "text");
+    // Verify it's a text input - target the input element within the TextField
+    const nameInput = nameField.locator("input");
+    await expect(nameInput).toHaveAttribute("type", "text");
 
     // Verify the label
     const nameFieldLabel = page.locator('label:has-text("Name")');
