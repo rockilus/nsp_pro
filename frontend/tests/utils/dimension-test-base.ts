@@ -359,4 +359,95 @@ export class DimensionTestBase extends WorkerTestBase {
       return false;
     }
   }
+
+  //////////////////////////
+  // Link Dimension List Methods
+  //////////////////////////
+
+  /**
+   * Gets the link dimension list section
+   */
+  getLinkDimensionList(page: Page) {
+    return page.locator(".link-dimension-list-item").first().locator("..");
+  }
+
+  /**
+   * Gets all dimension items in the link dimension list
+   */
+  getLinkDimensionItems(page: Page) {
+    return page.locator(".link-dimension-list-item");
+  }
+
+  /**
+   * Gets a specific dimension item in the link dimension list by name
+   */
+  getLinkDimensionItem(page: Page, dimensionName: string) {
+    return page.locator(
+      `.link-dimension-list-item:has(.link-dimension-item-name:text("${dimensionName}"))`
+    );
+  }
+
+  /**
+   * Gets the add button for a specific dimension in the link list
+   */
+  getLinkDimensionAddButton(page: Page, dimensionName: string) {
+    return this.getLinkDimensionItem(page, dimensionName).locator("button");
+  }
+
+  /**
+   * Checks if a dimension appears in the link dimension list
+   */
+  async isDimensionInLinkList(
+    page: Page,
+    dimensionName: string
+  ): Promise<boolean> {
+    const dimensionItem = this.getLinkDimensionItem(page, dimensionName);
+    try {
+      await dimensionItem.waitFor({ state: "visible", timeout: 1000 });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Clicks on a dimension in the link dimension list to select it
+   */
+  async selectLinkDimension(page: Page, dimensionName: string): Promise<void> {
+    const dimensionItem = this.getLinkDimensionItem(page, dimensionName);
+    await dimensionItem.click();
+  }
+
+  /**
+   * Clicks the add button for a dimension in the link list to link it
+   */
+  async linkDimension(page: Page, dimensionName: string): Promise<void> {
+    const addButton = this.getLinkDimensionAddButton(page, dimensionName);
+    await addButton.click();
+  }
+
+  /**
+   * Gets the dimension chips (tags) for a selected dimension
+   */
+  getDimensionChips(page: Page, dimensionName: string) {
+    return this.getLinkDimensionItem(page, dimensionName).locator(
+      ".link-dimension-list-dim-entries .MuiChip-root"
+    );
+  }
+
+  /**
+   * Checks if a dimension item shows the add button (is selected)
+   */
+  async isDimensionSelected(
+    page: Page,
+    dimensionName: string
+  ): Promise<boolean> {
+    const addButton = this.getLinkDimensionAddButton(page, dimensionName);
+    try {
+      await addButton.waitFor({ state: "visible", timeout: 1000 });
+      return true;
+    } catch {
+      return false;
+    }
+  }
 }

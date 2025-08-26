@@ -1,6 +1,9 @@
 import { test, expect } from "@playwright/test";
 import { DimensionTestBase } from "../../../utils/dimension-test-base";
-import { DimensionEntryType } from "../../../../src/types/dimension";
+import {
+  DimensionEntryType,
+  DimensionType,
+} from "../../../../src/types/dimension";
 
 const dimensionTestBase = new DimensionTestBase();
 
@@ -522,5 +525,182 @@ test.describe("NewDimensionForm Component", () => {
     await expect(tagInList).not.toBeVisible();
 
     console.log("✅ Tag is removed from list when clicking delete cross");
+  });
+
+  // Tests for linked dimensions
+  test.describe("Linked Dimensions", () => {
+    test("should show shift dimension of type bool in link dimension list", async ({
+      page,
+    }) => {
+      // Create a shift dimension of type bool
+      const shiftDimension = await dimensionTestBase.createTestDimension({
+        name: "Test Shift Bool Dimension",
+        entryType: DimensionEntryType.BOOL,
+        dimensionType: DimensionType.SHIFT,
+      });
+
+      // Refresh the page to ensure the UI is updated with the new dimension
+      await page.reload();
+      await page.waitForLoadState("networkidle");
+
+      // Open the popup (we're on workers page, so this will be for worker dimension type)
+      await dimensionTestBase.openNewDimensionPopup(page);
+      await dimensionTestBase.waitForPopupVisible(page);
+
+      // Check if the shift dimension appears in the link dimension list
+      const isInLinkList = await dimensionTestBase.isDimensionInLinkList(
+        page,
+        shiftDimension.name
+      );
+      expect(isInLinkList).toBe(true);
+
+      console.log(
+        "✅ Shift dimension of type bool appears in link dimension list"
+      );
+
+      // Clean up
+      await dimensionTestBase.deleteTestDimension(shiftDimension.dimensionId);
+    });
+
+    test("should show shift dimension of type dim entries in link dimension list", async ({
+      page,
+    }) => {
+      // Create a shift dimension of type dim entries
+      const shiftDimension = await dimensionTestBase.createTestDimension({
+        name: "Test Shift Tags Dimension",
+        entryType: DimensionEntryType.DIM_ENTRIES,
+        dimensionType: DimensionType.SHIFT,
+        dimEntries: [
+          { id: "", name: "Tag1", dimensionId: "", deleted: false },
+          { id: "", name: "Tag2", dimensionId: "", deleted: false },
+        ],
+      });
+
+      // Refresh the page to ensure the UI is updated with the new dimension
+      await page.reload();
+      await page.waitForLoadState("networkidle");
+
+      // Open the popup (we're on workers page, so this will be for worker dimension type)
+      await dimensionTestBase.openNewDimensionPopup(page);
+      await dimensionTestBase.waitForPopupVisible(page);
+
+      // Check if the shift dimension appears in the link dimension list
+      const isInLinkList = await dimensionTestBase.isDimensionInLinkList(
+        page,
+        shiftDimension.name
+      );
+      expect(isInLinkList).toBe(true);
+
+      console.log(
+        "✅ Shift dimension of type dim entries appears in link dimension list"
+      );
+
+      // Clean up
+      await dimensionTestBase.deleteTestDimension(shiftDimension.dimensionId);
+    });
+
+    test("should not show shift dimensions of type text and int in link dimension list", async ({
+      page,
+    }) => {
+      // Create shift dimensions of type text and int
+      const textDimension = await dimensionTestBase.createTestDimension({
+        name: "Test Shift Text Dimension",
+        entryType: DimensionEntryType.STR,
+        dimensionType: DimensionType.SHIFT,
+      });
+
+      const intDimension = await dimensionTestBase.createTestDimension({
+        name: "Test Shift Int Dimension",
+        entryType: DimensionEntryType.INT,
+        dimensionType: DimensionType.SHIFT,
+      });
+
+      // Refresh the page to ensure the UI is updated with the new dimensions
+      await page.reload();
+      await page.waitForLoadState("networkidle");
+
+      // Open the popup (we're on workers page, so this will be for worker dimension type)
+      await dimensionTestBase.openNewDimensionPopup(page);
+      await dimensionTestBase.waitForPopupVisible(page);
+
+      // Check that text dimension does not appear in link list
+      const textIsInLinkList = await dimensionTestBase.isDimensionInLinkList(
+        page,
+        textDimension.name
+      );
+      expect(textIsInLinkList).toBe(false);
+
+      // Check that int dimension does not appear in link list
+      const intIsInLinkList = await dimensionTestBase.isDimensionInLinkList(
+        page,
+        intDimension.name
+      );
+      expect(intIsInLinkList).toBe(false);
+
+      console.log(
+        "✅ Shift dimensions of type text and int do not appear in link dimension list"
+      );
+
+      // Clean up
+      await dimensionTestBase.deleteTestDimension(textDimension.dimensionId);
+      await dimensionTestBase.deleteTestDimension(intDimension.dimensionId);
+    });
+
+    test("should create same dimension for worker tab when clicking on shift dimension in link list", async ({
+      page,
+    }) => {
+      // Create a shift dimension of type bool
+      const shiftDimension = await dimensionTestBase.createTestDimension({
+        name: "Test Linkable Shift Dimension",
+        entryType: DimensionEntryType.BOOL,
+        dimensionType: DimensionType.SHIFT,
+      });
+
+      // Refresh the page to ensure the UI is updated with the new dimension
+      await page.reload();
+      await page.waitForLoadState("networkidle");
+
+      // Open the popup (we're on workers page, so this will be for worker dimension type)
+      await dimensionTestBase.openNewDimensionPopup(page);
+      await dimensionTestBase.waitForPopupVisible(page);
+
+      // Verify the dimension appears in link list
+      const isInLinkList = await dimensionTestBase.isDimensionInLinkList(
+        page,
+        shiftDimension.name
+      );
+      expect(isInLinkList).toBe(true);
+
+      // Click on the dimension to select it
+      await dimensionTestBase.selectLinkDimension(page, shiftDimension.name);
+
+      // Verify it becomes selected (add button appears)
+      const isSelected = await dimensionTestBase.isDimensionSelected(
+        page,
+        shiftDimension.name
+      );
+      expect(isSelected).toBe(true);
+
+      // Click the add button to link the dimension
+      await dimensionTestBase.linkDimension(page, shiftDimension.name);
+
+      // Wait for popup to close
+      await dimensionTestBase.waitForPopupHidden(page);
+
+      // Verify the dimension now appears as a column in the workers table
+      await dimensionTestBase.waitForNewColumn(page, shiftDimension.name);
+      const columnExists = await dimensionTestBase.columnExists(
+        page,
+        shiftDimension.name
+      );
+      expect(columnExists).toBe(true);
+
+      console.log(
+        "✅ Clicking on shift dimension in link list creates same dimension for worker tab"
+      );
+
+      // Clean up
+      await dimensionTestBase.deleteTestDimension(shiftDimension.dimensionId);
+    });
   });
 });
