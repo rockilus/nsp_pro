@@ -2,7 +2,7 @@
  * API client for attribute operations
  */
 
-import { AttributeT, toAttributeT, fromAttributeT } from "@/types/attribute";
+import { AttributeT, toAttributeT } from "@/types/attribute";
 import { BaseApi, AuthenticatedApiClient } from "./baseApi";
 
 export class AttributeApi extends BaseApi {
@@ -26,7 +26,7 @@ export class AttributeApi extends BaseApi {
       apiClient,
       "put",
       `/attributes/teams/${teamId}`,
-      fromAttributeT(attribute)
+      attribute
     );
     return toAttributeT(responseData);
   }
@@ -75,7 +75,7 @@ export class AttributeApi extends BaseApi {
       apiClient,
       "post",
       `/attributes/teams/${teamId}`,
-      fromAttributeT({ ...attribute, id: "" }) // API will assign ID
+      { ...attribute, id: "" } // API will assign ID
     );
     return toAttributeT(responseData);
   }
