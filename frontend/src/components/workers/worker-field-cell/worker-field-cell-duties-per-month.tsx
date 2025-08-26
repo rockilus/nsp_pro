@@ -44,6 +44,7 @@ export default function WorkerFieldCellDutiesPerMonth({
       scope="row"
       onClick={() => setEditing({ [worker.id]: "dutiesPerMonth" })}
       sx={{ paddingY: 0, textAlign: "center" }}
+      data-testid="worker-duties-per-month-cell"
     >
       {editing ? (
         <TextField
@@ -63,7 +64,10 @@ export default function WorkerFieldCellDutiesPerMonth({
             }
           }}
           autoFocus
-          inputProps={{ style: { textAlign: "center" } }}
+          inputProps={{
+            style: { textAlign: "center" },
+            "data-testid": `worker-duties-per-month-input-${worker.id}`,
+          }}
         />
       ) : (
         <Box
@@ -73,6 +77,7 @@ export default function WorkerFieldCellDutiesPerMonth({
             alignItems: "center",
             justifyContent: "center",
           }}
+          data-testid={`worker-duties-per-month-display-${worker.id}`}
         >
           {worker.dutiesPerMonth}
         </Box>

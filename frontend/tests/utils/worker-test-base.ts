@@ -422,6 +422,38 @@ export class WorkerTestBase {
   }
 
   /**
+   * Gets the duties per month cell for a worker row
+   */
+  getWorkerDutiesPerMonthCell(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+
+    // Prioritize the table cell itself for interaction
+    const byCellTestId = row.locator(
+      '[data-testid="worker-duties-per-month-cell"]'
+    );
+    // Fallback to finding by column position if data-testid is not available
+    const byColumnPosition = row.locator("td, th").nth(7); // Assuming duties per month is 8th column
+
+    return byCellTestId.or(byColumnPosition);
+  }
+
+  /**
+   * Gets the duties per month display element (for reading text)
+   */
+  getWorkerDutiesPerMonthDisplay(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+    return row.locator('[data-testid^="worker-duties-per-month-display-"]');
+  }
+
+  /**
+   * Gets the duties per month input element (for editing)
+   */
+  getWorkerDutiesPerMonthInput(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+    return row.locator('[data-testid^="worker-duties-per-month-input-"]');
+  }
+
+  /**
    * Gets team information
    */
   getTestTeam(): { teamId: string; name: string } | null {
