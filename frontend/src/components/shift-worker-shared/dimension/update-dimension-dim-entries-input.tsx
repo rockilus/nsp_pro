@@ -82,7 +82,10 @@ export default function UpdateDimensionDimEntriesInput({
   };
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box
+      sx={{ width: "100%" }}
+      data-testid={`dim-entries-input-${dimensionId}`}
+    >
       <TextField
         label={t("property_new_option")}
         variant="outlined"
@@ -93,18 +96,23 @@ export default function UpdateDimensionDimEntriesInput({
         helperText={
           error || listError ? t("property_new_option_helper_text") : ""
         }
+        data-testid={`new-dim-entry-field-${dimensionId}`}
         sx={{ width: "100%" }}
       />
-      <Box mt={2}>
+      <Box mt={2} data-testid={`dim-entries-list-${dimensionId}`}>
         {dimEntries.map((de, index) => (
           <Box
             key={index}
             display="flex"
             alignItems="center"
             sx={{ paddingLeft: 0.5 }}
+            data-testid={`dim-entry-item-${de.id}`}
           >
             {DimEntryEditing?.id === de.id ? (
-              <div className="edit-dim-entry">
+              <div
+                className="edit-dim-entry"
+                data-testid={`dim-entry-editing-${de.id}`}
+              >
                 <TextField
                   value={DimEntryEditing.name}
                   onChange={(e) =>
@@ -121,22 +129,40 @@ export default function UpdateDimensionDimEntriesInput({
                   helperText={
                     errorEditing ? t("property_new_option_helper_text") : ""
                   }
+                  data-testid={`dim-entry-edit-field-${de.id}`}
                   sx={{ width: "100%" }}
                 />
-                <IconButton onClick={handleEditDimEntry}>
+                <IconButton
+                  onClick={handleEditDimEntry}
+                  data-testid={`dim-entry-confirm-edit-${de.id}`}
+                >
                   <CheckIcon />
                 </IconButton>
-                <IconButton onClick={() => setDimEntryEditing(null)}>
+                <IconButton
+                  onClick={() => setDimEntryEditing(null)}
+                  data-testid={`dim-entry-cancel-edit-${de.id}`}
+                >
                   <CloseIcon />
                 </IconButton>
               </div>
             ) : (
-              <div className="edit-dim-entry">
-                <Box flexGrow={1}>{de.name}</Box>
-                <IconButton onClick={() => setDimEntryEditing(de)}>
+              <div
+                className="edit-dim-entry"
+                data-testid={`dim-entry-display-${de.id}`}
+              >
+                <Box flexGrow={1} data-testid={`dim-entry-name-${de.id}`}>
+                  {de.name}
+                </Box>
+                <IconButton
+                  onClick={() => setDimEntryEditing(de)}
+                  data-testid={`dim-entry-edit-button-${de.id}`}
+                >
                   <EditIcon />
                 </IconButton>
-                <IconButton onClick={() => deleteDimEntry(de.id)}>
+                <IconButton
+                  onClick={() => deleteDimEntry(de.id)}
+                  data-testid={`dim-entry-delete-button-${de.id}`}
+                >
                   <DeleteIcon />
                 </IconButton>
               </div>

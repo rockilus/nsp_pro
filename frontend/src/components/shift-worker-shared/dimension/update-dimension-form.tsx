@@ -103,7 +103,10 @@ export default function UpdateDimensionForm({
   };
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box
+      sx={{ width: "100%" }}
+      data-testid={`update-dimension-form-${dimension.id}`}
+    >
       <TextField
         label={t("name")}
         variant="outlined"
@@ -112,10 +115,11 @@ export default function UpdateDimensionForm({
         error={nameError}
         helperText={nameError ? t("name_helper_text") : ""}
         onKeyDown={handleKeyPress}
+        data-testid={`dimension-name-field-${dimension.id}`}
         sx={{ width: "100%" }}
       />
       {dimension.entryType === DimensionEntryType.DIM_ENTRIES && (
-        <Box mt={2}>
+        <Box mt={2} data-testid={`dimension-entries-section-${dimension.id}`}>
           <UpdateDimensionDimEntriesInput
             lng={lng}
             dimEntries={dimEntries}
@@ -131,13 +135,19 @@ export default function UpdateDimensionForm({
         <Button
           variant="contained"
           onClick={() => handleUpdateDimensionName()}
+          data-testid={`dimension-save-button-${dimension.id}`}
           sx={{ marginRight: 1 }}
         >
           {t("save")}
         </Button>
         {dimension.dimTypes.length > 1 &&
         dimension.dimTypes.includes(dimensionTypeTable) ? (
-          <Button variant="outlined" onClick={handleClickDelete} fullWidth>
+          <Button
+            variant="outlined"
+            onClick={handleClickDelete}
+            data-testid={`dimension-delete-button-${dimension.id}`}
+            fullWidth
+          >
             {t("delete")}
           </Button>
         ) : (

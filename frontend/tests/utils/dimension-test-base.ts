@@ -450,4 +450,272 @@ export class DimensionTestBase extends WorkerTestBase {
       return false;
     }
   }
+
+  //////////////////////////
+  // Dimension Cell Methods
+  //////////////////////////
+
+  /**
+   * Gets a dimension cell by dimension ID
+   */
+  getDimensionCell(page: Page, dimensionId: string) {
+    return page.locator(
+      `[data-testid="worker-dimension-${dimensionId}-header-cell"]`
+    );
+  }
+
+  /**
+   * Gets a dimension cell by dimension name (searches for the name in the cell)
+   */
+  getDimensionCellByName(page: Page, dimensionName: string) {
+    return page.locator(
+      `[data-testid*="worker-dimension-"][data-testid*="header-cell"]:has([data-testid*="dimension-name-"]:text("${dimensionName}"))`
+    );
+  }
+
+  /**
+   * Clicks on a dimension cell to open its popup
+   */
+  async clickDimensionCell(page: Page, dimensionId: string): Promise<void> {
+    const dimensionCell = this.getDimensionCell(page, dimensionId);
+    await dimensionCell.click();
+  }
+
+  /**
+   * Clicks on a dimension cell by name to open its popup
+   */
+  async clickDimensionCellByName(
+    page: Page,
+    dimensionName: string
+  ): Promise<void> {
+    const dimensionCell = this.getDimensionCellByName(page, dimensionName);
+    await dimensionCell.click();
+  }
+
+  /**
+   * Gets the dimension popup for a specific dimension
+   */
+  getDimensionPopup(page: Page, dimensionId: string) {
+    return page.locator(
+      `[data-testid="dimension-popup-${dimensionId}-popover"]`
+    );
+  }
+
+  /**
+   * Gets the dimension update form for a specific dimension
+   */
+  getDimensionUpdateForm(page: Page, dimensionId: string) {
+    return page.locator(`[data-testid="update-dimension-form-${dimensionId}"]`);
+  }
+
+  /**
+   * Gets the dimension name field in the update form
+   */
+  getDimensionNameField(page: Page, dimensionId: string) {
+    return page.locator(`[data-testid="dimension-name-field-${dimensionId}"]`);
+  }
+
+  /**
+   * Gets the dimension save button in the update form
+   */
+  getDimensionSaveButton(page: Page, dimensionId: string) {
+    return page.locator(`[data-testid="dimension-save-button-${dimensionId}"]`);
+  }
+
+  /**
+   * Gets the dimension delete button in the update form
+   */
+  getDimensionDeleteButton(page: Page, dimensionId: string) {
+    return page.locator(
+      `[data-testid="dimension-delete-button-${dimensionId}"]`
+    );
+  }
+
+  /**
+   * Gets the dimension entries section (for DIM_ENTRIES type dimensions)
+   */
+  getDimensionEntriesSection(page: Page, dimensionId: string) {
+    return page.locator(
+      `[data-testid="dimension-entries-section-${dimensionId}"]`
+    );
+  }
+
+  /**
+   * Gets the dimension entry items list
+   */
+  getDimensionEntryItems(page: Page, dimensionId: string) {
+    return page.locator(
+      `[data-testid="dim-entries-list-${dimensionId}"] [data-testid*="dim-entry-item-"]`
+    );
+  }
+
+  /**
+   * Gets a specific dimension entry item
+   */
+  getDimensionEntryItem(page: Page, entryId: string) {
+    return page.locator(`[data-testid="dim-entry-item-${entryId}"]`);
+  }
+
+  /**
+   * Gets the edit button for a dimension entry
+   */
+  getDimensionEntryEditButton(page: Page, entryId: string) {
+    return page.locator(`[data-testid="dim-entry-edit-button-${entryId}"]`);
+  }
+
+  /**
+   * Gets the delete button for a dimension entry
+   */
+  getDimensionEntryDeleteButton(page: Page, entryId: string) {
+    return page.locator(`[data-testid="dim-entry-delete-button-${entryId}"]`);
+  }
+
+  /**
+   * Gets the edit field for a dimension entry when in edit mode
+   */
+  getDimensionEntryEditField(page: Page, entryId: string) {
+    return page.locator(`[data-testid="dim-entry-edit-field-${entryId}"]`);
+  }
+
+  /**
+   * Gets the confirm edit button for a dimension entry
+   */
+  getDimensionEntryConfirmEditButton(page: Page, entryId: string) {
+    return page.locator(`[data-testid="dim-entry-confirm-edit-${entryId}"]`);
+  }
+
+  /**
+   * Gets the cancel edit button for a dimension entry
+   */
+  getDimensionEntryCancelEditButton(page: Page, entryId: string) {
+    return page.locator(`[data-testid="dim-entry-cancel-edit-${entryId}"]`);
+  }
+
+  /**
+   * Waits for dimension popup to be visible
+   */
+  async waitForDimensionPopupVisible(
+    page: Page,
+    dimensionId: string
+  ): Promise<void> {
+    const popup = this.getDimensionPopup(page, dimensionId);
+    await popup.waitFor({ state: "visible" });
+  }
+
+  /**
+   * Waits for dimension popup to be hidden
+   */
+  async waitForDimensionPopupHidden(
+    page: Page,
+    dimensionId: string
+  ): Promise<void> {
+    const popup = this.getDimensionPopup(page, dimensionId);
+    await popup.waitFor({ state: "hidden" });
+  }
+
+  /**
+   * Fills the dimension name field in the update form
+   */
+  async fillDimensionNameField(
+    page: Page,
+    dimensionId: string,
+    name: string
+  ): Promise<void> {
+    const nameField = this.getDimensionNameField(page, dimensionId);
+    const nameInput = nameField.locator("input");
+    await nameInput.waitFor({ state: "visible" });
+    await nameInput.fill(name);
+  }
+
+  /**
+   * Clicks the save button in the dimension update form
+   */
+  async clickDimensionSaveButton(
+    page: Page,
+    dimensionId: string
+  ): Promise<void> {
+    const saveButton = this.getDimensionSaveButton(page, dimensionId);
+    await saveButton.click();
+  }
+
+  /**
+   * Clicks the delete button in the dimension update form
+   */
+  async clickDimensionDeleteButton(
+    page: Page,
+    dimensionId: string
+  ): Promise<void> {
+    const deleteButton = this.getDimensionDeleteButton(page, dimensionId);
+    await deleteButton.click();
+  }
+
+  /**
+   * Closes dimension popup by clicking away
+   */
+  async closeDimensionPopupViaClickAway(page: Page): Promise<void> {
+    // Click outside the popup
+    await page.click("body", { position: { x: 50, y: 50 } });
+  }
+
+  /**
+   * Closes dimension popup by pressing Escape
+   */
+  async closeDimensionPopupViaEscape(page: Page): Promise<void> {
+    await page.keyboard.press("Escape");
+  }
+
+  /**
+   * Edits a dimension entry name
+   */
+  async editDimensionEntryName(
+    page: Page,
+    entryId: string,
+    newName: string
+  ): Promise<void> {
+    const editButton = this.getDimensionEntryEditButton(page, entryId);
+    await editButton.click();
+
+    const editField = this.getDimensionEntryEditField(page, entryId);
+    const input = editField.locator("input");
+    await input.waitFor({ state: "visible" });
+    await input.fill(newName);
+
+    const confirmButton = this.getDimensionEntryConfirmEditButton(
+      page,
+      entryId
+    );
+    await confirmButton.click();
+  }
+
+  /**
+   * Cancels editing a dimension entry
+   */
+  async cancelEditDimensionEntry(page: Page, entryId: string): Promise<void> {
+    const editButton = this.getDimensionEntryEditButton(page, entryId);
+    await editButton.click();
+
+    const cancelButton = this.getDimensionEntryCancelEditButton(page, entryId);
+    await cancelButton.click();
+  }
+
+  /**
+   * Deletes a dimension entry
+   */
+  async deleteDimensionEntry(page: Page, entryId: string): Promise<void> {
+    const deleteButton = this.getDimensionEntryDeleteButton(page, entryId);
+    await deleteButton.click();
+  }
+
+  /**
+   * Gets the dimension name displayed in the cell
+   */
+  async getDimensionNameInCell(
+    page: Page,
+    dimensionId: string
+  ): Promise<string> {
+    const nameElement = page.locator(
+      `[data-testid="dimension-name-${dimensionId}"]`
+    );
+    return (await nameElement.textContent()) || "";
+  }
 }

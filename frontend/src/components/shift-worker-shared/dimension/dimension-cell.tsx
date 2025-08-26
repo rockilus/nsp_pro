@@ -67,10 +67,15 @@ export default function DimensionCell({
   };
 
   const cellContent = () => (
-    <div className="table-header-default flex items-center justify-between">
+    <div
+      className="table-header-default flex items-center justify-between"
+      data-testid={`dimension-cell-content-${dimension.id}`}
+    >
       <div className="flex items-center gap-1">
         <Tooltip title={dimension.name} placement="top">
-          <span>{dimension.name}</span>
+          <span data-testid={`dimension-name-${dimension.id}`}>
+            {dimension.name}
+          </span>
         </Tooltip>
         {iconsPrefix[dimension.entryType]}
       </div>
@@ -124,6 +129,7 @@ export default function DimensionCell({
         }
         open={popoverAnchorOpen}
         setOpen={setPopoverAnchorOpen}
+        testId={`dimension-popup-${dimension.id}`}
       />
     </TableCell>
   );

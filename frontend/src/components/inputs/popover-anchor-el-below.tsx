@@ -8,11 +8,13 @@ export default function PopoverAnchorElBelow({
   content,
   open,
   setOpen,
+  testId,
 }: {
   buttonContent: React.ReactNode;
   content: React.ReactNode;
   open: boolean;
   setOpen: (open: boolean) => void;
+  testId?: string;
 }) {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
     null
@@ -36,6 +38,7 @@ export default function PopoverAnchorElBelow({
         aria-describedby={id}
         variant="contained"
         onClick={handleClick}
+        data-testid={testId ? `${testId}-button` : undefined}
         sx={{
           backgroundColor: "transparent",
           border: "none",
@@ -56,6 +59,7 @@ export default function PopoverAnchorElBelow({
         open={open}
         anchorEl={anchorEl}
         onClose={handleClose}
+        data-testid={testId ? `${testId}-popover` : undefined}
         anchorOrigin={{
           vertical: "bottom",
           horizontal: "left",
