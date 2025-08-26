@@ -1,26 +1,68 @@
 import { test, expect } from "@playwright/test";
 import { DimensionTestBase } from "../../../utils/dimension-test-base";
-import { DimensionEntryType } from "../../../../src/types/dimension";
+import {
+  DimensionEntryType,
+  DimensionType,
+} from "../../../../src/types/dimension";
 
 const dimensionTestBase = new DimensionTestBase();
 
 test.describe("Workers Page - Dimension Integration", () => {
+  let testWorker: { workerId: string; name: string; teamId: string };
+
   test.beforeAll(async () => {
     // Setup the test environment
     await dimensionTestBase.setupDimensionTests(test.info().workerIndex);
   });
 
   test.beforeEach(async ({ page }) => {
+    // Create a fresh test worker for each test
+    const workerName = `Test Worker ${test.info().workerIndex}-${Date.now()}`;
+    testWorker = await dimensionTestBase.createTestWorker({
+      name: workerName,
+      acronym: "TW",
+      weeklyHours: 40,
+      weeklyHoursDesired: 40,
+      dutiesPerMonth: 4,
+      annualLeave: 25,
+    });
+
+    console.log(
+      `Created test worker: ${testWorker.name} (${testWorker.workerId})`
+    );
+
     // Navigate to the workers page
     await dimensionTestBase.navigateToWorkersPage(page);
+
+    // Wait for the worker table to load and our test worker to appear
+    await page.waitForSelector('[aria-label="worker table"]');
+
+    // Verify our test worker is visible in the table
+    const workerRows = dimensionTestBase.getWorkerRows(page);
+    await expect(workerRows).toHaveCount(1);
+  });
+
+  test.afterEach(async () => {
+    // Clean up: delete the worker created for this test
+    if (testWorker?.workerId) {
+      try {
+        await dimensionTestBase.deleteTestWorker(testWorker.workerId);
+        console.log(`Deleted test worker: ${testWorker.workerId}`);
+      } catch (error) {
+        console.warn(
+          `Failed to delete test worker ${testWorker.workerId}:`,
+          error
+        );
+      }
+    }
   });
 
   test("should add new dimension column to workers table", async ({ page }) => {
+    const propertyName = "Worker Department";
+
     // Open the popup
     await dimensionTestBase.openNewDimensionPopup(page);
     await dimensionTestBase.waitForPopupVisible(page);
-
-    const propertyName = "Worker Department";
 
     // Fill in valid data
     await dimensionTestBase.fillNameField(page, propertyName);
@@ -54,11 +96,11 @@ test.describe("Workers Page - Dimension Integration", () => {
   test("should create worker-specific dimension with complex type", async ({
     page,
   }) => {
+    const propertyName = "Worker Skills";
+
     // Open the popup
     await dimensionTestBase.openNewDimensionPopup(page);
     await dimensionTestBase.waitForPopupVisible(page);
-
-    const propertyName = "Worker Skills";
 
     // Fill in tags-type dimension for workers
     await dimensionTestBase.fillNameField(page, propertyName);
