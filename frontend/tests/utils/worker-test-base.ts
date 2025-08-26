@@ -73,7 +73,7 @@ export class WorkerTestBase {
     ]);
 
     // Wait a bit for the team context to be fully set
-    await page.waitForTimeout(1000);
+    // await page.waitForTimeout(1000);
 
     // Step 4: Navigate directly to the workers page
     await page.goto(`${testConfig.frontendUrl}/en/plan/workers/`);
