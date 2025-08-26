@@ -145,7 +145,8 @@ test.describe("NewDimensionForm Component", () => {
 
     // Verify error appears for name field
     const nameField = dimensionTestBase.getNameTextField(page);
-    await expect(nameField).toHaveAttribute("aria-invalid", "true");
+    const nameInput = nameField.locator("input");
+    await expect(nameInput).toHaveAttribute("aria-invalid", "true");
 
     // Verify helper text contains error message
     const helperText = page.locator(
@@ -202,7 +203,9 @@ test.describe("NewDimensionForm Component", () => {
 
     // Verify both fields show errors
     const nameField = dimensionTestBase.getNameTextField(page);
-    await expect(nameField).toHaveAttribute("aria-invalid", "true");
+    await expect(nameField.locator(".MuiOutlinedInput-root")).toHaveClass(
+      /Mui-error/
+    );
 
     const typeSelect = dimensionTestBase.getTypeSelect(page);
     await expect(typeSelect.locator(".MuiOutlinedInput-root")).toHaveClass(
@@ -306,7 +309,8 @@ test.describe("NewDimensionForm Component", () => {
 
     // Verify fields have values
     const nameField = dimensionTestBase.getNameTextField(page);
-    await expect(nameField).toHaveValue("Test Property");
+    const nameInput = nameField.locator("input");
+    await expect(nameInput).toHaveValue("Test Property");
 
     // Close the popup
     await dimensionTestBase.closePopupViaCloseButton(page);
@@ -318,7 +322,8 @@ test.describe("NewDimensionForm Component", () => {
 
     // Verify fields are cleared
     const nameFieldAfterReopen = dimensionTestBase.getNameTextField(page);
-    await expect(nameFieldAfterReopen).toHaveValue("");
+    const nameInputAfterReopen = nameFieldAfterReopen.locator("input");
+    await expect(nameInputAfterReopen).toHaveValue("");
 
     // Verify type select is cleared (should show placeholder)
     const typeSelectAfterReopen = dimensionTestBase.getTypeSelectDropdown(page);

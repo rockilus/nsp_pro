@@ -288,7 +288,9 @@ export class DimensionTestBase extends WorkerTestBase {
    */
   async fillNameField(page: Page, name: string): Promise<void> {
     const nameField = this.getNameTextField(page);
-    await nameField.fill(name);
+    const nameInput = nameField.locator("input");
+    await nameInput.waitFor({ state: "visible" });
+    await nameInput.fill(name);
   }
 
   /**
