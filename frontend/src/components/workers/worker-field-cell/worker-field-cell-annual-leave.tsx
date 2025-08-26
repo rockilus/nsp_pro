@@ -26,7 +26,7 @@ export default function WorkerFieldCellAnnualLeave({
         annualLeave: valueState,
       });
     } else if (valueState === "") {
-      setValueState(worker.weeklyHours);
+      setValueState(worker.annualLeave);
     }
     setEditing({});
   };
@@ -42,6 +42,7 @@ export default function WorkerFieldCellAnnualLeave({
       scope="row"
       onClick={() => setEditing({ [worker.id]: "annualLeave" })}
       sx={{ paddingY: 0, textAlign: "center" }}
+      data-testid="worker-annual-leave-cell"
     >
       {editing ? (
         <TextField
@@ -61,7 +62,10 @@ export default function WorkerFieldCellAnnualLeave({
             }
           }}
           autoFocus
-          inputProps={{ style: { textAlign: "center" } }}
+          inputProps={{
+            style: { textAlign: "center" },
+            "data-testid": `worker-annual-leave-input-${worker.id}`,
+          }}
         />
       ) : (
         <Box
@@ -71,6 +75,7 @@ export default function WorkerFieldCellAnnualLeave({
             alignItems: "center",
             justifyContent: "center",
           }}
+          data-testid={`worker-annual-leave-display-${worker.id}`}
         >
           {worker.annualLeave}
         </Box>

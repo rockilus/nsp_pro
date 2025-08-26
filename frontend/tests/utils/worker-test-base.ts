@@ -454,6 +454,38 @@ export class WorkerTestBase {
   }
 
   /**
+   * Gets the annual leave cell for a worker row
+   */
+  getWorkerAnnualLeaveCell(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+
+    // Prioritize the table cell itself for interaction
+    const byCellTestId = row.locator(
+      '[data-testid="worker-annual-leave-cell"]'
+    );
+    // Fallback to finding by column position if data-testid is not available
+    const byColumnPosition = row.locator("td, th").nth(8); // Assuming annual leave is 9th column
+
+    return byCellTestId.or(byColumnPosition);
+  }
+
+  /**
+   * Gets the annual leave display element (for reading text)
+   */
+  getWorkerAnnualLeaveDisplay(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+    return row.locator('[data-testid^="worker-annual-leave-display-"]');
+  }
+
+  /**
+   * Gets the annual leave input element (for editing)
+   */
+  getWorkerAnnualLeaveInput(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+    return row.locator('[data-testid^="worker-annual-leave-input-"]');
+  }
+
+  /**
    * Gets team information
    */
   getTestTeam(): { teamId: string; name: string } | null {
