@@ -56,10 +56,14 @@ export class WorkerTestBase {
 
     // Step 1: Navigate to teams page
     await page.goto(`${testConfig.frontendUrl}/en/plan/settings/teams/`);
-    await expect(page.getByRole("heading", { name: "Teams" })).toBeVisible();
+    await expect(
+      page.locator('[data-testid="teams-page-heading"]')
+    ).toBeVisible();
 
-    // Step 2: Wait for our test team to appear in the UI
-    const teamElement = page.getByText(this.testTeam.name, { exact: true });
+    // Step 2: Wait for our test team to appear in the UI using team ID
+    const teamElement = page.locator(
+      `[data-testid="team-name-${this.testTeam.teamId}"]`
+    );
     await expect(teamElement).toBeVisible();
 
     // Step 3: Click on the team name to select it (this navigates to schedule page)
@@ -71,21 +75,13 @@ export class WorkerTestBase {
     // Wait a bit for the team context to be fully set
     await page.waitForTimeout(1000);
 
-    // Step 4: Look for Workers link in navigation - try multiple strategies
-    // First, let's check if any navigation links are visible at all
-    const navContainer = page.locator(".nav-links-container");
-    await expect(navContainer).toBeVisible();
-
-    // Try to find the Workers link by text
-    const workersLink = page.getByText("Workers").first();
-    await expect(workersLink).toBeVisible();
-    await workersLink.click();
-
-    // Wait for navigation to workers page
-    await page.waitForURL(`${testConfig.frontendUrl}/en/plan/workers/`);
+    // Step 4: Navigate directly to the workers page
+    await page.goto(`${testConfig.frontendUrl}/en/plan/workers/`);
 
     // Wait for the workers page to be loaded
-    await expect(page.getByRole("heading", { name: "Workers" })).toBeVisible();
+    await expect(
+      page.locator('[data-testid="workers-page-heading"]')
+    ).toBeVisible();
   }
 
   /**

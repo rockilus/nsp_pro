@@ -9,7 +9,9 @@ test.describe("Teams Settings Page with Database Reset", () => {
     // Navigate to the page using config
     await page.goto(`${testConfig.frontendUrl}/en/plan/settings/teams/`);
     // Wait for the page to be loaded
-    await expect(page.getByRole("heading", { name: "Teams" })).toBeVisible();
+    await expect(
+      page.locator('[data-testid="teams-page-heading"]')
+    ).toBeVisible();
   });
 
   test('should open the team creation form when the "New Team" button is pressed', async ({
@@ -55,7 +57,9 @@ test.describe("Teams Settings Page with Database Reset", () => {
 
     // Refresh the page to load the newly created team
     await page.reload();
-    await expect(page.getByRole("heading", { name: "Teams" })).toBeVisible();
+    await expect(
+      page.locator('[data-testid="teams-page-heading"]')
+    ).toBeVisible();
 
     // Wait for the team to appear in the UI
     const teamElement = page.getByText(testTeam.name, { exact: true });
@@ -81,7 +85,9 @@ test.describe("Teams Settings Page with Database Reset", () => {
 
     // Refresh the page to load the newly created team
     await page.reload();
-    await expect(page.getByRole("heading", { name: "Teams" })).toBeVisible();
+    await expect(
+      page.locator('[data-testid="teams-page-heading"]')
+    ).toBeVisible();
 
     // Wait for the team to appear in the UI
     const teamElement = page.getByText(testTeam.name, { exact: true });
