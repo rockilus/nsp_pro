@@ -166,7 +166,7 @@ test.describe("Worker Acronym Updates", () => {
   }) => {
     // Skip this test for now - empty names might not be allowed by backend validation
     // This test needs to be revised based on actual backend behavior
-    test.skip();
+    // test.skip();
 
     // Get the name and acronym cells
     const nameCell = workerTestBase.getWorkerNameCell(page);
