@@ -15,7 +15,8 @@ export class AttributeApi extends BaseApi {
     teamId: string
   ): Promise<AttributeT> {
     // Security: Input validation
-    if (!attribute || !attribute.id) {
+    // if (!attribute || !attribute.id) {
+    if (!attribute) {
       throw new Error("Invalid attribute data provided");
     }
     if (!teamId) {

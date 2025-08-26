@@ -41,7 +41,8 @@ export function useUpdateAttribute() {
       }
 
       // Input validation
-      if (!attribute || !attribute.id) {
+      // if (!attribute || !attribute.id) {
+      if (!attribute) {
         throw new Error("Valid attribute data is required");
       }
 
