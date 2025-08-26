@@ -14,7 +14,11 @@ const TableAddButton = ({
   showIcon?: boolean;
 }) => {
   return (
-    <button className="add-button" onClick={() => handleClick && handleClick()}>
+    <button
+      className="add-button"
+      onClick={() => handleClick && handleClick()}
+      data-testid={`add-${text.toLowerCase()}-button`}
+    >
       {showIcon && <AddIcon sx={{ height: "17px" }} />}
       {text}
     </button>

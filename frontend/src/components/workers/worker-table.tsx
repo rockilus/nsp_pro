@@ -503,13 +503,17 @@ function WorkerTableRow({
       })}
 
       {/* Actions column */}
-      <TableCell className="worker-table-actions">
+      <TableCell
+        className="worker-table-actions"
+        data-testid="worker-actions-cell"
+      >
         <Box sx={{ display: "flex", justifyContent: "center" }}>
           <Tooltip title="Delete Worker">
             <Button
               onClick={() => handleDeleteWorker(worker.id)}
               size="small"
               sx={{ minWidth: "auto", p: 0.5 }}
+              data-testid={`worker-delete-button-${worker.id}`}
             >
               <DeleteIcon fontSize="small" />
             </Button>

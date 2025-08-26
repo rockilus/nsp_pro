@@ -486,6 +486,65 @@ export class WorkerTestBase {
   }
 
   /**
+   * Gets the delete button for a worker row
+   */
+  getWorkerDeleteButton(page: Page, workerId: string) {
+    return page.locator(`[data-testid="worker-delete-button-${workerId}"]`);
+  }
+
+  /**
+   * Gets the delete button for a worker row by index
+   */
+  getWorkerDeleteButtonByIndex(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+    return row.locator('[data-testid^="worker-delete-button-"]');
+  }
+
+  /**
+   * Gets the actions cell for a worker row
+   */
+  getWorkerActionsCell(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+    return row.locator('[data-testid="worker-actions-cell"]');
+  }
+
+  /**
+   * Gets the Add Worker button
+   */
+  getAddWorkerButton(page: Page) {
+    return page.locator('[data-testid="add-worker-button"]');
+  }
+
+  /**
+   * Deletes a worker via the UI by clicking the delete button
+   */
+  async deleteWorkerViaUI(page: Page, workerId: string): Promise<void> {
+    const deleteButton = this.getWorkerDeleteButton(page, workerId);
+    await expect(deleteButton).toBeVisible();
+    await deleteButton.click();
+  }
+
+  /**
+   * Deletes a worker via the UI by clicking the delete button at specific row index
+   */
+  async deleteWorkerViaUIByIndex(
+    page: Page,
+    rowIndex: number = 0
+  ): Promise<void> {
+    const deleteButton = this.getWorkerDeleteButtonByIndex(page, rowIndex);
+    await expect(deleteButton).toBeVisible();
+    await deleteButton.click();
+  }
+
+  /**
+   * Waits for a worker to be removed from the table
+   */
+  async waitForWorkerRemoval(page: Page, workerId: string): Promise<void> {
+    const deleteButton = this.getWorkerDeleteButton(page, workerId);
+    await expect(deleteButton).not.toBeVisible();
+  }
+
+  /**
    * Gets team information
    */
   getTestTeam(): { teamId: string; name: string } | null {
