@@ -473,7 +473,7 @@ test.describe("NewDimensionForm Component", () => {
 
     // Verify tag appears in the tags list
     const tagInList = page.locator(
-      `[data-testid="new-dimension-tags-section"] [data-testid*="tag-chip"]:has-text("${tagName}")`
+      `[data-testid="new-dimension-tags-section"] >> text="${tagName}"`
     );
     await expect(tagInList).toBeVisible();
 
@@ -507,13 +507,13 @@ test.describe("NewDimensionForm Component", () => {
 
     // Verify tag appears in the list
     const tagInList = page.locator(
-      `[data-testid="new-dimension-tags-section"] [data-testid*="tag-chip"]:has-text("${tagName}")`
+      `[data-testid="new-dimension-tags-section"] >> text="${tagName}"`
     );
     await expect(tagInList).toBeVisible();
 
     // Find and click the delete button for this tag
     const deleteButton = page.locator(
-      `[data-testid="new-dimension-tags-section"] [data-testid*="tag-chip"]:has-text("${tagName}") [data-testid*="delete"]`
+      `[data-testid="new-dimension-tags-section"] >> text="${tagName}" >> .. >> button`
     );
     await expect(deleteButton).toBeVisible();
     await deleteButton.click();
