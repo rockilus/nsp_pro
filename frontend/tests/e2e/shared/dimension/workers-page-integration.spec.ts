@@ -102,13 +102,9 @@ test.describe("Workers Page - Dimension Integration", () => {
     await dimensionTestBase.openNewDimensionPopup(page);
     await dimensionTestBase.waitForPopupVisible(page);
 
-    // Fill in tags-type dimension for workers
+    // Fill in bool-type dimension for workers
     await dimensionTestBase.fillNameField(page, propertyName);
-    await dimensionTestBase.selectType(page, DimensionEntryType.DIM_ENTRIES);
-
-    // Verify tags section appears
-    const tagsSection = dimensionTestBase.getTagsSection(page);
-    await expect(tagsSection).toBeVisible();
+    await dimensionTestBase.selectType(page, DimensionEntryType.BOOL);
 
     // Submit
     await dimensionTestBase.clickAddButton(page);
@@ -123,7 +119,7 @@ test.describe("Workers Page - Dimension Integration", () => {
     expect(columnExists).toBe(true);
 
     console.log(
-      `✅ Worker-specific tags dimension '${propertyName}' created successfully`
+      `✅ Worker-specific bool dimension '${propertyName}' created successfully`
     );
   });
 
