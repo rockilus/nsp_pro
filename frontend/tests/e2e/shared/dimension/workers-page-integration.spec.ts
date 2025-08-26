@@ -12,13 +12,7 @@ test.describe("Workers Page - Dimension Integration", () => {
 
   test.beforeEach(async ({ page }) => {
     // Navigate to the workers page
-    const testTeam = dimensionTestBase.getTestTeam();
-    if (!testTeam) {
-      throw new Error("Test team not available");
-    }
-
-    await page.goto(`/en/plan/workers?teamId=${testTeam.teamId}`);
-    await page.waitForSelector('[aria-label="worker table"]');
+    await dimensionTestBase.navigateToWorkersPage(page);
   });
 
   test("should add new dimension column to workers table", async ({ page }) => {

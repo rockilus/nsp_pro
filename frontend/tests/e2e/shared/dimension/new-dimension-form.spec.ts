@@ -11,14 +11,8 @@ test.describe("NewDimensionForm Component", () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    // Test component behavior using workers page as default
-    const testTeam = dimensionTestBase.getTestTeam();
-    if (!testTeam) {
-      throw new Error("Test team not available");
-    }
-
-    await page.goto(`/en/plan/workers?teamId=${testTeam.teamId}`);
-    await page.waitForSelector('[aria-label="worker table"]');
+    // Navigate to the workers page for each test
+    await dimensionTestBase.navigateToWorkersPage(page);
   });
 
   test("should show popup with title 'New property' when clicking add button", async ({
