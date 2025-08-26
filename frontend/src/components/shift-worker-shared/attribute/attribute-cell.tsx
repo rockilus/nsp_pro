@@ -73,6 +73,7 @@ export default function AttributeCell({
         component="th"
         scope="row"
         className={cellClassName}
+        data-testid={`attribute-cell-${attribute.ownerId}-${dimension.id}`}
         onClick={() => setEditing({ [attribute.ownerId]: dimension.id })}
         sx={{
           paddingY: 0,
@@ -97,6 +98,7 @@ export default function AttributeCell({
               type="number"
               name={dimension.name}
               value={valueState}
+              data-testid={`attribute-number-field-${attribute.ownerId}-${dimension.id}`}
               onChange={(e) => setValueState(e.target.value)}
               onBlur={handleEditConfirm}
               onKeyDown={(e) => {
@@ -114,6 +116,7 @@ export default function AttributeCell({
               type="text"
               name={dimension.name}
               value={valueState}
+              data-testid={`attribute-text-field-${attribute.ownerId}-${dimension.id}`}
               onChange={(e) => setValueState(e.target.value)}
               onBlur={handleEditConfirm}
               onKeyDown={(e) => {
@@ -140,6 +143,7 @@ export default function AttributeCell({
                   ? attribute.value
                   : attribute.value === 1
               }
+              data-testid={`attribute-checkbox-${attribute.ownerId}-${dimension.id}`}
               onClick={handleToggle}
             />
           </Box>
