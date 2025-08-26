@@ -6,7 +6,7 @@
  */
 
 import { Page } from "@playwright/test";
-import { DatabaseTestUtils } from "./database-utils";
+import { WorkerTestBase } from "./worker-test-base";
 import { testConfig } from "./test-config";
 import {
   DimensionT,
@@ -15,12 +15,9 @@ import {
 } from "../../src/types/dimension";
 import { DimEntryT } from "../../src/types/dim-entry";
 
-export class DimensionTestBase {
-  protected dbUtils: DatabaseTestUtils;
-  protected testTeam: { teamId: string; name: string } | null = null;
-
+export class DimensionTestBase extends WorkerTestBase {
   constructor() {
-    this.dbUtils = new DatabaseTestUtils();
+    super();
   }
 
   /**
@@ -30,7 +27,7 @@ export class DimensionTestBase {
    * - Creates a test team
    */
   async setupDimensionTests(workerIndex: number): Promise<void> {
-    // Ensure the API is ready before running tests
+    // Use the parent class setup, but customize the team name for dimension tests
     await this.dbUtils.waitForApiReady();
 
     // Verify test utilities are available
@@ -124,46 +121,6 @@ export class DimensionTestBase {
   }
 
   /**
-   * Navigates to the workers page for the test team
-   * This should be called in beforeEach for consistent navigation
-   */
-  async navigateToWorkersPage(page: Page): Promise<void> {
-    if (!this.testTeam) {
-      throw new Error(
-        "Test team not created. Call setupDimensionTests() first."
-      );
-    }
-
-    // Step 1: Navigate to teams page
-    await page.goto(`${testConfig.frontendUrl}/en/plan/settings/teams/`);
-    await page.waitForSelector('h1:has-text("Teams")');
-
-    // Step 2: Wait for our test team to appear in the UI
-    const teamElement = page.getByText(this.testTeam.name, { exact: true });
-    await teamElement.waitFor({ state: "visible" });
-
-    // Step 3: Click on the team name to select it (this navigates to schedule page)
-    await Promise.all([
-      page.waitForURL(`${testConfig.frontendUrl}/en/plan/schedule/`),
-      teamElement.click(),
-    ]);
-
-    // Wait a bit for the team context to be fully set
-    await page.waitForTimeout(1000);
-
-    // Step 4: Navigate to Workers page
-    const workersLink = page.getByText("Workers").first();
-    await workersLink.waitFor({ state: "visible" });
-    await workersLink.click();
-
-    // Wait for navigation to workers page
-    await page.waitForURL(`${testConfig.frontendUrl}/en/plan/workers/`);
-
-    // Wait for the workers page to be loaded
-    await page.waitForSelector('h1:has-text("Workers")');
-  }
-
-  /**
    * Navigates to the shifts page for the test team
    * This should be called in beforeEach for consistent navigation
    */
@@ -201,13 +158,6 @@ export class DimensionTestBase {
 
     // Wait for the shifts page to be loaded
     await page.waitForSelector('h1:has-text("Shifts")');
-  }
-
-  /**
-   * Gets team information
-   */
-  getTestTeam(): { teamId: string; name: string } | null {
-    return this.testTeam;
   }
 
   //////////////////////////
