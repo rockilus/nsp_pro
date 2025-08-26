@@ -356,6 +356,39 @@ export class WorkerTestBase {
   }
 
   /**
+   * Gets the weekly hours cell for a worker row
+   */
+  getWorkerWeeklyHoursCell(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+
+    // Prioritize the table cell itself for interaction
+    const byCellTestId = row.locator(
+      '[data-testid="worker-weekly-hours-cell"]'
+    );
+    // Fallback to finding by column position - weeklyHours is the 6th column (index 5)
+    // Column order: name(0), acronym(1), employmentStart(2), employmentEnd(3), specialties(4), weeklyHours(5)
+    const byColumnPosition = row.locator("td, th").nth(5);
+
+    return byCellTestId.or(byColumnPosition);
+  }
+
+  /**
+   * Gets the weekly hours display element (for reading text)
+   */
+  getWorkerWeeklyHoursDisplay(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+    return row.locator('[data-testid^="worker-weekly-hours-display-"]');
+  }
+
+  /**
+   * Gets the weekly hours input element (for editing)
+   */
+  getWorkerWeeklyHoursInput(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+    return row.locator('[data-testid^="worker-weekly-hours-input-"]');
+  }
+
+  /**
    * Gets team information
    */
   getTestTeam(): { teamId: string; name: string } | null {
