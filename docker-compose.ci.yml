@@ -42,7 +42,7 @@ services:
       - MONGODB_DATABASE_NAME=test
       # Authorization - Permit
       - PDP_URL=http://permit:7000
-      - PDP_API_KEY= ${PDP_API_KEY}
+      - PDP_API_KEY=${PDP_API_KEY}
       # Development settings
       - UVICORN_RELOAD=True
       - TASK_EXPIRATION=150
