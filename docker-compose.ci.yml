@@ -13,7 +13,7 @@ services:
   permit:
     # No ports needed
     ports: []
-    env_file: []
+    env_file: null
     # Use GitHub Secrets for API keys
     environment:
       - PDP_API_KEY=${PDP_API_KEY}
@@ -26,7 +26,7 @@ services:
       - "4000:4000" # Keep the port for Playwright access from the host
 
     # Environment variables should be injected from GitHub Actions
-    env_file: []
+    env_file: null
     environment:
       # Environment
       - ENVIRONMENT=development
@@ -62,7 +62,7 @@ services:
   solve-service:
     # No changes needed here, as it doesn't have exposed ports or specific CI-only needs
     # It just needs to connect to localstack and mongodb
-    env_file: []
+    env_file: null
     environment:
       # Environment
       - ENVIRONMENT=development
@@ -94,7 +94,7 @@ services:
       - "3000:80" # Keep the port for Playwright access from the host
 
     # Environment variables should be injected from GitHub Actions
-    env_file: []
+    env_file: null
     environment:
       - NEXT_PUBLIC_BACKEND_URL=http://fastapi:4000 # Correct internal service URL
       - NEXT_PUBLIC_NODE_ENV=production
