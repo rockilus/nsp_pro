@@ -21,16 +21,12 @@ class DimensionService(BaseService):
         des_created: List[DimEntry] = []
         for dim_entry in dim_entries:
             dim_entry.dimension_id = d_created.id
-            des_created.append(
-                self.collection.dim_entry_db.create_dim_entry(dim_entry)
-            )
+            des_created.append(self.collection.dim_entry_db.create_dim_entry(dim_entry))
         attributes: List[Attribute] = []
         attributes_saved: List[Attribute] = []
         if d_created.entry_type == DimensionEntryType.BOOL:
             if DimensionType.SHIFT in d_created.dim_types:
-                shifts = self.collection.shift_db.get_work_shifts(
-                    d_created.team_id
-                )
+                shifts = self.collection.shift_db.get_work_shifts(d_created.team_id)
                 for shift in shifts:
                     # pylint: disable=R0801
                     attributes.append(
@@ -44,9 +40,7 @@ class DimensionService(BaseService):
                         )
                     )
             if DimensionType.REST_SHIFT in d_created.dim_types:
-                shifts = self.collection.shift_db.get_rest_shifts(
-                    d_created.team_id
-                )
+                shifts = self.collection.shift_db.get_rest_shifts(d_created.team_id)
                 for shift in shifts:
                     # pylint: disable=R0801
                     attributes.append(
@@ -60,9 +54,7 @@ class DimensionService(BaseService):
                         )
                     )
             if DimensionType.WORKER in d_created.dim_types:
-                workers = self.collection.worker_db.get_workers(
-                    d_created.team_id
-                )
+                workers = self.collection.worker_db.get_workers(d_created.team_id)
                 for worker in workers:
                     attributes.append(
                         Attribute(
@@ -84,9 +76,7 @@ class DimensionService(BaseService):
         )
 
     def delete_dimension(self, sd_id: str) -> None:
-        dim_entries = self.collection.dim_entry_db.get_dim_entries_by_dim_id(
-            sd_id
-        )
+        dim_entries = self.collection.dim_entry_db.get_dim_entries_by_dim_id(sd_id)
         for de in dim_entries:
             self.collection.dim_entry_db.logical_delete_dim_entry(de.id)
         self.collection.attribute_db.delete_attributes_by_dimension_id(sd_id)
