@@ -45,6 +45,12 @@ jobs:
         run: npx playwright install --with-deps
         working-directory: ./frontend
 
+      - name: Create required env files
+        run: |
+          touch .env.docker-compose.permit
+          touch .env.docker-compose.fastapi
+          touch .env.docker-compose.solve
+
       - name: Start all services with Docker Compose
         # This is where the magic happens.
         env:
