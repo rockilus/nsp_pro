@@ -24,14 +24,11 @@ ipykernel = "^6.29.5"
 pandas = "^2.2.3"
 pandas-stubs = "^2.2.3.250308"
 xlsxwriter = "^3.2.2"
-fastapi = "^0.115.6"
-uvicorn = {extras = ["standard"], version = "^0.24.0"}
 
 
 [tool.poetry.group.dev.dependencies]
 boto3-stubs = {extras = ["s3", "ssm"], version = "^1.39.4"}
 botocore-stubs = "^1.38.46"
-httpx = "^0.25.0"
 
 [build-system]
 requires = ["poetry-core"]

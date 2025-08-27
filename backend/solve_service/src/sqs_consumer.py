@@ -8,7 +8,7 @@ for solve requests and processes them using the existing solve logic.
 import asyncio
 import time
 from datetime import datetime, timezone
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 from loguru import logger
 from shared.database.database_collections import DatabaseCollections
@@ -28,7 +28,6 @@ from shared.services.sqs_solve_service import SQSSolveService
 
 from db_operations.get_engine_inputs import get_engine_inputs
 from db_operations.save_engine_outputs import save_engine_outputs
-from health_server import HealthServer
 from solve_service.solve_schedule import solve_schedule
 
 
@@ -47,11 +46,9 @@ class SQSSolveConsumer:
         self,
         sqs_solve_service: SQSSolveService,
         collections: DatabaseCollections,
-        health_server: Optional[HealthServer] = None,
     ):
         self.sqs_solve_service = sqs_solve_service
         self.collections = collections
-        self.health_server = health_server
         self.running = False
 
     async def start_consuming(self):
@@ -65,12 +62,6 @@ class SQSSolveConsumer:
 
         while self.running:
             try:
-                # Update health server with activity
-                if self.health_server:
-                    self.health_server.update_consumer_status(
-                        True, datetime.now(timezone.utc)
-                    )
-
                 # Poll for messages
                 messages = await self.sqs_solve_service.receive_solve_requests(
                     max_messages=1, wait_time_seconds=20  # Long polling

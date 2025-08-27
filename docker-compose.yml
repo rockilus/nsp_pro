@@ -78,19 +78,13 @@ services:
       context: ./backend
       dockerfile: solve_service/Dockerfile
     container_name: solve-service
-    ports:
-      - "8080:8080"  # Expose health check port
     env_file:
       - .env.docker-compose.solve
     depends_on:
       - mongodb
       - localstack
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://solve-service:8080/health"]
-      interval: 30s
-      timeout: 10s
-      start_period: 40s
-      retries: 3
+    # Note: This service might need to wait for the SQS queue to be created.
+    # You might need a startup script to create the queue on localstack.
 
   # Next.js Frontend
   frontend:
