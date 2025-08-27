@@ -307,7 +307,6 @@ test.describe("AttributeCell Component", () => {
     });
 
     test("should only accept numeric values", async ({ page }) => {
-      const invalidValue = "abc";
       const validValue = "456";
 
       // Click on the number attribute cell
@@ -318,15 +317,20 @@ test.describe("AttributeCell Component", () => {
 
       const numberField = attributeCell.locator('input[type="number"]');
 
-      // Try to enter invalid value
-      await numberField.fill(invalidValue);
-      await numberField.press("Enter");
+      // Verify that the input field has type="number" (browser validation)
+      await expect(numberField).toHaveAttribute("type", "number");
 
-      // The field should be empty or show default value since invalid input was rejected
+      // Try to type non-numeric characters using keyboard input
+      // This should be prevented by the browser's native validation
+      await numberField.clear();
+      await numberField.pressSequentially("abc123df");
+
+      // Only the numeric part should be accepted
       const fieldValue = await numberField.inputValue();
-      expect(fieldValue).not.toBe(invalidValue);
+      expect(fieldValue).toBe("123"); // Only numeric characters should remain
 
-      // Now enter a valid numeric value
+      // Clear and enter a valid numeric value
+      await numberField.clear();
       await numberField.fill(validValue);
       await numberField.press("Enter");
 
