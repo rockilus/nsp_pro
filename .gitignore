@@ -4,15 +4,26 @@ next-env.d.ts
 tsconfig.tsbuildinfo
 **redis.conf
 **/dump.rdb
-**.env
-**.env.*
+
+# Environment files
+*.env
+*.env.*
+.env
+.env.*
 **/.env
-**/.env.dev
-**/.env.local
-**/.env.development
-**/.env.docker
-**/.env.docker_compose
-**/.env.production
+**/.env.*
+
+# **.env
+# **.env.*
+# **/.env
+# **/.env.dev
+# **/.env.local
+# **/.env.development
+# **/.env.docker
+# **/.env.docker_compose
+# **/.env.production
+
+
 compose.dev.yaml
 
 
