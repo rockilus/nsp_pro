@@ -2,7 +2,7 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 COPY . .
-COPY .env.docker-compose.frontend .env.production
+# COPY .env.docker-compose.frontend .env.production
 RUN npm install
 RUN npm run build
 
