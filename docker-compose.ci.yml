@@ -13,6 +13,7 @@ services:
   permit:
     # No ports needed
     ports: []
+    env_file: []
     # Use GitHub Secrets for API keys
     environment:
       - PDP_API_KEY=${PDP_API_KEY}
@@ -61,6 +62,7 @@ services:
   solve-service:
     # No changes needed here, as it doesn't have exposed ports or specific CI-only needs
     # It just needs to connect to localstack and mongodb
+    env_file: []
     environment:
       # Environment
       - ENVIRONMENT=development
