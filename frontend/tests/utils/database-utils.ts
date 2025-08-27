@@ -317,7 +317,7 @@ export class DatabaseTestUtils {
    */
   async createTestUser(user?: Partial<TestUser>): Promise<UserCreationResult> {
     const defaultUser: TestUser = {
-      user_id: "64e9b7f1e13e4a1a9c8b4567",
+      user_id: testConfig.devUserId,
       email: "testuser@example.com",
       username: "testuser",
       first_name: "Test",

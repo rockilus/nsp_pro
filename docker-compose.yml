@@ -106,25 +106,25 @@ services:
       retries: 5
 
   # Development user initialization
-  init-dev-user:
-    build:
-      context: .
-      dockerfile: scripts/Dockerfile.init-user
-    container_name: init-dev-user
-    environment:
-      - DEV_API_KEY=${DEV_API_KEY:-ffb1f25b3585109374ac5fefa1728247ce600a27569c8344d779a57e0186cc93}
-    depends_on:
-      fastapi:
-        condition: service_healthy
-      # permit:
-      #   condition: service_healthy
-      # mongodb:
-      #   condition: service_healthy
-    networks:
-      - default
-    restart: "no"  # Only run once
-    # profiles:
-    #   - dev-init  # Optional: only run when explicitly requested
+  # init-dev-user:
+  #   build:
+  #     context: .
+  #     dockerfile: scripts/Dockerfile.init-user
+  #   container_name: init-dev-user
+  #   environment:
+  #     - DEV_API_KEY=${DEV_API_KEY:-ffb1f25b3585109374ac5fefa1728247ce600a27569c8344d779a57e0186cc93}
+  #   depends_on:
+  #     fastapi:
+  #       condition: service_healthy
+  #     # permit:
+  #     #   condition: service_healthy
+  #     # mongodb:
+  #     #   condition: service_healthy
+  #   networks:
+  #     - default
+  #   restart: "no"  # Only run once
+  #   # profiles:
+  #   #   - dev-init  # Optional: only run when explicitly requested
 
   # # 6. Playwright E2E Test Runner (Optional but Recommended)
   # e2e-tests:

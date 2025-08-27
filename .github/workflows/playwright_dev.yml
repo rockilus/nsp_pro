@@ -1,0 +1,73 @@
+name: CI with Playwright
+
+on:
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install Playwright dependencies
+        run: npm ci
+        working-directory: ./frontend
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Start all services with Docker Compose
+        # This is where the magic happens.
+        run: |
+          # The -f flag specifies multiple compose files.
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml up --build --detach
+          
+          # Wait for services to be healthy before running tests
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml ps
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml wait
+
+      - name: Run Playwright tests
+        run: npx playwright test
+        working-directory: ./frontend
+        env:
+          # Environment
+          TEST_ENVIRONMENT: development
+
+          # Development Authentication (for local testing)
+          TEST_USER_ID: 64e9b7f1e13e4a1a9c8b4567
+          TEST_API_KEY: ${{ secrets.DEV_API_KEY }}
+
+          # API and frontend URLs
+          TEST_API_URL: http://localhost:4000
+          TEST_FRONTEND_URL: http://localhost:3000
+          # Permit.io PDP URL (if used)
+          PERMIT_PDP_URL: http://localhost:7766
+
+          # Test utilities configuration
+          TEST_CONFIRMATION_TOKEN: test-reset-confirm
+          TEST_DB_RESET_TIMEOUT_MS: 30000
+          TEST_API_READY_TIMEOUT_MS: 10000
+          
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+        # if: always()
+        # with:
+        #   name: playwright-report
+        #   path: ./frontend/playwright-report/
+
+      - name: Teardown Docker Compose services
+        if: always()
+        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml down

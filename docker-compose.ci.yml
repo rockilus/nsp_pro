@@ -1,0 +1,113 @@
+services:
+  # General overrides for all services
+  mongodb:
+    # No ports needed for CI, services communicate via the Docker network
+    ports: []
+    # No persistent data in CI. This is crucial for clean runs.
+    volumes: []
+
+  localstack:
+    # No ports needed
+    ports: []
+
+  permit:
+    # No ports needed
+    ports: []
+    # Use GitHub Secrets for API keys
+    environment:
+      - PDP_API_KEY=${{ secrets.PDP_API_KEY }}
+      - PDP_DEBUG=True # You might want this for debugging CI failures
+
+  fastapi:
+    # No ports needed; Playwright will access via a proxy service or the host network
+    # The host network approach is simpler for Playwright
+    ports:
+      - "4000:4000" # Keep the port for Playwright access from the host
+
+    # Environment variables should be injected from GitHub Actions
+    env_file: []
+    environment:
+      # Environment
+      - ENVIRONMENT=development
+
+      # API Configuration
+      - API_DOMAIN=0.0.0.0
+      - API_URL=http://localhost:4000
+      - API_PORT=4000
+      - ORIGINS=["http://localhost:3000"]
+      - CLIENT_URL=http://localhost:3000
+      # Database Configuration - MongoDB for development
+      - MONGODB_URI=mongodb://mongodb:27017
+      - MONGODB_DATABASE_NAME=test
+      # Authorization - Permit
+      - PDP_URL=http://permit:7000
+      - PDP_API_KEY= ${{ secrets.PDP_API_KEY }}
+      # Development settings
+      - UVICORN_RELOAD=True
+      - TASK_EXPIRATION=150
+
+      # Localstack Configuration
+      - AWS_REGION=eu-west-3
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - ENDPOINT_URL=http://localstack:4566
+
+      # Development Authentication Configuration
+      - DEV_USER_ID=64e9b7f1e13e4a1a9c8b4567
+      - DEV_USER_EMAIL=testuser@example.com
+      - DEV_API_KEY=${{ secrets.DEV_API_KEY }} 
+
+
+  solve-service:
+    # No changes needed here, as it doesn't have exposed ports or specific CI-only needs
+    # It just needs to connect to localstack and mongodb
+    environment:
+      # Environment
+      - ENVIRONMENT=development
+
+      # MongoDB Configuration (Development)
+      - MONGODB_URI=mongodb://mongodb:27017
+      - MONGODB_DATABASE_NAME=test
+
+      # AWS configuration (for local development)
+      - AWS_REGION=eu-west-3
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_SESSION_TOKEN=
+      - ENDPOINT_URL=http://localstack:4566
+
+      # SQS Configuration
+      - SQS_QUEUE_NAME=nsp-pro-dev-solve-queue
+      - SQS_VISIBILITY_TIMEOUT=300
+      - SQS_MAX_RECEIVE_COUNT=3
+
+  frontend:
+    # Use the production build command
+    build:
+      context: ./frontend
+      # Use the Dockerfile that builds the production version.
+      # If your main Dockerfile does this, no change is needed here.
+    # No ports needed; Playwright will access via a proxy service or the host network
+    ports:
+      - "3000:80" # Keep the port for Playwright access from the host
+
+    # Environment variables should be injected from GitHub Actions
+    env_file: []
+    environment:
+      - NEXT_PUBLIC_BACKEND_URL=http://fastapi:4000 # Correct internal service URL
+      - NEXT_PUBLIC_NODE_ENV=production
+      # Environment
+      - NEXT_PUBLIC_NODE_ENV=development
+
+      # API Configuration  
+      - NEXT_PUBLIC_API_URL=http://fastapi:4000
+
+      # Development Authentication - must match backend DEV_USER_ID
+      - NEXT_PUBLIC_DEV_USER_ID=64e9b7f1e13e4a1a9c8b4567 # Test user
+      - NEXT_PUBLIC_DEV_API_KEY=${{ secrets.DEV_API_KEY }}
+
+      # Production Cognito Config (not used in development but kept for compatibility)
+      - NEXT_PUBLIC_COGNITO_AUTHORITY=https://placeholder-cognito-authority
+      - NEXT_PUBLIC_COGNITO_CLIENT_ID=placeholder-client-id
+      - NEXT_PUBLIC_REDIRECT_URI=http://localhost:3000/fr/plan/workers
+      - NEXT_PUBLIC_LOGOUT_REDIRECT_URI=http://localhost:3000
