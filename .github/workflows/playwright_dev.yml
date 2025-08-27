@@ -42,7 +42,7 @@ jobs:
           
           # Wait for services to be healthy before running tests
           docker compose -f docker-compose.yml -f docker-compose.ci.yml ps
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml wait fastapi frontend mongodb localstack permit
+          # docker compose -f docker-compose.yml -f docker-compose.ci.yml wait fastapi frontend mongodb localstack permit
 
       - name: Run Playwright tests
         run: npx playwright test
