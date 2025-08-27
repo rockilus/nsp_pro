@@ -18,6 +18,7 @@ from shared.services.factory import create_sqs_solve_service
 
 from config import config
 from database_setup import setup_database, shutdown_database
+from health_server import HealthServer
 from sqs_consumer import SQSSolveConsumer
 
 
@@ -32,11 +33,13 @@ class SolveService:
     - Error handling and logging
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.consumer: Optional[SQSSolveConsumer] = None
         self.collections: Optional[DatabaseCollections] = None
+        self.health_server: Optional[HealthServer] = None
         self.shutdown_event = asyncio.Event()
         self._consumer_task: Optional[asyncio.Task] = None
+        self._health_server_task: Optional[asyncio.Task] = None
 
     @asynccontextmanager
     async def database_lifespan(self):
@@ -72,6 +75,16 @@ class SolveService:
 
         try:
             async with self.database_lifespan() as collections:
+                # Initialize health server
+                self.health_server = HealthServer(collections)
+                logger.info("Starting health check server...")
+                self._health_server_task = asyncio.create_task(
+                    self.health_server.start_server(
+                        host=config.health_check_host,
+                        port=config.health_check_port,
+                    )
+                )
+
                 # Create AWS configuration
                 aws_config = AWSConfig(
                     region=config.aws_region,
@@ -87,13 +100,18 @@ class SolveService:
                 logger.info("SQS service created successfully")
 
                 # Create consumer with database collections
-                self.consumer = SQSSolveConsumer(sqs_service, collections)
+                self.consumer = SQSSolveConsumer(
+                    sqs_service, collections, self.health_server
+                )
 
                 # Start consuming messages
                 logger.info("Starting SQS consumer...")
                 self._consumer_task = asyncio.create_task(
                     self.consumer.start_consuming()
                 )
+
+                # Update health server with consumer status
+                self.health_server.update_consumer_status(True)
 
                 # Wait for shutdown signal
                 await self.shutdown_event.wait()
@@ -127,6 +145,10 @@ class SolveService:
         """
         logger.info("Initiating graceful shutdown...")
 
+        # Update health status
+        if self.health_server:
+            self.health_server.update_consumer_status(False)
+
         # Stop the consumer
         if self.consumer:
             logger.info("Stopping SQS consumer...")
@@ -140,6 +162,11 @@ class SolveService:
             except asyncio.TimeoutError:
                 logger.warning("Consumer shutdown timed out, forcing stop")
                 self._consumer_task.cancel()
+
+        # Stop health server
+        if self._health_server_task and not self._health_server_task.done():
+            logger.info("Stopping health server...")
+            self._health_server_task.cancel()
 
         logger.info("Graceful shutdown completed")
 
