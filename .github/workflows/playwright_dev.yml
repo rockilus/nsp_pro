@@ -26,6 +26,9 @@ jobs:
 
       - name: Start all services with Docker Compose
         # This is where the magic happens.
+        env:
+          PDP_API_KEY: ${{ secrets.PDP_API_KEY }}
+          DEV_API_KEY: ${{ secrets.DEV_API_KEY }}
         run: |
           # The -f flag specifies multiple compose files.
           docker compose -f docker-compose.yml -f docker-compose.ci.yml up --build --detach

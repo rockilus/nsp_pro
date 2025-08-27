@@ -15,7 +15,7 @@ services:
     ports: []
     # Use GitHub Secrets for API keys
     environment:
-      - PDP_API_KEY=${{ secrets.PDP_API_KEY }}
+      - PDP_API_KEY=${PDP_API_KEY}
       - PDP_DEBUG=True # You might want this for debugging CI failures
 
   fastapi:
@@ -41,7 +41,7 @@ services:
       - MONGODB_DATABASE_NAME=test
       # Authorization - Permit
       - PDP_URL=http://permit:7000
-      - PDP_API_KEY= ${{ secrets.PDP_API_KEY }}
+      - PDP_API_KEY= ${PDP_API_KEY}
       # Development settings
       - UVICORN_RELOAD=True
       - TASK_EXPIRATION=150
@@ -55,7 +55,7 @@ services:
       # Development Authentication Configuration
       - DEV_USER_ID=64e9b7f1e13e4a1a9c8b4567
       - DEV_USER_EMAIL=testuser@example.com
-      - DEV_API_KEY=${{ secrets.DEV_API_KEY }} 
+      - DEV_API_KEY=${DEV_API_KEY} 
 
 
   solve-service:
@@ -104,7 +104,7 @@ services:
 
       # Development Authentication - must match backend DEV_USER_ID
       - NEXT_PUBLIC_DEV_USER_ID=64e9b7f1e13e4a1a9c8b4567 # Test user
-      - NEXT_PUBLIC_DEV_API_KEY=${{ secrets.DEV_API_KEY }}
+      - NEXT_PUBLIC_DEV_API_KEY=${DEV_API_KEY}
 
       # Production Cognito Config (not used in development but kept for compatibility)
       - NEXT_PUBLIC_COGNITO_AUTHORITY=https://placeholder-cognito-authority
