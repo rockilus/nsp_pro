@@ -69,6 +69,7 @@ export default function PopoverRHS({
         anchorReference="anchorPosition"
         anchorPosition={{ top: 40, left: windowWidth - 390 }}
         onClose={handleClose}
+        data-testid="new-dimension-popup"
         slotProps={{
           paper: {
             style: {
@@ -87,8 +88,14 @@ export default function PopoverRHS({
           alignItems="center"
           sx={{ marginBottom: 1.5 }}
         >
-          <Typography variant="h6">{title}</Typography>
-          <IconButton onClick={handleClose} sx={{ padding: 0 }}>
+          <Typography variant="h6" data-testid="new-dimension-popup-title">
+            {title}
+          </Typography>
+          <IconButton
+            onClick={handleClose}
+            sx={{ padding: 0 }}
+            data-testid="new-dimension-popup-close"
+          >
             <CloseIcon />
           </IconButton>
         </Box>

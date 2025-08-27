@@ -7,7 +7,7 @@ import path from "path";
  * Verifies that types, API client, and components are properly integrated
  */
 describe("Frontend Template Application Integration", () => {
-  const frontendPath = path.resolve(__dirname, "../../src");
+  const frontendPath = path.join(process.cwd(), "src");
 
   describe("Type Definitions", () => {
     const typesFile = path.join(frontendPath, "types/shift-demand-template.ts");
@@ -143,6 +143,8 @@ describe("Frontend Template Application Integration", () => {
         frontendPath,
         "components/shiftDemand/templates/TemplateApplicationToRangeDialog.tsx"
       );
+      console.log(`Checking dialog file: ${dialogFile}`);
+
       const windowFile = path.join(
         frontendPath,
         "components/shiftDemand/templates/TemplateManagementWindow.tsx"

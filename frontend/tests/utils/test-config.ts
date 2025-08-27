@@ -26,6 +26,8 @@ export interface TestConfig {
   apiUrl: string;
   /** Frontend URL for navigation during tests */
   frontendUrl: string;
+  /** URL for Permit.io PDP, if used */
+  permitUrl: string;
   /** Authentication token for API requests in tests */
   authToken: string;
   /** Development User ID for X-Dev-User-ID header */
@@ -65,7 +67,11 @@ function validateRequiredEnvVars(): void {
   const required: string[] = [];
 
   if (environment === "development") {
-    required.push("TEST_USER_ID", "TEST_API_KEY");
+    required.push("TEST_USER_ID");
+    // For API key, accept either TEST_API_KEY or DEV_API_KEY
+    if (!process.env.TEST_API_KEY && !process.env.DEV_API_KEY) {
+      required.push("TEST_API_KEY or DEV_API_KEY");
+    }
   } else {
     required.push("TEST_AUTH_TOKEN");
   }
@@ -95,6 +101,7 @@ export function loadTestConfig(): TestConfig {
   const config: TestConfig = {
     apiUrl: process.env.TEST_API_URL || "http://localhost:4000",
     frontendUrl: process.env.TEST_FRONTEND_URL || "http://localhost:3000",
+    permitUrl: process.env.PERMIT_PDP_URL || "http://localhost:7766", // Default to local PDP
     environment,
     authToken: process.env.TEST_AUTH_TOKEN || "",
     devUserId: process.env.TEST_USER_ID || "",

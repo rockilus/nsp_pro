@@ -38,6 +38,7 @@ export default function WorkerFieldCellName({
     <TableCell
       component="th"
       scope="row"
+      data-testid="worker-name-cell"
       onClick={() => setEditing({ [worker.id]: "name" })}
       sx={{ paddingY: 0 }}
     >
@@ -57,9 +58,13 @@ export default function WorkerFieldCellName({
             }
           }}
           autoFocus
+          inputProps={{ "data-testid": `worker-name-input-${worker.id}` }}
         />
       ) : (
-        <Box sx={{ minHeight: 45, display: "flex", alignItems: "center" }}>
+        <Box
+          sx={{ minHeight: 45, display: "flex", alignItems: "center" }}
+          data-testid={`worker-name-display-${worker.id}`}
+        >
           {worker.name}
         </Box>
       )}

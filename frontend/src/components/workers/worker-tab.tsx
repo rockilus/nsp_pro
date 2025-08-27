@@ -447,7 +447,14 @@ export default function WorkerTab({
           <div>
             {/* Title container */}
             <div className="table-title-container">
-              <span className="title">{t("workers")}</span>
+              <span
+                className="title"
+                role="heading"
+                aria-level={1}
+                data-testid="workers-page-heading"
+              >
+                {t("workers")}
+              </span>
               <div style={{ display: "flex", gap: "8px" }}>
                 <TableAddButton
                   text={t("worker")}

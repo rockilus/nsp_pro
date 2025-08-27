@@ -25,17 +25,3 @@ export function toAttributeT(data: any): AttributeT {
     dimEntryIds: data.dim_entry_ids ?? data.dimEntryIds ?? [],
   };
 }
-
-/**
- * Convert AttributeT to API request format
- */
-export function fromAttributeT(attribute: AttributeT): any {
-  return {
-    id: attribute.id,
-    value: attribute.value,
-    owner_type: attribute.ownerType,
-    owner_id: attribute.ownerId,
-    dimension_id: attribute.dimensionId,
-    dim_entry_ids: attribute.dimEntryIds,
-  };
-}

@@ -25,14 +25,8 @@ class DimensionService(BaseService):
         attributes: List[Attribute] = []
         attributes_saved: List[Attribute] = []
         if d_created.entry_type == DimensionEntryType.BOOL:
-            if d_created.dim_types in [
-                DimensionType.SHIFT,
-                DimensionType.REST_SHIFT,
-            ]:
-                if d_created.dim_types == DimensionType.REST_SHIFT:
-                    shifts = self.collection.shift_db.get_rest_shifts(d_created.team_id)
-                else:
-                    shifts = self.collection.shift_db.get_work_shifts(d_created.team_id)
+            if DimensionType.SHIFT in d_created.dim_types:
+                shifts = self.collection.shift_db.get_work_shifts(d_created.team_id)
                 for shift in shifts:
                     # pylint: disable=R0801
                     attributes.append(
@@ -45,7 +39,21 @@ class DimensionService(BaseService):
                             dim_entry_ids=[],
                         )
                     )
-            elif d_created.dim_types == DimensionType.WORKER:
+            if DimensionType.REST_SHIFT in d_created.dim_types:
+                shifts = self.collection.shift_db.get_rest_shifts(d_created.team_id)
+                for shift in shifts:
+                    # pylint: disable=R0801
+                    attributes.append(
+                        Attribute(
+                            id="",
+                            value=False,
+                            owner_type=AttributeOwnerType.SHIFT,
+                            owner_id=shift.id,
+                            dimension_id=d_created.id,
+                            dim_entry_ids=[],
+                        )
+                    )
+            if DimensionType.WORKER in d_created.dim_types:
                 workers = self.collection.worker_db.get_workers(d_created.team_id)
                 for worker in workers:
                     attributes.append(

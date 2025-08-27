@@ -7,7 +7,7 @@ import path from "path";
  * Checks that components follow the centralized API pattern
  */
 describe("API Centralization", () => {
-  const frontendPath = path.resolve(__dirname, "../../src");
+  const frontendPath = path.join(process.cwd(), "src");
 
   describe("TemplateApplicationToRangeDialog", () => {
     const dialogFile = path.join(

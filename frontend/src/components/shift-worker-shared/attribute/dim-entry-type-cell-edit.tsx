@@ -126,6 +126,7 @@ export default function DimEntryTypeCellEdit({
 
   return (
     <div
+      data-testid="dim-entry-type-cell-edit-popup"
       style={{
         width: "240px",
         borderRadius: "6px",
@@ -165,9 +166,11 @@ export default function DimEntryTypeCellEdit({
             <Chip
               key={de.id}
               label={de.name}
+              data-testid={`selected-dim-entry-chip-${de.id}`}
               onDelete={() => handleRemoveFromSelected(de)}
               deleteIcon={
                 <ClearIcon
+                  data-testid={`remove-dim-entry-${de.id}`}
                   style={{
                     fontSize: "15px",
                     color: ConstraintDefaultColors.shade2,
@@ -187,6 +190,7 @@ export default function DimEntryTypeCellEdit({
             onChange={handleSearchChange}
             onKeyDown={handleKeyDown}
             ref={inputRef}
+            data-testid="dim-entry-search-input"
             // placeholder="Search shifts"
             style={{
               color: ConstraintDefaultColors.shade3,
@@ -212,10 +216,15 @@ export default function DimEntryTypeCellEdit({
         >
           {"Select one or more "}
         </div>
-        <List dense={true} sx={{ padding: "0 0 0 0" }}>
+        <List
+          dense={true}
+          sx={{ padding: "0 0 0 0" }}
+          data-testid="dim-entry-options-list"
+        >
           {filteredOptions.map((option) => (
             <ListItemButton
               key={option.id}
+              data-testid={`dim-entry-option-${option.id}`}
               onClick={() => {
                 handleAddSelectedDimEntry(option);
               }}

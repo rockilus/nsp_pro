@@ -49,6 +49,7 @@ export default function WorkerSpecialtyCell({
     <TableCell
       component="th"
       scope="row"
+      data-testid="worker-specialty-cell"
       sx={{
         paddingY: 0,
         cursor: "pointer",
@@ -58,6 +59,7 @@ export default function WorkerSpecialtyCell({
         buttonContent={worker.specialtyIds.map((sId, index) => (
           <Chip
             key={sId}
+            data-testid={`specialty-chip-${sId}`}
             label={specialties.find((s) => s.id === sId)?.name || ""}
             sx={{ cursor: "pointer" }}
           />

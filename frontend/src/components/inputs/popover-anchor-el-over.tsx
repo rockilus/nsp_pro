@@ -39,6 +39,7 @@ export default function PopoverAnchorElOver({
     >
       <Button
         aria-describedby={id}
+        data-testid="popover-trigger-button"
         variant="contained"
         onClick={handleClick}
         sx={{
@@ -61,6 +62,7 @@ export default function PopoverAnchorElOver({
       </Button>
       <Popover
         id={id}
+        data-testid="popover-content"
         open={open}
         anchorEl={anchorEl}
         onClose={handleClose}

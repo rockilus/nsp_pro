@@ -117,7 +117,12 @@ export default function TeamsTab({
   return (
     <div className="tab-container-wide">
       <div className="teams-tab-header">
-        <span className="title" role="heading" aria-level={1}>
+        <span
+          className="title"
+          role="heading"
+          aria-level={1}
+          data-testid="teams-page-heading"
+        >
           {t("teams")}
         </span>
         <NewTeamDialog lng={lng} handleCreateTeam={handleCreateTeam} />

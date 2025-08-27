@@ -5,6 +5,7 @@
  * 1. Backend API is running and accessible
  * 2. Test utilities are available
  * 3. Database can be reset successfully
+ * 4. Test user is created for authentication
  */
 
 import { chromium, FullConfig } from "@playwright/test";
@@ -16,10 +17,10 @@ async function globalSetup(config: FullConfig) {
   const dbUtils = new DatabaseTestUtils();
 
   try {
-    // Wait for API to be ready
-    console.log("⏳ Waiting for API to be ready...");
-    await dbUtils.waitForApiReady(15000); // 15 second timeout
-    console.log("✅ API is ready");
+    // Wait for all required services to be ready
+    console.log("⏳ Waiting for services to be ready...");
+    await dbUtils.waitForServicesReady(30000); // 30 second timeout
+    console.log("✅ All services are ready");
 
     // Check test utilities health
     console.log("🔍 Checking test utilities health...");
@@ -39,6 +40,19 @@ async function globalSetup(config: FullConfig) {
       `✅ Initial database reset completed: ${resetResult.operation_id}`
     );
     console.log(`   Reset ${resetResult.collections_reset.length} collections`);
+
+    // Create test user after database reset
+    console.log("👤 Creating test user...");
+    try {
+      const userResult = await dbUtils.createTestUser();
+      console.log("✅ Test user created successfully");
+      console.log(`   ${userResult.message}`);
+    } catch (error) {
+      console.error("❌ Failed to create test user:", error);
+      // Don't fail the entire setup if user creation fails
+      // Tests can handle authentication scenarios individually
+      console.warn("⚠️ Continuing with setup despite user creation failure");
+    }
 
     // Optional: Verify we can create and query a browser for testing
     const browser = await chromium.launch();
@@ -67,6 +81,10 @@ async function globalSetup(config: FullConfig) {
       } else if (error.message.includes("test utilities")) {
         console.error(
           "💡 Make sure ENVIRONMENT=test or ENVIRONMENT=development is set"
+        );
+      } else if (error.message.includes("Test user creation")) {
+        console.error(
+          "💡 Make sure the DEV_API_KEY environment variable is set correctly"
         );
       }
     }

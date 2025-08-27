@@ -39,8 +39,10 @@ export default function UpdateSpecialtiesForm({
   };
 
   return (
-    <Box sx={{ width: "100%" }}>
-      <span>{t("update_specialties")}</span>
+    <Box sx={{ width: "100%" }} data-testid="update-specialties-form">
+      <span data-testid="update-specialties-title">
+        {t("update_specialties")}
+      </span>
       <Box mt={2}>
         <UpdateSpecialtiesInput
           lng={lng}
@@ -57,6 +59,7 @@ export default function UpdateSpecialtiesForm({
           variant="contained"
           onClick={handleClose}
           sx={{ marginRight: 1 }}
+          data-testid="save-specialties-button"
         >
           {t("save")}
         </Button>

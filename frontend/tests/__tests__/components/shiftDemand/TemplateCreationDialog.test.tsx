@@ -5,13 +5,13 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { TemplateCreationDialog } from "../TemplateCreationDialog";
-import { TemplateType } from "../../../../types/shift-demand-template";
+import { TemplateCreationDialog } from "../../../../src/components/shiftDemand/templates/TemplateCreationDialog";
+import { TemplateType } from "../../../../src/types/shift-demand-template";
 import dayjs from "dayjs";
 import "@testing-library/jest-dom";
 
 // Mock the translation hook
-jest.mock("../../../../app/i18n/client", () => ({
+jest.mock("../../../../src/app/i18n/client", () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {
@@ -41,7 +41,7 @@ const mockApi = {
 // Note: The TemplateCreationDialog doesn't directly call the API,
 // it passes data to parent via onTemplateCreated callback.
 // This mock is for compatibility with existing test structure.
-jest.mock("../../../../app/lib/api/shiftDemandTemplateApi", () => ({
+jest.mock("../../../../src/app/lib/api/shiftDemandTemplateApi", () => ({
   ShiftDemandTemplateApi: mockApi,
 }));
 

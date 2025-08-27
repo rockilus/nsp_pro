@@ -49,7 +49,11 @@ export default function TeamsList({
         } ${isFirstItem ? "first-item" : ""}`}
       >
         <div className="team-list-item-description">
-          <strong className="teams-list-item-name" onClick={handleTeamClick}>
+          <strong
+            className="teams-list-item-name"
+            onClick={handleTeamClick}
+            data-testid={`team-name-${teamWithMembership.team.id}`}
+          >
             {teamWithMembership.team.name}
           </strong>
           <span className="teams-list-item-role">

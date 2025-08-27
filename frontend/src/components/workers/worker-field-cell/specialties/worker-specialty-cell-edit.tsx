@@ -128,6 +128,7 @@ export default function WorkerSpecialtyCellEdit({
 
   return (
     <div
+      data-testid="worker-specialty-edit-popup"
       style={{
         width: "240px",
         borderRadius: "6px",
@@ -148,6 +149,7 @@ export default function WorkerSpecialtyCellEdit({
             </div> */}
         <div
           className="input-container"
+          data-testid="specialty-input-container"
           onClick={() => inputRef.current && inputRef.current.focus()}
           style={{
             display: "flex",
@@ -166,10 +168,12 @@ export default function WorkerSpecialtyCellEdit({
           {selectedSpecialties.map((de) => (
             <Chip
               key={de.id}
+              data-testid={`selected-specialty-chip-${de.id}`}
               label={de.name}
               onDelete={() => handleRemoveFromSelected(de)}
               deleteIcon={
                 <ClearIcon
+                  data-testid={`remove-specialty-${de.id}`}
                   style={{
                     fontSize: "15px",
                     color: ConstraintDefaultColors.shade2,
@@ -185,6 +189,7 @@ export default function WorkerSpecialtyCellEdit({
           ))}
           <input
             type="text"
+            data-testid="specialty-search-input"
             value={searchQuery}
             onChange={handleSearchChange}
             onKeyDown={handleKeyDown}
@@ -214,10 +219,15 @@ export default function WorkerSpecialtyCellEdit({
         >
           {"Select one or more "}
         </div>
-        <List dense={true} sx={{ padding: "0 0 0 0" }}>
+        <List
+          dense={true}
+          sx={{ padding: "0 0 0 0" }}
+          data-testid="specialty-options-list"
+        >
           {filteredOptions.map((option) => (
             <ListItemButton
               key={option.id}
+              data-testid={`specialty-option-${option.id}`}
               onClick={() => {
                 handleAddSelectedSpecialty(option);
               }}

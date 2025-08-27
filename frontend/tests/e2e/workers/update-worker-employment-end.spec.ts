@@ -1,0 +1,364 @@
+import { test, expect } from "@playwright/test";
+import { WorkerTestBase } from "../../utils/worker-test-base";
+
+const workerTestBase = new WorkerTestBase();
+
+test.describe("Worker Employment End Date Updates", () => {
+  let testWorker: { workerId: string; name: string; teamId: string };
+  let initialWorkerName: string;
+
+  test.beforeEach(async ({ page }) => {
+    // Setup the common worker test environment
+    await workerTestBase.setupWorkerTests(test.info().workerIndex);
+
+    // Use a unique name per test to avoid conflicts
+    initialWorkerName = `John Doe ${test.info().workerIndex}-${Date.now()}`;
+
+    // Create a fresh test worker for each test
+    testWorker = await workerTestBase.createTestWorker({
+      name: initialWorkerName,
+      weeklyHours: 40,
+      weeklyHoursDesired: 40,
+      dutiesPerMonth: 4,
+      annualLeave: 25,
+    });
+
+    console.log(
+      `Created test worker: ${testWorker.name} (${testWorker.workerId})`
+    );
+
+    // Navigate to the workers page
+    await workerTestBase.navigateToWorkersPage(page);
+
+    // Wait for the worker table to load and our test worker to appear
+    await page.waitForSelector('[aria-label="worker table"]');
+
+    // Verify our test worker is visible in the table
+    const workerRows = workerTestBase.getWorkerRows(page);
+    await expect(workerRows).toHaveCount(1);
+
+    // Verify the worker name is displayed
+    const nameCell = workerTestBase.getWorkerNameCell(page);
+    await expect(nameCell).toContainText(initialWorkerName);
+  });
+
+  test.afterEach(async () => {
+    // Clean up: delete the worker created for this test
+    if (testWorker?.workerId) {
+      try {
+        await workerTestBase.deleteTestWorker(testWorker.workerId);
+        console.log(`Deleted test worker: ${testWorker.workerId}`);
+      } catch (error) {
+        console.warn(
+          `Failed to delete test worker ${testWorker.workerId}:`,
+          error
+        );
+      }
+    }
+  });
+
+  test("should display 'Permanent' as default when creating a new worker", async ({
+    page,
+  }) => {
+    // Get the employment end date cell
+    const employmentEndCell = workerTestBase.getWorkerEmploymentEndCell(page);
+    const employmentEndDisplay =
+      workerTestBase.getWorkerEmploymentEndDisplay(page);
+
+    // Verify the employment end date shows "Permanent" by default
+    await expect(employmentEndDisplay).toBeVisible();
+    await expect(employmentEndDisplay).toContainText("Permanent");
+
+    console.log(`✅ New worker has 'Permanent' as default employment end date`);
+  });
+
+  test("should allow editing employment end date by clicking on it and show checkbox", async ({
+    page,
+  }) => {
+    // Get the employment end date cell and display
+    const employmentEndCell = workerTestBase.getWorkerEmploymentEndCell(page);
+    const employmentEndDisplay =
+      workerTestBase.getWorkerEmploymentEndDisplay(page);
+
+    // Initially, the date should be displayed as text
+    await expect(employmentEndDisplay).toBeVisible();
+    await expect(employmentEndDisplay).toContainText("Permanent");
+
+    // Click on the employment end date to edit it
+    await employmentEndCell.click();
+
+    // After clicking, the editor should appear with a date picker and checkbox
+    const employmentEndEditor =
+      workerTestBase.getWorkerEmploymentEndEditor(page);
+    const permanentCheckbox =
+      workerTestBase.getWorkerEmploymentEndPermanentCheckbox(page);
+    const permanentCheckboxLabel =
+      workerTestBase.getWorkerEmploymentEndPermanentCheckboxLabel(page);
+
+    await expect(employmentEndEditor).toBeVisible();
+    await expect(permanentCheckbox).toBeVisible();
+    await expect(permanentCheckboxLabel).toBeVisible();
+
+    // The display element should no longer be visible when editing
+    await expect(employmentEndDisplay).not.toBeVisible();
+
+    console.log(
+      `✅ Employment end date cell shows date picker and checkbox when clicked`
+    );
+  });
+
+  test("should have disabled date picker when permanent is selected", async ({
+    page,
+  }) => {
+    // Get the employment end date cell
+    const employmentEndCell = workerTestBase.getWorkerEmploymentEndCell(page);
+
+    // Click on the employment end date to edit it
+    await employmentEndCell.click();
+
+    // Get the date picker input and permanent checkbox
+    const employmentEndDatePickerInput =
+      workerTestBase.getWorkerEmploymentEndDatePickerInput(page);
+    const permanentCheckbox =
+      workerTestBase.getWorkerEmploymentEndPermanentCheckbox(page);
+
+    // Since default is permanent, the checkbox should be checked and date picker input disabled
+    await expect(permanentCheckbox).toBeChecked();
+    await expect(employmentEndDatePickerInput).toBeDisabled();
+
+    console.log(`✅ Date picker is disabled when permanent is selected`);
+  });
+
+  test("should enable date picker when permanent checkbox is unchecked", async ({
+    page,
+  }) => {
+    // Get the employment end date cell
+    const employmentEndCell = workerTestBase.getWorkerEmploymentEndCell(page);
+
+    // Click on the employment end date to edit it
+    await employmentEndCell.click();
+
+    // Get the date picker input and permanent checkbox
+    const employmentEndDatePickerInput =
+      workerTestBase.getWorkerEmploymentEndDatePickerInput(page);
+    const permanentCheckbox =
+      workerTestBase.getWorkerEmploymentEndPermanentCheckbox(page);
+
+    // Initially, permanent should be checked and date picker input disabled
+    await expect(permanentCheckbox).toBeChecked();
+    await expect(employmentEndDatePickerInput).toBeDisabled();
+
+    // Uncheck the permanent checkbox
+    await permanentCheckbox.click();
+
+    // Now the checkbox should be unchecked and date picker input enabled
+    await expect(permanentCheckbox).not.toBeChecked();
+    await expect(employmentEndDatePickerInput).toBeEnabled();
+
+    console.log(
+      `✅ Date picker becomes enabled when permanent checkbox is unchecked`
+    );
+  });
+
+  test("should update employment end date when datepicker is changed and clicked away", async ({
+    page,
+  }) => {
+    // Get the employment end date cell
+    const employmentEndCell = workerTestBase.getWorkerEmploymentEndCell(page);
+    const employmentEndDisplay =
+      workerTestBase.getWorkerEmploymentEndDisplay(page);
+
+    // Click on the employment end date to edit it
+    await employmentEndCell.click();
+
+    // Get the date picker input and permanent checkbox
+    const employmentEndDatePickerInput =
+      workerTestBase.getWorkerEmploymentEndDatePickerInput(page);
+    const permanentCheckbox =
+      workerTestBase.getWorkerEmploymentEndPermanentCheckbox(page);
+
+    // Uncheck the permanent checkbox to enable the date picker
+    await permanentCheckbox.click();
+    await expect(employmentEndDatePickerInput).toBeEnabled();
+
+    // Set a specific date
+    const newDate = "31/12/2025";
+    await employmentEndDatePickerInput.fill(newDate);
+
+    // Click somewhere else to trigger blur event (save)
+    const pageTitle = page.getByRole("heading", { name: "Workers" });
+    await pageTitle.click();
+
+    // Wait a moment for the save operation to complete
+    await page.waitForTimeout(1000);
+
+    // The editor should no longer be visible
+    const employmentEndEditor =
+      workerTestBase.getWorkerEmploymentEndEditor(page);
+    await expect(employmentEndEditor).not.toBeVisible();
+
+    // The display should be visible again and show the updated date
+    await expect(employmentEndDisplay).toBeVisible();
+    await expect(employmentEndDisplay).toContainText(newDate);
+
+    console.log(`✅ Employment end date updated to ${newDate} via blur event`);
+  });
+
+  test("should update employment end date when datepicker is changed and Enter is pressed", async ({
+    page,
+  }) => {
+    // Get the employment end date cell
+    const employmentEndCell = workerTestBase.getWorkerEmploymentEndCell(page);
+    const employmentEndDisplay =
+      workerTestBase.getWorkerEmploymentEndDisplay(page);
+
+    // Click on the employment end date to edit it
+    await employmentEndCell.click();
+
+    // Get the date picker input and permanent checkbox
+    const employmentEndDatePickerInput =
+      workerTestBase.getWorkerEmploymentEndDatePickerInput(page);
+    const permanentCheckbox =
+      workerTestBase.getWorkerEmploymentEndPermanentCheckbox(page);
+
+    // Uncheck the permanent checkbox to enable the date picker
+    await permanentCheckbox.click();
+    await expect(employmentEndDatePickerInput).toBeEnabled();
+
+    // Set a specific date
+    const newDate = "15/06/2025";
+    await employmentEndDatePickerInput.fill(newDate);
+
+    // Press Enter to save
+    await employmentEndDatePickerInput.press("Enter");
+
+    // Wait a moment for the save operation to complete
+    await page.waitForTimeout(1000);
+
+    // The editor should no longer be visible
+    const employmentEndEditor =
+      workerTestBase.getWorkerEmploymentEndEditor(page);
+    await expect(employmentEndEditor).not.toBeVisible();
+
+    // The display should be visible again and show the updated date
+    await expect(employmentEndDisplay).toBeVisible();
+    await expect(employmentEndDisplay).toContainText(newDate);
+
+    console.log(`✅ Employment end date updated to ${newDate} via Enter key`);
+  });
+
+  test("should not update employment end date when Escape is pressed", async ({
+    page,
+  }) => {
+    // Get the employment end date cell
+    const employmentEndCell = workerTestBase.getWorkerEmploymentEndCell(page);
+    const employmentEndDisplay =
+      workerTestBase.getWorkerEmploymentEndDisplay(page);
+
+    // Get the initial text (should be "Permanent")
+    const initialText = await employmentEndDisplay.textContent();
+    const initialDisplayText = initialText?.trim() || "Permanent";
+
+    // Click on the employment end date to edit it
+    await employmentEndCell.click();
+
+    // Get the date picker input and permanent checkbox
+    const employmentEndDatePickerInput =
+      workerTestBase.getWorkerEmploymentEndDatePickerInput(page);
+    const permanentCheckbox =
+      workerTestBase.getWorkerEmploymentEndPermanentCheckbox(page);
+
+    // Uncheck the permanent checkbox to enable the date picker
+    await permanentCheckbox.click();
+    await expect(employmentEndDatePickerInput).toBeEnabled();
+
+    // Set a temporary date (but don't save it)
+    const tempDate = "01/01/2026";
+    await employmentEndDatePickerInput.fill(tempDate);
+
+    // Press Escape to cancel editing
+    await employmentEndDatePickerInput.press("Escape");
+
+    // Wait a moment for the cancel operation to complete
+    await page.waitForTimeout(1000);
+
+    // The editor should no longer be visible
+    const employmentEndEditor =
+      workerTestBase.getWorkerEmploymentEndEditor(page);
+    await expect(employmentEndEditor).not.toBeVisible();
+
+    // The display should be visible again and show the original text (not the temporary date)
+    await expect(employmentEndDisplay).toBeVisible();
+    await expect(employmentEndDisplay).toContainText(initialDisplayText);
+    await expect(employmentEndDisplay).not.toContainText(tempDate);
+
+    console.log(
+      `✅ Employment end date edit canceled, reverted to original: "${initialDisplayText}"`
+    );
+  });
+
+  test("should show 'Permanent' when permanent checkbox is selected for a worker with date", async ({
+    page,
+  }) => {
+    // First, set the worker to have an end date (not permanent)
+    const employmentEndCell = workerTestBase.getWorkerEmploymentEndCell(page);
+    const employmentEndDisplay =
+      workerTestBase.getWorkerEmploymentEndDisplay(page);
+
+    // Click on the employment end date to edit it
+    await employmentEndCell.click();
+
+    // Get the date picker input and permanent checkbox
+    const employmentEndDatePickerInput =
+      workerTestBase.getWorkerEmploymentEndDatePickerInput(page);
+    const permanentCheckbox =
+      workerTestBase.getWorkerEmploymentEndPermanentCheckbox(page);
+
+    // Uncheck the permanent checkbox to enable the date picker
+    await permanentCheckbox.click();
+    await expect(employmentEndDatePickerInput).toBeEnabled();
+
+    // Set a specific date
+    const specificDate = "30/11/2025";
+    await employmentEndDatePickerInput.fill(specificDate);
+
+    // Save by pressing Enter
+    await employmentEndDatePickerInput.press("Enter");
+
+    // Wait for save to complete
+    await page.waitForTimeout(1000);
+
+    // Verify the date is now displayed
+    await expect(employmentEndDisplay).toBeVisible();
+    await expect(employmentEndDisplay).toContainText(specificDate);
+
+    // Now click again to edit and select permanent
+    await employmentEndCell.click();
+
+    // Get the updated elements
+    const updatedPermanentCheckbox =
+      workerTestBase.getWorkerEmploymentEndPermanentCheckbox(page);
+
+    // The checkbox should not be checked since we have a date
+    await expect(updatedPermanentCheckbox).not.toBeChecked();
+
+    // Check the permanent checkbox
+    await updatedPermanentCheckbox.click();
+
+    // Save by clicking away
+    const pageTitle = page.getByRole("heading", { name: "Workers" });
+    await pageTitle.click();
+
+    // Wait for save to complete
+    await page.waitForTimeout(1000);
+
+    // The display should now show "Permanent" instead of the date
+    await expect(employmentEndDisplay).toBeVisible();
+    await expect(employmentEndDisplay).toContainText("Permanent");
+    await expect(employmentEndDisplay).not.toContainText(specificDate);
+
+    console.log(
+      `✅ Employment end date changed from specific date to 'Permanent' when checkbox selected`
+    );
+  });
+});

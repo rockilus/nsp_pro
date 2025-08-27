@@ -28,17 +28,45 @@ async def create_worker(
     user_context: UserContext = Depends(get_user_context),
     worker_service: WorkerService = Depends(get_worker_service),
 ) -> WorkerDTO:
+    """
+    Create a new worker for the specified team.
+
+    Authorization includes automatic retry logic based on configuration
+    to handle policy sync timing issues with Permit.io.
+    """
     try:
+        log_info(f"Creating worker for team {team_id}, user {user_context.user_id}")
+
+        # Simple authorization check - retry logic is handled internally
         if not await authz_check(
             user_context.user_id, "create-worker", "team", team_id
         ):
+            log_info(
+                f"Authorization denied for user {user_context.user_id} "
+                f"to create worker in team {team_id}"
+            )
             raise NotAuthorizedError("You do not have permission to create a worker")
+
+        log_info(
+            f"Authorization successful for user {user_context.user_id} "
+            f"to create worker in team {team_id}"
+        )
+
         w_data = Worker.from_dto(worker)
         worker_created, a_bool = worker_service.create_worker(w_data)
         response = worker_created.to_dto(a_bool)
+
+        log_info(
+            f"Worker created successfully for team {team_id}: " f"{worker_created.id}"
+        )
+
+    except NotAuthorizedError:
+        # Re-raise authorization errors without additional logging
+        raise
     except Exception as e:
-        log_info("Failed to create worker")
+        log_info(f"Failed to create worker for team {team_id}: {str(e)}")
         handle_routes_errors(e)
+
     return response
 
 

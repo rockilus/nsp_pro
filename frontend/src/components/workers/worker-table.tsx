@@ -13,7 +13,6 @@ import TableRow from "@mui/material/TableRow";
 import Tooltip from "@mui/material/Tooltip";
 import TextField from "@mui/material/TextField";
 // Components
-import NewDimensionForm from "../shift-worker-shared/dimension/new-dimension-form";
 import DimensionCell from "../shift-worker-shared/dimension/dimension-cell";
 import AttributeCell from "../shift-worker-shared/attribute/attribute-cell";
 import WorkerFieldCell from "./worker-field-cell/worker-field-cell";
@@ -313,6 +312,7 @@ function WorkerTableHeader({
         {/* First column header - Worker name */}
         <TableCell
           className="worker-table-first-header-cell"
+          data-testid="worker-name-header-cell"
           sx={{
             textAlign: "left !important",
             paddingLeft: "16px !important",
@@ -361,7 +361,11 @@ function WorkerTableHeader({
               handleDeleteSpecialty={handleDeleteSpecialty}
             />
           ) : (
-            <TableCell key={index} className="worker-table-cell">
+            <TableCell
+              key={index}
+              className="worker-table-cell"
+              data-testid={`worker-${field.name}-header-cell`}
+            >
               <div className="flex items-center justify-between">
                 <Tooltip title={field.label} placement="top">
                   <span className="table-header-default">{field.label}</span>
@@ -418,7 +422,10 @@ function WorkerTableHeader({
         ))}
 
         {/* Actions column header */}
-        <TableCell className="worker-table-actions-header">
+        <TableCell
+          className="worker-table-actions-header"
+          data-testid="worker-actions-header-cell"
+        >
           <Tooltip title={t("actions")} placement="top">
             <span className="table-header-default">{t("actions")}</span>
           </Tooltip>
@@ -504,13 +511,17 @@ function WorkerTableRow({
       })}
 
       {/* Actions column */}
-      <TableCell className="worker-table-actions">
+      <TableCell
+        className="worker-table-actions"
+        data-testid="worker-actions-cell"
+      >
         <Box sx={{ display: "flex", justifyContent: "center" }}>
           <Tooltip title="Delete Worker">
             <Button
               onClick={() => handleDeleteWorker(worker.id)}
               size="small"
               sx={{ minWidth: "auto", p: 0.5 }}
+              data-testid={`worker-delete-button-${worker.id}`}
             >
               <DeleteIcon fontSize="small" />
             </Button>

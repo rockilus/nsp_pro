@@ -37,7 +37,12 @@ export default function DialogDimensionDel({
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
-      <Button variant="outlined" onClick={handleClickOpen} fullWidth>
+      <Button
+        variant="outlined"
+        onClick={handleClickOpen}
+        data-testid={`dimension-delete-button-${dimensionId}`}
+        fullWidth
+      >
         {t("delete")}
       </Button>
       <Dialog
@@ -45,6 +50,7 @@ export default function DialogDimensionDel({
         onClose={handleClose}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
+        data-testid={`dimension-delete-dialog-${dimensionId}`}
       >
         <DialogTitle id="alert-dialog-title">{t("delete_title")}</DialogTitle>
         <DialogContent>
@@ -53,10 +59,18 @@ export default function DialogDimensionDel({
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClickDelete} color="error">
+          <Button
+            onClick={handleClickDelete}
+            color="error"
+            data-testid={`dimension-delete-confirm-${dimensionId}`}
+          >
             {t("delete_confirm")}
           </Button>
-          <Button onClick={handleClose} autoFocus>
+          <Button
+            onClick={handleClose}
+            autoFocus
+            data-testid={`dimension-delete-cancel-${dimensionId}`}
+          >
             {t("cancel")}
           </Button>
         </DialogActions>

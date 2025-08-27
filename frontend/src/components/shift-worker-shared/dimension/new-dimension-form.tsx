@@ -133,7 +133,7 @@ export default function NewDimensionForm({
   };
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box sx={{ width: "100%" }} data-testid="new-dimension-form">
       <TextField
         label={t("name")}
         variant="outlined"
@@ -142,11 +142,13 @@ export default function NewDimensionForm({
         error={nameError}
         helperText={nameError ? "Please enter a name" : ""}
         sx={{ width: "100%" }}
+        data-testid="new-dimension-name-field"
       />
       <Box mt={2}>
         <FormControl
           variant="outlined"
           style={{ minWidth: 120, width: "100%" }}
+          data-testid="new-dimension-type-select"
         >
           <InputLabel id="demo-simple-select-label">Type</InputLabel>
           <Select
@@ -158,20 +160,24 @@ export default function NewDimensionForm({
             label={t("property_type")}
           >
             {dimensionEntryTypeOptions.map((option, index) => (
-              <MenuItem key={index} value={option.value}>
+              <MenuItem
+                key={index}
+                value={option.value}
+                data-testid={`new-dimension-type-option-${option.value}`}
+              >
                 {option.label}
               </MenuItem>
             ))}
           </Select>
           {entryTypeError && (
-            <FormHelperText error>
+            <FormHelperText error data-testid="new-dimension-type-error">
               {t("property_type_helper_text")}
             </FormHelperText>
           )}
         </FormControl>
       </Box>
       {entryType === DimensionEntryType.DIM_ENTRIES && (
-        <Box mt={2}>
+        <Box mt={2} data-testid="new-dimension-tags-section">
           <NewDimensionDimEntriesInput
             lng={lng}
             dimEntries={dimEntriesNewDim}
@@ -182,7 +188,11 @@ export default function NewDimensionForm({
         </Box>
       )}
       <div style={{ display: "flex", justifyContent: "right", marginTop: 10 }}>
-        <Button variant="contained" onClick={handleAddElement}>
+        <Button
+          variant="contained"
+          onClick={handleAddElement}
+          data-testid="new-dimension-add-button"
+        >
           {t("add")}
         </Button>
       </div>

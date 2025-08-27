@@ -1,3 +1,4 @@
+import asyncio
 from typing import List
 
 from permit import PermitApiError  # type: ignore
@@ -115,17 +116,102 @@ async def authz_role_assignment_get_user_team_ids(user_id: str, role: str) -> Li
 async def authz_check(
     user_id: str, action: str, resource: str, resource_id: str | None = None
 ) -> bool:
+    """
+    Check if a user is authorized to perform an action on a resource.
+
+    Includes automatic retry logic based on configuration settings to handle
+    policy sync timing issues with Permit.io. Retry behavior is controlled
+    by config.authz_enable_retry, config.authz_max_retries, and
+    config.authz_initial_delay.
+
+    Args:
+        user_id: User identifier
+        action: Action to check (e.g., "create-worker")
+        resource: Resource type (e.g., "team")
+        resource_id: Specific resource instance ID
+
+    Returns:
+        bool: True if authorized, False otherwise
+
+    Raises:
+        Exception: If authorization check fails with errors after all retries
+    """
     resource_instance = f"{resource}:{resource_id}" if resource_id else resource
-    try:
-        out = await permit.check(
-            user=user_id,
-            action=action,
-            resource=resource_instance,
-        )
-    except Exception as e:
-        log_info("Permit check error")
-        handle_permit_errors(e)
-    return out
+
+    # If retry is disabled, use the original single-check logic
+    if not config.authz_enable_retry:
+        try:
+            result = await permit.check(
+                user=user_id,
+                action=action,
+                resource=resource_instance,
+            )
+            return result
+        except Exception as e:
+            log_info("Permit check error")
+            handle_permit_errors(e)
+            return False
+
+    # Retry logic enabled - use config settings
+    max_retries = config.authz_max_retries
+    initial_delay = config.authz_initial_delay
+
+    for attempt in range(max_retries + 1):
+        try:
+            log_debug(
+                f"Authorization attempt {attempt + 1}/{max_retries + 1}: "
+                f"user={user_id}, action={action}, "
+                f"resource={resource_instance}"
+            )
+
+            result = await permit.check(
+                user=user_id,
+                action=action,
+                resource=resource_instance,
+            )
+
+            if result:
+                if attempt > 0:
+                    log_info(
+                        f"Authorization succeeded on retry attempt "
+                        f"{attempt + 1} for {resource_instance}"
+                    )
+                return True
+
+            # If authorization failed and we have retries left, wait and retry
+            if attempt < max_retries:
+                backoff_delay = initial_delay * (2**attempt)
+                log_info(
+                    f"Authorization denied, retrying in {backoff_delay}s "
+                    f"(attempt {attempt + 1}/{max_retries + 1}) "
+                    f"for {resource_instance}"
+                )
+                await asyncio.sleep(backoff_delay)
+            else:
+                log_info(
+                    f"Authorization denied after all {max_retries + 1} "
+                    f"attempts for {resource_instance}"
+                )
+                return False
+
+        except Exception as e:
+            if attempt == max_retries:
+                log_info(
+                    f"Authorization check failed after "
+                    f"{max_retries + 1} attempts for {resource_instance}: "
+                    f"{str(e)}"
+                )
+                handle_permit_errors(e)
+                return False
+
+            backoff_delay = initial_delay * (2**attempt)
+            log_info(
+                f"Authorization error on attempt {attempt + 1}, "
+                f"retrying in {backoff_delay}s: {str(e)}"
+            )
+            await asyncio.sleep(backoff_delay)
+
+    return False
 
 
 # async def authz_get_all_users():
@@ -178,6 +264,16 @@ async def authz_delete_user(user_id: str) -> None:
         await permit.api.users.delete(user_id)
     except Exception as e:
         log_info("Permit delete user error")
+        handle_permit_errors(e)
+
+
+async def authz_delete_all_users() -> None:
+    try:
+        users = await authz_get_all_users()
+        for user in users:
+            await authz_delete_user(user.id)
+    except Exception as e:
+        log_info("Permit delete all users error")
         handle_permit_errors(e)
 
 
