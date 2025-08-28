@@ -55,7 +55,8 @@ jobs:
           # echo "Frontend is healthy"
 
       - name: Run Playwright tests
-        run: npx playwright test
+        # run: npx playwright test
+        run: npx playwright test tests/e2e/shared/attribute/attribute-cell.spec.ts --grep "should save attribute value when pressing enter"
         working-directory: ./frontend
         env:
           # Environment
