@@ -1,8 +1,34 @@
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /app
 COPY . .
-COPY .env.docker-compose.frontend .env.production
+
+# Environment
+ARG NEXT_PUBLIC_NODE_ENV
+# API Configuration
+ARG NEXT_PUBLIC_API_URL
+# Development Authentication - must match backend DEV_USER_ID
+ARG NEXT_PUBLIC_DEV_USER_ID
+ARG NEXT_PUBLIC_DEV_API_KEY
+# Production Cognito Config (not used in development but kept for compatibility)
+ARG NEXT_PUBLIC_COGNITO_AUTHORITY
+ARG NEXT_PUBLIC_COGNITO_CLIENT_ID
+ARG NEXT_PUBLIC_REDIRECT_URI
+ARG NEXT_PUBLIC_LOGOUT_REDIRECT_URI
+
+# Environment
+ENV NEXT_PUBLIC_NODE_ENV=${NEXT_PUBLIC_NODE_ENV}
+# API Configuration
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+# Development Authentication - must match backend DEV_USER_ID
+ENV NEXT_PUBLIC_DEV_USER_ID=${NEXT_PUBLIC_DEV_USER_ID}
+ENV NEXT_PUBLIC_DEV_API_KEY=${NEXT_PUBLIC_DEV_API_KEY}
+# Production Cognito Config (not used in development but kept for compatibility)
+ENV NEXT_PUBLIC_COGNITO_AUTHORITY=${NEXT_PUBLIC_COGNITO_AUTHORITY}
+ENV NEXT_PUBLIC_COGNITO_CLIENT_ID=${NEXT_PUBLIC_COGNITO_CLIENT_ID}
+ENV NEXT_PUBLIC_REDIRECT_URI=${NEXT_PUBLIC_REDIRECT_URI}
+ENV NEXT_PUBLIC_LOGOUT_REDIRECT_URI=${NEXT_PUBLIC_LOGOUT_REDIRECT_URI}
+
 RUN npm install
 RUN npm run build
 

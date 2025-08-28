@@ -97,6 +97,7 @@ export default function NavLinks({
             className={`nav-link-container ${
               pathname === link.href ? "active" : ""
             }`}
+            data-testid={`nav-link-${link.name}`}
           >
             <Link className="nav-link-link" href={link.href}>
               <span

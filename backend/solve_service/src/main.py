@@ -32,7 +32,7 @@ class SolveService:
     - Error handling and logging
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.consumer: Optional[SQSSolveConsumer] = None
         self.collections: Optional[DatabaseCollections] = None
         self.shutdown_event = asyncio.Event()

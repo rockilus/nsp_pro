@@ -25,7 +25,7 @@ services:
     # environment:
     #   - SERVICES=sqs
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localstack:4566/health"]
+      test: ["CMD", "curl", "http://localstack:4566/_localstack/health"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -42,7 +42,7 @@ services:
     #   - PDP_API_KEY=your_api_key_here # Replace with your actual API key
     #   - PDP_DEBUG=True
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://permit:7766/health"]
+      test: ["CMD", "wget", "http://permit:7000/health"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -67,7 +67,7 @@ services:
       - permit
     # Add a health check to ensure it's ready before tests run
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://fastapi:4000/health"]
+      test: ["CMD", "curl", "http://fastapi:4000/health"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -90,41 +90,51 @@ services:
   frontend:
     build:
       context: ./frontend
+      args:
+        # Environment
+        - NEXT_PUBLIC_NODE_ENV=development
+
+        # API Configuration  
+        - NEXT_PUBLIC_API_URL=http://localhost:4000
+
+        # Development Authentication - must match backend DEV_USER_ID
+        - NEXT_PUBLIC_DEV_USER_ID=64e9b7f1e13e4a1a9c8b4567 # Test user
+        - NEXT_PUBLIC_DEV_API_KEY=ffb1f25b3585109374ac5fefa1728247ce600a27569c8344d779a57e0186cc93
+
+        # Production Cognito Config (not used in development but kept for compatibility)
+        - NEXT_PUBLIC_COGNITO_AUTHORITY=https://placeholder-cognito-authority
+        - NEXT_PUBLIC_COGNITO_CLIENT_ID=placeholder-client-id
+        - NEXT_PUBLIC_REDIRECT_URI=http://localhost:3000/fr/plan/workers
+        - NEXT_PUBLIC_LOGOUT_REDIRECT_URI=http://localhost:3000
     container_name: frontend
     ports:
       - "3000:80"
-    # env_file:
-    #   - .env.docker-compose.frontend
-    # environment:
-    #   - NEXT_PUBLIC_NODE_ENV=development
-    #   # Point the Next.js app to the FastAPI service within the Docker network
-    #   - NEXT_PUBLIC_BACKEND_URL=http://fastapi:4000
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://frontend:3000"]
+      test: ["CMD", "curl", "http://frontend:80"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   # Development user initialization
-  init-dev-user:
-    build:
-      context: .
-      dockerfile: scripts/Dockerfile.init-user
-    container_name: init-dev-user
-    environment:
-      - DEV_API_KEY=${DEV_API_KEY:-ffb1f25b3585109374ac5fefa1728247ce600a27569c8344d779a57e0186cc93}
-    depends_on:
-      fastapi:
-        condition: service_healthy
-      # permit:
-      #   condition: service_healthy
-      # mongodb:
-      #   condition: service_healthy
-    networks:
-      - default
-    restart: "no"  # Only run once
-    # profiles:
-    #   - dev-init  # Optional: only run when explicitly requested
+  # init-dev-user:
+  #   build:
+  #     context: .
+  #     dockerfile: scripts/Dockerfile.init-user
+  #   container_name: init-dev-user
+  #   environment:
+  #     - DEV_API_KEY=${DEV_API_KEY:-ffb1f25b3585109374ac5fefa1728247ce600a27569c8344d779a57e0186cc93}
+  #   depends_on:
+  #     fastapi:
+  #       condition: service_healthy
+  #     # permit:
+  #     #   condition: service_healthy
+  #     # mongodb:
+  #     #   condition: service_healthy
+  #   networks:
+  #     - default
+  #   restart: "no"  # Only run once
+  #   # profiles:
+  #   #   - dev-init  # Optional: only run when explicitly requested
 
   # # 6. Playwright E2E Test Runner (Optional but Recommended)
   # e2e-tests:

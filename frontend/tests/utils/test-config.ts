@@ -8,17 +8,29 @@
 import * as dotenv from "dotenv";
 import * as path from "path";
 
-// Load test environment variables from .env.test.local
-// This file should contain sensitive test credentials and not be committed
-const envPath = path.resolve(process.cwd(), ".env.test.local");
-const result = dotenv.config({ path: envPath });
+// Detect if we're running in CI environment
+const isCI = process.env.CI === "true" || process.env.GITHUB_ACTIONS === "true";
 
-// Log configuration loading status (without exposing sensitive data)
-if (result.error) {
-  console.warn(`Warning: Could not load test environment file at ${envPath}`);
-  console.warn("Falling back to system environment variables");
+// Only load .env.test.local in local development, not in CI
+if (!isCI) {
+  // Load test environment variables from .env.test.local
+  // This file should contain sensitive test credentials and not be committed
+  const envPath = path.resolve(process.cwd(), ".env.test.local");
+  const result = dotenv.config({ path: envPath });
+
+  // Log configuration loading status (without exposing sensitive data)
+  if (result.error) {
+    console.warn(`Warning: Could not load test environment file at ${envPath}`);
+    console.warn("Falling back to system environment variables");
+  } else {
+    console.log(
+      "Test environment configuration loaded successfully from .env.test.local"
+    );
+  }
 } else {
-  console.log("Test environment configuration loaded successfully");
+  console.log(
+    "Running in CI environment - using environment variables directly"
+  );
 }
 
 export interface TestConfig {
@@ -105,7 +117,7 @@ export function loadTestConfig(): TestConfig {
     environment,
     authToken: process.env.TEST_AUTH_TOKEN || "",
     devUserId: process.env.TEST_USER_ID || "",
-    devApiKey: process.env.TEST_API_KEY || "",
+    devApiKey: process.env.TEST_API_KEY || process.env.DEV_API_KEY || "",
     confirmationToken:
       process.env.TEST_CONFIRMATION_TOKEN || "test-reset-confirm",
     dbResetTimeoutMs: parseInt(
