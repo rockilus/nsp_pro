@@ -46,10 +46,54 @@ export class WorkerTestBase {
   }
 
   /**
-   * Navigates to the workers page for the test team
-   * This should be called in beforeEach for consistent navigation
+   * Sets the selected team directly in localStorage and navigates to workers page
+   * This bypasses the UI navigation for faster test execution
    */
-  async navigateToWorkersPage(page: Page): Promise<void> {
+  async navigateToWorkersPageDirect(page: Page): Promise<void> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupWorkerTests() first.");
+    }
+
+    // Navigate to the application first to establish a valid document context
+    await page.goto(`${testConfig.frontendUrl}/en/plan/workers/`);
+
+    // Wait for initial page load
+    // await page.waitForLoadState("domcontentloaded");
+
+    // Now set the selected team in localStorage with proper document context
+    await page.evaluate((teamId) => {
+      localStorage.setItem("selectedTeamId", teamId);
+    }, this.testTeam.teamId);
+
+    // Reload the page to apply the localStorage changes
+    await page.reload();
+
+    // Wait for the page to load and the team context to initialize
+    await page.waitForLoadState("networkidle");
+    // await page.waitForLoadState("domcontentloaded");
+
+    // Verify we're on the workers page and the correct team is selected
+    await expect(
+      page.locator('[data-testid="workers-page-heading"]')
+    ).toBeVisible();
+
+    // Brief wait to ensure team context has fully initialized
+    // and no redirect to teams page occurs
+    // await page.waitForTimeout(500);
+
+    const currentUrl = page.url();
+    if (currentUrl.includes("/plan/settings/teams")) {
+      throw new Error(
+        "Navigation failed: redirected to teams page. Team context may not have initialized properly."
+      );
+    }
+  }
+
+  /**
+   * Navigates to the workers page via UI flow (original method)
+   * Use this when you need to test the full navigation flow
+   */
+  async navigateToWorkersPageViaUI(page: Page): Promise<void> {
     if (!this.testTeam) {
       throw new Error("Test team not created. Call setupWorkerTests() first.");
     }
@@ -95,6 +139,16 @@ export class WorkerTestBase {
     await expect(
       page.locator('[data-testid="workers-page-heading"]')
     ).toBeVisible();
+  }
+
+  /**
+   * Navigates to the workers page for the test team
+   * This should be called in beforeEach for consistent navigation
+   * Uses direct navigation for faster test execution
+   */
+  async navigateToWorkersPage(page: Page): Promise<void> {
+    return this.navigateToWorkersPageDirect(page);
+    // return this.navigateToWorkersPageViaUI(page);
   }
 
   /**
