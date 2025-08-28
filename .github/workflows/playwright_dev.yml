@@ -117,8 +117,8 @@ jobs:
           TEST_FRONTEND_URL: http://localhost:3000
 
       - name: Run Playwright tests
-        run: npx playwright test
-        # run: npx playwright test tests/e2e/shared/attribute/attribute-cell.spec.ts --grep "should save attribute value when pressing enter"
+        # run: npx playwright test
+        run: npx playwright test tests/e2e/shared/attribute/attribute-cell.spec.ts --grep "should save attribute value when pressing enter"
         working-directory: ./frontend
         env:
           # Environment
