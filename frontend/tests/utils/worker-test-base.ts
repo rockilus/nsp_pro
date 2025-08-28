@@ -60,6 +60,8 @@ export class WorkerTestBase {
       page.locator('[data-testid="teams-page-heading"]')
     ).toBeVisible();
 
+    await page.waitForLoadState("networkidle");
+
     // Step 2: Wait for our test team to appear in the UI using team ID
     const teamElement = page.locator(
       `[data-testid="team-name-${this.testTeam.teamId}"]`
