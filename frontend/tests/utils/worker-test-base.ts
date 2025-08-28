@@ -72,13 +72,24 @@ export class WorkerTestBase {
       teamElement.click(),
     ]);
 
-    // Wait a bit for the team context to be fully set
-    // await page.waitForTimeout(1000);
+    // Wait for client-side navigation to finish and network to be idle
+    // This prevents a detached main frame (NS_BINDING_ABORTED) when calling goto
+    await page.waitForLoadState("networkidle");
 
-    // Step 4: Navigate directly to the workers page
-    await page.goto(`${testConfig.frontendUrl}/en/plan/workers/`);
+    // Step 4: Navigate to workers page by clicking the workers link in NavLinks
+    const workersLink = page.locator('[data-testid="nav-link-workers"]');
+    await Promise.all([
+      page.waitForURL(`${testConfig.frontendUrl}/en/plan/workers/`),
+      workersLink.click(),
+    ]);
 
-    // Wait for the workers page to be loaded
+    // Wait for all content on the workers page to be loaded
+    // Wait for network to be idle to ensure all API calls are complete
+    await page.waitForLoadState("networkidle");
+
+    // Wait for DOM content to be fully loaded
+    await page.waitForLoadState("domcontentloaded");
+
     await expect(
       page.locator('[data-testid="workers-page-heading"]')
     ).toBeVisible();
