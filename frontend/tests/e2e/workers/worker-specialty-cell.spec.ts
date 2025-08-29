@@ -394,10 +394,7 @@ test.describe("Worker Specialty Cell", () => {
     // Wait for popup to close
     await expect(popup).not.toBeVisible();
 
-    // Wait a moment for the update to process
-    await page.waitForTimeout(500);
-
-    // Verify the specialty now appears in the cell
+    // Wait for the specialty chip to appear in the cell (indicating update is complete)
     const chip = page.locator(
       `[data-testid="specialty-chip-${specialty.specialtyId}"]`
     );
@@ -446,10 +443,7 @@ test.describe("Worker Specialty Cell", () => {
     // Wait for popup to close
     await expect(popup).not.toBeVisible();
 
-    // Wait a moment for the update to process
-    await page.waitForTimeout(1000);
-
-    // Verify the specialty chip is no longer visible in the cell
+    // Wait for the specialty chip to be removed from the cell (indicating update is complete)
     await expect(chip).not.toBeVisible();
 
     console.log(

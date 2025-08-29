@@ -22,27 +22,34 @@ export default function WorkerSpecialtyCell({
   const [valueState, setValueState] = useState<SpecialtyT[]>(
     specialties.filter((s) => worker.specialtyIds.includes(s.id))
   );
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const handleClose = () => {
     setOpen(false);
   };
 
   const handleAddSpecialty = (specialty: SpecialtyT) => {
+    setIsUpdating(true);
     const updatedValue = [...valueState, specialty];
     setValueState(updatedValue);
     handleUpdateWorker({
       ...worker,
       specialtyIds: updatedValue.map((v) => v.id),
     });
+    // Reset updating state after a brief moment to allow the update to complete
+    setTimeout(() => setIsUpdating(false), 100);
   };
 
   const handleRemoveSpecialty = (specialty: SpecialtyT) => {
+    setIsUpdating(true);
     const updatedValue = valueState.filter((v) => v.id !== specialty.id);
     setValueState(updatedValue);
     handleUpdateWorker({
       ...worker,
       specialtyIds: updatedValue.map((v) => v.id),
     });
+    // Reset updating state after a brief moment to allow the update to complete
+    setTimeout(() => setIsUpdating(false), 100);
   };
 
   return (
@@ -50,6 +57,7 @@ export default function WorkerSpecialtyCell({
       component="th"
       scope="row"
       data-testid="worker-specialty-cell"
+      data-updating={isUpdating}
       sx={{
         paddingY: 0,
         cursor: "pointer",
