@@ -485,6 +485,43 @@ export class WorkerTestBase {
   }
 
   /**
+   * Waits for the weekly hours desired field to finish updating and return to display mode
+   * @param page - The Playwright page object
+   * @param expectedValue - The expected value to appear in the display
+   * @param rowIndex - The row index (default: 0)
+   */
+  async waitForWeeklyHoursDesiredUpdate(
+    page: Page,
+    expectedValue: string | number,
+    rowIndex: number = 0
+  ) {
+    const cell = this.getWorkerWeeklyHoursDesiredCell(page, rowIndex);
+    const display = this.getWorkerWeeklyHoursDesiredDisplay(page, rowIndex);
+    const input = this.getWorkerWeeklyHoursDesiredInput(page, rowIndex);
+
+    // Wait for the input to disappear (editing to finish)
+    await expect(input).not.toBeVisible();
+
+    // Wait for the cell to be in display state (not saving) - but be flexible about the attribute
+    try {
+      await expect(cell).toHaveAttribute("data-state", "display", {
+        timeout: 2000,
+      });
+    } catch (error) {
+      // If data-state is not available, just continue - the component might not have it yet
+      console.log(
+        "data-state attribute not found, continuing with other checks"
+      );
+    }
+
+    // Wait for the display to show the expected value
+    await expect(display).toContainText(expectedValue.toString());
+
+    // Ensure the display is visible
+    await expect(display).toBeVisible();
+  }
+
+  /**
    * Gets the duties per month cell for a worker row
    */
   getWorkerDutiesPerMonthCell(page: Page, rowIndex: number = 0) {

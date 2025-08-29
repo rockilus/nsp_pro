@@ -21,6 +21,7 @@ export default function WorkerFieldCellWeeklyHoursDesired({
     worker.weeklyHoursDesired
   );
   const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const handleEdit = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -46,10 +47,15 @@ export default function WorkerFieldCellWeeklyHoursDesired({
     }
     setError(null);
     if (valueState !== worker.weeklyHoursDesired && valueState !== "") {
-      handleUpdateWorker({
-        ...worker,
-        weeklyHoursDesired: valueState,
-      });
+      setIsSaving(true);
+      try {
+        await handleUpdateWorker({
+          ...worker,
+          weeklyHoursDesired: valueState,
+        });
+      } finally {
+        setIsSaving(false);
+      }
     } else if (valueState === "") {
       setValueState(worker.weeklyHoursDesired);
     }
@@ -69,6 +75,8 @@ export default function WorkerFieldCellWeeklyHoursDesired({
       onClick={() => setEditing({ [worker.id]: "weeklyHoursDesired" })}
       sx={{ paddingY: 0, textAlign: "center" }}
       data-testid="worker-weekly-hours-desired-cell"
+      data-state={editing ? "editing" : isSaving ? "saving" : "display"}
+      data-current-value={worker.weeklyHoursDesired}
     >
       {editing ? (
         <TextField
@@ -90,6 +98,7 @@ export default function WorkerFieldCellWeeklyHoursDesired({
           inputProps={{
             style: { textAlign: "center" },
             "data-testid": `worker-weekly-hours-desired-input-${worker.id}`,
+            "data-state": "editing",
           }}
         />
       ) : (
@@ -101,6 +110,8 @@ export default function WorkerFieldCellWeeklyHoursDesired({
             justifyContent: "center",
           }}
           data-testid={`worker-weekly-hours-desired-display-${worker.id}`}
+          data-state="display"
+          data-value={worker.weeklyHoursDesired}
         >
           {worker.weeklyHoursDesired}
         </Box>
