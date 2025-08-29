@@ -138,6 +138,7 @@ export default function WorkerFieldEmploymentEnd({
             value={valueState}
             onChange={(newValue) => handleUpdateState(newValue)}
             onOpen={() => setDatePickerOpen(true)}
+            onClose={() => setDatePickerOpen(false)}
             slotProps={{
               textField: {
                 inputProps: {
