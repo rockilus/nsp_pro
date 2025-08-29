@@ -153,15 +153,8 @@ test.describe("Worker Weekly Hours Field Cell", () => {
     const pageTitle = page.getByRole("heading", { name: "Workers" });
     await pageTitle.click();
 
-    // Wait for the save operation to complete
-    await page.waitForTimeout(500);
-
-    // The input should no longer be visible
-    await expect(weeklyHoursInput).not.toBeVisible();
-
-    // The display should show the updated value
-    await expect(weeklyHoursDisplay).toBeVisible();
-    await expect(weeklyHoursDisplay).toContainText(newWeeklyHours.toString());
+    // Wait for the update to complete
+    await workerTestBase.waitForWeeklyHoursUpdate(page, newWeeklyHours);
 
     console.log(`✅ Weekly hours updated to ${newWeeklyHours} via blur event`);
   });
@@ -185,15 +178,8 @@ test.describe("Worker Weekly Hours Field Cell", () => {
     // Press Enter to save
     await weeklyHoursInput.press("Enter");
 
-    // Wait for the save operation to complete
-    await page.waitForTimeout(500);
-
-    // The input should no longer be visible
-    await expect(weeklyHoursInput).not.toBeVisible();
-
-    // The display should show the updated value
-    await expect(weeklyHoursDisplay).toBeVisible();
-    await expect(weeklyHoursDisplay).toContainText(newWeeklyHours.toString());
+    // Wait for the update to complete
+    await workerTestBase.waitForWeeklyHoursUpdate(page, newWeeklyHours);
 
     console.log(`✅ Weekly hours updated to ${newWeeklyHours} via Enter key`);
   });
@@ -225,17 +211,10 @@ test.describe("Worker Weekly Hours Field Cell", () => {
     // Press Escape to cancel editing
     await weeklyHoursInput.press("Escape");
 
-    // Wait for the cancel operation to complete
-    await page.waitForTimeout(500);
+    // Wait for the cancel operation to complete (should revert to original value)
+    await workerTestBase.waitForWeeklyHoursUpdate(page, initialWeeklyHours);
 
-    // The input should no longer be visible
-    await expect(weeklyHoursInput).not.toBeVisible();
-
-    // The display should show the original value (not the temporary one)
-    await expect(weeklyHoursDisplay).toBeVisible();
-    await expect(weeklyHoursDisplay).toContainText(
-      initialWeeklyHours.toString()
-    );
+    // Verify the display does not contain the temporary value
     await expect(weeklyHoursDisplay).not.toContainText(
       tempWeeklyHours.toString()
     );
@@ -264,17 +243,8 @@ test.describe("Worker Weekly Hours Field Cell", () => {
     // Press Enter to save the empty value
     await weeklyHoursInput.press("Enter");
 
-    // Wait for the save operation to complete
-    await page.waitForTimeout(500);
-
-    // The input should no longer be visible
-    await expect(weeklyHoursInput).not.toBeVisible();
-
-    // The display should show the original value (component should revert empty to original)
-    await expect(weeklyHoursDisplay).toBeVisible();
-    await expect(weeklyHoursDisplay).toContainText(
-      initialWeeklyHours.toString()
-    );
+    // Wait for the operation to complete (should revert to original value)
+    await workerTestBase.waitForWeeklyHoursUpdate(page, initialWeeklyHours);
 
     console.log(
       `✅ Empty input reverted to original value: ${initialWeeklyHours}`
@@ -334,17 +304,8 @@ test.describe("Worker Weekly Hours Field Cell", () => {
     // Don't change the value, just press Enter
     await weeklyHoursInput.press("Enter");
 
-    // Wait for the operation to complete
-    await page.waitForTimeout(500);
-
-    // The input should no longer be visible
-    await expect(weeklyHoursInput).not.toBeVisible();
-
-    // The display should still show the same value
-    await expect(weeklyHoursDisplay).toBeVisible();
-    await expect(weeklyHoursDisplay).toContainText(
-      initialWeeklyHours.toString()
-    );
+    // Wait for the operation to complete (value should remain unchanged)
+    await workerTestBase.waitForWeeklyHoursUpdate(page, initialWeeklyHours);
 
     console.log(`✅ No update when value unchanged: ${initialWeeklyHours}`);
   });
@@ -368,15 +329,8 @@ test.describe("Worker Weekly Hours Field Cell", () => {
     // Press Enter to save
     await weeklyHoursInput.press("Enter");
 
-    // Wait for the save operation to complete
-    await page.waitForTimeout(500);
-
-    // The input should no longer be visible
-    await expect(weeklyHoursInput).not.toBeVisible();
-
-    // The display should show the large number
-    await expect(weeklyHoursDisplay).toBeVisible();
-    await expect(weeklyHoursDisplay).toContainText(largeWeeklyHours);
+    // Wait for the update to complete
+    await workerTestBase.waitForWeeklyHoursUpdate(page, largeWeeklyHours);
 
     console.log(`✅ Large weekly hours ${largeWeeklyHours} handled correctly`);
   });

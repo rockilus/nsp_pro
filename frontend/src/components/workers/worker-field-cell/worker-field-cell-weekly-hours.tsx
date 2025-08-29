@@ -18,13 +18,16 @@ export default function WorkerFieldCellWeeklyHours({
   handleUpdateWorker: (updatedWorker: WorkerT) => void;
 }) {
   const [valueState, setValueState] = useState<number | "">(worker.weeklyHours);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleEditConfirm = async () => {
     if (valueState !== worker.weeklyHours && valueState !== "") {
-      handleUpdateWorker({
+      setIsSaving(true);
+      await handleUpdateWorker({
         ...worker,
         weeklyHours: valueState,
       });
+      setIsSaving(false);
     } else if (valueState === "") {
       setValueState(worker.weeklyHours);
     }
@@ -40,9 +43,13 @@ export default function WorkerFieldCellWeeklyHours({
     <TableCell
       component="th"
       scope="row"
-      onClick={() => setEditing({ [worker.id]: "weeklyHours" })}
+      onClick={() =>
+        !editing && !isSaving && setEditing({ [worker.id]: "weeklyHours" })
+      }
       sx={{ paddingY: 0, textAlign: "center" }}
       data-testid="worker-weekly-hours-cell"
+      data-state={editing ? "editing" : isSaving ? "saving" : "display"}
+      data-worker-id={worker.id}
     >
       {editing ? (
         <TextField
@@ -65,6 +72,7 @@ export default function WorkerFieldCellWeeklyHours({
           inputProps={{
             style: { textAlign: "center" },
             "data-testid": `worker-weekly-hours-input-${worker.id}`,
+            "data-state": "editing",
           }}
         />
       ) : (
@@ -76,8 +84,10 @@ export default function WorkerFieldCellWeeklyHours({
             justifyContent: "center",
           }}
           data-testid={`worker-weekly-hours-display-${worker.id}`}
+          data-state={isSaving ? "saving" : "display"}
+          data-value={worker.weeklyHours}
         >
-          {worker.weeklyHours}
+          {isSaving ? "Saving..." : worker.weeklyHours}
         </Box>
       )}
     </TableCell>
