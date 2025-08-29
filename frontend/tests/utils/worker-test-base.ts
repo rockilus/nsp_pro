@@ -272,15 +272,9 @@ export class WorkerTestBase {
   getWorkerNameCell(page: Page, rowIndex: number = 0) {
     const row = this.getWorkerRow(page, rowIndex);
 
-    const byCellTestId = row.locator('[data-testid="worker-name-cell"]');
-    const byDisplayTestId = row.locator(
-      '[data-testid^="worker-name-display-"]'
-    );
-    const byInputTestId = row.locator('[data-testid^="worker-name-input-"]');
-    const firstCell = row.locator("td, th").first();
-
-    // Return a locator that resolves to whichever exists first
-    return byCellTestId.or(byDisplayTestId).or(byInputTestId).or(firstCell);
+    // Target only the table cell to avoid strict mode violations
+    // The cell contains both display and input elements as needed
+    return row.locator('[data-testid="worker-name-cell"]');
   }
 
   /**
