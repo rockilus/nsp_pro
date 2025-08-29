@@ -588,6 +588,37 @@ export class WorkerTestBase {
   }
 
   /**
+   * Deletes a worker via the UI and waits for the deletion to complete
+   * This replaces the need for setTimeout by waiting for observable DOM changes
+   */
+  async deleteWorkerViaUIAndWait(page: Page, workerId: string): Promise<void> {
+    const initialCount = await this.getWorkerRows(page).count();
+
+    // Click the delete button
+    const deleteButton = this.getWorkerDeleteButton(page, workerId);
+    await expect(deleteButton).toBeVisible();
+    await deleteButton.click();
+
+    // Wait for the specific worker row to be removed from DOM
+    await expect(
+      page.locator(`[data-testid="worker-row-${workerId}"]`)
+    ).not.toBeVisible({ timeout: 1000 });
+
+    // Wait for the table to reflect the correct state
+    if (initialCount === 1) {
+      // Last worker being deleted - wait for empty state
+      await expect(page.locator("text=no_workers_found")).toBeVisible({
+        timeout: 1000,
+      });
+    } else {
+      // Wait for row count to decrease
+      await expect(this.getWorkerRows(page)).toHaveCount(initialCount - 1, {
+        timeout: 1000,
+      });
+    }
+  }
+
+  /**
    * Deletes a worker via the UI by clicking the delete button at specific row index
    */
   async deleteWorkerViaUIByIndex(

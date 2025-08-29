@@ -451,7 +451,10 @@ function WorkerTableRow({
   handleUpdateAttribute,
 }: WorkerTableRowProps) {
   return (
-    <TableRow className="worker-table-row">
+    <TableRow
+      className="worker-table-row"
+      data-testid={`worker-row-${worker.id}`}
+    >
       {/* First column - Worker name */}
       <WorkerNameCell
         worker={worker}
