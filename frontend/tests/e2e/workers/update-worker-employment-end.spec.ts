@@ -189,11 +189,12 @@ test.describe("Worker Employment End Date Updates", () => {
     const pageTitle = page.getByRole("heading", { name: "Workers" });
     await pageTitle.click();
 
-
-  // Wait for the editor to disappear and display to show the updated date
-  await expect(workerTestBase.getWorkerEmploymentEndEditor(page)).not.toBeVisible();
-  await expect(employmentEndDisplay).toBeVisible();
-  await expect(employmentEndDisplay).toContainText(newDate);
+    // Wait for the editor to disappear and display to show the updated date
+    await expect(
+      workerTestBase.getWorkerEmploymentEndEditor(page)
+    ).not.toBeVisible();
+    await expect(employmentEndDisplay).toBeVisible();
+    await expect(employmentEndDisplay).toContainText(newDate);
 
     console.log(`✅ Employment end date updated to ${newDate} via blur event`);
   });
@@ -226,11 +227,12 @@ test.describe("Worker Employment End Date Updates", () => {
     // Press Enter to save
     await employmentEndDatePickerInput.press("Enter");
 
-
-  // Wait for the editor to disappear and display to show the updated date
-  await expect(workerTestBase.getWorkerEmploymentEndEditor(page)).not.toBeVisible();
-  await expect(employmentEndDisplay).toBeVisible();
-  await expect(employmentEndDisplay).toContainText(newDate);
+    // Wait for the editor to disappear and display to show the updated date
+    await expect(
+      workerTestBase.getWorkerEmploymentEndEditor(page)
+    ).not.toBeVisible();
+    await expect(employmentEndDisplay).toBeVisible();
+    await expect(employmentEndDisplay).toContainText(newDate);
 
     console.log(`✅ Employment end date updated to ${newDate} via Enter key`);
   });
@@ -267,12 +269,13 @@ test.describe("Worker Employment End Date Updates", () => {
     // Press Escape to cancel editing
     await employmentEndDatePickerInput.press("Escape");
 
-
-  // Wait for the editor to disappear and display to show the original text
-  await expect(workerTestBase.getWorkerEmploymentEndEditor(page)).not.toBeVisible();
-  await expect(employmentEndDisplay).toBeVisible();
-  await expect(employmentEndDisplay).toContainText(initialDisplayText);
-  await expect(employmentEndDisplay).not.toContainText(tempDate);
+    // Wait for the editor to disappear and display to show the original text
+    await expect(
+      workerTestBase.getWorkerEmploymentEndEditor(page)
+    ).not.toBeVisible();
+    await expect(employmentEndDisplay).toBeVisible();
+    await expect(employmentEndDisplay).toContainText(initialDisplayText);
+    await expect(employmentEndDisplay).not.toContainText(tempDate);
 
     console.log(
       `✅ Employment end date edit canceled, reverted to original: "${initialDisplayText}"`
@@ -307,11 +310,12 @@ test.describe("Worker Employment End Date Updates", () => {
     // Save by pressing Enter
     await employmentEndDatePickerInput.press("Enter");
 
-
-  // Wait for the editor to disappear and display to show the updated date
-  await expect(workerTestBase.getWorkerEmploymentEndEditor(page)).not.toBeVisible();
-  await expect(employmentEndDisplay).toBeVisible();
-  await expect(employmentEndDisplay).toContainText(specificDate);
+    // Wait for the editor to disappear and display to show the updated date
+    await expect(
+      workerTestBase.getWorkerEmploymentEndEditor(page)
+    ).not.toBeVisible();
+    await expect(employmentEndDisplay).toBeVisible();
+    await expect(employmentEndDisplay).toContainText(specificDate);
 
     // Now click again to edit and select permanent
     await employmentEndCell.click();
@@ -330,12 +334,13 @@ test.describe("Worker Employment End Date Updates", () => {
     const pageTitle = page.getByRole("heading", { name: "Workers" });
     await pageTitle.click();
 
-
-  // Wait for the editor to disappear and display to show "Permanent"
-  await expect(workerTestBase.getWorkerEmploymentEndEditor(page)).not.toBeVisible();
-  await expect(employmentEndDisplay).toBeVisible();
-  await expect(employmentEndDisplay).toContainText("Permanent");
-  await expect(employmentEndDisplay).not.toContainText(specificDate);
+    // Wait for the editor to disappear and display to show "Permanent"
+    await expect(
+      workerTestBase.getWorkerEmploymentEndEditor(page)
+    ).not.toBeVisible();
+    await expect(employmentEndDisplay).toBeVisible();
+    await expect(employmentEndDisplay).toContainText("Permanent");
+    await expect(employmentEndDisplay).not.toContainText(specificDate);
 
     console.log(
       `✅ Employment end date changed from specific date to 'Permanent' when checkbox selected`
