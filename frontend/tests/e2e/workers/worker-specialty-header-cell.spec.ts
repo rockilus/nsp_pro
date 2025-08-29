@@ -59,12 +59,14 @@ test.describe("Worker Specialty Header Cell", () => {
     }
 
     // Clean up specialties
-    for (const specialty of testSpecialties) {
-      try {
-        await workerTestBase.deleteTestSpecialty(specialty.specialtyId);
-        console.log(`Deleted test specialty: ${specialty.specialtyId}`);
-      } catch (error) {
-        console.warn(`Failed to delete test specialty: ${error}`);
+    if (testSpecialties && Array.isArray(testSpecialties)) {
+      for (const specialty of testSpecialties) {
+        try {
+          await workerTestBase.deleteTestSpecialty(specialty.specialtyId);
+          console.log(`Deleted test specialty: ${specialty.specialtyId}`);
+        } catch (error) {
+          console.warn(`Failed to delete test specialty: ${error}`);
+        }
       }
     }
   });
@@ -123,10 +125,7 @@ test.describe("Worker Specialty Header Cell", () => {
     // Press Enter to add the specialty
     await newSpecialtyInput.press("Enter");
 
-    // Wait a moment for the specialty to be added
-    await page.waitForTimeout(500);
-
-    // Verify the specialty appears in the list
+    // Wait for the specialty to be added to the list (smarter wait)
     const specialtiesList = page.locator('[data-testid="specialties-list"]');
     await expect(specialtiesList).toContainText(newSpecialtyName);
 
@@ -222,20 +221,17 @@ test.describe("Worker Specialty Header Cell", () => {
     );
     await confirmButton.click();
 
-    // Wait for the update to complete
-    await page.waitForTimeout(500);
+    // Wait for the edit input to disappear (indicating update completed)
+    const editInputAfter = page.locator(
+      `[data-testid="specialty-edit-input-${testSpecialty.specialtyId}"]`
+    );
+    await expect(editInputAfter).not.toBeVisible();
 
     // Verify the specialty name is updated in the display
     const specialtyName = page.locator(
       `[data-testid="specialty-name-${testSpecialty.specialtyId}"]`
     );
     await expect(specialtyName).toContainText(newName);
-
-    // Verify we're no longer in edit mode
-    const editInputAfter = page.locator(
-      `[data-testid="specialty-edit-input-${testSpecialty.specialtyId}"]`
-    );
-    await expect(editInputAfter).not.toBeVisible();
 
     console.log(
       `✅ Specialty name updated from "${testSpecialty.name}" to "${newName}"`
@@ -280,20 +276,17 @@ test.describe("Worker Specialty Header Cell", () => {
     );
     await cancelButton.click();
 
-    // Wait for the cancel to complete
-    await page.waitForTimeout(500);
+    // Wait for edit mode to end (edit input disappears)
+    const editInputAfter = page.locator(
+      `[data-testid="specialty-edit-input-${testSpecialty.specialtyId}"]`
+    );
+    await expect(editInputAfter).not.toBeVisible();
 
     // Verify the original specialty name is still displayed
     const specialtyName = page.locator(
       `[data-testid="specialty-name-${testSpecialty.specialtyId}"]`
     );
     await expect(specialtyName).toContainText(originalName);
-
-    // Verify we're no longer in edit mode
-    const editInputAfter = page.locator(
-      `[data-testid="specialty-edit-input-${testSpecialty.specialtyId}"]`
-    );
-    await expect(editInputAfter).not.toBeVisible();
 
     console.log(
       `✅ Edit cancelled successfully, name remains "${originalName}"`
@@ -329,10 +322,7 @@ test.describe("Worker Specialty Header Cell", () => {
     await expect(deleteButton).toBeVisible();
     await deleteButton.click();
 
-    // Wait for the deletion to complete
-    await page.waitForTimeout(500);
-
-    // Verify the specialty is no longer visible in the list
+    // Wait for the specialty to be removed from the list
     await expect(specialtyItem).not.toBeVisible();
 
     console.log(`✅ Specialty "${testSpecialty.name}" deleted successfully`);
@@ -377,8 +367,8 @@ test.describe("Worker Specialty Header Cell", () => {
     await editInput.fill(newName);
     await editInput.press("Enter");
 
-    // Wait for the update to complete
-    await page.waitForTimeout(500);
+    // Wait for edit mode to end and update to complete
+    await expect(editInput).not.toBeVisible();
 
     // Verify the specialty name is updated
     const specialtyName = page.locator(
@@ -435,9 +425,6 @@ test.describe("Worker Specialty Header Cell", () => {
     await saveButton.click();
 
     // Wait for the popup to close
-    await page.waitForTimeout(500);
-
-    // Verify the popup is no longer visible
     await expect(popup).not.toBeVisible();
 
     console.log("✅ Popup closed successfully when clicking save button");
