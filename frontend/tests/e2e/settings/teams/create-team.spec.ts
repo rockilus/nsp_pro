@@ -41,7 +41,21 @@ test.describe("Teams Settings Page with Database Reset", () => {
     const teamNameInput = page.getByRole("textbox", { name: "Team name" });
     const uniqueTeamName = `Test Team ${test.info().workerIndex}-${Date.now()}`;
     await teamNameInput.fill(uniqueTeamName);
-    await page.getByRole("button", { name: "Create" }).click();
+
+    // Wait for the API request to complete when clicking Create
+    await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          response.url().includes(`${testConfig.apiUrl}/teams`) &&
+          response.request().method() === "POST" &&
+          response.status() === 200
+      ),
+      page.getByRole("button", { name: "Create" }).click(),
+    ]);
+
+    // Wait for the modal to close (indicates creation completed)
+    const modalTitle = page.getByRole("heading", { name: "New team" });
+    await expect(modalTitle).not.toBeVisible();
 
     // Verify that the new team appears in the list
     const newTeam = page.getByText(uniqueTeamName, { exact: true });
