@@ -85,12 +85,9 @@ test.describe("Worker Name Updates", () => {
     // Press Enter to save the changes
     await nameInput.press("Enter");
 
-    // Wait a moment for the save operation to complete
-    await page.waitForTimeout(500);
-
-    // After saving, the input should be replaced with text showing the new name
-    // The input field should no longer be visible
+    // Wait for the input to disappear and the display to show the new name
     await expect(nameInput).not.toBeVisible();
+    await expect(nameCell).toContainText(newName);
 
     // The cell should now display the updated name
     await expect(nameCell).toContainText(newName);
@@ -122,11 +119,9 @@ test.describe("Worker Name Updates", () => {
     const pageTitle = page.getByRole("heading", { name: "Workers" });
     await pageTitle.click();
 
-    // Wait a moment for the save operation to complete
-    await page.waitForTimeout(500);
-
-    // The name input should no longer be visible
+    // Wait for the input to disappear and the display to show the new name
     await expect(nameInput).not.toBeVisible();
+    await expect(nameCell).toContainText(newName);
 
     // The name cell should show the updated name
     await expect(nameCell).toContainText(newName);
@@ -155,11 +150,9 @@ test.describe("Worker Name Updates", () => {
     // Press Escape to cancel editing
     await nameInput.press("Escape");
 
-    // Wait a moment for the cancel operation to complete
-    await page.waitForTimeout(500);
-
-    // The input should no longer be visible
+    // Wait for the input to disappear and the display to revert to original name
     await expect(nameInput).not.toBeVisible();
+    await expect(nameCell).toContainText(originalName);
 
     // The name cell should still show the original name (not the temporary one)
     await expect(nameCell).toContainText(originalName);
@@ -188,11 +181,9 @@ test.describe("Worker Name Updates", () => {
     // Try to save by pressing Enter
     await nameInput.press("Enter");
 
-    // Wait a moment for the save operation to complete
-    await page.waitForTimeout(500);
-
-    // The input should be hidden after saving
+    // Wait for the input to disappear and the display to show "Unnamed Worker"
     await expect(nameInput).not.toBeVisible();
+    await expect(nameCell).toContainText("Unnamed Worker");
 
     // The name cell should display "Unnamed Worker" when the name is empty
     await expect(nameCell).toContainText("Unnamed Worker");
@@ -218,11 +209,9 @@ test.describe("Worker Name Updates", () => {
     // Save by pressing Enter
     await nameInput.press("Enter");
 
-    // Wait for save to complete
-    await page.waitForTimeout(500);
-
-    // The input should be hidden
+    // Wait for the input to disappear and the display to show the special name
     await expect(nameInput).not.toBeVisible();
+    await expect(nameCell).toContainText(specialName);
 
     // The name should be displayed correctly with special characters
     await expect(nameCell).toContainText(specialName);
