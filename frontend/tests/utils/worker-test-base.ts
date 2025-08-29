@@ -549,6 +549,51 @@ export class WorkerTestBase {
   }
 
   /**
+   * Waits for the annual leave update to complete
+   */
+  async waitForAnnualLeaveUpdateComplete(
+    page: Page,
+    expectedValue: string,
+    rowIndex: number = 0
+  ) {
+    const display = this.getWorkerAnnualLeaveDisplay(page, rowIndex);
+    const input = this.getWorkerAnnualLeaveInput(page, rowIndex);
+
+    // Wait for edit mode to end (input should be hidden)
+    await expect(input).not.toBeVisible();
+
+    // Wait for display mode to be active
+    await expect(display).toBeVisible();
+
+    // Wait for the display to show the expected value
+    await expect(display).toContainText(expectedValue);
+  }
+
+  /**
+   * Waits for annual leave edit mode to be active
+   */
+  async waitForAnnualLeaveEditMode(page: Page, rowIndex: number = 0) {
+    const input = this.getWorkerAnnualLeaveInput(page, rowIndex);
+    const display = this.getWorkerAnnualLeaveDisplay(page, rowIndex);
+
+    // Wait for input to be visible and display to be hidden
+    await expect(input).toBeVisible();
+    await expect(display).not.toBeVisible();
+  }
+
+  /**
+   * Waits for annual leave display mode to be active
+   */
+  async waitForAnnualLeaveDisplayMode(page: Page, rowIndex: number = 0) {
+    const input = this.getWorkerAnnualLeaveInput(page, rowIndex);
+    const display = this.getWorkerAnnualLeaveDisplay(page, rowIndex);
+
+    // Wait for display to be visible and input to be hidden
+    await expect(display).toBeVisible();
+    await expect(input).not.toBeVisible();
+  }
+
+  /**
    * Gets the delete button for a worker row
    */
   getWorkerDeleteButton(page: Page, workerId: string) {
