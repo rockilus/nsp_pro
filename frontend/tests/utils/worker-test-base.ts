@@ -517,6 +517,34 @@ export class WorkerTestBase {
   }
 
   /**
+   * Waits for the duties per month field to finish saving and return to display mode
+   */
+  async waitForDutiesPerMonthSave(
+    page: Page,
+    expectedValue: string | number,
+    rowIndex: number = 0
+  ) {
+    const display = this.getWorkerDutiesPerMonthDisplay(page, rowIndex);
+    const input = this.getWorkerDutiesPerMonthInput(page, rowIndex);
+
+    // Wait for the input to disappear (editing to finish)
+    await input.waitFor({ state: "detached", timeout: 5000 });
+
+    // Wait for the display to appear and show the expected value
+    await display.waitFor({ state: "visible", timeout: 5000 });
+    await page.waitForFunction(
+      ({ expectedValue, testId }) => {
+        const element = document.querySelector(`[data-testid^="${testId}"]`);
+        if (!element) return false;
+        const actualValue = element.textContent?.trim();
+        return actualValue === expectedValue.toString();
+      },
+      { expectedValue, testId: "worker-duties-per-month-display-" },
+      { timeout: 5000 }
+    );
+  }
+
+  /**
    * Gets the annual leave cell for a worker row
    */
   getWorkerAnnualLeaveCell(page: Page, rowIndex: number = 0) {

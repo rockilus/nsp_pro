@@ -160,8 +160,8 @@ test.describe("Worker Duties Per Month Field Cell", () => {
     const pageTitle = page.getByRole("heading", { name: "Workers" });
     await pageTitle.click();
 
-    // Wait for the save operation to complete
-    await page.waitForTimeout(500);
+    // Wait for the save operation to complete using smart waiting
+    await workerTestBase.waitForDutiesPerMonthSave(page, newDutiesPerMonth);
 
     // The input should no longer be visible
     await expect(dutiesPerMonthInput).not.toBeVisible();
@@ -198,8 +198,8 @@ test.describe("Worker Duties Per Month Field Cell", () => {
     // Press Enter to save
     await dutiesPerMonthInput.press("Enter");
 
-    // Wait for the save operation to complete
-    await page.waitForTimeout(500);
+    // Wait for the save operation to complete using smart waiting
+    await workerTestBase.waitForDutiesPerMonthSave(page, newDutiesPerMonth);
 
     // The input should no longer be visible
     await expect(dutiesPerMonthInput).not.toBeVisible();
@@ -248,8 +248,8 @@ test.describe("Worker Duties Per Month Field Cell", () => {
     // Press Escape to cancel editing
     await dutiesPerMonthInput.press("Escape");
 
-    // Wait for the cancel operation to complete
-    await page.waitForTimeout(500);
+    // Wait for the cancel operation to complete using smart waiting
+    await workerTestBase.waitForDutiesPerMonthSave(page, initialDutiesPerMonth);
 
     // The input should no longer be visible
     await expect(dutiesPerMonthInput).not.toBeVisible();
@@ -289,8 +289,8 @@ test.describe("Worker Duties Per Month Field Cell", () => {
     // Press Enter to save the empty value
     await dutiesPerMonthInput.press("Enter");
 
-    // Wait for the save operation to complete
-    await page.waitForTimeout(500);
+    // Wait for the save operation to complete using smart waiting
+    await workerTestBase.waitForDutiesPerMonthSave(page, initialDutiesPerMonth);
 
     // The input should no longer be visible
     await expect(dutiesPerMonthInput).not.toBeVisible();
@@ -324,8 +324,8 @@ test.describe("Worker Duties Per Month Field Cell", () => {
     );
     await dutiesPerMonthInput.press("Enter");
 
-    // Wait for any potential save operation
-    await page.waitForTimeout(500);
+    // Wait for any potential save operation using smart waiting
+    await workerTestBase.waitForDutiesPerMonthSave(page, initialDutiesPerMonth);
 
     // The input should no longer be visible
     await expect(dutiesPerMonthInput).not.toBeVisible();
@@ -362,8 +362,8 @@ test.describe("Worker Duties Per Month Field Cell", () => {
     // Press Enter to save
     await dutiesPerMonthInput.press("Enter");
 
-    // Wait for the save operation to complete
-    await page.waitForTimeout(500);
+    // Wait for the save operation to complete using smart waiting
+    await workerTestBase.waitForDutiesPerMonthSave(page, largeDutiesPerMonth);
 
     // The input should no longer be visible
     await expect(dutiesPerMonthInput).not.toBeVisible();
