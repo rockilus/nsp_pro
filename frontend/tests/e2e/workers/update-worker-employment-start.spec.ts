@@ -140,13 +140,8 @@ test.describe("Worker Employment Start Date Updates", () => {
     const pageTitle = page.getByRole("heading", { name: "Workers" });
     await pageTitle.click();
 
-    // Wait a moment for the save operation to complete
-    await page.waitForTimeout(1000);
-
-    // The input should no longer be visible
+    // Wait for the input to disappear and the display to show the updated date
     await expect(employmentStartInput).not.toBeVisible();
-
-    // The display should be visible again and show the updated date
     await expect(employmentStartDisplay).toBeVisible();
     await expect(employmentStartDisplay).toContainText(newDate);
 
@@ -179,13 +174,8 @@ test.describe("Worker Employment Start Date Updates", () => {
     // Press Enter to save
     await employmentStartInput.press("Enter");
 
-    // Wait a moment for the save operation to complete
-    await page.waitForTimeout(1000);
-
-    // The input should no longer be visible
+    // Wait for the input to disappear and the display to show the updated date
     await expect(employmentStartInput).not.toBeVisible();
-
-    // The display should show the updated date
     await expect(employmentStartDisplay).toBeVisible();
     await expect(employmentStartDisplay).toContainText(newDate);
 
@@ -222,13 +212,8 @@ test.describe("Worker Employment Start Date Updates", () => {
     // Press Escape to cancel editing
     await employmentStartInput.press("Escape");
 
-    // Wait a moment for the cancel operation to complete
-    await page.waitForTimeout(500);
-
-    // The input should no longer be visible
+    // Wait for the input to disappear and the display to show the original date
     await expect(employmentStartInput).not.toBeVisible();
-
-    // The display should show the original date (not the temporary one)
     await expect(employmentStartDisplay).toBeVisible();
     await expect(employmentStartDisplay).toContainText(originalDate);
     await expect(employmentStartDisplay).not.toContainText(tempDate);
@@ -269,13 +254,8 @@ test.describe("Worker Employment Start Date Updates", () => {
       if (await dayButton.isVisible()) {
         await dayButton.click();
 
-        // Wait for the calendar to close and the value to be updated
-        await page.waitForTimeout(1000);
-
-        // The input should no longer be visible after selection
+        // Wait for the input to disappear and the display to show the updated date containing "15"
         await expect(employmentStartInput).not.toBeVisible();
-
-        // The display should show the updated date containing "15"
         await expect(employmentStartDisplay).toBeVisible();
         const updatedDateText = await employmentStartDisplay.textContent();
         expect(updatedDateText).toContain("15");
@@ -321,8 +301,7 @@ test.describe("Worker Employment Start Date Updates", () => {
     // Press Enter to try to save the invalid date
     await employmentStartInput.press("Enter");
 
-    // Wait a moment for the validation to complete
-    await page.waitForTimeout(1000);
+    // Wait for either the input to remain visible (error) or revert to display
 
     // The system should either:
     // 1. Keep the input visible with an error state, or
@@ -337,7 +316,6 @@ test.describe("Worker Employment Start Date Updates", () => {
 
       // Cancel the edit to clean up
       await employmentStartInput.press("Escape");
-      await page.waitForTimeout(500);
     } else {
       // If input is hidden, it should have reverted to original date
       await expect(employmentStartDisplay).toBeVisible();

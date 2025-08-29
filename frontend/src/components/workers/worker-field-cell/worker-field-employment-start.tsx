@@ -113,6 +113,7 @@ export default function WorkerFieldEmploymentStart({
               textField: {
                 inputProps: {
                   "data-testid": `worker-employment-start-input-${worker.id}`,
+                  id: `worker-employment-start-input-${worker.id}`,
                 },
               },
             }}
