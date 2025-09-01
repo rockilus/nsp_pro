@@ -46,10 +46,54 @@ export class WorkerTestBase {
   }
 
   /**
-   * Navigates to the workers page for the test team
-   * This should be called in beforeEach for consistent navigation
+   * Sets the selected team directly in localStorage and navigates to workers page
+   * This bypasses the UI navigation for faster test execution
    */
-  async navigateToWorkersPage(page: Page): Promise<void> {
+  async navigateToWorkersPageDirect(page: Page): Promise<void> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupWorkerTests() first.");
+    }
+
+    // Navigate to the application first to establish a valid document context
+    await page.goto(`${testConfig.frontendUrl}/en/plan/workers/`);
+
+    // Wait for initial page load
+    // await page.waitForLoadState("domcontentloaded");
+
+    // Now set the selected team in localStorage with proper document context
+    await page.evaluate((teamId) => {
+      localStorage.setItem("selectedTeamId", teamId);
+    }, this.testTeam.teamId);
+
+    // Reload the page to apply the localStorage changes
+    await page.reload();
+
+    // Wait for the page to load and the team context to initialize
+    await page.waitForLoadState("networkidle");
+    // await page.waitForLoadState("domcontentloaded");
+
+    // Verify we're on the workers page and the correct team is selected
+    await expect(
+      page.locator('[data-testid="workers-page-heading"]')
+    ).toBeVisible();
+
+    // Brief wait to ensure team context has fully initialized
+    // and no redirect to teams page occurs
+    // await page.waitForTimeout(500);
+
+    const currentUrl = page.url();
+    if (currentUrl.includes("/plan/settings/teams")) {
+      throw new Error(
+        "Navigation failed: redirected to teams page. Team context may not have initialized properly."
+      );
+    }
+  }
+
+  /**
+   * Navigates to the workers page via UI flow (original method)
+   * Use this when you need to test the full navigation flow
+   */
+  async navigateToWorkersPageViaUI(page: Page): Promise<void> {
     if (!this.testTeam) {
       throw new Error("Test team not created. Call setupWorkerTests() first.");
     }
@@ -95,6 +139,16 @@ export class WorkerTestBase {
     await expect(
       page.locator('[data-testid="workers-page-heading"]')
     ).toBeVisible();
+  }
+
+  /**
+   * Navigates to the workers page for the test team
+   * This should be called in beforeEach for consistent navigation
+   * Uses direct navigation for faster test execution
+   */
+  async navigateToWorkersPage(page: Page): Promise<void> {
+    return this.navigateToWorkersPageDirect(page);
+    // return this.navigateToWorkersPageViaUI(page);
   }
 
   /**
@@ -218,15 +272,9 @@ export class WorkerTestBase {
   getWorkerNameCell(page: Page, rowIndex: number = 0) {
     const row = this.getWorkerRow(page, rowIndex);
 
-    const byCellTestId = row.locator('[data-testid="worker-name-cell"]');
-    const byDisplayTestId = row.locator(
-      '[data-testid^="worker-name-display-"]'
-    );
-    const byInputTestId = row.locator('[data-testid^="worker-name-input-"]');
-    const firstCell = row.locator("td, th").first();
-
-    // Return a locator that resolves to whichever exists first
-    return byCellTestId.or(byDisplayTestId).or(byInputTestId).or(firstCell);
+    // Target only the table cell to avoid strict mode violations
+    // The cell contains both display and input elements as needed
+    return row.locator('[data-testid="worker-name-cell"]');
   }
 
   /**
@@ -431,6 +479,80 @@ export class WorkerTestBase {
   }
 
   /**
+   * Waits for the weekly hours desired field to finish updating and return to display mode
+   * @param page - The Playwright page object
+   * @param expectedValue - The expected value to appear in the display
+   * @param rowIndex - The row index (default: 0)
+   */
+  async waitForWeeklyHoursDesiredUpdate(
+    page: Page,
+    expectedValue: string | number,
+    rowIndex: number = 0
+  ) {
+    const cell = this.getWorkerWeeklyHoursDesiredCell(page, rowIndex);
+    const display = this.getWorkerWeeklyHoursDesiredDisplay(page, rowIndex);
+    const input = this.getWorkerWeeklyHoursDesiredInput(page, rowIndex);
+
+    // Wait for the input to disappear (editing to finish)
+    await expect(input).not.toBeVisible();
+
+    // Wait for the cell to be in display state (not saving) - but be flexible about the attribute
+    try {
+      await expect(cell).toHaveAttribute("data-state", "display", {
+        timeout: 2000,
+      });
+    } catch (error) {
+      // If data-state is not available, just continue - the component might not have it yet
+      console.log(
+        "data-state attribute not found, continuing with other checks"
+      );
+    }
+
+    // Wait for the display to show the expected value
+    await expect(display).toContainText(expectedValue.toString());
+
+    // Ensure the display is visible
+    await expect(display).toBeVisible();
+  }
+
+  /**
+   * Waits for weekly hours field to complete its update cycle
+   * @param page - The Playwright page object
+   * @param expectedValue - The expected value to appear in the display
+   * @param rowIndex - The row index (default: 0)
+   */
+  async waitForWeeklyHoursUpdate(
+    page: Page,
+    expectedValue: string | number,
+    rowIndex: number = 0
+  ) {
+    const cell = this.getWorkerWeeklyHoursCell(page, rowIndex);
+    const display = this.getWorkerWeeklyHoursDisplay(page, rowIndex);
+    const input = this.getWorkerWeeklyHoursInput(page, rowIndex);
+
+    // Wait for the input to disappear (editing to finish)
+    await expect(input).not.toBeVisible();
+
+    // Wait for the cell to be in display state (not saving) - but be flexible about the attribute
+    try {
+      await expect(cell).toHaveAttribute("data-state", "display", {
+        timeout: 2000,
+      });
+    } catch (error) {
+      // If data-state is not available, just continue - the component might not have it yet
+      console.log(
+        "data-state attribute not found, continuing with other checks"
+      );
+    }
+
+    // Wait for the display to show the expected value
+    await expect(display).toContainText(expectedValue.toString());
+
+    // Ensure the display is visible
+    await expect(display).toBeVisible();
+  }
+
+  /**
    * Gets the duties per month cell for a worker row
    */
   getWorkerDutiesPerMonthCell(page: Page, rowIndex: number = 0) {
@@ -463,6 +585,34 @@ export class WorkerTestBase {
   }
 
   /**
+   * Waits for the duties per month field to finish saving and return to display mode
+   */
+  async waitForDutiesPerMonthSave(
+    page: Page,
+    expectedValue: string | number,
+    rowIndex: number = 0
+  ) {
+    const display = this.getWorkerDutiesPerMonthDisplay(page, rowIndex);
+    const input = this.getWorkerDutiesPerMonthInput(page, rowIndex);
+
+    // Wait for the input to disappear (editing to finish)
+    await input.waitFor({ state: "detached", timeout: 5000 });
+
+    // Wait for the display to appear and show the expected value
+    await display.waitFor({ state: "visible", timeout: 5000 });
+    await page.waitForFunction(
+      ({ expectedValue, testId }) => {
+        const element = document.querySelector(`[data-testid^="${testId}"]`);
+        if (!element) return false;
+        const actualValue = element.textContent?.trim();
+        return actualValue === expectedValue.toString();
+      },
+      { expectedValue, testId: "worker-duties-per-month-display-" },
+      { timeout: 5000 }
+    );
+  }
+
+  /**
    * Gets the annual leave cell for a worker row
    */
   getWorkerAnnualLeaveCell(page: Page, rowIndex: number = 0) {
@@ -492,6 +642,51 @@ export class WorkerTestBase {
   getWorkerAnnualLeaveInput(page: Page, rowIndex: number = 0) {
     const row = this.getWorkerRow(page, rowIndex);
     return row.locator('[data-testid^="worker-annual-leave-input-"]');
+  }
+
+  /**
+   * Waits for the annual leave update to complete
+   */
+  async waitForAnnualLeaveUpdateComplete(
+    page: Page,
+    expectedValue: string,
+    rowIndex: number = 0
+  ) {
+    const display = this.getWorkerAnnualLeaveDisplay(page, rowIndex);
+    const input = this.getWorkerAnnualLeaveInput(page, rowIndex);
+
+    // Wait for edit mode to end (input should be hidden)
+    await expect(input).not.toBeVisible();
+
+    // Wait for display mode to be active
+    await expect(display).toBeVisible();
+
+    // Wait for the display to show the expected value
+    await expect(display).toContainText(expectedValue);
+  }
+
+  /**
+   * Waits for annual leave edit mode to be active
+   */
+  async waitForAnnualLeaveEditMode(page: Page, rowIndex: number = 0) {
+    const input = this.getWorkerAnnualLeaveInput(page, rowIndex);
+    const display = this.getWorkerAnnualLeaveDisplay(page, rowIndex);
+
+    // Wait for input to be visible and display to be hidden
+    await expect(input).toBeVisible();
+    await expect(display).not.toBeVisible();
+  }
+
+  /**
+   * Waits for annual leave display mode to be active
+   */
+  async waitForAnnualLeaveDisplayMode(page: Page, rowIndex: number = 0) {
+    const input = this.getWorkerAnnualLeaveInput(page, rowIndex);
+    const display = this.getWorkerAnnualLeaveDisplay(page, rowIndex);
+
+    // Wait for display to be visible and input to be hidden
+    await expect(display).toBeVisible();
+    await expect(input).not.toBeVisible();
   }
 
   /**
@@ -531,6 +726,37 @@ export class WorkerTestBase {
     const deleteButton = this.getWorkerDeleteButton(page, workerId);
     await expect(deleteButton).toBeVisible();
     await deleteButton.click();
+  }
+
+  /**
+   * Deletes a worker via the UI and waits for the deletion to complete
+   * This replaces the need for setTimeout by waiting for observable DOM changes
+   */
+  async deleteWorkerViaUIAndWait(page: Page, workerId: string): Promise<void> {
+    const initialCount = await this.getWorkerRows(page).count();
+
+    // Click the delete button
+    const deleteButton = this.getWorkerDeleteButton(page, workerId);
+    await expect(deleteButton).toBeVisible();
+    await deleteButton.click();
+
+    // Wait for the specific worker row to be removed from DOM
+    await expect(
+      page.locator(`[data-testid="worker-row-${workerId}"]`)
+    ).not.toBeVisible({ timeout: 1000 });
+
+    // Wait for the table to reflect the correct state
+    if (initialCount === 1) {
+      // Last worker being deleted - wait for empty state
+      await expect(page.locator("text=no_workers_found")).toBeVisible({
+        timeout: 1000,
+      });
+    } else {
+      // Wait for row count to decrease
+      await expect(this.getWorkerRows(page)).toHaveCount(initialCount - 1, {
+        timeout: 1000,
+      });
+    }
   }
 
   /**

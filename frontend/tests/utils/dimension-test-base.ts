@@ -121,8 +121,8 @@ export class DimensionTestBase extends WorkerTestBase {
   }
 
   /**
-   * Navigates to the shifts page for the test team
-   * This should be called in beforeEach for consistent navigation
+   * Sets the selected team directly in localStorage and navigates to shifts page
+   * This bypasses the UI navigation for faster test execution
    */
   async navigateToShiftsPage(page: Page): Promise<void> {
     if (!this.testTeam) {
@@ -131,33 +131,29 @@ export class DimensionTestBase extends WorkerTestBase {
       );
     }
 
-    // Step 1: Navigate to teams page
-    await page.goto(`${testConfig.frontendUrl}/en/plan/settings/teams/`);
-    await page.waitForSelector('h1:has-text("Teams")');
+    // Navigate to the application first to establish a valid document context
+    await page.goto(`${testConfig.frontendUrl}/en/plan/shifts/`);
 
-    // Step 2: Wait for our test team to appear in the UI
-    const teamElement = page.getByText(this.testTeam.name, { exact: true });
-    await teamElement.waitFor({ state: "visible" });
+    // Now set the selected team in localStorage with proper document context
+    await page.evaluate((teamId) => {
+      localStorage.setItem("selectedTeamId", teamId);
+    }, this.testTeam.teamId);
 
-    // Step 3: Click on the team name to select it (this navigates to schedule page)
-    await Promise.all([
-      page.waitForURL(`${testConfig.frontendUrl}/en/plan/schedule/`),
-      teamElement.click(),
-    ]);
+    // Reload the page to apply the localStorage changes
+    await page.reload();
 
-    // Wait a bit for the team context to be fully set
-    await page.waitForTimeout(1000);
+    // Wait for the page to load and the team context to initialize
+    await page.waitForLoadState("networkidle");
 
-    // Step 4: Navigate to Shifts page
-    const shiftsLink = page.getByText("Shifts").first();
-    await shiftsLink.waitFor({ state: "visible" });
-    await shiftsLink.click();
-
-    // Wait for navigation to shifts page
-    await page.waitForURL(`${testConfig.frontendUrl}/en/plan/shifts/`);
-
-    // Wait for the shifts page to be loaded
+    // Verify we're on the shifts page and the correct team is selected
     await page.waitForSelector('h1:has-text("Shifts")');
+
+    const currentUrl = page.url();
+    if (currentUrl.includes("/plan/settings/teams")) {
+      throw new Error(
+        "Navigation failed: redirected to teams page. Team context may not have initialized properly."
+      );
+    }
   }
 
   //////////////////////////

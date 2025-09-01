@@ -86,8 +86,11 @@ test.describe("Worker Acronym Updates", () => {
     // Save the name change
     await nameInput.press("Enter");
 
-    // Wait for the save operation to complete
-    await page.waitForTimeout(500);
+    // Wait for the name input to disappear (indicating edit mode ended)
+    await expect(nameInput).not.toBeVisible();
+
+    // Wait for the acronym to change from the original value
+    await expect(acronymDisplay).not.toContainText(trimmedCurrentAcronym);
 
     // The acronym should automatically update - could be "AS" or "ALI" depending on implementation
     const newAcronym = await acronymDisplay.textContent();
@@ -183,8 +186,8 @@ test.describe("Worker Acronym Updates", () => {
     // Save the name change
     await nameInput.press("Enter");
 
-    // Wait for the save operation to complete
-    await page.waitForTimeout(500);
+    // Wait for the name input to disappear (indicating edit mode ended)
+    await expect(nameInput).not.toBeVisible();
 
     // The name cell should display "Unnamed Worker" when the name is empty
     await expect(nameCell).toContainText("Unnamed Worker");
@@ -227,13 +230,10 @@ test.describe("Worker Acronym Updates", () => {
     // Press Enter to save the changes
     await acronymInput.press("Enter");
 
-    // Wait a moment for the save operation to complete
-    await page.waitForTimeout(500);
-
-    // After saving, the input should be replaced with text showing the new acronym
+    // Wait for the input field to disappear (indicating save completed)
     await expect(acronymInput).not.toBeVisible();
 
-    // The display should now show the updated acronym
+    // Wait for the display to show the new acronym
     await expect(acronymDisplay).toContainText(newAcronym);
 
     console.log(
@@ -264,13 +264,10 @@ test.describe("Worker Acronym Updates", () => {
     const pageTitle = page.getByRole("heading", { name: "Workers" });
     await pageTitle.click();
 
-    // Wait a moment for the save operation to complete
-    await page.waitForTimeout(500);
-
-    // The acronym input should no longer be visible
+    // Wait for the acronym input to disappear (indicating save completed)
     await expect(acronymInput).not.toBeVisible();
 
-    // The acronym display should show the updated acronym
+    // Wait for the acronym display to show the updated acronym
     await expect(acronymDisplay).toContainText(newAcronym);
 
     console.log(`✅ Acronym updated via blur event to "${newAcronym}"`);
@@ -295,13 +292,10 @@ test.describe("Worker Acronym Updates", () => {
     // Press Enter to save
     await acronymInput.press("Enter");
 
-    // Wait a moment for the save operation to complete
-    await page.waitForTimeout(500);
-
-    // The input should no longer be visible
+    // Wait for the input to disappear (indicating save completed)
     await expect(acronymInput).not.toBeVisible();
 
-    // The acronym display should show the updated acronym
+    // Wait for the acronym display to show the updated acronym
     await expect(acronymDisplay).toContainText(newAcronym);
 
     console.log(`✅ Acronym updated via Enter key to "${newAcronym}"`);
@@ -334,10 +328,7 @@ test.describe("Worker Acronym Updates", () => {
     // Press Escape to cancel editing
     await acronymInput.press("Escape");
 
-    // Wait a moment for the cancel operation to complete
-    await page.waitForTimeout(500);
-
-    // The input should no longer be visible
+    // Wait for the input to disappear (indicating cancel completed)
     await expect(acronymInput).not.toBeVisible();
 
     // The acronym display should still show the original acronym (not the temporary one)
@@ -366,10 +357,10 @@ test.describe("Worker Acronym Updates", () => {
     await acronymInput.fill(customAcronym);
     await acronymInput.press("Enter");
 
-    // Wait for the save operation to complete
-    await page.waitForTimeout(500);
+    // Wait for the acronym input to disappear (indicating save completed)
+    await expect(acronymInput).not.toBeVisible();
 
-    // Verify the custom acronym is saved
+    // Wait for the custom acronym to be displayed
     await expect(acronymDisplay).toContainText(customAcronym);
 
     // Now change the worker's name to something with different initials
@@ -381,15 +372,15 @@ test.describe("Worker Acronym Updates", () => {
     await nameInput.fill(newName);
     await nameInput.press("Enter");
 
-    // Wait for the save operation to complete
-    await page.waitForTimeout(500);
+    // Wait for the name input to disappear (indicating save completed)
+    await expect(nameInput).not.toBeVisible();
+
+    // Wait for the name to be updated in the display
+    await expect(nameCell).toContainText(newName);
 
     // The acronym should still be "CUSTOM" and NOT "BW"
     await expect(acronymDisplay).toContainText(customAcronym);
     await expect(acronymDisplay).not.toContainText("BW");
-
-    // Verify the name was actually updated
-    await expect(nameCell).toContainText(newName);
 
     console.log(
       `✅ Acronym remained "${customAcronym}" after name change to "${newName}" (custom acronym preserved)`

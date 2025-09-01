@@ -171,16 +171,10 @@ test.describe("Worker Weekly Hours Desired Field Cell", () => {
     const pageTitle = page.getByRole("heading", { name: "Workers" });
     await pageTitle.click();
 
-    // Wait for the save operation to complete
-    await page.waitForTimeout(500);
-
-    // The input should no longer be visible
-    await expect(weeklyHoursDesiredInput).not.toBeVisible();
-
-    // The display should show the updated value
-    await expect(weeklyHoursDesiredDisplay).toBeVisible();
-    await expect(weeklyHoursDesiredDisplay).toContainText(
-      newWeeklyHoursDesired.toString()
+    // Wait for the weekly hours desired update to complete
+    await workerTestBase.waitForWeeklyHoursDesiredUpdate(
+      page,
+      newWeeklyHoursDesired
     );
 
     console.log(
@@ -212,16 +206,10 @@ test.describe("Worker Weekly Hours Desired Field Cell", () => {
     // Press Enter to save
     await weeklyHoursDesiredInput.press("Enter");
 
-    // Wait for the save operation to complete
-    await page.waitForTimeout(500);
-
-    // The input should no longer be visible
-    await expect(weeklyHoursDesiredInput).not.toBeVisible();
-
-    // The display should show the updated value
-    await expect(weeklyHoursDesiredDisplay).toBeVisible();
-    await expect(weeklyHoursDesiredDisplay).toContainText(
-      newWeeklyHoursDesired.toString()
+    // Wait for the weekly hours desired update to complete
+    await workerTestBase.waitForWeeklyHoursDesiredUpdate(
+      page,
+      newWeeklyHoursDesired
     );
 
     console.log(
@@ -263,17 +251,13 @@ test.describe("Worker Weekly Hours Desired Field Cell", () => {
     // Press Escape to cancel editing
     await weeklyHoursDesiredInput.press("Escape");
 
-    // Wait for the cancel operation to complete
-    await page.waitForTimeout(500);
-
-    // The input should no longer be visible
-    await expect(weeklyHoursDesiredInput).not.toBeVisible();
-
-    // The display should show the original value (not the temporary one)
-    await expect(weeklyHoursDesiredDisplay).toBeVisible();
-    await expect(weeklyHoursDesiredDisplay).toContainText(
-      initialWeeklyHoursDesired.toString()
+    // Wait for the cancel operation to complete (should revert to original value)
+    await workerTestBase.waitForWeeklyHoursDesiredUpdate(
+      page,
+      initialWeeklyHoursDesired
     );
+
+    // Verify it's not showing the temporary value
     await expect(weeklyHoursDesiredDisplay).not.toContainText(
       tempWeeklyHoursDesired.toString()
     );
@@ -305,16 +289,10 @@ test.describe("Worker Weekly Hours Desired Field Cell", () => {
     // Press Enter to save the empty value
     await weeklyHoursDesiredInput.press("Enter");
 
-    // Wait for the save operation to complete
-    await page.waitForTimeout(500);
-
-    // The input should no longer be visible
-    await expect(weeklyHoursDesiredInput).not.toBeVisible();
-
-    // The display should show the original value (component should revert empty to original)
-    await expect(weeklyHoursDesiredDisplay).toBeVisible();
-    await expect(weeklyHoursDesiredDisplay).toContainText(
-      initialWeeklyHoursDesired.toString()
+    // Wait for the save operation to complete (should revert to original value)
+    await workerTestBase.waitForWeeklyHoursDesiredUpdate(
+      page,
+      initialWeeklyHoursDesired
     );
 
     console.log(
@@ -346,16 +324,10 @@ test.describe("Worker Weekly Hours Desired Field Cell", () => {
     // Don't change the value, just press Enter
     await weeklyHoursDesiredInput.press("Enter");
 
-    // Wait for the operation to complete
-    await page.waitForTimeout(500);
-
-    // The input should no longer be visible
-    await expect(weeklyHoursDesiredInput).not.toBeVisible();
-
-    // The display should still show the same value
-    await expect(weeklyHoursDesiredDisplay).toBeVisible();
-    await expect(weeklyHoursDesiredDisplay).toContainText(
-      initialWeeklyHoursDesired.toString()
+    // Wait for the operation to complete (no change should occur)
+    await workerTestBase.waitForWeeklyHoursDesiredUpdate(
+      page,
+      initialWeeklyHoursDesired
     );
 
     console.log(
@@ -385,8 +357,11 @@ test.describe("Worker Weekly Hours Desired Field Cell", () => {
     // Press Enter to save
     await weeklyHoursDesiredInput.press("Enter");
 
-    // Wait for the save operation to complete
-    await page.waitForTimeout(500);
+    // Wait for the weekly hours desired update to complete
+    await workerTestBase.waitForWeeklyHoursDesiredUpdate(
+      page,
+      largeWeeklyHoursDesired
+    );
 
     // The input should no longer be visible
     await expect(weeklyHoursDesiredInput).not.toBeVisible();
@@ -437,17 +412,14 @@ test.describe("Worker Weekly Hours Desired Field Cell", () => {
     // Try to save by pressing Enter - should show error
     await weeklyHoursDesiredInput.press("Enter");
 
-    // Wait a bit for validation
-    await page.waitForTimeout(300);
-
-    // The input should still be visible (editing not completed due to validation error)
-    await expect(weeklyHoursDesiredInput).toBeVisible();
-
-    // Check if there's an error state on the TextField - Material UI adds aria-invalid attribute
+    // Wait for validation error to appear
     await expect(weeklyHoursDesiredInput).toHaveAttribute(
       "aria-invalid",
       "true"
     );
+
+    // The input should still be visible (editing not completed due to validation error)
+    await expect(weeklyHoursDesiredInput).toBeVisible();
 
     console.log(
       `✅ Validation prevents desired hours (${invalidWeeklyHoursDesired}) from being lower than weekly hours (${baseWeeklyHours})`
@@ -492,17 +464,10 @@ test.describe("Worker Weekly Hours Desired Field Cell", () => {
     const pageTitle = page.getByRole("heading", { name: "Workers" });
     await pageTitle.click();
 
-    // Wait for the operation to complete
-    await page.waitForTimeout(500);
+    // Wait for the validation error handling and reversion to complete
+    await workerTestBase.waitForWeeklyHoursDesiredUpdate(page, baseWeeklyHours);
 
-    // The input should no longer be visible (should revert and exit edit mode)
-    await expect(weeklyHoursDesiredInput).not.toBeVisible();
-
-    // The display should show the original value (should have reverted)
-    await expect(weeklyHoursDesiredDisplay).toBeVisible();
-    await expect(weeklyHoursDesiredDisplay).toContainText(
-      baseWeeklyHours.toString()
-    );
+    // Verify it's not showing the invalid value
     await expect(weeklyHoursDesiredDisplay).not.toContainText(
       invalidWeeklyHoursDesired
     );

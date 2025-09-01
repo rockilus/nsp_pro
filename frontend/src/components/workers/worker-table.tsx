@@ -249,6 +249,8 @@ function WorkerNameCell({
       className="worker-table-first-column"
       onClick={() => !editing && setBodyEditing({ [worker.id]: "name" })}
       sx={{ cursor: editing ? "default" : "pointer" }}
+      data-testid="worker-name-cell"
+      data-worker-id={worker.id}
     >
       <div className="worker-name-cell">
         {editing ? (
@@ -269,9 +271,18 @@ function WorkerNameCell({
             autoFocus
             size="small"
             variant="standard"
+            inputProps={{
+              "data-testid": `worker-name-input-${worker.id}`,
+              "data-state": "editing",
+            }}
           />
         ) : (
-          <div className="worker-name-text">
+          <div
+            className="worker-name-text"
+            data-testid={`worker-name-display-${worker.id}`}
+            data-state="display"
+            data-worker-name={worker.name || "Unnamed Worker"}
+          >
             <Tooltip title={worker.name || "Unnamed Worker"} placement="top">
               <span>{worker.name || "Unnamed Worker"}</span>
             </Tooltip>
@@ -451,7 +462,10 @@ function WorkerTableRow({
   handleUpdateAttribute,
 }: WorkerTableRowProps) {
   return (
-    <TableRow className="worker-table-row">
+    <TableRow
+      className="worker-table-row"
+      data-testid={`worker-row-${worker.id}`}
+    >
       {/* First column - Worker name */}
       <WorkerNameCell
         worker={worker}

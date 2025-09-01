@@ -20,13 +20,19 @@ export default function WorkerFieldCellDutiesPerMonth({
   const [valueState, setValueState] = useState<number | "">(
     worker.dutiesPerMonth
   );
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleEditConfirm = async () => {
     if (valueState !== worker.dutiesPerMonth && valueState !== "") {
-      handleUpdateWorker({
-        ...worker,
-        dutiesPerMonth: valueState,
-      });
+      setIsSaving(true);
+      try {
+        await handleUpdateWorker({
+          ...worker,
+          dutiesPerMonth: valueState,
+        });
+      } finally {
+        setIsSaving(false);
+      }
     } else if (valueState === "") {
       setValueState(worker.dutiesPerMonth);
     }
@@ -42,9 +48,12 @@ export default function WorkerFieldCellDutiesPerMonth({
     <TableCell
       component="th"
       scope="row"
-      onClick={() => setEditing({ [worker.id]: "dutiesPerMonth" })}
+      onClick={() =>
+        !editing && !isSaving && setEditing({ [worker.id]: "dutiesPerMonth" })
+      }
       sx={{ paddingY: 0, textAlign: "center" }}
       data-testid="worker-duties-per-month-cell"
+      data-saving={isSaving}
     >
       {editing ? (
         <TextField
@@ -64,9 +73,11 @@ export default function WorkerFieldCellDutiesPerMonth({
             }
           }}
           autoFocus
+          disabled={isSaving}
           inputProps={{
             style: { textAlign: "center" },
             "data-testid": `worker-duties-per-month-input-${worker.id}`,
+            "data-saving": isSaving,
           }}
         />
       ) : (
@@ -78,8 +89,10 @@ export default function WorkerFieldCellDutiesPerMonth({
             justifyContent: "center",
           }}
           data-testid={`worker-duties-per-month-display-${worker.id}`}
+          data-saving={isSaving}
+          data-value={worker.dutiesPerMonth}
         >
-          {worker.dutiesPerMonth}
+          {isSaving ? "Saving..." : worker.dutiesPerMonth}
         </Box>
       )}
     </TableCell>

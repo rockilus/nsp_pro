@@ -58,14 +58,19 @@ export default function WorkerFieldCellName({
             }
           }}
           autoFocus
-          inputProps={{ "data-testid": `worker-name-input-${worker.id}` }}
+          inputProps={{
+            "data-testid": `worker-name-input-${worker.id}`,
+            "data-state": "editing",
+          }}
         />
       ) : (
         <Box
           sx={{ minHeight: 45, display: "flex", alignItems: "center" }}
           data-testid={`worker-name-display-${worker.id}`}
+          data-state="display"
+          data-worker-name={worker.name || "Unnamed Worker"}
         >
-          {worker.name}
+          {worker.name || "Unnamed Worker"}
         </Box>
       )}
     </TableCell>

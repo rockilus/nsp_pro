@@ -83,11 +83,8 @@ test.describe("Worker Deletion", () => {
     const nameCell = workerTestBase.getWorkerNameCell(page);
     await expect(nameCell).toContainText("Worker to Delete");
 
-    // Click the delete button
-    await workerTestBase.deleteWorkerViaUI(page, testWorker.workerId);
-
-    // Wait for the worker to be removed from the table
-    await page.waitForTimeout(1000); // Allow time for the deletion to process
+    // Click the delete button and wait for deletion to complete
+    await workerTestBase.deleteWorkerViaUIAndWait(page, testWorker.workerId);
 
     // Verify the worker is no longer in the table
     // The table should now show the empty state
@@ -140,11 +137,8 @@ test.describe("Worker Deletion", () => {
     let workerRows = workerTestBase.getWorkerRows(page);
     await expect(workerRows).toHaveCount(3);
 
-    // Delete the second worker specifically
-    await workerTestBase.deleteWorkerViaUI(page, worker2.workerId);
-
-    // Wait for the deletion to process
-    await page.waitForTimeout(1000);
+    // Delete the second worker specifically and wait for completion
+    await workerTestBase.deleteWorkerViaUIAndWait(page, worker2.workerId);
 
     // Verify we now have only 2 workers
     workerRows = workerTestBase.getWorkerRows(page);
@@ -196,8 +190,9 @@ test.describe("Worker Deletion", () => {
     // Click the delete button (this might result in an error or graceful handling)
     await deleteButton.click();
 
-    // Wait a moment for any error handling or UI updates
-    await page.waitForTimeout(1000);
+    // Wait for any UI updates to complete by checking for empty state
+    // Since the worker was already deleted via API, the UI should eventually show empty state
+    await expect(page.locator("text=no_workers_found")).toBeVisible();
 
     // Refresh to get the current state
     await page.reload();
@@ -298,8 +293,7 @@ test.describe("Worker Deletion", () => {
     await expect(headerRow).toContainText("actions"); // Note: lowercase in actual implementation
 
     // Delete the worker
-    await workerTestBase.deleteWorkerViaUI(page, testWorker.workerId);
-    await page.waitForTimeout(1000);
+    await workerTestBase.deleteWorkerViaUIAndWait(page, testWorker.workerId);
 
     // Verify table headers are still present after deletion
     await expect(headerRow).toContainText("Name");
