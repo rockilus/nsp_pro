@@ -158,7 +158,7 @@ module "frontend" {
   source = "../../modules/s3-static-frontend"
 
   project_name                = var.project_name
-  environment                 = "prod"
+  environment                 = var.environment
   aws_region                  = var.aws_region
   api_gateway_domain          = var.api_gateway_domain
   cognito_user_pool_id        = module.cognito.user_pool_id
@@ -173,7 +173,7 @@ module "frontend" {
   cloudfront_price_class = var.cloudfront_price_class
 
   tags = {
-    Environment = "prod"
+    Environment = var.environment
     Owner       = "DevOps Team"
     Compliance  = "Healthcare"
   }
@@ -186,7 +186,7 @@ module "security_groups" {
   source = "../../modules/security-groups"
 
   project_name   = var.project_name
-  environment    = "prod"
+  environment    = var.environment
   vpc_id         = module.vpc.vpc_id
   vpc_cidr_block = module.vpc.vpc_cidr_block
 
@@ -199,7 +199,7 @@ module "security_groups" {
   nlb_security_group_ids = [module.network_load_balancer.nlb_security_group_id]
 
   tags = {
-    Environment = "prod"
+    Environment = var.environment
     Owner       = "DevOps Team"
     Compliance  = "Healthcare"
     Project     = "NSP Pro"
