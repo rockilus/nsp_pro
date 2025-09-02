@@ -52,22 +52,19 @@ module "secrets" {
   source = "../../modules/secrets"
 
   project_name = var.project_name
-  environment  = "prod"
+  environment  = var.environment
   aws_region   = var.aws_region
 
   # Secret values
-  permit_api_key       = var.permit_api_key
-  st_api_key           = var.st_api_key
-  st_connection_uri    = var.st_connection_uri
-  atlas_connection_uri = var.atlas_connection_uri
+  permit_api_key = var.permit_api_key
 
   # Healthcare compliance configuration
-  replica_region          = "us-west-2"
-  recovery_window_in_days = 30
-  log_retention_days      = 90
+  replica_region          = var.replica_region
+  recovery_window_in_days = var.recovery_window_in_days
+  log_retention_days      = var.log_retention_days
 
   tags = {
-    Environment = "prod"
+    Environment = var.environment
     Owner       = "DevOps Team"
     Compliance  = "Healthcare"
     Project     = "NSP Pro"
@@ -313,11 +310,8 @@ module "ecs" {
   permit_api_key = var.permit_api_key
 
   # Secret ARNs from secrets module
-  permit_api_key_secret_arn    = module.secrets.permit_api_key_secret_arn
-  st_api_key_secret_arn        = module.secrets.st_api_key_secret_arn
-  st_connection_uri_secret_arn = module.secrets.st_connection_uri_secret_arn
-  atlas_secret_arn             = module.secrets.atlas_secret_arn
-  documentdb_secret_arn        = module.documentdb.credentials_secret_arn
+  permit_api_key_secret_arn = module.secrets.permit_api_key_secret_arn
+  documentdb_secret_arn     = module.documentdb.credentials_secret_arn
 
   # Environment variables
   main_service_environment_variables  = var.main_service_environment_variables

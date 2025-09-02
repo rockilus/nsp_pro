@@ -423,25 +423,34 @@ variable "permit_api_key" {
   sensitive   = true
 }
 
-# SendGrid Configuration Variables
-variable "st_api_key" {
-  description = "SendGrid API key for email notifications"
+variable "replica_region" {
+  description = "Secondary AWS region for secret replication"
   type        = string
-  sensitive   = true
+  default     = "us-west-2"
 }
 
-variable "st_connection_uri" {
-  description = "SendGrid connection URI for email service"
-  type        = string
-  sensitive   = true
+variable "recovery_window_in_days" {
+  description = "Number of days to retain secrets for recovery"
+  type        = number
+  default     = 30
+
+  validation {
+    condition     = var.recovery_window_in_days >= 7 && var.recovery_window_in_days <= 30
+    error_message = "Recovery window must be between 7 and 30 days for compliance."
+  }
 }
 
-# MongoDB Atlas Configuration Variables
-variable "atlas_connection_uri" {
-  description = "MongoDB Atlas connection URI"
-  type        = string
-  sensitive   = true
+variable "log_retention_days" {
+  description = "CloudWatch log retention period in days for audit logs"
+  type        = number
+  default     = 90
+
+  validation {
+    condition     = contains([1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653], var.log_retention_days)
+    error_message = "Log retention days must be a valid CloudWatch retention period."
+  }
 }
+
 
 variable "main_service_environment_variables" {
   description = "Environment variables for the main service"

@@ -192,23 +192,6 @@ variable "permit_api_key_secret_arn" {
   default     = ""
 }
 
-variable "st_api_key_secret_arn" {
-  description = "ARN of the SuperTokens API key secret"
-  type        = string
-  default     = ""
-}
-
-variable "st_connection_uri_secret_arn" {
-  description = "ARN of the SuperTokens connection URI secret"
-  type        = string
-  default     = ""
-}
-
-variable "atlas_secret_arn" {
-  description = "ARN of the MongoDB Atlas credentials secret"
-  type        = string
-  default     = ""
-}
 
 variable "documentdb_secret_arn" {
   description = "ARN of the DocumentDB credentials secret"

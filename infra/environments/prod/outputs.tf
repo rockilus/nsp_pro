@@ -255,23 +255,7 @@ output "permit_api_key_secret_arn" {
   sensitive   = false
 }
 
-output "st_api_key_secret_arn" {
-  description = "ARN of the SendGrid API key secret"
-  value       = module.secrets.st_api_key_secret_arn
-  sensitive   = false
-}
 
-output "st_connection_uri_secret_arn" {
-  description = "ARN of the SendGrid connection URI secret"
-  value       = module.secrets.st_connection_uri_secret_arn
-  sensitive   = false
-}
-
-output "atlas_secret_arn" {
-  description = "ARN of the MongoDB Atlas credentials secret"
-  value       = module.secrets.atlas_secret_arn
-  sensitive   = false
-}
 
 # output "secrets_access_role_arn" {
 #   description = "ARN of the IAM role for accessing secrets"

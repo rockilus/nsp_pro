@@ -6,20 +6,6 @@ output "permit_api_key_secret_arn" {
   value       = aws_secretsmanager_secret.permit_api_key.arn
 }
 
-output "st_api_key_secret_arn" {
-  description = "ARN of the SendGrid API key secret"
-  value       = aws_secretsmanager_secret.st_api_key.arn
-}
-
-output "st_connection_uri_secret_arn" {
-  description = "ARN of the SendGrid connection URI secret"
-  value       = aws_secretsmanager_secret.st_connection_uri.arn
-}
-
-output "atlas_secret_arn" {
-  description = "ARN of the MongoDB Atlas credentials secret"
-  value       = aws_secretsmanager_secret.atlas_secret.arn
-}
 
 # Secret names for ECS task definitions
 output "permit_api_key_secret_name" {
@@ -27,20 +13,6 @@ output "permit_api_key_secret_name" {
   value       = aws_secretsmanager_secret.permit_api_key.name
 }
 
-output "st_api_key_secret_name" {
-  description = "Name of the SendGrid API key secret"
-  value       = aws_secretsmanager_secret.st_api_key.name
-}
-
-output "st_connection_uri_secret_name" {
-  description = "Name of the SendGrid connection URI secret"
-  value       = aws_secretsmanager_secret.st_connection_uri.name
-}
-
-output "atlas_secret_name" {
-  description = "Name of the MongoDB Atlas credentials secret"
-  value       = aws_secretsmanager_secret.atlas_secret.name
-}
 
 # IAM resources for accessing secrets
 # output "secrets_access_policy_arn" {
@@ -69,9 +41,6 @@ output "all_secret_arns" {
   description = "List of all secret ARNs managed by this module"
   value = [
     aws_secretsmanager_secret.permit_api_key.arn,
-    aws_secretsmanager_secret.st_api_key.arn,
-    aws_secretsmanager_secret.st_connection_uri.arn,
-    aws_secretsmanager_secret.atlas_secret.arn
   ]
 }
 
@@ -82,18 +51,6 @@ output "secrets_summary" {
     permit_api_key = {
       name = aws_secretsmanager_secret.permit_api_key.name
       arn  = aws_secretsmanager_secret.permit_api_key.arn
-    }
-    st_api_key = {
-      name = aws_secretsmanager_secret.st_api_key.name
-      arn  = aws_secretsmanager_secret.st_api_key.arn
-    }
-    st_connection_uri = {
-      name = aws_secretsmanager_secret.st_connection_uri.name
-      arn  = aws_secretsmanager_secret.st_connection_uri.arn
-    }
-    atlas_secret = {
-      name = aws_secretsmanager_secret.atlas_secret.name
-      arn  = aws_secretsmanager_secret.atlas_secret.arn
     }
   }
 }

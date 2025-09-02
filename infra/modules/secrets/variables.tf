@@ -28,23 +28,6 @@ variable "permit_api_key" {
   sensitive   = true
 }
 
-variable "st_api_key" {
-  description = "SendGrid API key for email notifications"
-  type        = string
-  sensitive   = true
-}
-
-variable "st_connection_uri" {
-  description = "SendGrid connection URI for email service"
-  type        = string
-  sensitive   = true
-}
-
-variable "atlas_connection_uri" {
-  description = "MongoDB Atlas connection URI"
-  type        = string
-  sensitive   = true
-}
 
 
 # KMS Configuration
