@@ -91,6 +91,97 @@ variable "landing_page_domain_name" {
   }
 }
 
+# Secrets Configuration Variables
+variable "permit_api_key" {
+  description = "Permit.io API key for PDP configuration"
+  type        = string
+  sensitive   = true
+}
+
+variable "replica_region" {
+  description = "Secondary AWS region for secret replication"
+  type        = string
+  default     = "us-west-2"
+}
+
+variable "recovery_window_in_days" {
+  description = "Number of days to retain secrets for recovery"
+  type        = number
+  default     = 30
+
+  validation {
+    condition     = var.recovery_window_in_days >= 7 && var.recovery_window_in_days <= 30
+    error_message = "Recovery window must be between 7 and 30 days for compliance."
+  }
+}
+
+variable "log_retention_days" {
+  description = "CloudWatch log retention period in days for audit logs"
+  type        = number
+  default     = 90
+
+  validation {
+    condition     = contains([1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653], var.log_retention_days)
+    error_message = "Log retention days must be a valid CloudWatch retention period."
+  }
+}
+
+# Route 53 and SSL Configuration Variables
+
+variable "hosted_zone_domain" {
+  description = "The root domain for the hosted zone (e.g., rockilus.com)"
+  type        = string
+  default     = "rockilus.com"
+
+  validation {
+    condition     = can(regex("^[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", var.hosted_zone_domain))
+    error_message = "Hosted zone domain must be a valid root domain format for healthcare compliance."
+  }
+}
+
+# DNS / Certificate / Health-check configuration
+variable "enable_dnssec" {
+  description = "Enable DNSSEC for the Route53 hosted zone to provide additional integrity assurances."
+  type        = bool
+  default     = true
+}
+
+variable "enable_certificate_transparency_logging" {
+  description = "Enable Certificate Transparency logging for ACM certificates to increase auditability."
+  type        = bool
+  default     = true
+}
+
+variable "enable_query_logging" {
+  description = "Enable Route53 query logging for audit and security monitoring."
+  type        = bool
+  default     = true
+}
+
+variable "health_check_regions" {
+  description = "List of AWS regions to use for multi-region health checks."
+  type        = list(string)
+  default     = ["us-east-1", "us-west-2", "eu-west-1"]
+
+  validation {
+    condition     = length(var.health_check_regions) >= 1
+    error_message = "At least one health check region must be provided."
+  }
+}
+
+variable "certificate_subject_alternative_names" {
+  description = "List of Subject Alternative Names for the SSL certificate (allows wildcard entries like '*.example.com')."
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition = alltrue([
+      for name in var.certificate_subject_alternative_names : can(regex("^(\\*\\.)?[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", name))
+    ])
+    error_message = "Each certificate subject alternative name must be a valid domain name; wildcard prefixes ('*.') are allowed."
+  }
+}
+
 # API Gateway Configuration
 variable "cors_allowed_origins" {
   description = "List of allowed CORS origins."
@@ -118,16 +209,7 @@ variable "api_gateway_domain" {
   }
 }
 
-variable "hosted_zone_domain" {
-  description = "The root domain for the hosted zone (e.g., rockilus.com)"
-  type        = string
-  default     = "rockilus.com"
 
-  validation {
-    condition     = can(regex("^[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", var.hosted_zone_domain))
-    error_message = "Hosted zone domain must be a valid root domain format for healthcare compliance."
-  }
-}
 
 variable "frontend_domain_name" {
   description = "Custom domain name for the frontend application (e.g., app.rockilus.com)"
@@ -416,40 +498,6 @@ variable "permit_pdp_operating_system_family" {
   }
 }
 
-# Secrets Configuration Variables
-variable "permit_api_key" {
-  description = "Permit.io API key for PDP configuration"
-  type        = string
-  sensitive   = true
-}
-
-variable "replica_region" {
-  description = "Secondary AWS region for secret replication"
-  type        = string
-  default     = "us-west-2"
-}
-
-variable "recovery_window_in_days" {
-  description = "Number of days to retain secrets for recovery"
-  type        = number
-  default     = 30
-
-  validation {
-    condition     = var.recovery_window_in_days >= 7 && var.recovery_window_in_days <= 30
-    error_message = "Recovery window must be between 7 and 30 days for compliance."
-  }
-}
-
-variable "log_retention_days" {
-  description = "CloudWatch log retention period in days for audit logs"
-  type        = number
-  default     = 90
-
-  validation {
-    condition     = contains([1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653], var.log_retention_days)
-    error_message = "Log retention days must be a valid CloudWatch retention period."
-  }
-}
 
 
 variable "main_service_environment_variables" {

@@ -81,28 +81,23 @@ module "route53" {
   }
 
   project_name = var.project_name
-  environment  = "prod"
-  domain_name  = var.hosted_zone_domain # Use hosted zone domain, not frontend domain
+  environment  = var.environment
+
+  domain_name = var.hosted_zone_domain # Use hosted zone domain, not frontend domain
 
   # Security enhancements for healthcare compliance
-  enable_dnssec                           = true
-  enable_certificate_transparency_logging = true
-  enable_query_logging                    = true
+  enable_dnssec                           = var.enable_dnssec
+  enable_certificate_transparency_logging = var.enable_certificate_transparency_logging
+  enable_query_logging                    = var.enable_query_logging
 
   # Multi-region health checks for high availability
-  health_check_regions = ["us-east-1", "us-west-2", "eu-west-1"]
+  health_check_regions = var.health_check_regions
 
   # SSL certificate with wildcard support for all NSP Pro subdomains
-  certificate_subject_alternative_names = [
-    "*.rockilus.com",    # Wildcard for all subdomains
-    "app.rockilus.com",  # Frontend application
-    "api.rockilus.com",  # API Gateway
-    "www.rockilus.com",  # Landing page alternative
-    "admin.rockilus.com" # Future admin portal
-  ]
+  certificate_subject_alternative_names = var.certificate_subject_alternative_names
 
   tags = {
-    Environment = "prod"
+    Environment = var.environment
     Owner       = "DevOps Team"
     Compliance  = "Healthcare"
     Project     = "NSP Pro"
