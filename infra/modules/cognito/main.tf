@@ -177,7 +177,7 @@ resource "aws_cognito_user_pool_client" "main" {
 # Cognito User Pool Domain - Required for hosted UI
 resource "aws_cognito_user_pool_domain" "main" {
   # domain       = var.cognito_domain_prefix != null ? var.cognito_domain_prefix : "${var.project_name}-${var.environment}"
-  domain       = "eu-west-3odtk8otjs"
+  domain       = var.cognito_domain_prefix
   user_pool_id = aws_cognito_user_pool.main.id
 }
 

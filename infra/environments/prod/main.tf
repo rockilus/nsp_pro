@@ -10,7 +10,7 @@ module "vpc" {
   private_subnet_cidrs = var.private_subnet_cidrs
 
   tags = {
-    Environment = "prod"
+    Environment = var.environment
     Owner       = "DevOps Team"
     Compliance  = "Healthcare"
     Project     = "NSP Pro"
@@ -22,11 +22,11 @@ module "ecr" {
   source = "../../modules/ecr"
 
   project_name   = var.project_name
-  environment    = "prod"
+  environment    = var.environment
   aws_account_id = var.aws_account_id
 
   tags = {
-    Environment = "prod"
+    Environment = var.environment
     Owner       = "DevOps Team"
     Compliance  = "Healthcare"
     Project     = "NSP Pro"
@@ -36,14 +36,15 @@ module "ecr" {
 module "cognito" {
   source = "../../modules/cognito"
 
-  project_name              = var.project_name
-  environment               = "prod"
-  api_gateway_url           = var.api_gateway_domain_name != null ? "https://${var.api_gateway_domain_name}" : var.api_gateway_domain
-  aws_region                = var.aws_region
+  project_name = var.project_name
+  environment  = var.environment
+  aws_region   = var.aws_region
+
+  api_gateway_url           = "https://${var.api_gateway_domain_name}"
   api_gateway_ssm_parameter = module.api_gateway.backend_api_key_parameter
   frontend_domain_name      = var.frontend_domain_name
   landing_page_domain_name  = var.landing_page_domain_name
-  cognito_domain_prefix     = null # Use default: project_name-environment
+  cognito_domain_prefix     = var.cognito_domain_prefix
 }
 
 # AWS Secrets Manager for sensitive configuration
