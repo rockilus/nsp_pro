@@ -134,25 +134,29 @@ module "network_load_balancer" {
   depends_on = [module.vpc]
 }
 
+# API Gateway for backend services
 module "api_gateway" {
   source = "../../modules/api_gateway"
 
-  project_name                  = var.project_name
-  environment                   = "prod"
-  aws_region                    = var.aws_region
-  aws_account_id                = var.aws_account_id
-  cors_allowed_origins          = var.cors_allowed_origins
+  # General configuration
+  project_name   = var.project_name
+  environment    = var.environment
+  aws_region     = var.aws_region
+  aws_account_id = var.aws_account_id
+
+  # API Gateway configuration
+  cors_allowed_origins   = var.cors_allowed_origins
+  api_gateway_stage_name = var.api_gateway_stage_name
+
   cognito_user_pool_id          = module.cognito.user_pool_id
   cognito_user_pool_clients_ids = [module.cognito.user_pool_client_id]
-  vpc_link_id                   = var.vpc_link_id
   vpc_link_target_arns          = module.network_load_balancer.vpc_link_target_arns
   vpc_link_endpoint_url         = module.network_load_balancer.vpc_link_endpoint_url
-  api_gateway_stage_name        = var.api_gateway_stage_name
 
   # Custom domain configuration using Route53 module outputs
-  custom_domain_name = var.api_gateway_domain_name != null ? var.api_gateway_domain_name : null
-  certificate_arn    = var.api_gateway_domain_name != null ? module.route53.certificate_arn : null
-  hosted_zone_id     = var.api_gateway_domain_name != null ? module.route53.hosted_zone_id : null
+  custom_domain_name = var.api_gateway_domain_name
+  certificate_arn    = module.route53.certificate_arn
+  hosted_zone_id     = module.route53.hosted_zone_id
 
   depends_on = [module.route53, module.network_load_balancer]
 }
@@ -231,8 +235,8 @@ module "documentdb" {
   # Production configuration
   master_username         = "docdbadmin"
   engine_version          = "5.0.0"
-  instance_class          = "db.r5.large"
-  instance_count          = 3
+  instance_class          = "db.t3.medium"
+  instance_count          = 1
   backup_retention_period = 30
   deletion_protection     = true
 

@@ -16,17 +16,17 @@ output "backend_api_key_parameter" {
 # Custom Domain Outputs
 output "custom_domain_name" {
   description = "The custom domain name for the API Gateway"
-  value       = var.custom_domain_name != null ? aws_api_gateway_domain_name.custom[0].domain_name : null
+  value       = aws_api_gateway_domain_name.custom.domain_name
 }
 
 output "custom_domain_cloudfront_domain" {
   description = "CloudFront domain name for the custom domain (for DNS configuration)"
-  value       = var.custom_domain_name != null ? aws_api_gateway_domain_name.custom[0].cloudfront_domain_name : null
+  value       = aws_api_gateway_domain_name.custom.cloudfront_domain_name
 }
 
 output "custom_domain_cloudfront_zone_id" {
   description = "CloudFront zone ID for the custom domain (for DNS configuration)"
-  value       = var.custom_domain_name != null ? aws_api_gateway_domain_name.custom[0].cloudfront_zone_id : null
+  value       = aws_api_gateway_domain_name.custom.cloudfront_zone_id
 }
 
 output "api_gateway_endpoint_configuration" {

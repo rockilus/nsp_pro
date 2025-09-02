@@ -33,10 +33,6 @@ variable "cognito_user_pool_clients_ids" {
   type        = list(string)
 }
 
-variable "vpc_link_id" {
-  description = "The ID of the VPC Link."
-  type        = string
-}
 
 variable "vpc_link_target_arns" {
   description = "List of target ARNs for the VPC Link."

@@ -42,13 +42,13 @@ variable "engine_version" {
 variable "instance_class" {
   description = "Instance class for DocumentDB cluster instances"
   type        = string
-  default     = "db.r5.large"
+  default     = "db.t3.medium"
 }
 
 variable "instance_count" {
   description = "Number of instances in the DocumentDB cluster"
   type        = number
-  default     = 2
+  default     = 1
   validation {
     condition     = var.instance_count >= 1 && var.instance_count <= 15
     error_message = "Instance count must be between 1 and 15."
