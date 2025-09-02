@@ -1,7 +1,7 @@
 # Security Group for Main Service
 resource "aws_security_group" "main_service" {
-  name = "backend-security-group"
-  # name_prefix = "${var.project_name}-${var.environment}-main-service-"
+  # name = "backend-security-group"
+  name_prefix = "${var.project_name}-${var.environment}-main-service-"
   description = "backend security group"
   # description = "Security group for ${var.project_name} ${var.environment} main service"
   vpc_id = var.vpc_id
@@ -110,8 +110,8 @@ resource "aws_security_group" "main_service" {
 
 # Security Group for Solve Service
 resource "aws_security_group" "solve_service" {
-  name = "backend-solveservice-sg"
-  # name_prefix = "${var.project_name}-${var.environment}-solve-service-"
+  # name = "backend-solveservice-sg"
+  name_prefix = "${var.project_name}-${var.environment}-solve-service-"
   description = "Backend solve service june 2025 architecture"
   # description = "Security group for ${var.project_name} ${var.environment} solve service"
   vpc_id = var.vpc_id
@@ -179,8 +179,8 @@ resource "aws_security_group" "solve_service" {
 
 # Security Group for Permit PDP
 resource "aws_security_group" "permit_pdp" {
-  name = "nsp_pro-permit_pdp_sg"
-  # name_prefix = "${var.project_name}-${var.environment}-permit-pdp-"
+  # name = "nsp_pro-permit_pdp_sg"
+  name_prefix = "${var.project_name}-${var.environment}-permit-pdp-"
   description = "Allow load balancer access to the permit pdp container"
   # description = "Security group for ${var.project_name} ${var.environment} Permit.io PDP service"
   vpc_id = var.vpc_id
