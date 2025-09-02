@@ -25,12 +25,6 @@ variable "environment" {
 }
 
 
-# API Gateway Configuration
-variable "cors_allowed_origins" {
-  description = "List of allowed CORS origins."
-  type        = list(string)
-}
-
 # VPC Configuration
 variable "vpc_cidr" {
   description = "CIDR block for the VPC"
@@ -78,6 +72,14 @@ variable "private_subnet_cidrs" {
     error_message = "All private subnet CIDRs must be valid IPv4 CIDR blocks."
   }
 }
+
+# API Gateway Configuration
+variable "cors_allowed_origins" {
+  description = "List of allowed CORS origins."
+  type        = list(string)
+}
+
+
 
 
 
