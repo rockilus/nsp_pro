@@ -108,17 +108,17 @@ module "route53" {
 module "network_load_balancer" {
   source = "../../modules/network-load-balancer"
 
-  project_name        = var.project_name
-  environment         = "prod"
+  project_name = var.project_name
+  environment  = var.environment
+
   vpc_id              = module.vpc.vpc_id
   private_subnet_ids  = module.vpc.private_subnet_ids
   backend_port        = var.backend_port
   allowed_cidr_blocks = [module.vpc.vpc_cidr_block]
   vpc_cidr_blocks     = [module.vpc.vpc_cidr_block]
-  target_instance_ids = var.backend_instance_ids
 
   tags = {
-    Environment = "prod"
+    Environment = var.environment
     Owner       = "DevOps Team"
     Compliance  = "Healthcare"
     Project     = "NSP Pro"

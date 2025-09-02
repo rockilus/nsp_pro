@@ -1,7 +1,7 @@
 # Network Load Balancer for API Gateway VPC Link
 resource "aws_lb" "api_nlb" {
-  name = "apigateway-mainservice-nlb"
-  # name               = "${var.project_name}-${var.environment}-api-nlb"
+  # name = "apigateway-mainservice-nlb"
+  name               = "${var.project_name}-${var.environment}-api-nlb"
   internal           = true
   load_balancer_type = "network"
 
@@ -22,21 +22,21 @@ resource "aws_lb" "api_nlb" {
   # Cross-zone load balancing for high availability
   enable_cross_zone_load_balancing = false
 
-  # tags = merge(
-  #   var.tags,
-  #   {
-  #     Name        = "${var.project_name}-${var.environment}-api-nlb"
-  #     Component   = "NetworkLoadBalancer"
-  #     Environment = var.environment
-  #     Project     = var.project_name
-  #     ManagedBy   = "Terraform"
-  # })
+  tags = merge(
+    var.tags,
+    {
+      Name        = "${var.project_name}-${var.environment}-api-nlb"
+      Component   = "NetworkLoadBalancer"
+      Environment = var.environment
+      Project     = var.project_name
+      ManagedBy   = "Terraform"
+  })
 }
 
 # Target Group for API Gateway backend services
 resource "aws_lb_target_group" "api_backend" {
-  name = "apigateway-mainservice-nlb-tg-2"
-  # name     = "${var.project_name}-${var.environment}-api-tg"
+  # name = "apigateway-mainservice-nlb-tg-2"
+  name        = "${var.project_name}-${var.environment}-api-tg"
   port        = var.backend_port
   protocol    = "TCP"
   vpc_id      = var.vpc_id
@@ -67,13 +67,13 @@ resource "aws_lb_target_group" "api_backend" {
     type            = "source_ip"
   }
 
-  # tags = merge(var.tags, {
-  #   Name        = "${var.project_name}-${var.environment}-api-target-group"
-  #   Component   = "TargetGroup"
-  #   Environment = var.environment
-  #   Project     = var.project_name
-  #   ManagedBy   = "Terraform"
-  # })
+  tags = merge(var.tags, {
+    Name        = "${var.project_name}-${var.environment}-api-target-group"
+    Component   = "TargetGroup"
+    Environment = var.environment
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+  })
 }
 
 # NLB Listener
@@ -85,21 +85,21 @@ resource "aws_lb_listener" "api_backend" {
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.api_backend.arn
-    forward {
-      target_group {
-        arn    = aws_lb_target_group.api_backend.arn
-        weight = 0
-      }
-    }
+    # forward {
+    #   target_group {
+    #     arn    = aws_lb_target_group.api_backend.arn
+    #     weight = 0
+    #   }
+    # }
   }
 
-  # tags = merge(var.tags, {
-  #   Name        = "${var.project_name}-${var.environment}-api-listener"
-  #   Component   = "Listener"
-  #   Environment = var.environment
-  #   Project     = var.project_name
-  #   ManagedBy   = "Terraform"
-  # })
+  tags = merge(var.tags, {
+    Name        = "${var.project_name}-${var.environment}-api-listener"
+    Component   = "Listener"
+    Environment = var.environment
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+  })
 }
 
 # Target Group Attachments for existing instances
@@ -112,8 +112,8 @@ resource "aws_lb_listener" "api_backend" {
 
 # Security Group for NLB (minimal rules for NLB)
 resource "aws_security_group" "nlb" {
-  name = "apigateway-mainservice-nlb-sg"
-  # name_prefix = "${var.project_name}-${var.environment}-nlb-"
+  # name = "apigateway-mainservice-nlb-sg"
+  name_prefix = "${var.project_name}-${var.environment}-nlb-"
   description = "Security group for network load balancer between api gateway and main service"
   # description = "Security group for ${var.project_name} ${var.environment} Network Load Balancer"
   vpc_id = var.vpc_id

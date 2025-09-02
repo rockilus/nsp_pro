@@ -41,8 +41,3 @@ variable "tags" {
   default     = {}
 }
 
-variable "target_instance_ids" {
-  description = "List of EC2 instance IDs to register as targets"
-  type        = list(string)
-  default     = []
-}

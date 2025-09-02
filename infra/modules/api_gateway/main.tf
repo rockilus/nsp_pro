@@ -566,7 +566,9 @@ resource "aws_api_gateway_deployment" "main" {
       aws_api_gateway_integration_response.internal_onboard_400.id,
       aws_api_gateway_integration_response.internal_onboard_500.id,
       aws_api_gateway_gateway_response.default_4xx.id,
-      aws_api_gateway_gateway_response.default_5xx.id
+      aws_api_gateway_gateway_response.default_5xx.id,
+      aws_api_gateway_vpc_link.main.id
+
     ]))
   }
   lifecycle {
