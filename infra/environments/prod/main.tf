@@ -195,8 +195,8 @@ module "security_groups" {
   solve_service_port = var.solve_service_port
   permit_pdp_port    = var.permit_pdp_port
 
-  # Network Load Balancer security group IDs
-  nlb_security_group_ids = [module.network_load_balancer.nlb_security_group_id]
+  # Network Load Balancer security group ID
+  nlb_security_group_id = module.network_load_balancer.nlb_security_group_id
 
   tags = {
     Environment = var.environment
@@ -262,8 +262,9 @@ module "ecs" {
   vpc_id                 = module.vpc.vpc_id
   vpc_cidr_block         = module.vpc.vpc_cidr_block
   private_subnet_ids     = module.vpc.private_subnet_ids
+  nlb_arn                = module.network_load_balancer.nlb_arn
   nlb_security_group_ids = [module.network_load_balancer.nlb_security_group_id]
-  nlb_target_group_arn   = module.network_load_balancer.target_group_arn
+  # nlb_target_group_arn   = module.network_load_balancer.target_group_arn
 
   # Security Group IDs from security groups module
   main_service_security_group_id  = module.security_groups.main_service_security_group_id

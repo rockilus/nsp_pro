@@ -273,6 +273,80 @@ resource "aws_ecs_task_definition" "permit_pdp" {
   # })
 }
 
+
+# Target Group for API Gateway backend services
+resource "aws_lb_target_group" "api_backend" {
+  # name = "apigateway-mainservice-nlb-tg-2"
+  # name        = "${var.project_name}-${var.environment}-api-tg"
+  name_prefix = "apitg-"
+  # port        = var.backend_port
+  port        = 4000
+  protocol    = "TCP"
+  vpc_id      = var.vpc_id
+  target_type = "ip"
+
+  # Health check configuration for backend services
+  health_check {
+    enabled             = true
+    healthy_threshold   = 5
+    interval            = 5
+    matcher             = "200-399"
+    path                = "/health"
+    port                = "traffic-port"
+    protocol            = "HTTP"
+    timeout             = 5
+    unhealthy_threshold = 2
+  }
+
+  # Preserve client IP for security and compliance
+  preserve_client_ip = false
+
+  # Deregistration delay for graceful shutdown
+  deregistration_delay = 300
+
+  stickiness {
+    cookie_duration = 0
+    enabled         = false
+    type            = "source_ip"
+  }
+
+  tags = merge(var.tags, {
+    Name        = "${var.project_name}-${var.environment}-api-target-group"
+    Component   = "TargetGroup"
+    Environment = var.environment
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+  })
+}
+
+# NLB Listener
+resource "aws_lb_listener" "api_backend" {
+  # load_balancer_arn = aws_lb.api_nlb.arn
+  load_balancer_arn = var.nlb_arn
+  port              = 80
+  protocol          = "TCP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.api_backend.arn
+    # forward {
+    #   target_group {
+    #     arn    = aws_lb_target_group.api_backend.arn
+    #     weight = 0
+    #   }
+    # }
+  }
+
+  tags = merge(var.tags, {
+    Name        = "${var.project_name}-${var.environment}-api-listener"
+    Component   = "Listener"
+    Environment = var.environment
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+  })
+}
+
+
 # Main Service ECS Service
 resource "aws_ecs_service" "main_service" {
   name = "main-service"
@@ -310,10 +384,11 @@ resource "aws_ecs_service" "main_service" {
   }
 
   load_balancer {
-    container_name   = var.main_service_container_name
-    container_port   = var.main_service_port
-    elb_name         = null
-    target_group_arn = var.nlb_target_group_arn
+    container_name = var.main_service_container_name
+    container_port = var.main_service_port
+    elb_name       = null
+    # target_group_arn = var.nlb_target_group_arn
+    target_group_arn = aws_lb_target_group.api_backend.arn
   }
 
   service_connect_configuration {
@@ -354,6 +429,9 @@ resource "aws_ecs_service" "main_service" {
   #   registry_arn = aws_service_discovery_service.main_service.arn
   # }
 
+  lifecycle {
+    replace_triggered_by = [aws_lb_target_group.api_backend]
+  }
 
   tags = {}
   # tags = merge(var.tags, {
@@ -365,7 +443,7 @@ resource "aws_ecs_service" "main_service" {
   #   Service     = "MainService"
   # })
 
-  depends_on = [aws_iam_role_policy_attachment.ecs_task_execution_role_policy]
+  depends_on = [aws_iam_role_policy_attachment.ecs_task_execution_role_policy, aws_lb_target_group.api_backend]
 }
 
 # Solve Service ECS Service

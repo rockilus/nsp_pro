@@ -1,7 +1,8 @@
 # Network Load Balancer for API Gateway VPC Link
 resource "aws_lb" "api_nlb" {
   # name = "apigateway-mainservice-nlb"
-  name               = "${var.project_name}-${var.environment}-api-nlb"
+  # name               = "${var.project_name}-${var.environment}-api-nlb"
+  name_prefix        = "nlb-"
   internal           = true
   load_balancer_type = "network"
 
@@ -33,74 +34,76 @@ resource "aws_lb" "api_nlb" {
   })
 }
 
-# Target Group for API Gateway backend services
-resource "aws_lb_target_group" "api_backend" {
-  # name = "apigateway-mainservice-nlb-tg-2"
-  name        = "${var.project_name}-${var.environment}-api-tg"
-  port        = var.backend_port
-  protocol    = "TCP"
-  vpc_id      = var.vpc_id
-  target_type = "ip"
+# # Target Group for API Gateway backend services
+# resource "aws_lb_target_group" "api_backend" {
+#   # name = "apigateway-mainservice-nlb-tg-2"
+#   # name        = "${var.project_name}-${var.environment}-api-tg"
+#   name_prefix = "apitg-"
+#   # port        = var.backend_port
+#   port        = 4000
+#   protocol    = "TCP"
+#   vpc_id      = var.vpc_id
+#   target_type = "ip"
 
-  # Health check configuration for backend services
-  health_check {
-    enabled             = true
-    healthy_threshold   = 5
-    interval            = 30
-    matcher             = "200-399"
-    path                = "/health"
-    port                = "traffic-port"
-    protocol            = "HTTP"
-    timeout             = 6
-    unhealthy_threshold = 2
-  }
+#   # Health check configuration for backend services
+#   health_check {
+#     enabled             = true
+#     healthy_threshold   = 5
+#     interval            = 5
+#     matcher             = "200-399"
+#     path                = "/health"
+#     port                = "traffic-port"
+#     protocol            = "HTTP"
+#     timeout             = 5
+#     unhealthy_threshold = 2
+#   }
 
-  # Preserve client IP for security and compliance
-  preserve_client_ip = false
+#   # Preserve client IP for security and compliance
+#   preserve_client_ip = false
 
-  # Deregistration delay for graceful shutdown
-  deregistration_delay = 300
+#   # Deregistration delay for graceful shutdown
+#   deregistration_delay = 300
 
-  stickiness {
-    cookie_duration = 0
-    enabled         = false
-    type            = "source_ip"
-  }
+#   stickiness {
+#     cookie_duration = 0
+#     enabled         = false
+#     type            = "source_ip"
+#   }
 
-  tags = merge(var.tags, {
-    Name        = "${var.project_name}-${var.environment}-api-target-group"
-    Component   = "TargetGroup"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-  })
-}
+#   tags = merge(var.tags, {
+#     Name        = "${var.project_name}-${var.environment}-api-target-group"
+#     Component   = "TargetGroup"
+#     Environment = var.environment
+#     Project     = var.project_name
+#     ManagedBy   = "Terraform"
+#   })
+# }
 
-# NLB Listener
-resource "aws_lb_listener" "api_backend" {
-  load_balancer_arn = aws_lb.api_nlb.arn
-  port              = var.backend_port
-  protocol          = "TCP"
+# # NLB Listener
+# resource "aws_lb_listener" "api_backend" {
+#   load_balancer_arn = aws_lb.api_nlb.arn
+#   port              = var.backend_port
+#   protocol          = "TCP"
 
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.api_backend.arn
-    # forward {
-    #   target_group {
-    #     arn    = aws_lb_target_group.api_backend.arn
-    #     weight = 0
-    #   }
-    # }
-  }
+#   default_action {
+#     type             = "forward"
+#     target_group_arn = aws_lb_target_group.api_backend.arn
+#     # forward {
+#     #   target_group {
+#     #     arn    = aws_lb_target_group.api_backend.arn
+#     #     weight = 0
+#     #   }
+#     # }
+#   }
 
-  tags = merge(var.tags, {
-    Name        = "${var.project_name}-${var.environment}-api-listener"
-    Component   = "Listener"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-  })
-}
+#   tags = merge(var.tags, {
+#     Name        = "${var.project_name}-${var.environment}-api-listener"
+#     Component   = "Listener"
+#     Environment = var.environment
+#     Project     = var.project_name
+#     ManagedBy   = "Terraform"
+#   })
+# }
 
 # Target Group Attachments for existing instances
 # resource "aws_lb_target_group_attachment" "api_backend" {

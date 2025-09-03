@@ -36,10 +36,9 @@ variable "permit_pdp_port" {
   default     = 7000
 }
 
-variable "nlb_security_group_ids" {
-  description = "List of security group IDs from the Network Load Balancer"
-  type        = list(string)
-  default     = []
+variable "nlb_security_group_id" {
+  description = "Security group ID from the Network Load Balancer"
+  type        = string
 }
 
 variable "tags" {

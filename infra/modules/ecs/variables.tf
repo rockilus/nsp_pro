@@ -33,16 +33,21 @@ variable "private_subnet_ids" {
   type        = list(string)
 }
 
+variable "nlb_arn" {
+  description = "ARN of the Network Load Balancer"
+  type        = string
+}
+
 variable "nlb_security_group_ids" {
   description = "List of security group IDs from the Network Load Balancer"
   type        = list(string)
   default     = []
 }
 
-variable "nlb_target_group_arn" {
-  description = "ARN of the Network Load Balancer target group"
-  type        = string
-}
+# variable "nlb_target_group_arn" {
+#   description = "ARN of the Network Load Balancer target group"
+#   type        = string
+# }
 
 variable "main_service_container_name" {
   description = "Name of the container for the main service"
