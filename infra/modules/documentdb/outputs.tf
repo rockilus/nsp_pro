@@ -72,10 +72,10 @@ output "instance_arns" {
 
 output "cloudwatch_log_group_audit_name" {
   description = "Name of the CloudWatch log group for audit logs"
-  value       = aws_cloudwatch_log_group.docdb_audit.name
+  value       = var.enable_docdb_audit ? aws_cloudwatch_log_group.docdb_audit[0].name : null
 }
 
 output "cloudwatch_log_group_profiler_name" {
   description = "Name of the CloudWatch log group for profiler logs"
-  value       = aws_cloudwatch_log_group.docdb_profiler.name
+  value       = var.enable_docdb_profiler ? aws_cloudwatch_log_group.docdb_profiler[0].name : null
 }

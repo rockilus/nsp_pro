@@ -362,6 +362,37 @@ variable "recovery_window_in_days_documentdb" {
   }
 }
 
+variable "storage_encrypted" {
+  description = "Whether to enable storage encryption for the DocumentDB cluster."
+  type        = bool
+  default     = true
+}
+
+variable "kms_key_id" {
+  description = "KMS key ID for encryption (uses default if not specified)"
+  type        = string
+  default     = null
+}
+
+# Control DocumentDB audit and profiler logging from the environment
+variable "enable_docdb_audit" {
+  description = "Enable audit logs for DocumentDB (environment-level toggle)."
+  type        = bool
+  default     = false
+}
+
+variable "enable_docdb_profiler" {
+  description = "Enable profiler logs for DocumentDB (environment-level toggle)."
+  type        = bool
+  default     = false
+}
+
+variable "profiler_threshold_ms" {
+  description = "Profiler threshold in milliseconds (only used when enable_docdb_profiler = true)."
+  type        = number
+  default     = 100
+}
+
 
 # ECS Configuration Variables
 # Main Service Configuration

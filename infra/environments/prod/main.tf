@@ -230,6 +230,15 @@ module "documentdb" {
   backup_retention_period = var.backup_retention_period
   deletion_protection     = var.deletion_protection
 
+  # KMS encryption
+  storage_encrypted = var.storage_encrypted
+  kms_key_id        = var.kms_key_id
+
+  # DocumentDB logging toggles
+  enable_docdb_audit    = var.enable_docdb_audit
+  enable_docdb_profiler = var.enable_docdb_profiler
+  profiler_threshold_ms = var.profiler_threshold_ms
+
   # Healthcare compliance configuration
   log_retention_days      = var.log_retention_days_documentdb
   replica_region          = var.replica_region_documentdb
