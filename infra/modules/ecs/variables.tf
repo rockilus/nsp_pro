@@ -196,12 +196,6 @@ variable "log_retention_days" {
   default     = 30
 }
 
-variable "permit_api_key" {
-  description = "Permit.io API key for PDP configuration"
-  type        = string
-  sensitive   = true
-}
-
 # Secret ARNs for ECS task definitions
 variable "permit_api_key_secret_arn" {
   description = "ARN of the Permit.io API key secret"

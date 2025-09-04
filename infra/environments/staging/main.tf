@@ -209,12 +209,15 @@ module "security_groups" {
 }
 
 
+
+
+
 # DocumentDB cluster for MongoDB-compatible database
 module "documentdb" {
   source = "../../modules/documentdb"
 
   project_name       = var.project_name
-  environment        = var.environment
+  environment        = "prod"
   vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.private_subnet_ids
   allowed_security_group_ids = [
@@ -223,17 +226,17 @@ module "documentdb" {
   ]
 
   # Production configuration
-  master_username         = var.master_username
-  engine_version          = var.engine_version
-  instance_class          = var.instance_class
-  instance_count          = var.instance_count
-  backup_retention_period = var.backup_retention_period
-  deletion_protection     = var.deletion_protection
+  master_username         = "docdbadmin"
+  engine_version          = "5.0.0"
+  instance_class          = "db.t3.medium"
+  instance_count          = 1
+  backup_retention_period = 30
+  deletion_protection     = true
 
   # Healthcare compliance configuration
-  log_retention_days      = var.log_retention_days_documentdb
-  replica_region          = var.replica_region_documentdb
-  recovery_window_in_days = var.recovery_window_in_days_documentdb
+  log_retention_days      = 90
+  replica_region          = "us-west-2"
+  recovery_window_in_days = 30
 
   tags = {
     Environment = "prod"
@@ -300,6 +303,9 @@ module "ecs" {
   permit_pdp_memory                  = var.permit_pdp_memory
   permit_pdp_cpu_architecture        = var.permit_pdp_cpu_architecture
   permit_pdp_operating_system_family = var.permit_pdp_operating_system_family
+
+  # Permit.io configuration
+  permit_api_key = var.permit_api_key
 
   # Secret ARNs from secrets module
   permit_api_key_secret_arn = module.secrets.permit_api_key_secret_arn
