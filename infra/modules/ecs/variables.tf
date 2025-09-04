@@ -67,6 +67,12 @@ variable "solve_service_ecr_repository_url" {
 
 
 # Main service configuration
+variable "main_service_environment_variables" {
+  description = "Environment variables for the main service"
+  type        = map(string)
+  default     = {}
+}
+
 variable "main_service_desired_count" {
   description = "Desired number of main service tasks"
   type        = number
@@ -105,6 +111,12 @@ variable "main_service_operating_system_family" {
 }
 
 # Solve service configuration
+variable "solve_service_environment_variables" {
+  description = "Environment variables for the solve service"
+  type        = map(string)
+  default     = {}
+}
+
 variable "solve_service_desired_count" {
   description = "Desired number of solve service tasks"
   type        = number
@@ -202,18 +214,6 @@ variable "documentdb_secret_arn" {
   description = "ARN of the DocumentDB credentials secret"
   type        = string
   default     = ""
-}
-
-variable "main_service_environment_variables" {
-  description = "Environment variables for the main service"
-  type        = map(string)
-  default     = {}
-}
-
-variable "solve_service_environment_variables" {
-  description = "Environment variables for the solve service"
-  type        = map(string)
-  default     = {}
 }
 
 variable "main_service_security_group_id" {

@@ -264,6 +264,13 @@ variable "cloudfront_price_class" {
 
 # ECS Configuration Variables
 # Main Service Configuration
+variable "main_service_environment_variables" {
+  description = "Environment variables for the main service"
+  type        = map(string)
+  default     = {}
+}
+
+
 variable "main_service_desired_count" {
   description = "Desired number of main service tasks"
   type        = number
@@ -343,6 +350,12 @@ variable "main_service_container_name" {
 }
 
 # Solve Service Configuration
+variable "solve_service_environment_variables" {
+  description = "Environment variables for the solve service"
+  type        = map(string)
+  default     = {}
+}
+
 variable "solve_service_desired_count" {
   description = "Desired number of solve service tasks"
   type        = number
@@ -471,18 +484,4 @@ variable "permit_pdp_operating_system_family" {
     condition     = contains(["LINUX", "WINDOWS"], var.permit_pdp_operating_system_family)
     error_message = "Permit PDP operating system family must be either 'LINUX' or 'WINDOWS' for compatibility."
   }
-}
-
-
-
-variable "main_service_environment_variables" {
-  description = "Environment variables for the main service"
-  type        = map(string)
-  default     = {}
-}
-
-variable "solve_service_environment_variables" {
-  description = "Environment variables for the solve service"
-  type        = map(string)
-  default     = {}
 }

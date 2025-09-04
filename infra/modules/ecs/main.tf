@@ -1,7 +1,7 @@
 # ECS Cluster
 resource "aws_ecs_cluster" "main" {
-  name = "rockilus-dev-architecture-jun2025"
-  # name = "${var.project_name}-${var.environment}-cluster"
+  # name = "rockilus-dev-architecture-jun2025"
+  name = "${var.project_name}-${var.environment}-cluster"
 
   # configuration {
   #   execute_command_configuration {
@@ -192,11 +192,9 @@ resource "aws_iam_role" "ecs_service_role" {
 
 # Service Discovery Namespace
 resource "aws_service_discovery_private_dns_namespace" "main" {
-  name        = "rockilus-namespace-jun2025"
-  description = "Rockilus namespace June 2025 architecture"
-  # name        = "${var.project_name}-${var.environment}.local"
-  # description = "Service discovery namespace for ${var.project_name} ${var.environment}"
-  vpc = var.vpc_id
+  name        = "${var.project_name}-${var.environment}-namespace"
+  description = "Service discovery namespace for ${var.project_name} ${var.environment}"
+  vpc         = var.vpc_id
 
   # tags = merge(var.tags, {
   #   Name        = "${var.project_name}-${var.environment}-namespace"
@@ -208,63 +206,68 @@ resource "aws_service_discovery_private_dns_namespace" "main" {
 }
 
 # Service Discovery Service for Main Service
-resource "aws_service_discovery_service" "main_service" {
-  name = "main-service-backend"
-  # name = "main-service"
-  description = "Managed by arn:aws:ecs:eu-west-3:590183915149:service/rockilus-dev-architecture-jun2025/main-service"
-  type        = "HTTP"
+# resource "aws_service_discovery_service" "main_service" {
+#   name = "main-service-backend"
+#   # name = "main-service"
+#   description = "Managed by arn:aws:ecs:eu-west-3:590183915149:service/rockilus-dev-architecture-jun2025/main-service"
+#   type        = "HTTP"
 
-  # dns_config {
-  #   namespace_id = aws_service_discovery_private_dns_namespace.main.id
+#   namespace_id = aws_service_discovery_private_dns_namespace.main.id
 
-  #   dns_records {
-  #     ttl  = 10
-  #     type = "A"
-  #   }
 
-  #   routing_policy = "MULTIVALUE"
-  # }
+#   # dns_config {
+#   #   namespace_id = aws_service_discovery_private_dns_namespace.main.id
 
-  tags = merge(
-    # var.tags,
-    {
-      AmazonECSManaged = "true"
-      # Name        = "${var.project_name}-${var.environment}-main-service-discovery"
-      # Component   = "ServiceDiscovery"
-      # Environment = var.environment
-      # Project     = var.project_name
-      # ManagedBy   = "Terraform"
-      # Service     = "MainService"
-  })
-}
+#   #   dns_records {
+#   #     ttl  = 10
+#   #     type = "A"
+#   #   }
+
+#   #   routing_policy = "MULTIVALUE"
+#   # }
+
+#   tags = merge(
+#     # var.tags,
+#     {
+#       AmazonECSManaged = "true"
+#       # Name        = "${var.project_name}-${var.environment}-main-service-discovery"
+#       # Component   = "ServiceDiscovery"
+#       # Environment = var.environment
+#       # Project     = var.project_name
+#       # ManagedBy   = "Terraform"
+#       # Service     = "MainService"
+#   })
+# }
 
 # Service Discovery Service for Permit PDP
-resource "aws_service_discovery_service" "permit_pdp" {
-  name = "permit-pdp-service"
-  # name = "permit-pdp"
-  description = "Managed by arn:aws:ecs:eu-west-3:590183915149:service/rockilus-dev-architecture-jun2025/permit-pdp"
-  type        = "HTTP"
+# resource "aws_service_discovery_service" "permit_pdp" {
+#   name = "permit-pdp-service"
+#   # name = "permit-pdp"
+#   description = "Managed by arn:aws:ecs:eu-west-3:590183915149:service/rockilus-dev-architecture-jun2025/permit-pdp"
+#   type        = "HTTP"
 
-  # dns_config {
-  #   namespace_id = aws_service_discovery_private_dns_namespace.main.id
+#   namespace_id = aws_service_discovery_private_dns_namespace.main.id
 
-  #   dns_records {
-  #     ttl  = 10
-  #     type = "A"
-  #   }
+#   # dns_config {
+#   #   namespace_id = aws_service_discovery_private_dns_namespace.main.id
 
-  #   routing_policy = "MULTIVALUE"
-  # }
+#   #   dns_records {
+#   #     ttl  = 10
+#   #     type = "A"
+#   #   }
 
-  tags = merge(
-    # var.tags,
-    {
-      AmazonECSManaged = "true"
-      # Name        = "${var.project_name}-${var.environment}-permit-pdp-discovery"
-      # Component   = "ServiceDiscovery"
-      # Environment = var.environment
-      # Project     = var.project_name
-      # ManagedBy   = "Terraform"
-      # Service     = "PermitPDP"
-  })
-}
+#   #   routing_policy = "MULTIVALUE"
+#   # }
+
+#   tags = merge(
+#     # var.tags,
+#     {
+#       AmazonECSManaged = "true"
+#       # Name        = "${var.project_name}-${var.environment}-permit-pdp-discovery"
+#       # Component   = "ServiceDiscovery"
+#       # Environment = var.environment
+#       # Project     = var.project_name
+#       # ManagedBy   = "Terraform"
+#       # Service     = "PermitPDP"
+#   })
+# }

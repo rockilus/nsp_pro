@@ -5,10 +5,19 @@ resource "aws_security_group" "main_service" {
   vpc_id      = var.vpc_id
 
   # HTTPS ingress
+  # ingress {
+  #   description = "HTTPS traffic"
+  #   from_port   = 443
+  #   to_port     = 443
+  #   protocol    = "tcp"
+  #   cidr_blocks = ["0.0.0.0/0"]
+  # }
+
+  # HTTP ingress
   ingress {
-    description = "HTTPS traffic"
-    from_port   = 443
-    to_port     = 443
+    description = "HTTP traffic"
+    from_port   = 4000
+    to_port     = 4000
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }

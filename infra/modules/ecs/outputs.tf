@@ -68,15 +68,15 @@ output "service_discovery_namespace_name" {
   value       = aws_service_discovery_private_dns_namespace.main.name
 }
 
-output "main_service_discovery_service_id" {
-  description = "ID of the main service discovery service"
-  value       = aws_service_discovery_service.main_service.id
-}
+# output "main_service_discovery_service_id" {
+#   description = "ID of the main service discovery service"
+#   value       = aws_service_discovery_service.main_service.id
+# }
 
-output "permit_pdp_discovery_service_id" {
-  description = "ID of the Permit PDP service discovery service"
-  value       = aws_service_discovery_service.permit_pdp.id
-}
+# output "permit_pdp_discovery_service_id" {
+#   description = "ID of the Permit PDP service discovery service"
+#   value       = aws_service_discovery_service.permit_pdp.id
+# }
 
 # CloudWatch Log Group Outputs
 output "main_service_log_group_name" {

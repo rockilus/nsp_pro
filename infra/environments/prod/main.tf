@@ -277,6 +277,7 @@ module "ecs" {
 
   # Service configuration
   # Main service
+  main_service_environment_variables   = var.main_service_environment_variables
   main_service_desired_count           = var.main_service_desired_count
   main_service_port                    = var.main_service_port
   main_service_cpu                     = var.main_service_cpu
@@ -287,6 +288,7 @@ module "ecs" {
 
 
   # Solve service
+  solve_service_environment_variables   = var.solve_service_environment_variables
   solve_service_desired_count           = var.solve_service_desired_count
   solve_service_port                    = var.solve_service_port
   solve_service_cpu                     = var.solve_service_cpu
@@ -309,9 +311,6 @@ module "ecs" {
   permit_api_key_secret_arn = module.secrets.permit_api_key_secret_arn
   documentdb_secret_arn     = module.documentdb.credentials_secret_arn
 
-  # Environment variables
-  main_service_environment_variables  = var.main_service_environment_variables
-  solve_service_environment_variables = var.solve_service_environment_variables
 
   tags = {
     Environment = "prod"
