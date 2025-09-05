@@ -14,9 +14,8 @@ variable "aws_region" {
 }
 
 variable "domain_name" {
-  description = "Domain name for the frontend (optional, for custom domain setup)"
+  description = "Domain name for the frontend"
   type        = string
-  default     = null
 }
 
 variable "certificate_arn" {
@@ -32,9 +31,8 @@ variable "cloudfront_certificate_arn" {
 }
 
 variable "route53_zone_id" {
-  description = "Route53 hosted zone ID (required if domain_name is provided)"
+  description = "Route53 hosted zone ID"
   type        = string
-  default     = null
 }
 
 variable "api_gateway_domain" {
