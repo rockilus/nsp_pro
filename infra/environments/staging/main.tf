@@ -40,11 +40,12 @@ module "cognito" {
   environment  = var.environment
   aws_region   = var.aws_region
 
-  api_gateway_url           = "https://${var.api_gateway_domain_name}"
-  api_gateway_ssm_parameter = module.api_gateway.backend_api_key_parameter
-  frontend_domain_name      = var.frontend_domain_name
-  landing_page_domain_name  = var.landing_page_domain_name
-  cognito_domain_prefix     = var.cognito_domain_prefix
+  api_gateway_url             = "https://${var.api_gateway_domain_name}"
+  api_gateway_ssm_parameter   = module.api_gateway.backend_api_key_parameter
+  frontend_domain_name        = var.frontend_domain_name
+  landing_page_domain_name    = var.landing_page_domain_name
+  cognito_domain_prefix       = var.cognito_domain_prefix
+  deletion_protection_cognito = var.deletion_protection_cognito
 }
 
 # AWS Secrets Manager for sensitive configuration
@@ -111,11 +112,12 @@ module "network_load_balancer" {
   project_name = var.project_name
   environment  = var.environment
 
-  vpc_id              = module.vpc.vpc_id
-  private_subnet_ids  = module.vpc.private_subnet_ids
-  backend_port        = var.backend_port
-  allowed_cidr_blocks = [module.vpc.vpc_cidr_block]
-  vpc_cidr_blocks     = [module.vpc.vpc_cidr_block]
+  vpc_id                  = module.vpc.vpc_id
+  private_subnet_ids      = module.vpc.private_subnet_ids
+  backend_port            = var.backend_port
+  allowed_cidr_blocks     = [module.vpc.vpc_cidr_block]
+  vpc_cidr_blocks         = [module.vpc.vpc_cidr_block]
+  deletion_protection_nlb = var.deletion_protection_nlb
 
   tags = {
     Environment = var.environment
