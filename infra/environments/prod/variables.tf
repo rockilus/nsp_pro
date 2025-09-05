@@ -91,6 +91,17 @@ variable "landing_page_domain_name" {
   }
 }
 
+variable "deletion_protection_cognito" {
+  description = "Enable deletion protection for the Cognito User Pool"
+  type        = string
+  default     = "ACTIVE"
+
+  validation {
+    condition     = contains(["ACTIVE", "INACTIVE"], var.deletion_protection_cognito)
+    error_message = "Deletion protection must be either 'ACTIVE' or 'INACTIVE'."
+  }
+}
+
 # Secrets Configuration Variables
 variable "permit_api_key" {
   description = "Permit.io API key for PDP configuration"
@@ -191,6 +202,13 @@ variable "backend_port" {
     condition     = (var.solve_service_port == 80) || (var.backend_port > 1024 && var.backend_port < 65536)
     error_message = "Backend port must be 80 or between 1024 and 65535 for security compliance."
   }
+}
+
+variable "deletion_protection_nlb" {
+  description = "Enable deletion protection for the Network Load Balancer"
+  type        = bool
+  default     = false
+
 }
 
 # API Gateway Configuration

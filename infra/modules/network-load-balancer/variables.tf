@@ -41,3 +41,9 @@ variable "tags" {
   default     = {}
 }
 
+variable "deletion_protection_nlb" {
+  description = "Enable deletion protection for the Network Load Balancer"
+  type        = bool
+  default     = false
+
+}

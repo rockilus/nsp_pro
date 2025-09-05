@@ -84,7 +84,7 @@ resource "aws_cognito_user_pool" "main" {
     Project     = var.project_name
   }
 
-  deletion_protection = "ACTIVE"
+  deletion_protection = var.deletion_protection_cognito
   user_pool_tier      = "ESSENTIALS"
 
   admin_create_user_config {

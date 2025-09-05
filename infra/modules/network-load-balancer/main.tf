@@ -18,7 +18,7 @@ resource "aws_lb" "api_nlb" {
 
   # Healthcare compliance - enable deletion protection in production
   # enable_deletion_protection = var.environment == "prod" ? true : false
-  enable_deletion_protection = false
+  enable_deletion_protection = var.deletion_protection_nlb
 
   # Cross-zone load balancing for high availability
   enable_cross_zone_load_balancing = false
