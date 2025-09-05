@@ -95,7 +95,8 @@ resource "aws_acm_certificate" "cloudfront" {
   provider                  = aws.us_east_1
   domain_name               = var.domain_name
   subject_alternative_names = var.certificate_subject_alternative_names
-  validation_method         = "DNS"
+  # subject_alternative_names = var.frontend_domain_name
+  validation_method = "DNS"
 
   # Certificate transparency logging for security compliance
   options {

@@ -1,6 +1,5 @@
 # ECS Cluster
 resource "aws_ecs_cluster" "main" {
-  # name = "rockilus-dev-architecture-jun2025"
   name = "${var.project_name}-${var.environment}-cluster"
 
   # configuration {
@@ -45,8 +44,7 @@ resource "aws_ecs_cluster" "main" {
 
 # CloudWatch Log Groups for Services
 resource "aws_cloudwatch_log_group" "main_service" {
-  name = "/ecs/nsp_pro-backend-task"
-  # name              = "/aws/ecs/${var.project_name}-${var.environment}-main-service"
+  name              = "/aws/ecs/${var.project_name}-${var.environment}-main-service"
   retention_in_days = 0
   # retention_in_days = var.log_retention_days
   log_group_class = "STANDARD"
@@ -62,8 +60,7 @@ resource "aws_cloudwatch_log_group" "main_service" {
 }
 
 resource "aws_cloudwatch_log_group" "solve_service" {
-  name = "/ecs/backend-solve-service-task"
-  # name              = "/aws/ecs/${var.project_name}-${var.environment}-solve-service"
+  name              = "/aws/ecs/${var.project_name}-${var.environment}-solve-service"
   retention_in_days = 0
   # retention_in_days = var.log_retention_days
   log_group_class = "STANDARD"
@@ -79,8 +76,7 @@ resource "aws_cloudwatch_log_group" "solve_service" {
 }
 
 resource "aws_cloudwatch_log_group" "permit_pdp" {
-  name = "/ecs/backend-permit-pdp-task"
-  # name              = "/aws/ecs/${var.project_name}-${var.environment}-permit-pdp"
+  name              = "/aws/ecs/${var.project_name}-${var.environment}-permit-pdp"
   retention_in_days = 0
   # retention_in_days = var.log_retention_days
   log_group_class = "STANDARD"
@@ -97,8 +93,7 @@ resource "aws_cloudwatch_log_group" "permit_pdp" {
 
 # IAM Task Execution Role
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "nsp_pro-ecs-task-role"
-  # name = "${var.project_name}-${var.environment}-ecs-task-execution-role"
+  name        = "${var.project_name}-${var.environment}-ecs-task-execution-role"
   description = "Allows ECS tasks to call AWS services on your behalf."
 
   assume_role_policy = jsonencode({
@@ -162,33 +157,38 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
 # }
 
 # IAM Role for ECS Service
-resource "aws_iam_role" "ecs_service_role" {
-  name        = "AWSServiceRoleForECS"
-  description = "Role to enable Amazon ECS to manage your cluster."
-  path        = "/aws-service-role/ecs.amazonaws.com/"
+# resource "aws_iam_role" "ecs_service_role" {
+#   name        = "${var.project_name}-${var.environment}-ecs-service-role"
+#   description = "Role to enable Amazon ECS to manage your cluster."
+#   # path        = "/aws-service-role/ecs.amazonaws.com/"
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ecs.amazonaws.com"
-        }
-      }
-    ]
-  })
+#   assume_role_policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Action = "sts:AssumeRole"
+#         Effect = "Allow"
+#         Principal = {
+#           Service = "ecs.amazonaws.com"
+#         }
+#       }
+#     ]
+#   })
 
-  # tags = merge(var.tags, {
-  #   Name        = "${var.project_name}-${var.environment}-ecs-service-role"
-  #   Component   = "IAM"
-  #   Environment = var.environment
-  #   Project     = var.project_name
-  #   ManagedBy   = "Terraform"
-  #   Purpose     = "ECSServiceRole"
-  # })
-}
+#   tags = merge(var.tags, {
+#     Name        = "${var.project_name}-${var.environment}-ecs-service-role"
+#     Component   = "IAM"
+#     Environment = var.environment
+#     Project     = var.project_name
+#     ManagedBy   = "Terraform"
+#     Purpose     = "ECSServiceRole"
+#   })
+# }
+
+# resource "aws_iam_role_policy_attachment" "ecs_service_role_attachment" {
+#   role       = aws_iam_role.ecs_service_role.name
+#   policy_arn = "arn:aws:iam::aws:policy/aws-service-role/AmazonECSServiceRolePolicy"
+# }
 
 # Service Discovery Namespace
 resource "aws_service_discovery_private_dns_namespace" "main" {

@@ -247,7 +247,7 @@ module "documentdb" {
   recovery_window_in_days = var.recovery_window_in_days_documentdb
 
   tags = {
-    Environment = "prod"
+    Environment = var.environment
     Owner       = "DevOps Team"
     Compliance  = "Healthcare"
     Project     = "NSP Pro"
@@ -262,7 +262,7 @@ module "ecs" {
   source = "../../modules/ecs"
 
   project_name   = var.project_name
-  environment    = "prod"
+  environment    = var.environment
   aws_region     = var.aws_region
   aws_account_id = var.aws_account_id
 
@@ -318,7 +318,7 @@ module "ecs" {
 
 
   tags = {
-    Environment = "prod"
+    Environment = var.environment
     Owner       = "DevOps Team"
     Compliance  = "Healthcare"
     Project     = "NSP Pro"

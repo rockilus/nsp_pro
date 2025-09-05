@@ -84,7 +84,8 @@ module "route53" {
   project_name = var.project_name
   environment  = var.environment
 
-  domain_name = var.hosted_zone_domain # Use hosted zone domain, not frontend domain
+  domain_name          = var.hosted_zone_domain # Use hosted zone domain, not frontend domain
+  frontend_domain_name = var.frontend_domain_name
 
   # Security enhancements for healthcare compliance
   enable_dnssec                           = var.enable_dnssec
@@ -247,7 +248,7 @@ module "documentdb" {
   recovery_window_in_days = var.recovery_window_in_days_documentdb
 
   tags = {
-    Environment = "prod"
+    Environment = var.environment
     Owner       = "DevOps Team"
     Compliance  = "Healthcare"
     Project     = "NSP Pro"
@@ -262,7 +263,7 @@ module "ecs" {
   source = "../../modules/ecs"
 
   project_name   = var.project_name
-  environment    = "prod"
+  environment    = var.environment
   aws_region     = var.aws_region
   aws_account_id = var.aws_account_id
 
@@ -318,7 +319,7 @@ module "ecs" {
 
 
   tags = {
-    Environment = "prod"
+    Environment = var.environment
     Owner       = "DevOps Team"
     Compliance  = "Healthcare"
     Project     = "NSP Pro"

@@ -18,6 +18,16 @@ variable "domain_name" {
   }
 }
 
+variable "frontend_domain_name" {
+  description = "Frontend domain name for the application (e.g., app.example.com)"
+  type        = string
+
+  validation {
+    condition     = can(regex("^[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]$", var.frontend_domain_name))
+    error_message = "Frontend domain name must be a valid DNS domain."
+  }
+}
+
 variable "enable_dnssec" {
   description = "Enable DNSSEC for enhanced security"
   type        = bool
