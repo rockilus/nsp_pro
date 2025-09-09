@@ -202,6 +202,8 @@ class ShiftDemandNewService(BaseService):
     ) -> Tuple[List[ShiftDemandNew], List[ShiftDemandNew]]:
         """
         Bulk upsert (create or update) shift demands.
+        Filters out demands with count=0 for creation and deletes existing
+        demands if their count is updated to 0.
 
         Args:
             shift_demands: List of shift demands to upsert
@@ -212,15 +214,28 @@ class ShiftDemandNewService(BaseService):
         if not shift_demands:
             return [], []
 
+        # Filter out zero-count demands from creation list
+        nonzero_demands = [d for d in shift_demands if d.count > 0]
+        zero_demands = [d for d in shift_demands if d.count <= 0]
+
+        # For each zero-count demand that has an ID, delete it
+        for demand in zero_demands:
+            if demand.id:
+                self.delete_shift_demand(demand.id)
+
+        # If no nonzero demands left, return empty results
+        if not nonzero_demands:
+            return [], []
+
         # Validate all demands belong to the same team
-        team_ids = {demand.team_id for demand in shift_demands}
+        team_ids = {demand.team_id for demand in nonzero_demands}
         if len(team_ids) > 1:
             raise ValueError("All demands must belong to the same team")
 
         team_id = next(iter(team_ids))
 
         # Validate all shifts exist and belong to the team
-        shift_ids = {demand.shift_id for demand in shift_demands}
+        shift_ids = {demand.shift_id for demand in nonzero_demands}
         shifts = self.collection.shift_db.get_shifts_by_ids(list(shift_ids))
 
         if len(shifts) != len(shift_ids):
@@ -237,13 +252,13 @@ class ShiftDemandNewService(BaseService):
 
         # Prepare demands with timestamps
         now = datetime.now(timezone.utc)
-        for demand in shift_demands:
+        for demand in nonzero_demands:
             if not demand.id:  # New demand
                 demand.created_at = now
             demand.updated_at = now
 
         return self.collection.shift_demand_new_db.bulk_upsert_shift_demands(
-            shift_demands
+            nonzero_demands
         )
 
     # pylint: disable=too-many-arguments, too-many-positional-arguments, too-many-locals

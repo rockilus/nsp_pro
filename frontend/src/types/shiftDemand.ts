@@ -128,7 +128,7 @@ export interface UseShiftDemandMutationsResult {
     mutateAsync: (params: {
       demandId: string;
       demand: ShiftDemandUpdateDTO;
-    }) => Promise<ShiftDemandDTO>;
+    }) => Promise<ShiftDemandDTO | null>;
     isLoading: boolean;
     error: Error | null;
   };
