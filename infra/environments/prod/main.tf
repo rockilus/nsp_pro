@@ -84,7 +84,8 @@ module "route53" {
   project_name = var.project_name
   environment  = var.environment
 
-  domain_name = var.hosted_zone_domain # Use hosted zone domain, not frontend domain
+  domain_name          = var.hosted_zone_domain # Use hosted zone domain, not frontend domain
+  frontend_domain_name = var.frontend_domain_name
 
   # Security enhancements for healthcare compliance
   enable_dnssec                           = var.enable_dnssec
@@ -96,6 +97,9 @@ module "route53" {
 
   # SSL certificate with wildcard support for all NSP Pro subdomains
   certificate_subject_alternative_names = var.certificate_subject_alternative_names
+
+  staging_subdomain    = var.staging_subdomain
+  staging_name_servers = var.staging_name_servers
 
   tags = {
     Environment = var.environment

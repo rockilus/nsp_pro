@@ -63,3 +63,15 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "staging_subdomain" {
+  description = "Subdomain for staging environment (e.g., staging.example.com)"
+  type        = string
+  default     = null
+}
+
+variable "staging_name_servers" {
+  description = "Name servers for the staging subdomain delegation"
+  type        = list(string)
+  default     = []
+}

@@ -192,6 +192,17 @@ variable "certificate_subject_alternative_names" {
   }
 }
 
+variable "staging_subdomain" {
+  description = "Subdomain for staging environment (e.g., staging.example.com)"
+  type        = string
+}
+
+variable "staging_name_servers" {
+  description = "Name servers for the staging subdomain delegation"
+  type        = list(string)
+}
+
+
 # Network Load Balancer Configuration
 variable "backend_port" {
   description = "Port for backend API services"

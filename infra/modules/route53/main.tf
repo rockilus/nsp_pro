@@ -33,6 +33,17 @@ resource "aws_route53_zone" "main" {
   })
 }
 
+# NS Delegation record in parent zone (if parent zone ID is provided)
+resource "aws_route53_record" "ns_delegation" {
+  count = var.environment == "prod" ? 1 : 0
+
+  zone_id = aws_route53_zone.main.id
+  name    = var.staging_subdomain
+  type    = "NS"
+  ttl     = 300
+  records = var.staging_name_servers
+}
+
 # DNSSEC Signing (for enhanced security)
 # resource "aws_route53_hosted_zone_dnssec" "main" {
 #   count = var.enable_dnssec ? 1 : 0
