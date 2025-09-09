@@ -1,7 +1,7 @@
 from datetime import date
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from shared.logger import log_info
 from shared.schemas.core import ShiftDemandNew, ShiftDemandSource
 from shared.schemas.dto import (
@@ -178,7 +178,7 @@ async def update_shift_demand(
     demand_dto: ShiftDemandNewUpdateDTO,
     user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
-) -> Optional[ShiftDemandNewDTO]:
+) -> Union[ShiftDemandNewDTO, Response]:
     """Update an existing shift demand."""
     try:
         user_id = user_context.user_id
@@ -236,7 +236,12 @@ async def update_shift_demand(
         updated_demand = service.update_shift_demand(existing_demand)
 
         log_info(f"Updated shift demand {demand_id} for team {team_id}")
-        return updated_demand.to_dto() if updated_demand else None
+
+        # If demand was deleted due to zero count, return 204 No Content
+        if updated_demand is None:
+            return Response(status_code=204)
+
+        return updated_demand.to_dto()
 
     except NotAuthorizedError:
         raise
