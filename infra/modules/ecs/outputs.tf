@@ -47,15 +47,15 @@ output "permit_pdp_service_id" {
 }
 
 # IAM Role Outputs
-output "ecs_task_execution_role_arn" {
-  description = "ARN of the ECS task execution role"
-  value       = aws_iam_role.ecs_task_execution_role.arn
-}
+# output "ecs_task_execution_role_arn" {
+#   description = "ARN of the ECS task execution role"
+#   value       = aws_iam_role.ecs_task_execution_role.arn
+# }
 
-output "ecs_task_execution_role_name" {
-  description = "Name of the ECS task execution role"
-  value       = aws_iam_role.ecs_task_execution_role.name
-}
+# output "ecs_task_execution_role_name" {
+#   description = "Name of the ECS task execution role"
+#   value       = aws_iam_role.ecs_task_execution_role.name
+# }
 
 # Service Discovery Outputs
 output "service_discovery_namespace_id" {
@@ -116,7 +116,6 @@ output "ecs_deployment_info" {
     main_service_service_name        = aws_ecs_service.main_service.name
     solve_service_service_name       = aws_ecs_service.solve_service.name
     permit_pdp_service_name          = aws_ecs_service.permit_pdp.name
-    execution_role_arn               = aws_iam_role.ecs_task_execution_role.arn
     service_discovery_namespace_name = aws_service_discovery_private_dns_namespace.main.name
   }
   sensitive = false

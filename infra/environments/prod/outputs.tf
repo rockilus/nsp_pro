@@ -233,7 +233,7 @@ output "ecs_service_discovery_namespace" {
 
 output "ecs_task_execution_role_arn" {
   description = "ARN of the ECS task execution role"
-  value       = module.ecs.ecs_task_execution_role_arn
+  value       = module.iam.ecs_task_execution_role_arn
 }
 
 output "ecs_deployment_info" {

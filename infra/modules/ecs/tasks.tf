@@ -9,8 +9,8 @@ resource "aws_ecs_task_definition" "main_service" {
   network_mode             = "awsvpc"
   cpu                      = var.main_service_cpu
   memory                   = var.main_service_memory
-  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
-  task_role_arn            = aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn       = var.task_execution_role_arn
+  task_role_arn            = var.task_execution_role_arn
   enable_fault_injection   = false
 
   container_definitions = jsonencode([
@@ -101,8 +101,8 @@ resource "aws_ecs_task_definition" "solve_service" {
   network_mode             = "awsvpc"
   cpu                      = var.solve_service_cpu
   memory                   = var.solve_service_memory
-  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
-  task_role_arn            = aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn       = var.task_execution_role_arn
+  task_role_arn            = var.task_execution_role_arn
   enable_fault_injection   = false
 
   container_definitions = jsonencode([
@@ -188,8 +188,8 @@ resource "aws_ecs_task_definition" "permit_pdp" {
   network_mode             = "awsvpc"
   cpu                      = var.permit_pdp_cpu
   memory                   = var.permit_pdp_memory
-  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
-  task_role_arn            = aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn       = var.task_execution_role_arn
+  task_role_arn            = var.task_execution_role_arn
   enable_fault_injection   = false
 
   container_definitions = jsonencode([
@@ -436,7 +436,6 @@ resource "aws_ecs_service" "main_service" {
   # })
 
   depends_on = [
-    aws_iam_role_policy_attachment.ecs_task_execution_role_policy,
     aws_lb_target_group.api_backend,
     aws_service_discovery_private_dns_namespace.main,
     # aws_service_discovery_service.main_service
@@ -503,7 +502,6 @@ resource "aws_ecs_service" "solve_service" {
   #   Service     = "SolveService"
   # })
 
-  depends_on = [aws_iam_role_policy_attachment.ecs_task_execution_role_policy]
 }
 
 # Permit PDP ECS Service
@@ -595,7 +593,6 @@ resource "aws_ecs_service" "permit_pdp" {
   # })
 
   depends_on = [
-    aws_iam_role_policy_attachment.ecs_task_execution_role_policy,
     aws_service_discovery_private_dns_namespace.main,
     # aws_service_discovery_service.permit_pdp
   ]

@@ -44,6 +44,17 @@ variable "nlb_security_group_ids" {
   default     = []
 }
 
+# IAM Role ARNs
+variable "task_execution_role_arn" {
+  description = "ARN of the ECS task execution IAM role"
+  type        = string
+}
+
+# variable "task_role_arn" {
+#   description = "ARN of the ECS task IAM role"
+#   type        = string
+# }
+
 # variable "nlb_target_group_arn" {
 #   description = "ARN of the Network Load Balancer target group"
 #   type        = string

@@ -91,44 +91,14 @@ resource "aws_cloudwatch_log_group" "permit_pdp" {
   # })
 }
 
-# IAM Task Execution Role
-resource "aws_iam_role" "ecs_task_execution_role" {
-  name        = "${var.project_name}-${var.environment}-ecs-task-execution-role"
-  description = "Allows ECS tasks to call AWS services on your behalf."
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ecs-tasks.amazonaws.com"
-        }
-      }
-    ]
-  })
-
-  # tags = merge(var.tags, {
-  #   Name        = "${var.project_name}-${var.environment}-ecs-task-execution-role"
-  #   Component   = "IAM"
-  #   Environment = var.environment
-  #   Project     = var.project_name
-  #   ManagedBy   = "Terraform"
-  #   Purpose     = "ECSTaskExecution"
-  # })
-}
-
-# Attach the Amazon ECS task execution role policy
-resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
-  role       = aws_iam_role.ecs_task_execution_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-}
+# IAM Role references
+# Using task_execution_role_arn and task_role_arn from the IAM module
 
 # Additional policy for ECR access
 # resource "aws_iam_role_policy" "ecs_task_execution_ecr_policy" {
 #   name = "${var.project_name}-${var.environment}-ecs-ecr-policy"
-#   role = aws_iam_role.ecs_task_execution_role.id
+#   # Use the task execution role name from the IAM module
+#   # role = var.task_execution_role_name
 
 #   policy = jsonencode({
 #     Version = "2012-10-17"

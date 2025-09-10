@@ -78,6 +78,19 @@ variable "log_retention_days" {
   }
 }
 
+# IAM Role ARNs
+# variable "task_role_arn" {
+#   description = "ARN of the ECS task role that needs access to secrets"
+#   type        = string
+#   default     = ""
+# }
+
+variable "task_execution_role_arn" {
+  description = "ARN of the ECS task execution role"
+  type        = string
+  default     = ""
+}
+
 # Tags
 variable "tags" {
   description = "A map of tags to assign to the resources"

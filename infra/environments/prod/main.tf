@@ -48,6 +48,26 @@ module "cognito" {
   deletion_protection_cognito = var.deletion_protection_cognito
 }
 
+# IAM roles and policies module
+module "iam" {
+  source = "../../modules/iam"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  # Pass secret ARNs after they're created
+  # secret_arns = module.secrets.all_secret_arns
+
+  tags = {
+    Environment = var.environment
+    Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
+    Project     = "NSP Pro"
+  }
+
+  depends_on = []
+}
+
 # AWS Secrets Manager for sensitive configuration
 module "secrets" {
   source = "../../modules/secrets"
@@ -57,7 +77,8 @@ module "secrets" {
   aws_region   = var.aws_region
 
   # Secret values
-  permit_api_key = var.permit_api_key
+  permit_api_key          = var.permit_api_key
+  task_execution_role_arn = module.iam.ecs_task_execution_role_arn
 
   # Healthcare compliance configuration
   replica_region          = var.replica_region
@@ -70,6 +91,8 @@ module "secrets" {
     Compliance  = "Healthcare"
     Project     = "NSP Pro"
   }
+
+  depends_on = [module.iam]
 }
 
 
@@ -270,6 +293,10 @@ module "ecs" {
   aws_region     = var.aws_region
   aws_account_id = var.aws_account_id
 
+  # IAM role ARNs from the IAM module
+  task_execution_role_arn = module.iam.ecs_task_execution_role_arn
+  # task_role_arn           = module.iam.ecs_task_role_arn
+
   # VPC and network configuration
   vpc_id                 = module.vpc.vpc_id
   vpc_cidr_block         = module.vpc.vpc_cidr_block
@@ -328,7 +355,15 @@ module "ecs" {
     Project     = "NSP Pro"
   }
 
-  depends_on = [module.vpc, module.ecr, module.network_load_balancer, module.secrets, module.documentdb, module.security_groups]
+  depends_on = [
+    module.vpc,
+    module.ecr,
+    module.network_load_balancer,
+    module.iam,
+    module.secrets,
+    module.documentdb,
+    module.security_groups
+  ]
 }
 
 

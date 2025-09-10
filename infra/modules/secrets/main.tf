@@ -9,14 +9,32 @@ terraform {
   }
 }
 
+# Data source to get the current account ID
+data "aws_caller_identity" "current" {}
+
 # Permit.io API Key Secret
 resource "aws_secretsmanager_secret" "permit_api_key" {
-  name        = "nsp_pro/permit_api_key"
-  description = "Permit.io api key"
-  #   name        = "${var.project_name}-${var.environment}-permit-api-key"
-  #   description             = "Permit.io API key for authorization service in ${var.environment} environment"
+  # name        = "nsp_pro/permit_api_key"
+  # description = "Permit.io api key"
+  name                           = "${var.project_name}-${var.environment}-permit-api-key"
+  description                    = "Permit.io API key for authorization service in ${var.environment} environment"
   recovery_window_in_days        = var.recovery_window_in_days
   force_overwrite_replica_secret = false
+
+  # Reference the IAM role from var.task_execution_role_arn if provided
+  policy = var.task_execution_role_arn != "" ? jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "secretsmanager:GetSecretValue"
+        Effect = "Allow"
+        Principal = {
+          AWS = var.task_execution_role_arn
+        }
+        Resource = "arn:aws:secretsmanager:${var.aws_region}:${data.aws_caller_identity.current.account_id}:secret:nsp_pro/permit_api_key-*"
+      },
+    ]
+  }) : null
 
 
   # Healthcare compliance and security configurations
