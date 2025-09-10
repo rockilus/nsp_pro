@@ -646,3 +646,39 @@ variable "permit_pdp_operating_system_family" {
     error_message = "Permit PDP operating system family must be either 'LINUX' or 'WINDOWS' for compatibility."
   }
 }
+
+
+# SQS Configuration
+variable "sqs_visibility_timeout" {
+  description = "Visibility timeout for SQS queue messages in seconds"
+  type        = number
+  default     = 300 # 5 minutes, adjust based on how long solve tasks typically take
+
+  validation {
+    condition     = var.sqs_visibility_timeout >= 0 && var.sqs_visibility_timeout <= 43200
+    error_message = "SQS visibility timeout must be between 0 and 43200 seconds (12 hours) for AWS compliance."
+  }
+}
+
+variable "sqs_max_receive_count" {
+  description = "Maximum number of times a message can be received before sending to DLQ"
+  type        = number
+  default     = 3
+
+  validation {
+    condition     = var.sqs_max_receive_count >= 1 && var.sqs_max_receive_count <= 1000
+    error_message = "SQS max receive count must be between 1 and 1000 for AWS compliance."
+  }
+}
+
+variable "sqs_alarm_actions" {
+  description = "List of ARNs for SQS CloudWatch alarm actions (e.g., SNS topics)"
+  type        = list(string)
+  default     = []
+}
+
+variable "kms_key_id" {
+  description = "KMS key ID for SQS encryption (leave empty to use AWS managed keys)"
+  type        = string
+  default     = ""
+}

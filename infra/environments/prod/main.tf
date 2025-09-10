@@ -48,6 +48,35 @@ module "cognito" {
   deletion_protection_cognito = var.deletion_protection_cognito
 }
 
+# SQS infrastructure for solve request processing
+module "sqs" {
+  source = "../../modules/sqs"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  # Configure queue settings for healthcare compliance
+  visibility_timeout_seconds = var.sqs_visibility_timeout
+  max_receive_count          = var.sqs_max_receive_count
+  kms_key_id                 = var.kms_key_id
+
+  # Service principals that can access the queue
+  service_principal_arns = [
+    module.iam.main_service_task_role_arn,
+    module.iam.solve_service_task_role_arn
+  ]
+
+  # Alarm actions (e.g., SNS topic ARNs for notifications)
+  alarm_actions = var.sqs_alarm_actions
+
+  tags = {
+    Environment = var.environment
+    Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
+    Project     = "NSP Pro"
+  }
+}
+
 # IAM roles and policies module
 module "iam" {
   source = "../../modules/iam"

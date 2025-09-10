@@ -19,3 +19,15 @@ variable "tags" {
 #   type        = list(string)
 #   default     = []
 # }
+
+variable "solve_queue_arn" {
+  description = "ARN of the SQS solve queue"
+  type        = string
+  default     = ""
+}
+
+variable "solve_dlq_arn" {
+  description = "ARN of the SQS solve dead-letter queue"
+  type        = string
+  default     = ""
+}
