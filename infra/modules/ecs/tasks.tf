@@ -30,24 +30,99 @@ resource "aws_ecs_task_definition" "main_service" {
       ]
 
 
-      environment = concat(
-        [
-          for key, value in var.main_service_environment_variables : {
-            name  = key
-            value = value
-          }
-        ],
-        [
-          {
-            name  = "SQS_SOLVE_QUEUE_NAME"
-            value = var.sqs_solve_queue_name
-          },
-          {
-            name  = "SQS_SOLVE_DLQ_NAME"
-            value = var.sqs_solve_dlq_name
-          }
-        ]
-      )
+      environment = [
+        #         ENVIRONMENT         = "production"
+        # API_DOMAIN          = "0.0.0.0"
+        # API_URL             = "api.rockilus.com"
+        # API_PORT            = "4000"
+        # ORIGINS             = "[\"https://app.rockilus.com\"]"
+        # CLIENT_URL          = "https://app.rockilus.com"
+        # PDP_URL             = "http://permit-pdp:7000"
+        # AUTHZ_ENABLE_RETRY  = "True"
+        # AUTHZ_MAX_RETRIES   = "8"
+        # AUTHZ_INITIAL_DELAY = "0.5"
+        # UVICORN_RELOAD      = "False"
+        # TASK_EXPIRATION     = "90"
+        {
+          name  = "ENVIRONMENT"
+          value = "production"
+        },
+        {
+          name  = "API_DOMAIN"
+          value = "0.0.0.0"
+        },
+        {
+          name  = "API_URL"
+          value = "api.rockilus.com"
+        },
+        {
+          name  = "API_PORT"
+          value = "4000"
+        },
+        {
+          name  = "ORIGINS"
+          value = "[\"https://app.rockilus.com\"]"
+        },
+        {
+          name  = "CLIENT_URL"
+          value = "https://app.rockilus.com"
+        },
+        {
+          name  = "PDP_URL"
+          value = "http://permit-pdp:7000"
+        },
+        {
+          name  = "AUTHZ_ENABLE_RETRY"
+          value = "True"
+        },
+        {
+          name  = "AUTHZ_MAX_RETRIES"
+          value = "8"
+        },
+        {
+          name  = "AUTHZ_INITIAL_DELAY"
+          value = "0.5"
+        },
+        {
+          name  = "UVICORN_RELOAD"
+          value = "False"
+        },
+        {
+          name  = "TASK_EXPIRATION"
+          value = "90"
+        },
+        {
+          name  = "AWS_REGION"
+          value = var.aws_region
+        },
+        {
+          name  = "SQS_SOLVE_QUEUE_NAME"
+          value = var.sqs_solve_queue_name
+        },
+        {
+          name  = "SQS_SOLVE_DLQ_NAME"
+          value = var.sqs_solve_dlq_name
+        }
+      ]
+
+      # environment = concat(
+      #   [
+      #     for key, value in var.main_service_environment_variables : {
+      #       name  = key
+      #       value = value
+      #     }
+      #   ],
+      #   [
+      #     {
+      #       name  = "SQS_SOLVE_QUEUE_NAME"
+      #       value = var.sqs_solve_queue_name
+      #     },
+      #     {
+      #       name  = "SQS_SOLVE_DLQ_NAME"
+      #       value = var.sqs_solve_dlq_name
+      #     }
+      #   ]
+      # )
 
       secrets = [
         {
@@ -133,24 +208,43 @@ resource "aws_ecs_task_definition" "solve_service" {
         }
       ]
 
-      environment = concat(
-        [
-          for key, value in var.solve_service_environment_variables : {
-            name  = key
-            value = value
-          }
-        ],
-        [
-          {
-            name  = "SQS_SOLVE_QUEUE_NAME"
-            value = var.sqs_solve_queue_name
-          },
-          {
-            name  = "SQS_SOLVE_DLQ_NAME"
-            value = var.sqs_solve_dlq_name
-          }
-        ]
-      )
+      environment = [
+        {
+          name  = "ENVIRONMENT"
+          value = "production"
+        },
+        {
+          name  = "AWS_REGION"
+          value = var.aws_region
+        },
+        {
+          name  = "SQS_SOLVE_QUEUE_NAME"
+          value = var.sqs_solve_queue_name
+        },
+        {
+          name  = "SQS_SOLVE_DLQ_NAME"
+          value = var.sqs_solve_dlq_name
+        }
+      ]
+
+      # environment = concat(
+      #   [
+      #     for key, value in var.solve_service_environment_variables : {
+      #       name  = key
+      #       value = value
+      #     }
+      #   ],
+      #   [
+      #     {
+      #       name  = "SQS_SOLVE_QUEUE_NAME"
+      #       value = var.sqs_solve_queue_name
+      #     },
+      #     {
+      #       name  = "SQS_SOLVE_DLQ_NAME"
+      #       value = var.sqs_solve_dlq_name
+      #     }
+      #   ]
+      # )
 
       logConfiguration = {
         logDriver = "awslogs"

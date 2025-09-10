@@ -6,11 +6,14 @@ resource "aws_sqs_queue" "solve_dlq" {
   visibility_timeout_seconds = 60
 
   # KMS encryption for healthcare compliance
-  kms_master_key_id                 = var.kms_key_id != "" ? var.kms_key_id : "alias/aws/sqs"
+  # Use customer KMS key when provided, otherwise omit the attribute so
+  # `sqs_managed_sse_enabled` can be used to enable SQS-managed SSE.
+  kms_master_key_id                 = var.kms_key_id != "" ? var.kms_key_id : null
   kms_data_key_reuse_period_seconds = 300
 
-  # Enable server-side encryption
-  sqs_managed_sse_enabled = var.kms_key_id == "" ? true : false
+  # Enable SQS-managed SSE only when no customer KMS key provided. Use null
+  # to omit the attribute when a KMS key is used (avoids conflict).
+  sqs_managed_sse_enabled = var.kms_key_id == "" ? true : null
 
   tags = merge(
     var.tags,
@@ -34,11 +37,14 @@ resource "aws_sqs_queue" "solve_queue" {
   })
 
   # KMS encryption for healthcare compliance
-  kms_master_key_id                 = var.kms_key_id != "" ? var.kms_key_id : "alias/aws/sqs"
+  # Use customer KMS key when provided, otherwise omit the attribute so
+  # `sqs_managed_sse_enabled` can be used to enable SQS-managed SSE.
+  kms_master_key_id                 = var.kms_key_id != "" ? var.kms_key_id : null
   kms_data_key_reuse_period_seconds = 300
 
-  # Enable server-side encryption
-  sqs_managed_sse_enabled = var.kms_key_id == "" ? true : false
+  # Enable SQS-managed SSE only when no customer KMS key provided. Use null
+  # to omit the attribute when a KMS key is used (avoids conflict).
+  sqs_managed_sse_enabled = var.kms_key_id == "" ? true : null
 
   # Set up CloudWatch Alarms for queue monitoring
   depends_on = [aws_sqs_queue.solve_dlq]
