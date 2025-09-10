@@ -350,7 +350,8 @@ resource "aws_ecs_service" "main_service" {
   health_check_grace_period_seconds = 0
   propagate_tags                    = "NONE"
   # Use the AWS service-linked role for ECS
-  iam_role = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
+  # Let ECS use its service-linked role; do not set iam_role explicitly which can
+  # conflict with service-linked role requirements.
 
   # alarms {
   #   alarm_names = []
@@ -421,7 +422,7 @@ resource "aws_ecs_service" "main_service" {
 
   lifecycle {
     replace_triggered_by  = [aws_lb_target_group.api_backend]
-    create_before_destroy = true
+    create_before_destroy = false
 
   }
 
@@ -452,8 +453,9 @@ resource "aws_ecs_service" "solve_service" {
   availability_zone_rebalancing     = "ENABLED"
   enable_ecs_managed_tags           = true
   health_check_grace_period_seconds = 0
-  iam_role                          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
-  propagate_tags                    = "NONE"
+  # iam_role                          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
+  # iam_role removed to allow ECS to use the service-linked role
+  propagate_tags = "NONE"
 
   network_configuration {
     subnets          = var.private_subnet_ids
@@ -490,7 +492,7 @@ resource "aws_ecs_service" "solve_service" {
   }
 
   lifecycle {
-    create_before_destroy = true
+    create_before_destroy = false
   }
 
   # tags = merge(var.tags, {
@@ -514,8 +516,9 @@ resource "aws_ecs_service" "permit_pdp" {
   availability_zone_rebalancing     = "ENABLED"
   enable_ecs_managed_tags           = true
   health_check_grace_period_seconds = 0
-  iam_role                          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
-  propagate_tags                    = "NONE"
+  # iam_role                          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
+  # iam_role removed to allow ECS to use the service-linked role
+  propagate_tags = "NONE"
 
   network_configuration {
     subnets          = var.private_subnet_ids
@@ -579,7 +582,7 @@ resource "aws_ecs_service" "permit_pdp" {
   }
 
   lifecycle {
-    create_before_destroy = true
+    create_before_destroy = false
   }
 
   tags = {}
