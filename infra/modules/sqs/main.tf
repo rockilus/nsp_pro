@@ -88,7 +88,7 @@ resource "aws_sqs_queue_policy" "solve_queue_policy" {
         Sid    = "AllowSendReceiveFromServices"
         Effect = "Allow"
         Principal = {
-          AWS = var.service_principal_arns
+          AWS = var.task_execution_role_arn
         }
         Action = [
           "sqs:SendMessage",
@@ -114,7 +114,7 @@ resource "aws_sqs_queue_policy" "solve_dlq_policy" {
         Sid    = "AllowSendReceiveFromServices"
         Effect = "Allow"
         Principal = {
-          AWS = var.service_principal_arns
+          AWS = var.task_execution_role_arn
         }
         Action = [
           "sqs:SendMessage",

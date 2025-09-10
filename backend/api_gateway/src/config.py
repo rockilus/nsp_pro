@@ -108,6 +108,14 @@ class AppConfig(BaseSettings):
         description="Development API key for service authentication",
     )
 
+    # SQS Configuration
+    sqs_solve_queue_name: str = Field(
+        "nsp-pro-dev-solve-queue", description="Name of the SQS solve queue"
+    )
+    sqs_solve_dlq_name: str | None = Field(
+        None, description="Name of the SQS dead-letter queue"
+    )
+
     model_config = SettingsConfigDict(
         env_prefix="",  # No prefix; can adjust if needed
         env_file=os.path.join(

@@ -65,7 +65,7 @@ class SolveService:
         """
         logger.info("Starting NSP Pro Solve Service...")
         logger.info(f"Environment: {config.environment}")
-        logger.info(f"SQS Queue: {config.sqs_queue_name}")
+        logger.info(f"SQS Queue: {config.sqs_solve_queue_name}")
 
         # Set up signal handlers for graceful shutdown
         self._setup_signal_handlers()
@@ -79,7 +79,8 @@ class SolveService:
                     aws_secret_access_key=config.aws_secret_access_key,
                     aws_session_token=config.aws_session_token,
                     endpoint_url=config.endpoint_url,
-                    sqs_solve_queue_name=config.sqs_queue_name,
+                    sqs_solve_queue_name=config.sqs_solve_queue_name,
+                    sqs_solve_dlq_name=config.sqs_solve_dlq_name,
                 )
 
                 # Create SQS service
@@ -115,7 +116,9 @@ class SolveService:
         """
 
         def signal_handler(signum, _):
-            logger.info(f"Received signal {signum}, initiating graceful shutdown...")
+            logger.info(
+                f"Received signal {signum}, initiating graceful shutdown..."
+            )
             self.shutdown_event.set()
 
         for sig in (signal.SIGTERM, signal.SIGINT):

@@ -26,10 +26,15 @@ variable "kms_key_id" {
   default     = ""
 }
 
-variable "service_principal_arns" {
-  description = "List of service principal ARNs that can access the queues"
-  type        = list(string)
+variable "task_execution_role_arn" {
+  description = "ARN of the ECS task execution IAM role"
+  type        = string
 }
+
+# variable "service_principal_arns" {
+#   description = "List of service principal ARNs that can access the queues"
+#   type        = list(string)
+# }
 
 variable "alarm_actions" {
   description = "List of ARNs for CloudWatch alarm actions (e.g., SNS topics)"

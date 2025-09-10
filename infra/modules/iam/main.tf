@@ -40,6 +40,12 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+# Attach SQS permissions to the task execution role
+resource "aws_iam_role_policy_attachment" "ecs_task_execution_sqs_policy_attachment" {
+  role       = aws_iam_role.ecs_task_execution_role.name
+  policy_arn = aws_iam_policy.ecs_task_execution_sqs_policy.arn
+}
+
 # Add policy for secrets access
 resource "aws_iam_role_policy" "secrets_access_policy" {
   name = "${var.project_name}-${var.environment}-secrets-access-policy"
