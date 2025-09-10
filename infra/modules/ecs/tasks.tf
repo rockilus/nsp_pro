@@ -1,3 +1,6 @@
+# Add AWS caller identity data source
+data "aws_caller_identity" "current" {}
+
 # Main Service Task Definition
 resource "aws_ecs_task_definition" "main_service" {
   # family = "nsp_pro-backend-task"
@@ -56,6 +59,8 @@ resource "aws_ecs_task_definition" "main_service" {
           "awslogs-group"         = aws_cloudwatch_log_group.main_service.name
           "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "ecs"
+          "max-buffer-size"       = "25m"
+          "mode"                  = "non-blocking"
         }
         secretOptions = []
       }
@@ -344,8 +349,8 @@ resource "aws_ecs_service" "main_service" {
   enable_ecs_managed_tags           = true
   health_check_grace_period_seconds = 0
   propagate_tags                    = "NONE"
-  # iam_role                          = "/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
-  # iam_role = aws_iam_role.ecs_service_role.arn
+  # Use the AWS service-linked role for ECS
+  iam_role = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
 
   # alarms {
   #   alarm_names = []
@@ -448,8 +453,8 @@ resource "aws_ecs_service" "solve_service" {
   availability_zone_rebalancing     = "ENABLED"
   enable_ecs_managed_tags           = true
   health_check_grace_period_seconds = 0
-  # iam_role                          = "/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
-  propagate_tags = "NONE"
+  iam_role                          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
+  propagate_tags                    = "NONE"
 
   network_configuration {
     subnets          = var.private_subnet_ids
@@ -511,8 +516,8 @@ resource "aws_ecs_service" "permit_pdp" {
   availability_zone_rebalancing     = "ENABLED"
   enable_ecs_managed_tags           = true
   health_check_grace_period_seconds = 0
-  # iam_role                          = "/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
-  propagate_tags = "NONE"
+  iam_role                          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
+  propagate_tags                    = "NONE"
 
   network_configuration {
     subnets          = var.private_subnet_ids
