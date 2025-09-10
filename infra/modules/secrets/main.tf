@@ -31,7 +31,7 @@ resource "aws_secretsmanager_secret" "permit_api_key" {
         Principal = {
           AWS = var.task_execution_role_arn
         }
-        Resource = "arn:aws:secretsmanager:${var.aws_region}:${data.aws_caller_identity.current.account_id}:secret:nsp_pro/permit_api_key-*"
+        Resource = "*"
       },
     ]
   }) : null
