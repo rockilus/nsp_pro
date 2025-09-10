@@ -78,7 +78,7 @@ module "sqs" {
   # Configure queue settings for healthcare compliance
   visibility_timeout_seconds = var.sqs_visibility_timeout
   max_receive_count          = var.sqs_max_receive_count
-  kms_key_id                 = var.kms_key_id
+  kms_key_id                 = var.kms_key_id_sqs
 
   # Service principals that can access the queue
   task_execution_role_arn = module.iam.ecs_task_execution_role_arn
@@ -381,6 +381,9 @@ module "ecs" {
   permit_api_key_secret_arn = module.secrets.permit_api_key_secret_arn
   documentdb_secret_arn     = module.documentdb.credentials_secret_arn
 
+  # SQS Queue Names
+  sqs_solve_queue_name = module.sqs.solve_queue_name
+  sqs_solve_dlq_name   = module.sqs.solve_dlq_name
 
   tags = {
     Environment = var.environment

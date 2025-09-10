@@ -131,7 +131,7 @@ variable "sqs_alarm_actions" {
   default     = []
 }
 
-variable "kms_key_id" {
+variable "kms_key_id_sqs" {
   description = "KMS key ID for SQS encryption (leave empty to use AWS managed keys)"
   type        = string
   default     = ""

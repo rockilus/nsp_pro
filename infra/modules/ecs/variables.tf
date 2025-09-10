@@ -241,3 +241,16 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+# SQS Queue Names
+variable "sqs_solve_queue_name" {
+  description = "Name of the SQS queue for solve requests"
+  type        = string
+  default     = ""
+}
+
+variable "sqs_solve_dlq_name" {
+  description = "Name of the SQS dead-letter queue for solve requests"
+  type        = string
+  default     = ""
+}

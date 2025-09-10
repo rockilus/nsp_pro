@@ -30,12 +30,24 @@ resource "aws_ecs_task_definition" "main_service" {
       ]
 
 
-      environment = [
-        for key, value in var.main_service_environment_variables : {
-          name  = key
-          value = value
-        }
-      ]
+      environment = concat(
+        [
+          for key, value in var.main_service_environment_variables : {
+            name  = key
+            value = value
+          }
+        ],
+        [
+          {
+            name  = "SQS_SOLVE_QUEUE_NAME"
+            value = var.sqs_solve_queue_name
+          },
+          {
+            name  = "SQS_SOLVE_DLQ_NAME"
+            value = var.sqs_solve_dlq_name
+          }
+        ]
+      )
 
       secrets = [
         {
@@ -121,12 +133,24 @@ resource "aws_ecs_task_definition" "solve_service" {
         }
       ]
 
-      environment = [
-        for key, value in var.solve_service_environment_variables : {
-          name  = key
-          value = value
-        }
-      ]
+      environment = concat(
+        [
+          for key, value in var.solve_service_environment_variables : {
+            name  = key
+            value = value
+          }
+        ],
+        [
+          {
+            name  = "SQS_SOLVE_QUEUE_NAME"
+            value = var.sqs_solve_queue_name
+          },
+          {
+            name  = "SQS_SOLVE_DLQ_NAME"
+            value = var.sqs_solve_dlq_name
+          }
+        ]
+      )
 
       logConfiguration = {
         logDriver = "awslogs"
