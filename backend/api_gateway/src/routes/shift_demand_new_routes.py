@@ -171,7 +171,9 @@ async def get_shift_demands_matrix(
         ) from e
 
 
-@router.put("/shift-demands-new/{demand_id}/teams/{team_id}")
+@router.put(
+    "/shift-demands-new/{demand_id}/teams/{team_id}", response_model=None
+)
 async def update_shift_demand(
     team_id: str,
     demand_id: str,
