@@ -76,6 +76,15 @@ resource "permitio_resource" "team" {
     "update-request" = {
       name = "update-request"
     },
+    "approve-request" = {
+      name = "approve-request"
+    },
+    "deny-request" = {
+      name = "deny-request"
+    },
+    "rescind-request" = {
+      name = "rescind-request"
+    },
     "read-requests" = {
       name = "read-requests"
     },

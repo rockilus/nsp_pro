@@ -41,7 +41,9 @@ variable "leader_permissions" {
     "delete-worker", "delete-request", "read-dimensions", "read-team-users", "update-worker",
     "read-constraints", "update-constraint", "duplicate-period", "create-demand",
     "read-constraint-templates", "delete-schedule", "read-breaches", "read-assignments",
-    "delete-demand", "create-request", "read-shift-demands"
+    "delete-demand", "create-request", "read-shift-demands", "approve-request",
+    "deny-request",
+    "rescind-request",
   ]
 }
 
