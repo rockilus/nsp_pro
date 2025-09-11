@@ -39,6 +39,13 @@ export default function ConstraintButton({
   // Dummy function for compatibility - we only use handleUpdateConstraint in edit mode
   const handleAddConstraint = (_: ConstraintT) => {
     // This won't actually be used, since we're editing an existing constraint
+    handleClose();
+  };
+
+  // Wrap the update constraint handler to close the menu after update
+  const wrappedUpdateConstraint = (updatedConstraint: ConstraintT) => {
+    handleUpdateConstraint(updatedConstraint);
+    handleClose();
   };
 
   return (
@@ -69,7 +76,7 @@ export default function ConstraintButton({
           constraint={constraint}
           template={constraintTemplate}
           handleAddConstraint={handleAddConstraint}
-          handleUpdateConstraint={handleUpdateConstraint}
+          handleUpdateConstraint={wrappedUpdateConstraint}
         />
       </Menu>
     </Box>
