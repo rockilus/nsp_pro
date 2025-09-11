@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 // Types
 import { BlockT, TemplateBlockT } from "../../../../types/constraint";
 // Constants
@@ -32,12 +32,19 @@ export default function BlockEditQty({
   }, [block]);
 
   const [valueState, setValueState] = useState<string>(initialValue);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isInitialFocus, setIsInitialFocus] = useState(true);
 
   useEffect(() => {
     if (block !== null) {
       setValueState(initialValue);
     }
   }, [block, initialValue]);
+
+  // Reset initial focus flag when component mounts
+  useEffect(() => {
+    setIsInitialFocus(true);
+  }, []);
 
   const handleSubmit = useCallback(() => {
     if (valueState !== "") {
@@ -67,16 +74,30 @@ export default function BlockEditQty({
     }
   };
 
+  const handleBlur = () => {
+    // Ignore the first blur event that occurs immediately after mounting
+    if (isInitialFocus) {
+      setIsInitialFocus(false);
+      // Re-focus the input
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 0);
+    } else {
+      handleSubmit();
+    }
+  };
+
   return (
     <div>
       <div className="field-input">
         <input
+          ref={inputRef}
           type="number"
           value={valueState}
           onChange={(e) => {
             setValueState(e.target.value);
           }}
-          onBlur={handleSubmit}
+          onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           autoFocus
           style={{
