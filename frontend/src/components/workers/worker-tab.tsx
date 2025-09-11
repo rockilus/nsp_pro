@@ -388,6 +388,25 @@ export default function WorkerTab({
       specialties.filter((specialty) => specialty.id !== specialtyId)
     );
 
+    // If backend did not return any updated workers, fall back to an
+    // optimistic local update: remove the specialtyId from each worker's
+    // specialtyIds array. Otherwise, merge returned updates.
+    if (!updatedWorkers || updatedWorkers.length === 0) {
+      setWorkers((prevWorkers) =>
+        prevWorkers.map((worker) =>
+          worker.specialtyIds && worker.specialtyIds.length > 0
+            ? {
+                ...worker,
+                specialtyIds: worker.specialtyIds.filter(
+                  (id) => id !== specialtyId
+                ),
+              }
+            : worker
+        )
+      );
+      return;
+    }
+
     setWorkers((prevWorkers) =>
       prevWorkers.map((worker) => {
         const updatedWorker = updatedWorkers.find(
