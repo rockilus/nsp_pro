@@ -16,7 +16,6 @@ export default function ConstraintButton({
   buttonElement,
   constraint,
   constraintTemplate,
-  handleAddConstraint,
   handleUpdateConstraint,
 }: {
   lng: string;
@@ -25,7 +24,6 @@ export default function ConstraintButton({
   buttonElement: React.ReactNode;
   constraint: ConstraintT;
   constraintTemplate: TemplateT | null;
-  handleAddConstraint: (constraint: ConstraintT) => void;
   handleUpdateConstraint: (updatedConstraint: ConstraintT) => void;
 }) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -36,6 +34,11 @@ export default function ConstraintButton({
   };
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  // Dummy function for compatibility - we only use handleUpdateConstraint in edit mode
+  const handleAddConstraint = (_: ConstraintT) => {
+    // This won't actually be used, since we're editing an existing constraint
   };
 
   return (

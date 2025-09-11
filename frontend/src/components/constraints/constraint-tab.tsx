@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 // Components
 import ConstraintList from "./constraint-list/constraint-list";
 import NewConstraint from "./edit-constraint/new-constraint";
+import TableAddButton from "../buttons/table-add-button";
 // Skeletons
 import TablesSkeleton from "../skeletons/tables-skeleton";
 // New hooks (authenticated)
@@ -13,10 +14,12 @@ import {
 } from "../../hooks/useConstraint";
 // Styles
 import "../../styles/tab-container-styles.css";
+import "./constraint-tab.css";
 // Types
 import { ConstraintT, TemplateT } from "../../types/constraint";
 import { WorkerT } from "../../types/worker";
 import { ShiftT } from "../../types/shift";
+import { useTranslation } from "../../app/i18n/client";
 
 export default function ConstraintTab({
   lng,
@@ -25,6 +28,7 @@ export default function ConstraintTab({
   lng: string;
   selectedTeamId: string | null;
 }) {
+  const { t } = useTranslation(lng, "constraint-page");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [templates, setTemplates] = useState<TemplateT[]>([]);
   const [constraints, setConstraints] = useState<ConstraintT[]>([]);
@@ -121,33 +125,37 @@ export default function ConstraintTab({
       ) : !selectedTeamId ? (
         <div>Please select a team</div>
       ) : (
-        <>
-          <div className="tab-container">
-            <ConstraintList
-              lng={lng}
-              workers={workers}
-              shifts={shifts}
-              constraints={constraints}
-              constraintTemplates={templates}
-              handleOpenAddConstraint={handleOpenAddConstraint}
-              handleAddConstraint={handleAddConstraint}
-              handleUpdateConstraint={handleUpdateConstraint}
-              handleDeleteConstraint={handleDeleteConstraint}
+        <div className="tab-container">
+          <div className="title-container">
+            <span className="title">{t("constraints")}</span>
+            <TableAddButton
+              text={t("constraint")}
+              handleClick={handleOpenAddConstraint}
             />
           </div>
-          {addingConstraint && (
-            <NewConstraint
-              lng={lng}
-              workers={workers}
-              shifts={shifts}
-              selectedTeamId={selectedTeamId}
-              templates={templates}
-              handleCloseAddConstraint={handleCloseAddConstraint}
-              handleAddConstraint={handleAddConstraint}
-              handleUpdateConstraint={handleUpdateConstraint}
-            />
-          )}
-        </>
+
+          <ConstraintList
+            lng={lng}
+            workers={workers}
+            shifts={shifts}
+            constraints={constraints}
+            constraintTemplates={templates}
+            handleUpdateConstraint={handleUpdateConstraint}
+            handleDeleteConstraint={handleDeleteConstraint}
+          />
+
+          <NewConstraint
+            lng={lng}
+            workers={workers}
+            shifts={shifts}
+            selectedTeamId={selectedTeamId}
+            templates={templates}
+            open={addingConstraint}
+            handleCloseAddConstraint={handleCloseAddConstraint}
+            handleAddConstraint={handleAddConstraint}
+            handleUpdateConstraint={handleUpdateConstraint}
+          />
+        </div>
       )}
     </>
   );
