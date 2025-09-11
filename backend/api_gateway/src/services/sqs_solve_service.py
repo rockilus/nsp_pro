@@ -45,9 +45,7 @@ class APIGatewaySQSSolveService(BaseService):
         super().__init__(collection)
         self.sqs_solve_service = sqs_solve_service
 
-    async def submit_solve_request(
-        self, schedule_id: str, team_id: str, user_id: str
-    ):
+    async def submit_solve_request(self, schedule_id: str, team_id: str, user_id: str):
         """
         Submit a solve request via SQS and create a SolveTaskStatus object.
         Returns the SolveTaskStatusSchema object (MongoDB schema).
@@ -78,9 +76,7 @@ class APIGatewaySQSSolveService(BaseService):
                         task_status_id=existing_status.id
                     )
             else:
-                raise ValueError(
-                    f"Schedule {schedule_id} is already being solved "
-                )
+                raise ValueError(f"Schedule {schedule_id} is already being solved ")
 
         try:
             # Submit to SQS
@@ -107,10 +103,8 @@ class APIGatewaySQSSolveService(BaseService):
                 result=None,
                 solver_output_metadata=None,
             )
-            sts_saved = (
-                self.collection.solve_task_status_db.create_solve_task_status(
-                    solve_task_status=solve_task_status
-                )
+            sts_saved = self.collection.solve_task_status_db.create_solve_task_status(
+                solve_task_status=solve_task_status
             )
 
             logger.info(
@@ -131,8 +125,10 @@ class APIGatewaySQSSolveService(BaseService):
         Get the current solve status for a solve task by solve_id.
         Returns the SolveTaskStatusResponseDTO or raises if not found.
         """
-        solve_task_status = self.collection.solve_task_status_db.get_solve_task_status_by_solve_id(
-            solve_id
+        solve_task_status = (
+            self.collection.solve_task_status_db.get_solve_task_status_by_solve_id(
+                solve_id
+            )
         )
         if not solve_task_status:
             raise ValueError(f"Solve task with id {solve_id} not found")
@@ -145,9 +141,7 @@ class APIGatewaySQSSolveService(BaseService):
             )
         return solve_task_status
 
-    async def get_latest_solve_status(
-        self, schedule_id: str
-    ) -> SolveTaskStatus | None:
+    async def get_latest_solve_status(self, schedule_id: str) -> SolveTaskStatus | None:
         """
         Get the latest completed solve status for a schedule by schedule_id.
         Returns the latest SolveTaskStatus or None if no completed
