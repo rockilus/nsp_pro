@@ -48,6 +48,33 @@ module "cognito" {
   deletion_protection_cognito = var.deletion_protection_cognito
 }
 
+
+# AWS Secrets Manager for sensitive configuration
+module "secrets" {
+  source = "../../modules/secrets"
+
+  project_name = var.project_name
+  environment  = var.environment
+  aws_region   = var.aws_region
+
+  # Secret values
+  permit_api_key = var.permit_api_key
+
+  # Healthcare compliance configuration
+  replica_region          = var.replica_region
+  recovery_window_in_days = var.recovery_window_in_days
+  log_retention_days      = var.log_retention_days
+
+  tags = {
+    Environment = var.environment
+    Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
+    Project     = "NSP Pro"
+  }
+
+}
+
+
 # IAM roles and policies module
 module "iam" {
   source = "../../modules/iam"
@@ -66,9 +93,8 @@ module "iam" {
   }
 
   # Pass secret ARNs created by the secrets module so IAM can create least-privilege policy
-  secret_arns = module.secrets.all_secret_arns
-
-  depends_on = []
+  # Do not consume secret ARNs directly here to avoid dependency cycles during replace
+  # IAM will fall back to ARN patterns when secret_arns is not provided.
 }
 
 # SQS infrastructure for solve request processing
@@ -103,33 +129,6 @@ module "sqs" {
   # secrets should be created independently; IAM will consume their ARNs
   # (remove circular depends_on on module.iam)
   # depends_on = [module.iam]
-}
-
-
-
-# AWS Secrets Manager for sensitive configuration
-module "secrets" {
-  source = "../../modules/secrets"
-
-  project_name = var.project_name
-  environment  = var.environment
-  aws_region   = var.aws_region
-
-  # Secret values
-  permit_api_key          = var.permit_api_key
-
-  # Healthcare compliance configuration
-  replica_region          = var.replica_region
-  recovery_window_in_days = var.recovery_window_in_days
-  log_retention_days      = var.log_retention_days
-
-  tags = {
-    Environment = var.environment
-    Owner       = "DevOps Team"
-    Compliance  = "Healthcare"
-    Project     = "NSP Pro"
-  }
-
 }
 
 
