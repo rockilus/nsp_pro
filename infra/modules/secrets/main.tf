@@ -21,20 +21,6 @@ resource "aws_secretsmanager_secret" "permit_api_key" {
   recovery_window_in_days        = var.recovery_window_in_days
   force_overwrite_replica_secret = false
 
-  # Reference the IAM role from var.task_execution_role_arn if provided
-  policy = var.task_execution_role_arn != "" ? jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "secretsmanager:GetSecretValue"
-        Effect = "Allow"
-        Principal = {
-          AWS = var.task_execution_role_arn
-        }
-        Resource = "*"
-      },
-    ]
-  }) : null
 
 
   # Healthcare compliance and security configurations

@@ -399,7 +399,8 @@ module "ecs" {
     module.iam,
     module.secrets,
     module.documentdb,
-    module.security_groups
+    module.security_groups,
+    module.sqs
   ]
 }
 

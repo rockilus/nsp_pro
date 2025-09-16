@@ -31,3 +31,9 @@ variable "solve_dlq_arn" {
   type        = string
   default     = ""
 }
+
+variable "secret_arns" {
+  description = "List of Secret ARNs that ECS tasks should have access to"
+  type        = list(string)
+  default     = []
+}

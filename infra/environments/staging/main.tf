@@ -65,6 +65,9 @@ module "iam" {
     Project     = "NSP Pro"
   }
 
+  # Pass secret ARNs created by the secrets module so IAM can create least-privilege policy
+  secret_arns = module.secrets.all_secret_arns
+
   depends_on = []
 }
 
@@ -97,7 +100,9 @@ module "sqs" {
     Project     = "NSP Pro"
   }
 
-  depends_on = [module.iam]
+  # secrets should be created independently; IAM will consume their ARNs
+  # (remove circular depends_on on module.iam)
+  # depends_on = [module.iam]
 }
 
 
@@ -112,7 +117,6 @@ module "secrets" {
 
   # Secret values
   permit_api_key          = var.permit_api_key
-  task_execution_role_arn = module.iam.ecs_task_execution_role_arn
 
   # Healthcare compliance configuration
   replica_region          = var.replica_region
@@ -126,7 +130,6 @@ module "secrets" {
     Project     = "NSP Pro"
   }
 
-  depends_on = [module.iam]
 }
 
 
@@ -399,7 +402,8 @@ module "ecs" {
     module.iam,
     module.secrets,
     module.documentdb,
-    module.security_groups
+    module.security_groups,
+    module.sqs
   ]
 }
 
