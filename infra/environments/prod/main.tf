@@ -351,6 +351,7 @@ module "ecs" {
   # Service configuration
   # Main service
   main_service_environment_variables   = var.main_service_environment_variables
+  main_service_environment             = var.main_service_environment
   main_service_desired_count           = var.main_service_desired_count
   main_service_port                    = var.main_service_port
   main_service_cpu                     = var.main_service_cpu
@@ -362,6 +363,7 @@ module "ecs" {
 
   # Solve service
   solve_service_environment_variables   = var.solve_service_environment_variables
+  solve_service_environment             = var.solve_service_environment
   solve_service_desired_count           = var.solve_service_desired_count
   solve_service_port                    = var.solve_service_port
   solve_service_cpu                     = var.solve_service_cpu

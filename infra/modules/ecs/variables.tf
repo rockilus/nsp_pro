@@ -84,6 +84,15 @@ variable "main_service_environment_variables" {
   default     = {}
 }
 
+variable "main_service_environment" {
+  description = "List of environment variables for the main service (each item is an object with name and value)"
+  type = list(object({
+    name  = string
+    value = string
+  }))
+  default = []
+}
+
 variable "main_service_desired_count" {
   description = "Desired number of main service tasks"
   type        = number
@@ -126,6 +135,15 @@ variable "solve_service_environment_variables" {
   description = "Environment variables for the solve service"
   type        = map(string)
   default     = {}
+}
+
+variable "solve_service_environment" {
+  description = "List of environment variables for the solve service (each item is an object with name and value)"
+  type = list(object({
+    name  = string
+    value = string
+  }))
+  default = []
 }
 
 variable "solve_service_desired_count" {
