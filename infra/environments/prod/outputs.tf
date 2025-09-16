@@ -243,15 +243,9 @@ output "ecs_deployment_info" {
 }
 
 # Secrets Manager outputs
-output "secrets_summary" {
-  description = "Summary of all secrets managed for the application"
-  value       = module.secrets.secrets_summary
-  sensitive   = false
-}
-
 output "permit_api_key_secret_arn" {
   description = "ARN of the Permit.io API key secret"
-  value       = module.secrets.permit_api_key_secret_arn
+  value       = data.aws_secretsmanager_secret.permit_api_key.arn
   sensitive   = false
 }
 
