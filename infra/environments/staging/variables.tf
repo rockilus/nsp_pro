@@ -461,9 +461,12 @@ variable "profiler_threshold_ms" {
 # ECS Configuration Variables
 # Main Service Configuration
 variable "main_service_environment_variables" {
-  description = "Environment variables for the main service"
-  type        = map(string)
-  default     = {}
+  description = "List of environment variables for main service (list of objects with name and value)"
+  type = list(object({
+    name  = string
+    value = string
+  }))
+  default = []
 }
 
 
@@ -547,9 +550,12 @@ variable "main_service_container_name" {
 
 # Solve Service Configuration
 variable "solve_service_environment_variables" {
-  description = "Environment variables for the solve service"
-  type        = map(string)
-  default     = {}
+  description = "List of environment variables for solve service (list of objects with name and value)"
+  type = list(object({
+    name  = string
+    value = string
+  }))
+  default = []
 }
 
 variable "solve_service_desired_count" {

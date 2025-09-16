@@ -31,7 +31,7 @@ resource "aws_ecs_task_definition" "main_service" {
 
 
       environment = concat(
-        var.main_service_environment,
+        var.main_service_environment_variables,
         [
           {
             name  = "AWS_REGION"
@@ -152,7 +152,7 @@ resource "aws_ecs_task_definition" "solve_service" {
       ]
 
       environment = concat(
-        var.solve_service_environment,
+        var.solve_service_environment_variables,
         [
           {
             name  = "AWS_REGION"

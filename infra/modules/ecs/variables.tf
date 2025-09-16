@@ -79,12 +79,6 @@ variable "solve_service_ecr_repository_url" {
 
 # Main service configuration
 variable "main_service_environment_variables" {
-  description = "Environment variables for the main service"
-  type        = map(string)
-  default     = {}
-}
-
-variable "main_service_environment" {
   description = "List of environment variables for the main service (each item is an object with name and value)"
   type = list(object({
     name  = string
@@ -132,12 +126,6 @@ variable "main_service_operating_system_family" {
 
 # Solve service configuration
 variable "solve_service_environment_variables" {
-  description = "Environment variables for the solve service"
-  type        = map(string)
-  default     = {}
-}
-
-variable "solve_service_environment" {
   description = "List of environment variables for the solve service (each item is an object with name and value)"
   type = list(object({
     name  = string

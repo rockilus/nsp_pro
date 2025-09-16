@@ -404,7 +404,7 @@ variable "log_retention_days_documentdb" {
 }
 
 # Typed list/object environment variables for ECS module
-variable "main_service_environment" {
+variable "main_service_environment_variables" {
   description = "List of environment variables for main service (list of objects with name and value)"
   type = list(object({
     name  = string
@@ -413,7 +413,7 @@ variable "main_service_environment" {
   default = []
 }
 
-variable "solve_service_environment" {
+variable "solve_service_environment_variables" {
   description = "List of environment variables for solve service (list of objects with name and value)"
   type = list(object({
     name  = string
@@ -478,13 +478,6 @@ variable "profiler_threshold_ms" {
 
 # ECS Configuration Variables
 # Main Service Configuration
-variable "main_service_environment_variables" {
-  description = "Environment variables for the main service"
-  type        = map(string)
-  default     = {}
-}
-
-
 variable "main_service_desired_count" {
   description = "Desired number of main service tasks"
   type        = number
@@ -564,12 +557,6 @@ variable "main_service_container_name" {
 }
 
 # Solve Service Configuration
-variable "solve_service_environment_variables" {
-  description = "Environment variables for the solve service"
-  type        = map(string)
-  default     = {}
-}
-
 variable "solve_service_desired_count" {
   description = "Desired number of solve service tasks"
   type        = number
