@@ -48,6 +48,60 @@ module "cognito" {
   deletion_protection_cognito = var.deletion_protection_cognito
 }
 
+# IAM roles and policies module
+module "iam" {
+  source = "../../modules/iam"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  # Pass secret ARNs after they're created
+  # secret_arns = module.secrets.all_secret_arns
+
+  tags = {
+    Environment = var.environment
+    Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
+    Project     = "NSP Pro"
+  }
+
+  depends_on = []
+}
+
+# SQS infrastructure for solve request processing
+module "sqs" {
+  source = "../../modules/sqs"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  # Configure queue settings for healthcare compliance
+  visibility_timeout_seconds = var.sqs_visibility_timeout
+  max_receive_count          = var.sqs_max_receive_count
+  kms_key_id                 = var.kms_key_id_sqs
+
+  # Service principals that can access the queue
+  task_execution_role_arn = module.iam.ecs_task_execution_role_arn
+  # service_principal_arns = [
+  #   module.iam.main_service_task_role_arn,
+  #   module.iam.solve_service_task_role_arn
+  # ]
+
+  # Alarm actions (e.g., SNS topic ARNs for notifications)
+  alarm_actions = var.sqs_alarm_actions
+
+  tags = {
+    Environment = var.environment
+    Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
+    Project     = "NSP Pro"
+  }
+
+  depends_on = [module.iam]
+}
+
+
+
 # AWS Secrets Manager for sensitive configuration
 module "secrets" {
   source = "../../modules/secrets"
@@ -57,7 +111,8 @@ module "secrets" {
   aws_region   = var.aws_region
 
   # Secret values
-  permit_api_key = var.permit_api_key
+  permit_api_key          = var.permit_api_key
+  task_execution_role_arn = module.iam.ecs_task_execution_role_arn
 
   # Healthcare compliance configuration
   replica_region          = var.replica_region
@@ -70,6 +125,8 @@ module "secrets" {
     Compliance  = "Healthcare"
     Project     = "NSP Pro"
   }
+
+  depends_on = [module.iam]
 }
 
 
@@ -97,6 +154,9 @@ module "route53" {
 
   # SSL certificate with wildcard support for all NSP Pro subdomains
   certificate_subject_alternative_names = var.certificate_subject_alternative_names
+
+  staging_subdomain    = var.staging_subdomain
+  staging_name_servers = var.staging_name_servers
 
   tags = {
     Environment = var.environment
@@ -267,6 +327,10 @@ module "ecs" {
   aws_region     = var.aws_region
   aws_account_id = var.aws_account_id
 
+  # IAM role ARNs from the IAM module
+  task_execution_role_arn = module.iam.ecs_task_execution_role_arn
+  # task_role_arn           = module.iam.ecs_task_role_arn
+
   # VPC and network configuration
   vpc_id                 = module.vpc.vpc_id
   vpc_cidr_block         = module.vpc.vpc_cidr_block
@@ -317,6 +381,9 @@ module "ecs" {
   permit_api_key_secret_arn = module.secrets.permit_api_key_secret_arn
   documentdb_secret_arn     = module.documentdb.credentials_secret_arn
 
+  # SQS Queue Names
+  sqs_solve_queue_name = module.sqs.solve_queue_name
+  sqs_solve_dlq_name   = module.sqs.solve_dlq_name
 
   tags = {
     Environment = var.environment
@@ -325,7 +392,15 @@ module "ecs" {
     Project     = "NSP Pro"
   }
 
-  depends_on = [module.vpc, module.ecr, module.network_load_balancer, module.secrets, module.documentdb, module.security_groups]
+  depends_on = [
+    module.vpc,
+    module.ecr,
+    module.network_load_balancer,
+    module.iam,
+    module.secrets,
+    module.documentdb,
+    module.security_groups
+  ]
 }
 
 

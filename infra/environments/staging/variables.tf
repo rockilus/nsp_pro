@@ -102,6 +102,41 @@ variable "deletion_protection_cognito" {
   }
 }
 
+# SQS Configuration
+variable "sqs_visibility_timeout" {
+  description = "Visibility timeout for SQS queue messages in seconds"
+  type        = number
+  default     = 300 # 5 minutes, adjust based on how long solve tasks typically take
+
+  validation {
+    condition     = var.sqs_visibility_timeout >= 0 && var.sqs_visibility_timeout <= 43200
+    error_message = "SQS visibility timeout must be between 0 and 43200 seconds (12 hours) for AWS compliance."
+  }
+}
+
+variable "sqs_max_receive_count" {
+  description = "Maximum number of times a message can be received before sending to DLQ"
+  type        = number
+  default     = 3
+
+  validation {
+    condition     = var.sqs_max_receive_count >= 1 && var.sqs_max_receive_count <= 1000
+    error_message = "SQS max receive count must be between 1 and 1000 for AWS compliance."
+  }
+}
+
+variable "sqs_alarm_actions" {
+  description = "List of ARNs for SQS CloudWatch alarm actions (e.g., SNS topics)"
+  type        = list(string)
+  default     = []
+}
+
+variable "kms_key_id_sqs" {
+  description = "KMS key ID for SQS encryption (leave empty to use AWS managed keys)"
+  type        = string
+  default     = ""
+}
+
 # Secrets Configuration Variables
 variable "permit_api_key" {
   description = "Permit.io API key for PDP configuration"
@@ -191,6 +226,17 @@ variable "certificate_subject_alternative_names" {
     error_message = "Each certificate subject alternative name must be a valid domain name; wildcard prefixes ('*.') are allowed."
   }
 }
+
+variable "staging_subdomain" {
+  description = "Subdomain for staging environment (e.g., staging.example.com)"
+  type        = string
+}
+
+variable "staging_name_servers" {
+  description = "Name servers for the staging subdomain delegation"
+  type        = list(string)
+}
+
 
 # Network Load Balancer Configuration
 variable "backend_port" {
