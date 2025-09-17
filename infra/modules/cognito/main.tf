@@ -6,11 +6,16 @@ resource "aws_cognito_user_pool" "main" {
   username_attributes = ["email"]
 
   # Schema for required user attributes
+  # Note: 'email' is a built-in attribute in Cognito. Declaring it as a schema
+  # with `required = true` can trigger the AWS error "Required custom
+  # attributes are not supported currently." Remove explicit declaration so
+  # Terraform does not attempt to add it as a custom attribute.
+
   schema {
     attribute_data_type      = "String"
     developer_only_attribute = false
     mutable                  = true
-    name                     = "email"
+    name                     = "family_name"
     required                 = true
 
     string_attribute_constraints {
@@ -19,25 +24,17 @@ resource "aws_cognito_user_pool" "main" {
     }
   }
 
-  #   schema {
-  #     attribute_data_type = "String"
-  #     name                = "email"
-  #     required            = true
-  #     mutable             = true
-  #   }
-
   schema {
-    attribute_data_type = "String"
-    name                = "family_name"
-    required            = false
-    mutable             = true
-  }
+    attribute_data_type      = "String"
+    developer_only_attribute = false
+    mutable                  = true
+    name                     = "given_name"
+    required                 = true
 
-  schema {
-    attribute_data_type = "String"
-    name                = "given_name"
-    required            = false
-    mutable             = true
+    string_attribute_constraints {
+      max_length = "2048"
+      min_length = "0"
+    }
   }
 
   # Password policy
@@ -105,7 +102,6 @@ resource "aws_cognito_user_pool" "main" {
 
   lifecycle {
     prevent_destroy = true
-    ignore_changes  = [schema]
   }
 
   depends_on = [module.post_confirmation_lambda]
