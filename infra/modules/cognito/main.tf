@@ -184,6 +184,16 @@ resource "aws_cognito_user_pool_domain" "main" {
   managed_login_version = 2
 }
 
+# AWS Cloud Control: Cognito managed login branding (uses AWS default hosted UI when no custom assets provided)
+resource "awscc_cognito_managed_login_branding" "branding" {
+  # This resource configures Cognito's hosted UI branding via the AWS Cloud Control provider.
+  # We intentionally do not upload custom assets here so AWS will serve the default hosted UI.
+  user_pool_id = aws_cognito_user_pool.main.id
+
+  # Keep a dependency on the domain so ordering is correct during apply.
+  depends_on = [aws_cognito_user_pool_domain.main]
+}
+
 # Post-confirmation Lambda module
 module "post_confirmation_lambda" {
   source = "./lambda/post_confirmation"
