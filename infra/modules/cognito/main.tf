@@ -120,6 +120,7 @@ resource "aws_cognito_user_pool_client" "main" {
   explicit_auth_flows = [
     "ALLOW_USER_AUTH",
     "ALLOW_USER_SRP_AUTH",
+    # "ALLOW_REFRESH_TOKEN_AUTH",
   ]
 
   # Token validity - Adjusted for SPA security best practices
@@ -179,6 +180,8 @@ resource "aws_cognito_user_pool_domain" "main" {
   # domain       = var.cognito_domain_prefix != null ? var.cognito_domain_prefix : "${var.project_name}-${var.environment}"
   domain       = var.cognito_domain_prefix
   user_pool_id = aws_cognito_user_pool.main.id
+
+  managed_login_version = 2
 }
 
 # Post-confirmation Lambda module
