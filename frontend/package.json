@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "build:dev": "dotenv -e .env.development -- next build",
+    "build:staging": "dotenv -e .env.staging -- next build",
     "build:prod": "next build",
     "start": "next start",
     "lint": "next lint",
