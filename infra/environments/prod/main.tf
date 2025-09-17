@@ -55,17 +55,12 @@ module "iam" {
   project_name = var.project_name
   environment  = var.environment
 
-  # Pass secret ARNs after they're created
-  # secret_arns = module.secrets.all_secret_arns
-
   tags = {
     Environment = var.environment
     Owner       = "DevOps Team"
     Compliance  = "Healthcare"
     Project     = "NSP Pro"
   }
-
-  depends_on = []
 }
 
 # SQS infrastructure for solve request processing

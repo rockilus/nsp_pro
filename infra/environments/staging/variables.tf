@@ -138,10 +138,10 @@ variable "kms_key_id_sqs" {
 }
 
 # Secrets Configuration Variables
-variable "permit_api_key" {
-  description = "Permit.io API key for PDP configuration"
+variable "permit_api_key_secret_name" {
+  description = "Name of the Permit API key secret in AWS Secrets Manager (created out-of-band)."
   type        = string
-  sensitive   = true
+  default     = null
 }
 
 variable "replica_region" {
@@ -397,7 +397,6 @@ variable "log_retention_days_documentdb" {
   description = "CloudWatch log retention period in days for DocumentDB audit logs"
   type        = number
   default     = 90
-
   validation {
     condition     = contains([1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653], var.log_retention_days_documentdb)
     error_message = "Log retention days for DocumentDB must be a valid CloudWatch retention period."
@@ -468,7 +467,6 @@ variable "main_service_environment_variables" {
   }))
   default = []
 }
-
 
 variable "main_service_desired_count" {
   description = "Desired number of main service tasks"

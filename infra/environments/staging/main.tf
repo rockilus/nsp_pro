@@ -48,33 +48,6 @@ module "cognito" {
   deletion_protection_cognito = var.deletion_protection_cognito
 }
 
-
-# AWS Secrets Manager for sensitive configuration
-module "secrets" {
-  source = "../../modules/secrets"
-
-  project_name = var.project_name
-  environment  = var.environment
-  aws_region   = var.aws_region
-
-  # Secret values
-  permit_api_key = var.permit_api_key
-
-  # Healthcare compliance configuration
-  replica_region          = var.replica_region
-  recovery_window_in_days = var.recovery_window_in_days
-  log_retention_days      = var.log_retention_days
-
-  tags = {
-    Environment = var.environment
-    Owner       = "DevOps Team"
-    Compliance  = "Healthcare"
-    Project     = "NSP Pro"
-  }
-
-}
-
-
 # IAM roles and policies module
 module "iam" {
   source = "../../modules/iam"
@@ -82,19 +55,12 @@ module "iam" {
   project_name = var.project_name
   environment  = var.environment
 
-  # Pass secret ARNs after they're created
-  # secret_arns = module.secrets.all_secret_arns
-
   tags = {
     Environment = var.environment
     Owner       = "DevOps Team"
     Compliance  = "Healthcare"
     Project     = "NSP Pro"
   }
-
-  # Pass secret ARNs created by the secrets module so IAM can create least-privilege policy
-  # Do not consume secret ARNs directly here to avoid dependency cycles during replace
-  # IAM will fall back to ARN patterns when secret_arns is not provided.
 }
 
 # SQS infrastructure for solve request processing
@@ -126,9 +92,24 @@ module "sqs" {
     Project     = "NSP Pro"
   }
 
-  # secrets should be created independently; IAM will consume their ARNs
-  # (remove circular depends_on on module.iam)
-  # depends_on = [module.iam]
+  depends_on = [module.iam]
+}
+
+
+
+# AWS Secrets Manager for sensitive configuration
+# The secrets are now managed out-of-band in AWS Secrets Manager.
+# Terraform will reference existing secrets via data sources so the
+# secret values never enter Terraform state.
+
+data "aws_secretsmanager_secret" "permit_api_key" {
+  # Name must match the secret already created in AWS Secrets Manager.
+  # Example: "nsp-pro/permit-api-key" or "nsp_pro-prod-permit-api-key" depending on your naming.
+  name = var.permit_api_key_secret_name
+}
+
+data "aws_secretsmanager_secret_version" "permit_api_key_version" {
+  secret_id = data.aws_secretsmanager_secret.permit_api_key.id
 }
 
 
@@ -379,8 +360,8 @@ module "ecs" {
   permit_pdp_cpu_architecture        = var.permit_pdp_cpu_architecture
   permit_pdp_operating_system_family = var.permit_pdp_operating_system_family
 
-  # Secret ARNs from secrets module
-  permit_api_key_secret_arn = module.secrets.permit_api_key_secret_arn
+  # Secret ARNs (referencing externally-managed Secrets Manager secrets)
+  permit_api_key_secret_arn = data.aws_secretsmanager_secret.permit_api_key.arn
   documentdb_secret_arn     = module.documentdb.credentials_secret_arn
 
   # SQS Queue Names
@@ -399,7 +380,6 @@ module "ecs" {
     module.ecr,
     module.network_load_balancer,
     module.iam,
-    module.secrets,
     module.documentdb,
     module.security_groups,
     module.sqs
