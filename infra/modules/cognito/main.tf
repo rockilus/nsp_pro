@@ -188,10 +188,15 @@ resource "aws_cognito_user_pool_domain" "main" {
 resource "awscc_cognito_managed_login_branding" "branding" {
   # This resource configures Cognito's hosted UI branding via the AWS Cloud Control provider.
   # We intentionally do not upload custom assets here so AWS will serve the default hosted UI.
-  user_pool_id = aws_cognito_user_pool.main.id
+  user_pool_id                = aws_cognito_user_pool.main.id
+  client_id                   = aws_cognito_user_pool_client.main.id
+  use_cognito_provided_values = true
 
   # Keep a dependency on the domain so ordering is correct during apply.
-  depends_on = [aws_cognito_user_pool_domain.main]
+  depends_on = [
+    aws_cognito_user_pool_domain.main,
+    aws_cognito_user_pool_client.main,
+  ]
 }
 
 # Post-confirmation Lambda module

@@ -48,11 +48,6 @@ module "cognito" {
   deletion_protection_cognito = var.deletion_protection_cognito
 }
 
-// AWS Cloud Control provider (used by module resources such as awscc_cognito_managed_login_branding)
-provider "awscc" {
-  region = var.aws_region
-}
-
 # IAM roles and policies module
 module "iam" {
   source = "../../modules/iam"
