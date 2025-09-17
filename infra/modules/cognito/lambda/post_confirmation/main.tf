@@ -63,10 +63,11 @@ resource "aws_lambda_function" "post_confirmation_trigger" {
 
   environment {
     variables = {
-      PROJECT_NAME = var.project_name
-      ENVIRONMENT  = var.environment
-      REGION       = var.aws_region
-      API_BASE_URL = var.api_gateway_url
+      PROJECT_NAME               = var.project_name
+      ENVIRONMENT                = var.environment
+      REGION                     = var.aws_region
+      API_BASE_URL               = var.api_gateway_url
+      INTERNAL_API_KEY_SSM_PARAM = "/${var.project_name}/${var.environment}/internal-api-key"
     }
   }
 
