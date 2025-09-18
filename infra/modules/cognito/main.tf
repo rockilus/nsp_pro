@@ -81,7 +81,7 @@ resource "aws_cognito_user_pool" "main" {
     Project     = var.project_name
   }
 
-  deletion_protection = var.deletion_protection_cognito
+  deletion_protection = var.deletion_protection_cognito_user_pool_aws
   user_pool_tier      = "ESSENTIALS"
 
   admin_create_user_config {
@@ -98,10 +98,6 @@ resource "aws_cognito_user_pool" "main" {
 
   verification_message_template {
     default_email_option = "CONFIRM_WITH_CODE"
-  }
-
-  lifecycle {
-    prevent_destroy = true
   }
 
   depends_on = [module.post_confirmation_lambda]

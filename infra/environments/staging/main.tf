@@ -40,12 +40,12 @@ module "cognito" {
   environment  = var.environment
   aws_region   = var.aws_region
 
-  api_gateway_url             = "https://${var.api_gateway_domain_name}"
-  api_gateway_ssm_parameter   = module.api_gateway.backend_api_key_parameter
-  frontend_domain_name        = var.frontend_domain_name
-  landing_page_domain_name    = var.landing_page_domain_name
-  cognito_domain_prefix       = var.cognito_domain_prefix
-  deletion_protection_cognito = var.deletion_protection_cognito
+  api_gateway_url                           = "https://${var.api_gateway_domain_name}"
+  api_gateway_ssm_parameter                 = module.api_gateway.backend_api_key_parameter
+  frontend_domain_name                      = var.frontend_domain_name
+  landing_page_domain_name                  = var.landing_page_domain_name
+  cognito_domain_prefix                     = var.cognito_domain_prefix
+  deletion_protection_cognito_user_pool_aws = var.deletion_protection_cognito_user_pool_aws
 }
 
 # IAM roles and policies module
@@ -197,7 +197,10 @@ module "api_gateway" {
   certificate_arn    = module.route53.certificate_arn
   hosted_zone_id     = module.route53.hosted_zone_id
 
-  depends_on = [module.route53, module.network_load_balancer]
+  depends_on = [
+    module.route53,
+    module.network_load_balancer,
+  ]
 }
 
 module "frontend" {

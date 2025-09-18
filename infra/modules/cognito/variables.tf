@@ -40,13 +40,14 @@ variable "cognito_domain_prefix" {
   default     = null
 }
 
-variable "deletion_protection_cognito" {
+variable "deletion_protection_cognito_user_pool_aws" {
   description = "Enable deletion protection for the Cognito User Pool"
   type        = string
   default     = "ACTIVE"
 
   validation {
-    condition     = contains(["ACTIVE", "INACTIVE"], var.deletion_protection_cognito)
+    condition     = contains(["ACTIVE", "INACTIVE"], var.deletion_protection_cognito_user_pool_aws)
     error_message = "Deletion protection must be either 'ACTIVE' or 'INACTIVE'."
   }
 }
+
