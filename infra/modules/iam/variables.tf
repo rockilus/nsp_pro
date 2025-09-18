@@ -1,3 +1,22 @@
+variable "permit_api_key_secret_arn" {
+  description = "ARN of the Permit API key secret in Secrets Manager"
+  type        = string
+
+  validation {
+    condition     = length(trimspace(var.permit_api_key_secret_arn)) > 0
+    error_message = "permit_api_key_secret_arn must be provided and non-empty"
+  }
+}
+
+variable "documentdb_secret_arn" {
+  description = "ARN of the DocumentDB credentials secret in Secrets Manager"
+  type        = string
+
+  validation {
+    condition     = length(trimspace(var.documentdb_secret_arn)) > 0
+    error_message = "documentdb_secret_arn must be provided and non-empty"
+  }
+}
 variable "project_name" {
   description = "Name of the project"
   type        = string

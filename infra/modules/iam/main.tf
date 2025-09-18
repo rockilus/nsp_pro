@@ -60,12 +60,11 @@ resource "aws_iam_role_policy" "secrets_access_policy" {
           "secretsmanager:GetSecretValue",
           "secretsmanager:DescribeSecret"
         ]
-        Resource = [
-          # Permit API key secret pattern
-          "arn:aws:secretsmanager:*:*:secret:${var.project_name}-${var.environment}-permit-api-key-*",
-          # DocumentDB credentials secret pattern
-          "arn:aws:secretsmanager:*:*:secret:${var.project_name}/${var.environment}/documentdb/credentials-*"
-        ]
+        Resource = compact([
+          # permit_api_key_secret_arn and documentdb_secret_arn provided by caller
+          var.permit_api_key_secret_arn,
+          var.documentdb_secret_arn,
+        ])
       }
     ]
   })

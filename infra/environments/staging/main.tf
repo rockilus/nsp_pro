@@ -1,3 +1,18 @@
+# AWS Secrets Manager for sensitive configuration
+# The secrets are now managed out-of-band in AWS Secrets Manager.
+# Terraform will reference existing secrets via data sources so the
+# secret values never enter Terraform state.
+
+data "aws_secretsmanager_secret" "permit_api_key" {
+  # Name must match the secret already created in AWS Secrets Manager.
+  # Example: "nsp-pro/permit-api-key" or "nsp_pro-prod-permit-api-key" depending on your naming.
+  name = var.permit_api_key_secret_name
+}
+
+data "aws_secretsmanager_secret_version" "permit_api_key_version" {
+  secret_id = data.aws_secretsmanager_secret.permit_api_key.id
+}
+
 # VPC Infrastructure
 module "vpc" {
   source = "../../modules/vpc"
@@ -61,6 +76,9 @@ module "iam" {
     Compliance  = "Healthcare"
     Project     = "NSP Pro"
   }
+  # Pass secret ARNs so the IAM policy can reference concrete resources
+  permit_api_key_secret_arn = data.aws_secretsmanager_secret.permit_api_key.arn
+  documentdb_secret_arn     = module.documentdb.credentials_secret_arn
 }
 
 # SQS infrastructure for solve request processing
@@ -93,23 +111,6 @@ module "sqs" {
   }
 
   depends_on = [module.iam]
-}
-
-
-
-# AWS Secrets Manager for sensitive configuration
-# The secrets are now managed out-of-band in AWS Secrets Manager.
-# Terraform will reference existing secrets via data sources so the
-# secret values never enter Terraform state.
-
-data "aws_secretsmanager_secret" "permit_api_key" {
-  # Name must match the secret already created in AWS Secrets Manager.
-  # Example: "nsp-pro/permit-api-key" or "nsp_pro-prod-permit-api-key" depending on your naming.
-  name = var.permit_api_key_secret_name
-}
-
-data "aws_secretsmanager_secret_version" "permit_api_key_version" {
-  secret_id = data.aws_secretsmanager_secret.permit_api_key.id
 }
 
 
