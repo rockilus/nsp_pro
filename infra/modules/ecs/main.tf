@@ -91,6 +91,38 @@ resource "aws_cloudwatch_log_group" "permit_pdp" {
   # })
 }
 
+
+# Grant the task execution role permissions to create log streams and put
+# log events specifically for the CloudWatch Log Groups created in this module.
+resource "aws_iam_role_policy" "ecs_task_execution_logs" {
+  name = "${var.project_name}-${var.environment}-ecs-task-execution-logs"
+  role = var.task_execution_role_id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams"
+        ]
+        Resource = [
+          aws_cloudwatch_log_group.main_service.arn,
+          aws_cloudwatch_log_group.solve_service.arn,
+          aws_cloudwatch_log_group.permit_pdp.arn,
+          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/ecs/main-service:log-stream:",
+          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/ecs/permit-pdp:log-stream:",
+          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/ecs/solve-service:log-stream:",
+        ]
+      }
+    ]
+  })
+}
+
 # IAM Role references
 # Using task_execution_role_arn and task_role_arn from the IAM module
 

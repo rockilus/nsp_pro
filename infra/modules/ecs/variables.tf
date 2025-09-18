@@ -11,11 +11,19 @@ variable "environment" {
 variable "aws_region" {
   description = "AWS region"
   type        = string
+  validation {
+    condition     = length(trimspace(var.aws_region)) > 0
+    error_message = "aws_region must not be an empty string"
+  }
 }
 
 variable "aws_account_id" {
   description = "AWS Account ID"
   type        = string
+  validation {
+    condition     = can(regex("^[0-9]{12}$", var.aws_account_id))
+    error_message = "aws_account_id must be a 12-digit AWS account id"
+  }
 }
 
 variable "vpc_id" {
@@ -47,6 +55,11 @@ variable "nlb_security_group_ids" {
 # IAM Role ARNs
 variable "task_execution_role_arn" {
   description = "ARN of the ECS task execution IAM role"
+  type        = string
+}
+
+variable "task_execution_role_id" {
+  description = "ID of the ECS task execution IAM role"
   type        = string
 }
 

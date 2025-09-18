@@ -13,6 +13,14 @@ data "aws_secretsmanager_secret_version" "permit_api_key_version" {
   secret_id = data.aws_secretsmanager_secret.permit_api_key.id
 }
 
+# Ensure we have an AWS account id available when not provided via terraform.tfvars.
+# This falls back to the provider's caller identity if var.aws_account_id is empty.
+data "aws_caller_identity" "current" {}
+
+locals {
+  effective_aws_account_id = var.aws_account_id != "" ? var.aws_account_id : data.aws_caller_identity.current.account_id
+}
+
 # VPC Infrastructure
 module "vpc" {
   source = "../../modules/vpc"
@@ -38,7 +46,7 @@ module "ecr" {
 
   project_name   = var.project_name
   environment    = var.environment
-  aws_account_id = var.aws_account_id
+  aws_account_id = local.effective_aws_account_id
 
   tags = {
     Environment = var.environment
@@ -51,10 +59,9 @@ module "ecr" {
 module "cognito" {
   source = "../../modules/cognito"
 
-  project_name = var.project_name
-  environment  = var.environment
-  aws_region   = var.aws_region
-
+  project_name                              = var.project_name
+  environment                               = var.environment
+  aws_region                                = var.aws_region
   api_gateway_url                           = "https://${var.api_gateway_domain_name}"
   api_gateway_ssm_parameter                 = module.api_gateway.backend_api_key_parameter
   frontend_domain_name                      = var.frontend_domain_name
@@ -182,7 +189,7 @@ module "api_gateway" {
   project_name   = var.project_name
   environment    = var.environment
   aws_region     = var.aws_region
-  aws_account_id = var.aws_account_id
+  aws_account_id = local.effective_aws_account_id
 
   # API Gateway configuration
   cors_allowed_origins   = var.cors_allowed_origins
@@ -312,11 +319,11 @@ module "ecs" {
   project_name   = var.project_name
   environment    = var.environment
   aws_region     = var.aws_region
-  aws_account_id = var.aws_account_id
+  aws_account_id = local.effective_aws_account_id
 
   # IAM role ARNs from the IAM module
   task_execution_role_arn = module.iam.ecs_task_execution_role_arn
-  # task_role_arn           = module.iam.ecs_task_role_arn
+  task_execution_role_id  = module.iam.ecs_task_execution_role_id
 
   # VPC and network configuration
   vpc_id                 = module.vpc.vpc_id
