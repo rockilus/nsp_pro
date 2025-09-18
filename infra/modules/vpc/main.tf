@@ -138,6 +138,13 @@ resource "aws_route_table" "public" {
   })
 }
 
+resource "aws_main_route_table_association" "public_as_main" {
+  vpc_id         = aws_vpc.main.id
+  route_table_id = aws_route_table.public.id
+
+  depends_on = [aws_route_table.public, aws_vpc.main]
+}
+
 # Route Table for Private Subnets
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
