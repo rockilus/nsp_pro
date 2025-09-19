@@ -205,6 +205,9 @@ module "api_gateway" {
   certificate_arn    = module.route53.certificate_arn
   hosted_zone_id     = module.route53.hosted_zone_id
 
+  # Task execution role for accessing SSM parameters
+  task_execution_role_id = module.iam.ecs_task_execution_role_id
+
   depends_on = [
     module.route53,
     module.network_load_balancer,

@@ -88,3 +88,9 @@ variable "endpoint_type" {
     error_message = "Endpoint type must be REGIONAL or EDGE. REGIONAL is recommended for healthcare applications."
   }
 }
+
+variable "task_execution_role_id" {
+  description = "ID (name or ARN) of the ECS task execution IAM role that should be granted access to SSM parameters"
+  type        = string
+  default     = ""
+}

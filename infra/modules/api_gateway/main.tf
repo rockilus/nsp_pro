@@ -23,6 +23,34 @@ resource "aws_ssm_parameter" "backend_api_key" {
   }
 }
 
+# Grant the ECS task execution role permission to read the SSM parameters used
+# for backend/internal API keys so tasks running in ECS can authenticate to
+# the backend when proxying requests through the API Gateway.
+resource "aws_iam_role_policy" "ecs_task_execution_ssm_parameters" {
+  name = "${var.project_name}-${var.environment}-ecs-task-execution-ssm"
+  role = var.task_execution_role_id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameter",
+          "ssm:GetParameters",
+          "ssm:GetParametersByPath",
+          "ssm:DescribeParameters",
+          "kms:Decrypt"
+        ]
+        Resource = [
+          aws_ssm_parameter.backend_api_key.arn,
+          aws_ssm_parameter.internal_api_key.arn
+        ]
+      }
+    ]
+  })
+}
+
 resource "aws_api_gateway_rest_api" "main" {
   name        = "${var.project_name}-api-gateway-${var.environment}"
   description = "REST API Gateway for ${var.project_name} in ${var.environment}, receive request from fontend and pass them through to the main service in the backend"
