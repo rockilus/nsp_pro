@@ -17,7 +17,9 @@ class AWSConfig(BaseModel):
     """AWS configuration settings."""
 
     region: str = Field(default="eu-west-3", description="AWS region")
-    aws_access_key_id: Optional[str] = Field(None, description="AWS access key ID")
+    aws_access_key_id: Optional[str] = Field(
+        None, description="AWS access key ID"
+    )
     aws_secret_access_key: Optional[str] = Field(
         None, description="AWS secret access key"
     )
@@ -49,7 +51,7 @@ class AWSConfig(BaseModel):
 
     # Secrets Manager Configuration
     documentdb_secret_name: str = Field(
-        default="rockilus/prod/documentdb/credentials",
+        # default="rockilus/prod/documentdb/credentials",
         description="DocumentDB credentials secret name",
     )
 
@@ -76,7 +78,9 @@ class AWSConfig(BaseModel):
             aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY", ""),
             aws_session_token=os.getenv("AWS_SESSION_TOKEN"),
             endpoint_url=os.getenv("AWS_ENDPOINT_URL"),
-            sqs_solve_queue_name=os.getenv("AWS_SQS_SOLVE_QUEUE_NAME", "solve-queue"),
+            sqs_solve_queue_name=os.getenv(
+                "AWS_SQS_SOLVE_QUEUE_NAME", "solve-queue"
+            ),
             sqs_solve_dlq_name=os.getenv("AWS_SQS_SOLVE_DLQ_NAME"),
             sqs_visibility_timeout_seconds=int(
                 os.getenv("AWS_SQS_VISIBILITY_TIMEOUT_SECONDS", "900")
@@ -87,10 +91,13 @@ class AWSConfig(BaseModel):
             sqs_receive_message_wait_time=int(
                 os.getenv("AWS_SQS_RECEIVE_MESSAGE_WAIT_TIME", "20")
             ),
-            sqs_max_receive_count=int(os.getenv("AWS_SQS_MAX_RECEIVE_COUNT", "3")),
+            sqs_max_receive_count=int(
+                os.getenv("AWS_SQS_MAX_RECEIVE_COUNT", "3")
+            ),
             documentdb_secret_name=os.getenv(
-                "AWS_DOCUMENTDB_SECRET_NAME",
-                "rockilus/prod/documentdb/credentials",
+                "DOCUMENTDB_SECRET_NAME",
+                "",
+                # "rockilus/prod/documentdb/credentials",
             ),
         )
 
@@ -138,17 +145,22 @@ class AWSConfig(BaseModel):
                 sqs_receive_message_wait_time=int(
                     os.getenv("AWS_SQS_RECEIVE_MESSAGE_WAIT_TIME", "20")
                 ),
-                sqs_max_receive_count=int(os.getenv("AWS_SQS_MAX_RECEIVE_COUNT", "3")),
+                sqs_max_receive_count=int(
+                    os.getenv("AWS_SQS_MAX_RECEIVE_COUNT", "3")
+                ),
                 documentdb_secret_name=os.getenv(
-                    "AWS_DOCUMENTDB_SECRET_NAME",
-                    "rockilus/prod/documentdb/credentials",
+                    "DOCUMENTDB_SECRET_NAME",
+                    "",
+                    # "rockilus/prod/documentdb/credentials",
                 ),
                 endpoint_url=os.getenv("AWS_ENDPOINT_URL"),
             )
 
         except (BotoCoreError, ClientError) as e:
             error_code = (
-                getattr(e, "response", {}).get("Error", {}).get("Code", "Unknown")
+                getattr(e, "response", {})
+                .get("Error", {})
+                .get("Code", "Unknown")
             )
             log_error(
                 f"Failed to retrieve AWS credentials from boto3 session: "

@@ -61,12 +61,7 @@ def get_expected_api_key() -> str:
             raise ServiceAuthError("SSM client not available in development")
 
         logger.debug("Got SSM client successfully")
-        # project_name = config.project_name
-        # logger.debug("Project name: %s", project_name)
-        # environment = config.environment
-        # logger.debug("Environment: %s", environment)
-        # parameter_name = f"/{project_name}/{environment}/backend-api-key"
-        parameter_name = "/rockilus/prod/backend-api-key"
+        parameter_name = config.backend_api_key_ssm_parameter_name
         logger.debug("Parameter name: %s", parameter_name)
 
         response = ssm.get_parameter(Name=parameter_name, WithDecryption=True)
@@ -82,9 +77,13 @@ def get_expected_api_key() -> str:
         error_code = e.response["Error"]["Code"]
         if error_code == "ParameterNotFound":
             logger.error("API key parameter not found: %s", parameter_name)
-            raise ServiceAuthError("Service authentication not configured") from e
+            raise ServiceAuthError(
+                "Service authentication not configured"
+            ) from e
         logger.error("AWS SSM error: %s", e)
-        raise ServiceAuthError("Failed to retrieve service configuration") from e
+        raise ServiceAuthError(
+            "Failed to retrieve service configuration"
+        ) from e
     except Exception as e:
         logger.error("Failed to retrieve API key from SSM: %s", e)
         raise ServiceAuthError("Service configuration error") from e
@@ -120,4 +119,6 @@ def validate_service_api_key(provided_key: Optional[str]) -> bool:
         raise
     except Exception as e:
         logger.error("Unexpected error during API key validation: %s", e)
-        raise ServiceAuthError("Service authentication validation failed") from e
+        raise ServiceAuthError(
+            "Service authentication validation failed"
+        ) from e

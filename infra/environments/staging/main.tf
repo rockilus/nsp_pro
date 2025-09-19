@@ -372,8 +372,10 @@ module "ecs" {
   permit_pdp_operating_system_family = var.permit_pdp_operating_system_family
 
   # Secret ARNs (referencing externally-managed Secrets Manager secrets)
-  permit_api_key_secret_arn = data.aws_secretsmanager_secret.permit_api_key.arn
-  documentdb_secret_arn     = module.documentdb.credentials_secret_arn
+  permit_api_key_secret_arn                  = data.aws_secretsmanager_secret.permit_api_key.arn
+  documentdb_secret_arn                      = module.documentdb.credentials_secret_arn
+  documentdb_secret_name                     = module.documentdb.credentials_secret_name
+  api_gateway_backend_api_key_parameter_name = module.api_gateway.backend_api_key_parameter.name
 
   # SQS Queue Names
   sqs_solve_queue_name = module.sqs.solve_queue_name

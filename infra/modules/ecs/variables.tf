@@ -240,6 +240,16 @@ variable "documentdb_secret_arn" {
   default     = ""
 }
 
+variable "documentdb_secret_name" {
+  description = "Name of the DocumentDB credentials secret"
+  type        = string
+}
+
+variable "api_gateway_backend_api_key_parameter_name" {
+  description = "SSM Parameter name where the backend API key is stored"
+  type        = string
+}
+
 variable "main_service_security_group_id" {
   description = "Security group ID for the main service"
   type        = string

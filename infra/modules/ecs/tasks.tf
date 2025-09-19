@@ -44,28 +44,18 @@ resource "aws_ecs_task_definition" "main_service" {
           {
             name  = "SQS_SOLVE_DLQ_NAME"
             value = var.sqs_solve_dlq_name
+          },
+          {
+            name  = "DOCUMENTDB_SECRET_NAME"
+            value = var.documentdb_secret_name
+          },
+          {
+            name  = "BACKEND_API_KEY_SSM_PARAMETER_NAME"
+            value = var.api_gateway_backend_api_key_parameter_name
           }
         ]
       )
 
-      # environment = concat(
-      #   [
-      #     for key, value in var.main_service_environment_variables : {
-      #       name  = key
-      #       value = value
-      #     }
-      #   ],
-      #   [
-      #     {
-      #       name  = "SQS_SOLVE_QUEUE_NAME"
-      #       value = var.sqs_solve_queue_name
-      #     },
-      #     {
-      #       name  = "SQS_SOLVE_DLQ_NAME"
-      #       value = var.sqs_solve_dlq_name
-      #     }
-      #   ]
-      # )
 
       secrets = [
         {
