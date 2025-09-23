@@ -100,7 +100,9 @@ async def authz_role_assignment_unassign(
         handle_permit_errors(e)
 
 
-async def authz_role_assignment_get_user_team_ids(user_id: str, role: str) -> List[str]:
+async def authz_role_assignment_get_user_team_ids(
+    user_id: str, role: str
+) -> List[str]:
     try:
         team_permit = await permit.api.role_assignments.list(
             user_key=user_id,
@@ -136,7 +138,15 @@ async def authz_check(
     Raises:
         Exception: If authorization check fails with errors after all retries
     """
-    resource_instance = f"{resource}:{resource_id}" if resource_id else resource
+    log_info("permit url: " + config.pdp_url + " key: " + config.pdp_api_key)
+    log_info(
+        f"Starting authorization check: user={user_id}, action={action}, "
+        f"resource={resource}, resource_id={resource_id}"
+    )
+    log_info(f"Retry enabled: {config.authz_enable_retry}")
+    resource_instance = (
+        f"{resource}:{resource_id}" if resource_id else resource
+    )
 
     # If retry is disabled, use the original single-check logic
     if not config.authz_enable_retry:
@@ -145,6 +155,9 @@ async def authz_check(
                 user=user_id,
                 action=action,
                 resource=resource_instance,
+            )
+            log_info(
+                f"Authorization check result: {result} for {resource_instance}"
             )
             return result
         except Exception as e:
@@ -226,11 +239,15 @@ async def authz_check(
 async def authz_get_all_users() -> List[UserAuth]:
     users: List[UserRead] = []
     page = 1
-    per_page = 100  # Adjust this value based on the actual limit specified by the API
+    per_page = (
+        100  # Adjust this value based on the actual limit specified by the API
+    )
 
     try:
         while True:
-            response = await permit.api.users.list(page=page, per_page=per_page)
+            response = await permit.api.users.list(
+                page=page, per_page=per_page
+            )
             users.extend(response.data)
 
             # Check if there's another page of results
