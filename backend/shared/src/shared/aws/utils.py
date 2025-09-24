@@ -27,6 +27,7 @@ def get_aws_config_from_env() -> AWSConfig:
             os.getenv("AWS_SQS_RECEIVE_MESSAGE_WAIT_TIME", "20")
         ),
         sqs_max_receive_count=int(os.getenv("AWS_SQS_MAX_RECEIVE_COUNT", "3")),
+        documentdb_secret_name=os.getenv("DOCUMENTDB_SECRET_NAME", ""),
     )
 
 

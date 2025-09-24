@@ -15,6 +15,7 @@ def test_aws_config_creation():
         aws_secret_access_key="test_secret_key",
         sqs_solve_queue_name="nsp-pro-dev-solve-queue",
         sqs_solve_dlq_name="nsp-solve-dlq",
+        documentdb_secret_name="test-documentdb-secret",
     )
     assert config.region == "eu-west-3"
     assert config.sqs_solve_queue_name == "nsp-pro-dev-solve-queue"
@@ -47,6 +48,7 @@ def test_sqs_client_initialization(mock_boto3):
         aws_secret_access_key="test_secret_key",
         sqs_solve_queue_name="nsp-pro-dev-solve-queue",
         sqs_solve_dlq_name="nsp-solve-dlq",
+        documentdb_secret_name="test-documentdb-secret",
     )
     client = SQSClient(config)
 

@@ -155,6 +155,10 @@ resource "aws_ecs_task_definition" "solve_service" {
           {
             name  = "SQS_SOLVE_DLQ_NAME"
             value = var.sqs_solve_dlq_name
+          },
+          {
+            name  = "DOCUMENTDB_SECRET_NAME"
+            value = var.documentdb_secret_name
           }
         ]
       )
