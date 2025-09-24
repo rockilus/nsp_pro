@@ -91,13 +91,13 @@ variable "landing_page_domain_name" {
   }
 }
 
-variable "deletion_protection_cognito" {
+variable "deletion_protection_cognito_user_pool_aws" {
   description = "Enable deletion protection for the Cognito User Pool"
   type        = string
   default     = "ACTIVE"
 
   validation {
-    condition     = contains(["ACTIVE", "INACTIVE"], var.deletion_protection_cognito)
+    condition     = contains(["ACTIVE", "INACTIVE"], var.deletion_protection_cognito_user_pool_aws)
     error_message = "Deletion protection must be either 'ACTIVE' or 'INACTIVE'."
   }
 }
@@ -278,6 +278,30 @@ variable "api_gateway_domain" {
     condition     = can(regex("^https://[a-zA-Z0-9.-]+", var.api_gateway_domain))
     error_message = "The API Gateway domain must be a valid HTTPS URL for security compliance."
   }
+}
+
+variable "enable_apigw_logging" {
+  description = "Enable API Gateway access logging and method-level logging (only create CW resources when true)."
+  type        = bool
+  default     = false
+}
+
+variable "apigw_logging_level" {
+  description = "Logging level for API Gateway method settings. One of OFF, ERROR, INFO."
+  type        = string
+  default     = "INFO"
+}
+
+variable "apigw_data_trace_enabled" {
+  description = "Enable data trace (request/response body) in API Gateway logs. Use with caution for sensitive data."
+  type        = bool
+  default     = false
+}
+
+variable "apigw_enable_xray" {
+  description = "Enable X-Ray tracing for the API Gateway stage."
+  type        = bool
+  default     = false
 }
 
 

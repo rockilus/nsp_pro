@@ -1,3 +1,26 @@
+# AWS Secrets Manager for sensitive configuration
+# The secrets are now managed out-of-band in AWS Secrets Manager.
+# Terraform will reference existing secrets via data sources so the
+# secret values never enter Terraform state.
+
+data "aws_secretsmanager_secret" "permit_api_key" {
+  # Name must match the secret already created in AWS Secrets Manager.
+  # Example: "nsp-pro/permit-api-key" or "nsp_pro-prod-permit-api-key" depending on your naming.
+  name = var.permit_api_key_secret_name
+}
+
+data "aws_secretsmanager_secret_version" "permit_api_key_version" {
+  secret_id = data.aws_secretsmanager_secret.permit_api_key.id
+}
+
+# Ensure we have an AWS account id available when not provided via terraform.tfvars.
+# This falls back to the provider's caller identity if var.aws_account_id is empty.
+data "aws_caller_identity" "current" {}
+
+locals {
+  effective_aws_account_id = var.aws_account_id != "" ? var.aws_account_id : data.aws_caller_identity.current.account_id
+}
+
 # VPC Infrastructure
 module "vpc" {
   source = "../../modules/vpc"
@@ -23,7 +46,7 @@ module "ecr" {
 
   project_name   = var.project_name
   environment    = var.environment
-  aws_account_id = var.aws_account_id
+  aws_account_id = local.effective_aws_account_id
 
   tags = {
     Environment = var.environment
@@ -40,12 +63,12 @@ module "cognito" {
   environment  = var.environment
   aws_region   = var.aws_region
 
-  api_gateway_url             = "https://${var.api_gateway_domain_name}"
-  api_gateway_ssm_parameter   = module.api_gateway.backend_api_key_parameter
-  frontend_domain_name        = var.frontend_domain_name
-  landing_page_domain_name    = var.landing_page_domain_name
-  cognito_domain_prefix       = var.cognito_domain_prefix
-  deletion_protection_cognito = var.deletion_protection_cognito
+  api_gateway_url                           = "https://${var.api_gateway_domain_name}"
+  api_gateway_ssm_parameter                 = module.api_gateway.backend_api_key_parameter
+  frontend_domain_name                      = var.frontend_domain_name
+  landing_page_domain_name                  = var.landing_page_domain_name
+  cognito_domain_prefix                     = var.cognito_domain_prefix
+  deletion_protection_cognito_user_pool_aws = var.deletion_protection_cognito_user_pool_aws
 }
 
 # IAM roles and policies module
@@ -54,6 +77,10 @@ module "iam" {
 
   project_name = var.project_name
   environment  = var.environment
+
+  # Pass secret ARNs so the IAM policy can reference concrete resources
+  permit_api_key_secret_arn = data.aws_secretsmanager_secret.permit_api_key.arn
+  documentdb_secret_arn     = module.documentdb.credentials_secret_arn
 
   tags = {
     Environment = var.environment
@@ -93,23 +120,6 @@ module "sqs" {
   }
 
   depends_on = [module.iam]
-}
-
-
-
-# AWS Secrets Manager for sensitive configuration
-# The secrets are now managed out-of-band in AWS Secrets Manager.
-# Terraform will reference existing secrets via data sources so the
-# secret values never enter Terraform state.
-
-data "aws_secretsmanager_secret" "permit_api_key" {
-  # Name must match the secret already created in AWS Secrets Manager.
-  # Example: "nsp-pro/permit-api-key" or "nsp_pro-prod-permit-api-key" depending on your naming.
-  name = var.permit_api_key_secret_name
-}
-
-data "aws_secretsmanager_secret_version" "permit_api_key_version" {
-  secret_id = data.aws_secretsmanager_secret.permit_api_key.id
 }
 
 
@@ -181,7 +191,7 @@ module "api_gateway" {
   project_name   = var.project_name
   environment    = var.environment
   aws_region     = var.aws_region
-  aws_account_id = var.aws_account_id
+  aws_account_id = local.effective_aws_account_id
 
   # API Gateway configuration
   cors_allowed_origins   = var.cors_allowed_origins
@@ -197,7 +207,19 @@ module "api_gateway" {
   certificate_arn    = module.route53.certificate_arn
   hosted_zone_id     = module.route53.hosted_zone_id
 
-  depends_on = [module.route53, module.network_load_balancer]
+  # Task execution role for accessing SSM parameters
+  task_execution_role_id = module.iam.ecs_task_execution_role_id
+
+  # Enable API Gateway logging for staging to help diagnose issues
+  enable_apigw_logging     = var.enable_apigw_logging
+  apigw_logging_level      = var.apigw_logging_level
+  apigw_data_trace_enabled = var.apigw_data_trace_enabled
+  apigw_enable_xray        = var.apigw_enable_xray
+
+  depends_on = [
+    module.route53,
+    module.network_load_balancer,
+  ]
 }
 
 module "frontend" {
@@ -308,11 +330,11 @@ module "ecs" {
   project_name   = var.project_name
   environment    = var.environment
   aws_region     = var.aws_region
-  aws_account_id = var.aws_account_id
+  aws_account_id = local.effective_aws_account_id
 
   # IAM role ARNs from the IAM module
   task_execution_role_arn = module.iam.ecs_task_execution_role_arn
-  # task_role_arn           = module.iam.ecs_task_role_arn
+  task_execution_role_id  = module.iam.ecs_task_execution_role_id
 
   # VPC and network configuration
   vpc_id                 = module.vpc.vpc_id
@@ -361,8 +383,10 @@ module "ecs" {
   permit_pdp_operating_system_family = var.permit_pdp_operating_system_family
 
   # Secret ARNs (referencing externally-managed Secrets Manager secrets)
-  permit_api_key_secret_arn = data.aws_secretsmanager_secret.permit_api_key.arn
-  documentdb_secret_arn     = module.documentdb.credentials_secret_arn
+  permit_api_key_secret_arn                  = data.aws_secretsmanager_secret.permit_api_key.arn
+  documentdb_secret_arn                      = module.documentdb.credentials_secret_arn
+  documentdb_secret_name                     = module.documentdb.credentials_secret_name
+  api_gateway_backend_api_key_parameter_name = module.api_gateway.backend_api_key_parameter.name
 
   # SQS Queue Names
   sqs_solve_queue_name = module.sqs.solve_queue_name

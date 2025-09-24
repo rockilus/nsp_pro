@@ -59,9 +59,10 @@ module "ecr" {
 module "cognito" {
   source = "../../modules/cognito"
 
-  project_name                              = var.project_name
-  environment                               = var.environment
-  aws_region                                = var.aws_region
+  project_name = var.project_name
+  environment  = var.environment
+  aws_region   = var.aws_region
+
   api_gateway_url                           = "https://${var.api_gateway_domain_name}"
   api_gateway_ssm_parameter                 = module.api_gateway.backend_api_key_parameter
   frontend_domain_name                      = var.frontend_domain_name
@@ -77,15 +78,16 @@ module "iam" {
   project_name = var.project_name
   environment  = var.environment
 
+  # Pass secret ARNs so the IAM policy can reference concrete resources
+  permit_api_key_secret_arn = data.aws_secretsmanager_secret.permit_api_key.arn
+  documentdb_secret_arn     = module.documentdb.credentials_secret_arn
+
   tags = {
     Environment = var.environment
     Owner       = "DevOps Team"
     Compliance  = "Healthcare"
     Project     = "NSP Pro"
   }
-  # Pass secret ARNs so the IAM policy can reference concrete resources
-  permit_api_key_secret_arn = data.aws_secretsmanager_secret.permit_api_key.arn
-  documentdb_secret_arn     = module.documentdb.credentials_secret_arn
 }
 
 # SQS infrastructure for solve request processing

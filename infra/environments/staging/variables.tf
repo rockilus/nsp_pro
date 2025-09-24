@@ -138,7 +138,7 @@ variable "kms_key_id_sqs" {
   default     = ""
 }
 
-# Secrets Configuration Variables
+# Name of the existing Permit API key secret in AWS Secrets Manager
 variable "permit_api_key_secret_name" {
   description = "Name of the Permit API key secret in AWS Secrets Manager (created out-of-band)."
   type        = string
