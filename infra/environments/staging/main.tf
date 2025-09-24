@@ -208,6 +208,12 @@ module "api_gateway" {
   # Task execution role for accessing SSM parameters
   task_execution_role_id = module.iam.ecs_task_execution_role_id
 
+  # Enable API Gateway logging for staging to help diagnose issues
+  enable_apigw_logging     = var.enable_apigw_logging
+  apigw_logging_level      = var.apigw_logging_level
+  apigw_data_trace_enabled = var.apigw_data_trace_enabled
+  apigw_enable_xray        = var.apigw_enable_xray
+
   depends_on = [
     module.route53,
     module.network_load_balancer,

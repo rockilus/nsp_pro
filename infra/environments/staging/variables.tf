@@ -280,6 +280,30 @@ variable "api_gateway_domain" {
   }
 }
 
+variable "enable_apigw_logging" {
+  description = "Enable API Gateway access logging and method-level logging (only create CW resources when true)."
+  type        = bool
+  default     = false
+}
+
+variable "apigw_logging_level" {
+  description = "Logging level for API Gateway method settings. One of OFF, ERROR, INFO."
+  type        = string
+  default     = "INFO"
+}
+
+variable "apigw_data_trace_enabled" {
+  description = "Enable data trace (request/response body) in API Gateway logs. Use with caution for sensitive data."
+  type        = bool
+  default     = false
+}
+
+variable "apigw_enable_xray" {
+  description = "Enable X-Ray tracing for the API Gateway stage."
+  type        = bool
+  default     = false
+}
+
 
 # Frontend Configuration
 variable "frontend_domain_name" {
@@ -320,7 +344,6 @@ variable "cloudfront_price_class" {
 
 
 # DocumentDB Configuration Variables
-
 variable "master_username" {
   description = "Master username for the DocumentDB cluster (will be stored in Secrets Manager or passed to the module)."
   type        = string

@@ -608,6 +608,52 @@ resource "aws_api_gateway_stage" "main" {
   deployment_id        = aws_api_gateway_deployment.main.id
   rest_api_id          = aws_api_gateway_rest_api.main.id
   stage_name           = var.api_gateway_stage_name
-  xray_tracing_enabled = false
+  xray_tracing_enabled = var.apigw_enable_xray
+}
+
+
+#############################
+# API Gateway logging (optional)
+#############################
+
+resource "aws_iam_role" "apigw_cloudwatch_role" {
+  count = var.enable_apigw_logging ? 1 : 0
+  name  = "${var.project_name}-${var.environment}-apigw-cw-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
+      Principal = { Service = "apigateway.amazonaws.com" }
+    }]
+  })
+
+  tags = {
+    Environment = var.environment
+    Project     = var.project_name
+  }
+}
+
+# Attach the managed policy AmazonAPIGatewayPushToCloudWatchLogs to ensure API Gateway has the exact required permissions
+resource "aws_iam_role_policy_attachment" "apigw_cloudwatch_role_attach" {
+  count      = var.enable_apigw_logging ? 1 : 0
+  role       = aws_iam_role.apigw_cloudwatch_role[0].name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+}
+
+
+# Method settings for logging and data trace
+resource "aws_api_gateway_method_settings" "all_methods" {
+  count       = var.enable_apigw_logging ? 1 : 0
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  stage_name  = aws_api_gateway_stage.main.stage_name
+  method_path = "*/*"
+
+  settings {
+    metrics_enabled    = true
+    logging_level      = var.apigw_logging_level
+    data_trace_enabled = var.apigw_data_trace_enabled
+  }
 }
 
