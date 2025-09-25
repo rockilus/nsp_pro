@@ -115,4 +115,91 @@ export class ShiftDemandTestBase {
   getDateHeader(page: Page, date: string) {
     return page.locator(`[data-testid="date-header-${date}"]`);
   }
+
+  /**
+   * Gets the select button in the ShiftDemandToolbar
+   */
+  getSelectButton(page: Page) {
+    return page.locator('[data-testid="shift-demand-select-button"]');
+  }
+
+  /**
+   * Gets the ShiftDemandActionToolbar (visible when in bulk mode)
+   */
+  getActionToolbar(page: Page) {
+    return page.locator('[data-testid="shift-demand-action-toolbar"]');
+  }
+
+  /**
+   * Gets bulk selection elements
+   */
+  getBulkSelectionElements(page: Page) {
+    return {
+      input: page.locator('[data-testid="bulk-selection-input"]'),
+      deleteButton: page.locator(
+        '[data-testid="bulk-selection-delete-button"]'
+      ),
+      confirmButton: page.locator(
+        '[data-testid="bulk-selection-confirm-button"]'
+      ),
+      cancelButton: page.locator(
+        '[data-testid="bulk-selection-cancel-button"]'
+      ),
+      deleteConfirmButton: page.locator(
+        '[data-testid="bulk-selection-delete-confirm-button"]'
+      ),
+    };
+  }
+
+  /**
+   * Gets selection checkboxes
+   */
+  getSelectionCheckboxes(page: Page) {
+    return {
+      selectAll: page.locator('[data-testid="select-all-checkbox"]'),
+      rowSelect: (shiftId: string) =>
+        page.locator(`[data-testid="row-select-checkbox-${shiftId}"]`),
+      columnSelect: (date: string) =>
+        page.locator(`[data-testid="column-select-checkbox-${date}"]`),
+      cellSelect: (shiftId: string, date: string) =>
+        page.locator(`[data-testid="cell-select-checkbox-${shiftId}-${date}"]`),
+    };
+  }
+
+  /**
+   * Creates shift demands via API for testing
+   */
+  async createShiftDemandViaAPI(
+    shiftId: string,
+    date: string,
+    count: number
+  ): Promise<void> {
+    if (!this.testTeam) {
+      throw new Error(
+        "Test team not created. Call setupShiftDemandTests first."
+      );
+    }
+
+    await this.dbUtils.createShiftDemand({
+      teamId: this.testTeam.teamId,
+      shiftId,
+      date: new Date(date),
+      count,
+    });
+  }
+
+  /**
+   * Gets shift IDs for testing (assumes setupShiftDemandTests was called)
+   */
+  async getTestShiftIds(): Promise<string[]> {
+    if (!this.testTeam) {
+      throw new Error(
+        "Test team not created. Call setupShiftDemandTests first."
+      );
+    }
+
+    // In a real implementation, we would fetch shift IDs from the API or database
+    // For now, we'll return mock IDs that correspond to the shifts created in setupShiftDemandTests
+    return ["shift1", "shift2", "shift3", "shift4"];
+  }
 }

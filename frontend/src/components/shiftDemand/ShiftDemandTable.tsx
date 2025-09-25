@@ -178,6 +178,9 @@ function ShiftDemandCell({
       {isBulkMode ? (
         <div className={`shift-demand-bulk ${isSelected ? "selected" : ""}`}>
           <Checkbox
+            data-testid={`cell-select-checkbox-${shiftId}-${date.format(
+              "YYYY-MM-DD"
+            )}`}
             checked={isSelected}
             onChange={() => onToggleSelection(shiftId, date)}
             size="small"
@@ -315,6 +318,7 @@ function ShiftDemandRowHeader({
         {/* Bulk mode checkbox */}
         {isBulkMode && (
           <Checkbox
+            data-testid={`row-select-checkbox-${shift.id}`}
             checked={isRowSelected}
             onChange={() => onSelectRow(shift.id)}
             size="small"
@@ -500,6 +504,7 @@ function ShiftDemandTableHeader({
               {bulkChangeState.isActive ? (
                 <>
                   <Checkbox
+                    data-testid="select-all-checkbox"
                     checked={isAllSelected()}
                     indeterminate={
                       bulkChangeState.selectedCells.length > 0 &&
@@ -538,6 +543,9 @@ function ShiftDemandTableHeader({
             <div className="shift-demand-date-info">
               {bulkChangeState.isActive && (
                 <Checkbox
+                  data-testid={`column-select-checkbox-${date.format(
+                    "YYYY-MM-DD"
+                  )}`}
                   checked={isColumnSelected(date)}
                   onChange={() => selectAllColumnCells(date)}
                   size="small"

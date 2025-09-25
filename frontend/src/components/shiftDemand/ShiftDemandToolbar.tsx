@@ -97,6 +97,7 @@ export function ShiftDemandToolbar({
 
           {/* Bulk Select Button */}
           <button
+            data-testid="shift-demand-select-button"
             onClick={onToggleBulkMode}
             disabled={isLoading || multitaskingModeActive}
             style={{
