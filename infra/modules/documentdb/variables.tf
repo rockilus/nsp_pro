@@ -42,13 +42,13 @@ variable "engine_version" {
 variable "instance_class" {
   description = "Instance class for DocumentDB cluster instances"
   type        = string
-  default     = "db.r5.large"
+  default     = "db.t3.medium"
 }
 
 variable "instance_count" {
   description = "Number of instances in the DocumentDB cluster"
   type        = number
-  default     = 2
+  default     = 1
   validation {
     condition     = var.instance_count >= 1 && var.instance_count <= 15
     error_message = "Instance count must be between 1 and 15."
@@ -79,6 +79,12 @@ variable "skip_final_snapshot" {
 
 variable "deletion_protection" {
   description = "Whether to enable deletion protection"
+  type        = bool
+  default     = true
+}
+
+variable "storage_encrypted" {
+  description = "Whether to enable storage encryption for the DocumentDB cluster."
   type        = bool
   default     = true
 }
@@ -121,4 +127,23 @@ variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)
   default     = {}
+}
+
+# Control DocumentDB audit and profiler features independently
+variable "enable_docdb_audit" {
+  description = "Enable DocumentDB audit logs (cluster parameter + CloudWatch export and log group)."
+  type        = bool
+  default     = true
+}
+
+variable "enable_docdb_profiler" {
+  description = "Enable DocumentDB profiler logs (cluster parameter + CloudWatch export and log group)."
+  type        = bool
+  default     = true
+}
+
+variable "profiler_threshold_ms" {
+  description = "Profiler threshold in milliseconds (only used when enable_docdb_profiler = true)."
+  type        = number
+  default     = 100
 }

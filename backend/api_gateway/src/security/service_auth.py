@@ -61,12 +61,7 @@ def get_expected_api_key() -> str:
             raise ServiceAuthError("SSM client not available in development")
 
         logger.debug("Got SSM client successfully")
-        # project_name = config.project_name
-        # logger.debug("Project name: %s", project_name)
-        # environment = config.environment
-        # logger.debug("Environment: %s", environment)
-        # parameter_name = f"/{project_name}/{environment}/backend-api-key"
-        parameter_name = "/rockilus/prod/backend-api-key"
+        parameter_name = config.backend_api_key_ssm_parameter_name
         logger.debug("Parameter name: %s", parameter_name)
 
         response = ssm.get_parameter(Name=parameter_name, WithDecryption=True)

@@ -245,7 +245,7 @@ export const useShiftDemandMutations = (
     },
   });
 
-  // Update mutation with optimistic updates
+  // Update mutation with optimistic updates and zero count handling
   const update = useMutation({
     mutationFn: async (params: {
       demandId: string;
@@ -254,6 +254,7 @@ export const useShiftDemandMutations = (
       if (!isAuthenticated || !user?.id_token) {
         throw new Error("User not authenticated - please sign in");
       }
+
       return ShiftDemandApi.updateShiftDemand(
         apiClient,
         teamId,
@@ -270,21 +271,36 @@ export const useShiftDemandMutations = (
         shiftDemandKeys.teams(teamId)
       );
 
-      // Optimistically update existing demand
-      queryClient.setQueryData(shiftDemandKeys.teams(teamId), (old: any) => {
-        if (!old) return old;
+      // Handle zero count differently in optimistic updates
+      if (variables.demand.count === 0) {
+        // Optimistically remove the demand
+        queryClient.setQueryData(shiftDemandKeys.teams(teamId), (old: any) => {
+          if (!old) return old;
 
-        const updatedDemands = old.demands?.map((demand: ShiftDemandDTO) =>
-          demand.id === variables.demandId
-            ? { ...demand, ...variables.demand, updatedAt: Date.now() / 1000 }
-            : demand
-        );
+          return {
+            ...old,
+            demands: old.demands?.filter(
+              (demand: ShiftDemandDTO) => demand.id !== variables.demandId
+            ),
+          };
+        });
+      } else {
+        // Optimistically update existing demand
+        queryClient.setQueryData(shiftDemandKeys.teams(teamId), (old: any) => {
+          if (!old) return old;
 
-        return {
-          ...old,
-          demands: updatedDemands,
-        };
-      });
+          const updatedDemands = old.demands?.map((demand: ShiftDemandDTO) =>
+            demand.id === variables.demandId
+              ? { ...demand, ...variables.demand, updatedAt: Date.now() / 1000 }
+              : demand
+          );
+
+          return {
+            ...old,
+            demands: updatedDemands,
+          };
+        });
+      }
 
       return { previousData };
     },

@@ -67,10 +67,10 @@ output "deployment_secret_access_key" {
 
 output "route53_record_name" {
   description = "Route53 record name (if created)"
-  value       = var.domain_name != null && var.route53_zone_id != null ? aws_route53_record.frontend[0].name : null
+  value       = aws_route53_record.frontend.name
 }
 
 output "route53_record_fqdn" {
   description = "Route53 record FQDN (if created)"
-  value       = var.domain_name != null && var.route53_zone_id != null ? aws_route53_record.frontend[0].fqdn : null
+  value       = aws_route53_record.frontend.fqdn
 }

@@ -23,6 +23,34 @@ resource "aws_ssm_parameter" "backend_api_key" {
   }
 }
 
+# Grant the ECS task execution role permission to read the SSM parameters used
+# for backend/internal API keys so tasks running in ECS can authenticate to
+# the backend when proxying requests through the API Gateway.
+resource "aws_iam_role_policy" "ecs_task_execution_ssm_parameters" {
+  name = "${var.project_name}-${var.environment}-ecs-task-execution-ssm"
+  role = var.task_execution_role_id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameter",
+          "ssm:GetParameters",
+          "ssm:GetParametersByPath",
+          "ssm:DescribeParameters",
+          "kms:Decrypt"
+        ]
+        Resource = [
+          aws_ssm_parameter.backend_api_key.arn,
+          aws_ssm_parameter.internal_api_key.arn
+        ]
+      }
+    ]
+  })
+}
+
 resource "aws_api_gateway_rest_api" "main" {
   name        = "${var.project_name}-api-gateway-${var.environment}"
   description = "REST API Gateway for ${var.project_name} in ${var.environment}, receive request from fontend and pass them through to the main service in the backend"
@@ -44,8 +72,8 @@ resource "aws_api_gateway_authorizer" "cognito" {
 
 # VPC Link
 resource "aws_api_gateway_vpc_link" "main" {
-  count       = var.environment == "prod" ? 1 : 0
-  name        = "apigateway-nlb-vpc-link"
+  # name        = "apigateway-nlb-vpc-link"
+  name        = "${var.project_name}-vpc-link-${var.environment}"
   description = "VPC Link to connect the API Gateway to the network load balancer"
   target_arns = var.vpc_link_target_arns
 }
@@ -106,12 +134,11 @@ resource "aws_api_gateway_integration" "any_proxy" {
   resource_id             = aws_api_gateway_resource.proxy.id
   http_method             = aws_api_gateway_method.any_proxy.http_method
   integration_http_method = "ANY"
-  # type                    = var.environment == "prod" ? "HTTP_PROXY" : "HTTP"
-  type                 = "HTTP_PROXY"
-  uri                  = "${var.vpc_link_endpoint_url}/{proxy}"
-  connection_type      = var.environment == "prod" ? "VPC_LINK" : "INTERNET"
-  connection_id        = var.environment == "prod" ? aws_api_gateway_vpc_link.main[0].id : null
-  passthrough_behavior = "WHEN_NO_TEMPLATES"
+  type                    = "HTTP_PROXY"
+  uri                     = "${var.vpc_link_endpoint_url}/{proxy}"
+  connection_type         = "VPC_LINK"
+  connection_id           = aws_api_gateway_vpc_link.main.id
+  passthrough_behavior    = "WHEN_NO_TEMPLATES"
   request_parameters = {
     "integration.request.path.proxy"               = "method.request.path.proxy"
     "integration.request.header.X-Forwarded-For"   = "method.request.header.X-Forwarded-For"
@@ -411,8 +438,8 @@ resource "aws_api_gateway_integration" "internal_onboard" {
   type                    = "HTTP_PROXY"
   # Fix: Remove {proxy+} from URI to avoid "Illegal character in path" error
   uri                  = "${var.vpc_link_endpoint_url}/users/onboard"
-  connection_type      = var.environment == "prod" ? "VPC_LINK" : "INTERNET"
-  connection_id        = var.environment == "prod" ? aws_api_gateway_vpc_link.main[0].id : null
+  connection_type      = "VPC_LINK"
+  connection_id        = aws_api_gateway_vpc_link.main.id
   passthrough_behavior = "WHEN_NO_TEMPLATES"
 
   request_parameters = {
@@ -460,17 +487,14 @@ resource "aws_api_gateway_integration_response" "internal_onboard_500" {
 # Data source for account id
 # data "aws_caller_identity" "current" {}
 
-data "aws_caller_identity" "current" {
-  count = var.environment == "prod" ? 1 : 0
-}
+data "aws_caller_identity" "current" {}
 
 locals {
-  effective_account_id = var.environment == "prod" ? data.aws_caller_identity.current[0].account_id : var.aws_account_id
+  effective_account_id = data.aws_caller_identity.current.account_id
 }
 
 # Custom Domain Name (conditional)
 resource "aws_api_gateway_domain_name" "custom" {
-  count       = var.custom_domain_name != null ? 1 : 0
   domain_name = var.custom_domain_name
 
   regional_certificate_arn = var.certificate_arn
@@ -491,31 +515,28 @@ resource "aws_api_gateway_domain_name" "custom" {
 
 # Base Path Mapping
 resource "aws_api_gateway_base_path_mapping" "custom" {
-  count       = var.custom_domain_name != null ? 1 : 0
   api_id      = aws_api_gateway_rest_api.main.id
   stage_name  = aws_api_gateway_stage.main.stage_name
-  domain_name = aws_api_gateway_domain_name.custom[0].domain_name
+  domain_name = aws_api_gateway_domain_name.custom.domain_name
 
   depends_on = [aws_api_gateway_domain_name.custom, aws_api_gateway_stage.main]
 }
 
 # Data source to reliably fetch custom domain information
 data "aws_api_gateway_domain_name" "custom" {
-  count       = var.custom_domain_name != null && var.hosted_zone_id != null ? 1 : 0
   domain_name = var.custom_domain_name
   depends_on  = [aws_api_gateway_domain_name.custom]
 }
 
 # DNS Record for Custom Domain (conditional) - Updated to use data source
 resource "aws_route53_record" "api_domain" {
-  count   = var.custom_domain_name != null && var.hosted_zone_id != null ? 1 : 0
   zone_id = var.hosted_zone_id
   name    = var.custom_domain_name
   type    = "A"
 
   alias {
-    name                   = data.aws_api_gateway_domain_name.custom[0].regional_domain_name
-    zone_id                = data.aws_api_gateway_domain_name.custom[0].regional_zone_id
+    name                   = data.aws_api_gateway_domain_name.custom.regional_domain_name
+    zone_id                = data.aws_api_gateway_domain_name.custom.regional_zone_id
     evaluate_target_health = false
   }
 
@@ -573,7 +594,9 @@ resource "aws_api_gateway_deployment" "main" {
       aws_api_gateway_integration_response.internal_onboard_400.id,
       aws_api_gateway_integration_response.internal_onboard_500.id,
       aws_api_gateway_gateway_response.default_4xx.id,
-      aws_api_gateway_gateway_response.default_5xx.id
+      aws_api_gateway_gateway_response.default_5xx.id,
+      aws_api_gateway_vpc_link.main.id
+
     ]))
   }
   lifecycle {
@@ -585,6 +608,52 @@ resource "aws_api_gateway_stage" "main" {
   deployment_id        = aws_api_gateway_deployment.main.id
   rest_api_id          = aws_api_gateway_rest_api.main.id
   stage_name           = var.api_gateway_stage_name
-  xray_tracing_enabled = false
+  xray_tracing_enabled = var.apigw_enable_xray
+}
+
+
+#############################
+# API Gateway logging (optional)
+#############################
+
+resource "aws_iam_role" "apigw_cloudwatch_role" {
+  count = var.enable_apigw_logging ? 1 : 0
+  name  = "${var.project_name}-${var.environment}-apigw-cw-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
+      Principal = { Service = "apigateway.amazonaws.com" }
+    }]
+  })
+
+  tags = {
+    Environment = var.environment
+    Project     = var.project_name
+  }
+}
+
+# Attach the managed policy AmazonAPIGatewayPushToCloudWatchLogs to ensure API Gateway has the exact required permissions
+resource "aws_iam_role_policy_attachment" "apigw_cloudwatch_role_attach" {
+  count      = var.enable_apigw_logging ? 1 : 0
+  role       = aws_iam_role.apigw_cloudwatch_role[0].name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+}
+
+
+# Method settings for logging and data trace
+resource "aws_api_gateway_method_settings" "all_methods" {
+  count       = var.enable_apigw_logging ? 1 : 0
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  stage_name  = aws_api_gateway_stage.main.stage_name
+  method_path = "*/*"
+
+  settings {
+    metrics_enabled    = true
+    logging_level      = var.apigw_logging_level
+    data_trace_enabled = var.apigw_data_trace_enabled
+  }
 }
 

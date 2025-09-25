@@ -61,6 +61,7 @@ async def get_current_user(
 ) -> UserDTO:
     try:
         user_id = user_context.user_id
+        log_info(f"Fetching current user with ID: {user_id}")
         if not await authz_check(user_context.user_id, "read", "user", user_id):
             raise NotAuthorizedError("You do not have permission to read the user")
         user = db_collections.user_db.get_user_by_id(user_id)

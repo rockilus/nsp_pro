@@ -75,7 +75,7 @@ class RequestRepository(BaseRepository[RequestSchema]):
                 "worker": {"$in": worker_ids},
                 "request_type": RequestType.WORK_DEMAND.value,
                 "status": RequestStatus.APPROVED.value,
-                "fulfillment": FulfillmentStatus.NOT_PROCESSED.value,
+                # "fulfillment": FulfillmentStatus.NOT_PROCESSED.value,
             }
         )
         return [request.to_core() for request in requests]

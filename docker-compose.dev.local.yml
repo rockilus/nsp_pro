@@ -1,0 +1,50 @@
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:5.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+    healthcheck:
+      test: mongo --eval "db.adminCommand('ping')"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # LocalStack (to emulate SQS)
+  localstack:
+    image: localstack/localstack
+    container_name: localstack
+    ports:
+      - "4566:4566"
+    # environment:
+    #   - SERVICES=sqs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localstack:4566/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Permit.io PDP
+  permit:
+    image: permitio/pdp-v2:latest
+    container_name: permit
+    ports:
+      - "7766:7000"
+    env_file:
+      - .env.docker-compose.permit
+    # environment:
+    #   - PDP_API_KEY=your_api_key_here # Replace with your actual API key
+    #   - PDP_DEBUG=True
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://permit:7766/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mongodb_data:
+    driver: local

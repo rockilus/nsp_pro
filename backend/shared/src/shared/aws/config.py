@@ -49,7 +49,7 @@ class AWSConfig(BaseModel):
 
     # Secrets Manager Configuration
     documentdb_secret_name: str = Field(
-        default="rockilus/prod/documentdb/credentials",
+        # default="rockilus/prod/documentdb/credentials",
         description="DocumentDB credentials secret name",
     )
 
@@ -89,8 +89,9 @@ class AWSConfig(BaseModel):
             ),
             sqs_max_receive_count=int(os.getenv("AWS_SQS_MAX_RECEIVE_COUNT", "3")),
             documentdb_secret_name=os.getenv(
-                "AWS_DOCUMENTDB_SECRET_NAME",
-                "rockilus/prod/documentdb/credentials",
+                "DOCUMENTDB_SECRET_NAME",
+                "",
+                # "rockilus/prod/documentdb/credentials",
             ),
         )
 
@@ -140,8 +141,9 @@ class AWSConfig(BaseModel):
                 ),
                 sqs_max_receive_count=int(os.getenv("AWS_SQS_MAX_RECEIVE_COUNT", "3")),
                 documentdb_secret_name=os.getenv(
-                    "AWS_DOCUMENTDB_SECRET_NAME",
-                    "rockilus/prod/documentdb/credentials",
+                    "DOCUMENTDB_SECRET_NAME",
+                    "",
+                    # "rockilus/prod/documentdb/credentials",
                 ),
                 endpoint_url=os.getenv("AWS_ENDPOINT_URL"),
             )

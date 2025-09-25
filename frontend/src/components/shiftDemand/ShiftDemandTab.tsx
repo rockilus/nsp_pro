@@ -643,9 +643,12 @@ function ShiftDemandTabInternal({
   );
 
   // Shift demand mutations
-  const { create, update, bulkUpsert } = useShiftDemandMutations(
-    selectedTeamId || ""
-  );
+  const {
+    create,
+    update,
+    delete: deleteDemand,
+    bulkUpsert,
+  } = useShiftDemandMutations(selectedTeamId || "");
 
   // Get work shifts using authenticated hook
   const getWorkShifts = useGetWorkShifts();
@@ -741,19 +744,24 @@ function ShiftDemandTabInternal({
       const timestamp = Math.floor(new Date(dateStr).getTime() / 1000);
 
       if (existingDemand) {
-        // Update existing demand
-        const updateData: ShiftDemandUpdateDTO = {
-          count: numValue,
-          source: "manual" as const,
-          notes: null,
-        };
+        if (numValue === 0) {
+          // Delete demand if count is zero
+          await deleteDemand.mutateAsync(existingDemand.id);
+        } else {
+          // Update existing demand
+          const updateData: ShiftDemandUpdateDTO = {
+            count: numValue,
+            source: "manual" as const,
+            notes: null,
+          };
 
-        await update.mutateAsync({
-          demandId: existingDemand.id,
-          demand: updateData,
-        });
-      } else {
-        // Create new demand
+          await update.mutateAsync({
+            demandId: existingDemand.id,
+            demand: updateData,
+          });
+        }
+      } else if (numValue > 0) {
+        // Only create new demand if count is greater than zero
         const createData: Omit<ShiftDemandCreateDTO, "teamId"> = {
           shiftId,
           date: timestamp,

@@ -195,7 +195,7 @@ export class ShiftDemandApi extends BaseApi {
     teamId: string,
     demandId: string,
     demand: ShiftDemandUpdateDTO
-  ): Promise<ShiftDemandDTO> {
+  ): Promise<ShiftDemandDTO | null> {
     // Security: Input validation
     if (!teamId) {
       throw new Error("Team ID is required");
@@ -206,6 +206,12 @@ export class ShiftDemandApi extends BaseApi {
 
     // Client-side validation
     validateUpdateRequest(demand);
+
+    // If count is 0, delete the demand instead of updating it
+    if (demand.count === 0) {
+      await this.deleteShiftDemand(apiClient, teamId, demandId);
+      return null;
+    }
 
     // Don't include teamId in update body to prevent conflicts
     const updateBody = { ...demand };

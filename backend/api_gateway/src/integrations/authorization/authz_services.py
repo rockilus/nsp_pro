@@ -136,6 +136,12 @@ async def authz_check(
     Raises:
         Exception: If authorization check fails with errors after all retries
     """
+    log_info("permit url: " + config.pdp_url + " key: " + config.pdp_api_key)
+    log_info(
+        f"Starting authorization check: user={user_id}, action={action}, "
+        f"resource={resource}, resource_id={resource_id}"
+    )
+    log_info(f"Retry enabled: {config.authz_enable_retry}")
     resource_instance = f"{resource}:{resource_id}" if resource_id else resource
 
     # If retry is disabled, use the original single-check logic
@@ -146,6 +152,7 @@ async def authz_check(
                 action=action,
                 resource=resource_instance,
             )
+            log_info(f"Authorization check result: {result} for {resource_instance}")
             return result
         except Exception as e:
             log_info("Permit check error")

@@ -558,7 +558,7 @@ class TestRequestRepository:
         found_ids = {r.worker_id for r in found}
         found_comments = {r.comment for r in found}
 
-        assert len(found) == 2
+        assert len(found) == 3  # 2 if we exclude fulfilled
         assert "worker1" in found_ids
         assert "worker2" in found_ids
         assert "should match" in found_comments

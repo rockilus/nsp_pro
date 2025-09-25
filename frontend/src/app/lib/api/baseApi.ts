@@ -71,6 +71,13 @@ export abstract class BaseApi {
     options?: RequestInit
   ): Promise<T> {
     try {
+      // For delete operations, we handle them differently since they often return 204 No Content
+      if (method === "delete") {
+        await apiClient.delete(endpoint, options);
+        // Return null for delete operations as they typically don't return content
+        return null as unknown as T;
+      }
+
       switch (method) {
         case "get":
           return await apiClient.get<T>(endpoint, options);
@@ -78,8 +85,8 @@ export abstract class BaseApi {
           return await apiClient.post<T>(endpoint, data, options);
         case "put":
           return await apiClient.put<T>(endpoint, data, options);
-        case "delete":
-          return await apiClient.delete<T>(endpoint, options);
+        default:
+          throw new Error(`Unsupported method: ${method}`);
       }
     } catch (error) {
       // Log error for debugging while sanitizing sensitive information

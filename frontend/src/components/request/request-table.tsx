@@ -235,7 +235,8 @@ const ActionsCell = ({
   handleUpdateRequest,
   handleDeleteRequest,
   handleRescindRequest,
-  handleApproveRequest,
+  handleAcceptRequest,
+  handleDenyRequest,
 }: {
   request: RequestT;
   lng: string;
@@ -247,7 +248,8 @@ const ActionsCell = ({
   handleUpdateRequest: (request: RequestT) => void;
   handleDeleteRequest: (requestId: string) => void;
   handleRescindRequest: (requestId: string) => void;
-  handleApproveRequest: (requestId: string) => void;
+  handleAcceptRequest: (requestId: string) => void;
+  handleDenyRequest: (requestId: string) => void;
 }) => {
   const canEdit =
     userTeamRole !== TeamMembershipRole.MEMBER ||
@@ -281,7 +283,7 @@ const ActionsCell = ({
       {canApprove && (
         <IconButton
           size="small"
-          onClick={() => handleApproveRequest(request.id)}
+          onClick={() => handleAcceptRequest(request.id)}
           title="Approve Request"
           color="success"
         >
@@ -292,11 +294,7 @@ const ActionsCell = ({
       {canApprove && (
         <IconButton
           size="small"
-          onClick={() => {
-            // Handle reject logic
-            const updatedRequest = { ...request, status: RequestStatus.DENIED };
-            handleUpdateRequest(updatedRequest);
-          }}
+          onClick={() => handleDenyRequest(request.id)}
           title="Reject Request"
           color="error"
         >
@@ -341,6 +339,8 @@ export default function RequestTable({
   handleUpdateRequest,
   handleDeleteRequest,
   handleRescindRequest,
+  handleAcceptRequest,
+  handleDenyRequest,
   showPastRequests,
 }: {
   lng: string;
@@ -353,6 +353,8 @@ export default function RequestTable({
   handleUpdateRequest: (request: RequestT) => void;
   handleDeleteRequest: (requestId: string) => void;
   handleRescindRequest: (requestId: string) => void;
+  handleAcceptRequest: (requestId: string) => void;
+  handleDenyRequest: (requestId: string) => void;
   showPastRequests: boolean;
 }) {
   const { t } = useTranslation(lng, "request-page");
@@ -360,14 +362,6 @@ export default function RequestTable({
   // Helper function to check if request is in the past
   const isRequestPast = (request: RequestT) => {
     return request.endDate.isBefore(new Date(), "day");
-  };
-
-  const handleApproveRequest = (requestId: string) => {
-    const request = requests.find((r) => r.id === requestId);
-    if (request) {
-      const updatedRequest = { ...request, status: RequestStatus.APPROVED };
-      handleUpdateRequest(updatedRequest);
-    }
   };
 
   // Simplified column definitions focused on the actual requirements
@@ -591,7 +585,8 @@ export default function RequestTable({
                       handleUpdateRequest={handleUpdateRequest}
                       handleDeleteRequest={handleDeleteRequest}
                       handleRescindRequest={handleRescindRequest}
-                      handleApproveRequest={handleApproveRequest}
+                      handleAcceptRequest={handleAcceptRequest}
+                      handleDenyRequest={handleDenyRequest}
                     />
                   </TableCell>
                 </TableRow>

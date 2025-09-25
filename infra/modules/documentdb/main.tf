@@ -78,22 +78,30 @@ resource "aws_docdb_cluster_parameter_group" "main" {
     value = "enabled"
   }
 
-  # Enable audit logging for healthcare compliance
-  parameter {
-    name  = "audit_logs"
-    value = "enabled"
+  # Enable audit logging only when requested
+  dynamic "parameter" {
+    for_each = var.enable_docdb_audit ? [1] : []
+    content {
+      name  = "audit_logs"
+      value = "enabled"
+    }
   }
 
-  # Enable profiler for performance monitoring
-  parameter {
-    name  = "profiler"
-    value = "enabled"
+  # Enable profiler and threshold only when requested
+  dynamic "parameter" {
+    for_each = var.enable_docdb_profiler ? [1] : []
+    content {
+      name  = "profiler"
+      value = "enabled"
+    }
   }
 
-  # Set profiler threshold (log slow operations > 100ms)
-  parameter {
-    name  = "profiler_threshold_ms"
-    value = "100"
+  dynamic "parameter" {
+    for_each = var.enable_docdb_profiler ? [1] : []
+    content {
+      name  = "profiler_threshold_ms"
+      value = tostring(var.profiler_threshold_ms)
+    }
   }
 
   tags = merge(var.tags, {
@@ -122,14 +130,17 @@ resource "aws_docdb_cluster" "main" {
   db_cluster_parameter_group_name = aws_docdb_cluster_parameter_group.main.name
 
   # Encryption configuration for healthcare compliance
-  storage_encrypted = true
+  storage_encrypted = var.storage_encrypted
   kms_key_id        = var.kms_key_id
 
   # Enable deletion protection in production
   deletion_protection = var.deletion_protection
 
   # Enable CloudWatch logs export for monitoring
-  enabled_cloudwatch_logs_exports = ["audit", "profiler"]
+  enabled_cloudwatch_logs_exports = concat(
+    var.enable_docdb_audit ? ["audit"] : [],
+    var.enable_docdb_profiler ? ["profiler"] : []
+  )
 
   tags = merge(var.tags, {
     Name        = "${var.project_name}-${var.environment}-docdb-cluster"
@@ -211,6 +222,7 @@ resource "aws_secretsmanager_secret_version" "docdb_credentials" {
 
 # CloudWatch Log Group for audit logs
 resource "aws_cloudwatch_log_group" "docdb_audit" {
+  count             = var.enable_docdb_audit ? 1 : 0
   name              = "/aws/docdb/${aws_docdb_cluster.main.cluster_identifier}/audit"
   retention_in_days = var.log_retention_days
 
@@ -225,6 +237,7 @@ resource "aws_cloudwatch_log_group" "docdb_audit" {
 
 # CloudWatch Log Group for profiler logs
 resource "aws_cloudwatch_log_group" "docdb_profiler" {
+  count             = var.enable_docdb_profiler ? 1 : 0
   name              = "/aws/docdb/${aws_docdb_cluster.main.cluster_identifier}/profiler"
   retention_in_days = var.log_retention_days
 

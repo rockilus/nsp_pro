@@ -13,10 +13,10 @@ output "nlb_zone_id" {
   value       = aws_lb.api_nlb.zone_id
 }
 
-output "target_group_arn" {
-  description = "ARN of the target group"
-  value       = aws_lb_target_group.api_backend.arn
-}
+# output "target_group_arn" {
+#   description = "ARN of the target group"
+#   value       = aws_lb_target_group.api_backend.arn
+# }
 
 output "nlb_security_group_id" {
   description = "Security group ID for the Network Load Balancer"

@@ -31,6 +31,28 @@ def get_ssm_client():
     return boto3.client("ssm", region_name=region)
 
 
+def get_internal_endpoint() -> str:
+    """
+    Determine internal onboard endpoint based on environment.
+    Priority:
+      1. API_BASE_URL env var (preferred for overrides)
+      2. ENVIRONMENT env var: 'prod' -> prod, 'staging' -> staging
+      Defaults to prod endpoint.
+    """
+    api_base = os.environ.get("API_BASE_URL")
+    if api_base:
+        return f"{api_base.rstrip('/')}/internal/onboard"
+
+    env = os.environ.get("ENVIRONMENT", "prod").lower()
+    if env in ("prod", "production"):
+        return "https://api.rockilus.com/internal/onboard"
+    if env in ("staging", "stage"):
+        return "https://api.staging.rockilus.com/internal/onboard"
+
+    logger.warning("Unknown ENVIRONMENT '%s', defaulting to prod", env)
+    return "https://api.rockilus.com/internal/onboard"
+
+
 @lru_cache(maxsize=1)
 def get_internal_api_key() -> Optional[str]:
     """
@@ -39,10 +61,14 @@ def get_internal_api_key() -> Optional[str]:
     """
     try:
         ssm = get_ssm_client()
-        # project_name = os.environ.get("PROJECT_NAME", "rockilus")
-        # environment = os.environ.get("ENVIRONMENT", "prod")
-        # param_name = f"/{project_name}/{environment}/internal-api-key"
-        param_name = "/rockilus/prod/internal-api-key"
+
+        # Allow override via env var INTERNAL_API_KEY_SSM_PARAM
+        # otherwise build from PROJECT_NAME/ENVIRONMENT
+        param_name = os.environ.get("INTERNAL_API_KEY_SSM_PARAM")
+        if not param_name:
+            project_name = os.environ.get("PROJECT_NAME", "rockilus")
+            environment = os.environ.get("ENVIRONMENT", "prod")
+            param_name = f"/{project_name}/{environment}/internal-api-key"
 
         response = ssm.get_parameter(Name=param_name, WithDecryption=True)
         api_key = response.get("Parameter", {}).get("Value")
@@ -127,11 +153,8 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             return event
 
         # Get internal API Gateway endpoint
-        # api_base_url = os.environ.get(
-        #     "API_BASE_URL", "https://api.rockilus.com"
-        # )
-        # internal_endpoint = f"{api_base_url}/internal/onboard"
-        internal_endpoint = "https://api.rockilus.com/internal/onboard"
+        internal_endpoint = get_internal_endpoint()
+        logger.info("Using internal endpoint: %s", internal_endpoint)
 
         # Get internal API key for Lambda -> API Gateway auth
         internal_api_key = get_internal_api_key()

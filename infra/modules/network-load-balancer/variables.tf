@@ -41,8 +41,9 @@ variable "tags" {
   default     = {}
 }
 
-variable "target_instance_ids" {
-  description = "List of EC2 instance IDs to register as targets"
-  type        = list(string)
-  default     = []
+variable "deletion_protection_nlb" {
+  description = "Enable deletion protection for the Network Load Balancer"
+  type        = bool
+  default     = false
+
 }

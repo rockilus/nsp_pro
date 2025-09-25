@@ -18,6 +18,16 @@ variable "domain_name" {
   }
 }
 
+variable "frontend_domain_name" {
+  description = "Frontend domain name for the application (e.g., app.example.com)"
+  type        = string
+
+  validation {
+    condition     = can(regex("^[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]$", var.frontend_domain_name))
+    error_message = "Frontend domain name must be a valid DNS domain."
+  }
+}
+
 variable "enable_dnssec" {
   description = "Enable DNSSEC for enhanced security"
   type        = bool
@@ -52,4 +62,16 @@ variable "tags" {
   description = "Additional tags to apply to resources"
   type        = map(string)
   default     = {}
+}
+
+variable "staging_subdomain" {
+  description = "Subdomain for staging environment (e.g., staging.example.com)"
+  type        = string
+  default     = null
+}
+
+variable "staging_name_servers" {
+  description = "Name servers for the staging subdomain delegation"
+  type        = list(string)
+  default     = []
 }

@@ -35,6 +35,9 @@ class AppConfig(BaseSettings):
     # MongoDB configuration
     mongodb_uri: str | None = Field(None, description="Database connection URL")
     mongodb_database_name: str = Field("test", description="MongoDB database name")
+    backend_api_key_ssm_parameter_name: str = Field(
+        ..., description="SSM Parameter name for backend API key"
+    )
 
     # DocumentDB configuration
     use_documentdb: bool = Field(
@@ -102,6 +105,14 @@ class AppConfig(BaseSettings):
         description="Development API key for service authentication",
     )
 
+    # SQS Configuration
+    sqs_solve_queue_name: str = Field(
+        "nsp-pro-dev-solve-queue", description="Name of the SQS solve queue"
+    )
+    sqs_solve_dlq_name: str | None = Field(
+        None, description="Name of the SQS dead-letter queue"
+    )
+
     model_config = SettingsConfigDict(
         env_prefix="",  # No prefix; can adjust if needed
         env_file=os.path.join(os.path.dirname(__file__), "..", ".env.development"),
@@ -129,8 +140,17 @@ class AppConfig(BaseSettings):
         # Use the new AWS Secrets Manager to retrieve DocumentDB credentials
         try:
             secrets_manager = SecretsManager()
+            docdb_secret_name = self.documentdb_secret_name or os.getenv(
+                "DOCUMENTDB_SECRET_NAME", ""
+            )
+            if not docdb_secret_name:
+                raise ValueError(
+                    "DocumentDB secret name must be set for production mode. "
+                    "Please check your environment variables."
+                )
             credentials = secrets_manager.get_documentdb_credentials(
-                self.documentdb_secret_name
+                # self.documentdb_secret_name
+                docdb_secret_name
             )
 
             log_info(
@@ -360,14 +380,14 @@ def initialize_environment() -> AppConfig:
     if environment == "production":
         print("Running in production mode.")
 
-        region = "eu-west-3"
+        # region = "eu-west-3"
 
         # Set DocumentDB configuration for production
-        os.environ["USE_DOCUMENTDB"] = "true"
+        # os.environ["USE_DOCUMENTDB"] = "true"
         # documentdb_secret = f"nsp-pro/{environment}/documentdb/credentials"
-        documentdb_secret = "rockilus/prod/documentdb/credentials"
-        os.environ["DOCUMENTDB_SECRET_NAME"] = documentdb_secret
-        os.environ["DOCUMENTDB_DATABASE_NAME"] = "nsp_pro"
+        # documentdb_secret = "rockilus/prod/documentdb/credentials"
+        # os.environ["DOCUMENTDB_SECRET_NAME"] = documentdb_secret
+        # os.environ["DOCUMENTDB_DATABASE_NAME"] = "nsp_pro"
 
         # Download CA bundle for DocumentDB TLS connection
         download_documentdb_ca_bundle()
@@ -485,34 +505,6 @@ def initialize_environment() -> AppConfig:
         #     )
         #     os.environ["DB_URI"] = db_uri
 
-        required_env_vars = [
-            "API_DOMAIN",
-            "API_URL",
-            "API_PORT",
-            "ORIGINS",
-            "CLIENT_URL",
-            "ST_CONNECTION_URI",
-            "ST_API_KEY",
-            "ST_DASHBOARD_ADMINS",
-            "ST_COOKIE_DOMAIN",
-            "PDP_URL",
-            "PDP_API_KEY",
-            "UVICORN_RELOAD",
-            "TASK_EXPIRATION",
-        ]
-        missing_vars = [var for var in required_env_vars if not os.getenv(var)]
-
-        if missing_vars:
-            print(f"Missing required environment variables: {missing_vars}")
-            # Retrieve .env file from S3
-            bucket_name = "nsp-pro-bucket"
-            file_key = ".env"  # Replace with the key of your .env file
-            env_file_path = download_env_file_from_s3(
-                bucket_name, file_key, region_name=region
-            )
-            if env_file_path is not None:
-                # Load the .env file using dotenv
-                load_dotenv(env_file_path)
     else:
         print("Running in development mode.")
         # Use MongoDB for development

@@ -11,11 +11,19 @@ variable "environment" {
 variable "aws_region" {
   description = "AWS region"
   type        = string
+  validation {
+    condition     = length(trimspace(var.aws_region)) > 0
+    error_message = "aws_region must not be an empty string"
+  }
 }
 
 variable "aws_account_id" {
   description = "AWS Account ID"
   type        = string
+  validation {
+    condition     = can(regex("^[0-9]{12}$", var.aws_account_id))
+    error_message = "aws_account_id must be a 12-digit AWS account id"
+  }
 }
 
 variable "vpc_id" {
@@ -33,16 +41,37 @@ variable "private_subnet_ids" {
   type        = list(string)
 }
 
+variable "nlb_arn" {
+  description = "ARN of the Network Load Balancer"
+  type        = string
+}
+
 variable "nlb_security_group_ids" {
   description = "List of security group IDs from the Network Load Balancer"
   type        = list(string)
   default     = []
 }
 
-variable "nlb_target_group_arn" {
-  description = "ARN of the Network Load Balancer target group"
+# IAM Role ARNs
+variable "task_execution_role_arn" {
+  description = "ARN of the ECS task execution IAM role"
   type        = string
 }
+
+variable "task_execution_role_id" {
+  description = "ID of the ECS task execution IAM role"
+  type        = string
+}
+
+# variable "task_role_arn" {
+#   description = "ARN of the ECS task IAM role"
+#   type        = string
+# }
+
+# variable "nlb_target_group_arn" {
+#   description = "ARN of the Network Load Balancer target group"
+#   type        = string
+# }
 
 variable "main_service_container_name" {
   description = "Name of the container for the main service"
@@ -62,6 +91,15 @@ variable "solve_service_ecr_repository_url" {
 
 
 # Main service configuration
+variable "main_service_environment_variables" {
+  description = "List of environment variables for the main service (each item is an object with name and value)"
+  type = list(object({
+    name  = string
+    value = string
+  }))
+  default = []
+}
+
 variable "main_service_desired_count" {
   description = "Desired number of main service tasks"
   type        = number
@@ -100,6 +138,15 @@ variable "main_service_operating_system_family" {
 }
 
 # Solve service configuration
+variable "solve_service_environment_variables" {
+  description = "List of environment variables for the solve service (each item is an object with name and value)"
+  type = list(object({
+    name  = string
+    value = string
+  }))
+  default = []
+}
+
 variable "solve_service_desired_count" {
   description = "Desired number of solve service tasks"
   type        = number
@@ -179,12 +226,6 @@ variable "log_retention_days" {
   default     = 30
 }
 
-variable "permit_api_key" {
-  description = "Permit.io API key for PDP configuration"
-  type        = string
-  sensitive   = true
-}
-
 # Secret ARNs for ECS task definitions
 variable "permit_api_key_secret_arn" {
   description = "ARN of the Permit.io API key secret"
@@ -192,23 +233,6 @@ variable "permit_api_key_secret_arn" {
   default     = ""
 }
 
-variable "st_api_key_secret_arn" {
-  description = "ARN of the SuperTokens API key secret"
-  type        = string
-  default     = ""
-}
-
-variable "st_connection_uri_secret_arn" {
-  description = "ARN of the SuperTokens connection URI secret"
-  type        = string
-  default     = ""
-}
-
-variable "atlas_secret_arn" {
-  description = "ARN of the MongoDB Atlas credentials secret"
-  type        = string
-  default     = ""
-}
 
 variable "documentdb_secret_arn" {
   description = "ARN of the DocumentDB credentials secret"
@@ -216,16 +240,14 @@ variable "documentdb_secret_arn" {
   default     = ""
 }
 
-variable "main_service_environment_variables" {
-  description = "Environment variables for the main service"
-  type        = map(string)
-  default     = {}
+variable "documentdb_secret_name" {
+  description = "Name of the DocumentDB credentials secret"
+  type        = string
 }
 
-variable "solve_service_environment_variables" {
-  description = "Environment variables for the solve service"
-  type        = map(string)
-  default     = {}
+variable "api_gateway_backend_api_key_parameter_name" {
+  description = "SSM Parameter name where the backend API key is stored"
+  type        = string
 }
 
 variable "main_service_security_group_id" {
@@ -247,4 +269,17 @@ variable "tags" {
   description = "A map of tags to assign to the resource"
   type        = map(string)
   default     = {}
+}
+
+# SQS Queue Names
+variable "sqs_solve_queue_name" {
+  description = "Name of the SQS queue for solve requests"
+  type        = string
+  default     = ""
+}
+
+variable "sqs_solve_dlq_name" {
+  description = "Name of the SQS dead-letter queue for solve requests"
+  type        = string
+  default     = ""
 }

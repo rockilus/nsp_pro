@@ -219,8 +219,9 @@ def create_sqs_solve_service(
         aws_secret_access_key=config.aws_secret_access_key,
         aws_session_token=config.aws_session_token,
         endpoint_url=config.endpoint_url,
-        sqs_solve_queue_name="nsp-pro-dev-solve-queue",
-        # sqs_solve_dlq_name="nsp-solve-dlq",
+        sqs_solve_queue_name=config.sqs_solve_queue_name,
+        sqs_solve_dlq_name=config.sqs_solve_dlq_name,
+        documentdb_secret_name=config.documentdb_secret_name,
     )
     sqs_client = SQSClient(aws_config)
 

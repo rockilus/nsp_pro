@@ -101,6 +101,12 @@ class APIClient {
       throw new Error(`API request failed: ${errorMessage}`);
     }
 
+    // Return null for 204 No Content responses
+    if (response.status === 204) {
+      return null as any;
+    }
+
+    // Otherwise, parse as JSON
     return response.json();
   }
 

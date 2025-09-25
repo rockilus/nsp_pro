@@ -33,10 +33,6 @@ variable "cognito_user_pool_clients_ids" {
   type        = list(string)
 }
 
-variable "vpc_link_id" {
-  description = "The ID of the VPC Link."
-  type        = string
-}
 
 variable "vpc_link_target_arns" {
   description = "List of target ARNs for the VPC Link."
@@ -91,4 +87,34 @@ variable "endpoint_type" {
     condition     = contains(["REGIONAL", "EDGE"], var.endpoint_type)
     error_message = "Endpoint type must be REGIONAL or EDGE. REGIONAL is recommended for healthcare applications."
   }
+}
+
+variable "task_execution_role_id" {
+  description = "ID (name or ARN) of the ECS task execution IAM role that should be granted access to SSM parameters"
+  type        = string
+  default     = ""
+}
+
+variable "enable_apigw_logging" {
+  description = "Enable API Gateway access logging and method-level logging (only create CW resources when true)."
+  type        = bool
+  default     = false
+}
+
+variable "apigw_logging_level" {
+  description = "Logging level for API Gateway method settings. One of OFF, ERROR, INFO."
+  type        = string
+  default     = "INFO"
+}
+
+variable "apigw_data_trace_enabled" {
+  description = "Enable data trace (request/response body) in API Gateway logs. Use with caution for sensitive data."
+  type        = bool
+  default     = false
+}
+
+variable "apigw_enable_xray" {
+  description = "Enable X-Ray tracing for the API Gateway stage."
+  type        = bool
+  default     = false
 }

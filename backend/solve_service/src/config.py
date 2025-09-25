@@ -15,7 +15,7 @@ from shared.logger import log_error, log_info
 # Step 1: Define your Pydantic Config Class
 class AppConfig(BaseSettings):
     environment: str = Field(
-        "development", description="Environment (development or production)"
+        "production", description="Environment (development or production)"
     )
 
     # MongoDB configuration (development)
@@ -58,8 +58,11 @@ class AppConfig(BaseSettings):
     )
 
     # SQS configuration
-    sqs_queue_name: str = Field(
-        "nsp-pro-solve-queue", description="SQS queue name for solve requests"
+    sqs_solve_queue_name: str = Field(
+        "nsp-pro-dev-solve-queue", description="Name of the SQS solve queue"
+    )
+    sqs_solve_dlq_name: str | None = Field(
+        None, description="Name of the SQS dead-letter queue"
     )
     sqs_visibility_timeout: int = Field(
         300, description="SQS message visibility timeout"
@@ -212,9 +215,9 @@ def initialize_environment() -> AppConfig:
         log_info("Running in production mode")
 
         # Set DocumentDB configuration
-        os.environ["USE_DOCUMENTDB"] = "true"
-        os.environ["DOCUMENTDB_SECRET_NAME"] = "rockilus/prod/documentdb/credentials"
-        os.environ["DOCUMENTDB_DATABASE_NAME"] = "nsp_pro"
+        # os.environ["USE_DOCUMENTDB"] = "true"
+        # os.environ["DOCUMENTDB_SECRET_NAME"] = "rockilus/prod/documentdb/credentials"
+        # os.environ["DOCUMENTDB_DATABASE_NAME"] = "nsp_pro"
 
         # Download CA bundle if needed
         try:

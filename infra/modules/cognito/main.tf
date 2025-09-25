@@ -6,6 +6,11 @@ resource "aws_cognito_user_pool" "main" {
   username_attributes = ["email"]
 
   # Schema for required user attributes
+  # Note: 'email' is a built-in attribute in Cognito. Declaring it as a schema
+  # with `required = true` can trigger the AWS error "Required custom
+  # attributes are not supported currently." Remove explicit declaration so
+  # Terraform does not attempt to add it as a custom attribute.
+
   schema {
     attribute_data_type      = "String"
     developer_only_attribute = false
@@ -19,25 +24,30 @@ resource "aws_cognito_user_pool" "main" {
     }
   }
 
-  #   schema {
-  #     attribute_data_type = "String"
-  #     name                = "email"
-  #     required            = true
-  #     mutable             = true
-  #   }
-
   schema {
-    attribute_data_type = "String"
-    name                = "family_name"
-    required            = false
-    mutable             = true
+    attribute_data_type      = "String"
+    developer_only_attribute = false
+    mutable                  = true
+    name                     = "family_name"
+    required                 = true
+
+    string_attribute_constraints {
+      max_length = "2048"
+      min_length = "0"
+    }
   }
 
   schema {
-    attribute_data_type = "String"
-    name                = "given_name"
-    required            = false
-    mutable             = true
+    attribute_data_type      = "String"
+    developer_only_attribute = false
+    mutable                  = true
+    name                     = "given_name"
+    required                 = true
+
+    string_attribute_constraints {
+      max_length = "2048"
+      min_length = "0"
+    }
   }
 
   # Password policy
@@ -84,7 +94,7 @@ resource "aws_cognito_user_pool" "main" {
     Project     = var.project_name
   }
 
-  deletion_protection = "ACTIVE"
+  deletion_protection = var.deletion_protection_cognito_user_pool_aws
   user_pool_tier      = "ESSENTIALS"
 
   admin_create_user_config {
@@ -103,11 +113,6 @@ resource "aws_cognito_user_pool" "main" {
     default_email_option = "CONFIRM_WITH_CODE"
   }
 
-  lifecycle {
-    prevent_destroy = true
-    ignore_changes  = [schema]
-  }
-
   depends_on = [module.post_confirmation_lambda]
 }
 
@@ -120,6 +125,7 @@ resource "aws_cognito_user_pool_client" "main" {
   explicit_auth_flows = [
     "ALLOW_USER_AUTH",
     "ALLOW_USER_SRP_AUTH",
+    # "ALLOW_REFRESH_TOKEN_AUTH",
   ]
 
   # Token validity - Adjusted for SPA security best practices
@@ -177,8 +183,25 @@ resource "aws_cognito_user_pool_client" "main" {
 # Cognito User Pool Domain - Required for hosted UI
 resource "aws_cognito_user_pool_domain" "main" {
   # domain       = var.cognito_domain_prefix != null ? var.cognito_domain_prefix : "${var.project_name}-${var.environment}"
-  domain       = "eu-west-3odtk8otjs"
+  domain       = var.cognito_domain_prefix
   user_pool_id = aws_cognito_user_pool.main.id
+
+  managed_login_version = 2
+}
+
+# AWS Cloud Control: Cognito managed login branding (uses AWS default hosted UI when no custom assets provided)
+resource "awscc_cognito_managed_login_branding" "branding" {
+  # This resource configures Cognito's hosted UI branding via the AWS Cloud Control provider.
+  # We intentionally do not upload custom assets here so AWS will serve the default hosted UI.
+  user_pool_id                = aws_cognito_user_pool.main.id
+  client_id                   = aws_cognito_user_pool_client.main.id
+  use_cognito_provided_values = true
+
+  # Keep a dependency on the domain so ordering is correct during apply.
+  depends_on = [
+    aws_cognito_user_pool_domain.main,
+    aws_cognito_user_pool_client.main,
+  ]
 }
 
 # Post-confirmation Lambda module

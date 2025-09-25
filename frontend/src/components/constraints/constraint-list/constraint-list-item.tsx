@@ -28,7 +28,6 @@ export default function ConstraintListItem({
   shifts,
   constraint,
   constraintTemplate,
-  handleAddConstraint,
   handleUpdateConstraint,
   handleDeleteConstraint,
   isLast,
@@ -38,7 +37,6 @@ export default function ConstraintListItem({
   shifts: ShiftT[];
   constraint: ConstraintT;
   constraintTemplate: TemplateT | null;
-  handleAddConstraint: (constraint: ConstraintT) => void;
   handleUpdateConstraint: (updatedConstraint: ConstraintT) => void;
   handleDeleteConstraint: (constraintId: string) => void;
   isLast?: boolean;
@@ -111,7 +109,7 @@ export default function ConstraintListItem({
               buttonElement={editButton()}
               constraint={constraint}
               constraintTemplate={constraintTemplate}
-              handleAddConstraint={handleAddConstraint}
+              // Add constraint is not needed in edit mode
               handleUpdateConstraint={handleUpdateConstraint}
             />
             <IconButton edge="end" aria-label="delete" onClick={handleDelete}>

@@ -34,6 +34,8 @@ import {
   useUpdateRequest,
   useDeleteRequest,
   useRescindRequest,
+  useAcceptRequest,
+  useDenyRequest,
   useGetRequestsTabData,
 } from "../../hooks/useRequest";
 // Styles
@@ -66,6 +68,8 @@ export default function RequestTab({
   const updateRequest = useUpdateRequest();
   const deleteRequest = useDeleteRequest();
   const rescindRequest = useRescindRequest();
+  const acceptRequest = useAcceptRequest();
+  const denyRequest = useDenyRequest();
   const getRequestsTabData = useGetRequestsTabData();
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -161,6 +165,30 @@ export default function RequestTab({
       );
     } catch (error) {
       console.error("Failed to rescind request:", error);
+      // Handle error appropriately
+    }
+  };
+
+  const handleAcceptRequest = async (requestId: string) => {
+    try {
+      const acceptedRequest = await acceptRequest(requestId, teamId);
+      setRequests(
+        requests.map((r) => (r.id === acceptedRequest.id ? acceptedRequest : r))
+      );
+    } catch (error) {
+      console.error("Failed to accept request:", error);
+      // Handle error appropriately
+    }
+  };
+
+  const handleDenyRequest = async (requestId: string) => {
+    try {
+      const deniedRequest = await denyRequest(requestId, teamId);
+      setRequests(
+        requests.map((r) => (r.id === deniedRequest.id ? deniedRequest : r))
+      );
+    } catch (error) {
+      console.error("Failed to deny request:", error);
       // Handle error appropriately
     }
   };
@@ -275,6 +303,8 @@ export default function RequestTab({
               handleUpdateRequest={handleUpdateRequest}
               handleDeleteRequest={handleDeleteRequest}
               handleRescindRequest={handleRescindRequest}
+              handleAcceptRequest={handleAcceptRequest}
+              handleDenyRequest={handleDenyRequest}
               showPastRequests={showPastRequests}
             />
           )}

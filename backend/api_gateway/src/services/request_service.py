@@ -14,7 +14,6 @@ from shared.schemas.core import (
     RequestAugmented,
     RequestStatus,
     RequestType,
-    SWOIdTypes,
     Worker,
 )
 
@@ -71,11 +70,8 @@ class RequestService(BaseService):
         )
         if not old_request:
             raise ValueError(f"Request with id {request.id} not found")
-        if (
-            old_request.status != request.status
-            or old_request.fulfillment != request.fulfillment
-        ):
-            raise ValueError("You cannot change the status or fulfillment of a request")
+        if old_request.status != request.status:
+            raise ValueError("You cannot change the status of a request")
         if not self.authz_request_team_member(
             new_request_worker_id=request.worker_id,
             author_id=author_id,
@@ -101,22 +97,25 @@ class RequestService(BaseService):
             raise ValueError(
                 f"Request with id {request_id} is not active and cannot be approved"
             )
-        single_shift_request = (
-            request.request_type == RequestType.LEAVE and request.shift_id is not None
-        ) or (
-            request.request_type == RequestType.WORK_DEMAND
-            and len(request.shift_options) == 1
-            and request.shift_options[0].id_type == SWOIdTypes.SHIFT
-        )
-        if single_shift_request:
-            target_shift_id = (
-                request.shift_id
-                if request.request_type == RequestType.LEAVE
-                and request.shift_id is not None
-                else request.shift_options[0].id
-            )
-            self._create_assignments_for_single_shift_request(request, target_shift_id)
-            request.fulfillment = FulfillmentStatus.FULFILLED
+        # single_shift_request = (
+        #     request.request_type == RequestType.LEAVE
+        #     and request.shift_id is not None
+        # ) or (
+        #     request.request_type == RequestType.WORK_DEMAND
+        #     and len(request.shift_options) == 1
+        #     and request.shift_options[0].id_type == SWOIdTypes.SHIFT
+        # )
+        # if single_shift_request:
+        #     target_shift_id = (
+        #         request.shift_id
+        #         if request.request_type == RequestType.LEAVE
+        #         and request.shift_id is not None
+        #         else request.shift_options[0].id
+        #     )
+        #     self._create_assignments_for_single_shift_request(
+        #         request, target_shift_id
+        #     )
+        #     request.fulfillment = FulfillmentStatus.FULFILLED
         request.status = RequestStatus.APPROVED
         updated_request = self.collection.request_db.update_request(request)
         return self._to_request_augmented(updated_request)

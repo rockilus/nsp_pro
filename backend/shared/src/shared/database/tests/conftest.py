@@ -73,7 +73,7 @@ async def mongodb_container() -> AsyncGenerator[DatabaseInterface, None]:
             raise RuntimeError(error_message) from e
 
         # Wait for MongoDB to be ready
-        connection_string = "mongodb://testuser:testpass@localhost:27017/"
+        connection_string = "mongodb://testuser:testpass@localhost:27018/"
         max_retries = 5
         config = DatabaseConfig(
             database_type=DatabaseType.MONGODB,

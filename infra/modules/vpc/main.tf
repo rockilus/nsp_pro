@@ -13,27 +13,27 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true
 
   # Healthcare compliance - enable flow logs
-  #   tags = merge(var.tags, {
-  #     Name        = "${var.project_name}-${var.environment}-vpc"
-  #     Component   = "VPC"
-  #     Environment = var.environment
-  #     Project     = var.project_name
-  #     ManagedBy   = "Terraform"
-  #     Compliance  = "Healthcare"
-  #   })
+  tags = merge(var.tags, {
+    Name        = "${var.project_name}-${var.environment}-vpc"
+    Component   = "VPC"
+    Environment = var.environment
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+    Compliance  = "Healthcare"
+  })
 }
 
 # Internet Gateway
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
-  #   tags = merge(var.tags, {
-  #     Name        = "${var.project_name}-${var.environment}-igw"
-  #     Component   = "InternetGateway"
-  #     Environment = var.environment
-  #     Project     = var.project_name
-  #     ManagedBy   = "Terraform"
-  #   })
+  tags = merge(var.tags, {
+    Name        = "${var.project_name}-${var.environment}-igw"
+    Component   = "InternetGateway"
+    Environment = var.environment
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+  })
 }
 
 # Public Subnets (3 across different AZs for high availability)
@@ -48,15 +48,15 @@ resource "aws_subnet" "public" {
   customer_owned_ipv4_pool        = ""
   outpost_arn                     = ""
 
-  #   tags = merge(var.tags, {
-  #     Name        = "${var.project_name}-${var.environment}-public-subnet-${count.index + 1}"
-  #     Component   = "PublicSubnet"
-  #     Environment = var.environment
-  #     Project     = var.project_name
-  #     ManagedBy   = "Terraform"
-  #     Type        = "Public"
-  #     AZ          = data.aws_availability_zones.available.names[count.index]
-  #   })
+  tags = merge(var.tags, {
+    Name        = "${var.project_name}-${var.environment}-public-subnet-${count.index + 1}"
+    Component   = "PublicSubnet"
+    Environment = var.environment
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+    Type        = "Public"
+    AZ          = data.aws_availability_zones.available.names[count.index]
+  })
 }
 
 # Private Subnets (3 across different AZs for high availability)
@@ -73,14 +73,13 @@ resource "aws_subnet" "private" {
   tags = merge(
     # var.tags, 
     {
-      Name = "private-subnet-${data.aws_availability_zones.available.names[count.index]}"
-      # Name = "${var.project_name}-${var.environment}-private-subnet-${data.aws_availability_zones.available.names[count.index]}"
-      #     Component   = "PrivateSubnet"
-      #     Environment = var.environment
-      #     Project     = var.project_name
-      #     ManagedBy   = "Terraform"
-      #     Type        = "Private"
-      #     AZ          = data.aws_availability_zones.available.names[count.index]
+      Name        = "${var.project_name}-${var.environment}-private-subnet-${data.aws_availability_zones.available.names[count.index]}"
+      Component   = "PrivateSubnet"
+      Environment = var.environment
+      Project     = var.project_name
+      ManagedBy   = "Terraform"
+      Type        = "Private"
+      AZ          = data.aws_availability_zones.available.names[count.index]
   })
 }
 
@@ -91,14 +90,14 @@ resource "aws_eip" "nat" {
   # Ensure the VPC exists before creating the EIP
   depends_on = [aws_internet_gateway.main]
 
-  #   tags = merge(var.tags, {
-  #     Name        = "${var.project_name}-${var.environment}-nat-eip"
-  #     Component   = "ElasticIP"
-  #     Environment = var.environment
-  #     Project     = var.project_name
-  #     ManagedBy   = "Terraform"
-  #     Purpose     = "NATGateway"
-  #   })
+  tags = merge(var.tags, {
+    Name        = "${var.project_name}-${var.environment}-nat-eip"
+    Component   = "ElasticIP"
+    Environment = var.environment
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+    Purpose     = "NATGateway"
+  })
 }
 
 # NAT Gateway (placed in the first public subnet for internet access)
@@ -109,12 +108,11 @@ resource "aws_nat_gateway" "main" {
   tags = merge(
     # var.tags, 
     {
-      Name = "nat-gateway-1"
-      #     Name        = "${var.project_name}-${var.environment}-nat-gateway"
-      #     Component   = "NATGateway"
-      #     Environment = var.environment
-      #     Project     = var.project_name
-      #     ManagedBy   = "Terraform"
+      Name        = "${var.project_name}-${var.environment}-nat-gateway"
+      Component   = "NATGateway"
+      Environment = var.environment
+      Project     = var.project_name
+      ManagedBy   = "Terraform"
   })
 
   # Ensure the Internet Gateway exists before creating the NAT Gateway
@@ -130,14 +128,21 @@ resource "aws_route_table" "public" {
     gateway_id = aws_internet_gateway.main.id
   }
 
-  #   tags = merge(var.tags, {
-  #     Name        = "${var.project_name}-${var.environment}-public-rt"
-  #     Component   = "RouteTable"
-  #     Environment = var.environment
-  #     Project     = var.project_name
-  #     ManagedBy   = "Terraform"
-  #     Type        = "Public"
-  #   })
+  tags = merge(var.tags, {
+    Name        = "${var.project_name}-${var.environment}-public-rt"
+    Component   = "RouteTable"
+    Environment = var.environment
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+    Type        = "Public"
+  })
+}
+
+resource "aws_main_route_table_association" "public_as_main" {
+  vpc_id         = aws_vpc.main.id
+  route_table_id = aws_route_table.public.id
+
+  depends_on = [aws_route_table.public, aws_vpc.main]
 }
 
 # Route Table for Private Subnets
@@ -150,15 +155,14 @@ resource "aws_route_table" "private" {
   }
 
   tags = merge(
-    # var.tags, 
+    var.tags,
     {
-      Name = "private-route-table"
-      #   Name = "${var.project_name}-${var.environment}-private-rt"
-      # Component   = "RouteTable"
-      # Environment = var.environment
-      # Project     = var.project_name
-      # ManagedBy   = "Terraform"
-      # Type        = "Private"
+      Name        = "${var.project_name}-${var.environment}-private-rt"
+      Component   = "RouteTable"
+      Environment = var.environment
+      Project     = var.project_name
+      ManagedBy   = "Terraform"
+      Type        = "Private"
   })
 }
 
@@ -255,7 +259,7 @@ resource "aws_route_table_association" "private" {
 # Network ACL for additional security layer (Healthcare compliance)
 resource "aws_default_network_acl" "main" {
   #   vpc_id                 = aws_vpc.main.id
-  default_network_acl_id = "acl-03d9a1666b1bd240f"
+  default_network_acl_id = aws_vpc.main.default_network_acl_id
 
   subnet_ids = flatten([aws_subnet.public[*].id, aws_subnet.private[*].id])
 
@@ -320,14 +324,14 @@ resource "aws_default_network_acl" "main" {
     to_port    = 0
   }
 
-  #   tags = merge(var.tags, {
-  #     Name        = "${var.project_name}-${var.environment}-nacl"
-  #     Component   = "NetworkACL"
-  #     Environment = var.environment
-  #     Project     = var.project_name
-  #     ManagedBy   = "Terraform"
-  #     Compliance  = "Healthcare"
-  #   })
+  tags = merge(var.tags, {
+    Name        = "${var.project_name}-${var.environment}-nacl"
+    Component   = "NetworkACL"
+    Environment = var.environment
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+    Compliance  = "Healthcare"
+  })
 
   depends_on = [aws_vpc.main]
 }
