@@ -858,7 +858,7 @@ function ShiftDemandTabInternal({
   }
 
   return (
-    <div className="tab-container-ultrawide">
+    <div className="tab-container-ultrawide" data-testid="shift-demand-tab">
       {/* Main Toolbar */}
       <ShiftDemandToolbar
         lng={lng}

@@ -89,7 +89,7 @@ export class ShiftDemandTestBase {
 
     // Wait for the main content to be visible using the data-testid attribute
     await expect(
-      page.locator('[data-testid="shift-demand-grid"]')
+      page.locator('[data-testid="shift-demand-tab"]')
     ).toBeVisible();
     console.log("✅ Navigated to shift demands page");
   }

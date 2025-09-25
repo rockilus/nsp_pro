@@ -518,6 +518,7 @@ function ShiftDemandTableHeader({
             className={`shift-demand-table-header date-column ${
               date.day() === 0 || date.day() === 6 ? "weekend" : ""
             }`}
+            data-testid={`date-header-${date.format("YYYY-MM-DD")}`}
           >
             <div className="shift-demand-date-info">
               {bulkChangeState.isActive && (
