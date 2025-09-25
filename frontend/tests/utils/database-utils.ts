@@ -1129,6 +1129,77 @@ export class DatabaseTestUtils {
       );
     }
   }
+
+  /**
+   * Create a shift demand for testing
+   */
+  async createShiftDemand(options: {
+    teamId: string;
+    shiftId: string;
+    date: Date;
+    count: number;
+    notes?: string;
+    source?: "manual" | "template" | "solver" | "import";
+  }): Promise<any> {
+    try {
+      // Import ShiftDemandApi dynamically to avoid circular imports
+      const { ShiftDemandApi } = await import(
+        "../../src/app/lib/api/shiftDemandApi"
+      );
+
+      const shiftDemandData = {
+        shiftId: options.shiftId,
+        date: Math.floor(options.date.getTime() / 1000), // Convert to Unix timestamp
+        count: options.count,
+        notes: options.notes || null,
+        source: options.source || "manual",
+        sourceId: null,
+      };
+
+      const result = await ShiftDemandApi.createShiftDemand(
+        this.testApiClient,
+        options.teamId,
+        shiftDemandData
+      );
+
+      return result;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to create shift demand: ${error.message}`);
+      }
+      throw new Error(`Failed to create shift demand: Unknown error`);
+    }
+  }
+
+  /**
+   * Get shift demands by period for testing
+   */
+  async getShiftDemandsByPeriod(
+    teamId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<any[]> {
+    try {
+      // Import ShiftDemandApi dynamically to avoid circular imports
+      const { ShiftDemandApi } = await import(
+        "../../src/app/lib/api/shiftDemandApi"
+      );
+
+      const result = await ShiftDemandApi.getShiftDemandsByPeriod(
+        this.testApiClient,
+        teamId,
+        startDate,
+        endDate
+      );
+
+      return result;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to get shift demands: ${error.message}`);
+      }
+      throw new Error(`Failed to get shift demands: Unknown error`);
+    }
+  }
 }
 
 /**
