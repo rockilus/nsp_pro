@@ -147,7 +147,11 @@ test.describe("Shift Demand - Period Navigation", () => {
     const startOfWeek = today.startOf("isoWeek");
     const monthOfStartOfWeek = startOfWeek.startOf("month");
 
+    // Explicitly select week view first
+    await periodNav.select.selectOption("week");
     await expect(periodNav.select).toHaveValue("week");
+
+    // Switch to month view
     await periodNav.select.selectOption("month");
 
     await expect(periodNav.select).toHaveValue("month");
@@ -166,6 +170,8 @@ test.describe("Shift Demand - Period Navigation", () => {
     await periodNav.nextButton.click(); // Go to next month
     await expect(periodNav.label).toHaveText(startOfMonth.format("MMMM YYYY"));
 
+    // Explicitly confirm we're in month view, then switch to week
+    await expect(periodNav.select).toHaveValue("month");
     await periodNav.select.selectOption("week");
     const weekOfStartOfMonth = startOfMonth.startOf("isoWeek");
     const endOfWeekOfStartOfMonth = startOfMonth.endOf("isoWeek");
