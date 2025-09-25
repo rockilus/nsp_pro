@@ -139,7 +139,7 @@ export function TemplateList({
   }
 
   return (
-    <Box className="template-list-container">
+    <Box className="template-list-container" data-testid="template-list">
       {/* Header */}
       <Box className="template-list-header">
         <Button

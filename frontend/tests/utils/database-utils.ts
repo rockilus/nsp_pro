@@ -1202,7 +1202,7 @@ export class DatabaseTestUtils {
   }
 
   /**
-   * Create a shift demand template using the existing ShiftDemandTemplateApi for consistent behavior
+   * Create a shift demand template using direct API call for test consistency
    */
   async createShiftDemandTemplate(templateData: {
     teamId: string;
@@ -1210,23 +1210,45 @@ export class DatabaseTestUtils {
     description?: string;
   }): Promise<{ templateId: string; name: string; teamId: string }> {
     try {
-      const { ShiftDemandTemplateApi } = await import(
-        "../../src/app/lib/api/shiftDemandTemplateApi"
-      );
-
       console.log(
         `📝 Creating shift demand template "${templateData.name}" for team ${templateData.teamId}...`
       );
 
-      const template = await ShiftDemandTemplateApi.createTemplate(
-        this.testApiClient,
-        templateData.teamId,
+      const response = await fetch(
+        `${testConfig.apiUrl}/shift-demand-templates/teams/${templateData.teamId}`,
         {
-          name: templateData.name,
-          description: templateData.description || "",
+          method: "POST",
+          headers: {
+            ...this.getAuthHeaders(),
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: templateData.name,
+            description: templateData.description || "",
+          }),
         }
       );
 
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error(
+          `❌ Test API POST /shift-demand-templates/teams/${templateData.teamId} failed:`,
+          {
+            status: response.status,
+            error: errorData,
+            environment: testConfig.environment,
+            endpoint: `/shift-demand-templates/teams/${templateData.teamId}`,
+            timestamp: new Date().toISOString(),
+          }
+        );
+        throw new Error(
+          `API POST /shift-demand-templates/teams/${
+            templateData.teamId
+          } failed: ${response.status} - ${JSON.stringify(errorData)}`
+        );
+      }
+
+      const template = await response.json();
       console.log(`✅ Template created with ID: ${template.id}`);
 
       return {
@@ -1244,24 +1266,41 @@ export class DatabaseTestUtils {
   }
 
   /**
-   * Delete a shift demand template using the existing ShiftDemandTemplateApi for consistent behavior
+   * Delete a shift demand template using direct API call for test consistency
    */
   async deleteShiftDemandTemplate(
     templateId: string,
     teamId: string
   ): Promise<void> {
     try {
-      const { ShiftDemandTemplateApi } = await import(
-        "../../src/app/lib/api/shiftDemandTemplateApi"
-      );
-
       console.log(`🗑️ Deleting shift demand template ${templateId}...`);
 
-      await ShiftDemandTemplateApi.deleteTemplate(
-        this.testApiClient,
-        templateId,
-        teamId
+      const response = await fetch(
+        `${testConfig.apiUrl}/shift-demand-templates/${templateId}/teams/${teamId}`,
+        {
+          method: "DELETE",
+          headers: this.getAuthHeaders(),
+        }
       );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error(
+          `❌ Test API DELETE /shift-demand-templates/${templateId}/teams/${teamId} failed:`,
+          {
+            status: response.status,
+            error: errorData,
+            environment: testConfig.environment,
+            endpoint: `/shift-demand-templates/${templateId}/teams/${teamId}`,
+            timestamp: new Date().toISOString(),
+          }
+        );
+        throw new Error(
+          `API DELETE /shift-demand-templates/${templateId}/teams/${teamId} failed: ${
+            response.status
+          } - ${JSON.stringify(errorData)}`
+        );
+      }
 
       console.log(`✅ Template deleted successfully`);
     } catch (error) {

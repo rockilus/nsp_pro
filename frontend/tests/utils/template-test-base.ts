@@ -9,6 +9,7 @@ import isoWeek from "dayjs/plugin/isoWeek";
 import utc from "dayjs/plugin/utc";
 import isBetween from "dayjs/plugin/isBetween";
 import { testConfig } from "./test-config";
+import { ShiftType } from "../../src/types/shift";
 
 dayjs.extend(isoWeek);
 dayjs.extend(utc);
@@ -44,28 +45,28 @@ export class TemplateTestBase {
         name: "Morning Shift",
         startTime: dayjs.utc("2023-01-01T08:00:00"),
         endTime: dayjs.utc("2023-01-01T12:00:00"),
-        shiftType: "NORMAL" as any,
+        shiftType: ShiftType.NORMAL,
       });
       await this.dbUtils.createShift({
         teamId: this.testTeam.teamId,
         name: "Afternoon Shift",
         startTime: dayjs.utc("2023-01-01T14:00:00"),
         endTime: dayjs.utc("2023-01-01T18:00:00"),
-        shiftType: "NORMAL" as any,
+        shiftType: ShiftType.NORMAL,
       });
       await this.dbUtils.createShift({
         teamId: this.testTeam.teamId,
         name: "Duty 1",
         startTime: dayjs.utc("2023-01-01T08:00:00"),
         endTime: dayjs.utc("2023-01-02T08:00:00"),
-        shiftType: "DUTY" as any,
+        shiftType: ShiftType.DUTY,
       });
       await this.dbUtils.createShift({
         teamId: this.testTeam.teamId,
         name: "Duty 2",
         startTime: dayjs.utc("2023-01-01T08:00:00"),
         endTime: dayjs.utc("2023-01-02T08:00:00"),
-        shiftType: "DUTY" as any,
+        shiftType: ShiftType.DUTY,
       });
 
       console.log("✅ Test shifts created");
@@ -145,7 +146,7 @@ export class TemplateTestBase {
     return {
       nameInput: page.locator('[data-testid="template-name-input"] input'),
       descriptionInput: page.locator(
-        '[data-testid="template-description-input"] textarea'
+        '[data-testid="template-description-input"] textarea:not([readonly])'
       ),
       createButton: page.locator(
         '[data-testid="template-creation-create-button"]'

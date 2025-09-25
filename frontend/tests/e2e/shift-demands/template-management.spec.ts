@@ -132,12 +132,12 @@ test.describe("Template Management", () => {
 
     const formElements = templateTestBase.getTemplateCreationFormElements(page);
 
-    // Test minimum length (should be at least 3 characters based on typical validation)
-    await formElements.nameInput.fill("AB");
+    // Test minimum length (empty string should be invalid, but single character should be valid)
+    await formElements.nameInput.fill("");
     await expect(formElements.createButton).toBeDisabled();
 
-    // Test valid length
-    await formElements.nameInput.fill("ABC");
+    // Test valid length (minimum is 1 character)
+    await formElements.nameInput.fill("A");
     await expect(formElements.createButton).not.toBeDisabled();
   });
 
@@ -155,8 +155,12 @@ test.describe("Template Management", () => {
     // Wait for template list to update and verify the new template appears
     await templateTestBase.waitForTemplateListLoaded(page);
 
-    // Check if template appears in the list (we can't predict the exact ID, so we look for the name)
-    await expect(page.locator(`text=${templateName}`)).toBeVisible();
+    // Wait for template list to refresh and check if template appears in the list
+    await expect(
+      page
+        .locator(`[data-testid^="template-list-item-"]`)
+        .filter({ hasText: templateName })
+    ).toBeVisible({ timeout: 10000 });
   });
 
   test("should cancel template creation when clicking cancel button", async ({
@@ -272,8 +276,8 @@ test.describe("Template Management", () => {
       templateTestBase.getTemplateDeleteConfirmationDialog(page);
     await expect(confirmDialog).toBeVisible();
 
-    // Verify dialog content
-    await expect(page.locator(`text=${templateName}`)).toBeVisible(); // Template name should be in confirmation message
+    // Verify dialog content - check for template name within the dialog
+    await expect(confirmDialog.locator(`text=${templateName}`)).toBeVisible(); // Template name should be in confirmation message
 
     // Verify dialog buttons
     const dialogButtons = templateTestBase.getDeleteConfirmationButtons(page);
