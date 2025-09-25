@@ -133,6 +133,7 @@ export const PeriodNavigation: React.FC<PeriodNavigationProps> = ({
         onClick={handleToday}
         disabled={isLoading}
         className={styles.todayButton}
+        data-testid="period-nav-today"
       >
         Today
       </button>
@@ -142,6 +143,7 @@ export const PeriodNavigation: React.FC<PeriodNavigationProps> = ({
         onClick={handlePrevious}
         disabled={isLoading}
         className={styles.previousButton}
+        data-testid="period-nav-previous"
       >
         <NavigateBeforeIcon />
       </button>
@@ -151,12 +153,15 @@ export const PeriodNavigation: React.FC<PeriodNavigationProps> = ({
         onClick={handleNext}
         disabled={isLoading}
         className={styles.nextButton}
+        data-testid="period-nav-next"
       >
         <NavigateNextIcon />
       </button>
 
       {/* Period Label */}
-      <span className={styles.periodLabel}>{getPeriodLabel()}</span>
+      <span className={styles.periodLabel} data-testid="period-nav-label">
+        {getPeriodLabel()}
+      </span>
 
       {/* Period Type Selector */}
       <select
@@ -164,6 +169,7 @@ export const PeriodNavigation: React.FC<PeriodNavigationProps> = ({
         onChange={(e) => handlePeriodTypeChange(e.target.value as PeriodType)}
         disabled={isLoading}
         className={styles.select}
+        data-testid="period-nav-select"
       >
         <option value="week">Week</option>
         <option value="month">Month</option>
