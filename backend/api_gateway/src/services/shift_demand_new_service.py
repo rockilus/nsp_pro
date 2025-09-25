@@ -233,6 +233,7 @@ class ShiftDemandNewService(BaseService):
 
         # Prepare lists for operations
         nonzero_demands: List[ShiftDemandNew] = []
+        demands_to_delete: List[str] = []
         # Delete zero-count existing demands; keep nonzero for upsert
         now = datetime.now(timezone.utc)
 
@@ -250,9 +251,10 @@ class ShiftDemandNewService(BaseService):
             existing = existing_map.get(key)
 
             if incoming.count <= 0:
-                # If there is an existing demand for this criteria, delete it
+                # If there is an existing demand for this criteria,
+                # collect it for deletion
                 if existing and existing.id:
-                    self.delete_shift_demand(existing.id)
+                    demands_to_delete.append(existing.id)
                 continue
 
             # For positive-count demands, if an existing demand is present,
@@ -267,6 +269,12 @@ class ShiftDemandNewService(BaseService):
 
             incoming.updated_at = now
             nonzero_demands.append(incoming)
+
+        # Bulk delete all demands that need to be removed
+        if demands_to_delete:
+            self.collection.shift_demand_new_db.delete_shift_demands_by_ids(
+                demands_to_delete
+            )
 
         # If there are no demands to create/update, return
         if not nonzero_demands:
