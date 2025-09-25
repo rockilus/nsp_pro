@@ -135,7 +135,7 @@ export class ShiftDemandTestBase {
    */
   getBulkSelectionElements(page: Page) {
     return {
-      input: page.locator('[data-testid="bulk-selection-input"]'),
+      input: page.locator('[data-testid="bulk-selection-input"] input'),
       deleteButton: page.locator(
         '[data-testid="bulk-selection-delete-button"]'
       ),
@@ -156,13 +156,15 @@ export class ShiftDemandTestBase {
    */
   getSelectionCheckboxes(page: Page) {
     return {
-      selectAll: page.locator('[data-testid="select-all-checkbox"]'),
+      selectAll: page.locator('[data-testid="select-all-checkbox"] input'),
       rowSelect: (shiftId: string) =>
-        page.locator(`[data-testid="row-select-checkbox-${shiftId}"]`),
+        page.locator(`[data-testid="row-select-checkbox-${shiftId}"] input`),
       columnSelect: (date: string) =>
-        page.locator(`[data-testid="column-select-checkbox-${date}"]`),
+        page.locator(`[data-testid="column-select-checkbox-${date}"] input`),
       cellSelect: (shiftId: string, date: string) =>
-        page.locator(`[data-testid="cell-select-checkbox-${shiftId}-${date}"]`),
+        page.locator(
+          `[data-testid="cell-select-checkbox-${shiftId}-${date}"] input`
+        ),
     };
   }
 

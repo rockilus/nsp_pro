@@ -73,7 +73,7 @@ export function BulkSelectionSection({
               style: { textAlign: "center" },
             }}
             placeholder={t("shift_demands")}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyPress}
             sx={{ width: 80 }}
           />
         </Box>
