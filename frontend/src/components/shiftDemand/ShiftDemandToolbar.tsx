@@ -1,9 +1,12 @@
 import React from "react";
-import { Box, Paper, Button } from "@mui/material";
-import { Description, Group } from "@mui/icons-material";
-import { PeriodNavigation } from "./PeriodNavigation";
 import { useTranslation } from "../../app/i18n/client";
 import { Dayjs } from "dayjs";
+// MUI
+import { Box, Paper, Button } from "@mui/material";
+import { Description, Group } from "@mui/icons-material";
+// Components
+import { PeriodNavigation } from "./PeriodNavigation";
+// Types
 import { PeriodType } from "../../types/shiftDemand";
 
 interface ShiftDemandToolbarProps {
