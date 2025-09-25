@@ -453,19 +453,19 @@ class TestShiftDemandNewRepository:
         """Test queries that should return empty results."""
         # Test empty team
         result = self.repo.get_shift_demands_by_team_id("nonexistent_team")
-        assert result == []
+        assert not result
 
         # Test empty date range
         result = self.repo.get_shift_demands_by_date_range(
             "team1", date(2025, 1, 1), date(2025, 1, 31)
         )
-        assert result == []
+        assert not result
 
         # Test empty specific shift
         result = self.repo.get_shift_demands_by_shift_and_date_range(
             "team1", "nonexistent_shift", date(2025, 1, 1), date(2025, 1, 31)
         )
-        assert result == []
+        assert not result
 
     def test_timestamp_updates(self):
         """Test that timestamps are properly handled."""
@@ -732,7 +732,7 @@ class TestShiftDemandNewRepository:
         """Test batch lookup with empty criteria list."""
         result = self.repo.get_shift_demands_by_criteria_batch([])
 
-        assert result == []
+        assert not result
 
     def test_get_shift_demands_by_criteria_batch_no_matches(self):
         """Test batch lookup when no demands match the criteria."""
@@ -1052,10 +1052,10 @@ class TestShiftDemandNewRepository:
 
         # Results should be the same
         assert len(batch_result) == len(individual_results)
-        for i in range(len(batch_result)):
-            if batch_result[i] is None and individual_results[i] is None:
+        for i, (b_res, ind_res) in enumerate(zip(batch_result, individual_results)):
+            if b_res is None and ind_res is None:
                 continue
-            elif batch_result[i] is not None and individual_results[i] is not None:
-                assert batch_result[i].id == individual_results[i].id
+            if b_res is not None and ind_res is not None:
+                assert b_res.id == ind_res.id
             else:
                 assert False, f"Mismatch at index {i}"
