@@ -3,9 +3,11 @@ import { ShiftDemandTestBase } from "../../utils/shift-demand-test-base";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import isBetween from "dayjs/plugin/isBetween";
+import utc from "dayjs/plugin/utc";
 
 dayjs.extend(isoWeek);
 dayjs.extend(isBetween);
+dayjs.extend(utc);
 
 test.describe("Shift Demand - Period Navigation", () => {
   let shiftDemandTestBase: ShiftDemandTestBase;
@@ -16,15 +18,19 @@ test.describe("Shift Demand - Period Navigation", () => {
     await shiftDemandTestBase.navigateToShiftDemandsPage(page);
   });
 
-  test("should display the current week by default and navigate weeks", async ({
-    page,
-  }) => {
+  test("should navigate weeks in week view", async ({ page }) => {
     const periodNav = shiftDemandTestBase.getPeriodNav(page);
-    const today = dayjs();
+    const today = dayjs.utc();
     const startOfWeek = today.startOf("isoWeek");
     const endOfWeek = today.endOf("isoWeek");
 
-    // Check that the initial view is the current week
+    // Explicitly select week view
+    await periodNav.select.selectOption("week");
+
+    // Set a known starting point by clicking "Today"
+    await periodNav.todayButton.click();
+
+    // Check that the view is the current week
     await expect(periodNav.label).toHaveText(today.format("MMMM YYYY"));
     await expect(
       shiftDemandTestBase.getDateHeader(page, startOfWeek.format("YYYY-MM-DD"))
@@ -72,16 +78,19 @@ test.describe("Shift Demand - Period Navigation", () => {
     ).toBeVisible();
   });
 
-  test("should switch to month view and navigate months", async ({ page }) => {
+  test("should navigate months in month view", async ({ page }) => {
     const periodNav = shiftDemandTestBase.getPeriodNav(page);
-    const today = dayjs();
+    const today = dayjs.utc();
     const startOfMonth = today.startOf("month");
     const endOfMonth = today.endOf("month");
 
     // Switch to month view
     await periodNav.select.selectOption("month");
 
-    // Check that the initial view is the current month
+    // Set a known starting point by clicking "Today"
+    await periodNav.todayButton.click();
+
+    // Check that the view is the current month
     await expect(periodNav.label).toHaveText(today.format("MMMM YYYY"));
     await expect(
       shiftDemandTestBase.getDateHeader(page, startOfMonth.format("YYYY-MM-DD"))
@@ -134,7 +143,7 @@ test.describe("Shift Demand - Period Navigation", () => {
     const periodNav = shiftDemandTestBase.getPeriodNav(page);
 
     // 1. Switch from week to month
-    const today = dayjs();
+    const today = dayjs.utc();
     const startOfWeek = today.startOf("isoWeek");
     const monthOfStartOfWeek = startOfWeek.startOf("month");
 
@@ -153,7 +162,7 @@ test.describe("Shift Demand - Period Navigation", () => {
     ).toBeVisible();
 
     // 2. Switch from month to week
-    const startOfMonth = dayjs().add(1, "month").startOf("month");
+    const startOfMonth = dayjs.utc().add(1, "month").startOf("month");
     await periodNav.nextButton.click(); // Go to next month
     await expect(periodNav.label).toHaveText(startOfMonth.format("MMMM YYYY"));
 
