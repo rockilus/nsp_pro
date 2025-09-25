@@ -5,6 +5,8 @@
 import { Page, expect } from "@playwright/test";
 import { testConfig } from "./test-config";
 import { DatabaseTestUtils } from "./database-utils";
+import dayjs from "dayjs";
+import { ShiftType, ShiftRestType } from "../../src/types/shift";
 
 export class ShiftDemandTestBase {
   protected dbUtils: DatabaseTestUtils;
@@ -27,6 +29,37 @@ export class ShiftDemandTestBase {
     });
     if (this.testTeam) {
       console.log(`✅ Test team created: ${this.testTeam.name}`);
+
+      // Create shifts for the tests
+      await this.dbUtils.createShift({
+        teamId: this.testTeam.teamId,
+        name: "Morning Shift",
+        startTime: dayjs.utc("2023-01-01T08:00:00"),
+        endTime: dayjs.utc("2023-01-01T12:00:00"),
+        shiftType: ShiftType.NORMAL,
+      });
+      await this.dbUtils.createShift({
+        teamId: this.testTeam.teamId,
+        name: "Afternoon Shift",
+        startTime: dayjs.utc("2023-01-01T14:00:00"),
+        endTime: dayjs.utc("2023-01-01T18:00:00"),
+        shiftType: ShiftType.NORMAL,
+      });
+      await this.dbUtils.createShift({
+        teamId: this.testTeam.teamId,
+        name: "Duty 1",
+        startTime: dayjs.utc("2023-01-01T08:00:00"),
+        endTime: dayjs.utc("2023-01-02T08:00:00"),
+        shiftType: ShiftType.DUTY,
+      });
+      await this.dbUtils.createShift({
+        teamId: this.testTeam.teamId,
+        name: "Duty 2",
+        startTime: dayjs.utc("2023-01-01T08:00:00"),
+        endTime: dayjs.utc("2023-01-02T08:00:00"),
+        shiftType: ShiftType.DUTY,
+      });
+      console.log("✅ Created 4 test shifts");
     }
   }
 

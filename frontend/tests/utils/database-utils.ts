@@ -9,10 +9,18 @@ import { TeamApi } from "../../src/app/lib/api/teamApi";
 import { WorkerApi } from "../../src/app/lib/api/workerApi";
 import { SpecialtyApi } from "../../src/app/lib/api/specialtyApi";
 import { DimensionApi } from "../../src/app/lib/api/dimensionApi";
+import { ShiftApi } from "../../src/app/lib/api/shiftApi";
 import { AuthenticatedApiClient } from "../../src/app/lib/api/baseApi";
 import { TeamWithMembership } from "../../src/types/team";
 import { WorkerT } from "../../src/types/worker";
 import { SpecialtyT } from "../../src/types/specialty";
+import {
+  ShiftT,
+  StaffingT,
+  ShiftType,
+  ShiftRestType,
+  ShiftLeaveType,
+} from "../../src/types/shift";
 import {
   DimensionT,
   DimensionType,
@@ -580,6 +588,59 @@ export class DatabaseTestUtils {
         );
       }
       throw new Error(`Failed to delete worker '${workerId}': Unknown error`);
+    }
+  }
+
+  /**
+   * Create a shift using the existing ShiftApi for consistent behavior
+   */
+  async createShift(shiftData: {
+    teamId: string;
+    name: string;
+    startTime: dayjs.Dayjs;
+    endTime: dayjs.Dayjs;
+    shiftType: ShiftType;
+    staffing?: StaffingT[];
+    restType?: ShiftRestType;
+    leaveType?: ShiftLeaveType;
+    color?: string;
+    acronym?: string;
+  }): Promise<ShiftT> {
+    try {
+      const shift: ShiftT = {
+        id: "", // Will be set by the API
+        teamId: shiftData.teamId,
+        name: shiftData.name,
+        acronym:
+          shiftData.acronym || shiftData.name.substring(0, 3).toUpperCase(),
+        acronymCustom: !!shiftData.acronym,
+        startTime: shiftData.startTime,
+        endTime: shiftData.endTime,
+        shiftType: shiftData.shiftType,
+        staffing: shiftData.staffing ?? [],
+        restType: shiftData.restType ?? ShiftRestType.NONE,
+        leaveType: shiftData.leaveType ?? ShiftLeaveType.NONE,
+        color: shiftData.color ?? "#FFFFFF",
+        recuperationTime: 0,
+        recuperationDutyId: null,
+        deleted: false,
+        attributes: [],
+      };
+
+      // Use the existing ShiftApi with our test client
+      const result: ShiftT = await ShiftApi.addShift(this.testApiClient, shift);
+
+      return result;
+    } catch (error) {
+      // Enhanced error handling for test debugging
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to create shift '${shiftData.name}': ${error.message}`
+        );
+      }
+      throw new Error(
+        `Failed to create shift '${shiftData.name}': Unknown error`
+      );
     }
   }
 
