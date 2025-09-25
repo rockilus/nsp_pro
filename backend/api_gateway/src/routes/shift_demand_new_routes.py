@@ -303,19 +303,14 @@ async def bulk_upsert_shift_demands(
         ]
 
         # Process bulk upsert through service
-        created, updated = service.bulk_upsert_shift_demands(demands)
-
-        log_info(
-            f"Bulk upsert completed for team {team_id}: "
-            f"{len(created)} created, {len(updated)} updated"
-        )
+        created, updated, deleted_ids = service.bulk_upsert_shift_demands(demands)
 
         # Convert result to response DTO
         return ShiftDemandsResultDTO(
             demandsCreated=[demand.to_dto() for demand in created],
             demandsRead=[],  # Not used in upsert
             demandsUpdated=[demand.to_dto() for demand in updated],
-            demandsDeletedIds=[],  # Not used in upsert
+            demandsDeletedIds=deleted_ids,
         )
 
     except NotAuthorizedError:
