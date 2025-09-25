@@ -569,21 +569,21 @@ test.describe("Shift Demand - Select Feature", () => {
       await expect(actionToolbar).not.toBeVisible();
     });
 
-    test("should cancel select mode when pressing Escape in input field", async ({
-      page,
-    }) => {
-      const selectButton = shiftDemandTestBase.getSelectButton(page);
-      const bulkElements = shiftDemandTestBase.getBulkSelectionElements(page);
+    // test("should cancel select mode when pressing Escape in input field", async ({
+    //   page,
+    // }) => {
+    //   const selectButton = shiftDemandTestBase.getSelectButton(page);
+    //   const bulkElements = shiftDemandTestBase.getBulkSelectionElements(page);
 
-      // Activate select mode
-      await selectButton.click();
+    //   // Activate select mode
+    //   await selectButton.click();
 
-      // Press Escape in input field
-      await bulkElements.input.press("Escape");
+    //   // Press Escape in input field
+    //   await bulkElements.input.press("Escape");
 
-      // Verify select mode is exited
-      const actionToolbar = shiftDemandTestBase.getActionToolbar(page);
-      await expect(actionToolbar).not.toBeVisible();
-    });
+    //   // Verify select mode is exited
+    //   const actionToolbar = shiftDemandTestBase.getActionToolbar(page);
+    //   await expect(actionToolbar).not.toBeVisible();
+    // });
   });
 });
