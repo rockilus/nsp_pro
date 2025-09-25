@@ -8,12 +8,13 @@ from shared.database.repositories.shift_demand_new import (
     ShiftDemandNewRepository,
 )
 from shared.schemas.core.shift_demand_new import (
+    ShiftDemandCriteria,
     ShiftDemandNew,
     ShiftDemandSource,
 )
 
 
-# pylint: disable=too-many-public-methods
+# pylint: disable=too-many-public-methods, too-many-lines
 class TestShiftDemandNewRepository:
     """Test suite for ShiftDemandNewRepository."""
 
@@ -726,3 +727,335 @@ class TestShiftDemandNewRepository:
         # Verify no demands remain
         remaining = self.repo.get_shift_demands_by_team_id("team1")
         assert len(remaining) == 0
+
+    def test_get_shift_demands_by_criteria_batch_empty_list(self):
+        """Test batch lookup with empty criteria list."""
+        result = self.repo.get_shift_demands_by_criteria_batch([])
+
+        assert result == []
+
+    def test_get_shift_demands_by_criteria_batch_no_matches(self):
+        """Test batch lookup when no demands match the criteria."""
+        criteria_list = [
+            ShiftDemandCriteria("team1", "shift1", date(2025, 1, 15)),
+            ShiftDemandCriteria("team1", "shift2", date(2025, 1, 16)),
+            ShiftDemandCriteria("team1", "shift3", date(2025, 1, 17)),
+        ]
+
+        result = self.repo.get_shift_demands_by_criteria_batch(criteria_list)
+
+        assert len(result) == 3
+        assert all(demand is None for demand in result)
+
+    def test_get_shift_demands_by_criteria_batch_all_matches(self):
+        """Test batch lookup when all criteria have matching demands."""
+        # Create shift demands
+        shift_demands = [
+            self._create_test_shift_demand(
+                shift_id="shift1", demand_date=date(2025, 1, 15), count=2
+            ),
+            self._create_test_shift_demand(
+                shift_id="shift2", demand_date=date(2025, 1, 16), count=3
+            ),
+            self._create_test_shift_demand(
+                shift_id="shift3", demand_date=date(2025, 1, 17), count=4
+            ),
+        ]
+
+        created_demands = []
+        for sd in shift_demands:
+            created_demands.append(self.repo.create_shift_demand(sd))
+
+        # Create criteria list in same order
+        criteria_list = [
+            ShiftDemandCriteria("team1", "shift1", date(2025, 1, 15)),
+            ShiftDemandCriteria("team1", "shift2", date(2025, 1, 16)),
+            ShiftDemandCriteria("team1", "shift3", date(2025, 1, 17)),
+        ]
+
+        result = self.repo.get_shift_demands_by_criteria_batch(criteria_list)
+
+        assert len(result) == 3
+        assert all(demand is not None for demand in result)
+
+        # Verify results match criteria in same order
+        for i, demand in enumerate(result):
+            assert demand is not None
+            assert demand.team_id == criteria_list[i].team_id
+            assert demand.shift_id == criteria_list[i].shift_id
+            assert demand.date == criteria_list[i].date
+
+    def test_get_shift_demands_by_criteria_batch_partial_matches(self):
+        """Test batch lookup when only some criteria have matching demands."""
+        # Create only some of the shift demands
+        shift_demands = [
+            self._create_test_shift_demand(
+                shift_id="shift1", demand_date=date(2025, 1, 15), count=2
+            ),
+            self._create_test_shift_demand(
+                shift_id="shift3", demand_date=date(2025, 1, 17), count=4
+            ),
+        ]
+
+        for sd in shift_demands:
+            self.repo.create_shift_demand(sd)
+
+        # Create criteria for all three, but only shift1 and shift3 exist
+        criteria_list = [
+            ShiftDemandCriteria("team1", "shift1", date(2025, 1, 15)),
+            ShiftDemandCriteria("team1", "shift2", date(2025, 1, 16)),  # No match
+            ShiftDemandCriteria("team1", "shift3", date(2025, 1, 17)),
+        ]
+
+        result = self.repo.get_shift_demands_by_criteria_batch(criteria_list)
+
+        assert len(result) == 3
+        assert result[0] is not None  # shift1 should be found
+        assert result[1] is None  # shift2 should not be found
+        assert result[2] is not None  # shift3 should be found
+
+        # Verify found demands match criteria
+        assert result[0].shift_id == "shift1"
+        assert result[0].date == date(2025, 1, 15)
+        assert result[2].shift_id == "shift3"
+        assert result[2].date == date(2025, 1, 17)
+
+    def test_get_shift_demands_by_criteria_batch_different_teams(self):
+        """Test batch lookup with criteria for different teams."""
+        # Create shift demands for different teams
+        team1_demand = self._create_test_shift_demand(
+            team_id="team1", shift_id="shift1", demand_date=date(2025, 1, 15)
+        )
+        team2_demand = self._create_test_shift_demand(
+            team_id="team2", shift_id="shift1", demand_date=date(2025, 1, 15)
+        )
+
+        self.repo.create_shift_demand(team1_demand)
+        self.repo.create_shift_demand(team2_demand)
+
+        # Create criteria for both teams
+        criteria_list = [
+            ShiftDemandCriteria("team1", "shift1", date(2025, 1, 15)),
+            ShiftDemandCriteria("team2", "shift1", date(2025, 1, 15)),
+            ShiftDemandCriteria("team3", "shift1", date(2025, 1, 15)),  # No match
+        ]
+
+        result = self.repo.get_shift_demands_by_criteria_batch(criteria_list)
+
+        assert len(result) == 3
+        assert result[0] is not None
+        assert result[1] is not None
+        assert result[2] is None
+
+        # Verify team isolation
+        assert result[0].team_id == "team1"
+        assert result[1].team_id == "team2"
+
+    def test_get_shift_demands_by_criteria_batch_same_criteria_multiple(self):
+        """Test batch lookup with duplicate criteria in the list."""
+        # Create one shift demand
+        shift_demand = self._create_test_shift_demand(
+            shift_id="shift1", demand_date=date(2025, 1, 15), count=5
+        )
+        created_demand = self.repo.create_shift_demand(shift_demand)
+
+        # Create criteria list with duplicate entries
+        criteria_list = [
+            ShiftDemandCriteria("team1", "shift1", date(2025, 1, 15)),
+            ShiftDemandCriteria("team1", "shift2", date(2025, 1, 16)),  # No match
+            ShiftDemandCriteria("team1", "shift1", date(2025, 1, 15)),  # Duplicate
+        ]
+
+        result = self.repo.get_shift_demands_by_criteria_batch(criteria_list)
+
+        assert len(result) == 3
+        assert result[0] is not None
+        assert result[1] is None
+        assert result[2] is not None
+
+        # Both matching entries should return the same demand
+        assert result[0].id == created_demand.id
+        assert result[2].id == created_demand.id
+        assert result[0].count == 5
+        assert result[2].count == 5
+
+    def test_get_shift_demands_by_criteria_batch_different_dates(self):
+        """Test batch lookup with criteria spanning different dates."""
+        # Create shift demands on different dates
+        shift_demands = [
+            self._create_test_shift_demand(
+                shift_id="shift1", demand_date=date(2025, 1, 1)
+            ),
+            self._create_test_shift_demand(
+                shift_id="shift1", demand_date=date(2025, 6, 15)
+            ),
+            self._create_test_shift_demand(
+                shift_id="shift1", demand_date=date(2025, 12, 31)
+            ),
+        ]
+
+        for sd in shift_demands:
+            self.repo.create_shift_demand(sd)
+
+        # Create criteria for various dates
+        criteria_list = [
+            ShiftDemandCriteria("team1", "shift1", date(2025, 1, 1)),
+            ShiftDemandCriteria("team1", "shift1", date(2025, 3, 15)),  # No match
+            ShiftDemandCriteria("team1", "shift1", date(2025, 6, 15)),
+            ShiftDemandCriteria("team1", "shift1", date(2025, 12, 31)),
+        ]
+
+        result = self.repo.get_shift_demands_by_criteria_batch(criteria_list)
+
+        assert len(result) == 4
+        assert result[0] is not None  # Jan 1
+        assert result[1] is None  # Mar 15 - no match
+        assert result[2] is not None  # Jun 15
+        assert result[3] is not None  # Dec 31
+
+        # Verify dates
+        assert result[0].date == date(2025, 1, 1)
+        assert result[2].date == date(2025, 6, 15)
+        assert result[3].date == date(2025, 12, 31)
+
+    def test_get_shift_demands_by_criteria_batch_with_different_sources(self):
+        """Test batch lookup with demands from different sources."""
+        # Create shift demands with different sources
+        shift_demands = [
+            self._create_test_shift_demand(
+                shift_id="shift1",
+                demand_date=date(2025, 1, 15),
+                source=ShiftDemandSource.MANUAL,
+            ),
+            self._create_test_shift_demand(
+                shift_id="shift2",
+                demand_date=date(2025, 1, 16),
+                source=ShiftDemandSource.TEMPLATE,
+                source_id="template123",
+            ),
+            self._create_test_shift_demand(
+                shift_id="shift3",
+                demand_date=date(2025, 1, 17),
+                source=ShiftDemandSource.DUPLICATED,
+                source_id="dup456",
+            ),
+        ]
+
+        for sd in shift_demands:
+            self.repo.create_shift_demand(sd)
+
+        criteria_list = [
+            ShiftDemandCriteria("team1", "shift1", date(2025, 1, 15)),
+            ShiftDemandCriteria("team1", "shift2", date(2025, 1, 16)),
+            ShiftDemandCriteria("team1", "shift3", date(2025, 1, 17)),
+        ]
+
+        result = self.repo.get_shift_demands_by_criteria_batch(criteria_list)
+
+        assert len(result) == 3
+        assert all(demand is not None for demand in result)
+
+        # Verify sources are preserved
+        assert result[0].source == ShiftDemandSource.MANUAL
+        assert result[1].source == ShiftDemandSource.TEMPLATE
+        assert result[1].source_id == "template123"
+        assert result[2].source == ShiftDemandSource.DUPLICATED
+        assert result[2].source_id == "dup456"
+
+    def test_get_shift_demands_by_criteria_batch_large_list(self):
+        """Test batch lookup with a large number of criteria."""
+        # Create many shift demands
+        shift_demands = []
+        criteria_list = []
+
+        for i in range(50):  # Create 50 demands
+            shift_demand = self._create_test_shift_demand(
+                shift_id=f"shift{i}",
+                demand_date=(date(2025, 1, 1) if i % 2 == 0 else date(2025, 1, 2)),
+                count=i + 1,
+            )
+            shift_demands.append(shift_demand)
+
+            # Create corresponding criteria
+            criteria_list.append(
+                ShiftDemandCriteria(
+                    "team1",
+                    f"shift{i}",
+                    date(2025, 1, 1) if i % 2 == 0 else date(2025, 1, 2),
+                )
+            )
+
+        # Create the demands in database
+        for sd in shift_demands:
+            self.repo.create_shift_demand(sd)
+
+        # Add some criteria that won't match
+        criteria_list.extend(
+            [
+                ShiftDemandCriteria("team1", "nonexistent1", date(2025, 1, 1)),
+                ShiftDemandCriteria("team1", "nonexistent2", date(2025, 1, 2)),
+            ]
+        )
+
+        result = self.repo.get_shift_demands_by_criteria_batch(criteria_list)
+
+        assert len(result) == 52  # 50 matches + 2 no matches
+
+        # First 50 should have matches
+        for i in range(50):
+            assert result[i] is not None
+            assert result[i].shift_id == f"shift{i}"
+            assert result[i].count == i + 1
+
+        # Last 2 should be None
+        assert result[50] is None
+        assert result[51] is None
+
+    def test_get_shift_demands_by_criteria_batch_performance(self):
+        """Test that batch lookup is more efficient than individual lookups."""
+        # Create several shift demands
+        shift_demands = [
+            self._create_test_shift_demand(
+                shift_id="shift1", demand_date=date(2025, 1, 15)
+            ),
+            self._create_test_shift_demand(
+                shift_id="shift2", demand_date=date(2025, 1, 16)
+            ),
+            self._create_test_shift_demand(
+                shift_id="shift3", demand_date=date(2025, 1, 17)
+            ),
+        ]
+
+        for sd in shift_demands:
+            self.repo.create_shift_demand(sd)
+
+        criteria_list = [
+            ShiftDemandCriteria("team1", "shift1", date(2025, 1, 15)),
+            ShiftDemandCriteria("team1", "shift2", date(2025, 1, 16)),
+            ShiftDemandCriteria("team1", "shift3", date(2025, 1, 17)),
+            ShiftDemandCriteria("team1", "shift4", date(2025, 1, 18)),  # No match
+        ]
+
+        # Batch lookup
+        batch_result = self.repo.get_shift_demands_by_criteria_batch(criteria_list)
+
+        # Individual lookups for comparison
+        individual_results = []
+        for criteria in criteria_list:
+            results = self.repo.get_shift_demands_by_shift_and_date_range(
+                criteria.team_id,
+                criteria.shift_id,
+                criteria.date,
+                criteria.date,
+            )
+            individual_results.append(results[0] if results else None)
+
+        # Results should be the same
+        assert len(batch_result) == len(individual_results)
+        for i in range(len(batch_result)):
+            if batch_result[i] is None and individual_results[i] is None:
+                continue
+            elif batch_result[i] is not None and individual_results[i] is not None:
+                assert batch_result[i].id == individual_results[i].id
+            else:
+                assert False, f"Mismatch at index {i}"

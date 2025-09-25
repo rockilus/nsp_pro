@@ -110,6 +110,7 @@ from shared.schemas.core.shift_demand import ShiftDemand
 from shared.schemas.core.shift_demand_exclusion import ShiftDemandExclusion
 from shared.schemas.core.shift_demand_new import (
     DemandsResult,
+    ShiftDemandCriteria,
     ShiftDemandNew,
     ShiftDemandSource,
 )
@@ -207,6 +208,7 @@ __all__ = [
     "ShiftDemand",
     "ShiftDemandExclusion",
     "DemandsResult",
+    "ShiftDemandCriteria",
     "ShiftDemandNew",
     "ShiftDemandSource",
     "ShiftDemandTemplate",

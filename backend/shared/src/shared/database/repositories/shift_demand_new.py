@@ -5,6 +5,7 @@ from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.shift_demand_new import ShiftDemandNewSchema
 from shared.schemas.core.shift_demand_new import (
+    ShiftDemandCriteria,
     ShiftDemandNew,
     ShiftDemandSource,
 )
@@ -205,3 +206,64 @@ class ShiftDemandNewRepository(BaseRepository[ShiftDemandNewSchema]):
 
         shift_demands = self.find_all(filter_query)
         return [shift_demand.to_core() for shift_demand in shift_demands]
+
+    def get_shift_demands_by_criteria_batch(
+        self, criteria_list: List[ShiftDemandCriteria]
+    ) -> List[Optional[ShiftDemandNew]]:
+        """
+        Get shift demands for multiple criteria in batch.
+
+        Args:
+            criteria_list: List of ShiftDemandCriteria with team_id, shift_id,
+                          and date
+
+        Returns:
+            List of ShiftDemandNew objects (or None) in same order as
+            criteria_list. If a criterion has no matching demand, None is
+            returned at that position.
+        """
+        if not criteria_list:
+            return []
+
+        # Build OR query to find all matching demands
+        or_conditions = []
+        for criteria in criteria_list:
+            date_timestamp = datetime.combine(
+                criteria.date, time.min, timezone.utc
+            ).timestamp()
+            or_conditions.append(
+                {
+                    "team": criteria.team_id,
+                    "shift": criteria.shift_id,
+                    "date": date_timestamp,
+                }
+            )
+
+        if not or_conditions:
+            return []
+
+        # Execute query
+        filter_query = {"$or": or_conditions}
+        found_demands = self.find_all(filter_query)
+
+        # Create lookup map for found demands
+        demand_map: Dict[Tuple[str, str, float], ShiftDemandNew] = {}
+        for demand_schema in found_demands:
+            demand = demand_schema.to_core()
+            key = (
+                demand.team_id,
+                demand.shift_id,
+                datetime.combine(demand.date, time.min, timezone.utc).timestamp(),
+            )
+            demand_map[key] = demand
+
+        # Return results in same order as input criteria
+        results = []
+        for criteria in criteria_list:
+            date_timestamp = datetime.combine(
+                criteria.date, time.min, timezone.utc
+            ).timestamp()
+            key = (criteria.team_id, criteria.shift_id, date_timestamp)
+            results.append(demand_map.get(key))
+
+        return results

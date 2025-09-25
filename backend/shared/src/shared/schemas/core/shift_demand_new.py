@@ -2,7 +2,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import date as date_type
 from datetime import datetime, time, timezone
 from enum import Enum
-from typing import List, Optional
+from typing import List, NamedTuple, Optional
 
 import humps
 from pydantic import TypeAdapter
@@ -196,3 +196,11 @@ class DemandsResult:
             ShiftDemandNew.from_dto(demand) for demand in data_dict["demands_updated"]
         ]
         return cls(**data_dict)
+
+
+class ShiftDemandCriteria(NamedTuple):
+    """Criteria for looking up shift demands."""
+
+    team_id: str
+    shift_id: str
+    date: date_type
