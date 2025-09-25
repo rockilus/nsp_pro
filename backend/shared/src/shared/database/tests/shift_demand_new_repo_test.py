@@ -1059,3 +1059,205 @@ class TestShiftDemandNewRepository:
                 assert b_res.id == ind_res.id
             else:
                 assert False, f"Mismatch at index {i}"
+
+    def test_delete_shift_demands_by_ids_empty_list(self):
+        """Test deleting with an empty list of IDs."""
+        result = self.repo.delete_shift_demands_by_ids([])
+
+        assert result == 0
+
+    def test_delete_shift_demands_by_ids_nonexistent_ids(self):
+        """Test deleting shift demands with non-existent IDs."""
+        nonexistent_ids = ["nonexistent1", "nonexistent2", "nonexistent3"]
+
+        result = self.repo.delete_shift_demands_by_ids(nonexistent_ids)
+
+        assert result == 0
+
+    def test_delete_shift_demands_by_ids_single_id(self):
+        """Test deleting a single shift demand by ID."""
+        # Create a shift demand
+        shift_demand = self._create_test_shift_demand()
+        created = self.repo.create_shift_demand(shift_demand)
+
+        # Delete it
+        result = self.repo.delete_shift_demands_by_ids([created.id])
+
+        assert result == 1
+
+        # Verify it was deleted
+        found = self.repo.get_shift_demand_by_id(created.id)
+        assert found is None
+
+    def test_delete_shift_demands_by_ids_multiple_ids(self):
+        """Test deleting multiple shift demands by IDs."""
+        # Create multiple shift demands
+        shift_demands = [
+            self._create_test_shift_demand(shift_id="shift1"),
+            self._create_test_shift_demand(shift_id="shift2"),
+            self._create_test_shift_demand(shift_id="shift3"),
+        ]
+
+        created_demands = []
+        for sd in shift_demands:
+            created = self.repo.create_shift_demand(sd)
+            created_demands.append(created)
+
+        # Delete all of them
+        ids_to_delete = [sd.id for sd in created_demands]
+        result = self.repo.delete_shift_demands_by_ids(ids_to_delete)
+
+        assert result == 3
+
+        # Verify they were all deleted
+        for demand in created_demands:
+            found = self.repo.get_shift_demand_by_id(demand.id)
+            assert found is None
+
+    def test_delete_shift_demands_by_ids_partial_matches(self):
+        """Test deleting with mix of existing and non-existent IDs."""
+        # Create some shift demands
+        shift_demands = [
+            self._create_test_shift_demand(shift_id="shift1"),
+            self._create_test_shift_demand(shift_id="shift2"),
+        ]
+
+        created_demands = []
+        for sd in shift_demands:
+            created = self.repo.create_shift_demand(sd)
+            created_demands.append(created)
+
+        # Mix existing IDs with non-existent ones
+        ids_to_delete = [
+            created_demands[0].id,  # Exists
+            "nonexistent1",  # Doesn't exist
+            created_demands[1].id,  # Exists
+            "nonexistent2",  # Doesn't exist
+        ]
+
+        result = self.repo.delete_shift_demands_by_ids(ids_to_delete)
+
+        assert result == 2  # Only 2 existed and were deleted
+
+        # Verify the existing ones were deleted
+        for demand in created_demands:
+            found = self.repo.get_shift_demand_by_id(demand.id)
+            assert found is None
+
+    def test_delete_shift_demands_by_ids_different_teams(self):
+        """Test that deletion works across different teams."""
+        # Create shift demands for different teams
+        team1_demand = self._create_test_shift_demand(team_id="team1")
+        team2_demand = self._create_test_shift_demand(team_id="team2")
+
+        created1 = self.repo.create_shift_demand(team1_demand)
+        created2 = self.repo.create_shift_demand(team2_demand)
+
+        # Delete both
+        ids_to_delete = [created1.id, created2.id]
+        result = self.repo.delete_shift_demands_by_ids(ids_to_delete)
+
+        assert result == 2
+
+        # Verify both were deleted
+        assert self.repo.get_shift_demand_by_id(created1.id) is None
+        assert self.repo.get_shift_demand_by_id(created2.id) is None
+
+    def test_delete_shift_demands_by_ids_large_batch(self):
+        """Test deleting a large batch of shift demands."""
+        # Create many shift demands
+        shift_demands = []
+        for i in range(50):
+            sd = self._create_test_shift_demand(
+                shift_id=f"shift{i}", demand_date=date(2025, 1, 15 + (i % 10))
+            )
+            shift_demands.append(sd)
+
+        created_demands = self.repo.bulk_create_shift_demands(shift_demands)
+        assert len(created_demands) == 50
+
+        # Delete all of them
+        ids_to_delete = [sd.id for sd in created_demands]
+        result = self.repo.delete_shift_demands_by_ids(ids_to_delete)
+
+        assert result == 50
+
+        # Verify all were deleted
+        remaining = self.repo.get_shift_demands_by_team_id("team1")
+        assert len(remaining) == 0
+
+    def test_delete_shift_demands_by_ids_with_different_sources(self):
+        """Test deleting shift demands with different sources."""
+        sources = [
+            ShiftDemandSource.MANUAL,
+            ShiftDemandSource.TEMPLATE,
+            ShiftDemandSource.DUPLICATED,
+            ShiftDemandSource.RECURRENCE,
+        ]
+
+        created_demands = []
+        for i, source in enumerate(sources):
+            sd = self._create_test_shift_demand(
+                shift_id=f"shift{i}",
+                source=source,
+                source_id=(
+                    f"source{i}" if source != ShiftDemandSource.MANUAL else None
+                ),
+            )
+            created = self.repo.create_shift_demand(sd)
+            created_demands.append(created)
+
+        # Delete all of them
+        ids_to_delete = [sd.id for sd in created_demands]
+        result = self.repo.delete_shift_demands_by_ids(ids_to_delete)
+
+        assert result == 4
+
+        # Verify all were deleted regardless of source
+        for demand in created_demands:
+            found = self.repo.get_shift_demand_by_id(demand.id)
+            assert found is None
+
+    def test_delete_shift_demands_by_ids_isolation(self):
+        """Test that deletion only affects specified IDs, leaving others."""
+        # Create several shift demands
+        all_demands = []
+        for i in range(5):
+            sd = self._create_test_shift_demand(shift_id=f"shift{i}")
+            created = self.repo.create_shift_demand(sd)
+            all_demands.append(created)
+
+        # Delete only some of them (index 1 and 3)
+        ids_to_delete = [all_demands[1].id, all_demands[3].id]
+        result = self.repo.delete_shift_demands_by_ids(ids_to_delete)
+
+        assert result == 2
+
+        # Verify only the specified ones were deleted
+        assert self.repo.get_shift_demand_by_id(all_demands[0].id) is not None
+        assert self.repo.get_shift_demand_by_id(all_demands[1].id) is None
+        assert self.repo.get_shift_demand_by_id(all_demands[2].id) is not None
+        assert self.repo.get_shift_demand_by_id(all_demands[3].id) is None
+        assert self.repo.get_shift_demand_by_id(all_demands[4].id) is not None
+
+        # Verify the remaining count
+        remaining = self.repo.get_shift_demands_by_team_id("team1")
+        assert len(remaining) == 3
+
+    def test_delete_shift_demands_by_ids_duplicate_ids(self):
+        """Test deleting with duplicate IDs in the list."""
+        # Create a shift demand
+        shift_demand = self._create_test_shift_demand()
+        created = self.repo.create_shift_demand(shift_demand)
+
+        # Try to delete with duplicate IDs
+        assert created.id is not None
+        ids_to_delete = [created.id, created.id, created.id]
+        result = self.repo.delete_shift_demands_by_ids(ids_to_delete)
+
+        # Should still only delete once
+        assert result == 1
+
+        # Verify it was deleted
+        found = self.repo.get_shift_demand_by_id(created.id)
+        assert found is None
