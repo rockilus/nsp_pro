@@ -150,7 +150,13 @@ export function TemplateCreationDialog({
     formData.description.length <= TEMPLATE_CONSTRAINTS.MAX_DESCRIPTION_LENGTH;
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="sm"
+      fullWidth
+      data-testid="template-creation-dialog"
+    >
       <DialogTitle>{t("create_new_template")}</DialogTitle>
       <DialogContent>
         <Box sx={{ pt: 2 }}>
@@ -161,6 +167,7 @@ export function TemplateCreationDialog({
           )}
 
           <TextField
+            data-testid="template-name-input"
             autoFocus
             required
             fullWidth
@@ -180,6 +187,7 @@ export function TemplateCreationDialog({
           />
 
           <TextField
+            data-testid="template-description-input"
             fullWidth
             multiline
             rows={3}
@@ -196,10 +204,15 @@ export function TemplateCreationDialog({
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} disabled={isLoading}>
+        <Button
+          data-testid="template-creation-cancel-button"
+          onClick={handleClose}
+          disabled={isLoading}
+        >
           {t("cancel")}
         </Button>
         <Button
+          data-testid="template-creation-create-button"
           onClick={handleSubmit}
           variant="contained"
           disabled={isLoading || !isFormValid}

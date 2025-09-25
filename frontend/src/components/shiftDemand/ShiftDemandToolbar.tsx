@@ -79,6 +79,7 @@ export function ShiftDemandToolbar({
         {/* Right side - Template Management, Bulk Select, Multitasking */}
         <Box display="flex" gap={1} alignItems="center">
           <Button
+            data-testid="shift-demand-template-button"
             variant="outlined"
             startIcon={<Description />}
             onClick={onOpenTemplates}

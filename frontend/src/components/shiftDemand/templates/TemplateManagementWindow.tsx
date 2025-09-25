@@ -564,6 +564,7 @@ export default function TemplateManagementWindow({
             flexDirection: "column",
           },
         }}
+        data-testid="template-management-window"
       >
         {/* Header */}
         <Box
@@ -597,6 +598,7 @@ export default function TemplateManagementWindow({
             </Typography>
           </Box>
           <IconButton
+            data-testid="template-management-close-button"
             onClick={onClose}
             sx={{ color: "text.secondary" }}
             aria-label={t("close")}

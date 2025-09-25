@@ -1200,6 +1200,78 @@ export class DatabaseTestUtils {
       throw new Error(`Failed to get shift demands: Unknown error`);
     }
   }
+
+  /**
+   * Create a shift demand template using the existing ShiftDemandTemplateApi for consistent behavior
+   */
+  async createShiftDemandTemplate(templateData: {
+    teamId: string;
+    name: string;
+    description?: string;
+  }): Promise<{ templateId: string; name: string; teamId: string }> {
+    try {
+      const { ShiftDemandTemplateApi } = await import(
+        "../../src/app/lib/api/shiftDemandTemplateApi"
+      );
+
+      console.log(
+        `📝 Creating shift demand template "${templateData.name}" for team ${templateData.teamId}...`
+      );
+
+      const template = await ShiftDemandTemplateApi.createTemplate(
+        this.testApiClient,
+        templateData.teamId,
+        {
+          name: templateData.name,
+          description: templateData.description || "",
+        }
+      );
+
+      console.log(`✅ Template created with ID: ${template.id}`);
+
+      return {
+        templateId: template.id,
+        name: template.name,
+        teamId: template.teamId,
+      };
+    } catch (error) {
+      console.error("Failed to create shift demand template:", error);
+      if (error instanceof Error) {
+        throw new Error(`Failed to create template: ${error.message}`);
+      }
+      throw new Error(`Failed to create template: Unknown error`);
+    }
+  }
+
+  /**
+   * Delete a shift demand template using the existing ShiftDemandTemplateApi for consistent behavior
+   */
+  async deleteShiftDemandTemplate(
+    templateId: string,
+    teamId: string
+  ): Promise<void> {
+    try {
+      const { ShiftDemandTemplateApi } = await import(
+        "../../src/app/lib/api/shiftDemandTemplateApi"
+      );
+
+      console.log(`🗑️ Deleting shift demand template ${templateId}...`);
+
+      await ShiftDemandTemplateApi.deleteTemplate(
+        this.testApiClient,
+        templateId,
+        teamId
+      );
+
+      console.log(`✅ Template deleted successfully`);
+    } catch (error) {
+      console.error("Failed to delete shift demand template:", error);
+      if (error instanceof Error) {
+        throw new Error(`Failed to delete template: ${error.message}`);
+      }
+      throw new Error(`Failed to delete template: Unknown error`);
+    }
+  }
 }
 
 /**
