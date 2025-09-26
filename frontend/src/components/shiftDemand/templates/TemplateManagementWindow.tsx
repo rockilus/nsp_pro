@@ -519,7 +519,7 @@ export default function TemplateManagementWindow({
           template={selectedTemplate}
           shifts={shifts}
           teamId={teamId}
-          onApply={() => handleTemplateApply()}
+          onApply={handleTemplateApply}
           onDelete={handleBack} // This will go back to list after delete
           onError={handleError}
           onUpdateTemplate={handleUpdateTemplate}
