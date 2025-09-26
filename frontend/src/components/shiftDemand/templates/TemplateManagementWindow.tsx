@@ -249,6 +249,7 @@ export default function TemplateManagementWindow({
         deleted: result.demandsDeleted,
       })
     );
+    onClose();
   };
 
   const handleRangeApplicationError = (error: string) => {
