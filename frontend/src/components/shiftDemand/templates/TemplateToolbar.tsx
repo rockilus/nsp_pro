@@ -348,8 +348,7 @@ export function TemplateToolbar({
           </div>
 
           {/* Week Display Selector */}
-          <FormControl size="small" className={styles.weekSelector}>
-            {/* <InputLabel>{t("show_weeks")}</InputLabel> */}
+          {/* <FormControl size="small" className={styles.weekSelector}>
             <Select
               value={weeksToShow}
               // label={t("show_weeks")}
@@ -362,7 +361,7 @@ export function TemplateToolbar({
               <MenuItem value={2}>{t("two_weeks")}</MenuItem>
               <MenuItem value="all">{t("all_weeks")}</MenuItem>
             </Select>
-          </FormControl>
+          </FormControl> */}
         </div>
 
         {/* Second Group: Template Type Toggle */}

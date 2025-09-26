@@ -8,6 +8,9 @@
  */
 
 import React, { useState, useMemo } from "react";
+import dayjs from "dayjs";
+import { useTranslation } from "../../../app/i18n/client";
+// MUI
 import {
   Box,
   Typography,
@@ -30,8 +33,7 @@ import {
   Person,
   Info,
 } from "@mui/icons-material";
-import dayjs from "dayjs";
-import { useTranslation } from "../../../app/i18n/client";
+// Types
 import { ShiftT } from "../../../types/shift";
 import {
   ShiftDemandTemplateDTO,
@@ -45,8 +47,10 @@ import {
   ColumnFilter,
   TableSort,
 } from "../../../types/filter";
+// Lib
 import { TemplateUtils } from "../../../app/lib/api/shiftDemandTemplateApi";
 import { useTableState } from "../../../hooks/useTableState";
+// Components
 import { createShiftColumns } from "../shiftColumns";
 import { TemplateToolbar } from "./TemplateToolbar";
 import { BuildFromDemandsDialog } from "./dialogs/BuildFromDemandsDialog";
@@ -100,7 +104,7 @@ export function TemplateViewer({
 
   // Toolbar state
   const [currentWeek, setCurrentWeek] = useState(0);
-  const [weeksToShow, setWeeksToShow] = useState<1 | 2 | "all">(1);
+  const [weeksToShow, setWeeksToShow] = useState<1 | 2 | "all">(2);
   const [templateType, setTemplateType] = useState<TemplateType>(
     template.templateType as TemplateType
   );
