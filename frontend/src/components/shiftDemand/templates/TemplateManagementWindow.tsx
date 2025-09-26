@@ -55,6 +55,7 @@ import TemplateApplicationToRangeDialog from "./TemplateApplicationToRangeDialog
 
 // Import CSS
 import "./TemplateManagementWindow.css";
+import { log } from "node:console";
 
 interface TemplateManagementWindowProps {
   lng: string;
@@ -169,6 +170,8 @@ export default function TemplateManagementWindow({
         // Use the selected template if it's the same one, otherwise fetch it
         let templateToUse = selectedTemplate;
         if (!templateToUse || templateToUse.id !== idToUse) {
+          console.log("idToUse", idToUse);
+
           templateToUse = await getTemplate(idToUse, teamId);
         }
 
