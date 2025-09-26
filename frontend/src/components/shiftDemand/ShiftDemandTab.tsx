@@ -19,6 +19,7 @@ import ReactQueryProvider from "../providers/ReactQueryProvider";
 import {
   useShiftDemands,
   useShiftDemandMutations,
+  shiftDemandKeys,
 } from "../../app/lib/hooks/useShiftDemands";
 import { useGetWorkShifts } from "../../hooks/useShift";
 import {
@@ -27,6 +28,7 @@ import {
   useDeleteMultitaskingGroup,
   useGetShiftDemandConcurrency,
 } from "../../hooks/useMultitasking";
+import { useQueryClient } from "@tanstack/react-query";
 // Types
 import { ShiftT, ShiftType } from "../../types/shift";
 import {
@@ -141,6 +143,10 @@ function ShiftDemandTabInternal({
   // Centralized period state (with localStorage persistence)
   const { currentDate, periodType, setCurrentDate, setPeriodType, isHydrated } =
     usePeriodState();
+
+  // Query client for data invalidation
+  const queryClient = useQueryClient();
+
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [isLoadingShifts, setIsLoadingShifts] = useState(false);
   const [shiftError, setShiftError] = useState<string | null>(null);
@@ -650,6 +656,15 @@ function ShiftDemandTabInternal({
     bulkUpsert,
   } = useShiftDemandMutations(selectedTeamId || "");
 
+  // Template application callback - invalidates shift demand queries to refresh data
+  const handleTemplateApplied = React.useCallback(() => {
+    if (selectedTeamId) {
+      queryClient.invalidateQueries({
+        queryKey: shiftDemandKeys.teams(selectedTeamId),
+      });
+    }
+  }, [queryClient, selectedTeamId]);
+
   // Get work shifts using authenticated hook
   const getWorkShifts = useGetWorkShifts();
 
@@ -975,6 +990,7 @@ function ShiftDemandTabInternal({
         teamId={selectedTeamId || ""}
         shifts={shifts}
         currentPeriod={{ start: startDate, end: endDate }}
+        onTemplateApplied={handleTemplateApplied}
       />
 
       {/* Error Feedback */}

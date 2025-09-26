@@ -66,6 +66,7 @@ interface TemplateManagementWindowProps {
     start: any; // Dayjs
     end: any; // Dayjs
   };
+  onTemplateApplied?: () => void; // Callback for successful template applications
 }
 
 export default function TemplateManagementWindow({
@@ -75,6 +76,7 @@ export default function TemplateManagementWindow({
   teamId,
   shifts,
   currentPeriod,
+  onTemplateApplied,
 }: TemplateManagementWindowProps) {
   const { t } = useTranslation(lng, "shift-demand-templates");
   const theme = useTheme();
@@ -234,6 +236,9 @@ export default function TemplateManagementWindow({
     setShowApplicationDialog(false);
     setTemplateToApplyId(null);
     setSuccessMessage(t("template_applied_successfully"));
+
+    // Notify parent component to refresh shift demand data
+    onTemplateApplied?.();
   };
 
   const handleRangeApplicationComplete = (
@@ -249,6 +254,10 @@ export default function TemplateManagementWindow({
         deleted: result.demandsDeleted,
       })
     );
+
+    // Notify parent component to refresh shift demand data
+    onTemplateApplied?.();
+
     onClose();
   };
 
