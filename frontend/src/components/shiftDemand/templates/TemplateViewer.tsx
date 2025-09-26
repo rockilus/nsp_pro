@@ -775,20 +775,64 @@ export function TemplateViewer({
     }
 
     try {
-      const updates: Promise<void>[] = [];
-
-      bulkChangeState.selectedCells.forEach((cell) => {
-        updates.push(
-          handleCellChange(
-            cell.shiftId,
-            cell.weekNumber,
-            cell.dayIndex,
-            String(value)
-          )
+      // Create updated weeks data with all bulk changes applied
+      const updatedWeeksData = template.weeksData.map((week) => {
+        // Find all selected cells for this week
+        const cellsForThisWeek = bulkChangeState.selectedCells.filter(
+          (cell) => cell.weekNumber === week.weekNumber
         );
+
+        if (cellsForThisWeek.length === 0) {
+          return week; // No changes for this week
+        }
+
+        // Start with existing demands
+        let updatedDemands = [...week.demands];
+
+        // Apply changes for each selected cell in this week
+        cellsForThisWeek.forEach((cell) => {
+          const existingDemandIndex = updatedDemands.findIndex(
+            (d) => d.shiftId === cell.shiftId && d.dayOfWeek === cell.dayIndex
+          );
+
+          if (value === 0) {
+            // Remove demand if value is 0
+            updatedDemands = updatedDemands.filter(
+              (d) =>
+                !(d.shiftId === cell.shiftId && d.dayOfWeek === cell.dayIndex)
+            );
+          } else if (existingDemandIndex >= 0) {
+            // Update existing demand
+            updatedDemands[existingDemandIndex] = {
+              ...updatedDemands[existingDemandIndex],
+              count: value,
+            };
+          } else {
+            // Add new demand
+            updatedDemands.push({
+              shiftId: cell.shiftId,
+              dayOfWeek: cell.dayIndex,
+              count: value,
+            });
+          }
+        });
+
+        return {
+          ...week,
+          demands: updatedDemands,
+        };
       });
 
-      await Promise.all(updates);
+      // Save to API using centralized method with a single call
+      await onUpdateTemplate({
+        weeksData: updatedWeeksData,
+      });
+
+      // Update local data map for immediate UI feedback
+      bulkChangeState.selectedCells.forEach((cell) => {
+        const cellKey = `${cell.shiftId}-${cell.weekNumber}-${cell.dayIndex}`;
+        templateDataMap.set(cellKey, value);
+      });
 
       // Clear selection after successful bulk update
       setBulkChangeState((prev) => ({
@@ -807,15 +851,42 @@ export function TemplateViewer({
     if (bulkChangeState.selectedCells.length === 0) return;
 
     try {
-      const updates: Promise<void>[] = [];
-
-      bulkChangeState.selectedCells.forEach((cell) => {
-        updates.push(
-          handleCellChange(cell.shiftId, cell.weekNumber, cell.dayIndex, "0")
+      // Create updated weeks data with all selected cells deleted (set to 0)
+      const updatedWeeksData = template.weeksData.map((week) => {
+        // Find all selected cells for this week
+        const cellsForThisWeek = bulkChangeState.selectedCells.filter(
+          (cell) => cell.weekNumber === week.weekNumber
         );
+
+        if (cellsForThisWeek.length === 0) {
+          return week; // No changes for this week
+        }
+
+        // Remove demands for selected cells (equivalent to setting them to 0)
+        const updatedDemands = week.demands.filter((demand) => {
+          return !cellsForThisWeek.some(
+            (cell) =>
+              cell.shiftId === demand.shiftId &&
+              cell.dayIndex === demand.dayOfWeek
+          );
+        });
+
+        return {
+          ...week,
+          demands: updatedDemands,
+        };
       });
 
-      await Promise.all(updates);
+      // Save to API using centralized method with a single call
+      await onUpdateTemplate({
+        weeksData: updatedWeeksData,
+      });
+
+      // Update local data map for immediate UI feedback
+      bulkChangeState.selectedCells.forEach((cell) => {
+        const cellKey = `${cell.shiftId}-${cell.weekNumber}-${cell.dayIndex}`;
+        templateDataMap.set(cellKey, 0);
+      });
 
       // Clear selection after successful bulk deletion
       setBulkChangeState((prev) => ({
