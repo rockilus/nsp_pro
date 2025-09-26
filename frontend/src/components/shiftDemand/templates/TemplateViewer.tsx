@@ -62,7 +62,7 @@ interface TemplateViewerProps {
   template: ShiftDemandTemplateDTO;
   shifts: ShiftT[];
   teamId: string;
-  onApply: () => void;
+  onApply: (templateId?: string) => void;
   onDelete: () => void;
   onError: (error: string) => void;
   // New props for centralized state management
@@ -963,7 +963,7 @@ export function TemplateViewer({
           {/* Right side: Action buttons (icons only) */}
           <Box sx={{ display: "flex", gap: 1 }}>
             <IconButton
-              onClick={onApply}
+              onClick={() => onApply(template.id)}
               color="primary"
               sx={{
                 bgcolor: "primary.main",
