@@ -834,10 +834,12 @@ export function TemplateViewer({
         templateDataMap.set(cellKey, value);
       });
 
-      // Clear selection after successful bulk update
+      // Clear selection and exit bulk mode after successful bulk update
       setBulkChangeState((prev) => ({
         ...prev,
+        isActive: false,
         selectedCells: [],
+        bulkValue: "1",
       }));
     } catch (error) {
       console.error("Failed to apply bulk changes:", error);
@@ -888,10 +890,12 @@ export function TemplateViewer({
         templateDataMap.set(cellKey, 0);
       });
 
-      // Clear selection after successful bulk deletion
+      // Clear selection and exit bulk mode after successful bulk deletion
       setBulkChangeState((prev) => ({
         ...prev,
+        isActive: false,
         selectedCells: [],
+        bulkValue: "1",
       }));
     } catch (error) {
       console.error("Failed to delete bulk selection:", error);
