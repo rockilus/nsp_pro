@@ -98,9 +98,10 @@ export class TemplateTestBase {
     await page.waitForLoadState("networkidle");
 
     // Wait for the main content to be visible using the data-testid attribute
-    await expect(
-      page.locator('[data-testid="shift-demand-tab"]')
-    ).toBeVisible();
+    // Add a longer timeout for webkit compatibility
+    await expect(page.locator('[data-testid="shift-demand-tab"]')).toBeVisible({
+      timeout: 10000,
+    });
     console.log("✅ Navigated to shift demands page");
   }
 
@@ -564,7 +565,7 @@ export class TemplateTestBase {
    */
   getTemplateBulkSelectionElements(page: Page) {
     return {
-      input: page.locator('[data-testid="bulk-selection-input"]'),
+      input: page.locator('[data-testid="bulk-selection-input"] input'),
       deleteButton: page.locator(
         '[data-testid="bulk-selection-delete-button"]'
       ),
@@ -582,7 +583,9 @@ export class TemplateTestBase {
    */
   getTemplateSelectionCheckboxes(page: Page) {
     return {
-      selectAll: page.locator('[data-testid="template-select-all-checkbox"]'),
+      selectAll: page.locator(
+        '[data-testid="template-select-all-checkbox"] input'
+      ),
     };
   }
 
@@ -596,7 +599,7 @@ export class TemplateTestBase {
     dayIndex: number
   ) {
     return page.locator(
-      `[data-testid="template-cell-checkbox-${shiftId}-${weekNumber}-${dayIndex}"]`
+      `[data-testid="template-cell-checkbox-${shiftId}-${weekNumber}-${dayIndex}"] input`
     );
   }
 
@@ -604,7 +607,9 @@ export class TemplateTestBase {
    * Gets a specific template row checkbox
    */
   getTemplateRowCheckbox(page: Page, shiftId: string) {
-    return page.locator(`[data-testid="template-row-checkbox-${shiftId}"]`);
+    return page.locator(
+      `[data-testid="template-row-checkbox-${shiftId}"] input`
+    );
   }
 
   /**
@@ -612,7 +617,7 @@ export class TemplateTestBase {
    */
   getTemplateColumnCheckbox(page: Page, weekNumber: number, dayIndex: number) {
     return page.locator(
-      `[data-testid="template-column-checkbox-${weekNumber}-${dayIndex}"]`
+      `[data-testid="template-column-checkbox-${weekNumber}-${dayIndex}"] input`
     );
   }
 
