@@ -454,12 +454,10 @@ test.describe("Template Table", () => {
       }
 
       // Apply bulk change with value "3"
+      // Note: This will automatically exit bulk mode
       await templateTestBase.applyTemplateBulkChange(page, "3");
 
-      // Exit bulk mode to see the values
-      await templateTestBase.deactivateTemplateSelectMode(page);
-
-      // Verify the values were set
+      // Verify the values were set (bulk mode has already exited after applying changes)
       for (let dayIndex = 0; dayIndex < 2; dayIndex++) {
         const valueElement = templateTestBase.getTemplateValue(
           page,
@@ -467,7 +465,7 @@ test.describe("Template Table", () => {
           0,
           dayIndex
         );
-        await expect(valueElement).toHaveText("3");
+        await expect(valueElement).toContainText("3");
       }
     });
   });

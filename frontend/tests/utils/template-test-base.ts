@@ -83,10 +83,10 @@ export class TemplateTestBase {
       );
     }
 
-    // Navigate to the application first to establish a valid document context
+    // Navigate to the shift demands page (same pattern as working tests)
     await page.goto(`${testConfig.frontendUrl}/en/plan/shift-demands`);
 
-    // Now set the selected team in localStorage with proper document context
+    // Set the selected team in localStorage to ensure proper team context
     await page.evaluate((teamId) => {
       localStorage.setItem("selectedTeamId", teamId);
     }, this.testTeam.teamId);
@@ -97,10 +97,13 @@ export class TemplateTestBase {
     // Wait for the page to load and the team context to initialize
     await page.waitForLoadState("networkidle");
 
+    // Wait for page to settle (especially important for WebKit)
+    await page.waitForTimeout(1000);
+
     // Wait for the main content to be visible using the data-testid attribute
     // Add a longer timeout for webkit compatibility
     await expect(page.locator('[data-testid="shift-demand-tab"]')).toBeVisible({
-      timeout: 10000,
+      timeout: 15000,
     });
     console.log("✅ Navigated to shift demands page");
   }
@@ -807,11 +810,14 @@ export class TemplateTestBase {
    */
   async deactivateTemplateSelectMode(page: Page) {
     const bulkElements = this.getTemplateBulkSelectionElements(page);
+
+    // Wait for cancel button to be visible and enabled before clicking
+    await expect(bulkElements.cancelButton).toBeVisible({ timeout: 10000 });
     await bulkElements.cancelButton.click();
 
     // Wait for action toolbar to disappear
     const actionToolbar = this.getTemplateActionToolbar(page);
-    await expect(actionToolbar).not.toBeVisible();
+    await expect(actionToolbar).toBeHidden();
   }
 
   /**
