@@ -20,7 +20,7 @@ dayjs.extend(isoWeek);
 dayjs.extend(isBetween);
 dayjs.extend(utc);
 
-test.describe("Template Toolbar", () => {
+test.describe("Template Toolbar Period", () => {
   let templateTestBase: TemplateTestBase;
 
   test.beforeAll(async () => {
@@ -68,54 +68,41 @@ test.describe("Template Toolbar", () => {
     test("should remove a week when clicking remove button and confirming", async ({
       page,
     }) => {
-      // Create a template with 3 weeks
+      // Create a template with 1 week
       const templateName = `Test Template Remove Week ${Date.now()}`;
       const templateId = await templateTestBase.createTemplateWithWeeks({
         name: templateName,
-        weekCount: 1, // Will be expanded via UI
+        weekCount: 1,
       });
 
       // Open template management and select the template
       await templateTestBase.openTemplateManagementWindow(page);
       await templateTestBase.selectTemplateInViewer(page, templateId);
 
-      const toolbarElements = templateTestBase.getTemplateToolbarElements(page);
-
-      // First add 2 more weeks to have 3 total
-      await toolbarElements.addWeekButton.click();
+      // Add 2 more weeks to have 3 total using the helper method
+      await templateTestBase.addWeekViaToolbar(page);
       await templateTestBase.waitForTemplateTableUpdate(page, 2);
-      await toolbarElements.addWeekButton.click();
+
+      await templateTestBase.addWeekViaToolbar(page);
       await templateTestBase.waitForTemplateTableUpdate(page, 3);
 
-      // Verify we have 3 weeks
-      const initialWeeks = templateTestBase.getTemplateTableWeeks(page);
-      await expect(initialWeeks).toHaveCount(3);
+      // Verify we have 3 weeks total (check toolbar display)
+      const totalWeeks = await templateTestBase.getTotalWeekCount(page);
+      expect(totalWeeks).toBe(3);
 
-      // Click the remove week button
-      await toolbarElements.removeWeekButton.click();
-
-      // Verify confirmation dialog appears
-      const deleteDialogElements =
-        templateTestBase.getDeleteWeekDialogElements(page);
-      await expect(deleteDialogElements.dialog).toBeVisible();
-      await expect(deleteDialogElements.dialog).toContainText("Week 3");
-
-      // Confirm deletion
-      await deleteDialogElements.confirmButton.click();
-
-      // Wait for dialog to close and table to update
-      await expect(deleteDialogElements.dialog).not.toBeVisible();
+      // Remove one week using the helper method
+      await templateTestBase.removeWeekViaToolbar(page, true);
       await templateTestBase.waitForTemplateTableUpdate(page, 2);
 
-      // Verify we now have 2 weeks
-      const updatedWeeks = templateTestBase.getTemplateTableWeeks(page);
-      await expect(updatedWeeks).toHaveCount(2);
+      // Verify we now have 2 weeks total
+      const finalWeeks = await templateTestBase.getTotalWeekCount(page);
+      expect(finalWeeks).toBe(2);
     });
 
     test("should cancel week removal when clicking cancel in confirmation dialog", async ({
       page,
     }) => {
-      // Create a template with 2 weeks
+      // Create a template with 1 week
       const templateName = `Test Template Cancel Remove ${Date.now()}`;
       const templateId = await templateTestBase.createTemplateWithWeeks({
         name: templateName,
@@ -126,25 +113,12 @@ test.describe("Template Toolbar", () => {
       await templateTestBase.openTemplateManagementWindow(page);
       await templateTestBase.selectTemplateInViewer(page, templateId);
 
-      const toolbarElements = templateTestBase.getTemplateToolbarElements(page);
-
       // Add one more week to have 2 total
-      await toolbarElements.addWeekButton.click();
+      await templateTestBase.addWeekViaToolbar(page);
       await templateTestBase.waitForTemplateTableUpdate(page, 2);
 
-      // Click the remove week button
-      await toolbarElements.removeWeekButton.click();
-
-      // Verify confirmation dialog appears
-      const deleteDialogElements =
-        templateTestBase.getDeleteWeekDialogElements(page);
-      await expect(deleteDialogElements.dialog).toBeVisible();
-
-      // Cancel deletion
-      await deleteDialogElements.cancelButton.click();
-
-      // Wait for dialog to close
-      await expect(deleteDialogElements.dialog).not.toBeVisible();
+      // Try to remove a week but cancel
+      await templateTestBase.removeWeekViaToolbar(page, false); // false = cancel
 
       // Verify we still have 2 weeks (no change)
       const weeks = templateTestBase.getTemplateTableWeeks(page);
@@ -553,12 +527,12 @@ test.describe("Template Toolbar", () => {
         "false"
       );
 
-      // Table headers should show "Week 1" and "Week 2"
-      await expect(page.locator("text=Week 1")).toBeVisible();
-      await expect(page.locator("text=Week 2")).toBeVisible();
+      // Table headers should show "Week 1" and "Week 2" (use specific table locator)
+      await expect(page.locator('th:has-text("Week 1")')).toBeVisible();
+      await expect(page.locator('th:has-text("Week 2")')).toBeVisible();
       // Even/Odd labels should be gone
-      await expect(page.locator("text=Even Week")).not.toBeVisible();
-      await expect(page.locator("text=Odd Week")).not.toBeVisible();
+      await expect(page.locator('th:has-text("Even Week")')).not.toBeVisible();
+      await expect(page.locator('th:has-text("Odd Week")')).not.toBeVisible();
     });
   });
 

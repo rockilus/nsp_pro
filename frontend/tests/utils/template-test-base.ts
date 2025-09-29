@@ -430,15 +430,95 @@ export class TemplateTestBase {
 
   /**
    * Helper method to wait for template table to update after toolbar actions
+   * Note: The template table may only display 2 weeks at a time, so we need to check the toolbar display
    */
   async waitForTemplateTableUpdate(page: Page, expectedWeekCount?: number) {
     // Wait a bit for the update to propagate
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(1000);
 
     if (expectedWeekCount !== undefined) {
-      // Wait for the expected number of week headers
-      const weeks = this.getTemplateTableWeeks(page);
-      await expect(weeks).toHaveCount(expectedWeekCount);
+      // Check the week display in the toolbar which shows actual total count
+      await page.waitForFunction(
+        (count) => {
+          const weekDisplay = document.querySelector(
+            '[data-testid="template-toolbar-week-display"]'
+          );
+          if (!weekDisplay) return false;
+          const text = weekDisplay.textContent || "";
+          // Look for pattern like "/3" or "/4" to indicate total weeks
+          const match = text.match(/\/(\d+)/);
+          if (match) {
+            return parseInt(match[1]) === count;
+          }
+          // Fallback to counting visible week headers
+          const weeks = document.querySelectorAll(
+            '[data-testid^="template-table-week-header-"]'
+          );
+          return weeks.length === count;
+        },
+        expectedWeekCount,
+        { timeout: 10000 }
+      );
     }
+  }
+
+  /**
+   * Helper method to get the actual total week count from the toolbar display
+   */
+  async getTotalWeekCount(page: Page): Promise<number> {
+    const weekDisplayText = await page
+      .locator('[data-testid="template-toolbar-week-display"]')
+      .textContent();
+    const match = weekDisplayText?.match(/\/(\d+)/);
+    if (match) {
+      return parseInt(match[1]);
+    }
+    // Fallback to counting visible headers
+    const visibleWeeks = this.getTemplateTableWeeks(page);
+    return await visibleWeeks.count();
+  }
+
+  /**
+   * Helper method to add a week via toolbar with proper waiting
+   */
+  async addWeekViaToolbar(page: Page) {
+    const toolbarElements = this.getTemplateToolbarElements(page);
+
+    // Wait for button to be enabled
+    await expect(toolbarElements.addWeekButton).not.toBeDisabled();
+
+    // Click the button
+    await toolbarElements.addWeekButton.click();
+
+    // Wait for the operation to complete
+    await page.waitForTimeout(1000);
+  }
+
+  /**
+   * Helper method to remove a week via toolbar with confirmation
+   */
+  async removeWeekViaToolbar(page: Page, confirmAction: boolean = true) {
+    const toolbarElements = this.getTemplateToolbarElements(page);
+
+    // Wait for button to be enabled
+    await expect(toolbarElements.removeWeekButton).not.toBeDisabled();
+
+    // Click the remove button
+    await toolbarElements.removeWeekButton.click();
+
+    // Handle the confirmation dialog
+    const deleteDialogElements = this.getDeleteWeekDialogElements(page);
+    await expect(deleteDialogElements.dialog).toBeVisible();
+
+    if (confirmAction) {
+      await deleteDialogElements.confirmButton.click();
+      await expect(deleteDialogElements.dialog).not.toBeVisible();
+    } else {
+      await deleteDialogElements.cancelButton.click();
+      await expect(deleteDialogElements.dialog).not.toBeVisible();
+    }
+
+    // Wait for the operation to complete
+    await page.waitForTimeout(1000);
   }
 }
