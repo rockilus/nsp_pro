@@ -92,9 +92,6 @@ test.describe("Shift Demand - Table", () => {
     await cell.click();
 
     // Wait for the demand to be created and UI to update
-    await page.waitForTimeout(1000); // Allow for API call to complete
-
-    // Verify the cell now shows a value of 1
     const valueElement = cell.locator(
       `[data-testid="shift-demand-value-${shiftId}-${dateStr}"]`
     );
@@ -105,9 +102,9 @@ test.describe("Shift Demand - Table", () => {
   test("should show plus and minus buttons on hover and handle increment/decrement", async ({
     page,
   }) => {
-    // First, create a shift demand by clicking an empty cell - use a nearby date
+    // First, create a shift demand by clicking an empty cell - use today to stay in current view
     const today = dayjs.utc();
-    const testDate = today.add(3, "day"); // Use a closer date that should be visible
+    const testDate = today; // Use today to ensure it's visible
     const dateStr = testDate.format("YYYY-MM-DD");
 
     const firstRowHeader = page
@@ -121,13 +118,19 @@ test.describe("Shift Demand - Table", () => {
     const cellSelector = `[data-testid="shift-demand-cell-${shiftId}-${dateStr}"]`;
     const cell = page.locator(cellSelector);
 
-    // Scroll the date into view if needed
-    await cell.scrollIntoViewIfNeeded();
+    // Make sure the cell is visible
+    await expect(cell).toBeVisible();
 
     // Create initial demand
     await cell.hover();
     await cell.click();
-    await page.waitForTimeout(1000);
+
+    // Wait for the demand to be created and value element to appear
+    const valueElement = cell.locator(
+      `[data-testid="shift-demand-value-${shiftId}-${dateStr}"]`
+    );
+    await expect(valueElement).toBeVisible();
+    await expect(valueElement).toHaveText("1");
 
     // Now test increment functionality
     await cell.hover();
@@ -146,29 +149,24 @@ test.describe("Shift Demand - Table", () => {
 
     // Click increment button
     await incrementButton.click();
-    await page.waitForTimeout(1000);
 
-    // Verify value increased to 2
-    const valueElement = cell.locator(
-      `[data-testid="shift-demand-value-${shiftId}-${dateStr}"]`
-    );
+    // Wait for value to update to 2
     await expect(valueElement).toHaveText("2");
 
     // Test decrement
     await cell.hover();
     await decrementButton.click();
-    await page.waitForTimeout(1000);
 
-    // Verify value decreased to 1
+    // Wait for value to update to 1
     await expect(valueElement).toHaveText("1");
   });
 
   test("should delete shift demand when decrementing from 1", async ({
     page,
   }) => {
-    // Create a shift demand first - use another nearby date
+    // Create a shift demand first - use today to stay in current view
     const today = dayjs.utc();
-    const testDate = today.add(2, "day"); // Use a closer date
+    const testDate = today; // Use today to ensure it's visible
     const dateStr = testDate.format("YYYY-MM-DD");
 
     const firstRowHeader = page
@@ -182,18 +180,18 @@ test.describe("Shift Demand - Table", () => {
     const cellSelector = `[data-testid="shift-demand-cell-${shiftId}-${dateStr}"]`;
     const cell = page.locator(cellSelector);
 
-    // Scroll the date into view if needed
-    await cell.scrollIntoViewIfNeeded();
+    // Make sure the cell is visible
+    await expect(cell).toBeVisible();
 
     // Create initial demand
     await cell.hover();
     await cell.click();
-    await page.waitForTimeout(1000);
 
-    // Verify value is 1
+    // Wait for the demand to be created and verify initial value
     const valueElement = cell.locator(
       `[data-testid="shift-demand-value-${shiftId}-${dateStr}"]`
     );
+    await expect(valueElement).toBeVisible();
     await expect(valueElement).toHaveText("1");
 
     // Hover and click decrement
@@ -202,9 +200,8 @@ test.describe("Shift Demand - Table", () => {
       `[data-testid="shift-demand-decrement-${shiftId}-${dateStr}"]`
     );
     await decrementButton.click();
-    await page.waitForTimeout(1000);
 
-    // Verify the demand was deleted - should show empty state again
+    // Wait for the demand to be deleted - should show empty state again
     const emptyState = cell.locator('[data-testid^="shift-demand-empty-"]');
     await expect(emptyState).toBeVisible();
 
@@ -213,9 +210,9 @@ test.describe("Shift Demand - Table", () => {
   });
 
   test("should handle multiple increments correctly", async ({ page }) => {
-    // Create a shift demand first - use a nearby date
+    // Create a shift demand first - use today to stay in current view
     const today = dayjs.utc();
-    const testDate = today.add(1, "day"); // Use tomorrow
+    const testDate = today; // Use today to ensure it's visible
 
     const firstRowHeader = page
       .locator('[data-testid^="shift-demand-row-header-"]')
@@ -230,19 +227,22 @@ test.describe("Shift Demand - Table", () => {
     )}"]`;
     const cell = page.locator(cellSelector);
 
-    // Scroll the date into view if needed
-    await cell.scrollIntoViewIfNeeded();
+    // Make sure the cell is visible
+    await expect(cell).toBeVisible();
 
     // Create initial demand
     await cell.hover();
     await cell.click();
-    await page.waitForTimeout(1000);
 
+    // Wait for the demand to be created and get value element
     const valueElement = cell.locator(
       `[data-testid="shift-demand-value-${shiftId}-${testDate.format(
         "YYYY-MM-DD"
       )}"]`
     );
+    await expect(valueElement).toBeVisible();
+    await expect(valueElement).toHaveText("1");
+
     const incrementButton = page.locator(
       `[data-testid="shift-demand-increment-${shiftId}-${testDate.format(
         "YYYY-MM-DD"
@@ -253,7 +253,6 @@ test.describe("Shift Demand - Table", () => {
     for (let i = 2; i <= 5; i++) {
       await cell.hover();
       await incrementButton.click();
-      await page.waitForTimeout(500);
       await expect(valueElement).toHaveText(i.toString());
     }
 
@@ -262,7 +261,7 @@ test.describe("Shift Demand - Table", () => {
   });
 
   test("should work with different shifts and dates", async ({ page }) => {
-    // Test with multiple shifts and dates - use nearby dates
+    // Test with multiple shifts and dates - use today to stay in current view
     const today = dayjs.utc();
 
     const rowHeaders = await page
@@ -278,9 +277,9 @@ test.describe("Shift Demand - Table", () => {
       .getAttribute("data-testid")
       .then((id) => id?.replace("shift-demand-row-header-", ""));
 
-    // Use today and tomorrow to stay within current view
+    // Use today for both to stay within current view
     const testDate1 = today;
-    const testDate2 = today.add(1, "day");
+    const testDate2 = today;
 
     const cell1 = page.locator(
       `[data-testid="shift-demand-cell-${shiftId1}-${testDate1.format(
@@ -293,32 +292,34 @@ test.describe("Shift Demand - Table", () => {
       )}"]`
     );
 
-    // Scroll cells into view
-    await cell1.scrollIntoViewIfNeeded();
-    await cell2.scrollIntoViewIfNeeded();
+    // Make sure cells are visible
+    await expect(cell1).toBeVisible();
+    await expect(cell2).toBeVisible();
 
     // Test with first shift, test date 1
     await cell1.hover();
     await cell1.click();
-    await page.waitForTimeout(1000);
 
+    // Wait for first demand to be created
     let valueElement = cell1.locator(
       `[data-testid="shift-demand-value-${shiftId1}-${testDate1.format(
         "YYYY-MM-DD"
       )}"]`
     );
+    await expect(valueElement).toBeVisible();
     await expect(valueElement).toHaveText("1");
 
     // Test with second shift, test date 2
     await cell2.hover();
     await cell2.click();
-    await page.waitForTimeout(1000);
 
+    // Wait for second demand to be created
     valueElement = cell2.locator(
       `[data-testid="shift-demand-value-${shiftId2}-${testDate2.format(
         "YYYY-MM-DD"
       )}"]`
     );
+    await expect(valueElement).toBeVisible();
     await expect(valueElement).toHaveText("1");
 
     // Verify both demands exist independently
