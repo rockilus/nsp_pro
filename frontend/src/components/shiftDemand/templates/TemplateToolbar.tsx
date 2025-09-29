@@ -263,6 +263,7 @@ export function TemplateToolbar({
           {/* Week Navigator */}
           <div className={styles.weekNavigation}>
             <button
+              data-testid="template-toolbar-previous-week-button"
               onClick={handlePreviousWeek}
               disabled={!canNavigatePrevious}
               className={styles.iconButton}
@@ -270,6 +271,7 @@ export function TemplateToolbar({
               <NavigateBefore />
             </button>
             <button
+              data-testid="template-toolbar-next-week-button"
               onClick={handleNextWeek}
               disabled={!canNavigateNext}
               className={styles.iconButton}
@@ -278,7 +280,11 @@ export function TemplateToolbar({
             </button>
 
             <div className={styles.weekDisplay}>
-              <Typography variant="body2" fontWeight={500}>
+              <Typography
+                variant="body2"
+                fontWeight={500}
+                data-testid="template-toolbar-week-display"
+              >
                 {weeksToShow === "all" ? (
                   formatDisplayedWeeks()
                 ) : (
@@ -307,6 +313,7 @@ export function TemplateToolbar({
               >
                 <span>
                   <button
+                    data-testid="template-toolbar-remove-week-button"
                     onClick={() => handleDeleteWeekClick(totalWeeks - 1)}
                     disabled={
                       !weekConstraints.canRemoveWeek ||
@@ -332,6 +339,7 @@ export function TemplateToolbar({
               >
                 <span>
                   <button
+                    data-testid="template-toolbar-add-week-button"
                     onClick={handleAddWeek}
                     disabled={!weekConstraints.canAddWeek || addWeekLoading}
                     className={styles.iconButton}
@@ -369,16 +377,23 @@ export function TemplateToolbar({
           {/* Template Type Toggle */}
           <div className={styles.templateTypeToggle}>
             <ToggleButtonGroup
+              data-testid="template-toolbar-type-toggle"
               value={templateType}
               exclusive
               onChange={handleTemplateTypeChange}
               size="small"
               disabled={updateLoading}
             >
-              <ToggleButton value={TemplateType.STANDARD}>
+              <ToggleButton
+                data-testid="template-toolbar-standard-type-button"
+                value={TemplateType.STANDARD}
+              >
                 {t("standard")}
               </ToggleButton>
-              <ToggleButton value={TemplateType.EVEN_ODD}>
+              <ToggleButton
+                data-testid="template-toolbar-even-odd-type-button"
+                value={TemplateType.EVEN_ODD}
+              >
                 {t("even_odd")}
               </ToggleButton>
             </ToggleButtonGroup>
@@ -391,6 +406,7 @@ export function TemplateToolbar({
         {/* Third Group: Select Button and From Demands Button */}
         <div className={styles.rightSection}>
           <button
+            data-testid="template-toolbar-from-demands-button"
             onClick={onBuildFromDemands}
             className={styles.standardButton}
           >
@@ -398,6 +414,7 @@ export function TemplateToolbar({
           </button>
 
           <button
+            data-testid="template-toolbar-select-button"
             onClick={onToggleBulkMode}
             style={{
               borderRadius: "4px",
@@ -430,6 +447,7 @@ export function TemplateToolbar({
 
       {/* Delete Week Confirmation Dialog */}
       <Dialog
+        data-testid="template-toolbar-delete-week-dialog"
         open={deleteConfirmOpen}
         onClose={() => setDeleteConfirmOpen(false)}
         maxWidth="sm"
@@ -444,10 +462,14 @@ export function TemplateToolbar({
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteConfirmOpen(false)}>
+          <Button
+            data-testid="template-toolbar-delete-week-cancel-button"
+            onClick={() => setDeleteConfirmOpen(false)}
+          >
             {t("cancel")}
           </Button>
           <Button
+            data-testid="template-toolbar-delete-week-confirm-button"
             onClick={handleDeleteWeekConfirm}
             color="error"
             variant="contained"

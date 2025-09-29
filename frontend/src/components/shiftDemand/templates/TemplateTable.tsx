@@ -527,6 +527,7 @@ function TemplateTableHeader({
           return (
             <TableCell
               key={`week-${weekNumber}`}
+              data-testid={`template-table-week-header-${weekNumber}`}
               className={`template-week-header ${
                 templateType === TemplateType.EVEN_ODD
                   ? weekNumber === 0
