@@ -138,9 +138,6 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
       // Press Escape key
       await page.keyboard.press("Escape");
 
-      // Wait a bit for dialog to close animation
-      await page.waitForTimeout(500);
-
       // Verify dialog is closed - check our specific dialog
       await expect(
         page.getByTestId("build-from-demands-dialog")
@@ -290,9 +287,6 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
       // Add a second week
       await toolbarElements.addWeekButton.click();
 
-      // Wait for the week to be added
-      await page.waitForTimeout(1000);
-
       // Open build from demands dialog
       await templateTestBase.openBuildFromDemandsDialog(page);
 
@@ -329,9 +323,6 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
         templateTestBase.getEvenOddConversionDialogElements(page);
       await expect(confirmDialog.dialog).toBeVisible();
       await confirmDialog.confirmButton.click();
-
-      // Wait for conversion to complete
-      await page.waitForTimeout(1000);
 
       // Open build from demands dialog
       await templateTestBase.openBuildFromDemandsDialog(page);
