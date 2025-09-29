@@ -136,9 +136,6 @@ test.describe("Template Viewer - Select Feature", () => {
       // Activate select mode
       await selectButton.click();
 
-      // Wait for template table to update with checkboxes
-      await page.waitForTimeout(500);
-
       // Check that cell checkboxes are visible (using a generic selector to verify presence)
       const cellCheckboxes = page.locator(
         '[data-testid*="template-cell-checkbox"] input'
