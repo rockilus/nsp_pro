@@ -424,10 +424,7 @@ test.describe("Shift Demand - Select Feature", () => {
       await bulkElements.input.fill("3");
       await bulkElements.confirmButton.click();
 
-      // Wait for the operation to complete
-      await page.waitForTimeout(2000);
-
-      // Verify select mode is exited
+      // Verify select mode is exited (wait for action toolbar to become invisible)
       const actionToolbar = shiftDemandTestBase.getActionToolbar(page);
       await expect(actionToolbar).not.toBeVisible();
 
@@ -457,16 +454,24 @@ test.describe("Shift Demand - Select Feature", () => {
         .getAttribute("data-testid")
         .then((id) => id?.replace("shift-demand-row-header-", ""));
 
-      const tomorrow = dayjs.utc().add(2, "day");
+      const tomorrow = dayjs.utc().add(1, "day");
       const testDate = tomorrow.format("YYYY-MM-DD");
 
       // Create a shift demand first by clicking the cell
       const cell = page.locator(
         `[data-testid="shift-demand-cell-${shiftId}-${testDate}"]`
       );
+
+      // Wait for the cell to be visible before interacting with it
+      await expect(cell).toBeVisible();
       await cell.hover();
       await cell.click();
-      await page.waitForTimeout(1000);
+
+      // Wait for the shift demand to be created by checking for the value element
+      const valueElement = cell.locator(
+        `[data-testid="shift-demand-value-${shiftId}-${testDate}"]`
+      );
+      await expect(valueElement).toBeVisible();
 
       // Now activate select mode and select the cell
       await selectButton.click();
@@ -480,9 +485,6 @@ test.describe("Shift Demand - Select Feature", () => {
       // Confirm deletion in the dialog
       await expect(bulkElements.deleteConfirmButton).toBeVisible();
       await bulkElements.deleteConfirmButton.click();
-
-      // Wait for the operation to complete
-      await page.waitForTimeout(2000);
 
       // Verify select mode is exited
       const actionToolbar = shiftDemandTestBase.getActionToolbar(page);
