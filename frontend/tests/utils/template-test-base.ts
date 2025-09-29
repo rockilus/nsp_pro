@@ -97,13 +97,19 @@ export class TemplateTestBase {
     // Wait for the page to load and the team context to initialize
     await page.waitForLoadState("networkidle");
 
-    // Wait for page to settle (especially important for WebKit)
-    await page.waitForTimeout(1000);
-
     // Wait for the main content to be visible using the data-testid attribute
     // Add a longer timeout for webkit compatibility
     await expect(page.locator('[data-testid="shift-demand-tab"]')).toBeVisible({
       timeout: 15000,
+    });
+
+    // Additional wait to ensure page components are fully initialized
+    await page.waitForFunction(() => {
+      // Check if React has finished rendering by looking for the presence of key elements
+      const shiftDemandTab = document.querySelector(
+        '[data-testid="shift-demand-tab"]'
+      );
+      return shiftDemandTab !== null;
     });
     console.log("✅ Navigated to shift demands page");
   }
@@ -933,10 +939,23 @@ export class TemplateTestBase {
   async selectSourceWeekDate(page: Page, date: string) {
     const formElements = this.getBuildFromDemandsFormElements(page);
 
-    // Try to find the actual input element within the DatePicker
-    const dateInput = page
-      .locator('[data-testid="source-week-date-picker"] input')
-      .first();
+    // Wait for the dialog to be visible and stable
+    await expect(formElements.dialog).toBeVisible();
+
+    // Try to find the date input - first try the specific input selector
+    let dateInput = formElements.sourceWeekDateInput;
+
+    // If that doesn't exist, try the input within the date picker
+    const inputExists = (await dateInput.count()) > 0;
+    if (!inputExists) {
+      dateInput = page
+        .locator('[data-testid="source-week-date-picker"] input')
+        .first();
+    }
+
+    // Wait for the input to be visible and enabled before interacting
+    await expect(dateInput).toBeVisible();
+    await expect(dateInput).toBeEnabled();
 
     // Click on the date input to focus it
     await dateInput.click();
@@ -948,8 +967,8 @@ export class TemplateTestBase {
     // Press Tab to trigger validation and lose focus
     await dateInput.press("Tab");
 
-    // Wait a moment for the date to be processed
-    await page.waitForTimeout(500);
+    // Wait for the date value to be accepted and processed
+    await expect(dateInput).toHaveValue(date);
   }
 
   /**
