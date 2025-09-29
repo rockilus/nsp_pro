@@ -551,7 +551,7 @@ test.describe("Shift Demand - Select Feature", () => {
         .getAttribute("data-testid")
         .then((id) => id?.replace("shift-demand-row-header-", ""));
 
-      const tomorrow = dayjs.utc().add(3, "day");
+      const tomorrow = dayjs.utc().add(1, "day");
       const testDate = tomorrow.format("YYYY-MM-DD");
 
       const checkboxes = shiftDemandTestBase.getSelectionCheckboxes(page);
@@ -561,12 +561,20 @@ test.describe("Shift Demand - Select Feature", () => {
       await bulkElements.input.fill("5");
       await bulkElements.input.press("Enter");
 
-      // Wait for operation to complete
-      await page.waitForTimeout(2000);
-
       // Verify select mode is exited
       const actionToolbar = shiftDemandTestBase.getActionToolbar(page);
       await expect(actionToolbar).not.toBeVisible();
+
+      // Verify the shift demand value is updated in the table
+      const cell = page.locator(
+        `[data-testid="shift-demand-cell-${shiftId}-${testDate}"]`
+      );
+      const valueElement = cell.locator(
+        `[data-testid="shift-demand-value-${shiftId}-${testDate}"]`
+      );
+
+      await expect(valueElement).toBeVisible();
+      await expect(valueElement).toHaveText("5");
     });
 
     // test("should cancel select mode when pressing Escape in input field", async ({
