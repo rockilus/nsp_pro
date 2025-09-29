@@ -929,7 +929,10 @@ export function TemplateViewer({
   // ...existing code...
 
   return (
-    <Box className="template-viewer-container">
+    <Box
+      data-testid="template-viewer-container"
+      className="template-viewer-container"
+    >
       {/* Header */}
       <Box className="template-viewer-header">
         {/* First line: Title, template info, and action buttons */}

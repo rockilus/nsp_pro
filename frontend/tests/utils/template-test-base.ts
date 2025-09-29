@@ -540,4 +540,138 @@ export class TemplateTestBase {
       // No need to wait for count change since we cancelled
     }
   }
+
+  //////////////////////////
+  // Template Viewer Select Testing Methods
+  //////////////////////////
+
+  /**
+   * Gets the template select button in the TemplateToolbar
+   */
+  getTemplateSelectButton(page: Page) {
+    return page.locator('[data-testid="template-toolbar-select-button"]');
+  }
+
+  /**
+   * Gets the TemplateActionToolbar
+   */
+  getTemplateActionToolbar(page: Page) {
+    return page.locator('[data-testid="template-action-toolbar"]');
+  }
+
+  /**
+   * Gets bulk selection elements in the template context
+   */
+  getTemplateBulkSelectionElements(page: Page) {
+    return {
+      input: page.locator('[data-testid="bulk-selection-input"]'),
+      deleteButton: page.locator(
+        '[data-testid="bulk-selection-delete-button"]'
+      ),
+      confirmButton: page.locator(
+        '[data-testid="bulk-selection-confirm-button"]'
+      ),
+      cancelButton: page.locator(
+        '[data-testid="bulk-selection-cancel-button"]'
+      ),
+    };
+  }
+
+  /**
+   * Gets template selection checkboxes
+   */
+  getTemplateSelectionCheckboxes(page: Page) {
+    return {
+      selectAll: page.locator('[data-testid="template-select-all-checkbox"]'),
+    };
+  }
+
+  /**
+   * Gets a specific template cell checkbox
+   */
+  getTemplateCellCheckbox(
+    page: Page,
+    shiftId: string,
+    weekNumber: number,
+    dayIndex: number
+  ) {
+    return page.locator(
+      `[data-testid="template-cell-checkbox-${shiftId}-${weekNumber}-${dayIndex}"]`
+    );
+  }
+
+  /**
+   * Gets a specific template row checkbox
+   */
+  getTemplateRowCheckbox(page: Page, shiftId: string) {
+    return page.locator(`[data-testid="template-row-checkbox-${shiftId}"]`);
+  }
+
+  /**
+   * Gets a specific template column checkbox
+   */
+  getTemplateColumnCheckbox(page: Page, weekNumber: number, dayIndex: number) {
+    return page.locator(
+      `[data-testid="template-column-checkbox-${weekNumber}-${dayIndex}"]`
+    );
+  }
+
+  /**
+   * Helper method to activate template select mode
+   */
+  async activateTemplateSelectMode(page: Page) {
+    const selectButton = this.getTemplateSelectButton(page);
+    await selectButton.click();
+
+    // Wait for action toolbar to appear
+    const actionToolbar = this.getTemplateActionToolbar(page);
+    await expect(actionToolbar).toBeVisible();
+  }
+
+  /**
+   * Helper method to deactivate template select mode
+   */
+  async deactivateTemplateSelectMode(page: Page) {
+    const bulkElements = this.getTemplateBulkSelectionElements(page);
+    await bulkElements.cancelButton.click();
+
+    // Wait for action toolbar to disappear
+    const actionToolbar = this.getTemplateActionToolbar(page);
+    await expect(actionToolbar).not.toBeVisible();
+  }
+
+  /**
+   * Helper method to apply bulk changes to template
+   */
+  async applyTemplateBulkChange(page: Page, value: string) {
+    const bulkElements = this.getTemplateBulkSelectionElements(page);
+
+    await bulkElements.input.fill(value);
+    await bulkElements.confirmButton.click();
+
+    // Wait for operation to complete and select mode to exit
+    const actionToolbar = this.getTemplateActionToolbar(page);
+    await expect(actionToolbar).not.toBeVisible();
+  }
+
+  /**
+   * Helper method to delete selected template cells
+   */
+  async deleteSelectedTemplateCells(page: Page) {
+    const bulkElements = this.getTemplateBulkSelectionElements(page);
+
+    await bulkElements.deleteButton.click();
+
+    // Handle confirmation dialog if it appears
+    const deleteConfirmButton = page.locator(
+      '[data-testid="bulk-selection-delete-confirm-button"]'
+    );
+    if (await deleteConfirmButton.isVisible()) {
+      await deleteConfirmButton.click();
+    }
+
+    // Wait for operation to complete and select mode to exit
+    const actionToolbar = this.getTemplateActionToolbar(page);
+    await expect(actionToolbar).not.toBeVisible();
+  }
 }

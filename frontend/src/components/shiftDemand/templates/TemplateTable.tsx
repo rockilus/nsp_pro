@@ -180,6 +180,7 @@ function TemplateCell({
       {isBulkMode ? (
         <div className={`template-bulk ${isSelected ? "selected" : ""}`}>
           <Checkbox
+            data-testid={`template-cell-checkbox-${shiftId}-${weekNumber}-${dayIndex}`}
             checked={isSelected}
             onChange={() => onToggleSelection(shiftId, weekNumber, dayIndex)}
             size="small"
@@ -297,10 +298,11 @@ function TemplateRowHeader({
         {/* Bulk mode checkbox */}
         {isBulkMode && (
           <Checkbox
+            data-testid={`template-row-checkbox-${shift.id}`}
             checked={isRowSelected}
             onChange={() => onSelectRow(shift.id)}
             size="small"
-            sx={{ mr: 0.5 }}
+            sx={{ position: "absolute", left: 2, top: "50%", mt: "-12px" }}
           />
         )}
 
@@ -486,6 +488,7 @@ function TemplateTableHeader({
               {bulkChangeState.isActive ? (
                 <>
                   <Checkbox
+                    data-testid="template-select-all-checkbox"
                     checked={isAllSelected()}
                     indeterminate={
                       bulkChangeState.selectedCells.length > 0 &&
@@ -564,6 +567,7 @@ function TemplateTableHeader({
                 {bulkChangeState.isActive ? (
                   <div className="template-day-header-content">
                     <Checkbox
+                      data-testid={`template-column-checkbox-${weekNumber}-${dayIndex}`}
                       checked={isSelected}
                       onChange={() =>
                         selectAllColumnCells(weekNumber, dayIndex)

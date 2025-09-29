@@ -50,6 +50,7 @@ export function TemplateActionToolbar({
 
   return (
     <Paper
+      data-testid="template-action-toolbar"
       elevation={2}
       sx={{
         p: 2,
