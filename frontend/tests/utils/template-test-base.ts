@@ -679,4 +679,168 @@ export class TemplateTestBase {
     const actionToolbar = this.getTemplateActionToolbar(page);
     await expect(actionToolbar).not.toBeVisible();
   }
+
+  //////////////////////////
+  // Build From Demands Testing Methods
+  //////////////////////////
+
+  /**
+   * Gets the build from demands button in the template toolbar
+   */
+  getBuildFromDemandsButton(page: Page) {
+    return page.locator('[data-testid="template-toolbar-from-demands-button"]');
+  }
+
+  /**
+   * Gets the build from demands dialog
+   */
+  getBuildFromDemandsDialog(page: Page) {
+    return page.locator('[data-testid="build-from-demands-dialog"]');
+  }
+
+  /**
+   * Gets form elements in the build from demands dialog
+   */
+  getBuildFromDemandsFormElements(page: Page) {
+    return {
+      dialog: page.locator('[data-testid="build-from-demands-dialog"]'),
+      sourceWeekDatePicker: page.locator(
+        '[data-testid="source-week-date-picker"]'
+      ),
+      sourceWeekDateInput: page.locator(
+        '[data-testid="source-week-date-input"]'
+      ),
+      targetWeekSelect: page.locator('[data-testid="target-week-select"]'),
+      applyButton: page.locator(
+        '[data-testid="build-from-demands-apply-button"]'
+      ),
+      cancelButton: page.locator(
+        '[data-testid="build-from-demands-cancel-button"]'
+      ),
+    };
+  }
+
+  /**
+   * Gets target week option by week number
+   */
+  getTargetWeekOption(page: Page, weekNumber: number) {
+    return page.locator(`[data-testid="target-week-option-${weekNumber}"]`);
+  }
+
+  /**
+   * Helper method to open the build from demands dialog
+   */
+  async openBuildFromDemandsDialog(page: Page) {
+    const buildButton = this.getBuildFromDemandsButton(page);
+    await buildButton.click();
+
+    const dialog = this.getBuildFromDemandsDialog(page);
+    await expect(dialog).toBeVisible();
+  }
+
+  /**
+   * Helper method to close the build from demands dialog
+   */
+  async closeBuildFromDemandsDialog(page: Page) {
+    const formElements = this.getBuildFromDemandsFormElements(page);
+    await formElements.cancelButton.click();
+
+    const dialog = this.getBuildFromDemandsDialog(page);
+    await expect(dialog).not.toBeVisible();
+  }
+
+  /**
+   * Helper method to select a source week date
+   */
+  async selectSourceWeekDate(page: Page, date: string) {
+    const formElements = this.getBuildFromDemandsFormElements(page);
+
+    // Click on the date input to open the date picker
+    await formElements.sourceWeekDateInput.click();
+
+    // Clear the input and type the new date
+    await formElements.sourceWeekDateInput.clear();
+    await formElements.sourceWeekDateInput.fill(date);
+
+    // Press Enter to confirm the date
+    await formElements.sourceWeekDateInput.press("Enter");
+  }
+
+  /**
+   * Helper method to select a target week
+   */
+  async selectTargetWeek(page: Page, weekNumber: number) {
+    const formElements = this.getBuildFromDemandsFormElements(page);
+
+    // Click on the select to open dropdown
+    await formElements.targetWeekSelect.click();
+
+    // Click on the specific week option
+    const weekOption = this.getTargetWeekOption(page, weekNumber);
+    await weekOption.click();
+  }
+
+  /**
+   * Helper method to apply demands from source to target week
+   */
+  async applyDemandsFromSourceToTarget(
+    page: Page,
+    sourceDate: string,
+    targetWeekNumber: number
+  ) {
+    // Open the dialog
+    await this.openBuildFromDemandsDialog(page);
+
+    // Select source week date
+    await this.selectSourceWeekDate(page, sourceDate);
+
+    // Select target week
+    await this.selectTargetWeek(page, targetWeekNumber);
+
+    // Apply the changes
+    const formElements = this.getBuildFromDemandsFormElements(page);
+    await formElements.applyButton.click();
+
+    // Wait for dialog to close (indicating successful operation)
+    const dialog = this.getBuildFromDemandsDialog(page);
+    await expect(dialog).not.toBeVisible();
+  }
+
+  /**
+   * Helper method to create shift demands via API for a specific week
+   * This creates demands that can be used as source data for building templates
+   */
+  async createShiftDemandsForWeek(
+    weekStartDate: string,
+    demands: { shiftId: string; value: number }[]
+  ) {
+    // This would use the API to create shift demands for testing
+    // Implementation would depend on the API structure
+    console.log(
+      "Creating shift demands for week starting:",
+      weekStartDate,
+      "with demands:",
+      demands
+    );
+  }
+
+  /**
+   * Helper method to verify template data matches expected demands
+   */
+  async verifyTemplateWeekData(
+    page: Page,
+    weekNumber: number,
+    expectedDemands: { shiftId: string; dayIndex: number; value: number }[]
+  ) {
+    // Wait for template table to be visible
+    await expect(page.locator('[data-testid="template-table"]')).toBeVisible();
+
+    // Verify each expected demand value in the template
+    for (const demand of expectedDemands) {
+      const cellLocator = page.locator(
+        `[data-testid="template-cell-${demand.shiftId}-${weekNumber}-${demand.dayIndex}"] input`
+      );
+      await expect(cellLocator).toHaveValue(demand.value.toString());
+    }
+  }
 }

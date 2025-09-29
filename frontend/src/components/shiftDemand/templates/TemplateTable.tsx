@@ -166,6 +166,7 @@ function TemplateCell({
 
   return (
     <TableCell
+      data-testid={`template-cell-${shiftId}-${weekNumber}-${dayIndex}`}
       className={`template-cell ${isWeekend ? "weekend" : ""} ${
         isWeekBoundary ? "week-boundary" : ""
       }`}
@@ -687,6 +688,7 @@ export default function TemplateTable({
 
   return (
     <TableContainer
+      data-testid="template-table"
       sx={{
         maxHeight: maxHeight,
         overflowY: "auto",

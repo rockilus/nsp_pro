@@ -100,7 +100,13 @@ export function BuildFromDemandsDialog({
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+    <Dialog
+      data-testid="build-from-demands-dialog"
+      open={open}
+      onClose={handleClose}
+      maxWidth="md"
+      fullWidth
+    >
       <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
         <Build color="primary" />
         {t("build_from_demands")}
@@ -122,6 +128,7 @@ export function BuildFromDemandsDialog({
                 {t("select_source_week_explanation")}
               </Typography>
               <DatePicker
+                data-testid="source-week-date-picker"
                 label={t("source_week_start_date")}
                 value={sourceWeekStart}
                 onChange={(newValue) =>
@@ -131,6 +138,9 @@ export function BuildFromDemandsDialog({
                   textField: {
                     fullWidth: true,
                     helperText: t("any_day_will_find_monday"),
+                    inputProps: {
+                      "data-testid": "source-week-date-input",
+                    },
                   },
                 }}
               />
@@ -147,12 +157,17 @@ export function BuildFromDemandsDialog({
               <FormControl fullWidth>
                 <InputLabel>{t("target_week_in_template")}</InputLabel>
                 <Select
+                  data-testid="target-week-select"
                   value={targetWeekNumber}
                   onChange={(e) => setTargetWeekNumber(Number(e.target.value))}
                   label={t("target_week_in_template")}
                 >
                   {availableWeeks.map((week) => (
-                    <MenuItem key={week.number} value={week.number}>
+                    <MenuItem
+                      key={week.number}
+                      value={week.number}
+                      data-testid={`target-week-option-${week.number}`}
+                    >
                       {week.label}
                     </MenuItem>
                   ))}
@@ -180,10 +195,15 @@ export function BuildFromDemandsDialog({
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={handleClose} disabled={applyLoading}>
+        <Button
+          data-testid="build-from-demands-cancel-button"
+          onClick={handleClose}
+          disabled={applyLoading}
+        >
           {t("cancel")}
         </Button>
         <Button
+          data-testid="build-from-demands-apply-button"
           onClick={handleApply}
           variant="contained"
           disabled={!sourceWeekStart || applyLoading}
