@@ -350,9 +350,6 @@ test.describe("Template Management", () => {
       templateTestBase.getTemplateDeleteConfirmationDialog(page);
     await expect(confirmDialog).not.toBeVisible();
 
-    // Wait a bit for the UI to update
-    await page.waitForTimeout(1000);
-
     // Verify template is no longer in the list
     const templateItem = templateTestBase.getTemplateListItem(page, templateId);
     await expect(templateItem).not.toBeVisible();
@@ -431,10 +428,7 @@ test.describe("Template Management", () => {
     );
     await actionButtons.delete.click();
 
-    // Wait a moment for any potential alert
-    await page.waitForTimeout(500);
-
-    // Verify no browser alert was fired
+    // Verify no browser alert was fired and our custom confirmation dialog is shown instead
     expect(alertFired).toBe(false);
 
     // Verify our custom confirmation dialog is shown instead
