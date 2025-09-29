@@ -433,9 +433,6 @@ export class TemplateTestBase {
    * Note: The template table may only display 2 weeks at a time, so we need to check the toolbar display
    */
   async waitForTemplateTableUpdate(page: Page, expectedWeekCount?: number) {
-    // Wait a bit for the update to propagate
-    await page.waitForTimeout(1000);
-
     if (expectedWeekCount !== undefined) {
       // Check the week display in the toolbar which shows actual total count
       await page.waitForFunction(
@@ -457,6 +454,17 @@ export class TemplateTestBase {
           return weeks.length === count;
         },
         expectedWeekCount,
+        { timeout: 10000 }
+      );
+    } else {
+      // If no expected count provided, just wait for the table to be stable
+      await page.waitForFunction(
+        () => {
+          const weekDisplay = document.querySelector(
+            '[data-testid="template-toolbar-week-display"]'
+          );
+          return weekDisplay !== null && weekDisplay.textContent !== "";
+        },
         { timeout: 10000 }
       );
     }
@@ -484,14 +492,17 @@ export class TemplateTestBase {
   async addWeekViaToolbar(page: Page) {
     const toolbarElements = this.getTemplateToolbarElements(page);
 
+    // Get the current week count before adding
+    const currentWeekCount = await this.getTotalWeekCount(page);
+
     // Wait for button to be enabled
     await expect(toolbarElements.addWeekButton).not.toBeDisabled();
 
     // Click the button
     await toolbarElements.addWeekButton.click();
 
-    // Wait for the operation to complete
-    await page.waitForTimeout(1000);
+    // Wait for the week count to increase by 1
+    await this.waitForTemplateTableUpdate(page, currentWeekCount + 1);
   }
 
   /**
@@ -499,6 +510,11 @@ export class TemplateTestBase {
    */
   async removeWeekViaToolbar(page: Page, confirmAction: boolean = true) {
     const toolbarElements = this.getTemplateToolbarElements(page);
+
+    // Get the current week count before removing (only if we're confirming)
+    const currentWeekCount = confirmAction
+      ? await this.getTotalWeekCount(page)
+      : undefined;
 
     // Wait for button to be enabled
     await expect(toolbarElements.removeWeekButton).not.toBeDisabled();
@@ -513,12 +529,15 @@ export class TemplateTestBase {
     if (confirmAction) {
       await deleteDialogElements.confirmButton.click();
       await expect(deleteDialogElements.dialog).not.toBeVisible();
+
+      // Wait for the week count to decrease by 1
+      if (currentWeekCount !== undefined && currentWeekCount > 1) {
+        await this.waitForTemplateTableUpdate(page, currentWeekCount - 1);
+      }
     } else {
       await deleteDialogElements.cancelButton.click();
       await expect(deleteDialogElements.dialog).not.toBeVisible();
+      // No need to wait for count change since we cancelled
     }
-
-    // Wait for the operation to complete
-    await page.waitForTimeout(1000);
   }
 }
