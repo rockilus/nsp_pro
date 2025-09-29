@@ -407,26 +407,241 @@ export class TemplateTestBase {
     weekCount?: number;
   }): Promise<string> {
     if (!this.testTeam) {
-      throw new Error("Test team not created");
-    }
-
-    // Create basic template first
-    const template = await this.dbUtils.createShiftDemandTemplate({
-      teamId: this.testTeam.teamId,
-      name: templateData.name,
-      description: templateData.description || "",
-    });
-
-    // Note: For now we just create a basic template (1 week)
-    // Tests can use UI interactions to add more weeks as needed
-    const weekCount = templateData.weekCount || 1;
-    if (weekCount > 1) {
-      console.log(
-        `⚠️ Template created with 1 week, but ${weekCount} weeks requested. Use UI to add more weeks.`
+      throw new Error(
+        "No test team available. Did you forget to call setupTemplateTests()?"
       );
     }
 
-    return template.templateId;
+    // Create the template first
+    const templateId = await this.createTemplateViaAPI({
+      name: templateData.name,
+      description: templateData.description,
+    });
+
+    // Note: For now, we only create a basic template
+    // Week management is handled through UI interactions in the tests
+    // This could be extended to create templates with specific demands if the API supports it
+
+    return templateId;
+  }
+
+  /**
+   * Helper method to create a template with some pre-filled demands for testing
+   */
+  async createTemplateWithDemands(templateData: {
+    name: string;
+    description?: string;
+    demands?: {
+      weekNumber: number;
+      dayIndex: number;
+      shiftId: string;
+      value: number;
+    }[];
+  }): Promise<string> {
+    if (!this.testTeam) {
+      throw new Error(
+        "No test team available. Did you forget to call setupTemplateTests()?"
+      );
+    }
+
+    // Create the basic template first
+    const templateId = await this.createTemplateViaAPI({
+      name: templateData.name,
+      description: templateData.description,
+    });
+
+    // Note: This would need API support to pre-populate demands
+    // For now, demands would need to be created through UI interactions
+
+    return templateId;
+  }
+
+  //////////////////////////
+  // Template Table Testing Methods
+  //////////////////////////
+
+  /**
+   * Gets the template table element
+   */
+  getTemplateTable(page: Page) {
+    return page.locator('[data-testid="template-table"]');
+  }
+
+  /**
+   * Gets template row header elements
+   */
+  getTemplateRowHeaders(page: Page) {
+    return page.locator('[data-testid^="template-row-header-"]');
+  }
+
+  /**
+   * Gets a specific template row header by shift ID
+   */
+  getTemplateRowHeader(page: Page, shiftId: string) {
+    return page.locator(`[data-testid="template-row-header-${shiftId}"]`);
+  }
+
+  /**
+   * Gets template cell by coordinates
+   */
+  getTemplateCell(
+    page: Page,
+    shiftId: string,
+    weekNumber: number,
+    dayIndex: number
+  ) {
+    return page.locator(
+      `[data-testid="template-cell-${shiftId}-${weekNumber}-${dayIndex}"]`
+    );
+  }
+
+  /**
+   * Gets template cell checkbox for bulk selection
+   */
+  getTemplateCellCheckbox(
+    page: Page,
+    shiftId: string,
+    weekNumber: number,
+    dayIndex: number
+  ) {
+    return page.locator(
+      `[data-testid="template-cell-checkbox-${shiftId}-${weekNumber}-${dayIndex}"] input`
+    );
+  }
+
+  /**
+   * Gets template row checkbox for bulk selection
+   */
+  getTemplateRowCheckbox(page: Page, shiftId: string) {
+    return page.locator(
+      `[data-testid="template-row-checkbox-${shiftId}"] input`
+    );
+  }
+
+  /**
+   * Gets template column checkbox for bulk selection
+   */
+  getTemplateColumnCheckbox(page: Page, weekNumber: number, dayIndex: number) {
+    return page.locator(
+      `[data-testid="template-column-checkbox-${weekNumber}-${dayIndex}"] input`
+    );
+  }
+
+  /**
+   * Gets template select all checkbox
+   */
+  getTemplateSelectAllCheckbox(page: Page) {
+    return page.locator('[data-testid="template-select-all-checkbox"]');
+  }
+
+  /**
+   * Gets template empty state element
+   */
+  getTemplateEmptyState(
+    page: Page,
+    shiftId: string,
+    weekNumber: number,
+    dayIndex: number
+  ) {
+    return page.locator(
+      `[data-testid="template-empty-${shiftId}-${weekNumber}-${dayIndex}"]`
+    );
+  }
+
+  /**
+   * Gets template value element
+   */
+  getTemplateValue(
+    page: Page,
+    shiftId: string,
+    weekNumber: number,
+    dayIndex: number
+  ) {
+    return page.locator(
+      `[data-testid="template-value-${shiftId}-${weekNumber}-${dayIndex}"]`
+    );
+  }
+
+  /**
+   * Gets template increment button
+   */
+  getTemplateIncrementButton(
+    page: Page,
+    shiftId: string,
+    weekNumber: number,
+    dayIndex: number
+  ) {
+    return page.locator(
+      `[data-testid="template-increment-${shiftId}-${weekNumber}-${dayIndex}"]`
+    );
+  }
+
+  /**
+   * Gets template decrement button
+   */
+  getTemplateDecrementButton(
+    page: Page,
+    shiftId: string,
+    weekNumber: number,
+    dayIndex: number
+  ) {
+    return page.locator(
+      `[data-testid="template-decrement-${shiftId}-${weekNumber}-${dayIndex}"]`
+    );
+  }
+
+  /**
+   * Gets template shift name element
+   */
+  getTemplateShiftName(page: Page, shiftId: string) {
+    return page.locator(`[data-testid="template-shift-name-${shiftId}"]`);
+  }
+
+  /**
+   * Gets week header elements
+   */
+  getTemplateWeekHeaders(page: Page) {
+    return page.locator('[data-testid^="template-table-week-header-"]');
+  }
+
+  /**
+   * Gets a specific week header
+   */
+  getTemplateWeekHeader(page: Page, weekNumber: number) {
+    return page.locator(
+      `[data-testid="template-table-week-header-${weekNumber}"]`
+    );
+  }
+
+  /**
+   * Helper method to wait for template table to load
+   */
+  async waitForTemplateTableLoaded(page: Page) {
+    await page.waitForSelector('[data-testid="template-table"]');
+    await page.waitForSelector('[data-testid^="template-row-header-"]');
+  }
+
+  /**
+   * Helper method to select a template and wait for it to load in the viewer
+   */
+  async selectTemplateAndWaitForTable(page: Page, templateId: string) {
+    await this.selectTemplateInViewer(page, templateId);
+    await this.waitForTemplateTableLoaded(page);
+  }
+
+  /**
+   * Gets the template select button (bulk mode toggle)
+   */
+  getTemplateSelectButton(page: Page) {
+    // This should be the bulk mode toggle button in the template toolbar
+    return page.locator('[data-testid="template-toolbar-select-button"]');
+  }
+
+  /**
+   * Gets the template action toolbar
+   */
+  getTemplateActionToolbar(page: Page) {
+    return page.locator('[data-testid="template-action-toolbar"]');
   }
 
   /**
@@ -547,20 +762,6 @@ export class TemplateTestBase {
   //////////////////////////
 
   /**
-   * Gets the template select button in the TemplateToolbar
-   */
-  getTemplateSelectButton(page: Page) {
-    return page.locator('[data-testid="template-toolbar-select-button"]');
-  }
-
-  /**
-   * Gets the TemplateActionToolbar
-   */
-  getTemplateActionToolbar(page: Page) {
-    return page.locator('[data-testid="template-action-toolbar"]');
-  }
-
-  /**
    * Gets bulk selection elements in the template context
    */
   getTemplateBulkSelectionElements(page: Page) {
@@ -590,38 +791,6 @@ export class TemplateTestBase {
   }
 
   /**
-   * Gets a specific template cell checkbox
-   */
-  getTemplateCellCheckbox(
-    page: Page,
-    shiftId: string,
-    weekNumber: number,
-    dayIndex: number
-  ) {
-    return page.locator(
-      `[data-testid="template-cell-checkbox-${shiftId}-${weekNumber}-${dayIndex}"] input`
-    );
-  }
-
-  /**
-   * Gets a specific template row checkbox
-   */
-  getTemplateRowCheckbox(page: Page, shiftId: string) {
-    return page.locator(
-      `[data-testid="template-row-checkbox-${shiftId}"] input`
-    );
-  }
-
-  /**
-   * Gets a specific template column checkbox
-   */
-  getTemplateColumnCheckbox(page: Page, weekNumber: number, dayIndex: number) {
-    return page.locator(
-      `[data-testid="template-column-checkbox-${weekNumber}-${dayIndex}"] input`
-    );
-  }
-
-  /**
    * Helper method to activate template select mode
    */
   async activateTemplateSelectMode(page: Page) {
@@ -646,15 +815,18 @@ export class TemplateTestBase {
   }
 
   /**
-   * Helper method to apply bulk changes to template
+   * Helper method to apply bulk changes in template context
    */
   async applyTemplateBulkChange(page: Page, value: string) {
     const bulkElements = this.getTemplateBulkSelectionElements(page);
 
+    // Enter the value
     await bulkElements.input.fill(value);
+
+    // Apply the change
     await bulkElements.confirmButton.click();
 
-    // Wait for operation to complete and select mode to exit
+    // Wait for the action to complete (action toolbar should disappear)
     const actionToolbar = this.getTemplateActionToolbar(page);
     await expect(actionToolbar).not.toBeVisible();
   }
