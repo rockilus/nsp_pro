@@ -755,15 +755,23 @@ export class TemplateTestBase {
   async selectSourceWeekDate(page: Page, date: string) {
     const formElements = this.getBuildFromDemandsFormElements(page);
 
-    // Click on the date input to open the date picker
-    await formElements.sourceWeekDateInput.click();
+    // Try to find the actual input element within the DatePicker
+    const dateInput = page
+      .locator('[data-testid="source-week-date-picker"] input')
+      .first();
+
+    // Click on the date input to focus it
+    await dateInput.click();
 
     // Clear the input and type the new date
-    await formElements.sourceWeekDateInput.clear();
-    await formElements.sourceWeekDateInput.fill(date);
+    await dateInput.fill("");
+    await dateInput.fill(date);
 
-    // Press Enter to confirm the date
-    await formElements.sourceWeekDateInput.press("Enter");
+    // Press Tab to trigger validation and lose focus
+    await dateInput.press("Tab");
+
+    // Wait a moment for the date to be processed
+    await page.waitForTimeout(500);
   }
 
   /**

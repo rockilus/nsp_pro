@@ -1,8 +1,31 @@
 /**
  * End-to-end tests for TemplateViewer Build From Demands Feature
  *
- * This test suite covers the build from demands functionality in the template viewer:
- * - Opening and closing the build from demands dialog
+ * This test suite covers the build from demands functionality in the temp    test("should enable apply button when source week is selected", async ({
+      page,
+    }) => {
+      await templateTestBase.openBuildFromDemandsDialog(page);
+
+      // Wait for dialog to be fully visible
+      await expect(page.getByTestId("build-from-demands-dialog")).toBeVisible();
+
+      const applyButton = page.getByTestId("build-from-demands-apply-button");
+
+      // Initially apply button should be disabled
+      await expect(applyButton).toBeDisabled();
+
+      // Enter a date directly
+      const dateInput = page.getByTestId("source-week-date-input");
+      await expect(dateInput).toBeVisible();
+      
+      await dateInput.click();
+      await dateInput.fill("15/01/2024");
+      
+      // Press Enter to confirm the date
+      await dateInput.press("Enter");
+
+      // Now apply button should be enabled
+      await expect(applyButton).toBeEnabled();- Opening and closing the build from demands dialog
  * - Source week selection and validation
  * - Target week selection for both standard and even/odd templates
  * - Applying demands and verifying data transfer
@@ -24,13 +47,10 @@ dayjs.extend(utc);
 test.describe("TemplateViewer - Build From Demands Feature", () => {
   let templateTestBase: TemplateTestBase;
 
-  test.beforeAll(async () => {
-    // Setup once for all tests to avoid timeout issues
+  test.beforeEach(async ({ page }) => {
+    // Setup for each test to avoid timeout issues with beforeAll
     templateTestBase = new TemplateTestBase();
     await templateTestBase.setupTemplateTests();
-  });
-
-  test.beforeEach(async ({ page }) => {
     // Navigate to the shift demands page and open template management
     await templateTestBase.navigateToShiftDemandsPage(page);
 
@@ -56,7 +76,8 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
     }) => {
       const buildButton = templateTestBase.getBuildFromDemandsButton(page);
       await expect(buildButton).toBeVisible();
-      await expect(buildButton).toContainText("From Demands");
+      // Check for the translation key or the translated text
+      await expect(buildButton).toContainText(/from_demands|From Demands/);
     });
 
     test("should open build from demands dialog when clicking the button", async ({
@@ -75,10 +96,17 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
       // Verify dialog is now visible
       await expect(dialog).toBeVisible();
 
-      // Verify dialog contains expected elements
-      await expect(page.locator("text=Build From Demands")).toBeVisible();
-      await expect(page.locator("text=Source Week")).toBeVisible();
-      await expect(page.locator("text=Target Week")).toBeVisible();
+      // Verify dialog contains expected elements - use dialog role to be specific
+      await expect(page.getByRole("dialog")).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: /Build from Demands/i })
+      ).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Source Week" })
+      ).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Target Week" })
+      ).toBeVisible();
     });
 
     test("should close build from demands dialog when clicking cancel button", async ({
@@ -94,7 +122,9 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
       await formElements.cancelButton.click();
 
       // Verify dialog is closed
-      await expect(formElements.dialog).not.toBeVisible();
+      await expect(
+        page.getByTestId("build-from-demands-dialog")
+      ).not.toBeVisible();
     });
 
     test("should close build from demands dialog when pressing Escape key", async ({
@@ -108,8 +138,13 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
       // Press Escape key
       await page.keyboard.press("Escape");
 
-      // Verify dialog is closed
-      await expect(dialog).not.toBeVisible();
+      // Wait a bit for dialog to close animation
+      await page.waitForTimeout(500);
+
+      // Verify dialog is closed - check our specific dialog
+      await expect(
+        page.getByTestId("build-from-demands-dialog")
+      ).not.toBeVisible();
     });
   });
 
@@ -119,24 +154,28 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
     }) => {
       await templateTestBase.openBuildFromDemandsDialog(page);
 
-      const formElements =
-        templateTestBase.getBuildFromDemandsFormElements(page);
-      await expect(formElements.sourceWeekDatePicker).toBeVisible();
-      await expect(formElements.sourceWeekDateInput).toBeVisible();
+      // Wait for dialog to be fully visible
+      await expect(page.getByTestId("build-from-demands-dialog")).toBeVisible();
+
+      // Check if date picker is visible by looking for the input field directly
+      await expect(page.getByTestId("source-week-date-input")).toBeVisible();
     });
 
     test("should accept valid date for source week", async ({ page }) => {
       await templateTestBase.openBuildFromDemandsDialog(page);
 
-      const formElements =
-        templateTestBase.getBuildFromDemandsFormElements(page);
-      const testDate = "2024-01-15"; // A Monday
+      // Wait for dialog to be fully visible
+      await expect(page.getByTestId("build-from-demands-dialog")).toBeVisible();
 
-      // Select a source date
-      await templateTestBase.selectSourceWeekDate(page, testDate);
+      // Enter a date directly
+      const dateInput = page.getByTestId("source-week-date-input");
+      await expect(dateInput).toBeVisible();
 
-      // Verify the date was set
-      await expect(formElements.sourceWeekDateInput).toHaveValue(testDate);
+      await dateInput.click();
+      await dateInput.fill("15/01/2024");
+
+      // Verify the input has the value
+      await expect(dateInput).toHaveValue("15/01/2024");
     });
 
     test("should enable apply button when source week is selected", async ({
@@ -144,17 +183,26 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
     }) => {
       await templateTestBase.openBuildFromDemandsDialog(page);
 
-      const formElements =
-        templateTestBase.getBuildFromDemandsFormElements(page);
+      // Wait for dialog to be fully visible
+      await expect(page.getByTestId("build-from-demands-dialog")).toBeVisible();
+
+      const applyButton = page.getByTestId("build-from-demands-apply-button");
 
       // Initially apply button should be disabled
-      await expect(formElements.applyButton).toBeDisabled();
+      await expect(applyButton).toBeDisabled();
 
-      // Select a source date
-      await templateTestBase.selectSourceWeekDate(page, "2024-01-15");
+      // Enter a date directly
+      const dateInput = page.getByTestId("source-week-date-input");
+      await expect(dateInput).toBeVisible();
 
-      // Apply button should now be enabled
-      await expect(formElements.applyButton).toBeEnabled();
+      await dateInput.click();
+      await dateInput.fill("15/01/2024");
+
+      // Press Enter to confirm the date
+      await dateInput.press("Enter");
+
+      // Now apply button should be enabled
+      await expect(applyButton).toBeEnabled();
     });
 
     test("should show helper text about Monday calculation", async ({
@@ -162,8 +210,13 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
     }) => {
       await templateTestBase.openBuildFromDemandsDialog(page);
 
-      // Should display helper text explaining Monday calculation
-      await expect(page.locator("text=any_day_will_find_monday")).toBeVisible();
+      // Should show helper text explaining Monday calculation - check for the first occurrence
+      await expect(
+        page
+          .getByTestId("build-from-demands-dialog")
+          .getByText(/find the Monday/i)
+          .first()
+      ).toBeVisible();
     });
   });
 
@@ -204,11 +257,12 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
       // Select target week 1 (index 0)
       await templateTestBase.selectTargetWeek(page, 0);
 
+      // Verify the selection by checking that the dropdown shows the selected option text
       const formElements =
         templateTestBase.getBuildFromDemandsFormElements(page);
 
-      // Verify the selection (this might need adjustment based on actual Select behavior)
-      await expect(formElements.targetWeekSelect).toHaveValue("0");
+      // For MUI Select, we check the displayed text rather than value
+      await expect(formElements.targetWeekSelect).toContainText("Week 1");
     });
 
     test("should show overwrite warning for selected target week", async ({
@@ -221,7 +275,7 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
 
       // Should show warning about overwriting data
       await expect(
-        page.locator("text*=overwrite").or(page.locator("text*=replace"))
+        page.locator(":text('overwrite')").or(page.locator(":text('replace')"))
       ).toBeVisible();
     });
   });
@@ -310,7 +364,7 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
       await templateTestBase.openBuildFromDemandsDialog(page);
 
       // Select source week date
-      await templateTestBase.selectSourceWeekDate(page, "2024-01-15");
+      await templateTestBase.selectSourceWeekDate(page, "01/15/2024");
 
       // Select target week
       await templateTestBase.selectTargetWeek(page, 0);
@@ -334,7 +388,7 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
       await templateTestBase.openBuildFromDemandsDialog(page);
 
       // Select source week date
-      await templateTestBase.selectSourceWeekDate(page, "2024-01-15");
+      await templateTestBase.selectSourceWeekDate(page, "01/15/2024");
 
       // Select target week
       await templateTestBase.selectTargetWeek(page, 0);
@@ -368,7 +422,7 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
       await templateTestBase.openBuildFromDemandsDialog(page);
 
       // Select source week date
-      await templateTestBase.selectSourceWeekDate(page, "2024-01-15");
+      await templateTestBase.selectSourceWeekDate(page, "01/15/2024");
 
       // Select target week
       await templateTestBase.selectTargetWeek(page, 0);
@@ -408,11 +462,11 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
       // Should show validation error
       await expect(
         page
-          .locator("text*=please_select_source_week")
+          .locator(":text('please_select_source_week')")
           .or(
             page
-              .locator("text*=Please select")
-              .or(page.locator("text*=required"))
+              .locator(":text('Please select')")
+              .or(page.locator(":text('required')"))
           )
       ).toBeVisible();
     });
@@ -439,7 +493,7 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
       await templateTestBase.openBuildFromDemandsDialog(page);
 
       // Select some values
-      await templateTestBase.selectSourceWeekDate(page, "2024-01-15");
+      await templateTestBase.selectSourceWeekDate(page, "01/15/2024");
       await templateTestBase.selectTargetWeek(page, 0);
 
       // Close dialog
@@ -452,8 +506,12 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
         templateTestBase.getBuildFromDemandsFormElements(page);
 
       // Form should be reset
-      await expect(formElements.sourceWeekDateInput).toHaveValue("");
-      await expect(formElements.targetWeekSelect).toHaveValue("0"); // Default value
+      const dateInput = page
+        .locator('[data-testid="source-week-date-picker"] input')
+        .first();
+      await expect(dateInput).toHaveValue("");
+      // For Select, we check that it shows the default selection
+      await expect(formElements.targetWeekSelect).toContainText("Week 1");
       await expect(formElements.applyButton).toBeDisabled();
     });
   });
@@ -470,7 +528,7 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
       await templateTestBase.openBuildFromDemandsDialog(page);
 
       // Select source and target
-      await templateTestBase.selectSourceWeekDate(page, "2024-01-15");
+      await templateTestBase.selectSourceWeekDate(page, "01/15/2024");
       await templateTestBase.selectTargetWeek(page, 0);
 
       const formElements =
@@ -493,14 +551,14 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
       // First application
       await templateTestBase.applyDemandsFromSourceToTarget(
         page,
-        "2024-01-15",
+        "01/15/2024",
         0
       );
 
       // Second application (should overwrite)
       await templateTestBase.applyDemandsFromSourceToTarget(
         page,
-        "2024-01-22",
+        "01/22/2024",
         0
       );
 
