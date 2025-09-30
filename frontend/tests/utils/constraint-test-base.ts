@@ -532,4 +532,423 @@ export class ConstraintTestBase {
       `ℹ️ No selection dialog found for placeholder ${placeholderIndex}`
     );
   }
+
+  /**
+   * Fills a string block placeholder (dropdown with options)
+   */
+  async fillStringPlaceholder(
+    page: Page,
+    placeholderIndex: number
+  ): Promise<void> {
+    console.log(`Attempting to fill string placeholder ${placeholderIndex}...`);
+
+    // Click on the placeholder
+    const placeholder = page
+      .locator('[data-testid^="constraint-block-placeholder-"]')
+      .nth(placeholderIndex);
+    const placeholderText = await placeholder.textContent();
+    console.log(`Clicking string placeholder with text: "${placeholderText}"`);
+    await placeholder.click({ force: true });
+    await page.waitForTimeout(500);
+
+    // Look for the string option dialog
+    const dialog = page.locator(".MuiPopover-root:visible").first();
+    if (await dialog.isVisible({ timeout: 2000 })) {
+      console.log("✅ Found string options dialog");
+
+      // Look for string options with data-testid
+      const stringOptions = dialog.locator('[data-testid^="string-option-"]');
+      const optionCount = await stringOptions.count();
+      console.log(`Found ${optionCount} string options`);
+
+      if (optionCount > 0) {
+        const firstOption = stringOptions.first();
+        const optionText = await firstOption.textContent();
+        console.log(`Selecting first string option: "${optionText}"`);
+        await firstOption.click();
+        console.log(
+          `✅ Selected string option for placeholder ${placeholderIndex}`
+        );
+        return;
+      }
+
+      // Fallback: look for ListItemButton elements
+      const listItems = dialog.locator(
+        'button[role="button"], .MuiListItemButton-root'
+      );
+      const listItemCount = await listItems.count();
+      if (listItemCount > 0) {
+        const firstItem = listItems.first();
+        const itemText = await firstItem.textContent();
+        console.log(`Selecting first list item: "${itemText}"`);
+        await firstItem.click();
+        console.log(
+          `✅ Selected list item for placeholder ${placeholderIndex}`
+        );
+        return;
+      }
+    }
+
+    console.log(
+      `⚠️ No string options found for placeholder ${placeholderIndex}`
+    );
+  }
+
+  /**
+   * Fills a constraint placeholder by text content (for shift-worker option blocks)
+   */
+  async fillPlaceholderByText(
+    page: Page,
+    placeholderText: string
+  ): Promise<void> {
+    console.log(
+      `Attempting to fill placeholder with text "${placeholderText}"...`
+    );
+
+    // Find placeholder by text content
+    const placeholder = page
+      .locator('[data-testid^="constraint-block-placeholder-"]')
+      .filter({ hasText: placeholderText });
+    const count = await placeholder.count();
+
+    if (count === 0) {
+      console.log(`⚠️ No placeholder found with text "${placeholderText}"`);
+      return;
+    }
+
+    if (count > 1) {
+      console.log(
+        `⚠️ Multiple placeholders found with text "${placeholderText}", using first one`
+      );
+    }
+
+    await placeholder.first().click({ force: true });
+    await page.waitForTimeout(1000); // Longer wait
+
+    // Look for shift-worker option dialog (for worker/shift selections)
+    const dialogSelectors = [
+      '[data-testid^="shift-worker-option-dialog-"]',
+      '[role="dialog"]:visible',
+      ".MuiPopover-root:visible",
+      ".MuiDialog-root:visible",
+    ];
+
+    for (const selector of dialogSelectors) {
+      const dialog = page.locator(selector).first();
+      if (await dialog.isVisible({ timeout: 3000 })) {
+        console.log(
+          `✅ Selection dialog opened for placeholder: "${placeholderText}" using selector: ${selector}`
+        );
+
+        // Wait for options to load
+        await page.waitForTimeout(1000);
+
+        // For shift-worker dialogs, we need to use the search input to trigger selection
+        // Look for the input field within the dialog
+        const searchInput = dialog.locator('input[type="text"]').first();
+        if (await searchInput.isVisible({ timeout: 2000 })) {
+          console.log(`Found search input in dialog for "${placeholderText}"`);
+
+          // Focus the input and type a search term to filter options
+          await searchInput.click();
+          await searchInput.clear();
+
+          // Type a search term based on what we're looking for
+          let searchTerm = "";
+          if (placeholderText.toLowerCase() === "jean") {
+            searchTerm = "Test Worker"; // Search for test workers
+          } else if (placeholderText.toLowerCase().includes("consultation")) {
+            searchTerm = "Shift"; // Search for shifts
+          } else {
+            searchTerm = "Test"; // Generic search
+          }
+
+          await searchInput.fill(searchTerm);
+          await page.waitForTimeout(500); // Wait for search results
+
+          // Press arrow down to select first result and enter to confirm
+          await searchInput.press("ArrowDown");
+          await page.waitForTimeout(200);
+          await searchInput.press("Enter");
+
+          console.log(
+            `✅ Selected option for "${placeholderText}" using search: "${searchTerm}"`
+          );
+
+          // Wait for React state to update
+          await page.waitForTimeout(1000);
+
+          // Close dialog if still open
+          if (await dialog.isVisible({ timeout: 500 })) {
+            await page.keyboard.press("Escape");
+            await page.waitForTimeout(500);
+          }
+
+          return;
+        }
+
+        // Fallback: try to click on visible options without using the input
+        const visibleOptions = dialog
+          .locator('div[style*="cursor: pointer"]')
+          .filter({
+            has: page.locator("text").filter({ hasText: /Test|Worker|Shift/ }),
+          });
+        const optionCount = await visibleOptions.count();
+
+        if (optionCount > 0) {
+          console.log(
+            `Found ${optionCount} visible options, clicking first one`
+          );
+          try {
+            await visibleOptions.first().click({ force: true });
+            console.log(
+              `✅ Clicked first visible option for "${placeholderText}"`
+            );
+
+            // Wait for React state to update
+            await page.waitForTimeout(1000);
+
+            return;
+          } catch (error) {
+            console.log(`Failed to click visible option: ${error}`);
+          }
+        }
+      }
+    }
+
+    console.log(
+      `ℹ️ No selection dialog found for placeholder "${placeholderText}"`
+    );
+  }
+
+  /**
+   * Fills a string block placeholder by text content
+   */
+  async fillStringPlaceholderByText(
+    page: Page,
+    placeholderText: string
+  ): Promise<void> {
+    console.log(
+      `Attempting to fill string placeholder with text "${placeholderText}"...`
+    );
+
+    // Find placeholder by text content
+    const placeholder = page
+      .locator('[data-testid^="constraint-block-placeholder-"]')
+      .filter({ hasText: placeholderText });
+    const count = await placeholder.count();
+
+    if (count === 0) {
+      console.log(`⚠️ No placeholder found with text "${placeholderText}"`);
+      return;
+    }
+
+    await placeholder.first().click({ force: true });
+    await page.waitForTimeout(1000); // Longer wait
+
+    // Look for the string option dialog
+    const dialog = page.locator(".MuiPopover-root:visible").first();
+    if (await dialog.isVisible({ timeout: 3000 })) {
+      console.log("✅ Found string options dialog");
+
+      // Wait for options to load
+      await page.waitForTimeout(500);
+
+      // Look for string options with data-testid
+      const stringOptions = dialog.locator('[data-testid^="string-option-"]');
+      const optionCount = await stringOptions.count();
+      console.log(`Found ${optionCount} string options`);
+
+      if (optionCount > 0) {
+        const firstOption = stringOptions.first();
+        const optionText = await firstOption.textContent();
+        console.log(`Selecting first string option: "${optionText}"`);
+        await firstOption.click();
+        console.log(
+          `✅ Selected string option for placeholder "${placeholderText}"`
+        );
+
+        // Wait for React state to update
+        await page.waitForTimeout(500);
+
+        // Ensure dialog is closed
+        if (await dialog.isVisible({ timeout: 1000 })) {
+          await page.keyboard.press("Escape");
+          await page.waitForTimeout(300);
+        }
+        return;
+      }
+
+      // Fallback: look for ListItemButton elements
+      const listItems = dialog.locator(
+        'button[role="button"], .MuiListItemButton-root, .MuiListItem-button'
+      );
+      const listItemCount = await listItems.count();
+      if (listItemCount > 0) {
+        const firstItem = listItems.first();
+        const itemText = await firstItem.textContent();
+        console.log(`Selecting first list item: "${itemText}"`);
+        await firstItem.click();
+        console.log(
+          `✅ Selected list item for placeholder "${placeholderText}"`
+        );
+
+        // Wait for React state to update
+        await page.waitForTimeout(500);
+
+        // Ensure dialog is closed
+        if (await dialog.isVisible({ timeout: 1000 })) {
+          await page.keyboard.press("Escape");
+          await page.waitForTimeout(300);
+        }
+        return;
+      }
+
+      // Final fallback: any clickable element in dialog
+      const anyClickable = dialog
+        .locator('li, [role="option"], button')
+        .first();
+      if (await anyClickable.isVisible({ timeout: 1000 })) {
+        const itemText = await anyClickable.textContent();
+        console.log(`Selecting fallback clickable item: "${itemText}"`);
+        await anyClickable.click();
+        console.log(
+          `✅ Selected fallback item for placeholder "${placeholderText}"`
+        );
+
+        // Wait for React state to update
+        await page.waitForTimeout(500);
+        return;
+      }
+    }
+
+    console.log(
+      `⚠️ No string options found for placeholder "${placeholderText}"`
+    );
+  }
+
+  /**
+   * Fills a number block placeholder by text content
+   */
+  async fillNumberPlaceholderByText(
+    page: Page,
+    placeholderText: string,
+    value: number = 3
+  ): Promise<void> {
+    console.log(
+      `Attempting to fill number placeholder with text "${placeholderText}" with value ${value}...`
+    );
+
+    // Find placeholder by text content
+    const placeholder = page
+      .locator('[data-testid^="constraint-block-placeholder-"]')
+      .filter({ hasText: placeholderText });
+    const count = await placeholder.count();
+
+    if (count === 0) {
+      console.log(`⚠️ No placeholder found with text "${placeholderText}"`);
+      return;
+    }
+
+    await placeholder.first().click({ force: true });
+    await page.waitForTimeout(1000); // Give more time for UI to respond
+
+    // Check what dialogs are open after clicking
+    const allDialogs = page.locator(
+      '.MuiPopover-root:visible, .MuiDialog-root:visible, [role="dialog"]:visible'
+    );
+    const dialogCount = await allDialogs.count();
+    console.log(
+      `Found ${dialogCount} dialogs open after clicking number placeholder`
+    );
+
+    // Look for the number input with specific data-testid first
+    let numberInput = page.locator('[data-testid="constraint-number-input"]');
+    if (await numberInput.isVisible({ timeout: 3000 })) {
+      console.log(`Found constraint-number-input for "${placeholderText}"`);
+      await numberInput.clear();
+      await numberInput.fill(value.toString());
+
+      // Try multiple submission methods to ensure the value is accepted
+      await numberInput.press("Enter"); // First try Enter
+      await page.waitForTimeout(300);
+
+      console.log(
+        `✅ Filled number input with ${value} for placeholder "${placeholderText}"`
+      );
+      return;
+    }
+
+    // If specific input not found, try to find any number or text input inside visible dialogs
+    for (let i = 0; i < dialogCount; i++) {
+      const dialog = allDialogs.nth(i);
+
+      // Try number input first
+      numberInput = dialog.locator('input[type="number"]');
+      if (await numberInput.isVisible({ timeout: 1000 })) {
+        console.log(
+          `Found number input in dialog ${i} for "${placeholderText}"`
+        );
+        await numberInput.clear();
+        await numberInput.fill(value.toString());
+        await numberInput.press("Enter");
+        await page.waitForTimeout(300);
+        console.log(
+          `✅ Filled number input with ${value} for placeholder "${placeholderText}"`
+        );
+        return;
+      }
+
+      // Try any text input
+      const textInput = dialog.locator('input[type="text"]');
+      if (await textInput.isVisible({ timeout: 1000 })) {
+        console.log(`Found text input in dialog ${i} for "${placeholderText}"`);
+        await textInput.clear();
+        await textInput.fill(value.toString());
+        await textInput.press("Enter");
+        await page.waitForTimeout(300);
+        console.log(
+          `✅ Filled text input with ${value} for placeholder "${placeholderText}"`
+        );
+        return;
+      }
+
+      // Try any input
+      const anyInput = dialog.locator("input");
+      if (await anyInput.isVisible({ timeout: 1000 })) {
+        console.log(
+          `Found generic input in dialog ${i} for "${placeholderText}"`
+        );
+        await anyInput.clear();
+        await anyInput.fill(value.toString());
+        await anyInput.press("Enter");
+        await page.waitForTimeout(300);
+        console.log(
+          `✅ Filled generic input with ${value} for placeholder "${placeholderText}"`
+        );
+        return;
+      }
+    }
+
+    // Fallback: try to find input in the entire page
+    const pageNumberInput = page.locator('input[type="number"]').first();
+    if (await pageNumberInput.isVisible({ timeout: 2000 })) {
+      console.log(`Found fallback number input for "${placeholderText}"`);
+      await pageNumberInput.clear();
+      await pageNumberInput.fill(value.toString());
+      await pageNumberInput.press("Enter");
+      await page.waitForTimeout(300);
+      console.log(
+        `✅ Filled fallback number input with ${value} for placeholder "${placeholderText}"`
+      );
+      return;
+    }
+
+    console.log(
+      `❌ FAILED: No number input found for placeholder "${placeholderText}"`
+    );
+    throw new Error(
+      `No number input found for placeholder "${placeholderText}"`
+    );
+  }
 }

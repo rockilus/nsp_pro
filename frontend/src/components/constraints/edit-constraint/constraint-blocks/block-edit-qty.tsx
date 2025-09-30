@@ -100,6 +100,7 @@ export default function BlockEditQty({
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           autoFocus
+          data-testid="constraint-number-input"
           style={{
             color: ConstraintDefaultColors.shade3,
             appearance: "textfield",
