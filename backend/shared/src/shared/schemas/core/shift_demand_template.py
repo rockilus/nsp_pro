@@ -73,12 +73,8 @@ class ShiftDemandTemplate:
     weeks_data: List[TemplateWeekData]  # Week patterns
     description: Optional[str] = None
     created_by: str = ""  # User ID who created the template
-    created_at: datetime = field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
-    updated_at: datetime = field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     id: Optional[str] = None
 
     # pylint: disable=too-many-branches
@@ -91,9 +87,7 @@ class ShiftDemandTemplate:
             raise ValueError("Template name must be 100 characters or less")
 
         if self.description and len(self.description) > 500:
-            raise ValueError(
-                "Template description must be 500 characters or less"
-            )
+            raise ValueError("Template description must be 500 characters or less")
 
         if not self.weeks_data:
             raise ValueError("Template must have at least one week of data")
@@ -104,9 +98,7 @@ class ShiftDemandTemplate:
         # Validate template type constraints
         if self.template_type == TemplateType.EVEN_ODD:
             if len(self.weeks_data) != 2:
-                raise ValueError(
-                    "Even/odd templates must have exactly 2 weeks"
-                )
+                raise ValueError("Even/odd templates must have exactly 2 weeks")
         elif self.template_type == TemplateType.STANDARD:
             if (
                 len(self.weeks_data) < 1 or len(self.weeks_data) > 8
@@ -117,9 +109,7 @@ class ShiftDemandTemplate:
         expected_weeks = set(range(len(self.weeks_data)))
         actual_weeks = {week.week_number for week in self.weeks_data}
         if expected_weeks != actual_weeks:
-            raise ValueError(
-                "Week numbers must be consecutive starting from 0"
-            )
+            raise ValueError("Week numbers must be consecutive starting from 0")
 
     def _normalize_weeks_data(
         self, weeks_data: List[TemplateWeekData]
@@ -166,9 +156,7 @@ class ShiftDemandTemplate:
                     )
 
             # Sort demands for consistent ordering (by shift_id, then day_of_week)
-            consolidated_demands.sort(
-                key=lambda d: (d.shift_id, d.day_of_week)
-            )
+            consolidated_demands.sort(key=lambda d: (d.shift_id, d.day_of_week))
 
             normalized_weeks.append(
                 TemplateWeekData(
@@ -196,12 +184,8 @@ class ShiftDemandTemplate:
     def from_dict(cls, data: Dict[str, Any]) -> "ShiftDemandTemplate":
         """Create instance from MongoDB document."""
         data["template_type"] = TemplateType(data["template_type"])
-        data["created_at"] = datetime.fromtimestamp(
-            data["created_at"], tz=timezone.utc
-        )
-        data["updated_at"] = datetime.fromtimestamp(
-            data["updated_at"], tz=timezone.utc
-        )
+        data["created_at"] = datetime.fromtimestamp(data["created_at"], tz=timezone.utc)
+        data["updated_at"] = datetime.fromtimestamp(data["updated_at"], tz=timezone.utc)
         data["weeks_data"] = [
             TemplateWeekData.from_dict(week) for week in data["weeks_data"]
         ]
@@ -371,9 +355,7 @@ def create_template_from_demands(
         if isinstance(demand_date, str):
             demand_date = datetime.strptime(demand_date, "%Y-%m-%d").date()
         elif isinstance(demand_date, (int, float)):
-            demand_date = datetime.fromtimestamp(
-                demand_date, tz=timezone.utc
-            ).date()
+            demand_date = datetime.fromtimestamp(demand_date, tz=timezone.utc).date()
 
         # Calculate week number and day of week
         days_diff = (demand_date - week_start).days
@@ -381,9 +363,7 @@ def create_template_from_demands(
         day_of_week = days_diff % 7
 
         # Skip demands outside expected weeks
-        expected_weeks = (
-            2 if template_type == TemplateType.EVEN_ODD else 8
-        )  # Max weeks
+        expected_weeks = 2 if template_type == TemplateType.EVEN_ODD else 8  # Max weeks
         if week_num >= expected_weeks:
             continue
 
@@ -403,9 +383,7 @@ def create_template_from_demands(
     template_weeks: List[TemplateWeekData] = []
     for week_num in sorted(weeks_data.keys()):
         template_weeks.append(
-            TemplateWeekData(
-                week_number=week_num, demands=weeks_data[week_num]
-            )
+            TemplateWeekData(week_number=week_num, demands=weeks_data[week_num])
         )
 
     return ShiftDemandTemplate(
@@ -437,9 +415,7 @@ def apply_demands_to_template_week(
     Raises:
         ValueError: If target week number is invalid
     """
-    if target_week_number < 0 or target_week_number >= len(
-        template.weeks_data
-    ):
+    if target_week_number < 0 or target_week_number >= len(template.weeks_data):
         raise ValueError(
             f"Target week number {target_week_number} is out of range. "
             f"Template has {len(template.weeks_data)} weeks "
@@ -453,9 +429,7 @@ def apply_demands_to_template_week(
         if isinstance(demand_date, str):
             demand_date = datetime.strptime(demand_date, "%Y-%m-%d").date()
         elif isinstance(demand_date, (int, float)):
-            demand_date = datetime.fromtimestamp(
-                demand_date, tz=timezone.utc
-            ).date()
+            demand_date = datetime.fromtimestamp(demand_date, tz=timezone.utc).date()
 
         # Calculate day of week (0=Monday, 6=Sunday)
         day_of_week = demand_date.weekday()
@@ -475,9 +449,7 @@ def apply_demands_to_template_week(
         if week.week_number == target_week_number:
             # Replace the demands for the target week
             updated_weeks_data.append(
-                TemplateWeekData(
-                    week_number=target_week_number, demands=new_demands
-                )
+                TemplateWeekData(week_number=target_week_number, demands=new_demands)
             )
         else:
             updated_weeks_data.append(week)
@@ -526,9 +498,7 @@ def apply_template_to_date_range(
         raise ValueError("Date range cannot exceed 365 days")
 
     # Calculate template application mapping
-    mappings = _calculate_template_application_mapping(
-        template, start_date, end_date
-    )
+    mappings = _calculate_template_application_mapping(template, start_date, end_date)
 
     # Generate demands from mapping
     demands = _generate_demands_from_mapping(template, mappings, team_id)
@@ -597,9 +567,7 @@ def _generate_demands_from_mapping(
             continue
 
         # Find demands for this day
-        day_demands = [
-            d for d in week_data.demands if d.day_of_week == template_day
-        ]
+        day_demands = [d for d in week_data.demands if d.day_of_week == template_day]
 
         for demand_entry in day_demands:
             if demand_entry.count > 0:
