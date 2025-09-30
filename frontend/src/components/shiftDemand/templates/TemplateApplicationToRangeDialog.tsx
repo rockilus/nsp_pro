@@ -182,6 +182,7 @@ export default function TemplateApplicationToRangeDialog({
 
   return (
     <Dialog
+      data-testid="template-application-dialog"
       open={open}
       onClose={handleClose}
       maxWidth="md"
@@ -211,6 +212,7 @@ export default function TemplateApplicationToRangeDialog({
             </Typography>
             <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
               <DatePicker
+                data-testid="template-application-start-date"
                 label={t("start_date")}
                 value={startDate}
                 onChange={handleStartDateChange}
@@ -225,6 +227,7 @@ export default function TemplateApplicationToRangeDialog({
                 }}
               />
               <DatePicker
+                data-testid="template-application-end-date"
                 label={t("end_date")}
                 value={endDate}
                 onChange={handleEndDateChange}
@@ -248,6 +251,7 @@ export default function TemplateApplicationToRangeDialog({
               {t("application_options")}
             </Typography>
             <FormControlLabel
+              data-testid="template-application-overwrite-switch"
               control={
                 <Switch
                   checked={overwriteExisting}
@@ -318,10 +322,15 @@ export default function TemplateApplicationToRangeDialog({
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 3 }}>
-        <Button onClick={handleClose} disabled={loading}>
+        <Button
+          data-testid="template-application-cancel-button"
+          onClick={handleClose}
+          disabled={loading}
+        >
           {t("cancel")}
         </Button>
         <Button
+          data-testid="template-application-apply-button"
           onClick={handleApply}
           variant="contained"
           disabled={!validation.isValid || loading}

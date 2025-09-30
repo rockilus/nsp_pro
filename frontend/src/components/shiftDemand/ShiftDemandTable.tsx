@@ -719,7 +719,7 @@ export default function ShiftDemandTable({
         }
       }}
     >
-      <Table size="small" stickyHeader>
+      <Table data-testid="shift-demand-table" size="small" stickyHeader>
         <ShiftDemandTableHeader
           lng={lng}
           dates={dates}

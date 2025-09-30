@@ -4,6 +4,7 @@
 
 import { Page, expect } from "@playwright/test";
 import { DatabaseTestUtils } from "./database-utils";
+import { AuthenticatedApiClient } from "../../src/app/lib/api/baseApi";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import utc from "dayjs/plugin/utc";
@@ -21,6 +22,15 @@ export class TemplateTestBase {
 
   constructor() {
     this.dbUtils = new DatabaseTestUtils();
+    // We'll use dbUtils' authenticated client for API calls
+  }
+
+  /**
+   * Get the authenticated API client for making test requests
+   */
+  private get testApiClient() {
+    // Access the dbUtils' internal authenticated client
+    return (this.dbUtils as any).testApiClient;
   }
 
   /**
@@ -29,47 +39,80 @@ export class TemplateTestBase {
    * - Creates a test team with shifts
    */
   async setupTemplateTests(): Promise<void> {
-    console.log("🚀 Setting up template tests...");
+    try {
+      console.log("� Setting up template tests...");
 
-    // Create a test team
-    this.testTeam = await this.dbUtils.createTeam({
-      name: "Template Test Team",
-    });
+      // Reset relevant database collections
+      await this.dbUtils.resetTeamRelatedData();
 
-    if (this.testTeam) {
-      console.log(`✅ Test team created: ${this.testTeam.name}`);
-
-      // Create shifts for the tests - using same shifts as shift demand tests for consistency
-      await this.dbUtils.createShift({
-        teamId: this.testTeam.teamId,
-        name: "Morning Shift",
-        startTime: dayjs.utc("2023-01-01T08:00:00"),
-        endTime: dayjs.utc("2023-01-01T12:00:00"),
-        shiftType: ShiftType.NORMAL,
-      });
-      await this.dbUtils.createShift({
-        teamId: this.testTeam.teamId,
-        name: "Afternoon Shift",
-        startTime: dayjs.utc("2023-01-01T14:00:00"),
-        endTime: dayjs.utc("2023-01-01T18:00:00"),
-        shiftType: ShiftType.NORMAL,
-      });
-      await this.dbUtils.createShift({
-        teamId: this.testTeam.teamId,
-        name: "Duty 1",
-        startTime: dayjs.utc("2023-01-01T08:00:00"),
-        endTime: dayjs.utc("2023-01-02T08:00:00"),
-        shiftType: ShiftType.DUTY,
-      });
-      await this.dbUtils.createShift({
-        teamId: this.testTeam.teamId,
-        name: "Duty 2",
-        startTime: dayjs.utc("2023-01-01T08:00:00"),
-        endTime: dayjs.utc("2023-01-02T08:00:00"),
-        shiftType: ShiftType.DUTY,
+      // Create a test team with shifts
+      this.testTeam = await this.dbUtils.createTeam({
+        name: "Template Test Team",
       });
 
-      console.log("✅ Test shifts created");
+      console.log(
+        `✅ Created test team: ${this.testTeam.name} (${this.testTeam.teamId})`
+      );
+
+      // Create some test shifts that will be referenced in templates
+      await this.createTestShifts();
+
+      console.log("✅ Template test setup completed successfully");
+    } catch (error) {
+      console.error("❌ Failed to setup template tests:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Creates test shifts for template testing
+   */
+  private async createTestShifts(): Promise<void> {
+    if (!this.testTeam) {
+      throw new Error("Test team not initialized");
+    }
+
+    try {
+      // Create a few test shifts that will be used in our tests
+      const shifts = [
+        {
+          teamId: this.testTeam.teamId,
+          name: "Morning Shift",
+          acronym: "shift1",
+          shiftType: ShiftType.DUTY,
+          startTime: dayjs.utc("08:00", "HH:mm"),
+          endTime: dayjs.utc("16:00", "HH:mm"),
+          color: "blue",
+        },
+        {
+          teamId: this.testTeam.teamId,
+          name: "Evening Shift",
+          acronym: "shift2",
+          shiftType: ShiftType.DUTY,
+          startTime: dayjs.utc("16:00", "HH:mm"),
+          endTime: dayjs.utc("00:00", "HH:mm").add(1, "day"),
+          color: "green",
+        },
+        {
+          teamId: this.testTeam.teamId,
+          name: "Night Shift",
+          acronym: "shift3",
+          shiftType: ShiftType.DUTY,
+          startTime: dayjs.utc("00:00", "HH:mm"),
+          endTime: dayjs.utc("08:00", "HH:mm"),
+          color: "red",
+        },
+      ];
+
+      for (const shiftData of shifts) {
+        await this.dbUtils.createShift(shiftData);
+        console.log(
+          `✅ Created test shift: ${shiftData.name} (${shiftData.acronym})`
+        );
+      }
+    } catch (error) {
+      console.error("Failed to create test shifts:", error);
+      throw error;
     }
   }
 
@@ -1047,5 +1090,197 @@ export class TemplateTestBase {
       );
       await expect(cellLocator).toHaveValue(demand.value.toString());
     }
+  }
+
+  //////////////////////////
+  // Template Application Testing Methods
+  //////////////////////////
+
+  /**
+   * Gets the apply button in the TemplateViewer
+   */
+  getTemplateViewerApplyButton(page: Page) {
+    return page.locator('[data-testid="template-viewer-apply-button"]');
+  }
+
+  /**
+   * Gets the template application dialog
+   */
+  getTemplateApplicationDialog(page: Page) {
+    return page.locator('[data-testid="template-application-dialog"]');
+  }
+
+  /**
+   * Gets template application dialog elements
+   */
+  getTemplateApplicationDialogElements(page: Page) {
+    return {
+      startDatePicker: page.locator(
+        '[data-testid="template-application-start-date"]'
+      ),
+      endDatePicker: page.locator(
+        '[data-testid="template-application-end-date"]'
+      ),
+      overwriteSwitch: page.locator(
+        '[data-testid="template-application-overwrite-switch"]'
+      ),
+      applyButton: page.locator(
+        '[data-testid="template-application-apply-button"]'
+      ),
+      cancelButton: page.locator(
+        '[data-testid="template-application-cancel-button"]'
+      ),
+    };
+  }
+
+  /**
+   * Sets a date in the application dialog
+   */
+  async setApplicationDialogDate(
+    page: Page,
+    field: "start" | "end",
+    dateString: string
+  ) {
+    const selector =
+      field === "start"
+        ? '[data-testid="template-application-start-date"] input'
+        : '[data-testid="template-application-end-date"] input';
+
+    // Clear and type the date
+    const input = page.locator(selector);
+    await input.click();
+    await input.fill("");
+    await input.fill(dateString);
+    await input.press("Enter");
+
+    // Wait a bit for the date picker to process
+    await page.waitForTimeout(500);
+  }
+
+  /**
+   * Sets the overwrite switch in the application dialog
+   */
+  async setApplicationDialogOverwrite(page: Page, overwrite: boolean) {
+    const switchElement = page.locator(
+      '[data-testid="template-application-overwrite-switch"] input[type="checkbox"]'
+    );
+    const isChecked = await switchElement.isChecked();
+
+    if ((overwrite && !isChecked) || (!overwrite && isChecked)) {
+      await switchElement.click();
+    }
+  }
+
+  /**
+   * Closes the template management window
+   */
+  async closeTemplateManagementWindow(page: Page) {
+    const closeButton = this.getTemplateManagementCloseButton(page);
+    await closeButton.click();
+
+    // Wait for the window to close
+    const window = this.getTemplateManagementWindow(page);
+    await expect(window).not.toBeVisible();
+  }
+
+  /**
+   * Verifies a shift demand value in the main shift demands table
+   */
+  async verifyShiftDemandValue(
+    page: Page,
+    shiftId: string,
+    dateString: string,
+    expectedValue: number
+  ) {
+    // Navigate back to the shift demands main view if needed
+    const shiftDemandTable = page.locator('[data-testid="shift-demand-table"]');
+    await expect(shiftDemandTable).toBeVisible();
+
+    // Find the span element for the specific shift and date value
+    const valueSelector = `[data-testid="shift-demand-value-${shiftId}-${dateString}"]`;
+    const valueElement = page.locator(valueSelector);
+
+    await expect(valueElement).toHaveText(expectedValue.toString());
+  }
+
+  /**
+   * Verifies that a shift demand does not exist for a specific shift and date
+   */
+  async verifyShiftDemandNotExists(
+    page: Page,
+    shiftId: string,
+    dateString: string
+  ) {
+    const valueSelector = `[data-testid="shift-demand-value-${shiftId}-${dateString}"]`;
+    const valueElement = page.locator(valueSelector);
+
+    // Should either not exist or have value of 0 or empty
+    const exists = (await valueElement.count()) > 0;
+    if (exists) {
+      const text = await valueElement.textContent();
+      expect(text === "" || text === "0").toBeTruthy();
+    }
+  }
+
+  /**
+   * Creates a shift demand via API for testing
+   */
+  async createShiftDemandViaAPI(demandData: {
+    shiftId: string;
+    date: string;
+    value: number;
+  }) {
+    if (!this.testTeam) {
+      throw new Error("Test team not initialized");
+    }
+
+    try {
+      // Use the authenticated API client to create shift demand
+      const response = await this.testApiClient.post(
+        `/teams/${this.testTeam.teamId}/shift-demands`,
+        {
+          shiftId: demandData.shiftId,
+          date: demandData.date,
+          count: demandData.value,
+        }
+      );
+
+      console.log(
+        `✅ Created shift demand: ${demandData.shiftId} on ${demandData.date} with value ${demandData.value}`
+      );
+      return response as any; // Type the response appropriately based on your API
+    } catch (error) {
+      console.error("Failed to create shift demand via API:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Converts a template to even/odd type via UI interactions
+   */
+  async convertTemplateToEvenOdd(page: Page, templateId: string) {
+    // Click on the even/odd toggle button in the template toolbar
+    const evenOddToggle = page.locator(
+      '[data-testid="template-toolbar-even-odd-type-button"]'
+    );
+    await expect(evenOddToggle).toBeVisible();
+    await evenOddToggle.click();
+
+    // Handle any confirmation dialog that might appear
+    const confirmDialog = page.locator(
+      '[data-testid="template-toolbar-even-odd-conversion-dialog"]'
+    );
+    if (await confirmDialog.isVisible()) {
+      const confirmButton = page.locator(
+        '[data-testid="template-toolbar-even-odd-confirm-button"]'
+      );
+      await confirmButton.click();
+
+      // Wait for the conversion to complete
+      await expect(confirmDialog).not.toBeVisible();
+    }
+
+    // Wait for the conversion to be reflected in the UI
+    await page.waitForTimeout(1000);
   }
 }

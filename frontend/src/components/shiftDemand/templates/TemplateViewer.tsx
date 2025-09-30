@@ -966,6 +966,7 @@ export function TemplateViewer({
           {/* Right side: Action buttons (icons only) */}
           <Box sx={{ display: "flex", gap: 1 }}>
             <IconButton
+              data-testid="template-viewer-apply-button"
               onClick={() => onApply(template.id)}
               color="primary"
               sx={{
