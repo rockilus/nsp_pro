@@ -1162,6 +1162,10 @@ export class TemplateTestBase {
     // For MUI DatePicker, we need to target the actual input field
     const input = page.locator(`${selector} input`);
 
+    // Wait for the input to be visible and enabled before interacting
+    await expect(input).toBeVisible();
+    await expect(input).toBeEnabled();
+
     // Clear the input first
     await input.click();
     await input.fill("");
@@ -1176,8 +1180,8 @@ export class TemplateTestBase {
     // Press Enter to confirm the date
     await input.press("Enter");
 
-    // Wait a bit for the date picker to process
-    await page.waitForTimeout(500);
+    // Wait for the date value to be properly set
+    await expect(input).toHaveValue(formattedDate);
   }
 
   /**
@@ -1303,7 +1307,8 @@ export class TemplateTestBase {
       await expect(confirmDialog).not.toBeVisible();
     }
 
-    // Wait for the conversion to be reflected in the UI
-    await page.waitForTimeout(1000);
+    // Wait for the conversion to be completed by checking for Even/Odd UI elements
+    // Look for the standard/even-odd toggle button state or specific even/odd template indicators
+    await expect(evenOddToggle).toHaveAttribute("aria-pressed", "true");
   }
 }
