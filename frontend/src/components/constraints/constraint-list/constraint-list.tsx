@@ -41,6 +41,7 @@ export default function ConstraintList({
       container
       spacing={0}
       sx={{ backgroundColor: "white", borderRadius: 2, mt: 1 }}
+      data-testid="constraint-list"
     >
       {constraints.length === 0 ? (
         <Grid item xs={12} sx={{ p: 2, textAlign: "center" }}>
@@ -58,6 +59,7 @@ export default function ConstraintList({
             handleUpdateConstraint={handleUpdateConstraint}
             handleDeleteConstraint={handleDeleteConstraint}
             isLast={index === constraints.length - 1}
+            data-testid={`constraint-item-${index}`}
           />
         ))
       )}

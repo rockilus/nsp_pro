@@ -26,6 +26,7 @@ export default function ConstraintEdit({
   template,
   handleAddConstraint,
   handleUpdateConstraint,
+  "data-testid": dataTestId,
 }: {
   lng: string;
   workers: WorkerT[];
@@ -34,6 +35,7 @@ export default function ConstraintEdit({
   template: TemplateT | null;
   handleAddConstraint: (constraint: ConstraintT) => void;
   handleUpdateConstraint: (updatedConstraint: ConstraintT) => void;
+  "data-testid"?: string;
 }) {
   const { t } = useTranslation(lng, "constraint-page");
   const [errors, setErrors] = useState<number[]>([]);
@@ -182,6 +184,7 @@ export default function ConstraintEdit({
         alignItems: "center",
         width: "100%",
       }}
+      data-testid={dataTestId || "constraint-edit-form"}
     >
       <div style={{ display: "flex", flexDirection: "row" }}>
         {template?.blocks.map((templateBlock, index) => (
@@ -192,6 +195,7 @@ export default function ConstraintEdit({
               alignItems: "center",
               marginRight: "5px",
             }}
+            data-testid={`constraint-block-${index}`}
           >
             <BlockDisplay
               lng={lng}
@@ -211,6 +215,7 @@ export default function ConstraintEdit({
         variant="contained"
         onClick={handleSaveConstraint}
         sx={{ textTransform: "none", height: 35, width: 60 }}
+        data-testid="save-constraint-button"
       >
         {constraint.id === "" ? t("add") : t("save")}
       </Button>

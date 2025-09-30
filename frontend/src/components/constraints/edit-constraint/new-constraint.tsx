@@ -62,6 +62,7 @@ export default function NewConstraint({
       fullWidth
       maxWidth="md"
       aria-labelledby="new-constraint-dialog-title"
+      data-testid="new-constraint-dialog"
     >
       <DialogTitle id="new-constraint-dialog-title">
         <div className="title-container">
@@ -94,6 +95,7 @@ export default function NewConstraint({
               template={selectedTemplate}
               handleAddConstraint={handleAddConstraint}
               handleUpdateConstraint={handleUpdateConstraint}
+              data-testid="constraint-edit-form"
             />
           ) : (
             <span className="select-template-placeholder">

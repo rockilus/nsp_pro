@@ -26,7 +26,7 @@ export default function TemplateList({
   const { t } = useTranslation(lng, "constraint-page");
 
   return (
-    <div>
+    <div data-testid="template-list">
       <span className="subtitle">{t("templates")}</span>
       <Box
         className="templates-container"
@@ -47,6 +47,7 @@ export default function TemplateList({
               }}
               selected={selectedTemplate?.id === ct.id}
               sx={{ padding: "0 0 0 0" }}
+              data-testid={`template-item-${index}`}
             >
               <ListItem sx={{ padding: "0 16px 0 16px" }}>
                 <ListItemText primary={ct.text} />

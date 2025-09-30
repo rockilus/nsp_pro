@@ -31,6 +31,7 @@ export default function ConstraintListItem({
   handleUpdateConstraint,
   handleDeleteConstraint,
   isLast,
+  "data-testid": dataTestId,
 }: {
   lng: string;
   workers: WorkerT[];
@@ -40,6 +41,7 @@ export default function ConstraintListItem({
   handleUpdateConstraint: (updatedConstraint: ConstraintT) => void;
   handleDeleteConstraint: (constraintId: string) => void;
   isLast?: boolean;
+  "data-testid"?: string;
 }) {
   const handleDelete = async () => {
     await handleDeleteConstraint(constraint.id);
@@ -68,6 +70,7 @@ export default function ConstraintListItem({
         paddingX: 1,
         borderBottom: isLast ? "none" : "1px solid #e0e0e0",
       }}
+      data-testid={dataTestId}
     >
       <Grid
         container

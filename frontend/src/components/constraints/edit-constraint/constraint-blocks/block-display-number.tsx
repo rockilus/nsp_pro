@@ -35,8 +35,16 @@ export default function BlockDisplayNumber({
       <div>
         {block && block.value !== ""
           ? blockDislayValue(block.value as number)
-          : blockDisplayPlaceholder(templateBlock.placeholder, error)}
-        {blockDisplayName(GetBlockNameLabel(lng, templateBlock.name), error)}
+          : blockDisplayPlaceholder(
+              templateBlock.placeholder,
+              error,
+              `constraint-block-placeholder-${index}`
+            )}
+        {blockDisplayName(
+          GetBlockNameLabel(lng, templateBlock.name),
+          error,
+          `constraint-block-name-${index}`
+        )}
       </div>
     );
   };
