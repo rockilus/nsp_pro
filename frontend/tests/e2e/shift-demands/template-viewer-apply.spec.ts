@@ -184,20 +184,24 @@ test.describe("TemplateViewer - Apply Template", () => {
     test("should apply standard template with rolling week logic", async ({
       page,
     }) => {
+      // Get the actual shift IDs created during setup
+      const shiftIds = templateTestBase.getCreatedShiftIds();
+      const morningShiftId = shiftIds[0]; // First shift created (Morning Shift)
+
       // Create a multi-week standard template with some demands
       const templateId = await templateTestBase.createTemplateWithDemands({
         name: "Multi-week Standard Template",
         description: "Template with 3 weeks for rolling logic test",
         demands: [
           // Week 1
-          { weekNumber: 0, dayIndex: 0, shiftId: "shift1", value: 2 }, // Monday
-          { weekNumber: 0, dayIndex: 4, shiftId: "shift1", value: 1 }, // Friday
+          { weekNumber: 0, dayIndex: 0, shiftId: morningShiftId, value: 2 }, // Monday
+          { weekNumber: 0, dayIndex: 4, shiftId: morningShiftId, value: 1 }, // Friday
           // Week 2
-          { weekNumber: 1, dayIndex: 1, shiftId: "shift1", value: 3 }, // Tuesday
-          { weekNumber: 1, dayIndex: 5, shiftId: "shift1", value: 2 }, // Saturday
+          { weekNumber: 1, dayIndex: 1, shiftId: morningShiftId, value: 3 }, // Tuesday
+          { weekNumber: 1, dayIndex: 5, shiftId: morningShiftId, value: 2 }, // Saturday
           // Week 3
-          { weekNumber: 2, dayIndex: 2, shiftId: "shift1", value: 1 }, // Wednesday
-          { weekNumber: 2, dayIndex: 6, shiftId: "shift1", value: 2 }, // Sunday
+          { weekNumber: 2, dayIndex: 2, shiftId: morningShiftId, value: 1 }, // Wednesday
+          { weekNumber: 2, dayIndex: 6, shiftId: morningShiftId, value: 2 }, // Sunday
         ],
       });
 

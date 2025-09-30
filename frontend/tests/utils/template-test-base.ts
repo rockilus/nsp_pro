@@ -19,6 +19,7 @@ dayjs.extend(isBetween);
 export class TemplateTestBase {
   protected dbUtils: DatabaseTestUtils;
   protected testTeam: { teamId: string; name: string } | null = null;
+  protected createdShiftIds: string[] = [];
 
   constructor() {
     this.dbUtils = new DatabaseTestUtils();
@@ -41,9 +42,6 @@ export class TemplateTestBase {
   async setupTemplateTests(): Promise<void> {
     try {
       console.log("� Setting up template tests...");
-
-      // Reset relevant database collections
-      await this.dbUtils.resetTeamRelatedData();
 
       // Create a test team with shifts
       this.testTeam = await this.dbUtils.createTeam({
@@ -78,42 +76,44 @@ export class TemplateTestBase {
         {
           teamId: this.testTeam.teamId,
           name: "Morning Shift",
-          acronym: "shift1",
-          shiftType: ShiftType.DUTY,
-          startTime: dayjs.utc("08:00", "HH:mm"),
-          endTime: dayjs.utc("16:00", "HH:mm"),
-          color: "blue",
+          startTime: dayjs.utc("2023-01-01T08:00:00"),
+          endTime: dayjs.utc("2023-01-01T16:00:00"),
+          shiftType: ShiftType.NORMAL,
         },
         {
           teamId: this.testTeam.teamId,
           name: "Evening Shift",
-          acronym: "shift2",
-          shiftType: ShiftType.DUTY,
-          startTime: dayjs.utc("16:00", "HH:mm"),
-          endTime: dayjs.utc("00:00", "HH:mm").add(1, "day"),
-          color: "green",
+          startTime: dayjs.utc("2023-01-01T16:00:00"),
+          endTime: dayjs.utc("2023-01-02T00:00:00"),
+          shiftType: ShiftType.NORMAL,
         },
         {
           teamId: this.testTeam.teamId,
           name: "Night Shift",
-          acronym: "shift3",
-          shiftType: ShiftType.DUTY,
-          startTime: dayjs.utc("00:00", "HH:mm"),
-          endTime: dayjs.utc("08:00", "HH:mm"),
-          color: "red",
+          startTime: dayjs.utc("2023-01-01T00:00:00"),
+          endTime: dayjs.utc("2023-01-01T08:00:00"),
+          shiftType: ShiftType.NORMAL,
         },
       ];
 
       for (const shiftData of shifts) {
-        await this.dbUtils.createShift(shiftData);
+        const createdShift = await this.dbUtils.createShift(shiftData);
+        this.createdShiftIds.push(createdShift.id);
         console.log(
-          `✅ Created test shift: ${shiftData.name} (${shiftData.acronym})`
+          `✅ Created test shift: ${shiftData.name} (${createdShift.id})`
         );
       }
     } catch (error) {
       console.error("Failed to create test shifts:", error);
       throw error;
     }
+  }
+
+  /**
+   * Gets the created shift IDs (in order: Morning, Evening, Night)
+   */
+  getCreatedShiftIds(): string[] {
+    return [...this.createdShiftIds];
   }
 
   /**
@@ -438,6 +438,19 @@ export class TemplateTestBase {
    * Helper method to select a template in the viewer
    */
   async selectTemplateInViewer(page: Page, templateId: string) {
+    // Refresh the page to ensure templates created via API are visible
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+
+    // Navigate back to shift demands and reopen template window
+    await this.navigateToShiftDemandsPage(page);
+
+    const templateButton = this.getTemplateButton(page);
+    await templateButton.click();
+
+    const templateWindow = this.getTemplateManagementWindow(page);
+    await expect(templateWindow).toBeVisible();
+
     // Click on the template list item to select it and view it
     const templateItem = this.getTemplateListItem(page, templateId);
     await templateItem.click();
@@ -1134,7 +1147,7 @@ export class TemplateTestBase {
   }
 
   /**
-   * Sets a date in the application dialog
+   * Sets a date in the template application dialog
    */
   async setApplicationDialogDate(
     page: Page,
@@ -1143,14 +1156,24 @@ export class TemplateTestBase {
   ) {
     const selector =
       field === "start"
-        ? '[data-testid="template-application-start-date"] input'
-        : '[data-testid="template-application-end-date"] input';
+        ? '[data-testid="template-application-start-date"]'
+        : '[data-testid="template-application-end-date"]';
 
-    // Clear and type the date
-    const input = page.locator(selector);
+    // For MUI DatePicker, we need to target the actual input field
+    const input = page.locator(`${selector} input`);
+
+    // Clear the input first
     await input.click();
     await input.fill("");
-    await input.fill(dateString);
+
+    // Type the date in MM/DD/YYYY format (standard for date inputs)
+    const formattedDate = dateString.replace(
+      /(\d{4})-(\d{2})-(\d{2})/,
+      "$2/$3/$1"
+    );
+    await input.fill(formattedDate);
+
+    // Press Enter to confirm the date
     await input.press("Enter");
 
     // Wait a bit for the date picker to process
