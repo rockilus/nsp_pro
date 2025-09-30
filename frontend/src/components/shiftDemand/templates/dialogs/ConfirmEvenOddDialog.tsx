@@ -67,6 +67,7 @@ export function ConfirmEvenOddDialog({
 
   return (
     <Dialog
+      data-testid="template-toolbar-even-odd-conversion-dialog"
       open={open}
       onClose={handleClose}
       maxWidth="sm"
@@ -136,10 +137,16 @@ export function ConfirmEvenOddDialog({
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={handleClose} disabled={isConfirming} color="inherit">
+        <Button
+          data-testid="template-toolbar-even-odd-cancel-button"
+          onClick={handleClose}
+          disabled={isConfirming}
+          color="inherit"
+        >
           {t("cancel")}
         </Button>
         <Button
+          data-testid="template-toolbar-even-odd-confirm-button"
           onClick={handleConfirm}
           color="warning"
           variant="contained"

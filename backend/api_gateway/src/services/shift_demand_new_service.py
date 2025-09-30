@@ -7,7 +7,11 @@ demands, including support for period-based operations and matrix formatting.
 from datetime import date, datetime, timedelta, timezone
 from typing import Dict, List, Optional, Tuple
 
-from shared.schemas.core import ShiftDemandNew, ShiftDemandSource
+from shared.schemas.core import (
+    ShiftDemandCriteria,
+    ShiftDemandNew,
+    ShiftDemandSource,
+)
 
 from src.services.base_service import BaseService
 
@@ -183,9 +187,10 @@ class ShiftDemandNewService(BaseService):
         """
         return self.collection.shift_demand_new_db.delete_shift_demand(demand_id)
 
+    # pylint: disable=too-many-locals, too-many-branches, too-many-statements
     def bulk_upsert_shift_demands(
         self, shift_demands: List[ShiftDemandNew]
-    ) -> Tuple[List[ShiftDemandNew], List[ShiftDemandNew]]:
+    ) -> Tuple[List[ShiftDemandNew], List[ShiftDemandNew], List[str]]:
         """
         Bulk upsert (create or update) shift demands.
         Filters out demands with count=0 for creation and deletes existing
@@ -195,25 +200,74 @@ class ShiftDemandNewService(BaseService):
             shift_demands: List of shift demands to upsert
 
         Returns:
-            Tuple of (created_demands, updated_demands)
+            Tuple of (created_demands, updated_demands, deleted_ids)
         """
         if not shift_demands:
-            return [], []
+            return [], [], []
 
-        # Filter out zero-count demands from creation list
-        nonzero_demands = [d for d in shift_demands if d.count > 0]
-        zero_demands = [d for d in shift_demands if d.count <= 0]
+        # Build criteria list for batch lookup (keeps input order)
+        criteria_list: List[ShiftDemandCriteria] = [
+            ShiftDemandCriteria(team_id=d.team_id, shift_id=d.shift_id, date=d.date)
+            for d in shift_demands
+        ]
 
-        # For each zero-count demand that has an ID, delete it
-        for demand in zero_demands:
-            if demand.id:
-                self.delete_shift_demand(demand.id)
+        # Lookup existing demands in a single batch call
+        existing_list = (
+            self.collection.shift_demand_new_db.get_shift_demands_by_criteria_batch(
+                criteria_list
+            )
+        )
 
-        # If no nonzero demands left, return empty results
+        # Prepare lists for operations
+        nonzero_demands: List[ShiftDemandNew] = []
+        demands_to_delete: List[str] = []
+        # Delete zero-count existing demands; keep nonzero for upsert
+        now = datetime.now(timezone.utc)
+
+        # Build a lookup map from existing results so we don't rely on
+        # ordering or equal lengths between inputs and repository results.
+        existing_map: Dict[Tuple[str, str, date], ShiftDemandNew] = {}
+        for ex in existing_list:
+            if not ex:
+                continue
+            key = (ex.team_id, ex.shift_id, ex.date)
+            existing_map[key] = ex
+
+        for incoming in shift_demands:
+            key = (incoming.team_id, incoming.shift_id, incoming.date)
+            existing = existing_map.get(key)
+
+            if incoming.count <= 0:
+                # If there is an existing demand for this criteria,
+                # collect it for deletion
+                if existing and existing.id:
+                    demands_to_delete.append(existing.id)
+                continue
+
+            # For positive-count demands, if an existing demand is present,
+            # preserve id/created_at
+            if existing:
+                incoming.id = existing.id
+                incoming.created_at = existing.created_at
+            else:
+                # Ensure new demand has no id so repository will create it
+                incoming.id = ""
+                incoming.created_at = now
+
+            incoming.updated_at = now
+            nonzero_demands.append(incoming)
+
+        # Bulk delete all demands that need to be removed
+        if demands_to_delete:
+            self.collection.shift_demand_new_db.delete_shift_demands_by_ids(
+                demands_to_delete
+            )
+
+        # If there are no demands to create/update, return
         if not nonzero_demands:
-            return [], []
+            return [], [], demands_to_delete
 
-        # Validate all demands belong to the same team
+        # Validate all nonzero demands belong to the same team
         team_ids = {demand.team_id for demand in nonzero_demands}
         if len(team_ids) > 1:
             raise ValueError("All demands must belong to the same team")
@@ -229,23 +283,44 @@ class ShiftDemandNewService(BaseService):
             missing = shift_ids - found_shift_ids
             raise ValueError(f"Shifts not found: {missing}")
 
-        # Validate team consistency
         for shift in shifts:
             if shift.team_id != team_id:
                 raise ValueError(f"Shift {shift.id} does not belong to team {team_id}")
 
-        # Prepare demands with timestamps
-        now = datetime.now(timezone.utc)
+        # Separate demands into create vs update operations
+        demands_to_create: List[ShiftDemandNew] = []
+        demands_to_update: List[ShiftDemandNew] = []
+
         for demand in nonzero_demands:
-            if not demand.id:  # New demand
-                demand.created_at = now
-            demand.updated_at = now
+            key = (demand.team_id, demand.shift_id, demand.date)
+            existing = existing_map.get(key)
 
-        return self.collection.shift_demand_new_db.bulk_upsert_shift_demands(
-            nonzero_demands
-        )
+            if existing:
+                # Demand exists in database, needs update
+                demands_to_update.append(demand)
+            else:
+                # Demand doesn't exist in database, needs creation
+                demands_to_create.append(demand)
 
-    # pylint: disable=too-many-arguments, too-many-positional-arguments, too-many-locals
+        # Perform bulk create for new demands
+        created: List[ShiftDemandNew] = []
+        if demands_to_create:
+            created = self.collection.shift_demand_new_db.bulk_create_shift_demands(
+                demands_to_create
+            )
+
+        # Perform individual updates for existing demands
+        updated: List[ShiftDemandNew] = []
+        for demand in demands_to_update:
+            updated_demand = self.collection.shift_demand_new_db.update_shift_demand(
+                demand
+            )
+            updated.append(updated_demand)
+
+        return created, updated, demands_to_delete
+
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
+    # pylint: disable=too-many-locals
     def copy_shift_demands_from_period(
         self,
         team_id: str,
@@ -314,7 +389,7 @@ class ShiftDemandNewService(BaseService):
 
         # Bulk create copied demands
         if copied_demands:
-            created, _ = self.bulk_upsert_shift_demands(copied_demands)
+            created, _, _ = self.bulk_upsert_shift_demands(copied_demands)
             return created
 
         return []
@@ -390,7 +465,10 @@ class ShiftDemandNewService(BaseService):
         )
 
         # Filter to exact period
-        period_demands = [d for d in demands if start_date <= d.date <= end_date]
+        period_demands = []
+        for d in demands:
+            if start_date <= d.date <= end_date:
+                period_demands.append(d)
 
         # Calculate statistics by shift
         shift_stats: Dict[str, Dict[str, int]] = {}

@@ -62,6 +62,7 @@ export function BulkSelectionSection({
           </Typography>
 
           <TextField
+            data-testid="bulk-selection-input"
             type="number"
             value={bulkValue}
             onChange={(e) => onBulkValueChange(e.target.value)}
@@ -72,7 +73,7 @@ export function BulkSelectionSection({
               style: { textAlign: "center" },
             }}
             placeholder={t("shift_demands")}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyPress}
             sx={{ width: 80 }}
           />
         </Box>
@@ -80,6 +81,7 @@ export function BulkSelectionSection({
         {/* Action buttons */}
         <Box display="flex" alignItems="center" gap={1}>
           <IconButton
+            data-testid="bulk-selection-delete-button"
             size="small"
             color="error"
             onClick={handleDeleteClick}
@@ -96,6 +98,7 @@ export function BulkSelectionSection({
           </IconButton>
 
           <IconButton
+            data-testid="bulk-selection-confirm-button"
             size="small"
             onClick={onApplyBulkChange}
             disabled={!hasSelection || !bulkValue}
@@ -111,6 +114,7 @@ export function BulkSelectionSection({
           </IconButton>
 
           <IconButton
+            data-testid="bulk-selection-cancel-button"
             size="small"
             onClick={onCancelBulkMode}
             title={t("cancel")}
@@ -142,6 +146,7 @@ export function BulkSelectionSection({
             {t("cancel")}
           </Button>
           <Button
+            data-testid="bulk-selection-delete-confirm-button"
             onClick={handleDeleteConfirm}
             color="error"
             variant="contained"

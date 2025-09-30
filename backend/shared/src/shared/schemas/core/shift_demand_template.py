@@ -523,15 +523,7 @@ def _calculate_template_application_mapping(
 
     if template.template_type == TemplateType.STANDARD:
         # Standard: cycle through weeks 0, 1, 2, ..., n-1, 0, 1, 2, ...
-
-        # Calculate which template week to start with based on start_date
-        # This ensures Monday-Sunday alignment
-        start_monday = current_date - timedelta(days=current_date.weekday())
-        # Use epoch Monday (1970-01-05) as reference
-        days_since_epoch = (start_monday - date(1970, 1, 5)).days
-        starting_template_week = (days_since_epoch // 7) % week_cycle_length
-
-        template_week = starting_template_week
+        template_week = 0  # Start from the first week of the template
 
     elif template.template_type == TemplateType.EVEN_ODD:
         # Even/Odd: determine if start week is even or odd

@@ -19,14 +19,10 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  TextField,
   CircularProgress,
-  Divider,
 } from "@mui/material";
 import { Build, ContentCopy } from "@mui/icons-material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs, { Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
@@ -104,7 +100,13 @@ export function BuildFromDemandsDialog({
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+    <Dialog
+      data-testid="build-from-demands-dialog"
+      open={open}
+      onClose={handleClose}
+      maxWidth="md"
+      fullWidth
+    >
       <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
         <Build color="primary" />
         {t("build_from_demands")}
@@ -116,91 +118,92 @@ export function BuildFromDemandsDialog({
             {t("build_from_demands_explanation")}
           </Alert>
 
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-              {/* Source Week Selection */}
-              <Box>
-                <Typography variant="h6" gutterBottom>
-                  {t("source_week")}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="textSecondary"
-                  sx={{ mb: 2 }}
-                >
-                  {t("select_source_week_explanation")}
-                </Typography>
-                <DatePicker
-                  label={t("source_week_start_date")}
-                  value={sourceWeekStart}
-                  onChange={(newValue) =>
-                    setSourceWeekStart(newValue ? newValue.utc() : null)
-                  }
-                  format="YYYY-MM-DD"
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      helperText: t("any_day_will_find_monday"),
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            {/* Source Week Selection */}
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                {t("source_week")}
+              </Typography>
+              <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+                {t("select_source_week_explanation")}
+              </Typography>
+              <DatePicker
+                data-testid="source-week-date-picker"
+                label={t("source_week_start_date")}
+                value={sourceWeekStart}
+                onChange={(newValue) =>
+                  setSourceWeekStart(newValue ? newValue.utc() : null)
+                }
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    helperText: t("any_day_will_find_monday"),
+                    inputProps: {
+                      "data-testid": "source-week-date-input",
                     },
-                  }}
-                />
-              </Box>
-
-              {/* Target Week Selection */}
-              <Box>
-                <Typography variant="h6" gutterBottom>
-                  {t("target_week")}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="textSecondary"
-                  sx={{ mb: 2 }}
-                >
-                  {t("select_target_week_explanation")}
-                </Typography>
-                <FormControl fullWidth>
-                  <InputLabel>{t("target_week_in_template")}</InputLabel>
-                  <Select
-                    value={targetWeekNumber}
-                    onChange={(e) =>
-                      setTargetWeekNumber(Number(e.target.value))
-                    }
-                    label={t("target_week_in_template")}
-                  >
-                    {availableWeeks.map((week) => (
-                      <MenuItem key={week.number} value={week.number}>
-                        {week.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
-
-              {/* Warning about overwriting */}
-              <Alert severity="warning">
-                <Typography variant="body2">
-                  {t("overwrite_warning", {
-                    weekNumber: targetWeekNumber + 1,
-                  })}
-                </Typography>
-              </Alert>
-
-              {/* Error display */}
-              {error && (
-                <Alert severity="error">
-                  <Typography variant="body2">{error}</Typography>
-                </Alert>
-              )}
+                  },
+                }}
+              />
             </Box>
-          </LocalizationProvider>
+
+            {/* Target Week Selection */}
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                {t("target_week")}
+              </Typography>
+              <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+                {t("select_target_week_explanation")}
+              </Typography>
+              <FormControl fullWidth>
+                <InputLabel>{t("target_week_in_template")}</InputLabel>
+                <Select
+                  data-testid="target-week-select"
+                  value={targetWeekNumber}
+                  onChange={(e) => setTargetWeekNumber(Number(e.target.value))}
+                  label={t("target_week_in_template")}
+                >
+                  {availableWeeks.map((week) => (
+                    <MenuItem
+                      key={week.number}
+                      value={week.number}
+                      data-testid={`target-week-option-${week.number}`}
+                    >
+                      {week.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+
+            {/* Warning about overwriting */}
+            <Alert severity="warning">
+              <Typography variant="body2">
+                {t("overwrite_warning", {
+                  weekNumber: targetWeekNumber + 1,
+                })}
+              </Typography>
+            </Alert>
+
+            {/* Error display */}
+            {error && (
+              <Alert severity="error">
+                <Typography variant="body2">{error}</Typography>
+              </Alert>
+            )}
+          </Box>
         </Box>
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={handleClose} disabled={applyLoading}>
+        <Button
+          data-testid="build-from-demands-cancel-button"
+          onClick={handleClose}
+          disabled={applyLoading}
+        >
           {t("cancel")}
         </Button>
         <Button
+          data-testid="build-from-demands-apply-button"
           onClick={handleApply}
           variant="contained"
           disabled={!sourceWeekStart || applyLoading}

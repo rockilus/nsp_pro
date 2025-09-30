@@ -37,7 +37,7 @@ class TeamService(BaseService):
             name=team_name,
             created_by_user_id=owner_id,
             created_at=datetime.now(timezone.utc),
-            use_solver=False,
+            use_solver=True,
         )
         new_team = self.collection.team_db.create_team(new_team)
         await authz_team_resource_instance_create(new_team)

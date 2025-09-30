@@ -9,16 +9,29 @@ import { TeamApi } from "../../src/app/lib/api/teamApi";
 import { WorkerApi } from "../../src/app/lib/api/workerApi";
 import { SpecialtyApi } from "../../src/app/lib/api/specialtyApi";
 import { DimensionApi } from "../../src/app/lib/api/dimensionApi";
+import { ShiftApi } from "../../src/app/lib/api/shiftApi";
+import { ShiftDemandTemplateApi } from "../../src/app/lib/api/shiftDemandTemplateApi";
 import { AuthenticatedApiClient } from "../../src/app/lib/api/baseApi";
 import { TeamWithMembership } from "../../src/types/team";
 import { WorkerT } from "../../src/types/worker";
 import { SpecialtyT } from "../../src/types/specialty";
+import {
+  ShiftT,
+  StaffingT,
+  ShiftType,
+  ShiftRestType,
+  ShiftLeaveType,
+} from "../../src/types/shift";
 import {
   DimensionT,
   DimensionType,
   DimensionEntryType,
 } from "../../src/types/dimension";
 import { DimEntryT } from "../../src/types/dim-entry";
+import {
+  ShiftDemandTemplateDTO,
+  ShiftDemandTemplateCreateDTO,
+} from "../../src/types/shift-demand-template";
 import { testConfig } from "./test-config";
 import dayjs from "dayjs";
 
@@ -583,6 +596,59 @@ export class DatabaseTestUtils {
     }
   }
 
+  /**
+   * Create a shift using the existing ShiftApi for consistent behavior
+   */
+  async createShift(shiftData: {
+    teamId: string;
+    name: string;
+    startTime: dayjs.Dayjs;
+    endTime: dayjs.Dayjs;
+    shiftType: ShiftType;
+    staffing?: StaffingT[];
+    restType?: ShiftRestType;
+    leaveType?: ShiftLeaveType;
+    color?: string;
+    acronym?: string;
+  }): Promise<ShiftT> {
+    try {
+      const shift: ShiftT = {
+        id: "", // Will be set by the API
+        teamId: shiftData.teamId,
+        name: shiftData.name,
+        acronym:
+          shiftData.acronym || shiftData.name.substring(0, 3).toUpperCase(),
+        acronymCustom: !!shiftData.acronym,
+        startTime: shiftData.startTime,
+        endTime: shiftData.endTime,
+        shiftType: shiftData.shiftType,
+        staffing: shiftData.staffing ?? [],
+        restType: shiftData.restType ?? ShiftRestType.NONE,
+        leaveType: shiftData.leaveType ?? ShiftLeaveType.NONE,
+        color: shiftData.color ?? "#FFFFFF",
+        recuperationTime: 0,
+        recuperationDutyId: null,
+        deleted: false,
+        attributes: [],
+      };
+
+      // Use the existing ShiftApi with our test client
+      const result: ShiftT = await ShiftApi.addShift(this.testApiClient, shift);
+
+      return result;
+    } catch (error) {
+      // Enhanced error handling for test debugging
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to create shift '${shiftData.name}': ${error.message}`
+        );
+      }
+      throw new Error(
+        `Failed to create shift '${shiftData.name}': Unknown error`
+      );
+    }
+  }
+
   //////////////////////////
   // Specialty Methods
   //////////////////////////
@@ -1066,6 +1132,147 @@ export class DatabaseTestUtils {
       throw new Error(
         `Failed to get attributes for owner '${ownerId}': Unknown error`
       );
+    }
+  }
+
+  /**
+   * Create a shift demand for testing
+   */
+  async createShiftDemand(options: {
+    teamId: string;
+    shiftId: string;
+    date: Date;
+    count: number;
+    notes?: string;
+    source?: "manual" | "template" | "solver" | "import";
+  }): Promise<any> {
+    try {
+      // Import ShiftDemandApi dynamically to avoid circular imports
+      const { ShiftDemandApi } = await import(
+        "../../src/app/lib/api/shiftDemandApi"
+      );
+
+      const shiftDemandData = {
+        shiftId: options.shiftId,
+        date: Math.floor(options.date.getTime() / 1000), // Convert to Unix timestamp
+        count: options.count,
+        notes: options.notes || null,
+        source: options.source || "manual",
+        sourceId: null,
+      };
+
+      const result = await ShiftDemandApi.createShiftDemand(
+        this.testApiClient,
+        options.teamId,
+        shiftDemandData
+      );
+
+      return result;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to create shift demand: ${error.message}`);
+      }
+      throw new Error(`Failed to create shift demand: Unknown error`);
+    }
+  }
+
+  /**
+   * Get shift demands by period for testing
+   */
+  async getShiftDemandsByPeriod(
+    teamId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<any[]> {
+    try {
+      // Import ShiftDemandApi dynamically to avoid circular imports
+      const { ShiftDemandApi } = await import(
+        "../../src/app/lib/api/shiftDemandApi"
+      );
+
+      const result = await ShiftDemandApi.getShiftDemandsByPeriod(
+        this.testApiClient,
+        teamId,
+        startDate,
+        endDate
+      );
+
+      return result;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to get shift demands: ${error.message}`);
+      }
+      throw new Error(`Failed to get shift demands: Unknown error`);
+    }
+  }
+
+  /**
+   * Create a shift demand template using ShiftDemandTemplateApi for consistency
+   */
+  async createShiftDemandTemplate(templateData: {
+    teamId: string;
+    name: string;
+    description?: string;
+  }): Promise<{ templateId: string; name: string; teamId: string }> {
+    try {
+      console.log(
+        `📝 Creating shift demand template "${templateData.name}" for team ${templateData.teamId}...`
+      );
+
+      // Create template data in the format expected by the API
+      const createData: ShiftDemandTemplateCreateDTO = {
+        name: templateData.name,
+        description: templateData.description || "",
+      };
+
+      // Use the existing ShiftDemandTemplateApi with our test client
+      const result: ShiftDemandTemplateDTO =
+        await ShiftDemandTemplateApi.createTemplate(
+          this.testApiClient,
+          templateData.teamId,
+          createData
+        );
+
+      console.log(`✅ Template created with ID: ${result.id}`);
+
+      return {
+        templateId: result.id,
+        name: result.name,
+        teamId: result.teamId,
+      };
+    } catch (error) {
+      console.error("Failed to create shift demand template:", error);
+      if (error instanceof Error) {
+        throw new Error(`Failed to create template: ${error.message}`);
+      }
+      throw new Error(`Failed to create template: Unknown error`);
+    }
+  }
+
+  /**
+   * Delete a shift demand template using ShiftDemandTemplateApi for consistency
+   */
+  async deleteShiftDemandTemplate(
+    templateId: string,
+    teamId: string
+  ): Promise<void> {
+    try {
+      console.log(`🗑️ Deleting shift demand template ${templateId}...`);
+
+      // Use the existing ShiftDemandTemplateApi with our test client
+      await ShiftDemandTemplateApi.deleteTemplate(
+        this.testApiClient,
+        templateId,
+        teamId
+      );
+
+      console.log(`✅ Template deleted successfully`);
+    } catch (error) {
+      console.error("Failed to delete shift demand template:", error);
+      if (error instanceof Error) {
+        throw new Error(`Failed to delete template: ${error.message}`);
+      }
+      throw new Error(`Failed to delete template: Unknown error`);
     }
   }
 }

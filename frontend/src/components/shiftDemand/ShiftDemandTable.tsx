@@ -157,6 +157,7 @@ function ShiftDemandCell({
   return (
     <TableCell
       className={getCellClassName()}
+      data-testid={`shift-demand-cell-${shiftId}-${date.format("YYYY-MM-DD")}`}
       style={
         {
           "--shift-bg-color": background,
@@ -177,6 +178,9 @@ function ShiftDemandCell({
       {isBulkMode ? (
         <div className={`shift-demand-bulk ${isSelected ? "selected" : ""}`}>
           <Checkbox
+            data-testid={`cell-select-checkbox-${shiftId}-${date.format(
+              "YYYY-MM-DD"
+            )}`}
             checked={isSelected}
             onChange={() => onToggleSelection(shiftId, date)}
             size="small"
@@ -197,6 +201,9 @@ function ShiftDemandCell({
             // Empty state with shift color theming
             <div
               className={`shift-demand-empty ${isHovered ? "hovered" : ""}`}
+              data-testid={`shift-demand-empty-${shiftId}-${date.format(
+                "YYYY-MM-DD"
+              )}`}
               onClick={!isMultitaskingMode ? handleAddDemand : undefined}
             >
               {isSaving ? (
@@ -221,6 +228,9 @@ function ShiftDemandCell({
                 <button
                   onClick={handleDecrement}
                   className="shift-demand-button decrement"
+                  data-testid={`shift-demand-decrement-${shiftId}-${date.format(
+                    "YYYY-MM-DD"
+                  )}`}
                 >
                   <Remove
                     className="shift-demand-button-icon"
@@ -232,6 +242,9 @@ function ShiftDemandCell({
               {/* Value display */}
               <span
                 className={`shift-demand-value ${isSaving ? "saving" : ""}`}
+                data-testid={`shift-demand-value-${shiftId}-${date.format(
+                  "YYYY-MM-DD"
+                )}`}
               >
                 {value}
               </span>
@@ -241,6 +254,9 @@ function ShiftDemandCell({
                 <button
                   onClick={handleIncrement}
                   className="shift-demand-button increment"
+                  data-testid={`shift-demand-increment-${shiftId}-${date.format(
+                    "YYYY-MM-DD"
+                  )}`}
                 >
                   <Add
                     className="shift-demand-button-icon"
@@ -282,6 +298,7 @@ function ShiftDemandRowHeader({
   return (
     <TableCell
       className="shift-demand-row-header"
+      data-testid={`shift-demand-row-header-${shift.id}`}
       sx={{
         padding: 0,
         minWidth: 180,
@@ -301,6 +318,7 @@ function ShiftDemandRowHeader({
         {/* Bulk mode checkbox */}
         {isBulkMode && (
           <Checkbox
+            data-testid={`row-select-checkbox-${shift.id}`}
             checked={isRowSelected}
             onChange={() => onSelectRow(shift.id)}
             size="small"
@@ -314,6 +332,7 @@ function ShiftDemandRowHeader({
             <Typography
               variant="body2"
               className="shift-demand-name"
+              data-testid={`shift-demand-name-${shift.id}`}
               sx={{ fontSize: "0.875rem", fontWeight: 550 }}
             >
               {shift.name || shift.acronym}
@@ -485,6 +504,7 @@ function ShiftDemandTableHeader({
               {bulkChangeState.isActive ? (
                 <>
                   <Checkbox
+                    data-testid="select-all-checkbox"
                     checked={isAllSelected()}
                     indeterminate={
                       bulkChangeState.selectedCells.length > 0 &&
@@ -518,10 +538,14 @@ function ShiftDemandTableHeader({
             className={`shift-demand-table-header date-column ${
               date.day() === 0 || date.day() === 6 ? "weekend" : ""
             }`}
+            data-testid={`date-header-${date.format("YYYY-MM-DD")}`}
           >
             <div className="shift-demand-date-info">
               {bulkChangeState.isActive && (
                 <Checkbox
+                  data-testid={`column-select-checkbox-${date.format(
+                    "YYYY-MM-DD"
+                  )}`}
                   checked={isColumnSelected(date)}
                   onChange={() => selectAllColumnCells(date)}
                   size="small"
@@ -695,7 +719,7 @@ export default function ShiftDemandTable({
         }
       }}
     >
-      <Table size="small" stickyHeader>
+      <Table data-testid="shift-demand-table" size="small" stickyHeader>
         <ShiftDemandTableHeader
           lng={lng}
           dates={dates}

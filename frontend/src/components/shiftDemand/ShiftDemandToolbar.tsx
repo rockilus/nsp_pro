@@ -1,9 +1,12 @@
 import React from "react";
-import { Box, Paper, Button } from "@mui/material";
-import { Description, Group } from "@mui/icons-material";
-import { PeriodNavigation } from "./PeriodNavigation";
 import { useTranslation } from "../../app/i18n/client";
 import { Dayjs } from "dayjs";
+// MUI
+import { Box, Paper, Button } from "@mui/material";
+import { Description, Group } from "@mui/icons-material";
+// Components
+import { PeriodNavigation } from "./PeriodNavigation";
+// Types
 import { PeriodType } from "../../types/shiftDemand";
 
 interface ShiftDemandToolbarProps {
@@ -76,6 +79,7 @@ export function ShiftDemandToolbar({
         {/* Right side - Template Management, Bulk Select, Multitasking */}
         <Box display="flex" gap={1} alignItems="center">
           <Button
+            data-testid="shift-demand-template-button"
             variant="outlined"
             startIcon={<Description />}
             onClick={onOpenTemplates}
@@ -94,6 +98,7 @@ export function ShiftDemandToolbar({
 
           {/* Bulk Select Button */}
           <button
+            data-testid="shift-demand-select-button"
             onClick={onToggleBulkMode}
             disabled={isLoading || multitaskingModeActive}
             style={{

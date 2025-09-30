@@ -8,6 +8,9 @@
  */
 
 import React, { useState, useMemo } from "react";
+import dayjs from "dayjs";
+import { useTranslation } from "../../../app/i18n/client";
+// MUI
 import {
   Box,
   Typography,
@@ -30,8 +33,7 @@ import {
   Person,
   Info,
 } from "@mui/icons-material";
-import dayjs from "dayjs";
-import { useTranslation } from "../../../app/i18n/client";
+// Types
 import { ShiftT } from "../../../types/shift";
 import {
   ShiftDemandTemplateDTO,
@@ -45,8 +47,10 @@ import {
   ColumnFilter,
   TableSort,
 } from "../../../types/filter";
+// Lib
 import { TemplateUtils } from "../../../app/lib/api/shiftDemandTemplateApi";
 import { useTableState } from "../../../hooks/useTableState";
+// Components
 import { createShiftColumns } from "../shiftColumns";
 import { TemplateToolbar } from "./TemplateToolbar";
 import { BuildFromDemandsDialog } from "./dialogs/BuildFromDemandsDialog";
@@ -58,7 +62,7 @@ interface TemplateViewerProps {
   template: ShiftDemandTemplateDTO;
   shifts: ShiftT[];
   teamId: string;
-  onApply: () => void;
+  onApply: (templateId?: string) => void;
   onDelete: () => void;
   onError: (error: string) => void;
   // New props for centralized state management
@@ -100,7 +104,7 @@ export function TemplateViewer({
 
   // Toolbar state
   const [currentWeek, setCurrentWeek] = useState(0);
-  const [weeksToShow, setWeeksToShow] = useState<1 | 2 | "all">(1);
+  const [weeksToShow, setWeeksToShow] = useState<1 | 2 | "all">(2);
   const [templateType, setTemplateType] = useState<TemplateType>(
     template.templateType as TemplateType
   );
@@ -167,9 +171,6 @@ export function TemplateViewer({
     });
     return map;
   }, [template.weeksData]);
-
-  console.log("template", template);
-  console.log("templateDataMap", templateDataMap);
 
   // Shift column definitions for filtering/sorting
   const shiftColumns = useMemo(
@@ -771,25 +772,71 @@ export function TemplateViewer({
     }
 
     try {
-      const updates: Promise<void>[] = [];
-
-      bulkChangeState.selectedCells.forEach((cell) => {
-        updates.push(
-          handleCellChange(
-            cell.shiftId,
-            cell.weekNumber,
-            cell.dayIndex,
-            String(value)
-          )
+      // Create updated weeks data with all bulk changes applied
+      const updatedWeeksData = template.weeksData.map((week) => {
+        // Find all selected cells for this week
+        const cellsForThisWeek = bulkChangeState.selectedCells.filter(
+          (cell) => cell.weekNumber === week.weekNumber
         );
+
+        if (cellsForThisWeek.length === 0) {
+          return week; // No changes for this week
+        }
+
+        // Start with existing demands
+        let updatedDemands = [...week.demands];
+
+        // Apply changes for each selected cell in this week
+        cellsForThisWeek.forEach((cell) => {
+          const existingDemandIndex = updatedDemands.findIndex(
+            (d) => d.shiftId === cell.shiftId && d.dayOfWeek === cell.dayIndex
+          );
+
+          if (value === 0) {
+            // Remove demand if value is 0
+            updatedDemands = updatedDemands.filter(
+              (d) =>
+                !(d.shiftId === cell.shiftId && d.dayOfWeek === cell.dayIndex)
+            );
+          } else if (existingDemandIndex >= 0) {
+            // Update existing demand
+            updatedDemands[existingDemandIndex] = {
+              ...updatedDemands[existingDemandIndex],
+              count: value,
+            };
+          } else {
+            // Add new demand
+            updatedDemands.push({
+              shiftId: cell.shiftId,
+              dayOfWeek: cell.dayIndex,
+              count: value,
+            });
+          }
+        });
+
+        return {
+          ...week,
+          demands: updatedDemands,
+        };
       });
 
-      await Promise.all(updates);
+      // Save to API using centralized method with a single call
+      await onUpdateTemplate({
+        weeksData: updatedWeeksData,
+      });
 
-      // Clear selection after successful bulk update
+      // Update local data map for immediate UI feedback
+      bulkChangeState.selectedCells.forEach((cell) => {
+        const cellKey = `${cell.shiftId}-${cell.weekNumber}-${cell.dayIndex}`;
+        templateDataMap.set(cellKey, value);
+      });
+
+      // Clear selection and exit bulk mode after successful bulk update
       setBulkChangeState((prev) => ({
         ...prev,
+        isActive: false,
         selectedCells: [],
+        bulkValue: "1",
       }));
     } catch (error) {
       console.error("Failed to apply bulk changes:", error);
@@ -803,20 +850,49 @@ export function TemplateViewer({
     if (bulkChangeState.selectedCells.length === 0) return;
 
     try {
-      const updates: Promise<void>[] = [];
-
-      bulkChangeState.selectedCells.forEach((cell) => {
-        updates.push(
-          handleCellChange(cell.shiftId, cell.weekNumber, cell.dayIndex, "0")
+      // Create updated weeks data with all selected cells deleted (set to 0)
+      const updatedWeeksData = template.weeksData.map((week) => {
+        // Find all selected cells for this week
+        const cellsForThisWeek = bulkChangeState.selectedCells.filter(
+          (cell) => cell.weekNumber === week.weekNumber
         );
+
+        if (cellsForThisWeek.length === 0) {
+          return week; // No changes for this week
+        }
+
+        // Remove demands for selected cells (equivalent to setting them to 0)
+        const updatedDemands = week.demands.filter((demand) => {
+          return !cellsForThisWeek.some(
+            (cell) =>
+              cell.shiftId === demand.shiftId &&
+              cell.dayIndex === demand.dayOfWeek
+          );
+        });
+
+        return {
+          ...week,
+          demands: updatedDemands,
+        };
       });
 
-      await Promise.all(updates);
+      // Save to API using centralized method with a single call
+      await onUpdateTemplate({
+        weeksData: updatedWeeksData,
+      });
 
-      // Clear selection after successful bulk deletion
+      // Update local data map for immediate UI feedback
+      bulkChangeState.selectedCells.forEach((cell) => {
+        const cellKey = `${cell.shiftId}-${cell.weekNumber}-${cell.dayIndex}`;
+        templateDataMap.set(cellKey, 0);
+      });
+
+      // Clear selection and exit bulk mode after successful bulk deletion
       setBulkChangeState((prev) => ({
         ...prev,
+        isActive: false,
         selectedCells: [],
+        bulkValue: "1",
       }));
     } catch (error) {
       console.error("Failed to delete bulk selection:", error);
@@ -853,7 +929,10 @@ export function TemplateViewer({
   // ...existing code...
 
   return (
-    <Box className="template-viewer-container">
+    <Box
+      data-testid="template-viewer-container"
+      className="template-viewer-container"
+    >
       {/* Header */}
       <Box className="template-viewer-header">
         {/* First line: Title, template info, and action buttons */}
@@ -887,7 +966,8 @@ export function TemplateViewer({
           {/* Right side: Action buttons (icons only) */}
           <Box sx={{ display: "flex", gap: 1 }}>
             <IconButton
-              onClick={onApply}
+              data-testid="template-viewer-apply-button"
+              onClick={() => onApply(template.id)}
               color="primary"
               sx={{
                 bgcolor: "primary.main",

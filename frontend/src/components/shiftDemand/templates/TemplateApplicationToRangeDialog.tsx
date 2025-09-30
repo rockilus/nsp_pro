@@ -21,11 +21,8 @@ import {
   Switch,
   Alert,
   CircularProgress,
-  Divider,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
@@ -184,161 +181,164 @@ export default function TemplateApplicationToRangeDialog({
   };
 
   return (
-    <LocalizationProvider
-      dateAdapter={AdapterDayjs}
-      adapterLocale="en"
-      dateFormats={{ dayOfMonth: "DD" }}
+    <Dialog
+      data-testid="template-application-dialog"
+      open={open}
+      onClose={handleClose}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: { minHeight: "500px" },
+      }}
     >
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        maxWidth="md"
-        fullWidth
-        PaperProps={{
-          sx: { minHeight: "500px" },
-        }}
-      >
-        <DialogTitle>
-          <Typography variant="h6">
-            {t("apply_template_to_date_range")}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            {t("template_name")}: <strong>{template.name}</strong> •{" "}
-            {t("template_type")}:{" "}
-            <strong>{formatTemplateType(template.templateType)}</strong> •{" "}
-            {t("weeks")}: <strong>{template.weeksData.length}</strong>
-          </Typography>
-        </DialogTitle>
+      <DialogTitle>
+        <Typography variant="h6">
+          {t("apply_template_to_date_range")}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          {t("template_name")}: <strong>{template.name}</strong> •{" "}
+          {t("template_type")}:{" "}
+          <strong>{formatTemplateType(template.templateType)}</strong> •{" "}
+          {t("weeks")}: <strong>{template.weeksData.length}</strong>
+        </Typography>
+      </DialogTitle>
 
-        <DialogContent>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-            {/* Date Range Selection */}
-            <Box>
-              <Typography variant="subtitle1" gutterBottom>
-                {t("select_date_range")}
-              </Typography>
-              <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-                <DatePicker
-                  label={t("start_date")}
-                  value={startDate}
-                  onChange={handleStartDateChange}
-                  timezone="UTC"
-                  slotProps={{
-                    textField: {
-                      error: validation.errors.some(
-                        (e) => e.includes("required") || e.includes("before")
-                      ),
-                      sx: { minWidth: 200 },
-                    },
-                  }}
-                />
-                <DatePicker
-                  label={t("end_date")}
-                  value={endDate}
-                  onChange={handleEndDateChange}
-                  minDate={startDate || undefined}
-                  timezone="UTC"
-                  slotProps={{
-                    textField: {
-                      error: validation.errors.some(
-                        (e) => e.includes("required") || e.includes("before")
-                      ),
-                      sx: { minWidth: 200 },
-                    },
-                  }}
-                />
-              </Box>
-            </Box>
-
-            {/* Options */}
-            <Box>
-              <Typography variant="subtitle1" gutterBottom>
-                {t("application_options")}
-              </Typography>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={overwriteExisting}
-                    onChange={(e) => setOverwriteExisting(e.target.checked)}
-                    color="warning"
-                  />
-                }
-                label={t("overwrite_existing_demands")}
+      <DialogContent>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          {/* Date Range Selection */}
+          <Box>
+            <Typography variant="subtitle1" gutterBottom>
+              {t("select_date_range")}
+            </Typography>
+            <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+              <DatePicker
+                data-testid="template-application-start-date"
+                label={t("start_date")}
+                value={startDate}
+                onChange={handleStartDateChange}
+                timezone="UTC"
+                slotProps={{
+                  textField: {
+                    error: validation.errors.some(
+                      (e) => e.includes("required") || e.includes("before")
+                    ),
+                    sx: { minWidth: 200 },
+                  },
+                }}
               />
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                {overwriteExisting
-                  ? t("overwrite_range_warning")
-                  : t("merge_not_implemented")}
-              </Typography>
+              <DatePicker
+                data-testid="template-application-end-date"
+                label={t("end_date")}
+                value={endDate}
+                onChange={handleEndDateChange}
+                minDate={startDate || undefined}
+                timezone="UTC"
+                slotProps={{
+                  textField: {
+                    error: validation.errors.some(
+                      (e) => e.includes("required") || e.includes("before")
+                    ),
+                    sx: { minWidth: 200 },
+                  },
+                }}
+              />
             </Box>
-
-            {/* Validation Errors */}
-            {validation.errors.length > 0 && (
-              <Alert severity="error">
-                <ul style={{ margin: 0, paddingLeft: 20 }}>
-                  {validation.errors.map((error, index) => (
-                    <li key={index}>{error}</li>
-                  ))}
-                </ul>
-              </Alert>
-            )}
-
-            {/* Preview */}
-            {previewData && (
-              <Box>
-                <Typography variant="subtitle1" gutterBottom>
-                  {t("application_preview")}
-                </Typography>
-                <Alert severity="info" sx={{ mb: 2 }}>
-                  <Typography variant="body2">
-                    {t("template_application_summary", {
-                      days: previewData.totalDays,
-                      weeks: previewData.weekCount,
-                      templateWeeks: previewData.templateWeeks,
-                    })}
-                  </Typography>
-                </Alert>
-
-                {template.templateType === TemplateType.STANDARD && (
-                  <Typography variant="body2" color="text.secondary">
-                    {t("standard_template_range_explanation", {
-                      weeks: template.weeksData.length,
-                    })}
-                  </Typography>
-                )}
-
-                {template.templateType === TemplateType.EVEN_ODD && (
-                  <Typography variant="body2" color="text.secondary">
-                    {t("even_odd_template_range_explanation")}
-                  </Typography>
-                )}
-              </Box>
-            )}
-
-            {overwriteExisting && (
-              <Alert severity="warning">
-                <Typography variant="body2">
-                  {t("overwrite_demands_warning")}
-                </Typography>
-              </Alert>
-            )}
           </Box>
-        </DialogContent>
 
-        <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button onClick={handleClose} disabled={loading}>
-            {t("cancel")}
-          </Button>
-          <Button
-            onClick={handleApply}
-            variant="contained"
-            disabled={!validation.isValid || loading}
-            startIcon={loading ? <CircularProgress size={16} /> : null}
-          >
-            {loading ? t("applying_template") : t("apply_template")}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </LocalizationProvider>
+          {/* Options */}
+          <Box>
+            <Typography variant="subtitle1" gutterBottom>
+              {t("application_options")}
+            </Typography>
+            <FormControlLabel
+              data-testid="template-application-overwrite-switch"
+              control={
+                <Switch
+                  checked={overwriteExisting}
+                  onChange={(e) => setOverwriteExisting(e.target.checked)}
+                  color="warning"
+                />
+              }
+              label={t("overwrite_existing_demands")}
+            />
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              {overwriteExisting
+                ? t("overwrite_range_warning")
+                : t("merge_not_implemented")}
+            </Typography>
+          </Box>
+
+          {/* Validation Errors */}
+          {validation.errors.length > 0 && (
+            <Alert severity="error">
+              <ul style={{ margin: 0, paddingLeft: 20 }}>
+                {validation.errors.map((error, index) => (
+                  <li key={index}>{error}</li>
+                ))}
+              </ul>
+            </Alert>
+          )}
+
+          {/* Preview */}
+          {previewData && (
+            <Box>
+              <Typography variant="subtitle1" gutterBottom>
+                {t("application_preview")}
+              </Typography>
+              <Alert severity="info" sx={{ mb: 2 }}>
+                <Typography variant="body2">
+                  {t("template_application_summary", {
+                    days: previewData.totalDays,
+                    weeks: previewData.weekCount,
+                    templateWeeks: previewData.templateWeeks,
+                  })}
+                </Typography>
+              </Alert>
+
+              {template.templateType === TemplateType.STANDARD && (
+                <Typography variant="body2" color="text.secondary">
+                  {t("standard_template_range_explanation", {
+                    weeks: template.weeksData.length,
+                  })}
+                </Typography>
+              )}
+
+              {template.templateType === TemplateType.EVEN_ODD && (
+                <Typography variant="body2" color="text.secondary">
+                  {t("even_odd_template_range_explanation")}
+                </Typography>
+              )}
+            </Box>
+          )}
+
+          {overwriteExisting && (
+            <Alert severity="warning">
+              <Typography variant="body2">
+                {t("overwrite_demands_warning")}
+              </Typography>
+            </Alert>
+          )}
+        </Box>
+      </DialogContent>
+
+      <DialogActions sx={{ px: 3, pb: 3 }}>
+        <Button
+          data-testid="template-application-cancel-button"
+          onClick={handleClose}
+          disabled={loading}
+        >
+          {t("cancel")}
+        </Button>
+        <Button
+          data-testid="template-application-apply-button"
+          onClick={handleApply}
+          variant="contained"
+          disabled={!validation.isValid || loading}
+          startIcon={loading ? <CircularProgress size={16} /> : null}
+        >
+          {loading ? t("applying_template") : t("apply_template")}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }

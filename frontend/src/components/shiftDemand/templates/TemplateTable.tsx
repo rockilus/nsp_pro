@@ -166,6 +166,7 @@ function TemplateCell({
 
   return (
     <TableCell
+      data-testid={`template-cell-${shiftId}-${weekNumber}-${dayIndex}`}
       className={`template-cell ${isWeekend ? "weekend" : ""} ${
         isWeekBoundary ? "week-boundary" : ""
       }`}
@@ -180,6 +181,7 @@ function TemplateCell({
       {isBulkMode ? (
         <div className={`template-bulk ${isSelected ? "selected" : ""}`}>
           <Checkbox
+            data-testid={`template-cell-checkbox-${shiftId}-${weekNumber}-${dayIndex}`}
             checked={isSelected}
             onChange={() => onToggleSelection(shiftId, weekNumber, dayIndex)}
             size="small"
@@ -194,6 +196,7 @@ function TemplateCell({
           {value === 0 ? (
             // Empty state with shift color theming
             <div
+              data-testid={`template-empty-${shiftId}-${weekNumber}-${dayIndex}`}
               className={`template-empty ${isHovered ? "hovered" : ""}`}
               onClick={handleAddDemand}
             >
@@ -217,6 +220,7 @@ function TemplateCell({
               {/* Decrement button */}
               {isHovered && !isSaving && (
                 <button
+                  data-testid={`template-decrement-${shiftId}-${weekNumber}-${dayIndex}`}
                   onClick={handleDecrement}
                   className="template-button decrement"
                 >
@@ -228,13 +232,17 @@ function TemplateCell({
               )}
 
               {/* Value display */}
-              <span className={`template-value ${isSaving ? "saving" : ""}`}>
+              <span
+                data-testid={`template-value-${shiftId}-${weekNumber}-${dayIndex}`}
+                className={`template-value ${isSaving ? "saving" : ""}`}
+              >
                 {value}
               </span>
 
               {/* Increment button */}
               {isHovered && !isSaving && (
                 <button
+                  data-testid={`template-increment-${shiftId}-${weekNumber}-${dayIndex}`}
                   onClick={handleIncrement}
                   className="template-button increment"
                 >
@@ -277,6 +285,7 @@ function TemplateRowHeader({
 
   return (
     <TableCell
+      data-testid={`template-row-header-${shift.id}`}
       className="template-row-header"
       sx={{
         padding: 0,
@@ -297,10 +306,11 @@ function TemplateRowHeader({
         {/* Bulk mode checkbox */}
         {isBulkMode && (
           <Checkbox
+            data-testid={`template-row-checkbox-${shift.id}`}
             checked={isRowSelected}
             onChange={() => onSelectRow(shift.id)}
             size="small"
-            sx={{ mr: 0.5 }}
+            sx={{ position: "absolute", left: 2, top: "50%", mt: "-12px" }}
           />
         )}
 
@@ -308,6 +318,7 @@ function TemplateRowHeader({
         <div className="template-name-container">
           <Tooltip title={shift.name}>
             <Typography
+              data-testid={`template-shift-name-${shift.id}`}
               variant="body2"
               className="template-name"
               sx={{ fontSize: "0.875rem", fontWeight: 550 }}
@@ -486,6 +497,7 @@ function TemplateTableHeader({
               {bulkChangeState.isActive ? (
                 <>
                   <Checkbox
+                    data-testid="template-select-all-checkbox"
                     checked={isAllSelected()}
                     indeterminate={
                       bulkChangeState.selectedCells.length > 0 &&
@@ -527,6 +539,7 @@ function TemplateTableHeader({
           return (
             <TableCell
               key={`week-${weekNumber}`}
+              data-testid={`template-table-week-header-${weekNumber}`}
               className={`template-week-header ${
                 templateType === TemplateType.EVEN_ODD
                   ? weekNumber === 0
@@ -563,6 +576,7 @@ function TemplateTableHeader({
                 {bulkChangeState.isActive ? (
                   <div className="template-day-header-content">
                     <Checkbox
+                      data-testid={`template-column-checkbox-${weekNumber}-${dayIndex}`}
                       checked={isSelected}
                       onChange={() =>
                         selectAllColumnCells(weekNumber, dayIndex)
@@ -682,6 +696,7 @@ export default function TemplateTable({
 
   return (
     <TableContainer
+      data-testid="template-table"
       sx={{
         maxHeight: maxHeight,
         overflowY: "auto",

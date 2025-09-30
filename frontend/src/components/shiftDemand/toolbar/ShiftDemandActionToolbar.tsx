@@ -34,6 +34,7 @@ export function ShiftDemandActionToolbar({
 
   return (
     <Paper
+      data-testid="shift-demand-action-toolbar"
       elevation={2}
       sx={{
         p: 2,

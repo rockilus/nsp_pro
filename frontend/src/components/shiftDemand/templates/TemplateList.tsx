@@ -34,6 +34,7 @@ import {
   TemplateType,
 } from "../../../types/shift-demand-template";
 import { TemplateUtils } from "../../../app/lib/api/shiftDemandTemplateApi";
+import { ConfirmationDialog } from "../../common/ConfirmationDialog";
 
 interface TemplateListProps {
   lng: string;
@@ -69,6 +70,17 @@ export function TemplateList({
   const [isLoading, setIsLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
 
+  // Confirmation dialog state
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    templateId: string;
+    templateName: string;
+  }>({
+    open: false,
+    templateId: "",
+    templateName: "",
+  });
+
   // Load templates on mount
   useEffect(() => {
     console.log("🔄 Loading templates for team:", teamId);
@@ -80,10 +92,15 @@ export function TemplateList({
     templateId: string,
     templateName: string
   ) => {
-    if (!window.confirm(t("confirm_delete_template", { name: templateName }))) {
-      return;
-    }
+    setConfirmDialog({
+      open: true,
+      templateId,
+      templateName,
+    });
+  };
 
+  const handleConfirmDelete = async () => {
+    const { templateId, templateName } = confirmDialog;
     setDeleteLoading(templateId);
     try {
       await onDeleteTemplateRequest(templateId, templateName);
@@ -94,7 +111,12 @@ export function TemplateList({
       );
     } finally {
       setDeleteLoading(null);
+      setConfirmDialog({ open: false, templateId: "", templateName: "" });
     }
+  };
+
+  const handleCancelDelete = () => {
+    setConfirmDialog({ open: false, templateId: "", templateName: "" });
   };
 
   const formatTemplateType = (type: TemplateType) => {
@@ -117,10 +139,11 @@ export function TemplateList({
   }
 
   return (
-    <Box className="template-list-container">
+    <Box className="template-list-container" data-testid="template-list">
       {/* Header */}
       <Box className="template-list-header">
         <Button
+          data-testid="template-list-create-button"
           variant="contained"
           startIcon={<Add />}
           onClick={onCreateTemplate}
@@ -147,6 +170,7 @@ export function TemplateList({
           templates.map((template) => (
             <Box
               key={template.id}
+              data-testid={`template-list-item-${template.id}`}
               className={`template-list-item ${
                 selectedTemplateId === template.id ? "selected" : ""
               }`}
@@ -165,6 +189,7 @@ export function TemplateList({
                   <Box className="template-list-item-actions">
                     <Tooltip title={t("apply_template")}>
                       <IconButton
+                        data-testid={`template-apply-button-${template.id}`}
                         size="small"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -177,6 +202,7 @@ export function TemplateList({
                     </Tooltip>
                     <Tooltip title={t("delete_template")}>
                       <IconButton
+                        data-testid={`template-delete-button-${template.id}`}
                         size="small"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -232,6 +258,22 @@ export function TemplateList({
           ))
         )}
       </Box>
+
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        open={confirmDialog.open}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        title={t("delete_template")}
+        content={t("confirm_delete_template", {
+          name: confirmDialog.templateName,
+        })}
+        confirmText={t("delete")}
+        cancelText={t("cancel")}
+        confirmColor="error"
+        showIcon={true}
+        testId="template-delete-confirmation-dialog"
+      />
     </Box>
   );
 }
