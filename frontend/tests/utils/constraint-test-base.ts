@@ -440,9 +440,96 @@ export class ConstraintTestBase {
   }
 
   /**
-   * Gets validation error elements
+   * Fills a constraint placeholder with the first available option
    */
-  getValidationErrors(page: Page) {
-    return page.locator('[data-testid*="constraint-block-error"]');
+  async fillPlaceholderWithFirstOption(
+    page: Page,
+    placeholderIndex: number
+  ): Promise<void> {
+    console.log(`Attempting to fill placeholder ${placeholderIndex}...`);
+
+    // Click on the placeholder
+    const placeholders = page.locator(
+      '[data-testid^="constraint-block-placeholder-"]'
+    );
+    const placeholder = placeholders.nth(placeholderIndex);
+    await placeholder.click({ force: true });
+    await page.waitForTimeout(500);
+
+    // Look for shift-worker option dialog (for worker/shift selections)
+    const dialogSelectors = [
+      '[data-testid^="shift-worker-option-dialog-"]',
+      '[role="dialog"]:visible',
+      ".MuiPopover-root:visible",
+      ".MuiDialog-root:visible",
+    ];
+
+    for (const selector of dialogSelectors) {
+      const dialog = page.locator(selector).first();
+      if (await dialog.isVisible({ timeout: 2000 })) {
+        console.log(
+          `✅ Selection dialog opened for placeholder: "${await placeholder.textContent()}" using selector: ${selector}`
+        );
+
+        // Try to select the first available option
+        const optionSelectors = [
+          '[data-testid^="worker-option"]',
+          '[data-testid^="shift-option"]',
+          ".MuiMenuItem",
+          '.MuiListItem[role="button"]',
+          'li[role="option"]',
+        ];
+
+        for (const optionSelector of optionSelectors) {
+          const options = dialog.locator(optionSelector);
+          const optionCount = await options.count();
+          if (optionCount > 0) {
+            await options.first().click();
+            console.log(
+              `✅ Selected first option using selector: ${optionSelector}`
+            );
+
+            // Look for and click confirm button
+            const confirmSelectors = [
+              '[data-testid="confirm-selection-button"]',
+              'button:has-text("Confirm")',
+              'button:has-text("OK")',
+              'button:has-text("Save")',
+              'button:has-text("Apply")',
+            ];
+
+            for (const confirmSelector of confirmSelectors) {
+              const confirmButton = dialog.locator(confirmSelector);
+              if (await confirmButton.isVisible({ timeout: 1000 })) {
+                await confirmButton.click();
+                console.log(
+                  `✅ Clicked confirm button using selector: ${confirmSelector}`
+                );
+                break;
+              }
+            }
+
+            // Close the dialog if still open
+            if (await dialog.isVisible({ timeout: 500 })) {
+              await page.keyboard.press("Escape");
+              await page.waitForTimeout(300);
+            }
+
+            // Double-check that no popover remains open
+            const remainingPopovers = page.locator(".MuiPopover-root:visible");
+            if ((await remainingPopovers.count()) > 0) {
+              await page.keyboard.press("Escape");
+              await page.waitForTimeout(300);
+            }
+
+            return;
+          }
+        }
+      }
+    }
+
+    console.log(
+      `ℹ️ No selection dialog found for placeholder ${placeholderIndex}`
+    );
   }
 }
