@@ -454,7 +454,6 @@ export class ConstraintTestBase {
     );
     const placeholder = placeholders.nth(placeholderIndex);
     await placeholder.click({ force: true });
-    await page.waitForTimeout(500);
 
     // Look for shift-worker option dialog (for worker/shift selections)
     const dialogSelectors = [
@@ -512,14 +511,24 @@ export class ConstraintTestBase {
             // Close the dialog if still open
             if (await dialog.isVisible({ timeout: 500 })) {
               await page.keyboard.press("Escape");
-              await page.waitForTimeout(300);
+              // Wait for dialog to close
+              await dialog.waitFor({ state: "hidden", timeout: 2000 });
             }
 
             // Double-check that no popover remains open
             const remainingPopovers = page.locator(".MuiPopover-root:visible");
             if ((await remainingPopovers.count()) > 0) {
               await page.keyboard.press("Escape");
-              await page.waitForTimeout(300);
+              // Wait for popovers to close
+              await page.waitForFunction(
+                () => {
+                  return (
+                    document.querySelectorAll(".MuiPopover-root:visible")
+                      .length === 0
+                  );
+                },
+                { timeout: 2000 }
+              );
             }
 
             return;
@@ -549,7 +558,6 @@ export class ConstraintTestBase {
     const placeholderText = await placeholder.textContent();
     console.log(`Clicking string placeholder with text: "${placeholderText}"`);
     await placeholder.click({ force: true });
-    await page.waitForTimeout(500);
 
     // Look for the string option dialog
     const dialog = page.locator(".MuiPopover-root:visible").first();
@@ -623,7 +631,6 @@ export class ConstraintTestBase {
     }
 
     await placeholder.first().click({ force: true });
-    await page.waitForTimeout(1000); // Longer wait
 
     // Look for shift-worker option dialog (for worker/shift selections)
     const dialogSelectors = [
@@ -639,9 +646,6 @@ export class ConstraintTestBase {
         console.log(
           `✅ Selection dialog opened for placeholder: "${placeholderText}" using selector: ${selector}`
         );
-
-        // Wait for options to load
-        await page.waitForTimeout(1000);
 
         // For shift-worker dialogs, we need to use the search input to trigger selection
         // Look for the input field within the dialog
@@ -664,26 +668,57 @@ export class ConstraintTestBase {
           }
 
           await searchInput.fill(searchTerm);
-          await page.waitForTimeout(500); // Wait for search results
 
-          // Press arrow down to select first result and enter to confirm
+          // Wait a moment for the search to process and then proceed
+          // Look for any visible options in the dialog after typing
+          // Wait for the input value to be set properly
+          await searchInput.waitFor({ state: "visible" });
+
+          // Try to find clickable options that match our search
+          const searchResults = dialog
+            .locator('[role="option"], [data-testid*="option"], li, div')
+            .filter({
+              hasText: new RegExp(searchTerm, "i"),
+            })
+            .filter({ hasNotText: /^$/ }); // Exclude empty text
+
+          const resultCount = await searchResults.count();
+          if (resultCount > 0) {
+            console.log(
+              `Found ${resultCount} search results, clicking first one`
+            );
+            try {
+              await searchResults.first().click({ force: true });
+              console.log(
+                `✅ Selected option for "${placeholderText}" using search: "${searchTerm}"`
+              );
+              // Wait for dialog to close
+              await dialog.waitFor({ state: "hidden", timeout: 3000 });
+              return;
+            } catch (error) {
+              console.log(`Failed to click search result: ${error}`);
+            }
+          }
+
+          // Fallback: try keyboard navigation
+          console.log(`No clickable results found, trying keyboard navigation`);
           await searchInput.press("ArrowDown");
-          await page.waitForTimeout(200);
           await searchInput.press("Enter");
 
           console.log(
-            `✅ Selected option for "${placeholderText}" using search: "${searchTerm}"`
+            `✅ Selected option for "${placeholderText}" using keyboard navigation`
           );
 
-          // Wait for React state to update
-          await page.waitForTimeout(1000);
-
-          // Close dialog if still open
-          if (await dialog.isVisible({ timeout: 500 })) {
-            await page.keyboard.press("Escape");
-            await page.waitForTimeout(500);
+          // Wait for dialog to close
+          try {
+            await dialog.waitFor({ state: "hidden", timeout: 3000 });
+          } catch (error) {
+            console.log(
+              `Dialog did not close after keyboard selection: ${error}`
+            );
+            // Force close by pressing Escape
+            await searchInput.press("Escape");
           }
-
           return;
         }
 
@@ -705,9 +740,8 @@ export class ConstraintTestBase {
               `✅ Clicked first visible option for "${placeholderText}"`
             );
 
-            // Wait for React state to update
-            await page.waitForTimeout(1000);
-
+            // Wait for dialog to close
+            await dialog.waitFor({ state: "hidden", timeout: 3000 });
             return;
           } catch (error) {
             console.log(`Failed to click visible option: ${error}`);
@@ -744,15 +778,11 @@ export class ConstraintTestBase {
     }
 
     await placeholder.first().click({ force: true });
-    await page.waitForTimeout(1000); // Longer wait
 
     // Look for the string option dialog
     const dialog = page.locator(".MuiPopover-root:visible").first();
     if (await dialog.isVisible({ timeout: 3000 })) {
       console.log("✅ Found string options dialog");
-
-      // Wait for options to load
-      await page.waitForTimeout(500);
 
       // Look for string options with data-testid
       const stringOptions = dialog.locator('[data-testid^="string-option-"]');
@@ -768,14 +798,8 @@ export class ConstraintTestBase {
           `✅ Selected string option for placeholder "${placeholderText}"`
         );
 
-        // Wait for React state to update
-        await page.waitForTimeout(500);
-
-        // Ensure dialog is closed
-        if (await dialog.isVisible({ timeout: 1000 })) {
-          await page.keyboard.press("Escape");
-          await page.waitForTimeout(300);
-        }
+        // Wait for dialog to close
+        await dialog.waitFor({ state: "hidden", timeout: 3000 });
         return;
       }
 
@@ -793,14 +817,8 @@ export class ConstraintTestBase {
           `✅ Selected list item for placeholder "${placeholderText}"`
         );
 
-        // Wait for React state to update
-        await page.waitForTimeout(500);
-
-        // Ensure dialog is closed
-        if (await dialog.isVisible({ timeout: 1000 })) {
-          await page.keyboard.press("Escape");
-          await page.waitForTimeout(300);
-        }
+        // Wait for dialog to close
+        await dialog.waitFor({ state: "hidden", timeout: 3000 });
         return;
       }
 
@@ -816,8 +834,8 @@ export class ConstraintTestBase {
           `✅ Selected fallback item for placeholder "${placeholderText}"`
         );
 
-        // Wait for React state to update
-        await page.waitForTimeout(500);
+        // Wait for dialog to close
+        await dialog.waitFor({ state: "hidden", timeout: 3000 });
         return;
       }
     }
@@ -851,7 +869,6 @@ export class ConstraintTestBase {
     }
 
     await placeholder.first().click({ force: true });
-    await page.waitForTimeout(1000); // Give more time for UI to respond
 
     // Check what dialogs are open after clicking
     const allDialogs = page.locator(
@@ -871,7 +888,18 @@ export class ConstraintTestBase {
 
       // Try multiple submission methods to ensure the value is accepted
       await numberInput.press("Enter"); // First try Enter
-      await page.waitForTimeout(300);
+
+      // Wait for the input to reflect the value
+      await page.waitForFunction(
+        (expectedValue) => {
+          const input = document.querySelector(
+            '[data-testid="constraint-number-input"]'
+          ) as HTMLInputElement;
+          return input && input.value === expectedValue;
+        },
+        value.toString(),
+        { timeout: 2000 }
+      );
 
       console.log(
         `✅ Filled number input with ${value} for placeholder "${placeholderText}"`
@@ -892,7 +920,9 @@ export class ConstraintTestBase {
         await numberInput.clear();
         await numberInput.fill(value.toString());
         await numberInput.press("Enter");
-        await page.waitForTimeout(300);
+
+        // Wait for the input to be filled
+        await numberInput.waitFor({ state: "attached", timeout: 2000 });
         console.log(
           `✅ Filled number input with ${value} for placeholder "${placeholderText}"`
         );
@@ -906,7 +936,9 @@ export class ConstraintTestBase {
         await textInput.clear();
         await textInput.fill(value.toString());
         await textInput.press("Enter");
-        await page.waitForTimeout(300);
+
+        // Wait for the input to be filled
+        await textInput.waitFor({ state: "attached", timeout: 2000 });
         console.log(
           `✅ Filled text input with ${value} for placeholder "${placeholderText}"`
         );
@@ -922,7 +954,9 @@ export class ConstraintTestBase {
         await anyInput.clear();
         await anyInput.fill(value.toString());
         await anyInput.press("Enter");
-        await page.waitForTimeout(300);
+
+        // Wait for the input to be filled
+        await anyInput.waitFor({ state: "attached", timeout: 2000 });
         console.log(
           `✅ Filled generic input with ${value} for placeholder "${placeholderText}"`
         );
@@ -937,7 +971,19 @@ export class ConstraintTestBase {
       await pageNumberInput.clear();
       await pageNumberInput.fill(value.toString());
       await pageNumberInput.press("Enter");
-      await page.waitForTimeout(300);
+
+      // Wait for the input to reflect the value
+      await page.waitForFunction(
+        (expectedValue) => {
+          const inputs = document.querySelectorAll('input[type="number"]');
+          return Array.from(inputs).some(
+            (input) => (input as HTMLInputElement).value === expectedValue
+          );
+        },
+        value.toString(),
+        { timeout: 2000 }
+      );
+
       console.log(
         `✅ Filled fallback number input with ${value} for placeholder "${placeholderText}"`
       );
