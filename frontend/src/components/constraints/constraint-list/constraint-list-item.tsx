@@ -70,7 +70,7 @@ export default function ConstraintListItem({
         paddingX: 1,
         borderBottom: isLast ? "none" : "1px solid #e0e0e0",
       }}
-      data-testid={dataTestId}
+      data-testid={dataTestId || `constraint-item-${constraint.id}`}
     >
       <Grid
         container
@@ -92,6 +92,7 @@ export default function ConstraintListItem({
                 ? ConstraintColorActiveText
                 : ConstraintColorInactiveText
             }
+            data-testid={`constraint-text-${constraint.id}`}
           >
             {constraint.text}
           </Typography>
@@ -101,21 +102,30 @@ export default function ConstraintListItem({
           />
         </Grid>
         <Grid item xs={3}>
-          {HardSoftButton(lng, constraint.hard, handleToggleHard)}
+          <div data-testid={`constraint-hard-soft-button-${constraint.id}`}>
+            {HardSoftButton(lng, constraint.hard, handleToggleHard)}
+          </div>
         </Grid>
         <Grid item xs={1}>
           <Box sx={{ display: "flex", flexDirection: "row" }}>
-            <ConstraintButton
-              lng={lng}
-              workers={workers}
-              shifts={shifts}
-              buttonElement={editButton()}
-              constraint={constraint}
-              constraintTemplate={constraintTemplate}
-              // Add constraint is not needed in edit mode
-              handleUpdateConstraint={handleUpdateConstraint}
-            />
-            <IconButton edge="end" aria-label="delete" onClick={handleDelete}>
+            <div data-testid={`constraint-edit-button-${constraint.id}`}>
+              <ConstraintButton
+                lng={lng}
+                workers={workers}
+                shifts={shifts}
+                buttonElement={editButton()}
+                constraint={constraint}
+                constraintTemplate={constraintTemplate}
+                // Add constraint is not needed in edit mode
+                handleUpdateConstraint={handleUpdateConstraint}
+              />
+            </div>
+            <IconButton
+              edge="end"
+              aria-label="delete"
+              onClick={handleDelete}
+              data-testid={`constraint-delete-button-${constraint.id}`}
+            >
               <DeleteIcon />
             </IconButton>
           </Box>

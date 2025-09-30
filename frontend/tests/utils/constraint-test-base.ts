@@ -309,6 +309,70 @@ export class ConstraintTestBase {
   }
 
   /**
+   * Gets a specific constraint item by constraint ID
+   */
+  getConstraintItemById(page: Page, constraintId: string) {
+    return page.locator(`[data-testid="constraint-item-${constraintId}"]`);
+  }
+
+  /**
+   * Gets the constraint text for a specific constraint
+   */
+  getConstraintText(page: Page, constraintId: string) {
+    return page.locator(`[data-testid="constraint-text-${constraintId}"]`);
+  }
+
+  /**
+   * Gets the hard/soft button for a specific constraint
+   */
+  getConstraintHardSoftButton(page: Page, constraintId: string) {
+    return page.locator(
+      `[data-testid="constraint-hard-soft-button-${constraintId}"]`
+    );
+  }
+
+  /**
+   * Gets the edit button for a specific constraint
+   */
+  getConstraintEditButton(page: Page, constraintId: string) {
+    return page.locator(
+      `[data-testid="constraint-edit-button-${constraintId}"]`
+    );
+  }
+
+  /**
+   * Gets the delete button for a specific constraint
+   */
+  getConstraintDeleteButton(page: Page, constraintId: string) {
+    return page.locator(
+      `[data-testid="constraint-delete-button-${constraintId}"]`
+    );
+  }
+
+  /**
+   * Gets the edit popup (menu)
+   */
+  getConstraintEditPopup(page: Page) {
+    return page.locator('[data-testid="constraint-edit-popup"]');
+  }
+
+  /**
+   * Gets the save constraint button in the edit form
+   */
+  getConstraintSaveButton(page: Page) {
+    return page.locator('[data-testid="save-constraint-button"]');
+  }
+
+  /**
+   * Waits for constraint list to load
+   */
+  async waitForConstraintListLoad(page: Page): Promise<void> {
+    await page.waitForSelector('[data-testid="constraint-list"]', {
+      timeout: 10000,
+    });
+  }
+
+  /**
    * Gets the shift-worker option selection dialog
    */
   getShiftWorkerOptionDialog(page: Page) {
@@ -996,5 +1060,99 @@ export class ConstraintTestBase {
     throw new Error(
       `No number input found for placeholder "${placeholderText}"`
     );
+  }
+
+  //////////////////////////
+  // Constraint API Methods
+  //////////////////////////
+
+  /**
+   * Creates a test constraint using the API
+   */
+  async createTestConstraint(constraintData: {
+    constraintType: number;
+    templateId: string;
+    language?: string;
+    blocks: any[];
+    text: string;
+    hard?: boolean;
+    priority?: string;
+    active?: boolean;
+  }): Promise<{ constraintId: string; teamId: string }> {
+    if (!this.testTeam) {
+      throw new Error("No test team created. Call setupConstraintTests first.");
+    }
+
+    return await this.dbUtils.createConstraint({
+      teamId: this.testTeam.teamId,
+      constraintType: constraintData.constraintType,
+      templateId: constraintData.templateId,
+      language: constraintData.language || "en",
+      blocks: constraintData.blocks,
+      text: constraintData.text,
+      hard: constraintData.hard ?? true,
+      priority: constraintData.priority || "medium",
+      active: constraintData.active ?? true,
+    });
+  }
+
+  /**
+   * Updates a test constraint using the API
+   */
+  async updateTestConstraint(
+    constraintId: string,
+    updates: {
+      constraintType?: number;
+      templateId?: string;
+      language?: string;
+      blocks?: any[];
+      text?: string;
+      hard?: boolean;
+      priority?: string;
+      active?: boolean;
+    }
+  ): Promise<{ constraintId: string; teamId: string }> {
+    if (!this.testTeam) {
+      throw new Error("No test team created. Call setupConstraintTests first.");
+    }
+
+    return await this.dbUtils.updateConstraint(
+      constraintId,
+      this.testTeam.teamId,
+      updates
+    );
+  }
+
+  /**
+   * Deletes a test constraint using the API
+   */
+  async deleteTestConstraint(constraintId: string): Promise<void> {
+    if (!this.testTeam) {
+      throw new Error("No test team created. Call setupConstraintTests first.");
+    }
+
+    await this.dbUtils.deleteConstraint(constraintId, this.testTeam.teamId);
+  }
+
+  /**
+   * Gets all constraints for the test team
+   */
+  async getTestConstraints(): Promise<any[]> {
+    if (!this.testTeam) {
+      throw new Error("No test team created. Call setupConstraintTests first.");
+    }
+
+    return await this.dbUtils.getConstraints(this.testTeam.teamId);
+  }
+
+  /**
+   * Gets constraint templates for the test team
+   */
+  async getTestConstraintTemplates(): Promise<any[]> {
+    if (!this.testTeam) {
+      throw new Error("No test team created. Call setupConstraintTests first.");
+    }
+
+    return await this.dbUtils.getConstraintTemplates(this.testTeam.teamId);
   }
 }
