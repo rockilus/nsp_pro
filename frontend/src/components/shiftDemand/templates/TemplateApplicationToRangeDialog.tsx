@@ -212,13 +212,13 @@ export default function TemplateApplicationToRangeDialog({
             </Typography>
             <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
               <DatePicker
+                data-testid="template-application-start-date"
                 label={t("start_date")}
                 value={startDate}
                 onChange={handleStartDateChange}
                 timezone="UTC"
                 slotProps={{
                   textField: {
-                    "data-testid": "template-application-start-date",
                     error: validation.errors.some(
                       (e) => e.includes("required") || e.includes("before")
                     ),
