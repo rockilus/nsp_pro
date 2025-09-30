@@ -11,49 +11,9 @@ import { ConstraintTestBase } from "../../utils/constraint-test-base";
 const constraintTestBase = new ConstraintTestBase();
 
 test.describe("Constraint Creation", () => {
-  let testWorkers: { workerId: string; name: string; teamId: string }[];
-  let testShifts: any[];
-
   test.beforeEach(async ({ page }) => {
-    // Setup the common constraint test environment
+    // Setup the common constraint test environment (includes workers and shifts)
     await constraintTestBase.setupConstraintTests(test.info().workerIndex);
-
-    // Create test workers
-    testWorkers = [];
-    const worker1 = await constraintTestBase.createTestWorker({
-      name: `Test Worker 1 ${test.info().workerIndex}-${Date.now()}`,
-      weeklyHours: 40,
-      weeklyHoursDesired: 40,
-      dutiesPerMonth: 4,
-      annualLeave: 25,
-    });
-    const worker2 = await constraintTestBase.createTestWorker({
-      name: `Test Worker 2 ${test.info().workerIndex}-${Date.now()}`,
-      weeklyHours: 35,
-      weeklyHoursDesired: 35,
-      dutiesPerMonth: 3,
-      annualLeave: 30,
-    });
-    testWorkers.push(worker1, worker2);
-
-    // Create test shifts
-    testShifts = [];
-    const shift1 = await constraintTestBase.createTestShift({
-      name: `Morning Shift ${test.info().workerIndex}-${Date.now()}`,
-      acronym: "MS",
-    });
-    const shift2 = await constraintTestBase.createTestShift({
-      name: `Evening Shift ${test.info().workerIndex}-${Date.now()}`,
-      acronym: "ES",
-    });
-    testShifts.push(shift1, shift2);
-
-    console.log(
-      `Created test workers: ${testWorkers.map((w) => w.name).join(", ")}`
-    );
-    console.log(
-      `Created test shifts: ${testShifts.map((s) => s.name).join(", ")}`
-    );
 
     // Navigate to the constraints page
     await constraintTestBase.navigateToConstraintsPage(page);
@@ -63,16 +23,8 @@ test.describe("Constraint Creation", () => {
   });
 
   test.afterEach(async () => {
-    // Clean up: delete the workers and shifts created for this test
-    if (testWorkers && Array.isArray(testWorkers)) {
-      for (const worker of testWorkers) {
-        try {
-          await constraintTestBase.deleteTestWorker(worker.workerId);
-        } catch (error) {
-          console.warn(`Failed to delete worker ${worker.name}:`, error);
-        }
-      }
-    }
+    // Clean up: delete the workers created during setup
+    await constraintTestBase.deleteAllTestWorkers();
 
     // Note: Shifts and constraints are cleaned up by the database reset between tests
   });

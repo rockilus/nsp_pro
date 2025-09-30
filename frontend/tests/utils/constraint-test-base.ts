@@ -20,6 +20,9 @@ import dayjs from "dayjs";
 export class ConstraintTestBase {
   protected dbUtils: DatabaseTestUtils;
   protected testTeam: { teamId: string; name: string } | null = null;
+  protected testWorkers: { workerId: string; name: string; teamId: string }[] =
+    [];
+  protected testShifts: ShiftT[] = [];
 
   constructor() {
     this.dbUtils = new DatabaseTestUtils();
@@ -31,6 +34,7 @@ export class ConstraintTestBase {
    * - Verifies test utilities are available
    * - Resets constraint-related database collections
    * - Creates a test team
+   * - Creates test workers and shifts
    */
   async setupConstraintTests(workerIndex: number): Promise<void> {
     // Wait for API to be ready
@@ -50,6 +54,43 @@ export class ConstraintTestBase {
     this.testTeam = await this.dbUtils.createTeam({ name: teamName });
     console.log(
       `Created test team: ${this.testTeam.name} (${this.testTeam.teamId})`
+    );
+
+    // Create test workers
+    this.testWorkers = [];
+    const worker1 = await this.createTestWorker({
+      name: `Test Worker 1 ${workerIndex}-${Date.now()}`,
+      weeklyHours: 40,
+      weeklyHoursDesired: 40,
+      dutiesPerMonth: 4,
+      annualLeave: 25,
+    });
+    const worker2 = await this.createTestWorker({
+      name: `Test Worker 2 ${workerIndex}-${Date.now()}`,
+      weeklyHours: 35,
+      weeklyHoursDesired: 35,
+      dutiesPerMonth: 3,
+      annualLeave: 30,
+    });
+    this.testWorkers.push(worker1, worker2);
+
+    // Create test shifts
+    this.testShifts = [];
+    const shift1 = await this.createTestShift({
+      name: `Morning Shift ${workerIndex}-${Date.now()}`,
+      acronym: "MS",
+    });
+    const shift2 = await this.createTestShift({
+      name: `Evening Shift ${workerIndex}-${Date.now()}`,
+      acronym: "ES",
+    });
+    this.testShifts.push(shift1, shift2);
+
+    console.log(
+      `Created test workers: ${this.testWorkers.map((w) => w.name).join(", ")}`
+    );
+    console.log(
+      `Created test shifts: ${this.testShifts.map((s) => s.name).join(", ")}`
     );
   }
 
@@ -161,6 +202,38 @@ export class ConstraintTestBase {
     }
 
     return await this.dbUtils.deleteWorker(workerId, this.testTeam.teamId);
+  }
+
+  /**
+   * Gets the test workers created during setup
+   */
+  getTestWorkers(): { workerId: string; name: string; teamId: string }[] {
+    return this.testWorkers;
+  }
+
+  /**
+   * Gets the test shifts created during setup
+   */
+  getTestShifts(): ShiftT[] {
+    return this.testShifts;
+  }
+
+  /**
+   * Deletes all test workers created during setup
+   */
+  async deleteAllTestWorkers(): Promise<void> {
+    if (!this.testTeam) {
+      throw new Error("No test team created. Call setupConstraintTests first.");
+    }
+
+    for (const worker of this.testWorkers) {
+      try {
+        await this.dbUtils.deleteWorker(worker.workerId, this.testTeam.teamId);
+      } catch (error) {
+        console.warn(`Failed to delete worker ${worker.name}:`, error);
+      }
+    }
+    this.testWorkers = [];
   }
 
   /**
