@@ -33,26 +33,285 @@ test.describe("Constraint List", () => {
     if (templates.length > 0) {
       const template = templates[0];
 
-      // Create a hard constraint
+      // Constraint Template example:
+      // {
+      //     "id": "0",
+      //     "constraintType": 1,
+      //     "text": "Jean doit faire au plus 2 consultations consécutives",
+      //     "language": "fr",
+      //     "blocks": [
+      //         {
+      //             "name": 4,
+      //             "type": 3,
+      //             "options": [
+      //                 {
+      //                     "name": "all workers",
+      //                     "id": "",
+      //                     "idType": 0,
+      //                     "isBoolDim": false,
+      //                     "categoryName": "All"
+      //                 },
+      //                 {
+      //                     "name": "Test Worker 1 0-1759274296632",
+      //                     "id": "68dc654024a1121753d06372",
+      //                     "idType": 1,
+      //                     "isBoolDim": false,
+      //                     "categoryName": "Workers"
+      //                 },
+      //                 {
+      //                     "name": "Test Worker 2 0-1759274304276",
+      //                     "id": "68dc654024a1121753d06376",
+      //                     "idType": 1,
+      //                     "isBoolDim": false,
+      //                     "categoryName": "Workers"
+      //                 }
+      //             ],
+      //             "placeholder": "Jean"
+      //         },
+      //         {
+      //             "name": 5,
+      //             "type": 0,
+      //             "options": [],
+      //             "placeholder": "doit faire"
+      //         },
+      //         {
+      //             "name": 0,
+      //             "type": 0,
+      //             "options": [
+      //                 "at most",
+      //                 "at least",
+      //                 "exactly"
+      //             ],
+      //             "placeholder": "au plus"
+      //         },
+      //         {
+      //             "name": 1,
+      //             "type": 1,
+      //             "options": [],
+      //             "placeholder": 2
+      //         },
+      //         {
+      //             "name": 3,
+      //             "type": 3,
+      //             "options": [
+      //                 {
+      //                     "name": "all shifts",
+      //                     "id": "",
+      //                     "idType": 0,
+      //                     "isBoolDim": false,
+      //                     "categoryName": "All"
+      //                 },
+      //                 {
+      //                     "name": "",
+      //                     "id": "68dcf47d65ffcac9f8fef46e",
+      //                     "idType": 2,
+      //                     "isBoolDim": false,
+      //                     "categoryName": "Shifts"
+      //                 },
+      //                 {
+      //                     "name": "",
+      //                     "id": "",
+      //                     "idType": 5,
+      //                     "isBoolDim": true,
+      //                     "categoryName": "Duties"
+      //                 }
+      //             ],
+      //             "placeholder": "consultations"
+      //         },
+      //         {
+      //             "name": 2,
+      //             "type": 0,
+      //             "options": [
+      //                 "consecutive"
+      //             ],
+      //             "placeholder": "consecutives"
+      //         }
+      //     ]
+      // }
+
+      // Constraint example:
+      // {
+      //     "id": "",
+      //     "teamId": "68dc653724a1121753d0631c",
+      //     "constraintType": 1,
+      //     "templateId": "0",
+      //     "language": "fr",
+      //     "blocks": [
+      //         {
+      //             "name": 4,
+      //             "type": 3,
+      //             "value": [
+      //                 {
+      //                     "name": "Test Worker 1 0-1759274296632",
+      //                     "id": "68dc654024a1121753d06372",
+      //                     "idType": 1,
+      //                     "isBoolDim": false,
+      //                     "categoryName": "Workers"
+      //                 }
+      //             ]
+      //         },
+      //         {
+      //             "name": 5,
+      //             "type": 0,
+      //             "value": "doit faire"
+      //         },
+      //         {
+      //             "name": 0,
+      //             "type": 0,
+      //             "value": "at most"
+      //         },
+      //         {
+      //             "name": 1,
+      //             "type": 1,
+      //             "value": 3
+      //         },
+      //         {
+      //             "name": 3,
+      //             "type": 3,
+      //             "value": [
+      //                 {
+      //                     "name": "",
+      //                     "id": "68dcf47d65ffcac9f8fef46e",
+      //                     "idType": 2,
+      //                     "isBoolDim": false,
+      //                     "categoryName": "Shifts"
+      //                 }
+      //             ]
+      //         },
+      //         {
+      //             "name": 2,
+      //             "type": 0,
+      //             "value": "consecutive"
+      //         }
+      //     ],
+      //     "text": "",
+      //     "hard": true,
+      //     "priority": "medium",
+      //     "active": true,
+      //     "missingAttributes": []
+      // }
+
+      // Create a hard constraint with properly populated blocks
+      const testWorkers = constraintTestBase.getTestWorkers();
+      const testShifts = constraintTestBase.getTestShifts();
+      
+      const hardConstraintBlocks = [
+        {
+          name: 4,
+          type: 3,
+          value: [
+            {
+              name: testWorkers[0].name,
+              id: testWorkers[0].workerId,
+              idType: 1,
+              isBoolDim: false,
+              categoryName: "Workers",
+            },
+          ],
+        },
+        {
+          name: 5,
+          type: 0,
+          value: "must work",
+        },
+        {
+          name: 0,
+          type: 0,
+          value: "at least",
+        },
+        {
+          name: 1,
+          type: 1,
+          value: 2,
+        },
+        {
+          name: 3,
+          type: 3,
+          value: [
+            {
+              name: testShifts[0].name,
+              id: testShifts[0].id,
+              idType: 2,
+              isBoolDim: false,
+              categoryName: "Shifts",
+            },
+          ],
+        },
+        {
+          name: 2,
+          type: 0,
+          value: "per week",
+        },
+      ];
+
       const hardConstraint = await constraintTestBase.createTestConstraint({
         constraintType: template.constraintType,
         templateId: template.id,
         language: "en",
-        blocks: [], // Empty blocks for now - can be populated based on template
-        text: "Test Hard Constraint - Worker must work at least 2 shifts per week",
+        blocks: hardConstraintBlocks,
+        text: "", // Will be populated by backend
         hard: true,
         priority: "high",
         active: true,
       });
       testConstraints.push(hardConstraint);
 
-      // Create a soft constraint
+      // Create a soft constraint with properly populated blocks
+      const softConstraintBlocks = [
+        {
+          name: 4,
+          type: 3,
+          value: [
+            {
+              name: testWorkers[1].name,
+              id: testWorkers[1].workerId,
+              idType: 1,
+              isBoolDim: false,
+              categoryName: "Workers",
+            },
+          ],
+        },
+        {
+          name: 5,
+          type: 0,
+          value: "prefers",
+        },
+        {
+          name: 0,
+          type: 0,
+          value: "at most",
+        },
+        {
+          name: 1,
+          type: 1,
+          value: 3,
+        },
+        {
+          name: 3,
+          type: 3,
+          value: [
+            {
+              name: testShifts[0].name,
+              id: testShifts[0].id,
+              idType: 2,
+              isBoolDim: false,
+              categoryName: "Shifts",
+            },
+          ],
+        },
+        {
+          name: 2,
+          type: 0,
+          value: "consecutive",
+        },
+      ];
+
       const softConstraint = await constraintTestBase.createTestConstraint({
         constraintType: template.constraintType,
         templateId: template.id,
         language: "en",
-        blocks: [], // Empty blocks for now
-        text: "Test Soft Constraint - Worker prefers morning shifts",
+        blocks: softConstraintBlocks,
+        text: "", // Will be populated by backend
         hard: false,
         priority: "medium",
         active: true,
@@ -92,21 +351,23 @@ test.describe("Constraint List", () => {
     await expect(constraintList).toBeVisible();
 
     if (testConstraints.length > 0) {
-      // Verify hard constraint is displayed
-      const hardConstraintText =
-        "Test Hard Constraint - Worker must work at least 2 shifts per week";
-      await constraintTestBase.waitForConstraintInList(
-        page,
-        hardConstraintText
-      );
-
-      // Verify soft constraint is displayed
-      const softConstraintText =
-        "Test Soft Constraint - Worker prefers morning shifts";
-      await constraintTestBase.waitForConstraintInList(
-        page,
-        softConstraintText
-      );
+      // Verify constraints are displayed
+      // Since the text is generated by the backend based on the blocks, 
+      // we check for the presence of constraint items with the expected IDs
+      const constraintItems = page.locator('[data-testid^="constraint-item-"]');
+      const itemCount = await constraintItems.count();
+      
+      // We should have at least our test constraints
+      expect(itemCount).toBeGreaterThanOrEqual(testConstraints.length);
+      
+      // Check that constraints contain worker and shift names from our test data
+      const constraintList = constraintTestBase.getConstraintList(page);
+      const testWorkers = constraintTestBase.getTestWorkers();
+      const testShifts = constraintTestBase.getTestShifts();
+      
+      // The generated text should contain our test worker and shift names
+      await expect(constraintList).toContainText(testWorkers[0].name);
+      await expect(constraintList).toContainText(testShifts[0].name);
 
       console.log("✅ Both test constraints are visible in the list");
     } else {
@@ -294,27 +555,33 @@ test.describe("Constraint List", () => {
     }
 
     const constraintToDelete = testConstraints[0];
-    const constraintText =
-      "Test Hard Constraint - Worker must work at least 2 shifts per week";
+    
+    // Get initial constraint count to verify deletion
+    const constraintItems = page.locator('[data-testid^="constraint-item-"]');
+    const initialCount = await constraintItems.count();
 
-    // Verify the constraint is initially visible
-    await constraintTestBase.waitForConstraintInList(page, constraintText);
-
-    // Find and click the delete button
+    // Verify the constraint is initially visible by checking the delete button exists
     const deleteButton = constraintTestBase.getConstraintDeleteButton(
       page,
       constraintToDelete.constraintId
     );
-
     await expect(deleteButton).toBeVisible();
+    // Click the delete button
     await deleteButton.click();
 
     // Wait for the constraint to be removed from the list
     await page.waitForTimeout(2000);
 
-    // Verify the constraint is no longer visible in the list
-    const constraintList = constraintTestBase.getConstraintList(page);
-    await expect(constraintList).not.toContainText(constraintText);
+    // Verify the constraint count decreased or the specific constraint item is gone
+    const finalCount = await constraintItems.count();
+    expect(finalCount).toBe(initialCount - 1);
+    
+    // Verify the specific constraint item is no longer present
+    const deletedConstraintItem = constraintTestBase.getConstraintItemById(
+      page,
+      constraintToDelete.constraintId
+    );
+    await expect(deletedConstraintItem).not.toBeVisible();
 
     // Remove from our test constraints array since it's been deleted
     testConstraints = testConstraints.filter(
@@ -392,9 +659,24 @@ test.describe("Constraint List", () => {
     await expect(editPopup).not.toBeVisible();
 
     // 3. Verify both constraints are still visible in the list
-    const constraintList = constraintTestBase.getConstraintList(page);
-    await expect(constraintList).toContainText("Test Hard Constraint");
-    await expect(constraintList).toContainText("Test Soft Constraint");
+    const constraintItems = page.locator('[data-testid^="constraint-item-"]');
+    const finalCount = await constraintItems.count();
+    
+    // Should still have our test constraints
+    expect(finalCount).toBeGreaterThanOrEqual(testConstraints.length);
+    
+    // Verify the constraint items still exist by checking their delete buttons
+    const constraint1DeleteButton = constraintTestBase.getConstraintDeleteButton(
+      page,
+      constraint1.constraintId
+    );
+    const constraint2DeleteButton = constraintTestBase.getConstraintDeleteButton(
+      page,
+      constraint2.constraintId
+    );
+    
+    await expect(constraint1DeleteButton).toBeVisible();
+    await expect(constraint2DeleteButton).toBeVisible();
 
     console.log(
       "✅ Constraint list maintains state correctly after operations"
