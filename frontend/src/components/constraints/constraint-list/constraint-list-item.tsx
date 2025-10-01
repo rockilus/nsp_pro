@@ -31,7 +31,6 @@ export default function ConstraintListItem({
   handleUpdateConstraint,
   handleDeleteConstraint,
   isLast,
-  "data-testid": dataTestId,
 }: {
   lng: string;
   workers: WorkerT[];
@@ -41,7 +40,6 @@ export default function ConstraintListItem({
   handleUpdateConstraint: (updatedConstraint: ConstraintT) => void;
   handleDeleteConstraint: (constraintId: string) => void;
   isLast?: boolean;
-  "data-testid"?: string;
 }) {
   const handleDelete = async () => {
     await handleDeleteConstraint(constraint.id);
@@ -70,7 +68,7 @@ export default function ConstraintListItem({
         paddingX: 1,
         borderBottom: isLast ? "none" : "1px solid #e0e0e0",
       }}
-      data-testid={dataTestId || `constraint-item-${constraint.id}`}
+      data-testid={`constraint-item-${constraint.id}`}
     >
       <Grid
         container
@@ -92,7 +90,6 @@ export default function ConstraintListItem({
                 ? ConstraintColorActiveText
                 : ConstraintColorInactiveText
             }
-            data-testid={`constraint-text-${constraint.id}`}
           >
             {constraint.text}
           </Typography>
@@ -102,8 +99,13 @@ export default function ConstraintListItem({
           />
         </Grid>
         <Grid item xs={3}>
-          <div data-testid={`constraint-hard-soft-button-${constraint.id}`}>
-            {HardSoftButton(lng, constraint.hard, handleToggleHard)}
+          <div>
+            {HardSoftButton(
+              lng,
+              constraint.hard,
+              constraint.id,
+              handleToggleHard
+            )}
           </div>
         </Grid>
         <Grid item xs={1}>

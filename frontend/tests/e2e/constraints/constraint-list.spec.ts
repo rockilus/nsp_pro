@@ -63,6 +63,8 @@ test.describe("Constraint List", () => {
     // Wait for the frontend to load the constraints
     // Some browsers (Firefox/WebKit) have slower React state updates
     await page.waitForTimeout(3000);
+    await page.reload();
+    await constraintTestBase.waitForConstraintListLoad(page);
   });
 
   test.afterEach(async () => {

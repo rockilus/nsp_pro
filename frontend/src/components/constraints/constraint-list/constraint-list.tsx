@@ -59,7 +59,6 @@ export default function ConstraintList({
             handleUpdateConstraint={handleUpdateConstraint}
             handleDeleteConstraint={handleDeleteConstraint}
             isLast={index === constraints.length - 1}
-            data-testid={`constraint-item-${index}`}
           />
         ))
       )}
