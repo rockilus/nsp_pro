@@ -102,14 +102,9 @@ describe("ConstraintTestBase", () => {
       const blocks = constraintTestBase.generateConstraintBlocksFromTemplate(
         mockTemplate,
         {
-          workerIndex: 0,
-          shiftIndex: 0,
+          workerId: "worker1", // Use specific worker ID
+          shiftId: "shift1", // Use specific shift ID
           numberValue: 3,
-          stringOverrides: {
-            5: "must work",
-            0: "at least",
-            2: "per week",
-          },
         }
       );
 
@@ -130,14 +125,14 @@ describe("ConstraintTestBase", () => {
         ],
       });
 
-      // Check TEXT block (type 0 - STRING with override)
+      // Check TEXT block (type 0 - STRING uses placeholder)
       expect(blocks[1]).toEqual({
         name: 5,
         type: 0,
-        value: "must work",
+        value: "should work",
       });
 
-      // Check OPERATOR block (type 0 - STRING with override)
+      // Check OPERATOR block (type 0 - STRING uses placeholder)
       expect(blocks[2]).toEqual({
         name: 0,
         type: 0,
@@ -178,6 +173,8 @@ describe("ConstraintTestBase", () => {
       const mockTemplate = {
         id: "0",
         constraintType: 1,
+        text: "Worker should work",
+        language: "en",
         blocks: [
           {
             name: 4,
@@ -190,7 +187,7 @@ describe("ConstraintTestBase", () => {
 
       const blocks = constraintTestBase.generateConstraintBlocksFromTemplate(
         mockTemplate,
-        { workerIndex: 0 }
+        { workerId: "worker1" }
       );
 
       expect(blocks).toHaveLength(1);
@@ -213,6 +210,8 @@ describe("ConstraintTestBase", () => {
       const mockTemplate = {
         id: "0",
         constraintType: 1,
+        text: "Default text",
+        language: "en",
         blocks: [
           {
             name: 5,
@@ -238,6 +237,8 @@ describe("ConstraintTestBase", () => {
       const mockTemplate = {
         id: "0",
         constraintType: 1,
+        text: "Number test",
+        language: "en",
         blocks: [
           {
             name: 1,

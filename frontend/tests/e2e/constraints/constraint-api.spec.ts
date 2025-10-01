@@ -34,16 +34,14 @@ test.describe("Constraint API Tests", () => {
     );
 
     // Create a test constraint using template-based block generation
+    const testWorkers = constraintTestBase.getTestWorkers();
+    const testShifts = constraintTestBase.getTestShifts();
+
     const createdConstraint =
       await constraintTestBase.createTestConstraintFromTemplate(template, {
-        workerIndex: 0,
-        shiftIndex: 0,
+        workerId: testWorkers[0].workerId, // Use first worker ID
+        shiftId: testShifts[0].id, // Use first shift ID
         numberValue: 2,
-        stringOverrides: {
-          5: "should work", // TEXT block
-          0: "at least", // OPERATOR block
-          2: "per week", // TIMING block
-        },
         hard: true,
         priority: "high",
         active: true,
@@ -93,16 +91,14 @@ test.describe("Constraint API Tests", () => {
     const template = templates[0];
 
     // Create a test constraint first using template-based generation
+    const testWorkers = constraintTestBase.getTestWorkers();
+    const testShifts = constraintTestBase.getTestShifts();
+
     const createdConstraint =
       await constraintTestBase.createTestConstraintFromTemplate(template, {
-        workerIndex: 0,
-        shiftIndex: 0,
+        workerId: testWorkers[0].workerId, // Use first worker ID
+        shiftId: testShifts[0].id, // Use first shift ID
         numberValue: 2,
-        stringOverrides: {
-          5: "should work", // TEXT block
-          0: "at least", // OPERATOR block
-          2: "per week", // TIMING block
-        },
         hard: true,
         priority: "high",
         active: true,
@@ -156,16 +152,14 @@ test.describe("Constraint API Tests", () => {
     const template = templates[0];
 
     // Create a test constraint first using template-based generation
+    const testWorkers = constraintTestBase.getTestWorkers();
+    const testShifts = constraintTestBase.getTestShifts();
+
     const createdConstraint =
       await constraintTestBase.createTestConstraintFromTemplate(template, {
-        workerIndex: 0,
-        shiftIndex: 0,
+        workerId: testWorkers[0].workerId, // Use first worker ID
+        shiftId: testShifts[0].id, // Use first shift ID
         numberValue: 1,
-        stringOverrides: {
-          5: "should work", // TEXT block
-          0: "exactly", // OPERATOR block
-          2: "per day", // TIMING block
-        },
         hard: true,
         priority: "medium",
         active: true,
@@ -209,5 +203,193 @@ test.describe("Constraint API Tests", () => {
         `✅ Template validation passed: ${template.id} - ${template.text}`
       );
     }
+  });
+
+  test("should create constraints with specific worker ID", async () => {
+    const templates = await constraintTestBase.getTestConstraintTemplates();
+    if (templates.length === 0) {
+      test.skip(true, "No constraint templates available");
+      return;
+    }
+
+    const template = templates[0];
+    const testWorkers = constraintTestBase.getTestWorkers();
+    const testShifts = constraintTestBase.getTestShifts();
+
+    // Test with first worker
+    const constraint1 =
+      await constraintTestBase.createTestConstraintFromTemplate(template, {
+        workerId: testWorkers[0].workerId,
+        shiftId: testShifts[0].id,
+        numberValue: 1,
+      });
+    expect(constraint1.constraintId).toBeTruthy();
+
+    // Test with second worker
+    const constraint2 =
+      await constraintTestBase.createTestConstraintFromTemplate(template, {
+        workerId: testWorkers[1].workerId,
+        shiftId: testShifts[0].id,
+        numberValue: 2,
+      });
+    expect(constraint2.constraintId).toBeTruthy();
+
+    console.log(
+      `✅ Created constraints for specific workers: ${constraint1.constraintId}, ${constraint2.constraintId}`
+    );
+  });
+
+  test("should create constraints with all workers option", async () => {
+    const templates = await constraintTestBase.getTestConstraintTemplates();
+    if (templates.length === 0) {
+      test.skip(true, "No constraint templates available");
+      return;
+    }
+
+    const template = templates[0];
+    const testShifts = constraintTestBase.getTestShifts();
+
+    const constraint =
+      await constraintTestBase.createTestConstraintFromTemplate(template, {
+        workerId: "all",
+        shiftId: testShifts[0].id,
+        numberValue: 3,
+      });
+
+    expect(constraint.constraintId).toBeTruthy();
+    console.log(
+      `✅ Created constraint for all workers: ${constraint.constraintId}`
+    );
+  });
+
+  test("should create constraints with all shifts option", async () => {
+    const templates = await constraintTestBase.getTestConstraintTemplates();
+    if (templates.length === 0) {
+      test.skip(true, "No constraint templates available");
+      return;
+    }
+
+    const template = templates[0];
+    const testWorkers = constraintTestBase.getTestWorkers();
+
+    const constraint =
+      await constraintTestBase.createTestConstraintFromTemplate(template, {
+        workerId: testWorkers[0].workerId,
+        shiftId: "all",
+        numberValue: 2,
+      });
+
+    expect(constraint.constraintId).toBeTruthy();
+    console.log(
+      `✅ Created constraint for all shifts: ${constraint.constraintId}`
+    );
+  });
+
+  test("should create constraints with duty option", async () => {
+    const templates = await constraintTestBase.getTestConstraintTemplates();
+    if (templates.length === 0) {
+      test.skip(true, "No constraint templates available");
+      return;
+    }
+
+    const template = templates[0];
+    const testWorkers = constraintTestBase.getTestWorkers();
+
+    const constraint =
+      await constraintTestBase.createTestConstraintFromTemplate(template, {
+        workerId: testWorkers[0].workerId,
+        shiftId: "duty",
+        numberValue: 1,
+      });
+
+    expect(constraint.constraintId).toBeTruthy();
+    console.log(
+      `✅ Created constraint with duty option: ${constraint.constraintId}`
+    );
+  });
+
+  test("should create constraints with no-duty option", async () => {
+    const templates = await constraintTestBase.getTestConstraintTemplates();
+    if (templates.length === 0) {
+      test.skip(true, "No constraint templates available");
+      return;
+    }
+
+    const template = templates[0];
+    const testWorkers = constraintTestBase.getTestWorkers();
+
+    const constraint =
+      await constraintTestBase.createTestConstraintFromTemplate(template, {
+        workerId: testWorkers[0].workerId,
+        shiftId: "no-duty",
+        numberValue: 0,
+      });
+
+    expect(constraint.constraintId).toBeTruthy();
+    console.log(
+      `✅ Created constraint with no-duty option: ${constraint.constraintId}`
+    );
+  });
+
+  test("should create constraints with default parameters", async () => {
+    const templates = await constraintTestBase.getTestConstraintTemplates();
+    if (templates.length === 0) {
+      test.skip(true, "No constraint templates available");
+      return;
+    }
+
+    const template = templates[0];
+
+    // Test with no parameters (should use defaults)
+    const constraint =
+      await constraintTestBase.createTestConstraintFromTemplate(template);
+
+    expect(constraint.constraintId).toBeTruthy();
+    console.log(
+      `✅ Created constraint with default parameters: ${constraint.constraintId}`
+    );
+  });
+
+  test("should create constraints with all combinations", async () => {
+    const templates = await constraintTestBase.getTestConstraintTemplates();
+    if (templates.length === 0) {
+      test.skip(true, "No constraint templates available");
+      return;
+    }
+
+    const template = templates[0];
+    const testWorkers = constraintTestBase.getTestWorkers();
+
+    // Test all workers + all shifts
+    const constraint1 =
+      await constraintTestBase.createTestConstraintFromTemplate(template, {
+        workerId: "all",
+        shiftId: "all",
+        numberValue: 5,
+      });
+
+    // Test all workers + duty
+    const constraint2 =
+      await constraintTestBase.createTestConstraintFromTemplate(template, {
+        workerId: "all",
+        shiftId: "duty",
+        numberValue: 3,
+      });
+
+    // Test all workers + no-duty
+    const constraint3 =
+      await constraintTestBase.createTestConstraintFromTemplate(template, {
+        workerId: "all",
+        shiftId: "no-duty",
+        numberValue: 1,
+      });
+
+    expect(constraint1.constraintId).toBeTruthy();
+    expect(constraint2.constraintId).toBeTruthy();
+    expect(constraint3.constraintId).toBeTruthy();
+
+    console.log(
+      `✅ Created constraints with all combinations: ${constraint1.constraintId}, ${constraint2.constraintId}, ${constraint3.constraintId}`
+    );
   });
 });

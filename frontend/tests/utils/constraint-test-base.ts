@@ -1075,20 +1075,14 @@ export class ConstraintTestBase {
    * @returns Array of constraint blocks ready for constraint creation
    */
   generateConstraintBlocksFromTemplate(
-    template: any,
+    template: TemplateT,
     options: {
-      workerIndex?: number;
-      shiftIndex?: number;
+      workerId?: string | "all";
+      shiftId?: string | "all" | "duty" | "no-duty";
       numberValue?: number;
-      stringOverrides?: { [blockName: number]: string };
     } = {}
   ): any[] {
-    const {
-      workerIndex = 0,
-      shiftIndex = 0,
-      numberValue = 2,
-      stringOverrides = {},
-    } = options;
+    const { workerId, shiftId, numberValue = 2 } = options;
 
     if (!template.blocks || !Array.isArray(template.blocks)) {
       throw new Error("Template must have blocks array");
@@ -1097,7 +1091,7 @@ export class ConstraintTestBase {
     const testWorkers = this.getTestWorkers();
     const testShifts = this.getTestShifts();
 
-    return template.blocks.map((templateBlock: any) => {
+    return template.blocks.map((templateBlock) => {
       const block = {
         name: templateBlock.name,
         type: templateBlock.type,
@@ -1107,9 +1101,8 @@ export class ConstraintTestBase {
       // Handle different block types based on BlockTypeOptions
       switch (templateBlock.type) {
         case 0: // STRING
-          // Use string override if provided, otherwise use placeholder
-          block.value =
-            stringOverrides[templateBlock.name] || templateBlock.placeholder;
+          // Use the placeholder from template (no overrides)
+          block.value = templateBlock.placeholder;
           break;
 
         case 1: // NUMBER
@@ -1127,63 +1120,124 @@ export class ConstraintTestBase {
           break;
 
         case 3: // SHIFT_WORKER_OPTION
-          // Select appropriate option from template based on category
+          // Select appropriate option from template based on provided IDs or defaults
           if (templateBlock.options && templateBlock.options.length > 0) {
-            // Find the first appropriate option that matches our test data
             let selectedOption = null;
 
-            // Look for worker options
-            const workerOption = templateBlock.options.find(
-              (opt: any) => opt.categoryName === "Workers" && opt.idType === 1
-            );
-            if (workerOption && testWorkers.length > workerIndex) {
-              selectedOption = {
-                name: testWorkers[workerIndex].name,
-                id: testWorkers[workerIndex].workerId,
-                idType: 1,
-                isBoolDim: false,
-                categoryName: "Workers",
-              };
-            }
-
-            // Look for shift options if no worker option found
-            if (!selectedOption) {
-              const shiftOption = templateBlock.options.find(
-                (opt: any) => opt.categoryName === "Shifts" && opt.idType === 2
-              );
-              if (shiftOption && testShifts.length > shiftIndex) {
-                selectedOption = {
-                  name: testShifts[shiftIndex].name,
-                  id: testShifts[shiftIndex].id,
-                  idType: 2,
-                  isBoolDim: false,
-                  categoryName: "Shifts",
-                };
+            // Check if this block is for workers (name 4 = WORKER)
+            if (templateBlock.name === 4) {
+              if (workerId === "all") {
+                // Look for "all workers" option
+                selectedOption = templateBlock.options.find(
+                  (opt: any) =>
+                    opt.categoryName === "All" &&
+                    opt.isBoolDim === false &&
+                    (opt.name === "all workers" ||
+                      opt.name.toLowerCase().includes("all"))
+                );
+              } else if (workerId) {
+                // Look for specific worker by ID
+                selectedOption = templateBlock.options.find(
+                  (opt: any) =>
+                    opt.id === workerId && opt.categoryName === "Workers"
+                );
+              } else {
+                // Default: use first available worker
+                const workerOption = templateBlock.options.find(
+                  (opt: any) =>
+                    opt.categoryName === "Workers" && opt.idType === 1
+                );
+                if (workerOption && testWorkers.length > 0) {
+                  selectedOption = {
+                    name: testWorkers[0].name,
+                    id: testWorkers[0].workerId,
+                    idType: (workerOption as any).idType,
+                    isBoolDim: (workerOption as any).isBoolDim,
+                    categoryName: (workerOption as any).categoryName,
+                  };
+                }
               }
             }
 
-            // Fallback to "all" options if available
-            if (!selectedOption) {
-              const allOption = templateBlock.options.find(
-                (opt: any) => opt.categoryName === "All" && opt.idType === 0
-              );
-              if (allOption) {
-                selectedOption = allOption;
+            // Check if this block is for shifts (name 3 = SHIFT)
+            else if (templateBlock.name === 3) {
+              if (shiftId === "all") {
+                // Look for "all shifts" option
+                selectedOption = templateBlock.options.find(
+                  (opt: any) =>
+                    opt.categoryName === "All" &&
+                    opt.isBoolDim === false &&
+                    (opt.name === "all shifts" ||
+                      opt.name.toLowerCase().includes("all"))
+                );
+              } else if (shiftId === "duty") {
+                // Look for duty option
+                selectedOption = templateBlock.options.find(
+                  (opt: any) =>
+                    opt.categoryName === "Duties" &&
+                    opt.isBoolDim === true &&
+                    opt.name === true
+                );
+              } else if (shiftId === "no-duty") {
+                // Look for no-duty option
+                selectedOption = templateBlock.options.find(
+                  (opt: any) =>
+                    opt.categoryName === "Duties" &&
+                    opt.isBoolDim === true &&
+                    opt.name === false
+                );
+              } else if (shiftId) {
+                // Look for specific shift by ID
+                selectedOption = templateBlock.options.find(
+                  (opt: any) =>
+                    opt.id === shiftId && opt.categoryName === "Shifts"
+                );
+              } else {
+                // Default: use first available shift
+                const shiftOption = templateBlock.options.find(
+                  (opt: any) =>
+                    opt.categoryName === "Shifts" && opt.idType === 2
+                );
+                if (shiftOption && testShifts.length > 0) {
+                  selectedOption = {
+                    name: testShifts[0].name,
+                    id: testShifts[0].id,
+                    idType: (shiftOption as any).idType,
+                    isBoolDim: (shiftOption as any).isBoolDim,
+                    categoryName: (shiftOption as any).categoryName,
+                  };
+                }
               }
             }
 
-            // Use the selected option or fallback to first option
-            block.value = [selectedOption || templateBlock.options[0]];
+            // Fallback to first option if no specific selection found
+            if (!selectedOption) {
+              selectedOption = templateBlock.options[0];
+            }
+
+            block.value = [selectedOption];
           } else {
-            // Fallback: create a basic worker option if no template options
-            if (testWorkers.length > workerIndex) {
+            // Fallback: create a basic option if no template options
+            if (templateBlock.name === 4 && testWorkers.length > 0) {
+              // Worker block
               block.value = [
                 {
-                  name: testWorkers[workerIndex].name,
-                  id: testWorkers[workerIndex].workerId,
+                  name: testWorkers[0].name,
+                  id: testWorkers[0].workerId,
                   idType: 1,
                   isBoolDim: false,
                   categoryName: "Workers",
+                },
+              ];
+            } else if (templateBlock.name === 3 && testShifts.length > 0) {
+              // Shift block
+              block.value = [
+                {
+                  name: testShifts[0].name,
+                  id: testShifts[0].id,
+                  idType: 2,
+                  isBoolDim: false,
+                  categoryName: "Shifts",
                 },
               ];
             } else {
@@ -1238,12 +1292,11 @@ export class ConstraintTestBase {
    * with constraint creation in a single call
    */
   async createTestConstraintFromTemplate(
-    template: any,
+    template: TemplateT,
     options: {
-      workerIndex?: number;
-      shiftIndex?: number;
+      workerId?: string | "all";
+      shiftId?: string | "all" | "duty" | "no-duty";
       numberValue?: number;
-      stringOverrides?: { [blockName: number]: string };
       language?: string;
       text?: string;
       hard?: boolean;

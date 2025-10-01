@@ -192,16 +192,14 @@ test.describe("Constraint List", () => {
       // }
 
       // Create a hard constraint using template-based block generation
+      const testWorkers = constraintTestBase.getTestWorkers();
+      const testShifts = constraintTestBase.getTestShifts();
+
       const hardConstraint =
         await constraintTestBase.createTestConstraintFromTemplate(template, {
-          workerIndex: 0,
-          shiftIndex: 0,
+          workerId: testWorkers[0].workerId, // Use first worker ID
+          shiftId: testShifts[0].id, // Use first shift ID
           numberValue: 2,
-          stringOverrides: {
-            5: "must work", // TEXT block
-            0: "at least", // OPERATOR block
-            2: "per week", // TIMING block
-          },
           hard: true,
           priority: "high",
         });
@@ -210,14 +208,9 @@ test.describe("Constraint List", () => {
       // Create a soft constraint using template-based block generation
       const softConstraint =
         await constraintTestBase.createTestConstraintFromTemplate(template, {
-          workerIndex: 1, // Use second worker
-          shiftIndex: 0,
+          workerId: testWorkers[1].workerId, // Use second worker ID
+          shiftId: testShifts[0].id, // Use first shift ID
           numberValue: 3,
-          stringOverrides: {
-            5: "prefers", // TEXT block
-            0: "at most", // OPERATOR block
-            2: "consecutive", // TIMING block
-          },
           hard: false,
           priority: "medium",
         });
