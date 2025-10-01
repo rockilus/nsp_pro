@@ -1067,6 +1067,142 @@ export class ConstraintTestBase {
   //////////////////////////
 
   /**
+   * Generates constraint blocks from a template with populated values
+   * This method creates realistic constraint blocks based on the template structure
+   *
+   * @param template - The constraint template to base the blocks on
+   * @param options - Optional customization for block values
+   * @returns Array of constraint blocks ready for constraint creation
+   */
+  generateConstraintBlocksFromTemplate(
+    template: any,
+    options: {
+      workerIndex?: number;
+      shiftIndex?: number;
+      numberValue?: number;
+      stringOverrides?: { [blockName: number]: string };
+    } = {}
+  ): any[] {
+    const {
+      workerIndex = 0,
+      shiftIndex = 0,
+      numberValue = 2,
+      stringOverrides = {},
+    } = options;
+
+    if (!template.blocks || !Array.isArray(template.blocks)) {
+      throw new Error("Template must have blocks array");
+    }
+
+    const testWorkers = this.getTestWorkers();
+    const testShifts = this.getTestShifts();
+
+    return template.blocks.map((templateBlock: any) => {
+      const block = {
+        name: templateBlock.name,
+        type: templateBlock.type,
+        value: null as any,
+      };
+
+      // Handle different block types based on BlockTypeOptions
+      switch (templateBlock.type) {
+        case 0: // STRING
+          // Use string override if provided, otherwise use placeholder
+          block.value =
+            stringOverrides[templateBlock.name] || templateBlock.placeholder;
+          break;
+
+        case 1: // NUMBER
+          // Use positive integer (default or provided)
+          block.value = numberValue;
+          break;
+
+        case 2: // LIST
+          // Use first option from template options array
+          if (templateBlock.options && templateBlock.options.length > 0) {
+            block.value = templateBlock.options[0];
+          } else {
+            block.value = templateBlock.placeholder;
+          }
+          break;
+
+        case 3: // SHIFT_WORKER_OPTION
+          // Select appropriate option from template based on category
+          if (templateBlock.options && templateBlock.options.length > 0) {
+            // Find the first appropriate option that matches our test data
+            let selectedOption = null;
+
+            // Look for worker options
+            const workerOption = templateBlock.options.find(
+              (opt: any) => opt.categoryName === "Workers" && opt.idType === 1
+            );
+            if (workerOption && testWorkers.length > workerIndex) {
+              selectedOption = {
+                name: testWorkers[workerIndex].name,
+                id: testWorkers[workerIndex].workerId,
+                idType: 1,
+                isBoolDim: false,
+                categoryName: "Workers",
+              };
+            }
+
+            // Look for shift options if no worker option found
+            if (!selectedOption) {
+              const shiftOption = templateBlock.options.find(
+                (opt: any) => opt.categoryName === "Shifts" && opt.idType === 2
+              );
+              if (shiftOption && testShifts.length > shiftIndex) {
+                selectedOption = {
+                  name: testShifts[shiftIndex].name,
+                  id: testShifts[shiftIndex].id,
+                  idType: 2,
+                  isBoolDim: false,
+                  categoryName: "Shifts",
+                };
+              }
+            }
+
+            // Fallback to "all" options if available
+            if (!selectedOption) {
+              const allOption = templateBlock.options.find(
+                (opt: any) => opt.categoryName === "All" && opt.idType === 0
+              );
+              if (allOption) {
+                selectedOption = allOption;
+              }
+            }
+
+            // Use the selected option or fallback to first option
+            block.value = [selectedOption || templateBlock.options[0]];
+          } else {
+            // Fallback: create a basic worker option if no template options
+            if (testWorkers.length > workerIndex) {
+              block.value = [
+                {
+                  name: testWorkers[workerIndex].name,
+                  id: testWorkers[workerIndex].workerId,
+                  idType: 1,
+                  isBoolDim: false,
+                  categoryName: "Workers",
+                },
+              ];
+            } else {
+              block.value = [];
+            }
+          }
+          break;
+
+        default:
+          // Fallback to placeholder for unknown types
+          block.value = templateBlock.placeholder;
+          break;
+      }
+
+      return block;
+    });
+  }
+
+  /**
    * Creates a test constraint using the API
    */
   async createTestConstraint(constraintData: {
@@ -1093,6 +1229,53 @@ export class ConstraintTestBase {
       hard: constraintData.hard ?? true,
       priority: constraintData.priority || "medium",
       active: constraintData.active ?? true,
+    });
+  }
+
+  /**
+   * Creates a test constraint from a template with auto-generated blocks
+   * This is a convenience method that combines template-based block generation
+   * with constraint creation in a single call
+   */
+  async createTestConstraintFromTemplate(
+    template: any,
+    options: {
+      workerIndex?: number;
+      shiftIndex?: number;
+      numberValue?: number;
+      stringOverrides?: { [blockName: number]: string };
+      language?: string;
+      text?: string;
+      hard?: boolean;
+      priority?: string;
+      active?: boolean;
+    } = {}
+  ): Promise<{ constraintId: string; teamId: string }> {
+    const {
+      language = "en",
+      text = "", // Will be populated by backend
+      hard = true,
+      priority = "medium",
+      active = true,
+      ...blockOptions
+    } = options;
+
+    // Generate blocks from template
+    const blocks = this.generateConstraintBlocksFromTemplate(
+      template,
+      blockOptions
+    );
+
+    // Create the constraint
+    return await this.createTestConstraint({
+      constraintType: template.constraintType,
+      templateId: template.id,
+      language,
+      blocks,
+      text,
+      hard,
+      priority,
+      active,
     });
   }
 
