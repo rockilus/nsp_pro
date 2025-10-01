@@ -1350,7 +1350,7 @@ export class DatabaseTestUtils {
   ): Promise<{ constraintId: string; teamId: string }> {
     try {
       // Make direct API calls instead of using dynamic import
-      
+
       // First get the current constraint
       const constraints = await this.testApiClient.get<any[]>(
         `/constraints/teams/${teamId}`
