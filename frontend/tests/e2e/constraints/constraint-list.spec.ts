@@ -88,51 +88,20 @@ test.describe("Constraint List", () => {
     await expect(constraintList).toBeVisible();
 
     if (testConstraints.length > 0) {
-      // Get the text content of the constraint list
-      const constraintListText = await constraintList.textContent();
-      console.log(
-        `Constraint list text content: ${constraintListText?.substring(
-          0,
-          200
-        )}...`
-      );
-
-      // Check if constraints are visible in the UI
-      const hasConstraintText =
-        constraintListText &&
-        constraintListText.includes("doit faire") &&
-        constraintListText.includes("consecutives");
-
-      if (hasConstraintText) {
-        // Ideal case: constraints are visible in UI
-        await expect(constraintList).toContainText("doit faire");
-        await expect(constraintList).toContainText("consecutives");
-        await expect(constraintList).toContainText("Hard");
-        await expect(constraintList).toContainText("Soft");
-        console.log("✅ Both test constraints are visible in the list");
-      } else {
-        // Fallback: verify constraints exist in backend even if UI isn't showing them
-        console.log(
-          "⚠️ Constraints not visible in UI, verifying backend state..."
+      // Check that each test constraint is displayed using its specific constraint item identifier
+      for (const testConstraint of testConstraints) {
+        const constraintItem = page.locator(
+          `[data-testid="constraint-item-${testConstraint.constraintId}"]`
         );
-        const backendConstraints =
-          await constraintTestBase.getTestConstraints();
-
-        expect(backendConstraints.length).toBeGreaterThanOrEqual(
-          testConstraints.length
-        );
-
-        // Verify the constraints we created are in the backend
-        for (const testConstraint of testConstraints) {
-          const found = backendConstraints.find(
-            (c) => c.id === testConstraint.constraintId
-          );
-          expect(found).toBeTruthy();
-        }
+        await expect(constraintItem).toBeVisible();
         console.log(
-          "✅ Test constraints verified in backend (UI display issue in this browser)"
+          `✅ Constraint ${testConstraint.constraintId} is visible in the list`
         );
       }
+
+      console.log(
+        `✅ All ${testConstraints.length} test constraints are visible in the list`
+      );
     } else {
       // If no test constraints were created due to missing templates,
       // verify the "no constraints" message
