@@ -215,6 +215,13 @@ export class ConstraintTestBase {
   }
 
   /**
+   * Gets the test team created during setup
+   */
+  getTestTeam(): { teamId: string; name: string } | null {
+    return this.testTeam;
+  }
+
+  /**
    * Deletes all test workers created during setup
    */
   async deleteAllTestWorkers(): Promise<void> {

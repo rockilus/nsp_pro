@@ -91,6 +91,17 @@ test.describe("Constraint List", () => {
       `[Test Run ${testRunId}] Created ${constraintCount} test constraints`
     );
 
+    // Clear localStorage and set the correct team to ensure we're viewing the right constraints
+    // This is crucial when multiple tests run in the same worker
+    const testTeam = constraintTestBase.getTestTeam();
+    await page.evaluate((teamData) => {
+      localStorage.clear();
+      // The app uses selectedTeamId, not selectedTeam
+      if (teamData) {
+        localStorage.setItem("selectedTeamId", teamData.teamId);
+      }
+    }, testTeam);
+
     // Wait for the frontend to load the constraints
     // Some browsers (Firefox/WebKit) have slower React state updates
     await page.waitForTimeout(1000);
@@ -185,38 +196,13 @@ test.describe("Constraint List", () => {
     await expect(constraintList).toBeVisible();
 
     if (testConstraints.length > 0) {
-      // Debug: Log all constraint items on the page
-      const allConstraintItems = await page
-        .locator('[data-testid^="constraint-item-"]')
-        .all();
-      console.log(
-        `[Test Run ${testRunId}] Found ${allConstraintItems.length} constraint items on page`
-      );
-      for (const item of allConstraintItems) {
-        const testId = await item.getAttribute("data-testid");
-        console.log(`[Test Run ${testRunId}] Found constraint item: ${testId}`);
-      }
-
-      // Log the constraint IDs we're looking for
-      console.log(
-        `[Test Run ${testRunId}] Looking for constraint IDs:`,
-        testConstraints.map((c) => c.constraintId)
-      );
-
       // Check that each test constraint is displayed using its specific constraint item identifier
       for (const testConstraint of testConstraints) {
         const constraintItem = page.locator(
           `[data-testid="constraint-item-${testConstraint.constraintId}"]`
         );
         await expect(constraintItem).toBeVisible({ timeout: 10000 });
-        console.log(
-          `[Test Run ${testRunId}] ✅ Constraint ${testConstraint.constraintId} is visible in the list`
-        );
       }
-
-      console.log(
-        `[Test Run ${testRunId}] ✅ All ${testConstraints.length} test constraints are visible in the list`
-      );
     } else {
       // If no test constraints were created due to missing templates,
       // verify the "no constraints" message
@@ -254,7 +240,6 @@ test.describe("Constraint List", () => {
     // Initially should show "Hard" (or localized equivalent)
     await expect(hardSoftButton).toBeVisible();
     const initialText = await hardSoftButton.textContent();
-    console.log(`[Test Run ${testRunId}] Initial button text: ${initialText}`);
 
     // Click the button to toggle to soft
     await hardSoftButton.click();
@@ -264,14 +249,9 @@ test.describe("Constraint List", () => {
 
     // Button should now show "Soft" (or localized equivalent)
     const updatedText = await hardSoftButton.textContent();
-    console.log(`[Test Run ${testRunId}] Updated button text: ${updatedText}`);
 
     // Verify the text changed (exact text depends on localization)
     expect(updatedText).not.toBe(initialText);
-
-    console.log(
-      `[Test Run ${testRunId}] ✅ Hard/soft constraint toggle works correctly`
-    );
   });
 
   test("should toggle constraint from soft to hard when clicking hard/soft button", async ({
@@ -301,7 +281,6 @@ test.describe("Constraint List", () => {
     // Initially should show "Soft" (or localized equivalent)
     await expect(hardSoftButton).toBeVisible();
     const initialText = await hardSoftButton.textContent();
-    console.log(`[Test Run ${testRunId}] Initial button text: ${initialText}`);
 
     // Click the button to toggle to hard
     await hardSoftButton.click();
@@ -311,14 +290,9 @@ test.describe("Constraint List", () => {
 
     // Button should now show "Hard" (or localized equivalent)
     const updatedText = await hardSoftButton.textContent();
-    console.log(`[Test Run ${testRunId}] Updated button text: ${updatedText}`);
 
     // Verify the text changed
     expect(updatedText).not.toBe(initialText);
-
-    console.log(
-      `[Test Run ${testRunId}] ✅ Soft to hard constraint toggle works correctly`
-    );
   });
 
   test("should open edit constraint popup when clicking edit button", async ({
