@@ -102,9 +102,7 @@ test.describe("Constraint List", () => {
       }
     }, testTeam);
 
-    // Wait for the frontend to load the constraints
-    // Some browsers (Firefox/WebKit) have slower React state updates
-    await page.waitForTimeout(1000);
+    // Reload the page to ensure the correct team is selected
     await page.reload();
 
     // Wait for the constraint list to load
@@ -244,8 +242,10 @@ test.describe("Constraint List", () => {
     // Click the button to toggle to soft
     await hardSoftButton.click();
 
-    // Wait a moment for the update to process
-    await page.waitForTimeout(1000);
+    // Wait for the button text to change
+    await expect(hardSoftButton).not.toHaveText(initialText || "", {
+      timeout: 10000,
+    });
 
     // Button should now show "Soft" (or localized equivalent)
     const updatedText = await hardSoftButton.textContent();
@@ -285,8 +285,10 @@ test.describe("Constraint List", () => {
     // Click the button to toggle to hard
     await hardSoftButton.click();
 
-    // Wait a moment for the update to process
-    await page.waitForTimeout(1000);
+    // Wait for the button text to change
+    await expect(hardSoftButton).not.toHaveText(initialText || "", {
+      timeout: 10000,
+    });
 
     // Button should now show "Hard" (or localized equivalent)
     const updatedText = await hardSoftButton.textContent();
@@ -419,19 +421,16 @@ test.describe("Constraint List", () => {
     // Click the delete button
     await deleteButton.click();
 
-    // Wait for the constraint to be removed from the list
-    await page.waitForTimeout(2000);
-
-    // Verify the constraint count decreased or the specific constraint item is gone
-    const finalCount = await constraintItems.count();
-    expect(finalCount).toBe(initialCount - 1);
-
-    // Verify the specific constraint item is no longer present
+    // Wait for the specific constraint item to be removed from the DOM
     const deletedConstraintItem = constraintTestBase.getConstraintItemById(
       page,
       constraintToDelete.constraintId
     );
-    await expect(deletedConstraintItem).not.toBeVisible();
+    await expect(deletedConstraintItem).not.toBeVisible({ timeout: 10000 });
+
+    // Verify the constraint count decreased
+    const finalCount = await constraintItems.count();
+    expect(finalCount).toBe(initialCount - 1);
 
     // Remove from our test constraints map since it's been deleted
     const updatedConstraints = testConstraints.filter(
@@ -506,8 +505,13 @@ test.describe("Constraint List", () => {
       page,
       constraint1.constraintId
     );
+    const initialText1 = await hardSoftButton1.textContent();
     await hardSoftButton1.click();
-    await page.waitForTimeout(1000);
+
+    // Wait for the button text to change
+    await expect(hardSoftButton1).not.toHaveText(initialText1 || "", {
+      timeout: 10000,
+    });
 
     // 2. Open and close edit popup for second constraint
     const editButton2 = constraintTestBase.getConstraintEditButton(
