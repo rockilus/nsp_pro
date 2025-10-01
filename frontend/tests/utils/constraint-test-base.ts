@@ -32,7 +32,6 @@ export class ConstraintTestBase {
    * Performs the common setup for constraint tests:
    * - Waits for API ready
    * - Verifies test utilities are available
-   * - Resets constraint-related database collections
    * - Creates a test team
    * - Creates test workers and shifts
    */
@@ -45,9 +44,6 @@ export class ConstraintTestBase {
     if (!health.test_utilities_available) {
       throw new Error("Test utilities are not available");
     }
-
-    // Reset constraint-related data (constraints, templates, workers, shifts, etc.)
-    await this.dbUtils.resetSchedulingData();
 
     // Create a test team
     const teamName = `Constraint Test Team ${workerIndex}-${Date.now()}`;
