@@ -1281,7 +1281,7 @@ export class DatabaseTestUtils {
   //////////////////////////
 
   /**
-   * Create a constraint using the existing ConstraintApi for consistent behavior
+   * Create a constraint using direct API call
    */
   async createConstraint(constraintData: {
     teamId: string;
@@ -1295,9 +1295,7 @@ export class DatabaseTestUtils {
     active: boolean;
   }): Promise<{ constraintId: string; teamId: string }> {
     try {
-      const { ConstraintApi } = await import(
-        "../../src/app/lib/api/constraintApi"
-      );
+      // Make direct API call instead of using dynamic import
       const constraintToCreate = {
         id: "", // Will be set by the API
         teamId: constraintData.teamId,
@@ -1312,8 +1310,8 @@ export class DatabaseTestUtils {
         missingAttributes: [],
       };
 
-      const createdConstraint = await ConstraintApi.addConstraint(
-        this.testApiClient,
+      const createdConstraint = await this.testApiClient.post<any>(
+        `/constraints/teams/${constraintData.teamId}`,
         constraintToCreate
       );
 
@@ -1351,14 +1349,11 @@ export class DatabaseTestUtils {
     }
   ): Promise<{ constraintId: string; teamId: string }> {
     try {
-      const { ConstraintApi } = await import(
-        "../../src/app/lib/api/constraintApi"
-      );
-
+      // Make direct API calls instead of using dynamic import
+      
       // First get the current constraint
-      const constraints = await ConstraintApi.getConstraints(
-        this.testApiClient,
-        teamId
+      const constraints = await this.testApiClient.get<any[]>(
+        `/constraints/teams/${teamId}`
       );
       const currentConstraint = constraints.find((c) => c.id === constraintId);
 
@@ -1371,8 +1366,8 @@ export class DatabaseTestUtils {
         ...updates,
       };
 
-      const result = await ConstraintApi.updateConstraint(
-        this.testApiClient,
+      const result = await this.testApiClient.put<any>(
+        `/constraints/${constraintId}/teams/${teamId}`,
         updatedConstraint
       );
 
@@ -1391,17 +1386,12 @@ export class DatabaseTestUtils {
   }
 
   /**
-   * Delete a constraint using the existing ConstraintApi for consistent behavior
+   * Delete a constraint using direct API call
    */
   async deleteConstraint(constraintId: string, teamId: string): Promise<void> {
     try {
-      const { ConstraintApi } = await import(
-        "../../src/app/lib/api/constraintApi"
-      );
-      await ConstraintApi.deleteConstraint(
-        this.testApiClient,
-        constraintId,
-        teamId
+      await this.testApiClient.delete<void>(
+        `/constraints/${constraintId}/teams/${teamId}`
       );
       console.log(`Deleted constraint: ${constraintId}`);
     } catch (error) {
@@ -1414,16 +1404,12 @@ export class DatabaseTestUtils {
   }
 
   /**
-   * Get all constraints for a team using the existing ConstraintApi
+   * Get all constraints for a team using direct API call
    */
   async getConstraints(teamId: string): Promise<any[]> {
     try {
-      const { ConstraintApi } = await import(
-        "../../src/app/lib/api/constraintApi"
-      );
-      const constraints = await ConstraintApi.getConstraints(
-        this.testApiClient,
-        teamId
+      const constraints = await this.testApiClient.get<any[]>(
+        `/constraints/teams/${teamId}`
       );
       console.log(
         `Retrieved ${constraints.length} constraints for team ${teamId}`
@@ -1439,16 +1425,13 @@ export class DatabaseTestUtils {
   }
 
   /**
-   * Get constraint templates for a team using the existing ConstraintApi
+   * Get constraint templates for a team using direct API call
    */
   async getConstraintTemplates(teamId: string): Promise<any[]> {
     try {
-      const { ConstraintApi } = await import(
-        "../../src/app/lib/api/constraintApi"
-      );
-      const templates = await ConstraintApi.getTemplates(
-        this.testApiClient,
-        teamId
+      // Make direct API call instead of using dynamic import
+      const templates = await this.testApiClient.get<any[]>(
+        `/constraint-templates/teams/${teamId}`
       );
       console.log(
         `Retrieved ${templates.length} constraint templates for team ${teamId}`
