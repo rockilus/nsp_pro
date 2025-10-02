@@ -824,9 +824,8 @@ test.describe("Constraint Creation", () => {
 
     // Step 5: Click away to close the edit shift block list
     console.log("Step 5: Clicking away to close selection list...");
-    // Click on the dialog background or another element
-    const dialogTitle = page.locator('[id="new-constraint-dialog-title"]');
-    await dialogTitle.click();
+    // Click somewhere on the screen to close the popover
+    await page.mouse.click(100, 100);
 
     // Wait for the popover to close
     await page.waitForTimeout(500);
