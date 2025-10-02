@@ -45,6 +45,7 @@ test.describe("Constraint Creation", () => {
 
   test.afterEach(async ({}, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
+    console.log(`[Test Run ${testRunId}] Starting cleanup...`);
 
     if (!testRunId) {
       console.warn("No testRunId found in testInfo - skipping cleanup");

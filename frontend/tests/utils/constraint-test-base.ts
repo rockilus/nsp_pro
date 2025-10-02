@@ -324,6 +324,9 @@ export class ConstraintTestBase {
     for (const worker of workers) {
       try {
         await this.dbUtils.deleteWorker(worker.workerId, this.testTeam.teamId);
+        console.log(
+          `[Test ${testId}] Deleted worker: ${worker.name} (${worker.workerId})`
+        );
       } catch (error) {
         console.warn(`Failed to delete worker ${worker.name}:`, error);
       }
