@@ -1061,7 +1061,9 @@ test.describe("Constraint Creation", () => {
     const editForm = constraintTestBase.getConstraintEditForm(page);
     await expect(editForm).toBeVisible();
 
-    console.log("Step 1: Check that the OPERATOR string block displays its value");
+    console.log(
+      "Step 1: Check that the OPERATOR string block displays its value"
+    );
     // BlockNameOptions.OPERATOR = 0
     // Template structure: [0: WORKER, 1: TEXT (display only), 2: OPERATOR, 3: NUMBER, 4: SHIFT, 5: TIMING]
     const operatorBlock = page.locator('[data-testid^="string-block-0-"]');
