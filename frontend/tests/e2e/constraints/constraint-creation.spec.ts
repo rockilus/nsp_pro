@@ -752,7 +752,7 @@ test.describe("Constraint Creation", () => {
     console.log("Step 3: Verifying shift options are displayed...");
 
     // Get our test shifts - we know they exist from the setup
-    const testShifts = constraintTestBase.getTestShifts();
+    const testShifts = constraintTestBase.getTestShifts(testRunId);
     const testShift1 = testShifts[0];
     const testShift2 = testShifts[1];
 
@@ -902,7 +902,7 @@ test.describe("Constraint Creation", () => {
     console.log("Step 3: Verifying worker options are displayed...");
 
     // Get our test workers - we know they exist from the setup
-    const testWorkers = constraintTestBase.getTestWorkers();
+    const testWorkers = constraintTestBase.getTestWorkers(testRunId);
     const testWorker1 = testWorkers[0];
     const testWorker2 = testWorkers[1];
 
