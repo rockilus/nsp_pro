@@ -69,6 +69,7 @@ export default function BlockDisplayNumber({
       }
       open={open}
       setOpen={setOpen}
+      data-testid={`number-block-${templateBlock.name}-${index}`}
     />
   );
 }
