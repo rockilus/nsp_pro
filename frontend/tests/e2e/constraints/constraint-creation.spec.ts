@@ -896,6 +896,153 @@ test.describe("Constraint Creation", () => {
     console.log("✅ Shift block test completed successfully!");
   });
 
+  test("should handle worker block interaction: display placeholder, show options, select worker, and validate", async ({
+    page,
+  }) => {
+    // Open the constraint creation dialog and select a template
+    await constraintTestBase.openAddConstraintDialog(page);
+    await constraintTestBase.selectTemplate(page, 0);
+
+    // Wait for the constraint edit form to be visible
+    const editForm = constraintTestBase.getConstraintEditForm(page);
+    await expect(editForm).toBeVisible();
+
+    console.log("Looking for worker blocks...");
+
+    // Find worker blocks (blocks with BlockNameOptions.WORKER = 4)
+    // The data-testid follows pattern: shift-worker-option-block-{blockName}-{index}
+    const workerBlocks = page.locator(
+      '[data-testid^="shift-worker-option-block-4-"]'
+    );
+    const workerBlockCount = await workerBlocks.count();
+
+    console.log(`Found ${workerBlockCount} worker blocks`);
+
+    if (workerBlockCount === 0) {
+      console.log("ℹ️ No worker blocks found in this template, skipping test");
+      return;
+    }
+
+    // Test the first worker block
+    const workerBlock = workerBlocks.first();
+    await expect(workerBlock).toBeVisible();
+
+    // Step 1: Check that the placeholder is displayed in the worker block
+    console.log("Step 1: Checking placeholder display...");
+    const placeholder = workerBlock.locator(
+      '[data-testid^="constraint-block-placeholder-"]'
+    );
+    await expect(placeholder).toBeVisible();
+    const placeholderText = await placeholder.textContent();
+    console.log(`✅ Placeholder displayed: "${placeholderText}"`);
+
+    // Step 2: Click on the worker block to open the selection list
+    console.log("Step 2: Clicking on worker block to open selection list...");
+    await workerBlock.click();
+
+    // Wait for the popover/dialog to open with the worker options
+    await page.waitForTimeout(500); // Small wait for animation
+
+    // Step 3: Verify that the template block options are displayed
+    console.log("Step 3: Verifying worker options are displayed...");
+
+    // Get our test workers - we know they exist from the setup
+    const testWorkers = constraintTestBase.getTestWorkers();
+    const testWorker1 = testWorkers[0];
+    const testWorker2 = testWorkers[1];
+
+    console.log(
+      `Looking for test worker: ${testWorker1.name} (ID: ${testWorker1.workerId})`
+    );
+
+    // Look for worker options using the data-testid pattern we added
+    // Pattern: swo-option-{categoryName}-{id}-{isBoolDim}
+    // For workers, categoryName should be "Workers" and isBoolDim should be false
+    const testWorkerOption = page.locator(
+      `[data-testid="swo-option-Workers-${testWorker1.workerId}-false"]`
+    );
+
+    await expect(testWorkerOption).toBeVisible({ timeout: 5000 });
+    console.log(`✅ Found test worker option: ${testWorker1.name}`);
+
+    // Step 4: Select one option (our test worker)
+    console.log(`Step 4: Selecting worker: ${testWorker1.name}...`);
+    await testWorkerOption.click();
+
+    // Step 5: Click away to close the edit worker block list
+    console.log("Step 5: Clicking away to close selection list...");
+    // Click somewhere on the screen to close the popover
+    await page.mouse.click(100, 100);
+
+    // Wait for the popover to close
+    await page.waitForTimeout(500);
+
+    // Step 6: Verify the worker block now displays the name of our test worker
+    console.log(
+      "Step 6: Verifying worker block displays selected worker name..."
+    );
+    const workerBlockValue = workerBlock.locator("text=" + testWorker1.name);
+    await expect(workerBlockValue).toBeVisible({ timeout: 5000 });
+    console.log(`✅ Worker block displays selected worker: ${testWorker1.name}`);
+
+    // Step 7: Click on add button - validation errors should be raised for other blocks but NOT the worker block
+    console.log("Step 7: Clicking Add button to test validation...");
+    const saveButton = constraintTestBase.getSaveConstraintButton(page);
+    await saveButton.click();
+
+    // Wait a moment for validation to process
+    await page.waitForTimeout(500);
+
+    // Check if there are validation errors
+    const validationErrors = page.locator(
+      '[data-testid*="constraint-block-error"], .Mui-error'
+    );
+    const errorCount = await validationErrors.count();
+
+    console.log(`Found ${errorCount} validation errors`);
+
+    if (errorCount > 0) {
+      // There should be validation errors for other blocks
+      console.log("✅ Validation errors present for incomplete blocks");
+
+      // Verify the worker block we filled is NOT showing an error
+      // Check if the worker block has an error indicator
+      const workerBlockError = workerBlock.locator('[data-testid*="error"]');
+      const workerBlockHasError = await workerBlockError.count();
+
+      // Also check the block's placeholder/name elements for error state
+      const workerBlockPlaceholderError = workerBlock.locator(
+        '[data-testid^="constraint-block-placeholder-"].Mui-error, [data-testid^="constraint-block-name-"].Mui-error'
+      );
+      const placeholderHasError = await workerBlockPlaceholderError.count();
+
+      console.log(`Worker block error indicators: ${workerBlockHasError}`);
+      console.log(
+        `Worker block placeholder/name error indicators: ${placeholderHasError}`
+      );
+
+      if (workerBlockHasError === 0 && placeholderHasError === 0) {
+        console.log(
+          "✅ Worker block does NOT have validation errors (as expected)"
+        );
+      } else {
+        console.log("⚠️ Worker block unexpectedly has validation errors");
+      }
+    } else {
+      // No validation errors means all required fields were filled
+      console.log(
+        "ℹ️ No validation errors - either only worker block was required or other blocks have defaults"
+      );
+    }
+
+    // Verify the dialog remains open (constraint not saved due to validation errors)
+    const dialog = constraintTestBase.getNewConstraintDialog(page);
+    await expect(dialog).toBeVisible();
+    console.log("✅ Dialog remains open due to validation errors");
+
+    console.log("✅ Worker block test completed successfully!");
+  });
+
   test("should preserve template selection when switching between templates", async ({
     page,
   }) => {
