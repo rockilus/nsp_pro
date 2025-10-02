@@ -250,318 +250,177 @@ test.describe("Constraint Creation", () => {
       '[data-testid^="template-item-"].Mui-selected'
     );
     const templateText = await selectedTemplate.textContent();
+    console.log(`Selected template: "${templateText}"`);
 
-    // Fill placeholders based on the specific template structure
     // Template "Jean doit faire au plus 2 consultations consécutives" has 6 blocks:
-    // 0: WORKER (Jean) - needs worker selection
-    // 1: TEXT (doit faire) - read-only text, skip
-    // 2: OPERATOR (au plus) - dropdown with options
-    // 3: NUMBER (2) - number input
-    // 4: SHIFT (consultations) - needs shift selection
-    // 5: TIMING (consecutives) - dropdown with options
+    // Block 0: WORKER (Jean) - needs worker selection
+    // Block 1: TEXT (doit faire) - read-only text, skip
+    // Block 2: OPERATOR (au plus) - dropdown with options
+    // Block 3: NUMBER (2) - number input
+    // Block 4: SHIFT (consultations) - needs shift selection
+    // Block 5: TIMING (consecutives) - dropdown with options
 
-    console.log("Filling template placeholders...");
+    const testWorkers = constraintTestBase.getTestWorkers();
+    const testShifts = constraintTestBase.getTestShifts();
+    const testWorker = testWorkers[0];
+    const testShift = testShifts[0];
 
-    // First, check how many placeholders actually exist and their texts
-    const allPlaceholders = page.locator(
-      '[data-testid^="constraint-block-placeholder-"]'
+    console.log("Step 1: Fill WORKER block (index 0)");
+    const workerBlock = page.locator(
+      '[data-testid^="shift-worker-option-block-4-"]'
     );
-    const placeholderCount = await allPlaceholders.count();
-    console.log(`Found ${placeholderCount} placeholders in total`);
+    await expect(workerBlock.first()).toBeVisible();
+    await workerBlock.first().click();
 
-    // Log all placeholder texts for debugging
-    for (let i = 0; i < placeholderCount; i++) {
-      const placeholderText = await allPlaceholders.nth(i).textContent();
-      console.log(`  Placeholder ${i}: "${placeholderText}"`);
-    }
-
-    // Fill placeholders based on the actual template structure we found:
-    // Placeholder 0: "Jean" (WORKER - BlockDisplayShiftWorkerOption)
-    // Placeholder 1: "au plus" (OPERATOR - BlockDisplayString with options)
-    // Placeholder 2: "2" (NUMBER - BlockDisplayNumber)
-    // Placeholder 3: "consultations" (SHIFT - BlockDisplayShiftWorkerOption)
-    // Placeholder 4: "consecutives" (TIMING - BlockDisplayString with options)
-
-    console.log("Filling template placeholders...");
-
-    // Fill placeholders by their text content to avoid index shifting issues
-
-    // Fill "Jean" placeholder: Worker selection (ShiftWorkerOption)
-    try {
-      await constraintTestBase.fillPlaceholderByText(page, "Jean");
-      console.log("✅ Filled worker placeholder (Jean)");
-    } catch (error) {
-      console.log(`Could not fill worker placeholder: ${error}`);
-    }
-
-    // Fill "au plus" placeholder: Operator dropdown (String with options)
-    try {
-      await constraintTestBase.fillStringPlaceholderByText(page, "au plus");
-      console.log("✅ Filled operator placeholder (au plus)");
-    } catch (error) {
-      console.log(`Could not fill operator placeholder: ${error}`);
-    }
-
-    // Fill "2" placeholder: Number input (Number)
-    try {
-      await constraintTestBase.fillNumberPlaceholderByText(page, "2", 3);
-      console.log("✅ Filled number placeholder (2)");
-    } catch (error) {
-      console.log(`Could not fill number placeholder: ${error}`);
-    }
-
-    // Fill "consultations" placeholder: Shift selection (ShiftWorkerOption)
-    try {
-      await constraintTestBase.fillPlaceholderByText(page, "consultations");
-      console.log("✅ Filled shift placeholder (consultations)");
-    } catch (error) {
-      console.log(`Could not fill shift placeholder: ${error}`);
-    }
-
-    // Fill "consecutives" placeholder: Timing dropdown (String with options)
-    try {
-      await constraintTestBase.fillStringPlaceholderByText(
-        page,
-        "consecutives"
-      );
-      console.log("✅ Filled timing placeholder (consecutives)");
-    } catch (error) {
-      console.log(`Could not fill timing placeholder: ${error}`);
-    }
-
-    // Wait for the save button to be enabled as indication that all fields are valid
-    console.log("Waiting for save button to be enabled...");
-    const finalSaveButton = constraintTestBase.getSaveConstraintButton(page);
-    await expect(finalSaveButton).toBeEnabled({ timeout: 10000 });
-    console.log(
-      "✅ Save button is enabled - all placeholders filled correctly"
+    // Wait for the shift-worker option dialog/popover to open
+    // Look for any shift-worker option to confirm the list is visible
+    const anyWorkerOption = page.locator(
+      '[data-testid^="swo-option-Workers-"]'
     );
+    await expect(anyWorkerOption.first()).toBeVisible({ timeout: 10000 });
 
-    // Save the constraint directly - no complex dialog handling needed    // Check if there are any validation errors before saving
+    // Now look for our specific worker
+    const workerOption = page.locator(
+      `[data-testid="swo-option-Workers-${testWorker.workerId}-false"]`
+    );
+    await expect(workerOption).toBeVisible({ timeout: 5000 });
+    await workerOption.click();
+
+    // Close the popover
+    await page.mouse.click(100, 100);
+    await page.waitForTimeout(500);
+    console.log(`✅ Filled WORKER block with: ${testWorker.name}`);
+
+    console.log("Step 2: Fill OPERATOR block (index 2)");
+    const operatorBlock = page.locator('[data-testid^="string-block-0-"]');
+    await expect(operatorBlock.first()).toBeVisible();
+    await operatorBlock.first().click();
+    await page.waitForTimeout(500);
+
+    const atLeastOption = page.locator(
+      '[data-testid="string-option-at-least"]'
+    );
+    await expect(atLeastOption).toBeVisible();
+    await atLeastOption.click();
+    await page.mouse.click(100, 100);
+    await page.waitForTimeout(500);
+    console.log("✅ Filled OPERATOR block with: at least");
+
+    console.log("Step 3: Fill NUMBER block (index 3)");
+    const numberBlock = page.locator('[data-testid^="number-block-1-"]');
+    await expect(numberBlock.first()).toBeVisible();
+    await numberBlock.first().click();
+    await page.waitForTimeout(500);
+
+    const numberInput = page.locator('[data-testid="constraint-number-input"]');
+    await expect(numberInput).toBeVisible();
+    const testNumber = "5";
+    await numberInput.fill(testNumber);
+    await numberInput.press("Enter");
+    await page.waitForTimeout(500);
+    console.log(`✅ Filled NUMBER block with: ${testNumber}`);
+
+    console.log("Step 4: Fill SHIFT block (index 4)");
+    const shiftBlock = page.locator(
+      '[data-testid^="shift-worker-option-block-3-"]'
+    );
+    await expect(shiftBlock.first()).toBeVisible();
+    await shiftBlock.first().click();
+    await page.waitForTimeout(500);
+
+    const shiftOption = page.locator(
+      `[data-testid="swo-option-Shifts-${testShift.id}-false"]`
+    );
+    await expect(shiftOption).toBeVisible({ timeout: 5000 });
+    await shiftOption.click();
+    await page.mouse.click(100, 100);
+    await page.waitForTimeout(500);
+    console.log(`✅ Filled SHIFT block with: ${testShift.name}`);
+
+    console.log("Step 5: Fill TIMING block (index 5)");
+    const timingBlock = page.locator('[data-testid^="string-block-2-"]');
+    await expect(timingBlock.first()).toBeVisible();
+    await timingBlock.first().click();
+    await page.waitForTimeout(500);
+
+    // The timing block should have timing options - look for "consecutive" option
+    // The exact data-testid will depend on the available options
+    const timingOptions = page.locator('[data-testid^="string-option-"]');
+    const timingOptionCount = await timingOptions.count();
+    console.log(`Found ${timingOptionCount} timing options`);
+
+    // Select the first timing option (should be "consecutive" or similar)
+    if (timingOptionCount > 0) {
+      const firstOption = timingOptions.first();
+      await expect(firstOption).toBeVisible({ timeout: 5000 });
+      const selectedOptionText = await firstOption.textContent();
+      await firstOption.click();
+
+      // Close the popover
+      await page.mouse.click(100, 100);
+      await page.waitForTimeout(500);
+      console.log(`✅ Filled TIMING block with: ${selectedOptionText}`);
+    } else {
+      console.log("⚠️ No timing options found");
+    }
+
+    console.log("Step 6: Verify no validation errors");
     const validationErrors = page.locator(
-      '[data-testid*="constraint-block-error"], .Mui-error, [class*="error"]'
+      '[data-testid*="constraint-block-error"], .Mui-error'
     );
     const errorCount = await validationErrors.count();
+    console.log(`Validation errors: ${errorCount}`);
+
     if (errorCount > 0) {
-      console.log(`⚠️ Found ${errorCount} validation errors before saving:`);
+      console.log("⚠️ Unexpected validation errors found");
       for (let i = 0; i < errorCount && i < 5; i++) {
         const errorText = await validationErrors.nth(i).textContent();
         console.log(`  - Error ${i + 1}: ${errorText}`);
       }
-
-      // Try to save anyway and see what happens
-      console.log("ℹ️ Attempting to save despite validation errors...");
-    } else {
-      console.log("✅ No validation errors found before saving");
     }
 
-    // Check if save button is enabled - with better error handling
-    let saveBtn = constraintTestBase.getSaveConstraintButton(page);
-
-    // Debug: First check if the constraint edit form is still visible
-    const editFormDebug = constraintTestBase.getConstraintEditForm(page);
-    const isFormVisible = await editFormDebug.isVisible().catch(() => false);
-    console.log(`Constraint edit form visible: ${isFormVisible}`);
-
-    if (!isFormVisible) {
-      console.log("⚠️ Constraint edit form not visible, looking for it...");
-      // Try to find any constraint form
-      const anyForm = page.locator(
-        '[data-testid*="constraint"], [class*="constraint"]'
-      );
-      const formCount = await anyForm.count();
-      console.log(`Found ${formCount} constraint-related elements`);
-
-      // Check if dialog is still open
-      const dialog = constraintTestBase.getNewConstraintDialog(page);
-      const isDialogVisible = await dialog.isVisible().catch(() => false);
-      console.log(`New constraint dialog visible: ${isDialogVisible}`);
-
-      if (!isDialogVisible) {
-        console.log(
-          "⚠️ Constraint dialog closed unexpectedly after filling placeholders"
-        );
-        // Check if the constraint was actually created by looking at the constraint list
-        const constraintList = constraintTestBase.getConstraintList(page);
-        const isListVisible = await constraintList
-          .isVisible()
-          .catch(() => false);
-        if (isListVisible) {
-          console.log(
-            "✅ Constraint list is visible, checking if constraint was created"
-          );
-          const constraintItems = page.locator(
-            '[data-testid^="constraint-item-"]'
-          );
-          const itemCount = await constraintItems.count();
-          if (itemCount > 0) {
-            console.log(
-              `✅ Found ${itemCount} constraints in the list, test may have succeeded`
-            );
-            return; // Exit the test successfully
-          }
-        }
-
-        // If we get here, try to reopen the dialog and continue
-        console.log("⚠️ Trying to reopen constraint dialog...");
-        const addButton = constraintTestBase.getAddConstraintButton(page);
-        if (await addButton.isVisible({ timeout: 2000 })) {
-          await addButton.click();
-
-          // Wait for dialog to open before continuing
-          const newDialog = constraintTestBase.getNewConstraintDialog(page);
-          await expect(newDialog).toBeVisible({ timeout: 5000 });
-
-          // Select the same template again
-          await constraintTestBase.selectTemplate(page, 0);
-
-          // Wait for constraint edit form to appear
-          const newEditForm = constraintTestBase.getConstraintEditForm(page);
-          await expect(newEditForm).toBeVisible({ timeout: 5000 });
-        } else {
-          throw new Error(
-            "Could not reopen constraint dialog - add button not found"
-          );
-        }
-      }
-    }
-
-    // Debug: Look for any save/add button
-    const allButtons = page.locator("button");
-    const buttonCount = await allButtons.count();
-    console.log(`Found ${buttonCount} buttons on page`);
-
-    // Find buttons with relevant text
-    const saveButtons = page.locator(
-      'button:has-text("Add"), button:has-text("Save"), button[data-testid*="save"], button[data-testid*="add"]'
-    );
-    const saveButtonCount = await saveButtons.count();
-    console.log(`Found ${saveButtonCount} save/add buttons`);
-
-    for (let i = 0; i < Math.min(saveButtonCount, 3); i++) {
-      const btn = saveButtons.nth(i);
-      const btnText = await btn.textContent();
-      const btnTestId = await btn.getAttribute("data-testid");
-      const isVisible = await btn.isVisible().catch(() => false);
-      const isEnabled = await btn.isEnabled().catch(() => false);
-      console.log(
-        `  Button ${i}: "${btnText}" (testid: ${btnTestId}) - visible: ${isVisible}, enabled: ${isEnabled}`
-      );
-    }
-
-    // Try to find the save button with a more flexible selector
-    if (saveButtonCount === 0) {
-      // Look for the specific save button with exact testid
-      saveBtn = page.locator('[data-testid="save-constraint-button"]');
-    } else {
-      // Use the first save/add button we found
-      saveBtn = saveButtons.first();
-    }
-
-    // Wait for save button to exist first
-    try {
-      await expect(saveBtn).toBeVisible({ timeout: 5000 });
-    } catch (error) {
-      console.log(`Error waiting for save button: ${error}`);
-
-      // Debug: Check current page state
-      const currentUrl = page.url();
-      console.log(`Current URL: ${currentUrl}`);
-
-      // Try to find any button and click it for debugging
-      const anyButton = page.locator("button").first();
-      if (await anyButton.isVisible({ timeout: 1000 })) {
-        const anyButtonText = await anyButton.textContent();
-        console.log(`First available button: "${anyButtonText}"`);
-      }
-
-      throw error;
-    }
-
-    let isEnabled = false;
-    try {
-      isEnabled = await saveBtn.isEnabled({ timeout: 5000 });
-      console.log(`Save button enabled: ${isEnabled}`);
-    } catch (error) {
-      console.log(`Error checking save button state: ${error}`);
-
-      // Debug: Check constraint state by looking at validation
-      const validationErrors = page.locator(
-        '[data-testid*="constraint-block-error"], .Mui-error, [class*="error"]'
-      );
-      const errorCount = await validationErrors.count();
-      console.log(`Current validation errors: ${errorCount}`);
-
-      // Debug: Check the actual placeholder values
-      const allPlaceholders = page.locator(
-        '[data-testid^="constraint-block-placeholder-"]'
-      );
-      const placeholderCount = await allPlaceholders.count();
-      console.log(`\nDebugging placeholder states:`);
-      for (let i = 0; i < placeholderCount; i++) {
-        const placeholderText = await allPlaceholders.nth(i).textContent();
-        const placeholderStyles = await allPlaceholders
-          .nth(i)
-          .getAttribute("class");
-        console.log(
-          `  Placeholder ${i}: "${placeholderText}" - classes: ${placeholderStyles}`
-        );
-      }
-
-      // Try to proceed anyway
-      isEnabled = await saveBtn.isEnabled().catch(() => false);
-    }
-
-    // Save the constraint
-    console.log("Attempting to click save button...");
+    console.log("Step 7: Click Add button to save the constraint");
     const saveButton = constraintTestBase.getSaveConstraintButton(page);
     await expect(saveButton).toBeVisible();
+    await expect(saveButton).toBeEnabled();
+    await saveButton.click();
+    console.log("✅ Add button clicked");
 
-    // Use force click to bypass any overlapping elements
-    await saveButton.click({ force: true });
-    console.log("✅ Save button clicked");
-
-    // Check if the constraint was saved successfully by seeing if dialog closes
-    console.log("Checking if constraint was saved...");
+    console.log("Step 8: Verify dialog closes");
     const dialog = constraintTestBase.getNewConstraintDialog(page);
+    await expect(dialog).not.toBeVisible({ timeout: 5000 });
+    console.log("✅ Dialog closed successfully");
 
-    try {
-      // If dialog closes, constraint was saved successfully
-      await expect(dialog).not.toBeVisible({ timeout: 5000 });
-      console.log("✅ Dialog closed successfully - constraint saved");
-    } catch (error) {
-      // If dialog doesn't close, check if it's due to validation errors
-      console.log(
-        "Dialog remained open, checking if due to validation errors..."
-      );
+    console.log("Step 9: Verify constraint appears in the list");
+    await page.waitForTimeout(1000); // Wait for constraint to appear in list
 
-      const validationErrors = page.locator(
-        '[data-testid*="constraint-block-error"], .Mui-error, [class*="error"]'
-      );
-      const errorCount = await validationErrors.count();
+    const constraintItems = page.locator('[data-testid^="constraint-item-"]');
+    const itemCount = await constraintItems.count();
+    console.log(`Found ${itemCount} constraint(s) in the list`);
 
-      if (errorCount > 0) {
-        console.log(
-          `⚠️ Constraint not saved due to ${errorCount} validation errors - this is expected behavior`
-        );
-        console.log(
-          "✅ Test passed: All placeholders filled correctly, save attempted, validation working"
-        );
-      } else {
-        console.log(
-          "⚠️ Dialog didn't close but no validation errors found - unexpected behavior"
-        );
-        throw error;
-      }
+    expect(itemCount).toBeGreaterThan(0);
+
+    // Verify the constraint text contains parts of our filled data
+    if (itemCount > 0) {
+      const firstConstraintText = await constraintItems.first().textContent();
+      console.log(`First constraint text: "${firstConstraintText}"`);
+
+      // Check if our test data appears in the constraint text (case-insensitive)
+      const lowerConstraintText = firstConstraintText?.toLowerCase() || "";
+      const lowerWorkerName = testWorker.name.toLowerCase();
+      const lowerShiftName = testShift.name.toLowerCase();
+
+      expect(lowerConstraintText).toContain(lowerWorkerName);
+      console.log(`✅ Constraint contains worker name: ${testWorker.name}`);
+
+      expect(lowerConstraintText).toContain(testNumber);
+      console.log(`✅ Constraint contains number: ${testNumber}`);
+
+      expect(lowerConstraintText).toContain(lowerShiftName);
+      console.log(`✅ Constraint contains shift name: ${testShift.name}`);
     }
 
-    // Test completion
-    console.log("✅ Constraint creation test completed successfully");
-    console.log("  - All placeholders filled correctly");
-    console.log("  - Save button enabled and clicked");
-    console.log(
-      "  - Either constraint saved OR validation errors properly shown"
-    );
+    console.log("✅ Constraint creation test completed successfully!");
   });
 
   test("should handle worker and shift selection in shift-worker option blocks", async ({
