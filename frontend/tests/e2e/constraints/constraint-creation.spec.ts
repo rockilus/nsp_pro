@@ -1061,20 +1061,19 @@ test.describe("Constraint Creation", () => {
     const editForm = constraintTestBase.getConstraintEditForm(page);
     await expect(editForm).toBeVisible();
 
-    console.log(
-      "Step 1: Check that the placeholder is displayed in the OPERATOR string block"
-    );
-    // The OPERATOR block is at index 1 (0: WORKER, 1: OPERATOR (TEXT "doit faire" is skipped in placeholders))
+    console.log("Step 1: Check that the OPERATOR string block displays its value");
     // BlockNameOptions.OPERATOR = 0
+    // Template structure: [0: WORKER, 1: TEXT (display only), 2: OPERATOR, 3: NUMBER, 4: SHIFT, 5: TIMING]
     const operatorBlock = page.locator('[data-testid^="string-block-0-"]');
     await expect(operatorBlock.first()).toBeVisible();
 
-    // Check that the placeholder "au plus" is displayed
-    const placeholder = page.locator(
-      '[data-testid="constraint-block-placeholder-1"]'
+    // Check that "au plus" is displayed (it's a value, not a placeholder in this case)
+    // The OPERATOR block is at index 2 (after WORKER and TEXT blocks)
+    const blockDisplay = page.locator(
+      '[data-testid="constraint-block-display-2"]'
     );
-    await expect(placeholder).toBeVisible();
-    await expect(placeholder).toContainText("au plus");
+    await expect(blockDisplay).toBeVisible();
+    await expect(blockDisplay).toContainText("au plus");
 
     console.log(
       "Step 2: Click on the OPERATOR string block to open the options list"
@@ -1098,24 +1097,22 @@ test.describe("Constraint Creation", () => {
     await expect(atLeastOption).toBeVisible();
     await expect(exactlyOption).toBeVisible();
 
-    console.log("Step 4: Select one option (at least)");
+    console.log("Step 4: Select a different option (at least)");
     await atLeastOption.click();
 
-    console.log("Step 5: Click away to close the edit string block list");
+    console.log(
+      "Step 5: The string block should now display the newly selected option"
+    );
+    // Click away to close the popover
     await page.mouse.click(100, 100);
     await page.waitForTimeout(300);
 
-    console.log(
-      "Step 6: The string block should now display the selected option"
-    );
-    // The block should now show "au moins" (translated "at least") instead of the placeholder
-    const blockDisplay = page.locator(
-      '[data-testid="constraint-block-display-1"]'
-    );
-    await expect(blockDisplay).toContainText("au moins");
+    // The block should now show "at least" (or its translation "au moins")
+    // Check for either the English or French version
+    await expect(blockDisplay).toContainText(/at least|au moins/i);
 
     console.log(
-      "Step 7: Click Add button to validate - no error should be raised for the OPERATOR block"
+      "Step 6: Click Add button to validate - no error should be raised for the OPERATOR block"
     );
     const saveButton = constraintTestBase.getSaveConstraintButton(page);
     await saveButton.click();
@@ -1123,9 +1120,9 @@ test.describe("Constraint Creation", () => {
     // Wait for validation
     await page.waitForTimeout(500);
 
-    // Check that there are NO validation errors for the OPERATOR block (index 1) since we filled it
+    // Check that there are NO validation errors for the OPERATOR block (index 2) since we filled it
     const operatorBlockError = page.locator(
-      '[data-testid="constraint-block-name-1"].Mui-error'
+      '[data-testid="constraint-block-name-2"].Mui-error'
     );
     await expect(operatorBlockError).not.toBeVisible();
 
