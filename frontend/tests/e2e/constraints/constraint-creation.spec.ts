@@ -983,7 +983,9 @@ test.describe("Constraint Creation", () => {
     );
     const workerBlockValue = workerBlock.locator("text=" + testWorker1.name);
     await expect(workerBlockValue).toBeVisible({ timeout: 5000 });
-    console.log(`✅ Worker block displays selected worker: ${testWorker1.name}`);
+    console.log(
+      `✅ Worker block displays selected worker: ${testWorker1.name}`
+    );
 
     // Step 7: Click on add button - validation errors should be raised for other blocks but NOT the worker block
     console.log("Step 7: Clicking Add button to test validation...");
