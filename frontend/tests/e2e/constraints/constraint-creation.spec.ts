@@ -1045,6 +1045,83 @@ test.describe("Constraint Creation", () => {
     console.log("✅ Worker block test completed successfully!");
   });
 
+  test("should handle string block interaction: display placeholder, show options, select option, and validate", async ({
+    page,
+  }) => {
+    // Open the constraint creation dialog
+    await constraintTestBase.openAddConstraintDialog(page);
+
+    // Select template 0: "Jean doit faire au plus 2 consultations consécutives"
+    // This template has STRING blocks with options:
+    // Block 1 (index 1): OPERATOR with options ["at most", "at least", "exactly"]
+    // Block 4 (index 4): TIMING with options ["consecutive"]
+    await constraintTestBase.selectTemplate(page, 0);
+
+    // Wait for the constraint edit form to be visible
+    const editForm = constraintTestBase.getConstraintEditForm(page);
+    await expect(editForm).toBeVisible();
+
+    console.log("Step 1: Check that the placeholder is displayed in the OPERATOR string block");
+    // The OPERATOR block is at index 1 (0: WORKER, 1: OPERATOR (TEXT "doit faire" is skipped in placeholders))
+    // BlockNameOptions.OPERATOR = 0
+    const operatorBlock = page.locator('[data-testid^="string-block-0-"]');
+    await expect(operatorBlock.first()).toBeVisible();
+
+    // Check that the placeholder "au plus" is displayed
+    const placeholder = page.locator('[data-testid="constraint-block-placeholder-1"]');
+    await expect(placeholder).toBeVisible();
+    await expect(placeholder).toContainText("au plus");
+
+    console.log("Step 2: Click on the OPERATOR string block to open the options list");
+    await operatorBlock.first().click();
+
+    // Wait for the list to be visible
+    await page.waitForTimeout(500);
+
+    console.log("Step 3: Verify that the options are displayed");
+    // Check that we can see the operator options
+    // The options should have data-testid like "string-option-at-most", "string-option-at-least", "string-option-exactly"
+    const atMostOption = page.locator('[data-testid="string-option-at-most"]');
+    const atLeastOption = page.locator('[data-testid="string-option-at-least"]');
+    const exactlyOption = page.locator('[data-testid="string-option-exactly"]');
+
+    // Verify all three options are visible
+    await expect(atMostOption).toBeVisible();
+    await expect(atLeastOption).toBeVisible();
+    await expect(exactlyOption).toBeVisible();
+
+    console.log("Step 4: Select one option (at least)");
+    await atLeastOption.click();
+
+    console.log("Step 5: Click away to close the edit string block list");
+    await page.mouse.click(100, 100);
+    await page.waitForTimeout(300);
+
+    console.log("Step 6: The string block should now display the selected option");
+    // The block should now show "au moins" (translated "at least") instead of the placeholder
+    const blockDisplay = page.locator('[data-testid="constraint-block-display-1"]');
+    await expect(blockDisplay).toContainText("au moins");
+
+    console.log("Step 7: Click Add button to validate - no error should be raised for the OPERATOR block");
+    const saveButton = constraintTestBase.getSaveConstraintButton(page);
+    await saveButton.click();
+
+    // Wait for validation
+    await page.waitForTimeout(500);
+
+    // Check that there are NO validation errors for the OPERATOR block (index 1) since we filled it
+    const operatorBlockError = page.locator('[data-testid="constraint-block-name-1"].Mui-error');
+    await expect(operatorBlockError).not.toBeVisible();
+
+    // Other blocks should have errors (they're still empty)
+    const errors = page.locator('[data-testid*="constraint-block-name-"].Mui-error');
+    const errorCount = await errors.count();
+    console.log(`Validation found ${errorCount} errors in unfilled blocks`);
+    expect(errorCount).toBeGreaterThan(0); // Should have errors for other unfilled blocks
+
+    console.log("✅ String block with dropdown options test completed successfully!");
+  });
+
   test("should preserve template selection when switching between templates", async ({
     page,
   }) => {

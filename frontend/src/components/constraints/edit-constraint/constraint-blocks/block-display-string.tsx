@@ -99,6 +99,7 @@ export default function BlockDisplayString({
       }
       open={open}
       setOpen={setOpen}
+      data-testid={`string-block-${templateBlock.name}-${index}`}
     />
   );
 }
