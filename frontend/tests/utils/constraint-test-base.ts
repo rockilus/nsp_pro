@@ -112,25 +112,32 @@ export class ConstraintTestBase {
     if (testId) {
       this.testWorkersMap.set(testId, workers);
       this.testShiftsMap.set(testId, shifts);
+      // Log worker names with their ids for better traceability
       console.log(
         `[Test ${testId}] Created test workers: ${workers
-          .map((w) => w.name)
+          .map((w) => `${w.name} (${w.workerId})`)
           .join(", ")}`
       );
+      // Log shift names with their ids for better traceability
       console.log(
         `[Test ${testId}] Created test shifts: ${shifts
-          .map((s) => s.name)
+          .map((s) => `${s.name} (${s.id})`)
           .join(", ")}`
       );
     } else {
       // Legacy storage for backwards compatibility
       this.testWorkers = workers;
       this.testShifts = shifts;
+      // Include ids in legacy logs as well for parity with testId logs
       console.log(
-        `Created test workers: ${workers.map((w) => w.name).join(", ")}`
+        `Created test workers: ${workers
+          .map((w) => `${w.name} (${w.workerId})`)
+          .join(", ")}`
       );
       console.log(
-        `Created test shifts: ${shifts.map((s) => s.name).join(", ")}`
+        `Created test shifts: ${shifts
+          .map((s) => `${s.name} (${s.id})`)
+          .join(", ")}`
       );
     }
   }
