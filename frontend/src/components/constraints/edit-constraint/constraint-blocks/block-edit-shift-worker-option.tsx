@@ -435,6 +435,7 @@ export default function BlockEditShiftWorkerOption({
                             : false
                         }
                         sx={{ padding: "0 0 0 0" }}
+                        data-testid={`swo-option-${option.categoryName}-${option.id}-${option.isBoolDim}`}
                       >
                         <ListItem sx={{ padding: "0 16px 0 16px" }}>
                           <ListItemText

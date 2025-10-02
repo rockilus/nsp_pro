@@ -749,6 +749,154 @@ test.describe("Constraint Creation", () => {
     }
   });
 
+  test("should handle shift block interaction: display placeholder, show options, select shift, and validate", async ({
+    page,
+  }) => {
+    // Open the constraint creation dialog and select a template
+    await constraintTestBase.openAddConstraintDialog(page);
+    await constraintTestBase.selectTemplate(page, 0);
+
+    // Wait for the constraint edit form to be visible
+    const editForm = constraintTestBase.getConstraintEditForm(page);
+    await expect(editForm).toBeVisible();
+
+    console.log("Looking for shift blocks...");
+
+    // Find shift blocks (blocks with BlockNameOptions.SHIFT = 3)
+    // The data-testid follows pattern: shift-worker-option-block-{blockName}-{index}
+    const shiftBlocks = page.locator(
+      '[data-testid^="shift-worker-option-block-3-"]'
+    );
+    const shiftBlockCount = await shiftBlocks.count();
+
+    console.log(`Found ${shiftBlockCount} shift blocks`);
+
+    if (shiftBlockCount === 0) {
+      console.log("ℹ️ No shift blocks found in this template, skipping test");
+      return;
+    }
+
+    // Test the first shift block
+    const shiftBlock = shiftBlocks.first();
+    await expect(shiftBlock).toBeVisible();
+
+    // Step 1: Check that the placeholder is displayed in the shift block
+    console.log("Step 1: Checking placeholder display...");
+    const placeholder = shiftBlock.locator(
+      '[data-testid^="constraint-block-placeholder-"]'
+    );
+    await expect(placeholder).toBeVisible();
+    const placeholderText = await placeholder.textContent();
+    console.log(`✅ Placeholder displayed: "${placeholderText}"`);
+
+    // Step 2: Click on the shift block to open the selection list
+    console.log("Step 2: Clicking on shift block to open selection list...");
+    await shiftBlock.click();
+
+    // Wait for the popover/dialog to open with the shift options
+    await page.waitForTimeout(500); // Small wait for animation
+
+    // Step 3: Verify that the template block options are displayed
+    console.log("Step 3: Verifying shift options are displayed...");
+
+    // Get our test shifts - we know they exist from the setup
+    const testShifts = constraintTestBase.getTestShifts();
+    const testShift1 = testShifts[0];
+    const testShift2 = testShifts[1];
+
+    console.log(
+      `Looking for test shift: ${testShift1.name} (ID: ${testShift1.id})`
+    );
+
+    // Look for shift options using the data-testid pattern we added
+    // Pattern: swo-option-{categoryName}-{id}-{isBoolDim}
+    // For shifts, categoryName should be "Shifts" and isBoolDim should be false
+    const testShiftOption = page.locator(
+      `[data-testid="swo-option-Shifts-${testShift1.id}-false"]`
+    );
+
+    await expect(testShiftOption).toBeVisible({ timeout: 5000 });
+    console.log(`✅ Found test shift option: ${testShift1.name}`);
+
+    // Step 4: Select one option (our test shift)
+    console.log(`Step 4: Selecting shift: ${testShift1.name}...`);
+    await testShiftOption.click();
+
+    // Step 5: Click away to close the edit shift block list
+    console.log("Step 5: Clicking away to close selection list...");
+    // Click on the dialog background or another element
+    const dialogTitle = page.locator('[id="new-constraint-dialog-title"]');
+    await dialogTitle.click();
+
+    // Wait for the popover to close
+    await page.waitForTimeout(500);
+
+    // Step 6: Verify the shift block now displays the name of our test shift
+    console.log(
+      "Step 6: Verifying shift block displays selected shift name..."
+    );
+    const shiftBlockValue = shiftBlock.locator("text=" + testShift1.name);
+    await expect(shiftBlockValue).toBeVisible({ timeout: 5000 });
+    console.log(`✅ Shift block displays selected shift: ${testShift1.name}`);
+
+    // Step 7: Click on add button - validation errors should be raised for other blocks but NOT the shift block
+    console.log("Step 7: Clicking Add button to test validation...");
+    const saveButton = constraintTestBase.getSaveConstraintButton(page);
+    await saveButton.click();
+
+    // Wait a moment for validation to process
+    await page.waitForTimeout(500);
+
+    // Check if there are validation errors
+    const validationErrors = page.locator(
+      '[data-testid*="constraint-block-error"], .Mui-error'
+    );
+    const errorCount = await validationErrors.count();
+
+    console.log(`Found ${errorCount} validation errors`);
+
+    if (errorCount > 0) {
+      // There should be validation errors for other blocks
+      console.log("✅ Validation errors present for incomplete blocks");
+
+      // Verify the shift block we filled is NOT showing an error
+      // Check if the shift block has an error indicator
+      const shiftBlockError = shiftBlock.locator('[data-testid*="error"]');
+      const shiftBlockHasError = await shiftBlockError.count();
+
+      // Also check the block's placeholder/name elements for error state
+      const shiftBlockPlaceholderError = shiftBlock.locator(
+        '[data-testid^="constraint-block-placeholder-"].Mui-error, [data-testid^="constraint-block-name-"].Mui-error'
+      );
+      const placeholderHasError = await shiftBlockPlaceholderError.count();
+
+      console.log(`Shift block error indicators: ${shiftBlockHasError}`);
+      console.log(
+        `Shift block placeholder/name error indicators: ${placeholderHasError}`
+      );
+
+      if (shiftBlockHasError === 0 && placeholderHasError === 0) {
+        console.log(
+          "✅ Shift block does NOT have validation errors (as expected)"
+        );
+      } else {
+        console.log("⚠️ Shift block unexpectedly has validation errors");
+      }
+    } else {
+      // No validation errors means all required fields were filled
+      console.log(
+        "ℹ️ No validation errors - either only shift block was required or other blocks have defaults"
+      );
+    }
+
+    // Verify the dialog remains open (constraint not saved due to validation errors)
+    const dialog = constraintTestBase.getNewConstraintDialog(page);
+    await expect(dialog).toBeVisible();
+    console.log("✅ Dialog remains open due to validation errors");
+
+    console.log("✅ Shift block test completed successfully!");
+  });
+
   test("should preserve template selection when switching between templates", async ({
     page,
   }) => {

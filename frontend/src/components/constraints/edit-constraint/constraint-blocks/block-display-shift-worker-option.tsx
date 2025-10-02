@@ -130,7 +130,7 @@ export default function BlockDisplayShiftWorkerOption({
       }
       open={open}
       setOpen={setOpen}
-      data-testid={`shift-worker-option-dialog-${index}`}
+      data-testid={`shift-worker-option-block-${templateBlock.name}-${index}`}
     />
   );
 }
