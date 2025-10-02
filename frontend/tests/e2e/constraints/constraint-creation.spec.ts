@@ -39,6 +39,20 @@ test.describe("Constraint Creation", () => {
     // Navigate to the constraints page
     await constraintTestBase.navigateToConstraintsPage(page);
 
+    // Clear localStorage and set the correct team to ensure we're working with the right team
+    // This is crucial when multiple tests run in the same worker
+    const testTeam = constraintTestBase.getTestTeam();
+    await page.evaluate((teamData) => {
+      localStorage.clear();
+      // The app uses selectedTeamId, not selectedTeam
+      if (teamData) {
+        localStorage.setItem("selectedTeamId", teamData.teamId);
+      }
+    }, testTeam);
+
+    // Reload the page to ensure the correct team is selected
+    await page.reload();
+
     // Wait for the constraint tab to load
     await page.waitForSelector('[data-testid="constraint-tab"]');
   });
@@ -114,7 +128,10 @@ test.describe("Constraint Creation", () => {
 
   test("should show editable constraint form when selecting a template", async ({
     page,
-  }) => {
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const constraintTestBase = testBasesMap.get(testRunId)!;
+
     // Open the constraint creation dialog
     await constraintTestBase.openAddConstraintDialog(page);
 
@@ -152,7 +169,10 @@ test.describe("Constraint Creation", () => {
 
   test("should open selection dialog when clicking on constraint block placeholders", async ({
     page,
-  }) => {
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const constraintTestBase = testBasesMap.get(testRunId)!;
+
     // Open the constraint creation dialog and select a template
     await constraintTestBase.openAddConstraintDialog(page);
     await constraintTestBase.selectTemplate(page, 0);
@@ -211,7 +231,10 @@ test.describe("Constraint Creation", () => {
 
   test("should show validation errors for incomplete constraint fields", async ({
     page,
-  }) => {
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const constraintTestBase = testBasesMap.get(testRunId)!;
+
     // Open the constraint creation dialog and select a template
     await constraintTestBase.openAddConstraintDialog(page);
     await constraintTestBase.selectTemplate(page, 0);
@@ -228,7 +251,9 @@ test.describe("Constraint Creation", () => {
     const hasErrors = await constraintTestBase.hasValidationErrors(page);
 
     if (hasErrors) {
-      const errorElements = constraintTestBase.getValidationErrors(page);
+      const errorElements = page.locator(
+        '[data-testid*="constraint-block-error"], .Mui-error'
+      );
       const errorCount = await errorElements.count();
 
       // Verify error styling is applied
@@ -238,7 +263,7 @@ test.describe("Constraint Creation", () => {
 
         // Check if error classes are applied
         const hasErrorClass = await errorElement.evaluate(
-          (el) =>
+          (el: Element) =>
             el.classList.contains("error") ||
             el.closest(".error") !== null ||
             window.getComputedStyle(el).color.includes("red") ||
@@ -484,7 +509,10 @@ test.describe("Constraint Creation", () => {
 
   test("should handle worker and shift selection in shift-worker option blocks", async ({
     page,
-  }) => {
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const constraintTestBase = testBasesMap.get(testRunId)!;
+
     // Open the constraint creation dialog and select a template
     await constraintTestBase.openAddConstraintDialog(page);
     await constraintTestBase.selectTemplate(page, 0);
@@ -584,7 +612,10 @@ test.describe("Constraint Creation", () => {
 
   test("should support multiple worker and shift selection", async ({
     page,
-  }) => {
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const constraintTestBase = testBasesMap.get(testRunId)!;
+
     // Open the constraint creation dialog and select a template
     await constraintTestBase.openAddConstraintDialog(page);
     await constraintTestBase.selectTemplate(page, 0);
@@ -669,7 +700,10 @@ test.describe("Constraint Creation", () => {
 
   test("should handle shift block interaction: display placeholder, show options, select shift, and validate", async ({
     page,
-  }) => {
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const constraintTestBase = testBasesMap.get(testRunId)!;
+
     // Open the constraint creation dialog and select a template
     await constraintTestBase.openAddConstraintDialog(page);
     await constraintTestBase.selectTemplate(page, 0);
@@ -816,7 +850,10 @@ test.describe("Constraint Creation", () => {
 
   test("should handle worker block interaction: display placeholder, show options, select worker, and validate", async ({
     page,
-  }) => {
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const constraintTestBase = testBasesMap.get(testRunId)!;
+
     // Open the constraint creation dialog and select a template
     await constraintTestBase.openAddConstraintDialog(page);
     await constraintTestBase.selectTemplate(page, 0);
@@ -965,7 +1002,10 @@ test.describe("Constraint Creation", () => {
 
   test("should handle string block interaction: display placeholder, show options, select option, and validate", async ({
     page,
-  }) => {
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const constraintTestBase = testBasesMap.get(testRunId)!;
+
     // Open the constraint creation dialog
     await constraintTestBase.openAddConstraintDialog(page);
 
@@ -1098,7 +1138,10 @@ test.describe("Constraint Creation", () => {
 
   test("should handle number block interaction: display placeholder, enter number, and validate", async ({
     page,
-  }) => {
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const constraintTestBase = testBasesMap.get(testRunId)!;
+
     // Open the constraint creation dialog
     await constraintTestBase.openAddConstraintDialog(page);
 
@@ -1218,7 +1261,10 @@ test.describe("Constraint Creation", () => {
 
   test("should preserve template selection when switching between templates", async ({
     page,
-  }) => {
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const constraintTestBase = testBasesMap.get(testRunId)!;
+
     // Open the constraint creation dialog
     await constraintTestBase.openAddConstraintDialog(page);
 
