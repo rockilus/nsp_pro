@@ -20,6 +20,15 @@ import dayjs from "dayjs";
 export class ConstraintTestBase {
   protected dbUtils: DatabaseTestUtils;
   protected testTeam: { teamId: string; name: string } | null = null;
+
+  // Maps to store workers and shifts by test ID for test isolation
+  protected testWorkersMap = new Map<
+    string,
+    { workerId: string; name: string; teamId: string }[]
+  >();
+  protected testShiftsMap = new Map<string, ShiftT[]>();
+
+  // Keep legacy arrays for backwards compatibility with tests that don't use test IDs
   protected testWorkers: { workerId: string; name: string; teamId: string }[] =
     [];
   protected testShifts: ShiftT[] = [];
@@ -34,8 +43,13 @@ export class ConstraintTestBase {
    * - Verifies test utilities are available
    * - Creates a test team
    * - Creates test workers and shifts
+   * @param workerIndex - The worker index for unique naming
+   * @param testId - Optional test ID for test isolation. If provided, workers and shifts will be stored by test ID
    */
-  async setupConstraintTests(workerIndex: number): Promise<void> {
+  async setupConstraintTests(
+    workerIndex: number,
+    testId?: string
+  ): Promise<void> {
     // Wait for API to be ready
     await this.dbUtils.waitForApiReady();
 
@@ -53,41 +67,72 @@ export class ConstraintTestBase {
     );
 
     // Create test workers
-    this.testWorkers = [];
-    const worker1 = await this.createTestWorker({
-      name: `Test Worker 1 ${workerIndex}-${Date.now()}`,
-      weeklyHours: 40,
-      weeklyHoursDesired: 40,
-      dutiesPerMonth: 4,
-      annualLeave: 25,
-    });
-    const worker2 = await this.createTestWorker({
-      name: `Test Worker 2 ${workerIndex}-${Date.now()}`,
-      weeklyHours: 35,
-      weeklyHoursDesired: 35,
-      dutiesPerMonth: 3,
-      annualLeave: 30,
-    });
-    this.testWorkers.push(worker1, worker2);
+    const workers: { workerId: string; name: string; teamId: string }[] = [];
+    const worker1 = await this.createTestWorker(
+      {
+        name: `Test Worker 1 ${workerIndex}-${Date.now()}`,
+        weeklyHours: 40,
+        weeklyHoursDesired: 40,
+        dutiesPerMonth: 4,
+        annualLeave: 25,
+      },
+      testId
+    );
+    const worker2 = await this.createTestWorker(
+      {
+        name: `Test Worker 2 ${workerIndex}-${Date.now()}`,
+        weeklyHours: 35,
+        weeklyHoursDesired: 35,
+        dutiesPerMonth: 3,
+        annualLeave: 30,
+      },
+      testId
+    );
+    workers.push(worker1, worker2);
 
     // Create test shifts
-    this.testShifts = [];
-    const shift1 = await this.createTestShift({
-      name: `Morning Shift ${workerIndex}-${Date.now()}`,
-      acronym: "MS",
-    });
-    const shift2 = await this.createTestShift({
-      name: `Evening Shift ${workerIndex}-${Date.now()}`,
-      acronym: "ES",
-    });
-    this.testShifts.push(shift1, shift2);
+    const shifts: ShiftT[] = [];
+    const shift1 = await this.createTestShift(
+      {
+        name: `Morning Shift ${workerIndex}-${Date.now()}`,
+        acronym: "MS",
+      },
+      testId
+    );
+    const shift2 = await this.createTestShift(
+      {
+        name: `Evening Shift ${workerIndex}-${Date.now()}`,
+        acronym: "ES",
+      },
+      testId
+    );
+    shifts.push(shift1, shift2);
 
-    console.log(
-      `Created test workers: ${this.testWorkers.map((w) => w.name).join(", ")}`
-    );
-    console.log(
-      `Created test shifts: ${this.testShifts.map((s) => s.name).join(", ")}`
-    );
+    // Store workers and shifts
+    if (testId) {
+      this.testWorkersMap.set(testId, workers);
+      this.testShiftsMap.set(testId, shifts);
+      console.log(
+        `[Test ${testId}] Created test workers: ${workers
+          .map((w) => w.name)
+          .join(", ")}`
+      );
+      console.log(
+        `[Test ${testId}] Created test shifts: ${shifts
+          .map((s) => s.name)
+          .join(", ")}`
+      );
+    } else {
+      // Legacy storage for backwards compatibility
+      this.testWorkers = workers;
+      this.testShifts = shifts;
+      console.log(
+        `Created test workers: ${workers.map((w) => w.name).join(", ")}`
+      );
+      console.log(
+        `Created test shifts: ${shifts.map((s) => s.name).join(", ")}`
+      );
+    }
   }
 
   /**
@@ -139,15 +184,20 @@ export class ConstraintTestBase {
 
   /**
    * Creates a test worker using the API
+   * @param workerData - The worker data
+   * @param testId - Optional test ID for test isolation
    */
-  async createTestWorker(workerData: {
-    name: string;
-    acronym?: string;
-    weeklyHours?: number;
-    weeklyHoursDesired?: number;
-    dutiesPerMonth?: number;
-    annualLeave?: number;
-  }): Promise<{ workerId: string; name: string; teamId: string }> {
+  async createTestWorker(
+    workerData: {
+      name: string;
+      acronym?: string;
+      weeklyHours?: number;
+      weeklyHoursDesired?: number;
+      dutiesPerMonth?: number;
+      annualLeave?: number;
+    },
+    testId?: string
+  ): Promise<{ workerId: string; name: string; teamId: string }> {
     if (!this.testTeam) {
       throw new Error("No test team created. Call setupConstraintTests first.");
     }
@@ -160,17 +210,22 @@ export class ConstraintTestBase {
 
   /**
    * Creates a test shift using the API
+   * @param shiftData - The shift data
+   * @param testId - Optional test ID for test isolation
    */
-  async createTestShift(shiftData: {
-    name: string;
-    startTime?: dayjs.Dayjs;
-    endTime?: dayjs.Dayjs;
-    shiftType?: ShiftType;
-    restType?: ShiftRestType;
-    leaveType?: ShiftLeaveType;
-    color?: string;
-    acronym?: string;
-  }): Promise<ShiftT> {
+  async createTestShift(
+    shiftData: {
+      name: string;
+      startTime?: dayjs.Dayjs;
+      endTime?: dayjs.Dayjs;
+      shiftType?: ShiftType;
+      restType?: ShiftRestType;
+      leaveType?: ShiftLeaveType;
+      color?: string;
+      acronym?: string;
+    },
+    testId?: string
+  ): Promise<ShiftT> {
     if (!this.testTeam) {
       throw new Error("No test team created. Call setupConstraintTests first.");
     }
@@ -202,15 +257,25 @@ export class ConstraintTestBase {
 
   /**
    * Gets the test workers created during setup
+   * @param testId - Optional test ID to get workers for a specific test
    */
-  getTestWorkers(): { workerId: string; name: string; teamId: string }[] {
+  getTestWorkers(
+    testId?: string
+  ): { workerId: string; name: string; teamId: string }[] {
+    if (testId) {
+      return this.testWorkersMap.get(testId) || [];
+    }
     return this.testWorkers;
   }
 
   /**
    * Gets the test shifts created during setup
+   * @param testId - Optional test ID to get shifts for a specific test
    */
-  getTestShifts(): ShiftT[] {
+  getTestShifts(testId?: string): ShiftT[] {
+    if (testId) {
+      return this.testShiftsMap.get(testId) || [];
+    }
     return this.testShifts;
   }
 
@@ -237,6 +302,36 @@ export class ConstraintTestBase {
       }
     }
     this.testWorkers = [];
+  }
+
+  /**
+   * Deletes test workers for a specific test ID
+   * @param testId - The test ID to clean up workers for
+   */
+  async deleteTestWorkers(testId: string): Promise<void> {
+    if (!this.testTeam) {
+      throw new Error("No test team created. Call setupConstraintTests first.");
+    }
+
+    const workers = this.testWorkersMap.get(testId) || [];
+    for (const worker of workers) {
+      try {
+        await this.dbUtils.deleteWorker(worker.workerId, this.testTeam.teamId);
+      } catch (error) {
+        console.warn(`Failed to delete worker ${worker.name}:`, error);
+      }
+    }
+    this.testWorkersMap.delete(testId);
+  }
+
+  /**
+   * Cleanup test data for a specific test ID
+   * @param testId - The test ID to clean up
+   */
+  async cleanupTestData(testId: string): Promise<void> {
+    await this.deleteTestWorkers(testId);
+    this.testShiftsMap.delete(testId);
+    console.log(`[Test ${testId}] Cleaned up test data`);
   }
 
   /**
@@ -1075,6 +1170,7 @@ export class ConstraintTestBase {
    *
    * @param template - The constraint template to base the blocks on
    * @param options - Optional customization for block values
+   * @param testId - Optional test ID to get test-specific workers and shifts
    * @returns Array of constraint blocks ready for constraint creation
    */
   generateConstraintBlocksFromTemplate(
@@ -1083,7 +1179,8 @@ export class ConstraintTestBase {
       workerId?: string | "all";
       shiftId?: string | "all" | "duty" | "no-duty";
       numberValue?: number;
-    } = {}
+    } = {},
+    testId?: string
   ): any[] {
     const { workerId, shiftId, numberValue = 2 } = options;
 
@@ -1091,8 +1188,8 @@ export class ConstraintTestBase {
       throw new Error("Template must have blocks array");
     }
 
-    const testWorkers = this.getTestWorkers();
-    const testShifts = this.getTestShifts();
+    const testWorkers = this.getTestWorkers(testId);
+    const testShifts = this.getTestShifts(testId);
 
     return template.blocks.map((templateBlock) => {
       const block = {
@@ -1293,6 +1390,9 @@ export class ConstraintTestBase {
    * Creates a test constraint from a template with auto-generated blocks
    * This is a convenience method that combines template-based block generation
    * with constraint creation in a single call
+   * @param template - The constraint template
+   * @param options - Options for constraint creation
+   * @param testId - Optional test ID for test-specific workers and shifts
    */
   async createTestConstraintFromTemplate(
     template: TemplateT,
@@ -1305,7 +1405,8 @@ export class ConstraintTestBase {
       hard?: boolean;
       priority?: string;
       active?: boolean;
-    } = {}
+    } = {},
+    testId?: string
   ): Promise<{ constraintId: string; teamId: string }> {
     const {
       language = "en",
@@ -1319,7 +1420,8 @@ export class ConstraintTestBase {
     // Generate blocks from template
     const blocks = this.generateConstraintBlocksFromTemplate(
       template,
-      blockOptions
+      blockOptions,
+      testId
     );
 
     // Create the constraint

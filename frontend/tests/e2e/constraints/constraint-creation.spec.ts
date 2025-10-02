@@ -7,13 +7,34 @@
 
 import { test, expect } from "@playwright/test";
 import { ConstraintTestBase } from "../../utils/constraint-test-base";
-
-const constraintTestBase = new ConstraintTestBase();
+import { randomUUID } from "crypto";
 
 test.describe("Constraint Creation", () => {
-  test.beforeEach(async ({ page }) => {
+  // Store the constraint test base per test run
+  const testBasesMap = new Map<string, ConstraintTestBase>();
+
+  test.beforeEach(async ({ page }, testInfo) => {
+    // Generate a unique ID for this specific test run
+    // Combines worker index, test title, and UUID for absolute uniqueness
+    const testRunId = `${testInfo.workerIndex}-${
+      testInfo.title
+    }-${randomUUID()}`;
+    console.log(
+      `[Test Run ${testRunId}] Starting constraint creation test setup`
+    );
+
+    // Create a new ConstraintTestBase instance for this test run
+    const constraintTestBase = new ConstraintTestBase();
+    testBasesMap.set(testRunId, constraintTestBase);
+
+    // Store the testRunId in test info for access in test body and cleanup
+    (testInfo as any).testRunId = testRunId;
+
     // Setup the common constraint test environment (includes workers and shifts)
-    await constraintTestBase.setupConstraintTests(test.info().workerIndex);
+    await constraintTestBase.setupConstraintTests(
+      testInfo.workerIndex,
+      testRunId
+    );
 
     // Navigate to the constraints page
     await constraintTestBase.navigateToConstraintsPage(page);
@@ -22,16 +43,48 @@ test.describe("Constraint Creation", () => {
     await page.waitForSelector('[data-testid="constraint-tab"]');
   });
 
-  test.afterEach(async () => {
-    // Clean up: delete the workers created during setup
-    await constraintTestBase.deleteAllTestWorkers();
+  test.afterEach(async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
 
-    // Note: Shifts and constraints are cleaned up by the database reset between tests
+    if (!testRunId) {
+      console.warn("No testRunId found in testInfo - skipping cleanup");
+      return;
+    }
+
+    const constraintTestBase = testBasesMap.get(testRunId);
+
+    if (!constraintTestBase) {
+      console.warn(
+        `[Test Run ${testRunId}] No test base found - skipping cleanup`
+      );
+      return;
+    }
+
+    console.log(`[Test Run ${testRunId}] Cleaning up test data`);
+
+    // Clean up: delete the workers and shifts created for THIS specific test run
+    try {
+      await constraintTestBase.cleanupTestData(testRunId);
+      console.log(`[Test Run ${testRunId}] Test data cleanup completed`);
+    } catch (error) {
+      console.warn(
+        `[Test Run ${testRunId}] Failed to cleanup test data:`,
+        error
+      );
+    }
+
+    // Clean up the maps to prevent memory leaks
+    testBasesMap.delete(testRunId);
+
+    console.log(`[Test Run ${testRunId}] Cleanup completed`);
   });
 
   test("should open constraint creation popup when clicking add constraint button", async ({
     page,
-  }) => {
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const constraintTestBase = testBasesMap.get(testRunId)!;
+
     // Find and click the add constraint button
     const addButton = constraintTestBase.getAddConstraintButton(page);
     await expect(addButton).toBeVisible();
@@ -236,7 +289,10 @@ test.describe("Constraint Creation", () => {
 
   test("should close popup and add constraint to list when all fields are filled", async ({
     page,
-  }) => {
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const constraintTestBase = testBasesMap.get(testRunId)!;
+
     // Open the constraint creation dialog and select a template
     await constraintTestBase.openAddConstraintDialog(page);
     await constraintTestBase.selectTemplate(page, 0);
@@ -250,7 +306,7 @@ test.describe("Constraint Creation", () => {
       '[data-testid^="template-item-"].Mui-selected'
     );
     const templateText = await selectedTemplate.textContent();
-    console.log(`Selected template: "${templateText}"`);
+    console.log(`[Test ${testRunId}] Selected template: "${templateText}"`);
 
     // Template "Jean doit faire au plus 2 consultations consécutives" has 6 blocks:
     // Block 0: WORKER (Jean) - needs worker selection
@@ -260,12 +316,12 @@ test.describe("Constraint Creation", () => {
     // Block 4: SHIFT (consultations) - needs shift selection
     // Block 5: TIMING (consecutives) - dropdown with options
 
-    const testWorkers = constraintTestBase.getTestWorkers();
-    const testShifts = constraintTestBase.getTestShifts();
+    const testWorkers = constraintTestBase.getTestWorkers(testRunId);
+    const testShifts = constraintTestBase.getTestShifts(testRunId);
     const testWorker = testWorkers[0];
     const testShift = testShifts[0];
 
-    console.log("Step 1: Fill WORKER block (index 0)");
+    console.log(`[Test ${testRunId}] Step 1: Fill WORKER block (index 0)`);
     const workerBlock = page.locator(
       '[data-testid^="shift-worker-option-block-4-"]'
     );
@@ -420,7 +476,9 @@ test.describe("Constraint Creation", () => {
       console.log(`✅ Constraint contains shift name: ${testShift.name}`);
     }
 
-    console.log("✅ Constraint creation test completed successfully!");
+    console.log(
+      `[Test ${testRunId}] ✅ Constraint creation test completed successfully!`
+    );
   });
 
   test("should handle worker and shift selection in shift-worker option blocks", async ({
