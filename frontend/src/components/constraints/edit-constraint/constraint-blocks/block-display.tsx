@@ -39,7 +39,10 @@ export default function BlockDisplay({
   handleRemoveError: (index: number) => void;
 }) {
   return (
-    <Box sx={{ height: "100%" }}>
+    <Box
+      sx={{ height: "100%" }}
+      data-testid={`constraint-block-display-${index}`}
+    >
       {templateBlock.name === BlockNameOptions.TEXT ? (
         blockDisplayText(templateBlock.placeholder as string)
       ) : templateBlock.type === BlockTypeOptions.SHIFT_WORKER_OPTION ? (

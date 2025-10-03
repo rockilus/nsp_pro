@@ -237,6 +237,9 @@ export default function BlockEditString({
               }}
               selected={selectedOption === option}
               sx={{ padding: "0 0 0 0" }}
+              data-testid={`string-option-${option
+                .replace(/\s+/g, "-")
+                .toLowerCase()}`}
             >
               <ListItem sx={{ padding: "0 16px 0 16px" }}>
                 <ListItemText

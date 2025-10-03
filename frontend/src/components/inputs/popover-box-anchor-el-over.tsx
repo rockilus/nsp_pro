@@ -8,11 +8,13 @@ export default function PopoverBoxAnchorElOver({
   content,
   open,
   setOpen,
+  "data-testid": dataTestId,
 }: {
   buttonContent: React.ReactNode;
   content: React.ReactNode;
   open: boolean;
   setOpen: (open: boolean) => void;
+  "data-testid"?: string;
 }) {
   const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
 
@@ -34,6 +36,7 @@ export default function PopoverBoxAnchorElOver({
         width: "100%",
         height: "100%",
       }}
+      data-testid={dataTestId}
     >
       <Box onClick={handleClick}>{buttonContent}</Box>
       <Popover

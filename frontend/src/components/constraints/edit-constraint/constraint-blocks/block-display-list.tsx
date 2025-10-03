@@ -35,8 +35,16 @@ export default function BlockDisplayList({
       <div>
         {block && Array.isArray(block.value) && block.value.length !== 0
           ? blockDislayValue(block.value.join(", "))
-          : blockDisplayPlaceholder(templateBlock.placeholder, error)}
-        {blockDisplayName(GetBlockNameLabel(lng, templateBlock.name), error)}
+          : blockDisplayPlaceholder(
+              templateBlock.placeholder,
+              error,
+              `constraint-block-placeholder-${index}`
+            )}
+        {blockDisplayName(
+          GetBlockNameLabel(lng, templateBlock.name),
+          error,
+          `constraint-block-name-${index}`
+        )}
       </div>
     );
   };

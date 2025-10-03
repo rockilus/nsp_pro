@@ -68,6 +68,7 @@ export default function ConstraintButton({
             },
           },
         }}
+        data-testid="constraint-edit-popup"
       >
         <ConstraintEdit
           lng={lng}

@@ -121,11 +121,13 @@ export default function ConstraintTab({
   return (
     <>
       {isLoading ? (
-        <TablesSkeleton numTables={1} numInternalRows={5} />
+        <div data-testid="constraints-loading">
+          <TablesSkeleton numTables={1} numInternalRows={5} />
+        </div>
       ) : !selectedTeamId ? (
         <div>Please select a team</div>
       ) : (
-        <div className="tab-container">
+        <div className="tab-container" data-testid="constraint-tab">
           <div className="title-container">
             <span className="title">{t("constraints")}</span>
             <TableAddButton

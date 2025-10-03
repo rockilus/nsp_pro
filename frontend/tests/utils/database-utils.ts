@@ -1275,6 +1275,185 @@ export class DatabaseTestUtils {
       throw new Error(`Failed to delete template: Unknown error`);
     }
   }
+
+  //////////////////////////
+  // Constraint Methods
+  //////////////////////////
+
+  /**
+   * Create a constraint using direct API call
+   */
+  async createConstraint(constraintData: {
+    teamId: string;
+    constraintType: number;
+    templateId: string;
+    language: string;
+    blocks: any[];
+    text: string;
+    hard: boolean;
+    priority: string;
+    active: boolean;
+  }): Promise<{ constraintId: string; teamId: string }> {
+    try {
+      // Make direct API call instead of using dynamic import
+      const constraintToCreate = {
+        id: "", // Will be set by the API
+        teamId: constraintData.teamId,
+        constraintType: constraintData.constraintType,
+        templateId: constraintData.templateId,
+        language: constraintData.language,
+        blocks: constraintData.blocks,
+        text: constraintData.text,
+        hard: constraintData.hard,
+        priority: constraintData.priority,
+        active: constraintData.active,
+        missingAttributes: [],
+      };
+
+      const createdConstraint = await this.testApiClient.post<any>(
+        `/constraints/teams/${constraintData.teamId}`,
+        constraintToCreate
+      );
+
+      console.log(
+        `Created constraint: ${createdConstraint.text} (${createdConstraint.id})`
+      );
+      return {
+        constraintId: createdConstraint.id,
+        teamId: createdConstraint.teamId,
+      };
+    } catch (error) {
+      console.error("Failed to create constraint:", error);
+      if (error instanceof Error) {
+        throw new Error(`Failed to create constraint: ${error.message}`);
+      }
+      throw new Error(`Failed to create constraint: Unknown error`);
+    }
+  }
+
+  /**
+   * Update a constraint using the existing ConstraintApi for consistent behavior
+   */
+  async updateConstraint(
+    constraintId: string,
+    teamId: string,
+    updates: {
+      constraintType?: number;
+      templateId?: string;
+      language?: string;
+      blocks?: any[];
+      text?: string;
+      hard?: boolean;
+      priority?: string;
+      active?: boolean;
+    }
+  ): Promise<{ constraintId: string; teamId: string }> {
+    try {
+      // Make direct API calls instead of using dynamic import
+
+      // First get the current constraint
+      const constraints = await this.testApiClient.get<any[]>(
+        `/constraints/teams/${teamId}`
+      );
+      const currentConstraint = constraints.find((c) => c.id === constraintId);
+
+      if (!currentConstraint) {
+        throw new Error(`Constraint with ID ${constraintId} not found`);
+      }
+
+      const updatedConstraint = {
+        ...currentConstraint,
+        ...updates,
+      };
+
+      const result = await this.testApiClient.put<any>(
+        `/constraints/${constraintId}/teams/${teamId}`,
+        updatedConstraint
+      );
+
+      console.log(`Updated constraint: ${result.text} (${result.id})`);
+      return {
+        constraintId: result.id,
+        teamId: result.teamId,
+      };
+    } catch (error) {
+      console.error("Failed to update constraint:", error);
+      if (error instanceof Error) {
+        throw new Error(`Failed to update constraint: ${error.message}`);
+      }
+      throw new Error(`Failed to update constraint: Unknown error`);
+    }
+  }
+
+  /**
+   * Delete a constraint using direct API call
+   */
+  async deleteConstraint(constraintId: string, teamId: string): Promise<void> {
+    try {
+      await this.testApiClient.delete<void>(
+        `/constraints/${constraintId}/teams/${teamId}`
+      );
+      console.log(`Deleted constraint: ${constraintId}`);
+    } catch (error) {
+      console.error("Failed to delete constraint:", error);
+      if (error instanceof Error) {
+        throw new Error(`Failed to delete constraint: ${error.message}`);
+      }
+      throw new Error(`Failed to delete constraint: Unknown error`);
+    }
+  }
+
+  /**
+   * Get all constraints for a team using direct API call
+   */
+  async getConstraints(teamId: string): Promise<any[]> {
+    try {
+      const constraints = await this.testApiClient.get<any[]>(
+        `/constraints/teams/${teamId}`
+      );
+      console.log(
+        `Retrieved ${constraints.length} constraints for team ${teamId}`
+      );
+      return constraints;
+    } catch (error) {
+      console.error("Failed to get constraints:", error);
+      if (error instanceof Error) {
+        throw new Error(`Failed to get constraints: ${error.message}`);
+      }
+      throw new Error(`Failed to get constraints: Unknown error`);
+    }
+  }
+
+  /**
+   * Get constraint templates for a team using direct API call
+   */
+  async getConstraintTemplates(teamId: string): Promise<any[]> {
+    try {
+      // Make direct API call instead of using dynamic import
+      const templates = await this.testApiClient.get<any[]>(
+        `/constraint-templates/teams/${teamId}`
+      );
+      console.log(
+        `Retrieved ${templates.length} constraint templates for team ${teamId}`
+      );
+      return templates;
+    } catch (error) {
+      console.error("Failed to get constraint templates:", error);
+      if (error instanceof Error) {
+        throw new Error(`Failed to get constraint templates: ${error.message}`);
+      }
+      throw new Error(`Failed to get constraint templates: Unknown error`);
+    }
+  }
+
+  /**
+   * Reset constraint-related collections
+   */
+  async resetConstraintData(): Promise<DatabaseResetResponse> {
+    return this.resetDatabase({
+      collections: ["constraints", "constraint_templates"],
+    });
+  }
 }
 
 /**

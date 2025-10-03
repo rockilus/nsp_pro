@@ -63,8 +63,16 @@ export default function BlockDisplayString({
       <div>
         {block && block.value !== ""
           ? blockDislayValue(translateOptionName(block.value as string))
-          : blockDisplayPlaceholder(templateBlock.placeholder, error)}
-        {blockDisplayName(GetBlockNameLabel(lng, templateBlock.name), error)}
+          : blockDisplayPlaceholder(
+              templateBlock.placeholder,
+              error,
+              `constraint-block-placeholder-${index}`
+            )}
+        {blockDisplayName(
+          GetBlockNameLabel(lng, templateBlock.name),
+          error,
+          `constraint-block-name-${index}`
+        )}
       </div>
     );
   };
@@ -91,6 +99,7 @@ export default function BlockDisplayString({
       }
       open={open}
       setOpen={setOpen}
+      data-testid={`string-block-${templateBlock.name}-${index}`}
     />
   );
 }
