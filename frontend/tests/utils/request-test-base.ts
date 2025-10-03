@@ -302,6 +302,36 @@ export class RequestTestBase {
   }
 
   /**
+   * Fetches all shifts for the test team from the API
+   * @returns Promise<ShiftT[]> - All shifts for the team
+   */
+  async fetchAllShiftsForTeam(): Promise<ShiftT[]> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupRequestTests first.");
+    }
+
+    try {
+      return await this.dbUtils.getAllShifts(this.testTeam.teamId);
+    } catch (error) {
+      console.error("Failed to fetch all shifts for team:", error);
+      throw new Error(
+        `Failed to fetch all shifts for team: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
+  }
+
+  /**
+   * Fetches all leave shifts for the test team from the API
+   * @returns Promise<ShiftT[]> - All leave shifts for the team
+   */
+  async fetchLeaveShiftsForTeam(): Promise<ShiftT[]> {
+    const allShifts = await this.fetchAllShiftsForTeam();
+    return allShifts.filter((shift) => shift.shiftType === ShiftType.LEAVE);
+  }
+
+  /**
    * Deletes all test workers created during setup
    */
   async deleteAllTestWorkers(): Promise<void> {

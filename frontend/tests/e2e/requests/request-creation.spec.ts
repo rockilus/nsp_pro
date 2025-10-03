@@ -247,13 +247,17 @@ test.describe("Request Creation", () => {
     const testRunId = (testInfo as any).testRunId as string;
     const requestTestBase = testBasesMap.get(testRunId)!;
     const testWorkers = requestTestBase.getTestWorkers(testRunId);
-    const testShifts = requestTestBase.getTestShifts(testRunId);
 
-    // Find the leave shift
-    const leaveShift = testShifts.find((shift) => shift.name.includes("Leave"));
-    if (!leaveShift) {
-      throw new Error("Leave shift not found in test data");
+    // Fetch all leave shifts for the team (these are default/system shifts)
+    const leaveShifts = await requestTestBase.fetchLeaveShiftsForTeam();
+    if (leaveShifts.length === 0) {
+      throw new Error(
+        "No leave shifts found for the team. Leave shifts should be created by default."
+      );
     }
+
+    // Use the first available leave shift
+    const leaveShift = leaveShifts[0];
 
     // Open the request creation popover
     await requestTestBase.openNewRequestPopover(page);
@@ -291,13 +295,17 @@ test.describe("Request Creation", () => {
     const testRunId = (testInfo as any).testRunId as string;
     const requestTestBase = testBasesMap.get(testRunId)!;
     const testWorkers = requestTestBase.getTestWorkers(testRunId);
-    const testShifts = requestTestBase.getTestShifts(testRunId);
 
-    // Find the leave shift
-    const leaveShift = testShifts.find((shift) => shift.name.includes("Leave"));
-    if (!leaveShift) {
-      throw new Error("Leave shift not found in test data");
+    // Fetch all leave shifts for the team (these are default/system shifts)
+    const leaveShifts = await requestTestBase.fetchLeaveShiftsForTeam();
+    if (leaveShifts.length === 0) {
+      throw new Error(
+        "No leave shifts found for the team. Leave shifts should be created by default."
+      );
     }
+
+    // Use the first available leave shift
+    const leaveShift = leaveShifts[0];
 
     // Open the request creation popover
     await requestTestBase.openNewRequestPopover(page);
