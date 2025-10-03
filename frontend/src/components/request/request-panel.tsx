@@ -346,6 +346,7 @@ export default function RequestPanel({
         <IconButton
           edge="end"
           aria-label="edit"
+          data-testid={`edit-request-button-${request.id}`}
           disabled={
             userTeamRole === TeamMembershipRole.MEMBER &&
             (!userWorkerId || request.workerId !== userWorkerId)

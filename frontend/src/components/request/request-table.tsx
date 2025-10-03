@@ -286,6 +286,7 @@ const ActionsCell = ({
           onClick={() => handleAcceptRequest(request.id)}
           title="Approve Request"
           color="success"
+          data-testid={`approve-request-button-${request.id}`}
         >
           <CheckIcon />
         </IconButton>
@@ -297,6 +298,7 @@ const ActionsCell = ({
           onClick={() => handleDenyRequest(request.id)}
           title="Reject Request"
           color="error"
+          data-testid={`reject-request-button-${request.id}`}
         >
           <CloseIcon />
         </IconButton>
@@ -310,6 +312,7 @@ const ActionsCell = ({
             request.status === RequestStatus.APPROVED ? "Approval" : "Rejection"
           }`}
           color="warning"
+          data-testid={`rescind-request-button-${request.id}`}
         >
           <UndoIcon />
         </IconButton>
@@ -321,6 +324,7 @@ const ActionsCell = ({
         onClick={() => handleDeleteRequest(request.id)}
         title="Delete Request"
         color="error"
+        data-testid={`delete-request-button-${request.id}`}
       >
         <DeleteIcon />
       </IconButton>
