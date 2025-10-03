@@ -37,30 +37,6 @@ test.describe("Request Creation", () => {
 
     // Navigate to the requests page (this already handles localStorage team setting)
     await requestTestBase.navigateToRequestsPage(page);
-
-    // Debug: Log the team information to verify correct setup
-    const testTeam = requestTestBase.getTestTeam();
-    const selectedTeamFromStorage = await page.evaluate(() => {
-      const selectedTeam = localStorage.getItem("selectedTeam");
-      return selectedTeam ? JSON.parse(selectedTeam) : null;
-    });
-
-    console.log(`[${testRunId}] Expected test team:`, testTeam);
-    console.log(
-      `[${testRunId}] Selected team from localStorage:`,
-      selectedTeamFromStorage
-    );
-
-    // Verify the team IDs match
-    if (testTeam && selectedTeamFromStorage) {
-      const teamsMatch = testTeam.teamId === selectedTeamFromStorage.teamId;
-      console.log(`[${testRunId}] Team IDs match:`, teamsMatch);
-      if (!teamsMatch) {
-        console.warn(
-          `[${testRunId}] ⚠️  Team ID mismatch! Expected: ${testTeam.teamId}, Got: ${selectedTeamFromStorage.teamId}`
-        );
-      }
-    }
   });
 
   test.afterEach(async ({}, testInfo) => {
@@ -131,6 +107,17 @@ test.describe("Request Creation", () => {
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
+
+    const selectedTeamFromStorage = await page.evaluate(() => {
+      const selectedTeam = localStorage.getItem("selectedTeam");
+      return selectedTeam ? JSON.parse(selectedTeam) : null;
+    });
+
+    console.log(
+      `[${testRunId}] Selected team from localStorage in test:`,
+      selectedTeamFromStorage
+    );
+
     const requestTestBase = testBasesMap.get(testRunId)!;
     const testWorkers = requestTestBase.getTestWorkers(testRunId);
     const testShifts = requestTestBase.getTestShifts(testRunId);
