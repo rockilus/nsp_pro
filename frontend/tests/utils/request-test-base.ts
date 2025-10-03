@@ -560,13 +560,13 @@ export class RequestTestBase {
   ): Promise<void> {
     // Enable date range
     const dateRangeCheckbox = this.getDateRangeCheckbox(page);
-    await dateRangeCheckbox.check();
+    await dateRangeCheckbox.click();
 
     // Set end date
     const endDatePicker = this.getEndDatePicker(page);
     await endDatePicker.waitFor({ state: "visible" });
     await endDatePicker.click();
-    await endDatePicker.fill(endDate.format("MM/DD/YYYY"));
+    await endDatePicker.fill(endDate.format("DD/MM/YYYY"));
     await endDatePicker.press("Enter");
   }
 
