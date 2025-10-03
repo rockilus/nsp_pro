@@ -170,11 +170,20 @@ export class RequestTestBase {
       route.continue({ headers });
     });
 
+    // Log the team data that will be set in localStorage (this shows in terminal)
+    console.log(
+      `🔧 [navigateToRequestsPageDirect] About to set selectedTeam in localStorage:`,
+      JSON.stringify(this.testTeam)
+    );
+
     // Set the selected team in localStorage to bypass team selection
     await page.addInitScript((teamData) => {
       localStorage.clear(); // Clear any existing data to prevent cross-test contamination
       sessionStorage.clear(); // Also clear session storage
-      localStorage.setItem("selectedTeam", JSON.stringify(teamData));
+      const teamDataStr = JSON.stringify(teamData);
+      localStorage.setItem("selectedTeam", teamDataStr);
+      // Note: This console.log runs in browser context, not visible in terminal
+      // console.log("🔧 [addInitScript] Setting selectedTeam in localStorage:", teamDataStr);
     }, this.testTeam);
 
     // Navigate directly to the requests page
