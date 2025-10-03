@@ -570,22 +570,31 @@ export class RequestTestBase {
    * This opens the shift options popover and selects the first available shift option
    */
   async selectShiftOptions(page: Page): Promise<void> {
-    // Click on the shift options button to open the popover
-    const shiftOptionsButton = this.getShiftOptionsButton(page);
-    await shiftOptionsButton.click();
+    // Click on the shift options display block to open the popover
+    const shiftOptionsBlock = this.getShiftOptionsDisplayBlock(page);
+    await shiftOptionsBlock.waitFor({ state: "visible" });
+    await shiftOptionsBlock.click();
 
     // Wait for the popover to open
     const shiftOptionsPopover = this.getShiftOptionsPopover(page);
     await shiftOptionsPopover.waitFor({ state: "visible" });
 
-    // For simplicity, we'll select the first available checkbox option
-    // In a real test, you might want to select specific options
-    const firstCheckbox = page.locator('input[type="checkbox"]').first();
-    await firstCheckbox.check();
+    // Look for the first available shift option using the test ID pattern
+    // Pattern: swo-option-{categoryName}-{id}-{isBoolDim}
+    // We'll look for any shift option (categoryName "Shifts" and isBoolDim false)
+    const shiftOption = page
+      .locator('[data-testid^="swo-option-Shifts-"][data-testid$="-false"]')
+      .first();
 
-    // Close the popover by clicking outside or on a close button
-    // The exact method depends on how the popover closes
+    // Wait for the option to be visible and click it
+    await shiftOption.waitFor({ state: "visible", timeout: 5000 });
+    await shiftOption.click();
+
+    // Press Escape to close the popover and confirm selection
     await page.keyboard.press("Escape");
+
+    // Wait for the popover to close
+    await shiftOptionsPopover.waitFor({ state: "hidden" });
   }
 
   /**
