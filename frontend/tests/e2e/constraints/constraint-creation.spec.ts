@@ -368,16 +368,15 @@ test.describe("Constraint Creation", () => {
     await expect(workerOption).toBeVisible({ timeout: 5000 });
     await workerOption.click();
 
-    // Close the popover
+    // Close the popover and wait for it to disappear
     await page.mouse.click(100, 100);
-    await page.waitForTimeout(500);
+    await expect(workerOption).not.toBeVisible();
     console.log(`✅ Filled WORKER block with: ${testWorker.name}`);
 
     console.log("Step 2: Fill OPERATOR block (index 2)");
     const operatorBlock = page.locator('[data-testid^="string-block-0-"]');
     await expect(operatorBlock.first()).toBeVisible();
     await operatorBlock.first().click();
-    await page.waitForTimeout(500);
 
     const atLeastOption = page.locator(
       '[data-testid="string-option-at-least"]'
@@ -385,21 +384,21 @@ test.describe("Constraint Creation", () => {
     await expect(atLeastOption).toBeVisible();
     await atLeastOption.click();
     await page.mouse.click(100, 100);
-    await page.waitForTimeout(500);
+    await expect(atLeastOption).not.toBeVisible();
     console.log("✅ Filled OPERATOR block with: at least");
 
     console.log("Step 3: Fill NUMBER block (index 3)");
     const numberBlock = page.locator('[data-testid^="number-block-1-"]');
     await expect(numberBlock.first()).toBeVisible();
     await numberBlock.first().click();
-    await page.waitForTimeout(500);
 
     const numberInput = page.locator('[data-testid="constraint-number-input"]');
     await expect(numberInput).toBeVisible();
     const testNumber = "5";
     await numberInput.fill(testNumber);
     await numberInput.press("Enter");
-    await page.waitForTimeout(500);
+    // Wait for the number input to disappear after pressing Enter
+    await expect(numberInput).not.toBeVisible();
     console.log(`✅ Filled NUMBER block with: ${testNumber}`);
 
     console.log("Step 4: Fill SHIFT block (index 4)");
@@ -408,7 +407,6 @@ test.describe("Constraint Creation", () => {
     );
     await expect(shiftBlock.first()).toBeVisible();
     await shiftBlock.first().click();
-    await page.waitForTimeout(500);
 
     const shiftOption = page.locator(
       `[data-testid="swo-option-Shifts-${testShift.id}-false"]`
@@ -416,14 +414,13 @@ test.describe("Constraint Creation", () => {
     await expect(shiftOption).toBeVisible({ timeout: 5000 });
     await shiftOption.click();
     await page.mouse.click(100, 100);
-    await page.waitForTimeout(500);
+    await expect(shiftOption).not.toBeVisible();
     console.log(`✅ Filled SHIFT block with: ${testShift.name}`);
 
     console.log("Step 5: Fill TIMING block (index 5)");
     const timingBlock = page.locator('[data-testid^="string-block-2-"]');
     await expect(timingBlock.first()).toBeVisible();
     await timingBlock.first().click();
-    await page.waitForTimeout(500);
 
     // The timing block should have timing options - look for "consecutive" option
     // The exact data-testid will depend on the available options
@@ -438,9 +435,9 @@ test.describe("Constraint Creation", () => {
       const selectedOptionText = await firstOption.textContent();
       await firstOption.click();
 
-      // Close the popover
+      // Close the popover and wait for options to disappear
       await page.mouse.click(100, 100);
-      await page.waitForTimeout(500);
+      await expect(firstOption).not.toBeVisible();
       console.log(`✅ Filled TIMING block with: ${selectedOptionText}`);
     } else {
       console.log("⚠️ No timing options found");
@@ -474,9 +471,10 @@ test.describe("Constraint Creation", () => {
     console.log("✅ Dialog closed successfully");
 
     console.log("Step 9: Verify constraint appears in the list");
-    await page.waitForTimeout(1000); // Wait for constraint to appear in list
-
+    // Wait for constraint items to appear in the list
     const constraintItems = page.locator('[data-testid^="constraint-item-"]');
+    await expect(constraintItems.first()).toBeVisible({ timeout: 5000 });
+
     const itemCount = await constraintItems.count();
     console.log(`Found ${itemCount} constraint(s) in the list`);
 
@@ -745,9 +743,6 @@ test.describe("Constraint Creation", () => {
     console.log("Step 2: Clicking on shift block to open selection list...");
     await shiftBlock.click();
 
-    // Wait for the popover/dialog to open with the shift options
-    await page.waitForTimeout(500); // Small wait for animation
-
     // Step 3: Verify that the template block options are displayed
     console.log("Step 3: Verifying shift options are displayed...");
 
@@ -779,8 +774,8 @@ test.describe("Constraint Creation", () => {
     // Click somewhere on the screen to close the popover
     await page.mouse.click(100, 100);
 
-    // Wait for the popover to close
-    await page.waitForTimeout(500);
+    // Wait for the shift option to disappear (popover closed)
+    await expect(testShiftOption).not.toBeVisible();
 
     // Step 6: Verify the shift block now displays the name of our test shift
     console.log(
@@ -795,13 +790,17 @@ test.describe("Constraint Creation", () => {
     const saveButton = constraintTestBase.getSaveConstraintButton(page);
     await saveButton.click();
 
-    // Wait a moment for validation to process
-    await page.waitForTimeout(500);
-
     // Check if there are validation errors
     const validationErrors = page.locator(
       '[data-testid*="constraint-block-error"], .Mui-error'
     );
+    // Wait for validation to complete by checking if any validation errors appear or ensuring save button is still enabled
+    await Promise.race([
+      expect(validationErrors.first())
+        .toBeVisible({ timeout: 2000 })
+        .catch(() => {}),
+      expect(saveButton).toBeEnabled({ timeout: 2000 }),
+    ]);
     const errorCount = await validationErrors.count();
 
     console.log(`Found ${errorCount} validation errors`);
@@ -895,9 +894,6 @@ test.describe("Constraint Creation", () => {
     console.log("Step 2: Clicking on worker block to open selection list...");
     await workerBlock.click();
 
-    // Wait for the popover/dialog to open with the worker options
-    await page.waitForTimeout(500); // Small wait for animation
-
     // Step 3: Verify that the template block options are displayed
     console.log("Step 3: Verifying worker options are displayed...");
 
@@ -929,8 +925,8 @@ test.describe("Constraint Creation", () => {
     // Click somewhere on the screen to close the popover
     await page.mouse.click(100, 100);
 
-    // Wait for the popover to close
-    await page.waitForTimeout(500);
+    // Wait for the worker option to disappear (popover closed)
+    await expect(testWorkerOption).not.toBeVisible();
 
     // Step 6: Verify the worker block now displays the name of our test worker
     console.log(
@@ -947,13 +943,17 @@ test.describe("Constraint Creation", () => {
     const saveButton = constraintTestBase.getSaveConstraintButton(page);
     await saveButton.click();
 
-    // Wait a moment for validation to process
-    await page.waitForTimeout(500);
-
     // Check if there are validation errors
     const validationErrors = page.locator(
       '[data-testid*="constraint-block-error"], .Mui-error'
     );
+    // Wait for validation to complete by checking if any validation errors appear or ensuring save button is still enabled
+    await Promise.race([
+      expect(validationErrors.first())
+        .toBeVisible({ timeout: 2000 })
+        .catch(() => {}),
+      expect(saveButton).toBeEnabled({ timeout: 2000 }),
+    ]);
     const errorCount = await validationErrors.count();
 
     console.log(`Found ${errorCount} validation errors`);
@@ -1040,9 +1040,6 @@ test.describe("Constraint Creation", () => {
     );
     await operatorBlock.first().click();
 
-    // Wait for the list to be visible
-    await page.waitForTimeout(500);
-
     console.log("Step 3: Verify that the options are displayed");
     // Check that we can see the operator options
     // The options should have data-testid like "string-option-at-most", "string-option-at-least", "string-option-exactly"
@@ -1065,7 +1062,8 @@ test.describe("Constraint Creation", () => {
     );
     // Click away to close the popover
     await page.mouse.click(100, 100);
-    await page.waitForTimeout(300);
+    // Wait for the option to disappear (popover closed)
+    await expect(atLeastOption).not.toBeVisible();
 
     // The block should now show "at least" (or its translation "au moins")
     // Check for either the English or French version
@@ -1077,13 +1075,17 @@ test.describe("Constraint Creation", () => {
     const saveButton = constraintTestBase.getSaveConstraintButton(page);
     await saveButton.click();
 
-    // Wait a moment for validation to process
-    await page.waitForTimeout(500);
-
     // Check if there are validation errors
     const validationErrors = page.locator(
       '[data-testid*="constraint-block-error"], .Mui-error'
     );
+    // Wait for validation to complete by checking if any validation errors appear or ensuring save button is still enabled
+    await Promise.race([
+      expect(validationErrors.first())
+        .toBeVisible({ timeout: 2000 })
+        .catch(() => {}),
+      expect(saveButton).toBeEnabled({ timeout: 2000 }),
+    ]);
     const errorCount = await validationErrors.count();
 
     console.log(`Found ${errorCount} validation errors`);
@@ -1173,9 +1175,6 @@ test.describe("Constraint Creation", () => {
     );
     await numberBlock.first().click();
 
-    // Wait for the popover to open
-    await page.waitForTimeout(500);
-
     console.log("Step 3: Verify that the number input field is displayed");
     const numberInput = page.locator('[data-testid="constraint-number-input"]');
     await expect(numberInput).toBeVisible();
@@ -1186,8 +1185,8 @@ test.describe("Constraint Creation", () => {
     await numberInput.fill(testNumber);
     await numberInput.press("Enter");
 
-    // Wait for the popover to close
-    await page.waitForTimeout(500);
+    // Wait for the number input to disappear (popover closed)
+    await expect(numberInput).not.toBeVisible();
 
     console.log("Step 5: Verify the number block now displays our number");
     const blockDisplay = page.locator(
@@ -1203,13 +1202,17 @@ test.describe("Constraint Creation", () => {
     const saveButton = constraintTestBase.getSaveConstraintButton(page);
     await saveButton.click();
 
-    // Wait a moment for validation to process
-    await page.waitForTimeout(500);
-
     // Check if there are validation errors
     const validationErrors = page.locator(
       '[data-testid*="constraint-block-error"], .Mui-error'
     );
+    // Wait for validation to complete by checking if any validation errors appear or ensuring save button is still enabled
+    await Promise.race([
+      expect(validationErrors.first())
+        .toBeVisible({ timeout: 2000 })
+        .catch(() => {}),
+      expect(saveButton).toBeEnabled({ timeout: 2000 }),
+    ]);
     const errorCount = await validationErrors.count();
 
     console.log(`Found ${errorCount} validation errors`);
