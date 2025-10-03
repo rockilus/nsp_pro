@@ -527,7 +527,7 @@ export class RequestTestBase {
   async setStartDate(page: Page, date: dayjs.Dayjs): Promise<void> {
     const startDatePicker = this.getStartDatePicker(page);
     await startDatePicker.click();
-    await startDatePicker.fill(date.format("MM/DD/YYYY"));
+    await startDatePicker.fill(date.format("DD/MM/YYYY"));
     // Press Enter to confirm the date
     await startDatePicker.press("Enter");
   }
