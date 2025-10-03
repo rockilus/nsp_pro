@@ -159,13 +159,29 @@ export class RequestTestBase {
       throw new Error("Test team not created. Call setupRequestTests first.");
     }
 
+    // Disable caching to prevent cross-test contamination
+    await page.route("**/*", (route) => {
+      const headers = {
+        ...route.request().headers(),
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+      };
+      route.continue({ headers });
+    });
+
     // Set the selected team in localStorage to bypass team selection
     await page.addInitScript((teamData) => {
+      localStorage.clear(); // Clear any existing data to prevent cross-test contamination
+      sessionStorage.clear(); // Also clear session storage
       localStorage.setItem("selectedTeam", JSON.stringify(teamData));
     }, this.testTeam);
 
     // Navigate directly to the requests page
     await page.goto(`http://localhost:3000/en/plan/requests`);
+
+    // Force a hard refresh to ensure clean state and prevent API caching issues
+    await page.reload({ waitUntil: "networkidle" });
 
     // Wait for the page to load and render
     await page.waitForSelector('[data-testid="request-tab"]', {

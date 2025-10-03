@@ -35,24 +35,32 @@ test.describe("Request Creation", () => {
     // Setup the common request test environment (includes workers and shifts)
     await requestTestBase.setupRequestTests(testInfo.workerIndex, testRunId);
 
-    // Navigate to the requests page
+    // Navigate to the requests page (this already handles localStorage team setting)
     await requestTestBase.navigateToRequestsPage(page);
 
-    // Clear localStorage and set the correct team to ensure we're working with the right team
-    // This is crucial when multiple tests run in the same worker
+    // Debug: Log the team information to verify correct setup
     const testTeam = requestTestBase.getTestTeam();
-    await page.evaluate((teamData) => {
-      localStorage.clear();
-      if (teamData) {
-        localStorage.setItem("selectedTeam", JSON.stringify(teamData));
+    const selectedTeamFromStorage = await page.evaluate(() => {
+      const selectedTeam = localStorage.getItem("selectedTeam");
+      return selectedTeam ? JSON.parse(selectedTeam) : null;
+    });
+
+    console.log(`[${testRunId}] Expected test team:`, testTeam);
+    console.log(
+      `[${testRunId}] Selected team from localStorage:`,
+      selectedTeamFromStorage
+    );
+
+    // Verify the team IDs match
+    if (testTeam && selectedTeamFromStorage) {
+      const teamsMatch = testTeam.teamId === selectedTeamFromStorage.teamId;
+      console.log(`[${testRunId}] Team IDs match:`, teamsMatch);
+      if (!teamsMatch) {
+        console.warn(
+          `[${testRunId}] ⚠️  Team ID mismatch! Expected: ${testTeam.teamId}, Got: ${selectedTeamFromStorage.teamId}`
+        );
       }
-    }, testTeam);
-
-    // Reload the page to ensure the correct team is selected
-    await page.reload();
-
-    // Wait for the request tab to load
-    await page.waitForSelector('[data-testid="request-tab"]');
+    }
   });
 
   test.afterEach(async ({}, testInfo) => {
