@@ -520,9 +520,12 @@ export default function RequestPanel({
                 color="primary"
                 value={requestState.negative}
                 exclusive
-                onChange={(event, value) =>
-                  setRequestState({ ...requestState, negative: value })
-                }
+                onChange={(event, value) => {
+                  // Only update if value is not null (prevent deselection)
+                  if (value !== null) {
+                    setRequestState({ ...requestState, negative: value });
+                  }
+                }}
                 aria-label="Platform"
                 data-testid="negative-positive-toggle"
               >
