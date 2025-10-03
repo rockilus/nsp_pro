@@ -18,11 +18,13 @@ test.describe("Request Creation", () => {
   const testBasesMap = new Map<string, RequestTestBase>();
 
   test.beforeEach(async ({ page }, testInfo) => {
+    // Ensure workerIndex has a safe fallback (0) so parallel/serial runs are stable
+    const workerIndex =
+      typeof testInfo.workerIndex === "number" ? testInfo.workerIndex : 0;
+
     // Generate a unique ID for this specific test run
     // Combines worker index, test title, and UUID for absolute uniqueness
-    const testRunId = `${testInfo.workerIndex}-${
-      testInfo.title
-    }-${randomUUID()}`;
+    const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
     console.log(`[Test Run ${testRunId}] Starting request creation test setup`);
 
     // Create a new RequestTestBase instance for this test run
@@ -33,7 +35,7 @@ test.describe("Request Creation", () => {
     (testInfo as any).testRunId = testRunId;
 
     // Setup the common request test environment (includes workers and shifts)
-    await requestTestBase.setupRequestTests(testInfo.workerIndex, testRunId);
+    await requestTestBase.setupRequestTests(workerIndex, testRunId);
 
     // Navigate to the requests page (this already handles localStorage team setting)
     await requestTestBase.navigateToRequestsPage(page);
