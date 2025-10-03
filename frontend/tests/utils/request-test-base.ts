@@ -62,9 +62,6 @@ export class RequestTestBase {
       throw new Error("Test utilities not available for request tests");
     }
 
-    // Reset request-related data first
-    await this.dbUtils.resetWorkersRelatedData();
-
     // Create test team
     this.testTeam = await this.dbUtils.createTeam({
       name: `Request Test Team ${workerIndex}-${testId || randomUUID()}`,
@@ -131,16 +128,6 @@ export class RequestTestBase {
         color: "#2196f3",
         acronym: "NIGHT",
       },
-      {
-        name: `Leave Shift ${workerIndex}-${testId || randomUUID()}`,
-        startTime: dayjs.utc().hour(0).minute(0).second(0),
-        endTime: dayjs.utc().hour(23).minute(59).second(59),
-        shiftType: ShiftType.LEAVE,
-        restType: ShiftRestType.OFF,
-        leaveType: ShiftLeaveType.VACATION,
-        color: "#ff9800",
-        acronym: "LEAVE",
-      },
     ];
 
     const testShifts = [];
@@ -172,15 +159,13 @@ export class RequestTestBase {
       throw new Error("Test team not created. Call setupRequestTests first.");
     }
 
-    // Set the selected team in localStorage
-    await page.evaluate((teamData) => {
+    // Set the selected team in localStorage to bypass team selection
+    await page.addInitScript((teamData) => {
       localStorage.setItem("selectedTeam", JSON.stringify(teamData));
     }, this.testTeam);
 
     // Navigate directly to the requests page
-    await page.goto(
-      `http://localhost:3000/en/plan/${this.testTeam.teamId}/requests`
-    );
+    await page.goto(`http://localhost:3000/en/plan/requests`);
 
     // Wait for the page to load and render
     await page.waitForSelector('[data-testid="request-tab"]', {
