@@ -486,7 +486,10 @@ export default function RequestTable({
         onResetAll={resetAll}
       />
 
-      <TableContainer className="border border-gray-200 rounded-lg">
+      <TableContainer
+        className="border border-gray-200 rounded-lg"
+        data-testid="request-table"
+      >
         <Table size="small" aria-label="requests table">
           <TableHead>
             <TableRow className="bg-gray-50">

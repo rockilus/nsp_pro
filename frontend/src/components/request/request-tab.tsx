@@ -228,7 +228,7 @@ export default function RequestTab({
   const isLoadingData = isLoading || isLoadingShiftDemands;
 
   return (
-    <div className="tab-container-wide">
+    <div className="tab-container-wide" data-testid="request-tab">
       {isLoadingData ? (
         <TablesSkeleton numTables={1} numInternalRows={3} />
       ) : (
@@ -251,9 +251,16 @@ export default function RequestTab({
                 },
               }}
               aria-label="Request Tabs"
+              data-testid="request-tabs"
             >
-              <Tab label={t("requests") || "Requests"} />
-              <Tab label={t("calendar") || "Calendar"} />
+              <Tab
+                label={t("requests") || "Requests"}
+                data-testid="requests-tab"
+              />
+              <Tab
+                label={t("calendar") || "Calendar"}
+                data-testid="calendar-tab"
+              />
             </Tabs>
 
             <div className="flex items-center gap-4">
@@ -266,6 +273,7 @@ export default function RequestTab({
                         onChange={(e) => setShowPastRequests(e.target.checked)}
                         size="small"
                         color="primary"
+                        data-testid="show-past-requests-switch"
                       />
                     }
                     label={
