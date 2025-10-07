@@ -337,7 +337,11 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           <>
             {/* Program staffing requirement */}
             <div className="calendar-row">
-              <div className="calendar-row__name" style={{ fontWeight: 600 }}>
+              <div
+                className="calendar-row__name"
+                style={{ fontWeight: 600 }}
+                title="Demand"
+              >
                 Demand
               </div>
               <div className="calendar-row__days">
@@ -364,7 +368,11 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
             </div>
             {/* Current staff available */}
             <div className="calendar-row">
-              <div className="calendar-row__name" style={{ fontWeight: 600 }}>
+              <div
+                className="calendar-row__name"
+                style={{ fontWeight: 600 }}
+                title="Offer"
+              >
                 Offer
               </div>
               <div className="calendar-row__days">
@@ -391,7 +399,11 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
             </div>
             {/* Delta */}
             <div className="calendar-row">
-              <div className="calendar-row__name" style={{ fontWeight: 600 }}>
+              <div
+                className="calendar-row__name"
+                style={{ fontWeight: 600 }}
+                title="Delta"
+              >
                 Delta
               </div>
               <div className="calendar-row__days">
@@ -425,7 +437,9 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
       <div className="calendar-body">
         {workers.map((worker) => (
           <div className="calendar-row" key={worker.id}>
-            <div className="calendar-row__name">{worker.name}</div>
+            <div className="calendar-row__name" title={worker.name}>
+              {worker.name}
+            </div>
             <div className="calendar-row__days">
               {days.map((d) => {
                 const req = getRequestForDay(worker.id, d);

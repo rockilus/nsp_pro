@@ -214,7 +214,30 @@
   color: #222;
   background: #f7f7f7;
   padding-left: 12px;
+  padding-right: 8px;
   border-right: 1px solid #e0e0e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+  position: relative;
+}
+
+.calendar-row__name:hover::after {
+  content: attr(title);
+  position: absolute;
+  z-index: 10;
+  left: 0;
+  top: 100%;
+  background: #222;
+  color: #fff;
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(30, 30, 30, 0.18);
+  white-space: nowrap;
+  pointer-events: none;
+  margin-top: 4px;
 }
 
 .calendar-row__days {
@@ -269,6 +292,7 @@
     min-width: 70px;
     font-size: 13px;
     padding-left: 6px;
+    padding-right: 4px;
   }
   .calendar-header__days,
   .calendar-row__days {
