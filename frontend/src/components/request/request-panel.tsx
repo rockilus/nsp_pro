@@ -301,6 +301,7 @@ export default function RequestPanel({
               });
               setWorkerIdError(false);
             }}
+            data-testid="worker-select"
           >
             {workers.map((worker) => (
               <MenuItem key={worker.id} value={worker.id}>
@@ -326,6 +327,7 @@ export default function RequestPanel({
               });
               setShiftIdError(false);
             }}
+            data-testid="shift-select"
           >
             {filterShiftsByRequestType(shifts, requestType).map((shift) => (
               <MenuItem key={shift.id} value={shift.id}>
@@ -344,6 +346,7 @@ export default function RequestPanel({
         <IconButton
           edge="end"
           aria-label="edit"
+          data-testid={`edit-request-button-${request.id}`}
           disabled={
             userTeamRole === TeamMembershipRole.MEMBER &&
             (!userWorkerId || request.workerId !== userWorkerId)
@@ -361,6 +364,7 @@ export default function RequestPanel({
           sx={{
             textTransform: "none",
           }}
+          data-testid="new-request-button"
         >
           {t("new_request")}
         </Button>
@@ -374,6 +378,7 @@ export default function RequestPanel({
           vertical: "bottom",
           horizontal: "left",
         }}
+        data-testid="request-panel-popover"
       >
         <div className="request-panel-container">
           <div className="request-panel-header">
@@ -408,6 +413,7 @@ export default function RequestPanel({
             }}
             aria-label="Request Type"
             sx={{ marginBottom: 2, marginLeft: 2 }}
+            data-testid="request-type-toggle"
           >
             <ToggleButton
               value={RequestType.WORK_DEMAND}
@@ -420,6 +426,7 @@ export default function RequestPanel({
                 width: "105px",
                 fontSize: "0.8rem",
               }}
+              data-testid="work-request-type-button"
             >
               {t("work")}
             </ToggleButton>
@@ -433,6 +440,7 @@ export default function RequestPanel({
                 width: "105px",
                 fontSize: "0.8rem",
               }}
+              data-testid="leave-request-type-button"
             >
               {t("leave")}
             </ToggleButton>
@@ -447,6 +455,7 @@ export default function RequestPanel({
               onChange={handleSelectDateRange}
               size="small"
               sx={{ marginLeft: "49px", height: "30px", width: "30px" }}
+              data-testid="date-range-checkbox"
             />
             <Typography sx={{ fontSize: "0.8rem" }}>
               {t("date_range")}
@@ -471,7 +480,12 @@ export default function RequestPanel({
                   setStartDateError(false);
                   if (!dateRange) setEndDateError(false);
                 }}
-                slotProps={{ textField: { error: startDateError } }}
+                slotProps={{
+                  textField: {
+                    error: startDateError,
+                    inputProps: { "data-testid": "start-date-picker" },
+                  },
+                }}
               />
               {dateRange && (
                 <DatePicker
@@ -491,7 +505,12 @@ export default function RequestPanel({
                     });
                     setEndDateError(false);
                   }}
-                  slotProps={{ textField: { error: endDateError } }}
+                  slotProps={{
+                    textField: {
+                      error: endDateError,
+                      inputProps: { "data-testid": "end-date-picker" },
+                    },
+                  }}
                 />
               )}
             </div>
@@ -502,10 +521,14 @@ export default function RequestPanel({
                 color="primary"
                 value={requestState.negative}
                 exclusive
-                onChange={(event, value) =>
-                  setRequestState({ ...requestState, negative: value })
-                }
+                onChange={(event, value) => {
+                  // Only update if value is not null (prevent deselection)
+                  if (value !== null) {
+                    setRequestState({ ...requestState, negative: value });
+                  }
+                }}
                 aria-label="Platform"
+                data-testid="negative-positive-toggle"
               >
                 <ToggleButton
                   value={false}
@@ -518,6 +541,7 @@ export default function RequestPanel({
                     width: "105px",
                     fontSize: "0.8rem",
                   }}
+                  data-testid="positive-request-button"
                 >
                   {t("do")}
                 </ToggleButton>
@@ -531,6 +555,7 @@ export default function RequestPanel({
                     width: "105px",
                     fontSize: "0.8rem",
                   }}
+                  data-testid="negative-request-button"
                 >
                   {t("dont")}
                 </ToggleButton>
@@ -574,6 +599,7 @@ export default function RequestPanel({
               color="primary"
               sx={{ marginRight: 2 }}
               onClick={handleSaveRequest}
+              data-testid="save-request-button"
             >
               {t("save")}
             </Button>

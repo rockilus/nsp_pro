@@ -649,6 +649,31 @@ export class DatabaseTestUtils {
     }
   }
 
+  /**
+   * Get all shifts for a team using the existing ShiftApi for consistent behavior
+   */
+  async getAllShifts(teamId: string): Promise<ShiftT[]> {
+    try {
+      // Use the existing ShiftApi with our test client
+      const result: ShiftT[] = await ShiftApi.getAllShifts(
+        this.testApiClient,
+        teamId
+      );
+
+      return result;
+    } catch (error) {
+      // Enhanced error handling for test debugging
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to get all shifts for team '${teamId}': ${error.message}`
+        );
+      }
+      throw new Error(
+        `Failed to get all shifts for team '${teamId}': Unknown error`
+      );
+    }
+  }
+
   //////////////////////////
   // Specialty Methods
   //////////////////////////

@@ -38,7 +38,11 @@ export default function PopoverSelectShifts({
       <label className="popover-select-shifts-label">
         <span className="popover-select-shifts-text">Select Shifts</span>
       </label>
-      <div className="popover-select-shifts-button" onClick={handleClick}>
+      <div
+        className="popover-select-shifts-button"
+        onClick={handleClick}
+        data-testid="shift-options-button"
+      >
         {buttonContent}
       </div>
       <Popover
@@ -58,6 +62,7 @@ export default function PopoverSelectShifts({
             },
           },
         }}
+        data-testid="shift-options-popover"
       >
         {content}
       </Popover>

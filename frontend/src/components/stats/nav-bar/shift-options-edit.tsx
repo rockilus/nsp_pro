@@ -345,6 +345,7 @@ export default function ShiftOptionsEdit({
                     (option: ShiftWorkerOptionT, index: number) => (
                       <ListItemButton
                         key={`item-${sectionLabel}-${index}`}
+                        data-testid={`swo-option-${option.categoryName}-${option.id}-${option.isBoolDim}`}
                         onClick={() => {
                           handleAddSelectedOption(sectionLabel, option);
                         }}

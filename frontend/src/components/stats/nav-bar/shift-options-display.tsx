@@ -42,7 +42,7 @@ export default function ShiftOptionsDisplay({
 
   const blockDisplay = () => {
     return (
-      <div className="block-display">
+      <div className="block-display" data-testid="shift-options-display-block">
         {selectedShiftsState.length !== 0
           ? blockDislayValue(
               selectedShiftsState
