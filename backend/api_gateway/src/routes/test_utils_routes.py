@@ -17,7 +17,7 @@ from shared.database.reset_service import (
 )
 
 from src.config import config
-from src.integrations.authorization import authz_delete_all_users
+from src.integrations.authorization import authz_delete_all_instances
 
 
 def get_database_interface(request: Request):
@@ -116,11 +116,11 @@ async def reset_database_endpoint(
         # Perform the reset operation
         if request.collections is None:
             result = await reset_service.reset_all_collections()
-            await authz_delete_all_users()  # Delete all users in authz
+            await authz_delete_all_instances()  # Delete all instances in authz
         else:
             result = await reset_service.reset_specific_collections(request.collections)
             if "users" in request.collections:
-                await authz_delete_all_users()
+                await authz_delete_all_instances()
 
         logger.info(f"Database reset completed: {result['operation_id']}")
 
