@@ -278,10 +278,103 @@ async def authz_delete_all_users() -> None:
         handle_permit_errors(e)
 
 
+async def authz_delete_all_resource_instances() -> None:
+    """Delete all resource instances from Permit.io."""
+    try:
+        # Keep fetching and deleting from page 1 until no more instances
+        per_page = 100  # Adjust based on API limits
+
+        while True:
+            resource_instances = await permit.api.resource_instances.list(
+                page=1, per_page=per_page
+            )
+
+            log_info(
+                f"Fetched {len(resource_instances)} resource instances " f"for deletion"
+            )
+
+            # If no instances found, we're done
+            if not resource_instances:
+                break
+
+            # Delete instances from current batch
+            for instance in resource_instances:
+                # Use the full resource instance identifier
+                # (resource:key format)
+                # Fallback to just the key if resource is not available
+                if hasattr(instance, 'resource') and instance.resource:
+                    resource_instance_id = f"{instance.resource}:{instance.key}"
+                else:
+                    # If resource is not available, try just the key
+                    resource_instance_id = instance.key
+
+                await permit.api.resource_instances.delete(resource_instance_id)
+
+    except Exception as e:
+        log_info("Permit delete all resource instances error")
+        handle_permit_errors(e)
+
+
+async def authz_delete_all_role_assignments() -> None:
+    """Delete all role assignments from Permit.io."""
+    try:
+        # Keep fetching and deleting from page 1 until no more assignments
+        per_page = 100  # Adjust based on API limits
+
+        while True:
+            role_assignments = await permit.api.role_assignments.list(
+                page=1, per_page=per_page
+            )
+
+            # If no assignments found, we're done
+            if not role_assignments:
+                break
+
+            # Delete assignments from current batch
+            for assignment in role_assignments:
+                # Extract resource type and key from resource_instance
+                resource_type = "team"  # Default fallback
+                resource_instance_key = "unknown"
+
+                if assignment.resource_instance:
+                    parts = assignment.resource_instance.split(":")
+                    if len(parts) >= 2:
+                        resource_type = parts[0]
+                        resource_instance_key = parts[1]
+                    else:
+                        resource_instance_key = parts[0]
+
+                await authz_role_assignment_unassign(
+                    user_id=assignment.user,
+                    resource=resource_type,
+                    resource_instance_key=resource_instance_key,
+                    role=assignment.role,
+                )
+
+    except Exception as e:
+        log_info("Permit delete all role assignments error")
+        handle_permit_errors(e)
+
+
+async def authz_delete_all_instances() -> None:
+    """
+    Delete all users, resource instances, and role assignments from Permit.io.
+    """
+    try:
+        # Delete in order: role assignments first, then resource instances,
+        # then users
+        # await authz_delete_all_role_assignments()
+        await authz_delete_all_resource_instances()
+        await authz_delete_all_users()
+    except Exception as e:
+        log_info("Permit delete all instances error")
+        handle_permit_errors(e)
+
+
 def permit_to_core_user_auth(user_read: UserRead) -> UserAuth:
     return UserAuth(
         id=user_read.key,
-        email=user_read.email,
+        email=user_read.email or "",
     )
 
 
