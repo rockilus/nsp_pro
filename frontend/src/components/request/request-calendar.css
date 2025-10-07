@@ -206,9 +206,10 @@
 .calendar-row__name {
   width: 160px;
   min-width: 120px;
+  max-width: 160px;
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
+  display: block;
+  line-height: 36px;
   font-weight: 500;
   font-size: 15px;
   color: #222;
@@ -290,7 +291,9 @@
   .calendar-row__name {
     width: 90px;
     min-width: 70px;
+    max-width: 90px;
     font-size: 13px;
+    line-height: 28px;
     padding-left: 6px;
     padding-right: 4px;
   }
