@@ -508,17 +508,19 @@ export class RequestTestBase {
   }
 
   /**
-   * Gets the worker select dropdown
+   * Gets the worker select dropdown input element
+   * Note: MUI Select component uses a hidden input for the value
    */
   getWorkerSelect(page: Page) {
-    return page.locator('[data-testid="worker-select"]');
+    return page.locator('[data-testid="worker-select"] input');
   }
 
   /**
-   * Gets the shift select dropdown (for leave requests)
+   * Gets the shift select dropdown input element (for leave requests)
+   * Note: MUI Select component uses a hidden input for the value
    */
   getShiftSelect(page: Page) {
-    return page.locator('[data-testid="shift-select"]');
+    return page.locator('[data-testid="shift-select"] input');
   }
 
   /**
@@ -760,8 +762,9 @@ export class RequestTestBase {
    * Selects a worker by name
    */
   async selectWorker(page: Page, workerName: string): Promise<void> {
-    const workerSelect = this.getWorkerSelect(page);
-    await workerSelect.click();
+    // Click on the Select component (parent of the hidden input)
+    const workerSelectContainer = page.locator('[data-testid="worker-select"]');
+    await workerSelectContainer.click();
 
     // Wait for dropdown options to appear and select the worker
     const workerOption = page.locator(`text="${workerName}"`);
@@ -773,8 +776,9 @@ export class RequestTestBase {
    * Selects a shift by name (for leave requests)
    */
   async selectShift(page: Page, shiftName: string): Promise<void> {
-    const shiftSelect = this.getShiftSelect(page);
-    await shiftSelect.click();
+    // Click on the Select component (parent of the hidden input)
+    const shiftSelectContainer = page.locator('[data-testid="shift-select"]');
+    await shiftSelectContainer.click();
 
     // Wait for dropdown options to appear and select the shift
     const shiftOption = page.locator(`text="${shiftName}"`);
