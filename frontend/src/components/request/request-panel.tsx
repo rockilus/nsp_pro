@@ -199,12 +199,12 @@ export default function RequestPanel({
 
   // Initialize with request data if provided (for calendar usage)
   React.useEffect(() => {
-    if (request && !isEdit) {
+    if (request) {
       setRequestState(request);
       setRequestType(request.requestType);
       setDateRange(!request.startDate.isSame(request.endDate, "day"));
       if (hideButton) {
-        // Auto-open for calendar usage
+        // Auto-open for calendar usage (both create and edit scenarios)
         setOpen(true);
       }
     }
