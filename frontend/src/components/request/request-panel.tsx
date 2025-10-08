@@ -22,6 +22,7 @@ import CheckIcon from "@mui/icons-material/Check";
 import DeleteIcon from "@mui/icons-material/Delete";
 import UndoIcon from "@mui/icons-material/Undo";
 import ClearIcon from "@mui/icons-material/Clear";
+import CloseIcon from "@mui/icons-material/Close";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import Chip from "@mui/material/Chip";
 // Components
@@ -479,18 +480,14 @@ export default function RequestPanel({
             <div className="flex items-center gap-2">
               <Typography variant="h6">{t("new_request")}</Typography>
               {isEdit && request && (
-                <Chip
-                  label={getStatusLabel(requestState.status)}
-                  size="small"
-                  color={getStatusColor(requestState.status)}
-                  variant="filled"
-                />
-              )}
-            </div>
-            <div className="flex items-center gap-1">
-              {/* Action buttons for edit mode */}
-              {isEdit && request && (
                 <>
+                  <Chip
+                    label={getStatusLabel(requestState.status)}
+                    size="small"
+                    color={getStatusColor(requestState.status)}
+                    variant="filled"
+                  />
+                  {/* Action buttons for edit mode */}
                   {canApprove && handleAcceptRequest && (
                     <IconButton
                       size="small"
@@ -570,6 +567,16 @@ export default function RequestPanel({
                 </>
               )}
             </div>
+            <IconButton
+              aria-label="close"
+              onClick={handleClose}
+              sx={{
+                color: (theme) => theme.palette.grey[500],
+              }}
+              data-testid="close-request-dialog-button"
+            >
+              <CloseIcon />
+            </IconButton>
           </div>
         </DialogTitle>
         <DialogContent>
@@ -794,15 +801,6 @@ export default function RequestPanel({
               )}
             </div>
             <div className="save-button-container">
-              <Button
-                variant="outlined"
-                color="secondary"
-                sx={{ marginRight: 2 }}
-                onClick={handleClose}
-                data-testid="cancel-request-button"
-              >
-                {t("cancel")}
-              </Button>
               <Button
                 variant="contained"
                 color="primary"
