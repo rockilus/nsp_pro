@@ -157,9 +157,9 @@ test.describe("Request Calendar", () => {
     const requestPanel = requestTestBase.getRequestPanelPopover(page);
     await expect(requestPanel).toBeVisible();
 
-    // Verify we can close the panel
-    const closeButton = page.locator('[aria-label="close"]').first();
-    await closeButton.click();
+    // Verify we can close the panel by clicking the cancel button
+    const cancelButton = page.getByTestId("cancel-request-button");
+    await cancelButton.click();
     await expect(requestPanel).not.toBeVisible();
 
     console.log("✅ Create request panel opens when clicking on today");
