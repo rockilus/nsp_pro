@@ -46,6 +46,8 @@ export default function RequestPanel({
   userTeamRole,
   handleAddRequest,
   handleUpdateRequest,
+  hideButton = false,
+  onClose,
 }: {
   lng: string;
   teamId: string;
@@ -58,6 +60,8 @@ export default function RequestPanel({
   userTeamRole: TeamMembershipRole;
   handleAddRequest: (request: RequestT) => void;
   handleUpdateRequest: (request: RequestT) => void;
+  hideButton?: boolean;
+  onClose?: () => void;
 }) {
   const { t } = useTranslation(lng, "request-page");
 
@@ -184,7 +188,26 @@ export default function RequestPanel({
     setEndDateError(false);
     setShiftIdError(false);
     setShiftOptionsError(false);
+
+    // Call external onClose if provided
+    if (onClose) {
+      onClose();
+    }
   };
+
+  // Initialize with request data if provided (for calendar usage)
+  React.useEffect(() => {
+    if (request && !isEdit) {
+      setRequestState(request);
+      setRequestType(request.requestType);
+      setDateRange(!request.startDate.isSame(request.endDate, "day"));
+      if (hideButton) {
+        // Auto-open for calendar usage - use a dummy button element
+        const dummyButton = document.createElement("button");
+        setAnchorEl(dummyButton as HTMLButtonElement);
+      }
+    }
+  }, [request, isEdit, hideButton]);
 
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
@@ -249,6 +272,10 @@ export default function RequestPanel({
 
     if (!isEdit) {
       await handleAddRequest(requestState);
+      // Close the dialog after successful creation
+      if (hideButton && onClose) {
+        onClose();
+      }
     } else if (request) {
       // Only compare if editing and request is defined
       if (
@@ -342,32 +369,38 @@ export default function RequestPanel({
 
   return (
     <div>
-      {isEdit && request ? (
-        <IconButton
-          edge="end"
-          aria-label="edit"
-          data-testid={`edit-request-button-${request.id}`}
-          disabled={
-            userTeamRole === TeamMembershipRole.MEMBER &&
-            (!userWorkerId || request.workerId !== userWorkerId)
-          }
-          onClick={handleClick}
-        >
-          <EditIcon />
-        </IconButton>
-      ) : (
-        <Button
-          aria-describedby={id}
-          variant="contained"
-          disabled={userTeamRole === TeamMembershipRole.MEMBER && !userWorkerId}
-          onClick={handleClick}
-          sx={{
-            textTransform: "none",
-          }}
-          data-testid="new-request-button"
-        >
-          {t("new_request")}
-        </Button>
+      {!hideButton && (
+        <>
+          {isEdit && request ? (
+            <IconButton
+              edge="end"
+              aria-label="edit"
+              data-testid={`edit-request-button-${request.id}`}
+              disabled={
+                userTeamRole === TeamMembershipRole.MEMBER &&
+                (!userWorkerId || request.workerId !== userWorkerId)
+              }
+              onClick={handleClick}
+            >
+              <EditIcon />
+            </IconButton>
+          ) : (
+            <Button
+              aria-describedby={id}
+              variant="contained"
+              disabled={
+                userTeamRole === TeamMembershipRole.MEMBER && !userWorkerId
+              }
+              onClick={handleClick}
+              sx={{
+                textTransform: "none",
+              }}
+              data-testid="new-request-button"
+            >
+              {t("new_request")}
+            </Button>
+          )}
+        </>
       )}
       <Popover
         id={id}
@@ -396,15 +429,27 @@ export default function RequestPanel({
                 setRequestType(value);
                 setRequestState((prev) => {
                   if (value === RequestType.WORK_DEMAND) {
-                    // When switching to work demand, clear shiftId
-                    return { ...prev, shiftId: null, requestType: value };
+                    // When switching to work demand, clear shiftId but preserve worker and dates
+                    return {
+                      ...prev,
+                      shiftId: null,
+                      requestType: value,
+                      // Preserve workerId and dates from initial request
+                      workerId: request?.workerId || prev.workerId,
+                      startDate: request?.startDate || prev.startDate,
+                      endDate: request?.endDate || prev.endDate,
+                    };
                   } else if (value === RequestType.LEAVE) {
-                    // When switching to leave, clear shiftOptions and set negative to false
+                    // When switching to leave, clear shiftOptions and set negative to false but preserve worker and dates
                     return {
                       ...prev,
                       shiftOptions: [],
                       negative: false,
                       requestType: value,
+                      // Preserve workerId and dates from initial request
+                      workerId: request?.workerId || prev.workerId,
+                      startDate: request?.startDate || prev.startDate,
+                      endDate: request?.endDate || prev.endDate,
                     };
                   }
                   return prev;

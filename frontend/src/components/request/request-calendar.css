@@ -286,6 +286,16 @@
   display: block;
 }
 
+.calendar-cell--clickable {
+  transition: background-color 0.2s ease;
+}
+
+.calendar-cell--clickable:hover {
+  background-color: #f0f8ff !important;
+  border: 1px solid #2196f3;
+  box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+}
+
 @media (max-width: 900px) {
   .calendar-header__empty,
   .calendar-row__name {

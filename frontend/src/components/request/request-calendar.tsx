@@ -3,11 +3,13 @@ import dayjs, { Dayjs } from "dayjs";
 import "./request-calendar.css";
 import { StaffingSummaryLoadingIndicator } from "./StaffingSummaryLoadingIndicator";
 import { RequestT } from "../../types/request";
-
-type WorkerT = {
-  id: string;
-  name: string;
-};
+import { WorkerT } from "../../types/worker";
+import RequestPanel from "./request-panel";
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 
 type StatusColors = {
   [key: string]: string;
@@ -15,6 +17,11 @@ type StatusColors = {
 
 import { ShiftDemandDTO } from "../../types/shiftDemand";
 import { ShiftT } from "../../types/shift";
+import {
+  RequestType,
+  RequestStatus,
+  FulfillmentStatus,
+} from "../../types/request";
 
 type RequestCalendarProps = {
   workers: WorkerT[];
@@ -22,6 +29,12 @@ type RequestCalendarProps = {
   statusColors?: StatusColors;
   demands?: ShiftDemandDTO[];
   shifts?: ShiftT[];
+  lng?: string;
+  teamId?: string;
+  shiftOptions?: Array<any>;
+  userTeamRole?: any;
+  handleAddRequest?: (request: RequestT) => void;
+  handleUpdateRequest?: (request: RequestT) => void;
 };
 
 const defaultStatusColors: StatusColors = {
@@ -62,6 +75,12 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   statusColors = defaultStatusColors,
   demands = [],
   shifts = [],
+  lng,
+  teamId,
+  shiftOptions = [],
+  userTeamRole,
+  handleAddRequest,
+  handleUpdateRequest,
 }) => {
   const [currentMonth, setCurrentMonth] = React.useState(
     dayjs().utc().startOf("month")
@@ -70,6 +89,13 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   const [showAcceptedNotFulfilled, setShowAcceptedNotFulfilled] =
     React.useState(true);
   const [showFulfilled, setShowFulfilled] = React.useState(true);
+
+  // State for calendar cell selection and request creation
+  const [selectedCell, setSelectedCell] = React.useState<{
+    workerId: string;
+    date: Dayjs;
+  } | null>(null);
+
   // Memoize days to avoid unnecessary rerenders and effect triggers
   const days = React.useMemo(
     () => getDaysInMonth(currentMonth),
@@ -243,6 +269,52 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   const handlePrevMonth = () => setCurrentMonth((m) => m.subtract(1, "month"));
   const handleNextMonth = () => setCurrentMonth((m) => m.add(1, "month"));
   const handleToday = () => setCurrentMonth(dayjs().utc().startOf("month"));
+
+  // Handle calendar cell click for empty cells
+  const handleCellClick = (workerId: string, date: Dayjs) => {
+    // Only allow clicking on empty cells (no existing request)
+    const existingRequest = getRequestForDay(workerId, date);
+    if (!existingRequest && handleAddRequest && lng && teamId) {
+      setSelectedCell({ workerId, date });
+    }
+  };
+
+  // Create pre-populated request for selected cell
+  const createPrePopulatedRequest = (
+    workerId: string,
+    date: Dayjs
+  ): RequestT => ({
+    id: "",
+    teamId: teamId || "",
+    requestType: RequestType.LEAVE, // Start with leave as default
+    workerId: workerId,
+    startDate: date,
+    endDate: date,
+    shiftId: null,
+    shiftOptions: [],
+    negative: false,
+    hard: true,
+    status: RequestStatus.PENDING,
+    fulfillment: FulfillmentStatus.NOT_PROCESSED,
+    comment: "",
+    createdAt: dayjs.utc(),
+    active: true,
+    shiftTargetIds: [],
+    missingAttributes: [],
+  });
+
+  // Handle closing the request panel
+  const handleCloseRequestPanel = () => {
+    setSelectedCell(null);
+  };
+
+  // Handle successful request creation
+  const handleRequestCreated = (request: RequestT) => {
+    if (handleAddRequest) {
+      handleAddRequest(request);
+    }
+    setSelectedCell(null);
+  };
 
   // --- END STAFFING TABLE LOGIC ---
 
@@ -443,17 +515,32 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
             <div className="calendar-row__days">
               {days.map((d) => {
                 const req = getRequestForDay(worker.id, d);
+                const isEmpty = !req;
+                const canAddRequest =
+                  isEmpty && handleAddRequest && lng && teamId;
+
                 return (
                   <div
                     key={d.date()}
                     className={`calendar-cell${
                       req ? " calendar-cell--leave" : ""
-                    }`}
+                    }${canAddRequest ? " calendar-cell--clickable" : ""}`}
                     style={{
                       background: req
                         ? getStatusColor(req, statusColors)
                         : undefined,
+                      cursor: canAddRequest ? "pointer" : "default",
                     }}
+                    onClick={() =>
+                      canAddRequest && handleCellClick(worker.id, d)
+                    }
+                    title={
+                      canAddRequest
+                        ? `Click to create request for ${
+                            worker.name
+                          } on ${d.format("MMM D")}`
+                        : undefined
+                    }
                   >
                     {req && (
                       <div className="calendar-cell__tooltip">
@@ -480,6 +567,54 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           </div>
         ))}
       </div>
+
+      {/* Request Panel for creating requests from calendar */}
+      {selectedCell && lng && teamId && (
+        <Dialog
+          open={Boolean(selectedCell)}
+          onClose={handleCloseRequestPanel}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>
+            Create Request for{" "}
+            {workers.find((w) => w.id === selectedCell.workerId)?.name} on{" "}
+            {selectedCell.date.format("MMM D, YYYY")}
+            <IconButton
+              aria-label="close"
+              onClick={handleCloseRequestPanel}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[500],
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent>
+            <RequestPanel
+              lng={lng}
+              teamId={teamId}
+              isEdit={false}
+              request={createPrePopulatedRequest(
+                selectedCell.workerId,
+                selectedCell.date
+              )}
+              workers={workers.filter((w) => !w.deleted)}
+              shifts={shifts}
+              shiftOptions={shiftOptions}
+              userWorkerId={selectedCell.workerId}
+              userTeamRole={userTeamRole}
+              handleAddRequest={handleRequestCreated}
+              handleUpdateRequest={handleUpdateRequest || (() => {})}
+              hideButton={true}
+              onClose={handleCloseRequestPanel}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
