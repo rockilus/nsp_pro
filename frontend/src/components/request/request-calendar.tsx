@@ -535,9 +535,9 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
                 const req = getRequestForDay(worker.id, d);
                 const isEmpty = !req;
                 const canAddRequest =
-                  isEmpty && handleAddRequest && lng && teamId;
+                  isEmpty && !!handleAddRequest && !!lng && !!teamId;
                 const canEditRequest =
-                  req && handleUpdateRequest && lng && teamId;
+                  !!req && !!handleUpdateRequest && !!lng && !!teamId;
 
                 return (
                   <div
@@ -557,10 +557,6 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
                         canAddRequest || canEditRequest ? "pointer" : "default",
                     }}
                     onClick={() => {
-                      console.log("canEditRequest", canEditRequest);
-                      console.log("canAddRequest", canAddRequest);
-                      console.log("req", req);
-
                       if (canAddRequest) {
                         handleCellClick(worker.id, d);
                       } else if (canEditRequest && req) {
