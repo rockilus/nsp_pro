@@ -570,50 +570,24 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
 
       {/* Request Panel for creating requests from calendar */}
       {selectedCell && lng && teamId && (
-        <Dialog
-          open={Boolean(selectedCell)}
+        <RequestPanel
+          lng={lng}
+          teamId={teamId}
+          isEdit={false}
+          request={createPrePopulatedRequest(
+            selectedCell.workerId,
+            selectedCell.date
+          )}
+          workers={workers.filter((w) => !w.deleted)}
+          shifts={shifts}
+          shiftOptions={shiftOptions}
+          userWorkerId={selectedCell.workerId}
+          userTeamRole={userTeamRole}
+          handleAddRequest={handleRequestCreated}
+          handleUpdateRequest={handleUpdateRequest || (() => {})}
+          hideButton={true}
           onClose={handleCloseRequestPanel}
-          maxWidth="sm"
-          fullWidth
-        >
-          <DialogTitle>
-            Create Request for{" "}
-            {workers.find((w) => w.id === selectedCell.workerId)?.name} on{" "}
-            {selectedCell.date.format("MMM D, YYYY")}
-            <IconButton
-              aria-label="close"
-              onClick={handleCloseRequestPanel}
-              sx={{
-                position: "absolute",
-                right: 8,
-                top: 8,
-                color: (theme) => theme.palette.grey[500],
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
-          </DialogTitle>
-          <DialogContent>
-            <RequestPanel
-              lng={lng}
-              teamId={teamId}
-              isEdit={false}
-              request={createPrePopulatedRequest(
-                selectedCell.workerId,
-                selectedCell.date
-              )}
-              workers={workers.filter((w) => !w.deleted)}
-              shifts={shifts}
-              shiftOptions={shiftOptions}
-              userWorkerId={selectedCell.workerId}
-              userTeamRole={userTeamRole}
-              handleAddRequest={handleRequestCreated}
-              handleUpdateRequest={handleUpdateRequest || (() => {})}
-              hideButton={true}
-              onClose={handleCloseRequestPanel}
-            />
-          </DialogContent>
-        </Dialog>
+        />
       )}
     </div>
   );
