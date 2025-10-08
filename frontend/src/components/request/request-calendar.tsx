@@ -280,13 +280,14 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
 
   // Handle calendar cell click for empty cells
   const handleCellClick = (workerId: string, date: Dayjs) => {
-    // Don't allow clicking on past days
-    if (date.isBefore(dayjs().utc(), "day")) {
+    const existingRequest = getRequestForDay(workerId, date);
+
+    // Don't allow clicking on past empty cells
+    if (!existingRequest && date.isBefore(dayjs().utc(), "day")) {
       return;
     }
 
     // Only allow clicking on empty cells (no existing request)
-    const existingRequest = getRequestForDay(workerId, date);
     if (!existingRequest && handleAddRequest && lng && teamId) {
       setSelectedCell({ workerId, date });
     }
@@ -555,6 +556,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
                 const req = getRequestForDay(worker.id, d);
                 const isEmpty = !req;
                 const isPast = d.isBefore(dayjs().utc(), "day");
+                const isPastEmpty = isPast && isEmpty;
                 const canAddRequest =
                   isEmpty && !isPast && !!handleAddRequest && !!lng && !!teamId;
                 const canEditRequest =
@@ -569,7 +571,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
                       canAddRequest || canEditRequest
                         ? " calendar-cell--clickable"
                         : ""
-                    }${isPast ? " calendar-cell--past" : ""}`}
+                    }${isPastEmpty ? " calendar-cell--past" : ""}`}
                     style={{
                       background: req
                         ? getStatusColor(req, statusColors)
@@ -588,7 +590,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
                       }
                     }}
                     title={
-                      isPast && isEmpty
+                      isPastEmpty
                         ? `Past date - ${d.format("MMM D")}`
                         : canAddRequest
                         ? `Click to create request for ${
