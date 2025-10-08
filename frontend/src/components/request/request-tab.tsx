@@ -297,6 +297,9 @@ export default function RequestTab({
                 handleAddRequest={handleAddRequest}
                 handleUpdateRequest={handleUpdateRequest}
                 handleDeleteRequest={handleDeleteRequest}
+                handleRescindRequest={handleRescindRequest}
+                handleAcceptRequest={handleAcceptRequest}
+                handleDenyRequest={handleDenyRequest}
               />
             </div>
           </div>
@@ -330,6 +333,9 @@ export default function RequestTab({
               handleAddRequest={handleAddRequest}
               handleUpdateRequest={handleUpdateRequest}
               handleDeleteRequest={handleDeleteRequest}
+              handleRescindRequest={handleRescindRequest}
+              handleAcceptRequest={handleAcceptRequest}
+              handleDenyRequest={handleDenyRequest}
             />
           )}
         </div>

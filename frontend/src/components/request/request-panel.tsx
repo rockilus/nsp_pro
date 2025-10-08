@@ -19,6 +19,10 @@ import WorkIcon from "@mui/icons-material/Work";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
+import CheckIcon from "@mui/icons-material/Check";
+import DeleteIcon from "@mui/icons-material/Delete";
+import UndoIcon from "@mui/icons-material/Undo";
+import ClearIcon from "@mui/icons-material/Clear";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Components
 import ShiftOptionsDisplay from "../stats/nav-bar/shift-options-display";
@@ -49,6 +53,9 @@ export default function RequestPanel({
   handleAddRequest,
   handleUpdateRequest,
   handleDeleteRequest,
+  handleRescindRequest,
+  handleAcceptRequest,
+  handleDenyRequest,
   hideButton = false,
   onClose,
 }: {
@@ -64,6 +71,9 @@ export default function RequestPanel({
   handleAddRequest: (request: RequestT) => void;
   handleUpdateRequest: (request: RequestT) => void;
   handleDeleteRequest?: (requestId: string) => void;
+  handleRescindRequest?: (requestId: string) => void;
+  handleAcceptRequest?: (requestId: string) => void;
+  handleDenyRequest?: (requestId: string) => void;
   hideButton?: boolean;
   onClose?: () => void;
 }) {
@@ -111,6 +121,20 @@ export default function RequestPanel({
   const [endDateError, setEndDateError] = useState(false);
   const [shiftIdError, setShiftIdError] = useState(false);
   const [shiftOptionsError, setShiftOptionsError] = useState(false);
+
+  // Helper functions for action button logic (similar to ActionsCell)
+  const canEdit =
+    userTeamRole !== TeamMembershipRole.MEMBER ||
+    (userWorkerId && request?.workerId === userWorkerId);
+
+  const canApprove =
+    userTeamRole === TeamMembershipRole.OWNER &&
+    request?.status === RequestStatus.PENDING;
+
+  const canRescind =
+    userTeamRole === TeamMembershipRole.OWNER &&
+    (request?.status === RequestStatus.APPROVED ||
+      request?.status === RequestStatus.DENIED);
 
   // Helper to filter shifts by request type
   function filterShiftsByRequestType(
@@ -311,13 +335,6 @@ export default function RequestPanel({
     handleClose();
   };
 
-  const handleDeleteClick = async () => {
-    if (isEdit && request && handleDeleteRequest) {
-      await handleDeleteRequest(request.id);
-      handleClose();
-    }
-  };
-
   const handleSelectDateRange = () => {
     if (dateRange) {
       setRequestState({
@@ -433,9 +450,69 @@ export default function RequestPanel({
         <DialogTitle>
           <div className="flex justify-between items-center">
             <Typography variant="h6">{t("new_request")}</Typography>
-            <IconButton onClick={handleClose} sx={{ padding: 0 }}>
-              <CloseIcon />
-            </IconButton>
+            <div className="flex items-center gap-1">
+              {/* Action buttons for edit mode */}
+              {isEdit && request && (
+                <>
+                  {canApprove && handleAcceptRequest && (
+                    <IconButton
+                      size="small"
+                      onClick={() => handleAcceptRequest(request.id)}
+                      title="Approve Request"
+                      color="success"
+                      data-testid={`approve-request-button-${request.id}`}
+                    >
+                      <CheckIcon />
+                    </IconButton>
+                  )}
+
+                  {canApprove && handleDenyRequest && (
+                    <IconButton
+                      size="small"
+                      onClick={() => handleDenyRequest(request.id)}
+                      title="Reject Request"
+                      color="error"
+                      data-testid={`reject-request-button-${request.id}`}
+                    >
+                      <ClearIcon />
+                    </IconButton>
+                  )}
+
+                  {canRescind && handleRescindRequest && (
+                    <IconButton
+                      size="small"
+                      onClick={() => handleRescindRequest(request.id)}
+                      title={`Rescind ${
+                        request.status === RequestStatus.APPROVED
+                          ? "Approval"
+                          : "Rejection"
+                      }`}
+                      color="warning"
+                      data-testid={`rescind-request-button-${request.id}`}
+                    >
+                      <UndoIcon />
+                    </IconButton>
+                  )}
+
+                  {handleDeleteRequest && (
+                    <IconButton
+                      size="small"
+                      disabled={!canEdit}
+                      onClick={() => handleDeleteRequest(request.id)}
+                      title="Delete Request"
+                      color="error"
+                      data-testid={`delete-request-button-${request.id}`}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  )}
+                </>
+              )}
+
+              <IconButton onClick={handleClose} sx={{ padding: 0 }}>
+                <CloseIcon />
+              </IconButton>
+            </div>
           </div>
         </DialogTitle>
         <DialogContent>
@@ -669,16 +746,6 @@ export default function RequestPanel({
               >
                 {t("save")}
               </Button>
-              {isEdit && request && handleDeleteRequest && (
-                <Button
-                  variant="outlined"
-                  color="error"
-                  onClick={handleDeleteClick}
-                  data-testid="delete-request-button"
-                >
-                  {t("delete") || "Delete"}
-                </Button>
-              )}
             </div>
           </div>
         </DialogContent>

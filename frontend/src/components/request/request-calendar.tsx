@@ -31,6 +31,9 @@ type RequestCalendarProps = {
   handleAddRequest?: (request: RequestT) => void;
   handleUpdateRequest?: (request: RequestT) => void;
   handleDeleteRequest?: (requestId: string) => void;
+  handleRescindRequest?: (requestId: string) => void;
+  handleAcceptRequest?: (requestId: string) => void;
+  handleDenyRequest?: (requestId: string) => void;
 };
 
 const defaultStatusColors: StatusColors = {
@@ -78,6 +81,9 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   handleAddRequest,
   handleUpdateRequest,
   handleDeleteRequest,
+  handleRescindRequest,
+  handleAcceptRequest,
+  handleDenyRequest,
 }) => {
   const [currentMonth, setCurrentMonth] = React.useState(
     dayjs().utc().startOf("month")
@@ -629,6 +635,9 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           handleAddRequest={handleRequestCreated}
           handleUpdateRequest={handleUpdateRequest || (() => {})}
           handleDeleteRequest={handleDeleteRequest}
+          handleRescindRequest={handleRescindRequest}
+          handleAcceptRequest={handleAcceptRequest}
+          handleDenyRequest={handleDenyRequest}
           hideButton={true}
           onClose={handleCloseRequestPanel}
         />
@@ -649,6 +658,9 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           handleAddRequest={handleRequestUpdated}
           handleUpdateRequest={handleRequestUpdated}
           handleDeleteRequest={handleDeleteRequest}
+          handleRescindRequest={handleRescindRequest}
+          handleAcceptRequest={handleAcceptRequest}
+          handleDenyRequest={handleDenyRequest}
           hideButton={true}
           onClose={handleCloseRequestPanel}
         />
