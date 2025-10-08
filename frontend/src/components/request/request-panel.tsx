@@ -277,6 +277,18 @@ export default function RequestPanel({
         onClose();
       }
     } else if (request) {
+      // Helper function to compare shiftOptions arrays
+      const areShiftOptionsEqual = (
+        options1: ShiftWorkerOptionT[],
+        options2: ShiftWorkerOptionT[]
+      ) => {
+        if (options1.length !== options2.length) return false;
+        return options1.every((opt1, index) => {
+          const opt2 = options2[index];
+          return opt1.id === opt2.id && opt1.idType === opt2.idType;
+        });
+      };
+
       // Only compare if editing and request is defined
       if (
         requestState.workerId === request.workerId &&
@@ -284,7 +296,8 @@ export default function RequestPanel({
         requestState.endDate === request.endDate &&
         requestState.shiftId === request.shiftId &&
         requestState.negative === request.negative &&
-        requestState.hard === request.hard
+        requestState.hard === request.hard &&
+        areShiftOptionsEqual(requestState.shiftOptions, request.shiftOptions)
       ) {
         handleClose();
         return;
