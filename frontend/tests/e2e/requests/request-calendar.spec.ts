@@ -8,15 +8,15 @@
 import { test, expect } from "@playwright/test";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { RequestCalendarTestBase } from "../../utils/request-calendar-test-base";
+import { RequestTestBase } from "../../utils/request-test-base";
 import { RequestType, RequestStatus } from "../../../src/types/request";
 import { randomUUID } from "crypto";
 
 dayjs.extend(utc);
 
 test.describe("Request Calendar", () => {
-  // Store the request calendar test base per test run
-  const testBasesMap = new Map<string, RequestCalendarTestBase>();
+  // Store the request test base per test run
+  const testBasesMap = new Map<string, RequestTestBase>();
 
   test.beforeEach(async ({ page }, testInfo) => {
     // Ensure workerIndex has a safe fallback (0) so parallel/serial runs are stable
@@ -28,18 +28,18 @@ test.describe("Request Calendar", () => {
     const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
     console.log(`[Test Run ${testRunId}] Starting request calendar test setup`);
 
-    // Create a new RequestCalendarTestBase instance for this test run
-    const requestCalendarTestBase = new RequestCalendarTestBase();
-    testBasesMap.set(testRunId, requestCalendarTestBase);
+    // Create a new RequestTestBase instance for this test run
+    const requestTestBase = new RequestTestBase();
+    testBasesMap.set(testRunId, requestTestBase);
 
     // Store the testRunId in test info for access in test body and cleanup
     (testInfo as any).testRunId = testRunId;
 
     // Setup the common request test environment (includes workers and shifts)
-    await requestCalendarTestBase.setupRequestTests(workerIndex, testRunId);
+    await requestTestBase.setupRequestTests(workerIndex, testRunId);
 
     // Navigate to the requests page
-    await requestCalendarTestBase.navigateToRequestsPage(page);
+    await requestTestBase.navigateToRequestsPage(page);
   });
 
   test.afterEach(async ({}, testInfo) => {
@@ -51,11 +51,11 @@ test.describe("Request Calendar", () => {
       return;
     }
 
-    const requestCalendarTestBase = testBasesMap.get(testRunId);
+    const requestTestBase = testBasesMap.get(testRunId);
 
-    if (!requestCalendarTestBase) {
+    if (!requestTestBase) {
       console.warn(
-        `No requestCalendarTestBase found for testRunId: ${testRunId}, skipping cleanup`
+        `No requestTestBase found for testRunId: ${testRunId}, skipping cleanup`
       );
       return;
     }
@@ -64,7 +64,7 @@ test.describe("Request Calendar", () => {
 
     // Clean up: delete the workers and shifts created for THIS specific test run
     try {
-      await requestCalendarTestBase.cleanupTestData(testRunId);
+      await requestTestBase.cleanupTestData(testRunId);
     } catch (error) {
       console.warn(
         `[Test Run ${testRunId}] Cleanup failed, but continuing:`,
@@ -82,27 +82,27 @@ test.describe("Request Calendar", () => {
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
-    const requestCalendarTestBase = testBasesMap.get(testRunId)!;
+    const requestTestBase = testBasesMap.get(testRunId)!;
 
     // Verify we're on the requests page with the list view (tab 0) selected
-    const requestTab = requestCalendarTestBase.getRequestTab(page);
+    const requestTab = requestTestBase.getRequestTab(page);
     await expect(requestTab).toBeVisible();
 
     // Navigate to the calendar tab
-    await requestCalendarTestBase.navigateToCalendarTab(page);
+    await requestTestBase.navigateToCalendarTab(page);
 
     // Verify the calendar is visible
-    const calendar = requestCalendarTestBase.getRequestCalendar(page);
+    const calendar = requestTestBase.getRequestCalendar(page);
     await expect(calendar).toBeVisible();
 
     // Verify calendar components are present
-    const monthLabel = requestCalendarTestBase.getCalendarMonthLabel(page);
+    const monthLabel = requestTestBase.getCalendarMonthLabel(page);
     await expect(monthLabel).toBeVisible();
 
-    const prevButton = requestCalendarTestBase.getPrevMonthButton(page);
+    const prevButton = requestTestBase.getPrevMonthButton(page);
     await expect(prevButton).toBeVisible();
 
-    const nextButton = requestCalendarTestBase.getNextMonthButton(page);
+    const nextButton = requestTestBase.getNextMonthButton(page);
     await expect(nextButton).toBeVisible();
 
     console.log(
@@ -114,17 +114,17 @@ test.describe("Request Calendar", () => {
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
-    const requestCalendarTestBase = testBasesMap.get(testRunId)!;
-    const testWorkers = requestCalendarTestBase.getTestWorkers(testRunId);
+    const requestTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = requestTestBase.getTestWorkers(testRunId);
 
     // Navigate to calendar
-    await requestCalendarTestBase.navigateToCalendarTab(page);
+    await requestTestBase.navigateToCalendarTab(page);
 
     // Use yesterday as a past date
     const pastDate = dayjs.utc().subtract(1, "day");
 
     // Verify that clicking on a past date does nothing
-    await requestCalendarTestBase.verifyPastDateClick(
+    await requestTestBase.verifyPastDateClick(
       page,
       testWorkers[0].workerId,
       pastDate
@@ -137,24 +137,24 @@ test.describe("Request Calendar", () => {
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
-    const requestCalendarTestBase = testBasesMap.get(testRunId)!;
-    const testWorkers = requestCalendarTestBase.getTestWorkers(testRunId);
+    const requestTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = requestTestBase.getTestWorkers(testRunId);
 
     // Navigate to calendar
-    await requestCalendarTestBase.navigateToCalendarTab(page);
+    await requestTestBase.navigateToCalendarTab(page);
 
     // Use today as a test date
     const today = dayjs.utc().startOf("day");
 
     // Click on empty cell for today
-    await requestCalendarTestBase.clickEmptyCalendarCell(
+    await requestTestBase.clickEmptyCalendarCell(
       page,
       testWorkers[0].workerId,
       today
     );
 
     // Verify request panel opens
-    const requestPanel = requestCalendarTestBase.getRequestPanelPopover(page);
+    const requestPanel = requestTestBase.getRequestPanelPopover(page);
     await expect(requestPanel).toBeVisible();
 
     // Verify we can close the panel
@@ -168,7 +168,7 @@ test.describe("Request Calendar", () => {
     const futureDate = dayjs.utc().add(2, "days");
 
     // Click on empty cell for future date
-    await requestCalendarTestBase.clickEmptyCalendarCell(
+    await requestTestBase.clickEmptyCalendarCell(
       page,
       testWorkers[0].workerId,
       futureDate
@@ -184,41 +184,41 @@ test.describe("Request Calendar", () => {
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
-    const requestCalendarTestBase = testBasesMap.get(testRunId)!;
-    const testWorkers = requestCalendarTestBase.getTestWorkers(testRunId);
+    const requestTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = requestTestBase.getTestWorkers(testRunId);
 
     // Navigate to calendar
-    await requestCalendarTestBase.navigateToCalendarTab(page);
+    await requestTestBase.navigateToCalendarTab(page);
 
     // Use tomorrow as test date
     const tomorrow = dayjs.utc().add(1, "day");
 
     // Click on empty cell to create request
-    await requestCalendarTestBase.clickEmptyCalendarCell(
+    await requestTestBase.clickEmptyCalendarCell(
       page,
       testWorkers[0].workerId,
       tomorrow
     );
 
     // Verify request panel opens
-    const requestPanel = requestCalendarTestBase.getRequestPanelPopover(page);
+    const requestPanel = requestTestBase.getRequestPanelPopover(page);
     await expect(requestPanel).toBeVisible();
 
     // Select work request type (should be default)
-    await requestCalendarTestBase.selectRequestType(page, "work");
+    await requestTestBase.selectRequestType(page, "work");
 
     // Select worker (should be pre-filled)
-    const workerSelect = requestCalendarTestBase.getWorkerSelect(page);
+    const workerSelect = requestTestBase.getWorkerSelect(page);
     await expect(workerSelect).toHaveValue(testWorkers[0].workerId);
 
     // Set positive preference (do the shift)
-    await requestCalendarTestBase.setRequestPreference(page, "positive");
+    await requestTestBase.setRequestPreference(page, "positive");
 
     // Select shift options (required for work requests)
-    await requestCalendarTestBase.selectShiftOptions(page);
+    await requestTestBase.selectShiftOptions(page);
 
     // Save the request
-    await requestCalendarTestBase.saveRequest(page);
+    await requestTestBase.saveRequest(page);
 
     // Wait for panel to close
     await expect(requestPanel).not.toBeVisible();
@@ -228,7 +228,7 @@ test.describe("Request Calendar", () => {
     await page.waitForTimeout(1000);
 
     // Check that the cell now has a request (should have request styling)
-    const cell = requestCalendarTestBase.getCalendarCell(
+    const cell = requestTestBase.getCalendarCell(
       page,
       testWorkers[0].workerId,
       tomorrow
@@ -248,12 +248,12 @@ test.describe("Request Calendar", () => {
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
-    const requestCalendarTestBase = testBasesMap.get(testRunId)!;
-    const testWorkers = requestCalendarTestBase.getTestWorkers(testRunId);
+    const requestTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = requestTestBase.getTestWorkers(testRunId);
 
     // Create a past request using the API
     const pastDate = dayjs.utc().subtract(2, "days");
-    const pastRequest = await requestCalendarTestBase.createTestRequest({
+    const pastRequest = await requestTestBase.createTestRequest({
       workerId: testWorkers[0].workerId,
       requestType: RequestType.WORK_DEMAND,
       startDate: pastDate,
@@ -263,7 +263,7 @@ test.describe("Request Calendar", () => {
 
     // Create a future request using the API
     const futureDate = dayjs.utc().add(3, "days");
-    const futureRequest = await requestCalendarTestBase.createTestRequest({
+    const futureRequest = await requestTestBase.createTestRequest({
       workerId: testWorkers[1].workerId,
       requestType: RequestType.LEAVE,
       startDate: futureDate,
@@ -272,10 +272,10 @@ test.describe("Request Calendar", () => {
     });
 
     // Navigate to calendar
-    await requestCalendarTestBase.navigateToCalendarTab(page);
+    await requestTestBase.navigateToCalendarTab(page);
 
     // Verify past request is shown
-    await requestCalendarTestBase.verifyCalendarCellHasRequest(
+    await requestTestBase.verifyCalendarCellHasRequest(
       page,
       testWorkers[0].workerId,
       pastDate,
@@ -283,7 +283,7 @@ test.describe("Request Calendar", () => {
     );
 
     // Verify future request is shown
-    await requestCalendarTestBase.verifyCalendarCellHasRequest(
+    await requestTestBase.verifyCalendarCellHasRequest(
       page,
       testWorkers[1].workerId,
       futureDate,
@@ -297,12 +297,12 @@ test.describe("Request Calendar", () => {
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
-    const requestCalendarTestBase = testBasesMap.get(testRunId)!;
-    const testWorkers = requestCalendarTestBase.getTestWorkers(testRunId);
+    const requestTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = requestTestBase.getTestWorkers(testRunId);
 
     // Create a request using the API
     const requestDate = dayjs.utc().add(1, "day");
-    const existingRequest = await requestCalendarTestBase.createTestRequest({
+    const existingRequest = await requestTestBase.createTestRequest({
       workerId: testWorkers[0].workerId,
       requestType: RequestType.WORK_DEMAND,
       startDate: requestDate,
@@ -312,10 +312,10 @@ test.describe("Request Calendar", () => {
     });
 
     // Navigate to calendar
-    await requestCalendarTestBase.navigateToCalendarTab(page);
+    await requestTestBase.navigateToCalendarTab(page);
 
     // Click on the existing request
-    await requestCalendarTestBase.clickRequestCalendarCell(
+    await requestTestBase.clickRequestCalendarCell(
       page,
       testWorkers[0].workerId,
       requestDate,
@@ -323,12 +323,12 @@ test.describe("Request Calendar", () => {
     );
 
     // Verify request panel opens in edit mode
-    const requestPanel = requestCalendarTestBase.getRequestPanelPopover(page);
+    const requestPanel = requestTestBase.getRequestPanelPopover(page);
     await expect(requestPanel).toBeVisible();
 
     // Verify the form is populated with existing request data
     // Check that we're in edit mode by looking for action buttons
-    const deleteButton = requestCalendarTestBase.getDeleteRequestButton(
+    const deleteButton = requestTestBase.getDeleteRequestButton(
       page,
       existingRequest.id
     );
@@ -343,12 +343,12 @@ test.describe("Request Calendar", () => {
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
-    const requestCalendarTestBase = testBasesMap.get(testRunId)!;
-    const testWorkers = requestCalendarTestBase.getTestWorkers(testRunId);
+    const requestTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = requestTestBase.getTestWorkers(testRunId);
 
     // Create a request using the API
     const requestDate = dayjs.utc().add(1, "day");
-    const existingRequest = await requestCalendarTestBase.createTestRequest({
+    const existingRequest = await requestTestBase.createTestRequest({
       workerId: testWorkers[0].workerId,
       requestType: RequestType.WORK_DEMAND,
       startDate: requestDate,
@@ -357,10 +357,10 @@ test.describe("Request Calendar", () => {
     });
 
     // Navigate to calendar
-    await requestCalendarTestBase.navigateToCalendarTab(page);
+    await requestTestBase.navigateToCalendarTab(page);
 
     // Click on the existing request to edit
-    await requestCalendarTestBase.clickRequestCalendarCell(
+    await requestTestBase.clickRequestCalendarCell(
       page,
       testWorkers[0].workerId,
       requestDate,
@@ -368,11 +368,11 @@ test.describe("Request Calendar", () => {
     );
 
     // Verify request panel opens
-    const requestPanel = requestCalendarTestBase.getRequestPanelPopover(page);
+    const requestPanel = requestTestBase.getRequestPanelPopover(page);
     await expect(requestPanel).toBeVisible();
 
     // Click delete button
-    const deleteButton = requestCalendarTestBase.getDeleteRequestButton(
+    const deleteButton = requestTestBase.getDeleteRequestButton(
       page,
       existingRequest.id
     );
@@ -383,7 +383,7 @@ test.describe("Request Calendar", () => {
     await expect(requestPanel).not.toBeVisible();
 
     // Verify request is removed from calendar
-    await requestCalendarTestBase.verifyCalendarCellIsEmpty(
+    await requestTestBase.verifyCalendarCellIsEmpty(
       page,
       testWorkers[0].workerId,
       requestDate
@@ -396,12 +396,12 @@ test.describe("Request Calendar", () => {
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
-    const requestCalendarTestBase = testBasesMap.get(testRunId)!;
-    const testWorkers = requestCalendarTestBase.getTestWorkers(testRunId);
+    const requestTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = requestTestBase.getTestWorkers(testRunId);
 
     // Create a pending request using the API
     const requestDate = dayjs.utc().add(1, "day");
-    const pendingRequest = await requestCalendarTestBase.createTestRequest({
+    const pendingRequest = await requestTestBase.createTestRequest({
       workerId: testWorkers[0].workerId,
       requestType: RequestType.WORK_DEMAND,
       startDate: requestDate,
@@ -410,10 +410,10 @@ test.describe("Request Calendar", () => {
     });
 
     // Navigate to calendar
-    await requestCalendarTestBase.navigateToCalendarTab(page);
+    await requestTestBase.navigateToCalendarTab(page);
 
     // Click on the pending request to edit
-    await requestCalendarTestBase.clickRequestCalendarCell(
+    await requestTestBase.clickRequestCalendarCell(
       page,
       testWorkers[0].workerId,
       requestDate,
@@ -421,11 +421,11 @@ test.describe("Request Calendar", () => {
     );
 
     // Verify request panel opens
-    const requestPanel = requestCalendarTestBase.getRequestPanelPopover(page);
+    const requestPanel = requestTestBase.getRequestPanelPopover(page);
     await expect(requestPanel).toBeVisible();
 
     // Click approve button (checkmark)
-    const approveButton = requestCalendarTestBase.getApproveRequestButton(
+    const approveButton = requestTestBase.getApproveRequestButton(
       page,
       pendingRequest.id
     );
@@ -436,7 +436,7 @@ test.describe("Request Calendar", () => {
     await expect(requestPanel).not.toBeVisible();
 
     // Verify the request status changed in the calendar (color should change)
-    const cell = requestCalendarTestBase.getCalendarCellWithRequest(
+    const cell = requestTestBase.getCalendarCellWithRequest(
       page,
       testWorkers[0].workerId,
       requestDate,
@@ -445,7 +445,7 @@ test.describe("Request Calendar", () => {
     await expect(cell).toBeVisible();
 
     // The cell should now have approved status color (green)
-    await requestCalendarTestBase.verifyCalendarCellHasRequest(
+    await requestTestBase.verifyCalendarCellHasRequest(
       page,
       testWorkers[0].workerId,
       requestDate,
@@ -462,12 +462,12 @@ test.describe("Request Calendar", () => {
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
-    const requestCalendarTestBase = testBasesMap.get(testRunId)!;
-    const testWorkers = requestCalendarTestBase.getTestWorkers(testRunId);
+    const requestTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = requestTestBase.getTestWorkers(testRunId);
 
     // Create an approved request using the API
     const requestDate = dayjs.utc().add(1, "day");
-    const approvedRequest = await requestCalendarTestBase.createTestRequest({
+    const approvedRequest = await requestTestBase.createTestRequest({
       workerId: testWorkers[0].workerId,
       requestType: RequestType.WORK_DEMAND,
       startDate: requestDate,
@@ -476,10 +476,10 @@ test.describe("Request Calendar", () => {
     });
 
     // Navigate to calendar
-    await requestCalendarTestBase.navigateToCalendarTab(page);
+    await requestTestBase.navigateToCalendarTab(page);
 
     // Click on the approved request to edit
-    await requestCalendarTestBase.clickRequestCalendarCell(
+    await requestTestBase.clickRequestCalendarCell(
       page,
       testWorkers[0].workerId,
       requestDate,
@@ -487,11 +487,11 @@ test.describe("Request Calendar", () => {
     );
 
     // Verify request panel opens
-    const requestPanel = requestCalendarTestBase.getRequestPanelPopover(page);
+    const requestPanel = requestTestBase.getRequestPanelPopover(page);
     await expect(requestPanel).toBeVisible();
 
     // Click rescind button
-    const rescindButton = requestCalendarTestBase.getRescindRequestButton(
+    const rescindButton = requestTestBase.getRescindRequestButton(
       page,
       approvedRequest.id
     );
@@ -502,7 +502,7 @@ test.describe("Request Calendar", () => {
     await expect(requestPanel).not.toBeVisible();
 
     // Verify the request status changed back to pending
-    await requestCalendarTestBase.verifyCalendarCellHasRequest(
+    await requestTestBase.verifyCalendarCellHasRequest(
       page,
       testWorkers[0].workerId,
       requestDate,
@@ -519,12 +519,12 @@ test.describe("Request Calendar", () => {
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
-    const requestCalendarTestBase = testBasesMap.get(testRunId)!;
-    const testWorkers = requestCalendarTestBase.getTestWorkers(testRunId);
+    const requestTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = requestTestBase.getTestWorkers(testRunId);
 
     // Create a pending request using the API
     const requestDate = dayjs.utc().add(1, "day");
-    const pendingRequest = await requestCalendarTestBase.createTestRequest({
+    const pendingRequest = await requestTestBase.createTestRequest({
       workerId: testWorkers[0].workerId,
       requestType: RequestType.WORK_DEMAND,
       startDate: requestDate,
@@ -533,10 +533,10 @@ test.describe("Request Calendar", () => {
     });
 
     // Navigate to calendar
-    await requestCalendarTestBase.navigateToCalendarTab(page);
+    await requestTestBase.navigateToCalendarTab(page);
 
     // Click on the pending request to edit
-    await requestCalendarTestBase.clickRequestCalendarCell(
+    await requestTestBase.clickRequestCalendarCell(
       page,
       testWorkers[0].workerId,
       requestDate,
@@ -544,11 +544,11 @@ test.describe("Request Calendar", () => {
     );
 
     // Verify request panel opens
-    const requestPanel = requestCalendarTestBase.getRequestPanelPopover(page);
+    const requestPanel = requestTestBase.getRequestPanelPopover(page);
     await expect(requestPanel).toBeVisible();
 
     // Click reject button (close icon)
-    const rejectButton = requestCalendarTestBase.getRejectRequestButton(
+    const rejectButton = requestTestBase.getRejectRequestButton(
       page,
       pendingRequest.id
     );
@@ -559,7 +559,7 @@ test.describe("Request Calendar", () => {
     await expect(requestPanel).not.toBeVisible();
 
     // Verify the request status changed to denied/rejected
-    await requestCalendarTestBase.verifyCalendarCellHasRequest(
+    await requestTestBase.verifyCalendarCellHasRequest(
       page,
       testWorkers[0].workerId,
       requestDate,
