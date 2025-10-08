@@ -122,19 +122,19 @@ export default function RequestPanel({
   const [shiftIdError, setShiftIdError] = useState(false);
   const [shiftOptionsError, setShiftOptionsError] = useState(false);
 
-  // Helper functions for action button logic (similar to ActionsCell)
+  // Helper functions for action button logic (use requestState instead of request for current status)
   const canEdit =
     userTeamRole !== TeamMembershipRole.MEMBER ||
-    (userWorkerId && request?.workerId === userWorkerId);
+    (userWorkerId && requestState.workerId === userWorkerId);
 
   const canApprove =
     userTeamRole === TeamMembershipRole.OWNER &&
-    request?.status === RequestStatus.PENDING;
+    requestState.status === RequestStatus.PENDING;
 
   const canRescind =
     userTeamRole === TeamMembershipRole.OWNER &&
-    (request?.status === RequestStatus.APPROVED ||
-      request?.status === RequestStatus.DENIED);
+    (requestState.status === RequestStatus.APPROVED ||
+      requestState.status === RequestStatus.DENIED);
 
   // Helper to filter shifts by request type
   function filterShiftsByRequestType(
@@ -480,9 +480,9 @@ export default function RequestPanel({
               <Typography variant="h6">{t("new_request")}</Typography>
               {isEdit && request && (
                 <Chip
-                  label={getStatusLabel(request.status)}
+                  label={getStatusLabel(requestState.status)}
                   size="small"
-                  color={getStatusColor(request.status)}
+                  color={getStatusColor(requestState.status)}
                   variant="filled"
                 />
               )}
@@ -494,7 +494,14 @@ export default function RequestPanel({
                   {canApprove && handleAcceptRequest && (
                     <IconButton
                       size="small"
-                      onClick={() => handleAcceptRequest(request.id)}
+                      onClick={() => {
+                        handleAcceptRequest(request.id);
+                        // Update local state to reflect the approval
+                        setRequestState((prev) => ({
+                          ...prev,
+                          status: RequestStatus.APPROVED,
+                        }));
+                      }}
                       title="Approve Request"
                       color="success"
                       data-testid={`approve-request-button-${request.id}`}
@@ -506,7 +513,14 @@ export default function RequestPanel({
                   {canApprove && handleDenyRequest && (
                     <IconButton
                       size="small"
-                      onClick={() => handleDenyRequest(request.id)}
+                      onClick={() => {
+                        handleDenyRequest(request.id);
+                        // Update local state to reflect the denial
+                        setRequestState((prev) => ({
+                          ...prev,
+                          status: RequestStatus.DENIED,
+                        }));
+                      }}
                       title="Reject Request"
                       color="error"
                       data-testid={`reject-request-button-${request.id}`}
@@ -518,9 +532,16 @@ export default function RequestPanel({
                   {canRescind && handleRescindRequest && (
                     <IconButton
                       size="small"
-                      onClick={() => handleRescindRequest(request.id)}
+                      onClick={() => {
+                        handleRescindRequest(request.id);
+                        // Update local state to reflect the rescind (back to pending)
+                        setRequestState((prev) => ({
+                          ...prev,
+                          status: RequestStatus.PENDING,
+                        }));
+                      }}
                       title={`Rescind ${
-                        request.status === RequestStatus.APPROVED
+                        requestState.status === RequestStatus.APPROVED
                           ? "Approval"
                           : "Rejection"
                       }`}
