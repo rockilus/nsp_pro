@@ -48,6 +48,7 @@ export default function RequestPanel({
   userTeamRole,
   handleAddRequest,
   handleUpdateRequest,
+  handleDeleteRequest,
   hideButton = false,
   onClose,
 }: {
@@ -62,6 +63,7 @@ export default function RequestPanel({
   userTeamRole: TeamMembershipRole;
   handleAddRequest: (request: RequestT) => void;
   handleUpdateRequest: (request: RequestT) => void;
+  handleDeleteRequest?: (requestId: string) => void;
   hideButton?: boolean;
   onClose?: () => void;
 }) {
@@ -294,6 +296,13 @@ export default function RequestPanel({
       handleUpdateRequest(updatedRequest);
     }
     handleClose();
+  };
+
+  const handleDeleteClick = async () => {
+    if (isEdit && request && handleDeleteRequest) {
+      await handleDeleteRequest(request.id);
+      handleClose();
+    }
   };
 
   const handleSelectDateRange = () => {
@@ -647,6 +656,16 @@ export default function RequestPanel({
               >
                 {t("save")}
               </Button>
+              {isEdit && request && handleDeleteRequest && (
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={handleDeleteClick}
+                  data-testid="delete-request-button"
+                >
+                  {t("delete") || "Delete"}
+                </Button>
+              )}
             </div>
           </div>
         </DialogContent>

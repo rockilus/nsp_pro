@@ -30,6 +30,7 @@ type RequestCalendarProps = {
   userTeamRole?: any;
   handleAddRequest?: (request: RequestT) => void;
   handleUpdateRequest?: (request: RequestT) => void;
+  handleDeleteRequest?: (requestId: string) => void;
 };
 
 const defaultStatusColors: StatusColors = {
@@ -76,6 +77,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   userTeamRole,
   handleAddRequest,
   handleUpdateRequest,
+  handleDeleteRequest,
 }) => {
   const [currentMonth, setCurrentMonth] = React.useState(
     dayjs().utc().startOf("month")
@@ -85,11 +87,16 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     React.useState(true);
   const [showFulfilled, setShowFulfilled] = React.useState(true);
 
-  // State for calendar cell selection and request creation
+  // State for calendar cell selection and request creation/editing
   const [selectedCell, setSelectedCell] = React.useState<{
     workerId: string;
     date: Dayjs;
   } | null>(null);
+
+  // State for editing existing requests
+  const [selectedRequest, setSelectedRequest] = React.useState<RequestT | null>(
+    null
+  );
 
   // Memoize days to avoid unnecessary rerenders and effect triggers
   const days = React.useMemo(
@@ -274,6 +281,13 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     }
   };
 
+  // Handle clicking on existing requests to edit them
+  const handleRequestClick = (request: RequestT) => {
+    if (handleUpdateRequest && lng && teamId) {
+      setSelectedRequest(request);
+    }
+  };
+
   // Create pre-populated request for selected cell
   const createPrePopulatedRequest = (
     workerId: string,
@@ -301,6 +315,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   // Handle closing the request panel
   const handleCloseRequestPanel = () => {
     setSelectedCell(null);
+    setSelectedRequest(null);
   };
 
   // Handle successful request creation
@@ -309,6 +324,14 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
       handleAddRequest(request);
     }
     setSelectedCell(null);
+  };
+
+  // Handle successful request update
+  const handleRequestUpdated = (request: RequestT) => {
+    if (handleUpdateRequest) {
+      handleUpdateRequest(request);
+    }
+    setSelectedRequest(null);
   };
 
   // --- END STAFFING TABLE LOGIC ---
@@ -513,27 +536,48 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
                 const isEmpty = !req;
                 const canAddRequest =
                   isEmpty && handleAddRequest && lng && teamId;
+                const canEditRequest =
+                  req && handleUpdateRequest && lng && teamId;
 
                 return (
                   <div
                     key={d.date()}
                     className={`calendar-cell${
                       req ? " calendar-cell--leave" : ""
-                    }${canAddRequest ? " calendar-cell--clickable" : ""}`}
+                    }${
+                      canAddRequest || canEditRequest
+                        ? " calendar-cell--clickable"
+                        : ""
+                    }`}
                     style={{
                       background: req
                         ? getStatusColor(req, statusColors)
                         : undefined,
-                      cursor: canAddRequest ? "pointer" : "default",
+                      cursor:
+                        canAddRequest || canEditRequest ? "pointer" : "default",
                     }}
-                    onClick={() =>
-                      canAddRequest && handleCellClick(worker.id, d)
-                    }
+                    onClick={() => {
+                      console.log("canEditRequest", canEditRequest);
+                      console.log("canAddRequest", canAddRequest);
+                      console.log("req", req);
+
+                      if (canAddRequest) {
+                        handleCellClick(worker.id, d);
+                      } else if (canEditRequest && req) {
+                        handleRequestClick(req);
+                      }
+                    }}
                     title={
                       canAddRequest
                         ? `Click to create request for ${
                             worker.name
                           } on ${d.format("MMM D")}`
+                        : canEditRequest && req
+                        ? `Click to edit ${req.requestType} request for ${
+                            worker.name
+                          } (${req.startDate.format(
+                            "MMM D"
+                          )} - ${req.endDate.format("MMM D")})`
                         : undefined
                     }
                   >
@@ -580,6 +624,27 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           userTeamRole={userTeamRole}
           handleAddRequest={handleRequestCreated}
           handleUpdateRequest={handleUpdateRequest || (() => {})}
+          handleDeleteRequest={handleDeleteRequest}
+          hideButton={true}
+          onClose={handleCloseRequestPanel}
+        />
+      )}
+
+      {/* Request Panel for editing existing requests from calendar */}
+      {selectedRequest && lng && teamId && (
+        <RequestPanel
+          lng={lng}
+          teamId={teamId}
+          isEdit={true}
+          request={selectedRequest}
+          workers={workers.filter((w) => !w.deleted)}
+          shifts={shifts}
+          shiftOptions={shiftOptions}
+          userWorkerId={selectedRequest.workerId}
+          userTeamRole={userTeamRole}
+          handleAddRequest={handleRequestUpdated}
+          handleUpdateRequest={handleRequestUpdated}
+          handleDeleteRequest={handleDeleteRequest}
           hideButton={true}
           onClose={handleCloseRequestPanel}
         />

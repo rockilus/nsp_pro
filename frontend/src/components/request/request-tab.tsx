@@ -296,6 +296,7 @@ export default function RequestTab({
                 userTeamRole={userTeamRole}
                 handleAddRequest={handleAddRequest}
                 handleUpdateRequest={handleUpdateRequest}
+                handleDeleteRequest={handleDeleteRequest}
               />
             </div>
           </div>
@@ -328,6 +329,7 @@ export default function RequestTab({
               userTeamRole={userTeamRole}
               handleAddRequest={handleAddRequest}
               handleUpdateRequest={handleUpdateRequest}
+              handleDeleteRequest={handleDeleteRequest}
             />
           )}
         </div>
