@@ -296,6 +296,22 @@
   box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
 }
 
+.calendar-cell--past {
+  background-color: #f5f5f5 !important;
+  color: #999 !important;
+  opacity: 0.6;
+}
+
+.calendar-cell--past.calendar-cell--clickable {
+  cursor: not-allowed !important;
+}
+
+.calendar-cell--past.calendar-cell--clickable:hover {
+  background-color: #f5f5f5 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
 @media (max-width: 900px) {
   .calendar-header__empty,
   .calendar-row__name {

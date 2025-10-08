@@ -274,6 +274,11 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
 
   // Handle calendar cell click for empty cells
   const handleCellClick = (workerId: string, date: Dayjs) => {
+    // Don't allow clicking on past days
+    if (date.isBefore(dayjs().utc(), "day")) {
+      return;
+    }
+
     // Only allow clicking on empty cells (no existing request)
     const existingRequest = getRequestForDay(workerId, date);
     if (!existingRequest && handleAddRequest && lng && teamId) {
@@ -295,7 +300,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   ): RequestT => ({
     id: "",
     teamId: teamId || "",
-    requestType: RequestType.LEAVE, // Start with leave as default
+    requestType: RequestType.WORK_DEMAND,
     workerId: workerId,
     startDate: date,
     endDate: date,
@@ -534,8 +539,9 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
               {days.map((d) => {
                 const req = getRequestForDay(worker.id, d);
                 const isEmpty = !req;
+                const isPast = d.isBefore(dayjs().utc(), "day");
                 const canAddRequest =
-                  isEmpty && !!handleAddRequest && !!lng && !!teamId;
+                  isEmpty && !isPast && !!handleAddRequest && !!lng && !!teamId;
                 const canEditRequest =
                   !!req && !!handleUpdateRequest && !!lng && !!teamId;
 
@@ -548,7 +554,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
                       canAddRequest || canEditRequest
                         ? " calendar-cell--clickable"
                         : ""
-                    }`}
+                    }${isPast ? " calendar-cell--past" : ""}`}
                     style={{
                       background: req
                         ? getStatusColor(req, statusColors)
@@ -564,7 +570,9 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
                       }
                     }}
                     title={
-                      canAddRequest
+                      isPast && isEmpty
+                        ? `Past date - ${d.format("MMM D")}`
+                        : canAddRequest
                         ? `Click to create request for ${
                             worker.name
                           } on ${d.format("MMM D")}`
