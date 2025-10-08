@@ -17,7 +17,6 @@ import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Typography from "@mui/material/Typography";
 import WorkIcon from "@mui/icons-material/Work";
 import IconButton from "@mui/material/IconButton";
-import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -498,7 +497,10 @@ export default function RequestPanel({
                     <IconButton
                       size="small"
                       disabled={!canEdit}
-                      onClick={() => handleDeleteRequest(request.id)}
+                      onClick={() => {
+                        handleDeleteRequest(request.id);
+                        handleClose();
+                      }}
                       title="Delete Request"
                       color="error"
                       data-testid={`delete-request-button-${request.id}`}
