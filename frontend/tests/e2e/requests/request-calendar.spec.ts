@@ -223,35 +223,20 @@ test.describe("Request Calendar", () => {
     // Save the request
     await requestTestBase.saveRequest(page);
 
-    // Wait a moment for the calendar to update
-    await page.waitForTimeout(1000);
-
     // Verify the request appears in the calendar
-    // Use a partial match on the test ID since it changes when a request is added
+    // Wait for a cell with a request ID suffix to appear (pattern: calendar-cell-{workerId}-{date}-request-{requestId})
     const cellPattern = `calendar-cell-${
       testWorkers[0].workerId
-    }-${tomorrow.format("YYYY-MM-DD")}`;
+    }-${tomorrow.format("YYYY-MM-DD")}-request-`;
     const calendarCell = page.locator(`[data-testid^="${cellPattern}"]`);
 
-    // Check that the cell is visible
-    await expect(calendarCell).toBeVisible();
+    // Wait for the cell to be visible and have the request styling
+    await expect(calendarCell).toBeVisible({ timeout: 5000 });
 
-    // Verify the cell now has a request (check for request-related styling or elements)
-    const cellHasRequest = await calendarCell.evaluate((el) => {
-      // Check if cell has request-related styling/classes or child elements indicating a request
-      const hasRequestClass =
-        el.classList.contains("calendar-cell--leave") ||
-        el.classList.contains("calendar-cell--work");
-      const hasRequestElement =
-        el.querySelector('[class*="request"]') !== null ||
-        el.querySelector('[data-testid*="request"]') !== null;
-      const hasBackgroundColor =
-        window.getComputedStyle(el).backgroundColor !== "rgba(0, 0, 0, 0)";
-
-      return hasRequestClass || hasRequestElement || hasBackgroundColor;
+    // Wait for the cell to have the calendar-cell--leave class (indicating a request is present)
+    await expect(calendarCell).toHaveClass(/calendar-cell--leave/, {
+      timeout: 5000,
     });
-
-    expect(cellHasRequest).toBe(true);
 
     console.log(
       "✅ Work request for single date created successfully and appears in calendar"
