@@ -23,6 +23,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import UndoIcon from "@mui/icons-material/Undo";
 import ClearIcon from "@mui/icons-material/Clear";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import Chip from "@mui/material/Chip";
 // Components
 import ShiftOptionsDisplay from "../stats/nav-bar/shift-options-display";
 // Styles
@@ -234,6 +235,33 @@ export default function RequestPanel({
   }, [request, isEdit, hideButton]);
 
   const id = open ? "request-dialog" : undefined;
+
+  // Helper function to get status color and label (same as RequestTable)
+  const getStatusColor = (status: RequestStatus) => {
+    switch (status) {
+      case RequestStatus.APPROVED:
+        return "success";
+      case RequestStatus.DENIED:
+        return "error";
+      case RequestStatus.DEFERRED:
+        return "warning";
+      default:
+        return "default";
+    }
+  };
+
+  const getStatusLabel = (status: RequestStatus) => {
+    switch (status) {
+      case RequestStatus.PENDING:
+        return t("pending");
+      case RequestStatus.APPROVED:
+        return t("approved");
+      case RequestStatus.DENIED:
+        return t("rejected");
+      default:
+        return "Unknown";
+    }
+  };
 
   const handleSaveRequest = async () => {
     // Reset all errors
@@ -448,7 +476,17 @@ export default function RequestPanel({
       >
         <DialogTitle>
           <div className="flex justify-between items-center">
-            <Typography variant="h6">{t("new_request")}</Typography>
+            <div className="flex items-center gap-2">
+              <Typography variant="h6">{t("new_request")}</Typography>
+              {isEdit && request && (
+                <Chip
+                  label={getStatusLabel(request.status)}
+                  size="small"
+                  color={getStatusColor(request.status)}
+                  variant="filled"
+                />
+              )}
+            </div>
             <div className="flex items-center gap-1">
               {/* Action buttons for edit mode */}
               {isEdit && request && (
