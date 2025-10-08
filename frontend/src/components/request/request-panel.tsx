@@ -508,10 +508,6 @@ export default function RequestPanel({
                   )}
                 </>
               )}
-
-              <IconButton onClick={handleClose} sx={{ padding: 0 }}>
-                <CloseIcon />
-              </IconButton>
             </div>
           </div>
         </DialogTitle>
@@ -737,6 +733,15 @@ export default function RequestPanel({
               )}
             </div>
             <div className="save-button-container">
+              <Button
+                variant="outlined"
+                color="secondary"
+                sx={{ marginRight: 2 }}
+                onClick={handleClose}
+                data-testid="cancel-request-button"
+              >
+                {t("cancel")}
+              </Button>
               <Button
                 variant="contained"
                 color="primary"
