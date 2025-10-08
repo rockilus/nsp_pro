@@ -348,13 +348,14 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   // --- END STAFFING TABLE LOGIC ---
 
   return (
-    <div className="request-calendar">
+    <div className="request-calendar" data-testid="request-calendar">
       {/* Top Controls: Status Legend & Month Selector */}
       <div className="calendar-top-controls">
         <div className="calendar-month-selector">
           <button
             className="calendar-month-selector__today"
             onClick={handleToday}
+            data-testid="calendar-today-button"
           >
             Today
           </button>
@@ -362,6 +363,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
             className="calendar-month-selector__arrow"
             onClick={handlePrevMonth}
             aria-label="Previous month"
+            data-testid="calendar-prev-month-button"
           >
             &#8592;
           </button>
@@ -369,10 +371,14 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
             className="calendar-month-selector__arrow"
             onClick={handleNextMonth}
             aria-label="Next month"
+            data-testid="calendar-next-month-button"
           >
             &#8594;
           </button>
-          <span className="calendar-month-selector__label">
+          <span
+            className="calendar-month-selector__label"
+            data-testid="calendar-month-label"
+          >
             {currentMonth.format("MMMM YYYY")}
           </span>
         </div>
@@ -384,6 +390,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
             type="button"
             onClick={() => setShowPending((v) => !v)}
             aria-pressed={showPending}
+            data-testid="calendar-show-pending-button"
           >
             <span className="calendar-status-legend__dot calendar-status-legend__dot--pending" />
             Pending
@@ -397,6 +404,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
             type="button"
             onClick={() => setShowAcceptedNotFulfilled((v) => !v)}
             aria-pressed={showAcceptedNotFulfilled}
+            data-testid="calendar-show-accepted-not-fulfilled-button"
           >
             <span className="calendar-status-legend__dot calendar-status-legend__dot--accepted-not-fulfilled" />
             Accepted not fulfilled
@@ -408,6 +416,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
             type="button"
             onClick={() => setShowFulfilled((v) => !v)}
             aria-pressed={showFulfilled}
+            data-testid="calendar-show-fulfilled-button"
           >
             <span className="calendar-status-legend__dot calendar-status-legend__dot--fulfilled" />
             Fulfilled
@@ -568,6 +577,9 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
                       cursor:
                         canAddRequest || canEditRequest ? "pointer" : "default",
                     }}
+                    data-testid={`calendar-cell-${worker.id}-${d.format(
+                      "YYYY-MM-DD"
+                    )}${req ? `-request-${req.id}` : ""}`}
                     onClick={() => {
                       if (canAddRequest) {
                         handleCellClick(worker.id, d);

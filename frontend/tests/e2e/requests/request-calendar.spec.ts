@@ -1,0 +1,574 @@
+/**
+ * E2E tests for Request Calendar functionality
+ *
+ * This test suite covers the request calendar feature in the RequestTab component,
+ * including calendar navigation, cell interactions, and request management.
+ */
+
+import { test, expect } from "@playwright/test";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import { RequestCalendarTestBase } from "../../utils/request-calendar-test-base";
+import { RequestType, RequestStatus } from "../../../src/types/request";
+import { randomUUID } from "crypto";
+
+dayjs.extend(utc);
+
+test.describe("Request Calendar", () => {
+  // Store the request calendar test base per test run
+  const testBasesMap = new Map<string, RequestCalendarTestBase>();
+
+  test.beforeEach(async ({ page }, testInfo) => {
+    // Ensure workerIndex has a safe fallback (0) so parallel/serial runs are stable
+    const workerIndex =
+      typeof testInfo.workerIndex === "number" ? testInfo.workerIndex : 0;
+
+    // Generate a unique ID for this specific test run
+    // Combines worker index, test title, and UUID for absolute uniqueness
+    const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
+    console.log(`[Test Run ${testRunId}] Starting request calendar test setup`);
+
+    // Create a new RequestCalendarTestBase instance for this test run
+    const requestCalendarTestBase = new RequestCalendarTestBase();
+    testBasesMap.set(testRunId, requestCalendarTestBase);
+
+    // Store the testRunId in test info for access in test body and cleanup
+    (testInfo as any).testRunId = testRunId;
+
+    // Setup the common request test environment (includes workers and shifts)
+    await requestCalendarTestBase.setupRequestTests(workerIndex, testRunId);
+
+    // Navigate to the requests page
+    await requestCalendarTestBase.navigateToRequestsPage(page);
+  });
+
+  test.afterEach(async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    console.log(`[Test Run ${testRunId}] Starting cleanup...`);
+
+    if (!testRunId) {
+      console.warn("No testRunId found, skipping cleanup");
+      return;
+    }
+
+    const requestCalendarTestBase = testBasesMap.get(testRunId);
+
+    if (!requestCalendarTestBase) {
+      console.warn(
+        `No requestCalendarTestBase found for testRunId: ${testRunId}, skipping cleanup`
+      );
+      return;
+    }
+
+    console.log(`[Test Run ${testRunId}] Cleaning up test data`);
+
+    // Clean up: delete the workers and shifts created for THIS specific test run
+    try {
+      await requestCalendarTestBase.cleanupTestData(testRunId);
+    } catch (error) {
+      console.warn(
+        `[Test Run ${testRunId}] Cleanup failed, but continuing:`,
+        error
+      );
+    }
+
+    // Clean up the maps to prevent memory leaks
+    testBasesMap.delete(testRunId);
+
+    console.log(`[Test Run ${testRunId}] Cleanup completed`);
+  });
+
+  test("should show request calendar when clicking on the calendar tab", async ({
+    page,
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const requestCalendarTestBase = testBasesMap.get(testRunId)!;
+
+    // Verify we're on the requests page with the list view (tab 0) selected
+    const requestTab = requestCalendarTestBase.getRequestTab(page);
+    await expect(requestTab).toBeVisible();
+
+    // Navigate to the calendar tab
+    await requestCalendarTestBase.navigateToCalendarTab(page);
+
+    // Verify the calendar is visible
+    const calendar = requestCalendarTestBase.getRequestCalendar(page);
+    await expect(calendar).toBeVisible();
+
+    // Verify calendar components are present
+    const monthLabel = requestCalendarTestBase.getCalendarMonthLabel(page);
+    await expect(monthLabel).toBeVisible();
+
+    const prevButton = requestCalendarTestBase.getPrevMonthButton(page);
+    await expect(prevButton).toBeVisible();
+
+    const nextButton = requestCalendarTestBase.getNextMonthButton(page);
+    await expect(nextButton).toBeVisible();
+
+    console.log(
+      "✅ Request calendar shows correctly when clicking calendar tab"
+    );
+  });
+
+  test("should do nothing when clicking on a past date cell", async ({
+    page,
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const requestCalendarTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = requestCalendarTestBase.getTestWorkers(testRunId);
+
+    // Navigate to calendar
+    await requestCalendarTestBase.navigateToCalendarTab(page);
+
+    // Use yesterday as a past date
+    const pastDate = dayjs.utc().subtract(1, "day");
+
+    // Verify that clicking on a past date does nothing
+    await requestCalendarTestBase.verifyPastDateClick(
+      page,
+      testWorkers[0].workerId,
+      pastDate
+    );
+
+    console.log("✅ Clicking on past date does nothing");
+  });
+
+  test("should open create request panel when clicking on today or future date cell", async ({
+    page,
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const requestCalendarTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = requestCalendarTestBase.getTestWorkers(testRunId);
+
+    // Navigate to calendar
+    await requestCalendarTestBase.navigateToCalendarTab(page);
+
+    // Use today as a test date
+    const today = dayjs.utc().startOf("day");
+
+    // Click on empty cell for today
+    await requestCalendarTestBase.clickEmptyCalendarCell(
+      page,
+      testWorkers[0].workerId,
+      today
+    );
+
+    // Verify request panel opens
+    const requestPanel = requestCalendarTestBase.getRequestPanelPopover(page);
+    await expect(requestPanel).toBeVisible();
+
+    // Verify we can close the panel
+    const closeButton = page.locator('[aria-label="close"]').first();
+    await closeButton.click();
+    await expect(requestPanel).not.toBeVisible();
+
+    console.log("✅ Create request panel opens when clicking on today");
+
+    // Test with a future date
+    const futureDate = dayjs.utc().add(2, "days");
+
+    // Click on empty cell for future date
+    await requestCalendarTestBase.clickEmptyCalendarCell(
+      page,
+      testWorkers[0].workerId,
+      futureDate
+    );
+
+    // Verify request panel opens again
+    await expect(requestPanel).toBeVisible();
+
+    console.log("✅ Create request panel opens when clicking on future date");
+  });
+
+  test("should create a new request and show it in the calendar", async ({
+    page,
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const requestCalendarTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = requestCalendarTestBase.getTestWorkers(testRunId);
+
+    // Navigate to calendar
+    await requestCalendarTestBase.navigateToCalendarTab(page);
+
+    // Use tomorrow as test date
+    const tomorrow = dayjs.utc().add(1, "day");
+
+    // Click on empty cell to create request
+    await requestCalendarTestBase.clickEmptyCalendarCell(
+      page,
+      testWorkers[0].workerId,
+      tomorrow
+    );
+
+    // Verify request panel opens
+    const requestPanel = requestCalendarTestBase.getRequestPanelPopover(page);
+    await expect(requestPanel).toBeVisible();
+
+    // Select work request type (should be default)
+    await requestCalendarTestBase.selectRequestType(page, "work");
+
+    // Select worker (should be pre-filled)
+    const workerSelect = requestCalendarTestBase.getWorkerSelect(page);
+    await expect(workerSelect).toHaveValue(testWorkers[0].workerId);
+
+    // Set positive preference (do the shift)
+    await requestCalendarTestBase.setRequestPreference(page, "positive");
+
+    // Select shift options (required for work requests)
+    await requestCalendarTestBase.selectShiftOptions(page);
+
+    // Save the request
+    await requestCalendarTestBase.saveRequest(page);
+
+    // Wait for panel to close
+    await expect(requestPanel).not.toBeVisible();
+
+    // Verify the request appears in the calendar
+    // Note: We need to wait a bit for the calendar to update
+    await page.waitForTimeout(1000);
+
+    // Check that the cell now has a request (should have request styling)
+    const cell = requestCalendarTestBase.getCalendarCell(
+      page,
+      testWorkers[0].workerId,
+      tomorrow
+    );
+    await expect(cell).toBeVisible();
+
+    // Verify the cell has request styling
+    const hasRequestClass = await cell.evaluate((el: Element) =>
+      el.classList.contains("calendar-cell--leave")
+    );
+    expect(hasRequestClass).toBe(true);
+
+    console.log("✅ New request created and appears in calendar");
+  });
+
+  test("should show existing requests in the calendar (past and future)", async ({
+    page,
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const requestCalendarTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = requestCalendarTestBase.getTestWorkers(testRunId);
+
+    // Create a past request using the API
+    const pastDate = dayjs.utc().subtract(2, "days");
+    const pastRequest = await requestCalendarTestBase.createTestRequest({
+      workerId: testWorkers[0].workerId,
+      requestType: RequestType.WORK_DEMAND,
+      startDate: pastDate,
+      endDate: pastDate,
+      status: RequestStatus.APPROVED,
+    });
+
+    // Create a future request using the API
+    const futureDate = dayjs.utc().add(3, "days");
+    const futureRequest = await requestCalendarTestBase.createTestRequest({
+      workerId: testWorkers[1].workerId,
+      requestType: RequestType.LEAVE,
+      startDate: futureDate,
+      endDate: futureDate,
+      status: RequestStatus.PENDING,
+    });
+
+    // Navigate to calendar
+    await requestCalendarTestBase.navigateToCalendarTab(page);
+
+    // Verify past request is shown
+    await requestCalendarTestBase.verifyCalendarCellHasRequest(
+      page,
+      testWorkers[0].workerId,
+      pastDate,
+      pastRequest.id
+    );
+
+    // Verify future request is shown
+    await requestCalendarTestBase.verifyCalendarCellHasRequest(
+      page,
+      testWorkers[1].workerId,
+      futureDate,
+      futureRequest.id
+    );
+
+    console.log("✅ Existing requests (past and future) are shown in calendar");
+  });
+
+  test("should open edit request panel when clicking on existing request", async ({
+    page,
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const requestCalendarTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = requestCalendarTestBase.getTestWorkers(testRunId);
+
+    // Create a request using the API
+    const requestDate = dayjs.utc().add(1, "day");
+    const existingRequest = await requestCalendarTestBase.createTestRequest({
+      workerId: testWorkers[0].workerId,
+      requestType: RequestType.WORK_DEMAND,
+      startDate: requestDate,
+      endDate: requestDate,
+      status: RequestStatus.PENDING,
+      comment: "Test request for editing",
+    });
+
+    // Navigate to calendar
+    await requestCalendarTestBase.navigateToCalendarTab(page);
+
+    // Click on the existing request
+    await requestCalendarTestBase.clickRequestCalendarCell(
+      page,
+      testWorkers[0].workerId,
+      requestDate,
+      existingRequest.id
+    );
+
+    // Verify request panel opens in edit mode
+    const requestPanel = requestCalendarTestBase.getRequestPanelPopover(page);
+    await expect(requestPanel).toBeVisible();
+
+    // Verify the form is populated with existing request data
+    // Check that we're in edit mode by looking for action buttons
+    const deleteButton = requestCalendarTestBase.getDeleteRequestButton(
+      page,
+      existingRequest.id
+    );
+    await expect(deleteButton).toBeVisible();
+
+    console.log(
+      "✅ Edit request panel opens when clicking on existing request"
+    );
+  });
+
+  test("should delete request when clicking delete button in edit panel", async ({
+    page,
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const requestCalendarTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = requestCalendarTestBase.getTestWorkers(testRunId);
+
+    // Create a request using the API
+    const requestDate = dayjs.utc().add(1, "day");
+    const existingRequest = await requestCalendarTestBase.createTestRequest({
+      workerId: testWorkers[0].workerId,
+      requestType: RequestType.WORK_DEMAND,
+      startDate: requestDate,
+      endDate: requestDate,
+      status: RequestStatus.PENDING,
+    });
+
+    // Navigate to calendar
+    await requestCalendarTestBase.navigateToCalendarTab(page);
+
+    // Click on the existing request to edit
+    await requestCalendarTestBase.clickRequestCalendarCell(
+      page,
+      testWorkers[0].workerId,
+      requestDate,
+      existingRequest.id
+    );
+
+    // Verify request panel opens
+    const requestPanel = requestCalendarTestBase.getRequestPanelPopover(page);
+    await expect(requestPanel).toBeVisible();
+
+    // Click delete button
+    const deleteButton = requestCalendarTestBase.getDeleteRequestButton(
+      page,
+      existingRequest.id
+    );
+    await expect(deleteButton).toBeVisible();
+    await deleteButton.click();
+
+    // Wait for panel to close
+    await expect(requestPanel).not.toBeVisible();
+
+    // Verify request is removed from calendar
+    await requestCalendarTestBase.verifyCalendarCellIsEmpty(
+      page,
+      testWorkers[0].workerId,
+      requestDate
+    );
+
+    console.log("✅ Request deleted successfully from calendar");
+  });
+
+  test("should approve request when clicking checkmark button in edit panel", async ({
+    page,
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const requestCalendarTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = requestCalendarTestBase.getTestWorkers(testRunId);
+
+    // Create a pending request using the API
+    const requestDate = dayjs.utc().add(1, "day");
+    const pendingRequest = await requestCalendarTestBase.createTestRequest({
+      workerId: testWorkers[0].workerId,
+      requestType: RequestType.WORK_DEMAND,
+      startDate: requestDate,
+      endDate: requestDate,
+      status: RequestStatus.PENDING,
+    });
+
+    // Navigate to calendar
+    await requestCalendarTestBase.navigateToCalendarTab(page);
+
+    // Click on the pending request to edit
+    await requestCalendarTestBase.clickRequestCalendarCell(
+      page,
+      testWorkers[0].workerId,
+      requestDate,
+      pendingRequest.id
+    );
+
+    // Verify request panel opens
+    const requestPanel = requestCalendarTestBase.getRequestPanelPopover(page);
+    await expect(requestPanel).toBeVisible();
+
+    // Click approve button (checkmark)
+    const approveButton = requestCalendarTestBase.getApproveRequestButton(
+      page,
+      pendingRequest.id
+    );
+    await expect(approveButton).toBeVisible();
+    await approveButton.click();
+
+    // Wait for panel to close
+    await expect(requestPanel).not.toBeVisible();
+
+    // Verify the request status changed in the calendar (color should change)
+    const cell = requestCalendarTestBase.getCalendarCellWithRequest(
+      page,
+      testWorkers[0].workerId,
+      requestDate,
+      pendingRequest.id
+    );
+    await expect(cell).toBeVisible();
+
+    // The cell should now have approved status color (green)
+    await requestCalendarTestBase.verifyCalendarCellHasRequest(
+      page,
+      testWorkers[0].workerId,
+      requestDate,
+      pendingRequest.id,
+      { status: RequestStatus.APPROVED }
+    );
+
+    console.log(
+      "✅ Request approved successfully and status updated in calendar"
+    );
+  });
+
+  test("should rescind approved request when clicking rescind button", async ({
+    page,
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const requestCalendarTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = requestCalendarTestBase.getTestWorkers(testRunId);
+
+    // Create an approved request using the API
+    const requestDate = dayjs.utc().add(1, "day");
+    const approvedRequest = await requestCalendarTestBase.createTestRequest({
+      workerId: testWorkers[0].workerId,
+      requestType: RequestType.WORK_DEMAND,
+      startDate: requestDate,
+      endDate: requestDate,
+      status: RequestStatus.APPROVED,
+    });
+
+    // Navigate to calendar
+    await requestCalendarTestBase.navigateToCalendarTab(page);
+
+    // Click on the approved request to edit
+    await requestCalendarTestBase.clickRequestCalendarCell(
+      page,
+      testWorkers[0].workerId,
+      requestDate,
+      approvedRequest.id
+    );
+
+    // Verify request panel opens
+    const requestPanel = requestCalendarTestBase.getRequestPanelPopover(page);
+    await expect(requestPanel).toBeVisible();
+
+    // Click rescind button
+    const rescindButton = requestCalendarTestBase.getRescindRequestButton(
+      page,
+      approvedRequest.id
+    );
+    await expect(rescindButton).toBeVisible();
+    await rescindButton.click();
+
+    // Wait for panel to close
+    await expect(requestPanel).not.toBeVisible();
+
+    // Verify the request status changed back to pending
+    await requestCalendarTestBase.verifyCalendarCellHasRequest(
+      page,
+      testWorkers[0].workerId,
+      requestDate,
+      approvedRequest.id,
+      { status: RequestStatus.PENDING }
+    );
+
+    console.log(
+      "✅ Request rescinded successfully and status reverted to pending"
+    );
+  });
+
+  test("should reject request when clicking close icon button in edit panel", async ({
+    page,
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const requestCalendarTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = requestCalendarTestBase.getTestWorkers(testRunId);
+
+    // Create a pending request using the API
+    const requestDate = dayjs.utc().add(1, "day");
+    const pendingRequest = await requestCalendarTestBase.createTestRequest({
+      workerId: testWorkers[0].workerId,
+      requestType: RequestType.WORK_DEMAND,
+      startDate: requestDate,
+      endDate: requestDate,
+      status: RequestStatus.PENDING,
+    });
+
+    // Navigate to calendar
+    await requestCalendarTestBase.navigateToCalendarTab(page);
+
+    // Click on the pending request to edit
+    await requestCalendarTestBase.clickRequestCalendarCell(
+      page,
+      testWorkers[0].workerId,
+      requestDate,
+      pendingRequest.id
+    );
+
+    // Verify request panel opens
+    const requestPanel = requestCalendarTestBase.getRequestPanelPopover(page);
+    await expect(requestPanel).toBeVisible();
+
+    // Click reject button (close icon)
+    const rejectButton = requestCalendarTestBase.getRejectRequestButton(
+      page,
+      pendingRequest.id
+    );
+    await expect(rejectButton).toBeVisible();
+    await rejectButton.click();
+
+    // Wait for panel to close
+    await expect(requestPanel).not.toBeVisible();
+
+    // Verify the request status changed to denied/rejected
+    await requestCalendarTestBase.verifyCalendarCellHasRequest(
+      page,
+      testWorkers[0].workerId,
+      requestDate,
+      pendingRequest.id,
+      { status: RequestStatus.DENIED }
+    );
+
+    console.log(
+      "✅ Request rejected successfully and status updated in calendar"
+    );
+  });
+});
