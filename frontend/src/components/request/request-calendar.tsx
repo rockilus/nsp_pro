@@ -5,11 +5,6 @@ import { StaffingSummaryLoadingIndicator } from "./StaffingSummaryLoadingIndicat
 import { RequestT } from "../../types/request";
 import { WorkerT } from "../../types/worker";
 import RequestPanel from "./request-panel";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import IconButton from "@mui/material/IconButton";
-import CloseIcon from "@mui/icons-material/Close";
 
 type StatusColors = {
   [key: string]: string;
