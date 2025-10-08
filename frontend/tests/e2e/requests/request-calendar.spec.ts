@@ -36,9 +36,9 @@ test.describe("Request Calendar", () => {
     (testInfo as any).testRunId = testRunId;
 
     // Determine if this test needs pre-created requests
-    const needsPreCreatedRequests = testInfo.title.includes(
-      "should show existing requests"
-    );
+    const needsPreCreatedRequests =
+      testInfo.title.includes("should show existing requests") ||
+      testInfo.title.includes("should open edit request panel");
 
     // Setup the common request test environment (includes workers and shifts)
     // Create test requests if this test needs them
@@ -304,17 +304,16 @@ test.describe("Request Calendar", () => {
     const testRunId = (testInfo as any).testRunId as string;
     const requestTestBase = testBasesMap.get(testRunId)!;
     const testWorkers = requestTestBase.getTestWorkers(testRunId);
+    const testRequests = requestTestBase.getTestRequests(testRunId);
 
-    // Create a request using the API
-    const requestDate = dayjs.utc().add(1, "day");
-    const existingRequest = await requestTestBase.createTestRequest({
-      workerId: testWorkers[0].workerId,
-      requestType: RequestType.WORK_DEMAND,
-      startDate: requestDate,
-      endDate: requestDate,
-      status: RequestStatus.PENDING,
-      comment: "Test request for editing",
-    });
+    // Verify we have the test requests created during setup
+    expect(testRequests.length).toBe(2);
+
+    // Use the future pending request (first in the array)
+    const futureRequest = testRequests[0];
+    expect(futureRequest.workerId).toBe(testWorkers[1].workerId);
+    expect(futureRequest.requestType).toBe(RequestType.LEAVE);
+    expect(futureRequest.status).toBe(RequestStatus.PENDING);
 
     // Navigate to calendar
     await requestTestBase.navigateToCalendarTab(page);
@@ -322,9 +321,9 @@ test.describe("Request Calendar", () => {
     // Click on the existing request
     await requestTestBase.clickRequestCalendarCell(
       page,
-      testWorkers[0].workerId,
-      requestDate,
-      existingRequest.id
+      testWorkers[1].workerId,
+      futureRequest.startDate,
+      futureRequest.id
     );
 
     // Verify request panel opens in edit mode
@@ -335,7 +334,7 @@ test.describe("Request Calendar", () => {
     // Check that we're in edit mode by looking for action buttons
     const deleteButton = requestTestBase.getDeleteRequestButton(
       page,
-      existingRequest.id
+      futureRequest.id
     );
     await expect(deleteButton).toBeVisible();
 
