@@ -10,6 +10,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { randomUUID } from "crypto";
 import { DatabaseTestUtils } from "./database-utils";
+import { loadTestConfig } from "./test-config";
 import {
   ShiftT,
   ShiftType,
@@ -427,23 +428,23 @@ export class RequestTestBase {
       missingAttributes: [],
     };
 
+    // Load test configuration
+    const config = loadTestConfig();
+
     // Create the request using the RequestApi
     // We need to create a request through the test endpoint
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/test/requests`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Dev-User-ID": process.env.TEST_USER_ID || "",
-          "X-API-Key": process.env.TEST_API_KEY || "",
-        },
-        body: JSON.stringify({
-          teamId: this.testTeam.teamId,
-          request: requestToCreate,
-        }),
-      }
-    );
+    const response = await fetch(`${config.apiUrl}/test/requests`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Dev-User-ID": config.devUserId,
+        "X-API-Key": config.devApiKey,
+      },
+      body: JSON.stringify({
+        teamId: this.testTeam.teamId,
+        request: requestToCreate,
+      }),
+    });
 
     if (!response.ok) {
       throw new Error(`Failed to create test request: ${response.statusText}`);
