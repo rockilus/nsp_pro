@@ -391,10 +391,10 @@ export class RequestTestBase {
   }
 
   /**
-   * Gets the request panel popover
+   * Gets the request panel dialog
    */
   getRequestPanelPopover(page: Page) {
-    return page.locator('[data-testid="request-panel-popover"]');
+    return page.locator('[data-testid="request-panel-dialog"]');
   }
 
   /**

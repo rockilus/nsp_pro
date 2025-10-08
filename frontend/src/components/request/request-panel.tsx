@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import dayjs from "dayjs";
 import { useTranslation } from "../../app/i18n/client";
 // MUI
-import Popover from "@mui/material/Popover";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import Button from "@mui/material/Button";
 import Checkbox from "@mui/material/Checkbox";
@@ -65,9 +67,7 @@ export default function RequestPanel({
 }) {
   const { t } = useTranslation(lng, "request-page");
 
-  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
-    null
-  );
+  const [open, setOpen] = React.useState<boolean>(false);
 
   // Helper to create a default request object
   const createDefaultRequest = (): RequestT => ({
@@ -168,11 +168,11 @@ export default function RequestPanel({
   };
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
+    setOpen(true);
   };
 
   const handleClose = () => {
-    setAnchorEl(null);
+    setOpen(false);
     // Reset state to initial value when closing
     setRequestState(isEdit && request ? request : createDefaultRequest());
     setDateRange(
@@ -202,15 +202,13 @@ export default function RequestPanel({
       setRequestType(request.requestType);
       setDateRange(!request.startDate.isSame(request.endDate, "day"));
       if (hideButton) {
-        // Auto-open for calendar usage - use a dummy button element
-        const dummyButton = document.createElement("button");
-        setAnchorEl(dummyButton as HTMLButtonElement);
+        // Auto-open for calendar usage
+        setOpen(true);
       }
     }
   }, [request, isEdit, hideButton]);
 
-  const open = Boolean(anchorEl);
-  const id = open ? "simple-popover" : undefined;
+  const id = open ? "request-dialog" : undefined;
 
   const handleSaveRequest = async () => {
     // Reset all errors
@@ -402,255 +400,257 @@ export default function RequestPanel({
           )}
         </>
       )}
-      <Popover
+      <Dialog
         id={id}
         open={open}
-        anchorEl={anchorEl}
         onClose={handleClose}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
-        }}
-        data-testid="request-panel-popover"
+        maxWidth="sm"
+        fullWidth
+        data-testid="request-panel-dialog"
       >
-        <div className="request-panel-container">
-          <div className="request-panel-header">
+        <DialogTitle>
+          <div className="flex justify-between items-center">
             <Typography variant="h6">{t("new_request")}</Typography>
             <IconButton onClick={handleClose} sx={{ padding: 0 }}>
               <CloseIcon />
             </IconButton>
           </div>
-          <ToggleButtonGroup
-            color="primary"
-            value={requestType}
-            exclusive
-            onChange={(_event, value) => {
-              if (value !== null) {
-                setRequestType(value);
-                setRequestState((prev) => {
-                  if (value === RequestType.WORK_DEMAND) {
-                    // When switching to work demand, clear shiftId but preserve worker and dates
-                    return {
-                      ...prev,
-                      shiftId: null,
-                      requestType: value,
-                      // Preserve workerId and dates from initial request
-                      workerId: request?.workerId || prev.workerId,
-                      startDate: request?.startDate || prev.startDate,
-                      endDate: request?.endDate || prev.endDate,
-                    };
-                  } else if (value === RequestType.LEAVE) {
-                    // When switching to leave, clear shiftOptions and set negative to false but preserve worker and dates
-                    return {
-                      ...prev,
-                      shiftOptions: [],
-                      negative: false,
-                      requestType: value,
-                      // Preserve workerId and dates from initial request
-                      workerId: request?.workerId || prev.workerId,
-                      startDate: request?.startDate || prev.startDate,
-                      endDate: request?.endDate || prev.endDate,
-                    };
-                  }
-                  return prev;
-                });
-              }
-            }}
-            aria-label="Request Type"
-            sx={{ marginBottom: 2, marginLeft: 2 }}
-            data-testid="request-type-toggle"
-          >
-            <ToggleButton
-              value={RequestType.WORK_DEMAND}
-              sx={{
-                marginTop: "5px",
-                marginBottom: "5px",
-                marginLeft: "56px",
-                textTransform: "none",
-                height: "30px",
-                width: "105px",
-                fontSize: "0.8rem",
-              }}
-              data-testid="work-request-type-button"
-            >
-              {t("work")}
-            </ToggleButton>
-            <ToggleButton
-              value={RequestType.LEAVE}
-              sx={{
-                marginTop: "5px",
-                marginBottom: "5px",
-                textTransform: "none",
-                height: "30px",
-                width: "105px",
-                fontSize: "0.8rem",
-              }}
-              data-testid="leave-request-type-button"
-            >
-              {t("leave")}
-            </ToggleButton>
-          </ToggleButtonGroup>
-          <div className="variable-input-container">
-            <PeopleAltIcon sx={{ marginLeft: 2, marginRight: 1 }} />
-            {selectWorker()}
-          </div>
-          <div className="variable-input-param-container">
-            <Checkbox
-              checked={dateRange}
-              onChange={handleSelectDateRange}
-              size="small"
-              sx={{ marginLeft: "49px", height: "30px", width: "30px" }}
-              data-testid="date-range-checkbox"
-            />
-            <Typography sx={{ fontSize: "0.8rem" }}>
-              {t("date_range")}
-            </Typography>
-          </div>
-          <div className="variable-input-container">
-            <AccessTimeIcon sx={{ marginLeft: 2, marginRight: 1 }} />
-            <div className="date-pickers-container">
-              <DatePicker
-                minDate={dayjs.utc().startOf("day")}
-                sx={{ marginLeft: 1, marginRight: 2 }}
-                value={requestState.startDate}
-                onChange={(newValue) => {
-                  setRequestState({
-                    ...requestState,
-                    startDate:
-                      newValue?.startOf("day") || dayjs.utc().startOf("day"),
-                    endDate: !dateRange
-                      ? newValue?.startOf("day") || dayjs.utc().startOf("day")
-                      : requestState.endDate,
+        </DialogTitle>
+        <DialogContent>
+          <div className="request-panel-container">
+            <ToggleButtonGroup
+              color="primary"
+              value={requestType}
+              exclusive
+              onChange={(_event, value) => {
+                if (value !== null) {
+                  setRequestType(value);
+                  setRequestState((prev) => {
+                    if (value === RequestType.WORK_DEMAND) {
+                      // When switching to work demand, clear shiftId but preserve worker and dates
+                      return {
+                        ...prev,
+                        shiftId: null,
+                        requestType: value,
+                        // Preserve workerId and dates from initial request
+                        workerId: request?.workerId || prev.workerId,
+                        startDate: request?.startDate || prev.startDate,
+                        endDate: request?.endDate || prev.endDate,
+                      };
+                    } else if (value === RequestType.LEAVE) {
+                      // When switching to leave, clear shiftOptions and set negative to false but preserve worker and dates
+                      return {
+                        ...prev,
+                        shiftOptions: [],
+                        negative: false,
+                        requestType: value,
+                        // Preserve workerId and dates from initial request
+                        workerId: request?.workerId || prev.workerId,
+                        startDate: request?.startDate || prev.startDate,
+                        endDate: request?.endDate || prev.endDate,
+                      };
+                    }
+                    return prev;
                   });
-                  setStartDateError(false);
-                  if (!dateRange) setEndDateError(false);
+                }
+              }}
+              aria-label="Request Type"
+              sx={{ marginBottom: 2, marginLeft: 2 }}
+              data-testid="request-type-toggle"
+            >
+              <ToggleButton
+                value={RequestType.WORK_DEMAND}
+                sx={{
+                  marginTop: "5px",
+                  marginBottom: "5px",
+                  marginLeft: "56px",
+                  textTransform: "none",
+                  height: "30px",
+                  width: "105px",
+                  fontSize: "0.8rem",
                 }}
-                slotProps={{
-                  textField: {
-                    error: startDateError,
-                    inputProps: { "data-testid": "start-date-picker" },
-                  },
+                data-testid="work-request-type-button"
+              >
+                {t("work")}
+              </ToggleButton>
+              <ToggleButton
+                value={RequestType.LEAVE}
+                sx={{
+                  marginTop: "5px",
+                  marginBottom: "5px",
+                  textTransform: "none",
+                  height: "30px",
+                  width: "105px",
+                  fontSize: "0.8rem",
                 }}
+                data-testid="leave-request-type-button"
+              >
+                {t("leave")}
+              </ToggleButton>
+            </ToggleButtonGroup>
+            <div className="variable-input-container">
+              <PeopleAltIcon sx={{ marginLeft: 2, marginRight: 1 }} />
+              {selectWorker()}
+            </div>
+            <div className="variable-input-param-container">
+              <Checkbox
+                checked={dateRange}
+                onChange={handleSelectDateRange}
+                size="small"
+                sx={{ marginLeft: "49px", height: "30px", width: "30px" }}
+                data-testid="date-range-checkbox"
               />
-              {dateRange && (
+              <Typography sx={{ fontSize: "0.8rem" }}>
+                {t("date_range")}
+              </Typography>
+            </div>
+            <div className="variable-input-container">
+              <AccessTimeIcon sx={{ marginLeft: 2, marginRight: 1 }} />
+              <div className="date-pickers-container">
                 <DatePicker
-                  minDate={requestState.startDate}
-                  sx={{
-                    marginLeft: 1,
-                    marginTop: "1px",
-                    marginRight: 2,
-                    width: "100%",
-                  }}
-                  value={requestState.endDate}
+                  minDate={dayjs.utc().startOf("day")}
+                  sx={{ marginLeft: 1, marginRight: 2 }}
+                  value={requestState.startDate}
                   onChange={(newValue) => {
                     setRequestState({
                       ...requestState,
-                      endDate:
+                      startDate:
                         newValue?.startOf("day") || dayjs.utc().startOf("day"),
+                      endDate: !dateRange
+                        ? newValue?.startOf("day") || dayjs.utc().startOf("day")
+                        : requestState.endDate,
                     });
-                    setEndDateError(false);
+                    setStartDateError(false);
+                    if (!dateRange) setEndDateError(false);
                   }}
                   slotProps={{
                     textField: {
-                      error: endDateError,
-                      inputProps: { "data-testid": "end-date-picker" },
+                      error: startDateError,
+                      inputProps: { "data-testid": "start-date-picker" },
                     },
                   }}
                 />
+                {dateRange && (
+                  <DatePicker
+                    minDate={requestState.startDate}
+                    sx={{
+                      marginLeft: 1,
+                      marginTop: "1px",
+                      marginRight: 2,
+                      width: "100%",
+                    }}
+                    value={requestState.endDate}
+                    onChange={(newValue) => {
+                      setRequestState({
+                        ...requestState,
+                        endDate:
+                          newValue?.startOf("day") ||
+                          dayjs.utc().startOf("day"),
+                      });
+                      setEndDateError(false);
+                    }}
+                    slotProps={{
+                      textField: {
+                        error: endDateError,
+                        inputProps: { "data-testid": "end-date-picker" },
+                      },
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+            {requestType === RequestType.WORK_DEMAND && (
+              <div className="variable-input-param-container">
+                <ToggleButtonGroup
+                  color="primary"
+                  value={requestState.negative}
+                  exclusive
+                  onChange={(event, value) => {
+                    // Only update if value is not null (prevent deselection)
+                    if (value !== null) {
+                      setRequestState({ ...requestState, negative: value });
+                    }
+                  }}
+                  aria-label="Platform"
+                  data-testid="negative-positive-toggle"
+                >
+                  <ToggleButton
+                    value={false}
+                    sx={{
+                      marginTop: "5px",
+                      marginBottom: "5px",
+                      marginLeft: "56px",
+                      textTransform: "none",
+                      height: "30px",
+                      width: "105px",
+                      fontSize: "0.8rem",
+                    }}
+                    data-testid="positive-request-button"
+                  >
+                    {t("do")}
+                  </ToggleButton>
+                  <ToggleButton
+                    value={true}
+                    sx={{
+                      marginTop: "5px",
+                      marginBottom: "5px",
+                      textTransform: "none",
+                      height: "30px",
+                      width: "105px",
+                      fontSize: "0.8rem",
+                    }}
+                    data-testid="negative-request-button"
+                  >
+                    {t("dont")}
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </div>
+            )}
+            <div className="variable-input-container">
+              <WorkIcon sx={{ marginLeft: 2, marginRight: 1 }} />
+              {requestType === RequestType.WORK_DEMAND ? (
+                <div
+                  style={
+                    shiftOptionsError
+                      ? {
+                          border: "2px solid #f44336",
+                          borderRadius: 8,
+                          padding: 2,
+                        }
+                      : {}
+                  }
+                >
+                  <ShiftOptionsDisplay
+                    lng={lng}
+                    selectedShifts={requestState.shiftOptions}
+                    statsShiftOptions={filterShiftOptions(shiftOptions, shifts)}
+                    workers={workers}
+                    shifts={shifts}
+                    disabled={false}
+                    handleEditSelectedShifts={(selected) => {
+                      handleEditSelectedShifts(selected);
+                      setShiftOptionsError(false);
+                    }}
+                  />
+                </div>
+              ) : (
+                selectShift()
               )}
             </div>
-          </div>
-          {requestType === RequestType.WORK_DEMAND && (
-            <div className="variable-input-param-container">
-              <ToggleButtonGroup
+            <div className="save-button-container">
+              <Button
+                variant="contained"
                 color="primary"
-                value={requestState.negative}
-                exclusive
-                onChange={(event, value) => {
-                  // Only update if value is not null (prevent deselection)
-                  if (value !== null) {
-                    setRequestState({ ...requestState, negative: value });
-                  }
-                }}
-                aria-label="Platform"
-                data-testid="negative-positive-toggle"
+                sx={{ marginRight: 2 }}
+                onClick={handleSaveRequest}
+                data-testid="save-request-button"
               >
-                <ToggleButton
-                  value={false}
-                  sx={{
-                    marginTop: "5px",
-                    marginBottom: "5px",
-                    marginLeft: "56px",
-                    textTransform: "none",
-                    height: "30px",
-                    width: "105px",
-                    fontSize: "0.8rem",
-                  }}
-                  data-testid="positive-request-button"
-                >
-                  {t("do")}
-                </ToggleButton>
-                <ToggleButton
-                  value={true}
-                  sx={{
-                    marginTop: "5px",
-                    marginBottom: "5px",
-                    textTransform: "none",
-                    height: "30px",
-                    width: "105px",
-                    fontSize: "0.8rem",
-                  }}
-                  data-testid="negative-request-button"
-                >
-                  {t("dont")}
-                </ToggleButton>
-              </ToggleButtonGroup>
+                {t("save")}
+              </Button>
             </div>
-          )}
-          <div className="variable-input-container">
-            <WorkIcon sx={{ marginLeft: 2, marginRight: 1 }} />
-            {requestType === RequestType.WORK_DEMAND ? (
-              <div
-                style={
-                  shiftOptionsError
-                    ? {
-                        border: "2px solid #f44336",
-                        borderRadius: 8,
-                        padding: 2,
-                      }
-                    : {}
-                }
-              >
-                <ShiftOptionsDisplay
-                  lng={lng}
-                  selectedShifts={requestState.shiftOptions}
-                  statsShiftOptions={filterShiftOptions(shiftOptions, shifts)}
-                  workers={workers}
-                  shifts={shifts}
-                  disabled={false}
-                  handleEditSelectedShifts={(selected) => {
-                    handleEditSelectedShifts(selected);
-                    setShiftOptionsError(false);
-                  }}
-                />
-              </div>
-            ) : (
-              selectShift()
-            )}
           </div>
-          <div className="save-button-container">
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ marginRight: 2 }}
-              onClick={handleSaveRequest}
-              data-testid="save-request-button"
-            >
-              {t("save")}
-            </Button>
-          </div>
-        </div>
-      </Popover>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
