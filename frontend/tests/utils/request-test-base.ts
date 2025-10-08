@@ -165,17 +165,30 @@ export class RequestTestBase {
 
     // Create test requests if requested
     if (createRequests) {
+      // Fetch leave shifts for leave requests
+      const leaveShifts = await this.fetchLeaveShiftsForTeam();
+
+      // If no leave shifts exist, create one
+      let leaveShift: ShiftT;
+      if (leaveShifts.length === 0) {
+        console.log(
+          `[${testId || "legacy"}] No leave shifts found, creating one...`
+        );
+        leaveShift = await this.createTestShift({
+          name: `Annual Leave ${workerIndex}-${testId || randomUUID()}`,
+          startTime: dayjs.utc().hour(0).minute(0).second(0),
+          endTime: dayjs.utc().hour(23).minute(59).second(59),
+          shiftType: ShiftType.LEAVE,
+          leaveType: ShiftLeaveType.VACATION,
+          color: "#ff9800",
+          acronym: "AL",
+        });
+      } else {
+        leaveShift = leaveShifts[0];
+      }
+
       const testRequestsData = [
-        // Past request - worker 1, approved work demand
-        {
-          workerId: testWorkers[0].workerId,
-          requestType: RequestType.WORK_DEMAND,
-          startDate: dayjs.utc().subtract(2, "days"),
-          endDate: dayjs.utc().subtract(2, "days"),
-          status: RequestStatus.APPROVED,
-          negative: false,
-        },
-        // Future request - worker 2, pending leave
+        // Future request - worker 2, pending leave with shift ID
         {
           workerId: testWorkers[1].workerId,
           requestType: RequestType.LEAVE,
@@ -183,6 +196,17 @@ export class RequestTestBase {
           endDate: dayjs.utc().add(3, "days"),
           status: RequestStatus.PENDING,
           negative: false,
+          shiftId: leaveShift.id, // Leave requests require a shift ID
+        },
+        // Past request - worker 1, approved leave
+        {
+          workerId: testWorkers[0].workerId,
+          requestType: RequestType.LEAVE,
+          startDate: dayjs.utc().subtract(2, "days"),
+          endDate: dayjs.utc().subtract(2, "days"),
+          status: RequestStatus.APPROVED,
+          negative: false,
+          shiftId: leaveShift.id, // Leave requests require a shift ID
         },
       ];
 

@@ -264,17 +264,17 @@ test.describe("Request Calendar", () => {
     // Verify we have the test requests created during setup
     expect(testRequests.length).toBe(2);
 
-    // First request should be a past approved work demand for worker 1
-    const pastRequest = testRequests[0];
-    expect(pastRequest.workerId).toBe(testWorkers[0].workerId);
-    expect(pastRequest.requestType).toBe(RequestType.WORK_DEMAND);
-    expect(pastRequest.status).toBe(RequestStatus.APPROVED);
-
-    // Second request should be a future pending leave for worker 2
-    const futureRequest = testRequests[1];
+    // First request should be a future pending leave for worker 2
+    const futureRequest = testRequests[0];
     expect(futureRequest.workerId).toBe(testWorkers[1].workerId);
     expect(futureRequest.requestType).toBe(RequestType.LEAVE);
     expect(futureRequest.status).toBe(RequestStatus.PENDING);
+
+    // Second request should be a past approved leave for worker 1
+    const pastRequest = testRequests[1];
+    expect(pastRequest.workerId).toBe(testWorkers[0].workerId);
+    expect(pastRequest.requestType).toBe(RequestType.LEAVE);
+    expect(pastRequest.status).toBe(RequestStatus.APPROVED);
 
     // Navigate to calendar
     await requestTestBase.navigateToCalendarTab(page);

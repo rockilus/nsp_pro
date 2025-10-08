@@ -1500,27 +1500,25 @@ export class DatabaseTestUtils {
     shiftOptions?: any[];
   }): Promise<any> {
     try {
+      // RequestDTO expects camelCase fields
       const requestPayload = {
+        id: "",
         teamId: requestData.teamId,
-        request: {
-          id: "",
-          teamId: requestData.teamId,
-          requestType: requestData.requestType,
-          workerId: requestData.workerId,
-          startDate: Math.floor(requestData.startDate.getTime() / 1000),
-          endDate: Math.floor(requestData.endDate.getTime() / 1000),
-          shiftId: requestData.shiftId || null,
-          shiftOptions: requestData.shiftOptions || [],
-          negative: requestData.negative || false,
-          hard: true,
-          status: requestData.status || "pending",
-          fulfillment: "not_processed",
-          comment: requestData.comment || "",
-          createdAt: Math.floor(Date.now() / 1000),
-          active: true,
-          shiftTargetIds: [],
-          missingAttributes: [],
-        },
+        requestType: requestData.requestType,
+        workerId: requestData.workerId,
+        startDate: Math.floor(requestData.startDate.getTime() / 1000),
+        endDate: Math.floor(requestData.endDate.getTime() / 1000),
+        shiftId: requestData.shiftId || null,
+        shiftOptions: requestData.shiftOptions || [],
+        negative: requestData.negative || false,
+        hard: true,
+        status: requestData.status || "pending",
+        fulfillment: "not_processed",
+        comment: requestData.comment || "",
+        createdAt: Math.floor(Date.now() / 1000),
+        active: true,
+        shiftTargetIds: [],
+        missingAttributes: [],
       };
 
       const response = await this.testApiClient.post<any>(
