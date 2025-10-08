@@ -1479,6 +1479,117 @@ export class DatabaseTestUtils {
       collections: ["constraints", "constraint_templates"],
     });
   }
+
+  //////////////////////////
+  // Request Methods
+  //////////////////////////
+
+  /**
+   * Create a request using the test API for consistent behavior
+   */
+  async createRequest(requestData: {
+    teamId: string;
+    workerId: string;
+    requestType: "work_demand" | "leave";
+    startDate: Date;
+    endDate: Date;
+    status?: "pending" | "approved" | "denied" | "deferred";
+    negative?: boolean;
+    comment?: string;
+    shiftId?: string | null;
+    shiftOptions?: any[];
+  }): Promise<any> {
+    try {
+      const requestPayload = {
+        teamId: requestData.teamId,
+        request: {
+          id: "",
+          teamId: requestData.teamId,
+          requestType: requestData.requestType,
+          workerId: requestData.workerId,
+          startDate: Math.floor(requestData.startDate.getTime() / 1000),
+          endDate: Math.floor(requestData.endDate.getTime() / 1000),
+          shiftId: requestData.shiftId || null,
+          shiftOptions: requestData.shiftOptions || [],
+          negative: requestData.negative || false,
+          hard: true,
+          status: requestData.status || "pending",
+          fulfillment: "not_processed",
+          comment: requestData.comment || "",
+          createdAt: Math.floor(Date.now() / 1000),
+          active: true,
+          shiftTargetIds: [],
+          missingAttributes: [],
+        },
+      };
+
+      const response = await this.testApiClient.post<any>(
+        `/requests/teams/${requestData.teamId}`,
+        requestPayload
+      );
+
+      console.log(
+        `Created request for worker ${requestData.workerId} in team ${requestData.teamId}`
+      );
+
+      return response;
+    } catch (error) {
+      console.error("Failed to create request:", error);
+      throw new Error(
+        `Failed to create request: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
+  }
+
+  /**
+   * Delete a request using the test API
+   */
+  async deleteRequest(requestId: string, teamId: string): Promise<void> {
+    try {
+      await this.testApiClient.delete(
+        `/requests/${requestId}?teamId=${teamId}`
+      );
+      console.log(`Deleted request ${requestId} from team ${teamId}`);
+    } catch (error) {
+      console.error(`Failed to delete request ${requestId}:`, error);
+      throw new Error(
+        `Failed to delete request: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
+  }
+
+  /**
+   * Get all requests for a team
+   */
+  async getRequests(teamId: string): Promise<any[]> {
+    try {
+      const response = await this.testApiClient.get<any[]>(
+        `/requests?teamId=${teamId}`
+      );
+      return response;
+    } catch (error) {
+      console.error("Failed to get requests:", error);
+      throw new Error(
+        `Failed to get requests: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
+  }
+
+  /**
+   * Reset request-related collections
+   */
+  async resetRequestData(): Promise<DatabaseResetResponse> {
+    return this.resetDatabase({
+      collections: ["requests"],
+      preserveSystemData: true,
+    });
+  }
 }
 
 /**

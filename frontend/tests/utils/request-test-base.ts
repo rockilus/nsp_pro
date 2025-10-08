@@ -10,7 +10,6 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { randomUUID } from "crypto";
 import { DatabaseTestUtils } from "./database-utils";
-import { loadTestConfig } from "./test-config";
 import {
   ShiftT,
   ShiftType,
@@ -23,7 +22,6 @@ import {
   RequestType,
   FulfillmentStatus,
 } from "../../src/types/request";
-import { RequestApi } from "../../src/app/lib/api/requestApi";
 
 dayjs.extend(utc);
 
@@ -37,11 +35,13 @@ export class RequestTestBase {
     { workerId: string; name: string; teamId: string }[]
   >();
   protected testShiftsMap = new Map<string, ShiftT[]>();
+  protected testRequestsMap = new Map<string, RequestT[]>();
 
   // Keep legacy arrays for backwards compatibility with tests that don't use test IDs
   protected testWorkers: { workerId: string; name: string; teamId: string }[] =
     [];
   protected testShifts: ShiftT[] = [];
+  protected testRequests: RequestT[] = [];
 
   constructor() {
     this.dbUtils = new DatabaseTestUtils();
@@ -53,10 +53,16 @@ export class RequestTestBase {
    * - Verifies test utilities are available
    * - Creates a test team
    * - Creates test workers and shifts
+   * - Optionally creates test requests
    * @param workerIndex - The worker index for unique naming
    * @param testId - Optional test ID for test isolation. If provided, workers and shifts will be stored by test ID
+   * @param createRequests - Optional flag to create test requests (default: false)
    */
-  async setupRequestTests(workerIndex: number, testId?: string): Promise<void> {
+  async setupRequestTests(
+    workerIndex: number,
+    testId?: string,
+    createRequests: boolean = false
+  ): Promise<void> {
     console.log(
       `[${testId || "legacy"}] Setting up request test environment...`
     );
@@ -156,6 +162,47 @@ export class RequestTestBase {
         testShifts.length
       } test shifts`
     );
+
+    // Create test requests if requested
+    if (createRequests) {
+      const testRequestsData = [
+        // Past request - worker 1, approved work demand
+        {
+          workerId: testWorkers[0].workerId,
+          requestType: RequestType.WORK_DEMAND,
+          startDate: dayjs.utc().subtract(2, "days"),
+          endDate: dayjs.utc().subtract(2, "days"),
+          status: RequestStatus.APPROVED,
+          negative: false,
+        },
+        // Future request - worker 2, pending leave
+        {
+          workerId: testWorkers[1].workerId,
+          requestType: RequestType.LEAVE,
+          startDate: dayjs.utc().add(3, "days"),
+          endDate: dayjs.utc().add(3, "days"),
+          status: RequestStatus.PENDING,
+          negative: false,
+        },
+      ];
+
+      const testRequests = [];
+      for (const requestData of testRequestsData) {
+        const request = await this.createTestRequest(requestData, testId);
+        testRequests.push(request);
+      }
+
+      // Store requests by test ID if provided, otherwise use legacy array
+      if (testId) {
+        this.testRequestsMap.set(testId, testRequests);
+      } else {
+        this.testRequests = testRequests;
+      }
+
+      console.log(
+        `[${testId || "legacy"}] Created ${testRequests.length} test requests`
+      );
+    }
   }
 
   /**
@@ -303,6 +350,17 @@ export class RequestTestBase {
   }
 
   /**
+   * Gets the test requests created during setup
+   * @param testId - Optional test ID to get requests for a specific test
+   */
+  getTestRequests(testId?: string): RequestT[] {
+    if (testId) {
+      return this.testRequestsMap.get(testId) || [];
+    }
+    return this.testRequests;
+  }
+
+  /**
    * Gets the test team created during setup
    */
   getTestTeam(): { teamId: string; name: string } | null {
@@ -383,12 +441,16 @@ export class RequestTestBase {
    */
   async cleanupTestData(testId: string): Promise<void> {
     await this.deleteTestWorkers(testId);
+    await this.deleteTestRequests(testId);
     this.testWorkersMap.delete(testId);
     this.testShiftsMap.delete(testId);
+    this.testRequestsMap.delete(testId);
   }
 
   /**
    * Creates a test request using the API
+   * @param requestData - The request data
+   * @param testId - Optional test ID for test isolation
    */
   async createTestRequest(
     requestData: {
@@ -399,6 +461,8 @@ export class RequestTestBase {
       status?: RequestStatus;
       negative?: boolean;
       comment?: string;
+      shiftId?: string | null;
+      shiftOptions?: any[];
     },
     testId?: string
   ): Promise<RequestT> {
@@ -408,50 +472,106 @@ export class RequestTestBase {
       );
     }
 
-    const requestToCreate: RequestT = {
-      id: "",
-      teamId: this.testTeam.teamId,
-      requestType: requestData.requestType,
-      workerId: requestData.workerId,
-      startDate: requestData.startDate,
-      endDate: requestData.endDate,
-      shiftId: null,
-      shiftOptions: [],
-      negative: requestData.negative || false,
-      hard: true,
-      status: requestData.status || RequestStatus.PENDING,
-      fulfillment: FulfillmentStatus.NOT_PROCESSED,
-      comment: requestData.comment || "",
-      createdAt: dayjs.utc(),
-      active: true,
-      shiftTargetIds: [],
-      missingAttributes: [],
+    // Convert RequestType enum to API format
+    const requestTypeMap = {
+      [RequestType.WORK_DEMAND]: "work_demand" as const,
+      [RequestType.LEAVE]: "leave" as const,
     };
 
-    // Load test configuration
-    const config = loadTestConfig();
+    // Convert RequestStatus enum to API format
+    const requestStatusMap = {
+      [RequestStatus.PENDING]: "pending" as const,
+      [RequestStatus.APPROVED]: "approved" as const,
+      [RequestStatus.DENIED]: "denied" as const,
+      [RequestStatus.DEFERRED]: "deferred" as const,
+    };
 
-    // Create the request using the RequestApi
-    // We need to create a request through the test endpoint
-    const response = await fetch(`${config.apiUrl}/test/requests`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Dev-User-ID": config.devUserId,
-        "X-API-Key": config.devApiKey,
-      },
-      body: JSON.stringify({
-        teamId: this.testTeam.teamId,
-        request: requestToCreate,
-      }),
+    const apiResponse = await this.dbUtils.createRequest({
+      teamId: this.testTeam.teamId,
+      workerId: requestData.workerId,
+      requestType: requestTypeMap[requestData.requestType],
+      startDate: requestData.startDate.toDate(),
+      endDate: requestData.endDate.toDate(),
+      status: requestData.status
+        ? requestStatusMap[requestData.status]
+        : "pending",
+      negative: requestData.negative || false,
+      comment: requestData.comment || "",
+      shiftId: requestData.shiftId,
+      shiftOptions: requestData.shiftOptions,
     });
 
-    if (!response.ok) {
-      throw new Error(`Failed to create test request: ${response.statusText}`);
+    // Convert API response to RequestT
+    const request: RequestT = {
+      id: apiResponse.id,
+      teamId: apiResponse.teamId,
+      requestType: requestData.requestType,
+      workerId: apiResponse.workerId,
+      startDate: dayjs.unix(apiResponse.startDate).utc(),
+      endDate: dayjs.unix(apiResponse.endDate).utc(),
+      shiftId: apiResponse.shiftId || null,
+      shiftOptions: apiResponse.shiftOptions || [],
+      negative: apiResponse.negative || false,
+      hard: apiResponse.hard || true,
+      status: requestData.status || RequestStatus.PENDING,
+      fulfillment: FulfillmentStatus.NOT_PROCESSED,
+      comment: apiResponse.comment || "",
+      createdAt: dayjs.unix(apiResponse.createdAt).utc(),
+      active: apiResponse.active || true,
+      shiftTargetIds: apiResponse.shiftTargetIds || [],
+      missingAttributes: apiResponse.missingAttributes || [],
+    };
+
+    return request;
+  }
+
+  /**
+   * Deletes a test request using the API
+   */
+  async deleteTestRequest(requestId: string): Promise<void> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupRequestTests first.");
     }
 
-    const createdRequest = await response.json();
-    return createdRequest;
+    await this.dbUtils.deleteRequest(requestId, this.testTeam.teamId);
+  }
+
+  /**
+   * Deletes all test requests created during setup
+   */
+  async deleteAllTestRequests(): Promise<void> {
+    if (!this.testTeam) return;
+
+    // Delete requests from all test IDs
+    for (const [testId, requests] of this.testRequestsMap.entries()) {
+      await this.deleteTestRequests(testId);
+    }
+
+    // Delete legacy requests
+    for (const request of this.testRequests) {
+      try {
+        await this.deleteTestRequest(request.id);
+      } catch (error) {
+        console.warn(`Failed to delete request ${request.id}:`, error);
+      }
+    }
+  }
+
+  /**
+   * Deletes test requests for a specific test ID
+   * @param testId - The test ID to clean up requests for
+   */
+  async deleteTestRequests(testId: string): Promise<void> {
+    const requests = this.testRequestsMap.get(testId);
+    if (!requests) return;
+
+    for (const request of requests) {
+      try {
+        await this.deleteTestRequest(request.id);
+      } catch (error) {
+        console.warn(`Failed to delete request ${request.id}:`, error);
+      }
+    }
   }
 
   /**

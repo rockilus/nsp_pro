@@ -35,8 +35,18 @@ test.describe("Request Calendar", () => {
     // Store the testRunId in test info for access in test body and cleanup
     (testInfo as any).testRunId = testRunId;
 
+    // Determine if this test needs pre-created requests
+    const needsPreCreatedRequests = testInfo.title.includes(
+      "should show existing requests"
+    );
+
     // Setup the common request test environment (includes workers and shifts)
-    await requestTestBase.setupRequestTests(workerIndex, testRunId);
+    // Create test requests if this test needs them
+    await requestTestBase.setupRequestTests(
+      workerIndex,
+      testRunId,
+      needsPreCreatedRequests
+    );
 
     // Navigate to the requests page
     await requestTestBase.navigateToRequestsPage(page);
@@ -249,26 +259,22 @@ test.describe("Request Calendar", () => {
     const testRunId = (testInfo as any).testRunId as string;
     const requestTestBase = testBasesMap.get(testRunId)!;
     const testWorkers = requestTestBase.getTestWorkers(testRunId);
+    const testRequests = requestTestBase.getTestRequests(testRunId);
 
-    // Create a past request using the API
-    const pastDate = dayjs.utc().subtract(2, "days");
-    const pastRequest = await requestTestBase.createTestRequest({
-      workerId: testWorkers[0].workerId,
-      requestType: RequestType.WORK_DEMAND,
-      startDate: pastDate,
-      endDate: pastDate,
-      status: RequestStatus.APPROVED,
-    });
+    // Verify we have the test requests created during setup
+    expect(testRequests.length).toBe(2);
 
-    // Create a future request using the API
-    const futureDate = dayjs.utc().add(3, "days");
-    const futureRequest = await requestTestBase.createTestRequest({
-      workerId: testWorkers[1].workerId,
-      requestType: RequestType.LEAVE,
-      startDate: futureDate,
-      endDate: futureDate,
-      status: RequestStatus.PENDING,
-    });
+    // First request should be a past approved work demand for worker 1
+    const pastRequest = testRequests[0];
+    expect(pastRequest.workerId).toBe(testWorkers[0].workerId);
+    expect(pastRequest.requestType).toBe(RequestType.WORK_DEMAND);
+    expect(pastRequest.status).toBe(RequestStatus.APPROVED);
+
+    // Second request should be a future pending leave for worker 2
+    const futureRequest = testRequests[1];
+    expect(futureRequest.workerId).toBe(testWorkers[1].workerId);
+    expect(futureRequest.requestType).toBe(RequestType.LEAVE);
+    expect(futureRequest.status).toBe(RequestStatus.PENDING);
 
     // Navigate to calendar
     await requestTestBase.navigateToCalendarTab(page);
@@ -277,7 +283,7 @@ test.describe("Request Calendar", () => {
     await requestTestBase.verifyCalendarCellHasRequest(
       page,
       testWorkers[0].workerId,
-      pastDate,
+      pastRequest.startDate,
       pastRequest.id
     );
 
@@ -285,7 +291,7 @@ test.describe("Request Calendar", () => {
     await requestTestBase.verifyCalendarCellHasRequest(
       page,
       testWorkers[1].workerId,
-      futureDate,
+      futureRequest.startDate,
       futureRequest.id
     );
 
