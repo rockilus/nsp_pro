@@ -7,13 +7,6 @@ import { RequestT } from "../../types/request";
 import { WorkerT } from "../../types/worker";
 import RequestPanel from "./request-panel";
 import { RequestCalendarToolbar } from "./RequestCalendarToolbar";
-
-dayjs.extend(isoWeek);
-
-type StatusColors = {
-  [key: string]: string;
-};
-
 import { ShiftDemandDTO } from "../../types/shiftDemand";
 import { ShiftT } from "../../types/shift";
 import {
@@ -22,7 +15,22 @@ import {
   FulfillmentStatus,
 } from "../../types/request";
 
-type RequestCalendarProps = {
+dayjs.extend(isoWeek);
+
+// Types
+type StatusColors = {
+  [key: string]: string;
+};
+
+type StaffingSummary = {
+  [date: string]: {
+    demand: number;
+    available: number;
+    delta: number;
+  };
+};
+
+interface RequestCalendarProps {
   workers: WorkerT[];
   requests: RequestT[];
   statusColors?: StatusColors;
@@ -38,8 +46,58 @@ type RequestCalendarProps = {
   handleRescindRequest?: (requestId: string) => void;
   handleAcceptRequest?: (requestId: string) => void;
   handleDenyRequest?: (requestId: string) => void;
-};
+}
 
+interface RequestCalendarCellProps {
+  worker: WorkerT;
+  date: Dayjs;
+  request: RequestT | null;
+  statusColors: StatusColors;
+  canAddRequest: boolean;
+  canEditRequest: boolean;
+  isPast: boolean;
+  isEmpty: boolean;
+  onCellClick: (workerId: string, date: Dayjs) => void;
+  onRequestClick: (request: RequestT) => void;
+}
+
+interface RequestCalendarRowProps {
+  worker: WorkerT;
+  days: Dayjs[];
+  statusColors: StatusColors;
+  getRequestForDay: (workerId: string, day: Dayjs) => RequestT | null;
+  handleAddRequest?: (request: RequestT) => void;
+  handleUpdateRequest?: (request: RequestT) => void;
+  lng?: string;
+  teamId?: string;
+  onCellClick: (workerId: string, date: Dayjs) => void;
+  onRequestClick: (request: RequestT) => void;
+}
+
+interface RequestCalendarHeaderProps {
+  days: Dayjs[];
+}
+
+interface RequestCalendarBodyProps {
+  workers: WorkerT[];
+  days: Dayjs[];
+  statusColors: StatusColors;
+  getRequestForDay: (workerId: string, day: Dayjs) => RequestT | null;
+  handleAddRequest?: (request: RequestT) => void;
+  handleUpdateRequest?: (request: RequestT) => void;
+  lng?: string;
+  teamId?: string;
+  onCellClick: (workerId: string, date: Dayjs) => void;
+  onRequestClick: (request: RequestT) => void;
+}
+
+interface StaffingSummaryRowsProps {
+  days: Dayjs[];
+  staffingSummary: StaffingSummary | null;
+  isCalculating: boolean;
+}
+
+// Constants
 const defaultStatusColors: StatusColors = {
   pending: "#FFC107", // orange
   approved: "#4CAF50", // green
@@ -52,6 +110,7 @@ const defaultStatusColors: StatusColors = {
 
 const daysOfWeek = ["M", "T", "W", "T", "F", "S", "S"];
 
+// Utility functions
 function getDaysInPeriod(start: Dayjs, end: Dayjs) {
   const days = [];
   let current = start;
@@ -73,6 +132,307 @@ function getStatusColor(request: RequestT, statusColors: StatusColors) {
   return "#BDBDBD";
 }
 
+// Individual cell component
+function RequestCalendarCell({
+  worker,
+  date,
+  request,
+  statusColors,
+  canAddRequest,
+  canEditRequest,
+  isPast,
+  isEmpty,
+  onCellClick,
+  onRequestClick,
+}: RequestCalendarCellProps) {
+  const isPastEmpty = isPast && isEmpty;
+
+  const handleClick = () => {
+    if (canAddRequest) {
+      onCellClick(worker.id, date);
+    } else if (canEditRequest && request) {
+      onRequestClick(request);
+    }
+  };
+
+  const getTitle = () => {
+    if (isPastEmpty) {
+      return `Past date - ${date.format("MMM D")}`;
+    }
+    if (canAddRequest) {
+      return `Click to create request for ${worker.name} on ${date.format(
+        "MMM D"
+      )}`;
+    }
+    if (canEditRequest && request) {
+      return `Click to edit ${request.requestType} request for ${
+        worker.name
+      } (${request.startDate.format("MMM D")} - ${request.endDate.format(
+        "MMM D"
+      )})`;
+    }
+    return undefined;
+  };
+
+  return (
+    <div
+      key={date.date()}
+      className={`calendar-cell${request ? " calendar-cell--leave" : ""}${
+        canAddRequest || canEditRequest ? " calendar-cell--clickable" : ""
+      }${isPastEmpty ? " calendar-cell--past" : ""}`}
+      style={{
+        background: request ? getStatusColor(request, statusColors) : undefined,
+        cursor: canAddRequest || canEditRequest ? "pointer" : "default",
+      }}
+      data-testid={`calendar-cell-${worker.id}-${date.format("YYYY-MM-DD")}${
+        request ? `-request-${request.id}` : ""
+      }`}
+      data-request-type={request ? request.requestType : undefined}
+      data-request-status={request ? request.status : undefined}
+      onClick={handleClick}
+      title={getTitle()}
+    >
+      {request && (
+        <div className="calendar-cell__tooltip">
+          <div>
+            <strong>Status:</strong> {request.status}
+          </div>
+          <div>
+            <strong>From:</strong> {request.startDate.format("DD/MM")}
+          </div>
+          <div>
+            <strong>To:</strong> {request.endDate.format("DD/MM")}
+          </div>
+          {request.comment && (
+            <div>
+              <strong>Comment:</strong> {request.comment}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Row component
+function RequestCalendarRow({
+  worker,
+  days,
+  statusColors,
+  getRequestForDay,
+  handleAddRequest,
+  handleUpdateRequest,
+  lng,
+  teamId,
+  onCellClick,
+  onRequestClick,
+}: RequestCalendarRowProps) {
+  return (
+    <div className="calendar-row" key={worker.id}>
+      <div className="calendar-row__name" title={worker.name}>
+        {worker.name}
+      </div>
+      <div className="calendar-row__days">
+        {days.map((d) => {
+          const request = getRequestForDay(worker.id, d);
+          const isEmpty = !request;
+          const isPast = d.isBefore(dayjs().utc(), "day");
+          const canAddRequest =
+            isEmpty && !isPast && !!handleAddRequest && !!lng && !!teamId;
+          const canEditRequest =
+            !!request && !!handleUpdateRequest && !!lng && !!teamId;
+
+          return (
+            <RequestCalendarCell
+              key={d.date()}
+              worker={worker}
+              date={d}
+              request={request}
+              statusColors={statusColors}
+              canAddRequest={canAddRequest}
+              canEditRequest={canEditRequest}
+              isPast={isPast}
+              isEmpty={isEmpty}
+              onCellClick={onCellClick}
+              onRequestClick={onRequestClick}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// Header component
+function RequestCalendarHeader({ days }: RequestCalendarHeaderProps) {
+  return (
+    <div className="calendar-header">
+      <div className="calendar-header__empty" />
+      <div className="calendar-header__days">
+        {days.map((d) => (
+          <div
+            key={d.date()}
+            className="calendar-header__day"
+            data-testid={`date-header-${d.format("YYYY-MM-DD")}`}
+          >
+            <div className="calendar-header__day-number">{d.date()}</div>
+            <div className="calendar-header__day-week">
+              {daysOfWeek[d.day() === 0 ? 6 : d.day() - 1]}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Body component
+function RequestCalendarBody({
+  workers,
+  days,
+  statusColors,
+  getRequestForDay,
+  handleAddRequest,
+  handleUpdateRequest,
+  lng,
+  teamId,
+  onCellClick,
+  onRequestClick,
+}: RequestCalendarBodyProps) {
+  return (
+    <div className="calendar-body">
+      {workers.map((worker) => (
+        <RequestCalendarRow
+          key={worker.id}
+          worker={worker}
+          days={days}
+          statusColors={statusColors}
+          getRequestForDay={getRequestForDay}
+          handleAddRequest={handleAddRequest}
+          handleUpdateRequest={handleUpdateRequest}
+          lng={lng}
+          teamId={teamId}
+          onCellClick={onCellClick}
+          onRequestClick={onRequestClick}
+        />
+      ))}
+    </div>
+  );
+}
+
+// Staffing summary rows component
+function StaffingSummaryRows({
+  days,
+  staffingSummary,
+  isCalculating,
+}: StaffingSummaryRowsProps) {
+  if (isCalculating || !staffingSummary) {
+    return <StaffingSummaryLoadingIndicator days={days} />;
+  }
+
+  return (
+    <>
+      {/* Program staffing requirement */}
+      <div className="calendar-row">
+        <div
+          className="calendar-row__name"
+          style={{ fontWeight: 600 }}
+          title="Demand"
+        >
+          Demand
+        </div>
+        <div className="calendar-row__days">
+          {days.map((d) => {
+            const dateKey = d.format("YYYY-MM-DD");
+            const summary = staffingSummary[dateKey] || {
+              demand: 0,
+              available: 0,
+              delta: 0,
+            };
+            return (
+              <div
+                key={dateKey}
+                className="calendar-cell"
+                style={{
+                  fontWeight: 600,
+                }}
+              >
+                {summary.demand}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      {/* Current staff available */}
+      <div className="calendar-row">
+        <div
+          className="calendar-row__name"
+          style={{ fontWeight: 600 }}
+          title="Offer"
+        >
+          Offer
+        </div>
+        <div className="calendar-row__days">
+          {days.map((d) => {
+            const dateKey = d.format("YYYY-MM-DD");
+            const summary = staffingSummary[dateKey] || {
+              demand: 0,
+              available: 0,
+              delta: 0,
+            };
+            return (
+              <div
+                key={dateKey}
+                className="calendar-cell"
+                style={{
+                  fontWeight: 600,
+                }}
+              >
+                {summary.available}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      {/* Delta */}
+      <div className="calendar-row">
+        <div
+          className="calendar-row__name"
+          style={{ fontWeight: 600 }}
+          title="Delta"
+        >
+          Delta
+        </div>
+        <div className="calendar-row__days">
+          {days.map((d) => {
+            const dateKey = d.format("YYYY-MM-DD");
+            const summary = staffingSummary[dateKey] || {
+              demand: 0,
+              available: 0,
+              delta: 0,
+            };
+            const delta = summary.delta;
+            const isNegative = delta < 0;
+            return (
+              <div
+                key={dateKey}
+                className={`calendar-cell calendar-cell--delta${
+                  isNegative
+                    ? " calendar-cell--delta-negative"
+                    : " calendar-cell--delta-positive"
+                }`}
+              >
+                {delta}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// Main calendar component
 export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   workers,
   requests,
@@ -90,6 +450,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   handleAcceptRequest,
   handleDenyRequest,
 }) => {
+  // State management
   const [currentMonth, setCurrentMonth] = React.useState(
     dayjs().utc().startOf("month")
   );
@@ -98,25 +459,21 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   const [showAcceptedNotFulfilled, setShowAcceptedNotFulfilled] =
     React.useState(true);
   const [showFulfilled, setShowFulfilled] = React.useState(true);
-  // allow toggling visibility of denied (rejected) requests
   const [showDenied, setShowDenied] = React.useState(true);
-
-  // State for request type filtering
   const [showWorkDemand, setShowWorkDemand] = React.useState(true);
   const [showLeave, setShowLeave] = React.useState(true);
-
-  // State for calendar cell selection and request creation/editing
   const [selectedCell, setSelectedCell] = React.useState<{
     workerId: string;
     date: Dayjs;
   } | null>(null);
-
-  // State for editing existing requests
   const [selectedRequest, setSelectedRequest] = React.useState<RequestT | null>(
     null
   );
+  const [staffingSummary, setStaffingSummary] =
+    React.useState<StaffingSummary | null>(null);
+  const [isCalculating, setIsCalculating] = React.useState(false);
 
-  // Calculate current period for toolbar (needs to be before days calculation)
+  // Calculate current period
   const currentPeriod = React.useMemo(() => {
     if (timeFrame === "month") {
       return {
@@ -124,7 +481,6 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
         end: currentMonth.endOf("month"),
       };
     } else {
-      // week
       return {
         start: currentMonth.startOf("isoWeek"),
         end: currentMonth.endOf("isoWeek"),
@@ -132,25 +488,13 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     }
   }, [currentMonth, timeFrame]);
 
-  // Memoize days based on the current period (week or month)
+  // Memoize days based on the current period
   const days = React.useMemo(
     () => getDaysInPeriod(currentPeriod.start, currentPeriod.end),
     [currentPeriod]
   );
 
-  // Progressive loading state for staffing summary
-  const [staffingSummary, setStaffingSummary] =
-    React.useState<StaffingSummary | null>(null);
-  const [isCalculating, setIsCalculating] = React.useState(false);
-
-  // --- STAFFING TABLE LOGIC ---
-  // Helper: get all shifts for this team (if provided)
-  const shiftMap: { [id: string]: ShiftT } = {};
-  for (const shift of shifts) {
-    shiftMap[shift.id] = shift;
-  }
-
-  // Helper: get all demands for the current period (memoized) - updated for ShiftDemandDTO
+  // Get all demands for the current period
   const periodDemands = React.useMemo(
     () =>
       demands.filter((d) => {
@@ -163,16 +507,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     [demands, currentPeriod]
   );
 
-  // --- PERFORMANCE OPTIMIZED: Precompute all values for the month ---
-  type StaffingSummary = {
-    [date: string]: {
-      demand: number;
-      available: number;
-      delta: number;
-    };
-  };
-
-  // Map workerId to requests for quick lookup (move up for use in summary)
+  // Map workerId to requests for quick lookup
   const requestsByWorker = React.useMemo(() => {
     const map: { [workerId: string]: RequestT[] } = {};
     for (const req of requests) {
@@ -182,7 +517,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     return map;
   }, [requests]);
 
-  // Progressive calculation of staffing summary (deferred, fixed infinite loop)
+  // Progressive calculation of staffing summary
   React.useEffect(() => {
     setStaffingSummary(null);
     setIsCalculating(true);
@@ -210,7 +545,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
         }
         for (const day of days) {
           const dateKey = day.format("YYYY-MM-DD");
-          // Demand calculation - updated for ShiftDemandDTO
+          // Demand calculation
           let totalDemand = 0;
           for (const shift of shifts) {
             const demandsForShift = periodDemands.filter((d) => {
@@ -229,7 +564,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
             );
             totalDemand += demandCount * shiftStaffing;
           }
-          // Available staff calculation (O(1) lookup)
+          // Available staff calculation
           let available = 0;
           for (const worker of workers) {
             if (!workerLeaves[worker.id] || !workerLeaves[worker.id][dateKey]) {
@@ -264,76 +599,76 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     periodDemands,
   ]);
 
-  // Helper: category check
-  function isPending(req: RequestT) {
-    return req.status === "pending";
-  }
-  function isAcceptedNotFulfilled(req: RequestT) {
-    return req.status === "approved" && req.fulfillment !== "fulfilled";
-  }
-  function isFulfilled(req: RequestT) {
-    return req.status === "approved" && req.fulfillment === "fulfilled";
-  }
-  function isDenied(req: RequestT) {
-    return req.status === RequestStatus.DENIED;
-  }
+  // Helper functions for filtering
+  const isPending = (req: RequestT) => req.status === "pending";
+  const isAcceptedNotFulfilled = (req: RequestT) =>
+    req.status === "approved" && req.fulfillment !== "fulfilled";
+  const isFulfilled = (req: RequestT) =>
+    req.status === "approved" && req.fulfillment === "fulfilled";
+  const isDenied = (req: RequestT) => req.status === RequestStatus.DENIED;
 
-  // For each worker, for each day, find if a request covers that day and is visible
-  function getRequestForDay(workerId: string, day: Dayjs): RequestT | null {
-    const reqs = requestsByWorker[workerId] || [];
-    return (
-      reqs.find((r) => {
-        const inRange =
-          !day.isBefore(r.startDate, "day") && !day.isAfter(r.endDate, "day");
-        if (!inRange) return false;
+  // Get request for a specific worker and day with filtering
+  const getRequestForDay = React.useCallback(
+    (workerId: string, day: Dayjs): RequestT | null => {
+      const reqs = requestsByWorker[workerId] || [];
+      return (
+        reqs.find((r) => {
+          const inRange =
+            !day.isBefore(r.startDate, "day") && !day.isAfter(r.endDate, "day");
+          if (!inRange) return false;
 
-        // Check request type filter
-        const isWorkDemandType = r.requestType === RequestType.WORK_DEMAND;
-        const isLeaveType = r.requestType === RequestType.LEAVE;
-        if (isWorkDemandType && !showWorkDemand) return false;
-        if (isLeaveType && !showLeave) return false;
+          // Check request type filter
+          const isWorkDemandType = r.requestType === RequestType.WORK_DEMAND;
+          const isLeaveType = r.requestType === RequestType.LEAVE;
+          if (isWorkDemandType && !showWorkDemand) return false;
+          if (isLeaveType && !showLeave) return false;
 
-        // Check status filter
-        if (isPending(r) && showPending) return true;
-        if (isAcceptedNotFulfilled(r) && showAcceptedNotFulfilled) return true;
-        if (isFulfilled(r) && showFulfilled) return true;
-        if (isDenied(r) && showDenied) return true;
-        return false;
-      }) || null
-    );
-  }
+          // Check status filter
+          if (isPending(r) && showPending) return true;
+          if (isAcceptedNotFulfilled(r) && showAcceptedNotFulfilled)
+            return true;
+          if (isFulfilled(r) && showFulfilled) return true;
+          if (isDenied(r) && showDenied) return true;
+          return false;
+        }) || null
+      );
+    },
+    [
+      requestsByWorker,
+      showWorkDemand,
+      showLeave,
+      showPending,
+      showAcceptedNotFulfilled,
+      showFulfilled,
+      showDenied,
+    ]
+  );
 
-  // New handlers for toolbar integration
+  // Event handlers
   const handlePeriodChange = (start: Dayjs, end: Dayjs) => {
-    // Store the start of the period (works for both week and month views)
     setCurrentMonth(start);
   };
 
   const handleTimeFrameChange = (newTimeFrame: "week" | "month") => {
     setTimeFrame(newTimeFrame);
-    // Adjust currentMonth to align with the new time frame
     if (newTimeFrame === "month") {
       setCurrentMonth(currentMonth.startOf("month"));
     } else {
-      // For week view, still use the month containing the current week
       setCurrentMonth(currentMonth.startOf("isoWeek"));
     }
   };
 
-  // Handler for status filter changes from toolbar
   const handleStatusFilterChange = (
     newShowPending: boolean,
     newShowAccepted: boolean,
     newShowDenied: boolean
   ) => {
     setShowPending(newShowPending);
-    // For "accepted", we control both accepted-not-fulfilled and fulfilled
     setShowAcceptedNotFulfilled(newShowAccepted);
     setShowFulfilled(newShowAccepted);
     setShowDenied(newShowDenied);
   };
 
-  // Handler for request type filter changes from toolbar
   const handleRequestTypeFilterChange = (
     newShowWorkDemand: boolean,
     newShowLeave: boolean
@@ -342,29 +677,24 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     setShowLeave(newShowLeave);
   };
 
-  // Handle calendar cell click for empty cells
   const handleCellClick = (workerId: string, date: Dayjs) => {
     const existingRequest = getRequestForDay(workerId, date);
 
-    // Don't allow clicking on past empty cells
     if (!existingRequest && date.isBefore(dayjs().utc(), "day")) {
       return;
     }
 
-    // Only allow clicking on empty cells (no existing request)
     if (!existingRequest && handleAddRequest && lng && teamId) {
       setSelectedCell({ workerId, date });
     }
   };
 
-  // Handle clicking on existing requests to edit them
   const handleRequestClick = (request: RequestT) => {
     if (handleUpdateRequest && lng && teamId) {
       setSelectedRequest(request);
     }
   };
 
-  // Create pre-populated request for selected cell
   const createPrePopulatedRequest = (
     workerId: string,
     date: Dayjs
@@ -388,13 +718,11 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     missingAttributes: [],
   });
 
-  // Handle closing the request panel
   const handleCloseRequestPanel = () => {
     setSelectedCell(null);
     setSelectedRequest(null);
   };
 
-  // Handle successful request creation
   const handleRequestCreated = (request: RequestT) => {
     if (handleAddRequest) {
       handleAddRequest(request);
@@ -402,7 +730,6 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     setSelectedCell(null);
   };
 
-  // Handle successful request update
   const handleRequestUpdated = (request: RequestT) => {
     if (handleUpdateRequest) {
       handleUpdateRequest(request);
@@ -410,8 +737,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     setSelectedRequest(null);
   };
 
-  // --- END STAFFING TABLE LOGIC ---
-
+  // Render
   return (
     <div className="request-calendar" data-testid="request-calendar">
       {/* Toolbar with Time Navigation */}
@@ -433,217 +759,30 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
       )}
 
       {/* Calendar Header */}
-      <div className="calendar-header">
-        <div className="calendar-header__empty" />
-        <div className="calendar-header__days">
-          {days.map((d) => (
-            <div
-              key={d.date()}
-              className="calendar-header__day"
-              data-testid={`date-header-${d.format("YYYY-MM-DD")}`}
-            >
-              <div className="calendar-header__day-number">{d.date()}</div>
-              <div className="calendar-header__day-week">
-                {daysOfWeek[d.day() === 0 ? 6 : d.day() - 1]}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <RequestCalendarHeader days={days} />
 
-      {/* STAFFING TABLE ROWS */}
-      {demands.length > 0 &&
-        shifts.length > 0 &&
-        (isCalculating || !staffingSummary ? (
-          <StaffingSummaryLoadingIndicator days={days} />
-        ) : (
-          <>
-            {/* Program staffing requirement */}
-            <div className="calendar-row">
-              <div
-                className="calendar-row__name"
-                style={{ fontWeight: 600 }}
-                title="Demand"
-              >
-                Demand
-              </div>
-              <div className="calendar-row__days">
-                {days.map((d) => {
-                  const dateKey = d.format("YYYY-MM-DD");
-                  const summary = staffingSummary[dateKey] || {
-                    demand: 0,
-                    available: 0,
-                    delta: 0,
-                  };
-                  return (
-                    <div
-                      key={dateKey}
-                      className="calendar-cell"
-                      style={{
-                        fontWeight: 600,
-                      }}
-                    >
-                      {summary.demand}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            {/* Current staff available */}
-            <div className="calendar-row">
-              <div
-                className="calendar-row__name"
-                style={{ fontWeight: 600 }}
-                title="Offer"
-              >
-                Offer
-              </div>
-              <div className="calendar-row__days">
-                {days.map((d) => {
-                  const dateKey = d.format("YYYY-MM-DD");
-                  const summary = staffingSummary[dateKey] || {
-                    demand: 0,
-                    available: 0,
-                    delta: 0,
-                  };
-                  return (
-                    <div
-                      key={dateKey}
-                      className="calendar-cell"
-                      style={{
-                        fontWeight: 600,
-                      }}
-                    >
-                      {summary.available}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            {/* Delta */}
-            <div className="calendar-row">
-              <div
-                className="calendar-row__name"
-                style={{ fontWeight: 600 }}
-                title="Delta"
-              >
-                Delta
-              </div>
-              <div className="calendar-row__days">
-                {days.map((d) => {
-                  const dateKey = d.format("YYYY-MM-DD");
-                  const summary = staffingSummary[dateKey] || {
-                    demand: 0,
-                    available: 0,
-                    delta: 0,
-                  };
-                  const delta = summary.delta;
-                  const isNegative = delta < 0;
-                  return (
-                    <div
-                      key={dateKey}
-                      className={`calendar-cell calendar-cell--delta${
-                        isNegative
-                          ? " calendar-cell--delta-negative"
-                          : " calendar-cell--delta-positive"
-                      }`}
-                    >
-                      {delta}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </>
-        ))}
+      {/* Staffing Summary Rows */}
+      {demands.length > 0 && shifts.length > 0 && (
+        <StaffingSummaryRows
+          days={days}
+          staffingSummary={staffingSummary}
+          isCalculating={isCalculating}
+        />
+      )}
+
       {/* Calendar Body */}
-      <div className="calendar-body">
-        {workers.map((worker) => (
-          <div className="calendar-row" key={worker.id}>
-            <div className="calendar-row__name" title={worker.name}>
-              {worker.name}
-            </div>
-            <div className="calendar-row__days">
-              {days.map((d) => {
-                const req = getRequestForDay(worker.id, d);
-                const isEmpty = !req;
-                const isPast = d.isBefore(dayjs().utc(), "day");
-                const isPastEmpty = isPast && isEmpty;
-                const canAddRequest =
-                  isEmpty && !isPast && !!handleAddRequest && !!lng && !!teamId;
-                const canEditRequest =
-                  !!req && !!handleUpdateRequest && !!lng && !!teamId;
-
-                return (
-                  <div
-                    key={d.date()}
-                    className={`calendar-cell${
-                      req ? " calendar-cell--leave" : ""
-                    }${
-                      canAddRequest || canEditRequest
-                        ? " calendar-cell--clickable"
-                        : ""
-                    }${isPastEmpty ? " calendar-cell--past" : ""}`}
-                    style={{
-                      background: req
-                        ? getStatusColor(req, statusColors)
-                        : undefined,
-                      cursor:
-                        canAddRequest || canEditRequest ? "pointer" : "default",
-                    }}
-                    data-testid={`calendar-cell-${worker.id}-${d.format(
-                      "YYYY-MM-DD"
-                    )}${req ? `-request-${req.id}` : ""}`}
-                    data-request-type={req ? req.requestType : undefined}
-                    data-request-status={req ? req.status : undefined}
-                    onClick={() => {
-                      if (canAddRequest) {
-                        handleCellClick(worker.id, d);
-                      } else if (canEditRequest && req) {
-                        handleRequestClick(req);
-                      }
-                    }}
-                    title={
-                      isPastEmpty
-                        ? `Past date - ${d.format("MMM D")}`
-                        : canAddRequest
-                        ? `Click to create request for ${
-                            worker.name
-                          } on ${d.format("MMM D")}`
-                        : canEditRequest && req
-                        ? `Click to edit ${req.requestType} request for ${
-                            worker.name
-                          } (${req.startDate.format(
-                            "MMM D"
-                          )} - ${req.endDate.format("MMM D")})`
-                        : undefined
-                    }
-                  >
-                    {req && (
-                      <div className="calendar-cell__tooltip">
-                        <div>
-                          <strong>Status:</strong> {req.status}
-                        </div>
-                        <div>
-                          <strong>From:</strong> {req.startDate.format("DD/MM")}
-                        </div>
-                        <div>
-                          <strong>To:</strong> {req.endDate.format("DD/MM")}
-                        </div>
-                        {req.comment && (
-                          <div>
-                            <strong>Comment:</strong> {req.comment}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
+      <RequestCalendarBody
+        workers={workers}
+        days={days}
+        statusColors={statusColors}
+        getRequestForDay={getRequestForDay}
+        handleAddRequest={handleAddRequest}
+        handleUpdateRequest={handleUpdateRequest}
+        lng={lng}
+        teamId={teamId}
+        onCellClick={handleCellClick}
+        onRequestClick={handleRequestClick}
+      />
 
       {/* Request Panel for creating requests from calendar */}
       {selectedCell && lng && teamId && (
