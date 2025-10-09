@@ -52,15 +52,6 @@ const defaultStatusColors: StatusColors = {
 
 const daysOfWeek = ["M", "T", "W", "T", "F", "S", "S"];
 
-function getDaysInMonth(month: Dayjs) {
-  const days = [];
-  const daysCount = month.daysInMonth();
-  for (let i = 1; i <= daysCount; i++) {
-    days.push(month.date(i).utc());
-  }
-  return days;
-}
-
 function getDaysInPeriod(start: Dayjs, end: Dayjs) {
   const days = [];
   let current = start;
@@ -273,13 +264,6 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     periodDemands,
   ]);
 
-  // // Map workerId to requests for quick lookup
-  // const requestsByWorker: { [workerId: string]: RequestT[] } = {};
-  // for (const req of requests) {
-  //   if (!requestsByWorker[req.workerId]) requestsByWorker[req.workerId] = [];
-  //   requestsByWorker[req.workerId].push(req);
-  // }
-
   // Helper: category check
   function isPending(req: RequestT) {
     return req.status === "pending";
@@ -318,11 +302,6 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
       }) || null
     );
   }
-
-  // Month navigation handlers
-  const handlePrevMonth = () => setCurrentMonth((m) => m.subtract(1, "month"));
-  const handleNextMonth = () => setCurrentMonth((m) => m.add(1, "month"));
-  const handleToday = () => setCurrentMonth(dayjs().utc().startOf("month"));
 
   // New handlers for toolbar integration
   const handlePeriodChange = (start: Dayjs, end: Dayjs) => {
@@ -453,61 +432,6 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
         />
       )}
 
-      {/* Top Controls: Status Legend */}
-      <div className="calendar-top-controls">
-        <div className="calendar-status-legend">
-          <button
-            className={`calendar-status-legend__btn${
-              showPending ? " calendar-status-legend__btn--active" : ""
-            }`}
-            type="button"
-            onClick={() => setShowPending((v) => !v)}
-            aria-pressed={showPending}
-            data-testid="calendar-show-pending-button"
-          >
-            <span className="calendar-status-legend__dot calendar-status-legend__dot--pending" />
-            Pending
-          </button>
-          <button
-            className={`calendar-status-legend__btn${
-              showAcceptedNotFulfilled
-                ? " calendar-status-legend__btn--active"
-                : ""
-            }`}
-            type="button"
-            onClick={() => setShowAcceptedNotFulfilled((v) => !v)}
-            aria-pressed={showAcceptedNotFulfilled}
-            data-testid="calendar-show-accepted-not-fulfilled-button"
-          >
-            <span className="calendar-status-legend__dot calendar-status-legend__dot--accepted-not-fulfilled" />
-            Accepted not fulfilled
-          </button>
-          <button
-            className={`calendar-status-legend__btn${
-              showFulfilled ? " calendar-status-legend__btn--active" : ""
-            }`}
-            type="button"
-            onClick={() => setShowFulfilled((v) => !v)}
-            aria-pressed={showFulfilled}
-            data-testid="calendar-show-fulfilled-button"
-          >
-            <span className="calendar-status-legend__dot calendar-status-legend__dot--fulfilled" />
-            Fulfilled
-          </button>
-          <button
-            className={`calendar-status-legend__btn${
-              showDenied ? " calendar-status-legend__btn--active" : ""
-            }`}
-            type="button"
-            onClick={() => setShowDenied((v) => !v)}
-            aria-pressed={showDenied}
-            data-testid="calendar-show-denied-button"
-          >
-            <span className="calendar-status-legend__dot calendar-status-legend__dot--denied" />
-            Denied
-          </button>
-        </div>
-      </div>
       {/* Calendar Header */}
       <div className="calendar-header">
         <div className="calendar-header__empty" />
