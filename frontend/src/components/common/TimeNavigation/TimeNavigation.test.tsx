@@ -8,8 +8,23 @@ import "@testing-library/jest-dom";
 import dayjs from "dayjs";
 import { TimeNavigation } from "./TimeNavigation";
 
+// Mock the useTranslation hook
+jest.mock("@/app/i18n/client", () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        today: "Today",
+        week: "Week",
+        month: "Month",
+      };
+      return translations[key] || key;
+    },
+  }),
+}));
+
 describe("TimeNavigation", () => {
   const defaultProps = {
+    lng: "en",
     currentPeriodStart: dayjs("2025-01-01"),
     currentPeriodEnd: dayjs("2025-01-31"),
     timeFrame: "month" as const,
@@ -42,21 +57,12 @@ describe("TimeNavigation", () => {
       expect(screen.getByTestId("custom-next")).toBeInTheDocument();
     });
 
-    it("should render with custom labels", () => {
-      render(
-        <TimeNavigation
-          {...defaultProps}
-          todayLabel="Aujourd'hui"
-          weekLabel="Semaine"
-          monthLabel="Mois"
-        />
-      );
+    it("should render with translated labels", () => {
+      render(<TimeNavigation {...defaultProps} />);
 
-      expect(screen.getByText("Aujourd'hui")).toBeInTheDocument();
-      expect(
-        screen.getByRole("option", { name: "Semaine" })
-      ).toBeInTheDocument();
-      expect(screen.getByRole("option", { name: "Mois" })).toBeInTheDocument();
+      expect(screen.getByText("Today")).toBeInTheDocument();
+      expect(screen.getByRole("option", { name: "Week" })).toBeInTheDocument();
+      expect(screen.getByRole("option", { name: "Month" })).toBeInTheDocument();
     });
 
     it("should apply custom className", () => {

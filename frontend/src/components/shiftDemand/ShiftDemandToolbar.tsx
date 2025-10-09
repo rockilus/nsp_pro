@@ -156,6 +156,7 @@ export function ShiftDemandToolbar({
         {/* Left side - Period Navigation (centered) */}
         <Box flex={1} display="flex" justifyContent="center">
           <TimeNavigation
+            lng={lng}
             currentPeriodStart={currentPeriod.start}
             currentPeriodEnd={currentPeriod.end}
             timeFrame={periodType === "custom" ? "week" : periodType}
@@ -164,9 +165,6 @@ export function ShiftDemandToolbar({
             onNextPeriod={handleNextPeriod}
             onTimeFrameChange={handleTimeFrameChange}
             isLoading={isLoading}
-            todayLabel={t("today") || "Today"}
-            weekLabel={t("week") || "Week"}
-            monthLabel={t("month") || "Month"}
             testIdPrefix="shift-demand-time-nav"
           />
         </Box>

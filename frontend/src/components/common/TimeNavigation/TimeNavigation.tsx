@@ -17,11 +17,15 @@ import {
   NavigateBefore as NavigateBeforeIcon,
   NavigateNext as NavigateNextIcon,
 } from "@mui/icons-material";
+import { useTranslation } from "@/app/i18n/client";
 import styles from "./TimeNavigation.module.css";
 
 export type TimeFrame = "week" | "month";
 
 interface TimeNavigationProps {
+  // Language code for translations
+  lng: string;
+
   // Current period boundaries
   currentPeriodStart: Dayjs;
   currentPeriodEnd: Dayjs;
@@ -37,9 +41,6 @@ interface TimeNavigationProps {
 
   // Optional props
   isLoading?: boolean;
-  todayLabel?: string;
-  weekLabel?: string;
-  monthLabel?: string;
 
   // Optional styling
   className?: string;
@@ -66,6 +67,7 @@ function formatPeriodLabel(start: Dayjs, end: Dayjs): string {
 }
 
 export const TimeNavigation: React.FC<TimeNavigationProps> = ({
+  lng,
   currentPeriodStart,
   currentPeriodEnd,
   timeFrame,
@@ -74,12 +76,11 @@ export const TimeNavigation: React.FC<TimeNavigationProps> = ({
   onNextPeriod,
   onTimeFrameChange,
   isLoading = false,
-  todayLabel = "Today",
-  weekLabel = "Week",
-  monthLabel = "Month",
   className = "",
   testIdPrefix = "time-nav",
 }) => {
+  const { t } = useTranslation(lng, "common");
+
   return (
     <div className={`${styles.container} ${className}`}>
       {/* Today Button */}
@@ -90,7 +91,7 @@ export const TimeNavigation: React.FC<TimeNavigationProps> = ({
         data-testid={`${testIdPrefix}-today`}
         aria-label="Navigate to today"
       >
-        {todayLabel}
+        {t("today")}
       </button>
 
       {/* Previous Period Button */}
@@ -136,8 +137,8 @@ export const TimeNavigation: React.FC<TimeNavigationProps> = ({
         data-testid={`${testIdPrefix}-select`}
         aria-label="Select time frame"
       >
-        <option value="week">{weekLabel}</option>
-        <option value="month">{monthLabel}</option>
+        <option value="week">{t("week")}</option>
+        <option value="month">{t("month")}</option>
       </select>
     </div>
   );

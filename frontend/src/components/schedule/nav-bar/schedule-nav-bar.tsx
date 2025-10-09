@@ -70,6 +70,7 @@ export default function ScheduleNavBar({
       }}
     >
       <TimeNavigation
+        lng={lng}
         currentPeriodStart={currentPeriodStart}
         currentPeriodEnd={currentPeriodEnd}
         timeFrame={scheduleViewSettings.timeFrame}
@@ -77,9 +78,6 @@ export default function ScheduleNavBar({
         onPreviousPeriod={handlePreviousPeriod}
         onNextPeriod={handleNextPeriod}
         onTimeFrameChange={handleChangeTimeFrame}
-        todayLabel={t("today")}
-        weekLabel={t("week")}
-        monthLabel={t("month")}
         testIdPrefix="schedule-time-nav"
       />
       <DataViewSelector
