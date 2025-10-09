@@ -843,6 +843,29 @@ export class RequestTestBase {
   }
 
   /**
+   * Gets the period navigation component locators
+   * (Uses TimeNavigation component)
+   */
+  getPeriodNav(page: Page) {
+    return {
+      todayButton: page.locator('[data-testid="time-nav-today"]'),
+      previousButton: page.locator('[data-testid="time-nav-previous"]'),
+      nextButton: page.locator('[data-testid="time-nav-next"]'),
+      label: page.locator('[data-testid="time-nav-label"]'),
+      select: page.locator('[data-testid="time-nav-select"]'),
+    };
+  }
+
+  /**
+   * Gets the table header cell for a specific date.
+   * @param page The Playwright page object.
+   * @param date The date in 'YYYY-MM-DD' format.
+   */
+  getDateHeader(page: Page, date: string) {
+    return page.locator(`[data-testid="date-header-${date}"]`);
+  }
+
+  /**
    * Gets a specific calendar cell by worker ID and date
    */
   getCalendarCell(page: Page, workerId: string, date: dayjs.Dayjs) {

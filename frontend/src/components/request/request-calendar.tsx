@@ -437,7 +437,11 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
         <div className="calendar-header__empty" />
         <div className="calendar-header__days">
           {days.map((d) => (
-            <div key={d.date()} className="calendar-header__day">
+            <div
+              key={d.date()}
+              className="calendar-header__day"
+              data-testid={`date-header-${d.format("YYYY-MM-DD")}`}
+            >
               <div className="calendar-header__day-number">{d.date()}</div>
               <div className="calendar-header__day-week">
                 {daysOfWeek[d.day() === 0 ? 6 : d.day() - 1]}
