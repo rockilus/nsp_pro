@@ -221,6 +221,21 @@ function RequestCalendarCell({
 
   const requestEmojis = getRequestEmojis();
 
+  // Get status-specific CSS class
+  const getStatusClass = () => {
+    if (!request) return "";
+
+    switch (request.status) {
+      case RequestStatus.PENDING:
+        return " calendar-cell--status-pending";
+      case RequestStatus.DENIED:
+        return " calendar-cell--status-denied";
+      case RequestStatus.APPROVED:
+      default:
+        return "";
+    }
+  };
+
   return (
     <div
       key={date.date()}
@@ -228,7 +243,7 @@ function RequestCalendarCell({
         request ? " calendar-cell--leave" : ""
       }${canAddRequest || canEditRequest ? " calendar-cell--clickable" : ""}${
         isPastEmpty ? " calendar-cell--past" : ""
-      }`}
+      }${getStatusClass()}`}
       style={
         {
           ...(shiftColors && {
