@@ -146,6 +146,7 @@ function RequestCalendarCell({
   onRequestClick,
 }: RequestCalendarCellProps) {
   const isPastEmpty = isPast && isEmpty;
+  const isWeekend = date.day() === 0 || date.day() === 6;
 
   const handleClick = () => {
     if (canAddRequest) {
@@ -177,9 +178,11 @@ function RequestCalendarCell({
   return (
     <div
       key={date.date()}
-      className={`calendar-cell${request ? " calendar-cell--leave" : ""}${
-        canAddRequest || canEditRequest ? " calendar-cell--clickable" : ""
-      }${isPastEmpty ? " calendar-cell--past" : ""}`}
+      className={`calendar-cell${isWeekend ? " weekend" : ""}${
+        request ? " calendar-cell--leave" : ""
+      }${canAddRequest || canEditRequest ? " calendar-cell--clickable" : ""}${
+        isPastEmpty ? " calendar-cell--past" : ""
+      }`}
       style={{
         background: request ? getStatusColor(request, statusColors) : undefined,
         cursor: canAddRequest || canEditRequest ? "pointer" : "default",
@@ -269,18 +272,21 @@ function RequestCalendarHeader({ days }: RequestCalendarHeaderProps) {
     <div className="calendar-header">
       <div className="calendar-header__empty" />
       <div className="calendar-header__days">
-        {days.map((d) => (
-          <div
-            key={d.date()}
-            className="calendar-header__day"
-            data-testid={`date-header-${d.format("YYYY-MM-DD")}`}
-          >
-            <div className="calendar-header__day-number">{d.date()}</div>
-            <div className="calendar-header__day-week">
-              {daysOfWeek[d.day() === 0 ? 6 : d.day() - 1]}
+        {days.map((d) => {
+          const isWeekend = d.day() === 0 || d.day() === 6;
+          return (
+            <div
+              key={d.date()}
+              className={`calendar-header__day${isWeekend ? " weekend" : ""}`}
+              data-testid={`date-header-${d.format("YYYY-MM-DD")}`}
+            >
+              <div className="calendar-header__day-number">{d.date()}</div>
+              <div className="calendar-header__day-week">
+                {daysOfWeek[d.day() === 0 ? 6 : d.day() - 1]}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
