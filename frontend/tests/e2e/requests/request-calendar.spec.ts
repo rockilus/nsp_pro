@@ -273,13 +273,13 @@ test.describe("Request Calendar", () => {
     // First request should be a future pending leave for worker 2
     const futureRequest = testRequests[0];
     expect(futureRequest.workerId).toBe(testWorkers[1].workerId);
-    expect(futureRequest.requestType).toBe(RequestType.LEAVE);
+    expect(futureRequest.requestType).toBe(RequestType.WORK_DEMAND);
     expect(futureRequest.status).toBe(RequestStatus.PENDING);
 
     // Second request should be a past approved leave for worker 1
     const pastRequest = testRequests[1];
     expect(pastRequest.workerId).toBe(testWorkers[0].workerId);
-    expect(pastRequest.requestType).toBe(RequestType.LEAVE);
+    expect(pastRequest.requestType).toBe(RequestType.WORK_DEMAND);
     expect(pastRequest.status).toBe(RequestStatus.APPROVED);
 
     // Navigate to calendar
@@ -318,7 +318,7 @@ test.describe("Request Calendar", () => {
     // Use the future pending request (first in the array)
     const futureRequest = testRequests[0];
     expect(futureRequest.workerId).toBe(testWorkers[1].workerId);
-    expect(futureRequest.requestType).toBe(RequestType.LEAVE);
+    expect(futureRequest.requestType).toBe(RequestType.WORK_DEMAND);
     expect(futureRequest.status).toBe(RequestStatus.PENDING);
 
     // Navigate to calendar
@@ -363,7 +363,7 @@ test.describe("Request Calendar", () => {
     // Use the future pending request (first in the array)
     const futureRequest = testRequests[0];
     expect(futureRequest.workerId).toBe(testWorkers[1].workerId);
-    expect(futureRequest.requestType).toBe(RequestType.LEAVE);
+    expect(futureRequest.requestType).toBe(RequestType.WORK_DEMAND);
     expect(futureRequest.status).toBe(RequestStatus.PENDING);
 
     // Navigate to calendar
@@ -416,7 +416,7 @@ test.describe("Request Calendar", () => {
     // Use the future pending request (first in the array)
     const pendingRequest = testRequests[0];
     expect(pendingRequest.workerId).toBe(testWorkers[1].workerId);
-    expect(pendingRequest.requestType).toBe(RequestType.LEAVE);
+    expect(pendingRequest.requestType).toBe(RequestType.WORK_DEMAND);
     expect(pendingRequest.status).toBe(RequestStatus.PENDING);
 
     // Navigate to calendar
@@ -480,7 +480,7 @@ test.describe("Request Calendar", () => {
     // Use the past approved request (second in the array)
     const approvedRequest = testRequests[1];
     expect(approvedRequest.workerId).toBe(testWorkers[0].workerId);
-    expect(approvedRequest.requestType).toBe(RequestType.LEAVE);
+    expect(approvedRequest.requestType).toBe(RequestType.WORK_DEMAND);
     expect(approvedRequest.status).toBe(RequestStatus.APPROVED);
 
     // Navigate to calendar
@@ -537,7 +537,7 @@ test.describe("Request Calendar", () => {
     // Use the future pending request (first in the array)
     const pendingRequest = testRequests[0];
     expect(pendingRequest.workerId).toBe(testWorkers[1].workerId);
-    expect(pendingRequest.requestType).toBe(RequestType.LEAVE);
+    expect(pendingRequest.requestType).toBe(RequestType.WORK_DEMAND);
     expect(pendingRequest.status).toBe(RequestStatus.PENDING);
 
     // Navigate to calendar
