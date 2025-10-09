@@ -190,7 +190,6 @@ export function RequestCalendarToolbar({
           onNextPeriod={handleNextPeriod}
           onTimeFrameChange={handleTimeFrameChangeInternal}
           isLoading={isLoading}
-          testIdPrefix="request-calendar-time-nav"
         />
 
         {/* Right side - Status filters */}

@@ -78,7 +78,6 @@ export default function ScheduleNavBar({
         onPreviousPeriod={handlePreviousPeriod}
         onNextPeriod={handleNextPeriod}
         onTimeFrameChange={handleChangeTimeFrame}
-        testIdPrefix="schedule-time-nav"
       />
       <DataViewSelector
         lng={lng}

@@ -164,7 +164,6 @@ export function ShiftDemandToolbar({
           onNextPeriod={handleNextPeriod}
           onTimeFrameChange={handleTimeFrameChange}
           isLoading={isLoading}
-          testIdPrefix="shift-demand-time-nav"
         />
 
         {/* Right side - Template Management, Bulk Select, Multitasking */}

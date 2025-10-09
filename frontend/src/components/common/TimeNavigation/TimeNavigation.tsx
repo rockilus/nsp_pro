@@ -44,9 +44,6 @@ interface TimeNavigationProps {
 
   // Optional styling
   className?: string;
-
-  // Test IDs for testing
-  testIdPrefix?: string;
 }
 
 /**
@@ -77,7 +74,6 @@ export const TimeNavigation: React.FC<TimeNavigationProps> = ({
   onTimeFrameChange,
   isLoading = false,
   className = "",
-  testIdPrefix = "time-nav",
 }) => {
   const { t } = useTranslation(lng, "common");
 
@@ -88,7 +84,7 @@ export const TimeNavigation: React.FC<TimeNavigationProps> = ({
         onClick={onToday}
         disabled={isLoading}
         className={styles.todayButton}
-        data-testid={`${testIdPrefix}-today`}
+        data-testid="time-nav-today"
         aria-label="Navigate to today"
       >
         {t("today")}
@@ -99,7 +95,7 @@ export const TimeNavigation: React.FC<TimeNavigationProps> = ({
         onClick={onPreviousPeriod}
         disabled={isLoading}
         className={styles.previousButton}
-        data-testid={`${testIdPrefix}-previous`}
+        data-testid="time-nav-previous"
         aria-label="Navigate to previous period"
       >
         <NavigateBeforeIcon />
@@ -110,7 +106,7 @@ export const TimeNavigation: React.FC<TimeNavigationProps> = ({
         onClick={onNextPeriod}
         disabled={isLoading}
         className={styles.nextButton}
-        data-testid={`${testIdPrefix}-next`}
+        data-testid="time-nav-next"
         aria-label="Navigate to next period"
       >
         <NavigateNextIcon />
@@ -119,7 +115,7 @@ export const TimeNavigation: React.FC<TimeNavigationProps> = ({
       {/* Period Label */}
       <span
         className={styles.periodLabel}
-        data-testid={`${testIdPrefix}-label`}
+        data-testid="time-nav-label"
         aria-label={`Current period: ${formatPeriodLabel(
           currentPeriodStart,
           currentPeriodEnd
@@ -134,7 +130,7 @@ export const TimeNavigation: React.FC<TimeNavigationProps> = ({
         onChange={(e) => onTimeFrameChange(e.target.value as TimeFrame)}
         disabled={isLoading}
         className={styles.select}
-        data-testid={`${testIdPrefix}-select`}
+        data-testid="time-nav-select"
         aria-label="Select time frame"
       >
         <option value="week">{t("week")}</option>
