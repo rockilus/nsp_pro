@@ -39,12 +39,6 @@ export default function NavLinks({
       route: "/shifts",
     },
     {
-      name: "coverages",
-      label: t("coverages"),
-      href: `/${lng}/plan/coverages`,
-      route: "/coverages",
-    },
-    {
       name: "shift-demands",
       label: t("shift_demands"),
       href: `/${lng}/plan/shift-demands`,
