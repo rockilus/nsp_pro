@@ -487,6 +487,7 @@ test.describe("Request Calendar", () => {
     const approvedRequest = await requestTestBase.approveTestRequest(
       pendingRequest.id
     );
+    await page.reload();
     expect(approvedRequest.status).toBe(RequestStatus.APPROVED);
 
     // Navigate to calendar
