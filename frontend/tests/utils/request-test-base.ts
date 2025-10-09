@@ -255,6 +255,24 @@ export class RequestTestBase {
             },
           ],
         },
+        // Past work request - worker 1, pending (will be approved for rescind test)
+        {
+          workerId: testWorkers[0].workerId,
+          requestType: RequestType.WORK_DEMAND,
+          startDate: dayjs.utc().add(1, "day"),
+          endDate: dayjs.utc().add(1, "day"),
+          status: RequestStatus.PENDING,
+          negative: false,
+          shiftOptions: [
+            {
+              name: selectedShift.name,
+              id: selectedShift.id,
+              idType: SWOIdTypes.SHIFT,
+              isBoolDim: false,
+              categoryName: "Shifts",
+            },
+          ],
+        },
       ];
 
       // Add leave request if a leave shift is available
@@ -280,6 +298,17 @@ export class RequestTestBase {
       for (const requestData of testRequestsData) {
         const request = await this.createTestRequest(requestData, testId);
         testRequests.push(request);
+      }
+
+      // Approve the third request (index 2) for the rescind test
+      if (testRequests.length >= 3) {
+        console.log(
+          `[${testId || "legacy"}] Approving third request for rescind test`
+        );
+        const approvedRequest = await this.approveTestRequest(
+          testRequests[2].id
+        );
+        testRequests[2] = approvedRequest;
       }
 
       // Store requests by test ID if provided, otherwise use legacy array
