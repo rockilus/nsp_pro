@@ -165,7 +165,7 @@ export function RequestCalendarToolbar({
         mb: 1,
         width: "100%",
         margin: 0,
-        padding: "3px 24px",
+        padding: "3px 0px",
         position: "sticky",
         top: 0,
         zIndex: 10,
@@ -194,80 +194,78 @@ export function RequestCalendarToolbar({
         />
 
         {/* Right side - Status filters */}
-        <Box display="flex" gap={1} alignItems="center">
-          {/* Request Type Filter */}
-          <ToggleButtonGroup
-            color="primary"
-            value={selectedRequestTypes}
-            onChange={handleRequestTypeFilterChange}
-            aria-label="request type filter"
-            size="small"
-            sx={{
-              "& .MuiToggleButton-root": {
-                textTransform: "none",
-                px: 2,
-                py: 0.5,
-                fontSize: "0.875rem",
-                fontWeight: 500,
-              },
-            }}
+        {/* Request Type Filter */}
+        <ToggleButtonGroup
+          color="primary"
+          value={selectedRequestTypes}
+          onChange={handleRequestTypeFilterChange}
+          aria-label="request type filter"
+          size="small"
+          sx={{
+            "& .MuiToggleButton-root": {
+              textTransform: "none",
+              px: 2,
+              py: 0.5,
+              fontSize: "0.875rem",
+              fontWeight: 500,
+            },
+          }}
+        >
+          <ToggleButton
+            value="work_demand"
+            aria-label="show work demand requests"
+            data-testid="request-calendar-filter-work"
           >
-            <ToggleButton
-              value="work_demand"
-              aria-label="show work demand requests"
-              data-testid="request-calendar-filter-work"
-            >
-              Work
-            </ToggleButton>
-            <ToggleButton
-              value="leave"
-              aria-label="show leave requests"
-              data-testid="request-calendar-filter-leave"
-            >
-              Leave
-            </ToggleButton>
-          </ToggleButtonGroup>
+            Work
+          </ToggleButton>
+          <ToggleButton
+            value="leave"
+            aria-label="show leave requests"
+            data-testid="request-calendar-filter-leave"
+          >
+            Leave
+          </ToggleButton>
+        </ToggleButtonGroup>
 
-          {/* Status Filter */}
-          <ToggleButtonGroup
-            color="primary"
-            value={selectedStatuses}
-            onChange={handleStatusFilterChange}
-            aria-label="request status filter"
-            size="small"
-            sx={{
-              "& .MuiToggleButton-root": {
-                textTransform: "none",
-                px: 2,
-                py: 0.5,
-                fontSize: "0.875rem",
-                fontWeight: 500,
-              },
-            }}
+        {/* Status Filter */}
+        <ToggleButtonGroup
+          color="primary"
+          value={selectedStatuses}
+          onChange={handleStatusFilterChange}
+          aria-label="request status filter"
+          size="small"
+          sx={{
+            "& .MuiToggleButton-root": {
+              textTransform: "none",
+              px: 2,
+              py: 0.5,
+              fontSize: "0.875rem",
+              fontWeight: 500,
+            },
+          }}
+        >
+          <ToggleButton
+            value="pending"
+            aria-label="show pending requests"
+            data-testid="request-calendar-filter-pending"
           >
-            <ToggleButton
-              value="pending"
-              aria-label="show pending requests"
-              data-testid="request-calendar-filter-pending"
-            >
-              Pending
-            </ToggleButton>
-            <ToggleButton
-              value="accepted"
-              aria-label="show accepted requests"
-              data-testid="request-calendar-filter-accepted"
-            >
-              Accepted
-            </ToggleButton>
-            <ToggleButton
-              value="denied"
-              aria-label="show denied requests"
-              data-testid="request-calendar-filter-denied"
-            >
-              Denied
-            </ToggleButton>
-          </ToggleButtonGroup>
-        </Box>
+            Pending
+          </ToggleButton>
+          <ToggleButton
+            value="accepted"
+            aria-label="show accepted requests"
+            data-testid="request-calendar-filter-accepted"
+          >
+            Accepted
+          </ToggleButton>
+          <ToggleButton
+            value="denied"
+            aria-label="show denied requests"
+            data-testid="request-calendar-filter-denied"
+          >
+            Denied
+          </ToggleButton>
+        </ToggleButtonGroup>
       </Box>
     </Paper>
   );
