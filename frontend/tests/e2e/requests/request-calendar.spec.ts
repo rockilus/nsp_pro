@@ -442,19 +442,17 @@ test.describe("Request Calendar", () => {
     await expect(approveButton).toBeVisible();
     await approveButton.click();
 
-    // Wait for panel to close
+    // Verify the status chip in the panel shows "Approved"
+    const statusChip = requestPanel.locator('[class*="MuiChip-filled"]');
+    await expect(statusChip).toBeVisible();
+    await expect(statusChip).toHaveText(/approved/i);
+
+    // Close the panel
+    const closeButton = page.getByTestId("close-request-dialog-button");
+    await closeButton.click();
     await expect(requestPanel).not.toBeVisible();
 
     // Verify the request status changed in the calendar (color should change)
-    const cell = requestTestBase.getCalendarCellWithRequest(
-      page,
-      testWorkers[1].workerId,
-      pendingRequest.startDate,
-      pendingRequest.id
-    );
-    await expect(cell).toBeVisible();
-
-    // The cell should now have approved status color (green)
     await requestTestBase.verifyCalendarCellHasRequest(
       page,
       testWorkers[1].workerId,
@@ -565,7 +563,14 @@ test.describe("Request Calendar", () => {
     await expect(rejectButton).toBeVisible();
     await rejectButton.click();
 
-    // Wait for panel to close
+    // Verify the status chip in the panel shows "Rejected"
+    const statusChip = requestPanel.locator('[class*="MuiChip-filled"]');
+    await expect(statusChip).toBeVisible();
+    await expect(statusChip).toHaveText(/rejected/i);
+
+    // Close the panel
+    const closeButton = page.getByTestId("close-request-dialog-button");
+    await closeButton.click();
     await expect(requestPanel).not.toBeVisible();
 
     // Verify the request status changed to denied/rejected
