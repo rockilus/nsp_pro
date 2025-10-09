@@ -50,7 +50,7 @@ describe("TimeNavigation", () => {
     });
 
     it("should render with custom test ID prefix", () => {
-      render(<TimeNavigation {...defaultProps} testIdPrefix="custom" />);
+      render(<TimeNavigation {...defaultProps} />);
 
       expect(screen.getByTestId("custom-today")).toBeInTheDocument();
       expect(screen.getByTestId("custom-previous")).toBeInTheDocument();
@@ -66,9 +66,7 @@ describe("TimeNavigation", () => {
     });
 
     it("should apply custom className", () => {
-      const { container } = render(
-        <TimeNavigation {...defaultProps} className="custom-class" />
-      );
+      const { container } = render(<TimeNavigation {...defaultProps} />);
 
       const navContainer = container.firstChild;
       expect(navContainer).toHaveClass("custom-class");
