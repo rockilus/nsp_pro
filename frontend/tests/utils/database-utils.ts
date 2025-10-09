@@ -1606,6 +1606,30 @@ export class DatabaseTestUtils {
   }
 
   /**
+   * Deny a request using the RequestApi for consistent behavior
+   * @param requestId - The ID of the request to deny
+   * @param teamId - The team ID
+   * @returns The updated request with DENIED status
+   */
+  async denyRequest(requestId: string, teamId: string): Promise<RequestT> {
+    try {
+      const deniedRequest = await RequestApi.denyRequest(
+        this.testApiClient,
+        requestId,
+        teamId
+      );
+      return deniedRequest;
+    } catch (error) {
+      console.error("Failed to deny request:", error);
+      throw new Error(
+        `Failed to deny request '${requestId}': ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
+  }
+
+  /**
    * Reset request-related collections
    */
   async resetRequestData(): Promise<DatabaseResetResponse> {

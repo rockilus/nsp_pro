@@ -294,6 +294,25 @@ export class RequestTestBase {
         );
       }
 
+      // Add another work request (worker 1) that will be denied for status filter tests
+      testRequestsData.push({
+        workerId: testWorkers[0].workerId,
+        requestType: RequestType.WORK_DEMAND,
+        startDate: dayjs.utc().add(7, "days"),
+        endDate: dayjs.utc().add(7, "days"),
+        status: RequestStatus.PENDING,
+        negative: false,
+        shiftOptions: [
+          {
+            name: selectedShift.name,
+            id: selectedShift.id,
+            idType: SWOIdTypes.SHIFT,
+            isBoolDim: false,
+            categoryName: "Shifts",
+          },
+        ],
+      });
+
       const testRequests = [];
       for (const requestData of testRequestsData) {
         const request = await this.createTestRequest(requestData, testId);
@@ -309,6 +328,18 @@ export class RequestTestBase {
           testRequests[2].id
         );
         testRequests[2] = approvedRequest;
+      }
+
+      // Deny the last request for status filter tests
+      const lastIndex = testRequests.length - 1;
+      if (lastIndex >= 0) {
+        console.log(
+          `[${testId || "legacy"}] Denying last request for status filter test`
+        );
+        const deniedRequest = await this.denyTestRequest(
+          testRequests[lastIndex].id
+        );
+        testRequests[lastIndex] = deniedRequest;
       }
 
       // Store requests by test ID if provided, otherwise use legacy array
@@ -666,6 +697,19 @@ export class RequestTestBase {
     }
 
     return await this.dbUtils.approveRequest(requestId, this.testTeam.teamId);
+  }
+
+  /**
+   * Denies a test request using the API
+   * @param requestId - The ID of the request to deny
+   * @returns The updated request with DENIED status
+   */
+  async denyTestRequest(requestId: string): Promise<RequestT> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupRequestTests first.");
+    }
+
+    return await this.dbUtils.denyRequest(requestId, this.testTeam.teamId);
   }
 
   /**
@@ -1508,6 +1552,157 @@ export class RequestTestBase {
   async verifyLeaveRequestsNotVisible(page: Page): Promise<void> {
     const leaveRequestCells = this.getVisibleLeaveRequestCells(page);
     const count = await leaveRequestCells.count();
+    expect(count).toBe(0);
+  }
+
+  //////////////////////////
+  // Status Filter Methods
+  //////////////////////////
+
+  /**
+   * Gets the pending request status filter button
+   */
+  getPendingStatusFilterButton(page: Page) {
+    return page.getByTestId("request-calendar-filter-pending");
+  }
+
+  /**
+   * Gets the accepted request status filter button
+   */
+  getAcceptedStatusFilterButton(page: Page) {
+    return page.getByTestId("request-calendar-filter-accepted");
+  }
+
+  /**
+   * Gets the denied request status filter button
+   */
+  getDeniedStatusFilterButton(page: Page) {
+    return page.getByTestId("request-calendar-filter-denied");
+  }
+
+  /**
+   * Toggles the pending request status filter
+   */
+  async togglePendingStatusFilter(page: Page): Promise<void> {
+    const button = this.getPendingStatusFilterButton(page);
+    await expect(button).toBeVisible();
+    await button.click();
+  }
+
+  /**
+   * Toggles the accepted request status filter
+   */
+  async toggleAcceptedStatusFilter(page: Page): Promise<void> {
+    const button = this.getAcceptedStatusFilterButton(page);
+    await expect(button).toBeVisible();
+    await button.click();
+  }
+
+  /**
+   * Toggles the denied request status filter
+   */
+  async toggleDeniedStatusFilter(page: Page): Promise<void> {
+    const button = this.getDeniedStatusFilterButton(page);
+    await expect(button).toBeVisible();
+    await button.click();
+  }
+
+  /**
+   * Gets all visible pending request cells in the calendar
+   */
+  getVisiblePendingRequestCells(page: Page) {
+    return page.locator('[data-request-status="pending"]');
+  }
+
+  /**
+   * Gets all visible approved request cells in the calendar
+   */
+  getVisibleApprovedRequestCells(page: Page) {
+    return page.locator('[data-request-status="approved"]');
+  }
+
+  /**
+   * Gets all visible denied request cells in the calendar
+   */
+  getVisibleDeniedRequestCells(page: Page) {
+    return page.locator('[data-request-status="denied"]');
+  }
+
+  /**
+   * Verifies that pending requests are visible in the calendar
+   */
+  async verifyPendingRequestsVisible(
+    page: Page,
+    expectedCount?: number
+  ): Promise<void> {
+    const pendingRequestCells = this.getVisiblePendingRequestCells(page);
+    const count = await pendingRequestCells.count();
+
+    if (expectedCount !== undefined) {
+      expect(count).toBe(expectedCount);
+    } else {
+      expect(count).toBeGreaterThan(0);
+    }
+  }
+
+  /**
+   * Verifies that approved requests are visible in the calendar
+   */
+  async verifyApprovedRequestsVisible(
+    page: Page,
+    expectedCount?: number
+  ): Promise<void> {
+    const approvedRequestCells = this.getVisibleApprovedRequestCells(page);
+    const count = await approvedRequestCells.count();
+
+    if (expectedCount !== undefined) {
+      expect(count).toBe(expectedCount);
+    } else {
+      expect(count).toBeGreaterThan(0);
+    }
+  }
+
+  /**
+   * Verifies that denied requests are visible in the calendar
+   */
+  async verifyDeniedRequestsVisible(
+    page: Page,
+    expectedCount?: number
+  ): Promise<void> {
+    const deniedRequestCells = this.getVisibleDeniedRequestCells(page);
+    const count = await deniedRequestCells.count();
+
+    if (expectedCount !== undefined) {
+      expect(count).toBe(expectedCount);
+    } else {
+      expect(count).toBeGreaterThan(0);
+    }
+  }
+
+  /**
+   * Verifies that pending requests are not visible in the calendar
+   */
+  async verifyPendingRequestsNotVisible(page: Page): Promise<void> {
+    const pendingRequestCells = this.getVisiblePendingRequestCells(page);
+    const count = await pendingRequestCells.count();
+    expect(count).toBe(0);
+  }
+
+  /**
+   * Verifies that approved requests are not visible in the calendar
+   */
+  async verifyApprovedRequestsNotVisible(page: Page): Promise<void> {
+    const approvedRequestCells = this.getVisibleApprovedRequestCells(page);
+    const count = await approvedRequestCells.count();
+    expect(count).toBe(0);
+  }
+
+  /**
+   * Verifies that denied requests are not visible in the calendar
+   */
+  async verifyDeniedRequestsNotVisible(page: Page): Promise<void> {
+    const deniedRequestCells = this.getVisibleDeniedRequestCells(page);
+    const count = await deniedRequestCells.count();
     expect(count).toBe(0);
   }
 }
