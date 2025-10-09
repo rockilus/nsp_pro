@@ -270,17 +270,17 @@ test.describe("Request Calendar", () => {
     // Verify we have the test requests created during setup
     expect(testRequests.length).toBe(2);
 
-    // First request should be a future pending leave for worker 2
+    // First request should be a future pending work request for worker 2
     const futureRequest = testRequests[0];
     expect(futureRequest.workerId).toBe(testWorkers[1].workerId);
     expect(futureRequest.requestType).toBe(RequestType.WORK_DEMAND);
     expect(futureRequest.status).toBe(RequestStatus.PENDING);
 
-    // Second request should be a past approved leave for worker 1
+    // Second request should be a past pending work request for worker 1
     const pastRequest = testRequests[1];
     expect(pastRequest.workerId).toBe(testWorkers[0].workerId);
     expect(pastRequest.requestType).toBe(RequestType.WORK_DEMAND);
-    expect(pastRequest.status).toBe(RequestStatus.APPROVED);
+    expect(pastRequest.status).toBe(RequestStatus.PENDING);
 
     // Navigate to calendar
     await requestTestBase.navigateToCalendarTab(page);
@@ -477,10 +477,16 @@ test.describe("Request Calendar", () => {
     // Verify we have the test requests created during setup
     expect(testRequests.length).toBe(2);
 
-    // Use the past approved request (second in the array)
-    const approvedRequest = testRequests[1];
-    expect(approvedRequest.workerId).toBe(testWorkers[0].workerId);
-    expect(approvedRequest.requestType).toBe(RequestType.WORK_DEMAND);
+    // Use the past pending request (second in the array)
+    const pendingRequest = testRequests[1];
+    expect(pendingRequest.workerId).toBe(testWorkers[0].workerId);
+    expect(pendingRequest.requestType).toBe(RequestType.WORK_DEMAND);
+    expect(pendingRequest.status).toBe(RequestStatus.PENDING);
+
+    // Approve the request via API before testing rescind functionality
+    const approvedRequest = await requestTestBase.approveTestRequest(
+      pendingRequest.id
+    );
     expect(approvedRequest.status).toBe(RequestStatus.APPROVED);
 
     // Navigate to calendar

@@ -11,6 +11,7 @@ import { SpecialtyApi } from "../../src/app/lib/api/specialtyApi";
 import { DimensionApi } from "../../src/app/lib/api/dimensionApi";
 import { ShiftApi } from "../../src/app/lib/api/shiftApi";
 import { ShiftDemandTemplateApi } from "../../src/app/lib/api/shiftDemandTemplateApi";
+import { RequestApi } from "../../src/app/lib/api/requestApi";
 import { AuthenticatedApiClient } from "../../src/app/lib/api/baseApi";
 import { TeamWithMembership } from "../../src/types/team";
 import { WorkerT } from "../../src/types/worker";
@@ -32,6 +33,7 @@ import {
   ShiftDemandTemplateDTO,
   ShiftDemandTemplateCreateDTO,
 } from "../../src/types/shift-demand-template";
+import { RequestT } from "../../src/types/request";
 import { testConfig } from "./test-config";
 import dayjs from "dayjs";
 
@@ -1573,6 +1575,30 @@ export class DatabaseTestUtils {
       console.error("Failed to get requests:", error);
       throw new Error(
         `Failed to get requests: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
+  }
+
+  /**
+   * Approve a request using the RequestApi for consistent behavior
+   * @param requestId - The ID of the request to approve
+   * @param teamId - The team ID
+   * @returns The updated request with APPROVED status
+   */
+  async approveRequest(requestId: string, teamId: string): Promise<RequestT> {
+    try {
+      const approvedRequest = await RequestApi.acceptRequest(
+        this.testApiClient,
+        requestId,
+        teamId
+      );
+      return approvedRequest;
+    } catch (error) {
+      console.error("Failed to approve request:", error);
+      throw new Error(
+        `Failed to approve request '${requestId}': ${
           error instanceof Error ? error.message : "Unknown error"
         }`
       );

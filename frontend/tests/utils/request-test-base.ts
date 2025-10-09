@@ -200,6 +200,7 @@ export class RequestTestBase {
       }
 
       // Create work requests that reference the created test shifts via shiftOptions
+      // All requests are created as PENDING - tests should explicitly approve/deny as needed
       const testRequestsData = [
         // Future work request - worker 2, pending, prefer selectedShift
         {
@@ -219,13 +220,13 @@ export class RequestTestBase {
             },
           ],
         },
-        // Past work request - worker 1, approved
+        // Past work request - worker 1, pending (tests should approve if needed)
         {
           workerId: testWorkers[0].workerId,
           requestType: RequestType.WORK_DEMAND,
           startDate: dayjs.utc().subtract(2, "days"),
           endDate: dayjs.utc().subtract(2, "days"),
-          status: RequestStatus.APPROVED,
+          status: RequestStatus.PENDING,
           negative: false,
           shiftOptions: [
             {
@@ -587,6 +588,19 @@ export class RequestTestBase {
     }
 
     await this.dbUtils.deleteRequest(requestId, this.testTeam.teamId);
+  }
+
+  /**
+   * Approves a test request using the API
+   * @param requestId - The ID of the request to approve
+   * @returns The updated request with APPROVED status
+   */
+  async approveTestRequest(requestId: string): Promise<RequestT> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupRequestTests first.");
+    }
+
+    return await this.dbUtils.approveRequest(requestId, this.testTeam.teamId);
   }
 
   /**
