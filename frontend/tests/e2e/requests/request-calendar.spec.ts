@@ -38,7 +38,13 @@ test.describe("Request Calendar", () => {
     // Determine if this test needs pre-created requests
     const needsPreCreatedRequests =
       testInfo.title.includes("should show existing requests") ||
-      testInfo.title.includes("should open edit request panel");
+      testInfo.title.includes("should open edit request panel") ||
+      testInfo.title.includes("should delete request when clicking delete") ||
+      testInfo.title.includes(
+        "should approve request when clicking checkmark"
+      ) ||
+      testInfo.title.includes("should rescind approved request") ||
+      testInfo.title.includes("should reject request when clicking close");
 
     // Setup the common request test environment (includes workers and shifts)
     // Create test requests if this test needs them
@@ -349,16 +355,16 @@ test.describe("Request Calendar", () => {
     const testRunId = (testInfo as any).testRunId as string;
     const requestTestBase = testBasesMap.get(testRunId)!;
     const testWorkers = requestTestBase.getTestWorkers(testRunId);
+    const testRequests = requestTestBase.getTestRequests(testRunId);
 
-    // Create a request using the API
-    const requestDate = dayjs.utc().add(1, "day");
-    const existingRequest = await requestTestBase.createTestRequest({
-      workerId: testWorkers[0].workerId,
-      requestType: RequestType.WORK_DEMAND,
-      startDate: requestDate,
-      endDate: requestDate,
-      status: RequestStatus.PENDING,
-    });
+    // Verify we have the test requests created during setup
+    expect(testRequests.length).toBe(2);
+
+    // Use the future pending request (first in the array)
+    const futureRequest = testRequests[0];
+    expect(futureRequest.workerId).toBe(testWorkers[1].workerId);
+    expect(futureRequest.requestType).toBe(RequestType.LEAVE);
+    expect(futureRequest.status).toBe(RequestStatus.PENDING);
 
     // Navigate to calendar
     await requestTestBase.navigateToCalendarTab(page);
@@ -366,9 +372,9 @@ test.describe("Request Calendar", () => {
     // Click on the existing request to edit
     await requestTestBase.clickRequestCalendarCell(
       page,
-      testWorkers[0].workerId,
-      requestDate,
-      existingRequest.id
+      testWorkers[1].workerId,
+      futureRequest.startDate,
+      futureRequest.id
     );
 
     // Verify request panel opens
@@ -378,7 +384,7 @@ test.describe("Request Calendar", () => {
     // Click delete button
     const deleteButton = requestTestBase.getDeleteRequestButton(
       page,
-      existingRequest.id
+      futureRequest.id
     );
     await expect(deleteButton).toBeVisible();
     await deleteButton.click();
@@ -389,8 +395,8 @@ test.describe("Request Calendar", () => {
     // Verify request is removed from calendar
     await requestTestBase.verifyCalendarCellIsEmpty(
       page,
-      testWorkers[0].workerId,
-      requestDate
+      testWorkers[1].workerId,
+      futureRequest.startDate
     );
 
     console.log("✅ Request deleted successfully from calendar");
@@ -402,16 +408,16 @@ test.describe("Request Calendar", () => {
     const testRunId = (testInfo as any).testRunId as string;
     const requestTestBase = testBasesMap.get(testRunId)!;
     const testWorkers = requestTestBase.getTestWorkers(testRunId);
+    const testRequests = requestTestBase.getTestRequests(testRunId);
 
-    // Create a pending request using the API
-    const requestDate = dayjs.utc().add(1, "day");
-    const pendingRequest = await requestTestBase.createTestRequest({
-      workerId: testWorkers[0].workerId,
-      requestType: RequestType.WORK_DEMAND,
-      startDate: requestDate,
-      endDate: requestDate,
-      status: RequestStatus.PENDING,
-    });
+    // Verify we have the test requests created during setup
+    expect(testRequests.length).toBe(2);
+
+    // Use the future pending request (first in the array)
+    const pendingRequest = testRequests[0];
+    expect(pendingRequest.workerId).toBe(testWorkers[1].workerId);
+    expect(pendingRequest.requestType).toBe(RequestType.LEAVE);
+    expect(pendingRequest.status).toBe(RequestStatus.PENDING);
 
     // Navigate to calendar
     await requestTestBase.navigateToCalendarTab(page);
@@ -419,8 +425,8 @@ test.describe("Request Calendar", () => {
     // Click on the pending request to edit
     await requestTestBase.clickRequestCalendarCell(
       page,
-      testWorkers[0].workerId,
-      requestDate,
+      testWorkers[1].workerId,
+      pendingRequest.startDate,
       pendingRequest.id
     );
 
@@ -442,8 +448,8 @@ test.describe("Request Calendar", () => {
     // Verify the request status changed in the calendar (color should change)
     const cell = requestTestBase.getCalendarCellWithRequest(
       page,
-      testWorkers[0].workerId,
-      requestDate,
+      testWorkers[1].workerId,
+      pendingRequest.startDate,
       pendingRequest.id
     );
     await expect(cell).toBeVisible();
@@ -451,8 +457,8 @@ test.describe("Request Calendar", () => {
     // The cell should now have approved status color (green)
     await requestTestBase.verifyCalendarCellHasRequest(
       page,
-      testWorkers[0].workerId,
-      requestDate,
+      testWorkers[1].workerId,
+      pendingRequest.startDate,
       pendingRequest.id,
       { status: RequestStatus.APPROVED }
     );
@@ -468,16 +474,16 @@ test.describe("Request Calendar", () => {
     const testRunId = (testInfo as any).testRunId as string;
     const requestTestBase = testBasesMap.get(testRunId)!;
     const testWorkers = requestTestBase.getTestWorkers(testRunId);
+    const testRequests = requestTestBase.getTestRequests(testRunId);
 
-    // Create an approved request using the API
-    const requestDate = dayjs.utc().add(1, "day");
-    const approvedRequest = await requestTestBase.createTestRequest({
-      workerId: testWorkers[0].workerId,
-      requestType: RequestType.WORK_DEMAND,
-      startDate: requestDate,
-      endDate: requestDate,
-      status: RequestStatus.APPROVED,
-    });
+    // Verify we have the test requests created during setup
+    expect(testRequests.length).toBe(2);
+
+    // Use the past approved request (second in the array)
+    const approvedRequest = testRequests[1];
+    expect(approvedRequest.workerId).toBe(testWorkers[0].workerId);
+    expect(approvedRequest.requestType).toBe(RequestType.LEAVE);
+    expect(approvedRequest.status).toBe(RequestStatus.APPROVED);
 
     // Navigate to calendar
     await requestTestBase.navigateToCalendarTab(page);
@@ -486,7 +492,7 @@ test.describe("Request Calendar", () => {
     await requestTestBase.clickRequestCalendarCell(
       page,
       testWorkers[0].workerId,
-      requestDate,
+      approvedRequest.startDate,
       approvedRequest.id
     );
 
@@ -509,7 +515,7 @@ test.describe("Request Calendar", () => {
     await requestTestBase.verifyCalendarCellHasRequest(
       page,
       testWorkers[0].workerId,
-      requestDate,
+      approvedRequest.startDate,
       approvedRequest.id,
       { status: RequestStatus.PENDING }
     );
@@ -525,16 +531,16 @@ test.describe("Request Calendar", () => {
     const testRunId = (testInfo as any).testRunId as string;
     const requestTestBase = testBasesMap.get(testRunId)!;
     const testWorkers = requestTestBase.getTestWorkers(testRunId);
+    const testRequests = requestTestBase.getTestRequests(testRunId);
 
-    // Create a pending request using the API
-    const requestDate = dayjs.utc().add(1, "day");
-    const pendingRequest = await requestTestBase.createTestRequest({
-      workerId: testWorkers[0].workerId,
-      requestType: RequestType.WORK_DEMAND,
-      startDate: requestDate,
-      endDate: requestDate,
-      status: RequestStatus.PENDING,
-    });
+    // Verify we have the test requests created during setup
+    expect(testRequests.length).toBe(2);
+
+    // Use the future pending request (first in the array)
+    const pendingRequest = testRequests[0];
+    expect(pendingRequest.workerId).toBe(testWorkers[1].workerId);
+    expect(pendingRequest.requestType).toBe(RequestType.LEAVE);
+    expect(pendingRequest.status).toBe(RequestStatus.PENDING);
 
     // Navigate to calendar
     await requestTestBase.navigateToCalendarTab(page);
@@ -542,8 +548,8 @@ test.describe("Request Calendar", () => {
     // Click on the pending request to edit
     await requestTestBase.clickRequestCalendarCell(
       page,
-      testWorkers[0].workerId,
-      requestDate,
+      testWorkers[1].workerId,
+      pendingRequest.startDate,
       pendingRequest.id
     );
 
@@ -565,8 +571,8 @@ test.describe("Request Calendar", () => {
     // Verify the request status changed to denied/rejected
     await requestTestBase.verifyCalendarCellHasRequest(
       page,
-      testWorkers[0].workerId,
-      requestDate,
+      testWorkers[1].workerId,
+      pendingRequest.startDate,
       pendingRequest.id,
       { status: RequestStatus.DENIED }
     );
