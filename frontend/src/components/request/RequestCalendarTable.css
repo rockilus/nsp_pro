@@ -162,12 +162,17 @@
   border-radius: 4px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
   font-weight: 500;
+  color: var(--shift-text-color, inherit);
+  /* Add subtle border using sample color for better visual definition */
+  border: 1px solid var(--shift-sample-color, transparent);
+  opacity: 0.95;
 }
 
 .calendar-cell--leave:hover {
   transform: scale(1.02);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
   z-index: 2;
+  opacity: 1;
 }
 
 /* Clickable empty cells */
@@ -190,6 +195,11 @@
   font-weight: bold;
   color: #1976d2;
   opacity: 0.7;
+}
+
+/* Clickable cells with request - enhanced hover with CSS variables */
+.calendar-cell--clickable.calendar-cell--leave:hover {
+  background-color: var(--shift-sample-color, inherit);
 }
 
 /* Past cells */
@@ -227,6 +237,8 @@
   white-space: normal;
   pointer-events: none;
   margin-top: 4px;
+  /* Use sample color for border accent */
+  border-left: 3px solid var(--shift-sample-color, transparent);
 }
 
 .calendar-cell--leave:hover .calendar-cell__tooltip {

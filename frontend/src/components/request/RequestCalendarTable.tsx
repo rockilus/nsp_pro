@@ -2,8 +2,10 @@ import React from "react";
 import dayjs, { Dayjs } from "dayjs";
 import "./RequestCalendarTable.css";
 import { StaffingSummaryLoadingIndicator } from "./StaffingSummaryLoadingIndicator";
-import { RequestT } from "../../types/request";
+import { RequestT, RequestType } from "../../types/request";
 import { WorkerT } from "../../types/worker";
+import { ShiftT } from "../../types/shift";
+import { ShiftColorMappings } from "../../constants/constants";
 
 // Types
 type StatusColors = {
@@ -22,6 +24,7 @@ interface RequestCalendarTableProps {
   workers: WorkerT[];
   days: Dayjs[];
   statusColors: StatusColors;
+  shifts: ShiftT[];
   getRequestForDay: (workerId: string, day: Dayjs) => RequestT | null;
   handleAddRequest?: (request: RequestT) => void;
   handleUpdateRequest?: (request: RequestT) => void;
@@ -38,6 +41,7 @@ interface RequestCalendarCellProps {
   date: Dayjs;
   request: RequestT | null;
   statusColors: StatusColors;
+  shifts: ShiftT[];
   canAddRequest: boolean;
   canEditRequest: boolean;
   isPast: boolean;
@@ -50,6 +54,7 @@ interface RequestCalendarRowProps {
   worker: WorkerT;
   days: Dayjs[];
   statusColors: StatusColors;
+  shifts: ShiftT[];
   getRequestForDay: (workerId: string, day: Dayjs) => RequestT | null;
   handleAddRequest?: (request: RequestT) => void;
   handleUpdateRequest?: (request: RequestT) => void;
@@ -67,6 +72,7 @@ interface RequestCalendarBodyProps {
   workers: WorkerT[];
   days: Dayjs[];
   statusColors: StatusColors;
+  shifts: ShiftT[];
   getRequestForDay: (workerId: string, day: Dayjs) => RequestT | null;
   handleAddRequest?: (request: RequestT) => void;
   handleUpdateRequest?: (request: RequestT) => void;
@@ -86,8 +92,28 @@ interface StaffingSummaryRowsProps {
 const daysOfWeek = ["M", "T", "W", "T", "F", "S", "S"];
 
 // Utility functions
-function getStatusColor(request: RequestT, statusColors: StatusColors) {
-  // Prefer fulfillment if not processed, else status
+function getStatusColor(
+  request: RequestT,
+  statusColors: StatusColors,
+  shifts: ShiftT[]
+) {
+  // For leave requests, always use red
+  if (request.requestType === RequestType.LEAVE) {
+    return "#F44336"; // red
+  }
+
+  // For work demand requests, use shift color if available
+  if (request.requestType === RequestType.WORK_DEMAND && request.shiftId) {
+    const shift = shifts.find((s) => s.id === request.shiftId);
+    if (shift) {
+      const shiftColors = ShiftColorMappings[shift.color];
+      if (shiftColors) {
+        return shiftColors.background;
+      }
+    }
+  }
+
+  // Fallback to status colors for other cases
   if (request.fulfillment && statusColors[request.fulfillment]) {
     return statusColors[request.fulfillment];
   }
@@ -103,6 +129,7 @@ function RequestCalendarCell({
   date,
   request,
   statusColors,
+  shifts,
   canAddRequest,
   canEditRequest,
   isPast,
@@ -140,6 +167,34 @@ function RequestCalendarCell({
     return undefined;
   };
 
+  // Get shift colors for CSS variables (similar to ShiftDemandCell)
+  const getShiftColors = () => {
+    if (request?.requestType === RequestType.WORK_DEMAND && request.shiftId) {
+      const shift = shifts.find((s) => s.id === request.shiftId);
+      if (shift) {
+        const colors = ShiftColorMappings[shift.color];
+        if (colors) {
+          return {
+            background: colors.background,
+            sample: colors.sample,
+            text: colors.text,
+          };
+        }
+      }
+    }
+    // For leave requests, use red
+    if (request?.requestType === RequestType.LEAVE) {
+      return {
+        background: "#F44336",
+        sample: "#D32F2F",
+        text: "#FFFFFF",
+      };
+    }
+    return null;
+  };
+
+  const shiftColors = getShiftColors();
+
   return (
     <div
       key={date.date()}
@@ -148,10 +203,21 @@ function RequestCalendarCell({
       }${canAddRequest || canEditRequest ? " calendar-cell--clickable" : ""}${
         isPastEmpty ? " calendar-cell--past" : ""
       }`}
-      style={{
-        background: request ? getStatusColor(request, statusColors) : undefined,
-        cursor: canAddRequest || canEditRequest ? "pointer" : "default",
-      }}
+      style={
+        {
+          ...(shiftColors && {
+            "--shift-bg-color": shiftColors.background,
+            "--shift-sample-color": shiftColors.sample,
+            "--shift-text-color": shiftColors.text,
+            background: shiftColors.background,
+          }),
+          ...(!shiftColors &&
+            request && {
+              background: getStatusColor(request, statusColors, shifts),
+            }),
+          cursor: canAddRequest || canEditRequest ? "pointer" : "default",
+        } as React.CSSProperties
+      }
       data-testid={`calendar-cell-${worker.id}-${date.format("YYYY-MM-DD")}${
         request ? `-request-${request.id}` : ""
       }`}
@@ -187,6 +253,7 @@ function RequestCalendarRow({
   worker,
   days,
   statusColors,
+  shifts,
   getRequestForDay,
   handleAddRequest,
   handleUpdateRequest,
@@ -217,6 +284,7 @@ function RequestCalendarRow({
               date={d}
               request={request}
               statusColors={statusColors}
+              shifts={shifts}
               canAddRequest={canAddRequest}
               canEditRequest={canEditRequest}
               isPast={isPast}
@@ -262,6 +330,7 @@ function RequestCalendarBody({
   workers,
   days,
   statusColors,
+  shifts,
   getRequestForDay,
   handleAddRequest,
   handleUpdateRequest,
@@ -278,6 +347,7 @@ function RequestCalendarBody({
           worker={worker}
           days={days}
           statusColors={statusColors}
+          shifts={shifts}
           getRequestForDay={getRequestForDay}
           handleAddRequest={handleAddRequest}
           handleUpdateRequest={handleUpdateRequest}
@@ -408,6 +478,7 @@ export default function RequestCalendarTable({
   workers,
   days,
   statusColors,
+  shifts,
   getRequestForDay,
   handleAddRequest,
   handleUpdateRequest,
@@ -437,6 +508,7 @@ export default function RequestCalendarTable({
         workers={workers}
         days={days}
         statusColors={statusColors}
+        shifts={shifts}
         getRequestForDay={getRequestForDay}
         handleAddRequest={handleAddRequest}
         handleUpdateRequest={handleUpdateRequest}

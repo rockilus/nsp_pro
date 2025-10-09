@@ -401,6 +401,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
         workers={workers}
         days={days}
         statusColors={statusColors}
+        shifts={shifts}
         getRequestForDay={getRequestForDay}
         handleAddRequest={handleAddRequest}
         handleUpdateRequest={handleUpdateRequest}
