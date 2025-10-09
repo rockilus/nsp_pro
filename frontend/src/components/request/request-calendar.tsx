@@ -1,10 +1,14 @@
 import React from "react";
 import dayjs, { Dayjs } from "dayjs";
+import isoWeek from "dayjs/plugin/isoWeek";
 import "./request-calendar.css";
 import { StaffingSummaryLoadingIndicator } from "./StaffingSummaryLoadingIndicator";
 import { RequestT } from "../../types/request";
 import { WorkerT } from "../../types/worker";
 import RequestPanel from "./request-panel";
+import { RequestCalendarToolbar } from "./RequestCalendarToolbar";
+
+dayjs.extend(isoWeek);
 
 type StatusColors = {
   [key: string]: string;
@@ -88,6 +92,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   const [currentMonth, setCurrentMonth] = React.useState(
     dayjs().utc().startOf("month")
   );
+  const [timeFrame, setTimeFrame] = React.useState<"week" | "month">("month");
   const [showPending, setShowPending] = React.useState(true);
   const [showAcceptedNotFulfilled, setShowAcceptedNotFulfilled] =
     React.useState(true);
@@ -284,6 +289,39 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   const handleNextMonth = () => setCurrentMonth((m) => m.add(1, "month"));
   const handleToday = () => setCurrentMonth(dayjs().utc().startOf("month"));
 
+  // New handlers for toolbar integration
+  const handlePeriodChange = (start: Dayjs, end: Dayjs) => {
+    // For month view, we store the start of the period
+    setCurrentMonth(start.startOf("month"));
+  };
+
+  const handleTimeFrameChange = (newTimeFrame: "week" | "month") => {
+    setTimeFrame(newTimeFrame);
+    // Adjust currentMonth to align with the new time frame
+    if (newTimeFrame === "month") {
+      setCurrentMonth(currentMonth.startOf("month"));
+    } else {
+      // For week view, still use the month containing the current week
+      setCurrentMonth(currentMonth.startOf("isoWeek"));
+    }
+  };
+
+  // Calculate current period for toolbar
+  const currentPeriod = React.useMemo(() => {
+    if (timeFrame === "month") {
+      return {
+        start: currentMonth.startOf("month"),
+        end: currentMonth.endOf("month"),
+      };
+    } else {
+      // week
+      return {
+        start: currentMonth.startOf("isoWeek"),
+        end: currentMonth.endOf("isoWeek"),
+      };
+    }
+  }, [currentMonth, timeFrame]);
+
   // Handle calendar cell click for empty cells
   const handleCellClick = (workerId: string, date: Dayjs) => {
     const existingRequest = getRequestForDay(workerId, date);
@@ -356,39 +394,19 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
 
   return (
     <div className="request-calendar" data-testid="request-calendar">
-      {/* Top Controls: Status Legend & Month Selector */}
+      {/* Toolbar with Time Navigation */}
+      {lng && (
+        <RequestCalendarToolbar
+          lng={lng}
+          currentPeriod={currentPeriod}
+          onPeriodChange={handlePeriodChange}
+          timeFrame={timeFrame}
+          onTimeFrameChange={handleTimeFrameChange}
+        />
+      )}
+
+      {/* Top Controls: Status Legend */}
       <div className="calendar-top-controls">
-        <div className="calendar-month-selector">
-          <button
-            className="calendar-month-selector__today"
-            onClick={handleToday}
-            data-testid="calendar-today-button"
-          >
-            Today
-          </button>
-          <button
-            className="calendar-month-selector__arrow"
-            onClick={handlePrevMonth}
-            aria-label="Previous month"
-            data-testid="calendar-prev-month-button"
-          >
-            &#8592;
-          </button>
-          <button
-            className="calendar-month-selector__arrow"
-            onClick={handleNextMonth}
-            aria-label="Next month"
-            data-testid="calendar-next-month-button"
-          >
-            &#8594;
-          </button>
-          <span
-            className="calendar-month-selector__label"
-            data-testid="calendar-month-label"
-          >
-            {currentMonth.format("MMMM YYYY")}
-          </span>
-        </div>
         <div className="calendar-status-legend">
           <button
             className={`calendar-status-legend__btn${
