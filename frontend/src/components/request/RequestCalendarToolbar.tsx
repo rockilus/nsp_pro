@@ -168,6 +168,7 @@ export function RequestCalendarToolbar({
         {/* Right side - Status filters */}
         <Box display="flex" gap={1} alignItems="center">
           <ToggleButtonGroup
+            color="primary"
             value={selectedStatuses}
             onChange={handleStatusFilterChange}
             aria-label="request status filter"
