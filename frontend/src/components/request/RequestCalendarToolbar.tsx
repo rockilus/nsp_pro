@@ -26,6 +26,14 @@ interface RequestCalendarToolbarProps {
     showAccepted: boolean,
     showDenied: boolean
   ) => void;
+
+  // Request type filter props
+  showWorkDemand: boolean;
+  showLeave: boolean;
+  onRequestTypeFilterChange: (
+    showWorkDemand: boolean,
+    showLeave: boolean
+  ) => void;
 }
 
 export function RequestCalendarToolbar({
@@ -39,6 +47,9 @@ export function RequestCalendarToolbar({
   showAccepted,
   showDenied,
   onStatusFilterChange,
+  showWorkDemand,
+  showLeave,
+  onRequestTypeFilterChange,
 }: RequestCalendarToolbarProps) {
   // Handlers for TimeNavigation
   const handleToday = () => {
@@ -123,11 +134,28 @@ export function RequestCalendarToolbar({
     onStatusFilterChange(newShowPending, newShowAccepted, newShowDenied);
   };
 
+  // Handler for request type filter changes
+  const handleRequestTypeFilterChange = (
+    _event: React.MouseEvent<HTMLElement>,
+    newTypes: string[]
+  ) => {
+    // newTypes is an array of selected values
+    const newShowWorkDemand = newTypes.includes("work_demand");
+    const newShowLeave = newTypes.includes("leave");
+
+    onRequestTypeFilterChange(newShowWorkDemand, newShowLeave);
+  };
+
   // Calculate current selected statuses for ToggleButtonGroup
   const selectedStatuses: string[] = [];
   if (showPending) selectedStatuses.push("pending");
   if (showAccepted) selectedStatuses.push("accepted");
   if (showDenied) selectedStatuses.push("denied");
+
+  // Calculate current selected request types for ToggleButtonGroup
+  const selectedRequestTypes: string[] = [];
+  if (showWorkDemand) selectedRequestTypes.push("work_demand");
+  if (showLeave) selectedRequestTypes.push("leave");
 
   return (
     <Paper
@@ -167,6 +195,40 @@ export function RequestCalendarToolbar({
 
         {/* Right side - Status filters */}
         <Box display="flex" gap={1} alignItems="center">
+          {/* Request Type Filter */}
+          <ToggleButtonGroup
+            color="primary"
+            value={selectedRequestTypes}
+            onChange={handleRequestTypeFilterChange}
+            aria-label="request type filter"
+            size="small"
+            sx={{
+              "& .MuiToggleButton-root": {
+                textTransform: "none",
+                px: 2,
+                py: 0.5,
+                fontSize: "0.875rem",
+                fontWeight: 500,
+              },
+            }}
+          >
+            <ToggleButton
+              value="work_demand"
+              aria-label="show work demand requests"
+              data-testid="request-calendar-filter-work"
+            >
+              Work
+            </ToggleButton>
+            <ToggleButton
+              value="leave"
+              aria-label="show leave requests"
+              data-testid="request-calendar-filter-leave"
+            >
+              Leave
+            </ToggleButton>
+          </ToggleButtonGroup>
+
+          {/* Status Filter */}
           <ToggleButtonGroup
             color="primary"
             value={selectedStatuses}

@@ -110,6 +110,10 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   // allow toggling visibility of denied (rejected) requests
   const [showDenied, setShowDenied] = React.useState(true);
 
+  // State for request type filtering
+  const [showWorkDemand, setShowWorkDemand] = React.useState(true);
+  const [showLeave, setShowLeave] = React.useState(true);
+
   // State for calendar cell selection and request creation/editing
   const [selectedCell, setSelectedCell] = React.useState<{
     workerId: string;
@@ -298,6 +302,14 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
         const inRange =
           !day.isBefore(r.startDate, "day") && !day.isAfter(r.endDate, "day");
         if (!inRange) return false;
+
+        // Check request type filter
+        const isWorkDemandType = r.requestType === RequestType.WORK_DEMAND;
+        const isLeaveType = r.requestType === RequestType.LEAVE;
+        if (isWorkDemandType && !showWorkDemand) return false;
+        if (isLeaveType && !showLeave) return false;
+
+        // Check status filter
         if (isPending(r) && showPending) return true;
         if (isAcceptedNotFulfilled(r) && showAcceptedNotFulfilled) return true;
         if (isFulfilled(r) && showFulfilled) return true;
@@ -340,6 +352,15 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     setShowAcceptedNotFulfilled(newShowAccepted);
     setShowFulfilled(newShowAccepted);
     setShowDenied(newShowDenied);
+  };
+
+  // Handler for request type filter changes from toolbar
+  const handleRequestTypeFilterChange = (
+    newShowWorkDemand: boolean,
+    newShowLeave: boolean
+  ) => {
+    setShowWorkDemand(newShowWorkDemand);
+    setShowLeave(newShowLeave);
   };
 
   // Handle calendar cell click for empty cells
@@ -426,6 +447,9 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           showAccepted={showAcceptedNotFulfilled || showFulfilled}
           showDenied={showDenied}
           onStatusFilterChange={handleStatusFilterChange}
+          showWorkDemand={showWorkDemand}
+          showLeave={showLeave}
+          onRequestTypeFilterChange={handleRequestTypeFilterChange}
         />
       )}
 
