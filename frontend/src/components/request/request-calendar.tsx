@@ -61,6 +61,16 @@ function getDaysInMonth(month: Dayjs) {
   return days;
 }
 
+function getDaysInPeriod(start: Dayjs, end: Dayjs) {
+  const days = [];
+  let current = start;
+  while (!current.isAfter(end, "day")) {
+    days.push(current);
+    current = current.add(1, "day");
+  }
+  return days;
+}
+
 function getStatusColor(request: RequestT, statusColors: StatusColors) {
   // Prefer fulfillment if not processed, else status
   if (request.fulfillment && statusColors[request.fulfillment]) {
@@ -111,10 +121,26 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     null
   );
 
-  // Memoize days to avoid unnecessary rerenders and effect triggers
+  // Calculate current period for toolbar (needs to be before days calculation)
+  const currentPeriod = React.useMemo(() => {
+    if (timeFrame === "month") {
+      return {
+        start: currentMonth.startOf("month"),
+        end: currentMonth.endOf("month"),
+      };
+    } else {
+      // week
+      return {
+        start: currentMonth.startOf("isoWeek"),
+        end: currentMonth.endOf("isoWeek"),
+      };
+    }
+  }, [currentMonth, timeFrame]);
+
+  // Memoize days based on the current period (week or month)
   const days = React.useMemo(
-    () => getDaysInMonth(currentMonth),
-    [currentMonth]
+    () => getDaysInPeriod(currentPeriod.start, currentPeriod.end),
+    [currentPeriod]
   );
 
   // Progressive loading state for staffing summary
@@ -129,14 +155,17 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     shiftMap[shift.id] = shift;
   }
 
-  // Helper: get all demands for this month (memoized) - updated for ShiftDemandDTO
-  const monthDemands = React.useMemo(
+  // Helper: get all demands for the current period (memoized) - updated for ShiftDemandDTO
+  const periodDemands = React.useMemo(
     () =>
       demands.filter((d) => {
         const demandDate = dayjs.unix(d.date).utc();
-        return demandDate.isSame(currentMonth, "month");
+        return (
+          !demandDate.isBefore(currentPeriod.start, "day") &&
+          !demandDate.isAfter(currentPeriod.end, "day")
+        );
       }),
-    [demands, currentMonth]
+    [demands, currentPeriod]
   );
 
   // --- PERFORMANCE OPTIMIZED: Precompute all values for the month ---
@@ -173,14 +202,8 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           const workerReqs = requestsByWorker[worker.id] || [];
           for (const req of workerReqs) {
             if (req.requestType === "leave" && req.status === "approved") {
-              let current = dayjs.max(
-                req.startDate,
-                currentMonth.startOf("month")
-              );
-              const lastDay = dayjs.min(
-                req.endDate,
-                currentMonth.endOf("month")
-              );
+              let current = dayjs.max(req.startDate, currentPeriod.start);
+              const lastDay = dayjs.min(req.endDate, currentPeriod.end);
               while (!current.isAfter(lastDay, "day")) {
                 const dateKey = current.format("YYYY-MM-DD");
                 if (!workerLeaves[worker.id]) workerLeaves[worker.id] = {};
@@ -195,7 +218,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           // Demand calculation - updated for ShiftDemandDTO
           let totalDemand = 0;
           for (const shift of shifts) {
-            const demandsForShift = monthDemands.filter((d) => {
+            const demandsForShift = periodDemands.filter((d) => {
               const demandDate = dayjs.unix(d.date).utc();
               return demandDate.isSame(day, "day") && d.shiftId === shift.id;
             });
@@ -237,13 +260,13 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
       clearTimeout(timerId);
     };
   }, [
-    currentMonth,
+    currentPeriod,
     workers,
     shifts,
     demands,
     requestsByWorker,
     days,
-    monthDemands,
+    periodDemands,
   ]);
 
   // // Map workerId to requests for quick lookup
@@ -305,22 +328,6 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
       setCurrentMonth(currentMonth.startOf("isoWeek"));
     }
   };
-
-  // Calculate current period for toolbar
-  const currentPeriod = React.useMemo(() => {
-    if (timeFrame === "month") {
-      return {
-        start: currentMonth.startOf("month"),
-        end: currentMonth.endOf("month"),
-      };
-    } else {
-      // week
-      return {
-        start: currentMonth.startOf("isoWeek"),
-        end: currentMonth.endOf("isoWeek"),
-      };
-    }
-  }, [currentMonth, timeFrame]);
 
   // Handle calendar cell click for empty cells
   const handleCellClick = (workerId: string, date: Dayjs) => {
