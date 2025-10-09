@@ -92,6 +92,8 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   const [showAcceptedNotFulfilled, setShowAcceptedNotFulfilled] =
     React.useState(true);
   const [showFulfilled, setShowFulfilled] = React.useState(true);
+  // allow toggling visibility of denied (rejected) requests
+  const [showDenied, setShowDenied] = React.useState(true);
 
   // State for calendar cell selection and request creation/editing
   const [selectedCell, setSelectedCell] = React.useState<{
@@ -256,6 +258,9 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   function isFulfilled(req: RequestT) {
     return req.status === "approved" && req.fulfillment === "fulfilled";
   }
+  function isDenied(req: RequestT) {
+    return req.status === RequestStatus.DENIED;
+  }
 
   // For each worker, for each day, find if a request covers that day and is visible
   function getRequestForDay(workerId: string, day: Dayjs): RequestT | null {
@@ -268,6 +273,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
         if (isPending(r) && showPending) return true;
         if (isAcceptedNotFulfilled(r) && showAcceptedNotFulfilled) return true;
         if (isFulfilled(r) && showFulfilled) return true;
+        if (isDenied(r) && showDenied) return true;
         return false;
       }) || null
     );
@@ -421,6 +427,18 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           >
             <span className="calendar-status-legend__dot calendar-status-legend__dot--fulfilled" />
             Fulfilled
+          </button>
+          <button
+            className={`calendar-status-legend__btn${
+              showDenied ? " calendar-status-legend__btn--active" : ""
+            }`}
+            type="button"
+            onClick={() => setShowDenied((v) => !v)}
+            aria-pressed={showDenied}
+            data-testid="calendar-show-denied-button"
+          >
+            <span className="calendar-status-legend__dot calendar-status-legend__dot--denied" />
+            Denied
           </button>
         </div>
       </div>
