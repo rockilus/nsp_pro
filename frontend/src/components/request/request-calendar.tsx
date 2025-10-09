@@ -17,11 +17,6 @@ import RequestCalendarTable from "./RequestCalendarTable";
 
 dayjs.extend(isoWeek);
 
-// Types
-type StatusColors = {
-  [key: string]: string;
-};
-
 type StaffingSummary = {
   [date: string]: {
     demand: number;
@@ -33,7 +28,6 @@ type StaffingSummary = {
 interface RequestCalendarProps {
   workers: WorkerT[];
   requests: RequestT[];
-  statusColors?: StatusColors;
   demands?: ShiftDemandDTO[];
   shifts?: ShiftT[];
   lng?: string;
@@ -47,17 +41,6 @@ interface RequestCalendarProps {
   handleAcceptRequest?: (requestId: string) => void;
   handleDenyRequest?: (requestId: string) => void;
 }
-
-// Constants
-const defaultStatusColors: StatusColors = {
-  pending: "#FFC107", // orange
-  approved: "#4CAF50", // green
-  fulfilled: "#2196F3", // blue
-  denied: "#F44336", // red
-  deferred: "#9E9E9E", // grey
-  not_processed: "#BDBDBD",
-  unfulfilled: "#E57373",
-};
 
 // Utility functions
 function getDaysInPeriod(start: Dayjs, end: Dayjs) {
@@ -74,7 +57,6 @@ function getDaysInPeriod(start: Dayjs, end: Dayjs) {
 export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   workers,
   requests,
-  statusColors = defaultStatusColors,
   demands = [],
   shifts = [],
   lng,
@@ -400,7 +382,6 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
       <RequestCalendarTable
         workers={workers}
         days={days}
-        statusColors={statusColors}
         shifts={shifts}
         getRequestForDay={getRequestForDay}
         handleAddRequest={handleAddRequest}

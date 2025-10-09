@@ -7,11 +7,6 @@ import { WorkerT } from "../../types/worker";
 import { ShiftT } from "../../types/shift";
 import { ShiftColorMappings } from "../../constants/constants";
 
-// Types
-type StatusColors = {
-  [key: string]: string;
-};
-
 type StaffingSummary = {
   [date: string]: {
     demand: number;
@@ -23,7 +18,6 @@ type StaffingSummary = {
 interface RequestCalendarTableProps {
   workers: WorkerT[];
   days: Dayjs[];
-  statusColors: StatusColors;
   shifts: ShiftT[];
   getRequestForDay: (workerId: string, day: Dayjs) => RequestT | null;
   handleAddRequest?: (request: RequestT) => void;
@@ -40,7 +34,6 @@ interface RequestCalendarCellProps {
   worker: WorkerT;
   date: Dayjs;
   request: RequestT | null;
-  statusColors: StatusColors;
   shifts: ShiftT[];
   canAddRequest: boolean;
   canEditRequest: boolean;
@@ -53,7 +46,6 @@ interface RequestCalendarCellProps {
 interface RequestCalendarRowProps {
   worker: WorkerT;
   days: Dayjs[];
-  statusColors: StatusColors;
   shifts: ShiftT[];
   getRequestForDay: (workerId: string, day: Dayjs) => RequestT | null;
   handleAddRequest?: (request: RequestT) => void;
@@ -71,7 +63,6 @@ interface RequestCalendarHeaderProps {
 interface RequestCalendarBodyProps {
   workers: WorkerT[];
   days: Dayjs[];
-  statusColors: StatusColors;
   shifts: ShiftT[];
   getRequestForDay: (workerId: string, day: Dayjs) => RequestT | null;
   handleAddRequest?: (request: RequestT) => void;
@@ -91,44 +82,11 @@ interface StaffingSummaryRowsProps {
 // Constants
 const daysOfWeek = ["M", "T", "W", "T", "F", "S", "S"];
 
-// Utility functions
-function getStatusColor(
-  request: RequestT,
-  statusColors: StatusColors,
-  shifts: ShiftT[]
-) {
-  // For leave requests, always use red
-  if (request.requestType === RequestType.LEAVE) {
-    return "#F44336"; // red
-  }
-
-  // For work demand requests, use shift color if available
-  if (request.requestType === RequestType.WORK_DEMAND && request.shiftId) {
-    const shift = shifts.find((s) => s.id === request.shiftId);
-    if (shift) {
-      const shiftColors = ShiftColorMappings[shift.color];
-      if (shiftColors) {
-        return shiftColors.background;
-      }
-    }
-  }
-
-  // Fallback to status colors for other cases
-  if (request.fulfillment && statusColors[request.fulfillment]) {
-    return statusColors[request.fulfillment];
-  }
-  if (request.status && statusColors[request.status]) {
-    return statusColors[request.status];
-  }
-  return "#BDBDBD";
-}
-
 // Individual cell component
 function RequestCalendarCell({
   worker,
   date,
   request,
-  statusColors,
   shifts,
   canAddRequest,
   canEditRequest,
@@ -213,10 +171,6 @@ function RequestCalendarCell({
             "--shift-text-color": shiftColors.text,
             background: shiftColors.background,
           }),
-          ...(!shiftColors &&
-            request && {
-              background: getStatusColor(request, statusColors, shifts),
-            }),
           cursor: canAddRequest || canEditRequest ? "pointer" : "default",
         } as React.CSSProperties
       }
@@ -254,7 +208,6 @@ function RequestCalendarCell({
 function RequestCalendarRow({
   worker,
   days,
-  statusColors,
   shifts,
   getRequestForDay,
   handleAddRequest,
@@ -285,7 +238,6 @@ function RequestCalendarRow({
               worker={worker}
               date={d}
               request={request}
-              statusColors={statusColors}
               shifts={shifts}
               canAddRequest={canAddRequest}
               canEditRequest={canEditRequest}
@@ -331,7 +283,6 @@ function RequestCalendarHeader({ days }: RequestCalendarHeaderProps) {
 function RequestCalendarBody({
   workers,
   days,
-  statusColors,
   shifts,
   getRequestForDay,
   handleAddRequest,
@@ -348,7 +299,6 @@ function RequestCalendarBody({
           key={worker.id}
           worker={worker}
           days={days}
-          statusColors={statusColors}
           shifts={shifts}
           getRequestForDay={getRequestForDay}
           handleAddRequest={handleAddRequest}
@@ -479,7 +429,6 @@ function StaffingSummaryRows({
 export default function RequestCalendarTable({
   workers,
   days,
-  statusColors,
   shifts,
   getRequestForDay,
   handleAddRequest,
@@ -509,7 +458,6 @@ export default function RequestCalendarTable({
       <RequestCalendarBody
         workers={workers}
         days={days}
-        statusColors={statusColors}
         shifts={shifts}
         getRequestForDay={getRequestForDay}
         handleAddRequest={handleAddRequest}
