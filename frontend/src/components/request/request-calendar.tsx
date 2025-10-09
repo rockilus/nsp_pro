@@ -314,8 +314,8 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
 
   // New handlers for toolbar integration
   const handlePeriodChange = (start: Dayjs, end: Dayjs) => {
-    // For month view, we store the start of the period
-    setCurrentMonth(start.startOf("month"));
+    // Store the start of the period (works for both week and month views)
+    setCurrentMonth(start);
   };
 
   const handleTimeFrameChange = (newTimeFrame: "week" | "month") => {
