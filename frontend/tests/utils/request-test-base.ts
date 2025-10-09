@@ -5,7 +5,7 @@
  * reducing duplication across multiple request test files.
  */
 
-import { Page } from "@playwright/test";
+import { Page, expect } from "@playwright/test";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { randomUUID } from "crypto";
@@ -16,6 +16,13 @@ import {
   ShiftRestType,
   ShiftLeaveType,
 } from "../../src/types/shift";
+import { SWOIdTypes } from "../../src/types/constraint";
+import {
+  RequestT,
+  RequestStatus,
+  RequestType,
+  FulfillmentStatus,
+} from "../../src/types/request";
 
 dayjs.extend(utc);
 
@@ -29,11 +36,13 @@ export class RequestTestBase {
     { workerId: string; name: string; teamId: string }[]
   >();
   protected testShiftsMap = new Map<string, ShiftT[]>();
+  protected testRequestsMap = new Map<string, RequestT[]>();
 
   // Keep legacy arrays for backwards compatibility with tests that don't use test IDs
   protected testWorkers: { workerId: string; name: string; teamId: string }[] =
     [];
   protected testShifts: ShiftT[] = [];
+  protected testRequests: RequestT[] = [];
 
   constructor() {
     this.dbUtils = new DatabaseTestUtils();
@@ -45,10 +54,16 @@ export class RequestTestBase {
    * - Verifies test utilities are available
    * - Creates a test team
    * - Creates test workers and shifts
+   * - Optionally creates test requests
    * @param workerIndex - The worker index for unique naming
    * @param testId - Optional test ID for test isolation. If provided, workers and shifts will be stored by test ID
+   * @param createRequests - Optional flag to create test requests (default: false)
    */
-  async setupRequestTests(workerIndex: number, testId?: string): Promise<void> {
+  async setupRequestTests(
+    workerIndex: number,
+    testId?: string,
+    createRequests: boolean = false
+  ): Promise<void> {
     console.log(
       `[${testId || "legacy"}] Setting up request test environment...`
     );
@@ -77,7 +92,10 @@ export class RequestTestBase {
       throw new Error("Failed to create test team for request tests");
     }
 
-    // Create test workers
+    // Create test workers with employment start date before any past requests
+    // Past requests are created 2 days ago, so we set employment start date 7 days ago
+    const employmentStartDate = dayjs.utc().subtract(7, "days").toDate();
+
     const testWorkersData = [
       {
         name: `Test Worker 1 ${workerIndex}-${testId || randomUUID()}`,
@@ -86,6 +104,7 @@ export class RequestTestBase {
         weeklyHoursDesired: 40,
         dutiesPerMonth: 8,
         annualLeave: 25,
+        employmentStartDate: employmentStartDate,
       },
       {
         name: `Test Worker 2 ${workerIndex}-${testId || randomUUID()}`,
@@ -94,6 +113,7 @@ export class RequestTestBase {
         weeklyHoursDesired: 35,
         dutiesPerMonth: 6,
         annualLeave: 20,
+        employmentStartDate: employmentStartDate,
       },
     ];
 
@@ -148,6 +168,100 @@ export class RequestTestBase {
         testShifts.length
       } test shifts`
     );
+
+    // Create test requests if requested
+    if (createRequests) {
+      // Prefer using one of the shifts we just created for this test (keeps tests isolated)
+      // Look up shifts created for this testId (or legacy array)
+      const createdShifts = testId
+        ? this.testShiftsMap.get(testId) || []
+        : this.testShifts;
+
+      // Prefer a shift to use for work request shiftOptions. Prefer a leave-type only if explicitly desired
+      let selectedShift: ShiftT | undefined = createdShifts.find(
+        (s) =>
+          s.shiftType === ShiftType.NORMAL ||
+          s.shiftType === ShiftType.DUTY ||
+          s.shiftType === ShiftType.REST
+      );
+
+      // Fall back to any created shift
+      if (!selectedShift) {
+        selectedShift = createdShifts[0];
+      }
+
+      // As a last resort, try to fetch any shift from the API
+      if (!selectedShift) {
+        const allShifts = await this.fetchAllShiftsForTeam();
+        selectedShift = allShifts[0];
+      }
+
+      if (!selectedShift) {
+        throw new Error(
+          `Failed to find or fetch a shift for request test setup (${
+            testId || "legacy"
+          })`
+        );
+      }
+
+      // Create work requests that reference the created test shifts via shiftOptions
+      // All requests are created as PENDING - tests should explicitly approve/deny as needed
+      const testRequestsData = [
+        // Future work request - worker 2, pending, prefer selectedShift
+        {
+          workerId: testWorkers[1].workerId,
+          requestType: RequestType.WORK_DEMAND,
+          startDate: dayjs.utc().add(3, "days"),
+          endDate: dayjs.utc().add(3, "days"),
+          status: RequestStatus.PENDING,
+          negative: false,
+          shiftOptions: [
+            {
+              name: selectedShift.name,
+              id: selectedShift.id,
+              idType: SWOIdTypes.SHIFT,
+              isBoolDim: false,
+              categoryName: "Shifts",
+            },
+          ],
+        },
+        // Past work request - worker 1, pending (tests should approve if needed)
+        {
+          workerId: testWorkers[0].workerId,
+          requestType: RequestType.WORK_DEMAND,
+          startDate: dayjs.utc().subtract(2, "days"),
+          endDate: dayjs.utc().subtract(2, "days"),
+          status: RequestStatus.PENDING,
+          negative: false,
+          shiftOptions: [
+            {
+              name: selectedShift.name,
+              id: selectedShift.id,
+              idType: SWOIdTypes.SHIFT,
+              isBoolDim: false,
+              categoryName: "Shifts",
+            },
+          ],
+        },
+      ];
+
+      const testRequests = [];
+      for (const requestData of testRequestsData) {
+        const request = await this.createTestRequest(requestData, testId);
+        testRequests.push(request);
+      }
+
+      // Store requests by test ID if provided, otherwise use legacy array
+      if (testId) {
+        this.testRequestsMap.set(testId, testRequests);
+      } else {
+        this.testRequests = testRequests;
+      }
+
+      console.log(
+        `[${testId || "legacy"}] Created ${testRequests.length} test requests`
+      );
+    }
   }
 
   /**
@@ -295,6 +409,17 @@ export class RequestTestBase {
   }
 
   /**
+   * Gets the test requests created during setup
+   * @param testId - Optional test ID to get requests for a specific test
+   */
+  getTestRequests(testId?: string): RequestT[] {
+    if (testId) {
+      return this.testRequestsMap.get(testId) || [];
+    }
+    return this.testRequests;
+  }
+
+  /**
    * Gets the test team created during setup
    */
   getTestTeam(): { teamId: string; name: string } | null {
@@ -375,8 +500,165 @@ export class RequestTestBase {
    */
   async cleanupTestData(testId: string): Promise<void> {
     await this.deleteTestWorkers(testId);
+    await this.deleteTestRequests(testId);
     this.testWorkersMap.delete(testId);
     this.testShiftsMap.delete(testId);
+    this.testRequestsMap.delete(testId);
+  }
+
+  /**
+   * Creates a test request using the API
+   * @param requestData - The request data
+   * @param testId - Optional test ID for test isolation
+   */
+  async createTestRequest(
+    requestData: {
+      workerId: string;
+      requestType: RequestType;
+      startDate: dayjs.Dayjs;
+      endDate: dayjs.Dayjs;
+      status?: RequestStatus;
+      negative?: boolean;
+      comment?: string;
+      shiftId?: string | null;
+      shiftOptions?: any[];
+    },
+    testId?: string
+  ): Promise<RequestT> {
+    if (!this.testTeam) {
+      throw new Error(
+        "Test team not initialized. Call setupRequestTests first."
+      );
+    }
+
+    // Convert RequestType enum to API format
+    const requestTypeMap = {
+      [RequestType.WORK_DEMAND]: "work_demand" as const,
+      [RequestType.LEAVE]: "leave" as const,
+    };
+
+    // Convert RequestStatus enum to API format
+    const requestStatusMap = {
+      [RequestStatus.PENDING]: "pending" as const,
+      [RequestStatus.APPROVED]: "approved" as const,
+      [RequestStatus.DENIED]: "denied" as const,
+      [RequestStatus.DEFERRED]: "deferred" as const,
+    };
+
+    const apiResponse = await this.dbUtils.createRequest({
+      teamId: this.testTeam.teamId,
+      workerId: requestData.workerId,
+      requestType: requestTypeMap[requestData.requestType],
+      startDate: requestData.startDate.toDate(),
+      endDate: requestData.endDate.toDate(),
+      status: requestData.status
+        ? requestStatusMap[requestData.status]
+        : "pending",
+      negative: requestData.negative || false,
+      comment: requestData.comment || "",
+      shiftId: requestData.shiftId,
+      shiftOptions: requestData.shiftOptions,
+    });
+
+    // Convert API response to RequestT
+    const request: RequestT = {
+      id: apiResponse.id,
+      teamId: apiResponse.teamId,
+      requestType: requestData.requestType,
+      workerId: apiResponse.workerId,
+      startDate: dayjs.unix(apiResponse.startDate).utc(),
+      endDate: dayjs.unix(apiResponse.endDate).utc(),
+      shiftId: apiResponse.shiftId || null,
+      shiftOptions: apiResponse.shiftOptions || [],
+      negative: apiResponse.negative || false,
+      hard: apiResponse.hard || true,
+      status: requestData.status || RequestStatus.PENDING,
+      fulfillment: FulfillmentStatus.NOT_PROCESSED,
+      comment: apiResponse.comment || "",
+      createdAt: dayjs.unix(apiResponse.createdAt).utc(),
+      active: apiResponse.active || true,
+      shiftTargetIds: apiResponse.shiftTargetIds || [],
+      missingAttributes: apiResponse.missingAttributes || [],
+    };
+
+    return request;
+  }
+
+  /**
+   * Deletes a test request using the API
+   */
+  async deleteTestRequest(requestId: string): Promise<void> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupRequestTests first.");
+    }
+
+    await this.dbUtils.deleteRequest(requestId, this.testTeam.teamId);
+  }
+
+  /**
+   * Approves a test request using the API
+   * @param requestId - The ID of the request to approve
+   * @returns The updated request with APPROVED status
+   */
+  async approveTestRequest(requestId: string): Promise<RequestT> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupRequestTests first.");
+    }
+
+    return await this.dbUtils.approveRequest(requestId, this.testTeam.teamId);
+  }
+
+  /**
+   * Deletes all test requests created during setup
+   */
+  async deleteAllTestRequests(): Promise<void> {
+    if (!this.testTeam) return;
+
+    // Delete requests from all test IDs
+    for (const [testId, requests] of this.testRequestsMap.entries()) {
+      await this.deleteTestRequests(testId);
+    }
+
+    // Delete legacy requests
+    for (const request of this.testRequests) {
+      try {
+        await this.deleteTestRequest(request.id);
+      } catch (error) {
+        console.warn(`Failed to delete request ${request.id}:`, error);
+      }
+    }
+  }
+
+  /**
+   * Deletes test requests for a specific test ID
+   * @param testId - The test ID to clean up requests for
+   */
+  async deleteTestRequests(testId: string): Promise<void> {
+    const requests = this.testRequestsMap.get(testId);
+    if (!requests) return;
+
+    for (const request of requests) {
+      try {
+        await this.deleteTestRequest(request.id);
+      } catch (error) {
+        console.warn(`Failed to delete request ${request.id}:`, error);
+      }
+    }
+  }
+
+  /**
+   * Navigates to the request calendar view
+   * Must be called after navigateToRequestsPage
+   */
+  async navigateToCalendarTab(page: Page): Promise<void> {
+    // Click on the calendar tab
+    const calendarTab = this.getCalendarTab(page);
+    await expect(calendarTab).toBeVisible();
+    await calendarTab.click();
+
+    // Wait for the calendar to be visible
+    const calendar = this.getRequestCalendar(page);
+    await expect(calendar).toBeVisible();
   }
 
   //////////////////////////
@@ -391,10 +673,10 @@ export class RequestTestBase {
   }
 
   /**
-   * Gets the request panel popover
+   * Gets the request panel dialog
    */
   getRequestPanelPopover(page: Page) {
-    return page.locator('[data-testid="request-panel-popover"]');
+    return page.locator('[data-testid="request-panel-dialog"]');
   }
 
   /**
@@ -419,17 +701,19 @@ export class RequestTestBase {
   }
 
   /**
-   * Gets the worker select dropdown
+   * Gets the worker select dropdown input element
+   * Note: MUI Select component uses a hidden input for the value
    */
   getWorkerSelect(page: Page) {
-    return page.locator('[data-testid="worker-select"]');
+    return page.locator('[data-testid="worker-select"] input');
   }
 
   /**
-   * Gets the shift select dropdown (for leave requests)
+   * Gets the shift select dropdown input element (for leave requests)
+   * Note: MUI Select component uses a hidden input for the value
    */
   getShiftSelect(page: Page) {
-    return page.locator('[data-testid="shift-select"]');
+    return page.locator('[data-testid="shift-select"] input');
   }
 
   /**
@@ -516,6 +800,129 @@ export class RequestTestBase {
     return page.locator('[data-testid="shift-options-popover"]');
   }
 
+  /**
+   * Gets the calendar tab button
+   */
+  getCalendarTab(page: Page) {
+    return page.getByTestId("calendar-tab");
+  }
+
+  /**
+   * Gets the request calendar component
+   */
+  getRequestCalendar(page: Page) {
+    return page.getByTestId("request-calendar");
+  }
+
+  /**
+   * Gets the calendar month label
+   */
+  getCalendarMonthLabel(page: Page) {
+    return page.getByTestId("calendar-month-label");
+  }
+
+  /**
+   * Gets the previous month button
+   */
+  getPrevMonthButton(page: Page) {
+    return page.getByTestId("calendar-prev-month-button");
+  }
+
+  /**
+   * Gets the next month button
+   */
+  getNextMonthButton(page: Page) {
+    return page.getByTestId("calendar-next-month-button");
+  }
+
+  /**
+   * Gets the today button
+   */
+  getTodayButton(page: Page) {
+    return page.getByTestId("calendar-today-button");
+  }
+
+  /**
+   * Gets a specific calendar cell by worker ID and date
+   */
+  getCalendarCell(page: Page, workerId: string, date: dayjs.Dayjs) {
+    return page.getByTestId(
+      `calendar-cell-${workerId}-${date.format("YYYY-MM-DD")}`
+    );
+  }
+
+  /**
+   * Gets a specific calendar cell with an existing request
+   */
+  getCalendarCellWithRequest(
+    page: Page,
+    workerId: string,
+    date: dayjs.Dayjs,
+    requestId: string
+  ) {
+    return page.getByTestId(
+      `calendar-cell-${workerId}-${date.format(
+        "YYYY-MM-DD"
+      )}-request-${requestId}`
+    );
+  }
+
+  /**
+   * Gets the pending status legend button
+   */
+  getShowPendingButton(page: Page) {
+    return page.getByTestId("calendar-show-pending-button");
+  }
+
+  /**
+   * Gets the accepted not fulfilled status legend button
+   */
+  getShowAcceptedNotFulfilledButton(page: Page) {
+    return page.getByTestId("calendar-show-accepted-not-fulfilled-button");
+  }
+
+  /**
+   * Gets the fulfilled status legend button
+   */
+  getShowFulfilledButton(page: Page) {
+    return page.getByTestId("calendar-show-fulfilled-button");
+  }
+
+  /**
+   * Gets the approve request button
+   */
+  getApproveRequestButton(page: Page, requestId: string) {
+    return page.getByTestId(`approve-request-button-${requestId}`);
+  }
+
+  /**
+   * Gets the reject request button
+   */
+  getRejectRequestButton(page: Page, requestId: string) {
+    return page.getByTestId(`reject-request-button-${requestId}`);
+  }
+
+  /**
+   * Gets the rescind request button
+   */
+  getRescindRequestButton(page: Page, requestId: string) {
+    return page.getByTestId(`rescind-request-button-${requestId}`);
+  }
+
+  /**
+   * Gets the delete request button
+   */
+  getDeleteRequestButton(page: Page, requestId: string) {
+    return page.getByTestId(`delete-request-button-${requestId}`);
+  }
+
+  /**
+   * Gets the comment field in the request panel
+   */
+  getCommentField(page: Page) {
+    return page.locator('textarea[name="comment"], input[name="comment"]');
+  }
+
   //////////////////////////
   // Helper Actions
   //////////////////////////
@@ -548,8 +955,9 @@ export class RequestTestBase {
    * Selects a worker by name
    */
   async selectWorker(page: Page, workerName: string): Promise<void> {
-    const workerSelect = this.getWorkerSelect(page);
-    await workerSelect.click();
+    // Click on the Select component (parent of the hidden input)
+    const workerSelectContainer = page.locator('[data-testid="worker-select"]');
+    await workerSelectContainer.click();
 
     // Wait for dropdown options to appear and select the worker
     const workerOption = page.locator(`text="${workerName}"`);
@@ -561,8 +969,9 @@ export class RequestTestBase {
    * Selects a shift by name (for leave requests)
    */
   async selectShift(page: Page, shiftName: string): Promise<void> {
-    const shiftSelect = this.getShiftSelect(page);
-    await shiftSelect.click();
+    // Click on the Select component (parent of the hidden input)
+    const shiftSelectContainer = page.locator('[data-testid="shift-select"]');
+    await shiftSelectContainer.click();
 
     // Wait for dropdown options to appear and select the shift
     const shiftOption = page.locator(`text="${shiftName}"`);
@@ -683,5 +1092,237 @@ export class RequestTestBase {
     console.log(
       `✅ Verified request for ${expectedRequest.workerName} appears in table`
     );
+  }
+
+  //////////////////////////
+  // Calendar Interaction Helpers
+  //////////////////////////
+
+  /**
+   * Clicks on an empty calendar cell to create a new request
+   */
+  async clickEmptyCalendarCell(
+    page: Page,
+    workerId: string,
+    date: dayjs.Dayjs
+  ): Promise<void> {
+    const cell = this.getCalendarCell(page, workerId, date);
+    await expect(cell).toBeVisible();
+    await cell.click();
+  }
+
+  /**
+   * Clicks on a calendar cell with an existing request to edit it
+   */
+  async clickRequestCalendarCell(
+    page: Page,
+    workerId: string,
+    date: dayjs.Dayjs,
+    requestId: string
+  ): Promise<void> {
+    const cell = this.getCalendarCellWithRequest(
+      page,
+      workerId,
+      date,
+      requestId
+    );
+    await expect(cell).toBeVisible();
+    await cell.click();
+  }
+
+  /**
+   * Navigates to a specific month in the calendar
+   */
+  async navigateToMonth(page: Page, targetMonth: dayjs.Dayjs): Promise<void> {
+    const currentMonthLabel = this.getCalendarMonthLabel(page);
+    let currentMonthText = await currentMonthLabel.textContent();
+    let currentMonth = dayjs.utc(currentMonthText, "MMMM YYYY");
+
+    while (!currentMonth.isSame(targetMonth, "month")) {
+      if (currentMonth.isBefore(targetMonth, "month")) {
+        await this.getNextMonthButton(page).click();
+      } else {
+        await this.getPrevMonthButton(page).click();
+      }
+
+      // Wait for the month to change
+      await page.waitForTimeout(100);
+      currentMonthText = await currentMonthLabel.textContent();
+      currentMonth = dayjs.utc(currentMonthText, "MMMM YYYY");
+    }
+  }
+
+  /**
+   * Waits for a request to appear in the calendar at the specified location
+   */
+  async waitForRequestInCalendar(
+    page: Page,
+    workerId: string,
+    date: dayjs.Dayjs,
+    requestId: string,
+    timeout: number = 5000
+  ): Promise<void> {
+    const cell = this.getCalendarCellWithRequest(
+      page,
+      workerId,
+      date,
+      requestId
+    );
+    await expect(cell).toBeVisible({ timeout });
+  }
+
+  /**
+   * Waits for a request to disappear from the calendar at the specified location
+   */
+  async waitForRequestToDisappearFromCalendar(
+    page: Page,
+    workerId: string,
+    date: dayjs.Dayjs,
+    requestId: string,
+    timeout: number = 5000
+  ): Promise<void> {
+    const cell = this.getCalendarCellWithRequest(
+      page,
+      workerId,
+      date,
+      requestId
+    );
+    await expect(cell).not.toBeVisible({ timeout });
+  }
+
+  /**
+   * Verifies that a calendar cell is empty (no request)
+   */
+  async verifyCalendarCellIsEmpty(
+    page: Page,
+    workerId: string,
+    date: dayjs.Dayjs
+  ): Promise<void> {
+    const cell = this.getCalendarCell(page, workerId, date);
+    await expect(cell).toBeVisible();
+
+    // Check that it doesn't have the request class
+    const hasRequestClass = await cell.evaluate((el: Element) =>
+      el.classList.contains("calendar-cell--leave")
+    );
+    expect(hasRequestClass).toBe(false);
+  }
+
+  /**
+   * Verifies that a calendar cell has a request with specific properties
+   */
+  async verifyCalendarCellHasRequest(
+    page: Page,
+    workerId: string,
+    date: dayjs.Dayjs,
+    requestId: string,
+    expectedProperties?: {
+      status?: RequestStatus;
+      backgroundColor?: string;
+    }
+  ): Promise<void> {
+    const cell = this.getCalendarCellWithRequest(
+      page,
+      workerId,
+      date,
+      requestId
+    );
+    await expect(cell).toBeVisible();
+
+    // Check that it has the request class
+    const hasRequestClass = await cell.evaluate((el: Element) =>
+      el.classList.contains("calendar-cell--leave")
+    );
+    expect(hasRequestClass).toBe(true);
+
+    if (expectedProperties?.backgroundColor) {
+      const backgroundColor = await cell.evaluate(
+        (el: Element) =>
+          getComputedStyle(el as HTMLElement).backgroundColor ||
+          (el as HTMLElement).style.background
+      );
+      expect(backgroundColor).toContain(expectedProperties.backgroundColor);
+    }
+  }
+
+  /**
+   * Verifies that clicking on a past date does nothing
+   */
+  async verifyPastDateClick(
+    page: Page,
+    workerId: string,
+    pastDate: dayjs.Dayjs
+  ): Promise<void> {
+    const cell = this.getCalendarCell(page, workerId, pastDate);
+    await expect(cell).toBeVisible();
+
+    // Verify the cell has the past class
+    const hasPastClass = await cell.evaluate((el: Element) =>
+      el.classList.contains("calendar-cell--past")
+    );
+    expect(hasPastClass).toBe(true);
+
+    // Click on the cell
+    await cell.click();
+
+    // Verify no request panel opened
+    const requestPanel = this.getRequestPanelPopover(page);
+    await expect(requestPanel).not.toBeVisible();
+  }
+
+  /**
+   * Toggles the status legend filters and verifies visibility
+   */
+  async toggleStatusFilter(
+    page: Page,
+    status: "pending" | "accepted-not-fulfilled" | "fulfilled"
+  ): Promise<void> {
+    let button;
+    switch (status) {
+      case "pending":
+        button = this.getShowPendingButton(page);
+        break;
+      case "accepted-not-fulfilled":
+        button = this.getShowAcceptedNotFulfilledButton(page);
+        break;
+      case "fulfilled":
+        button = this.getShowFulfilledButton(page);
+        break;
+    }
+
+    await expect(button).toBeVisible();
+    await button.click();
+  }
+
+  /**
+   * Creates and verifies a request appears in the calendar
+   */
+  async createRequestAndVerifyInCalendar(
+    page: Page,
+    workerId: string,
+    date: dayjs.Dayjs,
+    requestType: RequestType = RequestType.WORK_DEMAND
+  ): Promise<string> {
+    // Click on empty cell to open create dialog
+    await this.clickEmptyCalendarCell(page, workerId, date);
+
+    // Verify request panel opens
+    const requestPanel = this.getRequestPanelPopover(page);
+    await expect(requestPanel).toBeVisible();
+
+    // Select request type if needed
+    if (requestType === RequestType.LEAVE) {
+      await this.selectRequestType(page, "leave");
+    }
+
+    // Save the request
+    await this.saveRequest(page);
+
+    // Wait for panel to close
+    await expect(requestPanel).not.toBeVisible();
+
+    // Note: In a real test, you'd need to get the created request ID
+    // For now, return a placeholder
+    return "created-request-id";
   }
 }

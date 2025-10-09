@@ -296,6 +296,10 @@ export default function RequestTab({
                 userTeamRole={userTeamRole}
                 handleAddRequest={handleAddRequest}
                 handleUpdateRequest={handleUpdateRequest}
+                handleDeleteRequest={handleDeleteRequest}
+                handleRescindRequest={handleRescindRequest}
+                handleAcceptRequest={handleAcceptRequest}
+                handleDenyRequest={handleDenyRequest}
               />
             </div>
           </div>
@@ -322,6 +326,16 @@ export default function RequestTab({
               requests={requests}
               shifts={shifts}
               demands={shiftDemands}
+              lng={lng}
+              teamId={teamId}
+              shiftOptions={shiftOptions}
+              userTeamRole={userTeamRole}
+              handleAddRequest={handleAddRequest}
+              handleUpdateRequest={handleUpdateRequest}
+              handleDeleteRequest={handleDeleteRequest}
+              handleRescindRequest={handleRescindRequest}
+              handleAcceptRequest={handleAcceptRequest}
+              handleDenyRequest={handleDenyRequest}
             />
           )}
         </div>

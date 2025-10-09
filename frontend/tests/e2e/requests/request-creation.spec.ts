@@ -362,9 +362,10 @@ test.describe("Request Creation", () => {
     const popover = requestTestBase.getRequestPanelPopover(page);
     await expect(popover).toBeVisible();
 
-    // Check that validation errors are displayed (look for error styling)
+    // Check that validation errors are displayed using accessibility attribute
+    // MUI FormControl sets aria-invalid="true" on the input when error is present.
     const workerSelect = requestTestBase.getWorkerSelect(page);
-    await expect(workerSelect).toHaveClass(/error/i);
+    await expect(workerSelect).toHaveAttribute("aria-invalid", "true");
 
     console.log("✅ Validation errors displayed correctly");
   });

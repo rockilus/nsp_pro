@@ -206,15 +206,39 @@
 .calendar-row__name {
   width: 160px;
   min-width: 120px;
+  max-width: 160px;
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
+  display: block;
+  line-height: 36px;
   font-weight: 500;
   font-size: 15px;
   color: #222;
   background: #f7f7f7;
   padding-left: 12px;
+  padding-right: 8px;
   border-right: 1px solid #e0e0e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+  position: relative;
+}
+
+.calendar-row__name:hover::after {
+  content: attr(title);
+  position: absolute;
+  z-index: 10;
+  left: 0;
+  top: 100%;
+  background: #222;
+  color: #fff;
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(30, 30, 30, 0.18);
+  white-space: nowrap;
+  pointer-events: none;
+  margin-top: 4px;
 }
 
 .calendar-row__days {
@@ -262,13 +286,42 @@
   display: block;
 }
 
+.calendar-cell--clickable {
+  transition: background-color 0.2s ease;
+}
+
+.calendar-cell--clickable:hover {
+  background-color: #f0f8ff !important;
+  border: 1px solid #2196f3;
+  box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+}
+
+.calendar-cell--past {
+  background-color: #f5f5f5 !important;
+  color: #999 !important;
+  opacity: 0.6;
+}
+
+.calendar-cell--past.calendar-cell--clickable {
+  cursor: not-allowed !important;
+}
+
+.calendar-cell--past.calendar-cell--clickable:hover {
+  background-color: #f5f5f5 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
 @media (max-width: 900px) {
   .calendar-header__empty,
   .calendar-row__name {
     width: 90px;
     min-width: 70px;
+    max-width: 90px;
     font-size: 13px;
+    line-height: 28px;
     padding-left: 6px;
+    padding-right: 4px;
   }
   .calendar-header__days,
   .calendar-row__days {

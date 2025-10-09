@@ -3,11 +3,8 @@ import dayjs, { Dayjs } from "dayjs";
 import "./request-calendar.css";
 import { StaffingSummaryLoadingIndicator } from "./StaffingSummaryLoadingIndicator";
 import { RequestT } from "../../types/request";
-
-type WorkerT = {
-  id: string;
-  name: string;
-};
+import { WorkerT } from "../../types/worker";
+import RequestPanel from "./request-panel";
 
 type StatusColors = {
   [key: string]: string;
@@ -15,6 +12,11 @@ type StatusColors = {
 
 import { ShiftDemandDTO } from "../../types/shiftDemand";
 import { ShiftT } from "../../types/shift";
+import {
+  RequestType,
+  RequestStatus,
+  FulfillmentStatus,
+} from "../../types/request";
 
 type RequestCalendarProps = {
   workers: WorkerT[];
@@ -22,6 +24,16 @@ type RequestCalendarProps = {
   statusColors?: StatusColors;
   demands?: ShiftDemandDTO[];
   shifts?: ShiftT[];
+  lng?: string;
+  teamId?: string;
+  shiftOptions?: Array<any>;
+  userTeamRole?: any;
+  handleAddRequest?: (request: RequestT) => void;
+  handleUpdateRequest?: (request: RequestT) => void;
+  handleDeleteRequest?: (requestId: string) => void;
+  handleRescindRequest?: (requestId: string) => void;
+  handleAcceptRequest?: (requestId: string) => void;
+  handleDenyRequest?: (requestId: string) => void;
 };
 
 const defaultStatusColors: StatusColors = {
@@ -62,6 +74,16 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   statusColors = defaultStatusColors,
   demands = [],
   shifts = [],
+  lng,
+  teamId,
+  shiftOptions = [],
+  userTeamRole,
+  handleAddRequest,
+  handleUpdateRequest,
+  handleDeleteRequest,
+  handleRescindRequest,
+  handleAcceptRequest,
+  handleDenyRequest,
 }) => {
   const [currentMonth, setCurrentMonth] = React.useState(
     dayjs().utc().startOf("month")
@@ -70,6 +92,20 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   const [showAcceptedNotFulfilled, setShowAcceptedNotFulfilled] =
     React.useState(true);
   const [showFulfilled, setShowFulfilled] = React.useState(true);
+  // allow toggling visibility of denied (rejected) requests
+  const [showDenied, setShowDenied] = React.useState(true);
+
+  // State for calendar cell selection and request creation/editing
+  const [selectedCell, setSelectedCell] = React.useState<{
+    workerId: string;
+    date: Dayjs;
+  } | null>(null);
+
+  // State for editing existing requests
+  const [selectedRequest, setSelectedRequest] = React.useState<RequestT | null>(
+    null
+  );
+
   // Memoize days to avoid unnecessary rerenders and effect triggers
   const days = React.useMemo(
     () => getDaysInMonth(currentMonth),
@@ -222,6 +258,9 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   function isFulfilled(req: RequestT) {
     return req.status === "approved" && req.fulfillment === "fulfilled";
   }
+  function isDenied(req: RequestT) {
+    return req.status === RequestStatus.DENIED;
+  }
 
   // For each worker, for each day, find if a request covers that day and is visible
   function getRequestForDay(workerId: string, day: Dayjs): RequestT | null {
@@ -234,6 +273,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
         if (isPending(r) && showPending) return true;
         if (isAcceptedNotFulfilled(r) && showAcceptedNotFulfilled) return true;
         if (isFulfilled(r) && showFulfilled) return true;
+        if (isDenied(r) && showDenied) return true;
         return false;
       }) || null
     );
@@ -244,16 +284,85 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   const handleNextMonth = () => setCurrentMonth((m) => m.add(1, "month"));
   const handleToday = () => setCurrentMonth(dayjs().utc().startOf("month"));
 
+  // Handle calendar cell click for empty cells
+  const handleCellClick = (workerId: string, date: Dayjs) => {
+    const existingRequest = getRequestForDay(workerId, date);
+
+    // Don't allow clicking on past empty cells
+    if (!existingRequest && date.isBefore(dayjs().utc(), "day")) {
+      return;
+    }
+
+    // Only allow clicking on empty cells (no existing request)
+    if (!existingRequest && handleAddRequest && lng && teamId) {
+      setSelectedCell({ workerId, date });
+    }
+  };
+
+  // Handle clicking on existing requests to edit them
+  const handleRequestClick = (request: RequestT) => {
+    if (handleUpdateRequest && lng && teamId) {
+      setSelectedRequest(request);
+    }
+  };
+
+  // Create pre-populated request for selected cell
+  const createPrePopulatedRequest = (
+    workerId: string,
+    date: Dayjs
+  ): RequestT => ({
+    id: "",
+    teamId: teamId || "",
+    requestType: RequestType.WORK_DEMAND,
+    workerId: workerId,
+    startDate: date,
+    endDate: date,
+    shiftId: null,
+    shiftOptions: [],
+    negative: false,
+    hard: true,
+    status: RequestStatus.PENDING,
+    fulfillment: FulfillmentStatus.NOT_PROCESSED,
+    comment: "",
+    createdAt: dayjs.utc(),
+    active: true,
+    shiftTargetIds: [],
+    missingAttributes: [],
+  });
+
+  // Handle closing the request panel
+  const handleCloseRequestPanel = () => {
+    setSelectedCell(null);
+    setSelectedRequest(null);
+  };
+
+  // Handle successful request creation
+  const handleRequestCreated = (request: RequestT) => {
+    if (handleAddRequest) {
+      handleAddRequest(request);
+    }
+    setSelectedCell(null);
+  };
+
+  // Handle successful request update
+  const handleRequestUpdated = (request: RequestT) => {
+    if (handleUpdateRequest) {
+      handleUpdateRequest(request);
+    }
+    setSelectedRequest(null);
+  };
+
   // --- END STAFFING TABLE LOGIC ---
 
   return (
-    <div className="request-calendar">
+    <div className="request-calendar" data-testid="request-calendar">
       {/* Top Controls: Status Legend & Month Selector */}
       <div className="calendar-top-controls">
         <div className="calendar-month-selector">
           <button
             className="calendar-month-selector__today"
             onClick={handleToday}
+            data-testid="calendar-today-button"
           >
             Today
           </button>
@@ -261,6 +370,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
             className="calendar-month-selector__arrow"
             onClick={handlePrevMonth}
             aria-label="Previous month"
+            data-testid="calendar-prev-month-button"
           >
             &#8592;
           </button>
@@ -268,10 +378,14 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
             className="calendar-month-selector__arrow"
             onClick={handleNextMonth}
             aria-label="Next month"
+            data-testid="calendar-next-month-button"
           >
             &#8594;
           </button>
-          <span className="calendar-month-selector__label">
+          <span
+            className="calendar-month-selector__label"
+            data-testid="calendar-month-label"
+          >
             {currentMonth.format("MMMM YYYY")}
           </span>
         </div>
@@ -283,6 +397,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
             type="button"
             onClick={() => setShowPending((v) => !v)}
             aria-pressed={showPending}
+            data-testid="calendar-show-pending-button"
           >
             <span className="calendar-status-legend__dot calendar-status-legend__dot--pending" />
             Pending
@@ -296,6 +411,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
             type="button"
             onClick={() => setShowAcceptedNotFulfilled((v) => !v)}
             aria-pressed={showAcceptedNotFulfilled}
+            data-testid="calendar-show-accepted-not-fulfilled-button"
           >
             <span className="calendar-status-legend__dot calendar-status-legend__dot--accepted-not-fulfilled" />
             Accepted not fulfilled
@@ -307,9 +423,22 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
             type="button"
             onClick={() => setShowFulfilled((v) => !v)}
             aria-pressed={showFulfilled}
+            data-testid="calendar-show-fulfilled-button"
           >
             <span className="calendar-status-legend__dot calendar-status-legend__dot--fulfilled" />
             Fulfilled
+          </button>
+          <button
+            className={`calendar-status-legend__btn${
+              showDenied ? " calendar-status-legend__btn--active" : ""
+            }`}
+            type="button"
+            onClick={() => setShowDenied((v) => !v)}
+            aria-pressed={showDenied}
+            data-testid="calendar-show-denied-button"
+          >
+            <span className="calendar-status-legend__dot calendar-status-legend__dot--denied" />
+            Denied
           </button>
         </div>
       </div>
@@ -337,7 +466,11 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           <>
             {/* Program staffing requirement */}
             <div className="calendar-row">
-              <div className="calendar-row__name" style={{ fontWeight: 600 }}>
+              <div
+                className="calendar-row__name"
+                style={{ fontWeight: 600 }}
+                title="Demand"
+              >
                 Demand
               </div>
               <div className="calendar-row__days">
@@ -364,7 +497,11 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
             </div>
             {/* Current staff available */}
             <div className="calendar-row">
-              <div className="calendar-row__name" style={{ fontWeight: 600 }}>
+              <div
+                className="calendar-row__name"
+                style={{ fontWeight: 600 }}
+                title="Offer"
+              >
                 Offer
               </div>
               <div className="calendar-row__days">
@@ -391,7 +528,11 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
             </div>
             {/* Delta */}
             <div className="calendar-row">
-              <div className="calendar-row__name" style={{ fontWeight: 600 }}>
+              <div
+                className="calendar-row__name"
+                style={{ fontWeight: 600 }}
+                title="Delta"
+              >
                 Delta
               </div>
               <div className="calendar-row__days">
@@ -425,21 +566,62 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
       <div className="calendar-body">
         {workers.map((worker) => (
           <div className="calendar-row" key={worker.id}>
-            <div className="calendar-row__name">{worker.name}</div>
+            <div className="calendar-row__name" title={worker.name}>
+              {worker.name}
+            </div>
             <div className="calendar-row__days">
               {days.map((d) => {
                 const req = getRequestForDay(worker.id, d);
+                const isEmpty = !req;
+                const isPast = d.isBefore(dayjs().utc(), "day");
+                const isPastEmpty = isPast && isEmpty;
+                const canAddRequest =
+                  isEmpty && !isPast && !!handleAddRequest && !!lng && !!teamId;
+                const canEditRequest =
+                  !!req && !!handleUpdateRequest && !!lng && !!teamId;
+
                 return (
                   <div
                     key={d.date()}
                     className={`calendar-cell${
                       req ? " calendar-cell--leave" : ""
-                    }`}
+                    }${
+                      canAddRequest || canEditRequest
+                        ? " calendar-cell--clickable"
+                        : ""
+                    }${isPastEmpty ? " calendar-cell--past" : ""}`}
                     style={{
                       background: req
                         ? getStatusColor(req, statusColors)
                         : undefined,
+                      cursor:
+                        canAddRequest || canEditRequest ? "pointer" : "default",
                     }}
+                    data-testid={`calendar-cell-${worker.id}-${d.format(
+                      "YYYY-MM-DD"
+                    )}${req ? `-request-${req.id}` : ""}`}
+                    onClick={() => {
+                      if (canAddRequest) {
+                        handleCellClick(worker.id, d);
+                      } else if (canEditRequest && req) {
+                        handleRequestClick(req);
+                      }
+                    }}
+                    title={
+                      isPastEmpty
+                        ? `Past date - ${d.format("MMM D")}`
+                        : canAddRequest
+                        ? `Click to create request for ${
+                            worker.name
+                          } on ${d.format("MMM D")}`
+                        : canEditRequest && req
+                        ? `Click to edit ${req.requestType} request for ${
+                            worker.name
+                          } (${req.startDate.format(
+                            "MMM D"
+                          )} - ${req.endDate.format("MMM D")})`
+                        : undefined
+                    }
                   >
                     {req && (
                       <div className="calendar-cell__tooltip">
@@ -466,6 +648,55 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           </div>
         ))}
       </div>
+
+      {/* Request Panel for creating requests from calendar */}
+      {selectedCell && lng && teamId && (
+        <RequestPanel
+          lng={lng}
+          teamId={teamId}
+          isEdit={false}
+          request={createPrePopulatedRequest(
+            selectedCell.workerId,
+            selectedCell.date
+          )}
+          workers={workers.filter((w) => !w.deleted)}
+          shifts={shifts}
+          shiftOptions={shiftOptions}
+          userWorkerId={selectedCell.workerId}
+          userTeamRole={userTeamRole}
+          handleAddRequest={handleRequestCreated}
+          handleUpdateRequest={handleUpdateRequest || (() => {})}
+          handleDeleteRequest={handleDeleteRequest}
+          handleRescindRequest={handleRescindRequest}
+          handleAcceptRequest={handleAcceptRequest}
+          handleDenyRequest={handleDenyRequest}
+          hideButton={true}
+          onClose={handleCloseRequestPanel}
+        />
+      )}
+
+      {/* Request Panel for editing existing requests from calendar */}
+      {selectedRequest && lng && teamId && (
+        <RequestPanel
+          lng={lng}
+          teamId={teamId}
+          isEdit={true}
+          request={selectedRequest}
+          workers={workers.filter((w) => !w.deleted)}
+          shifts={shifts}
+          shiftOptions={shiftOptions}
+          userWorkerId={selectedRequest.workerId}
+          userTeamRole={userTeamRole}
+          handleAddRequest={handleRequestUpdated}
+          handleUpdateRequest={handleRequestUpdated}
+          handleDeleteRequest={handleDeleteRequest}
+          handleRescindRequest={handleRescindRequest}
+          handleAcceptRequest={handleAcceptRequest}
+          handleDenyRequest={handleDenyRequest}
+          hideButton={true}
+          onClose={handleCloseRequestPanel}
+        />
+      )}
     </div>
   );
 };

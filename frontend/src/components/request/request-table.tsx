@@ -278,6 +278,10 @@ const ActionsCell = ({
         userTeamRole={userTeamRole}
         handleAddRequest={handleUpdateRequest}
         handleUpdateRequest={handleUpdateRequest}
+        handleDeleteRequest={handleDeleteRequest}
+        handleRescindRequest={handleRescindRequest}
+        handleAcceptRequest={handleAcceptRequest}
+        handleDenyRequest={handleDenyRequest}
       />
 
       {canApprove && (
