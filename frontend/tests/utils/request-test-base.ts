@@ -16,6 +16,7 @@ import {
   ShiftRestType,
   ShiftLeaveType,
 } from "../../src/types/shift";
+import { SWOIdTypes } from "../../src/types/constraint";
 import {
   RequestT,
   RequestStatus,
@@ -165,48 +166,76 @@ export class RequestTestBase {
 
     // Create test requests if requested
     if (createRequests) {
-      // Fetch leave shifts for leave requests
-      const leaveShifts = await this.fetchLeaveShiftsForTeam();
+      // Prefer using one of the shifts we just created for this test (keeps tests isolated)
+      // Look up shifts created for this testId (or legacy array)
+      const createdShifts = testId
+        ? this.testShiftsMap.get(testId) || []
+        : this.testShifts;
 
-      // If no leave shifts exist, create one
-      let leaveShift: ShiftT;
-      if (leaveShifts.length === 0) {
-        console.log(
-          `[${testId || "legacy"}] No leave shifts found, creating one...`
-        );
-        leaveShift = await this.createTestShift({
-          name: `Annual Leave ${workerIndex}-${testId || randomUUID()}`,
-          startTime: dayjs.utc().hour(0).minute(0).second(0),
-          endTime: dayjs.utc().hour(23).minute(59).second(59),
-          shiftType: ShiftType.LEAVE,
-          leaveType: ShiftLeaveType.VACATION,
-          color: "#ff9800",
-          acronym: "AL",
-        });
-      } else {
-        leaveShift = leaveShifts[0];
+      // Prefer a shift to use for work request shiftOptions. Prefer a leave-type only if explicitly desired
+      let selectedShift: ShiftT | undefined = createdShifts.find(
+        (s) =>
+          s.shiftType === ShiftType.NORMAL ||
+          s.shiftType === ShiftType.DUTY ||
+          s.shiftType === ShiftType.REST
+      );
+
+      // Fall back to any created shift
+      if (!selectedShift) {
+        selectedShift = createdShifts[0];
       }
 
+      // As a last resort, try to fetch any shift from the API
+      if (!selectedShift) {
+        const allShifts = await this.fetchAllShiftsForTeam();
+        selectedShift = allShifts[0];
+      }
+
+      if (!selectedShift) {
+        throw new Error(
+          `Failed to find or fetch a shift for request test setup (${
+            testId || "legacy"
+          })`
+        );
+      }
+
+      // Create work requests that reference the created test shifts via shiftOptions
       const testRequestsData = [
-        // Future request - worker 2, pending leave with shift ID
+        // Future work request - worker 2, pending, prefer selectedShift
         {
           workerId: testWorkers[1].workerId,
-          requestType: RequestType.LEAVE,
+          requestType: RequestType.WORK_DEMAND,
           startDate: dayjs.utc().add(3, "days"),
           endDate: dayjs.utc().add(3, "days"),
           status: RequestStatus.PENDING,
           negative: false,
-          shiftId: leaveShift.id, // Leave requests require a shift ID
+          shiftOptions: [
+            {
+              name: selectedShift.name,
+              id: selectedShift.id,
+              idType: SWOIdTypes.SHIFT,
+              isBoolDim: false,
+              categoryName: "Shifts",
+            },
+          ],
         },
-        // Past request - worker 1, approved leave
+        // Past work request - worker 1, approved
         {
           workerId: testWorkers[0].workerId,
-          requestType: RequestType.LEAVE,
+          requestType: RequestType.WORK_DEMAND,
           startDate: dayjs.utc().subtract(2, "days"),
           endDate: dayjs.utc().subtract(2, "days"),
           status: RequestStatus.APPROVED,
           negative: false,
-          shiftId: leaveShift.id, // Leave requests require a shift ID
+          shiftOptions: [
+            {
+              name: selectedShift.name,
+              id: selectedShift.id,
+              idType: SWOIdTypes.SHIFT,
+              isBoolDim: false,
+              categoryName: "Shifts",
+            },
+          ],
         },
       ];
 
