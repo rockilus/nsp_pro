@@ -219,6 +219,17 @@
   content: none;
 }
 
+/* Emojis */
+.calendar-cell__emojis {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 1rem;
+  line-height: 1;
+  z-index: 1;
+}
+
 /* Tooltip */
 .calendar-cell__tooltip {
   display: none;

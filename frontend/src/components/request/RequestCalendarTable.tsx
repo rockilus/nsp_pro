@@ -2,7 +2,12 @@ import React from "react";
 import dayjs, { Dayjs } from "dayjs";
 import "./RequestCalendarTable.css";
 import { StaffingSummaryLoadingIndicator } from "./StaffingSummaryLoadingIndicator";
-import { RequestT, RequestType } from "../../types/request";
+import {
+  RequestT,
+  RequestType,
+  RequestStatus,
+  FulfillmentStatus,
+} from "../../types/request";
 import { WorkerT } from "../../types/worker";
 import { ShiftT } from "../../types/shift";
 import { ShiftColorMappings } from "../../constants/constants";
@@ -171,6 +176,51 @@ function RequestCalendarCell({
 
   const shiftColors = getShiftColors();
 
+  // Get emoji indicators for the request
+  const getRequestEmojis = () => {
+    if (!request) return null;
+
+    const emojis: string[] = [];
+
+    // Work request type indicator (negative vs positive)
+    if (request.requestType === RequestType.WORK_DEMAND) {
+      if (request.negative) {
+        emojis.push("🙅"); // Person gesturing no
+      } else {
+        emojis.push("🙋"); // Person raising one hand
+      }
+    }
+
+    // Status indicator
+    switch (request.status) {
+      case RequestStatus.PENDING:
+        emojis.push("🟠"); // Orange circle
+        break;
+      case RequestStatus.APPROVED:
+        emojis.push("🟢"); // Green circle
+        break;
+      case RequestStatus.DENIED:
+        emojis.push("🔴"); // Red circle
+        break;
+    }
+
+    // Fulfillment indicator (only show for approved requests)
+    if (request.status === RequestStatus.APPROVED) {
+      switch (request.fulfillment) {
+        case FulfillmentStatus.FULFILLED:
+          emojis.push("✅"); // Check mark
+          break;
+        case FulfillmentStatus.UNFULFILLED:
+          emojis.push("❌"); // Cross mark
+          break;
+      }
+    }
+
+    return emojis.join(" ");
+  };
+
+  const requestEmojis = getRequestEmojis();
+
   return (
     <div
       key={date.date()}
@@ -198,6 +248,9 @@ function RequestCalendarCell({
       onClick={handleClick}
       title={getTitle()}
     >
+      {request && requestEmojis && (
+        <div className="calendar-cell__emojis">{requestEmojis}</div>
+      )}
       {request && (
         <div className="calendar-cell__tooltip">
           <div>
