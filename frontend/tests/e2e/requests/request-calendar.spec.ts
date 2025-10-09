@@ -513,10 +513,17 @@ test.describe("Request Calendar", () => {
     await expect(rescindButton).toBeVisible();
     await rescindButton.click();
 
-    // Wait for panel to close
+    // Verify the status chip in the panel shows "Pending"
+    const statusChip = requestPanel.locator('[class*="MuiChip-filled"]');
+    await expect(statusChip).toBeVisible();
+    await expect(statusChip).toHaveText(/pending/i);
+
+    // Close the panel
+    const closeButton = page.getByTestId("close-request-dialog-button");
+    await closeButton.click();
     await expect(requestPanel).not.toBeVisible();
 
-    // Verify the request status changed back to pending
+    // Verify the request status changed back to pending in the calendar
     await requestTestBase.verifyCalendarCellHasRequest(
       page,
       testWorkers[0].workerId,
