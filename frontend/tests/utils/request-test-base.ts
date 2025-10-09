@@ -92,7 +92,10 @@ export class RequestTestBase {
       throw new Error("Failed to create test team for request tests");
     }
 
-    // Create test workers
+    // Create test workers with employment start date before any past requests
+    // Past requests are created 2 days ago, so we set employment start date 7 days ago
+    const employmentStartDate = dayjs.utc().subtract(7, "days").toDate();
+
     const testWorkersData = [
       {
         name: `Test Worker 1 ${workerIndex}-${testId || randomUUID()}`,
@@ -101,6 +104,7 @@ export class RequestTestBase {
         weeklyHoursDesired: 40,
         dutiesPerMonth: 8,
         annualLeave: 25,
+        employmentStartDate: employmentStartDate,
       },
       {
         name: `Test Worker 2 ${workerIndex}-${testId || randomUUID()}`,
@@ -109,6 +113,7 @@ export class RequestTestBase {
         weeklyHoursDesired: 35,
         dutiesPerMonth: 6,
         annualLeave: 20,
+        employmentStartDate: employmentStartDate,
       },
     ];
 
