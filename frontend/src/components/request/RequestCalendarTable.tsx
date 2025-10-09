@@ -172,14 +172,16 @@ function RequestCalendarCell({
     if (request?.requestType === RequestType.WORK_DEMAND && request.shiftId) {
       const shift = shifts.find((s) => s.id === request.shiftId);
       if (shift) {
-        const colors = ShiftColorMappings[shift.color];
-        if (colors) {
-          return {
-            background: colors.background,
-            sample: colors.sample,
-            text: colors.text,
-          };
-        }
+        const colors = ShiftColorMappings[shift.color] || {
+          background: "#f5f5f5",
+          sample: "#9e9e9e",
+          text: "#212121",
+        };
+        return {
+          background: colors.background,
+          sample: colors.sample,
+          text: colors.text,
+        };
       }
     }
     // For leave requests, use red
