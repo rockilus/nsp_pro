@@ -41,9 +41,6 @@ interface TimeNavigationProps {
 
   // Optional props
   isLoading?: boolean;
-
-  // Optional styling
-  className?: string;
 }
 
 /**
@@ -73,12 +70,11 @@ export const TimeNavigation: React.FC<TimeNavigationProps> = ({
   onNextPeriod,
   onTimeFrameChange,
   isLoading = false,
-  className = "",
 }) => {
   const { t } = useTranslation(lng, "common");
 
   return (
-    <div className={`${styles.container} ${className}`}>
+    <div className={styles.container}>
       {/* Today Button */}
       <button
         onClick={onToday}
