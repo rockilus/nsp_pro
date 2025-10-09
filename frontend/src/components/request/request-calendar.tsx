@@ -2,7 +2,6 @@ import React from "react";
 import dayjs, { Dayjs } from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import "./request-calendar.css";
-import { StaffingSummaryLoadingIndicator } from "./StaffingSummaryLoadingIndicator";
 import { RequestT } from "../../types/request";
 import { WorkerT } from "../../types/worker";
 import RequestPanel from "./request-panel";
@@ -14,6 +13,7 @@ import {
   RequestStatus,
   FulfillmentStatus,
 } from "../../types/request";
+import RequestCalendarTable from "./RequestCalendarTable";
 
 dayjs.extend(isoWeek);
 
@@ -48,55 +48,6 @@ interface RequestCalendarProps {
   handleDenyRequest?: (requestId: string) => void;
 }
 
-interface RequestCalendarCellProps {
-  worker: WorkerT;
-  date: Dayjs;
-  request: RequestT | null;
-  statusColors: StatusColors;
-  canAddRequest: boolean;
-  canEditRequest: boolean;
-  isPast: boolean;
-  isEmpty: boolean;
-  onCellClick: (workerId: string, date: Dayjs) => void;
-  onRequestClick: (request: RequestT) => void;
-}
-
-interface RequestCalendarRowProps {
-  worker: WorkerT;
-  days: Dayjs[];
-  statusColors: StatusColors;
-  getRequestForDay: (workerId: string, day: Dayjs) => RequestT | null;
-  handleAddRequest?: (request: RequestT) => void;
-  handleUpdateRequest?: (request: RequestT) => void;
-  lng?: string;
-  teamId?: string;
-  onCellClick: (workerId: string, date: Dayjs) => void;
-  onRequestClick: (request: RequestT) => void;
-}
-
-interface RequestCalendarHeaderProps {
-  days: Dayjs[];
-}
-
-interface RequestCalendarBodyProps {
-  workers: WorkerT[];
-  days: Dayjs[];
-  statusColors: StatusColors;
-  getRequestForDay: (workerId: string, day: Dayjs) => RequestT | null;
-  handleAddRequest?: (request: RequestT) => void;
-  handleUpdateRequest?: (request: RequestT) => void;
-  lng?: string;
-  teamId?: string;
-  onCellClick: (workerId: string, date: Dayjs) => void;
-  onRequestClick: (request: RequestT) => void;
-}
-
-interface StaffingSummaryRowsProps {
-  days: Dayjs[];
-  staffingSummary: StaffingSummary | null;
-  isCalculating: boolean;
-}
-
 // Constants
 const defaultStatusColors: StatusColors = {
   pending: "#FFC107", // orange
@@ -108,8 +59,6 @@ const defaultStatusColors: StatusColors = {
   unfulfilled: "#E57373",
 };
 
-const daysOfWeek = ["M", "T", "W", "T", "F", "S", "S"];
-
 // Utility functions
 function getDaysInPeriod(start: Dayjs, end: Dayjs) {
   const days = [];
@@ -119,323 +68,6 @@ function getDaysInPeriod(start: Dayjs, end: Dayjs) {
     current = current.add(1, "day");
   }
   return days;
-}
-
-function getStatusColor(request: RequestT, statusColors: StatusColors) {
-  // Prefer fulfillment if not processed, else status
-  if (request.fulfillment && statusColors[request.fulfillment]) {
-    return statusColors[request.fulfillment];
-  }
-  if (request.status && statusColors[request.status]) {
-    return statusColors[request.status];
-  }
-  return "#BDBDBD";
-}
-
-// Individual cell component
-function RequestCalendarCell({
-  worker,
-  date,
-  request,
-  statusColors,
-  canAddRequest,
-  canEditRequest,
-  isPast,
-  isEmpty,
-  onCellClick,
-  onRequestClick,
-}: RequestCalendarCellProps) {
-  const isPastEmpty = isPast && isEmpty;
-  const isWeekend = date.day() === 0 || date.day() === 6;
-
-  const handleClick = () => {
-    if (canAddRequest) {
-      onCellClick(worker.id, date);
-    } else if (canEditRequest && request) {
-      onRequestClick(request);
-    }
-  };
-
-  const getTitle = () => {
-    if (isPastEmpty) {
-      return `Past date - ${date.format("MMM D")}`;
-    }
-    if (canAddRequest) {
-      return `Click to create request for ${worker.name} on ${date.format(
-        "MMM D"
-      )}`;
-    }
-    if (canEditRequest && request) {
-      return `Click to edit ${request.requestType} request for ${
-        worker.name
-      } (${request.startDate.format("MMM D")} - ${request.endDate.format(
-        "MMM D"
-      )})`;
-    }
-    return undefined;
-  };
-
-  return (
-    <div
-      key={date.date()}
-      className={`calendar-cell${isWeekend ? " weekend" : ""}${
-        request ? " calendar-cell--leave" : ""
-      }${canAddRequest || canEditRequest ? " calendar-cell--clickable" : ""}${
-        isPastEmpty ? " calendar-cell--past" : ""
-      }`}
-      style={{
-        background: request ? getStatusColor(request, statusColors) : undefined,
-        cursor: canAddRequest || canEditRequest ? "pointer" : "default",
-      }}
-      data-testid={`calendar-cell-${worker.id}-${date.format("YYYY-MM-DD")}${
-        request ? `-request-${request.id}` : ""
-      }`}
-      data-request-type={request ? request.requestType : undefined}
-      data-request-status={request ? request.status : undefined}
-      onClick={handleClick}
-      title={getTitle()}
-    >
-      {request && (
-        <div className="calendar-cell__tooltip">
-          <div>
-            <strong>Status:</strong> {request.status}
-          </div>
-          <div>
-            <strong>From:</strong> {request.startDate.format("DD/MM")}
-          </div>
-          <div>
-            <strong>To:</strong> {request.endDate.format("DD/MM")}
-          </div>
-          {request.comment && (
-            <div>
-              <strong>Comment:</strong> {request.comment}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Row component
-function RequestCalendarRow({
-  worker,
-  days,
-  statusColors,
-  getRequestForDay,
-  handleAddRequest,
-  handleUpdateRequest,
-  lng,
-  teamId,
-  onCellClick,
-  onRequestClick,
-}: RequestCalendarRowProps) {
-  return (
-    <div className="calendar-row" key={worker.id}>
-      <div className="calendar-row__name" title={worker.name}>
-        {worker.name}
-      </div>
-      <div className="calendar-row__days">
-        {days.map((d) => {
-          const request = getRequestForDay(worker.id, d);
-          const isEmpty = !request;
-          const isPast = d.isBefore(dayjs().utc(), "day");
-          const canAddRequest =
-            isEmpty && !isPast && !!handleAddRequest && !!lng && !!teamId;
-          const canEditRequest =
-            !!request && !!handleUpdateRequest && !!lng && !!teamId;
-
-          return (
-            <RequestCalendarCell
-              key={d.date()}
-              worker={worker}
-              date={d}
-              request={request}
-              statusColors={statusColors}
-              canAddRequest={canAddRequest}
-              canEditRequest={canEditRequest}
-              isPast={isPast}
-              isEmpty={isEmpty}
-              onCellClick={onCellClick}
-              onRequestClick={onRequestClick}
-            />
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// Header component
-function RequestCalendarHeader({ days }: RequestCalendarHeaderProps) {
-  return (
-    <div className="calendar-header">
-      <div className="calendar-header__empty" />
-      <div className="calendar-header__days">
-        {days.map((d) => {
-          const isWeekend = d.day() === 0 || d.day() === 6;
-          return (
-            <div
-              key={d.date()}
-              className={`calendar-header__day${isWeekend ? " weekend" : ""}`}
-              data-testid={`date-header-${d.format("YYYY-MM-DD")}`}
-            >
-              <div className="calendar-header__day-number">{d.date()}</div>
-              <div className="calendar-header__day-week">
-                {daysOfWeek[d.day() === 0 ? 6 : d.day() - 1]}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// Body component
-function RequestCalendarBody({
-  workers,
-  days,
-  statusColors,
-  getRequestForDay,
-  handleAddRequest,
-  handleUpdateRequest,
-  lng,
-  teamId,
-  onCellClick,
-  onRequestClick,
-}: RequestCalendarBodyProps) {
-  return (
-    <div className="calendar-body">
-      {workers.map((worker) => (
-        <RequestCalendarRow
-          key={worker.id}
-          worker={worker}
-          days={days}
-          statusColors={statusColors}
-          getRequestForDay={getRequestForDay}
-          handleAddRequest={handleAddRequest}
-          handleUpdateRequest={handleUpdateRequest}
-          lng={lng}
-          teamId={teamId}
-          onCellClick={onCellClick}
-          onRequestClick={onRequestClick}
-        />
-      ))}
-    </div>
-  );
-}
-
-// Staffing summary rows component
-function StaffingSummaryRows({
-  days,
-  staffingSummary,
-  isCalculating,
-}: StaffingSummaryRowsProps) {
-  if (isCalculating || !staffingSummary) {
-    return <StaffingSummaryLoadingIndicator days={days} />;
-  }
-
-  return (
-    <>
-      {/* Program staffing requirement */}
-      <div className="calendar-row">
-        <div
-          className="calendar-row__name"
-          style={{ fontWeight: 600 }}
-          title="Demand"
-        >
-          Demand
-        </div>
-        <div className="calendar-row__days">
-          {days.map((d) => {
-            const dateKey = d.format("YYYY-MM-DD");
-            const summary = staffingSummary[dateKey] || {
-              demand: 0,
-              available: 0,
-              delta: 0,
-            };
-            return (
-              <div
-                key={dateKey}
-                className="calendar-cell"
-                style={{
-                  fontWeight: 600,
-                }}
-              >
-                {summary.demand}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      {/* Current staff available */}
-      <div className="calendar-row">
-        <div
-          className="calendar-row__name"
-          style={{ fontWeight: 600 }}
-          title="Offer"
-        >
-          Offer
-        </div>
-        <div className="calendar-row__days">
-          {days.map((d) => {
-            const dateKey = d.format("YYYY-MM-DD");
-            const summary = staffingSummary[dateKey] || {
-              demand: 0,
-              available: 0,
-              delta: 0,
-            };
-            return (
-              <div
-                key={dateKey}
-                className="calendar-cell"
-                style={{
-                  fontWeight: 600,
-                }}
-              >
-                {summary.available}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      {/* Delta */}
-      <div className="calendar-row">
-        <div
-          className="calendar-row__name"
-          style={{ fontWeight: 600 }}
-          title="Delta"
-        >
-          Delta
-        </div>
-        <div className="calendar-row__days">
-          {days.map((d) => {
-            const dateKey = d.format("YYYY-MM-DD");
-            const summary = staffingSummary[dateKey] || {
-              demand: 0,
-              available: 0,
-              delta: 0,
-            };
-            const delta = summary.delta;
-            const isNegative = delta < 0;
-            return (
-              <div
-                key={dateKey}
-                className={`calendar-cell calendar-cell--delta${
-                  isNegative
-                    ? " calendar-cell--delta-negative"
-                    : " calendar-cell--delta-positive"
-                }`}
-              >
-                {delta}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </>
-  );
 }
 
 // Main calendar component
@@ -764,20 +396,8 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
         />
       )}
 
-      {/* Calendar Header */}
-      <RequestCalendarHeader days={days} />
-
-      {/* Staffing Summary Rows */}
-      {demands.length > 0 && shifts.length > 0 && (
-        <StaffingSummaryRows
-          days={days}
-          staffingSummary={staffingSummary}
-          isCalculating={isCalculating}
-        />
-      )}
-
-      {/* Calendar Body */}
-      <RequestCalendarBody
+      {/* Calendar Table */}
+      <RequestCalendarTable
         workers={workers}
         days={days}
         statusColors={statusColors}
@@ -788,6 +408,10 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
         teamId={teamId}
         onCellClick={handleCellClick}
         onRequestClick={handleRequestClick}
+        staffingSummary={
+          demands.length > 0 && shifts.length > 0 ? staffingSummary : null
+        }
+        isCalculating={isCalculating}
       />
 
       {/* Request Panel for creating requests from calendar */}
