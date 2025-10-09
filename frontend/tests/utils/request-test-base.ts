@@ -204,9 +204,21 @@ export class RequestTestBase {
         );
       }
 
+      // Fetch leave shifts for leave request
+      const leaveShifts = await this.fetchLeaveShiftsForTeam();
+      let selectedLeaveShift: ShiftT | undefined = leaveShifts.find(
+        (s) => s.shiftType === ShiftType.LEAVE
+      );
+
+      if (!selectedLeaveShift) {
+        console.warn(
+          `[${testId || "legacy"}] No leave shift found for leave request`
+        );
+      }
+
       // Create work requests that reference the created test shifts via shiftOptions
       // All requests are created as PENDING - tests should explicitly approve/deny as needed
-      const testRequestsData = [
+      const testRequestsData: Array<any> = [
         // Future work request - worker 2, pending, prefer selectedShift
         {
           workerId: testWorkers[1].workerId,
@@ -244,6 +256,25 @@ export class RequestTestBase {
           ],
         },
       ];
+
+      // Add leave request if a leave shift is available
+      if (selectedLeaveShift) {
+        testRequestsData.push({
+          workerId: testWorkers[0].workerId,
+          requestType: RequestType.LEAVE,
+          startDate: dayjs.utc().add(5, "days"),
+          endDate: dayjs.utc().add(5, "days"),
+          status: RequestStatus.PENDING,
+          negative: false,
+          shiftId: selectedLeaveShift.id,
+        });
+
+        console.log(
+          `[${testId || "legacy"}] Will create leave request with shift: ${
+            selectedLeaveShift.name
+          }`
+        );
+      }
 
       const testRequests = [];
       for (const requestData of testRequestsData) {
@@ -1347,5 +1378,107 @@ export class RequestTestBase {
     // Note: In a real test, you'd need to get the created request ID
     // For now, return a placeholder
     return "created-request-id";
+  }
+
+  //////////////////////////
+  // Request Type Filter Helpers
+  //////////////////////////
+
+  /**
+   * Gets the work request filter button
+   */
+  getWorkRequestFilterButton(page: Page) {
+    return page.getByTestId("request-calendar-filter-work");
+  }
+
+  /**
+   * Gets the leave request filter button
+   */
+  getLeaveRequestFilterButton(page: Page) {
+    return page.getByTestId("request-calendar-filter-leave");
+  }
+
+  /**
+   * Toggles the work request filter
+   */
+  async toggleWorkRequestFilter(page: Page): Promise<void> {
+    const button = this.getWorkRequestFilterButton(page);
+    await expect(button).toBeVisible();
+    await button.click();
+  }
+
+  /**
+   * Toggles the leave request filter
+   */
+  async toggleLeaveRequestFilter(page: Page): Promise<void> {
+    const button = this.getLeaveRequestFilterButton(page);
+    await expect(button).toBeVisible();
+    await button.click();
+  }
+
+  /**
+   * Gets all visible work request cells in the calendar
+   */
+  getVisibleWorkRequestCells(page: Page) {
+    return page.locator('[data-request-type="work_demand"]');
+  }
+
+  /**
+   * Gets all visible leave request cells in the calendar
+   */
+  getVisibleLeaveRequestCells(page: Page) {
+    return page.locator('[data-request-type="leave"]');
+  }
+
+  /**
+   * Verifies that work requests are visible in the calendar
+   */
+  async verifyWorkRequestsVisible(
+    page: Page,
+    expectedCount?: number
+  ): Promise<void> {
+    const workRequestCells = this.getVisibleWorkRequestCells(page);
+    const count = await workRequestCells.count();
+
+    if (expectedCount !== undefined) {
+      expect(count).toBe(expectedCount);
+    } else {
+      expect(count).toBeGreaterThan(0);
+    }
+  }
+
+  /**
+   * Verifies that leave requests are visible in the calendar
+   */
+  async verifyLeaveRequestsVisible(
+    page: Page,
+    expectedCount?: number
+  ): Promise<void> {
+    const leaveRequestCells = this.getVisibleLeaveRequestCells(page);
+    const count = await leaveRequestCells.count();
+
+    if (expectedCount !== undefined) {
+      expect(count).toBe(expectedCount);
+    } else {
+      expect(count).toBeGreaterThan(0);
+    }
+  }
+
+  /**
+   * Verifies that work requests are not visible in the calendar
+   */
+  async verifyWorkRequestsNotVisible(page: Page): Promise<void> {
+    const workRequestCells = this.getVisibleWorkRequestCells(page);
+    const count = await workRequestCells.count();
+    expect(count).toBe(0);
+  }
+
+  /**
+   * Verifies that leave requests are not visible in the calendar
+   */
+  async verifyLeaveRequestsNotVisible(page: Page): Promise<void> {
+    const leaveRequestCells = this.getVisibleLeaveRequestCells(page);
+    const count = await leaveRequestCells.count();
+    expect(count).toBe(0);
   }
 }

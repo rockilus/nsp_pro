@@ -594,6 +594,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
                     data-testid={`calendar-cell-${worker.id}-${d.format(
                       "YYYY-MM-DD"
                     )}${req ? `-request-${req.id}` : ""}`}
+                    data-request-type={req ? req.requestType : undefined}
                     onClick={() => {
                       if (canAddRequest) {
                         handleCellClick(worker.id, d);
