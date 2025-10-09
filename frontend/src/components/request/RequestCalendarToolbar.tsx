@@ -2,7 +2,7 @@ import React from "react";
 import dayjs, { Dayjs } from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 // MUI
-import { Box, Paper } from "@mui/material";
+import { Box, Paper, ToggleButtonGroup, ToggleButton } from "@mui/material";
 // Components
 import { TimeNavigation } from "../common/TimeNavigation";
 
@@ -16,6 +16,16 @@ interface RequestCalendarToolbarProps {
   timeFrame: "week" | "month";
   onTimeFrameChange: (timeFrame: "week" | "month") => void;
   isLoading?: boolean;
+
+  // Status filter props
+  showPending: boolean;
+  showAccepted: boolean;
+  showDenied: boolean;
+  onStatusFilterChange: (
+    showPending: boolean,
+    showAccepted: boolean,
+    showDenied: boolean
+  ) => void;
 }
 
 export function RequestCalendarToolbar({
@@ -25,6 +35,10 @@ export function RequestCalendarToolbar({
   timeFrame,
   onTimeFrameChange,
   isLoading = false,
+  showPending,
+  showAccepted,
+  showDenied,
+  onStatusFilterChange,
 }: RequestCalendarToolbarProps) {
   // Handlers for TimeNavigation
   const handleToday = () => {
@@ -96,6 +110,25 @@ export function RequestCalendarToolbar({
     onPeriodChange(start, end);
   };
 
+  // Handler for status filter changes
+  const handleStatusFilterChange = (
+    _event: React.MouseEvent<HTMLElement>,
+    newStatuses: string[]
+  ) => {
+    // newStatuses is an array of selected values
+    const newShowPending = newStatuses.includes("pending");
+    const newShowAccepted = newStatuses.includes("accepted");
+    const newShowDenied = newStatuses.includes("denied");
+
+    onStatusFilterChange(newShowPending, newShowAccepted, newShowDenied);
+  };
+
+  // Calculate current selected statuses for ToggleButtonGroup
+  const selectedStatuses: string[] = [];
+  if (showPending) selectedStatuses.push("pending");
+  if (showAccepted) selectedStatuses.push("accepted");
+  if (showDenied) selectedStatuses.push("denied");
+
   return (
     <Paper
       elevation={0}
@@ -132,9 +165,45 @@ export function RequestCalendarToolbar({
           testIdPrefix="request-calendar-time-nav"
         />
 
-        {/* Right side - placeholder for future features */}
+        {/* Right side - Status filters */}
         <Box display="flex" gap={1} alignItems="center">
-          {/* Future features like filters, export, etc. can go here */}
+          <ToggleButtonGroup
+            value={selectedStatuses}
+            onChange={handleStatusFilterChange}
+            aria-label="request status filter"
+            size="small"
+            sx={{
+              "& .MuiToggleButton-root": {
+                textTransform: "none",
+                px: 2,
+                py: 0.5,
+                fontSize: "0.875rem",
+                fontWeight: 500,
+              },
+            }}
+          >
+            <ToggleButton
+              value="pending"
+              aria-label="show pending requests"
+              data-testid="request-calendar-filter-pending"
+            >
+              Pending
+            </ToggleButton>
+            <ToggleButton
+              value="accepted"
+              aria-label="show accepted requests"
+              data-testid="request-calendar-filter-accepted"
+            >
+              Accepted
+            </ToggleButton>
+            <ToggleButton
+              value="denied"
+              aria-label="show denied requests"
+              data-testid="request-calendar-filter-denied"
+            >
+              Denied
+            </ToggleButton>
+          </ToggleButtonGroup>
         </Box>
       </Box>
     </Paper>

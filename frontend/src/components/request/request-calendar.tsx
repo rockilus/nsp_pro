@@ -329,6 +329,19 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     }
   };
 
+  // Handler for status filter changes from toolbar
+  const handleStatusFilterChange = (
+    newShowPending: boolean,
+    newShowAccepted: boolean,
+    newShowDenied: boolean
+  ) => {
+    setShowPending(newShowPending);
+    // For "accepted", we control both accepted-not-fulfilled and fulfilled
+    setShowAcceptedNotFulfilled(newShowAccepted);
+    setShowFulfilled(newShowAccepted);
+    setShowDenied(newShowDenied);
+  };
+
   // Handle calendar cell click for empty cells
   const handleCellClick = (workerId: string, date: Dayjs) => {
     const existingRequest = getRequestForDay(workerId, date);
@@ -409,6 +422,10 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           onPeriodChange={handlePeriodChange}
           timeFrame={timeFrame}
           onTimeFrameChange={handleTimeFrameChange}
+          showPending={showPending}
+          showAccepted={showAcceptedNotFulfilled || showFulfilled}
+          showDenied={showDenied}
+          onStatusFilterChange={handleStatusFilterChange}
         />
       )}
 
