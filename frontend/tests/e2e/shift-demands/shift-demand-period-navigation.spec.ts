@@ -144,8 +144,15 @@ test.describe("Shift Demand - Period Navigation", () => {
 
     // 1. Switch from week to month
     const today = dayjs.utc();
-    const startOfWeek = today.startOf("isoWeek");
+    const startOfMonthTest = today.startOf("month");
+    const startOfWeek = startOfMonthTest.startOf("isoWeek");
     const monthOfStartOfWeek = startOfWeek.startOf("month");
+
+    console.log("Start of week:", startOfWeek.format("YYYY-MM-DD"));
+    console.log(
+      "Month of start of week:",
+      monthOfStartOfWeek.format("YYYY-MM-DD")
+    );
 
     // Explicitly select week view first
     await periodNav.select.selectOption("week");
@@ -166,7 +173,7 @@ test.describe("Shift Demand - Period Navigation", () => {
     ).toBeVisible();
 
     // 2. Switch from month to week
-    const startOfMonth = dayjs.utc().add(1, "month").startOf("month");
+    const startOfMonth = monthOfStartOfWeek.add(1, "month").startOf("month");
     await periodNav.nextButton.click(); // Go to next month
     await expect(periodNav.label).toHaveText(startOfMonth.format("MMMM YYYY"));
 
