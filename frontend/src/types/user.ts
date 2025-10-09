@@ -73,7 +73,6 @@ export const PageRolePermissions = {
   welcome: [TeamMembershipRole.OWNER, TeamMembershipRole.MEMBER],
   workers: [TeamMembershipRole.OWNER],
   shifts: [TeamMembershipRole.OWNER],
-  coverages: [TeamMembershipRole.OWNER],
   constraints: [TeamMembershipRole.OWNER],
   requests: [TeamMembershipRole.OWNER, TeamMembershipRole.MEMBER],
   campaign: [TeamMembershipRole.OWNER],

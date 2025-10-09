@@ -6,7 +6,6 @@ export const routeAccess: Record<
 > = {
   "/workers": { roles: [TeamMembershipRole.OWNER] },
   "/shifts": { roles: [TeamMembershipRole.OWNER] },
-  "/coverages": { roles: [TeamMembershipRole.OWNER], features: ["use_solver"] },
   "/constraints": {
     roles: [TeamMembershipRole.OWNER],
     features: ["use_solver"],

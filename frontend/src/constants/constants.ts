@@ -142,13 +142,6 @@ export const DefaultProperties: Record<string, string | boolean | string[]> = {
   list: [],
 };
 
-//Coverages
-export const CovTimeColWidth: number = 50; // in pixels
-export const CovTimeColPadR: number = 10; // in pixels
-export const CovHeadRowHeight: number = 20; // in pixels
-export const CovBodyRowHeight: number = 12; // in pixels
-export const CovBorderThick: number = 1; // in pixels
-
 // Constraints
 export const PriorityLevels: string[] = ["low", "medium", "high"];
 export const ConstraintDefaultColors: ConstraintColorsT = {
