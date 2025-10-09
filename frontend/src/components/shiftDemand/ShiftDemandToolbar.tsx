@@ -139,7 +139,7 @@ export function ShiftDemandToolbar({
         mb: 1,
         width: "100%",
         margin: 0,
-        padding: "3px 16px",
+        padding: "3px 24px",
         position: "sticky",
         top: 0,
         zIndex: 10,
@@ -154,20 +154,18 @@ export function ShiftDemandToolbar({
         height="40px"
       >
         {/* Left side - Period Navigation (centered) */}
-        <Box flex={1} display="flex" justifyContent="center">
-          <TimeNavigation
-            lng={lng}
-            currentPeriodStart={currentPeriod.start}
-            currentPeriodEnd={currentPeriod.end}
-            timeFrame={periodType === "custom" ? "week" : periodType}
-            onToday={handleToday}
-            onPreviousPeriod={handlePreviousPeriod}
-            onNextPeriod={handleNextPeriod}
-            onTimeFrameChange={handleTimeFrameChange}
-            isLoading={isLoading}
-            testIdPrefix="shift-demand-time-nav"
-          />
-        </Box>
+        <TimeNavigation
+          lng={lng}
+          currentPeriodStart={currentPeriod.start}
+          currentPeriodEnd={currentPeriod.end}
+          timeFrame={periodType === "custom" ? "week" : periodType}
+          onToday={handleToday}
+          onPreviousPeriod={handlePreviousPeriod}
+          onNextPeriod={handleNextPeriod}
+          onTimeFrameChange={handleTimeFrameChange}
+          isLoading={isLoading}
+          testIdPrefix="shift-demand-time-nav"
+        />
 
         {/* Right side - Template Management, Bulk Select, Multitasking */}
         <Box display="flex" gap={1} alignItems="center">
