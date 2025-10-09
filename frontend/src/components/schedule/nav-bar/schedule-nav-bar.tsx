@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import { useTranslation } from "../../../app/i18n/client";
 // Components
 import DataViewSelector from "./data-view-selector";
-import TimeViewSelector from "./time-view-selector";
+import { TimeNavigation } from "../../common/TimeNavigation";
 import CampaignInfo from "./campaign-info";
 import ScheduleSettings from "./schedule-settings";
 // Types
@@ -69,15 +69,18 @@ export default function ScheduleNavBar({
         padding: "3px 16px",
       }}
     >
-      <TimeViewSelector
-        lng={lng}
+      <TimeNavigation
         currentPeriodStart={currentPeriodStart}
         currentPeriodEnd={currentPeriodEnd}
-        scheduleViewSettings={scheduleViewSettings}
-        handleToday={handleToday}
-        handlePreviousPeriod={handlePreviousPeriod}
-        handleNextPeriod={handleNextPeriod}
-        handleChangeTimeFrame={handleChangeTimeFrame}
+        timeFrame={scheduleViewSettings.timeFrame}
+        onToday={handleToday}
+        onPreviousPeriod={handlePreviousPeriod}
+        onNextPeriod={handleNextPeriod}
+        onTimeFrameChange={handleChangeTimeFrame}
+        todayLabel={t("today")}
+        weekLabel={t("week")}
+        monthLabel={t("month")}
+        testIdPrefix="schedule-time-nav"
       />
       <DataViewSelector
         lng={lng}

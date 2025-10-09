@@ -1,3 +1,12 @@
+/**
+ * @deprecated This component is deprecated and will be removed in a future version.
+ * Please use the common TimeNavigation component instead:
+ *
+ * import { TimeNavigation } from "@/components/common/TimeNavigation";
+ *
+ * See migration guide: /frontend/src/components/common/TimeNavigation/README.md
+ */
+
 import React, { useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";

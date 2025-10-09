@@ -1,13 +1,16 @@
 import React from "react";
 import { useTranslation } from "../../app/i18n/client";
-import { Dayjs } from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
+import isoWeek from "dayjs/plugin/isoWeek";
 // MUI
 import { Box, Paper, Button } from "@mui/material";
 import { Description, Group } from "@mui/icons-material";
 // Components
-import { PeriodNavigation } from "./PeriodNavigation";
+import { TimeNavigation } from "../common/TimeNavigation";
 // Types
 import { PeriodType } from "../../types/shiftDemand";
+
+dayjs.extend(isoWeek);
 
 interface ShiftDemandToolbarProps {
   lng: string;
@@ -43,6 +46,91 @@ export function ShiftDemandToolbar({
 }: ShiftDemandToolbarProps) {
   const { t } = useTranslation(lng, "shift-demands");
 
+  // Handlers for TimeNavigation
+  const handleToday = () => {
+    // Calculate today's period based on periodType
+    const today = dayjs();
+    let start: Dayjs, end: Dayjs;
+
+    if (periodType === "week") {
+      start = today.startOf("isoWeek");
+      end = today.endOf("isoWeek");
+    } else if (periodType === "month") {
+      start = today.startOf("month");
+      end = today.endOf("month");
+    } else {
+      // For custom periods, keep current period length
+      const periodLength = currentPeriod.end.diff(currentPeriod.start);
+      start = today;
+      end = today.add(periodLength, "millisecond");
+    }
+
+    onPeriodChange(start, end);
+  };
+
+  const handlePreviousPeriod = () => {
+    if (isLoading) return;
+
+    let start: Dayjs, end: Dayjs;
+
+    if (periodType === "week") {
+      start = currentPeriod.start.subtract(1, "week");
+      end = currentPeriod.end.subtract(1, "week");
+    } else if (periodType === "month") {
+      start = currentPeriod.start.subtract(1, "month").startOf("month");
+      end = currentPeriod.start.subtract(1, "month").endOf("month");
+    } else {
+      // Custom period - maintain the same length
+      const periodLength = currentPeriod.end.diff(currentPeriod.start);
+      start = currentPeriod.start.subtract(periodLength, "millisecond");
+      end = currentPeriod.end.subtract(periodLength, "millisecond");
+    }
+
+    onPeriodChange(start, end);
+  };
+
+  const handleNextPeriod = () => {
+    if (isLoading) return;
+
+    let start: Dayjs, end: Dayjs;
+
+    if (periodType === "week") {
+      start = currentPeriod.start.add(1, "week");
+      end = currentPeriod.end.add(1, "week");
+    } else if (periodType === "month") {
+      start = currentPeriod.start.add(1, "month").startOf("month");
+      end = currentPeriod.start.add(1, "month").endOf("month");
+    } else {
+      // Custom period - maintain the same length
+      const periodLength = currentPeriod.end.diff(currentPeriod.start);
+      start = currentPeriod.start.add(periodLength, "millisecond");
+      end = currentPeriod.end.add(periodLength, "millisecond");
+    }
+
+    onPeriodChange(start, end);
+  };
+
+  const handleTimeFrameChange = (newType: "week" | "month") => {
+    // Map TimeNavigation's TimeFrame to PeriodType
+    onPeriodTypeChange(newType as PeriodType);
+
+    // Adjust current period to match new type
+    let start: Dayjs, end: Dayjs;
+
+    if (newType === "week") {
+      start = currentPeriod.start.startOf("isoWeek");
+      end = currentPeriod.start.endOf("isoWeek");
+    } else if (newType === "month") {
+      start = currentPeriod.start.startOf("month");
+      end = currentPeriod.start.endOf("month");
+    } else {
+      start = currentPeriod.start;
+      end = currentPeriod.end;
+    }
+
+    onPeriodChange(start, end);
+  };
+
   return (
     <Paper
       elevation={0}
@@ -67,12 +155,19 @@ export function ShiftDemandToolbar({
       >
         {/* Left side - Period Navigation (centered) */}
         <Box flex={1} display="flex" justifyContent="center">
-          <PeriodNavigation
-            currentPeriod={currentPeriod}
-            onPeriodChange={onPeriodChange}
-            periodType={periodType}
-            onPeriodTypeChange={onPeriodTypeChange}
+          <TimeNavigation
+            currentPeriodStart={currentPeriod.start}
+            currentPeriodEnd={currentPeriod.end}
+            timeFrame={periodType === "custom" ? "week" : periodType}
+            onToday={handleToday}
+            onPreviousPeriod={handlePreviousPeriod}
+            onNextPeriod={handleNextPeriod}
+            onTimeFrameChange={handleTimeFrameChange}
             isLoading={isLoading}
+            todayLabel={t("today") || "Today"}
+            weekLabel={t("week") || "Week"}
+            monthLabel={t("month") || "Month"}
+            testIdPrefix="shift-demand-time-nav"
           />
         </Box>
 

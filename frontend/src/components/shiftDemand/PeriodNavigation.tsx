@@ -1,6 +1,13 @@
 /**
  * Period navigation component for shift demand management
  * Allows users to navigate between different time periods and change period types
+ *
+ * @deprecated This component is deprecated and will be removed in a future version.
+ * Please use the common TimeNavigation component instead:
+ *
+ * import { TimeNavigation } from "@/components/common/TimeNavigation";
+ *
+ * See migration guide: /frontend/src/components/common/TimeNavigation/README.md
  */
 
 "use client";
