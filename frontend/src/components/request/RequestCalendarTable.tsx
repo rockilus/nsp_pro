@@ -6,6 +6,7 @@ import { RequestT, RequestType } from "../../types/request";
 import { WorkerT } from "../../types/worker";
 import { ShiftT } from "../../types/shift";
 import { ShiftColorMappings } from "../../constants/constants";
+import { SWOIdTypes } from "../../types/constraint";
 
 type StaffingSummary = {
   [date: string]: {
@@ -127,20 +128,35 @@ function RequestCalendarCell({
 
   // Get shift colors for CSS variables (similar to ShiftDemandCell)
   const getShiftColors = () => {
-    if (request?.requestType === RequestType.WORK_DEMAND && request.shiftId) {
-      const shift = shifts.find((s) => s.id === request.shiftId);
-      if (shift) {
-        const colors = ShiftColorMappings[shift.color] || {
-          background: "#f5f5f5",
-          sample: "#9e9e9e",
-          text: "#212121",
-        };
-        return {
-          background: colors.background,
-          sample: colors.sample,
-          text: colors.text,
-        };
+    // For work demand requests, check shiftOptions
+    if (request?.requestType === RequestType.WORK_DEMAND) {
+      // If there's exactly one shift option with type SHIFT, use that shift's color
+      if (
+        request.shiftOptions &&
+        request.shiftOptions.length === 1 &&
+        request.shiftOptions[0].idType === SWOIdTypes.SHIFT
+      ) {
+        const shiftOption = request.shiftOptions[0];
+        const shift = shifts.find((s) => s.id === shiftOption.id);
+        if (shift) {
+          const colors = ShiftColorMappings[shift.color] || {
+            background: "#f5f5f5",
+            sample: "#9e9e9e",
+            text: "#212121",
+          };
+          return {
+            background: colors.background,
+            sample: colors.sample,
+            text: colors.text,
+          };
+        }
       }
+      // Otherwise, use default work request colors (grey)
+      return {
+        background: "#f5f5f5",
+        sample: "#9e9e9e",
+        text: "#212121",
+      };
     }
     // For leave requests, use red
     if (request?.requestType === RequestType.LEAVE) {
