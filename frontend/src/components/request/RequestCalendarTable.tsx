@@ -12,7 +12,7 @@ import { WorkerT } from "../../types/worker";
 import { ShiftT } from "../../types/shift";
 import { ShiftColorMappings } from "../../constants/constants";
 import { SWOIdTypes } from "../../types/constraint";
-import { getShiftWorkerOptionDisplayText } from "../../utils/shift-worker-option-display";
+import { getRequestTargetDisplayText } from "../../utils/shift-worker-option-display";
 
 type StaffingSummary = {
   [date: string]: {
@@ -124,27 +124,12 @@ function RequestCalendarCell({
     }
     if (canEditRequest && request) {
       // Build the tooltip content as plain text
-      const targetText =
-        request.requestType === RequestType.LEAVE
-          ? (() => {
-              const shiftId =
-                request.shiftTargetIds && request.shiftTargetIds[0];
-              if (shiftId) {
-                const shift = shifts.find((s) => s.id === shiftId);
-                return shift ? shift.name : shiftId;
-              }
-              return "—";
-            })()
-          : (() => {
-              const emoji = request.negative ? "🙅" : "🙋";
-              if (request.shiftOptions && request.shiftOptions.length > 0) {
-                const optionTexts = request.shiftOptions.map((so) =>
-                  getShiftWorkerOptionDisplayText(so, [], shifts, "not")
-                );
-                return `${emoji} ${optionTexts.join(", ")}`;
-              }
-              return `${emoji} —`;
-            })();
+      const targetText = getRequestTargetDisplayText(
+        request,
+        [],
+        shifts,
+        "not"
+      );
 
       const periodText = request.startDate.isSame(request.endDate, "day")
         ? request.startDate.format("DD MMM").toLowerCase()

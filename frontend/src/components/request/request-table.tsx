@@ -20,7 +20,10 @@ import TableFilterBar from "../table/TableFilterBar";
 // Hooks
 import { useTableState } from "../../hooks/useTableState";
 // Utils
-import { getShiftWorkerOptionDisplayText } from "../../utils/shift-worker-option-display";
+import {
+  getShiftWorkerOptionDisplayText,
+  getRequestTargetDisplayText,
+} from "../../utils/shift-worker-option-display";
 // Styles
 import "../../styles/table-styles.css";
 // Types
@@ -84,22 +87,22 @@ const ShiftCell = ({
     if (request.shiftOptions.length === 0) {
       return <Chip label="No Preferences" size="small" variant="outlined" />;
     }
+
+    const displayText = getRequestTargetDisplayText(
+      request,
+      workers,
+      shifts,
+      t("not")
+    );
+
     return (
       <div className="flex flex-wrap gap-1">
-        {request.shiftOptions.map((option, index) => (
-          <Chip
-            key={index}
-            label={`${getShiftWorkerOptionDisplayText(
-              option,
-              workers,
-              shifts,
-              t("not")
-            )} ${request.negative ? "❌" : "✅"}`}
-            size="small"
-            variant="filled"
-            color={request.negative ? "error" : "success"}
-          />
-        ))}
+        <Chip
+          label={displayText}
+          size="small"
+          variant="filled"
+          color={request.negative ? "error" : "success"}
+        />
       </div>
     );
   }

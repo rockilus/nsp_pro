@@ -1,6 +1,7 @@
 import { ShiftWorkerOptionT, SWOIdTypes } from "../types/constraint";
 import { WorkerT } from "../types/worker";
 import { ShiftT } from "../types/shift";
+import { RequestT, RequestType } from "../types/request";
 
 /**
  * Get the display text for a ShiftWorkerOption with proper handling of different types
@@ -48,6 +49,41 @@ export const getShiftWorkerOptionDisplayText = (
 
   // Handle other dimension types and fallback
   return swo.name as string;
+};
+
+/**
+ * Get the display text for a request's target shift with emoji indicators
+ * @param request The request to display
+ * @param workers Array of workers (for worker type lookups)
+ * @param shifts Array of shifts (for shift type lookups)
+ * @param notTranslation The translation for "not" (default: "not")
+ * @returns The display text with emoji prefix for the request target
+ */
+export const getRequestTargetDisplayText = (
+  request: RequestT,
+  workers: WorkerT[] = [],
+  shifts: ShiftT[] = [],
+  notTranslation: string = "not"
+): string => {
+  if (request.requestType === RequestType.LEAVE) {
+    // For leave requests, show the shift being left (or all day)
+    const shiftId = request.shiftId;
+    if (shiftId) {
+      const shift = shifts.find((s) => s.id === shiftId);
+      return shift ? shift.name : shiftId;
+    }
+    return "—";
+  } else {
+    // For work requests, show emoji and shift options
+    const emoji = request.negative ? "🙅" : "🙋";
+    if (request.shiftOptions && request.shiftOptions.length > 0) {
+      const optionTexts = request.shiftOptions.map((so) =>
+        getShiftWorkerOptionDisplayText(so, workers, shifts, notTranslation)
+      );
+      return `${emoji} ${optionTexts.join(", ")}`;
+    }
+    return `${emoji} —`;
+  }
 };
 
 /**
