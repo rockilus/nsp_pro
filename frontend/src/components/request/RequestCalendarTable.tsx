@@ -122,11 +122,80 @@ function RequestCalendarCell({
       )}`;
     }
     if (canEditRequest && request) {
-      return `Click to edit ${request.requestType} request for ${
-        worker.name
-      } (${request.startDate.format("MMM D")} - ${request.endDate.format(
-        "MMM D"
-      )})`;
+      // Build the tooltip content as plain text
+      const targetText =
+        request.requestType === RequestType.LEAVE
+          ? (() => {
+              const shiftId =
+                request.shiftTargetIds && request.shiftTargetIds[0];
+              if (shiftId) {
+                const shift = shifts.find((s) => s.id === shiftId);
+                return shift ? shift.name : shiftId;
+              }
+              return "—";
+            })()
+          : (() => {
+              const emoji = request.negative ? "🙅" : "🙋";
+              const shiftNames: string[] = [];
+              if (request.shiftOptions && request.shiftOptions.length > 0) {
+                request.shiftOptions.forEach((so) => {
+                  if (so.idType === SWOIdTypes.SHIFT) {
+                    const s = shifts.find((sh) => sh.id === so.id);
+                    shiftNames.push(
+                      s ? s.name : so.name ? String(so.name) : so.id
+                    );
+                  }
+                });
+              }
+              return `${emoji} ${
+                shiftNames.length > 0 ? shiftNames.join(", ") : "—"
+              }`;
+            })();
+
+      const periodText = request.startDate.isSame(request.endDate, "day")
+        ? request.startDate.format("DD MMM").toLowerCase()
+        : `${request.startDate
+            .format("DD MMM")
+            .toLowerCase()} - ${request.endDate
+            .format("DD MMM")
+            .toLowerCase()}`;
+
+      const statusEmoji = (() => {
+        switch (request.status) {
+          case RequestStatus.PENDING:
+            return "🟠";
+          case RequestStatus.APPROVED:
+            return "🟢";
+          case RequestStatus.DENIED:
+            return "🔴";
+          default:
+            return "";
+        }
+      })();
+
+      const fulfillmentEmoji = (() => {
+        switch (request.fulfillment) {
+          case FulfillmentStatus.FULFILLED:
+            return "✅";
+          case FulfillmentStatus.UNFULFILLED:
+            return "❌";
+          default:
+            return "";
+        }
+      })();
+
+      let tooltip = `📆 ${periodText}\n${targetText}\n${statusEmoji} ${request.status}`;
+
+      // Only show fulfillment status if the request has been approved
+      if (request.status === RequestStatus.APPROVED) {
+        tooltip += `\n${fulfillmentEmoji} ${request.fulfillment}`;
+      }
+
+      if (request.comment) {
+        tooltip += `\nComment: ${request.comment}`;
+      }
+
+      return tooltip;
     }
     return undefined;
   };
@@ -265,114 +334,6 @@ function RequestCalendarCell({
     >
       {request && requestEmojis && (
         <div className="calendar-cell__emojis">{requestEmojis}</div>
-      )}
-      {request && (
-        <div className="calendar-cell__tooltip">
-          {/* Target shift / work request target */}
-          <div>
-            <strong>Target:</strong>{" "}
-            {request.requestType === RequestType.LEAVE
-              ? // For leave requests, show the shift name if provided in shiftTargetIds
-                // We'll try to find the matching shift name from the shifts prop based on shiftTargetIds[0]
-                (() => {
-                  const shiftId =
-                    request.shiftTargetIds && request.shiftTargetIds[0];
-                  if (shiftId) {
-                    const shift = shifts.find((s) => s.id === shiftId);
-                    return shift ? shift.name : shiftId;
-                  }
-                  return "—";
-                })()
-              : // Work requests: show emoji for negative/positive then target shift names from shiftOptions
-                (() => {
-                  const emoji = request.negative ? "🙅" : "🙋";
-                  const shiftNames: string[] = [];
-                  if (request.shiftOptions && request.shiftOptions.length > 0) {
-                    request.shiftOptions.forEach((so) => {
-                      if (so.idType === SWOIdTypes.SHIFT) {
-                        const s = shifts.find((sh) => sh.id === so.id);
-                        shiftNames.push(
-                          s ? s.name : so.name ? String(so.name) : so.id
-                        );
-                      }
-                    });
-                  }
-                  return (
-                    <span>
-                      {emoji}{" "}
-                      {shiftNames.length > 0 ? shiftNames.join(", ") : "—"}
-                    </span>
-                  );
-                })()}
-          </div>
-
-          {/* Period: show formatted range if start != end */}
-          <div>
-            <strong>Period:</strong>{" "}
-            {request.startDate.isSame(request.endDate, "day")
-              ? request.startDate.format("DD MMM").toLowerCase()
-              : `${request.startDate
-                  .format("DD MMM")
-                  .toLowerCase()} - ${request.endDate
-                  .format("DD MMM")
-                  .toLowerCase()}`}
-          </div>
-
-          {/* Status with traffic light emoji */}
-          <div>
-            <strong>Status:</strong>{" "}
-            {(() => {
-              let light = "";
-              switch (request.status) {
-                case RequestStatus.PENDING:
-                  light = "🟠";
-                  break;
-                case RequestStatus.APPROVED:
-                  light = "🟢";
-                  break;
-                case RequestStatus.DENIED:
-                  light = "🔴";
-                  break;
-                default:
-                  light = "";
-              }
-              return (
-                <span>
-                  {light} {request.status}
-                </span>
-              );
-            })()}
-          </div>
-
-          {/* Fulfillment with check/cross emoji (only meaningful for approved requests) */}
-          <div>
-            <strong>Fulfillment:</strong>{" "}
-            {(() => {
-              let mark = "";
-              switch (request.fulfillment) {
-                case FulfillmentStatus.FULFILLED:
-                  mark = "✅";
-                  break;
-                case FulfillmentStatus.UNFULFILLED:
-                  mark = "❌";
-                  break;
-                default:
-                  mark = "";
-              }
-              return (
-                <span>
-                  {mark} {request.fulfillment}
-                </span>
-              );
-            })()}
-          </div>
-
-          {request.comment && (
-            <div>
-              <strong>Comment:</strong> {request.comment}
-            </div>
-          )}
-        </div>
       )}
     </div>
   );
