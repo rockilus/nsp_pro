@@ -268,15 +268,105 @@ function RequestCalendarCell({
       )}
       {request && (
         <div className="calendar-cell__tooltip">
+          {/* Target shift / work request target */}
           <div>
-            <strong>Status:</strong> {request.status}
+            <strong>Target:</strong>{" "}
+            {request.requestType === RequestType.LEAVE
+              ? // For leave requests, show the shift name if provided in shiftTargetIds
+                // We'll try to find the matching shift name from the shifts prop based on shiftTargetIds[0]
+                (() => {
+                  const shiftId =
+                    request.shiftTargetIds && request.shiftTargetIds[0];
+                  if (shiftId) {
+                    const shift = shifts.find((s) => s.id === shiftId);
+                    return shift ? shift.name : shiftId;
+                  }
+                  return "—";
+                })()
+              : // Work requests: show emoji for negative/positive then target shift names from shiftOptions
+                (() => {
+                  const emoji = request.negative ? "🙅" : "🙋";
+                  const shiftNames: string[] = [];
+                  if (request.shiftOptions && request.shiftOptions.length > 0) {
+                    request.shiftOptions.forEach((so) => {
+                      if (so.idType === SWOIdTypes.SHIFT) {
+                        const s = shifts.find((sh) => sh.id === so.id);
+                        shiftNames.push(
+                          s ? s.name : so.name ? String(so.name) : so.id
+                        );
+                      }
+                    });
+                  }
+                  return (
+                    <span>
+                      {emoji}{" "}
+                      {shiftNames.length > 0 ? shiftNames.join(", ") : "—"}
+                    </span>
+                  );
+                })()}
           </div>
+
+          {/* Period: show formatted range if start != end */}
           <div>
-            <strong>From:</strong> {request.startDate.format("DD/MM")}
+            <strong>Period:</strong>{" "}
+            {request.startDate.isSame(request.endDate, "day")
+              ? request.startDate.format("DD MMM").toLowerCase()
+              : `${request.startDate
+                  .format("DD MMM")
+                  .toLowerCase()} - ${request.endDate
+                  .format("DD MMM")
+                  .toLowerCase()}`}
           </div>
+
+          {/* Status with traffic light emoji */}
           <div>
-            <strong>To:</strong> {request.endDate.format("DD/MM")}
+            <strong>Status:</strong>{" "}
+            {(() => {
+              let light = "";
+              switch (request.status) {
+                case RequestStatus.PENDING:
+                  light = "🟠";
+                  break;
+                case RequestStatus.APPROVED:
+                  light = "🟢";
+                  break;
+                case RequestStatus.DENIED:
+                  light = "🔴";
+                  break;
+                default:
+                  light = "";
+              }
+              return (
+                <span>
+                  {light} {request.status}
+                </span>
+              );
+            })()}
           </div>
+
+          {/* Fulfillment with check/cross emoji (only meaningful for approved requests) */}
+          <div>
+            <strong>Fulfillment:</strong>{" "}
+            {(() => {
+              let mark = "";
+              switch (request.fulfillment) {
+                case FulfillmentStatus.FULFILLED:
+                  mark = "✅";
+                  break;
+                case FulfillmentStatus.UNFULFILLED:
+                  mark = "❌";
+                  break;
+                default:
+                  mark = "";
+              }
+              return (
+                <span>
+                  {mark} {request.fulfillment}
+                </span>
+              );
+            })()}
+          </div>
+
           {request.comment && (
             <div>
               <strong>Comment:</strong> {request.comment}
