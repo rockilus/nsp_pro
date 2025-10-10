@@ -260,19 +260,6 @@ function RequestCalendarCell({
       }
     }
 
-    // Status indicator
-    switch (request.status) {
-      case RequestStatus.PENDING:
-        emojis.push("🟠"); // Orange circle
-        break;
-      case RequestStatus.APPROVED:
-        emojis.push("🟢"); // Green circle
-        break;
-      case RequestStatus.DENIED:
-        emojis.push("🔴"); // Red circle
-        break;
-    }
-
     // Fulfillment indicator (only show for approved requests)
     if (request.status === RequestStatus.APPROVED) {
       switch (request.fulfillment) {
