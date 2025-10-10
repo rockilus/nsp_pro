@@ -12,6 +12,7 @@ import { WorkerT } from "../../types/worker";
 import { ShiftT } from "../../types/shift";
 import { ShiftColorMappings } from "../../constants/constants";
 import { SWOIdTypes } from "../../types/constraint";
+import { getShiftWorkerOptionDisplayText } from "../../utils/shift-worker-option-display";
 
 type StaffingSummary = {
   [date: string]: {
@@ -136,20 +137,13 @@ function RequestCalendarCell({
             })()
           : (() => {
               const emoji = request.negative ? "🙅" : "🙋";
-              const shiftNames: string[] = [];
               if (request.shiftOptions && request.shiftOptions.length > 0) {
-                request.shiftOptions.forEach((so) => {
-                  if (so.idType === SWOIdTypes.SHIFT) {
-                    const s = shifts.find((sh) => sh.id === so.id);
-                    shiftNames.push(
-                      s ? s.name : so.name ? String(so.name) : so.id
-                    );
-                  }
-                });
+                const optionTexts = request.shiftOptions.map((so) =>
+                  getShiftWorkerOptionDisplayText(so, [], shifts, "not")
+                );
+                return `${emoji} ${optionTexts.join(", ")}`;
               }
-              return `${emoji} ${
-                shiftNames.length > 0 ? shiftNames.join(", ") : "—"
-              }`;
+              return `${emoji} —`;
             })();
 
       const periodText = request.startDate.isSame(request.endDate, "day")
