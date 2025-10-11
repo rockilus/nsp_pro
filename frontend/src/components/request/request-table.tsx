@@ -23,6 +23,7 @@ import { useTableState } from "../../hooks/useTableState";
 import {
   getShiftWorkerOptionDisplayText,
   getRequestTargetDisplayText,
+  getShiftColors,
 } from "../../utils/shift-worker-option-display";
 // Styles
 import "../../styles/table-styles.css";
@@ -69,6 +70,9 @@ const ShiftCell = ({
   workers: WorkerT[];
   t: any;
 }) => {
+  // Get shift colors for consistent styling
+  const shiftColors = getShiftColors(request, shifts);
+
   if (request.requestType === RequestType.LEAVE) {
     if (!request.shiftId) {
       return <Chip label="All Day" size="small" variant="outlined" />;
@@ -101,7 +105,13 @@ const ShiftCell = ({
           label={displayText}
           size="small"
           variant="filled"
-          color={request.negative ? "error" : "success"}
+          sx={{
+            ...(shiftColors && {
+              backgroundColor: shiftColors.background,
+              color: shiftColors.text,
+              borderColor: shiftColors.sample,
+            }),
+          }}
         />
       </div>
     );

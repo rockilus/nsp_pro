@@ -12,7 +12,10 @@ import { WorkerT } from "../../types/worker";
 import { ShiftT } from "../../types/shift";
 import { ShiftColorMappings } from "../../constants/constants";
 import { SWOIdTypes } from "../../types/constraint";
-import { getRequestTargetDisplayText } from "../../utils/shift-worker-option-display";
+import {
+  getRequestTargetDisplayText,
+  getShiftColors,
+} from "../../utils/shift-worker-option-display";
 
 type StaffingSummary = {
   [date: string]: {
@@ -179,50 +182,8 @@ function RequestCalendarCell({
     return undefined;
   };
 
-  // Get shift colors for CSS variables (similar to ShiftDemandCell)
-  const getShiftColors = () => {
-    // For work demand requests, check shiftOptions
-    if (request?.requestType === RequestType.WORK_DEMAND) {
-      // If there's exactly one shift option with type SHIFT, use that shift's color
-      if (
-        request.shiftOptions &&
-        request.shiftOptions.length === 1 &&
-        request.shiftOptions[0].idType === SWOIdTypes.SHIFT
-      ) {
-        const shiftOption = request.shiftOptions[0];
-        const shift = shifts.find((s) => s.id === shiftOption.id);
-        if (shift) {
-          const colors = ShiftColorMappings[shift.color] || {
-            background: "#f5f5f5",
-            sample: "#9e9e9e",
-            text: "#212121",
-          };
-          return {
-            background: colors.background,
-            sample: colors.sample,
-            text: colors.text,
-          };
-        }
-      }
-      // Otherwise, use default work request colors (grey)
-      return {
-        background: "#f5f5f5",
-        sample: "#9e9e9e",
-        text: "#212121",
-      };
-    }
-    // For leave requests, use red
-    if (request?.requestType === RequestType.LEAVE) {
-      return {
-        background: "#F44336",
-        sample: "#D32F2F",
-        text: "#FFFFFF",
-      };
-    }
-    return null;
-  };
-
-  const shiftColors = getShiftColors();
+  // Get shift colors for CSS variables (uses utility function)
+  const shiftColors = getShiftColors(request, shifts);
 
   // Get emoji indicators for the request
   const getRequestEmojis = () => {
