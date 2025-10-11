@@ -237,9 +237,9 @@ const FulfillmentCell = ({ request }: { request: RequestT }) => {
   const getFulfillmentLabel = (fulfillment: FulfillmentStatus) => {
     switch (fulfillment) {
       case FulfillmentStatus.FULFILLED:
-        return "Fulfilled";
+        return "✅ Fulfilled";
       case FulfillmentStatus.UNFULFILLED:
-        return "Unfulfilled";
+        return "❌ Unfulfilled";
       case FulfillmentStatus.NOT_PROCESSED:
         return "Not Processed";
       default:
