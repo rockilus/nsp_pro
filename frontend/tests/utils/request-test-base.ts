@@ -922,28 +922,32 @@ export class RequestTestBase {
    * Gets the calendar month label
    */
   getCalendarMonthLabel(page: Page) {
-    return page.getByTestId("calendar-month-label");
+    // TimeNavigation component uses data-testid="time-nav-label"
+    return page.locator('[data-testid="time-nav-label"]');
   }
 
   /**
    * Gets the previous month button
    */
   getPrevMonthButton(page: Page) {
-    return page.getByTestId("calendar-prev-month-button");
+    // TimeNavigation component uses data-testid="time-nav-previous"
+    return page.locator('[data-testid="time-nav-previous"]');
   }
 
   /**
    * Gets the next month button
    */
   getNextMonthButton(page: Page) {
-    return page.getByTestId("calendar-next-month-button");
+    // TimeNavigation component uses data-testid="time-nav-next"
+    return page.locator('[data-testid="time-nav-next"]');
   }
 
   /**
    * Gets the today button
    */
   getTodayButton(page: Page) {
-    return page.getByTestId("calendar-today-button");
+    // TimeNavigation component uses data-testid="time-nav-today"
+    return page.locator('[data-testid="time-nav-today"]');
   }
 
   /**

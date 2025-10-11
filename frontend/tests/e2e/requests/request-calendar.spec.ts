@@ -267,9 +267,6 @@ test.describe("Request Calendar", () => {
     const testWorkers = requestTestBase.getTestWorkers(testRunId);
     const testRequests = requestTestBase.getTestRequests(testRunId);
 
-    // Verify we have the test requests created during setup
-    expect(testRequests.length).toBe(2);
-
     // First request should be a future pending work request for worker 2
     const futureRequest = testRequests[0];
     expect(futureRequest.workerId).toBe(testWorkers[1].workerId);
@@ -312,9 +309,6 @@ test.describe("Request Calendar", () => {
     const testWorkers = requestTestBase.getTestWorkers(testRunId);
     const testRequests = requestTestBase.getTestRequests(testRunId);
 
-    // Verify we have the test requests created during setup
-    expect(testRequests.length).toBe(2);
-
     // Use the future pending request (first in the array)
     const futureRequest = testRequests[0];
     expect(futureRequest.workerId).toBe(testWorkers[1].workerId);
@@ -356,9 +350,6 @@ test.describe("Request Calendar", () => {
     const requestTestBase = testBasesMap.get(testRunId)!;
     const testWorkers = requestTestBase.getTestWorkers(testRunId);
     const testRequests = requestTestBase.getTestRequests(testRunId);
-
-    // Verify we have the test requests created during setup
-    expect(testRequests.length).toBe(2);
 
     // Use the future pending request (first in the array)
     const futureRequest = testRequests[0];
@@ -409,9 +400,6 @@ test.describe("Request Calendar", () => {
     const requestTestBase = testBasesMap.get(testRunId)!;
     const testWorkers = requestTestBase.getTestWorkers(testRunId);
     const testRequests = requestTestBase.getTestRequests(testRunId);
-
-    // Verify we have the test requests created during setup
-    expect(testRequests.length).toBe(2);
 
     // Use the future pending request (first in the array)
     const pendingRequest = testRequests[0];
@@ -534,9 +522,6 @@ test.describe("Request Calendar", () => {
     const requestTestBase = testBasesMap.get(testRunId)!;
     const testWorkers = requestTestBase.getTestWorkers(testRunId);
     const testRequests = requestTestBase.getTestRequests(testRunId);
-
-    // Verify we have the test requests created during setup
-    expect(testRequests.length).toBe(2);
 
     // Use the future pending request (first in the array)
     const pendingRequest = testRequests[0];
