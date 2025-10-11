@@ -204,9 +204,21 @@ export class RequestTestBase {
         );
       }
 
+      // Fetch leave shifts for leave request
+      const leaveShifts = await this.fetchLeaveShiftsForTeam();
+      let selectedLeaveShift: ShiftT | undefined = leaveShifts.find(
+        (s) => s.shiftType === ShiftType.LEAVE
+      );
+
+      if (!selectedLeaveShift) {
+        console.warn(
+          `[${testId || "legacy"}] No leave shift found for leave request`
+        );
+      }
+
       // Create work requests that reference the created test shifts via shiftOptions
       // All requests are created as PENDING - tests should explicitly approve/deny as needed
-      const testRequestsData = [
+      const testRequestsData: Array<any> = [
         // Future work request - worker 2, pending, prefer selectedShift
         {
           workerId: testWorkers[1].workerId,
@@ -243,12 +255,91 @@ export class RequestTestBase {
             },
           ],
         },
+        // Past work request - worker 1, pending (will be approved for rescind test)
+        {
+          workerId: testWorkers[0].workerId,
+          requestType: RequestType.WORK_DEMAND,
+          startDate: dayjs.utc().add(1, "day"),
+          endDate: dayjs.utc().add(1, "day"),
+          status: RequestStatus.PENDING,
+          negative: false,
+          shiftOptions: [
+            {
+              name: selectedShift.name,
+              id: selectedShift.id,
+              idType: SWOIdTypes.SHIFT,
+              isBoolDim: false,
+              categoryName: "Shifts",
+            },
+          ],
+        },
       ];
+
+      // Add leave request if a leave shift is available
+      if (selectedLeaveShift) {
+        testRequestsData.push({
+          workerId: testWorkers[0].workerId,
+          requestType: RequestType.LEAVE,
+          startDate: dayjs.utc().add(5, "days"),
+          endDate: dayjs.utc().add(5, "days"),
+          status: RequestStatus.PENDING,
+          negative: false,
+          shiftId: selectedLeaveShift.id,
+        });
+
+        console.log(
+          `[${testId || "legacy"}] Will create leave request with shift: ${
+            selectedLeaveShift.name
+          }`
+        );
+      }
+
+      // Add another work request (worker 1) that will be denied for status filter tests
+      testRequestsData.push({
+        workerId: testWorkers[0].workerId,
+        requestType: RequestType.WORK_DEMAND,
+        startDate: dayjs.utc().add(7, "days"),
+        endDate: dayjs.utc().add(7, "days"),
+        status: RequestStatus.PENDING,
+        negative: false,
+        shiftOptions: [
+          {
+            name: selectedShift.name,
+            id: selectedShift.id,
+            idType: SWOIdTypes.SHIFT,
+            isBoolDim: false,
+            categoryName: "Shifts",
+          },
+        ],
+      });
 
       const testRequests = [];
       for (const requestData of testRequestsData) {
         const request = await this.createTestRequest(requestData, testId);
         testRequests.push(request);
+      }
+
+      // Approve the third request (index 2) for the rescind test
+      if (testRequests.length >= 3) {
+        console.log(
+          `[${testId || "legacy"}] Approving third request for rescind test`
+        );
+        const approvedRequest = await this.approveTestRequest(
+          testRequests[2].id
+        );
+        testRequests[2] = approvedRequest;
+      }
+
+      // Deny the last request for status filter tests
+      const lastIndex = testRequests.length - 1;
+      if (lastIndex >= 0) {
+        console.log(
+          `[${testId || "legacy"}] Denying last request for status filter test`
+        );
+        const deniedRequest = await this.denyTestRequest(
+          testRequests[lastIndex].id
+        );
+        testRequests[lastIndex] = deniedRequest;
       }
 
       // Store requests by test ID if provided, otherwise use legacy array
@@ -609,6 +700,19 @@ export class RequestTestBase {
   }
 
   /**
+   * Denies a test request using the API
+   * @param requestId - The ID of the request to deny
+   * @returns The updated request with DENIED status
+   */
+  async denyTestRequest(requestId: string): Promise<RequestT> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupRequestTests first.");
+    }
+
+    return await this.dbUtils.denyRequest(requestId, this.testTeam.teamId);
+  }
+
+  /**
    * Deletes all test requests created during setup
    */
   async deleteAllTestRequests(): Promise<void> {
@@ -818,28 +922,55 @@ export class RequestTestBase {
    * Gets the calendar month label
    */
   getCalendarMonthLabel(page: Page) {
-    return page.getByTestId("calendar-month-label");
+    // TimeNavigation component uses data-testid="time-nav-label"
+    return page.locator('[data-testid="time-nav-label"]');
   }
 
   /**
    * Gets the previous month button
    */
   getPrevMonthButton(page: Page) {
-    return page.getByTestId("calendar-prev-month-button");
+    // TimeNavigation component uses data-testid="time-nav-previous"
+    return page.locator('[data-testid="time-nav-previous"]');
   }
 
   /**
    * Gets the next month button
    */
   getNextMonthButton(page: Page) {
-    return page.getByTestId("calendar-next-month-button");
+    // TimeNavigation component uses data-testid="time-nav-next"
+    return page.locator('[data-testid="time-nav-next"]');
   }
 
   /**
    * Gets the today button
    */
   getTodayButton(page: Page) {
-    return page.getByTestId("calendar-today-button");
+    // TimeNavigation component uses data-testid="time-nav-today"
+    return page.locator('[data-testid="time-nav-today"]');
+  }
+
+  /**
+   * Gets the period navigation component locators
+   * (Uses TimeNavigation component)
+   */
+  getPeriodNav(page: Page) {
+    return {
+      todayButton: page.locator('[data-testid="time-nav-today"]'),
+      previousButton: page.locator('[data-testid="time-nav-previous"]'),
+      nextButton: page.locator('[data-testid="time-nav-next"]'),
+      label: page.locator('[data-testid="time-nav-label"]'),
+      select: page.locator('[data-testid="time-nav-select"]'),
+    };
+  }
+
+  /**
+   * Gets the table header cell for a specific date.
+   * @param page The Playwright page object.
+   * @param date The date in 'YYYY-MM-DD' format.
+   */
+  getDateHeader(page: Page, date: string) {
+    return page.locator(`[data-testid="date-header-${date}"]`);
   }
 
   /**
@@ -1324,5 +1455,258 @@ export class RequestTestBase {
     // Note: In a real test, you'd need to get the created request ID
     // For now, return a placeholder
     return "created-request-id";
+  }
+
+  //////////////////////////
+  // Request Type Filter Helpers
+  //////////////////////////
+
+  /**
+   * Gets the work request filter button
+   */
+  getWorkRequestFilterButton(page: Page) {
+    return page.getByTestId("request-calendar-filter-work");
+  }
+
+  /**
+   * Gets the leave request filter button
+   */
+  getLeaveRequestFilterButton(page: Page) {
+    return page.getByTestId("request-calendar-filter-leave");
+  }
+
+  /**
+   * Toggles the work request filter
+   */
+  async toggleWorkRequestFilter(page: Page): Promise<void> {
+    const button = this.getWorkRequestFilterButton(page);
+    await expect(button).toBeVisible();
+    await button.click();
+  }
+
+  /**
+   * Toggles the leave request filter
+   */
+  async toggleLeaveRequestFilter(page: Page): Promise<void> {
+    const button = this.getLeaveRequestFilterButton(page);
+    await expect(button).toBeVisible();
+    await button.click();
+  }
+
+  /**
+   * Gets all visible work request cells in the calendar
+   */
+  getVisibleWorkRequestCells(page: Page) {
+    return page.locator('[data-request-type="work_demand"]');
+  }
+
+  /**
+   * Gets all visible leave request cells in the calendar
+   */
+  getVisibleLeaveRequestCells(page: Page) {
+    return page.locator('[data-request-type="leave"]');
+  }
+
+  /**
+   * Verifies that work requests are visible in the calendar
+   */
+  async verifyWorkRequestsVisible(
+    page: Page,
+    expectedCount?: number
+  ): Promise<void> {
+    const workRequestCells = this.getVisibleWorkRequestCells(page);
+    const count = await workRequestCells.count();
+
+    if (expectedCount !== undefined) {
+      expect(count).toBe(expectedCount);
+    } else {
+      expect(count).toBeGreaterThan(0);
+    }
+  }
+
+  /**
+   * Verifies that leave requests are visible in the calendar
+   */
+  async verifyLeaveRequestsVisible(
+    page: Page,
+    expectedCount?: number
+  ): Promise<void> {
+    const leaveRequestCells = this.getVisibleLeaveRequestCells(page);
+    const count = await leaveRequestCells.count();
+
+    if (expectedCount !== undefined) {
+      expect(count).toBe(expectedCount);
+    } else {
+      expect(count).toBeGreaterThan(0);
+    }
+  }
+
+  /**
+   * Verifies that work requests are not visible in the calendar
+   */
+  async verifyWorkRequestsNotVisible(page: Page): Promise<void> {
+    const workRequestCells = this.getVisibleWorkRequestCells(page);
+    const count = await workRequestCells.count();
+    expect(count).toBe(0);
+  }
+
+  /**
+   * Verifies that leave requests are not visible in the calendar
+   */
+  async verifyLeaveRequestsNotVisible(page: Page): Promise<void> {
+    const leaveRequestCells = this.getVisibleLeaveRequestCells(page);
+    const count = await leaveRequestCells.count();
+    expect(count).toBe(0);
+  }
+
+  //////////////////////////
+  // Status Filter Methods
+  //////////////////////////
+
+  /**
+   * Gets the pending request status filter button
+   */
+  getPendingStatusFilterButton(page: Page) {
+    return page.getByTestId("request-calendar-filter-pending");
+  }
+
+  /**
+   * Gets the accepted request status filter button
+   */
+  getAcceptedStatusFilterButton(page: Page) {
+    return page.getByTestId("request-calendar-filter-accepted");
+  }
+
+  /**
+   * Gets the denied request status filter button
+   */
+  getDeniedStatusFilterButton(page: Page) {
+    return page.getByTestId("request-calendar-filter-denied");
+  }
+
+  /**
+   * Toggles the pending request status filter
+   */
+  async togglePendingStatusFilter(page: Page): Promise<void> {
+    const button = this.getPendingStatusFilterButton(page);
+    await expect(button).toBeVisible();
+    await button.click();
+  }
+
+  /**
+   * Toggles the accepted request status filter
+   */
+  async toggleAcceptedStatusFilter(page: Page): Promise<void> {
+    const button = this.getAcceptedStatusFilterButton(page);
+    await expect(button).toBeVisible();
+    await button.click();
+  }
+
+  /**
+   * Toggles the denied request status filter
+   */
+  async toggleDeniedStatusFilter(page: Page): Promise<void> {
+    const button = this.getDeniedStatusFilterButton(page);
+    await expect(button).toBeVisible();
+    await button.click();
+  }
+
+  /**
+   * Gets all visible pending request cells in the calendar
+   */
+  getVisiblePendingRequestCells(page: Page) {
+    return page.locator('[data-request-status="pending"]');
+  }
+
+  /**
+   * Gets all visible approved request cells in the calendar
+   */
+  getVisibleApprovedRequestCells(page: Page) {
+    return page.locator('[data-request-status="approved"]');
+  }
+
+  /**
+   * Gets all visible denied request cells in the calendar
+   */
+  getVisibleDeniedRequestCells(page: Page) {
+    return page.locator('[data-request-status="denied"]');
+  }
+
+  /**
+   * Verifies that pending requests are visible in the calendar
+   */
+  async verifyPendingRequestsVisible(
+    page: Page,
+    expectedCount?: number
+  ): Promise<void> {
+    const pendingRequestCells = this.getVisiblePendingRequestCells(page);
+    const count = await pendingRequestCells.count();
+
+    if (expectedCount !== undefined) {
+      expect(count).toBe(expectedCount);
+    } else {
+      expect(count).toBeGreaterThan(0);
+    }
+  }
+
+  /**
+   * Verifies that approved requests are visible in the calendar
+   */
+  async verifyApprovedRequestsVisible(
+    page: Page,
+    expectedCount?: number
+  ): Promise<void> {
+    const approvedRequestCells = this.getVisibleApprovedRequestCells(page);
+    const count = await approvedRequestCells.count();
+
+    if (expectedCount !== undefined) {
+      expect(count).toBe(expectedCount);
+    } else {
+      expect(count).toBeGreaterThan(0);
+    }
+  }
+
+  /**
+   * Verifies that denied requests are visible in the calendar
+   */
+  async verifyDeniedRequestsVisible(
+    page: Page,
+    expectedCount?: number
+  ): Promise<void> {
+    const deniedRequestCells = this.getVisibleDeniedRequestCells(page);
+    const count = await deniedRequestCells.count();
+
+    if (expectedCount !== undefined) {
+      expect(count).toBe(expectedCount);
+    } else {
+      expect(count).toBeGreaterThan(0);
+    }
+  }
+
+  /**
+   * Verifies that pending requests are not visible in the calendar
+   */
+  async verifyPendingRequestsNotVisible(page: Page): Promise<void> {
+    const pendingRequestCells = this.getVisiblePendingRequestCells(page);
+    const count = await pendingRequestCells.count();
+    expect(count).toBe(0);
+  }
+
+  /**
+   * Verifies that approved requests are not visible in the calendar
+   */
+  async verifyApprovedRequestsNotVisible(page: Page): Promise<void> {
+    const approvedRequestCells = this.getVisibleApprovedRequestCells(page);
+    const count = await approvedRequestCells.count();
+    expect(count).toBe(0);
+  }
+
+  /**
+   * Verifies that denied requests are not visible in the calendar
+   */
+  async verifyDeniedRequestsNotVisible(page: Page): Promise<void> {
+    const deniedRequestCells = this.getVisibleDeniedRequestCells(page);
+    const count = await deniedRequestCells.count();
+    expect(count).toBe(0);
   }
 }

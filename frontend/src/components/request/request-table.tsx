@@ -20,7 +20,11 @@ import TableFilterBar from "../table/TableFilterBar";
 // Hooks
 import { useTableState } from "../../hooks/useTableState";
 // Utils
-import { getShiftWorkerOptionDisplayText } from "../../utils/shift-worker-option-display";
+import {
+  getShiftWorkerOptionDisplayText,
+  getRequestTargetDisplayText,
+  getShiftColors,
+} from "../../utils/shift-worker-option-display";
 // Styles
 import "../../styles/table-styles.css";
 // Types
@@ -66,17 +70,40 @@ const ShiftCell = ({
   workers: WorkerT[];
   t: any;
 }) => {
+  // Get shift colors for consistent styling
+  const shiftColors = getShiftColors(request, shifts);
+
   if (request.requestType === RequestType.LEAVE) {
     if (!request.shiftId) {
       return <Chip label="All Day" size="small" variant="outlined" />;
     }
     const shift = shifts.find((s) => s.id === request.shiftId);
-    return (
-      <div className="flex flex-col">
-        <span>{shift?.name || "Unknown"}</span>
-        {shift?.deleted && (
+
+    // If shift is deleted, show it as plain text with error message
+    if (shift?.deleted) {
+      return (
+        <div className="flex flex-col">
+          <span>{shift?.name || "Unknown"}</span>
           <span className="text-xs text-red-500">Shift deleted</span>
-        )}
+        </div>
+      );
+    }
+
+    // Otherwise, show as a chip with shift colors (like work requests)
+    return (
+      <div className="flex flex-wrap gap-1">
+        <Chip
+          label={shift?.name || "Unknown"}
+          size="small"
+          variant="filled"
+          sx={{
+            ...(shiftColors && {
+              backgroundColor: shiftColors.background,
+              color: shiftColors.text,
+              borderColor: shiftColors.sample,
+            }),
+          }}
+        />
       </div>
     );
   } else {
@@ -84,22 +111,28 @@ const ShiftCell = ({
     if (request.shiftOptions.length === 0) {
       return <Chip label="No Preferences" size="small" variant="outlined" />;
     }
+
+    const displayText = getRequestTargetDisplayText(
+      request,
+      workers,
+      shifts,
+      t("not")
+    );
+
     return (
       <div className="flex flex-wrap gap-1">
-        {request.shiftOptions.map((option, index) => (
-          <Chip
-            key={index}
-            label={`${getShiftWorkerOptionDisplayText(
-              option,
-              workers,
-              shifts,
-              t("not")
-            )} ${request.negative ? "❌" : "✅"}`}
-            size="small"
-            variant="filled"
-            color={request.negative ? "error" : "success"}
-          />
-        ))}
+        <Chip
+          label={displayText}
+          size="small"
+          variant="filled"
+          sx={{
+            ...(shiftColors && {
+              backgroundColor: shiftColors.background,
+              color: shiftColors.text,
+              borderColor: shiftColors.sample,
+            }),
+          }}
+        />
       </div>
     );
   }
@@ -204,9 +237,9 @@ const FulfillmentCell = ({ request }: { request: RequestT }) => {
   const getFulfillmentLabel = (fulfillment: FulfillmentStatus) => {
     switch (fulfillment) {
       case FulfillmentStatus.FULFILLED:
-        return "Fulfilled";
+        return "✅ Fulfilled";
       case FulfillmentStatus.UNFULFILLED:
-        return "Unfulfilled";
+        return "❌ Unfulfilled";
       case FulfillmentStatus.NOT_PROCESSED:
         return "Not Processed";
       default:

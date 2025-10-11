@@ -99,11 +99,11 @@ export class ShiftDemandTestBase {
    */
   getPeriodNav(page: Page) {
     return {
-      todayButton: page.locator('[data-testid="period-nav-today"]'),
-      previousButton: page.locator('[data-testid="period-nav-previous"]'),
-      nextButton: page.locator('[data-testid="period-nav-next"]'),
-      label: page.locator('[data-testid="period-nav-label"]'),
-      select: page.locator('[data-testid="period-nav-select"]'),
+      todayButton: page.locator('[data-testid="time-nav-today"]'),
+      previousButton: page.locator('[data-testid="time-nav-previous"]'),
+      nextButton: page.locator('[data-testid="time-nav-next"]'),
+      label: page.locator('[data-testid="time-nav-label"]'),
+      select: page.locator('[data-testid="time-nav-select"]'),
     };
   }
 
