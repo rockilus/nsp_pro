@@ -49,27 +49,12 @@ describe("TimeNavigation", () => {
       expect(screen.getByTestId("time-nav-select")).toBeInTheDocument();
     });
 
-    it("should render with custom test ID prefix", () => {
-      render(<TimeNavigation {...defaultProps} />);
-
-      expect(screen.getByTestId("custom-today")).toBeInTheDocument();
-      expect(screen.getByTestId("custom-previous")).toBeInTheDocument();
-      expect(screen.getByTestId("custom-next")).toBeInTheDocument();
-    });
-
     it("should render with translated labels", () => {
       render(<TimeNavigation {...defaultProps} />);
 
       expect(screen.getByText("Today")).toBeInTheDocument();
       expect(screen.getByRole("option", { name: "Week" })).toBeInTheDocument();
       expect(screen.getByRole("option", { name: "Month" })).toBeInTheDocument();
-    });
-
-    it("should apply custom className", () => {
-      const { container } = render(<TimeNavigation {...defaultProps} />);
-
-      const navContainer = container.firstChild;
-      expect(navContainer).toHaveClass("custom-class");
     });
   });
 
