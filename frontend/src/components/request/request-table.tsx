@@ -78,12 +78,32 @@ const ShiftCell = ({
       return <Chip label="All Day" size="small" variant="outlined" />;
     }
     const shift = shifts.find((s) => s.id === request.shiftId);
-    return (
-      <div className="flex flex-col">
-        <span>{shift?.name || "Unknown"}</span>
-        {shift?.deleted && (
+
+    // If shift is deleted, show it as plain text with error message
+    if (shift?.deleted) {
+      return (
+        <div className="flex flex-col">
+          <span>{shift?.name || "Unknown"}</span>
           <span className="text-xs text-red-500">Shift deleted</span>
-        )}
+        </div>
+      );
+    }
+
+    // Otherwise, show as a chip with shift colors (like work requests)
+    return (
+      <div className="flex flex-wrap gap-1">
+        <Chip
+          label={shift?.name || "Unknown"}
+          size="small"
+          variant="filled"
+          sx={{
+            ...(shiftColors && {
+              backgroundColor: shiftColors.background,
+              color: shiftColors.text,
+              borderColor: shiftColors.sample,
+            }),
+          }}
+        />
       </div>
     );
   } else {
