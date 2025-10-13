@@ -16,6 +16,7 @@ import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
 import LHSTab from "./lhs-tabs/lhs-tab";
 import CreateAssignment from "./lhs-tabs/create-assignment";
 import RequestPanel from "../request/request-panel";
+import RequestPanelContent from "../request/request-panel-content";
 import { buildAssignmentsDataByOwnerAndDate } from "./table/shared/assignment-utils";
 import { getPeriodStartEndDates } from "./schedule-utils";
 import { computePeriodEndDate } from "../../app/lib/utils/scheduleViewSettingsUtils";
@@ -975,7 +976,7 @@ export default function ScheduleTab({
       name: "request_selection",
       label: t("request"),
       content: selectedRequest ? (
-        <RequestPanel
+        <RequestPanelContent
           lng={lng}
           teamId={teamWithMembership.team.id}
           isEdit={true}
@@ -991,8 +992,9 @@ export default function ScheduleTab({
           handleRescindRequest={handleRescindRequest}
           handleAcceptRequest={handleAcceptRequest}
           handleDenyRequest={handleDenyRequest}
-          hideButton={true}
           onClose={handleCloseLHS}
+          showCloseButton={false}
+          fullWidth={true}
         />
       ) : null,
     },
