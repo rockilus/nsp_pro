@@ -1568,36 +1568,23 @@ export class TemplateTestBase {
   }
 
   /**
-   * Creates a shift demand via API for testing
+   * Creates shift demands via API for testing
    */
   async createShiftDemandViaAPI(demandData: {
     shiftId: string;
     date: string;
     value: number;
-  }) {
+  }): Promise<void> {
     if (!this.testTeam) {
       throw new Error("Test team not initialized");
     }
 
-    try {
-      // Use the authenticated API client to create shift demand
-      const response = await this.testApiClient.post(
-        `/teams/${this.testTeam.teamId}/shift-demands`,
-        {
-          shiftId: demandData.shiftId,
-          date: demandData.date,
-          count: demandData.value,
-        }
-      );
-
-      console.log(
-        `✅ Created shift demand: ${demandData.shiftId} on ${demandData.date} with value ${demandData.value}`
-      );
-      return response as any; // Type the response appropriately based on your API
-    } catch (error) {
-      console.error("Failed to create shift demand via API:", error);
-      throw error;
-    }
+    await this.dbUtils.createShiftDemand({
+      teamId: this.testTeam.teamId,
+      shiftId: demandData.shiftId,
+      date: new Date(demandData.date),
+      count: demandData.value,
+    });
   }
 
   /**
