@@ -1212,6 +1212,53 @@ export class TemplateTestBase {
   }
 
   /**
+   * Navigates to the period containing the specified date
+   */
+  async navigateToPeriod(page: Page, dateString: string) {
+    const targetDate = dayjs(dateString);
+
+    // Wait for the shift demand table to be visible
+    const shiftDemandTable = page.locator('[data-testid="shift-demand-table"]');
+    await expect(shiftDemandTable).toBeVisible();
+
+    // Check if the target date cell is already visible
+    const targetCell = page.locator(
+      `[data-testid^="shift-demand-value-"][data-testid$="-${dateString}"]`
+    );
+
+    const cellCount = await targetCell.count();
+    if (cellCount > 0) {
+      // We're already in the right period
+      return;
+    }
+
+    // Update localStorage to set the period state
+    // The usePeriodState hook stores period info in localStorage with key "nsp_pro_period_state"
+    await page.evaluate((dateStr) => {
+      const periodState = {
+        currentDate: dateStr, // ISO string
+        periodType: "month", // Default to month view
+      };
+      localStorage.setItem("nsp_pro_period_state", JSON.stringify(periodState));
+    }, targetDate.toISOString());
+
+    // Reload the page to apply the new period state
+    await page.reload();
+
+    // Wait for the page to load and the shift demands table to be visible again
+    await page.waitForLoadState("networkidle");
+    await expect(shiftDemandTable).toBeVisible({ timeout: 10000 });
+
+    // Verify that we're now in the correct period
+    const updatedCellCount = await targetCell.count();
+    if (updatedCellCount === 0) {
+      throw new Error(
+        `Failed to navigate to period containing ${dateString}. The date may not have any shift demands yet.`
+      );
+    }
+  }
+
+  /**
    * Verifies a shift demand value in the main shift demands table
    */
   async verifyShiftDemandValue(
@@ -1220,6 +1267,9 @@ export class TemplateTestBase {
     dateString: string,
     expectedValue: number
   ) {
+    // Navigate to the period containing the target date
+    await this.navigateToPeriod(page, dateString);
+
     // Navigate back to the shift demands main view if needed
     const shiftDemandTable = page.locator('[data-testid="shift-demand-table"]');
     await expect(shiftDemandTable).toBeVisible();
@@ -1239,6 +1289,9 @@ export class TemplateTestBase {
     shiftId: string,
     dateString: string
   ) {
+    // Navigate to the period containing the target date
+    await this.navigateToPeriod(page, dateString);
+
     const valueSelector = `[data-testid="shift-demand-value-${shiftId}-${dateString}"]`;
     const valueElement = page.locator(valueSelector);
 

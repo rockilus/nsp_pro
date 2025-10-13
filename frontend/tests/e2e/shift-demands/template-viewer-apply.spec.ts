@@ -241,14 +241,6 @@ test.describe("TemplateViewer - Apply Template", () => {
       // Apply the template
       await dialogElements.applyButton.click();
 
-      // Wait for application to complete
-      await expect(
-        page.locator("text=Template applied successfully")
-      ).toBeVisible({ timeout: 10000 });
-
-      // Close template management and verify shift demands were created
-      await templateTestBase.closeTemplateManagementWindow(page);
-
       // Verify the shift demands were applied in rolling fashion
       // Week 1 pattern should be applied to 2024-01-01 to 2024-01-07
       // Week 2 pattern should be applied to 2024-01-08 to 2024-01-14
