@@ -255,47 +255,124 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   ]);
 
   // Helper functions for filtering
-  const isPending = (req: RequestT) => req.status === "pending";
-  const isAcceptedNotFulfilled = (req: RequestT) =>
-    req.status === "approved" && req.fulfillment !== "fulfilled";
-  const isFulfilled = (req: RequestT) =>
-    req.status === "approved" && req.fulfillment === "fulfilled";
-  const isDenied = (req: RequestT) => req.status === RequestStatus.DENIED;
+  const isPending = React.useCallback(
+    (req: RequestT) => req.status === "pending",
+    []
+  );
+  const isAcceptedNotFulfilled = React.useCallback(
+    (req: RequestT) =>
+      req.status === "approved" && req.fulfillment !== "fulfilled",
+    []
+  );
+  const isFulfilled = React.useCallback(
+    (req: RequestT) =>
+      req.status === "approved" && req.fulfillment === "fulfilled",
+    []
+  );
+  const isDenied = React.useCallback(
+    (req: RequestT) => req.status === RequestStatus.DENIED,
+    []
+  );
 
   // Get request for a specific worker and day with filtering
   const getRequestForDay = React.useCallback(
     (workerId: string, day: Dayjs): RequestT | null => {
       const reqs = requestsByWorker[workerId] || [];
+
+      // Find the first request that matches all criteria
       return (
         reqs.find((r) => {
+          // Check date range
           const inRange =
             !day.isBefore(r.startDate, "day") && !day.isAfter(r.endDate, "day");
           if (!inRange) return false;
 
-          // Check request type filter
+          // Apply filters from tableState
+          for (const filter of tableState.filters) {
+            const column = columns.find((col) => col.id === filter.id);
+            if (!column) continue;
+
+            // Skip workerId filter (already applied to rows)
+            if (filter.id.startsWith("workerId")) continue;
+
+            const value = column.getValue(r);
+
+            switch (filter.type) {
+              case "text":
+                if (
+                  !String(value)
+                    .toLowerCase()
+                    .includes(String(filter.value).toLowerCase())
+                ) {
+                  return false;
+                }
+                break;
+
+              case "select":
+                if (Array.isArray(filter.value)) {
+                  if (!filter.value.includes(value)) {
+                    return false;
+                  }
+                } else {
+                  if (value !== filter.value) {
+                    return false;
+                  }
+                }
+                break;
+
+              case "date":
+                const filterValue = filter.value as {
+                  start?: string;
+                  end?: string;
+                };
+                const dateStr = String(value); // Value should be in YYYY-MM-DD format
+                if (filterValue.start && dateStr < filterValue.start) {
+                  return false;
+                }
+                if (filterValue.end && dateStr > filterValue.end) {
+                  return false;
+                }
+                break;
+
+              case "boolean":
+                if (value !== filter.value) {
+                  return false;
+                }
+                break;
+            }
+          }
+
+          // Also check the toolbar filters (these are separate from table filters)
           const isWorkDemandType = r.requestType === RequestType.WORK_DEMAND;
           const isLeaveType = r.requestType === RequestType.LEAVE;
           if (isWorkDemandType && !showWorkDemand) return false;
           if (isLeaveType && !showLeave) return false;
 
-          // Check status filter
+          // Check status filter from toolbar
           if (isPending(r) && showPending) return true;
           if (isAcceptedNotFulfilled(r) && showAcceptedNotFulfilled)
             return true;
           if (isFulfilled(r) && showFulfilled) return true;
           if (isDenied(r) && showDenied) return true;
+
           return false;
         }) || null
       );
     },
     [
       requestsByWorker,
+      tableState.filters,
+      columns,
       showWorkDemand,
       showLeave,
       showPending,
       showAcceptedNotFulfilled,
       showFulfilled,
       showDenied,
+      isPending,
+      isAcceptedNotFulfilled,
+      isFulfilled,
+      isDenied,
     ]
   );
 
