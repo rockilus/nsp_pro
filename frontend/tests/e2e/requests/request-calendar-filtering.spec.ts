@@ -16,6 +16,7 @@ import utc from "dayjs/plugin/utc";
 import { RequestTestBase } from "../../utils/request-test-base";
 // Types
 import {
+  RequestT,
   RequestType,
   RequestStatus,
   FulfillmentStatus,
@@ -103,15 +104,78 @@ test.describe("Request Calendar - Comprehensive Filtering", () => {
     console.log(`[Test Run ${testRunId}] Test requests:`, testRequests.length);
     console.log(`[Test Run ${testRunId}] Test shifts:`, testShifts.length);
 
+    // Map requests by shift
+    // A request is associated with a shift if:
+    // - It's a leave request with shiftId matching the shift
+    // - It's a work request with shiftOptions containing the shift ID
+    // - The shift ID is in shiftTargetIds
+    const requestsByShift = new Map<string, RequestT[]>();
+
+    for (const request of testRequests) {
+      const associatedShiftIds = new Set<string>();
+
+      // Check shiftId (leave requests)
+      if (request.shiftId) {
+        associatedShiftIds.add(request.shiftId);
+      }
+
+      // Check shiftOptions (work requests)
+      if (request.shiftOptions) {
+        for (const option of request.shiftOptions) {
+          if (option.id) {
+            associatedShiftIds.add(option.id);
+          }
+        }
+      }
+
+      // Check shiftTargetIds
+      if (request.shiftTargetIds) {
+        for (const id of request.shiftTargetIds) {
+          associatedShiftIds.add(id);
+        }
+      }
+
+      // Add request to each associated shift's list
+      for (const shiftId of associatedShiftIds) {
+        if (!requestsByShift.has(shiftId)) {
+          requestsByShift.set(shiftId, []);
+        }
+        requestsByShift.get(shiftId)!.push(request);
+      }
+    }
+
+    // Log the mapping
+    for (const [shiftId, requests] of requestsByShift.entries()) {
+      const shift = testShifts.find((s) => s.id === shiftId);
+      console.log(
+        `[Test Run ${testRunId}] Shift "${shift?.name || shiftId}": ${
+          requests.length
+        } requests`
+      );
+    }
+
     // Get count of requests before filtering
     const initialCount = await requestTestBase.countVisibleRequests(page);
     console.log(
       `[Test Run ${testRunId}] Initial visible requests: ${initialCount}`
     );
 
-    // Apply filter for the first shift
-    const firstShift = testShifts[0];
-    await requestTestBase.applySelectFilter(page, "shift", [firstShift.id]);
+    // Select a target shift (the first shift) to filter
+    const targetShift = testShifts[0];
+    const targetShiftRequests = requestsByShift.get(targetShift.id) || [];
+    const otherShiftRequests = testRequests.filter(
+      (r) => !targetShiftRequests.includes(r)
+    );
+
+    console.log(
+      `[Test Run ${testRunId}] Target shift "${targetShift.name}": ${targetShiftRequests.length} requests`
+    );
+    console.log(
+      `[Test Run ${testRunId}] Other shifts: ${otherShiftRequests.length} requests`
+    );
+
+    // Apply filter for the target shift
+    await requestTestBase.applySelectFilter(page, "shift", [targetShift.id]);
 
     // Verify filter chip is visible
     await requestTestBase.verifyFilterChipVisible(page, "shift");
@@ -122,11 +186,33 @@ test.describe("Request Calendar - Comprehensive Filtering", () => {
       `[Test Run ${testRunId}] Filtered visible requests: ${filteredCount}`
     );
 
-    // The filtered count should be less than or equal to initial count
-    expect(filteredCount).toBeLessThanOrEqual(initialCount);
+    // Verify the filtered count matches target shift requests
+    expect(filteredCount).toBe(targetShiftRequests.length);
+
+    // Verify target shift requests are visible
+    for (const request of targetShiftRequests) {
+      const requestCell = page.locator(
+        `[data-testid*="request-${request.id}"]`
+      );
+      await expect(requestCell).toBeVisible();
+    }
+    console.log(
+      `[Test Run ${testRunId}] ✓ All ${targetShiftRequests.length} requests for target shift are visible`
+    );
+
+    // Verify other shift requests are NOT visible
+    for (const request of otherShiftRequests) {
+      const requestCell = page.locator(
+        `[data-testid*="request-${request.id}"]`
+      );
+      await expect(requestCell).not.toBeVisible();
+    }
+    console.log(
+      `[Test Run ${testRunId}] ✓ All ${otherShiftRequests.length} requests for other shifts are hidden`
+    );
 
     console.log(
-      `✅ Successfully filtered requests by shift: ${firstShift.name}`
+      `✅ Successfully filtered requests by shift: ${targetShift.name}`
     );
   });
 
