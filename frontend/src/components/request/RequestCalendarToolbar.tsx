@@ -200,6 +200,7 @@ export function RequestCalendarToolbar({
           sx={{
             color: filters.length > 0 ? "primary.main" : "text.secondary",
           }}
+          data-testid="calendar-filter-menu-button"
         >
           <TuneIcon />
         </IconButton>
@@ -221,7 +222,7 @@ export function RequestCalendarToolbar({
         >
           {!selectedColumn ? (
             // Main menu - show list of filterable columns
-            <List sx={{ minWidth: 200 }}>
+            <List sx={{ minWidth: 200 }} data-testid="filter-column-list">
               {filterableColumns.map((column, index) => {
                 const hasFilter = filters.some((f) =>
                   f.id.startsWith(column.id)
@@ -232,6 +233,7 @@ export function RequestCalendarToolbar({
                     <ListItem disablePadding>
                       <ListItemButton
                         onClick={() => handleColumnSelect(column)}
+                        data-testid={`filter-column-${column.id}`}
                       >
                         <ListItemText
                           primary={column.label}
