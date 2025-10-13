@@ -137,6 +137,9 @@ function RequestCalendarCell({
     if (isPastEmpty) {
       return `Past date - ${date.format("MMM D")}`;
     }
+    if (worker.deleted && isEmpty) {
+      return `Worker deleted - ${date.format("MMM D")}`;
+    }
     if (canAddRequest) {
       return `Click to create request for ${worker.name} on ${date.format(
         "MMM D"
@@ -307,7 +310,12 @@ function RequestCalendarRow({
           const isEmpty = !request;
           const isPast = d.isBefore(dayjs().utc(), "day");
           const canAddRequest =
-            isEmpty && !isPast && !!handleAddRequest && !!lng && !!teamId;
+            isEmpty &&
+            !isPast &&
+            !worker.deleted &&
+            !!handleAddRequest &&
+            !!lng &&
+            !!teamId;
           const canEditRequest =
             !!request && !!handleUpdateRequest && !!lng && !!teamId;
 
