@@ -16,6 +16,7 @@ import {
 import RequestCalendarTable from "./RequestCalendarTable";
 import { useTableState } from "../../hooks/useTableState";
 import { createWorkerColumns } from "./workerColumns";
+import TableFilterBar from "../table/TableFilterBar";
 
 dayjs.extend(isoWeek);
 
@@ -396,6 +397,15 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           onRequestTypeFilterChange={handleRequestTypeFilterChange}
         />
       )}
+
+      {/* Filter Bar - shows active filters and sorting */}
+      <TableFilterBar
+        filters={workerTableState.filters}
+        sort={workerTableState.sort}
+        onRemoveFilter={removeWorkerFilter}
+        onRemoveSort={() => updateWorkerSort(null)}
+        onResetAll={resetWorkerFilters}
+      />
 
       {/* Calendar Table */}
       <RequestCalendarTable
