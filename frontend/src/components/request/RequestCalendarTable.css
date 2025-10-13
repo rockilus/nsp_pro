@@ -55,6 +55,14 @@
   z-index: 4;
 }
 
+.calendar-header__worker-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0 8px;
+}
+
 .calendar-header__days {
   display: flex;
   flex: 1;

@@ -348,15 +348,7 @@ function RequestCalendarHeader({
     <div className="calendar-header">
       <div className="calendar-header__empty">
         {/* Filter/Sort menu for workers */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            height: "100%",
-            padding: "0 8px",
-          }}
-        >
+        <div className="calendar-header__worker-content">
           <Typography variant="body2">{t("workers")}</Typography>
           {workerColumn && onSort && onFilter && (
             <ColumnSortFilterMenu
