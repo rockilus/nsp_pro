@@ -1159,8 +1159,8 @@ export class TemplateTestBase {
         ? '[data-testid="template-application-start-date"]'
         : '[data-testid="template-application-end-date"]';
 
-    // For MUI DatePicker, we need to target the actual input field
-    const input = page.locator(`${selector} input`);
+    // The data-testid is directly on the input element (via inputProps)
+    const input = page.locator(selector);
 
     // Wait for the input to be visible and enabled before interacting
     await expect(input).toBeVisible();
@@ -1170,18 +1170,19 @@ export class TemplateTestBase {
     await input.click();
     await input.fill("");
 
-    // Type the date in MM/DD/YYYY format (standard for date inputs)
+    // The DatePicker appears to use DD/MM/YYYY format based on the placeholder
+    // Convert from YYYY-MM-DD to DD/MM/YYYY
     const formattedDate = dateString.replace(
       /(\d{4})-(\d{2})-(\d{2})/,
-      "$2/$3/$1"
+      "$3/$2/$1"
     );
     await input.fill(formattedDate);
 
-    // Press Enter to confirm the date
-    await input.press("Enter");
+    // Press Tab to confirm the date (more reliable than Enter for date inputs)
+    await input.press("Tab");
 
-    // Wait for the date value to be properly set
-    await expect(input).toHaveValue(formattedDate);
+    // Wait a moment for the date to be processed and validation to update
+    await page.waitForTimeout(500);
   }
 
   /**

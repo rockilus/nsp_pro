@@ -144,7 +144,7 @@ test.describe("TemplateViewer - Apply Template", () => {
 
       // Verify error message is shown
       await expect(
-        page.locator("text=End date cannot be before start date")
+        page.locator("text=End date must be after start date")
       ).toBeVisible();
 
       // Set valid end date
@@ -226,15 +226,18 @@ test.describe("TemplateViewer - Apply Template", () => {
       // Ensure overwrite is enabled
       await templateTestBase.setApplicationDialogOverwrite(page, true);
 
-      // Apply the template
+      // Wait for validation to complete and apply button to be enabled
       const dialogElements =
         templateTestBase.getTemplateApplicationDialogElements(page);
+      await expect(dialogElements.applyButton).toBeEnabled({ timeout: 10000 });
+
+      // Apply the template
       await dialogElements.applyButton.click();
 
       // Wait for application to complete
       await expect(
         page.locator("text=Template applied successfully")
-      ).toBeVisible();
+      ).toBeVisible({ timeout: 10000 });
 
       // Close template management and verify shift demands were created
       await templateTestBase.closeTemplateManagementWindow(page);

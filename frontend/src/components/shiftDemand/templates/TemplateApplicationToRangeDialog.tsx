@@ -212,7 +212,6 @@ export default function TemplateApplicationToRangeDialog({
             </Typography>
             <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
               <DatePicker
-                data-testid="template-application-start-date"
                 label={t("start_date")}
                 value={startDate}
                 onChange={handleStartDateChange}
@@ -223,11 +222,13 @@ export default function TemplateApplicationToRangeDialog({
                       (e) => e.includes("required") || e.includes("before")
                     ),
                     sx: { minWidth: 200 },
+                    inputProps: {
+                      "data-testid": "template-application-start-date",
+                    },
                   },
                 }}
               />
               <DatePicker
-                data-testid="template-application-end-date"
                 label={t("end_date")}
                 value={endDate}
                 onChange={handleEndDateChange}
@@ -239,6 +240,9 @@ export default function TemplateApplicationToRangeDialog({
                       (e) => e.includes("required") || e.includes("before")
                     ),
                     sx: { minWidth: 200 },
+                    inputProps: {
+                      "data-testid": "template-application-end-date",
+                    },
                   },
                 }}
               />
