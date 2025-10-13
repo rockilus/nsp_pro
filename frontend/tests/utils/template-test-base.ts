@@ -11,6 +11,15 @@ import utc from "dayjs/plugin/utc";
 import isBetween from "dayjs/plugin/isBetween";
 import { testConfig } from "./test-config";
 import { ShiftType } from "../../src/types/shift";
+import {
+  ShiftDemandTemplateDTO,
+  ShiftDemandTemplateCreateDTO,
+  ShiftDemandTemplateUpdateDTO,
+  TemplateType,
+  TemplateWeekDataDTO,
+  DemandEntryDTO,
+} from "../../src/types/shift-demand-template";
+import { ShiftDemandTemplateApi } from "../../src/app/lib/api/shiftDemandTemplateApi";
 
 dayjs.extend(isoWeek);
 dayjs.extend(utc);
@@ -20,6 +29,12 @@ export class TemplateTestBase {
   protected dbUtils: DatabaseTestUtils;
   protected testTeam: { teamId: string; name: string } | null = null;
   protected createdShiftIds: string[] = [];
+
+  // Maps to store templates by test ID for test isolation
+  protected testTemplatesMap = new Map<string, ShiftDemandTemplateDTO[]>();
+
+  // Keep legacy arrays for backwards compatibility with tests that don't use test IDs
+  protected testTemplates: ShiftDemandTemplateDTO[] = [];
 
   constructor() {
     this.dbUtils = new DatabaseTestUtils();
@@ -38,34 +53,47 @@ export class TemplateTestBase {
    * Performs common setup for template tests:
    * - Resets relevant database collections
    * - Creates a test team with shifts
+   * - Creates test templates (standard and even/odd)
+   * @param testId - Optional test ID for test isolation
    */
-  async setupTemplateTests(): Promise<void> {
+  async setupTemplateTests(testId?: string): Promise<void> {
     try {
-      console.log("� Setting up template tests...");
+      console.log(`[${testId || "legacy"}] 🔧 Setting up template tests...`);
 
       // Create a test team with shifts
       this.testTeam = await this.dbUtils.createTeam({
-        name: "Template Test Team",
+        name: `Template Test Team ${testId || Date.now()}`,
       });
 
       console.log(
-        `✅ Created test team: ${this.testTeam.name} (${this.testTeam.teamId})`
+        `[${testId || "legacy"}] ✅ Created test team: ${this.testTeam.name} (${
+          this.testTeam.teamId
+        })`
       );
 
       // Create some test shifts that will be referenced in templates
-      await this.createTestShifts();
+      await this.createTestShifts(testId);
 
-      console.log("✅ Template test setup completed successfully");
+      // Create test templates
+      await this.createTestTemplates(testId);
+
+      console.log(
+        `[${testId || "legacy"}] ✅ Template test setup completed successfully`
+      );
     } catch (error) {
-      console.error("❌ Failed to setup template tests:", error);
+      console.error(
+        `[${testId || "legacy"}] ❌ Failed to setup template tests:`,
+        error
+      );
       throw error;
     }
   }
 
   /**
    * Creates test shifts for template testing
+   * @param testId - Optional test ID for test isolation
    */
-  private async createTestShifts(): Promise<void> {
+  private async createTestShifts(testId?: string): Promise<void> {
     if (!this.testTeam) {
       throw new Error("Test team not initialized");
     }
@@ -84,7 +112,7 @@ export class TemplateTestBase {
           teamId: this.testTeam.teamId,
           name: "Evening Shift",
           startTime: dayjs.utc("2023-01-01T16:00:00"),
-          endTime: dayjs.utc("2023-01-02T00:00:00"),
+          endTime: dayjs.utc("2023-01-01T00:00:00"),
           shiftType: ShiftType.NORMAL,
         },
         {
@@ -100,11 +128,178 @@ export class TemplateTestBase {
         const createdShift = await this.dbUtils.createShift(shiftData);
         this.createdShiftIds.push(createdShift.id);
         console.log(
-          `✅ Created test shift: ${shiftData.name} (${createdShift.id})`
+          `[${testId || "legacy"}] ✅ Created test shift: ${shiftData.name} (${
+            createdShift.id
+          })`
         );
       }
     } catch (error) {
-      console.error("Failed to create test shifts:", error);
+      console.error(
+        `[${testId || "legacy"}] Failed to create test shifts:`,
+        error
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Creates test templates via API
+   * Creates:
+   * 1. A standard template with 2 weeks
+   * 2. An even/odd template with 2 weeks
+   * Both templates include demands for all test shifts
+   * @param testId - Optional test ID for test isolation
+   */
+  private async createTestTemplates(testId?: string): Promise<void> {
+    if (!this.testTeam) {
+      throw new Error("Test team not initialized");
+    }
+
+    if (this.createdShiftIds.length === 0) {
+      throw new Error("No test shifts available for template creation");
+    }
+
+    try {
+      const templates: ShiftDemandTemplateDTO[] = [];
+
+      // 1. Create a standard template with 2 weeks
+      console.log(
+        `[${testId || "legacy"}] 🔧 Creating standard template with 2 weeks...`
+      );
+
+      const standardTemplate = await ShiftDemandTemplateApi.createTemplate(
+        this.testApiClient,
+        this.testTeam.teamId,
+        {
+          name: `Standard Template ${testId || Date.now()}`,
+          description: "Test standard template with 2 weeks",
+        }
+      );
+
+      // Add demands to the standard template
+      // Week 0: Monday-Sunday with varying demands
+      const week0Demands: DemandEntryDTO[] = [];
+      for (let dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++) {
+        this.createdShiftIds.forEach((shiftId, index) => {
+          week0Demands.push({
+            shiftId,
+            dayOfWeek,
+            count: ((dayOfWeek + index + 1) % 5) + 1, // Varying counts 1-5
+          });
+        });
+      }
+
+      // Week 1: Monday-Sunday with different demands
+      const week1Demands: DemandEntryDTO[] = [];
+      for (let dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++) {
+        this.createdShiftIds.forEach((shiftId, index) => {
+          week1Demands.push({
+            shiftId,
+            dayOfWeek,
+            count: ((dayOfWeek + index) % 5) + 2, // Varying counts 2-6
+          });
+        });
+      }
+
+      const weeksData: TemplateWeekDataDTO[] = [
+        { weekNumber: 0, demands: week0Demands },
+        { weekNumber: 1, demands: week1Demands },
+      ];
+
+      const updatedStandardTemplate =
+        await ShiftDemandTemplateApi.updateTemplate(
+          this.testApiClient,
+          standardTemplate.id,
+          this.testTeam.teamId,
+          {
+            weeksData,
+          }
+        );
+
+      templates.push(updatedStandardTemplate);
+      console.log(
+        `[${testId || "legacy"}] ✅ Created standard template: ${
+          updatedStandardTemplate.name
+        } (${updatedStandardTemplate.id})`
+      );
+
+      // 2. Create an even/odd template with 2 weeks
+      console.log(
+        `[${testId || "legacy"}] 🔧 Creating even/odd template with 2 weeks...`
+      );
+
+      const evenOddTemplate = await ShiftDemandTemplateApi.createTemplate(
+        this.testApiClient,
+        this.testTeam.teamId,
+        {
+          name: `Even/Odd Template ${testId || Date.now()}`,
+          description: "Test even/odd template with 2 weeks",
+        }
+      );
+
+      // Add demands to the even/odd template
+      // Week 0 (Even): Monday-Sunday with even week pattern
+      const evenWeekDemands: DemandEntryDTO[] = [];
+      for (let dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++) {
+        this.createdShiftIds.forEach((shiftId, index) => {
+          evenWeekDemands.push({
+            shiftId,
+            dayOfWeek,
+            count: (index + 1) * 2, // Even pattern: 2, 4, 6
+          });
+        });
+      }
+
+      // Week 1 (Odd): Monday-Sunday with odd week pattern
+      const oddWeekDemands: DemandEntryDTO[] = [];
+      for (let dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++) {
+        this.createdShiftIds.forEach((shiftId, index) => {
+          oddWeekDemands.push({
+            shiftId,
+            dayOfWeek,
+            count: (index + 1) * 2 - 1, // Odd pattern: 1, 3, 5
+          });
+        });
+      }
+
+      const evenOddWeeksData: TemplateWeekDataDTO[] = [
+        { weekNumber: 0, demands: evenWeekDemands },
+        { weekNumber: 1, demands: oddWeekDemands },
+      ];
+
+      const updatedEvenOddTemplate =
+        await ShiftDemandTemplateApi.updateTemplate(
+          this.testApiClient,
+          evenOddTemplate.id,
+          this.testTeam.teamId,
+          {
+            templateType: TemplateType.EVEN_ODD,
+            weeksData: evenOddWeeksData,
+          }
+        );
+
+      templates.push(updatedEvenOddTemplate);
+      console.log(
+        `[${testId || "legacy"}] ✅ Created even/odd template: ${
+          updatedEvenOddTemplate.name
+        } (${updatedEvenOddTemplate.id})`
+      );
+
+      // Store templates in appropriate collection
+      if (testId) {
+        this.testTemplatesMap.set(testId, templates);
+      } else {
+        this.testTemplates = templates;
+      }
+
+      console.log(
+        `[${testId || "legacy"}] ✅ Created ${templates.length} test templates`
+      );
+    } catch (error) {
+      console.error(
+        `[${testId || "legacy"}] ❌ Failed to create test templates:`,
+        error
+      );
       throw error;
     }
   }
@@ -117,7 +312,75 @@ export class TemplateTestBase {
   }
 
   /**
+   * Gets the test templates created during setup
+   * @param testId - Optional test ID to get templates for a specific test
+   */
+  getTestTemplates(testId?: string): ShiftDemandTemplateDTO[] {
+    if (testId) {
+      return this.testTemplatesMap.get(testId) || [];
+    }
+    return [...this.testTemplates];
+  }
+
+  /**
+   * Gets the standard test template created during setup
+   * @param testId - Optional test ID to get template for a specific test
+   */
+  getStandardTestTemplate(testId?: string): ShiftDemandTemplateDTO | null {
+    const templates = this.getTestTemplates(testId);
+    return (
+      templates.find((t) => t.templateType === TemplateType.STANDARD) || null
+    );
+  }
+
+  /**
+   * Gets the even/odd test template created during setup
+   * @param testId - Optional test ID to get template for a specific test
+   */
+  getEvenOddTestTemplate(testId?: string): ShiftDemandTemplateDTO | null {
+    const templates = this.getTestTemplates(testId);
+    return (
+      templates.find((t) => t.templateType === TemplateType.EVEN_ODD) || null
+    );
+  }
+
+  /**
+   * Gets the test team created during setup
+   */
+  getTestTeam(): { teamId: string; name: string } | null {
+    return this.testTeam;
+  }
+
+  /**
+   * Cleanup test data for a specific test ID
+   * @param testId - The test ID to clean up
+   */
+  async cleanupTestData(testId: string): Promise<void> {
+    // Delete templates created for this test
+    const templates = this.testTemplatesMap.get(testId);
+    if (templates && this.testTeam) {
+      for (const template of templates) {
+        try {
+          await ShiftDemandTemplateApi.deleteTemplate(
+            this.testApiClient,
+            template.id,
+            this.testTeam.teamId
+          );
+          console.log(`[${testId}] 🗑️  Deleted template: ${template.name}`);
+        } catch (error) {
+          console.warn(
+            `[${testId}] ⚠️  Failed to delete template ${template.id}:`,
+            error
+          );
+        }
+      }
+      this.testTemplatesMap.delete(testId);
+    }
+  }
+
+  /**
    * Navigates to the shift demands page for the test team
+   * Reloads the page to ensure templates created via API are available
    */
   async navigateToShiftDemandsPage(page: Page): Promise<void> {
     if (!this.testTeam) {
@@ -134,7 +397,8 @@ export class TemplateTestBase {
       localStorage.setItem("selectedTeamId", teamId);
     }, this.testTeam.teamId);
 
-    // Reload the page to apply the localStorage changes
+    // Reload the page to apply the localStorage changes and ensure
+    // templates created via API are available in the UI
     await page.reload();
 
     // Wait for the page to load and the team context to initialize
