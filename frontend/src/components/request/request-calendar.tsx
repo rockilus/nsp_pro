@@ -96,22 +96,37 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     React.useState<StaffingSummary | null>(null);
   const [isCalculating, setIsCalculating] = React.useState(false);
 
-  // Worker column definitions for filtering/sorting
-  const workerColumns = React.useMemo(
-    () => createWorkerColumns((key: string) => key, workers),
-    [workers]
+  // Column definitions for filtering (matching request table)
+  const columns = React.useMemo(
+    () => createWorkerColumns((key: string) => key, workers, shifts),
+    [workers, shifts]
   );
 
-  // Table state for worker filtering and sorting
+  // Table state for filtering requests
   // Use unified storage key shared with request table
+  // This manages filters for all request properties (worker, shift, date, type, status, fulfillment)
   const {
-    tableState: workerTableState,
-    filteredAndSortedData: filteredWorkers,
-    addFilter: addWorkerFilter,
-    removeFilter: removeWorkerFilter,
-    updateSort: updateWorkerSort,
-    resetAll: resetWorkerFilters,
-  } = useTableState(workers, workerColumns, "nsp-pro-request-tab-state");
+    tableState,
+    filteredAndSortedData: filteredRequests,
+    addFilter,
+    removeFilter,
+    updateSort,
+    resetAll,
+  } = useTableState(requests, columns, "nsp-pro-request-tab-state");
+
+  // Apply worker filter to determine which worker rows to show
+  const filteredWorkers = React.useMemo(() => {
+    const workerFilter = tableState.filters.find((f) =>
+      f.id.startsWith("workerId")
+    );
+    if (!workerFilter) {
+      return workers;
+    }
+
+    // Filter workers based on the workerId filter
+    const filterValues = workerFilter.value as string[];
+    return workers.filter((worker) => filterValues.includes(worker.id));
+  }, [workers, tableState.filters]);
 
   // Calculate current period
   const currentPeriod = React.useMemo(() => {
@@ -400,11 +415,12 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
 
       {/* Filter Bar - shows active filters and sorting */}
       <TableFilterBar
-        filters={workerTableState.filters}
-        sort={workerTableState.sort}
-        onRemoveFilter={removeWorkerFilter}
-        onRemoveSort={() => updateWorkerSort(null)}
-        onResetAll={resetWorkerFilters}
+        filters={tableState.filters}
+        sort={tableState.sort}
+        onRemoveFilter={removeFilter}
+        onRemoveSort={() => updateSort(null)}
+        onResetAll={resetAll}
+        hideSort={true}
       />
 
       {/* Calendar Table */}
@@ -424,11 +440,13 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
         }
         isCalculating={isCalculating}
         // Worker filter/sort props
-        currentSort={workerTableState.sort || undefined}
-        currentFilter={workerTableState.filters[0]}
-        onSort={updateWorkerSort}
-        onFilter={addWorkerFilter}
-        workerColumn={workerColumns[0]}
+        currentSort={tableState.sort || undefined}
+        currentFilter={tableState.filters.find((f) =>
+          f.id.startsWith("workerId")
+        )}
+        onSort={updateSort}
+        onFilter={addFilter}
+        workerColumn={columns[0]}
       />
 
       {/* Request Panel for creating requests from calendar */}

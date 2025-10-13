@@ -9,6 +9,7 @@ interface TableFilterBarProps {
   onRemoveFilter: (filterId: string) => void;
   onRemoveSort: () => void;
   onResetAll: () => void;
+  hideSort?: boolean; // Optional prop to hide the sort chip
 }
 
 export default function TableFilterBar({
@@ -17,8 +18,9 @@ export default function TableFilterBar({
   onRemoveFilter,
   onRemoveSort,
   onResetAll,
+  hideSort = false,
 }: TableFilterBarProps) {
-  const hasActiveFilters = filters.length > 0 || sort !== null;
+  const hasActiveFilters = filters.length > 0 || (!hideSort && sort !== null);
 
   if (!hasActiveFilters) {
     return null;
@@ -37,7 +39,7 @@ export default function TableFilterBar({
           overflowX: "hidden",
         }}
       >
-        {sort && (
+        {!hideSort && sort && (
           <Chip
             icon={<SortIcon />}
             label={`Sort: ${sort.label} ${
