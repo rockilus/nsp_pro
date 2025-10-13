@@ -107,19 +107,40 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     resetAll,
   } = useTableState(requests, columns, "nsp-pro-request-tab-state");
 
-  // Apply worker filter to determine which worker rows to show
+  // Apply worker filter and sort to determine which worker rows to show and their order
   const filteredWorkers = React.useMemo(() => {
+    let result = [...workers];
+
+    // Apply worker filter
     const workerFilter = tableState.filters.find((f) =>
       f.id.startsWith("workerId")
     );
-    if (!workerFilter) {
-      return workers;
+    if (workerFilter) {
+      const filterValues = workerFilter.value as string[];
+      result = result.filter((worker) => filterValues.includes(worker.id));
     }
 
-    // Filter workers based on the workerId filter
-    const filterValues = workerFilter.value as string[];
-    return workers.filter((worker) => filterValues.includes(worker.id));
-  }, [workers, tableState.filters]);
+    // Apply sorting if sort is on workerId column
+    if (tableState.sort && tableState.sort.columnId === "workerId") {
+      const workerColumn = columns.find((col) => col.id === "workerId");
+      if (workerColumn) {
+        result.sort((a, b) => {
+          const aValue = workerColumn.getValue(a);
+          const bValue = workerColumn.getValue(b);
+
+          let comparison = 0;
+          if (aValue < bValue) comparison = -1;
+          if (aValue > bValue) comparison = 1;
+
+          return tableState.sort!.direction === "desc"
+            ? -comparison
+            : comparison;
+        });
+      }
+    }
+
+    return result;
+  }, [workers, tableState.filters, tableState.sort, columns]);
 
   // Calculate current period
   const currentPeriod = React.useMemo(() => {
@@ -424,7 +445,6 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
         onRemoveFilter={removeFilter}
         onRemoveSort={() => updateSort(null)}
         onResetAll={resetAll}
-        hideSort={true}
       />
 
       {/* Calendar Table */}
