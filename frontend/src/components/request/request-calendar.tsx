@@ -14,6 +14,8 @@ import {
   FulfillmentStatus,
 } from "../../types/request";
 import RequestCalendarTable from "./RequestCalendarTable";
+import { useTableState } from "../../hooks/useTableState";
+import { createWorkerColumns } from "./workerColumns";
 
 dayjs.extend(isoWeek);
 
@@ -92,6 +94,23 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   const [staffingSummary, setStaffingSummary] =
     React.useState<StaffingSummary | null>(null);
   const [isCalculating, setIsCalculating] = React.useState(false);
+
+  // Worker column definitions for filtering/sorting
+  const workerColumns = React.useMemo(
+    () => createWorkerColumns((key: string) => key, workers),
+    [workers]
+  );
+
+  // Table state for worker filtering and sorting
+  // Use unified storage key shared with request table
+  const {
+    tableState: workerTableState,
+    filteredAndSortedData: filteredWorkers,
+    addFilter: addWorkerFilter,
+    removeFilter: removeWorkerFilter,
+    updateSort: updateWorkerSort,
+    resetAll: resetWorkerFilters,
+  } = useTableState(workers, workerColumns, "nsp-pro-request-tab-state");
 
   // Calculate current period
   const currentPeriod = React.useMemo(() => {
@@ -380,7 +399,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
 
       {/* Calendar Table */}
       <RequestCalendarTable
-        workers={workers}
+        workers={filteredWorkers}
         days={days}
         shifts={shifts}
         getRequestForDay={getRequestForDay}
@@ -394,6 +413,12 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           demands.length > 0 && shifts.length > 0 ? staffingSummary : null
         }
         isCalculating={isCalculating}
+        // Worker filter/sort props
+        currentSort={workerTableState.sort || undefined}
+        currentFilter={workerTableState.filters[0]}
+        onSort={updateWorkerSort}
+        onFilter={addWorkerFilter}
+        workerColumn={workerColumns[0]}
       />
 
       {/* Request Panel for creating requests from calendar */}

@@ -16,6 +16,8 @@ import {
   getRequestTargetDisplayText,
   getShiftColors,
 } from "../../utils/shift-worker-option-display";
+import { ColumnDefinition, ColumnFilter, TableSort } from "../../types/filter";
+import ColumnSortFilterMenu from "../table/ColumnSortFilterMenu";
 
 type StaffingSummary = {
   [date: string]: {
@@ -38,6 +40,12 @@ interface RequestCalendarTableProps {
   onRequestClick: (request: RequestT) => void;
   staffingSummary: StaffingSummary | null;
   isCalculating: boolean;
+  // Filter/Sort props
+  currentSort?: TableSort;
+  currentFilter?: ColumnFilter;
+  onSort?: (sort: TableSort | null) => void;
+  onFilter?: (filter: ColumnFilter) => void;
+  workerColumn?: ColumnDefinition;
 }
 
 interface RequestCalendarCellProps {
@@ -68,6 +76,12 @@ interface RequestCalendarRowProps {
 
 interface RequestCalendarHeaderProps {
   days: Dayjs[];
+  // Filter/Sort props
+  currentSort?: TableSort;
+  currentFilter?: ColumnFilter;
+  onSort?: (sort: TableSort | null) => void;
+  onFilter?: (filter: ColumnFilter) => void;
+  workerColumn?: ColumnDefinition;
 }
 
 interface RequestCalendarBodyProps {
@@ -316,10 +330,37 @@ function RequestCalendarRow({
 }
 
 // Header component
-function RequestCalendarHeader({ days }: RequestCalendarHeaderProps) {
+function RequestCalendarHeader({
+  days,
+  currentSort,
+  currentFilter,
+  onSort,
+  onFilter,
+  workerColumn,
+}: RequestCalendarHeaderProps) {
   return (
     <div className="calendar-header">
-      <div className="calendar-header__empty" />
+      <div className="calendar-header__empty">
+        {/* Filter/Sort menu for workers */}
+        {workerColumn && onSort && onFilter && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "100%",
+            }}
+          >
+            <ColumnSortFilterMenu
+              column={workerColumn}
+              currentSort={currentSort}
+              currentFilter={currentFilter}
+              onSort={onSort}
+              onFilter={onFilter}
+            />
+          </div>
+        )}
+      </div>
       <div className="calendar-header__days">
         {days.map((d) => {
           const isWeekend = d.day() === 0 || d.day() === 6;
@@ -501,11 +542,23 @@ export default function RequestCalendarTable({
   onRequestClick,
   staffingSummary,
   isCalculating,
+  currentSort,
+  currentFilter,
+  onSort,
+  onFilter,
+  workerColumn,
 }: RequestCalendarTableProps) {
   return (
     <div className="request-calendar-table">
       {/* Calendar Header */}
-      <RequestCalendarHeader days={days} />
+      <RequestCalendarHeader
+        days={days}
+        currentSort={currentSort}
+        currentFilter={currentFilter}
+        onSort={onSort}
+        onFilter={onFilter}
+        workerColumn={workerColumn}
+      />
 
       {/* Staffing Summary Rows */}
       {staffingSummary !== null && (
