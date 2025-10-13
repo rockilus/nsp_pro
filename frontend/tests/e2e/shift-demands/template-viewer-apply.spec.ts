@@ -191,34 +191,24 @@ test.describe("TemplateViewer - Apply Template", () => {
     test("should apply standard template with rolling week logic", async ({
       page,
     }) => {
+      // Get the standard test template created during setup
+      const standardTemplate = templateTestBase.getStandardTestTemplate();
+      if (!standardTemplate) {
+        throw new Error("Standard test template not found");
+      }
+
       // Get the actual shift IDs created during setup
       const shiftIds = templateTestBase.getCreatedShiftIds();
       const morningShiftId = shiftIds[0]; // First shift created (Morning Shift)
 
-      // Create a multi-week standard template with some demands
-      const templateId = await templateTestBase.createTemplateWithDemands({
-        name: "Multi-week Standard Template",
-        description: "Template with 3 weeks for rolling logic test",
-        demands: [
-          // Week 1
-          { weekNumber: 0, dayIndex: 0, shiftId: morningShiftId, value: 2 }, // Monday
-          { weekNumber: 0, dayIndex: 4, shiftId: morningShiftId, value: 1 }, // Friday
-          // Week 2
-          { weekNumber: 1, dayIndex: 1, shiftId: morningShiftId, value: 3 }, // Tuesday
-          { weekNumber: 1, dayIndex: 5, shiftId: morningShiftId, value: 2 }, // Saturday
-          // Week 3
-          { weekNumber: 2, dayIndex: 2, shiftId: morningShiftId, value: 1 }, // Wednesday
-          { weekNumber: 2, dayIndex: 6, shiftId: morningShiftId, value: 2 }, // Sunday
-        ],
-      });
-
-      await templateTestBase.selectTemplateInViewer(page, templateId);
+      await templateTestBase.selectTemplateInViewer(page, standardTemplate.id);
 
       // Open application dialog
       const applyButton = templateTestBase.getTemplateViewerApplyButton(page);
       await applyButton.click();
 
-      // Set a date range that covers exactly 3 weeks (matching template length)
+      // Set a date range that covers 4 weeks to test rolling logic
+      // The standard template has 2 weeks, so it should repeat twice
       await templateTestBase.setApplicationDialogDate(
         page,
         "start",
@@ -227,8 +217,8 @@ test.describe("TemplateViewer - Apply Template", () => {
       await templateTestBase.setApplicationDialogDate(
         page,
         "end",
-        "2024-01-21"
-      ); // Sunday (3 weeks)
+        "2024-01-28"
+      ); // Sunday (4 weeks)
 
       // Ensure overwrite is enabled
       await templateTestBase.setApplicationDialogOverwrite(page, true);
@@ -241,46 +231,64 @@ test.describe("TemplateViewer - Apply Template", () => {
       // Apply the template
       await dialogElements.applyButton.click();
 
+      // Navigate to the period to verify the demands
+      await templateTestBase.navigateToPeriod(page, "2024-01-01");
+
       // Verify the shift demands were applied in rolling fashion
-      // Week 1 pattern should be applied to 2024-01-01 to 2024-01-07
-      // Week 2 pattern should be applied to 2024-01-08 to 2024-01-14
-      // Week 3 pattern should be applied to 2024-01-15 to 2024-01-21
+      // The standard template has 2 weeks that should repeat:
+      // Week 0 pattern applied to 2024-01-01 to 2024-01-07
+      // Week 1 pattern applied to 2024-01-08 to 2024-01-14
+      // Week 0 pattern applied again to 2024-01-15 to 2024-01-21
+      // Week 1 pattern applied again to 2024-01-22 to 2024-01-28
+
+      // Calculate expected values based on the template creation logic
+      // Week 0, Monday (dayOfWeek=0, index=0): ((0 + 0 + 1) % 5) + 1 = 2
       await templateTestBase.verifyShiftDemandValue(
         page,
-        "shift1",
+        morningShiftId,
         "2024-01-01",
         2
-      ); // Monday, Week 1
+      ); // Monday, Week 0
+
+      // Week 0, Friday (dayOfWeek=4, index=0): ((4 + 0 + 1) % 5) + 1 = 1
       await templateTestBase.verifyShiftDemandValue(
         page,
-        "shift1",
+        morningShiftId,
         "2024-01-05",
         1
-      ); // Friday, Week 1
+      ); // Friday, Week 0
+
+      // Week 1, Monday (dayOfWeek=0, index=0): ((0 + 0) % 5) + 2 = 2
       await templateTestBase.verifyShiftDemandValue(
         page,
-        "shift1",
+        morningShiftId,
+        "2024-01-08",
+        2
+      ); // Monday, Week 1
+
+      // Week 1, Tuesday (dayOfWeek=1, index=0): ((1 + 0) % 5) + 2 = 3
+      await templateTestBase.verifyShiftDemandValue(
+        page,
+        morningShiftId,
         "2024-01-09",
         3
-      ); // Tuesday, Week 2
+      ); // Tuesday, Week 1
+
+      // Week 0 repeats - Monday (dayOfWeek=0, index=0): ((0 + 0 + 1) % 5) + 1 = 2
       await templateTestBase.verifyShiftDemandValue(
         page,
-        "shift1",
-        "2024-01-13",
+        morningShiftId,
+        "2024-01-15",
         2
-      ); // Saturday, Week 2
+      ); // Monday, Week 0 (repeated)
+
+      // Week 1 repeats - Monday (dayOfWeek=0, index=0): ((0 + 0) % 5) + 2 = 2
       await templateTestBase.verifyShiftDemandValue(
         page,
-        "shift1",
-        "2024-01-17",
-        1
-      ); // Wednesday, Week 3
-      await templateTestBase.verifyShiftDemandValue(
-        page,
-        "shift1",
-        "2024-01-21",
+        morningShiftId,
+        "2024-01-22",
         2
-      ); // Sunday, Week 3
+      ); // Monday, Week 1 (repeated)
     });
 
     test("should apply standard template with rolling logic for longer period", async ({
