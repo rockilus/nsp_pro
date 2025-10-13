@@ -14,10 +14,7 @@ import QuickStatsTable from "./lhs-tabs/quick-stats";
 import ScheduleDisplay from "./table/schedule-display";
 import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
 import LHSTab from "./lhs-tabs/lhs-tab";
-import LHSHeader from "./lhs-tabs/lhs-header";
 import CreateAssignment from "./lhs-tabs/create-assignment";
-import RequestPanel from "../request/request-panel";
-import RequestPanelContent from "../request/request-panel-content";
 import { buildAssignmentsDataByOwnerAndDate } from "./table/shared/assignment-utils";
 import { getPeriodStartEndDates } from "./schedule-utils";
 import { computePeriodEndDate } from "../../app/lib/utils/scheduleViewSettingsUtils";
@@ -295,7 +292,7 @@ export default function ScheduleTab({
     setSelectedRequest(request);
     setSelectedAssignment(null);
     setSelectedDemand(null);
-    setSelectedTab("request_selection");
+    setSelectedTab("selection");
   };
 
   // updateScheduleViewSettings is now provided by the useScheduleViewSettings hook
@@ -964,45 +961,24 @@ export default function ScheduleTab({
           ]}
           selectedAssignment={selectedAssignment}
           selectedDemand={selectedDemand}
+          selectedRequest={selectedRequest}
           specialties={specialties}
+          shiftOptions={[]}
+          userWorkerId={null}
+          userTeamRole={teamWithMembership.membership.role}
           onClose={handleCloseLHS}
           handleUpdateAssignment={handleUpdateAssignment}
           handleDeleteAssignment={handleDeleteAssignment}
           handleUpdateShiftDemand={handleUpdateShiftDemand}
           handleDeleteShiftDemand={handleDeleteShiftDemand}
+          handleAddRequest={handleAddRequest}
+          handleUpdateRequest={handleUpdateRequest}
+          handleDeleteRequest={handleDeleteRequest}
+          handleRescindRequest={handleRescindRequest}
+          handleAcceptRequest={handleAcceptRequest}
+          handleDenyRequest={handleDenyRequest}
         />
       ),
-    },
-    {
-      name: "request_selection",
-      label: t("request"),
-      content: selectedRequest ? (
-        <>
-          <LHSHeader
-            lhsHeaderTitle={t("new_request")}
-            onClose={handleCloseLHS}
-          />
-          <RequestPanelContent
-            lng={lng}
-            teamId={teamWithMembership.team.id}
-            isEdit={true}
-            request={selectedRequest}
-            workers={workers.filter((w) => !w.deleted)}
-            shifts={shifts.filter((s) => !s.deleted)}
-            shiftOptions={[]} // ShiftOptions not needed for viewing existing requests
-            userWorkerId={null} // Allow viewing any request in schedule context
-            userTeamRole={teamWithMembership.membership.role}
-            handleAddRequest={handleAddRequest}
-            handleUpdateRequest={handleUpdateRequest}
-            handleDeleteRequest={handleDeleteRequest}
-            handleRescindRequest={handleRescindRequest}
-            handleAcceptRequest={handleAcceptRequest}
-            handleDenyRequest={handleDenyRequest}
-            onClose={handleCloseLHS}
-            fullWidth={true}
-          />
-        </>
-      ) : null,
     },
     {
       name: "create_assignment",

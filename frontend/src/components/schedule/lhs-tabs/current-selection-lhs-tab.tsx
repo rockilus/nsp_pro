@@ -4,6 +4,7 @@ import { useTranslation } from "../../../app/i18n/client";
 // Components
 import AssignmentSelection from "./assignment-selection";
 import DemandSelection from "./demand-selection";
+import RequestPanelContent from "../../request/request-panel-content";
 import LHSHEader from "./lhs-header";
 // Styles
 import "./current-selection-lhs-tab.css";
@@ -19,6 +20,9 @@ import { AssignmentT } from "@/types/assignment";
 import { RecurrenceRuleT, RecurrenceUpdateScope } from "@/types/recurrence";
 import { ShiftDemandDTO, ShiftDemandUpdateDTO } from "@/types/shiftDemand";
 import { SpecialtyT } from "@/types/specialty";
+import { RequestT } from "@/types/request";
+import { TeamMembershipRole } from "@/types/team";
+import { ShiftWorkerOptionT } from "@/types/constraint";
 
 export default function CurrentSelectionLHSTab({
   lng,
@@ -27,12 +31,22 @@ export default function CurrentSelectionLHSTab({
   schedules,
   selectedAssignment,
   selectedDemand,
+  selectedRequest,
   specialties,
+  shiftOptions,
+  userWorkerId,
+  userTeamRole,
   onClose,
   handleUpdateAssignment,
   handleDeleteAssignment,
   handleUpdateShiftDemand,
   handleDeleteShiftDemand,
+  handleAddRequest,
+  handleUpdateRequest,
+  handleDeleteRequest,
+  handleRescindRequest,
+  handleAcceptRequest,
+  handleDenyRequest,
 }: {
   lng: string;
   workers: WorkerT[];
@@ -40,7 +54,11 @@ export default function CurrentSelectionLHSTab({
   schedules: ScheduleT[];
   selectedAssignment: AssignmentDataT | null;
   selectedDemand: ScheduleCellDataT | null;
+  selectedRequest: RequestT | null;
   specialties: SpecialtyT[];
+  shiftOptions: ShiftWorkerOptionT[];
+  userWorkerId: string | null;
+  userTeamRole: TeamMembershipRole;
   onClose: () => void;
   handleUpdateAssignment: (
     assignment: AssignmentT,
@@ -57,6 +75,12 @@ export default function CurrentSelectionLHSTab({
     updates: Partial<ShiftDemandUpdateDTO>
   ) => Promise<void>;
   handleDeleteShiftDemand: (demandId: string) => Promise<void>;
+  handleAddRequest: (request: RequestT) => void;
+  handleUpdateRequest: (request: RequestT) => void;
+  handleDeleteRequest?: (requestId: string) => void;
+  handleRescindRequest?: (requestId: string) => void;
+  handleAcceptRequest?: (requestId: string) => void;
+  handleDenyRequest?: (requestId: string) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -112,6 +136,27 @@ export default function CurrentSelectionLHSTab({
           specialties={specialties}
           handleUpdateShiftDemand={handleUpdateShiftDemand}
           handleDeleteShiftDemand={handleDeleteShiftDemand}
+        />
+      )}
+      {selectedRequest && (
+        <RequestPanelContent
+          lng={lng}
+          teamId={selectedRequest.teamId}
+          isEdit={true}
+          request={selectedRequest}
+          workers={workers}
+          shifts={shifts}
+          shiftOptions={shiftOptions}
+          userWorkerId={userWorkerId}
+          userTeamRole={userTeamRole}
+          handleAddRequest={handleAddRequest}
+          handleUpdateRequest={handleUpdateRequest}
+          handleDeleteRequest={handleDeleteRequest}
+          handleRescindRequest={handleRescindRequest}
+          handleAcceptRequest={handleAcceptRequest}
+          handleDenyRequest={handleDenyRequest}
+          onClose={onClose}
+          fullWidth={true}
         />
       )}
     </div>
