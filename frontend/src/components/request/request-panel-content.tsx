@@ -401,100 +401,9 @@ export default function RequestPanelContent({
 
   return (
     <div>
-      {/* Header with title, status chip, and action buttons */}
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center gap-2">
-          <Typography variant="h6">{t("new_request")}</Typography>
-          {isEdit && request && (
-            <>
-              <Chip
-                label={getStatusLabel(requestState.status)}
-                size="small"
-                color={getStatusColor(requestState.status)}
-                variant="filled"
-              />
-              {/* Action buttons for edit mode */}
-              {canApprove && handleAcceptRequest && (
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    handleAcceptRequest(request.id);
-                    // Update local state to reflect the approval
-                    setRequestState((prev) => ({
-                      ...prev,
-                      status: RequestStatus.APPROVED,
-                    }));
-                  }}
-                  title="Approve Request"
-                  color="success"
-                  data-testid={`approve-request-button-${request.id}`}
-                >
-                  <CheckIcon />
-                </IconButton>
-              )}
-
-              {canApprove && handleDenyRequest && (
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    handleDenyRequest(request.id);
-                    // Update local state to reflect the denial
-                    setRequestState((prev) => ({
-                      ...prev,
-                      status: RequestStatus.DENIED,
-                    }));
-                  }}
-                  title="Reject Request"
-                  color="error"
-                  data-testid={`reject-request-button-${request.id}`}
-                >
-                  <ClearIcon />
-                </IconButton>
-              )}
-
-              {canRescind && handleRescindRequest && (
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    handleRescindRequest(request.id);
-                    // Update local state to reflect the rescind (back to pending)
-                    setRequestState((prev) => ({
-                      ...prev,
-                      status: RequestStatus.PENDING,
-                    }));
-                  }}
-                  title={`Rescind ${
-                    requestState.status === RequestStatus.APPROVED
-                      ? "Approval"
-                      : "Rejection"
-                  }`}
-                  color="warning"
-                  data-testid={`rescind-request-button-${request.id}`}
-                >
-                  <UndoIcon />
-                </IconButton>
-              )}
-
-              {handleDeleteRequest && (
-                <IconButton
-                  size="small"
-                  disabled={!canEdit}
-                  onClick={() => {
-                    handleDeleteRequest(request.id);
-                    if (onClose) {
-                      onClose();
-                    }
-                  }}
-                  title="Delete Request"
-                  color="error"
-                  data-testid={`delete-request-button-${request.id}`}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              )}
-            </>
-          )}
-        </div>
+      {/* Header with title and close button */}
+      <div className="flex justify-between items-center mb-2">
+        <Typography variant="h6">{t("new_request")}</Typography>
         {showCloseButton && onClose && (
           <IconButton
             aria-label="close"
@@ -508,6 +417,97 @@ export default function RequestPanelContent({
           </IconButton>
         )}
       </div>
+
+      {/* Status chip and action buttons */}
+      {isEdit && request && (
+        <div className="flex items-center gap-2 mb-4">
+          <Chip
+            label={getStatusLabel(requestState.status)}
+            size="small"
+            color={getStatusColor(requestState.status)}
+            variant="filled"
+          />
+          {/* Action buttons for edit mode */}
+          {canApprove && handleAcceptRequest && (
+            <IconButton
+              size="small"
+              onClick={() => {
+                handleAcceptRequest(request.id);
+                // Update local state to reflect the approval
+                setRequestState((prev) => ({
+                  ...prev,
+                  status: RequestStatus.APPROVED,
+                }));
+              }}
+              title="Approve Request"
+              color="success"
+              data-testid={`approve-request-button-${request.id}`}
+            >
+              <CheckIcon />
+            </IconButton>
+          )}
+
+          {canApprove && handleDenyRequest && (
+            <IconButton
+              size="small"
+              onClick={() => {
+                handleDenyRequest(request.id);
+                // Update local state to reflect the denial
+                setRequestState((prev) => ({
+                  ...prev,
+                  status: RequestStatus.DENIED,
+                }));
+              }}
+              title="Reject Request"
+              color="error"
+              data-testid={`reject-request-button-${request.id}`}
+            >
+              <ClearIcon />
+            </IconButton>
+          )}
+
+          {canRescind && handleRescindRequest && (
+            <IconButton
+              size="small"
+              onClick={() => {
+                handleRescindRequest(request.id);
+                // Update local state to reflect the rescind (back to pending)
+                setRequestState((prev) => ({
+                  ...prev,
+                  status: RequestStatus.PENDING,
+                }));
+              }}
+              title={`Rescind ${
+                requestState.status === RequestStatus.APPROVED
+                  ? "Approval"
+                  : "Rejection"
+              }`}
+              color="warning"
+              data-testid={`rescind-request-button-${request.id}`}
+            >
+              <UndoIcon />
+            </IconButton>
+          )}
+
+          {handleDeleteRequest && (
+            <IconButton
+              size="small"
+              disabled={!canEdit}
+              onClick={() => {
+                handleDeleteRequest(request.id);
+                if (onClose) {
+                  onClose();
+                }
+              }}
+              title="Delete Request"
+              color="error"
+              data-testid={`delete-request-button-${request.id}`}
+            >
+              <DeleteIcon />
+            </IconButton>
+          )}
+        </div>
+      )}
 
       {/* Form content */}
       <div
