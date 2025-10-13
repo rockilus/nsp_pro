@@ -18,6 +18,8 @@ import {
 } from "../../utils/shift-worker-option-display";
 import { ColumnDefinition, ColumnFilter, TableSort } from "../../types/filter";
 import ColumnSortFilterMenu from "../table/ColumnSortFilterMenu";
+import { Typography } from "@mui/material";
+import { useTranslation } from "../../app/i18n/client";
 
 type StaffingSummary = {
   [date: string]: {
@@ -75,6 +77,7 @@ interface RequestCalendarRowProps {
 }
 
 interface RequestCalendarHeaderProps {
+  lng?: string;
   days: Dayjs[];
   // Filter/Sort props
   currentSort?: TableSort;
@@ -331,6 +334,7 @@ function RequestCalendarRow({
 
 // Header component
 function RequestCalendarHeader({
+  lng,
   days,
   currentSort,
   currentFilter,
@@ -338,19 +342,23 @@ function RequestCalendarHeader({
   onFilter,
   workerColumn,
 }: RequestCalendarHeaderProps) {
+  const { t } = useTranslation(lng || "en", "request-page");
+
   return (
     <div className="calendar-header">
       <div className="calendar-header__empty">
         {/* Filter/Sort menu for workers */}
-        {workerColumn && onSort && onFilter && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              height: "100%",
-            }}
-          >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            height: "100%",
+            padding: "0 8px",
+          }}
+        >
+          <Typography variant="body2">{t("workers")}</Typography>
+          {workerColumn && onSort && onFilter && (
             <ColumnSortFilterMenu
               column={workerColumn}
               currentSort={currentSort}
@@ -358,8 +366,8 @@ function RequestCalendarHeader({
               onSort={onSort}
               onFilter={onFilter}
             />
-          </div>
-        )}
+          )}
+        </div>
       </div>
       <div className="calendar-header__days">
         {days.map((d) => {
@@ -552,6 +560,7 @@ export default function RequestCalendarTable({
     <div className="request-calendar-table">
       {/* Calendar Header */}
       <RequestCalendarHeader
+        lng={lng}
         days={days}
         currentSort={currentSort}
         currentFilter={currentFilter}
