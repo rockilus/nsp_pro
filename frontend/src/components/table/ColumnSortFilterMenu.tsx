@@ -139,6 +139,7 @@ export default function ColumnSortFilterMenu({
           opacity: 0.7,
           "&:hover": { opacity: 1 },
         }}
+        data-testid={`column-menu-${column.id}`}
       >
         <MoreVertIcon fontSize="small" />
       </IconButton>
@@ -149,14 +150,20 @@ export default function ColumnSortFilterMenu({
         onClose={handleMenuClose}
         PaperProps={{ sx: { minWidth: 180 } }}
       >
-        <MenuItem onClick={() => handleSort("asc")}>
+        <MenuItem
+          onClick={() => handleSort("asc")}
+          data-testid={`sort-asc-${column.id}`}
+        >
           <ListItemIcon>
             <ArrowUpwardIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Sort Ascending</ListItemText>
         </MenuItem>
 
-        <MenuItem onClick={() => handleSort("desc")}>
+        <MenuItem
+          onClick={() => handleSort("desc")}
+          data-testid={`sort-desc-${column.id}`}
+        >
           <ListItemIcon>
             <ArrowDownwardIcon fontSize="small" />
           </ListItemIcon>
@@ -164,14 +171,20 @@ export default function ColumnSortFilterMenu({
         </MenuItem>
 
         {sortDirection && (
-          <MenuItem onClick={() => handleSort(null)}>
+          <MenuItem
+            onClick={() => handleSort(null)}
+            data-testid={`remove-sort-${column.id}`}
+          >
             <ListItemText>Remove Sort</ListItemText>
           </MenuItem>
         )}
 
         <Divider />
 
-        <MenuItem onClick={handleFilterOpen}>
+        <MenuItem
+          onClick={handleFilterOpen}
+          data-testid={`filter-menu-${column.id}`}
+        >
           <ListItemIcon>
             <FilterListIcon fontSize="small" />
           </ListItemIcon>

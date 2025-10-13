@@ -33,7 +33,7 @@ export default function DateFilter({
   };
 
   return (
-    <Box sx={{ p: 2, minWidth: 300 }}>
+    <Box sx={{ p: 2, minWidth: 300 }} data-testid={`date-filter-${columnId}`}>
       <Typography variant="subtitle2" sx={{ mb: 1 }}>
         Filter {label}
       </Typography>
@@ -45,6 +45,7 @@ export default function DateFilter({
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
           InputLabelProps={{ shrink: true }}
+          data-testid={`filter-start-date-${columnId}`}
         />
         <TextField
           type="date"
@@ -53,13 +54,23 @@ export default function DateFilter({
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
           InputLabelProps={{ shrink: true }}
+          data-testid={`filter-end-date-${columnId}`}
         />
       </Box>
       <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
-        <Button onClick={handleApply} variant="contained" size="small">
+        <Button
+          onClick={handleApply}
+          variant="contained"
+          size="small"
+          data-testid={`filter-apply-${columnId}`}
+        >
           Apply
         </Button>
-        <Button onClick={onClose} size="small">
+        <Button
+          onClick={onClose}
+          size="small"
+          data-testid={`filter-cancel-${columnId}`}
+        >
           Cancel
         </Button>
       </Box>

@@ -515,7 +515,7 @@ export default function RequestTable({
     removeFilter,
     updateSort,
     resetAll,
-  } = useTableState(requests, columns, "nsp-pro-request-table-state");
+  } = useTableState(requests, columns, "nsp-pro-request-tab-state");
 
   return (
     <div className="w-full">

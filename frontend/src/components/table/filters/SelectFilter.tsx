@@ -53,7 +53,10 @@ export default function SelectFilter({
   };
 
   return (
-    <Box sx={{ p: 2, minWidth: 250, maxHeight: 300, overflow: "auto" }}>
+    <Box
+      sx={{ p: 2, minWidth: 250, maxHeight: 300, overflow: "auto" }}
+      data-testid={`select-filter-${columnId}`}
+    >
       <Typography variant="subtitle2" sx={{ mb: 1 }}>
         Filter {label}
       </Typography>
@@ -67,6 +70,7 @@ export default function SelectFilter({
                   checked={selectedValues.includes(option.value)}
                   onChange={() => handleToggle(option.value)}
                   size="small"
+                  data-testid={`filter-option-${columnId}-${option.value}`}
                 />
               }
               label={option.label}
@@ -75,10 +79,19 @@ export default function SelectFilter({
         </FormGroup>
       </FormControl>
       <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
-        <Button onClick={handleApply} variant="contained" size="small">
+        <Button
+          onClick={handleApply}
+          variant="contained"
+          size="small"
+          data-testid={`filter-apply-${columnId}`}
+        >
           Apply
         </Button>
-        <Button onClick={onClose} size="small">
+        <Button
+          onClick={onClose}
+          size="small"
+          data-testid={`filter-cancel-${columnId}`}
+        >
           Cancel
         </Button>
       </Box>

@@ -14,6 +14,9 @@ import {
   FulfillmentStatus,
 } from "../../types/request";
 import RequestCalendarTable from "./RequestCalendarTable";
+import { useTableState } from "../../hooks/useTableState";
+import { createWorkerColumns } from "./workerColumns";
+import TableFilterBar from "../table/TableFilterBar";
 
 dayjs.extend(isoWeek);
 
@@ -75,13 +78,6 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     dayjs().utc().startOf("month")
   );
   const [timeFrame, setTimeFrame] = React.useState<"week" | "month">("month");
-  const [showPending, setShowPending] = React.useState(true);
-  const [showAcceptedNotFulfilled, setShowAcceptedNotFulfilled] =
-    React.useState(true);
-  const [showFulfilled, setShowFulfilled] = React.useState(true);
-  const [showDenied, setShowDenied] = React.useState(true);
-  const [showWorkDemand, setShowWorkDemand] = React.useState(true);
-  const [showLeave, setShowLeave] = React.useState(true);
   const [selectedCell, setSelectedCell] = React.useState<{
     workerId: string;
     date: Dayjs;
@@ -92,6 +88,59 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   const [staffingSummary, setStaffingSummary] =
     React.useState<StaffingSummary | null>(null);
   const [isCalculating, setIsCalculating] = React.useState(false);
+
+  // Column definitions for filtering (matching request table)
+  const columns = React.useMemo(
+    () => createWorkerColumns((key: string) => key, workers, shifts),
+    [workers, shifts]
+  );
+
+  // Table state for filtering requests
+  // Use unified storage key shared with request table
+  // This manages filters for all request properties (worker, shift, date, type, status, fulfillment)
+  const {
+    tableState,
+    filteredAndSortedData: filteredRequests,
+    addFilter,
+    removeFilter,
+    updateSort,
+    resetAll,
+  } = useTableState(requests, columns, "nsp-pro-request-tab-state");
+
+  // Apply worker filter and sort to determine which worker rows to show and their order
+  const filteredWorkers = React.useMemo(() => {
+    let result = [...workers];
+
+    // Apply worker filter
+    const workerFilter = tableState.filters.find((f) =>
+      f.id.startsWith("workerId")
+    );
+    if (workerFilter) {
+      const filterValues = workerFilter.value as string[];
+      result = result.filter((worker) => filterValues.includes(worker.id));
+    }
+
+    // Apply sorting if sort is on workerId column
+    if (tableState.sort && tableState.sort.columnId === "workerId") {
+      const workerColumn = columns.find((col) => col.id === "workerId");
+      if (workerColumn) {
+        result.sort((a, b) => {
+          const aValue = workerColumn.getValue(a);
+          const bValue = workerColumn.getValue(b);
+
+          let comparison = 0;
+          if (aValue < bValue) comparison = -1;
+          if (aValue > bValue) comparison = 1;
+
+          return tableState.sort!.direction === "desc"
+            ? -comparison
+            : comparison;
+        });
+      }
+    }
+
+    return result;
+  }, [workers, tableState.filters, tableState.sort, columns]);
 
   // Calculate current period
   const currentPeriod = React.useMemo(() => {
@@ -219,49 +268,83 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     periodDemands,
   ]);
 
-  // Helper functions for filtering
-  const isPending = (req: RequestT) => req.status === "pending";
-  const isAcceptedNotFulfilled = (req: RequestT) =>
-    req.status === "approved" && req.fulfillment !== "fulfilled";
-  const isFulfilled = (req: RequestT) =>
-    req.status === "approved" && req.fulfillment === "fulfilled";
-  const isDenied = (req: RequestT) => req.status === RequestStatus.DENIED;
+  // Helper functions for filtering - no longer needed since we use table state filters
+  // Keeping them for reference but they're not used anymore
 
   // Get request for a specific worker and day with filtering
   const getRequestForDay = React.useCallback(
     (workerId: string, day: Dayjs): RequestT | null => {
       const reqs = requestsByWorker[workerId] || [];
+
+      // Find the first request that matches all criteria
       return (
         reqs.find((r) => {
+          // Check date range
           const inRange =
             !day.isBefore(r.startDate, "day") && !day.isAfter(r.endDate, "day");
           if (!inRange) return false;
 
-          // Check request type filter
-          const isWorkDemandType = r.requestType === RequestType.WORK_DEMAND;
-          const isLeaveType = r.requestType === RequestType.LEAVE;
-          if (isWorkDemandType && !showWorkDemand) return false;
-          if (isLeaveType && !showLeave) return false;
+          // Apply filters from tableState
+          for (const filter of tableState.filters) {
+            const column = columns.find((col) => col.id === filter.id);
+            if (!column) continue;
 
-          // Check status filter
-          if (isPending(r) && showPending) return true;
-          if (isAcceptedNotFulfilled(r) && showAcceptedNotFulfilled)
-            return true;
-          if (isFulfilled(r) && showFulfilled) return true;
-          if (isDenied(r) && showDenied) return true;
-          return false;
+            // Skip workerId filter (already applied to rows)
+            if (filter.id.startsWith("workerId")) continue;
+
+            const value = column.getValue(r);
+
+            switch (filter.type) {
+              case "text":
+                if (
+                  !String(value)
+                    .toLowerCase()
+                    .includes(String(filter.value).toLowerCase())
+                ) {
+                  return false;
+                }
+                break;
+
+              case "select":
+                if (Array.isArray(filter.value)) {
+                  if (!filter.value.includes(value)) {
+                    return false;
+                  }
+                } else {
+                  if (value !== filter.value) {
+                    return false;
+                  }
+                }
+                break;
+
+              case "date":
+                const filterValue = filter.value as {
+                  start?: string;
+                  end?: string;
+                };
+                const dateStr = String(value); // Value should be in YYYY-MM-DD format
+                if (filterValue.start && dateStr < filterValue.start) {
+                  return false;
+                }
+                if (filterValue.end && dateStr > filterValue.end) {
+                  return false;
+                }
+                break;
+
+              case "boolean":
+                if (value !== filter.value) {
+                  return false;
+                }
+                break;
+            }
+          }
+
+          // All filters passed
+          return true;
         }) || null
       );
     },
-    [
-      requestsByWorker,
-      showWorkDemand,
-      showLeave,
-      showPending,
-      showAcceptedNotFulfilled,
-      showFulfilled,
-      showDenied,
-    ]
+    [requestsByWorker, tableState.filters, columns]
   );
 
   // Event handlers
@@ -276,25 +359,6 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     } else {
       setCurrentMonth(currentMonth.startOf("isoWeek"));
     }
-  };
-
-  const handleStatusFilterChange = (
-    newShowPending: boolean,
-    newShowAccepted: boolean,
-    newShowDenied: boolean
-  ) => {
-    setShowPending(newShowPending);
-    setShowAcceptedNotFulfilled(newShowAccepted);
-    setShowFulfilled(newShowAccepted);
-    setShowDenied(newShowDenied);
-  };
-
-  const handleRequestTypeFilterChange = (
-    newShowWorkDemand: boolean,
-    newShowLeave: boolean
-  ) => {
-    setShowWorkDemand(newShowWorkDemand);
-    setShowLeave(newShowLeave);
   };
 
   const handleCellClick = (workerId: string, date: Dayjs) => {
@@ -368,19 +432,24 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           onPeriodChange={handlePeriodChange}
           timeFrame={timeFrame}
           onTimeFrameChange={handleTimeFrameChange}
-          showPending={showPending}
-          showAccepted={showAcceptedNotFulfilled || showFulfilled}
-          showDenied={showDenied}
-          onStatusFilterChange={handleStatusFilterChange}
-          showWorkDemand={showWorkDemand}
-          showLeave={showLeave}
-          onRequestTypeFilterChange={handleRequestTypeFilterChange}
+          columns={columns}
+          filters={tableState.filters}
+          onFilter={addFilter}
         />
       )}
 
+      {/* Filter Bar - shows active filters and sorting */}
+      <TableFilterBar
+        filters={tableState.filters}
+        sort={tableState.sort}
+        onRemoveFilter={removeFilter}
+        onRemoveSort={() => updateSort(null)}
+        onResetAll={resetAll}
+      />
+
       {/* Calendar Table */}
       <RequestCalendarTable
-        workers={workers}
+        workers={filteredWorkers}
         days={days}
         shifts={shifts}
         getRequestForDay={getRequestForDay}
@@ -394,6 +463,14 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           demands.length > 0 && shifts.length > 0 ? staffingSummary : null
         }
         isCalculating={isCalculating}
+        // Worker filter/sort props
+        currentSort={tableState.sort || undefined}
+        currentFilter={tableState.filters.find((f) =>
+          f.id.startsWith("workerId")
+        )}
+        onSort={updateSort}
+        onFilter={addFilter}
+        workerColumn={columns[0]}
       />
 
       {/* Request Panel for creating requests from calendar */}

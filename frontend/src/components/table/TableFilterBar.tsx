@@ -9,6 +9,7 @@ interface TableFilterBarProps {
   onRemoveFilter: (filterId: string) => void;
   onRemoveSort: () => void;
   onResetAll: () => void;
+  hideSort?: boolean; // Optional prop to hide the sort chip
 }
 
 export default function TableFilterBar({
@@ -17,15 +18,19 @@ export default function TableFilterBar({
   onRemoveFilter,
   onRemoveSort,
   onResetAll,
+  hideSort = false,
 }: TableFilterBarProps) {
-  const hasActiveFilters = filters.length > 0 || sort !== null;
+  const hasActiveFilters = filters.length > 0 || (!hideSort && sort !== null);
 
   if (!hasActiveFilters) {
     return null;
   }
 
   return (
-    <Box sx={{ p: 2, backgroundColor: "grey.50", borderRadius: 1, mb: 2 }}>
+    <Box
+      sx={{ p: 2, backgroundColor: "grey.50", borderRadius: 1, mb: 2 }}
+      data-testid="table-filter-bar"
+    >
       <Box
         sx={{
           display: "flex",
@@ -37,7 +42,7 @@ export default function TableFilterBar({
           overflowX: "hidden",
         }}
       >
-        {sort && (
+        {!hideSort && sort && (
           <Chip
             icon={<SortIcon />}
             label={`Sort: ${sort.label} ${
@@ -46,6 +51,7 @@ export default function TableFilterBar({
             onDelete={onRemoveSort}
             variant="outlined"
             color="primary"
+            data-testid="sort-chip"
           />
         )}
 
@@ -56,6 +62,7 @@ export default function TableFilterBar({
             onDelete={() => onRemoveFilter(filter.id)}
             variant="outlined"
             color="secondary"
+            data-testid={`filter-chip-${filter.id}`}
           />
         ))}
 
@@ -68,6 +75,7 @@ export default function TableFilterBar({
             flexShrink: 0, // Prevent button from shrinking
             alignSelf: "flex-start", // Keep button at top when scrolling
           }}
+          data-testid="reset-all-filters-button"
         >
           Reset
         </Button>

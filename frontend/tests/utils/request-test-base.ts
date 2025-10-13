@@ -1709,4 +1709,264 @@ export class RequestTestBase {
     const count = await deniedRequestCells.count();
     expect(count).toBe(0);
   }
+
+  //////////////////////////
+  // New Filter Methods (using new implementation)
+  //////////////////////////
+
+  /**
+   * Opens the calendar filter menu
+   */
+  async openCalendarFilterMenu(page: Page): Promise<void> {
+    const filterButton = page.getByTestId("calendar-filter-menu-button");
+    await expect(filterButton).toBeVisible();
+    await filterButton.click();
+    // Wait for the column list to appear
+    await expect(page.getByTestId("filter-column-list")).toBeVisible();
+  }
+
+  /**
+   * Selects a filter column from the menu
+   */
+  async selectFilterColumn(page: Page, columnId: string): Promise<void> {
+    const columnButton = page.getByTestId(`filter-column-${columnId}`);
+    await expect(columnButton).toBeVisible();
+    await columnButton.click();
+  }
+
+  /**
+   * Applies a select filter with specific values
+   * @param page - The Playwright page
+   * @param columnId - The column ID to filter (e.g., "shiftId", "requestType", "status")
+   * @param values - Array of values to select
+   */
+  async applySelectFilter(
+    page: Page,
+    columnId: string,
+    values: string[]
+  ): Promise<void> {
+    // Open filter menu if not already open
+    const filterList = page.getByTestId("filter-column-list");
+    const isMenuOpen = await filterList.isVisible().catch(() => false);
+    if (!isMenuOpen) {
+      await this.openCalendarFilterMenu(page);
+    }
+
+    // Select the column
+    await this.selectFilterColumn(page, columnId);
+
+    // Wait for filter to appear
+    await expect(page.getByTestId(`select-filter-${columnId}`)).toBeVisible();
+
+    // Select the values
+    for (const value of values) {
+      const checkbox = page.getByTestId(`filter-option-${columnId}-${value}`);
+      await expect(checkbox).toBeVisible();
+      const isChecked = await checkbox.isChecked();
+      if (!isChecked) {
+        await checkbox.click();
+      }
+    }
+
+    // Apply the filter
+    const applyButton = page.getByTestId(`filter-apply-${columnId}`);
+    await applyButton.click();
+
+    // Wait for filter bar to show the applied filter
+    await expect(page.getByTestId("table-filter-bar")).toBeVisible();
+  }
+
+  /**
+   * Applies a date range filter
+   * @param page - The Playwright page
+   * @param columnId - The column ID to filter (usually "startDate" or "endDate")
+   * @param startDate - Start date in YYYY-MM-DD format
+   * @param endDate - End date in YYYY-MM-DD format
+   */
+  async applyDateFilter(
+    page: Page,
+    columnId: string,
+    startDate: string,
+    endDate: string
+  ): Promise<void> {
+    // Open filter menu if not already open
+    const filterList = page.getByTestId("filter-column-list");
+    const isMenuOpen = await filterList.isVisible().catch(() => false);
+    if (!isMenuOpen) {
+      await this.openCalendarFilterMenu(page);
+    }
+
+    // Select the column
+    await this.selectFilterColumn(page, columnId);
+
+    // Wait for filter to appear
+    await expect(page.getByTestId(`date-filter-${columnId}`)).toBeVisible();
+
+    // Fill in the dates
+    await page.getByTestId(`filter-start-date-${columnId}`).fill(startDate);
+    await page.getByTestId(`filter-end-date-${columnId}`).fill(endDate);
+
+    // Apply the filter
+    const applyButton = page.getByTestId(`filter-apply-${columnId}`);
+    await applyButton.click();
+
+    // Wait for filter bar to show the applied filter
+    await expect(page.getByTestId("table-filter-bar")).toBeVisible();
+  }
+
+  /**
+   * Verifies that a filter chip is visible in the filter bar
+   */
+  async verifyFilterChipVisible(page: Page, columnId: string): Promise<void> {
+    const filterChip = page.getByTestId(`filter-chip-${columnId}`);
+    await expect(filterChip).toBeVisible();
+  }
+
+  /**
+   * Removes a specific filter by clicking its chip
+   */
+  async removeFilter(page: Page, columnId: string): Promise<void> {
+    const filterChip = page.getByTestId(`filter-chip-${columnId}`);
+    await expect(filterChip).toBeVisible();
+    // Click the delete icon on the chip
+    await filterChip.locator('button[aria-label="delete"]').click();
+  }
+
+  /**
+   * Resets all filters and sorting
+   */
+  async resetAllFilters(page: Page): Promise<void> {
+    const resetButton = page.getByTestId("reset-all-filters-button");
+    await expect(resetButton).toBeVisible();
+    await resetButton.click();
+    // Wait for filter bar to disappear
+    await expect(page.getByTestId("table-filter-bar")).not.toBeVisible();
+  }
+
+  /**
+   * Verifies that the filter bar is not visible (no active filters)
+   */
+  async verifyNoActiveFilters(page: Page): Promise<void> {
+    await expect(page.getByTestId("table-filter-bar")).not.toBeVisible();
+  }
+
+  /**
+   * Opens the worker column sort/filter menu
+   */
+  async openWorkerColumnMenu(page: Page): Promise<void> {
+    const menuButton = page.getByTestId("column-menu-workerId");
+    await expect(menuButton).toBeVisible();
+    await menuButton.click();
+  }
+
+  /**
+   * Sorts by worker in specified direction
+   * @param page - The Playwright page
+   * @param direction - Sort direction ("asc" or "desc")
+   */
+  async sortByWorker(page: Page, direction: "asc" | "desc"): Promise<void> {
+    await this.openWorkerColumnMenu(page);
+    const sortButton = page.getByTestId(`sort-${direction}-workerId`);
+    await expect(sortButton).toBeVisible();
+    await sortButton.click();
+    // Wait for sort chip to appear
+    await expect(page.getByTestId("sort-chip")).toBeVisible();
+  }
+
+  /**
+   * Removes worker sorting
+   */
+  async removeWorkerSort(page: Page): Promise<void> {
+    await this.openWorkerColumnMenu(page);
+    const removeSortButton = page.getByTestId("remove-sort-workerId");
+    await expect(removeSortButton).toBeVisible();
+    await removeSortButton.click();
+  }
+
+  /**
+   * Applies worker filter through the worker column menu
+   * @param page - The Playwright page
+   * @param workerIds - Array of worker IDs to filter by
+   */
+  async applyWorkerFilter(page: Page, workerIds: string[]): Promise<void> {
+    await this.openWorkerColumnMenu(page);
+
+    // Click filter menu item
+    const filterMenuItem = page.getByTestId("filter-menu-workerId");
+    await expect(filterMenuItem).toBeVisible();
+    await filterMenuItem.click();
+
+    // Wait for filter to appear
+    await expect(page.getByTestId("select-filter-workerId")).toBeVisible();
+
+    // Select the workers
+    for (const workerId of workerIds) {
+      const checkbox = page.getByTestId(`filter-option-workerId-${workerId}`);
+      await expect(checkbox).toBeVisible();
+      const isChecked = await checkbox.isChecked();
+      if (!isChecked) {
+        await checkbox.click();
+      }
+    }
+
+    // Apply the filter
+    const applyButton = page.getByTestId("filter-apply-workerId");
+    await applyButton.click();
+
+    // Wait for filter bar to show the applied filter
+    await expect(page.getByTestId("table-filter-bar")).toBeVisible();
+  }
+
+  /**
+   * Verifies that the sort chip is visible in the filter bar
+   */
+  async verifySortChipVisible(page: Page): Promise<void> {
+    await expect(page.getByTestId("sort-chip")).toBeVisible();
+  }
+
+  /**
+   * Verifies that specific requests are visible in the calendar by their IDs
+   * @param page - The Playwright page
+   * @param requestIds - Array of request IDs that should be visible
+   */
+  async verifyRequestsVisibleByIds(
+    page: Page,
+    requestIds: string[]
+  ): Promise<void> {
+    for (const requestId of requestIds) {
+      const requestCell = page.locator(`[data-request-id="${requestId}"]`);
+      await expect(requestCell).toBeVisible();
+    }
+  }
+
+  /**
+   * Verifies that specific requests are not visible in the calendar by their IDs
+   * @param page - The Playwright page
+   * @param requestIds - Array of request IDs that should not be visible
+   */
+  async verifyRequestsNotVisibleByIds(
+    page: Page,
+    requestIds: string[]
+  ): Promise<void> {
+    for (const requestId of requestIds) {
+      const requestCell = page.locator(`[data-request-id="${requestId}"]`);
+      await expect(requestCell).not.toBeVisible();
+    }
+  }
+
+  /**
+   * Counts visible request cells in the calendar
+   */
+  async countVisibleRequests(page: Page): Promise<number> {
+    const requestCells = page.locator("[data-request-id]");
+    return await requestCells.count();
+  }
+
+  /**
+   * Verifies the number of visible requests matches expected count
+   */
+  async verifyRequestCount(page: Page, expectedCount: number): Promise<void> {
+    const count = await this.countVisibleRequests(page);
+    expect(count).toBe(expectedCount);
+  }
 }

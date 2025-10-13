@@ -16,6 +16,10 @@ import {
   getRequestTargetDisplayText,
   getShiftColors,
 } from "../../utils/shift-worker-option-display";
+import { ColumnDefinition, ColumnFilter, TableSort } from "../../types/filter";
+import ColumnSortFilterMenu from "../table/ColumnSortFilterMenu";
+import { Typography } from "@mui/material";
+import { useTranslation } from "../../app/i18n/client";
 
 type StaffingSummary = {
   [date: string]: {
@@ -38,6 +42,12 @@ interface RequestCalendarTableProps {
   onRequestClick: (request: RequestT) => void;
   staffingSummary: StaffingSummary | null;
   isCalculating: boolean;
+  // Filter/Sort props
+  currentSort?: TableSort;
+  currentFilter?: ColumnFilter;
+  onSort?: (sort: TableSort | null) => void;
+  onFilter?: (filter: ColumnFilter) => void;
+  workerColumn?: ColumnDefinition;
 }
 
 interface RequestCalendarCellProps {
@@ -67,7 +77,14 @@ interface RequestCalendarRowProps {
 }
 
 interface RequestCalendarHeaderProps {
+  lng?: string;
   days: Dayjs[];
+  // Filter/Sort props
+  currentSort?: TableSort;
+  currentFilter?: ColumnFilter;
+  onSort?: (sort: TableSort | null) => void;
+  onFilter?: (filter: ColumnFilter) => void;
+  workerColumn?: ColumnDefinition;
 }
 
 interface RequestCalendarBodyProps {
@@ -119,6 +136,9 @@ function RequestCalendarCell({
   const getTitle = () => {
     if (isPastEmpty) {
       return `Past date - ${date.format("MMM D")}`;
+    }
+    if (worker.deleted && isEmpty) {
+      return `Worker deleted - ${date.format("MMM D")}`;
     }
     if (canAddRequest) {
       return `Click to create request for ${worker.name} on ${date.format(
@@ -290,7 +310,12 @@ function RequestCalendarRow({
           const isEmpty = !request;
           const isPast = d.isBefore(dayjs().utc(), "day");
           const canAddRequest =
-            isEmpty && !isPast && !!handleAddRequest && !!lng && !!teamId;
+            isEmpty &&
+            !isPast &&
+            !worker.deleted &&
+            !!handleAddRequest &&
+            !!lng &&
+            !!teamId;
           const canEditRequest =
             !!request && !!handleUpdateRequest && !!lng && !!teamId;
 
@@ -316,10 +341,34 @@ function RequestCalendarRow({
 }
 
 // Header component
-function RequestCalendarHeader({ days }: RequestCalendarHeaderProps) {
+function RequestCalendarHeader({
+  lng,
+  days,
+  currentSort,
+  currentFilter,
+  onSort,
+  onFilter,
+  workerColumn,
+}: RequestCalendarHeaderProps) {
+  const { t } = useTranslation(lng || "en", "request-page");
+
   return (
     <div className="calendar-header">
-      <div className="calendar-header__empty" />
+      <div className="calendar-header__empty">
+        {/* Filter/Sort menu for workers */}
+        <div className="calendar-header__worker-content">
+          <Typography variant="body2">{t("workers")}</Typography>
+          {workerColumn && onSort && onFilter && (
+            <ColumnSortFilterMenu
+              column={workerColumn}
+              currentSort={currentSort}
+              currentFilter={currentFilter}
+              onSort={onSort}
+              onFilter={onFilter}
+            />
+          )}
+        </div>
+      </div>
       <div className="calendar-header__days">
         {days.map((d) => {
           const isWeekend = d.day() === 0 || d.day() === 6;
@@ -501,11 +550,24 @@ export default function RequestCalendarTable({
   onRequestClick,
   staffingSummary,
   isCalculating,
+  currentSort,
+  currentFilter,
+  onSort,
+  onFilter,
+  workerColumn,
 }: RequestCalendarTableProps) {
   return (
     <div className="request-calendar-table">
       {/* Calendar Header */}
-      <RequestCalendarHeader days={days} />
+      <RequestCalendarHeader
+        lng={lng}
+        days={days}
+        currentSort={currentSort}
+        currentFilter={currentFilter}
+        onSort={onSort}
+        onFilter={onFilter}
+        workerColumn={workerColumn}
+      />
 
       {/* Staffing Summary Rows */}
       {staffingSummary !== null && (
