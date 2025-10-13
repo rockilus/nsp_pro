@@ -5,10 +5,12 @@ import IconButton from "@mui/material/IconButton";
 import TableCell from "@mui/material/TableCell";
 // Components
 import AssignmentCell from "../shared/assignment-cell";
+import RequestCell from "../shared/request-cell";
 // Styles
 import "./worker-cell.css";
 // Types
 import { WorkerT } from "../../../../types/worker";
+import { ShiftT } from "../../../../types/shift";
 import {
   periodDateT,
   ScheduleViewSettingsT,
@@ -20,6 +22,7 @@ import { AssignmentDataDictT } from "@/types/assignment";
 export default function WorkerCell({
   periodDate,
   worker,
+  shifts,
   scheduleCellData,
   scheduleViewSettings,
   handleAssignmentSelection,
@@ -27,6 +30,7 @@ export default function WorkerCell({
 }: {
   periodDate: periodDateT;
   worker: WorkerT;
+  shifts: ShiftT[];
   scheduleCellData: ScheduleCellDataT | null;
   scheduleViewSettings: ScheduleViewSettingsT;
   handleAssignmentSelection: (seletedCell: AssignmentDataDictT) => void;
@@ -51,6 +55,12 @@ export default function WorkerCell({
               scheduleViewSettings={scheduleViewSettings}
               handleAssignmentSelection={handleAssignmentSelection}
             />
+          );
+        })}
+      {scheduleViewSettings.showRequests &&
+        scheduleCellData?.requests.map((request) => {
+          return (
+            <RequestCell key={request.id} request={request} shifts={shifts} />
           );
         })}
       <IconButton

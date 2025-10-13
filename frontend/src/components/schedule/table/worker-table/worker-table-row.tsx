@@ -63,6 +63,7 @@ export default function WorkerTableRow({
             key={dateIndex}
             periodDate={pDate}
             worker={worker}
+            shifts={shifts}
             scheduleCellData={scheduleCellData}
             scheduleViewSettings={scheduleViewSettings}
             handleAssignmentSelection={handleAssignmentSelection}
