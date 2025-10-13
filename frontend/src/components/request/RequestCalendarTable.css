@@ -206,14 +206,12 @@
 /* Clickable empty cells */
 .calendar-cell--clickable:not(.calendar-cell--leave) {
   cursor: pointer;
-  border: 1px dashed transparent;
-  border-radius: 4px;
 }
 
 .calendar-cell--clickable:not(.calendar-cell--leave):hover {
   background-color: rgba(33, 150, 243, 0.08);
-  border-color: rgba(25, 118, 210, 0.5);
-  border-style: dashed;
+  border: 1px dashed rgba(25, 118, 210, 0.5);
+  border-radius: 4px;
 }
 
 .calendar-cell--clickable:not(.calendar-cell--leave):hover::before {
