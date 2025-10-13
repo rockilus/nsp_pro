@@ -18,7 +18,6 @@ import CheckIcon from "@mui/icons-material/Check";
 import DeleteIcon from "@mui/icons-material/Delete";
 import UndoIcon from "@mui/icons-material/Undo";
 import ClearIcon from "@mui/icons-material/Clear";
-import CloseIcon from "@mui/icons-material/Close";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import Chip from "@mui/material/Chip";
 // Components
@@ -54,7 +53,6 @@ export default function RequestPanelContent({
   handleAcceptRequest,
   handleDenyRequest,
   onClose,
-  showCloseButton = false,
   fullWidth = false,
 }: {
   lng: string;
@@ -73,7 +71,6 @@ export default function RequestPanelContent({
   handleAcceptRequest?: (requestId: string) => void;
   handleDenyRequest?: (requestId: string) => void;
   onClose?: () => void;
-  showCloseButton?: boolean;
   fullWidth?: boolean;
 }) {
   const { t } = useTranslation(lng, "request-page");
@@ -401,23 +398,6 @@ export default function RequestPanelContent({
 
   return (
     <div>
-      {/* Header with title and close button */}
-      <div className="flex justify-between items-center mb-2">
-        <Typography variant="h6">{t("new_request")}</Typography>
-        {showCloseButton && onClose && (
-          <IconButton
-            aria-label="close"
-            onClick={onClose}
-            sx={{
-              color: (theme) => theme.palette.grey[500],
-            }}
-            data-testid="close-request-panel-button"
-          >
-            <CloseIcon />
-          </IconButton>
-        )}
-      </div>
-
       {/* Status chip and action buttons */}
       {isEdit && request && (
         <div className="flex items-center gap-2 mb-4">

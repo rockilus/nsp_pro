@@ -14,6 +14,7 @@ import QuickStatsTable from "./lhs-tabs/quick-stats";
 import ScheduleDisplay from "./table/schedule-display";
 import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
 import LHSTab from "./lhs-tabs/lhs-tab";
+import LHSHeader from "./lhs-tabs/lhs-header";
 import CreateAssignment from "./lhs-tabs/create-assignment";
 import RequestPanel from "../request/request-panel";
 import RequestPanelContent from "../request/request-panel-content";
@@ -976,26 +977,31 @@ export default function ScheduleTab({
       name: "request_selection",
       label: t("request"),
       content: selectedRequest ? (
-        <RequestPanelContent
-          lng={lng}
-          teamId={teamWithMembership.team.id}
-          isEdit={true}
-          request={selectedRequest}
-          workers={workers.filter((w) => !w.deleted)}
-          shifts={shifts.filter((s) => !s.deleted)}
-          shiftOptions={[]} // ShiftOptions not needed for viewing existing requests
-          userWorkerId={null} // Allow viewing any request in schedule context
-          userTeamRole={teamWithMembership.membership.role}
-          handleAddRequest={handleAddRequest}
-          handleUpdateRequest={handleUpdateRequest}
-          handleDeleteRequest={handleDeleteRequest}
-          handleRescindRequest={handleRescindRequest}
-          handleAcceptRequest={handleAcceptRequest}
-          handleDenyRequest={handleDenyRequest}
-          onClose={handleCloseLHS}
-          showCloseButton={false}
-          fullWidth={true}
-        />
+        <>
+          <LHSHeader
+            lhsHeaderTitle={t("new_request")}
+            onClose={handleCloseLHS}
+          />
+          <RequestPanelContent
+            lng={lng}
+            teamId={teamWithMembership.team.id}
+            isEdit={true}
+            request={selectedRequest}
+            workers={workers.filter((w) => !w.deleted)}
+            shifts={shifts.filter((s) => !s.deleted)}
+            shiftOptions={[]} // ShiftOptions not needed for viewing existing requests
+            userWorkerId={null} // Allow viewing any request in schedule context
+            userTeamRole={teamWithMembership.membership.role}
+            handleAddRequest={handleAddRequest}
+            handleUpdateRequest={handleUpdateRequest}
+            handleDeleteRequest={handleDeleteRequest}
+            handleRescindRequest={handleRescindRequest}
+            handleAcceptRequest={handleAcceptRequest}
+            handleDenyRequest={handleDenyRequest}
+            onClose={handleCloseLHS}
+            fullWidth={true}
+          />
+        </>
       ) : null,
     },
     {

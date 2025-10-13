@@ -2,10 +2,12 @@ import React from "react";
 import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
+import CloseIcon from "@mui/icons-material/Close";
 // Components
 import RequestPanelContent from "./request-panel-content";
 // Types
@@ -121,6 +123,27 @@ export default function RequestPanel({
         fullWidth
         data-testid="request-panel-dialog"
       >
+        <DialogTitle>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span>{t("new_request")}</span>
+            <IconButton
+              aria-label="close"
+              onClick={handleClose}
+              sx={{
+                color: (theme) => theme.palette.grey[500],
+              }}
+              data-testid="close-request-panel-button"
+            >
+              <CloseIcon />
+            </IconButton>
+          </div>
+        </DialogTitle>
         <DialogContent>
           <RequestPanelContent
             lng={lng}
@@ -139,7 +162,6 @@ export default function RequestPanel({
             handleAcceptRequest={handleAcceptRequest}
             handleDenyRequest={handleDenyRequest}
             onClose={handleClose}
-            showCloseButton={true}
           />
         </DialogContent>
       </Dialog>
