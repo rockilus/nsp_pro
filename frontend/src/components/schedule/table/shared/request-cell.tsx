@@ -18,9 +18,11 @@ import {
 export default function RequestCell({
   request,
   shifts,
+  handleRequestSelection,
 }: {
   request: RequestT | null;
   shifts: ShiftT[];
+  handleRequestSelection?: (request: RequestT) => void;
 }) {
   if (!request) {
     return null; // Don't render anything if there's no request
@@ -132,9 +134,11 @@ export default function RequestCell({
             background: shiftColors.background,
             color: shiftColors.text,
           }),
+          cursor: handleRequestSelection ? "pointer" : "default",
         } as React.CSSProperties
       }
       title={getTitle()}
+      onClick={() => handleRequestSelection?.(request)}
     >
       {requestEmojis && <div className="rc-emojis">{requestEmojis}</div>}
     </div>

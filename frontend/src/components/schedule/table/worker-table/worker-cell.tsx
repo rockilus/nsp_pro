@@ -18,6 +18,7 @@ import {
 } from "../../../../types/schedule";
 import { CreateAssignmentT } from "@/types/assignment";
 import { AssignmentDataDictT } from "@/types/assignment";
+import { RequestT } from "../../../../types/request";
 
 export default function WorkerCell({
   periodDate,
@@ -26,6 +27,7 @@ export default function WorkerCell({
   scheduleCellData,
   scheduleViewSettings,
   handleAssignmentSelection,
+  handleRequestSelection,
   handleOpenCreateAssignment,
 }: {
   periodDate: periodDateT;
@@ -34,6 +36,7 @@ export default function WorkerCell({
   scheduleCellData: ScheduleCellDataT | null;
   scheduleViewSettings: ScheduleViewSettingsT;
   handleAssignmentSelection: (seletedCell: AssignmentDataDictT) => void;
+  handleRequestSelection?: (request: RequestT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
   return (
@@ -60,7 +63,12 @@ export default function WorkerCell({
       {scheduleViewSettings.showRequests &&
         scheduleCellData?.requests.map((request) => {
           return (
-            <RequestCell key={request.id} request={request} shifts={shifts} />
+            <RequestCell
+              key={request.id}
+              request={request}
+              shifts={shifts}
+              handleRequestSelection={handleRequestSelection}
+            />
           );
         })}
       <IconButton

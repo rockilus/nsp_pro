@@ -39,6 +39,7 @@ export default function ScheduleDisplay({
   scheduleViewSettings,
   handleAssignmentSelection,
   handleDemandSelection,
+  handleRequestSelection,
   handleExportSchedule,
   handleOpenCreateAssignment,
 }: {
@@ -56,6 +57,7 @@ export default function ScheduleDisplay({
   scheduleViewSettings: ScheduleViewSettingsT;
   handleAssignmentSelection: (selectedAssignment: AssignmentDataT) => void;
   handleDemandSelection: (scheduleCellData: ScheduleCellDataT) => void;
+  handleRequestSelection?: (request: RequestT) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
@@ -95,6 +97,7 @@ export default function ScheduleDisplay({
         breaches={breaches}
         scheduleViewSettings={scheduleViewSettings}
         handleAssignmentSelection={handleAssignmentSelection}
+        handleRequestSelection={handleRequestSelection}
         handleExportSchedule={handleExportSchedule}
         handleOpenCreateAssignment={handleOpenCreateAssignment}
       />

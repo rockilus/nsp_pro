@@ -15,6 +15,7 @@ import ScheduleDisplay from "./table/schedule-display";
 import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
 import LHSTab from "./lhs-tabs/lhs-tab";
 import CreateAssignment from "./lhs-tabs/create-assignment";
+import RequestPanel from "../request/request-panel";
 import { buildAssignmentsDataByOwnerAndDate } from "./table/shared/assignment-utils";
 import { getPeriodStartEndDates } from "./schedule-utils";
 import { computePeriodEndDate } from "../../app/lib/utils/scheduleViewSettingsUtils";
@@ -29,6 +30,15 @@ import {
   useUpdateAssignmentAndRecurrence,
   useDeleteAssignment,
 } from "../../hooks/useAssignment";
+// Request Hooks
+import {
+  useAddRequest,
+  useUpdateRequest,
+  useDeleteRequest,
+  useRescindRequest,
+  useAcceptRequest,
+  useDenyRequest,
+} from "../../hooks/useRequest";
 // Hooks
 import {
   useValidateSchedule,
@@ -117,6 +127,14 @@ export default function ScheduleTab({
   const updateAssignmentAndRecurrence = useUpdateAssignmentAndRecurrence();
   const deleteAssignment = useDeleteAssignment();
 
+  // Request hooks
+  const addRequest = useAddRequest();
+  const updateRequest = useUpdateRequest();
+  const deleteRequest = useDeleteRequest();
+  const rescindRequest = useRescindRequest();
+  const acceptRequest = useAcceptRequest();
+  const denyRequest = useDenyRequest();
+
   const [isLoadingSchedule, setIsLoadingSchedule] = useState<boolean>(true);
   const [isLoadingAssignments, setIsLoadingAssignments] =
     useState<boolean>(true);
@@ -151,6 +169,7 @@ export default function ScheduleTab({
     useState<AssignmentDataT | null>(null);
   const [selectedDemand, setSelectedDemand] =
     useState<ScheduleCellDataT | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<RequestT | null>(null);
 
   // React Query hooks for shift demands - use dates from settings
   const {
@@ -257,6 +276,7 @@ export default function ScheduleTab({
   const handleAssignmentSelection = (selectedAssignment: AssignmentDataT) => {
     setSelectedAssignment(selectedAssignment);
     setSelectedDemand(null);
+    setSelectedRequest(null);
     setSelectedTab("selection");
   };
 
@@ -265,7 +285,15 @@ export default function ScheduleTab({
   ) => {
     setSelectedDemand(selectedScheduleCellData);
     setSelectedAssignment(null);
+    setSelectedRequest(null);
     setSelectedTab("selection");
+  };
+
+  const handleRequestSelection = (request: RequestT) => {
+    setSelectedRequest(request);
+    setSelectedAssignment(null);
+    setSelectedDemand(null);
+    setSelectedTab("request_selection");
   };
 
   // updateScheduleViewSettings is now provided by the useScheduleViewSettings hook
@@ -405,6 +433,93 @@ export default function ScheduleTab({
   };
 
   //////////////////////////
+  // Request Actions
+  //////////////////////////
+
+  const handleAddRequest = async (request: RequestT) => {
+    try {
+      const newRequest = await addRequest(request, teamWithMembership.team.id);
+      setRequests([...requests, newRequest]);
+      setSelectedRequest(newRequest);
+    } catch (error) {
+      console.error("Failed to add request:", error);
+    }
+  };
+
+  const handleUpdateRequest = async (request: RequestT) => {
+    try {
+      const updatedRequest = await updateRequest(
+        request,
+        teamWithMembership.team.id
+      );
+      setRequests(
+        requests.map((r) => (r.id === updatedRequest.id ? updatedRequest : r))
+      );
+      setSelectedRequest(updatedRequest);
+    } catch (error) {
+      console.error("Failed to update request:", error);
+    }
+  };
+
+  const handleDeleteRequest = async (requestId: string) => {
+    try {
+      await deleteRequest(requestId, teamWithMembership.team.id);
+      setRequests(requests.filter((r) => r.id !== requestId));
+      setSelectedRequest(null);
+      setSelectedTab(null);
+    } catch (error) {
+      console.error("Failed to delete request:", error);
+    }
+  };
+
+  const handleRescindRequest = async (requestId: string) => {
+    try {
+      const rescindedRequest = await rescindRequest(
+        requestId,
+        teamWithMembership.team.id
+      );
+      setRequests(
+        requests.map((r) =>
+          r.id === rescindedRequest.id ? rescindedRequest : r
+        )
+      );
+      setSelectedRequest(rescindedRequest);
+    } catch (error) {
+      console.error("Failed to rescind request:", error);
+    }
+  };
+
+  const handleAcceptRequest = async (requestId: string) => {
+    try {
+      const acceptedRequest = await acceptRequest(
+        requestId,
+        teamWithMembership.team.id
+      );
+      setRequests(
+        requests.map((r) => (r.id === acceptedRequest.id ? acceptedRequest : r))
+      );
+      setSelectedRequest(acceptedRequest);
+    } catch (error) {
+      console.error("Failed to accept request:", error);
+    }
+  };
+
+  const handleDenyRequest = async (requestId: string) => {
+    try {
+      const deniedRequest = await denyRequest(
+        requestId,
+        teamWithMembership.team.id
+      );
+      setRequests(
+        requests.map((r) => (r.id === deniedRequest.id ? deniedRequest : r))
+      );
+      setSelectedRequest(deniedRequest);
+    } catch (error) {
+      console.error("Failed to deny request:", error);
+    }
+  };
+
+  //////////////////////////
   // Assignment Actions
   //////////////////////////
 
@@ -476,6 +591,7 @@ export default function ScheduleTab({
     setCreateAssignmentData(null);
     setSelectedTab(null);
     setSelectedAssignment(null);
+    setSelectedRequest(null);
   };
 
   const handleCreateAssignment = async (
@@ -856,6 +972,31 @@ export default function ScheduleTab({
       ),
     },
     {
+      name: "request_selection",
+      label: t("request"),
+      content: selectedRequest ? (
+        <RequestPanel
+          lng={lng}
+          teamId={teamWithMembership.team.id}
+          isEdit={true}
+          request={selectedRequest}
+          workers={workers.filter((w) => !w.deleted)}
+          shifts={shifts.filter((s) => !s.deleted)}
+          shiftOptions={[]} // ShiftOptions not needed for viewing existing requests
+          userWorkerId={null} // Allow viewing any request in schedule context
+          userTeamRole={teamWithMembership.membership.role}
+          handleAddRequest={handleAddRequest}
+          handleUpdateRequest={handleUpdateRequest}
+          handleDeleteRequest={handleDeleteRequest}
+          handleRescindRequest={handleRescindRequest}
+          handleAcceptRequest={handleAcceptRequest}
+          handleDenyRequest={handleDenyRequest}
+          hideButton={true}
+          onClose={handleCloseLHS}
+        />
+      ) : null,
+    },
+    {
       name: "create_assignment",
       label: "",
       content: createAssignmentData ? (
@@ -954,6 +1095,7 @@ export default function ScheduleTab({
               scheduleViewSettings={scheduleViewSettings}
               handleAssignmentSelection={handleAssignmentSelection}
               handleDemandSelection={handleDemandSelection}
+              handleRequestSelection={handleRequestSelection}
               handleExportSchedule={handleExportSchedule}
               handleOpenCreateAssignment={handleOpenCreateAssignment}
             />
