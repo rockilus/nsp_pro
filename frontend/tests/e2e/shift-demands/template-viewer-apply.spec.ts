@@ -173,10 +173,17 @@ test.describe("TemplateViewer - Apply Template", () => {
       const applyButton = templateTestBase.getTemplateViewerApplyButton(page);
       await applyButton.click();
 
-      // Verify template information is displayed
-      await expect(page.locator("text=My Test Template")).toBeVisible();
-      await expect(page.locator("text=Standard")).toBeVisible(); // Default template type
-      await expect(page.locator("text=Weeks: 1")).toBeVisible(); // Default week count
+      // Get the application dialog for scoped assertions
+      const applicationDialog =
+        templateTestBase.getTemplateApplicationDialog(page);
+      await expect(applicationDialog).toBeVisible();
+
+      // Verify template information is displayed in the dialog
+      await expect(
+        applicationDialog.locator("text=My Test Template")
+      ).toBeVisible();
+      await expect(applicationDialog.locator("text=Standard")).toBeVisible(); // Default template type
+      await expect(applicationDialog.locator("text=Weeks: 1")).toBeVisible(); // Default week count
     });
   });
 
