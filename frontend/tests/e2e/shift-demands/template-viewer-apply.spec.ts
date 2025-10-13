@@ -612,30 +612,28 @@ test.describe("TemplateViewer - Apply Template", () => {
     test("should override existing shift demands when overwrite is enabled", async ({
       page,
     }) => {
+      // Get the standard test template and actual shift IDs
+      const standardTemplate = templateTestBase.getStandardTestTemplate();
+      if (!standardTemplate) {
+        throw new Error("Standard test template not found");
+      }
+      const shiftIds = templateTestBase.getCreatedShiftIds();
+      const morningShiftId = shiftIds[0];
+
       // First, create some existing shift demands
       await templateTestBase.createShiftDemandViaAPI({
-        shiftId: "shift1",
+        shiftId: morningShiftId,
         date: "2024-03-04", // Monday
-        value: 5,
+        value: 100, // Use a value that's clearly different from template
       });
 
       await templateTestBase.createShiftDemandViaAPI({
-        shiftId: "shift1",
+        shiftId: morningShiftId,
         date: "2024-03-05", // Tuesday
-        value: 3,
+        value: 200, // Use a value that's clearly different from template
       });
 
-      // Create a template that will override these
-      const templateId = await templateTestBase.createTemplateWithDemands({
-        name: "Override Template",
-        description: "Template for override testing",
-        demands: [
-          { weekNumber: 0, dayIndex: 0, shiftId: "shift1", value: 1 }, // Monday
-          { weekNumber: 0, dayIndex: 1, shiftId: "shift1", value: 2 }, // Tuesday
-        ],
-      });
-
-      await templateTestBase.selectTemplateInViewer(page, templateId);
+      await templateTestBase.selectTemplateInViewer(page, standardTemplate.id);
 
       // Apply with overwrite enabled
       const applyButton = templateTestBase.getTemplateViewerApplyButton(page);
@@ -657,50 +655,54 @@ test.describe("TemplateViewer - Apply Template", () => {
 
       const dialogElements =
         templateTestBase.getTemplateApplicationDialogElements(page);
+      await expect(dialogElements.applyButton).toBeEnabled({ timeout: 10000 });
       await dialogElements.applyButton.click();
 
-      // Verify values were overridden
+      // Navigate to the period to verify the demands
+      await templateTestBase.navigateToPeriod(page, "2024-03-04");
+
+      // Verify values were overridden with template values
+      // Week 0, Monday (dayOfWeek=0, index=0): ((0 + 0 + 1) % 5) + 1 = 2
       await templateTestBase.verifyShiftDemandValue(
         page,
-        "shift1",
+        morningShiftId,
         "2024-03-04",
-        1
-      ); // Was 5, now 1
+        2
+      ); // Was 100, now 2 (overridden)
+      // Week 0, Tuesday (dayOfWeek=1, index=0): ((1 + 0 + 1) % 5) + 1 = 3
       await templateTestBase.verifyShiftDemandValue(
         page,
-        "shift1",
+        morningShiftId,
         "2024-03-05",
-        2
-      ); // Was 3, now 2
+        3
+      ); // Was 200, now 3 (overridden)
     });
 
     test("should add to existing shift demands when overwrite is disabled", async ({
       page,
     }) => {
+      // Get the standard test template and actual shift IDs
+      const standardTemplate = templateTestBase.getStandardTestTemplate();
+      if (!standardTemplate) {
+        throw new Error("Standard test template not found");
+      }
+      const shiftIds = templateTestBase.getCreatedShiftIds();
+      const morningShiftId = shiftIds[0];
+
       // First, create some existing shift demands
       await templateTestBase.createShiftDemandViaAPI({
-        shiftId: "shift1",
+        shiftId: morningShiftId,
         date: "2024-03-11", // Monday
-        value: 2,
+        value: 10,
       });
 
       await templateTestBase.createShiftDemandViaAPI({
-        shiftId: "shift1",
+        shiftId: morningShiftId,
         date: "2024-03-12", // Tuesday
-        value: 1,
+        value: 10,
       });
 
-      // Create a template that will add to these
-      const templateId = await templateTestBase.createTemplateWithDemands({
-        name: "Additive Template",
-        description: "Template for additive testing",
-        demands: [
-          { weekNumber: 0, dayIndex: 0, shiftId: "shift1", value: 3 }, // Monday
-          { weekNumber: 0, dayIndex: 1, shiftId: "shift1", value: 4 }, // Tuesday
-        ],
-      });
-
-      await templateTestBase.selectTemplateInViewer(page, templateId);
+      await templateTestBase.selectTemplateInViewer(page, standardTemplate.id);
 
       // Apply with overwrite disabled
       const applyButton = templateTestBase.getTemplateViewerApplyButton(page);
@@ -722,53 +724,57 @@ test.describe("TemplateViewer - Apply Template", () => {
 
       const dialogElements =
         templateTestBase.getTemplateApplicationDialogElements(page);
+      await expect(dialogElements.applyButton).toBeEnabled({ timeout: 10000 });
       await dialogElements.applyButton.click();
 
+      // Navigate to the period to verify the demands
+      await templateTestBase.navigateToPeriod(page, "2024-03-11");
+
       // Verify values were added together
+      // Week 0, Monday (dayOfWeek=0, index=0): ((0 + 0 + 1) % 5) + 1 = 2
+      // Existing 10 + template 2 = 12
       await templateTestBase.verifyShiftDemandValue(
         page,
-        "shift1",
+        morningShiftId,
         "2024-03-11",
-        5
-      ); // 2 + 3 = 5
+        12
+      );
+      // Week 0, Tuesday (dayOfWeek=1, index=0): ((1 + 0 + 1) % 5) + 1 = 3
+      // Existing 10 + template 3 = 13
       await templateTestBase.verifyShiftDemandValue(
         page,
-        "shift1",
+        morningShiftId,
         "2024-03-12",
-        5
-      ); // 1 + 4 = 5
+        13
+      );
     });
 
     test("should handle mixed scenarios (some existing, some new demands)", async ({
       page,
     }) => {
+      // Get the standard test template and actual shift IDs
+      const standardTemplate = templateTestBase.getStandardTestTemplate();
+      if (!standardTemplate) {
+        throw new Error("Standard test template not found");
+      }
+      const shiftIds = templateTestBase.getCreatedShiftIds();
+      const morningShiftId = shiftIds[0];
+
       // Create existing demands for only some days
       await templateTestBase.createShiftDemandViaAPI({
-        shiftId: "shift1",
+        shiftId: morningShiftId,
         date: "2024-03-18", // Monday - has existing
-        value: 1,
+        value: 5,
       });
       // Tuesday - no existing demand
       // Wednesday - no existing demand
       await templateTestBase.createShiftDemandViaAPI({
-        shiftId: "shift1",
+        shiftId: morningShiftId,
         date: "2024-03-21", // Thursday - has existing
-        value: 2,
+        value: 5,
       });
 
-      // Create template with demands for all these days
-      const templateId = await templateTestBase.createTemplateWithDemands({
-        name: "Mixed Scenario Template",
-        description: "Template for mixed scenario testing",
-        demands: [
-          { weekNumber: 0, dayIndex: 0, shiftId: "shift1", value: 2 }, // Monday
-          { weekNumber: 0, dayIndex: 1, shiftId: "shift1", value: 1 }, // Tuesday
-          { weekNumber: 0, dayIndex: 2, shiftId: "shift1", value: 3 }, // Wednesday
-          { weekNumber: 0, dayIndex: 3, shiftId: "shift1", value: 1 }, // Thursday
-        ],
-      });
-
-      await templateTestBase.selectTemplateInViewer(page, templateId);
+      await templateTestBase.selectTemplateInViewer(page, standardTemplate.id);
 
       // Apply in additive mode
       const applyButton = templateTestBase.getTemplateViewerApplyButton(page);
@@ -789,33 +795,45 @@ test.describe("TemplateViewer - Apply Template", () => {
 
       const dialogElements =
         templateTestBase.getTemplateApplicationDialogElements(page);
+      await expect(dialogElements.applyButton).toBeEnabled({ timeout: 10000 });
       await dialogElements.applyButton.click();
 
+      // Navigate to the period to verify the demands
+      await templateTestBase.navigateToPeriod(page, "2024-03-18");
+
       // Verify mixed results
+      // Monday: Week 0, dayOfWeek=0: ((0 + 0 + 1) % 5) + 1 = 2
+      // Existing 5 + template 2 = 7
       await templateTestBase.verifyShiftDemandValue(
         page,
-        "shift1",
+        morningShiftId,
         "2024-03-18",
-        3
-      ); // 1 + 2 = 3 (existing + template)
+        7
+      );
+      // Tuesday: Week 0, dayOfWeek=1: ((1 + 0 + 1) % 5) + 1 = 3
+      // No existing, just template = 3
       await templateTestBase.verifyShiftDemandValue(
         page,
-        "shift1",
+        morningShiftId,
         "2024-03-19",
-        1
-      ); // 0 + 1 = 1 (new)
+        3
+      );
+      // Wednesday: Week 0, dayOfWeek=2: ((2 + 0 + 1) % 5) + 1 = 4
+      // No existing, just template = 4
       await templateTestBase.verifyShiftDemandValue(
         page,
-        "shift1",
+        morningShiftId,
         "2024-03-20",
-        3
-      ); // 0 + 3 = 3 (new)
+        4
+      );
+      // Thursday: Week 0, dayOfWeek=3: ((3 + 0 + 1) % 5) + 1 = 5
+      // Existing 5 + template 5 = 10
       await templateTestBase.verifyShiftDemandValue(
         page,
-        "shift1",
+        morningShiftId,
         "2024-03-21",
-        3
-      ); // 2 + 1 = 3 (existing + template)
+        10
+      );
     });
   });
 
@@ -823,20 +841,15 @@ test.describe("TemplateViewer - Apply Template", () => {
     test("should handle template application across year boundary", async ({
       page,
     }) => {
-      // Create even/odd template for year boundary testing
-      const templateId = await templateTestBase.createTemplateWithDemands({
-        name: "Year Boundary Template",
-        description: "Template for year boundary testing",
-        demands: [
-          // Odd week
-          { weekNumber: 0, dayIndex: 0, shiftId: "shift1", value: 1 },
-          // Even week
-          { weekNumber: 1, dayIndex: 0, shiftId: "shift1", value: 2 },
-        ],
-      });
+      // Get the even/odd test template and actual shift IDs
+      const evenOddTemplate = templateTestBase.getEvenOddTestTemplate();
+      if (!evenOddTemplate) {
+        throw new Error("Even/odd test template not found");
+      }
+      const shiftIds = templateTestBase.getCreatedShiftIds();
+      const morningShiftId = shiftIds[0];
 
-      await templateTestBase.selectTemplateInViewer(page, templateId);
-      await templateTestBase.convertTemplateToEvenOdd(page, templateId);
+      await templateTestBase.selectTemplateInViewer(page, evenOddTemplate.id);
 
       // Apply across 2023-2024 boundary (weeks 52, 53 of 2023 and week 1 of 2024)
       const applyButton = templateTestBase.getTemplateViewerApplyButton(page);
@@ -856,41 +869,39 @@ test.describe("TemplateViewer - Apply Template", () => {
       await templateTestBase.setApplicationDialogOverwrite(page, true);
       const dialogElements =
         templateTestBase.getTemplateApplicationDialogElements(page);
+      await expect(dialogElements.applyButton).toBeEnabled({ timeout: 10000 });
       await dialogElements.applyButton.click();
 
+      // Navigate to the period to verify the demands
+      await templateTestBase.navigateToPeriod(page, "2023-12-25");
+
       // Verify year boundary handling (week numbers should be calculated per year)
-      // 2023 Week 52 (even), 2023 Week 53 (odd), 2024 Week 1 (odd)
+      // 2023 Week 52 (even) = template Week 0 (Morning shift = 2)
       await templateTestBase.verifyShiftDemandValue(
         page,
-        "shift1",
+        morningShiftId,
         "2023-12-25",
         2
-      ); // Week 52 (even)
+      );
+      // 2024 Week 1 (odd) = template Week 1 (Morning shift = 1)
       await templateTestBase.verifyShiftDemandValue(
         page,
-        "shift1",
+        morningShiftId,
         "2024-01-01",
         1
-      ); // Week 53 (odd)
-      await templateTestBase.verifyShiftDemandValue(
-        page,
-        "shift1",
-        "2024-01-01",
-        1
-      ); // Week 1 of 2024 (odd)
+      );
     });
 
     test("should handle single day application", async ({ page }) => {
-      // Create template
-      const templateId = await templateTestBase.createTemplateWithDemands({
-        name: "Single Day Template",
-        description: "Template for single day testing",
-        demands: [
-          { weekNumber: 0, dayIndex: 2, shiftId: "shift1", value: 5 }, // Wednesday
-        ],
-      });
+      // Get the standard test template and actual shift IDs
+      const standardTemplate = templateTestBase.getStandardTestTemplate();
+      if (!standardTemplate) {
+        throw new Error("Standard test template not found");
+      }
+      const shiftIds = templateTestBase.getCreatedShiftIds();
+      const morningShiftId = shiftIds[0];
 
-      await templateTestBase.selectTemplateInViewer(page, templateId);
+      await templateTestBase.selectTemplateInViewer(page, standardTemplate.id);
 
       // Apply to just one day (Wednesday)
       const applyButton = templateTestBase.getTemplateViewerApplyButton(page);
@@ -910,19 +921,24 @@ test.describe("TemplateViewer - Apply Template", () => {
       await templateTestBase.setApplicationDialogOverwrite(page, true);
       const dialogElements =
         templateTestBase.getTemplateApplicationDialogElements(page);
+      await expect(dialogElements.applyButton).toBeEnabled({ timeout: 10000 });
       await dialogElements.applyButton.click();
 
+      // Navigate to the period to verify the demands
+      await templateTestBase.navigateToPeriod(page, "2024-04-03");
+
       // Verify single day application
+      // Week 0, Wednesday (dayOfWeek=2, index=0): ((2 + 0 + 1) % 5) + 1 = 4
       await templateTestBase.verifyShiftDemandValue(
         page,
-        "shift1",
+        morningShiftId,
         "2024-04-03",
-        5
+        4
       );
     });
 
     test("should handle empty template application", async ({ page }) => {
-      // Create template with no demands
+      // Create an empty template via API (no demands)
       const templateId = await templateTestBase.createTemplateViaAPI({
         name: "Empty Template",
         description: "Template with no demands",
@@ -947,12 +963,20 @@ test.describe("TemplateViewer - Apply Template", () => {
       await templateTestBase.setApplicationDialogOverwrite(page, true);
       const dialogElements =
         templateTestBase.getTemplateApplicationDialogElements(page);
+      await expect(dialogElements.applyButton).toBeEnabled({ timeout: 10000 });
       await dialogElements.applyButton.click();
+
+      // Navigate to the period to verify
+      await templateTestBase.navigateToPeriod(page, "2024-05-01");
+
+      // Get actual shift IDs
+      const shiftIds = templateTestBase.getCreatedShiftIds();
+      const morningShiftId = shiftIds[0];
 
       // Verify no demands were created (existing empty state should remain)
       await templateTestBase.verifyShiftDemandNotExists(
         page,
-        "shift1",
+        morningShiftId,
         "2024-05-01"
       );
     });
