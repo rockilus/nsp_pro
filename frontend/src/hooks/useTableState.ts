@@ -140,10 +140,24 @@ function loadTableState(
 
 function saveTableState(storageKey: string, state: TableState): void {
   try {
+    // Read existing data to preserve additional fields (like selectedTab)
+    const existing = localStorage.getItem(storageKey);
+    let existingData: any = {};
+    if (existing) {
+      try {
+        existingData = JSON.parse(existing);
+      } catch (e) {
+        // Ignore parse errors, will create new object
+      }
+    }
+
     const toSave = {
       version: STORAGE_VERSION,
       timestamp: Date.now(),
-      state,
+      state: {
+        ...existingData.state, // Preserve existing fields
+        ...state, // Update with new filter/sort state
+      },
     };
 
     const serialized = JSON.stringify(toSave);

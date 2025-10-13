@@ -221,8 +221,47 @@ export default function RequestTab({
 
   // ToggleButton state for request type
 
-  // Tabs for request status/calendar
-  const [statusTab, setStatusTab] = useState(0);
+  // Tabs for request status/calendar - with persistence
+  const [statusTab, setStatusTab] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("nsp-pro-request-tab-state");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          return typeof parsed.state?.selectedTab === "number"
+            ? parsed.state.selectedTab
+            : 0;
+        }
+      } catch (error) {
+        console.error("Error loading selected tab:", error);
+      }
+    }
+    return 0;
+  });
+
+  // Save selected tab to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("nsp-pro-request-tab-state");
+        let current;
+        if (stored) {
+          current = JSON.parse(stored);
+          current.state = current.state || {};
+        } else {
+          current = { version: "1.0", state: {} };
+        }
+        current.state.selectedTab = statusTab;
+        current.timestamp = Date.now();
+        localStorage.setItem(
+          "nsp-pro-request-tab-state",
+          JSON.stringify(current)
+        );
+      } catch (error) {
+        console.error("Error saving selected tab:", error);
+      }
+    }
+  }, [statusTab]);
 
   // Combined loading state
   const isLoadingData = isLoading || isLoadingShiftDemands;
