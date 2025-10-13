@@ -78,13 +78,6 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     dayjs().utc().startOf("month")
   );
   const [timeFrame, setTimeFrame] = React.useState<"week" | "month">("month");
-  const [showPending, setShowPending] = React.useState(true);
-  const [showAcceptedNotFulfilled, setShowAcceptedNotFulfilled] =
-    React.useState(true);
-  const [showFulfilled, setShowFulfilled] = React.useState(true);
-  const [showDenied, setShowDenied] = React.useState(true);
-  const [showWorkDemand, setShowWorkDemand] = React.useState(true);
-  const [showLeave, setShowLeave] = React.useState(true);
   const [selectedCell, setSelectedCell] = React.useState<{
     workerId: string;
     date: Dayjs;
@@ -254,25 +247,8 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     periodDemands,
   ]);
 
-  // Helper functions for filtering
-  const isPending = React.useCallback(
-    (req: RequestT) => req.status === "pending",
-    []
-  );
-  const isAcceptedNotFulfilled = React.useCallback(
-    (req: RequestT) =>
-      req.status === "approved" && req.fulfillment !== "fulfilled",
-    []
-  );
-  const isFulfilled = React.useCallback(
-    (req: RequestT) =>
-      req.status === "approved" && req.fulfillment === "fulfilled",
-    []
-  );
-  const isDenied = React.useCallback(
-    (req: RequestT) => req.status === RequestStatus.DENIED,
-    []
-  );
+  // Helper functions for filtering - no longer needed since we use table state filters
+  // Keeping them for reference but they're not used anymore
 
   // Get request for a specific worker and day with filtering
   const getRequestForDay = React.useCallback(
@@ -342,38 +318,12 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
             }
           }
 
-          // Also check the toolbar filters (these are separate from table filters)
-          const isWorkDemandType = r.requestType === RequestType.WORK_DEMAND;
-          const isLeaveType = r.requestType === RequestType.LEAVE;
-          if (isWorkDemandType && !showWorkDemand) return false;
-          if (isLeaveType && !showLeave) return false;
-
-          // Check status filter from toolbar
-          if (isPending(r) && showPending) return true;
-          if (isAcceptedNotFulfilled(r) && showAcceptedNotFulfilled)
-            return true;
-          if (isFulfilled(r) && showFulfilled) return true;
-          if (isDenied(r) && showDenied) return true;
-
-          return false;
+          // All filters passed
+          return true;
         }) || null
       );
     },
-    [
-      requestsByWorker,
-      tableState.filters,
-      columns,
-      showWorkDemand,
-      showLeave,
-      showPending,
-      showAcceptedNotFulfilled,
-      showFulfilled,
-      showDenied,
-      isPending,
-      isAcceptedNotFulfilled,
-      isFulfilled,
-      isDenied,
-    ]
+    [requestsByWorker, tableState.filters, columns]
   );
 
   // Event handlers
@@ -388,25 +338,6 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     } else {
       setCurrentMonth(currentMonth.startOf("isoWeek"));
     }
-  };
-
-  const handleStatusFilterChange = (
-    newShowPending: boolean,
-    newShowAccepted: boolean,
-    newShowDenied: boolean
-  ) => {
-    setShowPending(newShowPending);
-    setShowAcceptedNotFulfilled(newShowAccepted);
-    setShowFulfilled(newShowAccepted);
-    setShowDenied(newShowDenied);
-  };
-
-  const handleRequestTypeFilterChange = (
-    newShowWorkDemand: boolean,
-    newShowLeave: boolean
-  ) => {
-    setShowWorkDemand(newShowWorkDemand);
-    setShowLeave(newShowLeave);
   };
 
   const handleCellClick = (workerId: string, date: Dayjs) => {
@@ -480,13 +411,9 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           onPeriodChange={handlePeriodChange}
           timeFrame={timeFrame}
           onTimeFrameChange={handleTimeFrameChange}
-          showPending={showPending}
-          showAccepted={showAcceptedNotFulfilled || showFulfilled}
-          showDenied={showDenied}
-          onStatusFilterChange={handleStatusFilterChange}
-          showWorkDemand={showWorkDemand}
-          showLeave={showLeave}
-          onRequestTypeFilterChange={handleRequestTypeFilterChange}
+          columns={columns}
+          filters={tableState.filters}
+          onFilter={addFilter}
         />
       )}
 

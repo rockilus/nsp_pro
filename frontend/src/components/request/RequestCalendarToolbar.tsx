@@ -1,10 +1,29 @@
-import React from "react";
+import React, { useState } from "react";
 import dayjs, { Dayjs } from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 // MUI
-import { Box, Paper, ToggleButtonGroup, ToggleButton } from "@mui/material";
+import {
+  Box,
+  Paper,
+  IconButton,
+  Popover,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Divider,
+  IconButton as BackButton,
+} from "@mui/material";
+import {
+  Tune as TuneIcon,
+  ArrowBack as ArrowBackIcon,
+} from "@mui/icons-material";
 // Components
 import { TimeNavigation } from "../common/TimeNavigation";
+import SelectFilter from "../table/filters/SelectFilter";
+import DateFilter from "../table/filters/DateFilter";
+// Types
+import { ColumnDefinition, ColumnFilter } from "../../types/filter";
 
 dayjs.extend(isoWeek);
 
@@ -17,23 +36,10 @@ interface RequestCalendarToolbarProps {
   onTimeFrameChange: (timeFrame: "week" | "month") => void;
   isLoading?: boolean;
 
-  // Status filter props
-  showPending: boolean;
-  showAccepted: boolean;
-  showDenied: boolean;
-  onStatusFilterChange: (
-    showPending: boolean,
-    showAccepted: boolean,
-    showDenied: boolean
-  ) => void;
-
-  // Request type filter props
-  showWorkDemand: boolean;
-  showLeave: boolean;
-  onRequestTypeFilterChange: (
-    showWorkDemand: boolean,
-    showLeave: boolean
-  ) => void;
+  // Filter props (now using table state)
+  columns: ColumnDefinition[];
+  filters: ColumnFilter[];
+  onFilter: (filter: ColumnFilter) => void;
 }
 
 export function RequestCalendarToolbar({
@@ -43,14 +49,15 @@ export function RequestCalendarToolbar({
   timeFrame,
   onTimeFrameChange,
   isLoading = false,
-  showPending,
-  showAccepted,
-  showDenied,
-  onStatusFilterChange,
-  showWorkDemand,
-  showLeave,
-  onRequestTypeFilterChange,
+  columns,
+  filters,
+  onFilter,
 }: RequestCalendarToolbarProps) {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedColumn, setSelectedColumn] = useState<ColumnDefinition | null>(
+    null
+  );
+
   // Handlers for TimeNavigation
   const handleToday = () => {
     // Calculate today's period based on timeFrame
@@ -121,41 +128,34 @@ export function RequestCalendarToolbar({
     onPeriodChange(start, end);
   };
 
-  // Handler for status filter changes
-  const handleStatusFilterChange = (
-    _event: React.MouseEvent<HTMLElement>,
-    newStatuses: string[]
-  ) => {
-    // newStatuses is an array of selected values
-    const newShowPending = newStatuses.includes("pending");
-    const newShowAccepted = newStatuses.includes("accepted");
-    const newShowDenied = newStatuses.includes("denied");
-
-    onStatusFilterChange(newShowPending, newShowAccepted, newShowDenied);
+  // Filter menu handlers
+  const handleFilterMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
   };
 
-  // Handler for request type filter changes
-  const handleRequestTypeFilterChange = (
-    _event: React.MouseEvent<HTMLElement>,
-    newTypes: string[]
-  ) => {
-    // newTypes is an array of selected values
-    const newShowWorkDemand = newTypes.includes("work_demand");
-    const newShowLeave = newTypes.includes("leave");
-
-    onRequestTypeFilterChange(newShowWorkDemand, newShowLeave);
+  const handleFilterMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedColumn(null);
   };
 
-  // Calculate current selected statuses for ToggleButtonGroup
-  const selectedStatuses: string[] = [];
-  if (showPending) selectedStatuses.push("pending");
-  if (showAccepted) selectedStatuses.push("accepted");
-  if (showDenied) selectedStatuses.push("denied");
+  const handleColumnSelect = (column: ColumnDefinition) => {
+    setSelectedColumn(column);
+  };
 
-  // Calculate current selected request types for ToggleButtonGroup
-  const selectedRequestTypes: string[] = [];
-  if (showWorkDemand) selectedRequestTypes.push("work_demand");
-  if (showLeave) selectedRequestTypes.push("leave");
+  const handleBackToMenu = () => {
+    setSelectedColumn(null);
+  };
+
+  const handleFilterApply = (filter: ColumnFilter) => {
+    onFilter(filter);
+    setSelectedColumn(null);
+  };
+
+  // Get filterable columns (exclude workerId since it has its own UI in the table)
+  const filterableColumns = columns.filter((col) => col.id !== "workerId");
+
+  const open = Boolean(anchorEl);
+  const popoverId = open ? "filter-popover" : undefined;
 
   return (
     <Paper
@@ -179,7 +179,7 @@ export function RequestCalendarToolbar({
         width="100%"
         height="40px"
       >
-        {/* Left side - Period Navigation (centered) */}
+        {/* Left side - Period Navigation */}
         <TimeNavigation
           lng={lng}
           currentPeriodStart={currentPeriod.start}
@@ -192,79 +192,108 @@ export function RequestCalendarToolbar({
           isLoading={isLoading}
         />
 
-        {/* Right side - Status filters */}
-        {/* Request Type Filter */}
-        <ToggleButtonGroup
-          color="primary"
-          value={selectedRequestTypes}
-          onChange={handleRequestTypeFilterChange}
-          aria-label="request type filter"
+        {/* Right side - Filter button */}
+        <IconButton
+          onClick={handleFilterMenuOpen}
           size="small"
+          aria-describedby={popoverId}
           sx={{
-            "& .MuiToggleButton-root": {
-              textTransform: "none",
-              px: 2,
-              py: 0.5,
-              fontSize: "0.875rem",
-              fontWeight: 500,
-            },
+            color: filters.length > 0 ? "primary.main" : "text.secondary",
           }}
         >
-          <ToggleButton
-            value="work_demand"
-            aria-label="show work demand requests"
-            data-testid="request-calendar-filter-work"
-          >
-            Work
-          </ToggleButton>
-          <ToggleButton
-            value="leave"
-            aria-label="show leave requests"
-            data-testid="request-calendar-filter-leave"
-          >
-            Leave
-          </ToggleButton>
-        </ToggleButtonGroup>
+          <TuneIcon />
+        </IconButton>
 
-        {/* Status Filter */}
-        <ToggleButtonGroup
-          color="primary"
-          value={selectedStatuses}
-          onChange={handleStatusFilterChange}
-          aria-label="request status filter"
-          size="small"
-          sx={{
-            "& .MuiToggleButton-root": {
-              textTransform: "none",
-              px: 2,
-              py: 0.5,
-              fontSize: "0.875rem",
-              fontWeight: 500,
-            },
+        {/* Filter Popover */}
+        <Popover
+          id={popoverId}
+          open={open}
+          anchorEl={anchorEl}
+          onClose={handleFilterMenuClose}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "right",
+          }}
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "right",
           }}
         >
-          <ToggleButton
-            value="pending"
-            aria-label="show pending requests"
-            data-testid="request-calendar-filter-pending"
-          >
-            Pending
-          </ToggleButton>
-          <ToggleButton
-            value="accepted"
-            aria-label="show accepted requests"
-            data-testid="request-calendar-filter-accepted"
-          >
-            Accepted
-          </ToggleButton>
-          <ToggleButton
-            value="denied"
-            aria-label="show denied requests"
-            data-testid="request-calendar-filter-denied"
-          >
-            Denied
-          </ToggleButton>
-        </ToggleButtonGroup>
+          {!selectedColumn ? (
+            // Main menu - show list of filterable columns
+            <List sx={{ minWidth: 200 }}>
+              {filterableColumns.map((column, index) => {
+                const hasFilter = filters.some((f) =>
+                  f.id.startsWith(column.id)
+                );
+                return (
+                  <React.Fragment key={column.id}>
+                    {index > 0 && <Divider />}
+                    <ListItem disablePadding>
+                      <ListItemButton
+                        onClick={() => handleColumnSelect(column)}
+                      >
+                        <ListItemText
+                          primary={column.label}
+                          sx={{
+                            "& .MuiListItemText-primary": {
+                              fontWeight: hasFilter ? 600 : 400,
+                              color: hasFilter
+                                ? "primary.main"
+                                : "text.primary",
+                            },
+                          }}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  </React.Fragment>
+                );
+              })}
+            </List>
+          ) : (
+            // Filter detail - show the appropriate filter component for selected column
+            <Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  p: 1,
+                  borderBottom: 1,
+                  borderColor: "divider",
+                }}
+              >
+                <BackButton size="small" onClick={handleBackToMenu}>
+                  <ArrowBackIcon />
+                </BackButton>
+              </Box>
+              {selectedColumn.type === "select" && (
+                <SelectFilter
+                  onApply={handleFilterApply}
+                  onClose={handleFilterMenuClose}
+                  columnId={selectedColumn.id}
+                  label={selectedColumn.label}
+                  options={selectedColumn.getOptions?.() || []}
+                  currentValue={
+                    filters.find((f) => f.id.startsWith(selectedColumn.id))
+                      ?.value
+                  }
+                />
+              )}
+              {selectedColumn.type === "date" && (
+                <DateFilter
+                  onApply={handleFilterApply}
+                  onClose={handleFilterMenuClose}
+                  columnId={selectedColumn.id}
+                  label={selectedColumn.label}
+                  currentValue={
+                    filters.find((f) => f.id.startsWith(selectedColumn.id))
+                      ?.value
+                  }
+                />
+              )}
+            </Box>
+          )}
+        </Popover>
       </Box>
     </Paper>
   );
