@@ -785,6 +785,22 @@ export class TemplateTestBase {
     return templateId;
   }
 
+  /**
+   * Update an existing template via the test API client
+   */
+  async updateTemplateViaAPI(templateId: string, updates: Partial<unknown>) {
+    if (!this.testTeam) {
+      throw new Error("No test team available. Did you forget to call setupTemplateTests()?");
+    }
+
+    // Delegate to DatabaseTestUtils which wraps ShiftDemandTemplateApi
+    return await (this.dbUtils as any).updateShiftDemandTemplate(
+      templateId,
+      this.testTeam.teamId,
+      updates
+    );
+  }
+
   //////////////////////////
   // Template Table Testing Methods
   //////////////////////////

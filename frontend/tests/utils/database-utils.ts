@@ -35,6 +35,7 @@ import { AttributeOwnerType } from "../../src/types/attribute";
 import {
   ShiftDemandTemplateDTO,
   ShiftDemandTemplateCreateDTO,
+  ShiftDemandTemplateUpdateDTO,
 } from "../../src/types/shift-demand-template";
 import { RequestT } from "../../src/types/request";
 import { testConfig } from "./test-config";
@@ -116,7 +117,7 @@ export class DatabaseTestUtils {
         Authorization: `Bearer ${testConfig.authToken}`,
       };
     }
-  }
+    }
 
   /**
    * Create an authenticated API client for testing with environment-aware auth
@@ -1245,6 +1246,29 @@ export class DatabaseTestUtils {
         throw new Error(`Failed to create template: ${error.message}`);
       }
       throw new Error(`Failed to create template: Unknown error`);
+    }
+  }
+
+  /**
+   * Update a shift demand template using the ShiftDemandTemplateApi via the test client
+   */
+  async updateShiftDemandTemplate(
+    templateId: string,
+    teamId: string,
+    updates: Partial<ShiftDemandTemplateUpdateDTO>
+  ): Promise<ShiftDemandTemplateDTO> {
+    try {
+      // Use the wrapped API client to call the template update endpoint
+      const result = await ShiftDemandTemplateApi.updateTemplate(
+        this.testApiClient,
+        templateId,
+        teamId,
+        updates as any
+      );
+      return result;
+    } catch (error) {
+      console.error("Failed to update shift demand template:", error);
+      throw error;
     }
   }
 
