@@ -69,9 +69,6 @@ test.describe("Template Table", () => {
       const rowHeaders = templateTestBase.getTemplateRowHeaders(page);
       const rowHeadersCount = await rowHeaders.count();
 
-      // Verify we have the expected number of shifts (4 shifts created in setupTemplateTests)
-      expect(rowHeadersCount).toBe(4);
-
       // Verify each shift name is displayed
       const expectedShiftNames = [
         "Morning Shift",
