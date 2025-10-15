@@ -141,20 +141,24 @@ test.describe("Shift Demand - Table", () => {
     );
     await expect(incrementButton).toBeVisible();
 
-    // Verify minus button appears on hover
-    const decrementButton = page.locator(
-      `[data-testid="shift-demand-decrement-${shiftId}-${dateStr}"]`
-    );
-    await expect(decrementButton).toBeVisible();
-
     // Click increment button
     await incrementButton.click();
 
     // Wait for value to update to 2
     await expect(valueElement).toHaveText("2");
 
-    // Test decrement
+    // Verify minus button appears on hover
     await cell.hover();
+    const decrementButton = page.locator(
+      `[data-testid="shift-demand-decrement-${shiftId}-${dateStr}"]`
+    );
+    await expect(decrementButton).toBeVisible();
+    // Test decrement
+    const handle = await decrementButton.elementHandle();
+    if (handle) {
+      // Playwright element handle API: wait until it's stable
+      await handle.waitForElementState("stable");
+    }
     await decrementButton.click();
 
     // Wait for value to update to 1

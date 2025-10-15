@@ -9,7 +9,9 @@ import { TeamApi } from "../../src/app/lib/api/teamApi";
 import { WorkerApi } from "../../src/app/lib/api/workerApi";
 import { SpecialtyApi } from "../../src/app/lib/api/specialtyApi";
 import { DimensionApi } from "../../src/app/lib/api/dimensionApi";
+import { AttributeApi } from "../../src/app/lib/api/attributeApi";
 import { ShiftApi } from "../../src/app/lib/api/shiftApi";
+import { ShiftDemandApi } from "../../src/app/lib/api/shiftDemandApi";
 import { ShiftDemandTemplateApi } from "../../src/app/lib/api/shiftDemandTemplateApi";
 import { RequestApi } from "../../src/app/lib/api/requestApi";
 import { AuthenticatedApiClient } from "../../src/app/lib/api/baseApi";
@@ -29,6 +31,7 @@ import {
   DimensionEntryType,
 } from "../../src/types/dimension";
 import { DimEntryT } from "../../src/types/dim-entry";
+import { AttributeOwnerType } from "../../src/types/attribute";
 import {
   ShiftDemandTemplateDTO,
   ShiftDemandTemplateCreateDTO,
@@ -1004,12 +1007,6 @@ export class DatabaseTestUtils {
     teamId: string;
   }> {
     try {
-      // Import AttributeApi dynamically to avoid circular imports
-      const { AttributeApi } = await import(
-        "../../src/app/lib/api/attributeApi"
-      );
-      const { AttributeOwnerType } = await import("../../src/types/attribute");
-
       // Create the attribute object
       const newAttribute = {
         id: "", // Will be set by the API
@@ -1057,11 +1054,6 @@ export class DatabaseTestUtils {
     teamId: string;
   }> {
     try {
-      // Import AttributeApi dynamically to avoid circular imports
-      const { AttributeApi } = await import(
-        "../../src/app/lib/api/attributeApi"
-      );
-
       // First get the current attribute data by getting all attributes for the owner
       // Since we don't have a direct "get attribute by id" method, we'll need to get by owner
       // This is a limitation we'll work around for now
@@ -1107,11 +1099,6 @@ export class DatabaseTestUtils {
    */
   async deleteAttribute(attributeId: string, teamId: string): Promise<void> {
     try {
-      // Import AttributeApi dynamically to avoid circular imports
-      const { AttributeApi } = await import(
-        "../../src/app/lib/api/attributeApi"
-      );
-
       // Use the existing AttributeApi with our test client
       await AttributeApi.deleteAttribute(
         this.testApiClient,
@@ -1136,11 +1123,6 @@ export class DatabaseTestUtils {
    */
   async getAttributesByOwner(ownerId: string, teamId: string): Promise<any[]> {
     try {
-      // Import AttributeApi dynamically to avoid circular imports
-      const { AttributeApi } = await import(
-        "../../src/app/lib/api/attributeApi"
-      );
-
       // Use the existing AttributeApi with our test client
       const result = await AttributeApi.getAttributesByOwner(
         this.testApiClient,
@@ -1174,11 +1156,6 @@ export class DatabaseTestUtils {
     source?: "manual" | "template" | "solver" | "import";
   }): Promise<any> {
     try {
-      // Import ShiftDemandApi dynamically to avoid circular imports
-      const { ShiftDemandApi } = await import(
-        "../../src/app/lib/api/shiftDemandApi"
-      );
-
       const shiftDemandData = {
         shiftId: options.shiftId,
         date: Math.floor(options.date.getTime() / 1000), // Convert to Unix timestamp
@@ -1212,11 +1189,6 @@ export class DatabaseTestUtils {
     endDate: Date
   ): Promise<any[]> {
     try {
-      // Import ShiftDemandApi dynamically to avoid circular imports
-      const { ShiftDemandApi } = await import(
-        "../../src/app/lib/api/shiftDemandApi"
-      );
-
       const result = await ShiftDemandApi.getShiftDemandsByPeriod(
         this.testApiClient,
         teamId,
