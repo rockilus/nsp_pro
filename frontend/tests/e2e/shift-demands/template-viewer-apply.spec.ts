@@ -182,7 +182,9 @@ test.describe("TemplateViewer - Apply Template", () => {
       await expect(
         applicationDialog.locator(`text=${standardTemplate.name}`)
       ).toBeVisible();
-      await expect(applicationDialog.locator("text=Standard")).toBeVisible(); // Template type
+      await expect(
+        applicationDialog.getByText("Standard", { exact: true })
+      ).toBeVisible(); // Template type
       await expect(applicationDialog.locator("text=Weeks: 2")).toBeVisible(); // Standard template has 2 weeks
     });
   });
