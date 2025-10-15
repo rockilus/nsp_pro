@@ -138,7 +138,10 @@ export default function RequestPanel({
               sx={{
                 color: (theme) => theme.palette.grey[500],
               }}
-              data-testid="close-request-panel-button"
+              // primary test id expected by E2E tests
+              data-testid="close-request-dialog-button"
+              // preserve legacy id for any internal selectors (kept as legacy data attribute)
+              data-legacy-testid="close-request-panel-button"
             >
               <CloseIcon />
             </IconButton>
