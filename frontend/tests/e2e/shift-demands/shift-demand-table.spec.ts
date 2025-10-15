@@ -247,15 +247,20 @@ test.describe("Shift Demand - Table", () => {
     await expect(valueElement).toBeVisible();
     await expect(valueElement).toHaveText("1");
 
-    const incrementButton = page.locator(
-      `[data-testid="shift-demand-increment-${shiftId}-${testDate.format(
-        "YYYY-MM-DD"
-      )}"]`
-    );
-
     // Increment multiple times
     for (let i = 2; i <= 5; i++) {
       await cell.hover();
+      let incrementButton = page.locator(
+        `[data-testid="shift-demand-increment-${shiftId}-${testDate.format(
+          "YYYY-MM-DD"
+        )}"]`
+      );
+      await expect(incrementButton).toBeVisible();
+      const handle = await incrementButton.elementHandle();
+      if (handle) {
+        // Playwright element handle API: wait until it's stable
+        await handle.waitForElementState("stable");
+      }
       await incrementButton.click();
       await expect(valueElement).toHaveText(i.toString());
     }
