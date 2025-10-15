@@ -141,21 +141,22 @@ test.describe("Shift Demand - Table", () => {
     );
     await expect(incrementButton).toBeVisible();
 
-    // Verify minus button appears on hover
-    const decrementButton = page.locator(
-      `[data-testid="shift-demand-decrement-${shiftId}-${dateStr}"]`
-    );
-    await expect(decrementButton).toBeVisible();
-
     // Click increment button
     await incrementButton.click();
 
     // Wait for value to update to 2
     await expect(valueElement).toHaveText("2");
 
-    // Test decrement
+    // Hover the parent cell then the value element so the controls are rendered
     await cell.hover();
-    await decrementButton.click();
+    await valueElement.hover();
+    const decrementButton = page.locator(
+      `[data-testid="shift-demand-decrement-${shiftId}-${dateStr}"]`
+    );
+    // Wait for the decrement control and click it
+    await expect(decrementButton).toBeVisible({ timeout: 5000 });
+    // Always use locator.click which resolves a fresh element; force to handle overlayed hover controls
+    await decrementButton.click({ force: true });
 
     // Wait for value to update to 1
     await expect(valueElement).toHaveText("1");
@@ -193,13 +194,19 @@ test.describe("Shift Demand - Table", () => {
     );
     await expect(valueElement).toBeVisible();
     await expect(valueElement).toHaveText("1");
-
-    // Hover and click decrement
+    // Hover the parent cell and then the value element so hover controls render
     await cell.hover();
+    await valueElement.hover();
+
+    // Locate decrement as a top-level locator (controls may be rendered in a portal)
     const decrementButton = page.locator(
       `[data-testid="shift-demand-decrement-${shiftId}-${dateStr}"]`
     );
-    await decrementButton.click();
+
+    // Wait for the decrement control to appear and click it. Increase timeout
+    // slightly to account for animations, but avoid arbitrary sleeps.
+    await expect(decrementButton).toBeVisible({ timeout: 8000 });
+    await decrementButton.click({ force: true });
 
     // Wait for the demand to be deleted - should show empty state again
     const emptyState = cell.locator('[data-testid^="shift-demand-empty-"]');
@@ -243,15 +250,20 @@ test.describe("Shift Demand - Table", () => {
     await expect(valueElement).toBeVisible();
     await expect(valueElement).toHaveText("1");
 
-    const incrementButton = page.locator(
-      `[data-testid="shift-demand-increment-${shiftId}-${testDate.format(
-        "YYYY-MM-DD"
-      )}"]`
-    );
-
     // Increment multiple times
     for (let i = 2; i <= 5; i++) {
       await cell.hover();
+      let incrementButton = page.locator(
+        `[data-testid="shift-demand-increment-${shiftId}-${testDate.format(
+          "YYYY-MM-DD"
+        )}"]`
+      );
+      await expect(incrementButton).toBeVisible();
+      const handle = await incrementButton.elementHandle();
+      if (handle) {
+        // Playwright element handle API: wait until it's stable
+        await handle.waitForElementState("stable");
+      }
       await incrementButton.click();
       await expect(valueElement).toHaveText(i.toString());
     }

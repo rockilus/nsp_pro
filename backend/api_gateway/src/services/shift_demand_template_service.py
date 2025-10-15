@@ -323,55 +323,156 @@ class ShiftDemandTemplateService:
                 f"{template_id} for date range {start_date} to {end_date}"
             )
 
-            # Handle existing demands if overwrite is disabled
-            if not overwrite_existing:
-                # TO-DO: Implement merge logic when overwrite_existing=False
-                # For now, we'll always overwrite as per initial requirements
-                pass
-
-            # Apply demands to database
-            demands_created = 0
-            demands_updated = 0
-            demands_deleted = 0
-
             if overwrite_existing:
-                # Delete existing demands for the date range
-                deleted_count = (
-                    self.db.shift_demand_new_db.delete_demands_by_date_range(
-                        team_id=team_id,
-                        start_date=start_date,
-                        end_date=end_date,
-                    )
+                return await self._apply_template_with_overwrite(
+                    template_id=template_id,
+                    team_id=team_id,
+                    start_date=start_date,
+                    end_date=end_date,
+                    demands_to_create=demands_to_create,
                 )
-                demands_deleted = deleted_count
-
-            # Create new demands using ShiftDemandNew model
-            for demand in demands_to_create:
-                shift_demand = ShiftDemandNew(
-                    date=demand["date"],
-                    shift_id=demand["shift_id"],
-                    team_id=demand["team_id"],
-                    count=demand["count"],
-                    source=ShiftDemandSource.TEMPLATE,
-                    source_id=template_id,
-                )
-
-                self.db.shift_demand_new_db.create_shift_demand(shift_demand)
-                demands_created += 1
-
-            log_info(
-                f"Applied template {template_id} to date range "
-                f"{start_date} to {end_date}: "
-                f"created {demands_created}, updated {demands_updated}, "
-                f"deleted {demands_deleted} demands"
+            return await self._apply_template_with_merge(
+                template_id=template_id,
+                team_id=team_id,
+                start_date=start_date,
+                end_date=end_date,
+                demands_to_create=demands_to_create,
             )
-
-            return {
-                "demands_created": demands_created,
-                "demands_updated": demands_updated,
-                "demands_deleted": demands_deleted,
-            }
 
         except Exception as e:
             log_info(f"Failed to apply template to date range: {str(e)}")
             raise
+
+    async def _apply_template_with_overwrite(
+        self,
+        template_id: str,
+        team_id: str,
+        start_date: date,
+        end_date: date,
+        demands_to_create: List[dict],
+    ) -> Dict[str, int]:
+        """
+        Apply template with overwrite mode - delete existing and create new.
+
+        Args:
+            template_id: Template identifier
+            team_id: Team identifier
+            start_date: Start of target period
+            end_date: End of target period
+            demands_to_create: List of demand dictionaries from template
+
+        Returns:
+            Dictionary with operation counts
+        """
+        # Delete existing demands for the date range
+        demands_deleted = self.db.shift_demand_new_db.delete_demands_by_date_range(
+            team_id=team_id,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        # Create new demands from template
+        demands_created = 0
+        for demand in demands_to_create:
+            shift_demand = ShiftDemandNew(
+                date=demand["date"],
+                shift_id=demand["shift_id"],
+                team_id=demand["team_id"],
+                count=demand["count"],
+                source=ShiftDemandSource.TEMPLATE,
+                source_id=template_id,
+            )
+            self.db.shift_demand_new_db.create_shift_demand(shift_demand)
+            demands_created += 1
+
+        log_info(
+            f"Applied template {template_id} with overwrite to date range "
+            f"{start_date} to {end_date}: "
+            f"created {demands_created}, deleted {demands_deleted} demands"
+        )
+
+        return {
+            "demands_created": demands_created,
+            "demands_updated": 0,
+            "demands_deleted": demands_deleted,
+        }
+
+    async def _apply_template_with_merge(
+        self,
+        template_id: str,
+        team_id: str,
+        start_date: date,
+        end_date: date,
+        demands_to_create: List[dict],
+    ) -> Dict[str, int]:
+        """
+        Apply template with merge mode - add to or update existing demands.
+
+        When a demand exists for the same shift and date:
+        - Sum the counts from template and existing demand
+        - Update the existing demand
+
+        When a demand doesn't exist:
+        - Create new demand from template
+
+        Args:
+            template_id: Template identifier
+            team_id: Team identifier
+            start_date: Start of target period
+            end_date: End of target period
+            demands_to_create: List of demand dictionaries from template
+
+        Returns:
+            Dictionary with operation counts
+        """
+        # Fetch existing demands for the date range
+        existing_demands = self.db.shift_demand_new_db.get_shift_demands_by_date_range(
+            team_id=team_id,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        # Create lookup map for existing demands by (shift_id, date)
+        existing_demands_map = {
+            (demand.shift_id, demand.date): demand for demand in existing_demands
+        }
+
+        demands_created = 0
+        demands_updated = 0
+
+        # Process each demand from template
+        for demand_dict in demands_to_create:
+            demand_key = (demand_dict["shift_id"], demand_dict["date"])
+
+            if demand_key in existing_demands_map:
+                # Update existing demand by summing counts
+                existing_demand = existing_demands_map[demand_key]
+                existing_demand.count += demand_dict["count"]
+                existing_demand.update_timestamp()
+
+                self.db.shift_demand_new_db.update_shift_demand(existing_demand)
+                demands_updated += 1
+            else:
+                # Create new demand from template
+                new_demand = ShiftDemandNew(
+                    date=demand_dict["date"],
+                    shift_id=demand_dict["shift_id"],
+                    team_id=demand_dict["team_id"],
+                    count=demand_dict["count"],
+                    source=ShiftDemandSource.TEMPLATE,
+                    source_id=template_id,
+                )
+                self.db.shift_demand_new_db.create_shift_demand(new_demand)
+                demands_created += 1
+
+        log_info(
+            f"Applied template {template_id} with merge to date range "
+            f"{start_date} to {end_date}: "
+            f"created {demands_created}, updated {demands_updated} demands"
+        )
+
+        return {
+            "demands_created": demands_created,
+            "demands_updated": demands_updated,
+            "demands_deleted": 0,
+        }

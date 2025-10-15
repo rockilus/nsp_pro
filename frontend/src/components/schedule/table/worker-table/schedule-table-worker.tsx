@@ -44,6 +44,7 @@ export default function ScheduleTableWorker({
   breaches,
   scheduleViewSettings,
   handleAssignmentSelection,
+  handleRequestSelection,
   handleExportSchedule,
   handleOpenCreateAssignment,
 }: {
@@ -60,6 +61,7 @@ export default function ScheduleTableWorker({
   breaches: BreachT[];
   scheduleViewSettings: ScheduleViewSettingsT;
   handleAssignmentSelection: (selectedCell: AssignmentDataDictT) => void;
+  handleRequestSelection?: (request: RequestT) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
@@ -125,6 +127,7 @@ export default function ScheduleTableWorker({
               scheduleCellsDict={scheduleCellDict}
               scheduleViewSettings={scheduleViewSettings}
               handleAssignmentSelection={handleAssignmentSelection}
+              handleRequestSelection={handleRequestSelection}
               handleOpenCreateAssignment={handleOpenCreateAssignment}
             />
           ))}

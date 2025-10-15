@@ -5,10 +5,12 @@ import IconButton from "@mui/material/IconButton";
 import TableCell from "@mui/material/TableCell";
 // Components
 import AssignmentCell from "../shared/assignment-cell";
+import RequestCell from "../shared/request-cell";
 // Styles
 import "./worker-cell.css";
 // Types
 import { WorkerT } from "../../../../types/worker";
+import { ShiftT } from "../../../../types/shift";
 import {
   periodDateT,
   ScheduleViewSettingsT,
@@ -16,20 +18,25 @@ import {
 } from "../../../../types/schedule";
 import { CreateAssignmentT } from "@/types/assignment";
 import { AssignmentDataDictT } from "@/types/assignment";
+import { RequestT } from "../../../../types/request";
 
 export default function WorkerCell({
   periodDate,
   worker,
+  shifts,
   scheduleCellData,
   scheduleViewSettings,
   handleAssignmentSelection,
+  handleRequestSelection,
   handleOpenCreateAssignment,
 }: {
   periodDate: periodDateT;
   worker: WorkerT;
+  shifts: ShiftT[];
   scheduleCellData: ScheduleCellDataT | null;
   scheduleViewSettings: ScheduleViewSettingsT;
   handleAssignmentSelection: (seletedCell: AssignmentDataDictT) => void;
+  handleRequestSelection?: (request: RequestT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
   return (
@@ -50,6 +57,17 @@ export default function WorkerCell({
               assignmentData={aData}
               scheduleViewSettings={scheduleViewSettings}
               handleAssignmentSelection={handleAssignmentSelection}
+            />
+          );
+        })}
+      {scheduleViewSettings.showRequests &&
+        scheduleCellData?.requests.map((request) => {
+          return (
+            <RequestCell
+              key={request.id}
+              request={request}
+              shifts={shifts}
+              handleRequestSelection={handleRequestSelection}
             />
           );
         })}

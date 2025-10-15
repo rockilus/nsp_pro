@@ -1276,8 +1276,15 @@ export class RequestTestBase {
         await this.getPrevMonthButton(page).click();
       }
 
-      // Wait for the month to change
-      await page.waitForTimeout(100);
+      // Wait for the month label text to change to avoid using a fixed timeout
+      const previousText = currentMonthText;
+      await page.waitForFunction(
+        ({ selector, prev }: { selector: string; prev: string | null }) => {
+          const el = document.querySelector(selector);
+          return !!(el && el.textContent && el.textContent !== prev);
+        },
+        { selector: '[data-testid="time-nav-label"]', prev: previousText }
+      );
       currentMonthText = await currentMonthLabel.textContent();
       currentMonth = dayjs.utc(currentMonthText, "MMMM YYYY");
     }

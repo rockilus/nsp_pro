@@ -19,6 +19,7 @@ import {
   AssignmentDataDictT,
   CreateAssignmentT,
 } from "@/types/assignment";
+import { RequestT } from "../../../../types/request";
 
 export default function WorkerTableRow({
   lng,
@@ -30,6 +31,7 @@ export default function WorkerTableRow({
   scheduleCellsDict,
   scheduleViewSettings,
   handleAssignmentSelection,
+  handleRequestSelection,
   handleOpenCreateAssignment,
 }: {
   lng: string;
@@ -41,6 +43,7 @@ export default function WorkerTableRow({
   scheduleCellsDict: ScheduleCellsDictT;
   scheduleViewSettings: ScheduleViewSettingsT;
   handleAssignmentSelection: (selectedCell: AssignmentDataDictT) => void;
+  handleRequestSelection?: (request: RequestT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
   return (
@@ -63,9 +66,11 @@ export default function WorkerTableRow({
             key={dateIndex}
             periodDate={pDate}
             worker={worker}
+            shifts={shifts}
             scheduleCellData={scheduleCellData}
             scheduleViewSettings={scheduleViewSettings}
             handleAssignmentSelection={handleAssignmentSelection}
+            handleRequestSelection={handleRequestSelection}
             handleOpenCreateAssignment={handleOpenCreateAssignment}
           />
         );
