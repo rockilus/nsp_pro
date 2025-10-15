@@ -117,7 +117,7 @@ export class DatabaseTestUtils {
         Authorization: `Bearer ${testConfig.authToken}`,
       };
     }
-    }
+  }
 
   /**
    * Create an authenticated API client for testing with environment-aware auth

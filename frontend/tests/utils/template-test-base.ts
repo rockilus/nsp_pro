@@ -790,7 +790,9 @@ export class TemplateTestBase {
    */
   async updateTemplateViaAPI(templateId: string, updates: Partial<unknown>) {
     if (!this.testTeam) {
-      throw new Error("No test team available. Did you forget to call setupTemplateTests()?");
+      throw new Error(
+        "No test team available. Did you forget to call setupTemplateTests()?"
+      );
     }
 
     // Delegate to DatabaseTestUtils which wraps ShiftDemandTemplateApi
