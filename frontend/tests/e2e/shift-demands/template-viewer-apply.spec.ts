@@ -968,19 +968,46 @@ test.describe("TemplateViewer - Apply Template", () => {
       await expect(dialogElements.applyButton).toBeEnabled({ timeout: 10000 });
       await dialogElements.applyButton.click();
 
-      // Navigate to the period to verify
-      await templateTestBase.navigateToPeriod(page, "2024-05-01");
+      // Close the template management window
+      await templateTestBase.closeTemplateManagementWindow(page);
+
+      // Navigate to the period manually using localStorage (since navigateToPeriod expects demands to exist)
+      const targetDate = dayjs("2024-05-01");
+      await page.evaluate((dateStr) => {
+        const periodState = {
+          currentDate: dateStr,
+          periodType: "month",
+        };
+        localStorage.setItem(
+          "nsp_pro_period_state",
+          JSON.stringify(periodState)
+        );
+      }, targetDate.toISOString());
+
+      // Reload to apply the period state
+      await page.reload();
+      await page.waitForLoadState("networkidle");
+
+      // Wait for the shift demand table to be visible
+      const shiftDemandTable = page.locator(
+        '[data-testid="shift-demand-table"]'
+      );
+      await expect(shiftDemandTable).toBeVisible({ timeout: 10000 });
 
       // Get actual shift IDs
       const shiftIds = templateTestBase.getCreatedShiftIds();
       const morningShiftId = shiftIds[0];
 
-      // Verify no demands were created (existing empty state should remain)
-      await templateTestBase.verifyShiftDemandNotExists(
-        page,
-        morningShiftId,
-        "2024-05-01"
-      );
+      // Verify no demands were created by checking that the value element doesn't exist or is empty
+      const valueSelector = `[data-testid="shift-demand-value-${morningShiftId}-2024-05-01"]`;
+      const valueElement = page.locator(valueSelector);
+      const exists = (await valueElement.count()) > 0;
+
+      if (exists) {
+        const text = await valueElement.textContent();
+        expect(text === "" || text === "0").toBeTruthy();
+      }
+      // If element doesn't exist, that's also valid (no demand was created)
     });
   });
 });
