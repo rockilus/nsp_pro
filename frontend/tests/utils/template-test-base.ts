@@ -1331,8 +1331,23 @@ export class TemplateTestBase {
       }
       await dateInput.press("Tab");
 
-      // short wait for picker to process the value
-      await page.waitForTimeout(150);
+      // Wait for the picker/input to process the value and reflect it in the DOM
+      await page.waitForFunction(
+        () => {
+          const el =
+            document.querySelector('[data-testid="source-week-date-input"]') ||
+            document.querySelector(
+              '[data-testid="source-week-date-picker"] input'
+            );
+          return !!(
+            el &&
+            (el as HTMLInputElement).value &&
+            (el as HTMLInputElement).value.trim().length > 0
+          );
+        },
+        null,
+        { timeout: 5000 }
+      );
 
       // read current value
       try {
@@ -1358,8 +1373,25 @@ export class TemplateTestBase {
           el.blur();
         }, date);
 
-        // short wait for processing
-        await page.waitForTimeout(100);
+        // Wait for the input to be updated in the DOM after direct value set
+        await page.waitForFunction(
+          () => {
+            const el =
+              document.querySelector(
+                '[data-testid="source-week-date-input"]'
+              ) ||
+              document.querySelector(
+                '[data-testid="source-week-date-picker"] input'
+              );
+            return !!(
+              el &&
+              (el as HTMLInputElement).value &&
+              (el as HTMLInputElement).value.trim().length > 0
+            );
+          },
+          null,
+          { timeout: 2000 }
+        );
 
         // update lastValue
         lastValue = await dateInput.inputValue();
@@ -1555,8 +1587,8 @@ export class TemplateTestBase {
     // Press Tab to confirm the date (more reliable than Enter for date inputs)
     await input.press("Tab");
 
-    // Wait a moment for the date to be processed and validation to update
-    await page.waitForTimeout(500);
+    // Wait for the date input to be processed and for it to have a value (validation)
+    await expect(input).not.toHaveValue("", { timeout: 2000 });
   }
 
   /**
