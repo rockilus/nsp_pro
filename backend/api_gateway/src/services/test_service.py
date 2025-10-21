@@ -21,17 +21,21 @@ class SolverTestScenariosService(BaseService):
     def __init__(
         self,
         collection: DatabaseCollections,
+        test_data_file: Path | None = None,
     ):
         super().__init__(collection)
-        file_path = (
-            Path(__file__).resolve().parents[2]
-            / "tests"
-            / "test_data"
-            / "solver_data.json"
-        )
-        if not file_path.exists():
-            raise FileNotFoundError(f"Solver data file not found: {file_path}")
-        self.test_data_file_path = file_path
+        if test_data_file is None:
+            test_data_file = (
+                Path(__file__).resolve().parents[2]
+                / "tests"
+                / "test_data"
+                / "solver_data.json"
+            )
+        if not test_data_file.exists():
+            raise FileNotFoundError(
+                f"Solver data file not found: {test_data_file}"
+            )
+        self.test_data_file_path = test_data_file
 
     def get_scenario_names(self) -> List[str]:
         """Get list of all available scenario names from the JSON fixture.
@@ -44,7 +48,7 @@ class SolverTestScenariosService(BaseService):
                 data = json.load(fh)
         except Exception as exc:
             raise ValueError(
-                f"Failed to parse solver data file: {file_path}"
+                f"Failed to parse solver data file: {self.test_data_file_path}"
             ) from exc
 
         if not isinstance(data, dict) or len(data) == 0:
