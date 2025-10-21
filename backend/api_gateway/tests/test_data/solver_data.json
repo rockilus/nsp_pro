@@ -1,4 +1,24 @@
 {
+    "basic_coverage": {
+        "workers": [
+            {
+                "_id": "6894a72f457cee1161ccd88e",
+                "team": "6894a0a6457cee1161ccd840",
+                "name": "Cédric Pepion",
+                "acronym": "CP",
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 54,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
+                "deleted": false,
+                "user_id": null
+            }
+        ]
+    },
     "benoit_scenario_0": {
         "workers": [
             {

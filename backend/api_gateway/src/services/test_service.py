@@ -32,7 +32,9 @@ class SolverTestScenariosService(BaseService):
                 / "solver_data.json"
             )
         if not test_data_file.exists():
-            raise FileNotFoundError(f"Solver data file not found: {test_data_file}")
+            raise FileNotFoundError(
+                f"Solver data file not found: {test_data_file}"
+            )
         self.test_data_file_path = test_data_file
 
     def get_scenario_names(self) -> List[str]:
@@ -56,7 +58,9 @@ class SolverTestScenariosService(BaseService):
 
         return list(data.keys())
 
-    def create_scenario(self, scenario_name: str, team_id: str) -> ScenarioLoadResponse:
+    def create_scenario(
+        self, scenario_name: str, team_id: str
+    ) -> ScenarioLoadResponse:
         """Create a full scenario in the database for the given name.
 
         Loads workers from the JSON fixture, inserts them into the DB (with
@@ -87,7 +91,9 @@ class SolverTestScenariosService(BaseService):
             "shift_count": len(scenario["shifts"]),
         }
 
-    def load_scenario_data_from_json(self, scenario_name: str) -> Dict[str, Any]:
+    def load_scenario_data_from_json(
+        self, scenario_name: str
+    ) -> Dict[str, Any]:
         """Load raw scenario data from the local JSON fixture.
 
         Returns the raw dict stored under the given scenario name.
@@ -118,7 +124,9 @@ class SolverTestScenariosService(BaseService):
 
             return {"workers": workers}
         except Exception as exc:
-            raise ValueError("Failed to convert scenario data to core objects") from exc
+            raise ValueError(
+                "Failed to convert scenario data to core objects"
+            ) from exc
 
     def save_scenario_to_db(
         self,
@@ -130,7 +138,11 @@ class SolverTestScenariosService(BaseService):
             workers = scenario_data.get("workers", [])
             if not all(isinstance(w, Worker) for w in workers):
                 raise ValueError("Expected all workers to be Worker instances")
-            out["workers"] = self.collection.worker_db.create_workers(workers=workers)
+            out["workers"] = self.collection.worker_db.create_workers(
+                workers=workers
+            )
             return out
         except Exception as exc:
-            raise ValueError("Failed to save scenario data to database") from exc
+            raise ValueError(
+                "Failed to save scenario data to database"
+            ) from exc

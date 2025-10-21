@@ -11,25 +11,12 @@
 
 import { Page, expect } from "@playwright/test";
 import { DatabaseTestUtils } from "./database-utils";
+import { SolverScenarioResult } from "./database-utils";
 
 const testConfig = {
   apiUrl: process.env.NEXT_PUBLIC_API_GATEWAY_URL || "http://localhost:8000",
   frontendUrl: process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000",
 };
-
-export interface SolverScenarioResult {
-  success: boolean;
-  scenario_name: string;
-  workers: any[];
-  shifts: any[];
-  shift_demands: any[];
-  constraints: any[];
-  schedule: {
-    start_date: string;
-    end_date: string;
-    duration_days: number;
-  };
-}
 
 export interface ScenarioMetadata {
   name: string;
@@ -77,6 +64,7 @@ export class SolverTestBase {
   /**
    * Load a predefined scenario from backend fixtures
    * This creates all workers, shifts, and shift demands in one API call
+   * Note: The backend API returns a simple confirmation, so we fetch the created data separately
    */
   async loadScenario(scenarioName: string): Promise<SolverScenarioResult> {
     if (!this.testTeam) {
@@ -85,52 +73,25 @@ export class SolverTestBase {
 
     console.log(`📦 Loading scenario: ${scenarioName}`);
 
-    const response = await fetch(
-      `${testConfig.apiUrl}/test-utils/scenarios/load`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...this.getAuthHeaders(),
-        },
-        body: JSON.stringify({
-          scenario_name: scenarioName,
-          team_id: this.testTeam.teamId,
-        }),
-      }
+    // Load scenario using DatabaseTestUtils which handles authentication properly
+    const scenario = await this.dbUtils.loadSolverScenario(
+      scenarioName,
+      this.testTeam.teamId
     );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `Failed to load scenario '${scenarioName}': ${response.status} ${errorText}`
-      );
-    }
-
-    const result: SolverScenarioResult = await response.json();
-
     console.log(`✅ Loaded scenario: ${scenarioName}`);
-    console.log(`   - Workers: ${result.workers.length}`);
-    console.log(`   - Shifts: ${result.shifts.length}`);
-    console.log(`   - Shift Demands: ${result.shift_demands.length}`);
+    console.log(`   - Workers: ${scenario.workers.length}`);
+    console.log(`   - Shifts: ${scenario.shifts.length}`);
 
-    return result;
+    return scenario;
   }
 
   /**
    * Get list of all available scenarios
    */
-  async listAvailableScenarios(): Promise<ScenarioMetadata[]> {
-    const response = await fetch(`${testConfig.apiUrl}/test-utils/scenarios`, {
-      headers: this.getAuthHeaders(),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to list scenarios: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.scenarios;
+  async listAvailableScenarios(): Promise<string[]> {
+    // Use DatabaseTestUtils which handles authentication properly
+    return await this.dbUtils.listSolverScenarios();
   }
 
   /**
@@ -143,16 +104,16 @@ export class SolverTestBase {
   ): Promise<SolverScenarioResult> {
     const scenario = await this.loadScenario(scenarioName);
 
-    // Navigate to schedule page
-    await page.goto(`${testConfig.frontendUrl}/en/plan/schedule/`);
-
     // Set selected team in localStorage
     await page.evaluate((teamId) => {
       localStorage.setItem("selectedTeamId", teamId);
     }, this.testTeam!.teamId);
 
+    // Navigate to schedule page
+    await page.goto(`${testConfig.frontendUrl}/en/plan/schedule/`);
+
     // Reload to apply localStorage changes
-    await page.reload();
+    // await page.reload();
     await page.waitForLoadState("networkidle");
 
     console.log(
@@ -176,28 +137,17 @@ export class SolverTestBase {
 
     console.log(`📅 Creating schedule: ${startDate} to ${endDate}`);
 
-    const response = await fetch(`${testConfig.apiUrl}/schedules`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...this.getAuthHeaders(),
-      },
-      body: JSON.stringify({
+    const result = await this.dbUtils.makeAuthenticatedRequest<{ id: string }>(
+      "POST",
+      "/schedules",
+      {
         teamId: this.testTeam.teamId,
         startDate: startDate,
         endDate: endDate,
         status: "CAMPAIGN",
-      }),
-    });
+      }
+    );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `Failed to create schedule: ${response.status} ${errorText}`
-      );
-    }
-
-    const result = await response.json();
     this.currentScheduleId = result.id;
 
     console.log(`✅ Created schedule: ${this.currentScheduleId}`);
@@ -321,26 +271,6 @@ export class SolverTestBase {
     });
 
     console.log(`📸 Screenshot saved: ${filename}`);
-  }
-
-  /**
-   * Get authentication headers for API requests
-   */
-  private getAuthHeaders(): Record<string, string> {
-    const headers: Record<string, string> = {};
-
-    // Check environment and add appropriate auth headers
-    const environment = process.env.ENVIRONMENT || "local";
-
-    if (environment === "local" || environment === "test") {
-      // For local/test, we might use a test token or bypass auth
-      const testToken = process.env.TEST_AUTH_TOKEN;
-      if (testToken) {
-        headers["Authorization"] = `Bearer ${testToken}`;
-      }
-    }
-
-    return headers;
   }
 
   /**

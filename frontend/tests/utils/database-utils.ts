@@ -16,10 +16,11 @@ import { ShiftDemandTemplateApi } from "../../src/app/lib/api/shiftDemandTemplat
 import { RequestApi } from "../../src/app/lib/api/requestApi";
 import { AuthenticatedApiClient } from "../../src/app/lib/api/baseApi";
 import { TeamWithMembership } from "../../src/types/team";
-import { WorkerT } from "../../src/types/worker";
+import { WorkerT, toWorkerT } from "../../src/types/worker";
 import { SpecialtyT } from "../../src/types/specialty";
 import {
   ShiftT,
+  toShiftT,
   StaffingT,
   ShiftType,
   ShiftRestType,
@@ -74,12 +75,50 @@ export interface UserCreationResult {
   message: string;
 }
 
+export interface SolverScenarioResult {
+  scenario_name: string;
+  workers: WorkerT[];
+  shifts: ShiftT[];
+}
+
 export class DatabaseTestUtils {
   private testApiClient: AuthenticatedApiClient;
 
   constructor() {
     // Use centralized test configuration
     this.testApiClient = this.createTestApiClient();
+  }
+
+  /**
+   * Make an authenticated request to the API
+   * This is a convenience method for test scenarios where direct API calls are needed
+   * and there's no existing API wrapper method
+   */
+  async makeAuthenticatedRequest<T>(
+    method: "GET" | "POST" | "PUT" | "DELETE",
+    endpoint: string,
+    data?: any
+  ): Promise<T> {
+    const authHeaders = this.getAuthHeaders();
+
+    const response = await fetch(`${testConfig.apiUrl}${endpoint}`, {
+      method,
+      headers: authHeaders,
+      body: data ? JSON.stringify(data) : undefined,
+    });
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ detail: "Unknown error" }));
+      throw new Error(
+        `API ${method} ${endpoint} failed: ${response.status} ${
+          errorData.detail || JSON.stringify(errorData)
+        }`
+      );
+    }
+
+    return response.json();
   }
 
   /**
@@ -599,6 +638,23 @@ export class DatabaseTestUtils {
         );
       }
       throw new Error(`Failed to delete worker '${workerId}': Unknown error`);
+    }
+  }
+
+  /**
+   * Get all workers for a team using the existing WorkerApi for consistent behavior
+   */
+  async getWorkers(teamId: string): Promise<WorkerT[]> {
+    try {
+      const workers = await WorkerApi.getWorkers(this.testApiClient, teamId);
+      return workers;
+    } catch (error) {
+      console.error("Failed to get workers:", error);
+      throw new Error(
+        `Failed to get workers for team '${teamId}': ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   }
 
@@ -1633,6 +1689,68 @@ export class DatabaseTestUtils {
       collections: ["requests"],
       preserveSystemData: true,
     });
+  }
+
+  //////////////////////////
+  // Solver Test Scenario Methods
+  //////////////////////////
+
+  /**
+   * Load a predefined solver test scenario from backend fixtures
+   * This creates all workers, shifts, and shift demands in one API call
+   */
+  async loadSolverScenario(
+    scenarioName: string,
+    teamId: string
+  ): Promise<SolverScenarioResult> {
+    try {
+      // Backend returns an object with scenario_name, workers and shifts
+      const result = await this.testApiClient.post<{
+        scenario_name: string;
+        workers: any[];
+        shifts: any[];
+      }>("/test-utils/scenarios/load", {
+        scenario_name: scenarioName,
+        team_id: teamId,
+      });
+
+      console.log(`✅ Loaded solver scenario: ${scenarioName}`);
+      return {
+        scenario_name: scenarioName,
+        workers: result.workers.map(toWorkerT),
+        shifts: result.shifts.map(toShiftT),
+      };
+    } catch (error) {
+      console.error(`Failed to load scenario '${scenarioName}':`, error);
+      throw new Error(
+        `Failed to load scenario '${scenarioName}': ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
+  }
+
+  /**
+   * List all available solver test scenarios
+   * Returns scenario names that can be loaded via loadSolverScenario
+   */
+  async listSolverScenarios(): Promise<string[]> {
+    try {
+      // The route returns a simple array of scenario names
+      const result = await this.testApiClient.get<string[]>(
+        "/test-utils/scenarios"
+      );
+
+      console.log(`✅ Found ${result.length} available scenarios`);
+      return result;
+    } catch (error) {
+      console.error("Failed to list solver scenarios:", error);
+      throw new Error(
+        `Failed to list solver scenarios: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
   }
 }
 

@@ -4,7 +4,7 @@
 
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { ShiftT, LinkShiftT } from "../../../types/shift";
+import { ShiftT, LinkShiftT, toShiftT, fromShiftT } from "../../../types/shift";
 import { BaseApi, AuthenticatedApiClient } from "./baseApi";
 
 dayjs.extend(utc);
@@ -31,24 +31,7 @@ export interface ShiftsTabDataResponse {
 /**
  * Transform API data to ShiftT type
  */
-export const toShiftT = (data: any): ShiftT => {
-  return {
-    ...data,
-    startTime: dayjs.unix(data.startTime).utc(),
-    endTime: dayjs.unix(data.endTime).utc(),
-  };
-};
-
-/**
- * Transform ShiftT to API data format
- */
-export const fromShiftT = (data: ShiftT): any => {
-  return {
-    ...data,
-    startTime: data.startTime.unix(),
-    endTime: data.endTime.unix(),
-  };
-};
+// toShiftT and fromShiftT moved to `frontend/src/types/shift.ts`
 
 export class ShiftApi extends BaseApi {
   /**
