@@ -104,16 +104,17 @@ export class SolverTestBase {
   ): Promise<SolverScenarioResult> {
     const scenario = await this.loadScenario(scenarioName);
 
-    // Set selected team in localStorage
+    // Navigate to schedule page FIRST to establish proper origin
+    await page.goto(`${testConfig.frontendUrl}/en/plan/schedule/`);
+    await page.waitForLoadState("domcontentloaded");
+
+    // Now set selected team in localStorage (after page has valid origin)
     await page.evaluate((teamId) => {
       localStorage.setItem("selectedTeamId", teamId);
     }, this.testTeam!.teamId);
 
-    // Navigate to schedule page
-    await page.goto(`${testConfig.frontendUrl}/en/plan/schedule/`);
-
     // Reload to apply localStorage changes
-    // await page.reload();
+    await page.reload();
     await page.waitForLoadState("networkidle");
 
     console.log(
@@ -324,6 +325,9 @@ export class SolverTestBase {
       periodStartDate?: string; // ISO string
     }
   ): Promise<void> {
+    // Ensure page has loaded and has a valid origin
+    await page.waitForLoadState("domcontentloaded");
+
     await page.evaluate(
       ({ teamId, settings }) => {
         const storageKey = `scheduleViewSettings_${teamId}`;
