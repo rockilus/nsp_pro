@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from pydantic import BaseModel
+from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import Shift, Worker
 
 from src.services.base_service import BaseService
@@ -17,20 +18,29 @@ class ScenarioLoadResponse(BaseModel):
 
 
 class SolverTestScenariosService(BaseService):
+    def __init__(
+        self,
+        collection: DatabaseCollections,
+    ):
+        super().__init__(collection)
+        file_path = (
+            Path(__file__).resolve().parents[2]
+            / "tests"
+            / "test_data"
+            / "solver_data.json"
+        )
+        if not file_path.exists():
+            raise FileNotFoundError(f"Solver data file not found: {file_path}")
+        self.test_data_file_path = file_path
 
-    @staticmethod
-    def get_scenario_names() -> List[str]:
+    def get_scenario_names(self) -> List[str]:
         """Get list of all available scenario names from the JSON fixture.
         Raises:
             FileNotFoundError: if the fixture file does not exist.
             ValueError: if the fixture cannot be parsed or has no keys.
         """
-        file_path = Path(__file__).parent / "solver_data.json"
-        if not file_path.exists():
-            raise FileNotFoundError(f"Solver data file not found: {file_path}")
-
         try:
-            with file_path.open("r", encoding="utf-8") as fh:
+            with self.test_data_file_path.open("r", encoding="utf-8") as fh:
                 data = json.load(fh)
         except Exception as exc:
             raise ValueError(
@@ -39,7 +49,7 @@ class SolverTestScenariosService(BaseService):
 
         if not isinstance(data, dict) or len(data) == 0:
             raise ValueError(
-                f"Solver data file {file_path} contains no scenarios"
+                f"Solver data file {self.test_data_file_path} contains no scenarios"
             )
 
         return list(data.keys())
@@ -77,18 +87,14 @@ class SolverTestScenariosService(BaseService):
             "shift_count": len(scenario["shifts"]),
         }
 
-    @staticmethod
-    def load_scenario_data_from_json(scenario_name: str) -> Dict[str, Any]:
+    def load_scenario_data_from_json(
+        self, scenario_name: str
+    ) -> Dict[str, Any]:
         """Load raw scenario data from the local JSON fixture.
 
         Returns the raw dict stored under the given scenario name.
         """
-        file_path = Path(__file__).parent / "solver_data.json"
-
-        if not file_path.exists():
-            raise FileNotFoundError(f"Solver data file not found: {file_path}")
-
-        with file_path.open("r", encoding="utf-8") as fh:
+        with self.test_data_file_path.open("r", encoding="utf-8") as fh:
             data = json.load(fh)
 
         if scenario_name not in data:
