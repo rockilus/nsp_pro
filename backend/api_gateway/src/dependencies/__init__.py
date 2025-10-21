@@ -29,6 +29,7 @@ from src.dependencies.stats_service import get_stats_service
 from src.dependencies.team_invitation import get_team_invitation_service
 from src.dependencies.team_membership import get_team_membership_service
 from src.dependencies.team_service import get_team_service
+from src.dependencies.test_service import get_test_service
 from src.dependencies.user_service import get_user_service
 from src.dependencies.worker_service import get_worker_service
 
@@ -56,6 +57,7 @@ __all__ = [
     "get_team_invitation_service",
     "get_team_membership_service",
     "get_team_service",
+    "get_test_service",
     "get_user_service",
     "get_worker_service",
 ]
