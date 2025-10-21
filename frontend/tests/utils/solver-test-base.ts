@@ -309,6 +309,7 @@ export class SolverTestBase {
   /**
    * Set schedule view settings in localStorage
    * This allows configuring how the schedule is displayed (groupBy, timeFrame, etc.)
+   * Note: This uses default settings as the base and only overrides the provided settings
    */
   async setScheduleViewSettings(
     page: Page,
@@ -327,20 +328,21 @@ export class SolverTestBase {
       ({ teamId, settings }) => {
         const storageKey = `scheduleViewSettings_${teamId}`;
 
-        // Get existing settings or create defaults
-        let existingSettings: any = {};
-        try {
-          const stored = localStorage.getItem(storageKey);
-          if (stored) {
-            existingSettings = JSON.parse(stored);
-          }
-        } catch (e) {
-          // Ignore parsing errors
-        }
+        // Start with default settings
+        const now = new Date().toISOString();
+        const defaultSettings = {
+          timeFrame: "week",
+          groupBy: "shift",
+          showBreaches: true,
+          showAssignments: true,
+          showDailyShiftDemands: true,
+          showRequests: true,
+          periodStartDate: now,
+        };
 
-        // Merge with new settings
+        // Merge defaults with provided settings
         const updatedSettings = {
-          ...existingSettings,
+          ...defaultSettings,
           ...settings,
         };
 
