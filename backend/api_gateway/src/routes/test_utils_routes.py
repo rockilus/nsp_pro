@@ -15,10 +15,13 @@ from shared.database.reset_service import (
     DatabaseResetError,
     DatabaseResetService,
 )
+from shared.logger import log_info
 
 from src.config import config
-from src.dependencies import get_test_service
-from src.integrations.authorization import authz_delete_all_instances
+from src.dependencies import get_test_service, get_user_context
+from src.errors import NotAuthorizedError
+from src.integrations.authorization import authz_check, authz_delete_all_instances
+from src.security.user_context import UserContext
 from src.services.test_service import SolverTestScenariosService
 
 
@@ -215,10 +218,19 @@ class ScenarioLoadRequest(BaseModel):
 )
 async def load_test_scenario(
     request: ScenarioLoadRequest,
+    user_context: UserContext = Depends(get_user_context),
     test_service: SolverTestScenariosService = Depends(get_test_service),
 ) -> Dict:
     try:
-        logger.info(
+        if not await authz_check(
+            user_context.user_id, "create-worker", "team", request.team_id
+        ):
+            log_info(
+                f"Authorization denied for user {user_context.user_id} "
+                f"to create worker in team {request.team_id}"
+            )
+            raise NotAuthorizedError("You do not have permission to create a worker")
+        log_info(
             f"Loading test scenario '{request.scenario_name}' "
             f"for team '{request.team_id}'"
         )
@@ -245,6 +257,7 @@ async def load_test_scenario(
 
 @router.get("/scenarios")
 async def list_scenarios(
+    _: UserContext = Depends(get_user_context),
     test_service: SolverTestScenariosService = Depends(get_test_service),
 ) -> dict:
     """
