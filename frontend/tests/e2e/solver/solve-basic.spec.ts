@@ -44,8 +44,35 @@ test.describe("Solver - Basic Coverage", () => {
     console.log(`   - ${scenario.workers.length} workers created`);
     console.log(`   - ${scenario.shifts.length} shifts created`);
 
-    // Verify the schedule page loaded correctly
-    await page.waitForSelector("text=Schedule", { timeout: 5000 });
+    // Set schedule view settings to group by worker
+    await solverTestBase.setScheduleViewSettings(
+      page,
+      solverTestBase.getTestTeam()!.teamId,
+      {
+        groupBy: "worker",
+      }
+    );
+
+    // Refresh the page to apply settings
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+
+    // Check that all workers appear in the table row headers
+    for (const worker of scenario.workers) {
+      const workerHeaderSelector = `[data-testid="worker-row-header-${worker.id}"]`;
+      await page.waitForSelector(workerHeaderSelector, { timeout: 5000 });
+
+      // Verify the worker name is displayed correctly
+      const workerNameSelector = `[data-testid="worker-name-${worker.id}"]`;
+      const workerNameElement = await page.locator(workerNameSelector);
+      await expect(workerNameElement).toBeVisible();
+
+      const workerNameText = await workerNameElement.textContent();
+      expect(workerNameText).toContain(worker.name);
+      expect(workerNameText).toContain(worker.acronym);
+    }
+
+    console.log(`✅ All ${scenario.workers.length} workers visible in table`);
 
     // Take a screenshot of the loaded scenario
     await solverTestBase.takeScreenshot(page, "basic_coverage", "loaded");

@@ -307,6 +307,55 @@ export class SolverTestBase {
   }
 
   /**
+   * Set schedule view settings in localStorage
+   * This allows configuring how the schedule is displayed (groupBy, timeFrame, etc.)
+   */
+  async setScheduleViewSettings(
+    page: Page,
+    teamId: string,
+    settings: {
+      timeFrame?: "week" | "month";
+      groupBy?: "shift" | "worker";
+      showBreaches?: boolean;
+      showAssignments?: boolean;
+      showDailyShiftDemands?: boolean;
+      showRequests?: boolean;
+      periodStartDate?: string; // ISO string
+    }
+  ): Promise<void> {
+    await page.evaluate(
+      ({ teamId, settings }) => {
+        const storageKey = `scheduleViewSettings_${teamId}`;
+
+        // Get existing settings or create defaults
+        let existingSettings: any = {};
+        try {
+          const stored = localStorage.getItem(storageKey);
+          if (stored) {
+            existingSettings = JSON.parse(stored);
+          }
+        } catch (e) {
+          // Ignore parsing errors
+        }
+
+        // Merge with new settings
+        const updatedSettings = {
+          ...existingSettings,
+          ...settings,
+        };
+
+        localStorage.setItem(storageKey, JSON.stringify(updatedSettings));
+      },
+      { teamId, settings }
+    );
+
+    console.log(
+      `✅ Set schedule view settings for team ${teamId}:`,
+      JSON.stringify(settings, null, 2)
+    );
+  }
+
+  /**
    * Get the current schedule ID
    */
   getScheduleId(): string | null {

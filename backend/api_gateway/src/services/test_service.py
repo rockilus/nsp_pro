@@ -5,6 +5,7 @@ from typing import Any, Dict, List
 from pydantic import BaseModel
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import Shift, Worker
+from shared.database.schemas.worker import WorkerSchema
 
 from src.services.base_service import BaseService
 
@@ -115,7 +116,7 @@ class SolverTestScenariosService(BaseService):
         try:
             workers: List[Worker] = []
             for w in scenario_data.get("workers", []):
-                worker = Worker.from_dict(w)
+                worker = WorkerSchema.from_mongo(w).to_core()
                 # override team_id and clear id so DB creates a new doc
                 worker.team_id = team_id
                 if hasattr(worker, "id"):
