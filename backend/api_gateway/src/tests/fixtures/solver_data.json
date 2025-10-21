@@ -2,2586 +2,564 @@
     "benoit_scenario_0": {
         "workers": [
             {
-                "id": "6894a72f457cee1161ccd88e",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a72f457cee1161ccd88e",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Cédric Pepion",
                 "acronym": "CP",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 54,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 54,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a72f457cee1161ccd88f",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a72f457cee1161ccd88e",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a72f457cee1161ccd890",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a72f457cee1161ccd88e",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a72f457cee1161ccd892",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a72f457cee1161ccd88e",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a72f457cee1161ccd894",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a72f457cee1161ccd88e",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a72f457cee1161ccd893",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a72f457cee1161ccd88e",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a72f457cee1161ccd895",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a72f457cee1161ccd88e",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a72f457cee1161ccd891",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a72f457cee1161ccd88e",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a720457cee1161ccd886",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a720457cee1161ccd886",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Charlotte Fasquel",
                 "acronym": "CF",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 45,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 45,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a720457cee1161ccd887",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a720457cee1161ccd886",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a720457cee1161ccd88a",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a720457cee1161ccd886",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a720457cee1161ccd88c",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a720457cee1161ccd886",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a720457cee1161ccd888",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a720457cee1161ccd886",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a720457cee1161ccd889",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a720457cee1161ccd886",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a720457cee1161ccd88b",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a720457cee1161ccd886",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a720457cee1161ccd88d",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a720457cee1161ccd886",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a68b457cee1161ccd86e",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a68b457cee1161ccd86e",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Benoit Duval",
                 "acronym": "BD",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 42,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 42,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a68b457cee1161ccd874",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a68b457cee1161ccd86e",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a68b457cee1161ccd870",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a68b457cee1161ccd86e",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a68b457cee1161ccd871",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a68b457cee1161ccd86e",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a68b457cee1161ccd86f",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a68b457cee1161ccd86e",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a68b457cee1161ccd872",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a68b457cee1161ccd86e",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a68b457cee1161ccd875",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a68b457cee1161ccd86e",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a68b457cee1161ccd873",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a68b457cee1161ccd86e",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a69c457cee1161ccd87e",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a69c457cee1161ccd87e",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Christophe Brice",
                 "acronym": "CB",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 39,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 39,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a69c457cee1161ccd882",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a69c457cee1161ccd87e",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a69c457cee1161ccd884",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a69c457cee1161ccd87e",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a69c457cee1161ccd880",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a69c457cee1161ccd87e",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a69c457cee1161ccd87f",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a69c457cee1161ccd87e",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a69c457cee1161ccd881",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a69c457cee1161ccd87e",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a69c457cee1161ccd883",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a69c457cee1161ccd87e",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a69c457cee1161ccd885",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a69c457cee1161ccd87e",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a695457cee1161ccd876",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a695457cee1161ccd876",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Benjamin Puisney",
                 "acronym": "BP",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 48,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 48,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a695457cee1161ccd877",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a695457cee1161ccd876",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a695457cee1161ccd878",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a695457cee1161ccd876",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a695457cee1161ccd879",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a695457cee1161ccd876",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a695457cee1161ccd87a",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a695457cee1161ccd876",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a695457cee1161ccd87b",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a695457cee1161ccd876",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a695457cee1161ccd87c",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a695457cee1161ccd876",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a695457cee1161ccd87d",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a695457cee1161ccd876",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a562457cee1161ccd855",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a562457cee1161ccd855",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Anne Brejot",
                 "acronym": "AB",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 48,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 48,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "68c2ddca9863bc9be5bce82c",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a562457cee1161ccd855",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "68c2ddc99863bc9be5bce82b",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a562457cee1161ccd855",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "68c2ddcd9863bc9be5bce82d",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a562457cee1161ccd855",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "68c2ddcf9863bc9be5bce82e",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a562457cee1161ccd855",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "68c2ddd19863bc9be5bce82f",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a562457cee1161ccd855",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a663457cee1161ccd85e",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a663457cee1161ccd85e",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Arthur Guichoux",
                 "acronym": "AG",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 54,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 54,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a663457cee1161ccd862",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a663457cee1161ccd85e",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a663457cee1161ccd85f",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a663457cee1161ccd85e",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a663457cee1161ccd860",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a663457cee1161ccd85e",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a663457cee1161ccd861",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a663457cee1161ccd85e",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a663457cee1161ccd863",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a663457cee1161ccd85e",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a663457cee1161ccd864",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a663457cee1161ccd85e",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a663457cee1161ccd865",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a663457cee1161ccd85e",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a74b457cee1161ccd896",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a74b457cee1161ccd896",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Christophe Soltner",
                 "acronym": "CS",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 54,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 54,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a74b457cee1161ccd897",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a74b457cee1161ccd896",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a74b457cee1161ccd89a",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a74b457cee1161ccd896",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a74b457cee1161ccd89c",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a74b457cee1161ccd896",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a74b457cee1161ccd898",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a74b457cee1161ccd896",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a74b457cee1161ccd899",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a74b457cee1161ccd896",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a74b457cee1161ccd89d",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a74b457cee1161ccd896",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a74b457cee1161ccd89b",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a74b457cee1161ccd896",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a67b457cee1161ccd866",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a67b457cee1161ccd866",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Antoine Marc",
                 "acronym": "AM",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 34,
-                "weeklyHoursDesired": 34,
-                "dutiesPerMonth": 3,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 34,
+                "weekly_hours_desired": 34,
+                "duties_per_month": 3,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a67b457cee1161ccd86a",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a67b457cee1161ccd866",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a67b457cee1161ccd868",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a67b457cee1161ccd866",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a67b457cee1161ccd869",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a67b457cee1161ccd866",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a67b457cee1161ccd86b",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a67b457cee1161ccd866",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a67b457cee1161ccd86c",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a67b457cee1161ccd866",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a67b457cee1161ccd86d",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a67b457cee1161ccd866",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a67b457cee1161ccd867",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a67b457cee1161ccd866",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a7ad457cee1161ccd8f6",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a7ad457cee1161ccd8f6",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Marie-Eve Poignard",
                 "acronym": "MP",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 42,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 42,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a7ad457cee1161ccd8f7",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd8f6",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd8f9",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd8f6",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd8fa",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd8f6",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd8fc",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd8f6",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd8fd",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd8f6",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd8f8",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd8f6",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd8fb",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd8f6",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a7ad457cee1161ccd906",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a7ad457cee1161ccd906",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Nicolas Despierre",
                 "acronym": "ND",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 48,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 48,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a7ad457cee1161ccd907",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd906",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd90a",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd906",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd90c",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd906",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd908",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd906",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd909",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd906",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd90b",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd906",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd90d",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd906",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a7ac457cee1161ccd8e6",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a7ac457cee1161ccd8e6",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Louise Marrec",
                 "acronym": "LM",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 42,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 42,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a7ac457cee1161ccd8e7",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8e6",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8ea",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8e6",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8ec",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8e6",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8e8",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8e6",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8e9",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8e6",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8eb",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8e6",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8ed",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8e6",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a7ac457cee1161ccd8d6",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a7ac457cee1161ccd8d6",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Johanna Temime",
                 "acronym": "JT",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 42,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 42,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a7ac457cee1161ccd8d7",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8d6",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8da",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8d6",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8dc",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8d6",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8d8",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8d6",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8d9",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8d6",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8db",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8d6",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8dd",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8d6",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a7ac457cee1161ccd8ce",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a7ac457cee1161ccd8ce",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Johann Delaumenie",
                 "acronym": "JD",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 48,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 48,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a7ac457cee1161ccd8cf",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8ce",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8d2",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8ce",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8d1",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8ce",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8d4",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8ce",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8d3",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8ce",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8d5",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8ce",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8d0",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8ce",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a795457cee1161ccd8c6",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a795457cee1161ccd8c6",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Julien Bila",
                 "acronym": "JB",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 42,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 42,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a795457cee1161ccd8c7",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a795457cee1161ccd8c6",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a795457cee1161ccd8cc",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a795457cee1161ccd8c6",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a795457cee1161ccd8c8",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a795457cee1161ccd8c6",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a795457cee1161ccd8c9",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a795457cee1161ccd8c6",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a795457cee1161ccd8ca",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a795457cee1161ccd8c6",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a795457cee1161ccd8cb",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a795457cee1161ccd8c6",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a795457cee1161ccd8cd",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a795457cee1161ccd8c6",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a77f457cee1161ccd8b6",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a77f457cee1161ccd8b6",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "François Mateos",
                 "acronym": "FM",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 48,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 48,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a77f457cee1161ccd8b7",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a77f457cee1161ccd8b6",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a77f457cee1161ccd8b9",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a77f457cee1161ccd8b6",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a77f457cee1161ccd8ba",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a77f457cee1161ccd8b6",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a77f457cee1161ccd8bb",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a77f457cee1161ccd8b6",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a77f457cee1161ccd8b8",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a77f457cee1161ccd8b6",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a77f457cee1161ccd8bc",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a77f457cee1161ccd8b6",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a77f457cee1161ccd8bd",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a77f457cee1161ccd8b6",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a76d457cee1161ccd8a6",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a76d457cee1161ccd8a6",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Emmanuel Pouliquen",
                 "acronym": "EP",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 48,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 48,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a76d457cee1161ccd8aa",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a76d457cee1161ccd8a6",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a76d457cee1161ccd8a8",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a76d457cee1161ccd8a6",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a76d457cee1161ccd8a9",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a76d457cee1161ccd8a6",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a76d457cee1161ccd8ab",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a76d457cee1161ccd8a6",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a76d457cee1161ccd8a7",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a76d457cee1161ccd8a6",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a76d457cee1161ccd8ac",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a76d457cee1161ccd8a6",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a76d457cee1161ccd8ad",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a76d457cee1161ccd8a6",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a75c457cee1161ccd89e",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a75c457cee1161ccd89e",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Eloise Garnier",
                 "acronym": "EG",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 42,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 42,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a75c457cee1161ccd8a4",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a75c457cee1161ccd89e",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a75c457cee1161ccd8a0",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a75c457cee1161ccd89e",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a75c457cee1161ccd89f",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a75c457cee1161ccd89e",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a75c457cee1161ccd8a1",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a75c457cee1161ccd89e",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a75c457cee1161ccd8a2",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a75c457cee1161ccd89e",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a75c457cee1161ccd8a3",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a75c457cee1161ccd89e",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a75c457cee1161ccd8a5",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a75c457cee1161ccd89e",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a807457cee1161ccd90e",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a807457cee1161ccd90e",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Nicolas Patou",
                 "acronym": "NP",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": 1762041600,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 42,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": 1762041600,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 42,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a807457cee1161ccd90f",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a807457cee1161ccd90e",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a807457cee1161ccd910",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a807457cee1161ccd90e",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a807457cee1161ccd912",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a807457cee1161ccd90e",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a807457cee1161ccd911",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a807457cee1161ccd90e",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a807457cee1161ccd913",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a807457cee1161ccd90e",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a807457cee1161ccd914",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a807457cee1161ccd90e",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a807457cee1161ccd915",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a807457cee1161ccd90e",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a78b457cee1161ccd8be",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a78b457cee1161ccd8be",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Guillaume Montenot",
                 "acronym": "GM",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 34,
-                "weeklyHoursDesired": 34,
-                "dutiesPerMonth": 3,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 34,
+                "weekly_hours_desired": 34,
+                "duties_per_month": 3,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a78b457cee1161ccd8c2",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a78b457cee1161ccd8be",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a78b457cee1161ccd8c4",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a78b457cee1161ccd8be",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a78b457cee1161ccd8c0",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a78b457cee1161ccd8be",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a78b457cee1161ccd8c1",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a78b457cee1161ccd8be",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a78b457cee1161ccd8c3",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a78b457cee1161ccd8be",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a78b457cee1161ccd8bf",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a78b457cee1161ccd8be",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a78b457cee1161ccd8c5",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a78b457cee1161ccd8be",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a884457cee1161ccd966",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a884457cee1161ccd966",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Valentin Chirouze",
                 "acronym": "VC",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 52,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 52,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a884457cee1161ccd967",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a884457cee1161ccd966",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a884457cee1161ccd96a",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a884457cee1161ccd966",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a884457cee1161ccd969",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a884457cee1161ccd966",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a884457cee1161ccd96b",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a884457cee1161ccd966",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a884457cee1161ccd96c",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a884457cee1161ccd966",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a884457cee1161ccd96d",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a884457cee1161ccd966",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a884457cee1161ccd968",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a884457cee1161ccd966",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a864457cee1161ccd95e",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a864457cee1161ccd95e",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Thibault Poirier",
                 "acronym": "TP",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 48,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 48,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a864457cee1161ccd95f",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a864457cee1161ccd95e",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a864457cee1161ccd962",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a864457cee1161ccd95e",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a864457cee1161ccd960",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a864457cee1161ccd95e",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a864457cee1161ccd961",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a864457cee1161ccd95e",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a864457cee1161ccd963",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a864457cee1161ccd95e",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a864457cee1161ccd964",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a864457cee1161ccd95e",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a864457cee1161ccd965",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a864457cee1161ccd95e",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a864457cee1161ccd956",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a864457cee1161ccd956",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Thibaud Leduc",
                 "acronym": "TL",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 45,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 45,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a864457cee1161ccd957",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a864457cee1161ccd956",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a864457cee1161ccd958",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a864457cee1161ccd956",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a864457cee1161ccd959",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a864457cee1161ccd956",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a864457cee1161ccd95a",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a864457cee1161ccd956",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a864457cee1161ccd95b",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a864457cee1161ccd956",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a864457cee1161ccd95c",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a864457cee1161ccd956",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a864457cee1161ccd95d",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a864457cee1161ccd956",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a84b457cee1161ccd946",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a84b457cee1161ccd946",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Sophie Le Moigno-Le Port",
                 "acronym": "SLM",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 52,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 52,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a84b457cee1161ccd947",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a84b457cee1161ccd946",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a84b457cee1161ccd948",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a84b457cee1161ccd946",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a84b457cee1161ccd94c",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a84b457cee1161ccd946",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a84b457cee1161ccd949",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a84b457cee1161ccd946",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a84b457cee1161ccd94a",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a84b457cee1161ccd946",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a84b457cee1161ccd94b",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a84b457cee1161ccd946",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a84b457cee1161ccd94d",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a84b457cee1161ccd946",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a808457cee1161ccd936",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a808457cee1161ccd936",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Reem Perrotey",
                 "acronym": "RP",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 54,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 54,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a808457cee1161ccd937",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a808457cee1161ccd936",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a808457cee1161ccd939",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a808457cee1161ccd936",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a808457cee1161ccd93a",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a808457cee1161ccd936",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a808457cee1161ccd93b",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a808457cee1161ccd936",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a808457cee1161ccd938",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a808457cee1161ccd936",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a808457cee1161ccd93c",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a808457cee1161ccd936",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a808457cee1161ccd93d",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a808457cee1161ccd936",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a808457cee1161ccd926",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a808457cee1161ccd926",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Ruayda Heider-Minnigio",
                 "acronym": "RH",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 48,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 48,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a808457cee1161ccd927",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a808457cee1161ccd926",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a808457cee1161ccd92a",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a808457cee1161ccd926",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a808457cee1161ccd92c",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a808457cee1161ccd926",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a808457cee1161ccd929",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a808457cee1161ccd926",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a808457cee1161ccd928",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a808457cee1161ccd926",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a808457cee1161ccd92b",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a808457cee1161ccd926",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a808457cee1161ccd92d",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a808457cee1161ccd926",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a84b457cee1161ccd93e",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a84b457cee1161ccd93e",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Ségolène Dupont",
                 "acronym": "SD",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 34,
-                "weeklyHoursDesired": 34,
-                "dutiesPerMonth": 3,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 34,
+                "weekly_hours_desired": 34,
+                "duties_per_month": 3,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a84b457cee1161ccd93f",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a84b457cee1161ccd93e",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a84b457cee1161ccd942",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a84b457cee1161ccd93e",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a84b457cee1161ccd944",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a84b457cee1161ccd93e",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a84b457cee1161ccd941",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a84b457cee1161ccd93e",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a84b457cee1161ccd943",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a84b457cee1161ccd93e",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a84b457cee1161ccd945",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a84b457cee1161ccd93e",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a84b457cee1161ccd940",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a84b457cee1161ccd93e",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a807457cee1161ccd916",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a807457cee1161ccd916",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Oana Tiuca",
                 "acronym": "OT",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 54,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 54,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a807457cee1161ccd917",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a807457cee1161ccd916",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a807457cee1161ccd91a",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a807457cee1161ccd916",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a807457cee1161ccd91b",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a807457cee1161ccd916",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a807457cee1161ccd918",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a807457cee1161ccd916",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a807457cee1161ccd919",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a807457cee1161ccd916",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a807457cee1161ccd91c",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a807457cee1161ccd916",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a807457cee1161ccd91d",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a807457cee1161ccd916",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a884457cee1161ccd96e",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a884457cee1161ccd96e",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Vincent Lassalle",
                 "acronym": "VL",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 48,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 48,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a884457cee1161ccd96f",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a884457cee1161ccd96e",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a884457cee1161ccd974",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a884457cee1161ccd96e",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a884457cee1161ccd971",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a884457cee1161ccd96e",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a884457cee1161ccd973",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a884457cee1161ccd96e",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a884457cee1161ccd972",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a884457cee1161ccd96e",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a884457cee1161ccd975",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a884457cee1161ccd96e",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a884457cee1161ccd970",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a884457cee1161ccd96e",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a807457cee1161ccd91e",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a807457cee1161ccd91e",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Pascale Tinel-Colin",
                 "acronym": "PTC",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 9,
-                "weeklyHoursDesired": 9,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 9,
+                "weekly_hours_desired": 9,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a807457cee1161ccd91f",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a807457cee1161ccd91e",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a807457cee1161ccd920",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a807457cee1161ccd91e",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a807457cee1161ccd922",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a807457cee1161ccd91e",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a807457cee1161ccd923",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a807457cee1161ccd91e",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a807457cee1161ccd924",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a807457cee1161ccd91e",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a807457cee1161ccd921",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a807457cee1161ccd91e",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a807457cee1161ccd925",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a807457cee1161ccd91e",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a7ad457cee1161ccd8fe",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a7ad457cee1161ccd8fe",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Mathilde Rol",
                 "acronym": "MR",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 42,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 42,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a7ad457cee1161ccd8ff",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd8fe",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd904",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd8fe",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd900",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd8fe",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd901",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd8fe",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd902",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd8fe",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd903",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd8fe",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd905",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd8fe",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a7ad457cee1161ccd8ee",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a7ad457cee1161ccd8ee",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Marianne Offredo",
                 "acronym": "MO",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 48,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 48,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a7ad457cee1161ccd8ef",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd8ee",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd8f2",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd8ee",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd8f4",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd8ee",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd8f1",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd8ee",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd8f0",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd8ee",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd8f3",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd8ee",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ad457cee1161ccd8f5",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ad457cee1161ccd8ee",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a7ac457cee1161ccd8de",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a7ac457cee1161ccd8de",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Luc Hoarau",
                 "acronym": "LH",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 52,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 52,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a7ac457cee1161ccd8e4",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8de",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8df",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8de",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8e0",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8de",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8e1",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8de",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8e3",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8de",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8e2",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8de",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a7ac457cee1161ccd8e5",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a7ac457cee1161ccd8de",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "6894a777457cee1161ccd8ae",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "6894a777457cee1161ccd8ae",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Fanny De Sevin ",
                 "acronym": "FDS",
-                "acronymCustom": true,
-                "employmentStartDate": 1754524800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 48,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 48,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "6894a777457cee1161ccd8af",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a777457cee1161ccd8ae",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a777457cee1161ccd8b0",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a777457cee1161ccd8ae",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a777457cee1161ccd8b2",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a777457cee1161ccd8ae",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a777457cee1161ccd8b4",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a777457cee1161ccd8ae",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a777457cee1161ccd8b1",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a777457cee1161ccd8ae",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a777457cee1161ccd8b3",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "6894a777457cee1161ccd8ae",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "6894a777457cee1161ccd8b5",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "6894a777457cee1161ccd8ae",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             },
             {
-                "id": "68c99bad241cb23d8fcff61f",
-                "teamId": "6894a0a6457cee1161ccd840",
+                "_id": "68c99bad241cb23d8fcff61f",
+                "team": "6894a0a6457cee1161ccd840",
                 "name": "Maximilien Chesnais",
                 "acronym": "MC",
-                "acronymCustom": false,
-                "employmentStartDate": 1757980800,
-                "employmentEndDate": null,
-                "weeklyHours": 42,
-                "weeklyHoursDesired": 42,
-                "dutiesPerMonth": 4,
-                "annualLeave": 45,
+                "acronym_custom": false,
+                "employment_start_date": 1757980800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 42,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
                 "deleted": false,
-                "specialtyIds": [],
-                "userId": null,
-                "attributes": [
-                    {
-                        "id": "68c99bad241cb23d8fcff620",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "68c99bad241cb23d8fcff61f",
-                        "dimensionId": "6894a5a7457cee1161ccd856",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "68c99bad241cb23d8fcff621",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "68c99bad241cb23d8fcff61f",
-                        "dimensionId": "6894a5b3457cee1161ccd857",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "68c99bad241cb23d8fcff623",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "68c99bad241cb23d8fcff61f",
-                        "dimensionId": "6894a5ca457cee1161ccd859",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "68c99bad241cb23d8fcff625",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "68c99bad241cb23d8fcff61f",
-                        "dimensionId": "6894a5dd457cee1161ccd85b",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "68c99bad241cb23d8fcff627",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "68c99bad241cb23d8fcff61f",
-                        "dimensionId": "689af0de457cee1161ccda0e",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "68c99bad241cb23d8fcff622",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "68c99bad241cb23d8fcff61f",
-                        "dimensionId": "6894a5c0457cee1161ccd858",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "68c99bad241cb23d8fcff624",
-                        "value": true,
-                        "ownerType": 1,
-                        "ownerId": "68c99bad241cb23d8fcff61f",
-                        "dimensionId": "6894a5d5457cee1161ccd85a",
-                        "dimEntryIds": []
-                    },
-                    {
-                        "id": "68c99bad241cb23d8fcff626",
-                        "value": false,
-                        "ownerType": 1,
-                        "ownerId": "68c99bad241cb23d8fcff61f",
-                        "dimensionId": "6894a5e8457cee1161ccd85c",
-                        "dimEntryIds": []
-                    }
-                ]
+                "user_id": null
             }
         ]
     }

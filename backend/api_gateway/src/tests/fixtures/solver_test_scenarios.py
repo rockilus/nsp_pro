@@ -15,400 +15,16 @@ Scenarios are designed to test different solver capabilities:
 from datetime import date, timedelta
 from typing import Any, Dict, List
 from shared.schemas.core import Worker
+import json
+from pathlib import Path
+from typing import Optional
 
-
-benoit_workers = [
-    Worker(
-        id="",
-        team_id="team_01",
-        name=f"Benoit Worker {i:02d}",
-        acronym=f"BW{i:02d}",
-        acronym_custom=False,
-        employment_start_date=date(2025, 1, 1),
-        employment_end_date=None,
-        weekly_hours=40,
-        weekly_hours_desired=40,
-        duties_per_month=4,
-        annual_leave=25,
-        specialty_ids=[],
-        deleted=False,
-    )
-    for i in range(1, 36)
-]
+# repository to create workers in DB
+from shared.database.repositories.worker import WorkerRepository
 
 
 class SolverTestScenarios:
     """Collection of predefined solver test scenarios"""
-
-    @staticmethod
-    def benoit_scenario_0() -> Dict[str, Any]:
-        """
-        Benoit Scenario 0:
-        - 35 workers
-        """
-
-    @staticmethod
-    def basic_coverage() -> Dict[str, Any]:
-        """
-        Basic coverage scenario:
-        - 10 workers with standard hours
-        - 3 shifts (morning, afternoon, night)
-        - 1 month period (current month)
-        - Daily shift demands for each shift (2, 2, 1 staffing)
-        - No specialties or constraints
-
-        Expected behavior:
-        - Solver should find feasible solution in < 10 seconds
-        - All shift demands should be covered
-        - Workers should have balanced assignments
-        - No constraint breaches expected
-        """
-        today = date.today()
-        start_date = today.replace(day=1)
-        # Get last day of current month
-        if today.month == 12:
-            next_month = start_date.replace(
-                year=today.year + 1, month=1, day=1
-            )
-            end_date = next_month - timedelta(days=1)
-        else:
-            next_month = start_date.replace(month=today.month + 1, day=1)
-            end_date = next_month - timedelta(days=1)
-
-        return {
-            "scenario_name": "basic_coverage",
-            "description": "Basic daily coverage with 10 workers and 3 shifts",
-            "expected_solve_time_seconds": 10,
-            # 31 days * 3 shifts * ~1 worker avg
-            "expected_min_assignments": 90,
-            "expected_max_breaches": 0,
-            "workers": [
-                {
-                    "name": f"Worker {i:02d}",
-                    "acronym": f"W{i:02d}",
-                    "employment_start_date": start_date.isoformat(),
-                    "employment_end_date": None,
-                    "weekly_hours": 40,
-                    "weekly_hours_desired": 40,
-                    "duties_per_month": 4,
-                    "annual_leave": 25,
-                    "specialty_ids": [],
-                }
-                for i in range(1, 11)
-            ],
-            "shifts": [
-                {
-                    "name": "Morning Shift",
-                    "acronym": "MS",
-                    "start_time": "08:00:00",
-                    "end_time": "16:00:00",
-                    "color": "#1976d2",
-                    "shift_type": "NORMAL",
-                    "rest_type": "NONE",
-                    "leave_type": "NONE",
-                    "recuperation_time": 0,
-                    "is_rest": False,
-                    "staffing": [{"specialty_id": None, "staffing": 2}],
-                },
-                {
-                    "name": "Afternoon Shift",
-                    "acronym": "AS",
-                    "start_time": "16:00:00",
-                    "end_time": "00:00:00",
-                    "color": "#f57c00",
-                    "shift_type": "NORMAL",
-                    "rest_type": "NONE",
-                    "leave_type": "NONE",
-                    "recuperation_time": 0,
-                    "is_rest": False,
-                    "staffing": [{"specialty_id": None, "staffing": 2}],
-                },
-                {
-                    "name": "Night Shift",
-                    "acronym": "NS",
-                    "start_time": "00:00:00",
-                    "end_time": "08:00:00",
-                    "color": "#7b1fa2",
-                    "shift_type": "NORMAL",
-                    "rest_type": "NONE",
-                    "leave_type": "NONE",
-                    "recuperation_time": 0,
-                    "is_rest": False,
-                    "staffing": [{"specialty_id": None, "staffing": 1}],
-                },
-            ],
-            "shift_demands": {
-                "pattern": "daily",
-                "start_date": start_date.isoformat(),
-                "end_date": end_date.isoformat(),
-                "demands": [
-                    {"shift_index": 0, "count": 2},  # Morning: 2 workers
-                    {"shift_index": 1, "count": 2},  # Afternoon: 2 workers
-                    {"shift_index": 2, "count": 1},  # Night: 1 worker
-                ],
-            },
-            "constraints": [],
-            "schedule": {
-                "start_date": start_date.isoformat(),
-                "end_date": end_date.isoformat(),
-                "duration_days": (end_date - start_date).days + 1,
-            },
-        }
-
-    @staticmethod
-    def complex_constraints() -> Dict[str, Any]:
-        """
-        Complex scenario with multiple constraint types:
-        - 15 workers with varied contracts
-        - 5 shifts including duty shifts
-        - Various hard and soft constraints
-        - Different weekly hours and preferences
-        - 1 month period
-
-        Expected behavior:
-        - Solver should handle constraint conflicts
-        - Some soft constraints may be violated
-        - Hard constraints must be respected
-        - Solve time < 30 seconds
-        """
-        today = date.today()
-        start_date = today.replace(day=1)
-        if today.month == 12:
-            next_month = start_date.replace(
-                year=today.year + 1, month=1, day=1
-            )
-            end_date = next_month - timedelta(days=1)
-        else:
-            next_month = start_date.replace(month=today.month + 1, day=1)
-            end_date = next_month - timedelta(days=1)
-
-        return {
-            "scenario_name": "complex_constraints",
-            "description": (
-                "Complex scenario with 15 workers, 5 shifts, "
-                "and multiple constraints"
-            ),
-            "expected_solve_time_seconds": 30,
-            "expected_min_assignments": 120,
-            "expected_max_breaches": 10,
-            "workers": [
-                # Full-time workers (40h/week)
-                *[
-                    {
-                        "name": f"FT Worker {i:02d}",
-                        "acronym": f"FT{i:02d}",
-                        "employment_start_date": start_date.isoformat(),
-                        "employment_end_date": None,
-                        "weekly_hours": 40,
-                        "weekly_hours_desired": 40,
-                        "duties_per_month": 5,
-                        "annual_leave": 25,
-                        "specialty_ids": [],
-                    }
-                    for i in range(1, 11)
-                ],
-                # Part-time workers (20h/week)
-                *[
-                    {
-                        "name": f"PT Worker {i:02d}",
-                        "acronym": f"PT{i:02d}",
-                        "employment_start_date": start_date.isoformat(),
-                        "employment_end_date": None,
-                        "weekly_hours": 20,
-                        "weekly_hours_desired": 20,
-                        "duties_per_month": 2,
-                        "annual_leave": 25,
-                        "specialty_ids": [],
-                    }
-                    for i in range(11, 16)
-                ],
-            ],
-            "shifts": [
-                {
-                    "name": "Morning Shift",
-                    "acronym": "MS",
-                    "start_time": "08:00:00",
-                    "end_time": "16:00:00",
-                    "color": "#1976d2",
-                    "shift_type": "NORMAL",
-                    "rest_type": "NONE",
-                    "leave_type": "NONE",
-                    "recuperation_time": 0,
-                    "is_rest": False,
-                    "staffing": [{"specialty_id": None, "staffing": 3}],
-                },
-                {
-                    "name": "Afternoon Shift",
-                    "acronym": "AS",
-                    "start_time": "16:00:00",
-                    "end_time": "00:00:00",
-                    "color": "#f57c00",
-                    "shift_type": "NORMAL",
-                    "rest_type": "NONE",
-                    "leave_type": "NONE",
-                    "recuperation_time": 0,
-                    "is_rest": False,
-                    "staffing": [{"specialty_id": None, "staffing": 2}],
-                },
-                {
-                    "name": "Night Shift",
-                    "acronym": "NS",
-                    "start_time": "00:00:00",
-                    "end_time": "08:00:00",
-                    "color": "#7b1fa2",
-                    "shift_type": "NORMAL",
-                    "rest_type": "NONE",
-                    "leave_type": "NONE",
-                    "recuperation_time": 0,
-                    "is_rest": False,
-                    "staffing": [{"specialty_id": None, "staffing": 2}],
-                },
-                {
-                    "name": "Duty Shift",
-                    "acronym": "DT",
-                    "start_time": "08:00:00",
-                    "end_time": "08:00:00",
-                    "color": "#d32f2f",
-                    "shift_type": "DUTY",
-                    "rest_type": "NONE",
-                    "leave_type": "NONE",
-                    "recuperation_time": 24,
-                    "is_rest": False,
-                    "staffing": [{"specialty_id": None, "staffing": 1}],
-                },
-                {
-                    "name": "Rest Day",
-                    "acronym": "R",
-                    "start_time": "00:00:00",
-                    "end_time": "00:00:00",
-                    "color": "#4caf50",
-                    "shift_type": "REST",
-                    "rest_type": "REST",
-                    "leave_type": "NONE",
-                    "recuperation_time": 0,
-                    "is_rest": True,
-                    "staffing": [],
-                },
-            ],
-            "shift_demands": {
-                "pattern": "daily",
-                "start_date": start_date.isoformat(),
-                "end_date": end_date.isoformat(),
-                "demands": [
-                    {"shift_index": 0, "count": 3},  # Morning: 3 workers
-                    {"shift_index": 1, "count": 2},  # Afternoon: 2 workers
-                    {"shift_index": 2, "count": 2},  # Night: 2 workers
-                    {"shift_index": 3, "count": 1},  # Duty: 1 worker
-                ],
-            },
-            "constraints": [
-                # Example: Consecutive shifts constraint
-                # This would need to match your constraint schema
-                {
-                    "type": "MAX_CONSECUTIVE_SHIFTS",
-                    "parameters": {"max_consecutive": 5},
-                    "is_hard": True,
-                }
-            ],
-            "schedule": {
-                "start_date": start_date.isoformat(),
-                "end_date": end_date.isoformat(),
-                "duration_days": (end_date - start_date).days + 1,
-            },
-        }
-
-    @staticmethod
-    def weekend_coverage() -> Dict[str, Any]:
-        """
-        Weekend coverage scenario:
-        - 8 workers
-        - 2 shifts (day, night)
-        - Focus on weekend coverage requirements
-        - Different staffing for weekdays vs weekends
-
-        Expected behavior:
-        - Weekend shifts should be fairly distributed
-        - Minimum rest between weekend shifts
-        - Solve time < 15 seconds
-        """
-        today = date.today()
-        start_date = today.replace(day=1)
-        if today.month == 12:
-            next_month = start_date.replace(
-                year=today.year + 1, month=1, day=1
-            )
-            end_date = next_month - timedelta(days=1)
-        else:
-            next_month = start_date.replace(month=today.month + 1, day=1)
-            end_date = next_month - timedelta(days=1)
-
-        return {
-            "scenario_name": "weekend_coverage",
-            "description": (
-                "Weekend coverage with fair distribution across 8 workers"
-            ),
-            "expected_solve_time_seconds": 15,
-            # ~6 weekends * 2 shifts * 4 workers
-            "expected_min_assignments": 48,
-            "expected_max_breaches": 2,
-            "workers": [
-                {
-                    "name": f"Worker {i:02d}",
-                    "acronym": f"W{i:02d}",
-                    "employment_start_date": start_date.isoformat(),
-                    "employment_end_date": None,
-                    "weekly_hours": 40,
-                    "weekly_hours_desired": 40,
-                    "duties_per_month": 8,
-                    "annual_leave": 25,
-                    "specialty_ids": [],
-                }
-                for i in range(1, 9)
-            ],
-            "shifts": [
-                {
-                    "name": "Day Shift",
-                    "acronym": "DS",
-                    "start_time": "08:00:00",
-                    "end_time": "20:00:00",
-                    "color": "#1976d2",
-                    "shift_type": "NORMAL",
-                    "rest_type": "NONE",
-                    "leave_type": "NONE",
-                    "recuperation_time": 0,
-                    "is_rest": False,
-                    "staffing": [{"specialty_id": None, "staffing": 2}],
-                },
-                {
-                    "name": "Night Shift",
-                    "acronym": "NS",
-                    "start_time": "20:00:00",
-                    "end_time": "08:00:00",
-                    "color": "#7b1fa2",
-                    "shift_type": "NORMAL",
-                    "rest_type": "NONE",
-                    "leave_type": "NONE",
-                    "recuperation_time": 0,
-                    "is_rest": False,
-                    "staffing": [{"specialty_id": None, "staffing": 2}],
-                },
-            ],
-            "shift_demands": {
-                "pattern": "weekend_only",  # Special pattern for weekends
-                "start_date": start_date.isoformat(),
-                "end_date": end_date.isoformat(),
-                "demands": [
-                    {"shift_index": 0, "count": 2},  # Day: 2 workers
-                    {"shift_index": 1, "count": 2},  # Night: 2 workers
-                ],
-            },
-            "constraints": [],
-            "schedule": {
-                "start_date": start_date.isoformat(),
-                "end_date": end_date.isoformat(),
-                "duration_days": (end_date - start_date).days + 1,
-            },
-        }
 
     @staticmethod
     def get_all_scenarios() -> List[str]:
@@ -447,3 +63,173 @@ class SolverTestScenarios:
             "expected_min_assignments": scenario["expected_min_assignments"],
             "expected_max_breaches": scenario["expected_max_breaches"],
         }
+
+    @staticmethod
+    def load_workers_from_json(scenario_name: str) -> Dict[str, List[Worker]]:
+        """(deprecated) kept for backward compatibility.
+
+        Use `load_scenario_data_from_json` and
+        `create_workers_from_data` instead.
+        """
+
+        # For backward compatibility, call the new split methods
+        scenario_data = SolverTestScenarios.load_scenario_data_from_json(
+            scenario_name
+        )
+        return SolverTestScenarios.create_workers_from_data(scenario_data)
+
+    @staticmethod
+    def load_scenario_data_from_json(scenario_name: str) -> Dict[str, Any]:
+        """Load raw scenario data from the local JSON fixture.
+
+        Returns the raw dict stored under the given scenario name.
+        """
+        file_path = Path(__file__).parent / "solver_data.json"
+
+        if not file_path.exists():
+            raise FileNotFoundError(f"Solver data file not found: {file_path}")
+
+        with file_path.open("r", encoding="utf-8") as fh:
+            data = json.load(fh)
+
+        if scenario_name not in data:
+            raise ValueError(
+                f"Scenario '{scenario_name}' not found in solver_data.json"
+            )
+
+        return data[scenario_name]
+
+    @staticmethod
+    def create_workers_from_data(
+        scenario_data: Dict[str, Any],
+    ) -> Dict[str, List[Worker]]:
+        """Create core Worker objects from raw scenario data.
+
+        Expects scenario_data to be the dict loaded from the JSON file
+        (the value at data[scenario_name]). Returns {"workers": [Worker,...]}.
+        """
+        raw = scenario_data.get("workers", [])
+        workers: List[Worker] = []
+
+        for w in raw:
+            # Normalize keys expected by Worker.from_dict
+            mapped = {
+                "id": w.get("_id") or w.get("id"),
+                "team_id": w.get("team") or w.get("team_id"),
+                "name": w.get("name"),
+                "acronym": w.get("acronym"),
+                "acronym_custom": w.get("acronym_custom", False),
+                "employment_start_date": w.get("employment_start_date"),
+                "employment_end_date": w.get("employment_end_date"),
+                "weekly_hours": w.get("weekly_hours"),
+                "weekly_hours_desired": w.get("weekly_hours_desired"),
+                "duties_per_month": w.get("duties_per_month"),
+                "annual_leave": w.get("annual_leave"),
+                "specialty_ids": (
+                    w.get("specialties") or w.get("specialty_ids") or []
+                ),
+                "deleted": w.get("deleted", False),
+                "user_id": w.get("user_id", None),
+            }
+
+            worker = Worker.from_dict(mapped)
+            workers.append(worker)
+
+        return {"workers": workers}
+
+    @staticmethod
+    def create_workers_in_db(
+        db_interface,
+        workers_input: Any,
+        team_id: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        """Create workers in the database.
+
+        workers_input may be a list of Worker objects or a dict with key
+        'workers'. Optionally override the team_id for all workers before
+        creation. Returns a list of worker dicts produced by Worker.to_dict().
+        """
+        # Normalize input
+        if isinstance(workers_input, dict):
+            workers = workers_input.get("workers", [])
+        else:
+            workers = workers_input
+
+        # Ensure we have core Worker objects
+        normalized_workers: List[Worker] = []
+        for w in workers:
+            if isinstance(w, Worker):
+                worker_obj = w
+            elif isinstance(w, dict):
+                # If dict, try to map to Worker via from_dict
+                worker_obj = Worker.from_dict(w)
+            else:
+                raise TypeError("Worker entries must be Worker or dict")
+
+            # Override team_id if provided
+            if team_id is not None:
+                worker_obj.team_id = team_id
+
+            # Let DB assign id
+            # Clear id so repository treats this as a new document
+            if hasattr(worker_obj, "id"):
+                setattr(worker_obj, "id", None)
+
+            normalized_workers.append(worker_obj)
+
+        repo = WorkerRepository(db_interface)
+        created_workers = repo.create_workers(normalized_workers)
+
+        # Convert to simple dicts for responses
+        return [w.to_dict() for w in created_workers]
+
+    @staticmethod
+    def create_scenario(scenario_name: str, db_interface, team_id: str) -> Any:
+        """Create a full scenario in the database for the given name.
+
+        Loads workers from the JSON fixture, inserts them into the DB (with
+        team_id override), and returns a dict shaped like
+        ScenarioLoadResponse.
+        """
+        # Load scenario definition (shifts, demands, etc.)
+        scenario = SolverTestScenarios.get_scenario(scenario_name)
+
+        # Load raw scenario data from JSON fixture
+        scenario_data = SolverTestScenarios.load_scenario_data_from_json(
+            scenario_name
+        )
+
+        # Convert raw data into core worker objects
+        loaded = SolverTestScenarios.create_workers_from_data(scenario_data)
+
+        # Create workers in DB (override team)
+        created_workers = SolverTestScenarios.create_workers_in_db(
+            db_interface, loaded, team_id=team_id
+        )
+
+        # Import the response model locally to avoid circular imports at
+        # module import time when used within the application.
+        try:
+            from src.routes.test_utils_routes import ScenarioLoadResponse
+
+            return ScenarioLoadResponse(
+                success=True,
+                scenario_name=scenario_name,
+                workers=created_workers,
+                shifts=scenario.get("shifts", []),
+                shift_demands=scenario.get("shift_demands", {}),
+                constraints=scenario.get("constraints", []),
+                schedule=scenario.get("schedule", {}),
+            )
+        except ImportError:
+            # If the import fails (for example in some test runners), fall
+            # back to returning a plain dict with the same shape.
+            return {
+                "success": True,
+                "scenario_name": scenario_name,
+                "workers": created_workers,
+                "shifts": scenario.get("shifts", []),
+                "shift_demands": scenario.get("shift_demands", {}),
+                "constraints": scenario.get("constraints", []),
+                "schedule": scenario.get("schedule", {}),
+            }
