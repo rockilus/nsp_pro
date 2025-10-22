@@ -17,6 +17,7 @@ from shared.database.schemas.worker import WorkerSchema
 from shared.schemas.core import (
     Attribute,
     AttributeOwnerType,
+    ShiftWorkerOption,
     RequestType,
     BlockTypeOptions,
     ConstraintBuild,
@@ -206,6 +207,29 @@ class SolverTestScenariosService(BaseService):
             raise ValueError(
                 "Failed to convert scenario data to core objects"
             ) from exc
+
+    def _remap_shift_worker_options(
+        self, swo: ShiftWorkerOption, maps: Dict[str, Any]
+    ) -> Any:
+        try:
+            if swo.id_type == SWOIdTypes.WORKER:
+                if maps.get("workers") and swo.id in maps["workers"]:
+                    swo.id = maps["workers"][swo.id]
+            elif swo.id_type == SWOIdTypes.SHIFT:
+                if maps.get("shifts") and swo.id in maps["shifts"]:
+                    swo.id = maps["shifts"][swo.id]
+            elif swo.id_type == SWOIdTypes.DIMENSION:
+                if maps.get("dimensions") and swo.id in maps["dimensions"]:
+                    swo.id = maps["dimensions"][swo.id]
+            elif swo.id_type == SWOIdTypes.SPECIALTY:
+                if maps.get("specialties") and swo.id in maps["specialties"]:
+                    swo.id = maps["specialties"][swo.id]
+        except Exception:
+            # be defensive: if any unexpected structure is encountered,
+            # skip remapping for this option
+            return swo
+
+        return swo
 
     def save_scenario_to_db(
         self,
@@ -406,45 +430,18 @@ class SolverTestScenariosService(BaseService):
                 for b in c.blocks:
                     if b.type == BlockTypeOptions.SHIFT_WORKER_OPTION:
                         if not isinstance(b.value, list) and not all(
-                            isinstance(swo, str) for swo in b.value
+                            isinstance(swo, ShiftWorkerOption)
+                            for swo in b.value
                         ):
                             raise ValueError(
-                                "Expected block value to be list of shift_worker_option"
+                                "Expected block value to be list of "
+                                "shift_worker_option"
                             )
                         for swo in b.value:
-                            # Remap ids for known id_types
-                            # Supported: WORKER, SHIFT, DIMENSION, SPECIALTY
-                            try:
-                                if swo.id_type == SWOIdTypes.WORKER:
-                                    if (
-                                        maps.get("workers")
-                                        and swo.id in maps["workers"]
-                                    ):
-                                        swo.id = maps["workers"][swo.id]
-                                elif swo.id_type == SWOIdTypes.SHIFT:
-                                    if (
-                                        maps.get("shifts")
-                                        and swo.id in maps["shifts"]
-                                    ):
-                                        swo.id = maps["shifts"][swo.id]
-                                elif swo.id_type == SWOIdTypes.DIMENSION:
-                                    if (
-                                        maps.get("dimensions")
-                                        and swo.id in maps["dimensions"]
-                                    ):
-                                        swo.id = maps["dimensions"][swo.id]
-                                elif swo.id_type == SWOIdTypes.SPECIALTY:
-                                    if (
-                                        maps.get("specialties")
-                                        and swo.id in maps["specialties"]
-                                    ):
-                                        swo.id = maps["specialties"][swo.id]
-                            except Exception:
-                                # be defensive: if any unexpected structure is encountered,
-                                # skip remapping for this option
-                                continue
+                            swo = self._remap_shift_worker_options(swo, maps)
 
-                constraint_saved = self.collection.constraint_build_db.create_constraint_build(
+                constraint_db = self.collection.constraint_build_db
+                constraint_saved = constraint_db.create_constraint_build(
                     constraint_build=c
                 )
 
@@ -470,12 +467,17 @@ class SolverTestScenariosService(BaseService):
                     if maps.get("shifts"):
                         if r.shift_id in maps["shifts"]:
                             r.shift_id = maps["shifts"][r.shift_id]
-                    elif r.request_type == RequestType.WORK_DEMAND:
-                        if maps.get("shifts"):
-                            for swo in r.shift_options:
-                                if swo.id_type == SWOIdTypes.SHIFT:
-                                    if swo.id in maps["shifts"]:
-                                        swo.id = maps["shifts"][swo.id]
+                elif r.request_type == RequestType.WORK_DEMAND:
+                    if not isinstance(r.shift_options, list) and not all(
+                        isinstance(swo, ShiftWorkerOption)
+                        for swo in r.shift_options
+                    ):
+                        raise ValueError(
+                            "Expected request shift_options to be list of "
+                            "shift_worker_option"
+                        )
+                    for swo in r.shift_options:
+                        swo = self._remap_shift_worker_options(swo, maps)
 
                 request_saved = self.collection.request_db.create_request(
                     request=r
