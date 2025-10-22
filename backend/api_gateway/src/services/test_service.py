@@ -209,8 +209,12 @@ class SolverTestScenariosService(BaseService):
             ) from exc
 
     def _remap_shift_worker_options(
-        self, swo: ShiftWorkerOption, maps: Dict[str, Any]
+        self, swo: ShiftWorkerOption | str, maps: Dict[str, Any]
     ) -> Any:
+        # If caller passed a bare string id (legacy), just return it
+        if isinstance(swo, str):
+            return swo
+
         try:
             if swo.id_type == SWOIdTypes.WORKER:
                 if maps.get("workers") and swo.id in maps["workers"]:
@@ -429,7 +433,8 @@ class SolverTestScenariosService(BaseService):
 
                 for b in c.blocks:
                     if b.type == BlockTypeOptions.SHIFT_WORKER_OPTION:
-                        if not isinstance(b.value, list) and not all(
+                        # Validate that value is a list of ShiftWorkerOption
+                        if not isinstance(b.value, list) or not all(
                             isinstance(swo, ShiftWorkerOption)
                             for swo in b.value
                         ):
@@ -437,8 +442,11 @@ class SolverTestScenariosService(BaseService):
                                 "Expected block value to be list of "
                                 "shift_worker_option"
                             )
-                        for swo in b.value:
-                            swo = self._remap_shift_worker_options(swo, maps)
+                        # Replace list with remapped copies
+                        b.value = [
+                            self._remap_shift_worker_options(swo, maps)
+                            for swo in b.value
+                        ]
 
                 constraint_db = self.collection.constraint_build_db
                 constraint_saved = constraint_db.create_constraint_build(
@@ -468,7 +476,7 @@ class SolverTestScenariosService(BaseService):
                         if r.shift_id in maps["shifts"]:
                             r.shift_id = maps["shifts"][r.shift_id]
                 elif r.request_type == RequestType.WORK_DEMAND:
-                    if not isinstance(r.shift_options, list) and not all(
+                    if not isinstance(r.shift_options, list) or not all(
                         isinstance(swo, ShiftWorkerOption)
                         for swo in r.shift_options
                     ):
@@ -476,8 +484,10 @@ class SolverTestScenariosService(BaseService):
                             "Expected request shift_options to be list of "
                             "shift_worker_option"
                         )
-                    for swo in r.shift_options:
-                        swo = self._remap_shift_worker_options(swo, maps)
+                    r.shift_options = [
+                        self._remap_shift_worker_options(swo, maps)
+                        for swo in r.shift_options
+                    ]
 
                 request_saved = self.collection.request_db.create_request(
                     request=r
