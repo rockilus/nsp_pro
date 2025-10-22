@@ -113,8 +113,13 @@ class SolverTestScenariosService(BaseService):
         scenario = self.load_scenario_data_from_json(scenario_name)
         return {
             "name": scenario_name,
-            "worker_count": len(scenario["workers"]),
-            "shift_count": len(scenario["shifts"]),
+            "specialty_count": len(scenario.get("specialties", [])),
+            "worker_count": len(scenario.get("workers", [])),
+            "shift_count": len(scenario.get("shifts", [])),
+            "dimension_count": len(scenario.get("dimensions", [])),
+            "dim_entry_count": len(scenario.get("dim_entries", [])),
+            "attribute_count": len(scenario.get("attributes", [])),
+            "schedule_count": len(scenario.get("schedules", [])),
         }
 
     def load_scenario_data_from_json(
@@ -213,6 +218,12 @@ class SolverTestScenariosService(BaseService):
                 if not maps.get("workers", None):
                     maps["workers"] = {}
                 w.team_id = team_id
+                # Remap specialty ids to the newly created specialty ids
+                if maps.get("specialties"):
+                    w.specialty_ids = [
+                        maps["specialties"].get(old_id, old_id)
+                        for old_id in w.specialty_ids
+                    ]
                 w_id = w.id
                 w.id = ""  # Clear ID to let DB assign a new one
                 worker_saved = self.collection.worker_db.create_worker(
@@ -231,6 +242,7 @@ class SolverTestScenariosService(BaseService):
             for s in shifts:
                 if not maps.get("shifts", None):
                     maps["shifts"] = {}
+                s.team_id = team_id
                 s_id = s.id
                 s.id = ""  # Clear ID to let DB assign a new one
                 shift_saved = self.collection.shift_db.create_shift(shift=s)
@@ -249,6 +261,7 @@ class SolverTestScenariosService(BaseService):
             for d in dimensions:
                 if not maps.get("dimensions", None):
                     maps["dimensions"] = {}
+                d.team_id = team_id
                 d_id = d.id
                 d.id = ""  # Clear ID to let DB assign a new one
                 dimension_saved = (
@@ -313,6 +326,9 @@ class SolverTestScenariosService(BaseService):
                     "Expected all schedules to be Schedule instances"
                 )
             for s in schedules:
+                s.team_id = team_id
+                s.id = ""  # Clear ID to let DB assign a new one
+
                 if not out.get("schedules", None):
                     out["schedules"] = []
                 out["schedules"].append(
