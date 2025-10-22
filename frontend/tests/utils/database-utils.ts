@@ -32,12 +32,13 @@ import {
   DimensionEntryType,
 } from "../../src/types/dimension";
 import { DimEntryT } from "../../src/types/dim-entry";
-import { AttributeOwnerType } from "../../src/types/attribute";
+import { AttributeT, AttributeOwnerType } from "../../src/types/attribute";
 import {
   ShiftDemandTemplateDTO,
   ShiftDemandTemplateCreateDTO,
   ShiftDemandTemplateUpdateDTO,
 } from "../../src/types/shift-demand-template";
+import { ShiftDemandDTO } from "../../src/types/shiftDemand";
 import { RequestT } from "../../src/types/request";
 import { ScheduleT, toScheduleT } from "../../src/types/schedule";
 import { testConfig } from "./test-config";
@@ -78,8 +79,13 @@ export interface UserCreationResult {
 
 export interface SolverScenarioResult {
   scenario_name: string;
+  specialties: SpecialtyT[];
   workers: WorkerT[];
   shifts: ShiftT[];
+  dimensions: DimensionT[];
+  dim_entries: DimEntryT[];
+  attributes: AttributeT[];
+  shift_demands: ShiftDemandDTO[];
   schedules: ScheduleT[];
 }
 

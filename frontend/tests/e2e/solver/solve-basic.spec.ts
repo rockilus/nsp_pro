@@ -74,8 +74,35 @@ test.describe("Solver - Basic Coverage", () => {
 
     console.log(`✅ All ${scenario.workers.length} workers visible in table`);
 
-    // Take a screenshot of the loaded scenario
-    await solverTestBase.takeScreenshot(page, "basic_coverage", "loaded");
+    // Set schedule view settings to group by shift
+    await solverTestBase.setScheduleViewSettings(
+      page,
+      solverTestBase.getTestTeam()!.teamId,
+      {
+        groupBy: "shift",
+      }
+    );
+
+    // Refresh the page to apply settings
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+
+    // Check that all shifts appear in the table row headers
+    for (const shift of scenario.shifts) {
+      const shiftHeaderSelector = `[data-testid="shift-row-header-${shift.id}"]`;
+      await page.waitForSelector(shiftHeaderSelector, { timeout: 5000 });
+
+      // Verify the shift name is displayed correctly
+      const shiftNameSelector = `[data-testid="shift-name-${shift.id}"]`;
+      const shiftNameElement = await page.locator(shiftNameSelector);
+      await expect(shiftNameElement).toBeVisible();
+
+      const shiftNameText = await shiftNameElement.textContent();
+      expect(shiftNameText).toContain(shift.name);
+      expect(shiftNameText).toContain(shift.acronym);
+    }
+
+    console.log(`✅ All ${scenario.shifts.length} shifts visible in table`);
   });
 
   test("should solve basic_coverage scenario successfully", async ({

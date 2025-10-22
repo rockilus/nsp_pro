@@ -21,19 +21,24 @@
         ],
         "shifts": [
             {
-                "_id": "6894a0a7457cee1161ccd842",
+                "_id": "6894b852457cee1161ccd977",
                 "team": "6894a0a6457cee1161ccd840",
-                "name": "Off",
-                "acronym": "O",
-                "acronym_custom": false,
-                "start_time": 1754524800,
-                "end_time": 1754611200,
-                "staffing": [],
-                "color": "grey",
-                "shift_type": 2,
-                "rest_type": 1,
+                "name": "Garde Mater",
+                "acronym": "G-Mat",
+                "acronym_custom": true,
+                "start_time": 1754555400,
+                "end_time": 1754641800,
+                "staffing": [
+                    {
+                        "specialty": null,
+                        "staffing": 1
+                    }
+                ],
+                "color": "pink",
+                "shift_type": 1,
+                "rest_type": 0,
                 "leave_type": 0,
-                "recuperation_time": 0,
+                "recuperation_time": 23,
                 "recuperation_duty": null,
                 "deleted": false
             }
@@ -41,6 +46,20 @@
         "dimensions": [],
         "dim_entries": [],
         "attributes": [],
+        "shift_demands": [
+            {
+                "_id": "68d3f239c0c83df39b39bbaf",
+                "team": "6894a0a6457cee1161ccd840",
+                "shift": "6894b852457cee1161ccd977",
+                "date": 1767571200,
+                "count": 1,
+                "notes": null,
+                "source": "manual",
+                "source_id": null,
+                "created_at": 1758720569.714235,
+                "updated_at": 1758720569.714235
+            }
+        ],
         "schedules": [
             {
                 "_id": "68c9a04a241cb23d8fcff62f",
