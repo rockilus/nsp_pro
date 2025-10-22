@@ -5,27 +5,30 @@ from typing import Any, Dict, List
 from pydantic import BaseModel
 from shared.database.database_collections import DatabaseCollections
 from shared.database.schemas.attribute import AttributeSchema
+from shared.database.schemas.constraint_build import ConstraintBuildSchema
 from shared.database.schemas.dim_entry import DimEntrySchema
 from shared.database.schemas.dimension import DimensionSchema
+from shared.database.schemas.request import RequestSchema
 from shared.database.schemas.schedule import ScheduleSchema
 from shared.database.schemas.shift import ShiftSchema
 from shared.database.schemas.shift_demand_new import ShiftDemandNewSchema
 from shared.database.schemas.specialty import SpecialtySchema
 from shared.database.schemas.worker import WorkerSchema
-from shared.database.schemas.constraint_build import ConstraintBuildSchema
 from shared.schemas.core import (
     Attribute,
-    SWOIdTypes,
     AttributeOwnerType,
-    Dimension,
+    RequestType,
     BlockTypeOptions,
-    DimEntry,
-    Schedule,
-    ShiftDemandNew,
-    Shift,
-    Specialty,
-    Worker,
     ConstraintBuild,
+    Dimension,
+    DimEntry,
+    Request,
+    Schedule,
+    Shift,
+    ShiftDemandNew,
+    Specialty,
+    SWOIdTypes,
+    Worker,
 )
 
 from src.services.base_service import BaseService
@@ -43,6 +46,7 @@ class ScenarioLoadResponse(BaseModel):
     attributes: List[Attribute]
     shift_demands: List[ShiftDemandNew]
     constraints: List[ConstraintBuild]
+    requests: List[Request]
     schedules: List[Schedule]
 
 
@@ -114,6 +118,8 @@ class SolverTestScenariosService(BaseService):
             dim_entries=saved.get("dim_entries", []),
             attributes=saved.get("attributes", []),
             shift_demands=saved.get("shift_demands", []),
+            constraints=saved.get("constraints", []),
+            requests=saved.get("requests", []),
             schedules=saved.get("schedules", []),
         )
 
@@ -186,6 +192,10 @@ class SolverTestScenariosService(BaseService):
                 "constraints": [
                     ConstraintBuildSchema.from_mongo(c).to_core()
                     for c in scenario_data.get("constraints", [])
+                ],
+                "requests": [
+                    RequestSchema.from_mongo(r).to_core()
+                    for r in scenario_data.get("requests", [])
                 ],
                 "schedules": [
                     ScheduleSchema.from_mongo(s).to_core()
@@ -445,6 +455,35 @@ class SolverTestScenariosService(BaseService):
                 if not out.get("constraints", None):
                     out["constraints"] = []
                 out["constraints"].append(constraint_saved)
+
+            # Requests
+            requests: List[Request] = scenario_data.get("requests", [])
+            if not all(isinstance(r, Request) for r in requests):
+                raise ValueError(
+                    "Expected all requests to be Request instances"
+                )
+            for r in requests:
+                r.team_id = team_id
+                r.id = ""  # Clear ID to let DB assign a new one
+
+                if r.request_type == RequestType.LEAVE:
+                    if maps.get("shifts"):
+                        if r.shift_id in maps["shifts"]:
+                            r.shift_id = maps["shifts"][r.shift_id]
+                    elif r.request_type == RequestType.WORK_DEMAND:
+                        if maps.get("shifts"):
+                            for swo in r.shift_options:
+                                if swo.id_type == SWOIdTypes.SHIFT:
+                                    if swo.id in maps["shifts"]:
+                                        swo.id = maps["shifts"][swo.id]
+
+                request_saved = self.collection.request_db.create_request(
+                    request=r
+                )
+
+                if not out.get("requests", None):
+                    out["requests"] = []
+                out["requests"].append(request_saved)
 
             # Schedules
             schedules: List[Schedule] = scenario_data.get("schedules", [])
