@@ -262,6 +262,7 @@ async def load_test_scenario(
             "scenario_name": scenario.scenario_name,
             "workers": [w.to_dto(attributes=[]) for w in scenario.workers],
             "shifts": [s.to_dto(attributes=[]) for s in scenario.shifts],
+            "schedules": [s.to_dto() for s in scenario.schedules],
         }
 
     except HTTPException:

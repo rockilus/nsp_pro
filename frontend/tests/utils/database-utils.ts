@@ -39,6 +39,7 @@ import {
   ShiftDemandTemplateUpdateDTO,
 } from "../../src/types/shift-demand-template";
 import { RequestT } from "../../src/types/request";
+import { ScheduleT, toScheduleT } from "../../src/types/schedule";
 import { testConfig } from "./test-config";
 import dayjs from "dayjs";
 
@@ -79,6 +80,7 @@ export interface SolverScenarioResult {
   scenario_name: string;
   workers: WorkerT[];
   shifts: ShiftT[];
+  schedules: ScheduleT[];
 }
 
 export class DatabaseTestUtils {
@@ -1709,6 +1711,7 @@ export class DatabaseTestUtils {
         scenario_name: string;
         workers: any[];
         shifts: any[];
+        schedules: any[];
       }>("/test-utils/scenarios/load", {
         scenario_name: scenarioName,
         team_id: teamId,
@@ -1719,6 +1722,7 @@ export class DatabaseTestUtils {
         scenario_name: scenarioName,
         workers: result.workers.map(toWorkerT),
         shifts: result.shifts.map(toShiftT),
+        schedules: result.schedules.map(toScheduleT),
       };
     } catch (error) {
       console.error(`Failed to load scenario '${scenarioName}':`, error);
