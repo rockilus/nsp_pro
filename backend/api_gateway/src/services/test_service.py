@@ -471,6 +471,9 @@ class SolverTestScenariosService(BaseService):
                 r.team_id = team_id
                 r.id = ""  # Clear ID to let DB assign a new one
 
+                if maps.get("workers"):
+                    if r.worker_id in maps["workers"]:
+                        r.worker_id = maps["workers"][r.worker_id]
                 if r.request_type == RequestType.LEAVE:
                     if maps.get("shifts"):
                         if r.shift_id in maps["shifts"]:
