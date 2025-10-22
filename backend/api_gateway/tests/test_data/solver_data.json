@@ -60,6 +60,7 @@
                 "updated_at": 1758720569.714235
             }
         ],
+        "constraints": [],
         "schedules": [
             {
                 "_id": "68c9a04a241cb23d8fcff62f",
@@ -5835,39 +5836,6 @@
                 "owner": "6894bd14457cee1161ccda01",
                 "dimension": "68c9a181241cb23d8fcff630",
                 "dim_entries": []
-            }
-        ],
-        "schedules": [
-            {
-                "_id": "68c9a04a241cb23d8fcff62f",
-                "team": "6894a0a6457cee1161ccd840",
-                "start_date": 1762128000,
-                "end_date": 1767484800,
-                "status": 0,
-                "missing_coverage_dates": [],
-                "constraint_builds": [
-                    "68c99d20241cb23d8fcff62b",
-                    "68c99b7b241cb23d8fcff61e",
-                    "68c99c39241cb23d8fcff628",
-                    "68c99c8e241cb23d8fcff629",
-                    "68c99cd6241cb23d8fcff62a",
-                    "68c9a1ef241cb23d8fcff652",
-                    "68c9a1fd241cb23d8fcff653",
-                    "68c9a20a241cb23d8fcff654",
-                    "68c9a216241cb23d8fcff655",
-                    "68c9a23b241cb23d8fcff656",
-                    "68c9a24d241cb23d8fcff657",
-                    "68c9a290241cb23d8fcff658",
-                    "68c9a2a8241cb23d8fcff659",
-                    "68c9a2bf241cb23d8fcff65a",
-                    "68c9a2e9241cb23d8fcff65b",
-                    "68c9a305241cb23d8fcff65c",
-                    "68c9a31e241cb23d8fcff65d"
-                ],
-                "quick_staffings": [],
-                "created_at": 1758044234,
-                "updated_at": 1760459232.620205,
-                "created_by": "c109f0fe-e0b1-704d-2c10-0f676a7a70ad"
             }
         ],
         "shift_demands": [
@@ -20834,6 +20802,1803 @@
                 "source_id": null,
                 "created_at": 1760458995.519224,
                 "updated_at": 1760458995.519224
+            }
+        ],
+        "constraints": [
+            {
+                "_id": "68c99d20241cb23d8fcff62b",
+                "team": "6894a0a6457cee1161ccd840",
+                "constraint_type": 2,
+                "template_id": "3",
+                "language": "fr",
+                "blocks": [
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "Si"
+                    },
+                    {
+                        "name": 6,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Garde Chirurgie",
+                                "id": "6894b84a457cee1161ccd976",
+                                "id_type": 2,
+                                "is_bool_dim": false,
+                                "category_name": "Shifts"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "alors"
+                    },
+                    {
+                        "name": 7,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Off",
+                                "id": "6894a0a7457cee1161ccd842",
+                                "id_type": 2,
+                                "is_bool_dim": false,
+                                "category_name": "Shifts"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 1,
+                        "type": 1,
+                        "value": 2
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "jour"
+                    },
+                    {
+                        "name": 2,
+                        "type": 0,
+                        "value": "after"
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "pour"
+                    },
+                    {
+                        "name": 4,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Christophe Soltner",
+                                "id": "6894a74b457cee1161ccd896",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Fanny De Sevin ",
+                                "id": "6894a777457cee1161ccd8ae",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Guillaume Montenot",
+                                "id": "6894a78b457cee1161ccd8be",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Julien Bila",
+                                "id": "6894a795457cee1161ccd8c6",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Johann Delaumenie",
+                                "id": "6894a7ac457cee1161ccd8ce",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Johanna Temime",
+                                "id": "6894a7ac457cee1161ccd8d6",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Marianne Offredo",
+                                "id": "6894a7ad457cee1161ccd8ee",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Vincent Lassalle",
+                                "id": "6894a884457cee1161ccd96e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Nicolas Despierre",
+                                "id": "6894a7ad457cee1161ccd906",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            }
+                        ]
+                    }
+                ],
+                "hard": true,
+                "priority": "medium"
+            },
+            {
+                "_id": "68c9a1ef241cb23d8fcff652",
+                "team": "6894a0a6457cee1161ccd840",
+                "constraint_type": 5,
+                "template_id": "6",
+                "language": "fr",
+                "blocks": [
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "Les"
+                    },
+                    {
+                        "name": 3,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": true,
+                                "id": "",
+                                "id_type": 5,
+                                "is_bool_dim": true,
+                                "category_name": "Duties"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "le"
+                    },
+                    {
+                        "name": 8,
+                        "type": 0,
+                        "value": "sunday"
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "doivent être réparties de manière égale dans le temps pour"
+                    },
+                    {
+                        "name": 4,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "all workers",
+                                "id": "",
+                                "id_type": 0,
+                                "is_bool_dim": false,
+                                "category_name": "All"
+                            }
+                        ]
+                    }
+                ],
+                "hard": true,
+                "priority": "medium"
+            },
+            {
+                "_id": "68c9a1fd241cb23d8fcff653",
+                "team": "6894a0a6457cee1161ccd840",
+                "constraint_type": 5,
+                "template_id": "6",
+                "language": "fr",
+                "blocks": [
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "Les"
+                    },
+                    {
+                        "name": 3,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": true,
+                                "id": "",
+                                "id_type": 5,
+                                "is_bool_dim": true,
+                                "category_name": "Duties"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "le"
+                    },
+                    {
+                        "name": 8,
+                        "type": 0,
+                        "value": "saturday"
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "doivent être réparties de manière égale dans le temps pour"
+                    },
+                    {
+                        "name": 4,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "all workers",
+                                "id": "",
+                                "id_type": 0,
+                                "is_bool_dim": false,
+                                "category_name": "All"
+                            }
+                        ]
+                    }
+                ],
+                "hard": true,
+                "priority": "medium"
+            },
+            {
+                "_id": "68c9a20a241cb23d8fcff654",
+                "team": "6894a0a6457cee1161ccd840",
+                "constraint_type": 5,
+                "template_id": "6",
+                "language": "fr",
+                "blocks": [
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "Les"
+                    },
+                    {
+                        "name": 3,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": true,
+                                "id": "",
+                                "id_type": 5,
+                                "is_bool_dim": true,
+                                "category_name": "Duties"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "le"
+                    },
+                    {
+                        "name": 8,
+                        "type": 0,
+                        "value": "friday"
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "doivent être réparties de manière égale dans le temps pour"
+                    },
+                    {
+                        "name": 4,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "all workers",
+                                "id": "",
+                                "id_type": 0,
+                                "is_bool_dim": false,
+                                "category_name": "All"
+                            }
+                        ]
+                    }
+                ],
+                "hard": true,
+                "priority": "medium"
+            },
+            {
+                "_id": "68c9a216241cb23d8fcff655",
+                "team": "6894a0a6457cee1161ccd840",
+                "constraint_type": 5,
+                "template_id": "6",
+                "language": "fr",
+                "blocks": [
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "Les"
+                    },
+                    {
+                        "name": 3,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": true,
+                                "id": "",
+                                "id_type": 5,
+                                "is_bool_dim": true,
+                                "category_name": "Duties"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "le"
+                    },
+                    {
+                        "name": 8,
+                        "type": 0,
+                        "value": "thursday"
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "doivent être réparties de manière égale dans le temps pour"
+                    },
+                    {
+                        "name": 4,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "all workers",
+                                "id": "",
+                                "id_type": 0,
+                                "is_bool_dim": false,
+                                "category_name": "All"
+                            }
+                        ]
+                    }
+                ],
+                "hard": true,
+                "priority": "medium"
+            },
+            {
+                "_id": "68c9a23b241cb23d8fcff656",
+                "team": "6894a0a6457cee1161ccd840",
+                "constraint_type": 3,
+                "template_id": "5",
+                "language": "fr",
+                "blocks": [
+                    {
+                        "name": 4,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Pascale Tinel-Colin",
+                                "id": "6894a807457cee1161ccd91e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 0,
+                        "type": 0,
+                        "value": "should only"
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "faire des"
+                    },
+                    {
+                        "name": 3,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": true,
+                                "id": "6894b93c457cee1161ccd97f",
+                                "id_type": 3,
+                                "is_bool_dim": true,
+                                "category_name": "Bloc"
+                            }
+                        ]
+                    }
+                ],
+                "hard": true,
+                "priority": "medium"
+            },
+            {
+                "_id": "68c9a24d241cb23d8fcff657",
+                "team": "6894a0a6457cee1161ccd840",
+                "constraint_type": 3,
+                "template_id": "5",
+                "language": "fr",
+                "blocks": [
+                    {
+                        "name": 4,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Christophe Brice",
+                                "id": "6894a69c457cee1161ccd87e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 0,
+                        "type": 0,
+                        "value": "should not"
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "faire des"
+                    },
+                    {
+                        "name": 3,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": true,
+                                "id": "",
+                                "id_type": 5,
+                                "is_bool_dim": true,
+                                "category_name": "Duties"
+                            }
+                        ]
+                    }
+                ],
+                "hard": true,
+                "priority": "medium"
+            },
+            {
+                "_id": "68c9a290241cb23d8fcff658",
+                "team": "6894a0a6457cee1161ccd840",
+                "constraint_type": 0,
+                "template_id": "1",
+                "language": "fr",
+                "blocks": [
+                    {
+                        "name": 4,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Cédric Pepion",
+                                "id": "6894a72f457cee1161ccd88e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "doit faire"
+                    },
+                    {
+                        "name": 0,
+                        "type": 0,
+                        "value": "at least"
+                    },
+                    {
+                        "name": 1,
+                        "type": 1,
+                        "value": 2
+                    },
+                    {
+                        "name": 3,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Tps Administratif Journée",
+                                "id": "6894bd14457cee1161ccda01",
+                                "id_type": 2,
+                                "is_bool_dim": false,
+                                "category_name": "Shifts"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 2,
+                        "type": 0,
+                        "value": "per week"
+                    }
+                ],
+                "hard": true,
+                "priority": "medium"
+            },
+            {
+                "_id": "68c9a2a8241cb23d8fcff659",
+                "team": "6894a0a6457cee1161ccd840",
+                "constraint_type": 0,
+                "template_id": "1",
+                "language": "fr",
+                "blocks": [
+                    {
+                        "name": 4,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Johann Delaumenie",
+                                "id": "6894a7ac457cee1161ccd8ce",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "doit faire"
+                    },
+                    {
+                        "name": 0,
+                        "type": 0,
+                        "value": "at least"
+                    },
+                    {
+                        "name": 1,
+                        "type": 1,
+                        "value": 1
+                    },
+                    {
+                        "name": 3,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Tps Administratif Journée",
+                                "id": "6894bd14457cee1161ccda01",
+                                "id_type": 2,
+                                "is_bool_dim": false,
+                                "category_name": "Shifts"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 2,
+                        "type": 0,
+                        "value": "per week"
+                    }
+                ],
+                "hard": true,
+                "priority": "medium"
+            },
+            {
+                "_id": "68c9a2bf241cb23d8fcff65a",
+                "team": "6894a0a6457cee1161ccd840",
+                "constraint_type": 0,
+                "template_id": "1",
+                "language": "fr",
+                "blocks": [
+                    {
+                        "name": 4,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Christophe Soltner",
+                                "id": "6894a74b457cee1161ccd896",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "doit faire"
+                    },
+                    {
+                        "name": 0,
+                        "type": 0,
+                        "value": "exactly"
+                    },
+                    {
+                        "name": 1,
+                        "type": 1,
+                        "value": 3
+                    },
+                    {
+                        "name": 3,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Tps Administratif Journée",
+                                "id": "6894bd14457cee1161ccda01",
+                                "id_type": 2,
+                                "is_bool_dim": false,
+                                "category_name": "Shifts"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 2,
+                        "type": 0,
+                        "value": "per week"
+                    }
+                ],
+                "hard": true,
+                "priority": "medium"
+            },
+            {
+                "_id": "68c9a2e9241cb23d8fcff65b",
+                "team": "6894a0a6457cee1161ccd840",
+                "constraint_type": 0,
+                "template_id": "1",
+                "language": "fr",
+                "blocks": [
+                    {
+                        "name": 4,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Benoit Duval",
+                                "id": "6894a68b457cee1161ccd86e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "doit faire"
+                    },
+                    {
+                        "name": 0,
+                        "type": 0,
+                        "value": "at least"
+                    },
+                    {
+                        "name": 1,
+                        "type": 1,
+                        "value": 2
+                    },
+                    {
+                        "name": 3,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Tps Administratif Après Midi",
+                                "id": "6894bbe6457cee1161ccd9cb",
+                                "id_type": 2,
+                                "is_bool_dim": false,
+                                "category_name": "Shifts"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 2,
+                        "type": 0,
+                        "value": "per month"
+                    }
+                ],
+                "hard": true,
+                "priority": "medium"
+            },
+            {
+                "_id": "68c9a305241cb23d8fcff65c",
+                "team": "6894a0a6457cee1161ccd840",
+                "constraint_type": 0,
+                "template_id": "1",
+                "language": "fr",
+                "blocks": [
+                    {
+                        "name": 4,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Guillaume Montenot",
+                                "id": "6894a78b457cee1161ccd8be",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "doit faire"
+                    },
+                    {
+                        "name": 0,
+                        "type": 0,
+                        "value": "at least"
+                    },
+                    {
+                        "name": 1,
+                        "type": 1,
+                        "value": 2
+                    },
+                    {
+                        "name": 3,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Tps Administratif Après Midi",
+                                "id": "6894bbe6457cee1161ccd9cb",
+                                "id_type": 2,
+                                "is_bool_dim": false,
+                                "category_name": "Shifts"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 2,
+                        "type": 0,
+                        "value": "per month"
+                    }
+                ],
+                "hard": true,
+                "priority": "medium"
+            },
+            {
+                "_id": "68c9a31e241cb23d8fcff65d",
+                "team": "6894a0a6457cee1161ccd840",
+                "constraint_type": 0,
+                "template_id": "1",
+                "language": "fr",
+                "blocks": [
+                    {
+                        "name": 4,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Vincent Lassalle",
+                                "id": "6894a884457cee1161ccd96e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "doit faire"
+                    },
+                    {
+                        "name": 0,
+                        "type": 0,
+                        "value": "at least"
+                    },
+                    {
+                        "name": 1,
+                        "type": 1,
+                        "value": 1
+                    },
+                    {
+                        "name": 3,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Tps Administratif Journée",
+                                "id": "6894bd14457cee1161ccda01",
+                                "id_type": 2,
+                                "is_bool_dim": false,
+                                "category_name": "Shifts"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 2,
+                        "type": 0,
+                        "value": "per month"
+                    }
+                ],
+                "hard": true,
+                "priority": "medium"
+            },
+            {
+                "_id": "68c99b7b241cb23d8fcff61e",
+                "team": "6894a0a6457cee1161ccd840",
+                "constraint_type": 2,
+                "template_id": "4",
+                "language": "fr",
+                "blocks": [
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "Si"
+                    },
+                    {
+                        "name": 6,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": true,
+                                "id": "",
+                                "id_type": 5,
+                                "is_bool_dim": true,
+                                "category_name": "Duties"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "le"
+                    },
+                    {
+                        "name": 8,
+                        "type": 0,
+                        "value": "friday"
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "alors"
+                    },
+                    {
+                        "name": 7,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Off",
+                                "id": "6894a0a7457cee1161ccd842",
+                                "id_type": 2,
+                                "is_bool_dim": false,
+                                "category_name": "Shifts"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 1,
+                        "type": 1,
+                        "value": 1
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "jour"
+                    },
+                    {
+                        "name": 2,
+                        "type": 0,
+                        "value": "before"
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "pour"
+                    },
+                    {
+                        "name": 4,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Charlotte Fasquel",
+                                "id": "6894a720457cee1161ccd886",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Benoit Duval",
+                                "id": "6894a68b457cee1161ccd86e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Christophe Brice",
+                                "id": "6894a69c457cee1161ccd87e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Benjamin Puisney",
+                                "id": "6894a695457cee1161ccd876",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Anne Brejot",
+                                "id": "6894a562457cee1161ccd855",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Marie-Eve Poignard",
+                                "id": "6894a7ad457cee1161ccd8f6",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Louise Marrec",
+                                "id": "6894a7ac457cee1161ccd8e6",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Antoine Marc",
+                                "id": "6894a67b457cee1161ccd866",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Johanna Temime",
+                                "id": "6894a7ac457cee1161ccd8d6",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Johann Delaumenie",
+                                "id": "6894a7ac457cee1161ccd8ce",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Christophe Soltner",
+                                "id": "6894a74b457cee1161ccd896",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Arthur Guichoux",
+                                "id": "6894a663457cee1161ccd85e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Emmanuel Pouliquen",
+                                "id": "6894a76d457cee1161ccd8a6",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Nicolas Patou",
+                                "id": "6894a807457cee1161ccd90e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Guillaume Montenot",
+                                "id": "6894a78b457cee1161ccd8be",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Valentin Chirouze",
+                                "id": "6894a884457cee1161ccd966",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Thibault Poirier",
+                                "id": "6894a864457cee1161ccd95e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Sophie Le Moigno-Le Port",
+                                "id": "6894a84b457cee1161ccd946",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Ruayda Heider-Minnigio",
+                                "id": "6894a808457cee1161ccd926",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Ségolène Dupont",
+                                "id": "6894a84b457cee1161ccd93e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Oana Tiuca",
+                                "id": "6894a807457cee1161ccd916",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Vincent Lassalle",
+                                "id": "6894a884457cee1161ccd96e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Mathilde Rol",
+                                "id": "6894a7ad457cee1161ccd8fe",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Pascale Tinel-Colin",
+                                "id": "6894a807457cee1161ccd91e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Luc Hoarau",
+                                "id": "6894a7ac457cee1161ccd8de",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Fanny De Sevin ",
+                                "id": "6894a777457cee1161ccd8ae",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            }
+                        ]
+                    }
+                ],
+                "hard": true,
+                "priority": "medium"
+            },
+            {
+                "_id": "68c99c39241cb23d8fcff628",
+                "team": "6894a0a6457cee1161ccd840",
+                "constraint_type": 2,
+                "template_id": "4",
+                "language": "fr",
+                "blocks": [
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "Si"
+                    },
+                    {
+                        "name": 6,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": true,
+                                "id": "",
+                                "id_type": 5,
+                                "is_bool_dim": true,
+                                "category_name": "Duties"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "le"
+                    },
+                    {
+                        "name": 8,
+                        "type": 0,
+                        "value": "saturday"
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "alors"
+                    },
+                    {
+                        "name": 7,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Off",
+                                "id": "6894a0a7457cee1161ccd842",
+                                "id_type": 2,
+                                "is_bool_dim": false,
+                                "category_name": "Shifts"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 1,
+                        "type": 1,
+                        "value": 1
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "jour"
+                    },
+                    {
+                        "name": 2,
+                        "type": 0,
+                        "value": "before"
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "pour"
+                    },
+                    {
+                        "name": 4,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Cédric Pepion",
+                                "id": "6894a72f457cee1161ccd88e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Charlotte Fasquel",
+                                "id": "6894a720457cee1161ccd886",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Benoit Duval",
+                                "id": "6894a68b457cee1161ccd86e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Christophe Brice",
+                                "id": "6894a69c457cee1161ccd87e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Benjamin Puisney",
+                                "id": "6894a695457cee1161ccd876",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Anne Brejot",
+                                "id": "6894a562457cee1161ccd855",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Arthur Guichoux",
+                                "id": "6894a663457cee1161ccd85e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Christophe Soltner",
+                                "id": "6894a74b457cee1161ccd896",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Antoine Marc",
+                                "id": "6894a67b457cee1161ccd866",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Marie-Eve Poignard",
+                                "id": "6894a7ad457cee1161ccd8f6",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Nicolas Despierre",
+                                "id": "6894a7ad457cee1161ccd906",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Louise Marrec",
+                                "id": "6894a7ac457cee1161ccd8e6",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Johanna Temime",
+                                "id": "6894a7ac457cee1161ccd8d6",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Johann Delaumenie",
+                                "id": "6894a7ac457cee1161ccd8ce",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Emmanuel Pouliquen",
+                                "id": "6894a76d457cee1161ccd8a6",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Eloise Garnier",
+                                "id": "6894a75c457cee1161ccd89e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Nicolas Patou",
+                                "id": "6894a807457cee1161ccd90e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Guillaume Montenot",
+                                "id": "6894a78b457cee1161ccd8be",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Valentin Chirouze",
+                                "id": "6894a884457cee1161ccd966",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Thibaud Leduc",
+                                "id": "6894a864457cee1161ccd956",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Sophie Le Moigno-Le Port",
+                                "id": "6894a84b457cee1161ccd946",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Reem Perrotey",
+                                "id": "6894a808457cee1161ccd936",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Ruayda Heider-Minnigio",
+                                "id": "6894a808457cee1161ccd926",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Ségolène Dupont",
+                                "id": "6894a84b457cee1161ccd93e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Oana Tiuca",
+                                "id": "6894a807457cee1161ccd916",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Vincent Lassalle",
+                                "id": "6894a884457cee1161ccd96e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Mathilde Rol",
+                                "id": "6894a7ad457cee1161ccd8fe",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Pascale Tinel-Colin",
+                                "id": "6894a807457cee1161ccd91e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Luc Hoarau",
+                                "id": "6894a7ac457cee1161ccd8de",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Fanny De Sevin ",
+                                "id": "6894a777457cee1161ccd8ae",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Maximilien Chesnais",
+                                "id": "68c99bad241cb23d8fcff61f",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            }
+                        ]
+                    }
+                ],
+                "hard": true,
+                "priority": "medium"
+            },
+            {
+                "_id": "68c99c8e241cb23d8fcff629",
+                "team": "6894a0a6457cee1161ccd840",
+                "constraint_type": 2,
+                "template_id": "4",
+                "language": "fr",
+                "blocks": [
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "Si"
+                    },
+                    {
+                        "name": 6,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": true,
+                                "id": "",
+                                "id_type": 5,
+                                "is_bool_dim": true,
+                                "category_name": "Duties"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "le"
+                    },
+                    {
+                        "name": 8,
+                        "type": 0,
+                        "value": "saturday"
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "alors"
+                    },
+                    {
+                        "name": 7,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Off",
+                                "id": "6894a0a7457cee1161ccd842",
+                                "id_type": 2,
+                                "is_bool_dim": false,
+                                "category_name": "Shifts"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 1,
+                        "type": 1,
+                        "value": 2
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "jour"
+                    },
+                    {
+                        "name": 2,
+                        "type": 0,
+                        "value": "after"
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "pour"
+                    },
+                    {
+                        "name": 4,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Charlotte Fasquel",
+                                "id": "6894a720457cee1161ccd886",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Benoit Duval",
+                                "id": "6894a68b457cee1161ccd86e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Christophe Brice",
+                                "id": "6894a69c457cee1161ccd87e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Benjamin Puisney",
+                                "id": "6894a695457cee1161ccd876",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Anne Brejot",
+                                "id": "6894a562457cee1161ccd855",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Arthur Guichoux",
+                                "id": "6894a663457cee1161ccd85e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Christophe Soltner",
+                                "id": "6894a74b457cee1161ccd896",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Antoine Marc",
+                                "id": "6894a67b457cee1161ccd866",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Marie-Eve Poignard",
+                                "id": "6894a7ad457cee1161ccd8f6",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Nicolas Despierre",
+                                "id": "6894a7ad457cee1161ccd906",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Louise Marrec",
+                                "id": "6894a7ac457cee1161ccd8e6",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Johanna Temime",
+                                "id": "6894a7ac457cee1161ccd8d6",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Julien Bila",
+                                "id": "6894a795457cee1161ccd8c6",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "François Mateos",
+                                "id": "6894a77f457cee1161ccd8b6",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Eloise Garnier",
+                                "id": "6894a75c457cee1161ccd89e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Nicolas Patou",
+                                "id": "6894a807457cee1161ccd90e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Valentin Chirouze",
+                                "id": "6894a884457cee1161ccd966",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Thibault Poirier",
+                                "id": "6894a864457cee1161ccd95e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Thibaud Leduc",
+                                "id": "6894a864457cee1161ccd956",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Sophie Le Moigno-Le Port",
+                                "id": "6894a84b457cee1161ccd946",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Reem Perrotey",
+                                "id": "6894a808457cee1161ccd936",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Ruayda Heider-Minnigio",
+                                "id": "6894a808457cee1161ccd926",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Ségolène Dupont",
+                                "id": "6894a84b457cee1161ccd93e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Oana Tiuca",
+                                "id": "6894a807457cee1161ccd916",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Vincent Lassalle",
+                                "id": "6894a884457cee1161ccd96e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Pascale Tinel-Colin",
+                                "id": "6894a807457cee1161ccd91e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Johann Delaumenie",
+                                "id": "6894a7ac457cee1161ccd8ce",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Mathilde Rol",
+                                "id": "6894a7ad457cee1161ccd8fe",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Marianne Offredo",
+                                "id": "6894a7ad457cee1161ccd8ee",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Luc Hoarau",
+                                "id": "6894a7ac457cee1161ccd8de",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Fanny De Sevin ",
+                                "id": "6894a777457cee1161ccd8ae",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            },
+                            {
+                                "name": "Maximilien Chesnais",
+                                "id": "68c99bad241cb23d8fcff61f",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            }
+                        ]
+                    }
+                ],
+                "hard": true,
+                "priority": "medium"
+            },
+            {
+                "_id": "68c99cd6241cb23d8fcff62a",
+                "team": "6894a0a6457cee1161ccd840",
+                "constraint_type": 2,
+                "template_id": "4",
+                "language": "fr",
+                "blocks": [
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "Si"
+                    },
+                    {
+                        "name": 6,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": true,
+                                "id": "",
+                                "id_type": 5,
+                                "is_bool_dim": true,
+                                "category_name": "Duties"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "le"
+                    },
+                    {
+                        "name": 8,
+                        "type": 0,
+                        "value": "sunday"
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "alors"
+                    },
+                    {
+                        "name": 7,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Off",
+                                "id": "6894a0a7457cee1161ccd842",
+                                "id_type": 2,
+                                "is_bool_dim": false,
+                                "category_name": "Shifts"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 1,
+                        "type": 1,
+                        "value": 2
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "jour"
+                    },
+                    {
+                        "name": 2,
+                        "type": 0,
+                        "value": "after"
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "pour"
+                    },
+                    {
+                        "name": 4,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "all workers",
+                                "id": "",
+                                "id_type": 0,
+                                "is_bool_dim": false,
+                                "category_name": "All"
+                            }
+                        ]
+                    }
+                ],
+                "hard": true,
+                "priority": "medium"
+            }
+        ],
+        "schedules": [
+            {
+                "_id": "68c9a04a241cb23d8fcff62f",
+                "team": "6894a0a6457cee1161ccd840",
+                "start_date": 1762128000,
+                "end_date": 1767484800,
+                "status": 0,
+                "missing_coverage_dates": [],
+                "constraint_builds": [
+                    "68c99d20241cb23d8fcff62b",
+                    "68c99b7b241cb23d8fcff61e",
+                    "68c99c39241cb23d8fcff628",
+                    "68c99c8e241cb23d8fcff629",
+                    "68c99cd6241cb23d8fcff62a",
+                    "68c9a1ef241cb23d8fcff652",
+                    "68c9a1fd241cb23d8fcff653",
+                    "68c9a20a241cb23d8fcff654",
+                    "68c9a216241cb23d8fcff655",
+                    "68c9a23b241cb23d8fcff656",
+                    "68c9a24d241cb23d8fcff657",
+                    "68c9a290241cb23d8fcff658",
+                    "68c9a2a8241cb23d8fcff659",
+                    "68c9a2bf241cb23d8fcff65a",
+                    "68c9a2e9241cb23d8fcff65b",
+                    "68c9a305241cb23d8fcff65c",
+                    "68c9a31e241cb23d8fcff65d"
+                ],
+                "quick_staffings": [],
+                "created_at": 1758044234,
+                "updated_at": 1760459232.620205,
+                "created_by": "c109f0fe-e0b1-704d-2c10-0f676a7a70ad"
             }
         ]
     }

@@ -12,16 +12,18 @@ from shared.database.schemas.shift import ShiftSchema
 from shared.database.schemas.shift_demand_new import ShiftDemandNewSchema
 from shared.database.schemas.specialty import SpecialtySchema
 from shared.database.schemas.worker import WorkerSchema
+from shared.database.schemas.constraint_build import ConstraintBuildSchema
 from shared.schemas.core import (
     Attribute,
     AttributeOwnerType,
-    Dimension,
+    Dimension,BlockTypeOptions,
     DimEntry,
     Schedule,
     ShiftDemandNew,
     Shift,
     Specialty,
     Worker,
+    ConstraintBuild,
 )
 
 from src.services.base_service import BaseService
@@ -38,6 +40,7 @@ class ScenarioLoadResponse(BaseModel):
     dim_entries: List[DimEntry]
     attributes: List[Attribute]
     shift_demands: List[ShiftDemandNew]
+    constraints: List[ConstraintBuild]
     schedules: List[Schedule]
 
 
@@ -177,6 +180,10 @@ class SolverTestScenariosService(BaseService):
                 "shift_demands": [
                     ShiftDemandNewSchema.from_mongo(sd).to_core()
                     for sd in scenario_data.get("shift_demands", [])
+                ],
+                "constraints": [
+                    ConstraintBuildSchema.from_mongo(c).to_core()
+                    for c in scenario_data.get("constraints", [])
                 ],
                 "schedules": [
                     ScheduleSchema.from_mongo(s).to_core()
@@ -359,6 +366,39 @@ class SolverTestScenariosService(BaseService):
                 if not out.get("shift_demands", None):
                     out["shift_demands"] = []
                 out["shift_demands"].append(shift_demand_saved)
+
+            # Constraints
+            constraints: List[ConstraintBuild] = scenario_data.get(
+                "constraints", []
+            )
+            if not all(isinstance(c, ConstraintBuild) for c in constraints):
+                raise ValueError(
+                    "Expected all constraints to be ConstraintBuild instances"
+                )
+            for c in constraints:
+                c.team_id = team_id
+                c_id = c.id
+                c.id = ""  # Clear ID to let DB assign a new one
+
+                for b in c.blocks:
+                    if b.type == BlockTypeOptions.SHIFT_WORKER_OPTION:
+                        if not isinstance(b.value, list) and not all(
+                            isinstance(swo, str) for swo in b.value
+                        ):
+                            raise ValueError(
+                                "Expected block value to be list of shift_worker_option"
+                            )
+                        for swo in b.value:
+                            
+
+                constraint_saved = (
+                    self.collection.constraint_build_db.create_constraint_build(
+                        constraint_build=c
+                    )
+                )
+                if not out.get("constraints", None):
+                    out["constraints"] = []
+                out["constraints"].append(constraint_saved)
 
             # Schedules
             schedules: List[Schedule] = scenario_data.get("schedules", [])
