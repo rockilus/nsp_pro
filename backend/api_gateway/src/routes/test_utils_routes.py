@@ -26,6 +26,7 @@ from src.integrations.authorization import (
 )
 from src.security.user_context import UserContext
 from src.services.test_service import SolverTestScenariosService
+from shared.augment import r_to_r_augmented, cb_to_cb_augmented
 
 
 def get_database_interface(request: Request):
@@ -258,6 +259,33 @@ async def load_test_scenario(
         except ValueError as e:
             raise HTTPException(status_code=404, detail=str(e)) from e
 
+        cbs_augmented = [
+            cb_to_cb_augmented(
+                cb=cb,
+                workers=scenario.workers,
+                shifts=scenario.shifts,
+                dimensions=scenario.dimensions,
+                dim_entries=scenario.dim_entries,
+                attributes=scenario.attributes,
+                specialties=scenario.specialties,
+            )
+            for cb in scenario.constraints
+        ]
+
+        rs_augmented = [
+            r_to_r_augmented(
+                request=r,
+                worker=next(
+                    (w for w in scenario.workers if w.id == r.worker_id), None
+                ),
+                shifts=scenario.shifts,
+                dimensions=scenario.dimensions,
+                dim_entries=scenario.dim_entries,
+                attributes=scenario.attributes,
+            )
+            for r in scenario.requests
+        ]
+
         return {
             "scenario_name": scenario.scenario_name,
             "specialties": [s.to_dto() for s in scenario.specialties],
@@ -267,6 +295,8 @@ async def load_test_scenario(
             "dim_entries": [de.to_dto() for de in scenario.dim_entries],
             "attributes": [a.to_dto() for a in scenario.attributes],
             "shift_demands": [sd.to_dto() for sd in scenario.shift_demands],
+            "constraints": [c.to_dto() for c in cbs_augmented],
+            "requests": [r.to_dto() for r in rs_augmented],
             "schedules": [s.to_dto() for s in scenario.schedules],
         }
 

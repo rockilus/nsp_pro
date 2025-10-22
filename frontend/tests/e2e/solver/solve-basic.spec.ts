@@ -118,15 +118,6 @@ test.describe("Solver - Basic Coverage", () => {
       `📊 Scenario loaded with ${scenario.shift_demands.length} shift demands`
     );
 
-    // Create a schedule/campaign for this period
-    await solverTestBase.createSchedule(
-      scenario.schedule.start_date,
-      scenario.schedule.end_date
-    );
-
-    // Wait for schedule page to be ready
-    await page.waitForTimeout(2000);
-
     // Trigger solve
     await solverTestBase.triggerSolveAndWait(page, 60000);
 

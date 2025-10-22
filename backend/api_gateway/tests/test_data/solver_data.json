@@ -17,6 +17,22 @@
                 "specialties": [],
                 "deleted": false,
                 "user_id": null
+            },
+            {
+                "_id": "6894a69c457cee1161ccd87e",
+                "team": "6894a0a6457cee1161ccd840",
+                "name": "Christophe Brice",
+                "acronym": "CB",
+                "acronym_custom": true,
+                "employment_start_date": 1754524800,
+                "employment_end_date": null,
+                "weekly_hours": 42,
+                "weekly_hours_desired": 39,
+                "duties_per_month": 4,
+                "annual_leave": 45,
+                "specialties": [],
+                "deleted": false,
+                "user_id": null
             }
         ],
         "shifts": [
@@ -41,6 +57,28 @@
                 "recuperation_time": 23,
                 "recuperation_duty": null,
                 "deleted": false
+            },
+            {
+                "_id": "6894b85c457cee1161ccd979",
+                "team": "6894a0a6457cee1161ccd840",
+                "name": "ACA1",
+                "acronym": "ACA1",
+                "acronym_custom": true,
+                "start_time": 1754553600,
+                "end_time": 1754589600,
+                "staffing": [
+                    {
+                        "specialty": null,
+                        "staffing": 1
+                    }
+                ],
+                "color": "indigo",
+                "shift_type": 0,
+                "rest_type": 0,
+                "leave_type": 0,
+                "recuperation_time": 0,
+                "recuperation_duty": null,
+                "deleted": false
             }
         ],
         "dimensions": [],
@@ -58,10 +96,100 @@
                 "source_id": null,
                 "created_at": 1758720569.714235,
                 "updated_at": 1758720569.714235
+            },
+            {
+                "_id": "68d3f07fc0c83df39b39ba95",
+                "team": "6894a0a6457cee1161ccd840",
+                "shift": "6894b85c457cee1161ccd979",
+                "date": 1764720000,
+                "count": 1,
+                "notes": null,
+                "source": "manual",
+                "source_id": null,
+                "created_at": 1758720127.032846,
+                "updated_at": 1758720127.032846
             }
         ],
-        "constraints": [],
-        "requests": [],
+        "constraints": [
+            {
+                "_id": "68c9a24d241cb23d8fcff657",
+                "team": "6894a0a6457cee1161ccd840",
+                "constraint_type": 3,
+                "template_id": "5",
+                "language": "fr",
+                "blocks": [
+                    {
+                        "name": 4,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "Christophe Brice",
+                                "id": "6894a69c457cee1161ccd87e",
+                                "id_type": 1,
+                                "is_bool_dim": false,
+                                "category_name": "Workers"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 0,
+                        "type": 0,
+                        "value": "should not"
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "faire des"
+                    },
+                    {
+                        "name": 3,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": true,
+                                "id": "",
+                                "id_type": 5,
+                                "is_bool_dim": true,
+                                "category_name": "Duties"
+                            }
+                        ]
+                    }
+                ],
+                "hard": true,
+                "priority": "medium"
+            }
+        ],
+        "requests": [
+            {
+                "id": "68c9ab41241cb23d8fcff68e",
+                "teamId": "6894a0a6457cee1161ccd840",
+                "requestType": "work_demand",
+                "workerId": "6894a72f457cee1161ccd88e",
+                "startDate": 1763424000.0,
+                "endDate": 1763424000.0,
+                "shiftId": null,
+                "shiftOptions": [
+                    {
+                        "name": "ACA1",
+                        "id": "6894b85c457cee1161ccd979",
+                        "idType": 2,
+                        "isBoolDim": false,
+                        "categoryName": "Shifts"
+                    }
+                ],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "createdAt": 1758047041.162771,
+                "active": true,
+                "shiftTargetIds": [
+                    "6894bd14457cee1161ccda01"
+                ],
+                "missingAttributes": []
+            }
+        ],
         "schedules": [
             {
                 "_id": "68c9a04a241cb23d8fcff62f",
@@ -70,7 +198,9 @@
                 "end_date": 1767484800,
                 "status": 0,
                 "missing_coverage_dates": [],
-                "constraint_builds": [],
+                "constraint_builds": [
+                    "68c9a24d241cb23d8fcff657"
+                ],
                 "quick_staffings": [],
                 "created_at": 1758044234,
                 "updated_at": 1760459232.620205,
