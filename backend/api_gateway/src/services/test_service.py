@@ -9,6 +9,7 @@ from shared.database.schemas.dim_entry import DimEntrySchema
 from shared.database.schemas.dimension import DimensionSchema
 from shared.database.schemas.schedule import ScheduleSchema
 from shared.database.schemas.shift import ShiftSchema
+from shared.database.schemas.shift_demand_new import ShiftDemandNewSchema
 from shared.database.schemas.specialty import SpecialtySchema
 from shared.database.schemas.worker import WorkerSchema
 from shared.schemas.core import (
@@ -17,6 +18,7 @@ from shared.schemas.core import (
     Dimension,
     DimEntry,
     Schedule,
+    ShiftDemandNew,
     Shift,
     Specialty,
     Worker,
@@ -35,6 +37,7 @@ class ScenarioLoadResponse(BaseModel):
     dimensions: List[Dimension]
     dim_entries: List[DimEntry]
     attributes: List[Attribute]
+    shift_demands: List[ShiftDemandNew]
     schedules: List[Schedule]
 
 
@@ -105,6 +108,7 @@ class SolverTestScenariosService(BaseService):
             dimensions=saved.get("dimensions", []),
             dim_entries=saved.get("dim_entries", []),
             attributes=saved.get("attributes", []),
+            shift_demands=saved.get("shift_demands", []),
             schedules=saved.get("schedules", []),
         )
 
@@ -169,6 +173,10 @@ class SolverTestScenariosService(BaseService):
                 "attributes": [
                     AttributeSchema.from_mongo(a).to_core()
                     for a in scenario_data.get("attributes", [])
+                ],
+                "shift_demands": [
+                    ShiftDemandNewSchema.from_mongo(sd).to_core()
+                    for sd in scenario_data.get("shift_demands", [])
                 ],
                 "schedules": [
                     ScheduleSchema.from_mongo(s).to_core()
@@ -243,6 +251,14 @@ class SolverTestScenariosService(BaseService):
                 if not maps.get("shifts", None):
                     maps["shifts"] = {}
                 s.team_id = team_id
+                # Remap staffing specialty_ids to the newly created
+                # specialty ids
+                if maps.get("specialties"):
+                    for st in s.staffing:
+                        if st.specialty_id in maps["specialties"]:
+                            st.specialty_id = maps["specialties"][
+                                st.specialty_id
+                            ]
                 s_id = s.id
                 s.id = ""  # Clear ID to let DB assign a new one
                 shift_saved = self.collection.shift_db.create_shift(shift=s)
@@ -318,6 +334,31 @@ class SolverTestScenariosService(BaseService):
                 if not out.get("attributes", None):
                     out["attributes"] = []
                 out["attributes"].append(attribute_saved)
+
+            # Shift Demands
+            shift_demands: List[ShiftDemandNew] = scenario_data.get(
+                "shift_demands", []
+            )
+            if not all(isinstance(sd, ShiftDemandNew) for sd in shift_demands):
+                raise ValueError(
+                    "Expected all shift demands to be ShiftDemandNew instances"
+                )
+            for sd in shift_demands:
+                sd.team_id = team_id
+                sd.id = ""  # Clear ID to let DB assign a new one
+
+                if maps.get("shifts"):
+                    if sd.shift_id in maps["shifts"]:
+                        sd.shift_id = maps["shifts"][sd.shift_id]
+
+                shift_demand_saved = (
+                    self.collection.shift_demand_new_db.create_shift_demand(
+                        shift_demand=sd
+                    )
+                )
+                if not out.get("shift_demands", None):
+                    out["shift_demands"] = []
+                out["shift_demands"].append(shift_demand_saved)
 
             # Schedules
             schedules: List[Schedule] = scenario_data.get("schedules", [])
