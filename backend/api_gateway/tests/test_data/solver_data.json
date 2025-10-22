@@ -61,6 +61,7 @@
             }
         ],
         "constraints": [],
+        "requests": [],
         "schedules": [
             {
                 "_id": "68c9a04a241cb23d8fcff62f",
@@ -22566,6 +22567,3592 @@
                 ],
                 "hard": true,
                 "priority": "medium"
+            }
+        ],
+        "requests": [
+            {
+                "_id": "68c9a655241cb23d8fcff660",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a663457cee1161ccd85e",
+                "start_date": 1762214400,
+                "end_date": 1762214400,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": "Tps Administratif Après Midi",
+                        "id": "6894bbe6457cee1161ccd9cb",
+                        "id_type": 2,
+                        "is_bool_dim": false,
+                        "category_name": "Shifts"
+                    }
+                ],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758045781.556214
+            },
+            {
+                "_id": "68c9a671241cb23d8fcff661",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a663457cee1161ccd85e",
+                "start_date": 1764201600,
+                "end_date": 1764201600,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758045809.339349
+            },
+            {
+                "_id": "68c9a682241cb23d8fcff662",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a663457cee1161ccd85e",
+                "start_date": 1764288000,
+                "end_date": 1764460800,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758045826.152168
+            },
+            {
+                "_id": "68c9a6b7241cb23d8fcff663",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a562457cee1161ccd855",
+                "start_date": 1764892800,
+                "end_date": 1764892800,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "6894a5e8457cee1161ccd85c",
+                        "id_type": 3,
+                        "is_bool_dim": true,
+                        "category_name": "Tps Admin"
+                    }
+                ],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758045879.963469
+            },
+            {
+                "_id": "68c9a6df241cb23d8fcff664",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a562457cee1161ccd855",
+                "start_date": 1766707200,
+                "end_date": 1766880000,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758045919.703781
+            },
+            {
+                "_id": "68c9a6fa241cb23d8fcff665",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a562457cee1161ccd855",
+                "start_date": 1766966400,
+                "end_date": 1767484800,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758045946.100846
+            },
+            {
+                "_id": "68c9a718241cb23d8fcff666",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a663457cee1161ccd85e",
+                "start_date": 1765584000,
+                "end_date": 1765670400,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758045976.274245
+            },
+            {
+                "_id": "68c9a733241cb23d8fcff667",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a663457cee1161ccd85e",
+                "start_date": 1766707200,
+                "end_date": 1766707200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046003.824181
+            },
+            {
+                "_id": "68c9a742241cb23d8fcff668",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a663457cee1161ccd85e",
+                "start_date": 1766793600,
+                "end_date": 1767484800,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046018.97213
+            },
+            {
+                "_id": "68c9a79b241cb23d8fcff669",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a67b457cee1161ccd866",
+                "start_date": 1762300800,
+                "end_date": 1762300800,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "6894b93c457cee1161ccd97f",
+                        "id_type": 3,
+                        "is_bool_dim": true,
+                        "category_name": "Bloc"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046107.911608
+            },
+            {
+                "_id": "68c9ab7a241cb23d8fcff690",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a72f457cee1161ccd88e",
+                "start_date": 1766188800,
+                "end_date": 1766880000,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047098.969826
+            },
+            {
+                "_id": "68c9ab94241cb23d8fcff691",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a74b457cee1161ccd896",
+                "start_date": 1762473600,
+                "end_date": 1762473600,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047124.590243
+            },
+            {
+                "_id": "68c9af23241cb23d8fcff6b6",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a78b457cee1161ccd8be",
+                "start_date": 1762473600,
+                "end_date": 1762473600,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758048035.507348
+            },
+            {
+                "_id": "68c9a7ad241cb23d8fcff66a",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a67b457cee1161ccd866",
+                "start_date": 1762905600,
+                "end_date": 1762905600,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "6894b93c457cee1161ccd97f",
+                        "id_type": 3,
+                        "is_bool_dim": true,
+                        "category_name": "Bloc"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046125.461441
+            },
+            {
+                "_id": "68c9a7bc241cb23d8fcff66b",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a67b457cee1161ccd866",
+                "start_date": 1763510400,
+                "end_date": 1763510400,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "6894b93c457cee1161ccd97f",
+                        "id_type": 3,
+                        "is_bool_dim": true,
+                        "category_name": "Bloc"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046140.072041
+            },
+            {
+                "_id": "68c9a7ca241cb23d8fcff66c",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a67b457cee1161ccd866",
+                "start_date": 1764115200,
+                "end_date": 1764115200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "6894b93c457cee1161ccd97f",
+                        "id_type": 3,
+                        "is_bool_dim": true,
+                        "category_name": "Bloc"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046154.876848
+            },
+            {
+                "_id": "68c9a7d7241cb23d8fcff66d",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a67b457cee1161ccd866",
+                "start_date": 1764720000,
+                "end_date": 1764720000,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "6894b93c457cee1161ccd97f",
+                        "id_type": 3,
+                        "is_bool_dim": true,
+                        "category_name": "Bloc"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046167.959683
+            },
+            {
+                "_id": "68c9a7e6241cb23d8fcff66e",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a67b457cee1161ccd866",
+                "start_date": 1765324800,
+                "end_date": 1765324800,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "6894b93c457cee1161ccd97f",
+                        "id_type": 3,
+                        "is_bool_dim": true,
+                        "category_name": "Bloc"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046182.960505
+            },
+            {
+                "_id": "68c9a7f3241cb23d8fcff66f",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a67b457cee1161ccd866",
+                "start_date": 1765929600,
+                "end_date": 1765929600,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "6894b93c457cee1161ccd97f",
+                        "id_type": 3,
+                        "is_bool_dim": true,
+                        "category_name": "Bloc"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046195.268692
+            },
+            {
+                "_id": "68c9a998241cb23d8fcff680",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a695457cee1161ccd876",
+                "start_date": 1765756800,
+                "end_date": 1765756800,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046616.381417
+            },
+            {
+                "_id": "68c9a80f241cb23d8fcff671",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a67b457cee1161ccd866",
+                "start_date": 1767139200,
+                "end_date": 1767139200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "6894b93c457cee1161ccd97f",
+                        "id_type": 3,
+                        "is_bool_dim": true,
+                        "category_name": "Bloc"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046223.292143
+            },
+            {
+                "_id": "68c9a828241cb23d8fcff672",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a67b457cee1161ccd866",
+                "start_date": 1762560000,
+                "end_date": 1762646400,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046248.195524
+            },
+            {
+                "_id": "68c9a84c241cb23d8fcff673",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a67b457cee1161ccd866",
+                "start_date": 1762732800,
+                "end_date": 1762732800,
+                "shift": "6894a0a7457cee1161ccd849",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046284.453289
+            },
+            {
+                "_id": "68c9a880241cb23d8fcff674",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a67b457cee1161ccd866",
+                "start_date": 1764892800,
+                "end_date": 1765065600,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046336.331518
+            },
+            {
+                "_id": "68c9a8a0241cb23d8fcff675",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a67b457cee1161ccd866",
+                "start_date": 1762560000,
+                "end_date": 1762646400,
+                "shift": "6894a0a7457cee1161ccd84f",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046368.760929
+            },
+            {
+                "_id": "68c9a8bc241cb23d8fcff676",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a67b457cee1161ccd866",
+                "start_date": 1766188800,
+                "end_date": 1766275200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046396.443745
+            },
+            {
+                "_id": "68c9a8cc241cb23d8fcff677",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a67b457cee1161ccd866",
+                "start_date": 1766707200,
+                "end_date": 1766707200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046412.097435
+            },
+            {
+                "_id": "68c9a8dc241cb23d8fcff678",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a67b457cee1161ccd866",
+                "start_date": 1766793600,
+                "end_date": 1767484800,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046428.369182
+            },
+            {
+                "_id": "68c9a90b241cb23d8fcff679",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a68b457cee1161ccd86e",
+                "start_date": 1763510400,
+                "end_date": 1763510400,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046475.734596
+            },
+            {
+                "_id": "68c9a91f241cb23d8fcff67a",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a68b457cee1161ccd86e",
+                "start_date": 1764979200,
+                "end_date": 1764979200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046495.865977
+            },
+            {
+                "_id": "68c9a932241cb23d8fcff67b",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a68b457cee1161ccd86e",
+                "start_date": 1766793600,
+                "end_date": 1767484800,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046514.17095
+            },
+            {
+                "_id": "68c9a952241cb23d8fcff67c",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a695457cee1161ccd876",
+                "start_date": 1762128000,
+                "end_date": 1762128000,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046546.657378
+            },
+            {
+                "_id": "68c9a962241cb23d8fcff67d",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a695457cee1161ccd876",
+                "start_date": 1762473600,
+                "end_date": 1762646400,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046562.975785
+            },
+            {
+                "_id": "68c9a974241cb23d8fcff67e",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a695457cee1161ccd876",
+                "start_date": 1764115200,
+                "end_date": 1764115200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046580.4174
+            },
+            {
+                "_id": "68c9a98c241cb23d8fcff67f",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a695457cee1161ccd876",
+                "start_date": 1764720000,
+                "end_date": 1764720000,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046604.16892
+            },
+            {
+                "_id": "68c9a9ab241cb23d8fcff681",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a695457cee1161ccd876",
+                "start_date": 1766793600,
+                "end_date": 1767484800,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046635.850047
+            },
+            {
+                "_id": "68c9a9ce241cb23d8fcff682",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a69c457cee1161ccd87e",
+                "start_date": 1762992000,
+                "end_date": 1763337600,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046670.795309
+            },
+            {
+                "_id": "68c9a9ed241cb23d8fcff683",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a69c457cee1161ccd87e",
+                "start_date": 1763596800,
+                "end_date": 1763596800,
+                "shift": "6894a0a7457cee1161ccd851",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046701.611017
+            },
+            {
+                "_id": "68c9a9fc241cb23d8fcff684",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a69c457cee1161ccd87e",
+                "start_date": 1763683200,
+                "end_date": 1763683200,
+                "shift": "6894a0a7457cee1161ccd84f",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046716.740682
+            },
+            {
+                "_id": "68c9aa50241cb23d8fcff685",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a720457cee1161ccd886",
+                "start_date": 1762300800,
+                "end_date": 1762300800,
+                "shift": "6894a0a7457cee1161ccd842",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046800.123729
+            },
+            {
+                "_id": "68c9aa5c241cb23d8fcff686",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a720457cee1161ccd886",
+                "start_date": 1762905600,
+                "end_date": 1762905600,
+                "shift": "6894a0a7457cee1161ccd842",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046812.722316
+            },
+            {
+                "_id": "68c9aa72241cb23d8fcff687",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a720457cee1161ccd886",
+                "start_date": 1763510400,
+                "end_date": 1763510400,
+                "shift": "6894a0a7457cee1161ccd842",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046834.573012
+            },
+            {
+                "_id": "68c9aa7e241cb23d8fcff688",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a720457cee1161ccd886",
+                "start_date": 1764115200,
+                "end_date": 1764115200,
+                "shift": "6894a0a7457cee1161ccd842",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046846.572134
+            },
+            {
+                "_id": "68c9aa8a241cb23d8fcff689",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a720457cee1161ccd886",
+                "start_date": 1764720000,
+                "end_date": 1764720000,
+                "shift": "6894a0a7457cee1161ccd842",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046858.414305
+            },
+            {
+                "_id": "68c9aa93241cb23d8fcff68a",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a720457cee1161ccd886",
+                "start_date": 1765324800,
+                "end_date": 1765324800,
+                "shift": "6894a0a7457cee1161ccd842",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046867.847487
+            },
+            {
+                "_id": "68c9aa9e241cb23d8fcff68b",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a720457cee1161ccd886",
+                "start_date": 1765929600,
+                "end_date": 1765929600,
+                "shift": "6894a0a7457cee1161ccd842",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046878.354763
+            },
+            {
+                "_id": "68c9aac7241cb23d8fcff68c",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a720457cee1161ccd886",
+                "start_date": 1766966400,
+                "end_date": 1767484800,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758046919.176342
+            },
+            {
+                "_id": "68c9ab2a241cb23d8fcff68d",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a72f457cee1161ccd88e",
+                "start_date": 1762473600,
+                "end_date": 1762646400,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047018.596171
+            },
+            {
+                "_id": "68c9ab41241cb23d8fcff68e",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a72f457cee1161ccd88e",
+                "start_date": 1763424000,
+                "end_date": 1763424000,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": "Tps Administratif Journée",
+                        "id": "6894bd14457cee1161ccda01",
+                        "id_type": 2,
+                        "is_bool_dim": false,
+                        "category_name": "Shifts"
+                    }
+                ],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047041.162771
+            },
+            {
+                "_id": "68c9ab5d241cb23d8fcff68f",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a72f457cee1161ccd88e",
+                "start_date": 1765843200,
+                "end_date": 1765843200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": "Tps Administratif Journée",
+                        "id": "6894bd14457cee1161ccda01",
+                        "id_type": 2,
+                        "is_bool_dim": false,
+                        "category_name": "Shifts"
+                    }
+                ],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047069.855305
+            },
+            {
+                "_id": "68c9aba5241cb23d8fcff692",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a74b457cee1161ccd896",
+                "start_date": 1762732800,
+                "end_date": 1762732800,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047141.058854
+            },
+            {
+                "_id": "68c9abbc241cb23d8fcff693",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a74b457cee1161ccd896",
+                "start_date": 1763078400,
+                "end_date": 1763251200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047164.828982
+            },
+            {
+                "_id": "68c9abcc241cb23d8fcff694",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a74b457cee1161ccd896",
+                "start_date": 1763769600,
+                "end_date": 1763769600,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047180.519819
+            },
+            {
+                "_id": "68c9aea1241cb23d8fcff6b0",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a77f457cee1161ccd8b6",
+                "start_date": 1762560000,
+                "end_date": 1762646400,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047905.432611
+            },
+            {
+                "_id": "68c9aebd241cb23d8fcff6b1",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a77f457cee1161ccd8b6",
+                "start_date": 1763078400,
+                "end_date": 1763251200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047933.903955
+            },
+            {
+                "_id": "68c9aed1241cb23d8fcff6b2",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a77f457cee1161ccd8b6",
+                "start_date": 1763769600,
+                "end_date": 1763856000,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047953.636061
+            },
+            {
+                "_id": "68c9aeef241cb23d8fcff6b3",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a77f457cee1161ccd8b6",
+                "start_date": 1764547200,
+                "end_date": 1767484800,
+                "shift": "6894a0a7457cee1161ccd852",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047983.56975
+            },
+            {
+                "_id": "68c9abf9241cb23d8fcff695",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a74b457cee1161ccd896",
+                "start_date": 1764633600,
+                "end_date": 1764633600,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047225.160498
+            },
+            {
+                "_id": "68c9ac05241cb23d8fcff696",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a74b457cee1161ccd896",
+                "start_date": 1765065600,
+                "end_date": 1765065600,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047237.462609
+            },
+            {
+                "_id": "68c9ac15241cb23d8fcff697",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a74b457cee1161ccd896",
+                "start_date": 1765411200,
+                "end_date": 1765411200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047253.161376
+            },
+            {
+                "_id": "68c9ac20241cb23d8fcff698",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a74b457cee1161ccd896",
+                "start_date": 1765584000,
+                "end_date": 1765584000,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047264.151042
+            },
+            {
+                "_id": "68c9ac34241cb23d8fcff699",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a74b457cee1161ccd896",
+                "start_date": 1766188800,
+                "end_date": 1766880000,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047284.599696
+            },
+            {
+                "_id": "68c9ac3f241cb23d8fcff69a",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a74b457cee1161ccd896",
+                "start_date": 1766966400,
+                "end_date": 1766966400,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047295.132738
+            },
+            {
+                "_id": "68c9ac58241cb23d8fcff69b",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a75c457cee1161ccd89e",
+                "start_date": 1761955200,
+                "end_date": 1767484800,
+                "shift": "6894a0a7457cee1161ccd84c",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047320.990503
+            },
+            {
+                "_id": "68c9ac71241cb23d8fcff69c",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a76d457cee1161ccd8a6",
+                "start_date": 1762214400,
+                "end_date": 1762214400,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "6894b93c457cee1161ccd97f",
+                        "id_type": 3,
+                        "is_bool_dim": true,
+                        "category_name": "Bloc"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047345.184573
+            },
+            {
+                "_id": "68c9ac7e241cb23d8fcff69d",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a76d457cee1161ccd8a6",
+                "start_date": 1762819200,
+                "end_date": 1762819200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "6894b93c457cee1161ccd97f",
+                        "id_type": 3,
+                        "is_bool_dim": true,
+                        "category_name": "Bloc"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047358.392119
+            },
+            {
+                "_id": "68c9ac90241cb23d8fcff69e",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a76d457cee1161ccd8a6",
+                "start_date": 1763424000,
+                "end_date": 1763424000,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "6894b93c457cee1161ccd97f",
+                        "id_type": 3,
+                        "is_bool_dim": true,
+                        "category_name": "Bloc"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047376.511829
+            },
+            {
+                "_id": "68c9ac9e241cb23d8fcff69f",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a76d457cee1161ccd8a6",
+                "start_date": 1764028800,
+                "end_date": 1764028800,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "6894b93c457cee1161ccd97f",
+                        "id_type": 3,
+                        "is_bool_dim": true,
+                        "category_name": "Bloc"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047390.622518
+            },
+            {
+                "_id": "68c9acab241cb23d8fcff6a0",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a76d457cee1161ccd8a6",
+                "start_date": 1764633600,
+                "end_date": 1764633600,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "6894b93c457cee1161ccd97f",
+                        "id_type": 3,
+                        "is_bool_dim": true,
+                        "category_name": "Bloc"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047403.179849
+            },
+            {
+                "_id": "68c9acb7241cb23d8fcff6a1",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a76d457cee1161ccd8a6",
+                "start_date": 1765238400,
+                "end_date": 1765238400,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "6894b93c457cee1161ccd97f",
+                        "id_type": 3,
+                        "is_bool_dim": true,
+                        "category_name": "Bloc"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047415.774629
+            },
+            {
+                "_id": "68c9acc6241cb23d8fcff6a2",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a76d457cee1161ccd8a6",
+                "start_date": 1765843200,
+                "end_date": 1765843200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "6894b93c457cee1161ccd97f",
+                        "id_type": 3,
+                        "is_bool_dim": true,
+                        "category_name": "Bloc"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047430.266556
+            },
+            {
+                "_id": "68c9acdc241cb23d8fcff6a3",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a76d457cee1161ccd8a6",
+                "start_date": 1766448000,
+                "end_date": 1766448000,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "6894b93c457cee1161ccd97f",
+                        "id_type": 3,
+                        "is_bool_dim": true,
+                        "category_name": "Bloc"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047452.332128
+            },
+            {
+                "_id": "68c9acfc241cb23d8fcff6a4",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a76d457cee1161ccd8a6",
+                "start_date": 1762560000,
+                "end_date": 1762732800,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047484.695071
+            },
+            {
+                "_id": "68c9ad25241cb23d8fcff6a5",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a76d457cee1161ccd8a6",
+                "start_date": 1763164800,
+                "end_date": 1763251200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047525.006319
+            },
+            {
+                "_id": "68c9ad36241cb23d8fcff6a6",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a76d457cee1161ccd8a6",
+                "start_date": 1763424000,
+                "end_date": 1763510400,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047542.69074
+            },
+            {
+                "_id": "68c9ad4f241cb23d8fcff6a7",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a76d457cee1161ccd8a6",
+                "start_date": 1763596800,
+                "end_date": 1763769600,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047567.661967
+            },
+            {
+                "_id": "68c9ad67241cb23d8fcff6a8",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a76d457cee1161ccd8a6",
+                "start_date": 1766016000,
+                "end_date": 1766016000,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047591.822946
+            },
+            {
+                "_id": "68c9ad75241cb23d8fcff6a9",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a76d457cee1161ccd8a6",
+                "start_date": 1766188800,
+                "end_date": 1766188800,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047605.753247
+            },
+            {
+                "_id": "68c9ad8b241cb23d8fcff6aa",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a76d457cee1161ccd8a6",
+                "start_date": 1766793600,
+                "end_date": 1767484800,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047627.718318
+            },
+            {
+                "_id": "68c9adc2241cb23d8fcff6ab",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a777457cee1161ccd8ae",
+                "start_date": 1761955200,
+                "end_date": 1764460800,
+                "shift": "6894a0a7457cee1161ccd852",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047682.823713
+            },
+            {
+                "_id": "68c9add0241cb23d8fcff6ac",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a777457cee1161ccd8ae",
+                "start_date": 1764892800,
+                "end_date": 1764892800,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047696.504013
+            },
+            {
+                "_id": "68c9adf5241cb23d8fcff6ad",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a777457cee1161ccd8ae",
+                "start_date": 1765152000,
+                "end_date": 1765670400,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047733.468311
+            },
+            {
+                "_id": "68c9ae0f241cb23d8fcff6ae",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a777457cee1161ccd8ae",
+                "start_date": 1765411200,
+                "end_date": 1765411200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": "Tps Administratif Matin",
+                        "id": "6894baad457cee1161ccd9b0",
+                        "id_type": 2,
+                        "is_bool_dim": false,
+                        "category_name": "Shifts"
+                    }
+                ],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047759.814383
+            },
+            {
+                "_id": "68c9ae23241cb23d8fcff6af",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a777457cee1161ccd8ae",
+                "start_date": 1766966400,
+                "end_date": 1767484800,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758047779.574605
+            },
+            {
+                "_id": "68c9af08241cb23d8fcff6b4",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a78b457cee1161ccd8be",
+                "start_date": 1762214400,
+                "end_date": 1762214400,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758048008.042865
+            },
+            {
+                "_id": "68c9af19241cb23d8fcff6b5",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a78b457cee1161ccd8be",
+                "start_date": 1762560000,
+                "end_date": 1762560000,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758048025.625902
+            },
+            {
+                "_id": "68c9af34241cb23d8fcff6b7",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a78b457cee1161ccd8be",
+                "start_date": 1762819200,
+                "end_date": 1762819200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758048052.778691
+            },
+            {
+                "_id": "68c9af46241cb23d8fcff6b8",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a78b457cee1161ccd8be",
+                "start_date": 1762905600,
+                "end_date": 1762905600,
+                "shift": "6894a0a7457cee1161ccd849",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758048070.574005
+            },
+            {
+                "_id": "68c9af58241cb23d8fcff6b9",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a78b457cee1161ccd8be",
+                "start_date": 1763683200,
+                "end_date": 1763856000,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758048088.463673
+            },
+            {
+                "_id": "68c9af7c241cb23d8fcff6ba",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a78b457cee1161ccd8be",
+                "start_date": 1765152000,
+                "end_date": 1765238400,
+                "shift": "6894a0a7457cee1161ccd84f",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758048124.702484
+            },
+            {
+                "_id": "68c9af98241cb23d8fcff6bb",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a78b457cee1161ccd8be",
+                "start_date": 1765324800,
+                "end_date": 1765324800,
+                "shift": "6894a0a7457cee1161ccd849",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758048152.912302
+            },
+            {
+                "_id": "68c9afaa241cb23d8fcff6bc",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a78b457cee1161ccd8be",
+                "start_date": 1765497600,
+                "end_date": 1765497600,
+                "shift": "6894a0a7457cee1161ccd851",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758048170.371439
+            },
+            {
+                "_id": "68c9afb7241cb23d8fcff6bd",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a78b457cee1161ccd8be",
+                "start_date": 1765843200,
+                "end_date": 1765843200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758048183.969302
+            },
+            {
+                "_id": "68c9afc9241cb23d8fcff6be",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a78b457cee1161ccd8be",
+                "start_date": 1766188800,
+                "end_date": 1766880000,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758048201.463463
+            },
+            {
+                "_id": "68c9afdd241cb23d8fcff6bf",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a795457cee1161ccd8c6",
+                "start_date": 1764288000,
+                "end_date": 1764288000,
+                "shift": "6894a0a7457cee1161ccd84f",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758048221.746201
+            },
+            {
+                "_id": "68c9aff5241cb23d8fcff6c0",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a795457cee1161ccd8c6",
+                "start_date": 1764806400,
+                "end_date": 1764806400,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758048245.777866
+            },
+            {
+                "_id": "68c9b00a241cb23d8fcff6c1",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a795457cee1161ccd8c6",
+                "start_date": 1766966400,
+                "end_date": 1767484800,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758048266.967686
+            },
+            {
+                "_id": "68c9b047241cb23d8fcff6c2",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a7ac457cee1161ccd8ce",
+                "start_date": 1762214400,
+                "end_date": 1762214400,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": "Tps Administratif Journée",
+                        "id": "6894bd14457cee1161ccda01",
+                        "id_type": 2,
+                        "is_bool_dim": false,
+                        "category_name": "Shifts"
+                    }
+                ],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758048327.585799
+            },
+            {
+                "_id": "68c9bc16241cb23d8fcff6c3",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a7ac457cee1161ccd8ce",
+                "start_date": 1763424000,
+                "end_date": 1763424000,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": "Tps Administratif Journée",
+                        "id": "6894bd14457cee1161ccda01",
+                        "id_type": 2,
+                        "is_bool_dim": false,
+                        "category_name": "Shifts"
+                    }
+                ],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758051350.007151
+            },
+            {
+                "_id": "68c9bc22241cb23d8fcff6c4",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a7ac457cee1161ccd8ce",
+                "start_date": 1764028800,
+                "end_date": 1764028800,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": "Tps Administratif Journée",
+                        "id": "6894bd14457cee1161ccda01",
+                        "id_type": 2,
+                        "is_bool_dim": false,
+                        "category_name": "Shifts"
+                    }
+                ],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758051362.529827
+            },
+            {
+                "_id": "68c9bc36241cb23d8fcff6c5",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a7ac457cee1161ccd8ce",
+                "start_date": 1764288000,
+                "end_date": 1764288000,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758051382.661093
+            },
+            {
+                "_id": "68d3e07083f7a528e9c9eb01",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a7ac457cee1161ccd8d6",
+                "start_date": 1766275200,
+                "end_date": 1766793600,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758716016.059343
+            },
+            {
+                "_id": "68d3e0b183f7a528e9c9eb02",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a7ac457cee1161ccd8de",
+                "start_date": 1763164800,
+                "end_date": 1763856000,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758716081.275102
+            },
+            {
+                "_id": "68d3e0cf83f7a528e9c9eb03",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a7ac457cee1161ccd8de",
+                "start_date": 1763942400,
+                "end_date": 1764460800,
+                "shift": "6894a0a7457cee1161ccd84c",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758716111.856764
+            },
+            {
+                "_id": "68d3e0f483f7a528e9c9eb04",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a7ac457cee1161ccd8de",
+                "start_date": 1766188800,
+                "end_date": 1766880000,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758716148.550028
+            },
+            {
+                "_id": "68d3e11283f7a528e9c9eb05",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a7ac457cee1161ccd8e6",
+                "start_date": 1762300800,
+                "end_date": 1762646400,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758716178.529471
+            },
+            {
+                "_id": "68d3e12583f7a528e9c9eb06",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a7ac457cee1161ccd8e6",
+                "start_date": 1763424000,
+                "end_date": 1763596800,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758716197.058444
+            },
+            {
+                "_id": "68d3e14183f7a528e9c9eb07",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a7ac457cee1161ccd8e6",
+                "start_date": 1764374400,
+                "end_date": 1764460800,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758716225.994412
+            },
+            {
+                "_id": "68d3e15883f7a528e9c9eb08",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a7ac457cee1161ccd8e6",
+                "start_date": 1765411200,
+                "end_date": 1765411200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758716248.360601
+            },
+            {
+                "_id": "68d3e16683f7a528e9c9eb09",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a7ac457cee1161ccd8e6",
+                "start_date": 1766361600,
+                "end_date": 1766880000,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758716262.322316
+            },
+            {
+                "_id": "68d3e18583f7a528e9c9eb0a",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "68c99bad241cb23d8fcff61f",
+                "start_date": 1764288000,
+                "end_date": 1764288000,
+                "shift": "6894a0a7457cee1161ccd84f",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758716293.058401
+            },
+            {
+                "_id": "68d3e1a083f7a528e9c9eb0b",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "68c99bad241cb23d8fcff61f",
+                "start_date": 1766361600,
+                "end_date": 1766793600,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758716320.550415
+            },
+            {
+                "_id": "68d3e1d483f7a528e9c9eb0c",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a7ad457cee1161ccd8ee",
+                "start_date": 1762128000,
+                "end_date": 1762819200,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758716372.191877
+            },
+            {
+                "_id": "68d3e1e483f7a528e9c9eb0d",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a7ad457cee1161ccd8ee",
+                "start_date": 1763683200,
+                "end_date": 1763856000,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758716388.955584
+            },
+            {
+                "_id": "68d3e1fc83f7a528e9c9eb0e",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a7ad457cee1161ccd8ee",
+                "start_date": 1764374400,
+                "end_date": 1764460800,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758716412.733666
+            },
+            {
+                "_id": "68d3e21a83f7a528e9c9eb0f",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a7ad457cee1161ccd8ee",
+                "start_date": 1764633600,
+                "end_date": 1764633600,
+                "shift": "6894a0a7457cee1161ccd851",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758716442.640404
+            },
+            {
+                "_id": "68c9bc64241cb23d8fcff6c6",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a7ac457cee1161ccd8ce",
+                "start_date": 1764633600,
+                "end_date": 1764633600,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": "Tps Administratif Journée",
+                        "id": "6894bd14457cee1161ccda01",
+                        "id_type": 2,
+                        "is_bool_dim": false,
+                        "category_name": "Shifts"
+                    }
+                ],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758051428.443001
+            },
+            {
+                "_id": "68c9bc8f241cb23d8fcff6c7",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a7ac457cee1161ccd8ce",
+                "start_date": 1765238400,
+                "end_date": 1765238400,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": "Tps Administratif Journée",
+                        "id": "6894bd14457cee1161ccda01",
+                        "id_type": 2,
+                        "is_bool_dim": false,
+                        "category_name": "Shifts"
+                    }
+                ],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758051471.255704
+            },
+            {
+                "_id": "68c9bc9d241cb23d8fcff6c8",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a7ac457cee1161ccd8ce",
+                "start_date": 1765238400,
+                "end_date": 1765238400,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758051485.950636
+            },
+            {
+                "_id": "68c9bcb2241cb23d8fcff6c9",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a7ac457cee1161ccd8ce",
+                "start_date": 1765497600,
+                "end_date": 1765497600,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758051506.497478
+            },
+            {
+                "_id": "68c9bcc0241cb23d8fcff6ca",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a7ac457cee1161ccd8ce",
+                "start_date": 1765670400,
+                "end_date": 1765670400,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758051520.104638
+            },
+            {
+                "_id": "68c9bcd5241cb23d8fcff6cb",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a7ac457cee1161ccd8ce",
+                "start_date": 1765756800,
+                "end_date": 1765756800,
+                "shift": "6894a0a7457cee1161ccd84f",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758051541.070927
+            },
+            {
+                "_id": "68c9bce5241cb23d8fcff6cc",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a7ac457cee1161ccd8ce",
+                "start_date": 1765843200,
+                "end_date": 1765843200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": "Tps Administratif Journée",
+                        "id": "6894bd14457cee1161ccda01",
+                        "id_type": 2,
+                        "is_bool_dim": false,
+                        "category_name": "Shifts"
+                    }
+                ],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758051557.167792
+            },
+            {
+                "_id": "68c9bcfd241cb23d8fcff6cd",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a7ac457cee1161ccd8ce",
+                "start_date": 1766188800,
+                "end_date": 1766880000,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758051581.084157
+            },
+            {
+                "_id": "68d3e23083f7a528e9c9eb10",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a7ad457cee1161ccd8ee",
+                "start_date": 1765497600,
+                "end_date": 1765670400,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758716464.855671
+            },
+            {
+                "_id": "68d3e24783f7a528e9c9eb11",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a7ad457cee1161ccd8ee",
+                "start_date": 1766188800,
+                "end_date": 1766880000,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758716487.400641
+            },
+            {
+                "_id": "68d3e35683f7a528e9c9eb12",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a7ad457cee1161ccd8f6",
+                "start_date": 1762128000,
+                "end_date": 1767484800,
+                "shift": "6894a0a7457cee1161ccd84c",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758716758.150232
+            },
+            {
+                "_id": "68d3e39a83f7a528e9c9eb13",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a695457cee1161ccd876",
+                "start_date": 1767312000,
+                "end_date": 1767484800,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758716826.878855
+            },
+            {
+                "_id": "68d3e3b083f7a528e9c9eb14",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a7ac457cee1161ccd8e6",
+                "start_date": 1767484800,
+                "end_date": 1767484800,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758716848.683601
+            },
+            {
+                "_id": "68d3e3cf83f7a528e9c9eb15",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a7ad457cee1161ccd8fe",
+                "start_date": 1765584000,
+                "end_date": 1765670400,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758716879.517248
+            },
+            {
+                "_id": "68d3e3ed83f7a528e9c9eb16",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a7ad457cee1161ccd8fe",
+                "start_date": 1766275200,
+                "end_date": 1767484800,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758716909.87103
+            },
+            {
+                "_id": "68d3e63783f7a528e9c9eb17",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a7ad457cee1161ccd906",
+                "start_date": 1762473600,
+                "end_date": 1762646400,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758717495.826684
+            },
+            {
+                "_id": "68d3e65083f7a528e9c9eb18",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a7ad457cee1161ccd906",
+                "start_date": 1764892800,
+                "end_date": 1765065600,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758717520.038841
+            },
+            {
+                "_id": "68d3e66283f7a528e9c9eb19",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a7ad457cee1161ccd906",
+                "start_date": 1766707200,
+                "end_date": 1766707200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758717538.543017
+            },
+            {
+                "_id": "68d3e67283f7a528e9c9eb1a",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a7ad457cee1161ccd906",
+                "start_date": 1766793600,
+                "end_date": 1767484800,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758717554.848181
+            },
+            {
+                "_id": "68d3e70c83f7a528e9c9eb1b",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a807457cee1161ccd916",
+                "start_date": 1762732800,
+                "end_date": 1762819200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758717708.284277
+            },
+            {
+                "_id": "68d3e72283f7a528e9c9eb1c",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a807457cee1161ccd916",
+                "start_date": 1762992000,
+                "end_date": 1762992000,
+                "shift": "6894a0a7457cee1161ccd842",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758717730.642967
+            },
+            {
+                "_id": "68d3e74283f7a528e9c9eb1d",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a807457cee1161ccd916",
+                "start_date": 1764288000,
+                "end_date": 1764288000,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "6894b93c457cee1161ccd97f",
+                        "id_type": 3,
+                        "is_bool_dim": true,
+                        "category_name": "Bloc"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758717762.939877
+            },
+            {
+                "_id": "68d3e75783f7a528e9c9eb1e",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a807457cee1161ccd916",
+                "start_date": 1764374400,
+                "end_date": 1764460800,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758717783.36635
+            },
+            {
+                "_id": "68d3e76983f7a528e9c9eb1f",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a807457cee1161ccd916",
+                "start_date": 1766016000,
+                "end_date": 1766016000,
+                "shift": "6894a0a7457cee1161ccd842",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758717801.582019
+            },
+            {
+                "_id": "68d3e78a83f7a528e9c9eb20",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a807457cee1161ccd916",
+                "start_date": 1766102400,
+                "end_date": 1766188800,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758717834.942038
+            },
+            {
+                "_id": "68d3e79d83f7a528e9c9eb21",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a807457cee1161ccd916",
+                "start_date": 1766793600,
+                "end_date": 1767484800,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758717853.696997
+            },
+            {
+                "_id": "68d3e81883f7a528e9c9eb22",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a807457cee1161ccd91e",
+                "start_date": 1765152000,
+                "end_date": 1766620800,
+                "shift": "6894a0a7457cee1161ccd842",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758717976.164869
+            },
+            {
+                "_id": "68d3e89e83f7a528e9c9eb23",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a808457cee1161ccd926",
+                "start_date": 1766188800,
+                "end_date": 1766880000,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718110.330927
+            },
+            {
+                "_id": "68d3e8b383f7a528e9c9eb24",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a808457cee1161ccd936",
+                "start_date": 1764288000,
+                "end_date": 1764288000,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718131.24147
+            },
+            {
+                "_id": "68d3e8ca83f7a528e9c9eb25",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a808457cee1161ccd936",
+                "start_date": 1766707200,
+                "end_date": 1767484800,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718154.811508
+            },
+            {
+                "_id": "68d3e8e683f7a528e9c9eb26",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a84b457cee1161ccd93e",
+                "start_date": 1762300800,
+                "end_date": 1762300800,
+                "shift": "6894a0a7457cee1161ccd849",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718182.559323
+            },
+            {
+                "_id": "68d3e8f083f7a528e9c9eb27",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a84b457cee1161ccd93e",
+                "start_date": 1762905600,
+                "end_date": 1762905600,
+                "shift": "6894a0a7457cee1161ccd849",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718192.716784
+            },
+            {
+                "_id": "68d3e8ff83f7a528e9c9eb28",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a84b457cee1161ccd93e",
+                "start_date": 1763510400,
+                "end_date": 1763510400,
+                "shift": "6894a0a7457cee1161ccd84a",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718207.769569
+            },
+            {
+                "_id": "68d3e90e83f7a528e9c9eb29",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a84b457cee1161ccd93e",
+                "start_date": 1764115200,
+                "end_date": 1764115200,
+                "shift": "6894a0a7457cee1161ccd849",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718222.608184
+            },
+            {
+                "_id": "68d3e91783f7a528e9c9eb2a",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a84b457cee1161ccd93e",
+                "start_date": 1764720000,
+                "end_date": 1764720000,
+                "shift": "6894a0a7457cee1161ccd849",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718231.555863
+            },
+            {
+                "_id": "68d3e92383f7a528e9c9eb2b",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a84b457cee1161ccd93e",
+                "start_date": 1765324800,
+                "end_date": 1765324800,
+                "shift": "6894a0a7457cee1161ccd849",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718243.188822
+            },
+            {
+                "_id": "68d3e97683f7a528e9c9eb2c",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a84b457cee1161ccd93e",
+                "start_date": 1766188800,
+                "end_date": 1766880000,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718326.289801
+            },
+            {
+                "_id": "68d3e99683f7a528e9c9eb2d",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a84b457cee1161ccd93e",
+                "start_date": 1765929600,
+                "end_date": 1765929600,
+                "shift": "6894a0a7457cee1161ccd849",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718358.385121
+            },
+            {
+                "_id": "68d3ea6a83f7a528e9c9eb2e",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a84b457cee1161ccd946",
+                "start_date": 1762560000,
+                "end_date": 1763251200,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718570.896007
+            },
+            {
+                "_id": "68d3ea8c83f7a528e9c9eb2f",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a84b457cee1161ccd946",
+                "start_date": 1764547200,
+                "end_date": 1764547200,
+                "shift": "6894a0a7457cee1161ccd84f",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718604.755033
+            },
+            {
+                "_id": "68d3eab483f7a528e9c9eb30",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a864457cee1161ccd956",
+                "start_date": 1762560000,
+                "end_date": 1763251200,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718644.035338
+            },
+            {
+                "_id": "68d3eacc83f7a528e9c9eb31",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a864457cee1161ccd956",
+                "start_date": 1764892800,
+                "end_date": 1765065600,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718668.303303
+            },
+            {
+                "_id": "68d3eadb83f7a528e9c9eb32",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a864457cee1161ccd956",
+                "start_date": 1760659200,
+                "end_date": 1760659200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718683.85856
+            },
+            {
+                "_id": "68d3eaf983f7a528e9c9eb33",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a864457cee1161ccd95e",
+                "start_date": 1762732800,
+                "end_date": 1764460800,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718713.925417
+            },
+            {
+                "_id": "68d3eb1e83f7a528e9c9eb34",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a864457cee1161ccd95e",
+                "start_date": 1765497600,
+                "end_date": 1765584000,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718750.617995
+            },
+            {
+                "_id": "68d3eb3783f7a528e9c9eb35",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a864457cee1161ccd95e",
+                "start_date": 1765756800,
+                "end_date": 1766102400,
+                "shift": "6894a0a7457cee1161ccd849",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718775.382646
+            },
+            {
+                "_id": "68d3eb6583f7a528e9c9eb36",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a884457cee1161ccd966",
+                "start_date": 1764547200,
+                "end_date": 1767484800,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718821.248063
+            },
+            {
+                "_id": "68d3eb7f83f7a528e9c9eb37",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a884457cee1161ccd966",
+                "start_date": 1765756800,
+                "end_date": 1767484800,
+                "shift": "6894a0a7457cee1161ccd84c",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718847.7003
+            },
+            {
+                "_id": "68d3ebe983f7a528e9c9eb38",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a884457cee1161ccd96e",
+                "start_date": 1762300800,
+                "end_date": 1762300800,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718953.736988
+            },
+            {
+                "_id": "68d3ec0183f7a528e9c9eb39",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a884457cee1161ccd96e",
+                "start_date": 1762732800,
+                "end_date": 1762732800,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": "Tps Administratif Après Midi",
+                        "id": "6894bbe6457cee1161ccd9cb",
+                        "id_type": 2,
+                        "is_bool_dim": false,
+                        "category_name": "Shifts"
+                    }
+                ],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718977.692629
+            },
+            {
+                "_id": "68d3ec1283f7a528e9c9eb3a",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a884457cee1161ccd96e",
+                "start_date": 1764201600,
+                "end_date": 1764201600,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758718994.325771
+            },
+            {
+                "_id": "68d3ec2683f7a528e9c9eb3b",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a884457cee1161ccd96e",
+                "start_date": 1764806400,
+                "end_date": 1764806400,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758719014.448131
+            },
+            {
+                "_id": "68d3ec3783f7a528e9c9eb3c",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a884457cee1161ccd96e",
+                "start_date": 1764979200,
+                "end_date": 1764979200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758719031.946198
+            },
+            {
+                "_id": "68d3ec4983f7a528e9c9eb3d",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a884457cee1161ccd96e",
+                "start_date": 1765756800,
+                "end_date": 1765756800,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": "Tps Administratif Après Midi",
+                        "id": "6894bbe6457cee1161ccd9cb",
+                        "id_type": 2,
+                        "is_bool_dim": false,
+                        "category_name": "Shifts"
+                    }
+                ],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758719049.824979
+            },
+            {
+                "_id": "68d3ec5583f7a528e9c9eb3e",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a884457cee1161ccd96e",
+                "start_date": 1765929600,
+                "end_date": 1765929600,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758719061.825743
+            },
+            {
+                "_id": "68d3ec6783f7a528e9c9eb3f",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a884457cee1161ccd96e",
+                "start_date": 1766102400,
+                "end_date": 1766275200,
+                "shift": null,
+                "shift_options": [
+                    {
+                        "name": true,
+                        "id": "",
+                        "id_type": 5,
+                        "is_bool_dim": true,
+                        "category_name": "Duties"
+                    }
+                ],
+                "negative": true,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758719079.947642
+            },
+            {
+                "_id": "68d3ec7b83f7a528e9c9eb40",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "leave",
+                "worker": "6894a884457cee1161ccd96e",
+                "start_date": 1766361600,
+                "end_date": 1766793600,
+                "shift": "6894a0a7457cee1161ccd843",
+                "shift_options": [],
+                "negative": false,
+                "hard": true,
+                "status": "pending",
+                "fulfillment": "unfulfilled",
+                "comment": "",
+                "created_at": 1758719099.645907
             }
         ],
         "schedules": [

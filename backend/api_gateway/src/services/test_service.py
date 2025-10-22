@@ -456,9 +456,13 @@ class SolverTestScenariosService(BaseService):
                 s.team_id = team_id
                 s.id = ""  # Clear ID to let DB assign a new one
 
-                for c_id in s.constraint_build_ids:
-                    if c_id in maps.get("constraints", {}):
-                        c_id = maps["constraints"][c_id]
+                # Remap constraint_build_ids to created constraint ids
+                if maps.get("constraints"):
+                    remapped_ids: list[str] = []
+                    for c_id in s.constraint_build_ids:
+                        if c_id in maps["constraints"]:
+                            remapped_ids.append(maps["constraints"][c_id])
+                    s.constraint_build_ids = remapped_ids
 
                 if not out.get("schedules", None):
                     out["schedules"] = []
