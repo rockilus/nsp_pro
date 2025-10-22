@@ -15,8 +15,10 @@ from shared.database.schemas.worker import WorkerSchema
 from shared.database.schemas.constraint_build import ConstraintBuildSchema
 from shared.schemas.core import (
     Attribute,
+    SWOIdTypes,
     AttributeOwnerType,
-    Dimension,BlockTypeOptions,
+    Dimension,
+    BlockTypeOptions,
     DimEntry,
     Schedule,
     ShiftDemandNew,
@@ -212,15 +214,17 @@ class SolverTestScenariosService(BaseService):
                     "Expected all specialties to be Specialty instances"
                 )
             for s in specialties:
-                if not maps.get("specialties", None):
-                    maps["specialties"] = {}
                 s.team_id = team_id
                 s_id = s.id
                 s.id = ""  # Clear ID to let DB assign a new one
                 specialty_saved = (
                     self.collection.specialty_db.create_specialty(specialty=s)
                 )
+
+                if not maps.get("specialties", None):
+                    maps["specialties"] = {}
                 maps["specialties"][s_id] = specialty_saved.id
+
                 if not out.get("specialties", None):
                     out["specialties"] = []
                 out["specialties"].append(specialty_saved)
@@ -230,8 +234,6 @@ class SolverTestScenariosService(BaseService):
             if not all(isinstance(w, Worker) for w in workers):
                 raise ValueError("Expected all workers to be Worker instances")
             for w in workers:
-                if not maps.get("workers", None):
-                    maps["workers"] = {}
                 w.team_id = team_id
                 # Remap specialty ids to the newly created specialty ids
                 if maps.get("specialties"):
@@ -244,6 +246,9 @@ class SolverTestScenariosService(BaseService):
                 worker_saved = self.collection.worker_db.create_worker(
                     worker=w
                 )
+
+                if not maps.get("workers", None):
+                    maps["workers"] = {}
                 maps["workers"][w_id] = worker_saved.id
 
                 if not out.get("workers", None):
@@ -255,8 +260,6 @@ class SolverTestScenariosService(BaseService):
             if not all(isinstance(s, Shift) for s in shifts):
                 raise ValueError("Expected all shifts to be Shift instances")
             for s in shifts:
-                if not maps.get("shifts", None):
-                    maps["shifts"] = {}
                 s.team_id = team_id
                 # Remap staffing specialty_ids to the newly created
                 # specialty ids
@@ -269,6 +272,9 @@ class SolverTestScenariosService(BaseService):
                 s_id = s.id
                 s.id = ""  # Clear ID to let DB assign a new one
                 shift_saved = self.collection.shift_db.create_shift(shift=s)
+
+                if not maps.get("shifts", None):
+                    maps["shifts"] = {}
                 maps["shifts"][s_id] = shift_saved.id
 
                 if not out.get("shifts", None):
@@ -282,15 +288,17 @@ class SolverTestScenariosService(BaseService):
                     "Expected all dimensions to be Dimension instances"
                 )
             for d in dimensions:
-                if not maps.get("dimensions", None):
-                    maps["dimensions"] = {}
                 d.team_id = team_id
                 d_id = d.id
                 d.id = ""  # Clear ID to let DB assign a new one
                 dimension_saved = (
                     self.collection.dimension_db.create_dimension(dimension=d)
                 )
+
+                if not maps.get("dimensions", None):
+                    maps["dimensions"] = {}
                 maps["dimensions"][d_id] = dimension_saved.id
+
                 if not out.get("dimensions", None):
                     out["dimensions"] = []
                 out["dimensions"].append(dimension_saved)
@@ -302,8 +310,6 @@ class SolverTestScenariosService(BaseService):
                     "Expected all dim entries to be DimEntry instances"
                 )
             for de in dim_entries:
-                if not maps.get("dim_entries", None):
-                    maps["dim_entries"] = {}
                 de_id = de.id
                 de.id = ""  # Clear ID to let DB assign a new one
                 # Update dimension reference
@@ -312,7 +318,11 @@ class SolverTestScenariosService(BaseService):
                 dim_entry_saved = (
                     self.collection.dim_entry_db.create_dim_entry(dim_entry=de)
                 )
+
+                if not maps.get("dim_entries", None):
+                    maps["dim_entries"] = {}
                 maps["dim_entries"][de_id] = dim_entry_saved.id
+
                 if not out.get("dim_entries", None):
                     out["dim_entries"] = []
                 out["dim_entries"].append(dim_entry_saved)
@@ -324,8 +334,6 @@ class SolverTestScenariosService(BaseService):
                     "Expected all attributes to be Attribute instances"
                 )
             for a in attributes:
-                if not maps.get("attributes", None):
-                    maps["attributes"] = {}
                 a_id = a.id
                 a.id = ""  # Clear ID to let DB assign a new one
                 if a.owner_type == AttributeOwnerType.WORKER:
@@ -337,7 +345,11 @@ class SolverTestScenariosService(BaseService):
                 attribute_saved = (
                     self.collection.attribute_db.create_attribute(attribute=a)
                 )
+
+                if not maps.get("attributes", None):
+                    maps["attributes"] = {}
                 maps["attributes"][a_id] = attribute_saved.id
+
                 if not out.get("attributes", None):
                     out["attributes"] = []
                 out["attributes"].append(attribute_saved)
@@ -363,6 +375,7 @@ class SolverTestScenariosService(BaseService):
                         shift_demand=sd
                     )
                 )
+
                 if not out.get("shift_demands", None):
                     out["shift_demands"] = []
                 out["shift_demands"].append(shift_demand_saved)
@@ -389,13 +402,46 @@ class SolverTestScenariosService(BaseService):
                                 "Expected block value to be list of shift_worker_option"
                             )
                         for swo in b.value:
-                            
+                            # Remap ids for known id_types
+                            # Supported: WORKER, SHIFT, DIMENSION, SPECIALTY
+                            try:
+                                if swo.id_type == SWOIdTypes.WORKER:
+                                    if (
+                                        maps.get("workers")
+                                        and swo.id in maps["workers"]
+                                    ):
+                                        swo.id = maps["workers"][swo.id]
+                                elif swo.id_type == SWOIdTypes.SHIFT:
+                                    if (
+                                        maps.get("shifts")
+                                        and swo.id in maps["shifts"]
+                                    ):
+                                        swo.id = maps["shifts"][swo.id]
+                                elif swo.id_type == SWOIdTypes.DIMENSION:
+                                    if (
+                                        maps.get("dimensions")
+                                        and swo.id in maps["dimensions"]
+                                    ):
+                                        swo.id = maps["dimensions"][swo.id]
+                                elif swo.id_type == SWOIdTypes.SPECIALTY:
+                                    if (
+                                        maps.get("specialties")
+                                        and swo.id in maps["specialties"]
+                                    ):
+                                        swo.id = maps["specialties"][swo.id]
+                            except Exception:
+                                # be defensive: if any unexpected structure is encountered,
+                                # skip remapping for this option
+                                continue
 
-                constraint_saved = (
-                    self.collection.constraint_build_db.create_constraint_build(
-                        constraint_build=c
-                    )
+                constraint_saved = self.collection.constraint_build_db.create_constraint_build(
+                    constraint_build=c
                 )
+
+                if not maps.get("constraints", None):
+                    maps["constraints"] = {}
+                maps["constraints"][c_id] = constraint_saved.id
+
                 if not out.get("constraints", None):
                     out["constraints"] = []
                 out["constraints"].append(constraint_saved)
@@ -409,6 +455,10 @@ class SolverTestScenariosService(BaseService):
             for s in schedules:
                 s.team_id = team_id
                 s.id = ""  # Clear ID to let DB assign a new one
+
+                for c_id in s.constraint_build_ids:
+                    if c_id in maps.get("constraints", {}):
+                        c_id = maps["constraints"][c_id]
 
                 if not out.get("schedules", None):
                     out["schedules"] = []
