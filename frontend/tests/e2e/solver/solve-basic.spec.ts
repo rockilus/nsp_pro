@@ -12,7 +12,11 @@ import { ShiftType } from "@/types/shift";
 
 // Hardcoded list of test scenarios
 // This list is used across multiple tests to ensure consistency
-const TEST_SCENARIOS = ["basic_coverage", "benoit_scenario_0"] as const;
+const TEST_SCENARIOS = [
+  "basic_coverage",
+  "benoit_scenario_0",
+  "benoit_scenario_1",
+] as const;
 
 test.describe("Solver - Basic Coverage", () => {
   test("should list available solver test scenarios", async ({}, testInfo) => {
@@ -25,9 +29,9 @@ test.describe("Solver - Basic Coverage", () => {
     console.log(`Found ${scenarios.length} available scenarios:`);
 
     // Verify all test scenarios exist
+    // Ensure every expected test scenario appears in the returned list
     for (const scenarioName of TEST_SCENARIOS) {
-      const scenario = scenarios.find((s) => s === scenarioName);
-      expect(scenario).toBeDefined();
+      expect(scenarios).toContain(scenarioName);
       console.log(`   ✓ ${scenarioName}`);
     }
   });
