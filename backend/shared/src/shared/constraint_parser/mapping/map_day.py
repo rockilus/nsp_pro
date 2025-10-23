@@ -23,6 +23,7 @@ WEEK_DAYS: Tuple[str, ...] = (
 
 
 class MapDay:
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(
         self,
         dates_hist: List[date],
@@ -44,9 +45,7 @@ class MapDay:
             return self.dates_campaign
         if selector == VarDaySelectorOptions.WEEK_DAY_INDEX:
             return [d for d in self.dates_campaign if d.weekday() == target]
-        raise NotImplementedError(
-            f"Day selector {selector} " + "not implemented"
-        )
+        raise NotImplementedError(f"Day selector {selector} " + "not implemented")
 
     def get_coords_days_ord(
         self, cba: ConstraintBuildAugmented, interval: int
@@ -56,18 +55,14 @@ class MapDay:
         target = self.get_target(cba.blocks, cba.constraint_type)
 
         interval_abs = abs(interval)
-        dates_constraint = (
-            self.dates_hist[-interval_abs:] + self.dates_campaign
-        )
+        dates_constraint = self.dates_hist[-interval_abs:] + self.dates_campaign
 
         if selector == VarDaySelectorOptions.ALL:
             for i in range(
                 abs(min(interval, 0)),
                 len(dates_constraint) - max(interval, 0),
             ):
-                d_vars.append(
-                    (dates_constraint[i], dates_constraint[i + interval])
-                )
+                d_vars.append((dates_constraint[i], dates_constraint[i + interval]))
             return d_vars
         start = target if (target + interval >= 0) else target + NUM_DAYS_WEEK
         d_constraints_weekday_0 = dates_constraint[0].weekday()
@@ -85,9 +80,7 @@ class MapDay:
             )
         return d_vars
 
-    def get_coords_days_sum(
-        self, cba: ConstraintBuildAugmented
-    ) -> List[List[date]]:
+    def get_coords_days_sum(self, cba: ConstraintBuildAugmented) -> List[List[date]]:
         selector = self.get_selector(cba.blocks, cba.constraint_type)
         if selector == VarDaySelectorOptions.ALL:
             return [self.dates_campaign]
@@ -122,10 +115,9 @@ class MapDay:
         dates_constraint = self.dates_hist[-target_abs:] + self.dates_campaign
         if selector == VarDaySelectorOptions.ALL:
             return dates_constraint
-        raise NotImplementedError(
-            f"Day selector {selector} " + "not implemented"
-        )
+        raise NotImplementedError(f"Day selector {selector} " + "not implemented")
 
+    # pylint: disable=too-many-branches, too-many-return-statements
     def get_selector(
         self, blocks: List[Block], cstr_type: ConstraintType
     ) -> VarDaySelectorOptions:
@@ -139,15 +131,11 @@ class MapDay:
                     return VarDaySelectorOptions.MONTH
                 if timing_block.value == "per year":
                     return VarDaySelectorOptions.YEAR
-                raise ValueError(
-                    f"Operator {timing_block.value} not recognized"
-                )
+                raise ValueError(f"Operator {timing_block.value} not recognized")
             if cstr_type == ConstraintType.SEQ:
                 if timing_block.value == "consecutive":
                     return VarDaySelectorOptions.ALL
-                raise ValueError(
-                    f"Operator {timing_block.value} not recognized"
-                )
+                raise ValueError(f"Operator {timing_block.value} not recognized")
             if cstr_type == ConstraintType.ORD:
                 if timing_block.value in ["before", "after"]:
                     if weekday_block:
@@ -160,15 +148,10 @@ class MapDay:
                 return VarDaySelectorOptions.WEEK_DAY_INDEX
         raise ValueError("Timing block not found")
 
-    def get_target(
-        self, blocks: List[Block], cstr_type: ConstraintType
-    ) -> int:
+    def get_target(self, blocks: List[Block], cstr_type: ConstraintType) -> int:
         if cstr_type in [ConstraintType.SUM, ConstraintType.SEQ]:
             return 0
-        if (
-            self.get_selector(blocks, cstr_type)
-            != VarDaySelectorOptions.WEEK_DAY_INDEX
-        ):
+        if self.get_selector(blocks, cstr_type) != VarDaySelectorOptions.WEEK_DAY_INDEX:
             return 0
         weekday_block = find_block_by_name(blocks, BlockNameOptions.WEEKDAY)
         if weekday_block:
@@ -177,9 +160,7 @@ class MapDay:
             raise ValueError(f"Weekday {weekday_block.value} not recognized")
         raise ValueError("Weekday block not found")
 
-    def get_interval(
-        self, blocks: List[Block], cstr_type: ConstraintType
-    ) -> int:
+    def get_interval(self, blocks: List[Block], cstr_type: ConstraintType) -> int:
         if cstr_type in [
             ConstraintType.SUM,
             ConstraintType.SEQ,
