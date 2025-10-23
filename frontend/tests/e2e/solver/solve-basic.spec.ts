@@ -116,20 +116,23 @@ test.describe("Solver - Basic Coverage", () => {
     });
   }
 
-  test("should solve basic_coverage scenario successfully", async ({
-    page,
-  }) => {
-    // Load the scenario
-    const scenario = await solverTestBase.navigateToScheduleWithScenario(
+  // Parameterized test - runs individually for each scenario in UI mode
+  for (const scenarioName of TEST_SCENARIOS) {
+    test(`should solve ${scenarioName} scenario successfully`, async ({
       page,
-      "basic_coverage"
-    );
+    }) => {
+      // Load the scenario
+      const scenario = await solverTestBase.navigateToScheduleWithScenario(
+        page,
+        scenarioName
+      );
 
-    // Trigger solve
-    await solverTestBase.triggerSolveAndWait(page, 60000);
+      // Trigger solve
+      await solverTestBase.triggerSolveAndWait(page, 60000);
 
-    console.log("✅ Basic coverage scenario solved successfully");
-  });
+      console.log(`✅ ${scenarioName} scenario solved successfully`);
+    });
+  }
 });
 
 test.describe("Solver - Complex Scenarios", () => {
