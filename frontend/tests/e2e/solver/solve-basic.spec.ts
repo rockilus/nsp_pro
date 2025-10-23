@@ -119,30 +119,6 @@ test.describe("Solver - Basic Coverage", () => {
 
     console.log("✅ Basic coverage scenario solved successfully");
   });
-
-  test("should handle basic_coverage with realistic constraints", async ({
-    page,
-  }) => {
-    // This test would add some common constraints before solving
-    // For now, we'll just test the basic scenario
-
-    const scenario = await solverTestBase.navigateToScheduleWithScenario(
-      page,
-      "basic_coverage"
-    );
-
-    await solverTestBase.createSchedule(
-      scenario.schedule.start_date,
-      scenario.schedule.end_date
-    );
-
-    // In a real implementation, you would:
-    // 1. Add some constraint builds via API
-    // 2. Then trigger solve
-    // 3. Verify constraints are respected
-
-    console.log("ℹ️  Constraint testing not yet implemented");
-  });
 });
 
 test.describe("Solver - Complex Scenarios", () => {
