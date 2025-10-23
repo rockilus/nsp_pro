@@ -15,17 +15,10 @@ import { ShiftType } from "@/types/shift";
 const TEST_SCENARIOS = ["basic_coverage", "benoit_scenario_0"] as const;
 
 test.describe("Solver - Basic Coverage", () => {
-  const solverTestBase = new SolverTestBase();
-
-  test.beforeAll(async ({}, testInfo) => {
+  test("should list available solver test scenarios", async ({}, testInfo) => {
+    const solverTestBase = new SolverTestBase();
     await solverTestBase.setupSolverTests(testInfo.workerIndex);
-  });
 
-  test.afterAll(async () => {
-    await solverTestBase.cleanup();
-  });
-
-  test("should list available solver test scenarios", async () => {
     const scenarios = await solverTestBase.listAvailableScenarios();
 
     expect(scenarios.length).toBeGreaterThan(0);
@@ -43,7 +36,10 @@ test.describe("Solver - Basic Coverage", () => {
   for (const scenarioName of TEST_SCENARIOS) {
     test(`should load ${scenarioName} scenario successfully`, async ({
       page,
-    }) => {
+    }, testInfo) => {
+      const solverTestBase = new SolverTestBase();
+      await solverTestBase.setupSolverTests(testInfo.workerIndex);
+
       const scenario = await solverTestBase.navigateToScheduleWithScenario(
         page,
         scenarioName
@@ -150,7 +146,10 @@ test.describe("Solver - Basic Coverage", () => {
   for (const scenarioName of TEST_SCENARIOS) {
     test(`should solve ${scenarioName} scenario successfully`, async ({
       page,
-    }) => {
+    }, testInfo) => {
+      const solverTestBase = new SolverTestBase();
+      await solverTestBase.setupSolverTests(testInfo.workerIndex);
+
       // Load the scenario
       const scenario = await solverTestBase.navigateToScheduleWithScenario(
         page,
