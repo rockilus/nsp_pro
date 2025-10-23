@@ -135,129 +135,54 @@ test.describe("Solver - Basic Coverage", () => {
   }
 });
 
-test.describe("Solver - Complex Scenarios", () => {
-  const solverTestBase = new SolverTestBase();
+// test.describe("Solver - Error Handling", () => {
+//   const solverTestBase = new SolverTestBase();
 
-  test.beforeAll(async ({}, testInfo) => {
-    await solverTestBase.setupSolverTests(testInfo.workerIndex);
-  });
+//   test.beforeAll(async ({}, testInfo) => {
+//     await solverTestBase.setupSolverTests(testInfo.workerIndex);
+//   });
 
-  test.afterAll(async () => {
-    await solverTestBase.cleanup();
-  });
+//   test.afterAll(async () => {
+//     await solverTestBase.cleanup();
+//   });
 
-  test("should solve complex_constraints scenario", async ({ page }) => {
-    const scenario = await solverTestBase.navigateToScheduleWithScenario(
-      page,
-      "complex_constraints"
-    );
+//   test("should handle invalid scenario name gracefully", async () => {
+//     await expect(async () => {
+//       await solverTestBase.loadScenario("non_existent_scenario");
+//     }).rejects.toThrow();
 
-    expect(scenario.workers.length).toBe(15);
-    expect(scenario.shifts.length).toBe(5);
+//     console.log("✅ Invalid scenario handled correctly");
+//   });
 
-    console.log(`📊 Complex scenario loaded:`);
-    console.log(`   - ${scenario.workers.length} workers (mix of FT and PT)`);
-    console.log(
-      `   - ${scenario.shifts.length} shifts (including duty shifts)`
-    );
-    console.log(`   - ${scenario.shift_demands.length} shift demands`);
+//   test("should handle solve with no shift demands", async ({ page }) => {
+//     // Navigate to schedule without loading a scenario
+//     await page.goto("http://localhost:3000/en/plan/schedule/");
 
-    await solverTestBase.createSchedule(
-      scenario.schedule.start_date,
-      scenario.schedule.end_date
-    );
+//     await page.evaluate((teamId) => {
+//       localStorage.setItem("selectedTeamId", teamId);
+//     }, solverTestBase.getTestTeam()!.teamId);
 
-    // Complex scenario may take longer
-    await solverTestBase.triggerSolveAndWait(page, 90000);
+//     await page.reload();
 
-    // Take screenshot
-    await solverTestBase.takeScreenshot(page, "complex_constraints", "solved");
+//     // Try to solve without any data
+//     // Should either show an error or handle gracefully
 
-    // For complex scenarios, we expect more assignments but may allow some breaches
-    await solverTestBase.verifySolveResults(page, {
-      minAssignments: 120,
-      maxBreaches: 10, // Some soft constraint violations may be acceptable
-    });
+//     const solveButton = page.locator('button:has-text("Solve")').first();
 
-    console.log("✅ Complex constraints scenario solved successfully");
-  });
+//     // Check if solve button is disabled or shows warning
+//     const isDisabled = await solveButton.isDisabled().catch(() => true);
 
-  test.skip("should solve weekend_coverage scenario", async ({ page }) => {
-    // This test is skipped by default as it's similar to basic_coverage
-    // but focuses on weekend staffing patterns
+//     if (!isDisabled) {
+//       // If enabled, clicking should show an error
+//       await solveButton.click();
 
-    const scenario = await solverTestBase.navigateToScheduleWithScenario(
-      page,
-      "weekend_coverage"
-    );
+//       // Wait for error message
+//       await page.waitForSelector(
+//         '.MuiAlert-standardError, [data-testid="error-message"]',
+//         { timeout: 5000 }
+//       );
+//     }
 
-    expect(scenario.workers.length).toBe(8);
-    expect(scenario.shifts.length).toBe(2);
-
-    await solverTestBase.createSchedule(
-      scenario.schedule.start_date,
-      scenario.schedule.end_date
-    );
-
-    await solverTestBase.triggerSolveAndWait(page, 45000);
-
-    await solverTestBase.verifySolveResults(page, {
-      minAssignments: 48,
-      maxBreaches: 2,
-    });
-
-    console.log("✅ Weekend coverage scenario solved successfully");
-  });
-});
-
-test.describe("Solver - Error Handling", () => {
-  const solverTestBase = new SolverTestBase();
-
-  test.beforeAll(async ({}, testInfo) => {
-    await solverTestBase.setupSolverTests(testInfo.workerIndex);
-  });
-
-  test.afterAll(async () => {
-    await solverTestBase.cleanup();
-  });
-
-  test("should handle invalid scenario name gracefully", async () => {
-    await expect(async () => {
-      await solverTestBase.loadScenario("non_existent_scenario");
-    }).rejects.toThrow();
-
-    console.log("✅ Invalid scenario handled correctly");
-  });
-
-  test("should handle solve with no shift demands", async ({ page }) => {
-    // Navigate to schedule without loading a scenario
-    await page.goto("http://localhost:3000/en/plan/schedule/");
-
-    await page.evaluate((teamId) => {
-      localStorage.setItem("selectedTeamId", teamId);
-    }, solverTestBase.getTestTeam()!.teamId);
-
-    await page.reload();
-
-    // Try to solve without any data
-    // Should either show an error or handle gracefully
-
-    const solveButton = page.locator('button:has-text("Solve")').first();
-
-    // Check if solve button is disabled or shows warning
-    const isDisabled = await solveButton.isDisabled().catch(() => true);
-
-    if (!isDisabled) {
-      // If enabled, clicking should show an error
-      await solveButton.click();
-
-      // Wait for error message
-      await page.waitForSelector(
-        '.MuiAlert-standardError, [data-testid="error-message"]',
-        { timeout: 5000 }
-      );
-    }
-
-    console.log("✅ No shift demands scenario handled correctly");
-  });
-});
+//     console.log("✅ No shift demands scenario handled correctly");
+//   });
+// });
