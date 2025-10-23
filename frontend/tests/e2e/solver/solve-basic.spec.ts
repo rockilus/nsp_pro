@@ -8,6 +8,10 @@
 import { test, expect } from "@playwright/test";
 import { SolverTestBase } from "../../utils/solver-test-base";
 
+// Hardcoded list of test scenarios
+// This list is used across multiple tests to ensure consistency
+const TEST_SCENARIOS = ["basic_coverage", "benoit_scenario_0"] as const;
+
 test.describe("Solver - Basic Coverage", () => {
   const solverTestBase = new SolverTestBase();
 
@@ -25,85 +29,92 @@ test.describe("Solver - Basic Coverage", () => {
     expect(scenarios.length).toBeGreaterThan(0);
     console.log(`Found ${scenarios.length} available scenarios:`);
 
-    // Verify basic_coverage scenario exists
-    const basicScenario = scenarios.find((s) => s === "basic_coverage");
-    expect(basicScenario).toBeDefined();
+    // Verify all test scenarios exist
+    for (const scenarioName of TEST_SCENARIOS) {
+      const scenario = scenarios.find((s) => s === scenarioName);
+      expect(scenario).toBeDefined();
+      console.log(`   ✓ ${scenarioName}`);
+    }
   });
 
-  test("should load basic_coverage scenario successfully", async ({ page }) => {
-    const scenario = await solverTestBase.navigateToScheduleWithScenario(
+  // Parameterized test - runs individually for each scenario in UI mode
+  for (const scenarioName of TEST_SCENARIOS) {
+    test(`should load ${scenarioName} scenario successfully`, async ({
       page,
-      "basic_coverage"
-    );
+    }) => {
+      const scenario = await solverTestBase.navigateToScheduleWithScenario(
+        page,
+        scenarioName
+      );
 
-    expect(scenario.scenario_name).toBe("basic_coverage");
-    expect(scenario.workers.length).toBeGreaterThan(0);
-    // expect(scenario.shifts.length).toBe(0);
+      expect(scenario.scenario_name).toBe(scenarioName);
+      expect(scenario.workers.length).toBeGreaterThan(0);
 
-    console.log(`✅ Loaded basic_coverage scenario:`);
-    console.log(`   - ${scenario.workers.length} workers created`);
-    console.log(`   - ${scenario.shifts.length} shifts created`);
+      console.log(`✅ Loaded ${scenarioName} scenario:`);
+      console.log(`   - ${scenario.workers.length} workers created`);
+      console.log(`   - ${scenario.shifts.length} shifts created`);
 
-    // Set schedule view settings to group by worker
-    await solverTestBase.setScheduleViewSettings(
-      page,
-      solverTestBase.getTestTeam()!.teamId,
-      {
-        groupBy: "worker",
+      // Set schedule view settings to group by worker
+      await solverTestBase.setScheduleViewSettings(
+        page,
+        solverTestBase.getTestTeam()!.teamId,
+        {
+          groupBy: "worker",
+        }
+      );
+
+      // Refresh the page to apply settings
+      await page.reload();
+      await page.waitForLoadState("networkidle");
+
+      // Check that all workers appear in the table row headers
+      for (const worker of scenario.workers) {
+        const workerHeaderSelector = `[data-testid="worker-row-header-${worker.id}"]`;
+        await page.waitForSelector(workerHeaderSelector, { timeout: 5000 });
+
+        // Verify the worker name is displayed correctly
+        const workerNameSelector = `[data-testid="worker-name-${worker.id}"]`;
+        const workerNameElement = await page.locator(workerNameSelector);
+        await expect(workerNameElement).toBeVisible();
+
+        const workerNameText = await workerNameElement.textContent();
+        expect(workerNameText).toContain(worker.name);
+        expect(workerNameText).toContain(worker.acronym);
       }
-    );
 
-    // Refresh the page to apply settings
-    await page.reload();
-    await page.waitForLoadState("networkidle");
+      console.log(`✅ All ${scenario.workers.length} workers visible in table`);
 
-    // Check that all workers appear in the table row headers
-    for (const worker of scenario.workers) {
-      const workerHeaderSelector = `[data-testid="worker-row-header-${worker.id}"]`;
-      await page.waitForSelector(workerHeaderSelector, { timeout: 5000 });
+      // Set schedule view settings to group by shift
+      await solverTestBase.setScheduleViewSettings(
+        page,
+        solverTestBase.getTestTeam()!.teamId,
+        {
+          groupBy: "shift",
+        }
+      );
 
-      // Verify the worker name is displayed correctly
-      const workerNameSelector = `[data-testid="worker-name-${worker.id}"]`;
-      const workerNameElement = await page.locator(workerNameSelector);
-      await expect(workerNameElement).toBeVisible();
+      // Refresh the page to apply settings
+      await page.reload();
+      await page.waitForLoadState("networkidle");
 
-      const workerNameText = await workerNameElement.textContent();
-      expect(workerNameText).toContain(worker.name);
-      expect(workerNameText).toContain(worker.acronym);
-    }
+      // Check that all shifts appear in the table row headers
+      for (const shift of scenario.shifts) {
+        const shiftHeaderSelector = `[data-testid="shift-row-header-${shift.id}"]`;
+        await page.waitForSelector(shiftHeaderSelector, { timeout: 5000 });
 
-    console.log(`✅ All ${scenario.workers.length} workers visible in table`);
+        // Verify the shift name is displayed correctly
+        const shiftNameSelector = `[data-testid="shift-name-${shift.id}"]`;
+        const shiftNameElement = await page.locator(shiftNameSelector);
+        await expect(shiftNameElement).toBeVisible();
 
-    // Set schedule view settings to group by shift
-    await solverTestBase.setScheduleViewSettings(
-      page,
-      solverTestBase.getTestTeam()!.teamId,
-      {
-        groupBy: "shift",
+        const shiftNameText = await shiftNameElement.textContent();
+        expect(shiftNameText).toContain(shift.name);
+        expect(shiftNameText).toContain(shift.acronym);
       }
-    );
 
-    // Refresh the page to apply settings
-    await page.reload();
-    await page.waitForLoadState("networkidle");
-
-    // Check that all shifts appear in the table row headers
-    for (const shift of scenario.shifts) {
-      const shiftHeaderSelector = `[data-testid="shift-row-header-${shift.id}"]`;
-      await page.waitForSelector(shiftHeaderSelector, { timeout: 5000 });
-
-      // Verify the shift name is displayed correctly
-      const shiftNameSelector = `[data-testid="shift-name-${shift.id}"]`;
-      const shiftNameElement = await page.locator(shiftNameSelector);
-      await expect(shiftNameElement).toBeVisible();
-
-      const shiftNameText = await shiftNameElement.textContent();
-      expect(shiftNameText).toContain(shift.name);
-      expect(shiftNameText).toContain(shift.acronym);
-    }
-
-    console.log(`✅ All ${scenario.shifts.length} shifts visible in table`);
-  });
+      console.log(`✅ All ${scenario.shifts.length} shifts visible in table`);
+    });
+  }
 
   test("should solve basic_coverage scenario successfully", async ({
     page,
