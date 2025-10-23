@@ -7,6 +7,7 @@
 
 import { test, expect } from "@playwright/test";
 import { SolverTestBase } from "../../utils/solver-test-base";
+import { ScheduleStatus } from "@/types/schedule";
 
 // Hardcoded list of test scenarios
 // This list is used across multiple tests to ensure consistency
@@ -50,6 +51,15 @@ test.describe("Solver - Basic Coverage", () => {
       expect(scenario.scenario_name).toBe(scenarioName);
       expect(scenario.workers.length).toBeGreaterThan(0);
 
+      // Find the campaign schedule inside the scenario schedules
+      const campaignSchedule = scenario.schedules.find(
+        (s: any) => s.status === ScheduleStatus.CAMPAIGN
+      );
+
+      if (!campaignSchedule) {
+        throw new Error("No campaign schedule found in scenario.schedules");
+      }
+
       console.log(`✅ Loaded ${scenarioName} scenario:`);
       console.log(`   - ${scenario.workers.length} workers created`);
       console.log(`   - ${scenario.shifts.length} shifts created`);
@@ -67,8 +77,17 @@ test.describe("Solver - Basic Coverage", () => {
       await page.reload();
       await page.waitForLoadState("networkidle");
 
-      // Check that all workers appear in the table row headers
-      for (const worker of scenario.workers) {
+      // Check that employed workers appear in the table row headers
+      const employedWorkers = scenario.workers.filter((worker: any) => {
+        // Employed if start <= campaignEndDate and (no end or end >= campaignStartDate)
+        return (
+          worker.startDate <= campaignSchedule.endDate &&
+          (worker.endDate === null ||
+            worker.endDate >= campaignSchedule.startDate)
+        );
+      });
+
+      for (const worker of employedWorkers) {
         const workerHeaderSelector = `[data-testid="worker-row-header-${worker.id}"]`;
         await page.waitForSelector(workerHeaderSelector, { timeout: 5000 });
 
@@ -82,7 +101,9 @@ test.describe("Solver - Basic Coverage", () => {
         expect(workerNameText).toContain(worker.acronym);
       }
 
-      console.log(`✅ All ${scenario.workers.length} workers visible in table`);
+      console.log(
+        `✅ All ${employedWorkers.length} employed workers visible in table`
+      );
 
       // Set schedule view settings to group by shift
       await solverTestBase.setScheduleViewSettings(
