@@ -383,6 +383,9 @@ class SolverTestScenariosService(BaseService):
             for a in attributes:
                 a_id = a.id
                 a.id = ""  # Clear ID to let DB assign a new one
+                if maps.get("dimensions"):
+                    if a.dimension_id in maps["dimensions"]:
+                        a.dimension_id = maps["dimensions"][a.dimension_id]
                 if a.owner_type == AttributeOwnerType.WORKER:
                     if a.owner_id in maps.get("workers", {}):
                         a.owner_id = maps["workers"][a.owner_id]
