@@ -205,6 +205,7 @@ export default function CampaignInfo({
         {teamWithMembership.team.useSolver && (
           <>
             <Chip
+              data-testid={`solve-status-chip-${currentSolveStatus}`}
               label={GetStatusLabel(lng, currentSolveStatus)}
               onClick={() => handleOpenLHS("breaches")}
               color={
@@ -230,6 +231,7 @@ export default function CampaignInfo({
               }}
             >
               <Button
+                data-testid="solve-button"
                 variant="contained"
                 color="primary"
                 onClick={handleSolve}
@@ -286,12 +288,14 @@ export default function CampaignInfo({
 
       {/* Success notification */}
       <Snackbar
+        data-testid="solve-success-snackbar"
         open={showSuccessNotification}
         autoHideDuration={6000}
         onClose={() => setShowSuccessNotification(false)}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Alert
+          data-testid="solve-success-alert"
           onClose={() => setShowSuccessNotification(false)}
           severity="success"
           variant="filled"
@@ -302,6 +306,7 @@ export default function CampaignInfo({
 
       {/* Error notification */}
       <Snackbar
+        data-testid="solve-error-snackbar"
         open={showErrorNotification}
         autoHideDuration={8000}
         onClose={() => {
@@ -312,6 +317,7 @@ export default function CampaignInfo({
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Alert
+          data-testid="solve-error-alert"
           onClose={() => {
             setShowErrorNotification(false);
             clearError();

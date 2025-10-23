@@ -31,6 +31,7 @@ from shared.schemas.core import (
     SWOIdTypes,
     Worker,
 )
+from shared.logger import log_info
 
 from src.services.base_service import BaseService
 
@@ -160,7 +161,6 @@ class SolverTestScenariosService(BaseService):
         scenario_data: Dict[str, Any],
     ) -> Dict[str, Any]:
         try:
-
             return {
                 "specialties": [
                     SpecialtySchema.from_mongo(s).to_core()
@@ -204,8 +204,17 @@ class SolverTestScenariosService(BaseService):
                 ],
             }
         except Exception as exc:
+            # Include the original exception type and message to aid debugging
+            exc_type = type(exc).__name__
+            exc_msg = str(exc)
+            log_info(
+                f"Exception during scenario data conversion: {exc_type}: {exc_msg}"
+            )
             raise ValueError(
-                "Failed to convert scenario data to core objects"
+                (
+                    "Failed to convert scenario data to core objects: "
+                    f"{exc_type}: {exc_msg}"
+                )
             ) from exc
 
     def _remap_shift_worker_options(

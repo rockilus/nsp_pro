@@ -161,20 +161,20 @@
         ],
         "requests": [
             {
-                "id": "68c9ab41241cb23d8fcff68e",
-                "teamId": "6894a0a6457cee1161ccd840",
-                "requestType": "work_demand",
-                "workerId": "6894a72f457cee1161ccd88e",
-                "startDate": 1763424000.0,
-                "endDate": 1763424000.0,
-                "shiftId": null,
-                "shiftOptions": [
+                "_id": "68c9a655241cb23d8fcff660",
+                "team": "6894a0a6457cee1161ccd840",
+                "request_type": "work_demand",
+                "worker": "6894a72f457cee1161ccd88e",
+                "start_date": 1762214400,
+                "end_date": 1762214400,
+                "shift": null,
+                "shift_options": [
                     {
                         "name": "ACA1",
                         "id": "6894b85c457cee1161ccd979",
-                        "idType": 2,
-                        "isBoolDim": false,
-                        "categoryName": "Shifts"
+                        "id_type": 2,
+                        "is_bool_dim": false,
+                        "category_name": "Shifts"
                     }
                 ],
                 "negative": false,
@@ -182,12 +182,7 @@
                 "status": "pending",
                 "fulfillment": "unfulfilled",
                 "comment": "",
-                "createdAt": 1758047041.162771,
-                "active": true,
-                "shiftTargetIds": [
-                    "6894bd14457cee1161ccda01"
-                ],
-                "missingAttributes": []
+                "created_at": 1758045781.556214
             }
         ],
         "schedules": [

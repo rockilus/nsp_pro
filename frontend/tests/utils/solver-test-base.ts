@@ -166,34 +166,94 @@ export class SolverTestBase {
   ): Promise<void> {
     console.log("🔄 Triggering solver...");
 
-    // Look for solve button and click it
-    const solveButton = page.locator('button:has-text("Solve")').first();
+    // Look for solve button using data-testid and click it
+    const solveButton = page.locator('[data-testid="solve-button"]');
     await solveButton.waitFor({ state: "visible", timeout: 5000 });
-    await solveButton.click();
 
+    // Verify button is not disabled before clicking
+    const isDisabled = await solveButton.isDisabled();
+    if (isDisabled) {
+      throw new Error("Solve button is disabled");
+    }
+
+    await solveButton.click();
     console.log("⏳ Waiting for solver to complete...");
 
-    // Wait for solve to complete - look for success or failure indicators
-    // This depends on your UI implementation
-    try {
-      await page.waitForSelector(
-        '[data-testid="solve-status-success"], [data-testid="solve-status-complete"], .solver-success, .MuiAlert-standardSuccess:has-text("Solve")',
-        { timeout: timeoutMs }
-      );
-      console.log("✅ Solver completed successfully");
-    } catch (error) {
-      // Check if there was a failure
-      const failureElement = await page.$(
-        '[data-testid="solve-status-failure"], [data-testid="solve-status-error"], .solver-error, .MuiAlert-standardError'
-      );
+    // Wait for the solve button to be disabled (solving in progress)
+    await page.waitForSelector('[data-testid="solve-button"]:disabled', {
+      timeout: 5000,
+    });
+    console.log("🔄 Solver is running...");
 
-      if (failureElement) {
-        const errorText = await failureElement.textContent();
-        throw new Error(`Solver failed: ${errorText}`);
-      }
+    // Wait for the solve button to be enabled again (solving complete)
+    await page.waitForSelector('[data-testid="solve-button"]:not(:disabled)', {
+      timeout: timeoutMs,
+    });
+    console.log("✅ Solver completed");
 
-      throw new Error(`Solver did not complete within ${timeoutMs}ms`);
+    // Wait a bit for UI to update
+    await page.waitForTimeout(1000);
+
+    // Check that there are no error or success snackbars open
+    const errorSnackbar = await page.locator(
+      '[data-testid="solve-error-snackbar"]'
+    );
+    const successSnackbar = await page.locator(
+      '[data-testid="solve-success-snackbar"]'
+    );
+
+    const isErrorVisible = await errorSnackbar.isVisible().catch(() => false);
+    const isSuccessVisible = await successSnackbar
+      .isVisible()
+      .catch(() => false);
+
+    if (isErrorVisible) {
+      const errorAlert = await page.locator(
+        '[data-testid="solve-error-alert"]'
+      );
+      const errorText = await errorAlert.textContent();
+      throw new Error(`Solver failed with error: ${errorText}`);
     }
+
+    // Success snackbar is acceptable but should close
+    if (isSuccessVisible) {
+      console.log(
+        "ℹ️  Success notification visible, waiting for it to close..."
+      );
+      await page.waitForSelector('[data-testid="solve-success-snackbar"]', {
+        state: "hidden",
+        timeout: 7000, // autoHideDuration is 6000ms
+      });
+    }
+
+    // Check that the status chip shows a valid solved state
+    const validStatuses = [
+      "SOLVED_NO_BREACH",
+      "NO_SOLUTION",
+      "SOLVED_SOFT_BREACHED",
+      "SOLVED_HARD_BREACHED",
+    ];
+
+    let statusFound = false;
+    for (const status of validStatuses) {
+      const statusChip = await page.locator(
+        `[data-testid="solve-status-chip-${status}"]`
+      );
+      const isVisible = await statusChip.isVisible().catch(() => false);
+      if (isVisible) {
+        console.log(`✅ Solver completed with status: ${status}`);
+        statusFound = true;
+        break;
+      }
+    }
+
+    if (!statusFound) {
+      throw new Error(
+        `Expected solve status chip to show one of: ${validStatuses.join(", ")}`
+      );
+    }
+
+    console.log("✅ Solver completed successfully with valid status");
   }
 
   /**

@@ -15,8 +15,14 @@ export default function SnackBarComponent({
   handleClose: () => void;
 }) {
   return (
-    <Snackbar open={open} autoHideDuration={5000} onClose={handleClose}>
+    <Snackbar
+      data-testid={`snackbar-${severity}`}
+      open={open}
+      autoHideDuration={5000}
+      onClose={handleClose}
+    >
       <Alert
+        data-testid={`alert-${severity}`}
         onClose={handleClose}
         severity={severity}
         variant="filled"
