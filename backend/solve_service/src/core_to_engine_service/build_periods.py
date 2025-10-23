@@ -41,7 +41,9 @@ def build_periods_monthly(
         # Get the start of the month
         start_date = dates_campaign[0]
         start_of_month = date(start_date.year, start_date.month, 1)
-        _, last_day_month = calendar.monthrange(start_date.year, start_date.month)
+        _, last_day_month = calendar.monthrange(
+            start_date.year, start_date.month
+        )
         end_of_month = date(start_date.year, start_date.month, last_day_month)
 
         # Get all dates in the current month
@@ -57,4 +59,41 @@ def build_periods_monthly(
 
         # Remove the current month from the list of dates
         dates_campaign = [d for d in dates_campaign if d > end_of_month]
+    return periods
+
+
+def build_periods_yearly(
+    dates_hist: List[date], dates_campaign: List[date]
+) -> List[List[date]]:
+    """Build periods grouped by calendar year.
+
+    For each year present in dates_campaign, collect all campaign dates in that
+    year. If the first day of the year (Jan 1) appears in dates_hist, include
+    historical dates that fall within the same year as well.
+    """
+    dates_campaign = sorted(dates_campaign)  # Ensure dates are sorted
+
+    periods: List[List[date]] = []
+    while dates_campaign:
+        # Get the year for the first campaign date
+        start_date = dates_campaign[0]
+        start_of_year = date(start_date.year, 1, 1)
+        end_of_year = date(start_date.year, 12, 31)
+
+        # Get all dates in the current year from campaign
+        current_year_dates = [
+            d for d in dates_campaign if start_of_year <= d <= end_of_year
+        ]
+
+        # If Jan 1 in history, include historical dates for that year
+        if start_of_year in dates_hist:
+            current_year_dates.extend(
+                d for d in dates_hist if start_of_year <= d <= end_of_year
+            )
+
+        current_year_dates = sorted(set(current_year_dates))
+        periods.append(current_year_dates)
+
+        # Remove the current year from the list of campaign dates
+        dates_campaign = [d for d in dates_campaign if d > end_of_year]
     return periods

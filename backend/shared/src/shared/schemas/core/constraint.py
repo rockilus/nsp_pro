@@ -27,6 +27,7 @@ class VarDaySelectorOptions(Enum):
     MONTH = 2
     PERIOD = 3
     WEEK_DAY_INDEX = 4
+    YEAR = 5
 
 
 class VarShiftSelectorOptions(Enum):
@@ -252,7 +253,9 @@ class ConstraintBuild:
     @classmethod
     def from_dto(cls, data: ConstraintBuildDTO) -> "ConstraintBuild":
         data_snake = humps.decamelize(data.model_dump())
-        data_snake["constraint_type"] = ConstraintType(data_snake["constraint_type"])
+        data_snake["constraint_type"] = ConstraintType(
+            data_snake["constraint_type"]
+        )
         data_snake["blocks"] = [Block.from_dto(block) for block in data.blocks]
         data_snake.pop("text")
         data_snake.pop("active")
@@ -272,7 +275,9 @@ class ConstraintBuildAugmented(ConstraintBuild):
         out.update(
             {
                 "active": self.active,
-                "missing_attributes": [ma.to_dict() for ma in self.missing_attributes],
+                "missing_attributes": [
+                    ma.to_dict() for ma in self.missing_attributes
+                ],
                 "text": self.text,
             }
         )
@@ -291,7 +296,8 @@ class ConstraintBuildAugmented(ConstraintBuild):
             priority=data["priority"],
             active=data["active"],
             missing_attributes=[
-                MissingAttribute.from_dict(ma) for ma in data["missing_attributes"]
+                MissingAttribute.from_dict(ma)
+                for ma in data["missing_attributes"]
             ],
             text=data["text"],
         )
@@ -300,7 +306,9 @@ class ConstraintBuildAugmented(ConstraintBuild):
         out = asdict(self)
         out["constraint_type"] = self.constraint_type.value
         out["blocks"] = [block.to_dto() for block in self.blocks]
-        out["missing_attributes"] = [ma.to_dto() for ma in self.missing_attributes]
+        out["missing_attributes"] = [
+            ma.to_dto() for ma in self.missing_attributes
+        ]
         as_dict = humps.camelize(out)
         validator = TypeAdapter(ConstraintBuildDTO)
         return validator.validate_python(as_dict)
@@ -308,10 +316,15 @@ class ConstraintBuildAugmented(ConstraintBuild):
     @classmethod
     def from_dto(cls, data: ConstraintBuildDTO) -> "ConstraintBuildAugmented":
         data_snake = humps.decamelize(data.model_dump())
-        data_snake["constraint_type"] = ConstraintType(data_snake["constraint_type"])
-        data_snake["blocks"] = [Block.from_dto(block) for block in data_snake["blocks"]]
+        data_snake["constraint_type"] = ConstraintType(
+            data_snake["constraint_type"]
+        )
+        data_snake["blocks"] = [
+            Block.from_dto(block) for block in data_snake["blocks"]
+        ]
         data_snake["missing_attributes"] = [
-            MissingAttribute.from_dto(ma) for ma in data_snake["missing_attributes"]
+            MissingAttribute.from_dto(ma)
+            for ma in data_snake["missing_attributes"]
         ]
         return cls(**data_snake)
 
@@ -349,7 +362,9 @@ class ConstraintOrd(Constraint):
     shift_reference_ids: List[str]
     shift_relative_ids: List[str]
     interval: int
-    constraint_variables: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]]
+    constraint_variables: List[
+        Tuple[Tuple[str, str, str], Tuple[str, str, str]]
+    ]
 
 
 # list of variables to set to 0
@@ -424,7 +439,9 @@ class Template:
     @classmethod
     def from_dto(cls, data: TemplateDTO) -> "Template":
         data_snake = humps.decamelize(data.model_dump())
-        data_snake["constraint_type"] = ConstraintType(data_snake["constraint_type"])
+        data_snake["constraint_type"] = ConstraintType(
+            data_snake["constraint_type"]
+        )
         data_snake["blocks"] = [
             TemplateBlock.from_dto(block) for block in data_snake["blocks"]
         ]

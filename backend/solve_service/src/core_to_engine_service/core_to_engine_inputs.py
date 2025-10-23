@@ -40,6 +40,7 @@ from core_to_engine_service.build_link_shift_pairs import (
 from core_to_engine_service.build_periods import (
     build_periods_monthly,
     build_periods_weekly,
+    build_periods_yearly,
 )
 from core_to_engine_service.build_worker_shift_filter import (
     build_worker_shift_filters,
@@ -67,7 +68,9 @@ def core_to_engine_inputs(
 ) -> Tuple[InputsEngine, ProcessingCache]:
     # Workers
     workers_not_deleted = [w for w in engine_inputs.workers if not w.deleted]
-    worker_not_deleted_ids = [w.id for w in engine_inputs.workers if not w.deleted]
+    worker_not_deleted_ids = [
+        w.id for w in engine_inputs.workers if not w.deleted
+    ]
     dim_to_attr_value_to_worker = build_dim_to_attr_value_to_owner(
         engine_inputs.workers,
         engine_inputs.dimensions,
@@ -94,9 +97,13 @@ def core_to_engine_inputs(
         for s in engine_inputs.shifts
         if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
     ]
-    shift_duties = [s for s in engine_inputs.shifts if s.shift_type == ShiftType.DUTY]
+    shift_duties = [
+        s for s in engine_inputs.shifts if s.shift_type == ShiftType.DUTY
+    ]
     shift_duties_not_deleted = [s for s in shift_duties if not s.deleted]
-    shift_id_to_duration_dict = _build_shift_id_to_duration_dict(engine_inputs.shifts)
+    shift_id_to_duration_dict = _build_shift_id_to_duration_dict(
+        engine_inputs.shifts
+    )
     dim_to_attr_value_to_shift = build_dim_to_attr_value_to_owner(
         engine_inputs.shifts,
         engine_inputs.dimensions,
@@ -118,6 +125,7 @@ def core_to_engine_inputs(
         fixed_assignments,
         dates_campaign,
     )
+    periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
     ws_to_dates = build_ws_ids_to_dates(
         engine_inputs.schedule,
         engine_inputs.workers,
@@ -157,6 +165,7 @@ def core_to_engine_inputs(
         dates_campaign,
         periods_weekly,
         periods_monthly,
+        periods_yearly,
         worker_ids_to_worker_dates,
         engine_inputs.shifts,
         dim_to_attr_value_to_shift,
@@ -334,5 +343,6 @@ def core_to_engine_inputs(
 
 def _build_shift_id_to_duration_dict(shifts: List[Shift]) -> Dict[str, int]:
     return {
-        s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1) for s in shifts
+        s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1)
+        for s in shifts
     }
