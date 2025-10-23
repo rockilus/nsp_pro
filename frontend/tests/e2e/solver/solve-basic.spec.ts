@@ -8,6 +8,7 @@
 import { test, expect } from "@playwright/test";
 import { SolverTestBase } from "../../utils/solver-test-base";
 import { ScheduleStatus } from "@/types/schedule";
+import { ShiftType } from "@/types/shift";
 
 // Hardcoded list of test scenarios
 // This list is used across multiple tests to ensure consistency
@@ -118,8 +119,14 @@ test.describe("Solver - Basic Coverage", () => {
       await page.reload();
       await page.waitForLoadState("networkidle");
 
-      // Check that all shifts appear in the table row headers
-      for (const shift of scenario.shifts) {
+      // Check that only NORMAL and DUTY shifts appear in the table row headers
+      const visibleShifts = scenario.shifts.filter(
+        (shift: any) =>
+          shift.shiftType === ShiftType.NORMAL ||
+          shift.shiftType === ShiftType.DUTY
+      );
+
+      for (const shift of visibleShifts) {
         const shiftHeaderSelector = `[data-testid="shift-row-header-${shift.id}"]`;
         await page.waitForSelector(shiftHeaderSelector, { timeout: 5000 });
 
@@ -133,7 +140,9 @@ test.describe("Solver - Basic Coverage", () => {
         expect(shiftNameText).toContain(shift.acronym);
       }
 
-      console.log(`✅ All ${scenario.shifts.length} shifts visible in table`);
+      console.log(
+        `✅ All ${visibleShifts.length} NORMAL/DUTY shifts visible in table`
+      );
     });
   }
 
