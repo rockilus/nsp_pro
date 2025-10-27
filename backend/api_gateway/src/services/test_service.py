@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from typing import Any, Dict, List
+from datetime import date as date_type
 
 from pydantic import BaseModel
 from shared.database.database_collections import DatabaseCollections
