@@ -1,3 +1,54 @@
+# GitHub Copilot Instructions for NSP Pro (concise)
+
+This file gives focused, actionable guidance for an AI coding agent working in the NSP Pro monorepo.
+Keep it short and concrete — the goal is to get productive quickly.
+
+1) Big-picture architecture (what to read first)
+   - Three main services under `backend/`:
+     - `api_gateway/` (FastAPI): public HTTP endpoints, auth (AWS Cognito), AWS SQS task submission.
+     - `solve_service/` (Python): AWS SQS worker that runs the OR-Tools solver; reads shared schemas.
+     - `shared/` (Python): canonical schemas/models, DB connectors, logging utilities used by both services.
+   - Frontend is a Next.js app in `frontend/` (app dir, TS + MUI + Tailwind). Static-exportable via `next export`.
+   - Data flow example: API Gateway accepts schedule create -> sends message to AWS SQS -> `solve_service` consumes -> reads/writes the database using shared schemas (MongoDB locally; AWS DocumentDB in staging/production).
+
+2) Key directories and examples
+   - `backend/api_gateway/src/` — API routes and services (look at `src/routes` and `src/services`).
+   - `backend/solve_service/src/` — solver orchestration and task handlers. See `core_to_engine_service/` and other modules in `src/` for period/date handling and solver orchestration examples.
+   - `backend/shared/src/` — shared DTOs / schemas (imported as `shared.schemas.core`).
+   - `database_migration/migrations/` — migration JS files (Mongo migrations). Use these to understand DB shape changes.
+
+3) Developer workflows & commands (practical)
+   - Run backend unit tests: from `backend/` run `pytest` (or use the per-service pytest.ini inside `api_gateway/`).
+   - Check/format/lint: services use Python type hints and `pyproject.toml`. Run the service-specific checks via `Makefile` targets (e.g. `make solve_service_check` from `backend/`).
+   - Local dev with containers: there are multiple compose files. Typical: `docker-compose -f docker-compose.yml up --build` from repo root or use service-specific compose under `backend/`.
+   - Frontend dev: `npm install` then `npm run dev` in `frontend/`. For static export use `next build && next export`.
+
+4) Patterns & conventions to follow
+   - Python: use type hints, small pure functions, and import shared DTOs from `shared.schemas.core` rather than re-declaring types.
+   - Logging: use `loguru` (see `backend/shared` utilities). Prefer structured messages.
+   - Time units: scheduling code frequently uses minutes/seconds constants (see `utils/constants` and `calculate_worker_work_times.py`). Many functions expect minute-based integers.
+   - Period/worker loops: code often iterates periods (List[List[date]]), worker id maps, and builds assignments as tuples `(worker_id, date_iso, shift_id)`; preserve that shape when creating constraints.
+
+5) Integration points & external dependencies
+   - Auth: AWS Cognito (configured for API Gateway). Changes to auth flows impact `api_gateway` only.
+   - Task queue / messaging: AWS SQS is used for messages between `api_gateway` and `solve_service`. Task/message formats are defined in `api_gateway` when enqueuing and consumed by `solve_service`.
+   - DB: MongoDB locally; AWS DocumentDB in staging and production. Migrations are in `database_migration/`. Use `init-mongo.js` for local DB seeding.
+
+6) What an agent should do first (practical checklist)
+   - Inspect `backend/shared/src` to learn canonical schemas and DTOs (imported as `shared.schemas.core`).
+   - Open `backend/api_gateway/src` to find how messages are enqueued to SQS and the task/message payload shapes.
+   - Open `backend/solve_service/src` to see how SQS messages are consumed and what shapes the solver expects.
+   - Inspect `frontend/` (Next.js app) to understand UI shape, API clients (`frontend/src/app/lib`) and static-export constraints.
+   - Run unit tests for the modified service after changes.
+
+7) Small examples to reference
+   - Period handling: inspect `backend/solve_service/src/core_to_engine_service/` for functions handling periods, coefficients, and minute conversions (the codebase uses List[List[date]] patterns and minute-based durations).
+   - Shared DTO import: `from shared.schemas.core import (Request, Schedule, Shift, ShiftDemandNew, ShiftType, Worker, WorkerDates)`
+
+If anything above is unclear or you want additional examples (e.g., quick-start steps for running a solver task locally), tell me which area to expand and I will update this file. 
+
+---
+Keep edits short and repository-focused. When in doubt, prefer reading `backend/shared` types before changing cross-service payloads.
 
 # GitHub Copilot Instructions for NSP Pro
 
@@ -37,11 +88,11 @@ Microservice architecture with three main components:
    - FastAPI server
    - AWS Cognito for authentication (authentication is handled by AWS API Gateway)
    - Permit.io for authorization
-   - Celery for task queue management
-   - MongoDB for data storage
+   - AWS SQS for task queue management
+   - MongoDB for data storage locally; AWS DocumentDB in staging/production
 
 2. **Solver Service** (`backend/solve_service`)
-   - Listens to Celery queue for scheduling tasks
+   - Listens to AWS SQS queue for scheduling tasks
    - Uses Google OR-Tools for constraint-based optimization
    - Processes schedules according to rules and constraints
 
