@@ -333,40 +333,82 @@ def sort_workers(
 def round_proportional_times(
     proportional_times: Dict[str, List[float]],
 ) -> Dict[str, List[int]]:
-    rounded_times: Dict[str, List[int]] = {
-        worker_id: [] for worker_id in proportional_times.keys()
-    }
+    """Round proportional (float) times to non-negative ints while preserving
+    the total per period.
 
-    if len(proportional_times.values()) > 0:
-        len_first_value = len(list(proportional_times.values())[0])
-        for i in range(len_first_value):
-            total_work_time = round(
-                sum(
-                    proportional_times[worker_id][i]
-                    for worker_id in proportional_times.keys()
+        Uses the largest-remainder (Hamilton) method per period:
+            - take floor of each worker's value
+                    - compute how many units are still needed to reach the
+                        rounded total
+            - distribute the remaining units to workers with largest
+                fractional remainders
+
+    This avoids repeated per-unit loops and handles large numbers efficiently.
+    """
+    rounded_times: Dict[str, List[int]] = {w: [] for w in proportional_times.keys()}
+
+    # Nothing to do
+    if not proportional_times:
+        return rounded_times
+
+    # Number of periods is the length of the first worker's list
+    len_first_value = len(next(iter(proportional_times.values())))
+    worker_ids = list(proportional_times.keys())
+
+    for i in range(len_first_value):
+        # clamp negative values to 0.0 defensively
+        vals: Dict[str, float] = {
+            w: max(0.0, float(proportional_times[w][i])) for w in worker_ids
+        }
+
+        total = sum(vals.values())
+        total_needed = int(round(total))
+        if total_needed < 0:
+            total_needed = 0
+
+        # Base allocation: floors
+        floors: Dict[str, int] = {w: int(math.floor(vals[w])) for w in worker_ids}
+        base_total = sum(floors.values())
+
+        # Fractional remainders used to distribute extra units
+        remainders: Dict[str, float] = {w: vals[w] - floors[w] for w in worker_ids}
+
+        if total_needed >= base_total:
+            # Need to add (total_needed - base_total) units
+            add = total_needed - base_total
+            if add > 0:
+                # Sort by remainder desc, then by value desc to break ties
+                ordered = sorted(
+                    worker_ids,
+                    key=lambda w, rem=remainders, v=vals: (rem[w], v[w]),
+                    reverse=True,
                 )
-            )
-            # Calculate the initial rounded times and the rounding error
-            period_rounded_times: Dict[str, int] = {
-                worker_id: round(proportional_times[worker_id][i])
-                for worker_id in proportional_times.keys()
-            }
-            total_rounded_time = sum(period_rounded_times.values())
-            rounding_error = total_work_time - total_rounded_time
+                n = len(ordered)
+                # Distribute in round-robin across ordered list to
+                # handle add > n
+                for k in range(add):
+                    floors[ordered[k % n]] += 1
+        else:
+            # Need to remove (base_total - total_needed) units
+            remove = base_total - total_needed
+            if remove > 0:
+                # Prefer to remove from workers with smallest remainder
+                # (closest to an exact integer). Tie-break on smaller value
+                # so we remove from those contributing less overall.
+                ordered = sorted(
+                    worker_ids,
+                    key=lambda w, rem=remainders, v=vals: (rem[w], v[w]),
+                )
+                for w in ordered:
+                    if remove <= 0:
+                        break
+                    can_remove = min(floors[w], remove)
+                    floors[w] -= can_remove
+                    remove -= can_remove
 
-            # Distribute the rounding error across the workers
-            sorted_workers = sort_workers(i, proportional_times, period_rounded_times)
-
-            for j in range(abs(rounding_error)):
-                worker_id = sorted_workers[j % len(sorted_workers)]
-                if rounding_error > 0:
-                    period_rounded_times[worker_id] += 1
-                elif rounding_error < 0 < period_rounded_times[worker_id]:
-                    period_rounded_times[worker_id] -= 1
-
-            # Store the rounded times for the current period
-            for worker_id, rounded_time in period_rounded_times.items():
-                rounded_times[worker_id].append(rounded_time)
+        # Final safeguard: ensure non-negative and append
+        for w in worker_ids:
+            rounded_times[w].append(max(0, floors[w]))
 
     return rounded_times
 
