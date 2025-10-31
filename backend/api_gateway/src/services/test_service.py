@@ -14,6 +14,9 @@ from shared.database.schemas.shift import ShiftSchema
 from shared.database.schemas.shift_demand_new import ShiftDemandNewSchema
 from shared.database.schemas.specialty import SpecialtySchema
 from shared.database.schemas.worker import WorkerSchema
+from shared.database.schemas.shift_demand_template import (
+    ShiftDemandTemplateSchema,
+)
 from shared.logger import log_info
 from shared.schemas.core import (
     Attribute,
@@ -23,6 +26,7 @@ from shared.schemas.core import (
     Dimension,
     DimEntry,
     Request,
+    ShiftDemandTemplate,
     RequestType,
     Schedule,
     Shift,
@@ -46,6 +50,7 @@ class ScenarioLoadResponse(BaseModel):
     dimensions: List[Dimension]
     dim_entries: List[DimEntry]
     attributes: List[Attribute]
+    shift_demand_templates: List[ShiftDemandTemplate]
     shift_demands: List[ShiftDemandNew]
     constraints: List[ConstraintBuild]
     requests: List[Request]
@@ -68,7 +73,9 @@ class SolverTestScenariosService(BaseService):
                 / "solver_data.json"
             )
         if not test_data_file.exists():
-            raise FileNotFoundError(f"Solver data file not found: {test_data_file}")
+            raise FileNotFoundError(
+                f"Solver data file not found: {test_data_file}"
+            )
         self.test_data_file_path = test_data_file
 
     def get_scenario_names(self) -> List[str]:
@@ -92,7 +99,9 @@ class SolverTestScenariosService(BaseService):
 
         return list(data.keys())
 
-    def create_scenario(self, scenario_name: str, team_id: str) -> ScenarioLoadResponse:
+    def create_scenario(
+        self, scenario_name: str, team_id: str
+    ) -> ScenarioLoadResponse:
         """Create a full scenario in the database for the given name.
 
         Loads workers from the JSON fixture, inserts them into the DB (with
@@ -116,6 +125,7 @@ class SolverTestScenariosService(BaseService):
             dimensions=saved.get("dimensions", []),
             dim_entries=saved.get("dim_entries", []),
             attributes=saved.get("attributes", []),
+            shift_demand_templates=saved.get("shift_demand_templates", []),
             shift_demands=saved.get("shift_demands", []),
             constraints=saved.get("constraints", []),
             requests=saved.get("requests", []),
@@ -133,10 +143,18 @@ class SolverTestScenariosService(BaseService):
             "dimension_count": len(scenario.get("dimensions", [])),
             "dim_entry_count": len(scenario.get("dim_entries", [])),
             "attribute_count": len(scenario.get("attributes", [])),
+            "shift_demand_templates_count": len(
+                scenario.get("shift_demand_templates", [])
+            ),
+            "shift_demand_count": len(scenario.get("shift_demands", [])),
+            "constraint_count": len(scenario.get("constraints", [])),
+            "request_count": len(scenario.get("requests", [])),
             "schedule_count": len(scenario.get("schedules", [])),
         }
 
-    def load_scenario_data_from_json(self, scenario_name: str) -> Dict[str, Any]:
+    def load_scenario_data_from_json(
+        self, scenario_name: str
+    ) -> Dict[str, Any]:
         """Load raw scenario data from the local JSON fixture.
 
         Returns the raw dict stored under the given scenario name.
@@ -180,6 +198,10 @@ class SolverTestScenariosService(BaseService):
                 "attributes": [
                     AttributeSchema.from_mongo(a).to_core()
                     for a in scenario_data.get("attributes", [])
+                ],
+                "shift_demand_templates": [
+                    ShiftDemandTemplateSchema.from_mongo(sdt).to_core()
+                    for sdt in scenario_data.get("shift_demand_templates", [])
                 ],
                 "shift_demands": [
                     ShiftDemandNewSchema.from_mongo(sd).to_core()
@@ -252,13 +274,17 @@ class SolverTestScenariosService(BaseService):
             # Specialties
             specialties: List[Specialty] = scenario_data.get("specialties", [])
             if not all(isinstance(s, Specialty) for s in specialties):
-                raise ValueError("Expected all specialties to be Specialty instances")
+                raise ValueError(
+                    "Expected all specialties to be Specialty instances"
+                )
             for spe in specialties:
                 spe.team_id = team_id
                 spe_id = spe.id
                 spe.id = ""  # Clear ID to let DB assign a new one
-                specialty_saved = self.collection.specialty_db.create_specialty(
-                    specialty=spe
+                specialty_saved = (
+                    self.collection.specialty_db.create_specialty(
+                        specialty=spe
+                    )
                 )
 
                 if not maps.get("specialties", None):
@@ -283,7 +309,9 @@ class SolverTestScenariosService(BaseService):
                     ]
                 w_id = w.id
                 w.id = ""  # Clear ID to let DB assign a new one
-                worker_saved = self.collection.worker_db.create_worker(worker=w)
+                worker_saved = self.collection.worker_db.create_worker(
+                    worker=w
+                )
 
                 if not maps.get("workers", None):
                     maps["workers"] = {}
@@ -304,7 +332,9 @@ class SolverTestScenariosService(BaseService):
                 if maps.get("specialties"):
                     for st in s.staffing:
                         if st.specialty_id in maps["specialties"]:
-                            st.specialty_id = maps["specialties"][st.specialty_id]
+                            st.specialty_id = maps["specialties"][
+                                st.specialty_id
+                            ]
                 s_id = s.id
                 s.id = ""  # Clear ID to let DB assign a new one
                 shift_saved = self.collection.shift_db.create_shift(shift=s)
@@ -320,13 +350,15 @@ class SolverTestScenariosService(BaseService):
             # Dimensions
             dimensions = scenario_data.get("dimensions", [])
             if not all(isinstance(d, Dimension) for d in dimensions):
-                raise ValueError("Expected all dimensions to be Dimension instances")
+                raise ValueError(
+                    "Expected all dimensions to be Dimension instances"
+                )
             for d in dimensions:
                 d.team_id = team_id
                 d_id = d.id
                 d.id = ""  # Clear ID to let DB assign a new one
-                dimension_saved = self.collection.dimension_db.create_dimension(
-                    dimension=d
+                dimension_saved = (
+                    self.collection.dimension_db.create_dimension(dimension=d)
                 )
 
                 if not maps.get("dimensions", None):
@@ -340,15 +372,17 @@ class SolverTestScenariosService(BaseService):
             # Dim Entries
             dim_entries: List[DimEntry] = scenario_data.get("dim_entries", [])
             if not all(isinstance(de, DimEntry) for de in dim_entries):
-                raise ValueError("Expected all dim entries to be DimEntry instances")
+                raise ValueError(
+                    "Expected all dim entries to be DimEntry instances"
+                )
             for de in dim_entries:
                 de_id = de.id
                 de.id = ""  # Clear ID to let DB assign a new one
                 # Update dimension reference
                 if de.dimension_id in maps.get("dimensions", {}):
                     de.dimension_id = maps["dimensions"][de.dimension_id]
-                dim_entry_saved = self.collection.dim_entry_db.create_dim_entry(
-                    dim_entry=de
+                dim_entry_saved = (
+                    self.collection.dim_entry_db.create_dim_entry(dim_entry=de)
                 )
 
                 if not maps.get("dim_entries", None):
@@ -362,7 +396,9 @@ class SolverTestScenariosService(BaseService):
             # Attributes
             attributes: List[Attribute] = scenario_data.get("attributes", [])
             if not all(isinstance(a, Attribute) for a in attributes):
-                raise ValueError("Expected all attributes to be Attribute instances")
+                raise ValueError(
+                    "Expected all attributes to be Attribute instances"
+                )
             for a in attributes:
                 a_id = a.id
                 a.id = ""  # Clear ID to let DB assign a new one
@@ -375,8 +411,8 @@ class SolverTestScenariosService(BaseService):
                 elif a.owner_type == AttributeOwnerType.SHIFT:
                     if a.owner_id in maps.get("shifts", {}):
                         a.owner_id = maps["shifts"][a.owner_id]
-                attribute_saved = self.collection.attribute_db.create_attribute(
-                    attribute=a
+                attribute_saved = (
+                    self.collection.attribute_db.create_attribute(attribute=a)
                 )
 
                 if not maps.get("attributes", None):
@@ -387,8 +423,39 @@ class SolverTestScenariosService(BaseService):
                     out["attributes"] = []
                 out["attributes"].append(attribute_saved)
 
+            # Shift Demand Templates
+            shift_demand_templates: List[ShiftDemandTemplate] = (
+                scenario_data.get("shift_demand_templates", [])
+            )
+            if not all(
+                isinstance(sdt, ShiftDemandTemplate)
+                for sdt in shift_demand_templates
+            ):
+                raise ValueError(
+                    "Expected all shift demand templates to be ShiftDemandTemplate instances"
+                )
+            for sdt in shift_demand_templates:
+                sdt.team_id = team_id
+                sdt.id = ""  # Clear ID to let DB assign a new one
+
+                if maps.get("shifts"):
+                    if sdt.shift_id in maps["shifts"]:
+                        sdt.shift_id = maps["shifts"][sdt.shift_id]
+
+                shift_demand_template_saved = self.collection.shift_demand_template_db.create_shift_demand_template(
+                    shift_demand_template=sdt
+                )
+
+                if not out.get("shift_demand_templates", None):
+                    out["shift_demand_templates"] = []
+                out["shift_demand_templates"].append(
+                    shift_demand_template_saved
+                )
+
             # Shift Demands
-            shift_demands: List[ShiftDemandNew] = scenario_data.get("shift_demands", [])
+            shift_demands: List[ShiftDemandNew] = scenario_data.get(
+                "shift_demands", []
+            )
             if not all(isinstance(sd, ShiftDemandNew) for sd in shift_demands):
                 raise ValueError(
                     "Expected all shift demands to be ShiftDemandNew instances"
@@ -412,7 +479,9 @@ class SolverTestScenariosService(BaseService):
                 out["shift_demands"].append(shift_demand_saved)
 
             # Constraints
-            constraints: List[ConstraintBuild] = scenario_data.get("constraints", [])
+            constraints: List[ConstraintBuild] = scenario_data.get(
+                "constraints", []
+            )
             if not all(isinstance(c, ConstraintBuild) for c in constraints):
                 raise ValueError(
                     "Expected all constraints to be ConstraintBuild instances"
@@ -426,7 +495,8 @@ class SolverTestScenariosService(BaseService):
                     if b.type == BlockTypeOptions.SHIFT_WORKER_OPTION:
                         # Validate that value is a list of ShiftWorkerOption
                         if not isinstance(b.value, list) or not all(
-                            isinstance(swo, ShiftWorkerOption) for swo in b.value
+                            isinstance(swo, ShiftWorkerOption)
+                            for swo in b.value
                         ):
                             raise ValueError(
                                 "Expected block value to be list of "
@@ -454,7 +524,9 @@ class SolverTestScenariosService(BaseService):
             # Requests
             requests: List[Request] = scenario_data.get("requests", [])
             if not all(isinstance(r, Request) for r in requests):
-                raise ValueError("Expected all requests to be Request instances")
+                raise ValueError(
+                    "Expected all requests to be Request instances"
+                )
             for r in requests:
                 r.team_id = team_id
                 r.id = ""  # Clear ID to let DB assign a new one
@@ -468,7 +540,8 @@ class SolverTestScenariosService(BaseService):
                             r.shift_id = maps["shifts"][r.shift_id]
                 elif r.request_type == RequestType.WORK_DEMAND:
                     if not isinstance(r.shift_options, list) or not all(
-                        isinstance(swo, ShiftWorkerOption) for swo in r.shift_options
+                        isinstance(swo, ShiftWorkerOption)
+                        for swo in r.shift_options
                     ):
                         raise ValueError(
                             "Expected request shift_options to be list of "
@@ -479,7 +552,9 @@ class SolverTestScenariosService(BaseService):
                         for swo in r.shift_options
                     ]
 
-                request_saved = self.collection.request_db.create_request(request=r)
+                request_saved = self.collection.request_db.create_request(
+                    request=r
+                )
 
                 if not out.get("requests", None):
                     out["requests"] = []
@@ -488,7 +563,9 @@ class SolverTestScenariosService(BaseService):
             # Schedules
             schedules: List[Schedule] = scenario_data.get("schedules", [])
             if not all(isinstance(s, Schedule) for s in schedules):
-                raise ValueError("Expected all schedules to be Schedule instances")
+                raise ValueError(
+                    "Expected all schedules to be Schedule instances"
+                )
             for schedule in schedules:
                 schedule.team_id = team_id
                 schedule.id = ""  # Clear ID to let DB assign a new one
@@ -504,8 +581,12 @@ class SolverTestScenariosService(BaseService):
                 if not out.get("schedules", None):
                     out["schedules"] = []
                 out["schedules"].append(
-                    self.collection.schedule_db.create_schedule(schedule=schedule)
+                    self.collection.schedule_db.create_schedule(
+                        schedule=schedule
+                    )
                 )
             return out
         except Exception as exc:
-            raise ValueError("Failed to save scenario data to database") from exc
+            raise ValueError(
+                "Failed to save scenario data to database"
+            ) from exc
