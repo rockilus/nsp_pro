@@ -64,6 +64,8 @@ Frontend dev:
 
 Note for agents: when running frontend build or tests (for example `npx tsc`, Playwright, or other frontend test/compile commands), you must run those commands from inside the `frontend` directory. In other words, first run `cd frontend` and then run `npx tsc`, `npx playwright test`, `npm run test`, or similar commands from that folder.
 
+Agent note: when running Playwright tests, prefer running with Chromium only to reduce resource usage and speed up runs (for example: `npx playwright test --project=chromium`).
+
 ```bash
 cd frontend
 npm install
