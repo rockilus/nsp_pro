@@ -191,8 +191,11 @@ export class SolverTestBase {
     });
     console.log("✅ Solver completed");
 
-    // Wait a bit for UI to update
-    await page.waitForTimeout(1000);
+    // Wait for status chip to appear (indicating UI has updated)
+    await page.waitForSelector('[data-testid^="solve-status-chip-"]', {
+      state: "visible",
+      timeout: 5000,
+    });
 
     // Check that there are no error or success snackbars open
     const errorSnackbar = await page.locator(
@@ -265,8 +268,17 @@ export class SolverTestBase {
   ): Promise<void> {
     console.log("🔍 Verifying solve results...");
 
-    // Wait for results to be displayed
-    await page.waitForTimeout(2000);
+    // Wait for assignment cells to be present in the DOM
+    // This indicates the calendar has rendered the solve results
+    await page
+      .waitForSelector('[data-testid^="assignment-"]', {
+        state: "attached",
+        timeout: 5000,
+      })
+      .catch(() => {
+        // If no assignments exist, that's valid (could be NO_SOLUTION)
+        console.log("   No assignment cells found (possibly NO_SOLUTION)");
+      });
 
     // Count assignments in the calendar view
     // This will depend on your actual UI implementation
