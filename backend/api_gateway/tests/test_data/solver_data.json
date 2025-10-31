@@ -5969,7 +5969,7 @@
                 "_id": "6894bf1a457cee1161ccda0a",
                 "name": "Haute",
                 "team": "6894a0a6457cee1161ccd840",
-                "template_type": "even_odd",
+                "template_type": "standard",
                 "weeks_data": [
                     {
                         "week_number": 0,

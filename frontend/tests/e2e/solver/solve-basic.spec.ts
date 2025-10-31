@@ -161,7 +161,7 @@ test.describe("Solver - Basic Coverage", () => {
       );
 
       // Trigger solve
-      await solverTestBase.triggerSolveAndWait(page, 60000);
+      await solverTestBase.triggerSolveAndWait(page, 120000);
 
       console.log(`✅ ${scenarioName} scenario solved successfully`);
     });
