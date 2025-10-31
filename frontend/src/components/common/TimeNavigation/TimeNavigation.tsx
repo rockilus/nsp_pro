@@ -44,13 +44,28 @@ interface TimeNavigationProps {
 }
 
 /**
- * Formats period label based on start and end dates
+ * Formats period label based on start and end dates and the selected time frame.
+ * For week view we display the month/year corresponding to the middle of the
+ * week (so a week spanning two months will show a single "MMMM YYYY" label).
  * Examples:
- * - Same month/year: "January 2025"
- * - Different months, same year: "Jan - Feb 2025"
+ * - Week view (any cross-month week): "October 2025"
+ * - Same month/year (month view): "January 2025"
+ * - Different months, same year (month view spanning months): "Jan - Feb 2025"
  * - Different years: "Dec 2024 - Jan 2025"
  */
-function formatPeriodLabel(start: Dayjs, end: Dayjs): string {
+function formatPeriodLabel(
+  start: Dayjs,
+  end: Dayjs,
+  timeFrame: TimeFrame
+): string {
+  // Week view: show the month/year of the middle day of the week to avoid
+  // labels like "Oct - Nov 2025" when a week spans months.
+  if (timeFrame === "week") {
+    // Week is 7 days; use the middle day to pick a representative month/year
+    const middle = start.add(3, "day");
+    return middle.format("MMMM YYYY");
+  }
+
   if (start.month() === end.month() && start.year() === end.year()) {
     return start.format("MMMM YYYY");
   } else if (start.month() !== end.month() && start.year() === end.year()) {
@@ -114,10 +129,11 @@ export const TimeNavigation: React.FC<TimeNavigationProps> = ({
         data-testid="time-nav-label"
         aria-label={`Current period: ${formatPeriodLabel(
           currentPeriodStart,
-          currentPeriodEnd
+          currentPeriodEnd,
+          timeFrame
         )}`}
       >
-        {formatPeriodLabel(currentPeriodStart, currentPeriodEnd)}
+        {formatPeriodLabel(currentPeriodStart, currentPeriodEnd, timeFrame)}
       </span>
 
       {/* Period Type Selector */}

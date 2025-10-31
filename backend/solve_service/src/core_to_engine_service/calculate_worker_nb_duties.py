@@ -45,36 +45,28 @@ def build_nb_duties_constraints(
         for i, period in p_index_to_period.items():
             if len(period) == 0:
                 continue
+            assignments = [
+                (w_id, d.isoformat(), s.id)
+                for d in period
+                for s in shifts_duty
+                if d
+                in ws_to_dates[(w_id, s.id)].dates_hist
+                + ws_to_dates[(w_id, s.id)].dates_campaign
+                and d in period
+            ]
+            if not assignments:
+                continue
+            targets = target_work_times[i]
             if i not in p_index_to_gadtc:
                 p_index_to_gadtc[i] = GroupsAssignmentsTargetConstraint(
-                    assignments=[
-                        [
-                            (w_id, d.isoformat(), s.id)
-                            for d in period
-                            for s in shifts_duty
-                            if d
-                            in ws_to_dates[(w_id, s.id)].dates_hist
-                            + ws_to_dates[(w_id, s.id)].dates_campaign
-                            and d in period
-                        ]
-                    ],
-                    targets=[target_work_times[i]],
+                    assignments=[assignments],
+                    targets=[targets],
                     penalty=penalty,
                     tolerance=tolerance,
                 )
             else:
-                p_index_to_gadtc[i].assignments.append(
-                    [
-                        (w_id, d.isoformat(), s.id)
-                        for d in period
-                        for s in shifts_duty
-                        if d
-                        in ws_to_dates[(w_id, s.id)].dates_hist
-                        + ws_to_dates[(w_id, s.id)].dates_campaign
-                        and d in period
-                    ]
-                )
-                p_index_to_gadtc[i].targets.append(target_work_times[i])
+                p_index_to_gadtc[i].assignments.append(assignments)
+                p_index_to_gadtc[i].targets.append(targets)
     return list(p_index_to_gadtc.values())
 
 

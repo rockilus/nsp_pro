@@ -2,39 +2,10 @@
  * API client for worker operations
  */
 
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { WorkerT } from "../../../types/worker";
+import { WorkerT, toWorkerT, fromWorkerT } from "../../../types/worker";
 import { BaseApi, AuthenticatedApiClient } from "./baseApi";
-
-dayjs.extend(utc);
-
 export class WorkerApi extends BaseApi {
-  /**
-   * Transform API response data to WorkerT
-   */
-  private static toWorkerT(data: any): WorkerT {
-    return {
-      ...data,
-      employmentStartDate: dayjs.unix(data.employmentStartDate).utc(),
-      employmentEndDate: data.employmentEndDate
-        ? dayjs.unix(data.employmentEndDate).utc()
-        : null,
-    };
-  }
-
-  /**
-   * Transform WorkerT to API request data
-   */
-  private static fromWorkerT(data: WorkerT): any {
-    return {
-      ...data,
-      employmentStartDate: data.employmentStartDate.unix(),
-      employmentEndDate: data.employmentEndDate
-        ? data.employmentEndDate.unix()
-        : null,
-    };
-  }
+  // Conversion functions are provided from the shared type module
 
   /**
    * Add a new worker (authenticated)
@@ -52,9 +23,9 @@ export class WorkerApi extends BaseApi {
       apiClient,
       "post",
       `/workers/teams/${worker.teamId}`,
-      this.fromWorkerT(worker)
+      fromWorkerT(worker)
     );
-    return this.toWorkerT(responseData);
+    return toWorkerT(responseData);
   }
 
   /**
@@ -74,7 +45,7 @@ export class WorkerApi extends BaseApi {
       "get",
       `/workers/teams/${teamId}`
     );
-    return responseData.map((worker: any) => this.toWorkerT(worker));
+    return responseData.map((worker: any) => toWorkerT(worker));
   }
 
   /**
@@ -94,7 +65,7 @@ export class WorkerApi extends BaseApi {
       "get",
       `/workers/all/teams/${teamId}`
     );
-    return responseData.map((worker: any) => this.toWorkerT(worker));
+    return responseData.map((worker: any) => toWorkerT(worker));
   }
 
   /**
@@ -113,9 +84,9 @@ export class WorkerApi extends BaseApi {
       apiClient,
       "put",
       `/workers/${updatedWorker.id}/teams/${updatedWorker.teamId}`,
-      this.fromWorkerT(updatedWorker)
+      fromWorkerT(updatedWorker)
     );
-    return this.toWorkerT(responseData);
+    return toWorkerT(responseData);
   }
 
   /**
@@ -144,7 +115,7 @@ export class WorkerApi extends BaseApi {
       `/workers/${workerId}/attach_user/teams/${teamId}`,
       { user_id: userId }
     );
-    return this.toWorkerT(responseData);
+    return toWorkerT(responseData);
   }
 
   /**

@@ -23,17 +23,20 @@ WEEK_DAYS: Tuple[str, ...] = (
 
 
 class MapDay:
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(
         self,
         dates_hist: List[date],
         dates_campaign: List[date],
         periods_weekly: List[List[date]],
         periods_monthly: List[List[date]],
+        periods_yearly: List[List[date]],
     ) -> None:
         self.dates_hist = dates_hist
         self.dates_campaign = dates_campaign
         self.periods_weekly = periods_weekly
         self.periods_monthly = periods_monthly
+        self.periods_yearly = periods_yearly
 
     def get_coords_days(self, cba: ConstraintBuildAugmented) -> List[date]:
         selector = self.get_selector(cba.blocks, cba.constraint_type)
@@ -85,6 +88,8 @@ class MapDay:
             return self.periods_weekly
         if selector == VarDaySelectorOptions.MONTH:
             return self.periods_monthly
+        if selector == VarDaySelectorOptions.YEAR:
+            return self.periods_yearly
         raise ValueError(f"Selector {selector} not recognized")
         # period = [
         #     cba.day_var.start_date + timedelta(days=i)
@@ -112,6 +117,7 @@ class MapDay:
             return dates_constraint
         raise NotImplementedError(f"Day selector {selector} " + "not implemented")
 
+    # pylint: disable=too-many-branches, too-many-return-statements
     def get_selector(
         self, blocks: List[Block], cstr_type: ConstraintType
     ) -> VarDaySelectorOptions:
@@ -121,6 +127,10 @@ class MapDay:
             if cstr_type == ConstraintType.SUM:
                 if timing_block.value == "per week":
                     return VarDaySelectorOptions.WEEK
+                if timing_block.value == "per month":
+                    return VarDaySelectorOptions.MONTH
+                if timing_block.value == "per year":
+                    return VarDaySelectorOptions.YEAR
                 raise ValueError(f"Operator {timing_block.value} not recognized")
             if cstr_type == ConstraintType.SEQ:
                 if timing_block.value == "consecutive":

@@ -33,6 +33,7 @@ class MapConstaint:
         dates_campaign: List[date],
         periods_weekly: List[List[date]],
         periods_monthly: List[List[date]],
+        periods_yearly: List[List[date]],
         worker_ids_to_worker_dates: Dict[str, WorkerDates],
         shifts: List[Shift],
         shift_dim_dict: Dict,
@@ -47,7 +48,11 @@ class MapConstaint:
         self.penalties = penalties
         self.map_worker = MapWorker(workers, worker_dim_dict)
         self.map_day = MapDay(
-            dates_hist, dates_campaign, periods_weekly, periods_monthly
+            dates_hist,
+            dates_campaign,
+            periods_weekly,
+            periods_monthly,
+            periods_yearly,
         )
         self.map_shift = MapShift(shifts, shift_dim_dict, shift_ids_in_coverage)
 

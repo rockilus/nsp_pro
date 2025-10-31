@@ -159,14 +159,15 @@ test.describe("Request Calendar", () => {
     // Navigate to calendar
     await requestTestBase.navigateToCalendarTab(page);
 
-    // Use today as a test date
-    const today = dayjs.utc().startOf("day");
+    // Use a date in the near future (5 days from now) to avoid edge cases with "today"
+    // This ensures the date is definitely in a visible month
+    const futureDate1 = dayjs.utc().add(5, "days");
 
-    // Click on empty cell for today
+    // Click on empty cell for future date
     await requestTestBase.clickEmptyCalendarCell(
       page,
       testWorkers[0].workerId,
-      today
+      futureDate1
     );
 
     // Verify request panel opens
@@ -178,16 +179,18 @@ test.describe("Request Calendar", () => {
     await closeButton.click();
     await expect(requestPanel).not.toBeVisible();
 
-    console.log("✅ Create request panel opens when clicking on today");
+    console.log(
+      "✅ Create request panel opens when clicking on near future date"
+    );
 
-    // Test with a future date
-    const futureDate = dayjs.utc().add(2, "days");
+    // Test with another future date
+    const futureDate2 = dayjs.utc().add(7, "days");
 
     // Click on empty cell for future date
     await requestTestBase.clickEmptyCalendarCell(
       page,
       testWorkers[0].workerId,
-      futureDate
+      futureDate2
     );
 
     // Verify request panel opens again

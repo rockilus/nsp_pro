@@ -92,6 +92,7 @@ export default function WorkerRowHeaderCell({
 
   return (
     <TableCell
+      data-testid={`worker-row-header-${worker.id}`}
       sx={{
         position: "sticky",
         left: 0,
@@ -101,7 +102,10 @@ export default function WorkerRowHeaderCell({
       }}
     >
       <div className="worker-row-header-cell-container">
-        <span className="worker-name">{`${worker.name} (${worker.acronym})`}</span>
+        <span
+          className="worker-name"
+          data-testid={`worker-name-${worker.id}`}
+        >{`${worker.name} (${worker.acronym})`}</span>
         {scheduleCampaign && (
           <div className="worker-stats-item">
             <div

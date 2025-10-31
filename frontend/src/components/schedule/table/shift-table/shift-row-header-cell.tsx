@@ -46,6 +46,7 @@ export default function ShiftRowHeaderCell({
 
   return (
     <TableCell
+      data-testid={`shift-row-header-${shift.id}`}
       sx={{
         position: "sticky",
         left: 0,
@@ -62,7 +63,10 @@ export default function ShiftRowHeaderCell({
           style={{ "--bg-color": sample } as React.CSSProperties}
         ></div>
         <div className="shift-row-header-cell-left">
-          <span className="shift-name">{`${shift.name} (${shift.acronym})`}</span>
+          <span
+            className="shift-name"
+            data-testid={`shift-name-${shift.id}`}
+          >{`${shift.name} (${shift.acronym})`}</span>
           {teamWithMembership.team.useSolver && scheduleCampaign && (
             <span
               className={`shift-stats-total ${

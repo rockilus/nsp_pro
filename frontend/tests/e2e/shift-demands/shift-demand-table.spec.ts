@@ -62,9 +62,12 @@ test.describe("Shift Demand - Table", () => {
     // Wait for the table to load
     await page.waitForSelector('[data-testid^="shift-demand-cell-"]');
 
-    // Get the first shift's cell for tomorrow to avoid conflicts with other tests
+    // Use a date that's visible in the current month view to avoid navigation issues
     const tomorrow = dayjs.utc().add(1, "day");
     const dateStr = tomorrow.format("YYYY-MM-DD");
+
+    // Navigate to the month containing tomorrow's date if needed
+    await shiftDemandTestBase.navigateToMonth(page, tomorrow);
 
     // Find a shift row and get its first empty cell
     const firstRowHeader = page

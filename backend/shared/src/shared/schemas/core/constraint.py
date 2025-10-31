@@ -27,6 +27,7 @@ class VarDaySelectorOptions(Enum):
     MONTH = 2
     PERIOD = 3
     WEEK_DAY_INDEX = 4
+    YEAR = 5
 
 
 class VarShiftSelectorOptions(Enum):

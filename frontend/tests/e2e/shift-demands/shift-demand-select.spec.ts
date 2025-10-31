@@ -417,6 +417,9 @@ test.describe("Shift Demand - Select Feature", () => {
       const tomorrow = dayjs.utc().add(1, "day");
       const testDate = tomorrow.format("YYYY-MM-DD");
 
+      // Navigate to the correct month before selecting the cell
+      await shiftDemandTestBase.navigateToMonth(page, tomorrow);
+
       const checkboxes = shiftDemandTestBase.getSelectionCheckboxes(page);
       await checkboxes.cellSelect(shiftId!, testDate).click();
 
@@ -456,6 +459,9 @@ test.describe("Shift Demand - Select Feature", () => {
 
       const tomorrow = dayjs.utc().add(1, "day");
       const testDate = tomorrow.format("YYYY-MM-DD");
+
+      // Navigate to the correct month before creating the shift demand
+      await shiftDemandTestBase.navigateToMonth(page, tomorrow);
 
       // Create a shift demand first by clicking the cell
       const cell = page.locator(
@@ -555,6 +561,9 @@ test.describe("Shift Demand - Select Feature", () => {
 
       const tomorrow = dayjs.utc().add(1, "day");
       const testDate = tomorrow.format("YYYY-MM-DD");
+
+      // Navigate to the correct month before selecting the cell
+      await shiftDemandTestBase.navigateToMonth(page, tomorrow);
 
       const checkboxes = shiftDemandTestBase.getSelectionCheckboxes(page);
       await checkboxes.cellSelect(shiftId!, testDate).click();

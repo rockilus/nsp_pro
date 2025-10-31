@@ -6,18 +6,27 @@ They include multiple safety mechanisms to prevent accidental use in
 production.
 """
 
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from loguru import logger
 from pydantic import BaseModel
+from shared.augment import cb_to_cb_augmented, r_to_r_augmented
 from shared.database.reset_service import (
     DatabaseResetError,
     DatabaseResetService,
 )
+from shared.logger import log_info
 
 from src.config import config
-from src.integrations.authorization import authz_delete_all_instances
+from src.dependencies import get_test_service, get_user_context
+from src.errors import NotAuthorizedError
+from src.integrations.authorization import (
+    authz_check,
+    authz_delete_all_instances,
+)
+from src.security.user_context import UserContext
+from src.services.test_service import SolverTestScenariosService
 
 
 def get_database_interface(request: Request):
@@ -198,3 +207,116 @@ async def test_utils_health() -> dict:
         "test_utilities_available": config.environment
         in ["test", "testing", "local", "development"],
     }
+
+
+class ScenarioLoadRequest(BaseModel):
+    """Request model for loading test scenarios."""
+
+    scenario_name: str
+    team_id: str
+
+
+@router.post(
+    "/scenarios/load",
+    #   response_model=ScenarioLoadResponse
+)
+async def load_test_scenario(
+    request: ScenarioLoadRequest,
+    user_context: UserContext = Depends(get_user_context),
+    test_service: SolverTestScenariosService = Depends(get_test_service),
+) -> Dict:
+    try:
+        if not await authz_check(
+            user_context.user_id, "create-worker", "team", request.team_id
+        ):
+            log_info(
+                f"Authorization denied for user {user_context.user_id} "
+                f"to create worker in team {request.team_id}"
+            )
+            raise NotAuthorizedError("You do not have permission to create a worker")
+        log_info(
+            f"Loading test scenario '{request.scenario_name}' "
+            f"for team '{request.team_id}'"
+        )
+
+        # Get scenario data
+        try:
+            scenario = test_service.create_scenario(
+                scenario_name=request.scenario_name, team_id=request.team_id
+            )
+        except ValueError as e:
+            raise HTTPException(status_code=404, detail=str(e)) from e
+
+        cbs_augmented = [
+            cb_to_cb_augmented(
+                cb=cb,
+                workers=scenario.workers,
+                shifts=scenario.shifts,
+                dimensions=scenario.dimensions,
+                dim_entries=scenario.dim_entries,
+                attributes=scenario.attributes,
+                specialties=scenario.specialties,
+            )
+            for cb in scenario.constraints
+        ]
+
+        rs_augmented = [
+            r_to_r_augmented(
+                request=r,
+                worker=next((w for w in scenario.workers if w.id == r.worker_id), None),
+                shifts=scenario.shifts,
+                dimensions=scenario.dimensions,
+                dim_entries=scenario.dim_entries,
+                attributes=scenario.attributes,
+            )
+            for r in scenario.requests
+        ]
+
+        return {
+            "scenario_name": scenario.scenario_name,
+            "specialties": [s.to_dto() for s in scenario.specialties],
+            "workers": [w.to_dto(attributes=[]) for w in scenario.workers],
+            "shifts": [s.to_dto(attributes=[]) for s in scenario.shifts],
+            "dimensions": [d.to_dto() for d in scenario.dimensions],
+            "dim_entries": [de.to_dto() for de in scenario.dim_entries],
+            "attributes": [a.to_dto() for a in scenario.attributes],
+            "shift_demand_templates": [
+                sdt.to_dto() for sdt in scenario.shift_demand_templates
+            ],
+            "shift_demands": [sd.to_dto() for sd in scenario.shift_demands],
+            "constraints": [c.to_dto() for c in cbs_augmented],
+            "requests": [r.to_dto() for r in rs_augmented],
+            "schedules": [s.to_dto() for s in scenario.schedules],
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to load scenario: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to load scenario: {str(e)}",
+        ) from e
+
+
+@router.get("/scenarios")
+async def list_scenarios(
+    _: UserContext = Depends(get_user_context),
+    test_service: SolverTestScenariosService = Depends(get_test_service),
+) -> List[str]:
+    """
+    List all available test scenarios.
+
+    Returns:
+        Dict with available scenarios and their metadata
+    """
+    try:
+        scenarios = test_service.get_scenario_names()
+        return scenarios
+
+    except Exception as e:
+        logger.error(f"Failed to list scenarios: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to list scenarios: {str(e)}",
+        ) from e
