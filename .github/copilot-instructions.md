@@ -62,6 +62,8 @@ make solve_service_check   # runs typecheck/linters for solve_service
 
 Frontend dev:
 
+Note for agents: when running frontend build or tests (for example `npx tsc`, Playwright, or other frontend test/compile commands), you must run those commands from inside the `frontend` directory. In other words, first run `cd frontend` and then run `npx tsc`, `npx playwright test`, `npm run test`, or similar commands from that folder.
+
 ```bash
 cd frontend
 npm install
