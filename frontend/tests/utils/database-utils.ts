@@ -32,7 +32,7 @@ import {
   DimensionEntryType,
 } from "../../src/types/dimension";
 import { DimEntryT } from "../../src/types/dim-entry";
-import { AttributeT, AttributeOwnerType } from "../../src/types/attribute";
+import { AttributeT, toAttributeT } from "../../src/types/attribute";
 import {
   ShiftDemandTemplateDTO,
   ShiftDemandTemplateCreateDTO,
@@ -1715,8 +1715,13 @@ export class DatabaseTestUtils {
       // Backend returns an object with scenario_name, workers and shifts
       const result = await this.testApiClient.post<{
         scenario_name: string;
+        specialties: any[];
         workers: any[];
         shifts: any[];
+        dimensions: any[];
+        dim_entries: any[];
+        attributes: any[];
+        shift_demands: any[];
         schedules: any[];
       }>("/test-utils/scenarios/load", {
         scenario_name: scenarioName,
@@ -1726,8 +1731,13 @@ export class DatabaseTestUtils {
       console.log(`✅ Loaded solver scenario: ${scenarioName}`);
       return {
         scenario_name: scenarioName,
+        specialties: result.specialties,
         workers: result.workers.map(toWorkerT),
         shifts: result.shifts.map(toShiftT),
+        dimensions: result.dimensions,
+        dim_entries: result.dim_entries,
+        attributes: result.attributes.map(toAttributeT),
+        shift_demands: result.shift_demands,
         schedules: result.schedules.map(toScheduleT),
       };
     } catch (error) {
