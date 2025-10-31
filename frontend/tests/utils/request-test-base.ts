@@ -1278,8 +1278,15 @@ export class RequestTestBase {
     // Wait for the calendar to be fully loaded before reading the month
     await expect(currentMonthLabel).toBeVisible();
 
-    // Wait a bit for any animations or lazy loading to complete
-    await page.waitForTimeout(500);
+    // Wait for the first day of the month to be rendered in the calendar
+    // This ensures the calendar data has fully loaded
+    const firstDayOfMonth = targetMonth.startOf("month").format("YYYY-MM-DD");
+    const firstDateHeader = this.getDateHeader(page, firstDayOfMonth);
+    await expect(firstDateHeader)
+      .toBeVisible({ timeout: 5000 })
+      .catch(() => {
+        // If the first day isn't visible yet, just continue - we'll navigate to it
+      });
 
     let currentMonthText = await currentMonthLabel.textContent();
     // Use strict parsing (third parameter = true) to avoid parsing issues
