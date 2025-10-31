@@ -122,8 +122,9 @@ export class ShiftDemandTestBase {
     // Wait for the calendar to be fully loaded before reading the month
     await expect(currentMonthLabel).toBeVisible();
 
-    // Wait a bit for any animations or lazy loading to complete
-    await page.waitForTimeout(500);
+    // Wait for the calendar grid/table to be visible and stable
+    const calendarGrid = page.locator('[data-testid^="date-header-"]').first();
+    await expect(calendarGrid).toBeVisible();
 
     let currentMonthText = await currentMonthLabel.textContent();
     // Use strict parsing (third parameter = true) to avoid parsing issues
