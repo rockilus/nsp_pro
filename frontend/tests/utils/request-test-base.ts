@@ -8,6 +8,7 @@
 import { Page, expect } from "@playwright/test";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import customParseFormat from "dayjs/plugin/customParseFormat";
 import { randomUUID } from "crypto";
 import { DatabaseTestUtils } from "./database-utils";
 import {
@@ -25,6 +26,7 @@ import {
 } from "../../src/types/request";
 
 dayjs.extend(utc);
+dayjs.extend(customParseFormat);
 
 export class RequestTestBase {
   protected dbUtils: DatabaseTestUtils;
@@ -1237,6 +1239,9 @@ export class RequestTestBase {
     workerId: string,
     date: dayjs.Dayjs
   ): Promise<void> {
+    // Navigate to the correct month first
+    await this.navigateToMonth(page, date);
+
     const cell = this.getCalendarCell(page, workerId, date);
     await expect(cell).toBeVisible();
     await cell.click();
@@ -1251,6 +1256,9 @@ export class RequestTestBase {
     date: dayjs.Dayjs,
     requestId: string
   ): Promise<void> {
+    // Navigate to the correct month first
+    await this.navigateToMonth(page, date);
+
     const cell = this.getCalendarCellWithRequest(
       page,
       workerId,
@@ -1266,8 +1274,16 @@ export class RequestTestBase {
    */
   async navigateToMonth(page: Page, targetMonth: dayjs.Dayjs): Promise<void> {
     const currentMonthLabel = this.getCalendarMonthLabel(page);
+
+    // Wait for the calendar to be fully loaded before reading the month
+    await expect(currentMonthLabel).toBeVisible();
+
+    // Wait a bit for any animations or lazy loading to complete
+    await page.waitForTimeout(500);
+
     let currentMonthText = await currentMonthLabel.textContent();
-    let currentMonth = dayjs.utc(currentMonthText, "MMMM YYYY");
+    // Use strict parsing (third parameter = true) to avoid parsing issues
+    let currentMonth = dayjs.utc(currentMonthText, "MMMM YYYY", true);
 
     while (!currentMonth.isSame(targetMonth, "month")) {
       if (currentMonth.isBefore(targetMonth, "month")) {
@@ -1286,7 +1302,8 @@ export class RequestTestBase {
         { selector: '[data-testid="time-nav-label"]', prev: previousText }
       );
       currentMonthText = await currentMonthLabel.textContent();
-      currentMonth = dayjs.utc(currentMonthText, "MMMM YYYY");
+      // Use strict parsing (third parameter = true) to avoid parsing issues
+      currentMonth = dayjs.utc(currentMonthText, "MMMM YYYY", true);
     }
   }
 
@@ -1336,6 +1353,9 @@ export class RequestTestBase {
     workerId: string,
     date: dayjs.Dayjs
   ): Promise<void> {
+    // Navigate to the correct month first
+    await this.navigateToMonth(page, date);
+
     const cell = this.getCalendarCell(page, workerId, date);
     await expect(cell).toBeVisible();
 
@@ -1359,6 +1379,9 @@ export class RequestTestBase {
       backgroundColor?: string;
     }
   ): Promise<void> {
+    // Navigate to the correct month first
+    await this.navigateToMonth(page, date);
+
     const cell = this.getCalendarCellWithRequest(
       page,
       workerId,
@@ -1391,6 +1414,9 @@ export class RequestTestBase {
     workerId: string,
     pastDate: dayjs.Dayjs
   ): Promise<void> {
+    // Navigate to the correct month first
+    await this.navigateToMonth(page, pastDate);
+
     const cell = this.getCalendarCell(page, workerId, pastDate);
     await expect(cell).toBeVisible();
 
