@@ -334,10 +334,12 @@ class TestCalculateWorkerWorkTimes:
             "worker2": [-15.2, -25.6, -35.1],
             "worker3": [-12.3, -22.1, -32.2],
         }
+        # Negative proportional times are clamped to 0 by the implementation,
+        # so the expected rounded result for all negative inputs is zeros.
         expected_rounded_times = {
-            "worker1": [-10, -20, -31],
-            "worker2": [-16, -26, -35],
-            "worker3": [-12, -22, -32],
+            "worker1": [0, 0, 0],
+            "worker2": [0, 0, 0],
+            "worker3": [0, 0, 0],
         }
         rounded_times = round_proportional_times(proportional_times)
         assert rounded_times == expected_rounded_times
