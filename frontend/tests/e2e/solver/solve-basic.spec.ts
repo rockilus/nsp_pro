@@ -151,6 +151,9 @@ test.describe("Solver - Basic Coverage", () => {
     test(`should solve ${scenarioName} scenario successfully`, async ({
       page,
     }, testInfo) => {
+      const testTimeout = 120000;
+      test.setTimeout(testTimeout);
+
       const solverTestBase = new SolverTestBase();
       await solverTestBase.setupSolverTests(testInfo.workerIndex);
 
@@ -161,7 +164,7 @@ test.describe("Solver - Basic Coverage", () => {
       );
 
       // Trigger solve
-      await solverTestBase.triggerSolveAndWait(page, 120000);
+      await solverTestBase.triggerSolveAndWait(page, testTimeout);
 
       console.log(`✅ ${scenarioName} scenario solved successfully`);
     });
