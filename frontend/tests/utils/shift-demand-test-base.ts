@@ -6,7 +6,12 @@ import { Page, expect } from "@playwright/test";
 import { testConfig } from "./test-config";
 import { DatabaseTestUtils } from "./database-utils";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import customParseFormat from "dayjs/plugin/customParseFormat";
 import { ShiftType, ShiftRestType } from "../../src/types/shift";
+
+dayjs.extend(utc);
+dayjs.extend(customParseFormat);
 
 export class ShiftDemandTestBase {
   protected dbUtils: DatabaseTestUtils;
@@ -105,6 +110,45 @@ export class ShiftDemandTestBase {
       label: page.locator('[data-testid="time-nav-label"]'),
       select: page.locator('[data-testid="time-nav-select"]'),
     };
+  }
+
+  /**
+   * Navigates to a specific month in the shift demand calendar
+   */
+  async navigateToMonth(page: Page, targetMonth: dayjs.Dayjs): Promise<void> {
+    const periodNav = this.getPeriodNav(page);
+    const currentMonthLabel = periodNav.label;
+
+    // Wait for the calendar to be fully loaded before reading the month
+    await expect(currentMonthLabel).toBeVisible();
+
+    // Wait a bit for any animations or lazy loading to complete
+    await page.waitForTimeout(500);
+
+    let currentMonthText = await currentMonthLabel.textContent();
+    // Use strict parsing (third parameter = true) to avoid parsing issues
+    let currentMonth = dayjs.utc(currentMonthText, "MMMM YYYY", true);
+
+    while (!currentMonth.isSame(targetMonth, "month")) {
+      if (currentMonth.isBefore(targetMonth, "month")) {
+        await periodNav.nextButton.click();
+      } else {
+        await periodNav.previousButton.click();
+      }
+
+      // Wait for the month label text to change to avoid using a fixed timeout
+      const previousText = currentMonthText;
+      await page.waitForFunction(
+        ({ selector, prev }: { selector: string; prev: string | null }) => {
+          const el = document.querySelector(selector);
+          return !!(el && el.textContent && el.textContent !== prev);
+        },
+        { selector: '[data-testid="time-nav-label"]', prev: previousText }
+      );
+      currentMonthText = await currentMonthLabel.textContent();
+      // Use strict parsing (third parameter = true) to avoid parsing issues
+      currentMonth = dayjs.utc(currentMonthText, "MMMM YYYY", true);
+    }
   }
 
   /**
