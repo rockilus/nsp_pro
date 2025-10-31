@@ -280,6 +280,9 @@ async def load_test_scenario(
             "dimensions": [d.to_dto() for d in scenario.dimensions],
             "dim_entries": [de.to_dto() for de in scenario.dim_entries],
             "attributes": [a.to_dto() for a in scenario.attributes],
+            "shift_demand_templates": [
+                sdt.to_dto() for sdt in scenario.shift_demand_templates
+            ],
             "shift_demands": [sd.to_dto() for sd in scenario.shift_demands],
             "constraints": [c.to_dto() for c in cbs_augmented],
             "requests": [r.to_dto() for r in rs_augmented],
