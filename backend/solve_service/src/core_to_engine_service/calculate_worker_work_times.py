@@ -361,7 +361,7 @@ def round_proportional_times(
                 worker_id = sorted_workers[j % len(sorted_workers)]
                 if rounding_error > 0:
                     period_rounded_times[worker_id] += 1
-                elif rounding_error < 0:
+                elif rounding_error < 0 < period_rounded_times[worker_id]:
                     period_rounded_times[worker_id] -= 1
 
             # Store the rounded times for the current period

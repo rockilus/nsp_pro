@@ -15,9 +15,7 @@ from tests.sample_data import test_data_set_1
 
 class TestBuildPeriods:
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_build_periods_weekly(
-        self, sample_data: EngineInputsAugmented
-    ) -> None:
+    def test_build_periods_weekly(self, sample_data: EngineInputsAugmented) -> None:
         schedule = sample_data.schedule
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
@@ -31,17 +29,13 @@ class TestBuildPeriods:
         # Verify the output
         assert isinstance(periods_weekly, list)
         assert all(isinstance(week, list) for week in periods_weekly)
-        assert all(
-            isinstance(day, date) for week in periods_weekly for day in week
-        )
+        assert all(isinstance(day, date) for week in periods_weekly for day in week)
 
         # Verify that the periods are correctly built
         expected_periods = []
         current_date = schedule.start_date
         while current_date <= schedule.end_date:
-            start_of_week = current_date - timedelta(
-                days=current_date.weekday()
-            )
+            start_of_week = current_date - timedelta(days=current_date.weekday())
             end_of_week = start_of_week + timedelta(days=6)
             week_dates = [
                 d for d in dates_campaign if start_of_week <= d <= end_of_week
@@ -51,9 +45,7 @@ class TestBuildPeriods:
         assert periods_weekly == expected_periods
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_build_periods_monthly(
-        self, sample_data: EngineInputsAugmented
-    ) -> None:
+    def test_build_periods_monthly(self, sample_data: EngineInputsAugmented) -> None:
         schedule = sample_data.schedule
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
@@ -67,9 +59,7 @@ class TestBuildPeriods:
         # Verify the output
         assert isinstance(periods_monthly, list)
         assert all(isinstance(month, list) for month in periods_monthly)
-        assert all(
-            isinstance(day, date) for month in periods_monthly for day in month
-        )
+        assert all(isinstance(day, date) for month in periods_monthly for day in month)
 
         # Verify that the periods are correctly built
         expected_periods = []
@@ -79,22 +69,16 @@ class TestBuildPeriods:
             _, last_day_month = calendar.monthrange(
                 current_date.year, current_date.month
             )
-            end_of_month = date(
-                current_date.year, current_date.month, last_day_month
-            )
+            end_of_month = date(current_date.year, current_date.month, last_day_month)
             month_dates = [
-                d
-                for d in dates_campaign
-                if start_of_month <= d <= end_of_month
+                d for d in dates_campaign if start_of_month <= d <= end_of_month
             ]
             expected_periods.append(month_dates)
             current_date = end_of_month + timedelta(days=1)
         assert periods_monthly == expected_periods
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_build_periods_yearly(
-        self, sample_data: EngineInputsAugmented
-    ) -> None:
+    def test_build_periods_yearly(self, sample_data: EngineInputsAugmented) -> None:
         schedule = sample_data.schedule
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
@@ -108,9 +92,7 @@ class TestBuildPeriods:
         # Verify the output
         assert isinstance(periods_yearly, list)
         assert all(isinstance(year, list) for year in periods_yearly)
-        assert all(
-            isinstance(day, date) for year in periods_yearly for day in year
-        )
+        assert all(isinstance(day, date) for year in periods_yearly for day in year)
 
         # Verify that the periods are correctly built
         expected_periods = []
@@ -122,57 +104,6 @@ class TestBuildPeriods:
                 d for d in dates_campaign if start_of_year <= d <= end_of_year
             ]
             expected_periods.append(year_dates)
-            current_date = end_of_year + timedelta(days=1)
-        assert periods_yearly == expected_periods
-
-    @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_build_periods_yearly_with_hist(
-        self, sample_data: EngineInputsAugmented
-    ) -> None:
-        schedule = sample_data.schedule
-        # Move start into January to exercise crossing-year history
-        schedule.start_date = date(2025, 1, 3)
-        dates_campaign = [
-            schedule.start_date + timedelta(days=i)
-            for i in range((schedule.end_date - schedule.start_date).days + 1)
-        ]
-        dates_hist = [
-            date(2024, 12, 30),
-            date(2024, 12, 31),
-            date(2025, 1, 1),
-            date(2025, 1, 2),
-        ]
-
-        # Filter dates_hist to only include years present in dates_campaign
-        campaign_years = set(d.year for d in dates_campaign)
-        filtered_dates_hist = [
-            d for d in dates_hist if d.year in campaign_years
-        ]
-
-        # Call the method under test
-        periods_yearly = build_periods_yearly(
-            filtered_dates_hist, dates_campaign
-        )
-
-        # Verify the output
-        assert isinstance(periods_yearly, list)
-        assert all(isinstance(year, list) for year in periods_yearly)
-        assert all(
-            isinstance(day, date) for year in periods_yearly for day in year
-        )
-
-        # Verify that the periods are correctly built
-        expected_periods = []
-        current_date = min(filtered_dates_hist + dates_campaign)
-        while current_date <= schedule.end_date:
-            start_of_year = date(current_date.year, 1, 1)
-            end_of_year = date(current_date.year, 12, 31)
-            year_dates = [
-                d
-                for d in filtered_dates_hist + dates_campaign
-                if start_of_year <= d <= end_of_year
-            ]
-            expected_periods.append(sorted(set(year_dates)))
             current_date = end_of_year + timedelta(days=1)
         assert periods_yearly == expected_periods
 
@@ -195,9 +126,7 @@ class TestBuildPeriods:
         # Verify the output
         assert isinstance(periods_weekly, list)
         assert all(isinstance(week, list) for week in periods_weekly)
-        assert all(
-            isinstance(day, date) for week in periods_weekly for day in week
-        )
+        assert all(isinstance(day, date) for week in periods_weekly for day in week)
 
         # Verify that the periods are correctly built
         expected_periods = []
@@ -216,9 +145,7 @@ class TestBuildPeriods:
                 d += timedelta(days=1)
 
         while current_date <= schedule.end_date:
-            start_of_week = current_date - timedelta(
-                days=current_date.weekday()
-            )
+            start_of_week = current_date - timedelta(days=current_date.weekday())
             end_of_week = start_of_week + timedelta(days=6)
             week_dates = [
                 d
@@ -256,16 +183,12 @@ class TestBuildPeriods:
         ]
 
         # Call the method under test
-        periods_monthly = build_periods_monthly(
-            filtered_dates_hist, dates_campaign
-        )
+        periods_monthly = build_periods_monthly(filtered_dates_hist, dates_campaign)
 
         # Verify the output
         assert isinstance(periods_monthly, list)
         assert all(isinstance(month, list) for month in periods_monthly)
-        assert all(
-            isinstance(day, date) for month in periods_monthly for day in month
-        )
+        assert all(isinstance(day, date) for month in periods_monthly for day in month)
 
         # Verify that the periods are correctly built
         expected_periods = []
@@ -275,9 +198,7 @@ class TestBuildPeriods:
             _, last_day_month = calendar.monthrange(
                 current_date.year, current_date.month
             )
-            end_of_month = date(
-                current_date.year, current_date.month, last_day_month
-            )
+            end_of_month = date(current_date.year, current_date.month, last_day_month)
             month_dates = [
                 d
                 for d in filtered_dates_hist + dates_campaign
@@ -286,3 +207,48 @@ class TestBuildPeriods:
             expected_periods.append(sorted(set(month_dates)))
             current_date = end_of_month + timedelta(days=1)
         assert periods_monthly == expected_periods
+
+    @pytest.mark.parametrize("sample_data", test_data_set_1)
+    def test_build_periods_yearly_with_hist(
+        self, sample_data: EngineInputsAugmented
+    ) -> None:
+        schedule = sample_data.schedule
+        # Move start into January to exercise crossing-year history
+        schedule.start_date = date(2025, 1, 3)
+        dates_campaign = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+        dates_hist = [
+            date(2024, 12, 30),
+            date(2024, 12, 31),
+            date(2025, 1, 1),
+            date(2025, 1, 2),
+        ]
+
+        # Filter dates_hist to only include years present in dates_campaign
+        campaign_years = set(d.year for d in dates_campaign)
+        filtered_dates_hist = [d for d in dates_hist if d.year in campaign_years]
+
+        # Call the method under test
+        periods_yearly = build_periods_yearly(filtered_dates_hist, dates_campaign)
+
+        # Verify the output
+        assert isinstance(periods_yearly, list)
+        assert all(isinstance(year, list) for year in periods_yearly)
+        assert all(isinstance(day, date) for year in periods_yearly for day in year)
+
+        # Verify that the periods are correctly built
+        expected_periods = []
+        current_date = min(filtered_dates_hist + dates_campaign)
+        while current_date <= schedule.end_date:
+            start_of_year = date(current_date.year, 1, 1)
+            end_of_year = date(current_date.year, 12, 31)
+            year_dates = [
+                d
+                for d in filtered_dates_hist + dates_campaign
+                if start_of_year <= d <= end_of_year
+            ]
+            expected_periods.append(sorted(set(year_dates)))
+            current_date = end_of_year + timedelta(days=1)
+        assert periods_yearly == expected_periods

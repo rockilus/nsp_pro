@@ -68,9 +68,7 @@ def core_to_engine_inputs(
 ) -> Tuple[InputsEngine, ProcessingCache]:
     # Workers
     workers_not_deleted = [w for w in engine_inputs.workers if not w.deleted]
-    worker_not_deleted_ids = [
-        w.id for w in engine_inputs.workers if not w.deleted
-    ]
+    worker_not_deleted_ids = [w.id for w in engine_inputs.workers if not w.deleted]
     dim_to_attr_value_to_worker = build_dim_to_attr_value_to_owner(
         engine_inputs.workers,
         engine_inputs.dimensions,
@@ -97,13 +95,9 @@ def core_to_engine_inputs(
         for s in engine_inputs.shifts
         if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
     ]
-    shift_duties = [
-        s for s in engine_inputs.shifts if s.shift_type == ShiftType.DUTY
-    ]
+    shift_duties = [s for s in engine_inputs.shifts if s.shift_type == ShiftType.DUTY]
     shift_duties_not_deleted = [s for s in shift_duties if not s.deleted]
-    shift_id_to_duration_dict = _build_shift_id_to_duration_dict(
-        engine_inputs.shifts
-    )
+    shift_id_to_duration_dict = _build_shift_id_to_duration_dict(engine_inputs.shifts)
     dim_to_attr_value_to_shift = build_dim_to_attr_value_to_owner(
         engine_inputs.shifts,
         engine_inputs.dimensions,
@@ -147,12 +141,12 @@ def core_to_engine_inputs(
     )
 
     w_to_nb_duties = calculate_worker_nb_duties(
-        engine_inputs.schedule,
-        workers_not_deleted,
-        shifts_not_deleted,
-        engine_inputs.requests_leave,
-        engine_inputs.shift_demands,
-        periods_monthly,
+        schedule=engine_inputs.schedule,
+        workers=workers_not_deleted,
+        shifts=shifts_not_deleted,
+        requests=engine_inputs.requests_leave,
+        shift_demands=engine_inputs.shift_demands,
+        periods=periods_monthly,
     )
 
     # Constraints:
@@ -214,7 +208,15 @@ def core_to_engine_inputs(
             ),
         ),
         user_constraints=constraints,
+        # user_constraints=Constraints(
+        #     sum=constraints.sum,
+        #     seq=constraints.seq,
+        #     ord=constraints.ord,
+        #     fil=constraints.fil,
+        #     fai=constraints.fai,
+        # ),
         configuration_constraints=ConfigurationConstraintInputs(
+            # work_loads=None,
             work_loads=(
                 build_engine_work_loads(
                     workers_not_deleted,
@@ -289,14 +291,16 @@ def core_to_engine_inputs(
                 if engine_inputs.model_config.system_constraints.weekly_target_work_time
                 else []
             ),
+            # monthly_target_nb_duties=[],
             monthly_target_nb_duties=(
                 build_nb_duties_constraints(
                     periods_monthly,
                     w_to_nb_duties,
                     ws_to_dates,
                     shift_duties_not_deleted,
-                    engine_inputs.penalties.system_constraint.monthly_target_nb_duties,
                     # fmt: off
+                    engine_inputs.penalties.system_constraint
+                    .monthly_target_nb_duties,
                     engine_inputs.model_config.system_constraints
                     .mthly_target_nb_duty_tolerance,
                     # fmt: on
@@ -331,6 +335,17 @@ def core_to_engine_inputs(
         ),
         model_config=engine_inputs.model_config,
     )
+
+    # start_time_validation = time.time()
+    # log_info("Starting engine inputs validation")
+    # if not validate_engine_inputs(inputs):
+    #     raise ValueError("Engine inputs validation failed.")
+    # end_time_validation = time.time()
+    # total_time_validation = end_time_validation - start_time_validation
+    # log_info(
+    #     f"Engine inputs validation completed in {total_time_validation:.2f} seconds"
+    # )
+
     return inputs, ProcessingCache(
         constraints=constraints,
         periods_weekly=periods_weekly,
@@ -343,6 +358,5 @@ def core_to_engine_inputs(
 
 def _build_shift_id_to_duration_dict(shifts: List[Shift]) -> Dict[str, int]:
     return {
-        s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1)
-        for s in shifts
+        s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1) for s in shifts
     }

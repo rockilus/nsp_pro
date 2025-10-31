@@ -41,9 +41,7 @@ def build_periods_monthly(
         # Get the start of the month
         start_date = dates_campaign[0]
         start_of_month = date(start_date.year, start_date.month, 1)
-        _, last_day_month = calendar.monthrange(
-            start_date.year, start_date.month
-        )
+        _, last_day_month = calendar.monthrange(start_date.year, start_date.month)
         end_of_month = date(start_date.year, start_date.month, last_day_month)
 
         # Get all dates in the current month
