@@ -225,31 +225,139 @@ stop_documentdb() {
     fi
 }
 
+# Function to empty S3 bucket contents (handles versioned buckets) and remove from terraform state
+preserve_s3_buckets() {
+    log "Preserving S3 buckets: emptying contents and removing from terraform state"
+    cd "$STAGING_DIR"
+
+    # Find all aws_s3_bucket resources in terraform state
+    s3_resources=()
+    while IFS= read -r line; do
+        s3_resources+=("$line")
+    done < <(terraform state list 2>/dev/null | grep 'aws_s3_bucket' || true)
+
+    if [ ${#s3_resources[@]} -eq 0 ]; then
+        log "No S3 bucket resources found in terraform state"
+        return 0
+    fi
+
+    for res in "${s3_resources[@]}"; do
+        log "Processing terraform resource: $res"
+
+        # Extract bucket name from state
+        bucket_name=$(terraform state show "$res" 2>/dev/null | awk -F'= ' '/^ *bucket *=/ {gsub(/"/,"",$2); print $2; exit}')
+
+        if [ -z "$bucket_name" ]; then
+            warn "Could not determine bucket name for $res, skipping"
+            continue
+        fi
+
+        log "Emptying bucket: $bucket_name"
+
+        # Check if versioning enabled
+        versioning=$(aws s3api get-bucket-versioning --bucket "$bucket_name" --query 'Status' --output text 2>/dev/null || echo "None")
+
+        if [ "$versioning" = "Enabled" ]; then
+            log "Bucket $bucket_name is versioned — deleting all versions and delete markers"
+            # Loop and delete versions/delete markers until none remain
+            while true; do
+                aws s3api list-object-versions --bucket "$bucket_name" --output json \
+                    --query='{Objects: (Versions[] | [].{Key:Key,VersionId:VersionId}) + (DeleteMarkers[] | [].{Key:Key,VersionId:VersionId})}' \
+                    > /tmp/s3_delete.json 2>/dev/null || true
+
+                if [ ! -s /tmp/s3_delete.json ]; then
+                    break
+                fi
+
+                # If jq is available, use it to count objects; otherwise fallback to a grep check
+                if command -v jq >/dev/null 2>&1; then
+                    count=$(jq -r '.Objects | length' /tmp/s3_delete.json 2>/dev/null || echo 0)
+                    if [ "$count" -eq 0 ]; then
+                        break
+                    fi
+                else
+                    if grep -q '"Objects"[[:space:]]*:\s*\[\s*\]' /tmp/s3_delete.json 2>/dev/null; then
+                        break
+                    fi
+                fi
+
+                aws s3api delete-objects --bucket "$bucket_name" --delete file:///tmp/s3_delete.json >/dev/null 2>&1 || warn "Failed to delete some object versions in $bucket_name"
+                rm -f /tmp/s3_delete.json
+            done
+            rm -f /tmp/s3_delete.json
+        else
+            # Non-versioned bucket: delete all objects
+            log "Deleting all objects from $bucket_name"
+            aws s3 rm "s3://$bucket_name" --recursive >/dev/null 2>&1 || warn "Failed to delete objects from $bucket_name"
+        fi
+
+        # After emptying, remove the bucket resource from terraform state so terraform won't try to delete it
+        log "Removing $res from terraform state to avoid bucket deletion"
+        terraform state rm "$res" >/dev/null 2>&1 || warn "Failed to remove $res from terraform state"
+        success "Preserved bucket $bucket_name (emptied and removed from state)"
+    done
+}
+
 # Main entry: run checks, confirm, then perform teardown steps
 main() {
-    # Parse flags: --dry-run (no destructive actions), --yes (skip confirmation)
+    # Parse flags: --dry-run (no destructive actions), --yes (skip confirmation),
+    # --profile/-p <name>, --region/-r <name>
     DRY_RUN=0
     AUTO_YES=0
-    for arg in "$@"; do
-        case "$arg" in
+    PROFILE=""
+    REGION=""
+
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
             --dry-run|-n)
                 DRY_RUN=1
+                shift
                 ;;
             --yes|-y)
                 AUTO_YES=1
+                shift
+                ;;
+            --profile|-p)
+                PROFILE="$2"
+                shift 2
+                ;;
+            --profile=*)
+                PROFILE="${1#*=}"
+                shift
+                ;;
+            --region|-r)
+                REGION="$2"
+                shift 2
+                ;;
+            --region=*)
+                REGION="${1#*=}"
+                shift
                 ;;
             --help|-h)
-                echo "Usage: $0 [--dry-run] [--yes]"
+                echo "Usage: $0 [--dry-run] [--yes] [--profile NAME] [--region NAME]"
                 echo
-                echo "  --dry-run, -n   Show what would be done without making changes"
-                echo "  --yes, -y       Skip interactive confirmation"
+                echo "  --dry-run, -n       Show what would be done without making changes"
+                echo "  --yes, -y           Skip interactive confirmation"
+                echo "  --profile, -p NAME  AWS profile to use (sets AWS_PROFILE)"
+                echo "  --region, -r NAME   AWS region to use (sets AWS_DEFAULT_REGION)"
                 exit 0
                 ;;
             *)
                 # ignore other args
+                shift
                 ;;
         esac
     done
+
+    # Export profile and region if provided
+    if [ -n "$PROFILE" ]; then
+        export AWS_PROFILE="$PROFILE"
+        log "Using AWS profile: $AWS_PROFILE"
+    fi
+    if [ -n "$REGION" ]; then
+        export AWS_DEFAULT_REGION="$REGION"
+        log "Using AWS region: $AWS_DEFAULT_REGION"
+    fi
 
     # Always check AWS CLI is available and configured
     check_aws_cli
@@ -285,6 +393,9 @@ main() {
         echo "You can run for real with: $0 --yes"
         exit 0
     fi
+
+    # Preserve S3 buckets (empty contents and remove from state so buckets aren't deleted)
+    preserve_s3_buckets
 
     # Execute destructive actions
     destroy_ecs
