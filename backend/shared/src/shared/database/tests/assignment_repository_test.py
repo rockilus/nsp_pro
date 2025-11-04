@@ -360,7 +360,9 @@ class TestAssignmentRepository:
         self.repo.create_many(assignments)
 
         # Only start date provided -> should return assignments on/after 2023-01-02
-        results = self.repo.get_assignments_by_dates("team1", date(2023, 1, 2), None)
+        results = self.repo.get_assignments_by_dates(
+            "team1", date(2023, 1, 2), None
+        )
 
         assert len(results) == 2
         assert all(r.date >= date(2023, 1, 2) for r in results)
@@ -399,10 +401,90 @@ class TestAssignmentRepository:
         self.repo.create_many(assignments)
 
         # Only end date provided -> should return assignments on/before 2023-01-02
-        results = self.repo.get_assignments_by_dates("team1", None, date(2023, 1, 2))
+        results = self.repo.get_assignments_by_dates(
+            "team1", None, date(2023, 1, 2)
+        )
 
         assert len(results) == 2
         assert all(r.date <= date(2023, 1, 2) for r in results)
+
+    def test_delete_assignments_by_dates_delete_fixed_true(self):
+        """When delete_fixed=True, delete both fixed and non-fixed assignments."""
+        assignments = [
+            AssignmentSchema(
+                team="team1",
+                worker="worker1",
+                schedule="schedule1",
+                date=datetime(2023, 1, 1, tzinfo=timezone.utc),
+                shift="shift1",
+                fixed=False,
+                source=AssignmentSource.MANUAL.value,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker2",
+                schedule="schedule2",
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc),
+                shift="shift2",
+                fixed=True,
+                source=AssignmentSource.MANUAL.value,
+            ),
+        ]
+        self.repo.create_many(assignments)
+
+        deleted_ids = self.repo.delete_assignments_by_dates(
+            "team1", date(2023, 1, 1), date(2023, 1, 2), delete_fixed=True
+        )
+
+        # Both assignments should be deleted
+        assert len(deleted_ids) == 2
+        remaining = list(self.repo.collection.find({"team": "team1"}))
+        assert len(remaining) == 0
+
+    def test_delete_assignments_by_dates_delete_fixed_false(self):
+        """When delete_fixed=False, delete only non-fixed assignments."""
+        assignments = [
+            AssignmentSchema(
+                team="team1",
+                worker="worker1",
+                schedule="schedule1",
+                date=datetime(2023, 1, 1, tzinfo=timezone.utc),
+                shift="shift1",
+                fixed=False,
+                source=AssignmentSource.MANUAL.value,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker2",
+                schedule="schedule2",
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc),
+                shift="shift2",
+                fixed=True,
+                source=AssignmentSource.MANUAL.value,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker3",
+                schedule="schedule3",
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc),
+                shift="shift3",
+                fixed=False,
+                source=AssignmentSource.MANUAL.value,
+            ),
+        ]
+        self.repo.create_many(assignments)
+
+        deleted_ids = self.repo.delete_assignments_by_dates(
+            "team1", date(2023, 1, 1), date(2023, 1, 2), delete_fixed=False
+        )
+
+        # Only the non-fixed assignments should be deleted (2 of them)
+        assert len(deleted_ids) == 2
+
+        # The fixed assignment should remain
+        remaining = list(self.repo.collection.find({"team": "team1"}))
+        assert len(remaining) == 1
+        assert remaining[0]["fixed"] is True
 
     def test_delete_assignments_by_schedule_id(self):
         """Test deleting assignments by schedule ID."""
@@ -441,7 +523,9 @@ class TestAssignmentRepository:
                 team="team1",
                 worker="worker1",
                 schedule="schedule1",
-                date=datetime(today.year, today.month, today.day, tzinfo=timezone.utc),
+                date=datetime(
+                    today.year, today.month, today.day, tzinfo=timezone.utc
+                ),
                 shift="shift1",
                 fixed=False,
                 source=AssignmentSource.MANUAL.value,
@@ -450,7 +534,9 @@ class TestAssignmentRepository:
                 team="team1",
                 worker="worker2",
                 schedule="schedule2",
-                date=datetime(today.year, today.month, today.day, tzinfo=timezone.utc)
+                date=datetime(
+                    today.year, today.month, today.day, tzinfo=timezone.utc
+                )
                 + timedelta(days=1),
                 shift="shift2",
                 fixed=True,
@@ -460,7 +546,9 @@ class TestAssignmentRepository:
                 team="team1",
                 worker="worker2",
                 schedule="schedule2",
-                date=datetime(today.year, today.month, today.day, tzinfo=timezone.utc)
+                date=datetime(
+                    today.year, today.month, today.day, tzinfo=timezone.utc
+                )
                 + timedelta(days=-1),
                 shift="shift2",
                 fixed=True,
@@ -470,7 +558,9 @@ class TestAssignmentRepository:
                 team="team2",
                 worker="worker3",
                 schedule="schedule3",
-                date=datetime(today.year, today.month, today.day, tzinfo=timezone.utc),
+                date=datetime(
+                    today.year, today.month, today.day, tzinfo=timezone.utc
+                ),
                 shift="shift3",
                 fixed=False,
                 source=AssignmentSource.MANUAL.value,
@@ -490,7 +580,9 @@ class TestAssignmentRepository:
 
     def test_delete_assignments_by_team_and_shift_today_onward(self):
         """Test deleting assignments by team and shift from today onward."""
-        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        today = datetime.now().replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
         assignments = [
             AssignmentSchema(
                 team="team1",
@@ -531,7 +623,9 @@ class TestAssignmentRepository:
         ]
         self.repo.create_many(assignments)
 
-        self.repo.delete_assignments_by_team_and_shift_today_onward("team1", "shift1")
+        self.repo.delete_assignments_by_team_and_shift_today_onward(
+            "team1", "shift1"
+        )
 
         remaining = list(
             self.repo.collection.find({"team": "team1", "shift": "shift1"})
@@ -542,7 +636,9 @@ class TestAssignmentRepository:
 
     def test_delete_assignments_by_team_worker_shift_and_date(self):
         """Test deleting assignments by team, worker, shift, and date."""
-        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        today = datetime.now().replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
         assignments = [
             AssignmentSchema(
                 team="team1",
@@ -583,8 +679,10 @@ class TestAssignmentRepository:
         ]
         a_created = self.repo.create_many(assignments)
 
-        a_deleted_ids = self.repo.delete_assignments_by_team_worker_shift_and_date(
-            "team1", "worker1", "shift1", today.date()
+        a_deleted_ids = (
+            self.repo.delete_assignments_by_team_worker_shift_and_date(
+                "team1", "worker1", "shift1", today.date()
+            )
         )
 
         assert len(a_deleted_ids) == 1
@@ -702,8 +800,10 @@ class TestAssignmentRepository:
         assert result.date == a_date
 
         # Test for non-existing assignment
-        non_existing_result = self.repo.get_assignment_by_worker_shift_team_and_date(
-            "worker2", "shift2", "team2", date(2023, 1, 2)
+        non_existing_result = (
+            self.repo.get_assignment_by_worker_shift_team_and_date(
+                "worker2", "shift2", "team2", date(2023, 1, 2)
+            )
         )
         assert non_existing_result is None
 
@@ -766,13 +866,17 @@ class TestAssignmentRepository:
         ]
         self.repo.create_many(assignments)
 
-        deleted_ids = self.repo.delete_assignments_by_reference_id(reference_id)
+        deleted_ids = self.repo.delete_assignments_by_reference_id(
+            reference_id
+        )
 
         assert len(deleted_ids) == 2
         assert all(isinstance(id, str) for id in deleted_ids)
 
         remaining = list(
-            self.repo.collection.find({"reference_assignment_id": reference_id})
+            self.repo.collection.find(
+                {"reference_assignment_id": reference_id}
+            )
         )
         assert len(remaining) == 0
 
@@ -780,7 +884,9 @@ class TestAssignmentRepository:
         """Test deleting assignments by recurrence rule ID from a
         specific date."""
         source_id = "rule123"
-        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        today = datetime.now().replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
         assignments = [
             AssignmentSchema(
                 team="team1",
@@ -922,7 +1028,9 @@ class TestAssignmentRepository:
         ]
         self.repo.create_many(assignments)
 
-        self.repo.delete_assignments_by_schedule_id_and_dates(schedule_id, dates)
+        self.repo.delete_assignments_by_schedule_id_and_dates(
+            schedule_id, dates
+        )
 
         remaining = list(self.repo.collection.find({"schedule": schedule_id}))
 
@@ -964,7 +1072,9 @@ class TestAssignmentRepository:
         assert len(deleted_ids) == len(assignment_ids)
         assert all(isinstance(id, str) for id in deleted_ids)
 
-        remaining = list(self.repo.collection.find({"_id": {"$in": assignment_ids}}))
+        remaining = list(
+            self.repo.collection.find({"_id": {"$in": assignment_ids}})
+        )
         assert len(remaining) == 0
 
     def test_get_assignments_by_schedule_ids_and_date_range(self):
