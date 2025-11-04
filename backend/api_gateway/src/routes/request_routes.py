@@ -193,7 +193,7 @@ async def rescind_request(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     request_service: RequestService = Depends(get_request_service),
-) -> RequestDTO:
+) -> dict:
     try:
         user_id = user_context.user_id
         if not await authz_check(
@@ -205,8 +205,13 @@ async def rescind_request(
             raise NotAuthorizedError(
                 "You do not have permission to rescind a request"
             )
-        request = request_service.rescind_request(request_id=request_id)
-        response = request.to_dto()
+        request, deleted_ids = request_service.rescind_request(
+            request_id=request_id
+        )
+        response = {
+            "request": request.to_dto(),
+            "assignmentsDeletedIds": deleted_ids,
+        }
     except Exception as e:
         log_info("Failed to rescind request")
         handle_routes_errors(e)

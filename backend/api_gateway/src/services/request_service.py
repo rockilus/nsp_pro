@@ -207,7 +207,9 @@ class RequestService(BaseService):
         updated_request = self.collection.request_db.update_request(request)
         return self._to_request_augmented(updated_request)
 
-    def rescind_request(self, request_id: str) -> RequestAugmented:
+    def rescind_request(
+        self, request_id: str
+    ) -> tuple[RequestAugmented, List[str]]:
         request = self.collection.request_db.get_request_by_id(
             request_id=request_id
         )
@@ -217,17 +219,18 @@ class RequestService(BaseService):
             raise ValueError(
                 f"Request with id {request_id} is already in pending status"
             )
-
-        # Delete any assignments that were created for this request
-        self.collection.assignment_db.delete_assignments_by_source_id(
-            source_id=request_id
+        # Delete any assignments that were created for this request and collect ids
+        deleted_ids: List[str] = (
+            self.collection.assignment_db.delete_assignments_by_source_id(
+                source_id=request_id
+            )
         )
 
         # Update request status back to pending
         request.status = RequestStatus.PENDING
         request.fulfillment = FulfillmentStatus.NOT_PROCESSED
         updated_request = self.collection.request_db.update_request(request)
-        return self._to_request_augmented(updated_request)
+        return self._to_request_augmented(updated_request), deleted_ids
 
     def delete_request(
         self, request_id: str, author_id: str, team_role: str

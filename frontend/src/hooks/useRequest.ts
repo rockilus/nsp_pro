@@ -242,7 +242,10 @@ export function useRescindRequest() {
   const { user, isAuthenticated, loading } = useAuth();
 
   const rescindRequest = useCallback(
-    async (requestId: string, teamId: string): Promise<RequestT> => {
+    async (
+      requestId: string,
+      teamId: string
+    ): Promise<{ request: RequestT; assignmentsDeletedIds: string[] }> => {
       // Security: Validate authentication state
       if (loading) {
         throw new Error("Authentication still loading - please wait");

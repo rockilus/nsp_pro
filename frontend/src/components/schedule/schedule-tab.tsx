@@ -473,16 +473,23 @@ export default function ScheduleTab({
 
   const handleRescindRequest = async (requestId: string) => {
     try {
-      const rescindedRequest = await rescindRequest(
+      const result = await rescindRequest(
         requestId,
         teamWithMembership.team.id
       );
-      setRequests(
-        requests.map((r) =>
-          r.id === rescindedRequest.id ? rescindedRequest : r
-        )
+      const rescindedRequest = result.request;
+      const assignmentsDeletedIds = result.assignmentsDeletedIds || [];
+
+      setRequests((prev) =>
+        prev.map((r) => (r.id === rescindedRequest.id ? rescindedRequest : r))
       );
       setSelectedRequest(rescindedRequest);
+
+      if (assignmentsDeletedIds.length > 0) {
+        setAssignments((prev) =>
+          prev.filter((a) => !assignmentsDeletedIds.includes(a.id))
+        );
+      }
     } catch (error) {
       console.error("Failed to rescind request:", error);
     }

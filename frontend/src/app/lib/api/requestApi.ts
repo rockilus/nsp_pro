@@ -137,7 +137,7 @@ export class RequestApi extends BaseApi {
     apiClient: AuthenticatedApiClient,
     requestId: string,
     teamId: string
-  ): Promise<RequestT> {
+  ): Promise<{ request: RequestT; assignmentsDeletedIds: string[] }> {
     // Security: Input validation
     if (!requestId?.trim()) {
       throw new Error("Request ID is required");
@@ -151,7 +151,10 @@ export class RequestApi extends BaseApi {
       "post",
       `/requests/${requestId}/teams/${teamId}/rescind`
     );
-    return toRequestT(responseData);
+    return {
+      request: toRequestT(responseData.request),
+      assignmentsDeletedIds: responseData.assignmentsDeletedIds || [],
+    };
   }
 
   /**

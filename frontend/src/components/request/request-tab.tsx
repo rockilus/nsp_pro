@@ -157,7 +157,8 @@ export default function RequestTab({
 
   const handleRescindRequest = async (requestId: string) => {
     try {
-      const rescindedRequest = await rescindRequest(requestId, teamId);
+      const result = await rescindRequest(requestId, teamId);
+      const rescindedRequest = result.request;
       setRequests(
         requests.map((r) =>
           r.id === rescindedRequest.id ? rescindedRequest : r
