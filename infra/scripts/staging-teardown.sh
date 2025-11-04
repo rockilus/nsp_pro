@@ -2,6 +2,9 @@
 
 # filepath: /Users/felipekharaba/Code/nsp_pro/scripts/staging-teardown.sh
 
+# Command to run from infra directory:
+# ./scripts/staging-teardown.sh --profile rockilus-staging
+
 set -e  # Exit on any error
 
 # Configuration
