@@ -94,9 +94,9 @@ export default function AssignmentSelection({
               <Chip
                 icon={
                   selectedAssignmentState.fixed ? (
-                    <LockOutlineIcon sx={{ fontSize: "0.8rem" }} />
+                    // <LockOutlineIcon sx={{ fontSize: "0.8rem" }} />🔒
                   ) : (
-                    <LockOpenIcon sx={{ fontSize: "0.8rem" }} />
+                    // <LockOpenIcon sx={{ fontSize: "0.8rem" }} />🔓
                   )
                 }
                 label={

@@ -73,6 +73,11 @@ export default function AssignmentCell({
           style={{ "--bg-color": sample } as React.CSSProperties}
         ></div>
       )}
+      {assignmentData.assignment.fixed && (
+        <span className="assignment-fixed-lock" aria-label="fixed">
+          🔒
+        </span>
+      )}
     </div>
   );
 }
