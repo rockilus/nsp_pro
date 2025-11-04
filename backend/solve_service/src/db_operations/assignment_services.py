@@ -1,10 +1,10 @@
+from datetime import timedelta
 from typing import List, Tuple
 
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
     Assignment,
     Schedule,
-    ScheduleStatus,
     Shift,
     ShiftRestType,
 )
@@ -14,12 +14,16 @@ from shared.schemas.core import (
 def get_fixed_assignments(
     schedule: Schedule, collections: DatabaseCollections
 ) -> Tuple[List[Assignment], List[Assignment]]:
-    team_schedules = collections.schedule_db.get_schedules(schedule.team_id)
-    as_hist = collections.assignment_db.get_assignments_by_schedule_ids(
-        [s.id for s in team_schedules if s.status == ScheduleStatus.VALIDATED]
+    as_hist = collections.assignment_db.get_assignments_by_dates(
+        team_id=schedule.team_id,
+        start_date=None,
+        end_date=schedule.start_date - timedelta(days=1),
     )  # validated assignments
-    as_wip_fixed = collections.assignment_db.get_assignments_fixed_by_schedule_ids(
-        [s.id for s in team_schedules if s.status == ScheduleStatus.CAMPAIGN]
+    as_wip_fixed = collections.assignment_db.get_assignments_by_dates(
+        team_id=schedule.team_id,
+        start_date=schedule.start_date,
+        end_date=schedule.end_date,
+        fixed=True,
     )  # assignments wip and fixed
     return as_hist, as_wip_fixed
 
