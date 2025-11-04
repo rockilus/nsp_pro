@@ -2,13 +2,17 @@
 
 # filepath: /Users/felipekharaba/Code/nsp_pro/scripts/staging-teardown.sh
 
+# Command to run from infra directory:
+# ./scripts/staging-teardown.sh --profile rockilus-staging
+
 set -e  # Exit on any error
 
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-STAGING_DIR="$PROJECT_ROOT/infra/environments/staging"
-MODULES_DIR="$PROJECT_ROOT/infra/modules"
+# Correct paths: PROJECT_ROOT is already the `infra` directory, so don't duplicate `infra` in child paths
+STAGING_DIR="$PROJECT_ROOT/environments/staging"
+MODULES_DIR="$PROJECT_ROOT/modules"
 
 # Colors for output
 RED='\033[0;31m'
@@ -224,141 +228,203 @@ stop_documentdb() {
     fi
 }
 
-# Function to display cost savings summary
-show_cost_summary() {
-    log "Cost Savings Summary:"
-    echo "======================================"
-    echo "✅ ECS Services: ~\$50-200/month saved"
-    echo "✅ Network Load Balancer: ~\$16/month saved"
-    echo "✅ NAT Gateway: ~\$45/month saved"
-    echo "✅ DocumentDB (stopped): ~\$100-500/month saved"
-    echo "✅ ECR storage (cleaned): ~\$1-10/month saved"
-    echo ""
-    echo "🔄 Resources kept for quick restart:"
-    echo "   - VPC (except NAT)"
-    echo "   - ECR repositories"
-    echo "   - Cognito"
-    echo "   - IAM roles"
-    echo "   - SQS queues"
-    echo "   - Route 53"
-    echo "   - API Gateway"
-    echo "   - Frontend S3/CloudFront"
-    echo "   - Security Groups"
-    echo ""
-    echo "💡 To restart staging environment:"
-    echo "   ./scripts/staging-startup.sh"
+# Function to empty S3 bucket contents (handles versioned buckets) and remove from terraform state
+preserve_s3_buckets() {
+    log "Preserving S3 buckets: emptying contents and removing from terraform state"
+    cd "$STAGING_DIR"
+
+    # Find all aws_s3_bucket resources in terraform state
+    s3_resources=()
+    while IFS= read -r line; do
+        s3_resources+=("$line")
+    done < <(terraform state list 2>/dev/null | grep 'aws_s3_bucket' || true)
+
+    if [ ${#s3_resources[@]} -eq 0 ]; then
+        log "No S3 bucket resources found in terraform state"
+        return 0
+    fi
+
+    for res in "${s3_resources[@]}"; do
+        log "Processing terraform resource: $res"
+
+        # Extract bucket name from state
+        bucket_name=$(terraform state show "$res" 2>/dev/null | awk -F'= ' '/^ *bucket *=/ {gsub(/"/,"",$2); print $2; exit}')
+
+        if [ -z "$bucket_name" ]; then
+            warn "Could not determine bucket name for $res, skipping"
+            continue
+        fi
+
+        log "Emptying bucket: $bucket_name"
+
+        # Check if versioning enabled
+        versioning=$(aws s3api get-bucket-versioning --bucket "$bucket_name" --query 'Status' --output text 2>/dev/null || echo "None")
+
+        if [ "$versioning" = "Enabled" ]; then
+            log "Bucket $bucket_name is versioned — deleting all versions and delete markers"
+            # Loop and delete versions/delete markers until none remain
+            while true; do
+                aws s3api list-object-versions --bucket "$bucket_name" --output json \
+                    --query='{Objects: (Versions[] | [].{Key:Key,VersionId:VersionId}) + (DeleteMarkers[] | [].{Key:Key,VersionId:VersionId})}' \
+                    > /tmp/s3_delete.json 2>/dev/null || true
+
+                if [ ! -s /tmp/s3_delete.json ]; then
+                    break
+                fi
+
+                # If jq is available, use it to count objects; otherwise fallback to a grep check
+                if command -v jq >/dev/null 2>&1; then
+                    count=$(jq -r '.Objects | length' /tmp/s3_delete.json 2>/dev/null || echo 0)
+                    if [ "$count" -eq 0 ]; then
+                        break
+                    fi
+                else
+                    if grep -q '"Objects"[[:space:]]*:\s*\[\s*\]' /tmp/s3_delete.json 2>/dev/null; then
+                        break
+                    fi
+                fi
+
+                aws s3api delete-objects --bucket "$bucket_name" --delete file:///tmp/s3_delete.json >/dev/null 2>&1 || warn "Failed to delete some object versions in $bucket_name"
+                rm -f /tmp/s3_delete.json
+            done
+            rm -f /tmp/s3_delete.json
+        else
+            # Non-versioned bucket: delete all objects
+            log "Deleting all objects from $bucket_name"
+            aws s3 rm "s3://$bucket_name" --recursive >/dev/null 2>&1 || warn "Failed to delete objects from $bucket_name"
+        fi
+
+        # After emptying, remove the bucket resource from terraform state so terraform won't try to delete it
+        log "Removing $res from terraform state to avoid bucket deletion"
+        terraform state rm "$res" >/dev/null 2>&1 || warn "Failed to remove $res from terraform state"
+        success "Preserved bucket $bucket_name (emptied and removed from state)"
+    done
 }
 
-# Function to create restore instructions
-create_restore_instructions() {
-    local restore_file="$SCRIPT_DIR/staging-restore-instructions.md"
-    
-    cat > "$restore_file" << 'EOF'
-# Staging Environment Restore Instructions
-
-This file contains instructions to restore the staging environment after teardown.
-
-## Quick Restore Commands
-
-1. **Start DocumentDB cluster** (if stopped):
-   ```bash
-   aws docdb start-db-cluster --db-cluster-identifier nsp-pro-staging-docdb
-   ```
-
-2. **Recreate NAT Gateway and Elastic IP**:
-   ```bash
-   cd infra/environments/staging
-   terraform apply -target='module.vpc.aws_eip.nat[0]' -auto-approve
-   terraform apply -target='module.vpc.aws_nat_gateway.main[0]' -auto-approve
-   ```
-
-3. **Recreate Network Load Balancer**:
-   ```bash
-   terraform apply -target=module.network_load_balancer -auto-approve
-   ```
-
-4. **Recreate ECS services**:
-   ```bash
-   # First ensure images are available in ECR
-   # Then apply ECS module
-   terraform apply -target=module.ecs -auto-approve
-   ```
-
-## Full Environment Restore
-
-To restore the complete staging environment:
-
-```bash
-cd infra/environments/staging
-terraform apply
-```
-
-## Notes
-
-- DocumentDB will take 5-10 minutes to start
-- NAT Gateway recreation will briefly interrupt private subnet internet access
-- ECS services will need fresh container images in ECR
-- DNS and SSL certificates remain active throughout teardown
-</EOF>
-
-    success "Restore instructions created at: $restore_file"
-}
-
-# Main execution function
+# Main entry: run checks, confirm, then perform teardown steps
 main() {
-    log "Starting NSP Pro Staging Environment Teardown"
-    log "============================================="
-    
-    # Pre-flight checks
+    # Parse flags: --dry-run (no destructive actions), --yes (skip confirmation),
+    # --profile/-p <name>, --region/-r <name>
+    DRY_RUN=0
+    AUTO_YES=0
+    PROFILE=""
+    REGION=""
+
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --dry-run|-n)
+                DRY_RUN=1
+                shift
+                ;;
+            --yes|-y)
+                AUTO_YES=1
+                shift
+                ;;
+            --profile|-p)
+                PROFILE="$2"
+                shift 2
+                ;;
+            --profile=*)
+                PROFILE="${1#*=}"
+                shift
+                ;;
+            --region|-r)
+                REGION="$2"
+                shift 2
+                ;;
+            --region=*)
+                REGION="${1#*=}"
+                shift
+                ;;
+            --help|-h)
+                echo "Usage: $0 [--dry-run] [--yes] [--profile NAME] [--region NAME]"
+                echo
+                echo "  --dry-run, -n       Show what would be done without making changes"
+                echo "  --yes, -y           Skip interactive confirmation"
+                echo "  --profile, -p NAME  AWS profile to use (sets AWS_PROFILE)"
+                echo "  --region, -r NAME   AWS region to use (sets AWS_DEFAULT_REGION)"
+                exit 0
+                ;;
+            *)
+                # ignore other args
+                shift
+                ;;
+        esac
+    done
+
+    # Export profile and region if provided
+    if [ -n "$PROFILE" ]; then
+        export AWS_PROFILE="$PROFILE"
+        log "Using AWS profile: $AWS_PROFILE"
+    fi
+    if [ -n "$REGION" ]; then
+        export AWS_DEFAULT_REGION="$REGION"
+        log "Using AWS region: $AWS_DEFAULT_REGION"
+    fi
+
+    # Always check AWS CLI is available and configured
     check_aws_cli
     check_terraform
-    
-    # Confirm with user
-    warn "This will destroy/deactivate staging environment components to save costs."
-    warn "The following will be destroyed: ECS, NLB, NAT Gateway, ECR images"
-    warn "The following will be stopped: DocumentDB"
-    warn "The following will be kept: VPC, ECR repos, Cognito, IAM, SQS, Route53, API Gateway, Frontend, Security Groups"
+    init_terraform
+
     echo
-    read -p "Are you sure you want to continue? (yes/no): " -r
-    echo
-    
-    if [[ ! $REPLY =~ ^[Yy][Ee][Ss]$ ]]; then
-        log "Teardown cancelled by user"
+    echo "This will destroy resources in the staging environment and delete ECR images."
+    echo "If you're running this from CI or a script, be cautious — this is destructive."
+
+    if [ "$DRY_RUN" -eq 1 ]; then
+        log "Running in dry-run mode: no destructive actions will be performed."
+    fi
+
+    if [ "$AUTO_YES" -eq 0 ] && [ "$DRY_RUN" -eq 0 ]; then
+        read -r -p "Type 'yes' to proceed: " CONFIRM
+        if [[ ! "$CONFIRM" =~ ^([yY][eE][sS])$ ]]; then
+            warn "Aborting teardown (confirmation not received)."
+            exit 1
+        fi
+    fi
+
+    if [ "$DRY_RUN" -eq 1 ]; then
+        # Show planned actions without executing
+        echo
+        echo "Planned teardown actions (dry-run):"
+        echo " - scale down and destroy ECS module (module.ecs)"
+        echo " - destroy Network Load Balancer (module.network_load_balancer)"
+        echo " - remove images from ECR repositories (main & solve)"
+        echo " - destroy NAT Gateway and associated Elastic IPs (module.vpc)"
+        echo " - stop DocumentDB cluster (module.documentdb)"
+        echo
+        echo "You can run for real with: $0 --yes"
         exit 0
     fi
-    
-    # Initialize terraform
-    init_terraform
-    
-    # Execute teardown in order
-    log "Starting teardown sequence..."
-    
-    # 1. ECS (includes services and cluster)
+
+    # Preserve S3 buckets (empty contents and remove from state so buckets aren't deleted)
+    preserve_s3_buckets
+
+    # Execute destructive actions
     destroy_ecs
-    
-    # 2. Network Load Balancer
     destroy_nlb
-    
-    # 3. ECR images cleanup
     clean_ecr_images
-    
-    # 4. NAT Gateway and Elastic IPs
     destroy_nat_gateway
-    
-    # 5. DocumentDB stop
     stop_documentdb
-    
-    # Create restore instructions
-    create_restore_instructions
-    
-    # Show summary
-    success "Staging environment teardown completed successfully!"
-    show_cost_summary
-    
-    log "Teardown process finished at $(date)"
+
+    # Write a short restore instructions file next to the script (non-destructive)
+    RESTORE_FILE="$SCRIPT_DIR/staging-restore-instructions.md"
+    cat > "$RESTORE_FILE" <<'EOF'
+# Staging restore instructions
+
+The following operations are recommended to restore the staging environment after teardown:
+
+- Re-create resources by running Terraform apply in `infra/environments/staging`.
+- Push container images to ECR repositories (main and solve services).
+- Verify ECS service desired counts and scaling.
+
+EOF
+
+    success "Staging teardown sequence completed. Restore instructions saved to: $RESTORE_FILE"
 }
 
-# Script execution
+# If script is executed (not sourced), run main
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     main "$@"
 fi
+
