@@ -7,6 +7,7 @@ from shared.schemas.core import (
     Schedule,
     Shift,
     ShiftRestType,
+    ShiftDemand,
 )
 
 
@@ -54,15 +55,29 @@ def save_assignments(
 
     shift_map = {shift.id: shift for shift in shifts}
 
-    for assignment in assignments:
-        for fixed_assignment in fixed_assignments:
-            if (
-                assignment.date == fixed_assignment.date
-                and assignment.shift_id == fixed_assignment.shift_id
-                and assignment.worker_id == fixed_assignment.worker_id
-            ):
-                assignment.fixed = True
-                break
+    # Avoid creating assignments that already exist in the DB as fixed
+    existing_fixed_keys = set()
+    if fixed_assignment_existing:
+        tmp = []
+        for fa in fixed_assignment_existing:
+            tmp.append((fa.worker_id, fa.date, fa.shift_id))
+        existing_fixed_keys = set(tmp)
+
+    # Also deduplicate incoming assignments (keep first occurrence)
+    seen = set()
+    filtered_assignments: List[Assignment] = []
+    for a in assignments:
+        key = (a.worker_id, a.date, a.shift_id)
+        if key in existing_fixed_keys:
+            # Skip creating this assignment, it already exists as fixed in DB
+            continue
+        if key in seen:
+            # Skip duplicate in the provided assignments list
+            continue
+        seen.add(key)
+        filtered_assignments.append(a)
+
+    assignments = filtered_assignments
 
     # Separate assignments into non-recuperation and recuperation
     non_recuperation_assignments = [
@@ -96,6 +111,7 @@ def save_assignments(
         if shift and shift.rest_type == ShiftRestType.RECUPERATION:
             reference_shift_id = shift.recuperation_duty_id
             if reference_shift_id:
+                # First try to find the newly-created reference assignment
                 reference_assignment = next(
                     (
                         a
@@ -106,6 +122,20 @@ def save_assignments(
                     ),
                     None,
                 )
+
+                # If not found among newly-created, check fixed assignments
+                if not reference_assignment and fixed_assignment_existing:
+                    reference_assignment = next(
+                        (
+                            a
+                            for a in fixed_assignment_existing
+                            if a.date == assignment.date
+                            and a.worker_id == assignment.worker_id
+                            and a.shift_id == reference_shift_id
+                        ),
+                        None,
+                    )
+
                 if reference_assignment:
                     assignment.reference_assignment_id = (
                         reference_assignment.id
