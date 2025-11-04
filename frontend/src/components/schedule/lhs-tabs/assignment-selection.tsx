@@ -92,15 +92,17 @@ export default function AssignmentSelection({
                 {t("assignment")}
               </span>
               <Chip
-                icon={
-                  selectedAssignmentState.fixed ? (
-                    // <LockOutlineIcon sx={{ fontSize: "0.8rem" }} />🔒
-                  ) : (
-                    // <LockOpenIcon sx={{ fontSize: "0.8rem" }} />🔓
-                  )
-                }
+                // icon={
+                //   selectedAssignmentState.fixed ? (
+                //     <LockOutlineIcon sx={{ fontSize: "0.8rem" }} />
+                //   ) : (
+                //     <LockOpenIcon sx={{ fontSize: "0.8rem" }} />
+                //   )
+                // }
                 label={
-                  selectedAssignmentState.fixed ? t("locked") : t("unlocked")
+                  selectedAssignmentState.fixed
+                    ? `🔒 ${t("locked")}`
+                    : `🔓 ${t("unlocked")}`
                 }
                 variant="outlined"
                 size="small"
