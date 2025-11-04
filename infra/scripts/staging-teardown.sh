@@ -7,8 +7,9 @@ set -e  # Exit on any error
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-STAGING_DIR="$PROJECT_ROOT/infra/environments/staging"
-MODULES_DIR="$PROJECT_ROOT/infra/modules"
+# Correct paths: PROJECT_ROOT is already the `infra` directory, so don't duplicate `infra` in child paths
+STAGING_DIR="$PROJECT_ROOT/environments/staging"
+MODULES_DIR="$PROJECT_ROOT/modules"
 
 # Colors for output
 RED='\033[0;31m'
@@ -224,141 +225,92 @@ stop_documentdb() {
     fi
 }
 
-# Function to display cost savings summary
-show_cost_summary() {
-    log "Cost Savings Summary:"
-    echo "======================================"
-    echo "✅ ECS Services: ~\$50-200/month saved"
-    echo "✅ Network Load Balancer: ~\$16/month saved"
-    echo "✅ NAT Gateway: ~\$45/month saved"
-    echo "✅ DocumentDB (stopped): ~\$100-500/month saved"
-    echo "✅ ECR storage (cleaned): ~\$1-10/month saved"
-    echo ""
-    echo "🔄 Resources kept for quick restart:"
-    echo "   - VPC (except NAT)"
-    echo "   - ECR repositories"
-    echo "   - Cognito"
-    echo "   - IAM roles"
-    echo "   - SQS queues"
-    echo "   - Route 53"
-    echo "   - API Gateway"
-    echo "   - Frontend S3/CloudFront"
-    echo "   - Security Groups"
-    echo ""
-    echo "💡 To restart staging environment:"
-    echo "   ./scripts/staging-startup.sh"
-}
-
-# Function to create restore instructions
-create_restore_instructions() {
-    local restore_file="$SCRIPT_DIR/staging-restore-instructions.md"
-    
-    cat > "$restore_file" << 'EOF'
-# Staging Environment Restore Instructions
-
-This file contains instructions to restore the staging environment after teardown.
-
-## Quick Restore Commands
-
-1. **Start DocumentDB cluster** (if stopped):
-   ```bash
-   aws docdb start-db-cluster --db-cluster-identifier nsp-pro-staging-docdb
-   ```
-
-2. **Recreate NAT Gateway and Elastic IP**:
-   ```bash
-   cd infra/environments/staging
-   terraform apply -target='module.vpc.aws_eip.nat[0]' -auto-approve
-   terraform apply -target='module.vpc.aws_nat_gateway.main[0]' -auto-approve
-   ```
-
-3. **Recreate Network Load Balancer**:
-   ```bash
-   terraform apply -target=module.network_load_balancer -auto-approve
-   ```
-
-4. **Recreate ECS services**:
-   ```bash
-   # First ensure images are available in ECR
-   # Then apply ECS module
-   terraform apply -target=module.ecs -auto-approve
-   ```
-
-## Full Environment Restore
-
-To restore the complete staging environment:
-
-```bash
-cd infra/environments/staging
-terraform apply
-```
-
-## Notes
-
-- DocumentDB will take 5-10 minutes to start
-- NAT Gateway recreation will briefly interrupt private subnet internet access
-- ECS services will need fresh container images in ECR
-- DNS and SSL certificates remain active throughout teardown
-</EOF>
-
-    success "Restore instructions created at: $restore_file"
-}
-
-# Main execution function
+# Main entry: run checks, confirm, then perform teardown steps
 main() {
-    log "Starting NSP Pro Staging Environment Teardown"
-    log "============================================="
-    
-    # Pre-flight checks
+    # Parse flags: --dry-run (no destructive actions), --yes (skip confirmation)
+    DRY_RUN=0
+    AUTO_YES=0
+    for arg in "$@"; do
+        case "$arg" in
+            --dry-run|-n)
+                DRY_RUN=1
+                ;;
+            --yes|-y)
+                AUTO_YES=1
+                ;;
+            --help|-h)
+                echo "Usage: $0 [--dry-run] [--yes]"
+                echo
+                echo "  --dry-run, -n   Show what would be done without making changes"
+                echo "  --yes, -y       Skip interactive confirmation"
+                exit 0
+                ;;
+            *)
+                # ignore other args
+                ;;
+        esac
+    done
+
+    # Always check AWS CLI is available and configured
     check_aws_cli
     check_terraform
-    
-    # Confirm with user
-    warn "This will destroy/deactivate staging environment components to save costs."
-    warn "The following will be destroyed: ECS, NLB, NAT Gateway, ECR images"
-    warn "The following will be stopped: DocumentDB"
-    warn "The following will be kept: VPC, ECR repos, Cognito, IAM, SQS, Route53, API Gateway, Frontend, Security Groups"
+    init_terraform
+
     echo
-    read -p "Are you sure you want to continue? (yes/no): " -r
-    echo
-    
-    if [[ ! $REPLY =~ ^[Yy][Ee][Ss]$ ]]; then
-        log "Teardown cancelled by user"
+    echo "This will destroy resources in the staging environment and delete ECR images."
+    echo "If you're running this from CI or a script, be cautious — this is destructive."
+
+    if [ "$DRY_RUN" -eq 1 ]; then
+        log "Running in dry-run mode: no destructive actions will be performed."
+    fi
+
+    if [ "$AUTO_YES" -eq 0 ] && [ "$DRY_RUN" -eq 0 ]; then
+        read -r -p "Type 'yes' to proceed: " CONFIRM
+        if [[ ! "$CONFIRM" =~ ^([yY][eE][sS])$ ]]; then
+            warn "Aborting teardown (confirmation not received)."
+            exit 1
+        fi
+    fi
+
+    if [ "$DRY_RUN" -eq 1 ]; then
+        # Show planned actions without executing
+        echo
+        echo "Planned teardown actions (dry-run):"
+        echo " - scale down and destroy ECS module (module.ecs)"
+        echo " - destroy Network Load Balancer (module.network_load_balancer)"
+        echo " - remove images from ECR repositories (main & solve)"
+        echo " - destroy NAT Gateway and associated Elastic IPs (module.vpc)"
+        echo " - stop DocumentDB cluster (module.documentdb)"
+        echo
+        echo "You can run for real with: $0 --yes"
         exit 0
     fi
-    
-    # Initialize terraform
-    init_terraform
-    
-    # Execute teardown in order
-    log "Starting teardown sequence..."
-    
-    # 1. ECS (includes services and cluster)
+
+    # Execute destructive actions
     destroy_ecs
-    
-    # 2. Network Load Balancer
     destroy_nlb
-    
-    # 3. ECR images cleanup
     clean_ecr_images
-    
-    # 4. NAT Gateway and Elastic IPs
     destroy_nat_gateway
-    
-    # 5. DocumentDB stop
     stop_documentdb
-    
-    # Create restore instructions
-    create_restore_instructions
-    
-    # Show summary
-    success "Staging environment teardown completed successfully!"
-    show_cost_summary
-    
-    log "Teardown process finished at $(date)"
+
+    # Write a short restore instructions file next to the script (non-destructive)
+    RESTORE_FILE="$SCRIPT_DIR/staging-restore-instructions.md"
+    cat > "$RESTORE_FILE" <<'EOF'
+# Staging restore instructions
+
+The following operations are recommended to restore the staging environment after teardown:
+
+- Re-create resources by running Terraform apply in `infra/environments/staging`.
+- Push container images to ECR repositories (main and solve services).
+- Verify ECS service desired counts and scaling.
+
+EOF
+
+    success "Staging teardown sequence completed. Restore instructions saved to: $RESTORE_FILE"
 }
 
-# Script execution
+# If script is executed (not sourced), run main
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     main "$@"
 fi
+
