@@ -26,12 +26,16 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         result = self.create(assignment_schema)
         return result.to_core()
 
-    def create_assignments(self, assignments: List[Assignment]) -> List[Assignment]:
+    def create_assignments(
+        self, assignments: List[Assignment]
+    ) -> List[Assignment]:
         """Create multiple assignments at once."""
         if not assignments:
             return []
 
-        assignment_schemas = [AssignmentSchema.from_core(a) for a in assignments]
+        assignment_schemas = [
+            AssignmentSchema.from_core(a) for a in assignments
+        ]
         result = self.create_many(assignment_schemas)
         return [a.to_core() for a in result]
 
@@ -120,7 +124,72 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         assignments = self.find_all(query)
         return [a.to_core() for a in assignments]
 
-    def get_assignments_by_schedule_id(self, schedule_id: str) -> List[Assignment]:
+    def delete_assignments_by_dates(
+        self,
+        team_id: str,
+        start_date: Optional[date],
+        end_date: Optional[date],
+        delete_fixed: bool = False,
+    ) -> List[str]:
+        """Delete all assignments for a team within a date range.
+
+            Behavior mirrors `get_assignments_by_dates`:
+            - both start_date and end_date provided: delete assignments where
+                date >= start_date and date <= end_date
+            - only start_date provided: delete assignments where
+                date >= start_date
+            - only end_date provided: delete assignments where
+                date <= end_date
+            - neither provided: do nothing and return []
+
+        If `delete_fixed` is True: delete both fixed and non-fixed assignments.
+        If `delete_fixed` is False: delete only non-fixed assignments (fixed == False).
+
+            Returns:
+                List[str]: list of deleted assignment ids
+        """
+        if not start_date and not end_date:
+            return []
+
+        date_filter: Dict[str, Any] = {}
+        if start_date:
+            date_filter["$gte"] = datetime(
+                start_date.year,
+                start_date.month,
+                start_date.day,
+                tzinfo=timezone.utc,
+            )
+        if end_date:
+            date_filter["$lte"] = datetime(
+                end_date.year,
+                end_date.month,
+                end_date.day,
+                tzinfo=timezone.utc,
+            )
+
+        query: Dict[str, Any] = {"team": team_id}
+        if date_filter:
+            query["date"] = date_filter
+
+        # If delete_fixed is False, we should only delete non-fixed assignments.
+        # If delete_fixed is True, we do not add any fixed filter and delete all matching
+        # assignments regardless of their `fixed` flag.
+        if not delete_fixed:
+            query["fixed"] = False
+
+        # Find matching assignments and collect their ids
+        matching = self.collection.find(query, {"_id": 1})
+        deleted_ids = [doc["_id"] for doc in matching]
+
+        # Delete them
+        if deleted_ids:
+            self.collection.delete_many(query)
+
+        return deleted_ids
+
+    def get_assignments_by_schedule_id(
+        self, schedule_id: str
+    ) -> List[Assignment]:
         """Get all assignments for a specific schedule."""
         assignments = self.find_all({"schedule": schedule_id})
         return [a.to_core() for a in assignments]
@@ -136,7 +205,9 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         self, schedule_ids: List[str]
     ) -> List[Assignment]:
         """Get all fixed assignments for a list of schedule IDs."""
-        assignments = self.find_all({"fixed": True, "schedule": {"$in": schedule_ids}})
+        assignments = self.find_all(
+            {"fixed": True, "schedule": {"$in": schedule_ids}}
+        )
         return [a.to_core() for a in assignments]
 
     def get_assignments_by_schedule_ids_and_date_range(
@@ -184,7 +255,9 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         )
         return [a.to_core() for a in assignments]
 
-    def get_assignments_by_reference_id(self, reference_id: str) -> List[Assignment]:
+    def get_assignments_by_reference_id(
+        self, reference_id: str
+    ) -> List[Assignment]:
         """Get assignments by their reference assignment ID."""
         assignments = self.find_all({"reference_assignment_id": reference_id})
         return [assignment.to_core() for assignment in assignments]
@@ -196,7 +269,9 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         assert assignment_updated is not None
         return assignment_updated.to_core()
 
-    def update_assignments(self, assignments: List[Assignment]) -> List[Assignment]:
+    def update_assignments(
+        self, assignments: List[Assignment]
+    ) -> List[Assignment]:
         """Update multiple assignments."""
         if not assignments:
             return []
@@ -263,7 +338,9 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
             },
             {"_id": 1},  # Only retrieve the `_id` field
         )
-        deleted_ids = [assignment["_id"] for assignment in matching_assignments]
+        deleted_ids = [
+            assignment["_id"] for assignment in matching_assignments
+        ]
 
         # Delete the matching assignments
         self.collection.delete_many(
@@ -277,12 +354,16 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
 
         return deleted_ids
 
-    def delete_assignments_by_reference_id(self, reference_id: str) -> List[str]:
+    def delete_assignments_by_reference_id(
+        self, reference_id: str
+    ) -> List[str]:
         """Delete assignments by their reference assignment ID and return their IDs."""
         matching_assignments = self.collection.find(
             {"reference_assignment_id": reference_id}, {"_id": 1}
         )
-        deleted_ids = [assignment["_id"] for assignment in matching_assignments]
+        deleted_ids = [
+            assignment["_id"] for assignment in matching_assignments
+        ]
 
         self.collection.delete_many({"reference_assignment_id": reference_id})
 
@@ -291,7 +372,9 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
     def delete_assignments_by_source_id_from_date(
         self, source_id: str, from_date: date
     ) -> List[str]:
-        start_of_day = datetime.combine(from_date, time.min, tzinfo=timezone.utc)
+        start_of_day = datetime.combine(
+            from_date, time.min, tzinfo=timezone.utc
+        )
 
         # Find the matching assignments and get their IDs
         matching_assignments = self.collection.find(
@@ -301,7 +384,9 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
             },
             {"_id": 1},  # Only retrieve the `_id` field
         )
-        deleted_ids = [assignment["_id"] for assignment in matching_assignments]
+        deleted_ids = [
+            assignment["_id"] for assignment in matching_assignments
+        ]
 
         # Delete the matching assignments
         self.collection.delete_many(
@@ -318,7 +403,9 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         matching_assignments = self.collection.find(
             {"source_id": source_id}, {"_id": 1}
         )
-        deleted_ids = [assignment["_id"] for assignment in matching_assignments]
+        deleted_ids = [
+            assignment["_id"] for assignment in matching_assignments
+        ]
 
         # Delete the matching assignments
         self.collection.delete_many({"source_id": source_id})
@@ -334,7 +421,8 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
 
         # Convert dates to datetime objects
         date_filters = [
-            datetime(d.year, d.month, d.day, tzinfo=timezone.utc) for d in dates
+            datetime(d.year, d.month, d.day, tzinfo=timezone.utc)
+            for d in dates
         ]
 
         self.collection.delete_many(
