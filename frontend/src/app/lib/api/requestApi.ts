@@ -3,6 +3,7 @@
  */
 
 import { RequestT, toRequestT, fromRequestT } from "../../../types/request";
+import { AssignmentT, toAssignmentT } from "../../../types/assignment";
 import { BaseApi, AuthenticatedApiClient } from "./baseApi";
 
 export class RequestApi extends BaseApi {
@@ -83,7 +84,7 @@ export class RequestApi extends BaseApi {
     apiClient: AuthenticatedApiClient,
     requestId: string,
     teamId: string
-  ): Promise<RequestT> {
+  ): Promise<{ request: RequestT; assignments: AssignmentT[] }> {
     // Security: Input validation
     if (!requestId?.trim()) {
       throw new Error("Request ID is required");
@@ -97,7 +98,12 @@ export class RequestApi extends BaseApi {
       "post",
       `/requests/${requestId}/teams/${teamId}/accept`
     );
-    return toRequestT(responseData);
+    return {
+      request: toRequestT(responseData.request),
+      assignments: (responseData.assignments || []).map((a: any) =>
+        toAssignmentT(a)
+      ),
+    };
   }
 
   /**

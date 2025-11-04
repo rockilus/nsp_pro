@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 // Types
 import { RequestT } from "../types/request";
+import { AssignmentT } from "../types/assignment";
 import { WorkerT } from "../types/worker";
 import { ShiftT } from "../types/shift";
 import { ShiftWorkerOptionT } from "../types/constraint";
@@ -170,7 +171,10 @@ export function useAcceptRequest() {
   const { user, isAuthenticated, loading } = useAuth();
 
   const acceptRequest = useCallback(
-    async (requestId: string, teamId: string): Promise<RequestT> => {
+    async (
+      requestId: string,
+      teamId: string
+    ): Promise<{ request: RequestT; assignments: AssignmentT[] }> => {
       // Security: Validate authentication state
       if (loading) {
         throw new Error("Authentication still loading - please wait");

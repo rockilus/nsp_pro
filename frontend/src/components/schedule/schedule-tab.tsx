@@ -490,14 +490,25 @@ export default function ScheduleTab({
 
   const handleAcceptRequest = async (requestId: string) => {
     try {
-      const acceptedRequest = await acceptRequest(
-        requestId,
-        teamWithMembership.team.id
-      );
-      setRequests(
-        requests.map((r) => (r.id === acceptedRequest.id ? acceptedRequest : r))
+      const result = await acceptRequest(requestId, teamWithMembership.team.id);
+      const acceptedRequest = result.request;
+      const newAssignments = result.assignments || [];
+
+      // Update requests list and selected request
+      setRequests((prev) =>
+        prev.map((r) => (r.id === acceptedRequest.id ? acceptedRequest : r))
       );
       setSelectedRequest(acceptedRequest);
+
+      // Merge new assignments into the assignments state
+      if (newAssignments.length > 0) {
+        setAssignments((prev) => {
+          // Avoid duplicates by id
+          const existingIds = new Set(prev.map((a) => a.id));
+          const toAdd = newAssignments.filter((a) => !existingIds.has(a.id));
+          return [...prev, ...toAdd];
+        });
+      }
     } catch (error) {
       console.error("Failed to accept request:", error);
     }
