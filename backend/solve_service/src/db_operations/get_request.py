@@ -239,20 +239,29 @@ def evaluate_single_shift_request_fulfillment(
     if not single_shift_request or target_shift_id is None:
         return None
 
-    # Count assignments in the inclusive date period
-    for i in range((req.end_date - req.start_date).days + 1):
-        a_date = req.start_date + timedelta(days=i)
-        exists = assignment_exists(
-            req.worker_id, target_shift_id, req.team_id, a_date
-        )
-        if req.request_type == RequestType.LEAVE and not exists:
-            return FulfillmentStatus.UNFULFILLED
-        if (
-            req.request_type == RequestType.LEAVE
-            and not req.negative
-            and not exists
-        ):
-            return FulfillmentStatus.UNFULFILLED
-        if req.request_type == RequestType.LEAVE and req.negative and exists:
-            return FulfillmentStatus.UNFULFILLED
-    return FulfillmentStatus.FULFILLED
+    # Case 1: negative work demand -> need no assignments during the period
+    if req.request_type == RequestType.WORK_DEMAND and req.negative:
+        for i in range((req.end_date - req.start_date).days + 1):
+            a_date = req.start_date + timedelta(days=i)
+            exists = assignment_exists(
+                req.worker_id, target_shift_id, req.team_id, a_date
+            )
+            if exists:
+                return FulfillmentStatus.UNFULFILLED
+        return FulfillmentStatus.FULFILLED
+
+    # Case 2: positive demand -> need assignment every day
+    if req.request_type == RequestType.LEAVE or (
+        req.request_type == RequestType.WORK_DEMAND and not req.negative
+    ):
+        for i in range((req.end_date - req.start_date).days + 1):
+            a_date = req.start_date + timedelta(days=i)
+            exists = assignment_exists(
+                req.worker_id, target_shift_id, req.team_id, a_date
+            )
+            if not exists:
+                return FulfillmentStatus.UNFULFILLED
+        return FulfillmentStatus.FULFILLED
+
+    # Fallback (shouldn't happen for single-shift requests)
+    return None
