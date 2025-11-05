@@ -15,12 +15,14 @@ from shared.schemas.core.solve_task_status import ScheduleSolveStatus
 from db_operations.assignment_services import save_assignments
 from db_operations.get_request import update_requests
 from db_operations.save_breaches import save_breaches
+from engine import ProcessingCache
 
 
 def save_engine_outputs(
     schedule: Schedule,
     engine_intputs: EngineInputs,
     engine_outputs: EngineOutputs,
+    processing_cache: ProcessingCache,
     collections: DatabaseCollections,
 ) -> Tuple[
     ScheduleSolveStatus, List[Assignment], List[Breach], SolverOutputMetadata
@@ -33,11 +35,12 @@ def save_engine_outputs(
         collections=collections,
     )
     update_requests(
-        engine_intputs.requests_work + engine_intputs.requests_leave,
-        engine_intputs.workers,
-        engine_intputs.shifts,
-        collections,
-        assignments_saved,
+        requests=engine_intputs.requests_work + engine_intputs.requests_leave,
+        workers=engine_intputs.workers,
+        shifts=engine_intputs.shifts,
+        assignments=assignments_saved,
+        dim_to_attr_value_to_shift=processing_cache.dim_to_attr_value_to_shift,
+        collections=collections,
     )
     breaches_saved = save_breaches(
         schedule=schedule,

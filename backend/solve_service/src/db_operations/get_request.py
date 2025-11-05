@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple, Dict
 
 from shared.augment import r_to_r_augmented
 from shared.database.database_collections import DatabaseCollections
@@ -9,15 +9,16 @@ from shared.schemas.core import (
     Attribute,
     Dimension,
     DimEntry,
+    FulfillmentStatus,
     Request,
     RequestAugmented,
     RequestStatus,
-    FulfillmentStatus,
     RequestType,
     Shift,
     Worker,
 )
 from shared.schemas.core.constraint import SWOIdTypes
+from engine import ProcessingCache
 
 
 # pylint: disable=too-many-branches
@@ -140,8 +141,11 @@ def update_requests(
     requests: List[Request],
     workers: List[Worker],
     shifts: List[Shift],
-    collections: DatabaseCollections,
     assignments: List[Assignment],
+    dim_to_attr_value_to_shift: Dict[
+        str, Dict[str | int | float | bool, List[str]]
+    ],
+    collections: DatabaseCollections,
 ) -> List[RequestAugmented]:
     """Update requests and evaluate fulfillment for single-shift requests.
 

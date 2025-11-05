@@ -1,6 +1,7 @@
 # import json
 # import os
 import time
+from typing import Tuple
 
 from shared.schemas.core import (
     EngineInputs,
@@ -9,14 +10,16 @@ from shared.schemas.core import (
 )
 
 from core_to_engine_service import core_to_engine_inputs
-from engine import Engine
+from engine import Engine, ProcessingCache
 from engine_to_core_service import engine_to_core
 from solve_service.model_config import model_config
 from solve_service.penalties import penalties
 
 
 # pylint: disable=too-many-locals
-def solve_schedule(engine_inputs: EngineInputs) -> EngineOutputs:
+def solve_schedule(
+    engine_inputs: EngineInputs,
+) -> Tuple[EngineOutputs, ProcessingCache]:
     # current_path = os.path.dirname(os.path.realpath(__file__))
     # inputs_file_path = os.path.join(current_path, "engine_inputs.json")
     # with open(inputs_file_path, "w", encoding="utf-8") as inputs_file:
@@ -53,16 +56,23 @@ def solve_schedule(engine_inputs: EngineInputs) -> EngineOutputs:
     )
     end_time_engine_to_core = time.time()
     # time stats
-    total_time_core_to_engine = end_time_core_to_engine - start_time_core_to_engine
+    total_time_core_to_engine = (
+        end_time_core_to_engine - start_time_core_to_engine
+    )
     total_time_engine = end_time_engine - start_time_engine
-    total_time_engine_to_core = end_time_engine_to_core - start_time_engine_to_core
+    total_time_engine_to_core = (
+        end_time_engine_to_core - start_time_engine_to_core
+    )
     print("engine inputs time:   " + f"{total_time_core_to_engine:.2f}s")
     print("engine time:          " + f"{total_time_engine:.2f}s")
     print("process outputs time: " + f"{total_time_engine_to_core:.2f}s")
-    return EngineOutputs(
-        schedule_solve_status=schedule_solve_status,
-        assignments=a_campaign,
-        breaches=breaches,
-        requests=updated_requests,
-        model_output=model_output,
+    return (
+        EngineOutputs(
+            schedule_solve_status=schedule_solve_status,
+            assignments=a_campaign,
+            breaches=breaches,
+            requests=updated_requests,
+            model_output=model_output,
+        ),
+        processing_cache,
     )

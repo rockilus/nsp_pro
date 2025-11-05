@@ -353,6 +353,7 @@ def core_to_engine_inputs(
         w_to_work_times=w_to_work_times,
         w_to_nb_duties=w_to_nb_duties,
         shift_id_to_duration=shift_id_to_duration_dict,
+        dim_to_attr_value_to_shift=dim_to_attr_value_to_shift,
     )
 
 
