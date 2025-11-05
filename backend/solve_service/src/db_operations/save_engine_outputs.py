@@ -13,9 +13,8 @@ from shared.schemas.core import (
 from shared.schemas.core.solve_task_status import ScheduleSolveStatus
 
 from db_operations.assignment_services import save_assignments
+from db_operations.get_request import update_requests
 from db_operations.save_breaches import save_breaches
-
-# from db_operations.get_request import update_requests
 
 
 def save_engine_outputs(
@@ -23,19 +22,21 @@ def save_engine_outputs(
     engine_intputs: EngineInputs,
     engine_outputs: EngineOutputs,
     collections: DatabaseCollections,
-) -> Tuple[ScheduleSolveStatus, List[Assignment], List[Breach], SolverOutputMetadata]:
+) -> Tuple[
+    ScheduleSolveStatus, List[Assignment], List[Breach], SolverOutputMetadata
+]:
     start_time_update_db = time.time()
-    # requests_aug_saved = update_requests(
-    #     engine_intputs.requests,
-    #     engine_intputs.workers,
-    #     engine_intputs.shifts,
-    #     collections,
-    # )
     assignments_saved = save_assignments(
         assignments=engine_outputs.assignments,
         schedule=schedule,
         shifts=engine_intputs.shifts,
         collections=collections,
+    )
+    requests_aug_saved = update_requests(
+        engine_intputs.requests_work + engine_intputs.requests_leave,
+        engine_intputs.workers,
+        engine_intputs.shifts,
+        collections,
     )
     breaches_saved = save_breaches(
         schedule=schedule,

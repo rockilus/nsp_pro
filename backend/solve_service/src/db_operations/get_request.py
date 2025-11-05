@@ -62,7 +62,10 @@ def _sync_assignments_with_requests(
                     a_date=a_date,
                 )
                 if assignment_existing:
-                    if assignment_existing.source != AssignmentSource.RECURRENCE:
+                    if (
+                        assignment_existing.source
+                        != AssignmentSource.RECURRENCE
+                    ):
                         assignment_existing.source = AssignmentSource.REQUEST
                         assignment_existing.source_id = req.id
                     assignment_existing.fixed = True
@@ -126,21 +129,22 @@ def get_requests_by_dates(
     requests_leave = [
         r
         for r in requests
-        if r.request_type == RequestType.LEAVE and r.status == RequestStatus.APPROVED
+        if r.request_type == RequestType.LEAVE
+        and r.status == RequestStatus.APPROVED
     ]
     return r_work_augmented, requests_leave
 
 
-# def update_requests(
-#     requests: List[Request],
-#     workers: List[Worker],
-#     shifts: List[Shift],
-#     collections: DatabaseCollections,
-# ) -> List[RequestAugmented]:
-#     updated_requests = collections.request_db.update_requests(requests)
-#     out: List[RequestAugmented] = []
-#     for r in updated_requests:
-#         worker = next((w for w in workers if w.id == r.worker_id), None)
-#         shift = next((s for s in shifts if s.id == r.shift_id), None)
-#         out.append(r_to_r_augmented(r, worker, shift))
-#     return out
+def update_requests(
+    requests: List[Request],
+    workers: List[Worker],
+    shifts: List[Shift],
+    collections: DatabaseCollections,
+) -> List[RequestAugmented]:
+    updated_requests = collections.request_db.update_requests(requests)
+    out: List[RequestAugmented] = []
+    for r in updated_requests:
+        worker = next((w for w in workers if w.id == r.worker_id), None)
+        shift = next((s for s in shifts if s.id == r.shift_id), None)
+        out.append(r_to_r_augmented(r, worker, shift))
+    return out
