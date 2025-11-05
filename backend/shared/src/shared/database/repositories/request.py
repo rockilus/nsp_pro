@@ -5,7 +5,6 @@ from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.request import RequestSchema
 from shared.schemas.core.request import (
-    FulfillmentStatus,
     Request,
     RequestStatus,
     RequestType,
@@ -36,31 +35,20 @@ class RequestRepository(BaseRepository[RequestSchema]):
             raise Exception(f"Request with id {request_id} not found")
         return request.to_core()
 
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
     def get_requests_by_dates(
-        self, start_date: date, end_date: date, worker_ids: List[str]
+        self,
+        start_date: date,
+        end_date: date,
+        worker_ids: List[str],
+        request_type: RequestType | None = None,
+        status: RequestStatus | None = None,
     ) -> List[Request]:
-        """Get all requests within a date range for a list of workers."""
-        start_timestamp = datetime.combine(
-            start_date, datetime.min.time(), timezone.utc
-        ).timestamp()
-        end_timestamp = datetime.combine(
-            end_date, datetime.min.time(), timezone.utc
-        ).timestamp()
-        requests = self.find_all(
-            {
-                "start_date": {"$gte": start_timestamp},
-                "end_date": {"$lte": end_timestamp},
-                "worker": {"$in": worker_ids},
-            }
-        )
-        return [request.to_core() for request in requests]
+        """Get all requests within a date range for a list of workers.
 
-    def get_approved_work_demand_requests_by_dates(
-        self, start_date: date, end_date: date, worker_ids: List[str]
-    ) -> List[Request]:
-        """
-        Get all approved work demand requests with NOT_PROCESSED fulfillment
-        within a date range for a list of workers.
+        Optionally filter by request_type and/or status. If either optional
+        argument is provided the corresponding field will be added to the
+        MongoDB query.
         """
         start_timestamp = datetime.combine(
             start_date, datetime.min.time(), timezone.utc
@@ -68,41 +56,21 @@ class RequestRepository(BaseRepository[RequestSchema]):
         end_timestamp = datetime.combine(
             end_date, datetime.min.time(), timezone.utc
         ).timestamp()
-        requests = self.find_all(
-            {
-                "start_date": {"$gte": start_timestamp},
-                "end_date": {"$lte": end_timestamp},
-                "worker": {"$in": worker_ids},
-                "request_type": RequestType.WORK_DEMAND.value,
-                "status": RequestStatus.APPROVED.value,
-                # "fulfillment": FulfillmentStatus.NOT_PROCESSED.value,
-            }
-        )
-        return [request.to_core() for request in requests]
 
-    def get_approved_fulfilled_leave_requests_by_dates(
-        self, start_date: date, end_date: date, worker_ids: List[str]
-    ) -> List[Request]:
-        """
-        Get all approved leave requests with FULFILLED fulfillment
-        within a date range for a list of workers.
-        """
-        start_timestamp = datetime.combine(
-            start_date, datetime.min.time(), timezone.utc
-        ).timestamp()
-        end_timestamp = datetime.combine(
-            end_date, datetime.min.time(), timezone.utc
-        ).timestamp()
-        requests = self.find_all(
-            {
-                "start_date": {"$gte": start_timestamp},
-                "end_date": {"$lte": end_timestamp},
-                "worker": {"$in": worker_ids},
-                "request_type": RequestType.LEAVE.value,
-                "status": RequestStatus.APPROVED.value,
-                "fulfillment": FulfillmentStatus.FULFILLED.value,
-            }
-        )
+        query = {
+            "start_date": {"$gte": start_timestamp},
+            "end_date": {"$lte": end_timestamp},
+            "worker": {"$in": worker_ids},
+        }
+
+        if request_type is not None:
+            # store enum as its value in the DB
+            query["request_type"] = request_type.value
+
+        if status is not None:
+            query["status"] = status.value
+
+        requests = self.find_all(query)
         return [request.to_core() for request in requests]
 
     def update_request(self, request: Request) -> Request:

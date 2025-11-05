@@ -42,12 +42,10 @@ def get_engine_inputs(
         collections,
     )
     link_shifts = get_link_shifts(schedule.team_id, shifts, collections)
-    shift_demands = (
-        collections.shift_demand_new_db.get_shift_demands_by_date_range(
-            team_id=schedule.team_id,
-            start_date=schedule.start_date,
-            end_date=schedule.end_date,
-        )
+    shift_demands = collections.shift_demand_new_db.get_shift_demands_by_date_range(
+        team_id=schedule.team_id,
+        start_date=schedule.start_date,
+        end_date=schedule.end_date,
     )
     model_output = collections.model_output_db.get_model_output(schedule.id)
     end_time_db = time.time()

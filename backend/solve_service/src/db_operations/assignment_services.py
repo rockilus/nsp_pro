@@ -7,7 +7,6 @@ from shared.schemas.core import (
     Schedule,
     Shift,
     ShiftRestType,
-    ShiftDemand,
 )
 
 
@@ -41,13 +40,11 @@ def save_assignments(
         end_date=schedule.end_date,
         delete_fixed=False,
     )
-    fixed_assignment_existing = (
-        collections.assignment_db.get_assignments_by_dates(
-            team_id=schedule.team_id,
-            start_date=schedule.start_date,
-            end_date=schedule.end_date,
-            fixed=True,
-        )
+    fixed_assignment_existing = collections.assignment_db.get_assignments_by_dates(
+        team_id=schedule.team_id,
+        start_date=schedule.start_date,
+        end_date=schedule.end_date,
+        fixed=True,
     )
     if not assignments:
         return []
@@ -84,8 +81,7 @@ def save_assignments(
         for assignment in assignments
         if not (
             shift_map.get(assignment.shift_id)
-            and shift_map[assignment.shift_id].rest_type
-            == ShiftRestType.RECUPERATION
+            and shift_map[assignment.shift_id].rest_type == ShiftRestType.RECUPERATION
         )
     ]
 
@@ -93,15 +89,12 @@ def save_assignments(
         assignment
         for assignment in assignments
         if shift_map.get(assignment.shift_id)
-        and shift_map[assignment.shift_id].rest_type
-        == ShiftRestType.RECUPERATION
+        and shift_map[assignment.shift_id].rest_type == ShiftRestType.RECUPERATION
     ]
 
     # Create non-recuperation assignments first
-    created_non_recuperation_assignments = (
-        collections.assignment_db.create_assignments(
-            non_recuperation_assignments
-        )
+    created_non_recuperation_assignments = collections.assignment_db.create_assignments(
+        non_recuperation_assignments
     )
 
     # Process recuperation assignments
@@ -136,17 +129,13 @@ def save_assignments(
                     )
 
                 if reference_assignment:
-                    assignment.reference_assignment_id = (
-                        reference_assignment.id
-                    )
+                    assignment.reference_assignment_id = reference_assignment.id
 
     # Create recuperation assignments
-    created_recuperation_assignments = (
-        collections.assignment_db.create_assignments(recuperation_assignments)
+    created_recuperation_assignments = collections.assignment_db.create_assignments(
+        recuperation_assignments
     )
 
     # Combine all created assignments
-    out = (
-        created_non_recuperation_assignments + created_recuperation_assignments
-    )
+    out = created_non_recuperation_assignments + created_recuperation_assignments
     return out
