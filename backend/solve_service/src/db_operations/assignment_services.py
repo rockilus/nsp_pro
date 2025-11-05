@@ -32,7 +32,6 @@ def get_fixed_assignments(
 def save_assignments(
     assignments: List[Assignment],
     schedule: Schedule,
-    fixed_assignments: List[Assignment],
     shifts: List[Shift],
     collections: DatabaseCollections,
 ) -> List[Assignment]:

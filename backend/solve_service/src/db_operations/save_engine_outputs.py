@@ -23,7 +23,9 @@ def save_engine_outputs(
     engine_intputs: EngineInputs,
     engine_outputs: EngineOutputs,
     collections: DatabaseCollections,
-) -> Tuple[ScheduleSolveStatus, List[Assignment], List[Breach], SolverOutputMetadata]:
+) -> Tuple[
+    ScheduleSolveStatus, List[Assignment], List[Breach], SolverOutputMetadata
+]:
     start_time_update_db = time.time()
     # requests_aug_saved = update_requests(
     #     engine_intputs.requests,
@@ -34,7 +36,6 @@ def save_engine_outputs(
     assignments_saved = save_assignments(
         assignments=engine_outputs.assignments,
         schedule=schedule,
-        fixed_assignments=engine_intputs.as_wip_fixed,
         shifts=engine_intputs.shifts,
         collections=collections,
     )

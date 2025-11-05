@@ -20,6 +20,16 @@ def get_engine_inputs(
     (workers, shifts, dimensions, dim_entries, attributes, specialties) = (
         fetch_workers_shifts_dim_attributes_spe(schedule.team_id, collections)
     )
+    requests_work, requests_leave = get_requests_by_dates(
+        start_date=schedule.start_date,
+        end_date=schedule.end_date,
+        workers=workers,
+        shifts=shifts,
+        dimensions=dimensions,
+        dim_entries=dim_entries,
+        attributes=attributes,
+        collections=collections,
+    )
     as_hist, as_wip_fixed = get_fixed_assignments(schedule, collections)
     cbs_augmented = get_active_constraint_builds_by_ids(
         schedule.constraint_build_ids,
@@ -32,20 +42,12 @@ def get_engine_inputs(
         collections,
     )
     link_shifts = get_link_shifts(schedule.team_id, shifts, collections)
-    shift_demands = collections.shift_demand_new_db.get_shift_demands_by_date_range(
-        team_id=schedule.team_id,
-        start_date=schedule.start_date,
-        end_date=schedule.end_date,
-    )
-    requests_work, requests_leave = get_requests_by_dates(
-        start_date=schedule.start_date,
-        end_date=schedule.end_date,
-        workers=workers,
-        shifts=shifts,
-        dimensions=dimensions,
-        dim_entries=dim_entries,
-        attributes=attributes,
-        collections=collections,
+    shift_demands = (
+        collections.shift_demand_new_db.get_shift_demands_by_date_range(
+            team_id=schedule.team_id,
+            start_date=schedule.start_date,
+            end_date=schedule.end_date,
+        )
     )
     model_output = collections.model_output_db.get_model_output(schedule.id)
     end_time_db = time.time()
