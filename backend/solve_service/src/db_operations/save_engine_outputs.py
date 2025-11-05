@@ -32,11 +32,12 @@ def save_engine_outputs(
         shifts=engine_intputs.shifts,
         collections=collections,
     )
-    requests_aug_saved = update_requests(
+    update_requests(
         engine_intputs.requests_work + engine_intputs.requests_leave,
         engine_intputs.workers,
         engine_intputs.shifts,
         collections,
+        assignments_saved,
     )
     breaches_saved = save_breaches(
         schedule=schedule,

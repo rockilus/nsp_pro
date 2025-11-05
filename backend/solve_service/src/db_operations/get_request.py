@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from typing import List, Tuple
+from typing import Callable, List, Optional, Tuple
 
 from shared.augment import r_to_r_augmented
 from shared.database.database_collections import DatabaseCollections
@@ -12,6 +12,7 @@ from shared.schemas.core import (
     Request,
     RequestAugmented,
     RequestStatus,
+    FulfillmentStatus,
     RequestType,
     Shift,
     Worker,
@@ -48,7 +49,7 @@ def _sync_assignments_with_requests(
                 if req.shift_id is not None:
                     target_shift_id = req.shift_id
                 else:
-                    continue  # Safety check; should not happen due to validation
+                    continue  # safety check
             else:
                 target_shift_id = req.shift_options[0].id
 
@@ -140,11 +141,118 @@ def update_requests(
     workers: List[Worker],
     shifts: List[Shift],
     collections: DatabaseCollections,
+    assignments: List[Assignment],
 ) -> List[RequestAugmented]:
+    """Update requests and evaluate fulfillment for single-shift requests.
+
+    Persist fulfillment status and return the augmented requests.
+
+    The actual fulfillment checking logic is delegated to
+    `evaluate_single_shift_request_fulfillment` which accepts a pure
+    assignment-existence callable so it can be unit-tested without DB access.
+    """
     updated_requests = collections.request_db.update_requests(requests)
+
+    # Helper that checks the provided assignments list and returns True if
+    # an assignment exists for the given worker/shift/team/date.
+    def _assignment_exists(
+        worker_id: str, shift_id: str, team_id: str, a_date: date
+    ) -> bool:
+        for a in assignments:
+            if (
+                a.worker_id == worker_id
+                and a.shift_id == shift_id
+                and a.team_id == team_id
+                and a.date == a_date
+            ):
+                return True
+        return False
+
+    # Evaluate fulfillment for each updated request when applicable
+    need_persist = False
+    for r in updated_requests:
+        result = evaluate_single_shift_request_fulfillment(
+            r, _assignment_exists
+        )
+        if result is not None and r.fulfillment != result:
+            r.fulfillment = result
+            need_persist = True
+
+    # Persist fulfillment updates if any changed
+    if need_persist:
+        collections.request_db.update_requests(updated_requests)
+
     out: List[RequestAugmented] = []
     for r in updated_requests:
         worker = next((w for w in workers if w.id == r.worker_id), None)
         shift = next((s for s in shifts if s.id == r.shift_id), None)
-        out.append(r_to_r_augmented(r, worker, shift))
+        # r_to_r_augmented expects shifts/dimensions/dim_entries/attributes
+        # Provide minimal context (empty lists) when we don't have them here.
+        out.append(
+            r_to_r_augmented(
+                request=r,
+                worker=worker,
+                shifts=[shift] if shift else [],
+                dimensions=[],
+                dim_entries=[],
+                attributes=[],
+            )
+        )
     return out
+
+
+def evaluate_single_shift_request_fulfillment(
+    req: Request,
+    assignment_exists: Callable[[str, str, str, date], bool],
+) -> Optional[FulfillmentStatus]:
+    """Evaluate fulfillment for leave or single-shift work requests.
+
+    - If the request is not a single-shift request, returns None.
+    - For leave requests: fulfilled if there are NO assignments for the
+      requested shift during the request period.
+    - For work demand (single shift):
+        - positive (negative == False): fulfilled if there is at least one
+          assignment for the shift during the period.
+        - negative (negative == True): fulfilled if there are NO assignments
+          for the shift during the period.
+
+    The `assignment_exists` callable must accept
+    (worker_id, shift_id, team_id, a_date) and return a boolean indicating
+    if an assignment exists for that day.
+    """
+    # Determine if this is a single-shift request and get the target shift id
+    single_shift_request = False
+    target_shift_id: str | None = None
+
+    if req.request_type == RequestType.LEAVE:
+        if req.shift_id is not None:
+            single_shift_request = True
+            target_shift_id = req.shift_id
+    elif req.request_type == RequestType.WORK_DEMAND:
+        if len(req.shift_options) == 1:
+            first = req.shift_options[0]
+            # If the ShiftWorkerOption refers to a SHIFT, use its id
+            if first is not None and first.id_type == SWOIdTypes.SHIFT:
+                single_shift_request = True
+                target_shift_id = first.id
+
+    if not single_shift_request or target_shift_id is None:
+        return None
+
+    # Count assignments in the inclusive date period
+    for i in range((req.end_date - req.start_date).days + 1):
+        a_date = req.start_date + timedelta(days=i)
+        exists = assignment_exists(
+            req.worker_id, target_shift_id, req.team_id, a_date
+        )
+        if req.request_type == RequestType.LEAVE and not exists:
+            return FulfillmentStatus.UNFULFILLED
+        if (
+            req.request_type == RequestType.LEAVE
+            and not req.negative
+            and not exists
+        ):
+            return FulfillmentStatus.UNFULFILLED
+        if req.request_type == RequestType.LEAVE and req.negative and exists:
+            return FulfillmentStatus.UNFULFILLED
+    return FulfillmentStatus.FULFILLED
