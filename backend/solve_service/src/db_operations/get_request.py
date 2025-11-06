@@ -1,13 +1,13 @@
 from datetime import date, timedelta
 from typing import Callable, Dict, List, Optional, Tuple
 
-# engine.ProcessingCache not used in this module
-import shared.constraint_parser.parse_selected_shifts as pss
+from shared.constraint_parser import parse_selected_shifts
 from shared.augment import r_to_r_augmented
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
     Assignment,
     AssignmentSource,
+    Schedule,
     Attribute,
     Dimension,
     DimEntry,
@@ -24,7 +24,9 @@ from shared.schemas.core.constraint import SWOIdTypes
 
 # pylint: disable=too-many-branches
 def _sync_assignments_with_requests(
-    requests: List[Request], collections: DatabaseCollections
+    schedule: Schedule,
+    requests: List[Request],
+    collections: DatabaseCollections,
 ) -> None:
     """Ensure assignments mirror request approval status.
 
@@ -35,6 +37,8 @@ def _sync_assignments_with_requests(
     """
     ab = collections.assignment_db
     for req in requests:
+        if req.worker_id == "690b10d6a1f73dd84b5db1b4":
+            print("Debugging request sync for worker 690b10d6a1f73dd84b5db1b4")
         shift_opts = req.shift_options
         single_shift_request = False
         if req.request_type == RequestType.LEAVE:
@@ -65,7 +69,10 @@ def _sync_assignments_with_requests(
                     a_date=a_date,
                 )
                 if assignment_existing:
-                    if assignment_existing.source != AssignmentSource.RECURRENCE:
+                    if (
+                        assignment_existing.source
+                        != AssignmentSource.RECURRENCE
+                    ):
                         assignment_existing.source = AssignmentSource.REQUEST
                         assignment_existing.source_id = req.id
                     assignment_existing.fixed = True
@@ -91,8 +98,7 @@ def _sync_assignments_with_requests(
 
 # pylint: disable=too-many-arguments, too-many-positional-arguments
 def get_requests_by_dates(
-    start_date: date,
-    end_date: date,
+    schedule: Schedule,
     workers: List[Worker],
     shifts: List[Shift],
     dimensions: List[Dimension],
@@ -101,8 +107,8 @@ def get_requests_by_dates(
     collections: DatabaseCollections,
 ) -> Tuple[List[RequestAugmented], List[Request]]:
     requests = collections.request_db.get_requests_by_dates(
-        start_date=start_date,
-        end_date=end_date,
+        start_date=schedule.start_date,
+        end_date=schedule.end_date,
         worker_ids=[w.id for w in workers],
     )
     requests_work = [
@@ -125,11 +131,14 @@ def get_requests_by_dates(
         if r_augmented.active:
             r_work_augmented.append(r_augmented)
     # Keep assignment synchronization logic in a helper for readability
-    _sync_assignments_with_requests(requests=requests, collections=collections)
+    _sync_assignments_with_requests(
+        schedule=schedule, requests=requests, collections=collections
+    )
     requests_leave = [
         r
         for r in requests
-        if r.request_type == RequestType.LEAVE and r.status == RequestStatus.APPROVED
+        if r.request_type == RequestType.LEAVE
+        and r.status == RequestStatus.APPROVED
     ]
     return r_work_augmented, requests_leave
 
@@ -138,8 +147,13 @@ def update_requests(
     requests: List[Request],
     workers: List[Worker],
     shifts: List[Shift],
+    dimensions: List[Dimension],
+    dim_entries: List[DimEntry],
+    attributes: List[Attribute],
     assignments: List[Assignment],
-    dim_to_attr_value_to_shift: Dict[str, Dict[str | int | float | bool, List[str]]],
+    dim_to_attr_value_to_shift: Dict[
+        str, Dict[str | int | float | bool, List[str]]
+    ],
     collections: DatabaseCollections,
 ) -> List[RequestAugmented]:
     """Update requests and evaluate fulfillment for requests.
@@ -189,17 +203,14 @@ def update_requests(
     out: List[RequestAugmented] = []
     for r in updated_requests:
         worker = next((w for w in workers if w.id == r.worker_id), None)
-        shift = next((s for s in shifts if s.id == r.shift_id), None)
-        # r_to_r_augmented expects shifts/dimensions/dim_entries/attributes
-        # Provide minimal context (empty lists) when we don't have them here.
         out.append(
             r_to_r_augmented(
                 request=r,
                 worker=worker,
-                shifts=[shift] if shift else [],
-                dimensions=[],
-                dim_entries=[],
-                attributes=[],
+                shifts=shifts,
+                dimensions=dimensions,
+                dim_entries=dim_entries,
+                attributes=attributes,
             )
         )
     return out
@@ -229,7 +240,11 @@ def evaluate_request_fulfillment(
         return [
             a.shift_id
             for a in assignments
-            if (a.worker_id == worker_id and a.team_id == team_id and a.date == a_date)
+            if (
+                a.worker_id == worker_id
+                and a.team_id == team_id
+                and a.date == a_date
+            )
         ]
 
     # Handle leave and single-shift work requests (existing behaviour).
@@ -276,7 +291,7 @@ def evaluate_request_fulfillment(
     if req.request_type == RequestType.WORK_DEMAND and req.shift_options:
         # Resolve target shift ids using the shared parser. Missing
         # properties are not available here; pass an empty list.
-        target_shift_ids = pss.parse_selected_shifts(
+        target_shift_ids = parse_selected_shifts(
             selected_shifts=req.shift_options,
             missing_properties=[],
             shifts=shifts,

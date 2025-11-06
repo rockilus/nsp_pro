@@ -57,9 +57,12 @@ class RequestRepository(BaseRepository[RequestSchema]):
             end_date, datetime.min.time(), timezone.utc
         ).timestamp()
 
+        # Return requests that overlap the requested period. A request
+        # overlaps [start_date, end_date] when its start_date <= end_date
+        # and its end_date >= start_date.
         query = {
-            "start_date": {"$gte": start_timestamp},
-            "end_date": {"$lte": end_timestamp},
+            "start_date": {"$lte": end_timestamp},
+            "end_date": {"$gte": start_timestamp},
             "worker": {"$in": worker_ids},
         }
 
