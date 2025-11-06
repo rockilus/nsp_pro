@@ -4,28 +4,28 @@ from shared.schemas.core import (
     Assignment,
     Breach,
     LinkShift,
+    Penalties,
     RequestAugmented,
     Schedule,
     Shift,
     ShiftDemandNew,
     Worker,
-    Penalties,
 )
-from engine_to_core_service.build_breaches.build_breaches_debug import (
-    debug_breaches,
-)
-
-# helper functions moved to build_breaches_debug
 
 from engine import Breach as BreachEngine
 from engine import Outputs as OutputsEngine
 from engine import ProcessingCache
+from engine_to_core_service.build_breaches.build_breaches_debug import (
+    debug_breaches,
+)
 from engine_to_core_service.build_breaches.build_breaches_model import (
     build_breaches_model,
 )
 from engine_to_core_service.build_breaches.build_breaches_not_model import (
     build_breaches_not_model,
 )
+
+# helper functions moved to build_breaches_debug
 
 
 # pylint: disable=too-many-arguments, R0801

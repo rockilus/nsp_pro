@@ -13,6 +13,7 @@ from shared.schemas.core import Constraints, ModelConfig
 
 @dataclass
 class ShiftDemand:
+    id: str
     assignments: List[Tuple[str, str, str]]
     assignments_specialties: List[List[Tuple[str, str, str, str]]]
     target: int
@@ -303,6 +304,4 @@ class ProcessingCache:
     w_to_work_times: Dict[str, Dict[str, List[int]]]
     w_to_nb_duties: Dict[str, Dict[str, List[int]]]
     shift_id_to_duration: Dict[str, int]
-    dim_to_attr_value_to_shift: Dict[
-        str, Dict[str | int | float | bool, List[str]]
-    ]
+    dim_to_attr_value_to_shift: Dict[str, Dict[str | int | float | bool, List[str]]]

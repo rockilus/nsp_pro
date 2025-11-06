@@ -5,6 +5,7 @@ from shared.schemas.core import (
     Assignment,
     Breach,
     LinkShift,
+    Penalties,
     RequestAugmented,
     Schedule,
     Shift,
@@ -12,7 +13,6 @@ from shared.schemas.core import (
     SolverOutputMetadata,
     SolverOutputStatus,
     Worker,
-    Penalties,
 )
 from shared.schemas.core.solve_task_status import ScheduleSolveStatus
 
