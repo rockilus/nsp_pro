@@ -155,6 +155,7 @@ def calculate_breach_penalty_work_time_week_target(
     cstr_durations: List[int],
     cstr_target: int,
     penalty: int,
+    tolerance: float = 0.0,
 ) -> int:
     breach_coords = {
         (var.worker_id, var.date, var.shift_id) for var in breach.variables
@@ -162,7 +163,7 @@ def calculate_breach_penalty_work_time_week_target(
 
     assignment_to_duration: Dict[tuple, int] = {}
     assignment_to_group: Dict[tuple, int] = {}
-    for g_idx, group_assignments in enumerate(constraint.assignments):
+    for g_idx, group_assignments in enumerate(assignments):
         group_durations = getattr(
             constraint, "durations", [None] * len(group_assignments)
         )
@@ -436,23 +437,38 @@ def debug_breaches(
         #     if not found:
         #         val = 0
 
-
-# @dataclass
-# class GroupsAssignmentsDurationsTargetConstraint:
-#     assignments: List[List[Tuple[str, str, str]]]
-#     durations: List[List[int]]
-#     targets: List[int]
-#     penalty: int
-#     tolerance: float = 0.0
+        # @dataclass
+        # class GroupsAssignmentsDurationsTargetConstraint:
+        #     assignments: List[List[Tuple[str, str, str]]]
+        #     durations: List[List[int]]
+        #     targets: List[int]
+        #     penalty: int
+        #     tolerance: float = 0.0
 
         elif b.objective_category == ObjectiveCategory.WORK_TIME_WEEK_TARGET:
+            b_vars_set = {
+                (var.worker_id, var.date.isoformat(), var.shift_id)
+                for var in b.variables
+            }
             for group in inputs.system_constraints.weekly_target_work_time:
                 for cstr_assignments, cstr_durations, cstr_target in zip(
                     group.assignments,
                     group.durations,
                     group.targets,
                 ):
-                    
+                    c_vars_set = set(cstr_assignments)
+                    same_as_sets = b_vars_set == c_vars_set
+                    if same_as_sets:
+                        val = calculate_breach_penalty_work_time_week_target(
+                            b,
+                            assignments,
+                            cstr_assignments,
+                            cstr_durations,
+                            cstr_target,
+                            group.penalty,
+                        )
+                        break
+
                 # group.assignments is list of lists
                 flat = [a for sub in group.assignments for a in sub]
                 if any(
