@@ -1,6 +1,8 @@
 from datetime import date, timedelta
-from typing import Callable, List, Optional, Tuple, Dict
+from typing import Callable, Dict, List, Optional, Tuple
 
+# engine.ProcessingCache not used in this module
+import shared.constraint_parser.parse_selected_shifts as pss
 from shared.augment import r_to_r_augmented
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
@@ -18,9 +20,6 @@ from shared.schemas.core import (
     Worker,
 )
 from shared.schemas.core.constraint import SWOIdTypes
-
-# engine.ProcessingCache not used in this module
-import shared.constraint_parser.parse_selected_shifts as pss
 
 
 # pylint: disable=too-many-branches
@@ -66,10 +65,7 @@ def _sync_assignments_with_requests(
                     a_date=a_date,
                 )
                 if assignment_existing:
-                    if (
-                        assignment_existing.source
-                        != AssignmentSource.RECURRENCE
-                    ):
+                    if assignment_existing.source != AssignmentSource.RECURRENCE:
                         assignment_existing.source = AssignmentSource.REQUEST
                         assignment_existing.source_id = req.id
                     assignment_existing.fixed = True
@@ -133,8 +129,7 @@ def get_requests_by_dates(
     requests_leave = [
         r
         for r in requests
-        if r.request_type == RequestType.LEAVE
-        and r.status == RequestStatus.APPROVED
+        if r.request_type == RequestType.LEAVE and r.status == RequestStatus.APPROVED
     ]
     return r_work_augmented, requests_leave
 
@@ -144,9 +139,7 @@ def update_requests(
     workers: List[Worker],
     shifts: List[Shift],
     assignments: List[Assignment],
-    dim_to_attr_value_to_shift: Dict[
-        str, Dict[str | int | float | bool, List[str]]
-    ],
+    dim_to_attr_value_to_shift: Dict[str, Dict[str | int | float | bool, List[str]]],
     collections: DatabaseCollections,
 ) -> List[RequestAugmented]:
     """Update requests and evaluate fulfillment for requests.
@@ -236,11 +229,7 @@ def evaluate_request_fulfillment(
         return [
             a.shift_id
             for a in assignments
-            if (
-                a.worker_id == worker_id
-                and a.team_id == team_id
-                and a.date == a_date
-            )
+            if (a.worker_id == worker_id and a.team_id == team_id and a.date == a_date)
         ]
 
     # Handle leave and single-shift work requests (existing behaviour).
