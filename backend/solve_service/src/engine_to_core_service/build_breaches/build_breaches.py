@@ -15,6 +15,7 @@ from shared.schemas.core import (
     ConstraintOperator,
     ConstraintSeq,
     ConstraintFil,
+    ConstraintSum,
 )
 
 from engine import Breach as BreachEngine
@@ -196,6 +197,61 @@ def calculate_breach_penalty_seq(
         deviation = max(target_value - nb_a_period, 0)
     else:
         # Fallback: treat as absolute difference
+        deviation = abs(target_value - nb_a_period)
+
+    return penalty * deviation
+
+
+def calculate_breach_penalty_sum(
+    breach: Breach,
+    assignments: List[Assignment],
+    penalty: int,
+    constraint: "ConstraintSum",
+) -> int:
+    """Calculate the total penalty for a SUM-type breach.
+
+    Uses the same logic as the tests in `constraint_sum_test.py`:
+    - Count assignments that match any of the breach.variables (worker_id,
+      date, shift_id).
+    - Apply operator/target_value rules:
+      * LESS_THAN_OR_EQUAL: penalty * max(nb - target, 0)
+      * EQUAL: penalty * abs(target - nb)
+      * GREATER_THAN_OR_EQUAL: penalty * max(target - nb, 0)
+
+    Args:
+        breach: The Breach object containing variables to check.
+        assignments: List of Assignment objects to count against the breach.
+        penalty: Penalty value (int) to apply per unit of deviation.
+        constraint: ConstraintSum instance used to get operator/target.
+
+    Returns:
+        The total penalty for this breach.
+    """
+    breach_coords = {
+        (var.worker_id, var.date, var.shift_id) for var in breach.variables
+    }
+
+    nb_a_period = sum(
+        1
+        for assignment in assignments
+        if (
+            assignment.worker_id,
+            assignment.date,
+            assignment.shift_id,
+        )
+        in breach_coords
+    )
+
+    target_value = constraint.target_value
+    operator = constraint.operator or ConstraintOperator.EQUAL
+
+    if operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
+        deviation = max(nb_a_period - target_value, 0)
+    elif operator == ConstraintOperator.EQUAL:
+        deviation = abs(target_value - nb_a_period)
+    elif operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
+        deviation = max(target_value - nb_a_period, 0)
+    else:
         deviation = abs(target_value - nb_a_period)
 
     return penalty * deviation
