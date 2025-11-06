@@ -150,7 +150,7 @@ def calculate_breach_penalty_sum(
 def calculate_breach_penalty_shift_demand(
     breach: Breach,
     shift_demand: ShiftDemandNew,
-    workers: List[Worker],
+    workers_by_spe_id: Dict[str, List[Worker]],
     shift: Shift,
     assignments: List[Assignment],
     penalty: int,
@@ -321,6 +321,11 @@ def debug_breaches(
         sd.id: sd for sd in engine_inputs.shift_demands
     }
     shifts_by_id: Dict[str, Shift] = {s.id: s for s in engine_inputs.shifts}
+    # Map specialty id -> list[Worker]
+    workers_by_spe_id: Dict[str, List[Worker]] = {}
+    for w in engine_inputs.workers:
+        for spe in w.specialty_ids:
+            workers_by_spe_id.setdefault(spe, []).append(w)
 
     # Accumulators
     stats: Dict[str, Dict[str, float]] = {}
