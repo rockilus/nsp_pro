@@ -18,7 +18,9 @@ from shared.schemas.core import (
     Worker,
 )
 from shared.schemas.core.constraint import SWOIdTypes
-from engine import ProcessingCache
+
+# engine.ProcessingCache not used in this module
+import shared.constraint_parser.parse_selected_shifts as pss
 
 
 # pylint: disable=too-many-branches
@@ -176,7 +178,11 @@ def update_requests(
     need_persist = False
     for r in updated_requests:
         result = evaluate_single_shift_request_fulfillment(
-            r, _assignment_exists
+            r,
+            _assignment_exists,
+            assignments,
+            shifts,
+            dim_to_attr_value_to_shift,
         )
         if result is not None and r.fulfillment != result:
             r.fulfillment = result
@@ -208,23 +214,34 @@ def update_requests(
 def evaluate_single_shift_request_fulfillment(
     req: Request,
     assignment_exists: Callable[[str, str, str, date], bool],
+    assignments: List[Assignment],
+    shifts: List[Shift],
+    shift_dim_dict: Dict,
 ) -> Optional[FulfillmentStatus]:
-    """Evaluate fulfillment for leave or single-shift work requests.
+    """Evaluate fulfillment for leave, single-shift and
+    multi-shift work requests.
 
-    - If the request is not a single-shift request, returns None.
-    - For leave requests: fulfilled if there are NO assignments for the
-      requested shift during the request period.
-    - For work demand (single shift):
-        - positive (negative == False): fulfilled if there is at least one
-          assignment for the shift during the period.
-        - negative (negative == True): fulfilled if there are NO assignments
-          for the shift during the period.
-
-    The `assignment_exists` callable must accept
-    (worker_id, shift_id, team_id, a_date) and return a boolean indicating
-    if an assignment exists for that day.
+    - If the request is neither a leave nor a work demand, returns None.
+    - Leave and single-shift work requests keep their existing semantics.
+    - Multi-shift work demands are resolved via the shared parser and
+      evaluated by inspecting actual assigned shifts for the worker.
     """
-    # Determine if this is a single-shift request and get the target shift id
+
+    # Helper: collect assigned shift ids for the worker on a given date.
+    def _assigned_shift_ids_on_date(
+        worker_id: str, team_id: str, a_date: date
+    ) -> List[str]:
+        return [
+            a.shift_id
+            for a in assignments
+            if (
+                a.worker_id == worker_id
+                and a.team_id == team_id
+                and a.date == a_date
+            )
+        ]
+
+    # Handle leave and single-shift work requests (existing behaviour).
     single_shift_request = False
     target_shift_id: str | None = None
 
@@ -235,37 +252,64 @@ def evaluate_single_shift_request_fulfillment(
     elif req.request_type == RequestType.WORK_DEMAND:
         if len(req.shift_options) == 1:
             first = req.shift_options[0]
-            # If the ShiftWorkerOption refers to a SHIFT, use its id
             if first is not None and first.id_type == SWOIdTypes.SHIFT:
                 single_shift_request = True
                 target_shift_id = first.id
 
-    if not single_shift_request or target_shift_id is None:
-        return None
+    if single_shift_request and target_shift_id is not None:
+        # Negative single-shift work demand -> no assignments in period.
+        if req.request_type == RequestType.WORK_DEMAND and req.negative:
+            for i in range((req.end_date - req.start_date).days + 1):
+                a_date = req.start_date + timedelta(days=i)
+                exists = assignment_exists(
+                    req.worker_id, target_shift_id, req.team_id, a_date
+                )
+                if exists:
+                    return FulfillmentStatus.UNFULFILLED
+            return FulfillmentStatus.FULFILLED
 
-    # Case 1: negative work demand -> need no assignments during the period
-    if req.request_type == RequestType.WORK_DEMAND and req.negative:
+        # Positive single-shift demand or leave -> assignment every day.
+        if req.request_type == RequestType.LEAVE or (
+            req.request_type == RequestType.WORK_DEMAND and not req.negative
+        ):
+            for i in range((req.end_date - req.start_date).days + 1):
+                a_date = req.start_date + timedelta(days=i)
+                exists = assignment_exists(
+                    req.worker_id, target_shift_id, req.team_id, a_date
+                )
+                if not exists:
+                    return FulfillmentStatus.UNFULFILLED
+            return FulfillmentStatus.FULFILLED
+
+    # Multi-shift work demand handling.
+    if req.request_type == RequestType.WORK_DEMAND and req.shift_options:
+        # Resolve target shift ids using the shared parser. Missing
+        # properties are not available here; pass an empty list.
+        target_shift_ids = pss.parse_selected_shifts(
+            selected_shifts=req.shift_options,
+            missing_properties=[],
+            shifts=shifts,
+            shift_dim_dict=shift_dim_dict,
+        )
+
+        # For each day in the period, check assigned shifts.
         for i in range((req.end_date - req.start_date).days + 1):
             a_date = req.start_date + timedelta(days=i)
-            exists = assignment_exists(
-                req.worker_id, target_shift_id, req.team_id, a_date
+            assigned_ids = _assigned_shift_ids_on_date(
+                req.worker_id, req.team_id, a_date
             )
-            if exists:
-                return FulfillmentStatus.UNFULFILLED
+            if req.negative:
+                # Negative: no assigned shift should be in target set.
+                for sid in assigned_ids:
+                    if sid in target_shift_ids:
+                        return FulfillmentStatus.UNFULFILLED
+            else:
+                # Positive: all assigned shifts must be inside target set.
+                for sid in assigned_ids:
+                    if sid not in target_shift_ids:
+                        return FulfillmentStatus.UNFULFILLED
+
         return FulfillmentStatus.FULFILLED
 
-    # Case 2: positive demand -> need assignment every day
-    if req.request_type == RequestType.LEAVE or (
-        req.request_type == RequestType.WORK_DEMAND and not req.negative
-    ):
-        for i in range((req.end_date - req.start_date).days + 1):
-            a_date = req.start_date + timedelta(days=i)
-            exists = assignment_exists(
-                req.worker_id, target_shift_id, req.team_id, a_date
-            )
-            if not exists:
-                return FulfillmentStatus.UNFULFILLED
-        return FulfillmentStatus.FULFILLED
-
-    # Fallback (shouldn't happen for single-shift requests)
+    # Fallback: not applicable.
     return None
