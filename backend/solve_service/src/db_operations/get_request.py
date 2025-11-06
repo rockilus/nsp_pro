@@ -149,15 +149,16 @@ def update_requests(
     ],
     collections: DatabaseCollections,
 ) -> List[RequestAugmented]:
-    """Update requests and evaluate fulfillment for single-shift requests.
+    """Update requests and evaluate fulfillment for requests.
 
-    Persist fulfillment status and return the augmented requests.
-
-    The actual fulfillment checking logic is delegated to
-    `evaluate_single_shift_request_fulfillment` which accepts a pure
+    Persist fulfillment status once at the end and return the augmented
+    requests. The actual fulfillment checking logic is delegated to
+    `evaluate_request_fulfillment` which accepts a pure
     assignment-existence callable so it can be unit-tested without DB access.
     """
-    updated_requests = collections.request_db.update_requests(requests)
+    # Work on the requests passed as parameter (do not re-fetch from DB).
+    # We'll persist changes once at the end if anything changed.
+    updated_requests = list(requests)
 
     # Helper that checks the provided assignments list and returns True if
     # an assignment exists for the given worker/shift/team/date.
@@ -177,7 +178,7 @@ def update_requests(
     # Evaluate fulfillment for each updated request when applicable
     need_persist = False
     for r in updated_requests:
-        result = evaluate_single_shift_request_fulfillment(
+        result = evaluate_request_fulfillment(
             r,
             _assignment_exists,
             assignments,
@@ -211,7 +212,8 @@ def update_requests(
     return out
 
 
-def evaluate_single_shift_request_fulfillment(
+# pylint: disable=too-many-return-statements
+def evaluate_request_fulfillment(
     req: Request,
     assignment_exists: Callable[[str, str, str, date], bool],
     assignments: List[Assignment],
