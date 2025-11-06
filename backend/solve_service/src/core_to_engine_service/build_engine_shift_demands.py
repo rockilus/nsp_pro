@@ -23,7 +23,11 @@ def build_engine_shift_demands(
     c_penalty: CoveragePenalty,
 ) -> List[ShiftDemandEngine]:
     out: List[ShiftDemandEngine] = []
+    seen_pair = set()
     for shift_demand in daily_shift_demands:
+        pair = (shift_demand.date.isoformat(), shift_demand.shift_id)
+        if pair in seen_pair:
+            continue
         if shift_demand.date not in dates_campaign:
             continue
         shift = next(
@@ -32,6 +36,7 @@ def build_engine_shift_demands(
         )
         if shift is None:
             continue
+        seen_pair.add(pair)
         assignments: List[Tuple[str, str, str]] = []
         assignments_specialty: List[List[Tuple[str, str, str, str]]] = []
         target: int = 0
@@ -43,13 +48,16 @@ def build_engine_shift_demands(
             assignments += [
                 (w.id, shift_demand.date.isoformat(), shift.id)
                 for w in workers_not_deleted
-                if shift_demand.date in worker_ids_to_worker_dates[w.id].dates_campaign
+                if shift_demand.date
+                in worker_ids_to_worker_dates[w.id].dates_campaign
             ]
             target += target_staffing
             if specialty_id is None:
                 continue
             workers_qualified = [
-                w for w in workers_not_deleted if specialty_id in w.specialty_ids
+                w
+                for w in workers_not_deleted
+                if specialty_id in w.specialty_ids
             ]
             assignments_specialty.append(
                 [

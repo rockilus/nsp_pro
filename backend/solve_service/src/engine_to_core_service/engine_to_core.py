@@ -13,6 +13,7 @@ from shared.schemas.core import (
     SolverOutputMetadata,
     SolverOutputStatus,
     Worker,
+    EngineInputsAugmented,
 )
 from shared.schemas.core.solve_task_status import ScheduleSolveStatus
 
@@ -40,7 +41,7 @@ def engine_to_core(
     requests: List[RequestAugmented],
     as_hist: List[Assignment],
     processing_cache: ProcessingCache,
-    penalties: Penalties,
+    engine_inputs: EngineInputsAugmented,
 ) -> Tuple[
     ScheduleSolveStatus,
     List[Assignment],
@@ -61,7 +62,7 @@ def engine_to_core(
         outputs.breaches,
         processing_cache,
         outputs,
-        penalties=penalties,
+        engine_inputs=engine_inputs,
     )
     schedule_solve_status = get_schedule_status(
         is_solution=outputs.is_solution, breaches=breaches
