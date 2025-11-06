@@ -5,7 +5,7 @@ from typing import List
 from ortools.sat.python import cp_model  # type: ignore
 from shared.schemas.core import Constraint
 
-from engine.types import ObjectiveCategory, Request, VarName
+from engine.types import ObjectiveCategory, Request, VarName, ShiftDemand
 
 # def get_average_nb_shifts_per_worker(
 #     coverage: List[ShiftDemand],
@@ -84,13 +84,14 @@ def build_var_name_groups_assignments(
 
 
 def build_var_name_daily_shift_demand(
+    shift_demand: ShiftDemand,
     cstr_vars: List[cp_model.IntVar],
     category: ObjectiveCategory,
 ) -> str:
     return json.dumps(
         asdict(
             VarName(
-                objective_id=None,
+                objective_id=shift_demand.id,
                 cstr_vars=[var.Name() for var in cstr_vars],
                 objective_category=category.value,
                 hard_to_soft=None,
@@ -154,7 +155,9 @@ def build_var_name_link_shift(
 #     )
 
 
-def build_var_name_seq(constraint: Constraint, span: List[cp_model.IntVar]) -> str:
+def build_var_name_seq(
+    constraint: Constraint, span: List[cp_model.IntVar]
+) -> str:
     # pylint: disable=protected-access
     return json.dumps(
         asdict(

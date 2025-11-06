@@ -5,6 +5,7 @@ from shared.schemas.core import (
     Breach,
     ShiftDemandNew,
     EngineInputsAugmented,
+    Request,
     Worker,
     ShiftType,
     ConstraintFai,
@@ -147,38 +148,13 @@ def calculate_breach_penalty_sum(
     return penalty * deviation
 
 
-def calculate_breach_penalty_shift_demand(
-    breach: Breach,
-    shift_demand: ShiftDemandNew,
-    workers_by_spe_id: Dict[str, List[Worker]],
-    shift: Shift,
-    assignments: List[Assignment],
-    penalty: int,
-    target: int,
-) -> int:
-    breach_coords = {
-        (var.worker_id, var.date, var.shift_id) for var in breach.variables
-    }
-
-    nb_assigned = sum(
-        1
-        for assignment in assignments
-        if (
-            assignment.worker_id,
-            assignment.date,
-            assignment.shift_id,
-        )
-        in breach_coords
-    )
-
-    return penalty * abs(nb_assigned - target)
-
-
 def calculate_breach_penalty_work_time_week_target(
     breach: Breach,
     assignments: List[Assignment],
+    cstr_assignments: List[Tuple[str, str, str]],
+    cstr_durations: List[int],
+    cstr_target: int,
     penalty: int,
-    constraint: GroupsAssignmentsDurationsTargetConstraint,
 ) -> int:
     breach_coords = {
         (var.worker_id, var.date, var.shift_id) for var in breach.variables
@@ -321,11 +297,14 @@ def debug_breaches(
         sd.id: sd for sd in engine_inputs.shift_demands
     }
     shifts_by_id: Dict[str, Shift] = {s.id: s for s in engine_inputs.shifts}
-    # Map specialty id -> list[Worker]
-    workers_by_spe_id: Dict[str, List[Worker]] = {}
-    for w in engine_inputs.workers:
-        for spe in w.specialty_ids:
-            workers_by_spe_id.setdefault(spe, []).append(w)
+    # workers_by_spe_id: Dict[str, List[Worker]] = {}
+    # for w in engine_inputs.workers:
+    #     for spe in w.specialty_ids:
+    #         workers_by_spe_id.setdefault(spe, []).append(w)
+    requests_by_id: Dict[str, Request] = {
+        r.id: r
+        for r in engine_inputs.requests_leave + engine_inputs.requests_work
+    }
 
     # Accumulators
     stats: Dict[str, Dict[str, float]] = {}
@@ -405,7 +384,13 @@ def debug_breaches(
                 val = 0
 
         elif b.objective_category == ObjectiveCategory.REQUEST:
-            val = engine_inputs.penalties.user_constraint.request.hard
+            req = requests_by_id.get(b.objective_id)
+            if req is not None:
+                val = (
+                    engine_inputs.penalties.user_constraint.request.hard
+                    if req.hard
+                    else engine_inputs.penalties.user_constraint.request.soft
+                )
 
         if b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND:
             # try to match a shift demand by assignments membership
@@ -413,67 +398,71 @@ def debug_breaches(
             if sd is not None:
                 shift = shifts_by_id.get(sd.shift_id)
                 if shift is not None:
-                    pen = (
+                    val = (
                         engine_inputs.penalties.configuration_constraint.coverage.duty
                         if shift.shift_type == ShiftType.DUTY
                         else engine_inputs.penalties.configuration_constraint.coverage.normal
                     )
 
-                    val = calculate_breach_penalty_shift_demand(
-                        b, assignments, sd.penalty, sd.target
-                    )
+        # elif b.objective_category.name == ObjectiveCategory.LINK_SHIFT.name:
+        #     # link shift id stored in objective_id
+        #     link_id = b.objective_id
+        #     pen = 0
+        #     for pair in link_shifts_pairs:
+        #         if len(pair) >= 4 and pair[2] == link_id:
+        #             pen = pair[3]
+        #             break
+        #     val = len(b.variables) * pen
 
-        elif b.objective_category.name == ObjectiveCategory.LINK_SHIFT.name:
-            # link shift id stored in objective_id
-            link_id = b.objective_id
-            pen = 0
-            for pair in link_shifts_pairs:
-                if len(pair) >= 4 and pair[2] == link_id:
-                    pen = pair[3]
-                    break
-            val = len(b.variables) * pen
+        # elif b.objective_category.name == ObjectiveCategory.DUTY_RECUP.name:
+        #     # find recup pair
+        #     found = False
+        #     for pair in duty_recup_pairs:
+        #         if len(pair) >= 3:
+        #             # pair is (a_duty, a_recup, penalty)
+        #             pen = pair[2]
+        #             # if any a_duty matches breach variable -> use pen
+        #             for a in pair[0:2]:
+        #                 if isinstance(a, tuple):
+        #                     if a in {
+        #                         (v.worker_id, v.date, v.shift_id)
+        #                         for v in b.variables
+        #                     }:
+        #                         val = len(b.variables) * pen
+        #                         found = True
+        #                         break
+        #         if found:
+        #             break
+        #     if not found:
+        #         val = 0
 
-        elif b.objective_category.name == ObjectiveCategory.DUTY_RECUP.name:
-            # find recup pair
-            found = False
-            for pair in duty_recup_pairs:
-                if len(pair) >= 3:
-                    # pair is (a_duty, a_recup, penalty)
-                    pen = pair[2]
-                    # if any a_duty matches breach variable -> use pen
-                    for a in pair[0:2]:
-                        if isinstance(a, tuple):
-                            if a in {
-                                (v.worker_id, v.date, v.shift_id)
-                                for v in b.variables
-                            }:
-                                val = len(b.variables) * pen
-                                found = True
-                                break
-                if found:
-                    break
-            if not found:
-                val = 0
 
-        elif b.objective_category.name in (
-            ObjectiveCategory.WORK_TIME_WEEK_TARGET.name,
-        ):
-            # try to match a system weekly target
-            val = 0
-            if sys_inputs is not None:
-                for group in getattr(
-                    sys_inputs, "weekly_target_work_time", []
+# @dataclass
+# class GroupsAssignmentsDurationsTargetConstraint:
+#     assignments: List[List[Tuple[str, str, str]]]
+#     durations: List[List[int]]
+#     targets: List[int]
+#     penalty: int
+#     tolerance: float = 0.0
+
+        elif b.objective_category == ObjectiveCategory.WORK_TIME_WEEK_TARGET:
+            for group in inputs.system_constraints.weekly_target_work_time:
+                for cstr_assignments, cstr_durations, cstr_target in zip(
+                    group.assignments,
+                    group.durations,
+                    group.targets,
                 ):
-                    # group.assignments is list of lists
-                    flat = [a for sub in group.assignments for a in sub]
-                    if any(
-                        (v.worker_id, v.date, v.shift_id) in flat
-                        for v in b.variables
-                    ):
-                        val = calculate_breach_penalty_work_time_week_target(
-                            b, assignments, group.penalty, group
-                        )
-                        break
+                    
+                # group.assignments is list of lists
+                flat = [a for sub in group.assignments for a in sub]
+                if any(
+                    (v.worker_id, v.date, v.shift_id) in flat
+                    for v in b.variables
+                ):
+                    val = calculate_breach_penalty_work_time_week_target(
+                        b, assignments, group.penalty, group
+                    )
+                    break
 
         elif b.objective_category.name in (
             ObjectiveCategory.DUTIES_PER_MONTH_TARGET.name,
