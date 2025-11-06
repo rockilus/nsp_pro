@@ -3,17 +3,17 @@ from typing import List
 from shared.schemas.core import (
     Assignment,
     Breach,
+    EngineInputsAugmented,
     LinkShift,
-    Penalties,
     RequestAugmented,
     Schedule,
     Shift,
     ShiftDemandNew,
     Worker,
-    EngineInputsAugmented,
 )
 
 from engine import Breach as BreachEngine
+from engine import Inputs
 from engine import Outputs as OutputsEngine
 from engine import ProcessingCache
 from engine_to_core_service.build_breaches.build_breaches_debug import (
@@ -42,6 +42,7 @@ def build_breaches(
     processing_cache: ProcessingCache,
     outputs: OutputsEngine | None = None,
     engine_inputs: EngineInputsAugmented | None = None,
+    inputs: Inputs | None = None,
 ) -> List[Breach]:
     breaches_model = build_breaches_model(
         schedule,
@@ -62,15 +63,14 @@ def build_breaches(
         processing_cache,
     )
     # If an Outputs object was provided, print quick debugging stats
-    if outputs is not None and engine_inputs is not None:
+    if outputs is not None and engine_inputs is not None and inputs is not None:
         try:
             debug_breaches(
                 outputs=outputs,
                 breaches=breaches_model,
-                penalties=penalties,
                 assignments=assignments,
-                processing_cache=processing_cache,
                 engine_inputs=engine_inputs,
+                inputs=inputs,
             )
         except Exception:
             # Never fail the normal flow because of debug printing

@@ -24,7 +24,9 @@ class AddCoverage(AddConstraint):
                     self.model.Add(sum(c_variables) == shift_demand.target)
                 else:
                     var_name = build_var_name_daily_shift_demand(
-                        c_variables, ObjectiveCategory.DAILY_SHIFT_DEMAND
+                        shift_demand,
+                        c_variables,
+                        ObjectiveCategory.DAILY_SHIFT_DEMAND,
                     )
                     delta = self.model.NewIntVar(-100, 100, "")
                     self.model.Add(delta == sum(c_variables) - shift_demand.target)
@@ -65,6 +67,7 @@ class AddCoverage(AddConstraint):
                     self.model.Add(sum(c_variables_spe) == target_specialty)
                 else:
                     var_name = build_var_name_daily_shift_demand(
+                        shift_demand,
                         c_variables_gen,
                         ObjectiveCategory.DAILY_SHIFT_DEMAND_SPE,
                     )

@@ -4,8 +4,8 @@ from typing import List, Tuple
 from shared.schemas.core import (
     Assignment,
     Breach,
+    EngineInputsAugmented,
     LinkShift,
-    Penalties,
     RequestAugmented,
     Schedule,
     Shift,
@@ -13,10 +13,10 @@ from shared.schemas.core import (
     SolverOutputMetadata,
     SolverOutputStatus,
     Worker,
-    EngineInputsAugmented,
 )
 from shared.schemas.core.solve_task_status import ScheduleSolveStatus
 
+from engine import Inputs
 from engine import Outputs as OutputsEngine
 from engine import ProcessingCache
 from engine_to_core_service.build_breaches.build_breaches import build_breaches
@@ -30,7 +30,7 @@ from engine_to_core_service.update_schedule import get_schedule_status
 # )
 
 
-# pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments, too-many-locals, too-many-positional-arguments
 def engine_to_core(
     schedule: Schedule,
     outputs: OutputsEngine,
@@ -42,6 +42,7 @@ def engine_to_core(
     as_hist: List[Assignment],
     processing_cache: ProcessingCache,
     engine_inputs: EngineInputsAugmented,
+    inputs: Inputs,
 ) -> Tuple[
     ScheduleSolveStatus,
     List[Assignment],
@@ -63,6 +64,7 @@ def engine_to_core(
         processing_cache,
         outputs,
         engine_inputs=engine_inputs,
+        inputs=inputs,
     )
     schedule_solve_status = get_schedule_status(
         is_solution=outputs.is_solution, breaches=breaches

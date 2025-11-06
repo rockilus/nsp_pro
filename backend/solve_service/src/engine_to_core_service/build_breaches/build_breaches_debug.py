@@ -3,28 +3,27 @@ from typing import Dict, List, Tuple, cast
 from shared.schemas.core import (
     Assignment,
     Breach,
-    ShiftDemandNew,
-    EngineInputsAugmented,
-    Request,
-    Worker,
-    ShiftType,
     ConstraintFai,
     ConstraintFil,
+    ConstraintOperator,
     ConstraintOrd,
-    Shift,
     ConstraintSeq,
     ConstraintSum,
-    Penalties,
+    EngineInputsAugmented,
+    Request,
+    Shift,
+    ShiftDemandNew,
+    ShiftType,
 )
 from shared.schemas.core.breach import ObjectiveCategory
 
 from engine.types import (
-    GroupsAssignmentsDurationsTargetConstraint,
-    GroupsAssignmentsTargetConstraint,
     Inputs,
 )
 
 
+# pylint: disable=too-many-arguments, too-many-locals, too-many-branches
+# pylint: disable=too-many-statements
 def calculate_breach_penalty_fil(
     breach: Breach,
     assignments: List[Assignment],
@@ -35,7 +34,7 @@ def calculate_breach_penalty_fil(
         (var.worker_id, var.date, var.shift_id) for var in breach.variables
     }
 
-    if constraint is not None and constraint.operator.name == "YES":
+    if constraint is not None and constraint.operator == ConstraintOperator.YES:
         workers_dates = {(v.worker_id, v.date) for v in breach.variables}
         nb_a_period = sum(
             1
@@ -94,11 +93,11 @@ def calculate_breach_penalty_seq(
 
     if operator is None:
         deviation = abs(target_value - nb_a_period)
-    elif operator.name == "LESS_THAN_OR_EQUAL":
+    elif operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
         deviation = max(nb_a_period - target_value, 0)
-    elif operator.name == "EQUAL":
+    elif operator == ConstraintOperator.EQUAL:
         deviation = abs(target_value - nb_a_period)
-    elif operator.name == "GREATER_THAN_OR_EQUAL":
+    elif operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
         deviation = max(target_value - nb_a_period, 0)
     else:
         deviation = abs(target_value - nb_a_period)
@@ -136,11 +135,11 @@ def calculate_breach_penalty_sum(
 
     if operator is None:
         deviation = abs(target_value - nb_a_period)
-    elif operator.name == "LESS_THAN_OR_EQUAL":
+    elif operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
         deviation = max(nb_a_period - target_value, 0)
-    elif operator.name == "EQUAL":
+    elif operator == ConstraintOperator.EQUAL:
         deviation = abs(target_value - nb_a_period)
-    elif operator.name == "GREATER_THAN_OR_EQUAL":
+    elif operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
         deviation = max(target_value - nb_a_period, 0)
     else:
         deviation = abs(target_value - nb_a_period)
@@ -233,7 +232,7 @@ def debug_breaches(
                 pass
 
     shift_demands_by_id: Dict[str, ShiftDemandNew] = {
-        sd.id: sd for sd in engine_inputs.shift_demands
+        sd.id: sd for sd in engine_inputs.shift_demands if sd.id is not None
     }
     shifts_by_id: Dict[str, Shift] = {s.id: s for s in engine_inputs.shifts}
     # workers_by_spe_id: Dict[str, List[Worker]] = {}
@@ -241,8 +240,7 @@ def debug_breaches(
     #     for spe in w.specialty_ids:
     #         workers_by_spe_id.setdefault(spe, []).append(w)
     requests_by_id: Dict[str, Request] = {
-        r.id: r
-        for r in engine_inputs.requests_leave + engine_inputs.requests_work
+        r.id: r for r in engine_inputs.requests_leave + engine_inputs.requests_work
     }
 
     # Accumulators
@@ -257,7 +255,7 @@ def debug_breaches(
         # try to resolve based on category
         if b.objective_category == ObjectiveCategory.CONSTRAINT:
             # find constraint by objective_id
-            cstr = constraints_by_id.get(b.objective_id)
+            cstr = constraints_by_id.get(b.objective_id) if b.objective_id else None
             if cstr is not None:
                 # Narrow by concrete type for safer access and static typing
                 if isinstance(cstr, ConstraintFil):
@@ -267,9 +265,7 @@ def debug_breaches(
                         if cstr_fil.hard
                         else engine_inputs.penalties.user_constraint.fil.soft
                     )
-                    val = calculate_breach_penalty_fil(
-                        b, assignments, pen, cstr_fil
-                    )
+                    val = calculate_breach_penalty_fil(b, assignments, pen, cstr_fil)
                 elif isinstance(cstr, ConstraintSeq):
                     cstr_seq = cast(ConstraintSeq, cstr)
                     pen = (
@@ -277,15 +273,14 @@ def debug_breaches(
                         if cstr_seq.hard
                         else engine_inputs.penalties.user_constraint.seq.soft
                     )
-                    val = calculate_breach_penalty_seq(
-                        b, assignments, pen, cstr_seq
-                    )
+                    val = calculate_breach_penalty_seq(b, assignments, pen, cstr_seq)
                 elif isinstance(cstr, ConstraintFai):
                     # ConstraintFai has similar shape to seq; reuse seq penalty.
                     # Cast to ConstraintSeq for the calculator's signature.
                     # cstr_fai = cast(ConstraintFai, cstr)
                     print(
-                        f"Warning: Unhandled constraint type for breach debug: {type(cstr)}"
+                        "Warning: Unhandled constraint type for breach debug: "
+                        + f"{type(cstr)}"
                     )
                     # val = calculate_breach_penalty_seq(
                     #     b, assignments, pen, cstr_fai
@@ -306,24 +301,24 @@ def debug_breaches(
                         if cstr_sum.hard
                         else engine_inputs.penalties.user_constraint.sum.soft
                     )
-                    val = calculate_breach_penalty_sum(
-                        b, assignments, pen, cstr_sum
-                    )
+                    val = calculate_breach_penalty_sum(b, assignments, pen, cstr_sum)
                 else:
                     # fallback when the constraint type isn't one of the
                     # handled concrete classes (keep original behaviour)
                     print(
-                        f"Warning: Unhandled constraint type for breach debug: {type(cstr)}"
+                        "Warning: Unhandled constraint type for breach debug: "
+                        + f"{type(cstr)}"
                     )
             else:
                 # unknown constraint, cannot compute
                 print(
-                    f"Warning: Constraint with id {b.objective_id} not found for breach debug."
+                    f"Warning: Constraint with id {b.objective_id} not found "
+                    + "for breach debug."
                 )
                 val = 0
 
         elif b.objective_category == ObjectiveCategory.REQUEST:
-            req = requests_by_id.get(b.objective_id)
+            req = requests_by_id.get(b.objective_id) if b.objective_id else None
             if req is not None:
                 val = (
                     engine_inputs.penalties.user_constraint.request.hard
@@ -333,14 +328,17 @@ def debug_breaches(
 
         if b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND:
             # try to match a shift demand by assignments membership
-            sd = shift_demands_by_id.get(b.objective_id)
+            sd = shift_demands_by_id.get(b.objective_id) if b.objective_id else None
             if sd is not None:
                 shift = shifts_by_id.get(sd.shift_id)
                 if shift is not None:
+                    pen_coverage = (
+                        engine_inputs.penalties.configuration_constraint.coverage
+                    )
                     val = (
-                        engine_inputs.penalties.configuration_constraint.coverage.duty
+                        pen_coverage.duty
                         if shift.shift_type == ShiftType.DUTY
-                        else engine_inputs.penalties.configuration_constraint.coverage.normal
+                        else pen_coverage.normal
                     )
 
         # elif b.objective_category.name == ObjectiveCategory.LINK_SHIFT.name:
@@ -388,9 +386,11 @@ def debug_breaches(
                 (var.worker_id, var.date.isoformat(), var.shift_id)
                 for var in b.variables
             }
-            for group in inputs.system_constraints.weekly_target_work_time:
+            for group_dur in inputs.system_constraints.weekly_target_work_time:
                 for cstr_assignments, cstr_durations, cstr_target in zip(
-                    group.assignments, group.durations, group.targets
+                    group_dur.assignments,
+                    group_dur.durations,
+                    group_dur.targets,
                 ):
                     c_vars_set = set(cstr_assignments)
                     same_as_sets = b_vars_set == c_vars_set
@@ -400,7 +400,7 @@ def debug_breaches(
                             cstr_assignments,
                             cstr_durations,
                             cstr_target,
-                            group.penalty,
+                            group_dur.penalty,
                         )
 
         elif b.objective_category == ObjectiveCategory.DUTIES_PER_MONTH_TARGET:
@@ -477,7 +477,8 @@ def debug_breaches(
     total_breaches = sum(int(v["count"]) for v in stats.values())
     print("-" * (w1 + w2 + w3 + w4))
     print(
-        f"{'TOTAL':<{w1}}{total_breaches:>{w2}}{total_calc:>{w3}.0f}{(total_calc / total_breaches if total_breaches else 0):>{w4}.1f}"
+        f"{'TOTAL':<{w1}}{total_breaches:>{w2}}{total_calc:>{w3}.0f}"
+        + f"{(total_calc / total_breaches if total_breaches else 0):>{w4}.1f}"
     )
 
     # Checks vs engine outputs
@@ -487,17 +488,11 @@ def debug_breaches(
         print(
             f"  Calculated total objective (sum of breach penalties): {int(total_calc)}"
         )
-        print(
-            f"  Raw engine breaches (outputs.breaches): {len(outputs.breaches)}"
-        )
+        print(f"  Raw engine breaches (outputs.breaches): {len(outputs.breaches)}")
         if int(total_calc) != int(outputs.objective_value):
-            print(
-                "  WARNING: objective_value does not match calculated total!"
-            )
+            print("  WARNING: objective_value does not match calculated total!")
         if total_breaches != len(outputs.breaches):
-            print(
-                "  WARNING: model breaches count does not match raw engine breaches!"
-            )
+            print("  WARNING: model breaches count does not match raw engine breaches!")
     except Exception:
         # never break normal flow when debugging
         pass

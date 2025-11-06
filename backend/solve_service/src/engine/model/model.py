@@ -11,7 +11,7 @@ from shared.schemas.core import SolverParams, SolveStrategy
 from engine.model.add_constraint_factory import AddConstraintFactory
 from engine.model.solver_solution_callback import SolverSolutionCallback
 from engine.model.utils.model_utils import (
-    build_var_name_daily_shift_demand,
+    build_var_name_duty_recup,
     build_var_name_groups_assignments,
     build_var_name_link_shift,
     build_var_name_work_time,
@@ -366,7 +366,7 @@ class Model:
             if not hard_to_soft:
                 self.model.Add(duty_var == recup_var)
             else:
-                var_name = build_var_name_daily_shift_demand(
+                var_name = build_var_name_duty_recup(
                     [duty_var, recup_var], ObjectiveCategory.DUTY_RECUP
                 )
                 delta = self.model.NewIntVar(-1, 1, "")

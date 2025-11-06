@@ -53,7 +53,8 @@ def solve_schedule(
         engine_inputs.requests_work,
         engine_inputs.as_hist,
         processing_cache,
-        penalties,
+        ei_augmented,
+        inputs,
     )
     end_time_engine_to_core = time.time()
     # time stats
