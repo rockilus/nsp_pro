@@ -9,6 +9,7 @@ from shared.schemas.core import (
     Shift,
     ShiftDemandNew,
     Worker,
+    Penalties,
 )
 
 from engine import Breach as BreachEngine
@@ -34,6 +35,7 @@ def build_breaches(
     breaches_engine: List[BreachEngine],
     processing_cache: ProcessingCache,
     outputs: OutputsEngine | None = None,
+    penalties: Penalties | None = None,
 ) -> List[Breach]:
     breaches_model = build_breaches_model(
         schedule,
@@ -54,10 +56,10 @@ def build_breaches(
         processing_cache,
     )
     # If an Outputs object was provided, print quick debugging stats
-    if outputs is not None:
+    if outputs is not None and penalties is not None:
         try:
             _print_breaches_debug_stats(
-                outputs=outputs, breaches=breaches_model
+                outputs=outputs, breaches=breaches_model, penalties=penalties
             )
         except Exception:
             # Never fail the normal flow because of debug printing
@@ -66,7 +68,7 @@ def build_breaches(
 
 
 def _print_breaches_debug_stats(
-    outputs: OutputsEngine, breaches: List[Breach]
+    outputs: OutputsEngine, breaches: List[Breach], penalties: Penalties
 ) -> None:
     """Print simple debug stats about solver outputs and breaches.
 
