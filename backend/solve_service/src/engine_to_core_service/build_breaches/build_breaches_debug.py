@@ -1,4 +1,4 @@
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, cast
 
 from shared.schemas.core import (
     Assignment,
@@ -11,6 +11,11 @@ from shared.schemas.core import (
     ConstraintSeq,
     ConstraintSum,
 )
+from shared.schemas.core import (
+    ConstraintOrd,
+    ConstraintFai,
+)
+
 
 from engine.types import (
     GroupsAssignmentsDurationsTargetConstraint,
@@ -342,28 +347,48 @@ def debug_breaches(
             # find constraint by objective_id
             cstr = constraints_by_id.get(b.objective_id)
             if cstr is not None:
-                if getattr(cstr, "constraint_variables", None) is not None:
-                    # could be sum/seq/fai - check class name
-                    cls_name = cstr.__class__.__name__.lower()
-                    if "fil" in cls_name:
-                        val = calculate_breach_penalty_fil(
-                            b, assignments, pen, cstr
-                        )
-                    elif "seq" in cls_name:
-                        val = calculate_breach_penalty_seq(
-                            b, assignments, pen, cstr
-                        )
-                    elif "sum" in cls_name:
-                        val = calculate_breach_penalty_sum(
-                            b, assignments, pen, cstr
-                        )
-                    else:
-                        # fallback: count * pen
-                        val = len(b.variables) * pen
-                else:
+                # use constraint.penalty when available
+                pen = getattr(cstr, "penalty", 0)
+                # Narrow by concrete type for safer access and static typing
+                if isinstance(cstr, ConstraintFil):
+                    cstr_fil = cast(ConstraintFil, cstr)
+                    val = calculate_breach_penalty_fil(
+                        b, assignments, pen, cstr_fil
+                    )
+                elif isinstance(cstr, ConstraintSeq):
+                    cstr_seq = cast(ConstraintSeq, cstr)
+                    val = calculate_breach_penalty_seq(
+                        b, assignments, pen, cstr_seq
+                    )
+                elif isinstance(cstr, ConstraintFai):
+                    # ConstraintFai has similar shape to seq; reuse seq penalty.
+                    # Cast to ConstraintSeq for the calculator's signature.
+                    # cstr_fai = cast(ConstraintFai, cstr)
+                    print(
+                        f"Warning: Unhandled constraint type for breach debug: {type(cstr)}"
+                    )
+                    # val = calculate_breach_penalty_seq(
+                    #     b, assignments, pen, cstr_fai
+                    # )
+                elif isinstance(cstr, ConstraintOrd):
+                    # No dedicated ord penalty calculator; fall back to count * pen
                     val = len(b.variables) * pen
+                elif isinstance(cstr, ConstraintSum):
+                    cstr_sum = cast(ConstraintSum, cstr)
+                    val = calculate_breach_penalty_sum(
+                        b, assignments, pen, cstr_sum
+                    )
+                else:
+                    # fallback when the constraint type isn't one of the
+                    # handled concrete classes (keep original behaviour)
+                    print(
+                        f"Warning: Unhandled constraint type for breach debug: {type(cstr)}"
+                    )
             else:
                 # unknown constraint, cannot compute
+                print(
+                    f"Warning: Constraint with id {b.objective_id} not found for breach debug."
+                )
                 val = 0
 
         elif b.objective_category == ObjectiveCategory.REQUEST:
@@ -371,11 +396,7 @@ def debug_breaches(
             penalty = penalties.user_constraint.request.hard
             val = penalty
 
-        coverage_cats = (
-            ObjectiveCategory.DAILY_SHIFT_DEMAND.name,
-            ObjectiveCategory.DAILY_SHIFT_DEMAND_SPE.name,
-        )
-        if b.objective_category.name in coverage_cats:
+        if b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND:
             # try to match a shift demand by assignments membership
             breach_coords = {
                 (v.worker_id, v.date, v.shift_id) for v in b.variables
