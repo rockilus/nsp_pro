@@ -11,7 +11,11 @@ from shared.schemas.core import (
     Worker,
     Penalties,
 )
-from shared.schemas.core import ConstraintOperator, ConstraintSeq
+from shared.schemas.core import (
+    ConstraintOperator,
+    ConstraintSeq,
+    ConstraintFil,
+)
 
 from engine import Breach as BreachEngine
 from engine import Outputs as OutputsEngine
@@ -69,37 +73,69 @@ def build_breaches(
 
 
 def calculate_breach_penalty_fil(
-    breach: Breach, assignments: List[Assignment], penalty: int
+    breach: Breach,
+    assignments: List[Assignment],
+    penalty: int,
+    constraint: ConstraintFil | None = None,
 ) -> int:
     """Calculate the total penalty for a FIL-type breach.
 
-    The calculation matches the logic used in the tests: count how many
-    assignments match any of the breach.variables (matching worker_id,
-    date and shift_id) and multiply that count by the provided penalty.
+    Behavior depends on the constraint operator:
+    - If operator == YES: `constraint.constraint_variables` list the allowed
+      (worker,date,shift) coordinates. Violations are assignments on the same
+      worker/date that have a shift not in the allowed set.
+    - If operator == NO: `constraint.constraint_variables` list the forbidden
+      coordinates. Violations are assignments that match those coordinates.
+
+    If `constraint` is None we fall back to counting assignments that match
+    `breach.variables` (legacy behavior/tests).
 
     Args:
         breach: The Breach object containing variables to check.
         assignments: List of Assignment objects to count against the breach.
         penalty: Penalty value (int) to apply per matching assignment.
+        constraint: Optional ConstraintFil that provides the operator and the
+            canonical constraint variables.
 
     Returns:
         The total penalty for this breach (penalty * matched_count).
     """
-    # Build a set of coordinate tuples for faster membership checks
+    # Coordinate set for variables present in the breach/constraint
     breach_coords = {
         (var.worker_id, var.date, var.shift_id) for var in breach.variables
     }
 
-    nb_a_period = sum(
-        1
-        for assignment in assignments
-        if (
-            assignment.worker_id,
-            assignment.date,
-            assignment.shift_id,
+    if (
+        constraint is not None
+        and constraint.operator == ConstraintOperator.YES
+    ):
+        # Allowed list: violations are assignments for the same worker/date
+        # whose shift is not in the allowed set.
+        workers_dates = {(v.worker_id, v.date) for v in breach.variables}
+        nb_a_period = sum(
+            1
+            for assignment in assignments
+            if (assignment.worker_id, assignment.date) in workers_dates
+            and (
+                assignment.worker_id,
+                assignment.date,
+                assignment.shift_id,
+            )
+            not in breach_coords
         )
-        in breach_coords
-    )
+    else:
+        # Default / NO operator: violations are assignments that match
+        # the listed coordinates.
+        nb_a_period = sum(
+            1
+            for assignment in assignments
+            if (
+                assignment.worker_id,
+                assignment.date,
+                assignment.shift_id,
+            )
+            in breach_coords
+        )
 
     return penalty * nb_a_period
 
