@@ -9,7 +9,7 @@ from db_operations.get_constraint_build import (
     get_active_constraint_builds_by_ids,
 )
 from db_operations.get_link_shift import get_link_shifts
-from db_operations.get_request import get_requests_by_dates
+from db_operations.request_services import get_requests_by_dates
 
 
 # pylint: disable=too-many-locals, too-many-statements
@@ -21,8 +21,7 @@ def get_engine_inputs(
         fetch_workers_shifts_dim_attributes_spe(schedule.team_id, collections)
     )
     requests_work, requests_leave = get_requests_by_dates(
-        start_date=schedule.start_date,
-        end_date=schedule.end_date,
+        schedule=schedule,
         workers=workers,
         shifts=shifts,
         dimensions=dimensions,
@@ -42,10 +41,12 @@ def get_engine_inputs(
         collections,
     )
     link_shifts = get_link_shifts(schedule.team_id, shifts, collections)
-    shift_demands = collections.shift_demand_new_db.get_shift_demands_by_date_range(
-        team_id=schedule.team_id,
-        start_date=schedule.start_date,
-        end_date=schedule.end_date,
+    shift_demands = (
+        collections.shift_demand_new_db.get_shift_demands_by_date_range(
+            team_id=schedule.team_id,
+            start_date=schedule.start_date,
+            end_date=schedule.end_date,
+        )
     )
     model_output = collections.model_output_db.get_model_output(schedule.id)
     end_time_db = time.time()

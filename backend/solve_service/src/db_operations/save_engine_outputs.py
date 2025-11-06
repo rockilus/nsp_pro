@@ -13,7 +13,7 @@ from shared.schemas.core import (
 from shared.schemas.core.solve_task_status import ScheduleSolveStatus
 
 from db_operations.assignment_services import save_assignments
-from db_operations.get_request import update_requests
+from db_operations.request_services import update_requests
 from db_operations.save_breaches import save_breaches
 from engine import ProcessingCache
 

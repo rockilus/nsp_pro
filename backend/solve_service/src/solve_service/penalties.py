@@ -16,10 +16,10 @@ penalties = Penalties(
         ord=Penalty(hard=100, soft=10),
         seq=Penalty(hard=100, soft=10),
         sum=Penalty(hard=100, soft=10),
-        request=Penalty(hard=100, soft=10),
+        request=Penalty(hard=1000, soft=10),
     ),
     configuration_constraint=ConfigurationConstraintPenalty(
-        coverage=CoveragePenalty(duty=1000, normal=200),
+        coverage=CoveragePenalty(duty=10000, normal=2000),
         duty_recup=10000,
         worker_shift_filter=10000,
         link_shift=5,

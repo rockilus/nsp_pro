@@ -1,13 +1,12 @@
 from datetime import date, timedelta
 from typing import Callable, Dict, List, Optional, Tuple
 
-from shared.constraint_parser import parse_selected_shifts
 from shared.augment import r_to_r_augmented
+from shared.constraint_parser import parse_selected_shifts
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
     Assignment,
     AssignmentSource,
-    Schedule,
     Attribute,
     Dimension,
     DimEntry,
@@ -16,13 +15,14 @@ from shared.schemas.core import (
     RequestAugmented,
     RequestStatus,
     RequestType,
+    Schedule,
     Shift,
     Worker,
 )
 from shared.schemas.core.constraint import SWOIdTypes
 
 
-# pylint: disable=too-many-branches
+# pylint: disable=too-many-branches, too-many-locals
 def _sync_assignments_with_requests(
     schedule: Schedule,
     requests: List[Request],
@@ -37,8 +37,6 @@ def _sync_assignments_with_requests(
     """
     ab = collections.assignment_db
     for req in requests:
-        if req.worker_id == "690b10d6a1f73dd84b5db1b4":
-            print("Debugging request sync for worker 690b10d6a1f73dd84b5db1b4")
         shift_opts = req.shift_options
         single_shift_request = False
         if req.request_type == RequestType.LEAVE:
@@ -60,8 +58,15 @@ def _sync_assignments_with_requests(
                 target_shift_id = req.shift_options[0].id
 
             get_ass = ab.get_assignment_by_worker_shift_team_and_date
-            for i in range((req.end_date - req.start_date).days + 1):
-                a_date = req.start_date + timedelta(days=i)
+            # Only operate on the overlap between the request period and the
+            # schedule period: use the smallest period (intersection).
+            period_start = max(req.start_date, schedule.start_date)
+            period_end = min(req.end_date, schedule.end_date)
+            if period_start > period_end:
+                # No overlap between request and schedule; nothing to create.
+                continue
+            for i in range((period_end - period_start).days + 1):
+                a_date = period_start + timedelta(days=i)
                 assignment_existing = get_ass(
                     worker_id=req.worker_id,
                     shift_id=target_shift_id,
