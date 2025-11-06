@@ -149,7 +149,6 @@ def calculate_breach_penalty_sum(
 
 
 def calculate_breach_penalty_work_time_week_target(
-    breach: Breach,
     assignments: List[Assignment],
     cstr_assignments: List[Tuple[str, str, str]],
     cstr_durations: List[int],
@@ -157,58 +156,25 @@ def calculate_breach_penalty_work_time_week_target(
     penalty: int,
     tolerance: float = 0.0,
 ) -> int:
-    breach_coords = {
-        (var.worker_id, var.date, var.shift_id) for var in breach.variables
-    }
-
-    assignment_to_duration: Dict[tuple, int] = {}
-    assignment_to_group: Dict[tuple, int] = {}
-    for g_idx, group_assignments in enumerate(assignments):
-        group_durations = getattr(
-            constraint, "durations", [None] * len(group_assignments)
-        )
-        if not group_durations or (
-            len(group_durations) != len(group_assignments)
-        ):
-            group_durations = [1] * len(group_assignments)
-        for a, d in zip(group_assignments, group_durations):
-            assignment_to_duration[a] = d
-            assignment_to_group[a] = g_idx
-
-    group_idx = None
-    for var in breach.variables:
-        key = (var.worker_id, var.date, var.shift_id)
-        if key in assignment_to_group:
-            group_idx = assignment_to_group[key]
-            break
-
-    if group_idx is None:
-        target = (
-            constraint.targets[0]
-            if getattr(constraint, "targets", None)
-            else 0
-        )
-        tolerance = getattr(constraint, "tolerance", 0)
+    total_duration = 0
+    for cstr_a, cstr_d in zip(cstr_assignments, cstr_durations):
+        cstr_a_assigned = False
+        for a in assignments:
+            if (
+                a.worker_id == cstr_a[0]
+                and a.date.isoformat() == cstr_a[1]
+                and a.shift_id == cstr_a[2]
+            ):
+                cstr_a_assigned = True
+                break
+        if cstr_a_assigned:
+            total_duration += cstr_d * 100
+    tolerance_abs = round(cstr_target * tolerance * 100)
+    if cstr_target == 0:
+        division_result = total_duration - tolerance_abs
     else:
-        target = constraint.targets[group_idx]
-        tolerance = getattr(constraint, "tolerance", 0)
-
-    weighted_sum = 0
-    for assignment in assignments:
-        key = (assignment.worker_id, assignment.date, assignment.shift_id)
-        if key in breach_coords and key in assignment_to_duration:
-            weighted_sum += assignment_to_duration[key]
-
-    weighted_sum_x100 = weighted_sum * 100
-    tolerance_x100 = round(target * tolerance * 100)
-
-    if target == 0:
-        division_result = weighted_sum_x100 - tolerance_x100
-    else:
-        division_result = (weighted_sum_x100 - tolerance_x100) // target
-
+        division_result = (total_duration - tolerance_abs) // cstr_target
     excess = max(division_result - 100, 0)
-
     return penalty * excess
 
 
@@ -460,25 +426,12 @@ def debug_breaches(
                     same_as_sets = b_vars_set == c_vars_set
                     if same_as_sets:
                         val = calculate_breach_penalty_work_time_week_target(
-                            b,
                             assignments,
                             cstr_assignments,
                             cstr_durations,
                             cstr_target,
                             group.penalty,
                         )
-                        break
-
-                # group.assignments is list of lists
-                flat = [a for sub in group.assignments for a in sub]
-                if any(
-                    (v.worker_id, v.date, v.shift_id) in flat
-                    for v in b.variables
-                ):
-                    val = calculate_breach_penalty_work_time_week_target(
-                        b, assignments, group.penalty, group
-                    )
-                    break
 
         elif b.objective_category.name in (
             ObjectiveCategory.DUTIES_PER_MONTH_TARGET.name,
