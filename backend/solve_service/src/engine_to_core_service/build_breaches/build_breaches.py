@@ -1,4 +1,8 @@
-from typing import List
+from typing import List, Dict
+from engine.types import (
+    GroupsAssignmentsDurationsTargetConstraint,
+    GroupsAssignmentsTargetConstraint,
+)
 
 from shared.schemas.core import (
     Assignment,
@@ -257,6 +261,37 @@ def calculate_breach_penalty_sum(
     return penalty * deviation
 
 
+def calculate_breach_penalty_shift_demand(
+    breach: Breach,
+    assignments: List[Assignment],
+    penalty: int,
+    target: int,
+) -> int:
+    """Calculate penalty for a shift demand breach.
+
+    Mirrors AddCoverage hard-to-soft logic: penalty is applied to the
+    absolute difference between assigned count and target. We count how many
+    assignments in `assignments` match the breach.variables and compute
+    penalty * abs(count - target).
+    """
+    breach_coords = {
+        (var.worker_id, var.date, var.shift_id) for var in breach.variables
+    }
+
+    nb_assigned = sum(
+        1
+        for assignment in assignments
+        if (
+            assignment.worker_id,
+            assignment.date,
+            assignment.shift_id,
+        )
+        in breach_coords
+    )
+
+    return penalty * abs(nb_assigned - target)
+
+
 def _print_breaches_debug_stats(
     outputs: OutputsEngine, breaches: List[Breach], penalties: Penalties
 ) -> None:
@@ -284,3 +319,159 @@ def _print_breaches_debug_stats(
     else:
         for cat, cnt in sorted(counts.items()):
             print(f"  {cat}: {cnt}")
+
+
+# Ord / request penalty: just number of breaches * penalty
+
+
+def calculate_breach_penalty_work_time_week_target(
+    breach: Breach,
+    assignments: List[Assignment],
+    penalty: int,
+    constraint: GroupsAssignmentsDurationsTargetConstraint,
+) -> int:
+    """Compute penalty for work-time week target breaches.
+
+    Implements the numeric steps used in
+    Model.add_target_work_time_constraints.
+
+    Steps (summary):
+      - weighted_sum = sum(duration_i for assigned vars)
+      - weighted_sum_x100 = weighted_sum * 100
+      - tolerance_x100 = round(target * tolerance * 100)
+      - division_result = (weighted_sum_x100 - tolerance_x100) // target
+        (or plain subtraction when target == 0)
+      - excess = max(division_result - 100, 0)
+      - return penalty * excess
+
+    The function maps tuples from constraint.assignments to durations using
+    constraint.durations and finds the corresponding target/tolerance for the
+    group that contains the breach variables. If no group matches, it falls
+    back to target=0 and tolerance=0.
+    """
+    breach_coords = {
+        (var.worker_id, var.date, var.shift_id) for var in breach.variables
+    }
+
+    # Build mapping from assignment tuple -> duration and tuple -> group idx.
+    # Use untyped tuple keys to avoid strict typing mismatches across modules.
+    assignment_to_duration: Dict[tuple, int] = {}
+    assignment_to_group: Dict[tuple, int] = {}
+    for g_idx, group_assignments in enumerate(constraint.assignments):
+        # support older constraint shapes that include durations, but
+        # default to unit durations when not provided
+        group_durations = getattr(
+            constraint, "durations", [None] * len(group_assignments)
+        )
+        if not group_durations or (
+            len(group_durations) != len(group_assignments)
+        ):
+            group_durations = [1] * len(group_assignments)
+        for a, d in zip(group_assignments, group_durations):
+            # a is expected to be a tuple like (worker_id, date, shift_id)
+            assignment_to_duration[a] = d
+            assignment_to_group[a] = g_idx
+
+    # Find group index for this breach by looking up any breach variable
+    group_idx = None
+    for var in breach.variables:
+        key = (var.worker_id, var.date, var.shift_id)
+        if key in assignment_to_group:
+            group_idx = assignment_to_group[key]
+            break
+
+    # Derive target and tolerance for the group (fallbacks if not found)
+    if group_idx is None:
+        target = (
+            constraint.targets[0]
+            if getattr(constraint, "targets", None)
+            else 0
+        )
+        tolerance = getattr(constraint, "tolerance", 0)
+    else:
+        target = constraint.targets[group_idx]
+        tolerance = getattr(constraint, "tolerance", 0)
+
+    # Sum durations for assignments that are both present in the solution and
+    # belong to the breach coordinates
+    weighted_sum = 0
+    for assignment in assignments:
+        key = (assignment.worker_id, assignment.date, assignment.shift_id)
+        if key in breach_coords and key in assignment_to_duration:
+            weighted_sum += assignment_to_duration[key]
+
+    weighted_sum_x100 = weighted_sum * 100
+    tolerance_x100 = round(target * tolerance * 100)
+
+    if target == 0:
+        division_result = weighted_sum_x100 - tolerance_x100
+    else:
+        # Integer division to mimic AddDivisionEquality behaviour
+        division_result = (weighted_sum_x100 - tolerance_x100) // target
+
+    excess = max(division_result - 100, 0)
+
+    return penalty * excess
+
+
+def calculate_breach_penalty_nb_duties_target(
+    breach: Breach,
+    assignments: List[Assignment],
+    penalty: int,
+    constraint: GroupsAssignmentsTargetConstraint,
+) -> int:
+    """Penalty for monthly target nb duties.
+
+    Uses GroupsAssignmentsTargetConstraint shape.
+
+    Logic mirrors Model.add_target_nb_duties_constraints: count assigned
+    variables for the group, apply tolerance and target to compute an integer
+    division result, then excess = max(division_result - 100, 0). Return
+    penalty * excess.
+    """
+    breach_coords = {
+        (var.worker_id, var.date, var.shift_id) for var in breach.variables
+    }
+
+    # Map assignment tuple to group index
+    assignment_to_group: Dict[tuple, int] = {}
+    for g_idx, group_assignments in enumerate(constraint.assignments):
+        for a in group_assignments:
+            assignment_to_group[a] = g_idx
+
+    # find group index for breach
+    group_idx = None
+    for var in breach.variables:
+        key = (var.worker_id, var.date, var.shift_id)
+        if key in assignment_to_group:
+            group_idx = assignment_to_group[key]
+            break
+
+    if group_idx is None:
+        target = (
+            constraint.targets[0]
+            if getattr(constraint, "targets", None)
+            else 0
+        )
+        tolerance = getattr(constraint, "tolerance", 0)
+    else:
+        target = constraint.targets[group_idx]
+        tolerance = getattr(constraint, "tolerance", 0)
+
+    # Count assignments present in solution that belong to the group
+    count = 0
+    for assignment in assignments:
+        key = (assignment.worker_id, assignment.date, assignment.shift_id)
+        if key in breach_coords and assignment_to_group.get(key) == group_idx:
+            count += 1
+
+    weighted_sum_x100 = count * 100
+    tolerance_x100 = round(target * tolerance * 100)
+
+    if target == 0:
+        division_result = weighted_sum_x100 - tolerance_x100
+    else:
+        division_result = (weighted_sum_x100 - tolerance_x100) // target
+
+    excess = max(division_result - 100, 0)
+    return penalty * excess
