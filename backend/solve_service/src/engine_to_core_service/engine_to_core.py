@@ -58,6 +58,7 @@ def engine_to_core(
         requests,
         outputs.breaches,
         processing_cache,
+        outputs,
     )
     schedule_solve_status = get_schedule_status(
         is_solution=outputs.is_solution, breaches=breaches
