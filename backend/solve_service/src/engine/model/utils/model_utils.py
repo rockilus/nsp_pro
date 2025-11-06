@@ -60,6 +60,29 @@ def build_var_name_work_time(
     )
 
 
+# class GroupsAssignmentsTargetConstraint:
+#     assignments: List[List[Tuple[str, str, str]]]
+#     targets: List[int]
+#     penalty: int
+#     tolerance: float = 0.0
+
+
+def build_var_name_groups_assignments(
+    cstr_vars: List[cp_model.IntVar],
+    category: ObjectiveCategory,
+) -> str:
+    return json.dumps(
+        asdict(
+            VarName(
+                objective_id=None,
+                cstr_vars=[var.Name() for var in cstr_vars],
+                objective_category=category.value,
+                hard_to_soft=None,
+            )
+        )
+    )
+
+
 def build_var_name_daily_shift_demand(
     cstr_vars: List[cp_model.IntVar],
     category: ObjectiveCategory,
