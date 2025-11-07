@@ -183,7 +183,13 @@ def calculate_breach_penalty_nb_duties_target(
                     total += 1
                     break
         tolerance_abs = round(cstr_target * group.tolerance)
-        excess = max(total - cstr_target - tolerance_abs, 0)
+        # Subtract tolerance only for the regular duties-per-month objective.
+        # For other objective categories (e.g. SPECIAL_DAYS_TARGET) do not
+        # apply the tolerance subtraction when computing the excess.
+        if objective_category == ObjectiveCategory.DUTIES_PER_MONTH_TARGET:
+            excess = max(total - cstr_target - tolerance_abs, 0)
+        else:
+            excess = max(total - cstr_target, 0)
         excesses.append(excess)
     return max(excesses) * group.penalty
 
@@ -407,7 +413,7 @@ def debug_breaches(
                 same_as_sets = b_vars_set == c_vars_set
                 if same_as_sets:
                     val = calculate_breach_penalty_nb_duties_target(
-                        assignments, group
+                        assignments, group, b.objective_category
                     )
                     break
 
@@ -416,12 +422,14 @@ def debug_breaches(
                 (var.worker_id, var.date.isoformat(), var.shift_id)
                 for var in b.variables
             }
-            for group in inputs.system_constraints.monthly_target_nb_duties:
+            for (
+                group
+            ) in inputs.system_constraints.special_days_target_nb_duties:
                 c_vars_set = {a for ass in group.assignments for a in ass}
                 same_as_sets = b_vars_set == c_vars_set
                 if same_as_sets:
                     val = calculate_breach_penalty_nb_duties_target(
-                        assignments, group
+                        assignments, group, b.objective_category
                     )
                     break
 
