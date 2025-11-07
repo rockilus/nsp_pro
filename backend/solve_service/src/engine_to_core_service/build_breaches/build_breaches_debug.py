@@ -353,15 +353,8 @@ def debug_breaches(
                         else pen_coverage.normal
                     )
 
-        # elif b.objective_category.name == ObjectiveCategory.LINK_SHIFT.name:
-        #     # link shift id stored in objective_id
-        #     link_id = b.objective_id
-        #     pen = 0
-        #     for pair in link_shifts_pairs:
-        #         if len(pair) >= 4 and pair[2] == link_id:
-        #             pen = pair[3]
-        #             break
-        #     val = len(b.variables) * pen
+        elif b.objective_category == ObjectiveCategory.LINK_SHIFT:
+            val = engine_inputs.penalties.configuration_constraint.link_shift
 
         # elif b.objective_category.name == ObjectiveCategory.DUTY_RECUP.name:
         #     # find recup pair

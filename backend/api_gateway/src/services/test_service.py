@@ -288,6 +288,7 @@ class SolverTestScenariosService(BaseService):
             self._save_specialties(scenario_data, team_id, maps, out)
             self._save_workers(scenario_data, team_id, maps, out)
             self._save_shifts(scenario_data, team_id, maps, out)
+            self._save_link_shifts(scenario_data, team_id, maps, out)
             self._save_dimensions(scenario_data, team_id, maps, out)
             self._save_dim_entries(scenario_data, maps, out)
             self._save_attributes(scenario_data, maps, out)
@@ -375,6 +376,36 @@ class SolverTestScenariosService(BaseService):
 
             maps.setdefault("shifts", {})[s_id] = shift_saved.id
             out.setdefault("shifts", []).append(shift_saved)
+
+    def _save_link_shifts(
+        self,
+        scenario_data: Dict[str, Any],
+        team_id: str,
+        maps: Dict[str, Any],
+        out: Dict[str, Any],
+    ) -> None:
+        link_shifts: List[LinkShift] = scenario_data.get("link_shifts", [])
+        if not all(isinstance(ls, LinkShift) for ls in link_shifts):
+            raise ValueError(
+                "Expected all link_shifts to be LinkShift instances"
+            )
+        for ls in link_shifts:
+            ls.team_id = team_id
+            ls_id = ls.id
+            # Remap shift ids to the newly-created shift ids if mappings exist
+            if maps.get("shifts"):
+                ls.shift_ids = [
+                    maps["shifts"].get(old_id, old_id)
+                    for old_id in ls.shift_ids
+                ]
+            ls.id = ""
+            # Persist link shift
+            link_shift_saved = self.collection.link_shift_db.create_link_shift(
+                link_shift=ls
+            )
+
+            maps.setdefault("link_shifts", {})[ls_id] = link_shift_saved.id
+            out.setdefault("link_shifts", []).append(link_shift_saved)
 
     def _save_dimensions(
         self,
@@ -548,7 +579,8 @@ class SolverTestScenariosService(BaseService):
                         isinstance(swo, ShiftWorkerOption) for swo in b.value
                     ):
                         raise ValueError(
-                            "Expected block value to be list of shift_worker_option"
+                            "Expected block value to be list of "
+                            "shift_worker_option"
                         )
                     b.value = [
                         self._remap_shift_worker_options(swo, maps)

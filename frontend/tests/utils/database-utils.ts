@@ -25,6 +25,7 @@ import {
   ShiftType,
   ShiftRestType,
   ShiftLeaveType,
+  LinkShiftT,
 } from "../../src/types/shift";
 import {
   DimensionT,
@@ -82,6 +83,7 @@ export interface SolverScenarioResult {
   specialties: SpecialtyT[];
   workers: WorkerT[];
   shifts: ShiftT[];
+  link_shifts: LinkShiftT[];
   dimensions: DimensionT[];
   dim_entries: DimEntryT[];
   attributes: AttributeT[];
@@ -1718,6 +1720,7 @@ export class DatabaseTestUtils {
         specialties: any[];
         workers: any[];
         shifts: any[];
+        link_shifts: any[];
         dimensions: any[];
         dim_entries: any[];
         attributes: any[];
@@ -1734,6 +1737,7 @@ export class DatabaseTestUtils {
         specialties: result.specialties,
         workers: result.workers.map(toWorkerT),
         shifts: result.shifts.map(toShiftT),
+        link_shifts: result.link_shifts,
         dimensions: result.dimensions,
         dim_entries: result.dim_entries,
         attributes: result.attributes.map(toAttributeT),
