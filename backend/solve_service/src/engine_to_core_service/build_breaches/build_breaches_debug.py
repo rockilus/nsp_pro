@@ -257,11 +257,10 @@ def debug_breaches(
                 else None
             )
             if cstr is not None:
-                # cstr = cast(Constraint, cstr)
-                # constraint_type = cstr.constraint_type.name.lower()
+                cstr = cast(Constraint, cstr)
+                constraint_type = cstr.constraint_type.name.lower()
                 # Narrow by concrete type for safer access and static typing
                 if isinstance(cstr, ConstraintFil):
-                    constraint_type = "fil"
                     cstr_fil = cast(ConstraintFil, cstr)
                     pen = (
                         engine_inputs.penalties.user_constraint.fil.hard
@@ -270,7 +269,6 @@ def debug_breaches(
                     )
                     val = calculate_breach_penalty_fil(b, assignments, pen)
                 elif isinstance(cstr, ConstraintSeq):
-                    constraint_type = "seq"
                     cstr_seq = cast(ConstraintSeq, cstr)
                     pen = (
                         engine_inputs.penalties.user_constraint.seq.hard
@@ -281,7 +279,6 @@ def debug_breaches(
                         b, assignments, pen, cstr_seq
                     )
                 elif isinstance(cstr, ConstraintFai):
-                    constraint_type = "fai"
                     # ConstraintFai has similar shape to seq; reuse seq penalty.
                     # Cast to ConstraintSeq for the calculator's signature.
                     # cstr_fai = cast(ConstraintFai, cstr)
@@ -293,7 +290,6 @@ def debug_breaches(
                     #     b, assignments, pen, cstr_fai
                     # )
                 elif isinstance(cstr, ConstraintOrd):
-                    constraint_type = "ord"
                     # No dedicated ord penalty calculator; fall back to count * pen
                     cstr_ord = cast(ConstraintOrd, cstr)
                     val = (
@@ -302,7 +298,6 @@ def debug_breaches(
                         else engine_inputs.penalties.user_constraint.ord.soft
                     )
                 elif isinstance(cstr, ConstraintSum):
-                    constraint_type = "sum"
                     cstr_sum = cast(ConstraintSum, cstr)
                     pen = (
                         engine_inputs.penalties.user_constraint.sum.hard
@@ -313,8 +308,6 @@ def debug_breaches(
                         b, assignments, pen, cstr_sum
                     )
                 else:
-                    # fallback: record concrete class name lowercased
-                    constraint_type = type(cstr).__name__.lower()
                     # fallback when the constraint type isn't one of the
                     # handled concrete classes (keep original behaviour)
                     print(
