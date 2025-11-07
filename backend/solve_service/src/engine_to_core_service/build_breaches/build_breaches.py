@@ -44,7 +44,7 @@ def build_breaches(
     engine_inputs: EngineInputsAugmented | None = None,
     inputs: Inputs | None = None,
 ) -> List[Breach]:
-    breaches_model = build_breaches_model(
+    breaches_model, breaches_parsed = build_breaches_model(
         schedule,
         workers,
         shifts,
@@ -63,14 +63,19 @@ def build_breaches(
         processing_cache,
     )
     # If an Outputs object was provided, print quick debugging stats
-    if outputs is not None and engine_inputs is not None and inputs is not None:
+    if (
+        outputs is not None
+        and engine_inputs is not None
+        and inputs is not None
+    ):
         try:
             debug_breaches(
                 outputs=outputs,
-                breaches=breaches_model,
+                breaches=breaches_parsed,
                 assignments=assignments,
                 engine_inputs=engine_inputs,
                 inputs=inputs,
+                processing_cache=processing_cache,
             )
         except Exception:
             # Never fail the normal flow because of debug printing

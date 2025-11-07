@@ -17,9 +17,7 @@ from shared.schemas.core import (
 )
 from shared.schemas.core.breach import ObjectiveCategory
 
-from engine.types import (
-    Inputs,
-)
+from engine.types import Inputs, Outputs, ProcessingCache
 
 
 # pylint: disable=too-many-arguments, too-many-locals, too-many-branches
@@ -34,7 +32,10 @@ def calculate_breach_penalty_fil(
         (var.worker_id, var.date, var.shift_id) for var in breach.variables
     }
 
-    if constraint is not None and constraint.operator == ConstraintOperator.YES:
+    if (
+        constraint is not None
+        and constraint.operator == ConstraintOperator.YES
+    ):
         workers_dates = {(v.worker_id, v.date) for v in breach.variables}
         nb_a_period = sum(
             1
@@ -164,6 +165,7 @@ def calculate_breach_penalty_work_time_week_target(
                 and a.shift_id == cstr_a[2]
             ):
                 total_duration += cstr_d * 100
+                # total_duration += shift_id_to_duration.get(a.shift_id, 0)
                 break
     tolerance_abs = round(cstr_target * tolerance * 100)
     if cstr_target == 0:
@@ -201,11 +203,12 @@ def calculate_breach_penalty_nb_duties_target(
 
 
 def debug_breaches(
-    outputs,
+    outputs: Outputs,
     breaches: List[Breach],
     assignments: List[Assignment],
     engine_inputs: EngineInputsAugmented,
     inputs: Inputs,
+    processing_cache: ProcessingCache,
 ) -> None:
     """Compute penalty breakdown per objective category and print a table.
 
@@ -240,7 +243,8 @@ def debug_breaches(
     #     for spe in w.specialty_ids:
     #         workers_by_spe_id.setdefault(spe, []).append(w)
     requests_by_id: Dict[str, Request] = {
-        r.id: r for r in engine_inputs.requests_leave + engine_inputs.requests_work
+        r.id: r
+        for r in engine_inputs.requests_leave + engine_inputs.requests_work
     }
 
     # Accumulators
@@ -255,7 +259,11 @@ def debug_breaches(
         # try to resolve based on category
         if b.objective_category == ObjectiveCategory.CONSTRAINT:
             # find constraint by objective_id
-            cstr = constraints_by_id.get(b.objective_id) if b.objective_id else None
+            cstr = (
+                constraints_by_id.get(b.objective_id)
+                if b.objective_id
+                else None
+            )
             if cstr is not None:
                 # Narrow by concrete type for safer access and static typing
                 if isinstance(cstr, ConstraintFil):
@@ -265,7 +273,9 @@ def debug_breaches(
                         if cstr_fil.hard
                         else engine_inputs.penalties.user_constraint.fil.soft
                     )
-                    val = calculate_breach_penalty_fil(b, assignments, pen, cstr_fil)
+                    val = calculate_breach_penalty_fil(
+                        b, assignments, pen, cstr_fil
+                    )
                 elif isinstance(cstr, ConstraintSeq):
                     cstr_seq = cast(ConstraintSeq, cstr)
                     pen = (
@@ -273,7 +283,9 @@ def debug_breaches(
                         if cstr_seq.hard
                         else engine_inputs.penalties.user_constraint.seq.soft
                     )
-                    val = calculate_breach_penalty_seq(b, assignments, pen, cstr_seq)
+                    val = calculate_breach_penalty_seq(
+                        b, assignments, pen, cstr_seq
+                    )
                 elif isinstance(cstr, ConstraintFai):
                     # ConstraintFai has similar shape to seq; reuse seq penalty.
                     # Cast to ConstraintSeq for the calculator's signature.
@@ -288,12 +300,11 @@ def debug_breaches(
                 elif isinstance(cstr, ConstraintOrd):
                     # No dedicated ord penalty calculator; fall back to count * pen
                     cstr_ord = cast(ConstraintOrd, cstr)
-                    pen = (
+                    val = (
                         engine_inputs.penalties.user_constraint.ord.hard
                         if cstr_ord.hard
                         else engine_inputs.penalties.user_constraint.ord.soft
                     )
-                    val = len(b.variables) * pen
                 elif isinstance(cstr, ConstraintSum):
                     cstr_sum = cast(ConstraintSum, cstr)
                     pen = (
@@ -301,7 +312,9 @@ def debug_breaches(
                         if cstr_sum.hard
                         else engine_inputs.penalties.user_constraint.sum.soft
                     )
-                    val = calculate_breach_penalty_sum(b, assignments, pen, cstr_sum)
+                    val = calculate_breach_penalty_sum(
+                        b, assignments, pen, cstr_sum
+                    )
                 else:
                     # fallback when the constraint type isn't one of the
                     # handled concrete classes (keep original behaviour)
@@ -318,7 +331,9 @@ def debug_breaches(
                 val = 0
 
         elif b.objective_category == ObjectiveCategory.REQUEST:
-            req = requests_by_id.get(b.objective_id) if b.objective_id else None
+            req = (
+                requests_by_id.get(b.objective_id) if b.objective_id else None
+            )
             if req is not None:
                 val = (
                     engine_inputs.penalties.user_constraint.request.hard
@@ -328,7 +343,11 @@ def debug_breaches(
 
         if b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND:
             # try to match a shift demand by assignments membership
-            sd = shift_demands_by_id.get(b.objective_id) if b.objective_id else None
+            sd = (
+                shift_demands_by_id.get(b.objective_id)
+                if b.objective_id
+                else None
+            )
             if sd is not None:
                 shift = shifts_by_id.get(sd.shift_id)
                 if shift is not None:
@@ -387,16 +406,25 @@ def debug_breaches(
                 for var in b.variables
             }
             for group_dur in inputs.system_constraints.weekly_target_work_time:
+                c_vars_set = {a for ass in group_dur.assignments for a in ass}
                 for cstr_assignments, cstr_durations, cstr_target in zip(
                     group_dur.assignments,
                     group_dur.durations,
                     group_dur.targets,
                 ):
                     c_vars_set = set(cstr_assignments)
+
+                    b_all_in_c = all(var in b_vars_set for var in c_vars_set)
+                    c_all_in_b = all(var in c_vars_set for var in b_vars_set)
+                    same_len = len(b_vars_set) == len(c_vars_set)
+                    if b_all_in_c and c_all_in_b and same_len:
+                        print("Matched by all_in + len")
+
                     same_as_sets = b_vars_set == c_vars_set
                     if same_as_sets:
                         val = calculate_breach_penalty_work_time_week_target(
                             assignments,
+                            processing_cache.shift_id_to_duration,
                             cstr_assignments,
                             cstr_durations,
                             cstr_target,
@@ -441,10 +469,6 @@ def debug_breaches(
                             group.penalty,
                         )
 
-        else:
-            # fallback: zero
-            val = 0
-
         stats[cat]["total"] += val
         total_calc += val
 
@@ -481,18 +505,68 @@ def debug_breaches(
         + f"{(total_calc / total_breaches if total_breaches else 0):>{w4}.1f}"
     )
 
+    print(
+        "constraint:",
+        len(
+            [
+                b
+                for b in breaches
+                if b.objective_category == ObjectiveCategory.CONSTRAINT
+            ]
+        ),
+    )
+    print(
+        "request:",
+        len(
+            [
+                b
+                for b in breaches
+                if b.objective_category == ObjectiveCategory.REQUEST
+            ]
+        ),
+    )
+    print(
+        "daily_shift_demand:",
+        len(
+            [
+                b
+                for b in breaches
+                if b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
+            ]
+        ),
+    )
+    print(
+        "specialty_daily_shift_demand:",
+        len(
+            [
+                b
+                for b in breaches
+                if b.objective_category
+                == ObjectiveCategory.SPECIAL_DAYS_TARGET
+            ]
+        ),
+    )
+    print(
+        "work_time_week_target:",
+        len(
+            [
+                b
+                for b in breaches
+                if b.objective_category
+                == ObjectiveCategory.WORK_TIME_WEEK_TARGET
+            ]
+        ),
+    )
+
     # Checks vs engine outputs
     try:
         print("\nChecks:")
-        print(f"  Solver objective_value: {outputs.objective_value}")
         print(
-            f"  Calculated total objective (sum of breach penalties): {int(total_calc)}"
+            f"  Solver objective_value: {outputs.objective_value} vs calc: {total_calc} delta: {int(total_calc)-outputs.objective_value}"
         )
-        print(f"  Raw engine breaches (outputs.breaches): {len(outputs.breaches)}")
-        if int(total_calc) != int(outputs.objective_value):
-            print("  WARNING: objective_value does not match calculated total!")
-        if total_breaches != len(outputs.breaches):
-            print("  WARNING: model breaches count does not match raw engine breaches!")
+        print(
+            f"  Raw engine breaches (outputs.breaches): {len(outputs.breaches)} vs calc: {total_breaches} delta: {total_breaches-len(outputs.breaches)}"
+        )
     except Exception:
         # never break normal flow when debugging
         pass
