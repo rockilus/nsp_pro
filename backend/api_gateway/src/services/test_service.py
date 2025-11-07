@@ -17,10 +17,12 @@ from shared.database.schemas.shift_demand_template import (
 )
 from shared.database.schemas.specialty import SpecialtySchema
 from shared.database.schemas.worker import WorkerSchema
+from shared.database.schemas.link_shift import LinkShiftSchema
 from shared.logger import log_info
 from shared.schemas.core import (
     Attribute,
     AttributeOwnerType,
+    LinkShift,
     BlockTypeOptions,
     RequestStatus,
     ConstraintBuild,
@@ -48,6 +50,7 @@ class ScenarioLoadResponse(BaseModel):
     specialties: List[Specialty]
     workers: List[Worker]
     shifts: List[Shift]
+    link_shifts: List[LinkShift]
     dimensions: List[Dimension]
     dim_entries: List[DimEntry]
     attributes: List[Attribute]
@@ -122,6 +125,7 @@ class SolverTestScenariosService(BaseService):
             specialties=saved.get("specialties", []),
             workers=saved.get("workers", []),
             shifts=saved.get("shifts", []),
+            link_shifts=saved.get("link_shifts", []),
             dimensions=saved.get("dimensions", []),
             dim_entries=saved.get("dim_entries", []),
             attributes=saved.get("attributes", []),
@@ -186,6 +190,10 @@ class SolverTestScenariosService(BaseService):
                 "shifts": [
                     ShiftSchema.from_mongo(s).to_core()
                     for s in scenario_data.get("shifts", [])
+                ],
+                "link_shifts": [
+                    LinkShiftSchema.from_mongo(ls).to_core()
+                    for ls in scenario_data.get("link_shifts", [])
                 ],
                 "dimensions": [
                     DimensionSchema.from_mongo(d).to_core()

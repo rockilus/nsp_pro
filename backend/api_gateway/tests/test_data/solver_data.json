@@ -1642,6 +1642,32 @@
                 "deleted": false
             }
         ],
+        "link_shifts": [
+            {
+                "_id": "68c9a030241cb23d8fcff62c",
+                "team": "6894a0a6457cee1161ccd840",
+                "shifts": [
+                    "6894bce7457cee1161ccd9f8",
+                    "6894bc43457cee1161ccd9dd"
+                ]
+            },
+            {
+                "_id": "68c9a036241cb23d8fcff62d",
+                "team": "6894a0a6457cee1161ccd840",
+                "shifts": [
+                    "6894ba76457cee1161ccd995",
+                    "6894bc43457cee1161ccd9dd"
+                ]
+            },
+            {
+                "_id": "68c9a03e241cb23d8fcff62e",
+                "team": "6894a0a6457cee1161ccd840",
+                "shifts": [
+                    "6894bbe6457cee1161ccd9d4",
+                    "6894baac457cee1161ccd99e"
+                ]
+            }
+        ],
         "dimensions": [
             {
                 "_id": "6894a615457cee1161ccd85d",
@@ -26011,6 +26037,32 @@
                 "recuperation_time": 0,
                 "recuperation_duty": null,
                 "deleted": false
+            }
+        ],
+        "link_shifts": [
+            {
+                "_id": "68c9a030241cb23d8fcff62c",
+                "team": "6894a0a6457cee1161ccd840",
+                "shifts": [
+                    "6894bce7457cee1161ccd9f8",
+                    "6894bc43457cee1161ccd9dd"
+                ]
+            },
+            {
+                "_id": "68c9a036241cb23d8fcff62d",
+                "team": "6894a0a6457cee1161ccd840",
+                "shifts": [
+                    "6894ba76457cee1161ccd995",
+                    "6894bc43457cee1161ccd9dd"
+                ]
+            },
+            {
+                "_id": "68c9a03e241cb23d8fcff62e",
+                "team": "6894a0a6457cee1161ccd840",
+                "shifts": [
+                    "6894bbe6457cee1161ccd9d4",
+                    "6894baac457cee1161ccd99e"
+                ]
             }
         ],
         "dimensions": [

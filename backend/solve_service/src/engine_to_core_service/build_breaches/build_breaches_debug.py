@@ -385,14 +385,6 @@ def debug_breaches(
         #     if not found:
         #         val = 0
 
-        # @dataclass
-        # class GroupsAssignmentsDurationsTargetConstraint:
-        #     assignments: List[List[Tuple[str, str, str]]]
-        #     durations: List[List[int]]
-        #     targets: List[int]
-        #     penalty: int
-        #     tolerance: float = 0.0
-
         elif b.objective_category == ObjectiveCategory.WORK_TIME_WEEK_TARGET:
             b_vars_set = {
                 (var.worker_id, var.date.isoformat(), var.shift_id)
