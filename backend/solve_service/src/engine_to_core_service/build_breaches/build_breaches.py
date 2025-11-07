@@ -75,7 +75,6 @@ def build_breaches(
                 assignments=assignments,
                 engine_inputs=engine_inputs,
                 inputs=inputs,
-                processing_cache=processing_cache,
             )
         except Exception:
             # Never fail the normal flow because of debug printing

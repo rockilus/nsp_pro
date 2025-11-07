@@ -603,10 +603,12 @@ class Model:
     ) -> None:
         for constraint in constraints:
             excesses = []
+            cstr_vars = []
             for assignments, target in zip(
                 constraint.assignments, constraint.targets
             ):
                 constraint_vars = [self.variables[a] for a in assignments]
+                cstr_vars.extend(constraint_vars)
                 excess = self.model.NewIntVar(
                     -target,
                     len(constraint_vars)
@@ -625,7 +627,7 @@ class Model:
                 excesses.append(excess)
             # var_name = "target_nb_duties"
             var_name = build_var_name_groups_assignments(
-                cstr_vars=constraint_vars,
+                cstr_vars=cstr_vars,
                 category=ObjectiveCategory.DUTIES_PER_MONTH_TARGET,
             )
             max_excess = self.model.NewIntVar(
@@ -644,10 +646,12 @@ class Model:
     ) -> None:
         for constraint in constraints:
             excesses = []
+            cstr_vars = []
             for assignments, target in zip(
                 constraint.assignments, constraint.targets
             ):
                 constraint_vars = [self.variables[a] for a in assignments]
+                cstr_vars.extend(constraint_vars)
                 excess = self.model.NewIntVar(
                     -target,
                     len(constraint_vars)
@@ -661,7 +665,7 @@ class Model:
                 excesses.append(excess)
             # var_name = "special_days"
             var_name = build_var_name_groups_assignments(
-                cstr_vars=constraint_vars,
+                cstr_vars=cstr_vars,
                 category=ObjectiveCategory.SPECIAL_DAYS_TARGET,
             )
             max_excess = self.model.NewIntVar(
