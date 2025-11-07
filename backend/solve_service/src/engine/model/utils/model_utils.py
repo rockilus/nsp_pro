@@ -169,9 +169,7 @@ def build_var_name_link_shift(
 #     )
 
 
-def build_var_name_seq(
-    constraint: Constraint, span: List[cp_model.IntVar]
-) -> str:
+def build_var_name_seq(constraint: Constraint, span: List[cp_model.IntVar]) -> str:
     # pylint: disable=protected-access
     return json.dumps(
         asdict(

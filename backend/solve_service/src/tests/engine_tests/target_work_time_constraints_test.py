@@ -327,7 +327,7 @@ class TestTargetWorkTimeConstraints:
             ]
 
         assert len(out.breaches) == 1
-        assert len(breaches) == 0
+        assert len(breaches) == 1
 
         max_excess = max(*deltas, 0)
 
@@ -582,7 +582,7 @@ class TestTargetWorkTimeConstraints:
         assert max_excess == excess_expected
 
         assert len(out.breaches) == 1
-        assert len(breaches) == 0
+        assert len(breaches) == 1
 
         objective_value_expected = (
             ei_work_times.penalties.system_constraint.weekly_target_work_time

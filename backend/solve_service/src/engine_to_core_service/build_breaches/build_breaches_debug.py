@@ -3,9 +3,9 @@ from typing import Dict, List, Tuple, cast
 from shared.schemas.core import (
     Assignment,
     Breach,
+    Constraint,
     ConstraintFai,
     ConstraintFil,
-    Constraint,
     ConstraintOperator,
     ConstraintOrd,
     ConstraintSeq,
@@ -19,10 +19,10 @@ from shared.schemas.core import (
 from shared.schemas.core.breach import ObjectiveCategory
 
 from engine.types import (
-    Inputs,
-    Outputs,
     GroupsAssignmentsDurationsTargetConstraint,
     GroupsAssignmentsTargetConstraint,
+    Inputs,
+    Outputs,
 )
 
 
@@ -231,8 +231,7 @@ def debug_breaches(
     #     for spe in w.specialty_ids:
     #         workers_by_spe_id.setdefault(spe, []).append(w)
     requests_by_id: Dict[str, Request] = {
-        r.id: r
-        for r in engine_inputs.requests_leave + engine_inputs.requests_work
+        r.id: r for r in engine_inputs.requests_leave + engine_inputs.requests_work
     }
 
     # Accumulators
@@ -251,11 +250,7 @@ def debug_breaches(
         # try to resolve based on category
         if b.objective_category == ObjectiveCategory.CONSTRAINT:
             # find constraint by objective_id
-            cstr = (
-                constraints_by_id.get(b.objective_id)
-                if b.objective_id
-                else None
-            )
+            cstr = constraints_by_id.get(b.objective_id) if b.objective_id else None
             if cstr is not None:
                 cstr = cast(Constraint, cstr)
                 constraint_type = cstr.constraint_type.name.lower()
@@ -275,9 +270,7 @@ def debug_breaches(
                         if cstr_seq.hard
                         else engine_inputs.penalties.user_constraint.seq.soft
                     )
-                    val = calculate_breach_penalty_seq(
-                        b, assignments, pen, cstr_seq
-                    )
+                    val = calculate_breach_penalty_seq(b, assignments, pen, cstr_seq)
                 elif isinstance(cstr, ConstraintFai):
                     # ConstraintFai has similar shape to seq; reuse seq penalty.
                     # Cast to ConstraintSeq for the calculator's signature.
@@ -304,9 +297,7 @@ def debug_breaches(
                         if cstr_sum.hard
                         else engine_inputs.penalties.user_constraint.sum.soft
                     )
-                    val = calculate_breach_penalty_sum(
-                        b, assignments, pen, cstr_sum
-                    )
+                    val = calculate_breach_penalty_sum(b, assignments, pen, cstr_sum)
                 else:
                     # fallback when the constraint type isn't one of the
                     # handled concrete classes (keep original behaviour)
@@ -324,9 +315,7 @@ def debug_breaches(
                 val = 0
 
         elif b.objective_category == ObjectiveCategory.REQUEST:
-            req = (
-                requests_by_id.get(b.objective_id) if b.objective_id else None
-            )
+            req = requests_by_id.get(b.objective_id) if b.objective_id else None
             if req is not None:
                 val = (
                     engine_inputs.penalties.user_constraint.request.hard
@@ -336,11 +325,7 @@ def debug_breaches(
 
         if b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND:
             # try to match a shift demand by assignments membership
-            sd = (
-                shift_demands_by_id.get(b.objective_id)
-                if b.objective_id
-                else None
-            )
+            sd = shift_demands_by_id.get(b.objective_id) if b.objective_id else None
             if sd is not None:
                 shift = shifts_by_id.get(sd.shift_id)
                 if shift is not None:
@@ -411,9 +396,7 @@ def debug_breaches(
                 (var.worker_id, var.date.isoformat(), var.shift_id)
                 for var in b.variables
             }
-            for (
-                group
-            ) in inputs.system_constraints.special_days_target_nb_duties:
+            for group in inputs.system_constraints.special_days_target_nb_duties:
                 c_vars_set = {a for ass in group.assignments for a in ass}
                 same_as_sets = b_vars_set == c_vars_set
                 if same_as_sets:
@@ -473,9 +456,7 @@ def debug_breaches(
             avg = tot / cnt if cnt > 0 else 0.0
             rows_c.append((k, cnt, tot, avg))
 
-        print(
-            "\nBroken down constraint breaches (ObjectiveCategory.CONSTRAINT):"
-        )
+        print("\nBroken down constraint breaches (ObjectiveCategory.CONSTRAINT):")
         col1 = "ConstraintType"
         col2 = "Count"
         col3 = "Total"
@@ -491,12 +472,8 @@ def debug_breaches(
         for r in rows_c:
             print(f"{r[0]:<{w1}}{r[1]:>{w2}}{r[2]:>{w3}.0f}{r[3]:>{w4}.1f}")
         print("-" * (w1 + w2 + w3 + w4))
-        total_c_breaches = sum(
-            int(v["count"]) for v in constraint_stats.values()
-        )
-        total_c_calc = sum(
-            float(v["total"]) for v in constraint_stats.values()
-        )
+        total_c_breaches = sum(int(v["count"]) for v in constraint_stats.values())
+        total_c_calc = sum(float(v["total"]) for v in constraint_stats.values())
         print(
             f"{'TOTAL':<{w1}}{total_c_breaches:>{w2}}{total_c_calc:>{w3}.0f}"
             + f"{(total_c_calc / total_c_breaches if total_c_breaches else 0):>{w4}.1f}"
@@ -506,10 +483,14 @@ def debug_breaches(
     try:
         print("\nChecks:")
         print(
-            f"  Solver objective_value: {outputs.objective_value} vs calc: {total_calc} delta: {int(total_calc)-outputs.objective_value}"
+            f"  Solver objective_value: {outputs.objective_value} vs "
+            + f"calc: {total_calc} "
+            + f"delta: {int(total_calc)-outputs.objective_value}"
         )
         print(
-            f"  Raw engine breaches (outputs.breaches): {len(outputs.breaches)} vs calc: {total_breaches} delta: {total_breaches-len(outputs.breaches)}"
+            f"  Raw engine breaches (outputs.breaches): {len(outputs.breaches)} vs "
+            + f"calc: {total_breaches} "
+            + f"delta: {total_breaches-len(outputs.breaches)}"
         )
     except Exception:
         # never break normal flow when debugging

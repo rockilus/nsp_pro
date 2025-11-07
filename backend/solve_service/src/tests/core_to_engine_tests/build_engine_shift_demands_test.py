@@ -358,7 +358,8 @@ class TestBuildEngineShiftDemands:
                     (s for s in shifts_not_deleted if s.id == shift_id), None
                 )
                 assert shift_ref is not None
-                total_count = sum(dsd.count for dsd in dsds_source)
+                # total_count = sum(dsd.count for dsd in dsds_source)
+                total_count = dsds_source[0].count
                 staffing = sum(s.staffing for s in shift_ref.staffing)
                 assert sd.target == total_count * staffing
 

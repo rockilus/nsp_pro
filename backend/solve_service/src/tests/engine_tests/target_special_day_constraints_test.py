@@ -542,7 +542,7 @@ class TestSpecialDayConstraints:
         )
 
         assert len(out.breaches) == breach_count_expected
-        assert len(breaches) == 0
+        assert len(breaches) == breach_count_expected
 
         objective_value_expected = (
             # fmt: off

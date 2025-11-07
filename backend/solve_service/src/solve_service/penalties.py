@@ -1,3 +1,5 @@
+import os
+
 from shared.schemas.core import (
     ConfigurationConstraintPenalty,
     CoveragePenalty,
@@ -8,7 +10,7 @@ from shared.schemas.core import (
 )
 
 # pylint: disable=R0801
-penalties = Penalties(
+penalties_prod = Penalties(
     user_constraint=UserConstraintPenalty(
         eve=Penalty(hard=100, soft=10),
         fai=Penalty(hard=100, soft=10),
@@ -36,6 +38,40 @@ penalties = Penalties(
     ),
 )
 
+penalties_test = Penalties(
+    user_constraint=UserConstraintPenalty(
+        eve=Penalty(hard=100, soft=10),
+        fai=Penalty(hard=100, soft=10),
+        fil=Penalty(hard=100, soft=10),
+        ord=Penalty(hard=100, soft=10),
+        seq=Penalty(hard=100, soft=10),
+        sum=Penalty(hard=100, soft=10),
+        request=Penalty(hard=100, soft=10),
+    ),
+    configuration_constraint=ConfigurationConstraintPenalty(
+        coverage=CoveragePenalty(duty=1000, normal=200),
+        duty_recup=10000,
+        worker_shift_filter=10000,
+        link_shift=5,
+        weekly_worktime_max=5,
+        weekly_worktime_desired=0,
+        weekly_worktime_contract=1,
+        monthly_duties_max=5,
+        monthly_duties_desired=3,
+    ),
+    system_constraint=SystemConstraintPenalty(
+        weekly_target_work_time=5,
+        monthly_target_nb_duties=1,
+        special_days_target_nb_duties=1,
+    ),
+)
+
+pytest_mode = os.getenv("PYTEST_VERSION", "false").lower() != "false"
+github_actions_mode = os.getenv("GITHUB_ACTIONS", "false").lower() == "true"
+test_mode = pytest_mode or github_actions_mode
+
+# penalties = penalties_test if test_mode else penalties_prod
+penalties = penalties_prod
 
 """
 MODEL CALIBRATION:
