@@ -5,6 +5,7 @@ from shared.schemas.core import (
     Breach,
     ConstraintFai,
     ConstraintFil,
+    Constraint,
     ConstraintOperator,
     ConstraintOrd,
     ConstraintSeq,
@@ -20,7 +21,6 @@ from shared.schemas.core.breach import ObjectiveCategory
 from engine.types import (
     Inputs,
     Outputs,
-    ProcessingCache,
     GroupsAssignmentsDurationsTargetConstraint,
     GroupsAssignmentsTargetConstraint,
 )
@@ -237,8 +237,12 @@ def debug_breaches(
 
     # Accumulators
     stats: Dict[str, Dict[str, float]] = {}
+    # Per-constraint-type breakdown for ObjectiveCategory.CONSTRAINT
+    constraint_stats: Dict[str, Dict[str, float]] = {}
     total_calc = 0
     for b in breaches:
+        # track concrete constraint type when objective category is CONSTRAINT
+        constraint_type: str | None = None
         cat = str(b.objective_category.name)
         stats.setdefault(cat, {"count": 0, "total": 0.0})
         stats[cat]["count"] += 1
@@ -253,8 +257,11 @@ def debug_breaches(
                 else None
             )
             if cstr is not None:
+                # cstr = cast(Constraint, cstr)
+                # constraint_type = cstr.constraint_type.name.lower()
                 # Narrow by concrete type for safer access and static typing
                 if isinstance(cstr, ConstraintFil):
+                    constraint_type = "fil"
                     cstr_fil = cast(ConstraintFil, cstr)
                     pen = (
                         engine_inputs.penalties.user_constraint.fil.hard
@@ -263,6 +270,7 @@ def debug_breaches(
                     )
                     val = calculate_breach_penalty_fil(b, assignments, pen)
                 elif isinstance(cstr, ConstraintSeq):
+                    constraint_type = "seq"
                     cstr_seq = cast(ConstraintSeq, cstr)
                     pen = (
                         engine_inputs.penalties.user_constraint.seq.hard
@@ -273,6 +281,7 @@ def debug_breaches(
                         b, assignments, pen, cstr_seq
                     )
                 elif isinstance(cstr, ConstraintFai):
+                    constraint_type = "fai"
                     # ConstraintFai has similar shape to seq; reuse seq penalty.
                     # Cast to ConstraintSeq for the calculator's signature.
                     # cstr_fai = cast(ConstraintFai, cstr)
@@ -284,6 +293,7 @@ def debug_breaches(
                     #     b, assignments, pen, cstr_fai
                     # )
                 elif isinstance(cstr, ConstraintOrd):
+                    constraint_type = "ord"
                     # No dedicated ord penalty calculator; fall back to count * pen
                     cstr_ord = cast(ConstraintOrd, cstr)
                     val = (
@@ -292,6 +302,7 @@ def debug_breaches(
                         else engine_inputs.penalties.user_constraint.ord.soft
                     )
                 elif isinstance(cstr, ConstraintSum):
+                    constraint_type = "sum"
                     cstr_sum = cast(ConstraintSum, cstr)
                     pen = (
                         engine_inputs.penalties.user_constraint.sum.hard
@@ -302,6 +313,8 @@ def debug_breaches(
                         b, assignments, pen, cstr_sum
                     )
                 else:
+                    # fallback: record concrete class name lowercased
+                    constraint_type = type(cstr).__name__.lower()
                     # fallback when the constraint type isn't one of the
                     # handled concrete classes (keep original behaviour)
                     print(
@@ -310,6 +323,7 @@ def debug_breaches(
                     )
             else:
                 # unknown constraint, cannot compute
+                constraint_type = "unknown"
                 print(
                     f"Warning: Constraint with id {b.objective_id} not found "
                     + "for breach debug."
@@ -432,6 +446,12 @@ def debug_breaches(
 
         stats[cat]["total"] += val
         total_calc += val
+        # collect per-constraint-type stats for CONSTRAINT objective category
+        if b.objective_category == ObjectiveCategory.CONSTRAINT:
+            ctype = constraint_type or "unknown"
+            constraint_stats.setdefault(ctype, {"count": 0, "total": 0.0})
+            constraint_stats[ctype]["count"] += 1
+            constraint_stats[ctype]["total"] += val
 
     # Print table
     rows: List[Tuple[str, int, float, float]] = []
@@ -465,6 +485,44 @@ def debug_breaches(
         f"{'TOTAL':<{w1}}{total_breaches:>{w2}}{total_calc:>{w3}.0f}"
         + f"{(total_calc / total_breaches if total_breaches else 0):>{w4}.1f}"
     )
+
+    # Second table: breakdown by concrete constraint type for CONSTRAINT category
+    if constraint_stats:
+        rows_c: List[Tuple[str, int, float, float]] = []
+        for k, v in sorted(constraint_stats.items()):
+            cnt = int(v["count"])
+            tot = float(v["total"])
+            avg = tot / cnt if cnt > 0 else 0.0
+            rows_c.append((k, cnt, tot, avg))
+
+        print(
+            "\nBroken down constraint breaches (ObjectiveCategory.CONSTRAINT):"
+        )
+        col1 = "ConstraintType"
+        col2 = "Count"
+        col3 = "Total"
+        col4 = "Average"
+        w1 = max(len(col1), max((len(r[0]) for r in rows_c), default=0)) + 2
+        w2 = max(len(col2), 8)
+        w3 = max(len(col3), 12)
+        w4 = max(len(col4), 12)
+
+        header = f"{col1:<{w1}}{col2:>{w2}}{col3:>{w3}}{col4:>{w4}}"
+        print(header)
+        print("-" * (w1 + w2 + w3 + w4))
+        for r in rows_c:
+            print(f"{r[0]:<{w1}}{r[1]:>{w2}}{r[2]:>{w3}.0f}{r[3]:>{w4}.1f}")
+        print("-" * (w1 + w2 + w3 + w4))
+        total_c_breaches = sum(
+            int(v["count"]) for v in constraint_stats.values()
+        )
+        total_c_calc = sum(
+            float(v["total"]) for v in constraint_stats.values()
+        )
+        print(
+            f"{'TOTAL':<{w1}}{total_c_breaches:>{w2}}{total_c_calc:>{w3}.0f}"
+            + f"{(total_c_calc / total_c_breaches if total_c_breaches else 0):>{w4}.1f}"
+        )
 
     # Checks vs engine outputs
     try:
