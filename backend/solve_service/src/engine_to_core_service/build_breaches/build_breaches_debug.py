@@ -183,9 +183,6 @@ def calculate_breach_penalty_nb_duties_target(
                     total += 1
                     break
         tolerance_abs = round(cstr_target * group.tolerance)
-        # Subtract tolerance only for the regular duties-per-month objective.
-        # For other objective categories (e.g. SPECIAL_DAYS_TARGET) do not
-        # apply the tolerance subtraction when computing the excess.
         if objective_category == ObjectiveCategory.DUTIES_PER_MONTH_TARGET:
             excess = max(total - cstr_target - tolerance_abs, 0)
         else:
