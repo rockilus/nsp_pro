@@ -24,6 +24,7 @@ import {
   RequestType,
   FulfillmentStatus,
 } from "../../src/types/request";
+import { AssignmentT } from "@/types/assignment";
 
 dayjs.extend(utc);
 dayjs.extend(customParseFormat);
@@ -693,7 +694,9 @@ export class RequestTestBase {
    * @param requestId - The ID of the request to approve
    * @returns The updated request with APPROVED status
    */
-  async approveTestRequest(requestId: string): Promise<RequestT> {
+  async approveTestRequest(
+    requestId: string
+  ): Promise<{ request: RequestT; assignments: AssignmentT[] }> {
     if (!this.testTeam) {
       throw new Error("Test team not created. Call setupRequestTests first.");
     }

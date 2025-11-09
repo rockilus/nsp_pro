@@ -44,6 +44,7 @@ import { RequestT } from "../../src/types/request";
 import { ScheduleT, toScheduleT } from "../../src/types/schedule";
 import { testConfig } from "./test-config";
 import dayjs from "dayjs";
+import { AssignmentT } from "@/types/assignment";
 
 export interface DatabaseResetOptions {
   collections?: string[];
@@ -1649,14 +1650,17 @@ export class DatabaseTestUtils {
    * @param teamId - The team ID
    * @returns The updated request with APPROVED status
    */
-  async approveRequest(requestId: string, teamId: string): Promise<RequestT> {
+  async approveRequest(
+    requestId: string,
+    teamId: string
+  ): Promise<{ request: RequestT; assignments: AssignmentT[] }> {
     try {
-      const approvedRequest = await RequestApi.acceptRequest(
+      const { request, assignments } = await RequestApi.acceptRequest(
         this.testApiClient,
         requestId,
         teamId
       );
-      return approvedRequest;
+      return { request, assignments };
     } catch (error) {
       console.error("Failed to approve request:", error);
       throw new Error(
