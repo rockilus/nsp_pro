@@ -327,10 +327,12 @@ export class RequestTestBase {
         console.log(
           `[${testId || "legacy"}] Approving third request for rescind test`
         );
-        const approvedRequest = await this.approveTestRequest(
+        // approveTestRequest returns { request: RequestT, assignments: AssignmentT[] }
+        // we only want to keep the RequestT in our testRequests array
+        const approvedResponse = await this.approveTestRequest(
           testRequests[2].id
         );
-        testRequests[2] = approvedRequest;
+        testRequests[2] = approvedResponse.request;
       }
 
       // Deny the last request for status filter tests
