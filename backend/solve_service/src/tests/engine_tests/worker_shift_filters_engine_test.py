@@ -192,8 +192,12 @@ class TestWorkerShiftFiltersEngine:
         assert outputs.objective_value == 0
         assert len(outputs.breaches) == 0
 
-    def test_filter_out_shift_request_not_respected(self, ei_filters) -> None:
-        # Create a shared dimension where only the shift has an entry -> shift filtered out
+    def test_shift_filtered_out_by_dimension_causes_shift_demand_breach(
+        self, ei_filters: EngineInputsAugmented
+    ) -> None:
+        # Create a shared dimension where the shift has one dim entry and
+        # all workers have a different dim entry -> the shift is filtered out
+        # for all workers which should produce a daily shift demand breach.
         ei = ei_filters
         dim = Dimension(
             id="dim_shift_only",
@@ -203,59 +207,49 @@ class TestWorkerShiftFiltersEngine:
             entry_type=DimensionEntryType.DIM_ENTRIES,
             deleted=False,
         )
-        de = DimEntry(
-            id="de_shift", dimension_id=dim.id, name="x", deleted=False
+        de_filter = DimEntry(
+            id="de_filter",
+            dimension_id=dim.id,
+            name="only_shift",
+            deleted=False,
         )
+        # attach the exclusive entry to the shift
         attr_shift = Attribute(
             id="a_s",
             value="",
             owner_type=AttributeOwnerType.SHIFT,
             owner_id=ei.shifts[0].id,
             dimension_id=dim.id,
-            dim_entry_ids=[de.id],
+            dim_entry_ids=[de_filter.id],
         )
 
         ei.dimensions = [dim]
-        ei.dim_entries = [de]
+        ei.dim_entries = [de_filter]
         ei.attributes = [attr_shift]
 
-        target_worker = ei.workers[0]
-        target_shift = ei.shifts[0]
-        req = _make_request(target_worker, target_shift, ei.schedule)
-
-        ei.requests_work = requests_to_requests_augmented(
-            requests=[req],
-            workers=ei.workers,
-            shifts=ei.shifts,
-            dimensions=ei.dimensions,
-            dim_entries=ei.dim_entries,
-            attributes=ei.attributes,
-        )
-
+        # run solver
         outputs = engine_solve_engine_inputs(ei)
 
-        a_target = next(
-            (
-                a
-                for a in outputs.assignments
-                if a.worker_id == target_worker.id
-                and a.date == ei.schedule.start_date
-                and a.shift_id == target_shift.id
-            ),
-            None,
-        )
-        assert a_target is None
+        # solver should still have found a solution (with coverage penalty)
+        assert outputs.is_solution is True
 
+        # confirm there is a single daily shift demand breach
         breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
-        # there should be a request breach for our request
-        assert any(
-            b.objective_category == ObjectiveCategory.REQUEST
-            and b.objective_id == req.id
-            for b in breaches
+        assert len(breaches) == 1
+        assert (
+            breaches[0].objective_category
+            == ObjectiveCategory.DAILY_SHIFT_DEMAND
         )
 
-    def test_filter_out_worker_request_not_respected(self, ei_filters) -> None:
-        # Create a shared dimension where only the worker has an entry -> worker filtered out
+        # objective_value should equal the coverage penalty for a normal shift
+        expected_pen = ei.penalties.configuration_constraint.coverage.normal
+        assert outputs.objective_value == expected_pen
+
+    def test_worker_filtered_out_by_dimension_causes_shift_demand_breach(
+        self, ei_filters
+    ) -> None:
+        # Create a shared dimension where workers have an entry that no
+        # shift has -> all workers are filtered out for that shift.
         ei = ei_filters
         dim = Dimension(
             id="dim_worker_only",
@@ -265,55 +259,48 @@ class TestWorkerShiftFiltersEngine:
             entry_type=DimensionEntryType.DIM_ENTRIES,
             deleted=False,
         )
-        de = DimEntry(
-            id="de_worker", dimension_id=dim.id, name="y", deleted=False
+        de_worker = DimEntry(
+            id="de_worker",
+            dimension_id=dim.id,
+            name="only_worker",
+            deleted=False,
         )
-        attr_worker = Attribute(
-            id="a_w",
+        # attach the exclusive entry to every worker so none match shifts
+        attr_w0 = Attribute(
+            id="a_w0",
             value="",
             owner_type=AttributeOwnerType.WORKER,
             owner_id=ei.workers[0].id,
             dimension_id=dim.id,
-            dim_entry_ids=[de.id],
+            dim_entry_ids=[de_worker.id],
+        )
+        attr_w1 = Attribute(
+            id="a_w1",
+            value="",
+            owner_type=AttributeOwnerType.WORKER,
+            owner_id=ei.workers[1].id,
+            dimension_id=dim.id,
+            dim_entry_ids=[de_worker.id],
         )
 
         ei.dimensions = [dim]
-        ei.dim_entries = [de]
-        ei.attributes = [attr_worker]
-
-        target_worker = ei.workers[0]
-        target_shift = ei.shifts[0]
-        req = _make_request(target_worker, target_shift, ei.schedule)
-
-        ei.requests_work = requests_to_requests_augmented(
-            requests=[req],
-            workers=ei.workers,
-            shifts=ei.shifts,
-            dimensions=ei.dimensions,
-            dim_entries=ei.dim_entries,
-            attributes=ei.attributes,
-        )
+        ei.dim_entries = [de_worker]
+        ei.attributes = [attr_w0, attr_w1]
 
         outputs = engine_solve_engine_inputs(ei)
 
-        a_target = next(
-            (
-                a
-                for a in outputs.assignments
-                if a.worker_id == target_worker.id
-                and a.date == ei.schedule.start_date
-                and a.shift_id == target_shift.id
-            ),
-            None,
-        )
-        assert a_target is None
+        # solver should find a solution but pay a coverage penalty
+        assert outputs.is_solution is True
 
         breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
-        assert any(
-            b.objective_category == ObjectiveCategory.REQUEST
-            and b.objective_id == req.id
-            for b in breaches
+        assert len(breaches) == len(ei.shifts)  # one breach per shift
+        assert (
+            breaches[0].objective_category
+            == ObjectiveCategory.DAILY_SHIFT_DEMAND
         )
+
+        expected_pen = ei.penalties.configuration_constraint.coverage.normal
+        assert outputs.objective_value == expected_pen * len(ei.shifts)
 
     def test_filter_in_but_other_dimension_filters_out_request(
         self, ei_filters
@@ -407,76 +394,5 @@ class TestWorkerShiftFiltersEngine:
         assert any(
             b.objective_category == ObjectiveCategory.REQUEST
             and b.objective_id == req.id
-            for b in breaches
-        )
-
-    def test_shift_filtered_out_all_workers_causes_coverage_breach(
-        self, ei_filters
-    ) -> None:
-        # Make a shift demand for a specific shift/date and then filter out all workers for that shift
-        ei = ei_filters
-        # pick a normal/duty shift
-        target_shift = next(
-            s
-            for s in ei.shifts
-            if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
-        )
-
-        # set a daily shift demand for the first campaign date
-        dsd = ShiftDemandNew(
-            date=ei.schedule.start_date,
-            shift_id=target_shift.id,
-            team_id="t0",
-            count=1,
-            notes=None,
-            source=ShiftDemandSource.MANUAL,
-            source_id=None,
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-            id=f"dsd_{target_shift.id}_{ei.schedule.start_date.isoformat()}",
-        )
-        ei.shift_demands = [dsd]
-
-        # create a dimension that marks the shift with a value that no worker has
-        dim = Dimension(
-            id="dim_filter_all",
-            team_id="t0",
-            dim_types=[DimensionType.WORKER, DimensionType.SHIFT],
-            name="filter_all",
-            entry_type=DimensionEntryType.DIM_ENTRIES,
-            deleted=False,
-        )
-        de = DimEntry(
-            id="de_only_shift", dimension_id=dim.id, name="only", deleted=False
-        )
-        attr_shift = Attribute(
-            id="a_only_s",
-            value="",
-            owner_type=AttributeOwnerType.SHIFT,
-            owner_id=target_shift.id,
-            dimension_id=dim.id,
-            dim_entry_ids=[de.id],
-        )
-
-        ei.dimensions = [dim]
-        ei.dim_entries = [de]
-        ei.attributes = [attr_shift]
-
-        outputs = engine_solve_engine_inputs(ei)
-
-        # Ensure no assignment for that shift/date
-        a_for_shift = [
-            a
-            for a in outputs.assignments
-            if a.shift_id == target_shift.id
-            and a.date == ei.schedule.start_date
-        ]
-        assert len(a_for_shift) == 0
-
-        breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
-        # there should be a daily shift demand breach for this shift/date
-        assert any(
-            b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
-            and b.variables[0].shift_id == target_shift.id
             for b in breaches
         )
