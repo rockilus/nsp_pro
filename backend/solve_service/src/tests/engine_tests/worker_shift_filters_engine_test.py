@@ -345,3 +345,175 @@ class TestWorkerShiftFiltersEngine:
         # objective_value should equal the coverage penalty for a normal shift
         expected_pen = ei.penalties.configuration_constraint.coverage.normal
         assert outputs.objective_value == expected_pen
+
+    def test_shift_filtered_out_by_bool_dimension_causes_shift_demand_breach(
+        self, ei_filters: EngineInputsAugmented
+    ) -> None:
+        # Shared boolean dimension: shift has a boolean attr but workers do not.
+        # This should filter the shift for all workers and cause a breach.
+        ei = ei_filters
+        dim = Dimension(
+            id="dim_shift_only_bool",
+            team_id="t0",
+            dim_types=[DimensionType.WORKER, DimensionType.SHIFT],
+            name="d_bool",
+            entry_type=DimensionEntryType.BOOL,
+            deleted=False,
+        )
+
+        # attach the boolean attr to the shift
+        attr_shift = Attribute(
+            id="a_s_bool",
+            value=True,
+            owner_type=AttributeOwnerType.SHIFT,
+            owner_id=ei.shifts[0].id,
+            dimension_id=dim.id,
+            dim_entry_ids=[],
+        )
+
+        ei.dimensions = [dim]
+        ei.dim_entries = []
+        ei.attributes = [attr_shift]
+
+        # run solver
+        outputs = engine_solve_engine_inputs(ei)
+
+        # solver should still have found a solution (with coverage penalty)
+        assert outputs.is_solution is True
+
+        # confirm there is a single daily shift demand breach
+        breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
+        assert len(breaches) == 1
+        assert (
+            breaches[0].objective_category
+            == ObjectiveCategory.DAILY_SHIFT_DEMAND
+        )
+
+        # objective_value should equal the coverage penalty for a normal shift
+        expected_pen = ei.penalties.configuration_constraint.coverage.normal
+        assert outputs.objective_value == expected_pen
+
+    def test_worker_filtered_out_by_bool_dimension_causes_shift_demand_breach(
+        self, ei_filters: EngineInputsAugmented
+    ) -> None:
+        # Shared boolean dimension: workers have True but shifts lack that attr.
+        # All workers are therefore filtered out for the shift.
+        ei = ei_filters
+        dim = Dimension(
+            id="dim_worker_only_bool",
+            team_id="t0",
+            dim_types=[DimensionType.WORKER, DimensionType.SHIFT],
+            name="d2_bool",
+            entry_type=DimensionEntryType.BOOL,
+            deleted=False,
+        )
+
+        # attach the boolean attr to every worker so none match shifts
+        attr_w0 = Attribute(
+            id="a_w0_bool",
+            value=True,
+            owner_type=AttributeOwnerType.WORKER,
+            owner_id=ei.workers[0].id,
+            dimension_id=dim.id,
+            dim_entry_ids=[],
+        )
+        attr_w1 = Attribute(
+            id="a_w1_bool",
+            value=True,
+            owner_type=AttributeOwnerType.WORKER,
+            owner_id=ei.workers[1].id,
+            dimension_id=dim.id,
+            dim_entry_ids=[],
+        )
+
+        ei.dimensions = [dim]
+        ei.dim_entries = []
+        ei.attributes = [attr_w0, attr_w1]
+
+        outputs = engine_solve_engine_inputs(ei)
+
+        # solver should find a solution but pay a coverage penalty
+        assert outputs.is_solution is True
+
+        breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
+        assert len(breaches) == len(ei.shifts)  # one breach per shift
+        assert (
+            breaches[0].objective_category
+            == ObjectiveCategory.DAILY_SHIFT_DEMAND
+        )
+
+        expected_pen = ei.penalties.configuration_constraint.coverage.normal
+        assert outputs.objective_value == expected_pen * len(ei.shifts)
+
+    def test_filter_in_but_other_bool_dimension_filters_out_causes_shift_demand_breach(
+        self, ei_filters: EngineInputsAugmented
+    ) -> None:
+        # Two boolean dimensions: first matches (worker+shift), second mismatches
+        # -> final result filtered and a daily breach produced.
+        ei = ei_filters
+        dim_ok = Dimension(
+            id="dim_ok_bool",
+            team_id="t0",
+            dim_types=[DimensionType.WORKER, DimensionType.SHIFT],
+            name="ok_bool",
+            entry_type=DimensionEntryType.BOOL,
+            deleted=False,
+        )
+
+        dim_bad = Dimension(
+            id="dim_bad_bool",
+            team_id="t0",
+            dim_types=[DimensionType.WORKER, DimensionType.SHIFT],
+            name="bad_bool",
+            entry_type=DimensionEntryType.BOOL,
+            deleted=False,
+        )
+
+        # worker has True for dim_ok but no attr for dim_bad
+        attr_w_ok = Attribute(
+            id="a_w_ok_bool",
+            value=True,
+            owner_type=AttributeOwnerType.WORKER,
+            owner_id=ei.workers[0].id,
+            dimension_id=dim_ok.id,
+            dim_entry_ids=[],
+        )
+        # shift has True for dim_ok and True for dim_bad (mismatch for worker)
+        attr_s_ok = Attribute(
+            id="a_s_ok_bool",
+            value=True,
+            owner_type=AttributeOwnerType.SHIFT,
+            owner_id=ei.shifts[0].id,
+            dimension_id=dim_ok.id,
+            dim_entry_ids=[],
+        )
+        attr_s_bad = Attribute(
+            id="a_s_bad_bool",
+            value=True,
+            owner_type=AttributeOwnerType.SHIFT,
+            owner_id=ei.shifts[0].id,
+            dimension_id=dim_bad.id,
+            dim_entry_ids=[],
+        )
+
+        ei.dimensions = [dim_ok, dim_bad]
+        ei.dim_entries = []
+        ei.attributes = [attr_w_ok, attr_s_ok, attr_s_bad]
+
+        # run solver (no request is provided)
+        outputs = engine_solve_engine_inputs(ei)
+
+        # solver should find a solution but pay a coverage penalty
+        assert outputs.is_solution is True
+
+        # confirm there is a single daily shift demand breach
+        breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
+        assert len(breaches) == 1
+        assert (
+            breaches[0].objective_category
+            == ObjectiveCategory.DAILY_SHIFT_DEMAND
+        )
+
+        # objective_value should equal the coverage penalty for a normal shift
+        expected_pen = ei.penalties.configuration_constraint.coverage.normal
+        assert outputs.objective_value == expected_pen
