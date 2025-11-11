@@ -43,6 +43,7 @@ from core_to_engine_service.build_periods import (
     build_periods_yearly,
 )
 from core_to_engine_service.build_worker_shift_filter import (
+    BoolSharedPolicy,
     build_worker_shift_filters,
 )
 from core_to_engine_service.calculate_worker_nb_duties import (
@@ -149,6 +150,17 @@ def core_to_engine_inputs(
         periods=periods_monthly,
     )
 
+    # Fixed assignments
+    fixed_values = core_to_engine_fixed_values(
+        engine_inputs.workers,
+        workers_not_deleted,
+        worker_ids_to_worker_dates,
+        engine_inputs.shifts,
+        engine_inputs.shift_demands,
+        fixed_assignments,
+        engine_inputs.requests_leave,
+    )
+
     # Constraints:
     constraints = build_engine_constraints(
         engine_inputs.cbs_augmented,
@@ -183,15 +195,8 @@ def core_to_engine_inputs(
                 ]
                 for w_id in worker_not_deleted_ids
             ],
-            fixed_values=core_to_engine_fixed_values(
-                engine_inputs.workers,
-                workers_not_deleted,
-                worker_ids_to_worker_dates,
-                engine_inputs.shifts,
-                engine_inputs.shift_demands,
-                fixed_assignments,
-                engine_inputs.requests_leave,
-            ),
+            # fixed_values={},
+            fixed_values=fixed_values,
             sol_hint=SolHint(
                 var_sol=(
                     engine_inputs.model_output.var_sol
@@ -270,12 +275,19 @@ def core_to_engine_inputs(
                 engine_inputs.penalties.configuration_constraint.link_shift,
             ),
             worker_shift_filters=build_worker_shift_filters(
-                engine_inputs.workers,
-                worker_ids_to_worker_dates,
-                engine_inputs.shifts,
-                engine_inputs.dimensions,
-                engine_inputs.attributes,
-                engine_inputs.penalties.configuration_constraint.worker_shift_filter,
+                workers=engine_inputs.workers,
+                worker_ids_to_worker_dates=worker_ids_to_worker_dates,
+                shifts=engine_inputs.shifts,
+                dimensions=engine_inputs.dimensions,
+                attributes=engine_inputs.attributes,
+                fixed_values=fixed_values,
+                penalty=(
+                    engine_inputs.penalties.configuration_constraint.worker_shift_filter
+                ),
+                shared_bool_policies={
+                    d.id: BoolSharedPolicy.SHIFT_TRUE_ONLY
+                    for d in engine_inputs.dimensions
+                },
             ),
         ),
         system_constraints=SystemConstraintInputs(

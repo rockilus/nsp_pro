@@ -1,8 +1,6 @@
 from datetime import date
 from typing import Dict, List, Set, Tuple
 
-import pytest
-
 from shared.schemas.core import (
     Attribute,
     AttributeOwnerType,
@@ -10,12 +8,12 @@ from shared.schemas.core import (
     DimensionEntryType,
     DimensionType,
     Shift,
-    ShiftType,
     Worker,
     WorkerDates,
 )
 
 from core_to_engine_service.build_worker_shift_filter import (
+    BoolSharedPolicy,
     build_worker_shift_filters,
 )
 
@@ -45,7 +43,13 @@ def test_no_shared_dimensions_returns_empty(workers_10: List[Worker]):
     worker_dates = _make_worker_dates(workers, date(2025, 1, 1))
 
     out, penalty = build_worker_shift_filters(
-        workers, worker_dates, shifts, dimensions, attributes, penalty=123
+        workers=workers,
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=shifts,
+        dimensions=dimensions,
+        attributes=attributes,
+        fixed_values={},
+        penalty=123,
     )
 
     assert not out
@@ -70,7 +74,16 @@ def test_shared_dimension_but_no_attributes_returns_empty(
     worker_dates = _make_worker_dates(workers, date(2025, 1, 1))
 
     out, penalty = build_worker_shift_filters(
-        workers, worker_dates, shifts, [dim_shared], [], penalty=5
+        workers=workers,
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=shifts,
+        dimensions=[dim_shared],
+        attributes=[],
+        fixed_values={},
+        penalty=5,
+        shared_bool_policies={
+            d.id: BoolSharedPolicy.SHIFT_TRUE_ONLY for d in [dim_shared]
+        },
     )
 
     assert not out
@@ -105,7 +118,13 @@ def test_shared_dimension_attributes_only_for_one_worker(
     worker_dates = _make_worker_dates(workers, date(2025, 1, 1))
 
     out, penalty = build_worker_shift_filters(
-        workers, worker_dates, shifts, [dim], [attr_w0], penalty=7
+        workers=workers,
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=shifts,
+        dimensions=[dim],
+        attributes=[attr_w0],
+        fixed_values={},
+        penalty=7,
     )
 
     # Because no shift has attributes, the worker with an attribute will have
@@ -146,7 +165,13 @@ def test_shared_dimension_attributes_only_for_one_shift(
     worker_dates = _make_worker_dates(workers, date(2025, 1, 1))
 
     out, penalty = build_worker_shift_filters(
-        workers, worker_dates, shifts, [dim], [attr_s0], penalty=11
+        workers=workers,
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=shifts,
+        dimensions=[dim],
+        attributes=[attr_s0],
+        fixed_values={},
+        penalty=11,
     )
 
     # Since workers don't have matching attributes, the shift with attribute
@@ -206,7 +231,13 @@ def test_shared_dimension_worker_and_shift_match(
     worker_dates = _make_worker_dates(workers, date(2025, 1, 1))
 
     out, penalty = build_worker_shift_filters(
-        workers, worker_dates, shifts, [dim], attributes, penalty=13
+        workers=workers,
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=shifts,
+        dimensions=[dim],
+        attributes=attributes,
+        fixed_values={},
+        penalty=13,
     )
 
     # Compute expected set:
@@ -269,7 +300,13 @@ def test_shared_dimension_all_workers_and_shifts_no_filtering(
     worker_dates = _make_worker_dates(workers, date(2025, 1, 1))
 
     out, penalty = build_worker_shift_filters(
-        workers, worker_dates, shifts, [dim], attributes, penalty=17
+        workers=workers,
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=shifts,
+        dimensions=[dim],
+        attributes=attributes,
+        fixed_values={},
+        penalty=17,
     )
 
     assert _to_set(out) == set()
@@ -304,7 +341,13 @@ def test_shared_bool_attributes_only_for_one_worker(
     worker_dates = _make_worker_dates(workers, date(2025, 1, 1))
 
     out, penalty = build_worker_shift_filters(
-        workers, worker_dates, shifts, [dim], [attr_w0], penalty=7
+        workers=workers,
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=shifts,
+        dimensions=[dim],
+        attributes=[attr_w0],
+        fixed_values={},
+        penalty=7,
     )
 
     # Because no shift has attributes, the worker with an attribute will have
@@ -345,7 +388,13 @@ def test_shared_bool_attributes_only_for_one_shift(
     worker_dates = _make_worker_dates(workers, date(2025, 1, 1))
 
     out, penalty = build_worker_shift_filters(
-        workers, worker_dates, shifts, [dim], [attr_s0], penalty=11
+        workers=workers,
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=shifts,
+        dimensions=[dim],
+        attributes=[attr_s0],
+        fixed_values={},
+        penalty=11,
     )
 
     # Since workers don't have matching attributes, the shift with attribute
@@ -405,7 +454,13 @@ def test_shared_bool_worker_and_shift_match(
     worker_dates = _make_worker_dates(workers, date(2025, 1, 1))
 
     out, penalty = build_worker_shift_filters(
-        workers, worker_dates, shifts, [dim], attributes, penalty=13
+        workers=workers,
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=shifts,
+        dimensions=[dim],
+        attributes=attributes,
+        fixed_values={},
+        penalty=13,
     )
 
     # Compute expected set (same logic as dim-entry variant):
@@ -465,7 +520,13 @@ def test_shared_bool_all_workers_and_shifts_no_filtering(
     worker_dates = _make_worker_dates(workers, date(2025, 1, 1))
 
     out, penalty = build_worker_shift_filters(
-        workers, worker_dates, shifts, [dim], attributes, penalty=17
+        workers=workers,
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=shifts,
+        dimensions=[dim],
+        attributes=attributes,
+        fixed_values={},
+        penalty=17,
     )
 
     assert _to_set(out) == set()
