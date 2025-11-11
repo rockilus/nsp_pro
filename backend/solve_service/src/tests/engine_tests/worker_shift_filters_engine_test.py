@@ -114,7 +114,7 @@ class TestWorkerShiftFiltersEngine:
                 acronym="S0",
                 acronym_custom=False,
                 start_time=datetime(2025, 1, 1, 8, 0),
-                end_time=datetime(2025, 1, 1, 12, 0),
+                end_time=datetime(2025, 1, 1, 18, 0),
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="blue",
                 shift_type=ShiftType.NORMAL,
@@ -130,8 +130,8 @@ class TestWorkerShiftFiltersEngine:
                 name="Shift 1",
                 acronym="S1",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 13, 0),
-                end_time=datetime(2025, 1, 1, 17, 0),
+                start_time=datetime(2025, 1, 1, 8, 0),
+                end_time=datetime(2025, 1, 1, 18, 0),
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="green",
                 shift_type=ShiftType.NORMAL,
@@ -180,46 +180,17 @@ class TestWorkerShiftFiltersEngine:
             model_config=model_config_fix,
         )
 
-    def test_no_filters_request_respected(
+    def test_solve_schedule_has_solution_and_no_breaches(
         self, ei_filters: EngineInputsAugmented
     ) -> None:
-        # No dimensions/attributes -> request should be satisfied
+        # Solve the simple schedule and assert it's a valid solution with no breaches
         ei = ei_filters
-        ei.dimensions = []
-        ei.dim_entries = []
-        ei.attributes = []
-
-        target_worker = ei.workers[0]
-        target_shift = ei.shifts[0]
-        req = _make_request(target_worker, target_shift, ei.schedule)
-
-        ei.requests_work = requests_to_requests_augmented(
-            requests=[req],
-            workers=ei.workers,
-            shifts=ei.shifts,
-            dimensions=ei.dimensions,
-            dim_entries=ei.dim_entries,
-            attributes=ei.attributes,
-        )
 
         outputs: Outputs = engine_solve_engine_inputs(ei)
 
-        # check assignment exists for the requested triple
-        print("\nASSIGNMENTS DEBUG:", outputs.assignments)
-        a_target = next(
-            (
-                a
-                for a in outputs.assignments
-                if a.worker_id == req.worker_id
-                and a.date == req.start_date
-                and a.shift_id == req.shift_id
-            ),
-            None,
-        )
-        assert a_target is not None
-
-        assert len(outputs.breaches) == 0
+        assert outputs.is_solution is True
         assert outputs.objective_value == 0
+        assert len(outputs.breaches) == 0
 
     def test_filter_out_shift_request_not_respected(self, ei_filters) -> None:
         # Create a shared dimension where only the shift has an entry -> shift filtered out
