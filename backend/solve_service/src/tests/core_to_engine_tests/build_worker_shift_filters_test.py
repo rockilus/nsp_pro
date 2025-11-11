@@ -35,7 +35,7 @@ def _to_set(
     return set(tuples_list)
 
 
-def test_no_shared_dimensions_returns_empty(workers_10):
+def test_no_shared_dimensions_returns_empty(workers_10: List[Worker]):
     # dimensions contain only worker-only or shift-only in the conftest fixture
     dimensions: List[Dimension] = []
     attributes: List[Attribute] = []
@@ -53,7 +53,7 @@ def test_no_shared_dimensions_returns_empty(workers_10):
 
 
 def test_shared_dimension_but_no_attributes_returns_empty(
-    workers_10, shifts_3n_2d
+    workers_10: List[Worker], shifts_3n_2d: List[Shift]
 ):
     # One shared dimension but no attributes provided
     dim_shared = Dimension(
@@ -78,7 +78,7 @@ def test_shared_dimension_but_no_attributes_returns_empty(
 
 
 def test_shared_dimension_attributes_only_for_one_worker(
-    workers_10, shifts_3n_2d
+    workers_10: List[Worker], shifts_3n_2d: List[Shift]
 ):
     # shared dimension; one worker has an attribute, no shift attributes
     dim = Dimension(
@@ -119,7 +119,7 @@ def test_shared_dimension_attributes_only_for_one_worker(
 
 
 def test_shared_dimension_attributes_only_for_one_shift(
-    workers_10, shifts_3n_2d
+    workers_10: List[Worker], shifts_3n_2d: List[Shift]
 ):
     # shared dimension; one shift has an attribute, no worker attributes
     dim = Dimension(
@@ -159,7 +159,9 @@ def test_shared_dimension_attributes_only_for_one_shift(
     assert penalty == 11
 
 
-def test_shared_dimension_worker_and_shift_match(workers_10, shifts_3n_2d):
+def test_shared_dimension_worker_and_shift_match(
+    workers_10: List[Worker], shifts_3n_2d: List[Shift]
+):
     # shared dimension; worker0 has de_m, shift0 has de_m (match), shift1 has de_n
     dim = Dimension(
         id="dimC",
@@ -225,7 +227,7 @@ def test_shared_dimension_worker_and_shift_match(workers_10, shifts_3n_2d):
 
 
 def test_shared_dimension_all_workers_and_shifts_no_filtering(
-    workers_10, shifts_3n_2d
+    workers_10: List[Worker], shifts_3n_2d: List[Shift]
 ):
     # All workers and all shifts share the same dim entry -> no invalid combinations
     dim = Dimension(
