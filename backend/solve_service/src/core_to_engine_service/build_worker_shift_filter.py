@@ -297,6 +297,116 @@ def build_worker_shift_filters_bool(
     return list(out)
 
 
+def build_worker_shift_filters_bool_shift_true(
+    workers: List[Worker],
+    worker_ids_to_worker_dates: Dict[str, WorkerDates],
+    shifts: List[Shift],
+    dimensions: List[Dimension],
+    attributes: List[Attribute],
+) -> List[Tuple[str, str, str]]:
+    """Build worker-shift filters enforcing only shifts with True attr.
+
+    Logic (per-dimension, boolean shared dims):
+    - If a shift has attribute True for the shared dimension, only workers
+      with attribute True for that dimension may do that shift.
+    - If a shift has attribute False (or no explicit attr), no worker
+      filtering is applied for that shift.
+
+    In short:
+    - shift True -> worker True (restrict)
+    - shift False or missing -> any worker (no restriction)
+    - worker True/False do not by themselves restrict shifts
+
+    Returns list of (worker_id, date_iso, shift_id) invalid tuples.
+    """
+    out: Set[Tuple[str, str, str]] = set()
+
+    # consider only shared boolean dimensions
+    shared_dimensions = [
+        dim
+        for dim in dimensions
+        if not dim.deleted
+        and dim.entry_type == DimensionEntryType.BOOL
+        and (
+            (
+                DimensionType.WORKER in dim.dim_types
+                and DimensionType.SHIFT in dim.dim_types
+            )
+            or (
+                DimensionType.WORKER in dim.dim_types
+                and DimensionType.REST_SHIFT in dim.dim_types
+            )
+        )
+    ]
+
+    # worker boolean attrs: worker_id -> dimension_id -> bool
+    worker_bool_attrs: Dict[str, Dict[str, bool]] = defaultdict(dict)
+    # shift boolean attrs: shift_id -> dimension_id -> bool
+    shift_bool_attrs: Dict[str, Dict[str, bool]] = defaultdict(dict)
+
+    for attr in attributes:
+        # only consider attrs with boolean values
+        if not isinstance(attr.value, bool):
+            continue
+        if attr.owner_type == AttributeOwnerType.WORKER:
+            worker_bool_attrs[attr.owner_id][attr.dimension_id] = bool(
+                attr.value
+            )
+        elif attr.owner_type == AttributeOwnerType.SHIFT:
+            shift_bool_attrs[attr.owner_id][attr.dimension_id] = bool(
+                attr.value
+            )
+
+    all_worker_ids: Set[str] = {w.id for w in workers if not w.deleted}
+
+    for dimension in shared_dimensions:
+        dimension_id = dimension.id
+
+        # determine shift types to include
+        shift_types_to_include = set()
+        if DimensionType.SHIFT in dimension.dim_types:
+            shift_types_to_include.update({ShiftType.NORMAL, ShiftType.DUTY})
+        if DimensionType.REST_SHIFT in dimension.dim_types:
+            shift_types_to_include.add(ShiftType.REST)
+
+        # relevant shifts for this dimension
+        relevant_shifts = [
+            s
+            for s in shifts
+            if not s.deleted and s.shift_type in shift_types_to_include
+        ]
+
+        # Only enforce for shifts that explicitly have the boolean attr True
+        restricted_shift_ids: Set[str] = set()
+        for s in relevant_shifts:
+            attrs = shift_bool_attrs.get(s.id, {})
+            if dimension_id in attrs and attrs[dimension_id] is True:
+                restricted_shift_ids.add(s.id)
+
+        if not restricted_shift_ids:
+            continue
+
+        # gather workers that have True for this dimension
+        workers_with_true: Set[str] = set()
+        for worker_id, bool_attrs in worker_bool_attrs.items():
+            if dimension_id in bool_attrs and bool_attrs[dimension_id] is True:
+                workers_with_true.add(worker_id)
+
+        # For each restricted shift, workers without True are invalid
+        for shift_id in restricted_shift_ids:
+            invalid_worker_ids = all_worker_ids - workers_with_true
+            for worker_id in invalid_worker_ids:
+                # Skip if no dates for worker
+                if worker_id not in worker_ids_to_worker_dates:
+                    continue
+                dates = worker_ids_to_worker_dates[worker_id].dates_campaign
+                out.update(
+                    [(worker_id, d.isoformat(), shift_id) for d in dates]
+                )
+
+    return list(out)
+
+
 def build_worker_shift_filters(
     workers: List[Worker],
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
