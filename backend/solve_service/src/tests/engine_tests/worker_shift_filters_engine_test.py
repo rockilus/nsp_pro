@@ -1,9 +1,7 @@
-from datetime import date, datetime, timezone
-from typing import List
+from datetime import date, datetime
 
 import pytest
 
-from shared.augment.r_to_r_augmented import requests_to_requests_augmented
 from shared.schemas.core import (
     Attribute,
     AttributeOwnerType,
@@ -14,10 +12,6 @@ from shared.schemas.core import (
     ModelConfig,
     Penalties,
     ScheduleStatus,
-    FulfillmentStatus,
-    Request,
-    RequestStatus,
-    RequestType,
     Schedule,
     Shift,
     ShiftDemandNew,
@@ -25,9 +19,7 @@ from shared.schemas.core import (
     ShiftLeaveType,
     ShiftRestType,
     ShiftType,
-    ShiftWorkerOption,
     Staffing,
-    SWOIdTypes,
     Worker,
     ObjectiveCategory,
     EngineInputsAugmented,
@@ -38,33 +30,6 @@ from engine_to_core_service.build_breaches.build_breaches_model import (
     _parse_breaches_engine,
 )
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
-
-
-def _make_request(worker: Worker, shift: Shift, schedule: Schedule) -> Request:
-    return Request(
-        id="req_test",
-        team_id="t0",
-        worker_id=worker.id,
-        start_date=schedule.start_date,
-        end_date=schedule.start_date,
-        shift_id=shift.id,
-        shift_options=[
-            ShiftWorkerOption(
-                name=shift.name,
-                id=shift.id,
-                id_type=SWOIdTypes.SHIFT,
-                is_bool_dim=False,
-                category_name=shift.acronym,
-            )
-        ],
-        negative=False,
-        hard=True,
-        status=RequestStatus.APPROVED,
-        request_type=RequestType.WORK_DEMAND,
-        fulfillment=FulfillmentStatus.NOT_PROCESSED,
-        comment="",
-        created_at=datetime.now(tz=timezone.utc),
-    )
 
 
 class TestWorkerShiftFiltersEngine:
@@ -302,10 +267,11 @@ class TestWorkerShiftFiltersEngine:
         expected_pen = ei.penalties.configuration_constraint.coverage.normal
         assert outputs.objective_value == expected_pen * len(ei.shifts)
 
-    def test_filter_in_but_other_dimension_filters_out_request(
-        self, ei_filters
+    def test_filter_in_but_other_dimension_filters_out_causes_shift_demand_breach(
+        self, ei_filters: EngineInputsAugmented
     ) -> None:
         # Two dimensions: first matches (worker+shift), second mismatches -> final result filtered
+        # This should filter the shift for the worker and produce a daily shift demand breach
         ei = ei_filters
         dim_ok = Dimension(
             id="dim_ok",
@@ -362,37 +328,20 @@ class TestWorkerShiftFiltersEngine:
         ei.dim_entries = [de_ok, de_bad]
         ei.attributes = [attr_w_ok, attr_s_ok, attr_s_bad]
 
-        target_worker = ei.workers[0]
-        target_shift = ei.shifts[0]
-        req = _make_request(target_worker, target_shift, ei.schedule)
-
-        ei.requests_work = requests_to_requests_augmented(
-            requests=[req],
-            workers=ei.workers,
-            shifts=ei.shifts,
-            dimensions=ei.dimensions,
-            dim_entries=ei.dim_entries,
-            attributes=ei.attributes,
-        )
-
+        # run solver (no request is provided)
         outputs = engine_solve_engine_inputs(ei)
 
-        a_target = next(
-            (
-                a
-                for a in outputs.assignments
-                if a.worker_id == target_worker.id
-                and a.date == ei.schedule.start_date
-                and a.shift_id == target_shift.id
-            ),
-            None,
-        )
-        # because dim_bad filters out the shift for our worker, the request is not satisfied
-        assert a_target is None
+        # solver should find a solution but pay a coverage penalty
+        assert outputs.is_solution is True
 
+        # confirm there is a single daily shift demand breach
         breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
-        assert any(
-            b.objective_category == ObjectiveCategory.REQUEST
-            and b.objective_id == req.id
-            for b in breaches
+        assert len(breaches) == 1
+        assert (
+            breaches[0].objective_category
+            == ObjectiveCategory.DAILY_SHIFT_DEMAND
         )
+
+        # objective_value should equal the coverage penalty for a normal shift
+        expected_pen = ei.penalties.configuration_constraint.coverage.normal
+        assert outputs.objective_value == expected_pen
