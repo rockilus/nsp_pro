@@ -274,3 +274,199 @@ def test_shared_dimension_all_workers_and_shifts_no_filtering(
 
     assert _to_set(out) == set()
     assert penalty == 17
+
+
+def test_shared_bool_attributes_only_for_one_worker(
+    workers_10: List[Worker], shifts_3n_2d: List[Shift]
+):
+    # shared boolean dimension; one worker has an attribute True, no shift attrs
+    dim = Dimension(
+        id="dimBoolA",
+        team_id="t0",
+        dim_types=[DimensionType.WORKER, DimensionType.SHIFT],
+        name="dimBoolA",
+        entry_type=DimensionEntryType.BOOL,
+        deleted=False,
+    )
+
+    workers = workers_10[:3]
+    shifts = shifts_3n_2d[:2]
+    # worker w0 will have boolean attribute True
+    attr_w0 = Attribute(
+        id="a_w0_bool",
+        value=True,
+        owner_type=AttributeOwnerType.WORKER,
+        owner_id=workers[0].id,
+        dimension_id=dim.id,
+        dim_entry_ids=[],
+    )
+
+    worker_dates = _make_worker_dates(workers, date(2025, 1, 1))
+
+    out, penalty = build_worker_shift_filters(
+        workers, worker_dates, shifts, [dim], [attr_w0], penalty=7
+    )
+
+    # Because no shift has attributes, the worker with an attribute will have
+    # all relevant shifts considered invalid
+    expected = set()
+    for s in shifts:
+        expected.add((workers[0].id, date(2025, 1, 1).isoformat(), s.id))
+
+    assert _to_set(out) == expected
+    assert penalty == 7
+
+
+def test_shared_bool_attributes_only_for_one_shift(
+    workers_10: List[Worker], shifts_3n_2d: List[Shift]
+):
+    # shared boolean dimension; one shift has attribute True, no worker attrs
+    dim = Dimension(
+        id="dimBoolB",
+        team_id="t0",
+        dim_types=[DimensionType.WORKER, DimensionType.SHIFT],
+        name="dimBoolB",
+        entry_type=DimensionEntryType.BOOL,
+        deleted=False,
+    )
+
+    workers = workers_10[:3]
+    shifts = shifts_3n_2d[:2]
+    # shift s0 has boolean attribute True
+    attr_s0 = Attribute(
+        id="a_s0_bool",
+        value=True,
+        owner_type=AttributeOwnerType.SHIFT,
+        owner_id=shifts[0].id,
+        dimension_id=dim.id,
+        dim_entry_ids=[],
+    )
+
+    worker_dates = _make_worker_dates(workers, date(2025, 1, 1))
+
+    out, penalty = build_worker_shift_filters(
+        workers, worker_dates, shifts, [dim], [attr_s0], penalty=11
+    )
+
+    # Since workers don't have matching attributes, the shift with attribute
+    # will mark all workers as invalid for that shift
+    expected = set()
+    for w in workers:
+        expected.add((w.id, date(2025, 1, 1).isoformat(), shifts[0].id))
+
+    assert _to_set(out) == expected
+    assert penalty == 11
+
+
+def test_shared_bool_worker_and_shift_match(
+    workers_10: List[Worker], shifts_3n_2d: List[Shift]
+):
+    # shared boolean dimension; worker0 True, shift0 True (match), shift1 False
+    dim = Dimension(
+        id="dimBoolC",
+        team_id="t0",
+        dim_types=[DimensionType.WORKER, DimensionType.SHIFT],
+        name="dimBoolC",
+        entry_type=DimensionEntryType.BOOL,
+        deleted=False,
+    )
+
+    workers = workers_10[:2]
+    shifts = shifts_3n_2d[:2]
+
+    attr_w0 = Attribute(
+        id="a_w0_bool_c",
+        value=True,
+        owner_type=AttributeOwnerType.WORKER,
+        owner_id=workers[0].id,
+        dimension_id=dim.id,
+        dim_entry_ids=[],
+    )
+
+    attr_s0 = Attribute(
+        id="a_s0_bool_c",
+        value=True,
+        owner_type=AttributeOwnerType.SHIFT,
+        owner_id=shifts[0].id,
+        dimension_id=dim.id,
+        dim_entry_ids=[],
+    )
+
+    attr_s1 = Attribute(
+        id="a_s1_bool_c",
+        value=False,
+        owner_type=AttributeOwnerType.SHIFT,
+        owner_id=shifts[1].id,
+        dimension_id=dim.id,
+        dim_entry_ids=[],
+    )
+
+    attributes = [attr_w0, attr_s0, attr_s1]
+    worker_dates = _make_worker_dates(workers, date(2025, 1, 1))
+
+    out, penalty = build_worker_shift_filters(
+        workers, worker_dates, shifts, [dim], attributes, penalty=13
+    )
+
+    # Compute expected set (same logic as dim-entry variant):
+    expected = set()
+    # worker0 invalid for s1
+    expected.add((workers[0].id, date(2025, 1, 1).isoformat(), shifts[1].id))
+    # s0 invalid worker (w1)
+    expected.add((workers[1].id, date(2025, 1, 1).isoformat(), shifts[0].id))
+    # s1 invalid for all workers
+    for w in workers:
+        expected.add((w.id, date(2025, 1, 1).isoformat(), shifts[1].id))
+
+    assert _to_set(out) == expected
+    assert penalty == 13
+
+
+def test_shared_bool_all_workers_and_shifts_no_filtering(
+    workers_10: List[Worker], shifts_3n_2d: List[Shift]
+):
+    # All workers and all shifts share the same boolean value True -> no invalid
+    # combinations
+    dim = Dimension(
+        id="dimBoolD",
+        team_id="t0",
+        dim_types=[DimensionType.WORKER, DimensionType.SHIFT],
+        name="dimBoolD",
+        entry_type=DimensionEntryType.BOOL,
+        deleted=False,
+    )
+
+    workers = workers_10[:3]
+    shifts = shifts_3n_2d[:2]
+    attributes = []
+    for w in workers:
+        attributes.append(
+            Attribute(
+                id=f"a_w_bool_{w.id}",
+                value=True,
+                owner_type=AttributeOwnerType.WORKER,
+                owner_id=w.id,
+                dimension_id=dim.id,
+                dim_entry_ids=[],
+            )
+        )
+    for s in shifts:
+        attributes.append(
+            Attribute(
+                id=f"a_s_bool_{s.id}",
+                value=True,
+                owner_type=AttributeOwnerType.SHIFT,
+                owner_id=s.id,
+                dimension_id=dim.id,
+                dim_entry_ids=[],
+            )
+        )
+
+    worker_dates = _make_worker_dates(workers, date(2025, 1, 1))
+
+    out, penalty = build_worker_shift_filters(
+        workers, worker_dates, shifts, [dim], attributes, penalty=17
+    )
+
+    assert _to_set(out) == set()
+    assert penalty == 17
