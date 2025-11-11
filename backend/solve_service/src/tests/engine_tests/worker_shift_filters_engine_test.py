@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import List
 
 import pytest
@@ -11,6 +11,9 @@ from shared.schemas.core import (
     Dimension,
     DimensionEntryType,
     DimensionType,
+    ModelConfig,
+    Penalties,
+    ScheduleStatus,
     FulfillmentStatus,
     Request,
     RequestStatus,
@@ -44,7 +47,7 @@ def _make_request(worker: Worker, shift: Shift, schedule: Schedule) -> Request:
         worker_id=worker.id,
         start_date=schedule.start_date,
         end_date=schedule.start_date,
-        shift_id=None,
+        shift_id=shift.id,
         shift_options=[
             ShiftWorkerOption(
                 name=shift.name,
@@ -65,11 +68,105 @@ def _make_request(worker: Worker, shift: Shift, schedule: Schedule) -> Request:
 
 
 class TestWorkerShiftFiltersEngine:
+    @pytest.fixture
+    def ei_filters(
+        self, penalties_fix: Penalties, model_config_fix: ModelConfig
+    ) -> EngineInputsAugmented:
+        # Minimal scenario built from scratch: one schedule date, two workers, two shifts
+        schedule = Schedule(
+            id="sch0",
+            team_id="t0",
+            start_date=date(2025, 1, 1),
+            end_date=date(2025, 1, 1),
+            status=ScheduleStatus.CAMPAIGN,
+            missing_coverage_dates=[],
+            constraint_build_ids=[],
+            quick_staffings=[],
+            created_by="user1",
+            created_at=datetime(2025, 1, 1),
+            updated_at=datetime(2025, 1, 1),
+        )
+
+        workers = [
+            Worker(
+                id=f"w{i}",
+                team_id="t0",
+                name=f"Worker {i}",
+                acronym=f"W{i}",
+                acronym_custom=False,
+                employment_start_date=date(2025, 1, 1),
+                employment_end_date=None,
+                weekly_hours=40,
+                weekly_hours_desired=40,
+                duties_per_month=0,
+                annual_leave=0,
+                specialty_ids=[],
+                deleted=False,
+            )
+            for i in range(2)
+        ]
+
+        shifts = [
+            Shift(
+                id="s0",
+                team_id="t0",
+                name="Shift 0",
+                acronym="S0",
+                acronym_custom=False,
+                start_time=datetime(2025, 1, 1, 8, 0),
+                end_time=datetime(2025, 1, 1, 12, 0),
+                staffing=[Staffing(specialty_id=None, staffing=1)],
+                color="blue",
+                shift_type=ShiftType.NORMAL,
+                rest_type=ShiftRestType.NONE,
+                leave_type=ShiftLeaveType.NONE,
+                recuperation_time=0,
+                recuperation_duty_id=None,
+                deleted=False,
+            ),
+            Shift(
+                id="s1",
+                team_id="t0",
+                name="Shift 1",
+                acronym="S1",
+                acronym_custom=False,
+                start_time=datetime(2025, 1, 1, 13, 0),
+                end_time=datetime(2025, 1, 1, 17, 0),
+                staffing=[Staffing(specialty_id=None, staffing=1)],
+                color="green",
+                shift_type=ShiftType.NORMAL,
+                rest_type=ShiftRestType.NONE,
+                leave_type=ShiftLeaveType.NONE,
+                recuperation_time=0,
+                recuperation_duty_id=None,
+                deleted=False,
+            ),
+        ]
+
+        return EngineInputsAugmented(
+            schedule=schedule,
+            workers=workers,
+            shifts=shifts,
+            link_shifts=[],
+            dimensions=[],
+            dim_entries=[],
+            attributes=[],
+            as_hist=[],
+            as_wip_fixed=[],
+            cbs_augmented=[],
+            shift_demands=[],
+            requests_work=[],
+            requests_leave=[],
+            model_output=None,
+            penalties=penalties_fix,
+            model_config=model_config_fix,
+        )
+
     def test_no_filters_request_respected(
-        self, engine_inputs: EngineInputsAugmented
+        self, ei_filters: EngineInputsAugmented
     ) -> None:
         # No dimensions/attributes -> request should be satisfied
-        ei = engine_inputs
+        ei = ei_filters
         ei.dimensions = []
         ei.dim_entries = []
         ei.attributes = []
@@ -90,6 +187,7 @@ class TestWorkerShiftFiltersEngine:
         outputs: Outputs = engine_solve_engine_inputs(ei)
 
         # check assignment exists for the requested triple
+        print("\nASSIGNMENTS DEBUG:", outputs.assignments)
         a_target = next(
             (
                 a
@@ -105,11 +203,9 @@ class TestWorkerShiftFiltersEngine:
         assert len(outputs.breaches) == 0
         assert outputs.objective_value == 0
 
-    def test_filter_out_shift_request_not_respected(
-        self, engine_inputs
-    ) -> None:
+    def test_filter_out_shift_request_not_respected(self, ei_filters) -> None:
         # Create a shared dimension where only the shift has an entry -> shift filtered out
-        ei = engine_inputs
+        ei = ei_filters
         dim = Dimension(
             id="dim_shift_only",
             team_id="t0",
@@ -169,11 +265,9 @@ class TestWorkerShiftFiltersEngine:
             for b in breaches
         )
 
-    def test_filter_out_worker_request_not_respected(
-        self, engine_inputs
-    ) -> None:
+    def test_filter_out_worker_request_not_respected(self, ei_filters) -> None:
         # Create a shared dimension where only the worker has an entry -> worker filtered out
-        ei = engine_inputs
+        ei = ei_filters
         dim = Dimension(
             id="dim_worker_only",
             team_id="t0",
@@ -233,10 +327,10 @@ class TestWorkerShiftFiltersEngine:
         )
 
     def test_filter_in_but_other_dimension_filters_out_request(
-        self, engine_inputs
+        self, ei_filters
     ) -> None:
         # Two dimensions: first matches (worker+shift), second mismatches -> final result filtered
-        ei = engine_inputs
+        ei = ei_filters
         dim_ok = Dimension(
             id="dim_ok",
             team_id="t0",
@@ -328,10 +422,10 @@ class TestWorkerShiftFiltersEngine:
         )
 
     def test_shift_filtered_out_all_workers_causes_coverage_breach(
-        self, engine_inputs
+        self, ei_filters
     ) -> None:
         # Make a shift demand for a specific shift/date and then filter out all workers for that shift
-        ei = engine_inputs
+        ei = ei_filters
         # pick a normal/duty shift
         target_shift = next(
             s
