@@ -143,6 +143,24 @@ class TestWorkerShiftFiltersEngine:
             ),
         ]
 
+        # create shift demands for both shifts on the campaign date so solver
+        # has coverage requirements to satisfy (one slot each)
+        shift_demands = [
+            ShiftDemandNew(
+                date=schedule.start_date,
+                shift_id=s.id,
+                team_id="t0",
+                count=1,
+                notes=None,
+                source=ShiftDemandSource.MANUAL,
+                source_id=None,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
+                id=f"dsd_{s.id}_{schedule.start_date.isoformat()}",
+            )
+            for s in shifts
+        ]
+
         return EngineInputsAugmented(
             schedule=schedule,
             workers=workers,
@@ -154,7 +172,7 @@ class TestWorkerShiftFiltersEngine:
             as_hist=[],
             as_wip_fixed=[],
             cbs_augmented=[],
-            shift_demands=[],
+            shift_demands=shift_demands,
             requests_work=[],
             requests_leave=[],
             model_output=None,
