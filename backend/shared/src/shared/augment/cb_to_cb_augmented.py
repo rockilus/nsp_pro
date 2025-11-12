@@ -7,10 +7,10 @@ from shared.schemas.core.constraint import (
     BlockNameOptions,
     ConstraintBuild,
     ConstraintBuildAugmented,
+    ConstraintType,
     MissingAttribute,
     ShiftWorkerOption,
     SWOIdTypes,
-    ConstraintType,
 )
 from shared.schemas.core.dim_entry import DimEntry
 from shared.schemas.core.dimension import Dimension, DimensionEntryType
@@ -80,16 +80,14 @@ def build_missing_attributes_and_active(
     active_shift_relative = False
     for block in blocks:
         if block.name == BlockNameOptions.WORKER:
-            (new_mps, new_active_worker) = (
-                build_missing_attributes_and_active_owner(
-                    AttributeOwnerType.WORKER,
-                    block,
-                    workers,
-                    dimensions,
-                    dim_entries,
-                    attributes,
-                    specialties,
-                )
+            (new_mps, new_active_worker) = build_missing_attributes_and_active_owner(
+                AttributeOwnerType.WORKER,
+                block,
+                workers,
+                dimensions,
+                dim_entries,
+                attributes,
+                specialties,
             )
             mps += new_mps
             active_worker = active_worker or new_active_worker
@@ -98,28 +96,22 @@ def build_missing_attributes_and_active(
             BlockNameOptions.SHIFT_REFERENCE,
             BlockNameOptions.SHIFT_RELATIVE,
         ]:
-            new_mps, new_active_shift = (
-                build_missing_attributes_and_active_owner(
-                    AttributeOwnerType.SHIFT,
-                    block,
-                    shifts,
-                    dimensions,
-                    dim_entries,
-                    attributes,
-                    [],
-                )
+            new_mps, new_active_shift = build_missing_attributes_and_active_owner(
+                AttributeOwnerType.SHIFT,
+                block,
+                shifts,
+                dimensions,
+                dim_entries,
+                attributes,
+                [],
             )
             mps += new_mps
             if block.name == BlockNameOptions.SHIFT:
                 active_shift = active_shift or new_active_shift
             if block.name == BlockNameOptions.SHIFT_REFERENCE:
-                active_shift_reference = (
-                    active_shift_reference or new_active_shift
-                )
+                active_shift_reference = active_shift_reference or new_active_shift
             if block.name == BlockNameOptions.SHIFT_RELATIVE:
-                active_shift_relative = (
-                    active_shift_relative or new_active_shift
-                )
+                active_shift_relative = active_shift_relative or new_active_shift
     active = active_worker and (
         active_shift or (active_shift_reference and active_shift_relative)
     )
@@ -169,16 +161,12 @@ def build_missing_attributes_and_active_owner(
             raise ValueError("Dimension not found")
         if dimension.deleted:
             mps.append(
-                build_missing_attributes_deleted_dimension(
-                    owner_type, block, dimension
-                )
+                build_missing_attributes_deleted_dimension(owner_type, block, dimension)
             )
             continue
         if dimension.entry_type == DimensionEntryType.BOOL:
-            (new_mp, new_active) = (
-                build_missing_attributes_and_active_dimension_bool(
-                    owner_type, block, owners, dimension, attributes
-                )
+            (new_mp, new_active) = build_missing_attributes_and_active_dimension_bool(
+                owner_type, block, owners, dimension, attributes
             )
 
         elif dimension.entry_type == DimensionEntryType.DIM_ENTRIES:
@@ -221,9 +209,7 @@ def build_missing_attributes_and_active_owner(
     if any(spe_id is None for spe_id in swo_spe_ids):
         raise ValueError("Specialty id is missing")
     for spe_id in swo_spe_ids:
-        specialty = next(
-            (spe for spe in specialties if spe.id == spe_id), None
-        )
+        specialty = next((spe for spe in specialties if spe.id == spe_id), None)
         if specialty is None:
             raise ValueError("Specialty not found")
         if specialty.deleted:
@@ -404,15 +390,9 @@ def build_missing_attributes_and_active_dimension_dim_entry(
         for a in attributes
         if a.dimension_id == dimension.id and a.owner_id in o_not_deleted_ids
     ]
-    dim_entry_ids = list(
-        set(de_id for a in a_all for de_id in a.dim_entry_ids)
-    )
-    dim_entry_names_owners = [
-        de.name for de in dim_entries if de.id in dim_entry_ids
-    ]
-    missing_values = list(
-        set(a_values_constraint) - set(dim_entry_names_owners)
-    )
+    dim_entry_ids = list(set(de_id for a in a_all for de_id in a.dim_entry_ids))
+    dim_entry_names_owners = [de.name for de in dim_entries if de.id in dim_entry_ids]
+    missing_values = list(set(a_values_constraint) - set(dim_entry_names_owners))
     not_missing_values = list(set(a_values_constraint) - set(missing_values))
     if missing_values:
         mp = MissingAttribute(
