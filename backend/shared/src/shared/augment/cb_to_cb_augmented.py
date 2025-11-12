@@ -7,6 +7,7 @@ from shared.schemas.core.constraint import (
     BlockNameOptions,
     ConstraintBuild,
     ConstraintBuildAugmented,
+    ConstraintType,
     MissingAttribute,
     ShiftWorkerOption,
     SWOIdTypes,
@@ -45,6 +46,8 @@ def cb_to_cb_augmented(
         attributes,
         specialties,
     )
+    if cb.constraint_type in [ConstraintType.FAI, ConstraintType.EVE]:
+        active = False
     return ConstraintBuildAugmented(
         id=cb.id,
         team_id=cb.team_id,

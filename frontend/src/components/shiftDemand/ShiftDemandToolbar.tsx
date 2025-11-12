@@ -220,7 +220,7 @@ export function ShiftDemandToolbar({
           </button>
 
           {/* Multitasking Button */}
-          <button
+          {/* <button
             onClick={onToggleMultitaskingMode}
             disabled={isLoading || bulkModeActive}
             style={{
@@ -252,7 +252,7 @@ export function ShiftDemandToolbar({
           >
             <Group style={{ fontSize: "16px" }} />
             Multitasking
-          </button>
+          </button> */}
         </Box>
       </Box>
     </Paper>

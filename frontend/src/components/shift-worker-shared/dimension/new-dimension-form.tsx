@@ -55,8 +55,8 @@ export default function NewDimensionForm({
     value: DimensionEntryType;
     label: string;
   }[] = [
-    { value: DimensionEntryType.STR, label: t("type_str") },
-    { value: DimensionEntryType.INT, label: t("type_int") },
+    // { value: DimensionEntryType.STR, label: t("type_str") },
+    // { value: DimensionEntryType.INT, label: t("type_int") },
     { value: DimensionEntryType.BOOL, label: t("type_bool") },
     { value: DimensionEntryType.DIM_ENTRIES, label: t("type_list") },
   ];

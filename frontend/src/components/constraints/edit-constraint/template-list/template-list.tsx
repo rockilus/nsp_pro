@@ -10,7 +10,7 @@ import ListItemText from "@mui/material/ListItemText";
 import "../../../../styles/text-styles.css";
 import "./template-list.css";
 // Types
-import { TemplateT } from "../../../../types/constraint";
+import { TemplateT, ConstraintType } from "../../../../types/constraint";
 
 export default function TemplateList({
   lng,
@@ -39,21 +39,27 @@ export default function TemplateList({
         }}
       >
         <List dense={true} sx={{ padding: "0 0 0 0" }}>
-          {templates.map((ct, index) => (
-            <ListItemButton
-              key={index}
-              onClick={() => {
-                handleSelectedTemplate(ct);
-              }}
-              selected={selectedTemplate?.id === ct.id}
-              sx={{ padding: "0 0 0 0" }}
-              data-testid={`template-item-${index}`}
-            >
-              <ListItem sx={{ padding: "0 16px 0 16px" }}>
-                <ListItemText primary={ct.text} />
-              </ListItem>
-            </ListItemButton>
-          ))}
+          {templates
+            .filter(
+              (ct) =>
+                ct.constraintType !== ConstraintType.FAI &&
+                ct.constraintType !== ConstraintType.EVE
+            )
+            .map((ct, index) => (
+              <ListItemButton
+                key={index}
+                onClick={() => {
+                  handleSelectedTemplate(ct);
+                }}
+                selected={selectedTemplate?.id === ct.id}
+                sx={{ padding: "0 0 0 0" }}
+                data-testid={`template-item-${index}`}
+              >
+                <ListItem sx={{ padding: "0 16px 0 16px" }}>
+                  <ListItemText primary={ct.text} />
+                </ListItem>
+              </ListItemButton>
+            ))}
         </List>
       </Box>
     </div>
