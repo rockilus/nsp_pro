@@ -25,7 +25,10 @@ interface RootLayoutProps {
   params: Promise<{ lng: string }>;
 }
 
-export default async function RootLayout({ children, params }: RootLayoutProps) {
+export default async function RootLayout({
+  children,
+  params,
+}: RootLayoutProps) {
   // `params` can be a Promise in newer Next.js route handlers — await it first.
   const resolvedParams = await params;
   const lng = resolvedParams.lng;
