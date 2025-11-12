@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import "dayjs/locale/en-gb";
@@ -17,15 +18,10 @@ import "../../../../styles/page.css";
 // Types
 import { PageRolePermissions } from "@/types/user";
 
-export default function Page({
-  params: { lng },
-}: {
-  params: {
-    lng: string;
-  };
-}) {
+export default function Page({ params }: { params: Promise<{ lng: string }> }) {
   const { selectedTeam } = useTeam();
   const { user } = useUser();
+  const { lng } = React.use(params as Promise<{ lng: string }>);
 
   return (
     selectedTeam &&

@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 // Components
 import ConstraintTab from "../../../../components/constraints/constraint-tab";
 import { AccessGuard } from "@/components/access/access-guard";
@@ -8,14 +9,9 @@ import { useTeam } from "@/context/TeamContext";
 // Styles
 import "../../../../styles/page.css";
 
-export default function Page({
-  params: { lng },
-}: {
-  params: {
-    lng: string;
-  };
-}) {
+export default function Page({ params }: { params: Promise<{ lng: string }> }) {
   const { selectedTeam } = useTeam();
+  const { lng } = React.use(params as Promise<{ lng: string }>);
 
   return (
     <AccessGuard route="/constraints" teamWithMembership={selectedTeam}>
