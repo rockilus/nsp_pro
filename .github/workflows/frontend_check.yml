@@ -39,6 +39,6 @@ jobs:
       - name: Run typescript
         run: npx tsc
       - name: Lint
-        run: npm run lint
+        run: npx eslint .
       - name: Run tests
         run: npm test -- --ci --coverage --watchAll=false
