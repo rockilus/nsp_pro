@@ -37,16 +37,12 @@ export default async function RootLayout({
     notFound();
   }
 
+  // Only the root layout (src/app/layout.tsx) must render <html> and <body>.
+  // Child layouts should return elements that can be nested inside the root body.
   return (
-    <html lang={lng}>
-      <AppRouterCacheProvider>
-        <body className={inter.className}>
-          <LanguageProvider initialLanguage={lng}>
-            {/* <ImpersonationBanner /> */}
-            {children}
-          </LanguageProvider>
-        </body>
-      </AppRouterCacheProvider>
-    </html>
+    <LanguageProvider initialLanguage={lng}>
+      {/* <ImpersonationBanner /> */}
+      {children}
+    </LanguageProvider>
   );
 }
