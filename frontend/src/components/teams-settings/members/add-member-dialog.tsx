@@ -24,6 +24,55 @@ import {
 } from "@/types/team-invitation";
 import { WorkerT } from "@/types/worker";
 
+type AttachWorkerSelectProps = {
+  workers: WorkerT[];
+  selectedWorkerId: string | null;
+  onChange: (event: SelectChangeEvent) => void;
+  onCancel: () => void;
+  workerLabel: string;
+};
+
+export function AttachWorkerSelect({
+  workers,
+  selectedWorkerId,
+  onChange,
+  onCancel,
+  workerLabel,
+}: AttachWorkerSelectProps) {
+  return (
+    <div className="attach-worker-select">
+      <FormControl fullWidth>
+        <InputLabel id="attach-worker-select-label">{workerLabel}</InputLabel>
+        <Select
+          labelId="attach-worker-select-label"
+          id="attach-worker-select"
+          value={selectedWorkerId || ""}
+          label={workerLabel}
+          onChange={onChange}
+        >
+          {workers.map((worker) => (
+            <MenuItem
+              key={worker.id}
+              value={worker.id}
+              disabled={worker.userId !== null}
+            >
+              {worker.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <IconButton
+        onClick={onCancel}
+        sx={{
+          marginLeft: "10px",
+        }}
+      >
+        <CloseIcon fontSize="small" />
+      </IconButton>
+    </div>
+  );
+}
+
 export default function AddMemberDialog({
   lng,
   teamId,
@@ -127,41 +176,6 @@ export default function AddMemberDialog({
     });
   };
 
-  const AttachWorkerSelect = () => {
-    return (
-      <div className="attach-worker-select">
-        <FormControl fullWidth>
-          <InputLabel id="demo-simple-select-label">{t("worker")}</InputLabel>
-          <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
-            value={selectedWorkerId || ""}
-            label="Worker"
-            onChange={handleChange}
-          >
-            {workers.map((worker) => (
-              <MenuItem
-                key={worker.id}
-                value={worker.id}
-                disabled={worker.userId !== null}
-              >
-                {worker.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <IconButton
-          onClick={handleCancelAttachWorker}
-          sx={{
-            marginLeft: "10px",
-          }}
-        >
-          <CloseIcon fontSize="small" />
-        </IconButton>
-      </div>
-    );
-  };
-
   return (
     <React.Fragment>
       <Button
@@ -231,7 +245,13 @@ export default function AddMemberDialog({
             helperText={helperText}
           />
           {showAttachWorker ? (
-            <AttachWorkerSelect />
+            <AttachWorkerSelect
+              workers={workers}
+              selectedWorkerId={selectedWorkerId}
+              onChange={handleChange}
+              onCancel={handleCancelAttachWorker}
+              workerLabel={t("worker")}
+            />
           ) : (
             <button
               className="attach-worker-button"
