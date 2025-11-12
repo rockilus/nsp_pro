@@ -124,7 +124,7 @@ export const MultitaskingSelector: React.FC<MultitaskingSelectorProps> = ({
 
       <Grid container spacing={3}>
         {/* Selection Panel */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               <Box
@@ -184,7 +184,7 @@ export const MultitaskingSelector: React.FC<MultitaskingSelectorProps> = ({
         </Grid>
 
         {/* Results Panel */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -280,7 +280,7 @@ export const MultitaskingSelector: React.FC<MultitaskingSelectorProps> = ({
                 Summary Statistics
               </Typography>
               <Grid container spacing={2}>
-                <Grid item xs={6} sm={3}>
+                <Grid size={{ xs: 6, sm: 3 }}>
                   <Typography variant="h4" color="primary">
                     {allShiftDemandIds.length}
                   </Typography>
@@ -288,7 +288,7 @@ export const MultitaskingSelector: React.FC<MultitaskingSelectorProps> = ({
                     Total Shifts
                   </Typography>
                 </Grid>
-                <Grid item xs={6} sm={3}>
+                <Grid size={{ xs: 6, sm: 3 }}>
                   <Typography variant="h4" color="secondary">
                     {
                       concurrencyList.filter(
@@ -300,7 +300,7 @@ export const MultitaskingSelector: React.FC<MultitaskingSelectorProps> = ({
                     With Concurrency
                   </Typography>
                 </Grid>
-                <Grid item xs={6} sm={3}>
+                <Grid size={{ xs: 6, sm: 3 }}>
                   <Typography variant="h4" color="info.main">
                     {Math.round(
                       concurrencyList.reduce(
@@ -313,7 +313,7 @@ export const MultitaskingSelector: React.FC<MultitaskingSelectorProps> = ({
                     Avg Concurrent
                   </Typography>
                 </Grid>
-                <Grid item xs={6} sm={3}>
+                <Grid size={{ xs: 6, sm: 3 }}>
                   <Typography variant="h4" color="success.main">
                     {selectedShiftDemands.length}
                   </Typography>

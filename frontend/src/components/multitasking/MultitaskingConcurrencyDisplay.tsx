@@ -92,7 +92,7 @@ export const MultitaskingConcurrencyDisplay: React.FC<
 
       <Grid container spacing={2}>
         {concurrencyList.map((concurrency) => (
-          <Grid item xs={12} md={6} lg={4} key={concurrency.shiftDemandId}>
+          <Grid size={{ xs: 12, md: 6, lg: 4 }} key={concurrency.shiftDemandId}>
             <Card elevation={2}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>

@@ -112,7 +112,7 @@ export default function MultitaskingPage() {
           </Typography>
 
           <Grid container spacing={3} alignItems="center">
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 label="Team ID"
@@ -122,7 +122,7 @@ export default function MultitaskingPage() {
               />
             </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 label="Start Date"
@@ -136,7 +136,7 @@ export default function MultitaskingPage() {
               />
             </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 label="End Date"
@@ -150,7 +150,7 @@ export default function MultitaskingPage() {
               />
             </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Box sx={{ display: "flex", gap: 1 }}>
                 <Button
                   variant="contained"
@@ -220,7 +220,7 @@ export default function MultitaskingPage() {
               </Typography>
 
               <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Typography variant="subtitle2" gutterBottom>
                     Request Payload:
                   </Typography>
@@ -242,7 +242,7 @@ export default function MultitaskingPage() {
                   </Paper>
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Typography variant="subtitle2" gutterBottom>
                     Endpoint:
                   </Typography>

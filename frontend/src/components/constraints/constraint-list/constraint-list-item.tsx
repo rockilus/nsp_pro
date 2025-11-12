@@ -88,10 +88,7 @@ export default function ConstraintListItem({
 
   return (
     <Grid
-      item
-      xs={12}
-      md={12}
-      xl={12}
+      size={{ xs: 12, md: 12, xl: 12 }}
       sx={{
         paddingX: 1,
         borderBottom: isLast ? "none" : "1px solid #e0e0e0",
@@ -109,7 +106,7 @@ export default function ConstraintListItem({
             : ConstraintColorInactiveBack,
         }}
       >
-        <Grid item xs={8}>
+        <Grid size={{ xs: 8 }}>
           <Typography
             variant="subtitle2"
             align="left"
@@ -126,7 +123,7 @@ export default function ConstraintListItem({
             missingProperties={constraint.missingAttributes}
           />
         </Grid>
-        <Grid item xs={3}>
+        <Grid size={{ xs: 3 }}>
           <HardSoftButton
             lng={lng}
             hard={constraint.hard}
@@ -134,7 +131,7 @@ export default function ConstraintListItem({
             handleToggleHard={handleToggleHard}
           />
         </Grid>
-        <Grid item xs={1}>
+        <Grid size={{ xs: 1 }}>
           <Box sx={{ display: "flex", flexDirection: "row" }}>
             <div data-testid={`constraint-edit-button-${constraint.id}`}>
               <ConstraintButton
