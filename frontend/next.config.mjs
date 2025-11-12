@@ -6,9 +6,14 @@ const nextConfig = {
   images: {
     unoptimized: true
   },
-  experimental: {
-    // Force all pages to be client-side for static export
-    missingSuspenseWithCSRBailout: false,
+  // Turbopack configuration: explicitly set the workspace root so Next
+  // doesn't attempt to infer it (which warns when multiple lockfiles
+  // exist). An explicit turbopack config also silences the error that
+  // occurs when a `webpack` config is present but no `turbopack` config
+  // is defined.
+  turbopack: {
+    // Use the current package (frontend/) as the workspace root
+    root: '.',
   },
   // Webpack configuration to handle static export issues
   webpack: (config, { isServer, dev }) => {
