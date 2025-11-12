@@ -1,16 +1,16 @@
 from typing import List
-from loguru import logger
+
 from shared.schemas.core import (
     Assignment,
     Breach,
     EngineInputsAugmented,
     LinkShift,
+    ObjectiveCategory,
     RequestAugmented,
     Schedule,
     Shift,
     ShiftDemandNew,
     Worker,
-    ObjectiveCategory,
 )
 
 from engine import Breach as BreachEngine
@@ -65,11 +65,7 @@ def build_breaches(
     #     processing_cache,
     # )
     # If an Outputs object was provided, print quick debugging stats
-    if (
-        outputs is not None
-        and engine_inputs is not None
-        and inputs is not None
-    ):
+    if outputs is not None and engine_inputs is not None and inputs is not None:
         try:
             debug_breaches(
                 outputs=outputs,
