@@ -16,6 +16,7 @@ from shared.schemas.core import (
     RequestType,
     Worker,
 )
+from shared.schemas.core.constraint import SWOIdTypes
 
 from src.services.assignment_service import AssignmentService
 from src.services.base_service import BaseService
@@ -86,7 +87,9 @@ class RequestService(BaseService):
         new_request = self.collection.request_db.update_request(request)
         return self._to_request_augmented(new_request)
 
-    def approve_request(self, request_id: str) -> RequestAugmented:
+    def approve_request(
+        self, request_id: str
+    ) -> tuple[RequestAugmented, List[Assignment]]:
         request = self.collection.request_db.get_request_by_id(request_id=request_id)
         if not request:
             raise ValueError(f"Request with id {request_id} not found")
@@ -97,32 +100,37 @@ class RequestService(BaseService):
             raise ValueError(
                 f"Request with id {request_id} is not active and cannot be approved"
             )
-        # single_shift_request = (
-        #     request.request_type == RequestType.LEAVE
-        #     and request.shift_id is not None
-        # ) or (
-        #     request.request_type == RequestType.WORK_DEMAND
-        #     and len(request.shift_options) == 1
-        #     and request.shift_options[0].id_type == SWOIdTypes.SHIFT
-        # )
-        # if single_shift_request:
-        #     target_shift_id = (
-        #         request.shift_id
-        #         if request.request_type == RequestType.LEAVE
-        #         and request.shift_id is not None
-        #         else request.shift_options[0].id
-        #     )
-        #     self._create_assignments_for_single_shift_request(
-        #         request, target_shift_id
-        #     )
-        #     request.fulfillment = FulfillmentStatus.FULFILLED
+        # If this is a single-shift request (leave with shift_id OR work_demand
+        # with exactly one shift option pointing to a SHIFT), create fixed
+        # assignments for the request period and mark fulfillment as fulfilled.
+        single_shift_request = (
+            request.request_type == RequestType.LEAVE and request.shift_id is not None
+        ) or (
+            request.request_type == RequestType.WORK_DEMAND
+            and len(request.shift_options) == 1
+            and request.shift_options[0].id_type == SWOIdTypes.SHIFT
+        )
+        assignments_created: List[Assignment] = []
+        if single_shift_request:
+            target_shift_id = (
+                request.shift_id
+                if request.request_type == RequestType.LEAVE
+                and request.shift_id is not None
+                else request.shift_options[0].id
+            )
+            # create fixed assignments for the whole request period and collect
+            # created assignments
+            assignments_created = self._create_assignments_for_single_shift_request(
+                request, target_shift_id
+            )
+            request.fulfillment = FulfillmentStatus.FULFILLED
         request.status = RequestStatus.APPROVED
         updated_request = self.collection.request_db.update_request(request)
-        return self._to_request_augmented(updated_request)
+        return self._to_request_augmented(updated_request), assignments_created
 
     def _create_assignments_for_single_shift_request(
         self, request: Request, target_shift_id: str
-    ) -> None:
+    ) -> List[Assignment]:
         """
         Create assignments for each date in the request for a single-shift
         request (leave or work demand).
@@ -131,6 +139,7 @@ class RequestService(BaseService):
             request.start_date + timedelta(days=i)
             for i in range((request.end_date - request.start_date).days + 1)
         ]
+        created_assignments: List[Assignment] = []
         for date in dates:
             # Create an assignment for each date in the range
             if date < datetime.now(tz=timezone.utc).date():
@@ -163,9 +172,11 @@ class RequestService(BaseService):
                     source_id=request.id,
                     reference_assignment_id=None,
                 )
-                self.assignment_service.create_assignment_and_recurrence(
+                ar_result = self.assignment_service.create_assignment_and_recurrence(
                     assignment_new=assignment_new, recurrence_new=None
                 )
+                created_assignments.extend(ar_result.assignments_created)
+        return created_assignments
 
     def deny_request(self, request_id: str) -> RequestAugmented:
         request = self.collection.request_db.get_request_by_id(request_id=request_id)
@@ -178,7 +189,7 @@ class RequestService(BaseService):
         updated_request = self.collection.request_db.update_request(request)
         return self._to_request_augmented(updated_request)
 
-    def rescind_request(self, request_id: str) -> RequestAugmented:
+    def rescind_request(self, request_id: str) -> tuple[RequestAugmented, List[str]]:
         request = self.collection.request_db.get_request_by_id(request_id=request_id)
         if not request:
             raise ValueError(f"Request with id {request_id} not found")
@@ -186,17 +197,18 @@ class RequestService(BaseService):
             raise ValueError(
                 f"Request with id {request_id} is already in pending status"
             )
-
-        # Delete any assignments that were created for this request
-        self.collection.assignment_db.delete_assignments_by_source_id(
-            source_id=request_id
+        # Delete any assignments that were created for this request and collect ids
+        deleted_ids: List[str] = (
+            self.collection.assignment_db.delete_assignments_by_source_id(
+                source_id=request_id
+            )
         )
 
         # Update request status back to pending
         request.status = RequestStatus.PENDING
         request.fulfillment = FulfillmentStatus.NOT_PROCESSED
         updated_request = self.collection.request_db.update_request(request)
-        return self._to_request_augmented(updated_request)
+        return self._to_request_augmented(updated_request), deleted_ids
 
     def delete_request(self, request_id: str, author_id: str, team_role: str) -> None:
         request = self.collection.request_db.get_request_by_id(request_id=request_id)

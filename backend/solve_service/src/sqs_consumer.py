@@ -164,12 +164,13 @@ class SQSSolveConsumer:
         engine_inputs = get_engine_inputs(
             schedule=schedule, collections=self.collections
         )
-        engine_outputs = solve_schedule(engine_inputs=engine_inputs)
+        engine_outputs, processing_cache = solve_schedule(engine_inputs=engine_inputs)
         schedule_solve_status, assignments, breaches, solver_output = (
             save_engine_outputs(
                 schedule=schedule,
                 engine_intputs=engine_inputs,
                 engine_outputs=engine_outputs,
+                processing_cache=processing_cache,
                 collections=self.collections,
             )
         )

@@ -25,6 +25,7 @@ import {
   ShiftType,
   ShiftRestType,
   ShiftLeaveType,
+  LinkShiftT,
 } from "../../src/types/shift";
 import {
   DimensionT,
@@ -43,6 +44,7 @@ import { RequestT } from "../../src/types/request";
 import { ScheduleT, toScheduleT } from "../../src/types/schedule";
 import { testConfig } from "./test-config";
 import dayjs from "dayjs";
+import { AssignmentT } from "@/types/assignment";
 
 export interface DatabaseResetOptions {
   collections?: string[];
@@ -82,6 +84,7 @@ export interface SolverScenarioResult {
   specialties: SpecialtyT[];
   workers: WorkerT[];
   shifts: ShiftT[];
+  link_shifts: LinkShiftT[];
   dimensions: DimensionT[];
   dim_entries: DimEntryT[];
   attributes: AttributeT[];
@@ -1647,14 +1650,17 @@ export class DatabaseTestUtils {
    * @param teamId - The team ID
    * @returns The updated request with APPROVED status
    */
-  async approveRequest(requestId: string, teamId: string): Promise<RequestT> {
+  async approveRequest(
+    requestId: string,
+    teamId: string
+  ): Promise<{ request: RequestT; assignments: AssignmentT[] }> {
     try {
-      const approvedRequest = await RequestApi.acceptRequest(
+      const { request, assignments } = await RequestApi.acceptRequest(
         this.testApiClient,
         requestId,
         teamId
       );
-      return approvedRequest;
+      return { request, assignments };
     } catch (error) {
       console.error("Failed to approve request:", error);
       throw new Error(
@@ -1718,6 +1724,7 @@ export class DatabaseTestUtils {
         specialties: any[];
         workers: any[];
         shifts: any[];
+        link_shifts: any[];
         dimensions: any[];
         dim_entries: any[];
         attributes: any[];
@@ -1734,6 +1741,7 @@ export class DatabaseTestUtils {
         specialties: result.specialties,
         workers: result.workers.map(toWorkerT),
         shifts: result.shifts.map(toShiftT),
+        link_shifts: result.link_shifts,
         dimensions: result.dimensions,
         dim_entries: result.dim_entries,
         attributes: result.attributes.map(toAttributeT),

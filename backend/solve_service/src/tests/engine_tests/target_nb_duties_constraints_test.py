@@ -617,7 +617,7 @@ class TestTargetWorkTimeConstraints:
         assert max_excess == 1
 
         assert len(out.breaches) == 1
-        assert len(breaches) == 0
+        assert len(breaches) == 1
 
         objective_value_expected = (
             # fmt: off

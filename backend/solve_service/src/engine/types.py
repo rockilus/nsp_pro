@@ -13,6 +13,7 @@ from shared.schemas.core import Constraints, ModelConfig
 
 @dataclass
 class ShiftDemand:
+    id: str
     assignments: List[Tuple[str, str, str]]
     assignments_specialties: List[List[Tuple[str, str, str, str]]]
     target: int
@@ -90,6 +91,8 @@ class NbDuties:
     tolerance: float = 0.0
 
 
+# Target work time and nb duties constraints calculated based on the user inputs
+# in the workers page
 @dataclass
 class WorkLoads:
     weekly_work_time_contractual: WorkTime
@@ -136,6 +139,8 @@ class ConfigurationConstraintInputs:
     ]  # (List[assignments], penalty)
 
 
+# Target work time and nb duties constraints calculated based on the campaign
+# number of workers and required work
 @dataclass
 class SystemConstraintInputs:
     weekly_target_work_time: List[GroupsAssignmentsDurationsTargetConstraint]
@@ -187,6 +192,9 @@ class ObjectiveCategory(Enum):
     DUTIES_PER_MONTH = 6
     LINK_SHIFT = 7
     DUTY_RECUP = 8
+    WORK_TIME_WEEK_TARGET = 9
+    DUTIES_PER_MONTH_TARGET = 10
+    SPECIAL_DAYS_TARGET = 11
 
 
 # pylint: disable=R0801
@@ -296,3 +304,4 @@ class ProcessingCache:
     w_to_work_times: Dict[str, Dict[str, List[int]]]
     w_to_nb_duties: Dict[str, Dict[str, List[int]]]
     shift_id_to_duration: Dict[str, int]
+    dim_to_attr_value_to_shift: Dict[str, Dict[str | int | float | bool, List[str]]]

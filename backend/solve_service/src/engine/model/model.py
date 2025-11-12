@@ -11,7 +11,8 @@ from shared.schemas.core import SolverParams, SolveStrategy
 from engine.model.add_constraint_factory import AddConstraintFactory
 from engine.model.solver_solution_callback import SolverSolutionCallback
 from engine.model.utils.model_utils import (
-    build_var_name_daily_shift_demand,
+    build_var_name_duty_recup,
+    build_var_name_groups_assignments,
     build_var_name_link_shift,
     build_var_name_work_time,
 )
@@ -365,7 +366,7 @@ class Model:
             if not hard_to_soft:
                 self.model.Add(duty_var == recup_var)
             else:
-                var_name = build_var_name_daily_shift_demand(
+                var_name = build_var_name_duty_recup(
                     [duty_var, recup_var], ObjectiveCategory.DUTY_RECUP
                 )
                 delta = self.model.NewIntVar(-1, 1, "")
@@ -476,12 +477,14 @@ class Model:
     ) -> None:
         for constraint in constraints:
             excesses = []
+            cstr_vars = []
             for assignments, durations, target in zip(
                 constraint.assignments,
                 constraint.durations,
                 constraint.targets,
             ):
                 constraint_vars = [self.variables[a] for a in assignments]
+                cstr_vars.extend(constraint_vars)
                 tolerance_x100 = round(target * constraint.tolerance * 100)
                 weighted_sum = self.model.NewIntVar(
                     0,
@@ -534,12 +537,14 @@ class Model:
                     [division_result - 100, 0],
                 )
                 excesses.append(excess)
-            var_name = "target_work_time"
+            # var_name = "target_work_time"
+            var_name = build_var_name_groups_assignments(
+                cstr_vars=cstr_vars,
+                category=ObjectiveCategory.WORK_TIME_WEEK_TARGET,
+            )
             max_excess = self.model.NewIntVar(
                 0,
-                len(constraint_vars)
-                * Constants.NUM_HOURS_DAY
-                * Constants.NUM_MINUTES_HOUR,
+                len(cstr_vars) * Constants.NUM_HOURS_DAY * Constants.NUM_MINUTES_HOUR,
                 var_name,
             )
             self.model.AddMaxEquality(max_excess, excesses)
@@ -585,8 +590,10 @@ class Model:
     ) -> None:
         for constraint in constraints:
             excesses = []
+            cstr_vars = []
             for assignments, target in zip(constraint.assignments, constraint.targets):
                 constraint_vars = [self.variables[a] for a in assignments]
+                cstr_vars.extend(constraint_vars)
                 excess = self.model.NewIntVar(
                     -target,
                     len(constraint_vars)
@@ -603,7 +610,11 @@ class Model:
                     ],
                 )
                 excesses.append(excess)
-            var_name = "target_nb_duties"
+            # var_name = "target_nb_duties"
+            var_name = build_var_name_groups_assignments(
+                cstr_vars=cstr_vars,
+                category=ObjectiveCategory.DUTIES_PER_MONTH_TARGET,
+            )
             max_excess = self.model.NewIntVar(
                 0,
                 len(constraint_vars)
@@ -620,8 +631,10 @@ class Model:
     ) -> None:
         for constraint in constraints:
             excesses = []
+            cstr_vars = []
             for assignments, target in zip(constraint.assignments, constraint.targets):
                 constraint_vars = [self.variables[a] for a in assignments]
+                cstr_vars.extend(constraint_vars)
                 excess = self.model.NewIntVar(
                     -target,
                     len(constraint_vars)
@@ -633,7 +646,11 @@ class Model:
                     excess, [sum(v for v in constraint_vars) - target, 0]
                 )
                 excesses.append(excess)
-            var_name = "special_days"
+            # var_name = "special_days"
+            var_name = build_var_name_groups_assignments(
+                cstr_vars=cstr_vars,
+                category=ObjectiveCategory.SPECIAL_DAYS_TARGET,
+            )
             max_excess = self.model.NewIntVar(
                 0,
                 len(constraint_vars)

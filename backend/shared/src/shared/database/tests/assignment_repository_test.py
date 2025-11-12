@@ -8,7 +8,7 @@ from shared.database.schemas.assignment import AssignmentSchema
 from shared.schemas.core.assignment import Assignment, AssignmentSource
 
 
-# pylint: disable=too-many-public-methods
+# pylint: disable=too-many-public-methods, too-many-lines
 class TestAssignmentRepository:
     repo: AssignmentRepository
 
@@ -245,6 +245,242 @@ class TestAssignmentRepository:
         assert len(results) == 2
         assert results[0].date in [date(2023, 1, 1), date(2023, 1, 2)]
         assert results[1].date in [date(2023, 1, 1), date(2023, 1, 2)]
+
+    def test_get_assignments_by_dates_with_fixed_true(self):
+        """Test filtering assignments by date range and fixed=True."""
+        assignments = [
+            AssignmentSchema(
+                team="team1",
+                worker="worker1",
+                schedule="schedule1",
+                date=datetime(2023, 1, 1, tzinfo=timezone.utc),
+                shift="shift1",
+                fixed=False,
+                source=AssignmentSource.MANUAL.value,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker2",
+                schedule="schedule2",
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc),
+                shift="shift2",
+                fixed=True,
+                source=AssignmentSource.MANUAL.value,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker3",
+                schedule="schedule3",
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc),
+                shift="shift3",
+                fixed=True,
+                source=AssignmentSource.MANUAL.value,
+            ),
+        ]
+        self.repo.create_many(assignments)
+
+        results = self.repo.get_assignments_by_dates(
+            "team1", date(2023, 1, 1), date(2023, 1, 2), True
+        )
+
+        assert len(results) == 2
+        assert all(r.fixed is True for r in results)
+
+    def test_get_assignments_by_dates_with_fixed_false(self):
+        """Test filtering assignments by date range and fixed=False."""
+        assignments = [
+            AssignmentSchema(
+                team="team1",
+                worker="worker1",
+                schedule="schedule1",
+                date=datetime(2023, 1, 1, tzinfo=timezone.utc),
+                shift="shift1",
+                fixed=False,
+                source=AssignmentSource.MANUAL.value,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker2",
+                schedule="schedule2",
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc),
+                shift="shift2",
+                fixed=True,
+                source=AssignmentSource.MANUAL.value,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker3",
+                schedule="schedule3",
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc),
+                shift="shift3",
+                fixed=False,
+                source=AssignmentSource.MANUAL.value,
+            ),
+        ]
+        self.repo.create_many(assignments)
+
+        results = self.repo.get_assignments_by_dates(
+            "team1", date(2023, 1, 1), date(2023, 1, 2), False
+        )
+
+        assert len(results) == 2
+        assert all(r.fixed is False for r in results)
+
+    def test_get_assignments_by_dates_with_only_start(self):
+        """Test getting assignments when only start date is provided."""
+        assignments = [
+            AssignmentSchema(
+                team="team1",
+                worker="worker1",
+                schedule="schedule1",
+                date=datetime(2023, 1, 1, tzinfo=timezone.utc),
+                shift="shift1",
+                fixed=False,
+                source=AssignmentSource.MANUAL.value,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker2",
+                schedule="schedule2",
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc),
+                shift="shift2",
+                fixed=True,
+                source=AssignmentSource.MANUAL.value,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker3",
+                schedule="schedule3",
+                date=datetime(2023, 1, 3, tzinfo=timezone.utc),
+                shift="shift3",
+                fixed=False,
+                source=AssignmentSource.MANUAL.value,
+            ),
+        ]
+        self.repo.create_many(assignments)
+
+        # Only start date provided -> should return assignments on/after 2023-01-02
+        results = self.repo.get_assignments_by_dates("team1", date(2023, 1, 2), None)
+
+        assert len(results) == 2
+        assert all(r.date >= date(2023, 1, 2) for r in results)
+
+    def test_get_assignments_by_dates_with_only_end(self):
+        """Test getting assignments when only end date is provided."""
+        assignments = [
+            AssignmentSchema(
+                team="team1",
+                worker="worker1",
+                schedule="schedule1",
+                date=datetime(2023, 1, 1, tzinfo=timezone.utc),
+                shift="shift1",
+                fixed=False,
+                source=AssignmentSource.MANUAL.value,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker2",
+                schedule="schedule2",
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc),
+                shift="shift2",
+                fixed=True,
+                source=AssignmentSource.MANUAL.value,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker3",
+                schedule="schedule3",
+                date=datetime(2023, 1, 3, tzinfo=timezone.utc),
+                shift="shift3",
+                fixed=False,
+                source=AssignmentSource.MANUAL.value,
+            ),
+        ]
+        self.repo.create_many(assignments)
+
+        # Only end date provided -> should return assignments on/before 2023-01-02
+        results = self.repo.get_assignments_by_dates("team1", None, date(2023, 1, 2))
+
+        assert len(results) == 2
+        assert all(r.date <= date(2023, 1, 2) for r in results)
+
+    def test_delete_assignments_by_dates_delete_fixed_true(self):
+        """When delete_fixed=True, delete both fixed and non-fixed assignments."""
+        assignments = [
+            AssignmentSchema(
+                team="team1",
+                worker="worker1",
+                schedule="schedule1",
+                date=datetime(2023, 1, 1, tzinfo=timezone.utc),
+                shift="shift1",
+                fixed=False,
+                source=AssignmentSource.MANUAL.value,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker2",
+                schedule="schedule2",
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc),
+                shift="shift2",
+                fixed=True,
+                source=AssignmentSource.MANUAL.value,
+            ),
+        ]
+        self.repo.create_many(assignments)
+
+        deleted_ids = self.repo.delete_assignments_by_dates(
+            "team1", date(2023, 1, 1), date(2023, 1, 2), delete_fixed=True
+        )
+
+        # Both assignments should be deleted
+        assert len(deleted_ids) == 2
+        remaining = list(self.repo.collection.find({"team": "team1"}))
+        assert len(remaining) == 0
+
+    def test_delete_assignments_by_dates_delete_fixed_false(self):
+        """When delete_fixed=False, delete only non-fixed assignments."""
+        assignments = [
+            AssignmentSchema(
+                team="team1",
+                worker="worker1",
+                schedule="schedule1",
+                date=datetime(2023, 1, 1, tzinfo=timezone.utc),
+                shift="shift1",
+                fixed=False,
+                source=AssignmentSource.MANUAL.value,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker2",
+                schedule="schedule2",
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc),
+                shift="shift2",
+                fixed=True,
+                source=AssignmentSource.MANUAL.value,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker3",
+                schedule="schedule3",
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc),
+                shift="shift3",
+                fixed=False,
+                source=AssignmentSource.MANUAL.value,
+            ),
+        ]
+        self.repo.create_many(assignments)
+
+        deleted_ids = self.repo.delete_assignments_by_dates(
+            "team1", date(2023, 1, 1), date(2023, 1, 2), delete_fixed=False
+        )
+
+        # Only the non-fixed assignments should be deleted (2 of them)
+        assert len(deleted_ids) == 2
+
+        # The fixed assignment should remain
+        remaining = list(self.repo.collection.find({"team": "team1"}))
+        assert len(remaining) == 1
+        assert remaining[0]["fixed"] is True
 
     def test_delete_assignments_by_schedule_id(self):
         """Test deleting assignments by schedule ID."""

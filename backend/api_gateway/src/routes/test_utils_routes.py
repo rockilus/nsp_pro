@@ -277,6 +277,7 @@ async def load_test_scenario(
             "specialties": [s.to_dto() for s in scenario.specialties],
             "workers": [w.to_dto(attributes=[]) for w in scenario.workers],
             "shifts": [s.to_dto(attributes=[]) for s in scenario.shifts],
+            "link_shifts": [ls.to_dto() for ls in scenario.link_shifts],
             "dimensions": [d.to_dto() for d in scenario.dimensions],
             "dim_entries": [de.to_dto() for de in scenario.dim_entries],
             "attributes": [a.to_dto() for a in scenario.attributes],

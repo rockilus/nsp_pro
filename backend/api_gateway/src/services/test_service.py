@@ -8,6 +8,7 @@ from shared.database.schemas.attribute import AttributeSchema
 from shared.database.schemas.constraint_build import ConstraintBuildSchema
 from shared.database.schemas.dim_entry import DimEntrySchema
 from shared.database.schemas.dimension import DimensionSchema
+from shared.database.schemas.link_shift import LinkShiftSchema
 from shared.database.schemas.request import RequestSchema
 from shared.database.schemas.schedule import ScheduleSchema
 from shared.database.schemas.shift import ShiftSchema
@@ -25,7 +26,9 @@ from shared.schemas.core import (
     ConstraintBuild,
     Dimension,
     DimEntry,
+    LinkShift,
     Request,
+    RequestStatus,
     RequestType,
     Schedule,
     Shift,
@@ -47,6 +50,7 @@ class ScenarioLoadResponse(BaseModel):
     specialties: List[Specialty]
     workers: List[Worker]
     shifts: List[Shift]
+    link_shifts: List[LinkShift]
     dimensions: List[Dimension]
     dim_entries: List[DimEntry]
     attributes: List[Attribute]
@@ -117,6 +121,7 @@ class SolverTestScenariosService(BaseService):
             specialties=saved.get("specialties", []),
             workers=saved.get("workers", []),
             shifts=saved.get("shifts", []),
+            link_shifts=saved.get("link_shifts", []),
             dimensions=saved.get("dimensions", []),
             dim_entries=saved.get("dim_entries", []),
             attributes=saved.get("attributes", []),
@@ -179,6 +184,10 @@ class SolverTestScenariosService(BaseService):
                 "shifts": [
                     ShiftSchema.from_mongo(s).to_core()
                     for s in scenario_data.get("shifts", [])
+                ],
+                "link_shifts": [
+                    LinkShiftSchema.from_mongo(ls).to_core()
+                    for ls in scenario_data.get("link_shifts", [])
                 ],
                 "dimensions": [
                     DimensionSchema.from_mongo(d).to_core()
@@ -273,6 +282,7 @@ class SolverTestScenariosService(BaseService):
             self._save_specialties(scenario_data, team_id, maps, out)
             self._save_workers(scenario_data, team_id, maps, out)
             self._save_shifts(scenario_data, team_id, maps, out)
+            self._save_link_shifts(scenario_data, team_id, maps, out)
             self._save_dimensions(scenario_data, team_id, maps, out)
             self._save_dim_entries(scenario_data, maps, out)
             self._save_attributes(scenario_data, maps, out)
@@ -354,6 +364,33 @@ class SolverTestScenariosService(BaseService):
 
             maps.setdefault("shifts", {})[s_id] = shift_saved.id
             out.setdefault("shifts", []).append(shift_saved)
+
+    def _save_link_shifts(
+        self,
+        scenario_data: Dict[str, Any],
+        team_id: str,
+        maps: Dict[str, Any],
+        out: Dict[str, Any],
+    ) -> None:
+        link_shifts: List[LinkShift] = scenario_data.get("link_shifts", [])
+        if not all(isinstance(ls, LinkShift) for ls in link_shifts):
+            raise ValueError("Expected all link_shifts to be LinkShift instances")
+        for ls in link_shifts:
+            ls.team_id = team_id
+            ls_id = ls.id
+            # Remap shift ids to the newly-created shift ids if mappings exist
+            if maps.get("shifts"):
+                ls.shift_ids = [
+                    maps["shifts"].get(old_id, old_id) for old_id in ls.shift_ids
+                ]
+            ls.id = ""
+            # Persist link shift
+            link_shift_saved = self.collection.link_shift_db.create_link_shift(
+                link_shift=ls
+            )
+
+            maps.setdefault("link_shifts", {})[ls_id] = link_shift_saved.id
+            out.setdefault("link_shifts", []).append(link_shift_saved)
 
     def _save_dimensions(
         self,
@@ -504,7 +541,7 @@ class SolverTestScenariosService(BaseService):
                         isinstance(swo, ShiftWorkerOption) for swo in b.value
                     ):
                         raise ValueError(
-                            "Expected block value to be list of shift_worker_option"
+                            "Block value must be a list of shift_worker_option"
                         )
                     b.value = [
                         self._remap_shift_worker_options(swo, maps) for swo in b.value
@@ -553,6 +590,7 @@ class SolverTestScenariosService(BaseService):
                     for swo in r.shift_options
                 ]
 
+            r.status = RequestStatus.APPROVED
             request_saved = self.collection.request_db.create_request(request=r)
             out.setdefault("requests", []).append(request_saved)
 

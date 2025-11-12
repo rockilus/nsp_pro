@@ -1,6 +1,6 @@
 import json
 from datetime import date
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from shared.schemas.core import (
     Assignment,
@@ -38,11 +38,11 @@ def build_breaches_model(
     constraints: Constraints,
     requests: List[RequestAugmented],
     breaches_engine: List[BreachEngine],
-) -> List[Breach]:
-    breaches = _parse_breaches_engine(schedule, breaches_engine)
+) -> Tuple[List[Breach], List[Breach]]:
+    breaches_parsed = _parse_breaches_engine(schedule, breaches_engine)
     breaches = [
         b
-        for b in breaches
+        for b in breaches_parsed
         if b.objective_category != ObjectiveCategory.DAILY_SHIFT_DEMAND
     ]
     for breach in breaches:
@@ -61,7 +61,7 @@ def build_breaches_model(
         daily_shift_demands,
         assignments,
     )
-    return breaches
+    return breaches, breaches_parsed
 
 
 def _parse_breaches_engine(

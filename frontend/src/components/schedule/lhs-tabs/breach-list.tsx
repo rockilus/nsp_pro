@@ -42,6 +42,8 @@ export default function BreachList({
       { category: ObjectiveCategory.LINK_SHIFT, label: t("link_shift") },
     ];
 
+  const nonAllCount = categoryMap.filter((c) => c.category !== "all").length;
+
   const [selectedCategories, setSelectedCategories] = useState<
     ObjectiveCategory[]
   >(
@@ -58,13 +60,8 @@ export default function BreachList({
           .map((c) => c.category as ObjectiveCategory)
       );
     } else {
-      setSelectedCategories((prevCategories) => {
-        if (prevCategories.includes(category)) {
-          return prevCategories.filter((cat) => cat !== category);
-        } else {
-          return [...prevCategories, category];
-        }
-      });
+      // Single-select: choose only this category
+      setSelectedCategories([category]);
     }
   };
 

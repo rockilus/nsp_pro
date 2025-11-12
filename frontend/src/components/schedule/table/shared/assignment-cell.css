@@ -6,6 +6,9 @@
   margin: 1px;
   padding: 2px;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  /* keep content flow and allow placing the lock using margin-top:auto */
 }
 
 .a-cell-title {
@@ -39,4 +42,13 @@
 .a-cell-shift-type-marker.duty {
   /* background-color: #0000ff70; */
   background-color: var(--bg-color, #212121);
+}
+
+.assignment-fixed-lock {
+  font-size: 14px;
+  pointer-events: none; /* don't block clicks */
+  margin-top: auto; /* push to bottom */
+  align-self: flex-end; /* align to right */
+  /* padding-right: 6px; */
+  /* padding-bottom: 6px; */
 }

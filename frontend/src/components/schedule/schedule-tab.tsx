@@ -473,16 +473,23 @@ export default function ScheduleTab({
 
   const handleRescindRequest = async (requestId: string) => {
     try {
-      const rescindedRequest = await rescindRequest(
+      const result = await rescindRequest(
         requestId,
         teamWithMembership.team.id
       );
-      setRequests(
-        requests.map((r) =>
-          r.id === rescindedRequest.id ? rescindedRequest : r
-        )
+      const rescindedRequest = result.request;
+      const assignmentsDeletedIds = result.assignmentsDeletedIds || [];
+
+      setRequests((prev) =>
+        prev.map((r) => (r.id === rescindedRequest.id ? rescindedRequest : r))
       );
       setSelectedRequest(rescindedRequest);
+
+      if (assignmentsDeletedIds.length > 0) {
+        setAssignments((prev) =>
+          prev.filter((a) => !assignmentsDeletedIds.includes(a.id))
+        );
+      }
     } catch (error) {
       console.error("Failed to rescind request:", error);
     }
@@ -490,14 +497,25 @@ export default function ScheduleTab({
 
   const handleAcceptRequest = async (requestId: string) => {
     try {
-      const acceptedRequest = await acceptRequest(
-        requestId,
-        teamWithMembership.team.id
-      );
-      setRequests(
-        requests.map((r) => (r.id === acceptedRequest.id ? acceptedRequest : r))
+      const result = await acceptRequest(requestId, teamWithMembership.team.id);
+      const acceptedRequest = result.request;
+      const newAssignments = result.assignments || [];
+
+      // Update requests list and selected request
+      setRequests((prev) =>
+        prev.map((r) => (r.id === acceptedRequest.id ? acceptedRequest : r))
       );
       setSelectedRequest(acceptedRequest);
+
+      // Merge new assignments into the assignments state
+      if (newAssignments.length > 0) {
+        setAssignments((prev) => {
+          // Avoid duplicates by id
+          const existingIds = new Set(prev.map((a) => a.id));
+          const toAdd = newAssignments.filter((a) => !existingIds.has(a.id));
+          return [...prev, ...toAdd];
+        });
+      }
     } catch (error) {
       console.error("Failed to accept request:", error);
     }

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "shared"
-version = "0.1.324"
+version = "0.1.331"
 description = ""
 authors = ["Felipe Kharaba"]
 readme = "README.md"

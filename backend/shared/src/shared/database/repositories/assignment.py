@@ -1,5 +1,5 @@
 from datetime import date, datetime, time, timezone
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
@@ -73,18 +73,51 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         return assignment[0].to_core() if assignment else None
 
     def get_assignments_by_dates(
-        self, team_id: str, start_date: date, end_date: date
+        self,
+        team_id: str,
+        start_date: Optional[date],
+        end_date: Optional[date],
+        fixed: Optional[bool] = None,
     ) -> List[Assignment]:
-        """Get all assignments for a team within a date range."""
-        assignments = self.find_all(
-            {
-                "team": team_id,
-                "date": {
-                    "$gte": datetime(start_date.year, start_date.month, start_date.day),
-                    "$lte": datetime(end_date.year, end_date.month, end_date.day),
-                },
-            }
-        )
+        """Get all assignments for a team within a date range.
+
+        Behavior:
+        - both start_date and end_date provided: return assignments where
+            date >= start_date and date <= end_date
+        - only start_date provided: return assignments where
+            date >= start_date
+        - only end_date provided: return assignments where
+            date <= end_date
+        - neither provided: return an empty list
+        """
+        if not start_date and not end_date:
+            return []
+
+        date_filter: Dict[str, Any] = {}
+        if start_date:
+            date_filter["$gte"] = datetime(
+                start_date.year,
+                start_date.month,
+                start_date.day,
+                tzinfo=timezone.utc,
+            )
+        if end_date:
+            date_filter["$lte"] = datetime(
+                end_date.year,
+                end_date.month,
+                end_date.day,
+                tzinfo=timezone.utc,
+            )
+
+        query: Dict[str, Any] = {"team": team_id}
+        if date_filter:
+            query["date"] = date_filter
+
+        # Optionally filter by fixed flag (True = only fixed, False = only non-fixed)
+        if fixed is not None:
+            query["fixed"] = fixed
+
+        assignments = self.find_all(query)
         return [a.to_core() for a in assignments]
 
     def get_assignments_by_schedule_id(self, schedule_id: str) -> List[Assignment]:
@@ -97,19 +130,6 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
     ) -> List[Assignment]:
         """Get all assignments for a list of schedule IDs."""
         assignments = self.find_all({"schedule": {"$in": schedule_ids}})
-        return [a.to_core() for a in assignments]
-
-    def get_assignments_fixed_by_schedule_ids(
-        self, schedule_ids: List[str]
-    ) -> List[Assignment]:
-        """Get all fixed assignments for a list of schedule IDs."""
-        assignments = self.find_all(
-            {
-                "fixed": True,
-                "schedule": {"$in": schedule_ids},
-                "deleted": False,
-            }
-        )
         return [a.to_core() for a in assignments]
 
     def get_assignments_by_schedule_ids_and_date_range(
@@ -192,6 +212,70 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
     def delete_assignments(self, assignment_ids: List[str]) -> List[str]:
         result = self.collection.delete_many({"_id": {"$in": assignment_ids}})
         return assignment_ids if result.deleted_count > 0 else []
+
+    def delete_assignments_by_dates(
+        self,
+        team_id: str,
+        start_date: Optional[date],
+        end_date: Optional[date],
+        delete_fixed: bool = False,
+    ) -> List[str]:
+        """Delete all assignments for a team within a date range.
+
+            Behavior mirrors `get_assignments_by_dates`:
+            - both start_date and end_date provided: delete assignments where
+                date >= start_date and date <= end_date
+            - only start_date provided: delete assignments where
+                date >= start_date
+            - only end_date provided: delete assignments where
+                date <= end_date
+            - neither provided: do nothing and return []
+
+        If `delete_fixed` is True: delete both fixed and non-fixed assignments.
+        If `delete_fixed` is False: delete only non-fixed assignments (fixed == False).
+
+            Returns:
+                List[str]: list of deleted assignment ids
+        """
+        if not start_date and not end_date:
+            return []
+
+        date_filter: Dict[str, Any] = {}
+        if start_date:
+            date_filter["$gte"] = datetime(
+                start_date.year,
+                start_date.month,
+                start_date.day,
+                tzinfo=timezone.utc,
+            )
+        if end_date:
+            date_filter["$lte"] = datetime(
+                end_date.year,
+                end_date.month,
+                end_date.day,
+                tzinfo=timezone.utc,
+            )
+
+        query: Dict[str, Any] = {"team": team_id}
+        if date_filter:
+            query["date"] = date_filter
+
+        # If delete_fixed is False, we should only delete non-fixed assignments.
+        # If delete_fixed is True, we do not add any fixed filter and delete all
+        # matching
+        # assignments regardless of their `fixed` flag.
+        if not delete_fixed:
+            query["fixed"] = False
+
+        # Find matching assignments and collect their ids
+        matching = self.collection.find(query, {"_id": 1})
+        deleted_ids = [doc["_id"] for doc in matching]
+
+        # Delete them
+        if deleted_ids:
+            self.collection.delete_many(query)
+
+        return deleted_ids
 
     def delete_assignments_by_schedule_id(self, schedule_id: str) -> None:
         """Delete all assignments for a specific schedule."""

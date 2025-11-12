@@ -43,6 +43,7 @@ from core_to_engine_service.build_periods import (
     build_periods_yearly,
 )
 from core_to_engine_service.build_worker_shift_filter import (
+    BoolSharedPolicy,
     build_worker_shift_filters,
 )
 from core_to_engine_service.calculate_worker_nb_duties import (
@@ -149,6 +150,17 @@ def core_to_engine_inputs(
         periods=periods_monthly,
     )
 
+    # Fixed assignments
+    fixed_values = core_to_engine_fixed_values(
+        engine_inputs.workers,
+        workers_not_deleted,
+        worker_ids_to_worker_dates,
+        engine_inputs.shifts,
+        engine_inputs.shift_demands,
+        fixed_assignments,
+        engine_inputs.requests_leave,
+    )
+
     # Constraints:
     constraints = build_engine_constraints(
         engine_inputs.cbs_augmented,
@@ -183,15 +195,8 @@ def core_to_engine_inputs(
                 ]
                 for w_id in worker_not_deleted_ids
             ],
-            fixed_values=core_to_engine_fixed_values(
-                engine_inputs.workers,
-                workers_not_deleted,
-                worker_ids_to_worker_dates,
-                engine_inputs.shifts,
-                engine_inputs.shift_demands,
-                fixed_assignments,
-                engine_inputs.requests_leave,
-            ),
+            # fixed_values={},
+            fixed_values=fixed_values,
             sol_hint=SolHint(
                 var_sol=(
                     engine_inputs.model_output.var_sol
@@ -209,14 +214,18 @@ def core_to_engine_inputs(
         ),
         user_constraints=constraints,
         # user_constraints=Constraints(
-        #     sum=constraints.sum,
-        #     seq=constraints.seq,
-        #     ord=constraints.ord,
-        #     fil=constraints.fil,
+        # sum=[],
+        # seq=[],
+        # ord=[],
+        # fil=[],
+        # fai=[],
+        # sum=constraints.sum,
+        # seq=constraints.seq,
+        # ord=constraints.ord,
+        # fil=constraints.fil,
         #     fai=constraints.fai,
         # ),
         configuration_constraints=ConfigurationConstraintInputs(
-            # work_loads=None,
             work_loads=(
                 build_engine_work_loads(
                     workers_not_deleted,
@@ -266,15 +275,23 @@ def core_to_engine_inputs(
                 engine_inputs.penalties.configuration_constraint.link_shift,
             ),
             worker_shift_filters=build_worker_shift_filters(
-                engine_inputs.workers,
-                worker_ids_to_worker_dates,
-                engine_inputs.shifts,
-                engine_inputs.dimensions,
-                engine_inputs.attributes,
-                engine_inputs.penalties.configuration_constraint.worker_shift_filter,
+                workers=engine_inputs.workers,
+                worker_ids_to_worker_dates=worker_ids_to_worker_dates,
+                shifts=engine_inputs.shifts,
+                dimensions=engine_inputs.dimensions,
+                attributes=engine_inputs.attributes,
+                fixed_values=fixed_values,
+                penalty=(
+                    engine_inputs.penalties.configuration_constraint.worker_shift_filter
+                ),
+                shared_bool_policies={
+                    d.id: BoolSharedPolicy.SHIFT_TRUE_ONLY
+                    for d in engine_inputs.dimensions
+                },
             ),
         ),
         system_constraints=SystemConstraintInputs(
+            # weekly_target_work_time=[],
             weekly_target_work_time=(
                 build_work_time_constraints(
                     periods_weekly,
@@ -311,6 +328,7 @@ def core_to_engine_inputs(
                 # fmt: on
                 else []
             ),
+            # special_days_target_nb_duties=[],
             special_days_target_nb_duties=(
                 build_duty_special_days_constraints(
                     workers_not_deleted,
@@ -353,6 +371,7 @@ def core_to_engine_inputs(
         w_to_work_times=w_to_work_times,
         w_to_nb_duties=w_to_nb_duties,
         shift_id_to_duration=shift_id_to_duration_dict,
+        dim_to_attr_value_to_shift=dim_to_attr_value_to_shift,
     )
 
 

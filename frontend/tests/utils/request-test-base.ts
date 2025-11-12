@@ -24,6 +24,7 @@ import {
   RequestType,
   FulfillmentStatus,
 } from "../../src/types/request";
+import { AssignmentT } from "@/types/assignment";
 
 dayjs.extend(utc);
 dayjs.extend(customParseFormat);
@@ -326,10 +327,12 @@ export class RequestTestBase {
         console.log(
           `[${testId || "legacy"}] Approving third request for rescind test`
         );
-        const approvedRequest = await this.approveTestRequest(
+        // approveTestRequest returns { request: RequestT, assignments: AssignmentT[] }
+        // we only want to keep the RequestT in our testRequests array
+        const approvedResponse = await this.approveTestRequest(
           testRequests[2].id
         );
-        testRequests[2] = approvedRequest;
+        testRequests[2] = approvedResponse.request;
       }
 
       // Deny the last request for status filter tests
@@ -693,7 +696,9 @@ export class RequestTestBase {
    * @param requestId - The ID of the request to approve
    * @returns The updated request with APPROVED status
    */
-  async approveTestRequest(requestId: string): Promise<RequestT> {
+  async approveTestRequest(
+    requestId: string
+  ): Promise<{ request: RequestT; assignments: AssignmentT[] }> {
     if (!this.testTeam) {
       throw new Error("Test team not created. Call setupRequestTests first.");
     }
