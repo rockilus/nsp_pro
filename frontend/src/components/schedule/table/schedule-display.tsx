@@ -61,7 +61,7 @@ export default function ScheduleDisplay({
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
-  const scheduleDisplays: { [key: string]: JSX.Element } = {
+  const scheduleDisplays: { [key: string]: React.ReactElement } = {
     shift: (
       <ScheduleTableShift
         lng={lng}
