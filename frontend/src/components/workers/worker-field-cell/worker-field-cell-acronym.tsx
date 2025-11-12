@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 // MUI
 import Box from "@mui/material/Box";
 import TableCell from "@mui/material/TableCell";
@@ -15,19 +15,28 @@ export default function WorkerFieldCellAcronym({
   worker: WorkerT;
   editing: boolean;
   setEditing: Dispatch<SetStateAction<{}>>;
-  handleUpdateWorker: (updatedWorker: WorkerT) => void;
+  // allow async updates (parent may return a Promise)
+  handleUpdateWorker: (updatedWorker: WorkerT) => void | Promise<unknown>;
 }) {
   const [valueState, setValueState] = useState<string>(worker.acronym);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const handleEditConfirm = async () => {
     if (valueState !== worker.acronym) {
-      console.log("In acronym: ", worker.acronym, " -> ", valueState);
-
-      handleUpdateWorker({
-        ...worker,
-        acronym: valueState,
-      });
+      // mark updating for UX; parent may perform async work
+      setIsUpdating(true);
+      const res = handleUpdateWorker({ ...worker, acronym: valueState });
+      if (res && typeof (res as Promise<unknown>).then === "function") {
+        try {
+          await (res as Promise<unknown>);
+        } finally {
+          setIsUpdating(false);
+        }
+      } else {
+        setIsUpdating(false);
+      }
     }
+
     setEditing({});
   };
 
@@ -36,16 +45,18 @@ export default function WorkerFieldCellAcronym({
     setValueState(worker.acronym);
   };
 
-  useEffect(() => {
-    setValueState(worker.acronym);
-  }, [worker.acronym]);
-
   return (
     <TableCell
       component="th"
       scope="row"
       data-testid="worker-acronym-cell"
-      onClick={() => setEditing({ [worker.id]: "acronym" })}
+      onClick={() => {
+        if (!isUpdating) {
+          // initialize local edit value from prop when entering edit mode
+          setValueState(worker.acronym);
+          setEditing({ [worker.id]: "acronym" });
+        }
+      }}
       sx={{ paddingY: 0, textAlign: "center" }}
     >
       {editing ? (
@@ -64,9 +75,11 @@ export default function WorkerFieldCellAcronym({
             }
           }}
           autoFocus
+          disabled={isUpdating}
           inputProps={{
             style: { textAlign: "center" },
             "data-testid": `worker-acronym-input-${worker.id}`,
+            "data-updating": isUpdating,
           }}
         />
       ) : (
