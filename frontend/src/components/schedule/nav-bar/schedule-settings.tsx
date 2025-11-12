@@ -230,9 +230,21 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
                 );
                 setTargetWeek(selectedWeek || null);
               }}
-              placeholder="Select a week"
+              displayEmpty
+              renderValue={(selected) =>
+                (selected as string) ? (
+                  (selected as string)
+                ) : (
+                  <em style={{ color: "#6b6b6b" }}>{t("target_week")}</em>
+                )
+              }
+              inputProps={{ "aria-label": t("target_week") }}
               style={{ minWidth: "300px" }}
             >
+              {/* optional disabled placeholder item for a11y */}
+              <MenuItem disabled value="">
+                <em>{t("target_week")}</em>
+              </MenuItem>
               {weekOptions.map((week, index) => (
                 <MenuItem key={`${index}-${week.label}`} value={week.label}>
                   {week.label}
