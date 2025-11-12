@@ -435,7 +435,7 @@ export function AuthContextProvider({
   children,
 }: {
   children: React.ReactNode;
-}): JSX.Element {
+}): React.ReactElement {
   // Security: Default to production mode unless explicitly set to development
   if (env.isDevelopment) {
     console.log("🔧 Using development authentication");
