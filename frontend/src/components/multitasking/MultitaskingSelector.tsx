@@ -7,6 +7,7 @@
  */
 
 import React, { useState, useMemo } from "react";
+import dayjs, { Dayjs } from "dayjs";
 import {
   Box,
   Card,
@@ -30,8 +31,8 @@ import {
 
 interface MultitaskingSelectorProps {
   teamId: string;
-  startDate: Date;
-  endDate: Date;
+  startDate: Dayjs;
+  endDate: Dayjs;
   onSelectionChange?: (selectedShiftDemandIds: string[]) => void;
   enabled?: boolean;
 }

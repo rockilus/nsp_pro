@@ -1,6 +1,7 @@
 /**
  * API client for multitasking operations
  */
+import dayjs, { Dayjs } from "dayjs";
 import {
   MultitaskingGroupDTO,
   MultitaskingGroup,
@@ -133,8 +134,8 @@ export class MultitaskingApi extends BaseApi {
   static async getShiftDemandConcurrency(
     apiClient: AuthenticatedApiClient,
     teamId: string,
-    startDate: Date,
-    endDate: Date
+    startDate: Dayjs,
+    endDate: Dayjs
   ): Promise<ShiftDemandConcurrency[]> {
     // Security: Input validation
     if (!teamId) {
@@ -143,14 +144,14 @@ export class MultitaskingApi extends BaseApi {
     if (!startDate || !endDate) {
       throw new Error("Start date and end date are required");
     }
-    if (startDate > endDate) {
+    if (!startDate.isBefore(endDate)) {
       throw new Error("Start date must be before end date");
     }
 
     try {
-      // Convert dates to Unix timestamps
-      const startTimestamp = Math.floor(startDate.getTime() / 1000);
-      const endTimestamp = Math.floor(endDate.getTime() / 1000);
+      // Convert dates to Unix timestamps (seconds)
+      const startTimestamp = startDate.unix();
+      const endTimestamp = endDate.unix();
 
       const requestData: ShiftDemandConcurrencyRequest = {
         teamId,

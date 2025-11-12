@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import dayjs, { Dayjs } from "dayjs";
 // Types
 import {
   MultitaskingGroup,
@@ -249,8 +250,8 @@ export function useGetShiftDemandConcurrency() {
   const getShiftDemandConcurrency = useCallback(
     async (
       teamId: string,
-      startDate: Date,
-      endDate: Date
+      startDate: Dayjs,
+      endDate: Dayjs
     ): Promise<ShiftDemandConcurrency[]> => {
       if (env.isDevelopment) {
         console.log("🔍 useGetShiftDemandConcurrency called:", {

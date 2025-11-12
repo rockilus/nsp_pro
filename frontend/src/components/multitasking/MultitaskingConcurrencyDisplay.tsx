@@ -6,6 +6,7 @@
  */
 
 import React from "react";
+import dayjs, { Dayjs } from "dayjs";
 import {
   Box,
   Card,
@@ -21,8 +22,8 @@ import { useShiftDemandConcurrency } from "@/app/lib/hooks/useMultitasking";
 
 interface MultitaskingConcurrencyDisplayProps {
   teamId: string;
-  startDate: Date;
-  endDate: Date;
+  startDate: Dayjs;
+  endDate: Dayjs;
   enabled?: boolean;
 }
 
@@ -71,7 +72,9 @@ export const MultitaskingConcurrencyDisplay: React.FC<
   }
 
   const formatDateRange = () => {
-    return `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+    return `${startDate.format("YYYY-MM-DD")} - ${endDate.format(
+      "YYYY-MM-DD"
+    )}`;
   };
 
   return (
