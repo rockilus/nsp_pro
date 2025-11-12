@@ -10,6 +10,107 @@ import "./shift-staffing-cell.css";
 import { SpecialtyT } from "@/types/specialty";
 import { ShiftT, StaffingT } from "../../../../types/shift";
 
+type AdjustStaffingButtonsProps = {
+  staffing: StaffingT;
+  onIncrease: (event: React.SyntheticEvent, staffing: StaffingT) => void;
+  onDecrease: (event: React.SyntheticEvent, staffing: StaffingT) => void;
+};
+
+const AdjustStaffingButtons = ({
+  staffing,
+  onIncrease,
+  onDecrease,
+}: AdjustStaffingButtonsProps) => {
+  return (
+    <div className="adjust-staffing-buttons">
+      <div
+        role="button"
+        tabIndex={0}
+        className="adjust-button adjust-button-top"
+        onClick={(e) => onIncrease(e, staffing)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") onIncrease(e, staffing);
+        }}
+      >
+        +
+      </div>
+      <div
+        role="button"
+        tabIndex={0}
+        className="adjust-button adjust-button-bottom"
+        onClick={(e) => onDecrease(e, staffing)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") onDecrease(e, staffing);
+        }}
+      >
+        –
+      </div>
+    </div>
+  );
+};
+
+type StaffingChipProps = {
+  staffing: StaffingT;
+  specialties: SpecialtyT[];
+  onIncrease: (event: React.SyntheticEvent, staffing: StaffingT) => void;
+  onDecrease: (event: React.SyntheticEvent, staffing: StaffingT) => void;
+};
+
+const StaffingChip = ({
+  staffing,
+  specialties,
+  onIncrease,
+  onDecrease,
+}: StaffingChipProps) => {
+  const specialty = specialties.find((s) => s.id === staffing.specialtyId);
+  return (
+    <div className="chip">
+      <span className="chip-label">{`${
+        staffing.specialtyId === null
+          ? "Any"
+          : specialty
+          ? specialty.name
+          : "Name not found"
+      }: ${staffing.staffing}`}</span>
+      <span className="chip-delete">
+        <AdjustStaffingButtons
+          staffing={staffing}
+          onIncrease={onIncrease}
+          onDecrease={onDecrease}
+        />
+      </span>
+    </div>
+  );
+};
+
+type ButtonContentProps = {
+  staffingList: StaffingT[];
+  specialties: SpecialtyT[];
+  onIncrease: (event: React.SyntheticEvent, staffing: StaffingT) => void;
+  onDecrease: (event: React.SyntheticEvent, staffing: StaffingT) => void;
+};
+
+const ButtonContent = ({
+  staffingList,
+  specialties,
+  onIncrease,
+  onDecrease,
+}: ButtonContentProps) => {
+  return (
+    <div className="chips-container">
+      {staffingList.map((staffing, index) => (
+        <StaffingChip
+          key={staffing.specialtyId || index}
+          staffing={staffing}
+          specialties={specialties}
+          onIncrease={onIncrease}
+          onDecrease={onDecrease}
+        />
+      ))}
+    </div>
+  );
+};
+
 export default function ShiftStaffingCell({
   shift,
   specialties,
@@ -116,67 +217,8 @@ export default function ShiftStaffingCell({
     });
   };
 
-  const AdjustStaffingButtons = ({ staffing }: { staffing: StaffingT }) => {
-    return (
-      <div className="adjust-staffing-buttons">
-        <div
-          role="button"
-          tabIndex={0}
-          className="adjust-button adjust-button-top"
-          onClick={(e) => handleIncreaseStaffing(e, staffing)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ")
-              handleIncreaseStaffing(e, staffing);
-          }}
-        >
-          +
-        </div>
-        <div
-          role="button"
-          tabIndex={0}
-          className="adjust-button adjust-button-bottom"
-          onClick={(e) => handleDecreaseStaffing(e, staffing)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ")
-              handleDecreaseStaffing(e, staffing);
-          }}
-        >
-          –
-        </div>
-      </div>
-    );
-  };
-
-  const StaffingChip = ({ staffing }: { staffing: StaffingT }) => {
-    const specialty = specialties.find((s) => s.id === staffing.specialtyId);
-    return (
-      <div className="chip">
-        <span className="chip-label">{`${
-          staffing.specialtyId === null
-            ? "Any"
-            : specialty
-            ? specialty.name
-            : "Name not found"
-        }: ${staffing.staffing}`}</span>
-        <span className="chip-delete">
-          <AdjustStaffingButtons staffing={staffing} />
-        </span>
-      </div>
-    );
-  };
-
-  const ButtonContent = () => {
-    return (
-      <div className="chips-container">
-        {shift.staffing.map((staffing, index) => (
-          <StaffingChip
-            key={staffing.specialtyId || index}
-            staffing={staffing}
-          />
-        ))}
-      </div>
-    );
-  };
+  // Note: presentational subcomponents are defined above to avoid creating
+  // components during render which would reset state and break eslint rules.
 
   return (
     <TableCell
@@ -188,7 +230,14 @@ export default function ShiftStaffingCell({
       }}
     >
       <PopoverAnchorElOver
-        buttonContent={<ButtonContent />}
+        buttonContent={
+          <ButtonContent
+            staffingList={shift.staffing}
+            specialties={specialties}
+            onIncrease={handleIncreaseStaffing}
+            onDecrease={handleDecreaseStaffing}
+          />
+        }
         content={
           <ShiftStaffingCellEdit
             selectedSpecialties={buildSelectedSpecialties()}
