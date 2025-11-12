@@ -22,20 +22,24 @@ export async function generateStaticParams() {
 
 interface RootLayoutProps {
   children: React.ReactNode;
-  params: { lng: string };
+  params: Promise<{ lng: string }>;
 }
 
-export default function RootLayout({ children, params }: RootLayoutProps) {
+export default async function RootLayout({ children, params }: RootLayoutProps) {
+  // `params` can be a Promise in newer Next.js route handlers — await it first.
+  const resolvedParams = await params;
+  const lng = resolvedParams.lng;
+
   // Validate language parameter
-  if (!languages.includes(params.lng)) {
+  if (!languages.includes(lng)) {
     notFound();
   }
 
   return (
-    <html lang={params.lng}>
+    <html lang={lng}>
       <AppRouterCacheProvider>
         <body className={inter.className}>
-          <LanguageProvider initialLanguage={params.lng}>
+          <LanguageProvider initialLanguage={lng}>
             {/* <ImpersonationBanner /> */}
             {children}
           </LanguageProvider>
