@@ -133,6 +133,7 @@ export default function ColumnSortFilterMenu({
   return (
     <>
       <IconButton
+        component="span"
         size="small"
         onClick={handleMenuOpen}
         sx={{
