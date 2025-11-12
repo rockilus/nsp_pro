@@ -73,7 +73,7 @@ export default function ShiftStaffingCell({
   };
 
   const handleIncreaseStaffing = (
-    event: React.MouseEvent<HTMLButtonElement>,
+    event: React.SyntheticEvent,
     staffing: StaffingT
   ) => {
     event.stopPropagation();
@@ -96,7 +96,7 @@ export default function ShiftStaffingCell({
   };
 
   const handleDecreaseStaffing = (
-    event: React.MouseEvent<HTMLButtonElement>,
+    event: React.SyntheticEvent,
     staffing: StaffingT
   ) => {
     event.stopPropagation();
@@ -119,18 +119,28 @@ export default function ShiftStaffingCell({
   const AdjustStaffingButtons = ({ staffing }: { staffing: StaffingT }) => {
     return (
       <div className="adjust-staffing-buttons">
-        <button
+        <div
+          role="button"
+          tabIndex={0}
           className="adjust-button adjust-button-top"
           onClick={(e) => handleIncreaseStaffing(e, staffing)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") handleIncreaseStaffing(e, staffing);
+          }}
         >
           +
-        </button>
-        <button
+        </div>
+        <div
+          role="button"
+          tabIndex={0}
           className="adjust-button adjust-button-bottom"
           onClick={(e) => handleDecreaseStaffing(e, staffing)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") handleDecreaseStaffing(e, staffing);
+          }}
         >
           –
-        </button>
+        </div>
       </div>
     );
   };
