@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import dayjs from "dayjs";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
@@ -24,6 +24,33 @@ interface DemandSelectionProps {
   ) => Promise<void>;
   handleDeleteShiftDemand: (demandId: string) => Promise<void>;
 }
+
+interface AdjustStaffingButtonsProps {
+  onDecrease: () => void;
+  onIncrease: () => void;
+}
+
+const AdjustStaffingButtons = ({
+  onDecrease,
+  onIncrease,
+}: AdjustStaffingButtonsProps) => {
+  return (
+    <div className="demand-selection-adjust-buttons-container">
+      <button
+        className="demand-selection-adjust-button adjust-button-left"
+        onClick={onDecrease}
+      >
+        –
+      </button>
+      <button
+        className="demand-selection-adjust-button adjust-button-right"
+        onClick={onIncrease}
+      >
+        +
+      </button>
+    </div>
+  );
+};
 
 export default function DemandSelection({
   lng,
@@ -66,24 +93,7 @@ export default function DemandSelection({
     await handleDeleteShiftDemand(shiftDemand.id);
   };
 
-  const AdjustStaffingButtons = () => {
-    return (
-      <div className="demand-selection-adjust-buttons-container">
-        <button
-          className="demand-selection-adjust-button adjust-button-left"
-          onClick={handleDecreaseDSD}
-        >
-          –
-        </button>
-        <button
-          className="demand-selection-adjust-button adjust-button-right"
-          onClick={handleIncreaseDSD}
-        >
-          +
-        </button>
-      </div>
-    );
-  };
+  // AdjustStaffingButtons moved outside component to avoid creating components during render
 
   return (
     <div className="demand-selection-container">
@@ -108,7 +118,10 @@ export default function DemandSelection({
           <span className="demand-selection-dsd-target">
             {shiftDemand.count}
           </span>
-          <AdjustStaffingButtons />
+          <AdjustStaffingButtons
+            onDecrease={handleDecreaseDSD}
+            onIncrease={handleIncreaseDSD}
+          />
         </div>
         <div className="demand-selection-staffing-required">
           <span className="demand-selection-staffing-required-label">
