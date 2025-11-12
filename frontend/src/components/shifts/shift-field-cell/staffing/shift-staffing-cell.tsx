@@ -125,7 +125,8 @@ export default function ShiftStaffingCell({
           className="adjust-button adjust-button-top"
           onClick={(e) => handleIncreaseStaffing(e, staffing)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") handleIncreaseStaffing(e, staffing);
+            if (e.key === "Enter" || e.key === " ")
+              handleIncreaseStaffing(e, staffing);
           }}
         >
           +
@@ -136,7 +137,8 @@ export default function ShiftStaffingCell({
           className="adjust-button adjust-button-bottom"
           onClick={(e) => handleDecreaseStaffing(e, staffing)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") handleDecreaseStaffing(e, staffing);
+            if (e.key === "Enter" || e.key === " ")
+              handleDecreaseStaffing(e, staffing);
           }}
         >
           –
