@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo } from "react";
 import { useTranslation } from "../../../../app/i18n/client";
 // MUI
 import TableCell from "@mui/material/TableCell";
@@ -31,7 +31,7 @@ export default function DailyShiftDemandRow({
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
-  const [counts, setCounts] = useState<{
+  const counts = useMemo<{
     [date: string]: {
       [id: string]: {
         actual: number;
@@ -44,14 +44,10 @@ export default function DailyShiftDemandRow({
         staffingTotal: number;
       };
     };
-  }>({});
-
-  useEffect(() => {
-    const newCounts =
-      scheduleViewSettings.groupBy === "shift"
-        ? countShifts(shifts, assignments, shiftDemands, periodDates)
-        : countStaffings(shifts, assignments, shiftDemands, periodDates);
-    setCounts(newCounts);
+  }>(() => {
+    return scheduleViewSettings.groupBy === "shift"
+      ? countShifts(shifts, assignments, shiftDemands, periodDates)
+      : countStaffings(shifts, assignments, shiftDemands, periodDates);
   }, [shifts, assignments, shiftDemands, periodDates, scheduleViewSettings]);
 
   return (
