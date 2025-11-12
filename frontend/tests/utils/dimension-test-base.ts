@@ -171,21 +171,21 @@ export class DimensionTestBase extends WorkerTestBase {
    * Gets the popup dialog
    */
   getNewDimensionPopup(page: Page) {
-    return page.locator('[data-testid="new-dimension-popup"]');
+    return page.locator('[data-testid="new-dimension-dialog"]');
   }
 
   /**
    * Gets the popup title
    */
   getPopupTitle(page: Page) {
-    return page.locator('[data-testid="new-dimension-popup-title"]');
+    return page.locator('[data-testid="new-dimension-dialog-title"]');
   }
 
   /**
    * Gets the popup close button
    */
   getPopupCloseButton(page: Page) {
-    return page.locator('[data-testid="new-dimension-popup-close"]');
+    return page.locator('[data-testid="new-dimension-dialog-close"]');
   }
 
   /**

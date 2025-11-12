@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 // MUI
-import Popover from "@mui/material/Popover";
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
@@ -43,14 +44,17 @@ export default function PopoverRHS({
     }
   }, []);
 
-  const id = open ? "floating-popover" : undefined;
+  const id = open ? "floating-dialog" : undefined;
 
   return (
     <Box>
+      {/* trigger wrapper: use a non-button element so we don't accidentally nest buttons */}
       <Box
+        component="span"
         aria-describedby={id}
         onClick={handleClick}
         sx={{
+          display: "inline-block",
           backgroundColor: "transparent",
           border: "none",
           boxShadow: "none",
@@ -59,48 +63,54 @@ export default function PopoverRHS({
             boxShadow: "none",
           },
           padding: 0,
+          cursor: "pointer",
         }}
       >
         {buttonContent}
       </Box>
-      <Popover
+
+      <Dialog
         id={id}
         open={open}
-        anchorReference="anchorPosition"
-        anchorPosition={{ top: 40, left: windowWidth - 390 }}
         onClose={handleClose}
-        data-testid="new-dimension-popup"
-        slotProps={{
-          paper: {
-            style: {
-              margin: 20,
-              boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
-              padding: 20,
-              width: 350,
-              height: "80%",
-            },
+        aria-labelledby="floating-dialog-title"
+        data-testid="new-dimension-dialog"
+        // position the paper near the right side similar to the popover
+        PaperProps={{
+          style: {
+            margin: 20,
+            padding: 20,
+            width: 350,
+            height: "80%",
+            boxSizing: "border-box",
+            position: "absolute",
+            top: 40,
+            right: 20,
+            boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
           },
         }}
       >
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          sx={{ marginBottom: 1.5 }}
-        >
-          <Typography variant="h6" data-testid="new-dimension-popup-title">
-            {title}
-          </Typography>
-          <IconButton
-            onClick={handleClose}
-            sx={{ padding: 0 }}
-            data-testid="new-dimension-popup-close"
+        <DialogContent dividers={false} sx={{ margin: 0, padding: 0 }}>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{ marginBottom: 1.5 }}
           >
-            <CloseIcon />
-          </IconButton>
-        </Box>
-        {content}
-      </Popover>
+            <Typography variant="h6" id="floating-dialog-title">
+              {title}
+            </Typography>
+            <IconButton
+              onClick={handleClose}
+              sx={{ padding: 0 }}
+              data-testid="new-dimension-dialog-close"
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          {content}
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }
