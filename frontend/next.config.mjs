@@ -15,19 +15,6 @@ const nextConfig = {
     // Use the current package (frontend/) as the workspace root
     root: '.',
   },
-  // Webpack configuration to handle static export issues
-  webpack: (config, { isServer, dev }) => {
-    // For static export, we need to handle server-side imports gracefully
-    if (!isServer && !dev) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
-      };
-    }
-    return config;
-  },
 }
 
 export default nextConfig;
