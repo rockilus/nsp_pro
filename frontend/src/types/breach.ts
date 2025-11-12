@@ -18,6 +18,10 @@ export enum ObjectiveCategory {
   WORK_TIME_DESIRED = 5,
   DUTIES_PER_MONTH = 6,
   LINK_SHIFT = 7,
+  DUTY_RECUP = 8,
+  WORK_TIME_WEEK_TARGET = 9,
+  DUTIES_PER_MONTH_TARGET = 10,
+  SPECIAL_DAYS_TARGET = 11,
 }
 
 export type BreachT = {
