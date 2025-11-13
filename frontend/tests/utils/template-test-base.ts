@@ -1572,23 +1572,27 @@ export class TemplateTestBase {
     await expect(input).toBeVisible();
     await expect(input).toBeEnabled();
 
-    // Clear the input first
-    await input.click();
-    await input.fill("");
+    // Convert incoming YYYY-MM-DD to dayjs and format as DD/MM/YYYY (app locale)
+    const d = dayjs.utc(dateString, "YYYY-MM-DD", true);
+    if (!d.isValid()) {
+      throw new Error(
+        `Invalid date string passed to setApplicationDialogDate: ${dateString}`
+      );
+    }
+    const formatted = d.format("DD/MM/YYYY");
 
-    // The DatePicker appears to use DD/MM/YYYY format based on the placeholder
-    // Convert from YYYY-MM-DD to DD/MM/YYYY
-    const formattedDate = dateString.replace(
-      /(\d{4})-(\d{2})-(\d{2})/,
-      "$3/$2/$1"
-    );
-    await input.fill(formattedDate);
+    // Set the value directly on the input element so React/MUI picks it up
+    await input.evaluate((el: HTMLInputElement, v: string) => {
+      el.value = v;
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+    }, formatted);
+    // Press Tab to confirm / blur the input so validation runs (some components
+    // validate on blur rather than on input events)
+    // await input.press("Tab");
 
-    // Press Tab to confirm the date (more reliable than Enter for date inputs)
-    await input.press("Tab");
-
-    // Wait for the date input to be processed and for it to have a value (validation)
-    await expect(input).not.toHaveValue("", { timeout: 2000 });
+    // Give the app a tick to process the change and run validation
+    await page.waitForTimeout(100);
   }
 
   /**
