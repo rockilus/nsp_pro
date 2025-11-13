@@ -1122,10 +1122,18 @@ export class RequestTestBase {
    */
   async setStartDate(page: Page, date: dayjs.Dayjs): Promise<void> {
     const startDatePicker = this.getStartDatePicker(page);
-    await startDatePicker.click();
-    await startDatePicker.fill(date.format("DD/MM/YYYY"));
-    // Press Enter to confirm the date
-    await startDatePicker.press("Enter");
+    const value = date.format("DD/MM/YYYY");
+
+    // Set the value directly on the input to avoid opening MUI's overlay
+    // which can render hidden/internal elements that intercept pointer events.
+    await startDatePicker.evaluate((el: HTMLInputElement, v: string) => {
+      el.value = v;
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+    }, value);
+
+    // Give the app a tick to process the change
+    await page.waitForTimeout(30);
   }
 
   /**
@@ -1142,9 +1150,16 @@ export class RequestTestBase {
     // Set end date
     const endDatePicker = this.getEndDatePicker(page);
     await endDatePicker.waitFor({ state: "visible" });
-    await endDatePicker.click();
-    await endDatePicker.fill(endDate.format("DD/MM/YYYY"));
-    await endDatePicker.press("Enter");
+
+    const value = endDate.format("DD/MM/YYYY");
+    // Set value directly on the end date input to avoid opening the overlay
+    await endDatePicker.evaluate((el: HTMLInputElement, v: string) => {
+      el.value = v;
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+    }, value);
+
+    await page.waitForTimeout(30);
   }
 
   /**
