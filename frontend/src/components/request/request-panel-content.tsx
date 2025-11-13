@@ -602,6 +602,7 @@ export default function RequestPanelContent({
                   error: startDateError,
                   inputProps: { "data-testid": "start-date-picker" },
                 },
+                // openPickerButton: { "data-testid": "start-date-picker" } as any,
               }}
             />
             {dateRange && (
