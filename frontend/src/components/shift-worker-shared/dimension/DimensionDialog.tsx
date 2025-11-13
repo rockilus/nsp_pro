@@ -7,7 +7,7 @@ import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 
-export default function PopoverRHS({
+export default function DimensionDialog({
   buttonContent,
   title,
   content,
@@ -97,7 +97,11 @@ export default function PopoverRHS({
             alignItems="center"
             sx={{ marginBottom: 1.5 }}
           >
-            <Typography variant="h6" id="floating-dialog-title">
+            <Typography
+              variant="h6"
+              id="floating-dialog-title"
+              data-testid="new-dimension-dialog-title"
+            >
               {title}
             </Typography>
             <IconButton

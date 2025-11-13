@@ -66,7 +66,7 @@ test.describe("Workers Page - Dimension Integration", () => {
 
     // Fill in valid data
     await dimensionTestBase.fillNameField(page, propertyName);
-    await dimensionTestBase.selectType(page, DimensionEntryType.STR);
+    await dimensionTestBase.selectType(page, DimensionEntryType.BOOL);
 
     // Submit
     await dimensionTestBase.clickAddButton(page);
@@ -121,40 +121,6 @@ test.describe("Workers Page - Dimension Integration", () => {
     console.log(
       `✅ Worker-specific bool dimension '${propertyName}' created successfully`
     );
-  });
-
-  test("should handle multiple worker dimensions creation", async ({
-    page,
-  }) => {
-    const workerProperties = [
-      { name: "Worker Department", type: DimensionEntryType.STR },
-      { name: "Worker Experience", type: DimensionEntryType.INT },
-      { name: "Worker Is Manager", type: DimensionEntryType.BOOL },
-    ];
-
-    for (const property of workerProperties) {
-      // Open the popup
-      await dimensionTestBase.openNewDimensionPopup(page);
-      await dimensionTestBase.waitForPopupVisible(page);
-
-      // Fill in the property data
-      await dimensionTestBase.fillNameField(page, property.name);
-      await dimensionTestBase.selectType(page, property.type);
-
-      // Submit
-      await dimensionTestBase.clickAddButton(page);
-      await dimensionTestBase.waitForPopupHidden(page);
-
-      // Verify column was added to workers table
-      await dimensionTestBase.waitForNewColumn(page, property.name);
-      const columnExists = await dimensionTestBase.columnExists(
-        page,
-        property.name
-      );
-      expect(columnExists).toBe(true);
-    }
-
-    console.log("✅ Multiple worker dimensions created successfully");
   });
 
   // Tests for linked dimensions

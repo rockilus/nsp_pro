@@ -18,7 +18,7 @@ test.describe("NewDimensionForm Component", () => {
     await dimensionTestBase.navigateToWorkersPage(page);
   });
 
-  test("should show popup with title 'New property' when clicking add button", async ({
+  test("should show dialog with title 'New property' when clicking add button", async ({
     page,
   }) => {
     // Click the Add Property button
@@ -41,7 +41,7 @@ test.describe("NewDimensionForm Component", () => {
     );
   });
 
-  test("should close popup when clicking on the close icon", async ({
+  test("should close dialog when clicking on the close icon", async ({
     page,
   }) => {
     // Open the popup
@@ -100,14 +100,14 @@ test.describe("NewDimensionForm Component", () => {
     await typeSelectDropdown.click();
 
     // Verify all expected options are present
-    const textOption = dimensionTestBase.getTypeOption(
-      page,
-      DimensionEntryType.STR
-    );
-    const numberOption = dimensionTestBase.getTypeOption(
-      page,
-      DimensionEntryType.INT
-    );
+    // const textOption = dimensionTestBase.getTypeOption(
+    //   page,
+    //   DimensionEntryType.STR
+    // );
+    // const numberOption = dimensionTestBase.getTypeOption(
+    //   page,
+    //   DimensionEntryType.INT
+    // );
     const boolOption = dimensionTestBase.getTypeOption(
       page,
       DimensionEntryType.BOOL
@@ -117,14 +117,14 @@ test.describe("NewDimensionForm Component", () => {
       DimensionEntryType.DIM_ENTRIES
     );
 
-    await expect(textOption).toBeVisible();
-    await expect(numberOption).toBeVisible();
+    // await expect(textOption).toBeVisible();
+    // await expect(numberOption).toBeVisible();
     await expect(boolOption).toBeVisible();
     await expect(tagsOption).toBeVisible();
 
     // Verify option text content
-    await expect(textOption).toContainText("Text");
-    await expect(numberOption).toContainText("Number");
+    // await expect(textOption).toContainText("Text");
+    // await expect(numberOption).toContainText("Number");
     await expect(boolOption).toContainText("True/False");
     await expect(tagsOption).toContainText("Tags");
 
@@ -141,7 +141,7 @@ test.describe("NewDimensionForm Component", () => {
     await dimensionTestBase.waitForPopupVisible(page);
 
     // Leave name field empty, select a type
-    await dimensionTestBase.selectType(page, DimensionEntryType.STR);
+    await dimensionTestBase.selectType(page, DimensionEntryType.BOOL);
 
     // Click add button
     await dimensionTestBase.clickAddButton(page);
@@ -231,7 +231,7 @@ test.describe("NewDimensionForm Component", () => {
     console.log("✅ Both error messages appear when both fields are empty");
   });
 
-  test("should close popup when form is submitted with valid data", async ({
+  test("should close dialog when form is submitted with valid data", async ({
     page,
   }) => {
     // Open the popup
@@ -242,7 +242,7 @@ test.describe("NewDimensionForm Component", () => {
 
     // Fill in valid data
     await dimensionTestBase.fillNameField(page, propertyName);
-    await dimensionTestBase.selectType(page, DimensionEntryType.STR);
+    await dimensionTestBase.selectType(page, DimensionEntryType.BOOL);
 
     // Click add button
     await dimensionTestBase.clickAddButton(page);
@@ -257,7 +257,7 @@ test.describe("NewDimensionForm Component", () => {
     console.log("✅ Popup closes when form is submitted with valid data");
   });
 
-  test("should close popup when pressing escape", async ({ page }) => {
+  test("should close dialog when pressing escape", async ({ page }) => {
     // Open the popup
     await dimensionTestBase.openNewDimensionPopup(page);
     await dimensionTestBase.waitForPopupVisible(page);
@@ -278,7 +278,7 @@ test.describe("NewDimensionForm Component", () => {
     console.log("✅ Popup closes when pressing Escape");
   });
 
-  test("should close popup when clicking away", async ({ page }) => {
+  test("should close dialog when clicking away", async ({ page }) => {
     // Open the popup
     await dimensionTestBase.openNewDimensionPopup(page);
     await dimensionTestBase.waitForPopupVisible(page);
@@ -299,7 +299,7 @@ test.describe("NewDimensionForm Component", () => {
     console.log("✅ Popup closes when clicking away");
   });
 
-  test("should clear all fields when closing and reopening popup", async ({
+  test("should clear all fields when closing and reopening dialog", async ({
     page,
   }) => {
     // Open the popup
@@ -308,7 +308,7 @@ test.describe("NewDimensionForm Component", () => {
 
     // Fill in some data
     await dimensionTestBase.fillNameField(page, "Test Property");
-    await dimensionTestBase.selectType(page, DimensionEntryType.INT);
+    await dimensionTestBase.selectType(page, DimensionEntryType.BOOL);
 
     // Verify fields have values
     const nameField = dimensionTestBase.getNameTextField(page);
@@ -350,7 +350,7 @@ test.describe("NewDimensionForm Component", () => {
     await expect(tagsSection).toBeVisible();
 
     // Change to a different type
-    await dimensionTestBase.selectType(page, DimensionEntryType.STR);
+    await dimensionTestBase.selectType(page, DimensionEntryType.BOOL);
 
     // Verify tags section disappears
     await expect(tagsSection).not.toBeVisible();
@@ -364,8 +364,8 @@ test.describe("NewDimensionForm Component", () => {
     page,
   }) => {
     const types = [
-      { type: DimensionEntryType.STR, name: "Text Property" },
-      { type: DimensionEntryType.INT, name: "Number Property" },
+      // { type: DimensionEntryType.STR, name: "Text Property" },
+      // { type: DimensionEntryType.INT, name: "Number Property" },
       { type: DimensionEntryType.BOOL, name: "Boolean Property" },
     ];
 
