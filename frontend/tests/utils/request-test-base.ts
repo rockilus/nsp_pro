@@ -786,7 +786,7 @@ export class RequestTestBase {
   /**
    * Gets the request panel dialog
    */
-  getRequestPanelPopover(page: Page) {
+  getRequestPanelDialog(page: Page) {
     return page.locator('[data-testid="request-panel-dialog"]');
   }
 
@@ -1074,7 +1074,7 @@ export class RequestTestBase {
     await newRequestButton.click();
 
     // Wait for popover to open
-    const popover = this.getRequestPanelPopover(page);
+    const popover = this.getRequestPanelDialog(page);
     await popover.waitFor({ state: "visible" });
   }
 
@@ -1201,7 +1201,7 @@ export class RequestTestBase {
     await saveButton.click();
 
     // Wait for popover to close
-    const popover = this.getRequestPanelPopover(page);
+    const popover = this.getRequestPanelDialog(page);
     await popover.waitFor({ state: "hidden" });
   }
 
@@ -1442,7 +1442,7 @@ export class RequestTestBase {
     await cell.click();
 
     // Verify no request panel opened
-    const requestPanel = this.getRequestPanelPopover(page);
+    const requestPanel = this.getRequestPanelDialog(page);
     await expect(requestPanel).not.toBeVisible();
   }
 
@@ -1483,7 +1483,7 @@ export class RequestTestBase {
     await this.clickEmptyCalendarCell(page, workerId, date);
 
     // Verify request panel opens
-    const requestPanel = this.getRequestPanelPopover(page);
+    const requestPanel = this.getRequestPanelDialog(page);
     await expect(requestPanel).toBeVisible();
 
     // Select request type if needed
