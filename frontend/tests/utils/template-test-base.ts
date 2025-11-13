@@ -1581,17 +1581,29 @@ export class TemplateTestBase {
     }
     const formatted = d.format("DD/MM/YYYY");
 
-    // Set the value directly on the input element so React/MUI picks it up
+    // Set the value directly on the input element and trigger React's internal handlers
     await input.evaluate((el: HTMLInputElement, v: string) => {
-      el.value = v;
+      // Get the native setter to bypass React's value property
+      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype,
+        "value"
+      )?.set;
+
+      if (nativeInputValueSetter) {
+        nativeInputValueSetter.call(el, v);
+      } else {
+        el.value = v;
+      }
+
+      // Dispatch input event to trigger React's onChange handler
       el.dispatchEvent(new Event("input", { bubbles: true }));
       el.dispatchEvent(new Event("change", { bubbles: true }));
-    }, formatted);
-    // Press Tab to confirm / blur the input so validation runs (some components
-    // validate on blur rather than on input events)
-    // await input.press("Tab");
 
-    // Give the app a tick to process the change and run validation
+      // Blur the input to ensure validation runs
+      el.blur();
+    }, formatted);
+
+    // Give the app time to process the change and run validation
     await page.waitForTimeout(100);
   }
 
