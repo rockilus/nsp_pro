@@ -140,7 +140,11 @@ export default function DemandsHeaderCell({
       }}
     >
       <div className="container-dsd-cell">
-        <button onClick={handleClick}>
+        <button
+          type="button"
+          onClick={handleClick}
+          className="dsd-popover-button"
+        >
           <DSDPopoverButton counts={counts} />
         </button>
         <Popover
