@@ -438,11 +438,7 @@ function ShiftDemandTabInternal({
       // Entering multitasking mode - fetch concurrency data and multitasking groups
       try {
         const [concurrencyList, groups] = await Promise.all([
-          getShiftDemandConcurrency(
-            selectedTeamId,
-            startDate.toDate(),
-            endDate.toDate()
-          ),
+          getShiftDemandConcurrency(selectedTeamId, startDate, endDate),
           getMultitaskingGroups(selectedTeamId),
         ]);
 

@@ -4,9 +4,13 @@ import Skeleton from "@mui/material/Skeleton";
 import Stack from "@mui/material/Stack";
 
 export default function ScheduleTableSkeleton() {
-  const scheduleSkeletonRow = (position: "top" | "middle" | "bottom") => {
+  const scheduleSkeletonRow = (
+    position: "top" | "middle" | "bottom",
+    key?: React.Key
+  ) => {
     return (
       <Stack
+        key={key}
         direction="row"
         spacing="2px"
         sx={{ height: "60px", width: "100%" }}
@@ -49,11 +53,11 @@ export default function ScheduleTableSkeleton() {
 
   return (
     <Stack spacing="2px" sx={{ height: "600px", width: "100%" }}>
-      {scheduleSkeletonRow("top")}
+      {scheduleSkeletonRow("top", "top")}
       {Array.from({ length: 7 }).map((_, index) =>
-        scheduleSkeletonRow("middle")
+        scheduleSkeletonRow("middle", index)
       )}
-      {scheduleSkeletonRow("bottom")}
+      {scheduleSkeletonRow("bottom", "bottom")}
     </Stack>
   );
 }

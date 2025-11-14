@@ -10,6 +10,7 @@ import {
   isNetworkError,
 } from "../config/cognito";
 import { env } from "../config/env";
+import dayjs from "dayjs";
 
 interface AuthContextType {
   user: User | undefined | null;
@@ -157,8 +158,8 @@ function DevelopmentAuthProvider({ children }: { children: React.ReactNode }) {
           email: "dev@nsp-pro.com",
           name: "Development User",
           aud: "dev-client",
-          exp: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
-          iat: Math.floor(Date.now() / 1000),
+          exp: Math.floor(dayjs().unix() / 1000) + 3600, // 1 hour from now
+          iat: Math.floor(dayjs().unix() / 1000),
           iss: "dev-issuer",
         },
         id_token: env.devUserId, // Use dev user ID as token
@@ -166,7 +167,7 @@ function DevelopmentAuthProvider({ children }: { children: React.ReactNode }) {
         refresh_token: env.devUserId,
         token_type: "Bearer",
         scope: "openid profile email",
-        expires_at: Math.floor(Date.now() / 1000) + 3600,
+        expires_at: Math.floor(dayjs().unix() / 1000) + 3600,
         expires_in: 3600,
         expired: false,
         scopes: ["openid", "profile", "email"],
@@ -435,7 +436,7 @@ export function AuthContextProvider({
   children,
 }: {
   children: React.ReactNode;
-}): JSX.Element {
+}): React.ReactElement {
   // Security: Default to production mode unless explicitly set to development
   if (env.isDevelopment) {
     console.log("🔧 Using development authentication");

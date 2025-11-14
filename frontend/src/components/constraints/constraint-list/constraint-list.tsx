@@ -44,7 +44,7 @@ export default function ConstraintList({
       data-testid="constraint-list"
     >
       {constraints.length === 0 ? (
-        <Grid item xs={12} sx={{ p: 2, textAlign: "center" }}>
+        <Grid size={{ xs: 12 }} sx={{ p: 2, textAlign: "center" }}>
           <span>{t("no_constraints")}</span>
         </Grid>
       ) : (

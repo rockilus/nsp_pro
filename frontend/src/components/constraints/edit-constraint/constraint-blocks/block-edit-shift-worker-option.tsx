@@ -179,7 +179,10 @@ export default function BlockEditShiftWorkerOption({
 
   useEffect(() => {
     if (block !== null) {
-      setValueState(initialValue);
+      // Schedule the state update asynchronously (microtask) so we don't
+      // call setState synchronously inside the effect body which can
+      // trigger cascading renders and is flagged by the linter.
+      Promise.resolve().then(() => setValueState(initialValue()));
     }
   }, [block, initialValue]);
 

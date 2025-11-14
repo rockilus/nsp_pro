@@ -1,7 +1,7 @@
 "use client";
 
+import React, { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
 // Components
 import TeamSettingsLayout from "@/components/teams-settings/team-settings-layout";
 import { RoleBased } from "@/components/access/role-based";
@@ -15,13 +15,12 @@ export default function Layout({
   params,
 }: {
   children: React.ReactNode;
-  params: {
-    lng: string;
-  };
+  params: Promise<{ lng: string }>;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { selectedTeam, teams, loading, setSelectedTeamId } = useTeam();
+  const { lng } = React.use(params as Promise<{ lng: string }>);
 
   // Extract teamId from query parameters
   const teamId = searchParams.get("teamId");
@@ -46,32 +45,24 @@ export default function Layout({
         console.warn(
           `❌ Invalid team ID: ${teamId}, redirecting to team selection`
         );
-        router.replace(`/${params.lng}/plan/settings/teams`);
+        router.replace(`/${lng}/plan/settings/teams`);
         return;
       }
     } else {
       // No team ID specified, redirect to team selection
       console.log("❌ No team ID specified, redirecting to team selection");
-      router.replace(`/${params.lng}/plan/settings/teams`);
+      router.replace(`/${lng}/plan/settings/teams`);
       return;
     }
-  }, [
-    teamId,
-    teams,
-    selectedTeam,
-    setSelectedTeamId,
-    loading,
-    router,
-    params.lng,
-  ]);
+  }, [teamId, teams, selectedTeam, setSelectedTeamId, loading, router, lng]);
 
   // Security: Redirect to team selection if no teams available
   useEffect(() => {
     if (!loading && teams.length === 0) {
       console.log("🔄 No teams available, redirecting to team selection");
-      router.replace(`/${params.lng}/plan/settings/teams`);
+      router.replace(`/${lng}/plan/settings/teams`);
     }
-  }, [teams, loading, router, params.lng]);
+  }, [teams, loading, router, lng]);
 
   // Loading state
   if (loading) {
@@ -97,7 +88,7 @@ export default function Layout({
       role={selectedTeam.membership.role}
       allowedRoles={PageRolePermissions.teams}
     >
-      <TeamSettingsLayout params={params}>{children}</TeamSettingsLayout>
+      <TeamSettingsLayout params={{ lng }}>{children}</TeamSettingsLayout>
     </RoleBased>
   );
 }

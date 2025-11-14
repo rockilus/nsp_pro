@@ -130,13 +130,11 @@ test.describe("Worker Employment Start Date Updates", () => {
       workerTestBase.getWorkerEmploymentStartInput(page);
     await expect(employmentStartInput).toBeVisible();
 
-    // Change the date by typing in the input
-    // We'll set it to a specific date like 01/01/2024
+    // Set a specific date using the helper method
     const newDate = "01/01/2024";
-    await employmentStartInput.fill(newDate);
+    await workerTestBase.setEmploymentStartDate(page, newDate);
 
     // Click somewhere else to trigger blur event (save)
-    // We'll click on the page title
     const pageTitle = page.getByRole("heading", { name: "Workers" });
     await pageTitle.click();
 
@@ -167,9 +165,9 @@ test.describe("Worker Employment Start Date Updates", () => {
       workerTestBase.getWorkerEmploymentStartInput(page);
     await expect(employmentStartInput).toBeVisible();
 
-    // Change the date by typing in the input
+    // Set a specific date using the helper method
     const newDate = "15/12/2023";
-    await employmentStartInput.fill(newDate);
+    await workerTestBase.setEmploymentStartDate(page, newDate);
 
     // Press Enter to save
     await employmentStartInput.press("Enter");
@@ -205,9 +203,9 @@ test.describe("Worker Employment Start Date Updates", () => {
       workerTestBase.getWorkerEmploymentStartInput(page);
     await expect(employmentStartInput).toBeVisible();
 
-    // Change the date but don't save it
+    // Set a temporary date (but don't save it) using the helper method
     const tempDate = "31/12/2025";
-    await employmentStartInput.fill(tempDate);
+    await workerTestBase.setEmploymentStartDate(page, tempDate);
 
     // Press Escape to cancel editing
     await employmentStartInput.press("Escape");
@@ -294,7 +292,7 @@ test.describe("Worker Employment Start Date Updates", () => {
       workerTestBase.getWorkerEmploymentStartInput(page);
     await expect(employmentStartInput).toBeVisible();
 
-    // Try to enter an invalid date format
+    // Try to enter an invalid date format using fill (not the helper, since helper validates)
     const invalidDate = "invalid-date-format";
     await employmentStartInput.fill(invalidDate);
 

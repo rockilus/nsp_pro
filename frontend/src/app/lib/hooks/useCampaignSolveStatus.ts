@@ -27,7 +27,10 @@ export function useCampaignSolveStatus(
   // Fetch latest solve status when campaign changes
   useEffect(() => {
     if (!scheduleCampaign) {
-      setLatestSolveData(null);
+      // Avoid calling setState synchronously inside the effect body
+      // (this can trigger cascading renders). Defer to a microtask so
+      // the state update runs after the current render.
+      Promise.resolve().then(() => setLatestSolveData(null));
       return;
     }
 

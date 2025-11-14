@@ -3,7 +3,7 @@ import dayjs, { Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
-import { Button, MenuItem, Select, TextField } from "@mui/material";
+import { Button, MenuItem, Select } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Components
 import RecurrenceEdit from "./recurrence-edit/recurrence-edit";
@@ -321,7 +321,6 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
             setDateError(false);
             setDate(newDate ? dayjs(newDate).utc() : null);
           }}
-          slots={{ textField: TextField }}
           slotProps={{
             textField: {
               fullWidth: true,

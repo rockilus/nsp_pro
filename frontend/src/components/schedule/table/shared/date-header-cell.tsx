@@ -9,6 +9,35 @@ import "./date-header-cell.css";
 import { ScheduleStatus, periodDateT } from "../../../../types/schedule";
 
 dayjs.extend(utc);
+type ScheduleStatusLogoProps = {
+  scheduleStatus: ScheduleStatus | null;
+};
+
+const ScheduleStatusLogo: React.FC<ScheduleStatusLogoProps> = ({
+  scheduleStatus,
+}) => {
+  if (scheduleStatus === null) return null;
+
+  const containerClass =
+    scheduleStatus === ScheduleStatus.VALIDATED
+      ? "validated"
+      : scheduleStatus === ScheduleStatus.CAMPAIGN
+      ? "campaign"
+      : "";
+
+  const content =
+    scheduleStatus === ScheduleStatus.VALIDATED
+      ? "v"
+      : scheduleStatus === ScheduleStatus.CAMPAIGN
+      ? "c"
+      : "";
+
+  return (
+    <div className={`schedule-status-logo-container ${containerClass}`}>
+      <div className="schedule-status-logo">{content}</div>
+    </div>
+  );
+};
 
 export default function DateHeaderCell({
   periodDate,
@@ -17,28 +46,6 @@ export default function DateHeaderCell({
 }) {
   const today = dayjs.utc().startOf("day");
   const isToday = periodDate.date.isSame(today, "day");
-
-  const ScheduleStatusLogo = () => {
-    return (
-      <div
-        className={`schedule-status-logo-container ${
-          periodDate.scheduleStatus === ScheduleStatus.VALIDATED
-            ? "validated"
-            : periodDate.scheduleStatus === ScheduleStatus.CAMPAIGN
-            ? "campaign"
-            : ""
-        }`}
-      >
-        <div className="schedule-status-logo">
-          {periodDate.scheduleStatus === ScheduleStatus.VALIDATED
-            ? "v"
-            : periodDate.scheduleStatus === ScheduleStatus.CAMPAIGN
-            ? "c"
-            : ""}
-        </div>
-      </div>
-    );
-  };
 
   return (
     <TableCell
@@ -55,7 +62,9 @@ export default function DateHeaderCell({
             {periodDate.date.format("DD")}
           </span>
         </div>
-        {periodDate.scheduleStatus !== null && <ScheduleStatusLogo />}
+        {periodDate.scheduleStatus !== null && (
+          <ScheduleStatusLogo scheduleStatus={periodDate.scheduleStatus} />
+        )}
       </div>
     </TableCell>
   );

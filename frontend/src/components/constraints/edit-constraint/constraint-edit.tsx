@@ -37,6 +37,45 @@ export default function ConstraintEdit({
   handleUpdateConstraint: (updatedConstraint: ConstraintT) => void;
   "data-testid"?: string;
 }) {
+  // Use a key based on incoming props so the inner component remounts
+  // whenever `constraint` or `template` change. This avoids calling
+  // setState synchronously inside an effect.
+  const formKey = JSON.stringify([constraint, template]);
+
+  return (
+    <ConstraintEditInner
+      key={formKey}
+      lng={lng}
+      workers={workers}
+      shifts={shifts}
+      constraint={constraint}
+      template={template}
+      handleAddConstraint={handleAddConstraint}
+      handleUpdateConstraint={handleUpdateConstraint}
+      data-testid={dataTestId}
+    />
+  );
+}
+
+function ConstraintEditInner({
+  lng,
+  workers,
+  shifts,
+  constraint,
+  template,
+  handleAddConstraint,
+  handleUpdateConstraint,
+  "data-testid": dataTestId,
+}: {
+  lng: string;
+  workers: WorkerT[];
+  shifts: ShiftT[];
+  constraint: ConstraintT;
+  template: TemplateT | null;
+  handleAddConstraint: (constraint: ConstraintT) => void;
+  handleUpdateConstraint: (updatedConstraint: ConstraintT) => void;
+  "data-testid"?: string;
+}) {
   const { t } = useTranslation(lng, "constraint-page");
   const [errors, setErrors] = useState<number[]>([]);
 
@@ -86,19 +125,19 @@ export default function ConstraintEdit({
     }
   }, [constraint, template]);
 
-  const [constraintState, setConstraintState] = useState(
+  // Initialize state lazily using the callback above. Because the inner
+  // component is remounted when `constraint` or `template` change (via
+  // the `key` on the parent), we don't need to call setState inside an
+  // effect to sync props -> state.
+  const [constraintState, setConstraintState] = useState<ConstraintT>(
     initialConstraintState
   );
 
   const validateConstraint = (): boolean => {
     const updatedErrors: number[] = [];
     if (template) {
-      console.log("constraintState", constraintState);
-
       template.blocks.map((block, index) => {
         const value = constraintState.blocks[index].value;
-        console.log("index", index);
-        console.log("value", value);
         if (block.name === BlockNameOptions.TEXT) {
           return;
         }
@@ -119,8 +158,6 @@ export default function ConstraintEdit({
         }
       });
       setErrors(updatedErrors);
-      console.log("updatedErrors", updatedErrors);
-
       return updatedErrors.length === 0;
     } else {
       return false;
@@ -133,12 +170,7 @@ export default function ConstraintEdit({
   };
 
   const handleSaveConstraint = () => {
-    console.log("handleSaveConstraint");
-
     const valid = validateConstraint();
-    console.log("valid", valid);
-    console.log("errors", errors);
-
     if (!valid) {
       return;
     }
@@ -169,11 +201,6 @@ export default function ConstraintEdit({
       });
     }
   };
-
-  useEffect(() => {
-    setConstraintState(initialConstraintState());
-    setErrors([]);
-  }, [initialConstraintState]);
 
   return (
     <Box

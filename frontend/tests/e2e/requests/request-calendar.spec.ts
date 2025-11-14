@@ -171,7 +171,7 @@ test.describe("Request Calendar", () => {
     );
 
     // Verify request panel opens
-    const requestPanel = requestTestBase.getRequestPanelPopover(page);
+    const requestPanel = requestTestBase.getRequestPanelDialog(page);
     await expect(requestPanel).toBeVisible();
 
     // Close the panel
@@ -220,7 +220,7 @@ test.describe("Request Calendar", () => {
     );
 
     // Verify request panel opens
-    const requestPanel = requestTestBase.getRequestPanelPopover(page);
+    const requestPanel = requestTestBase.getRequestPanelDialog(page);
     await expect(requestPanel).toBeVisible();
 
     // Select work request type (should be default)
@@ -330,7 +330,7 @@ test.describe("Request Calendar", () => {
     );
 
     // Verify request panel opens in edit mode
-    const requestPanel = requestTestBase.getRequestPanelPopover(page);
+    const requestPanel = requestTestBase.getRequestPanelDialog(page);
     await expect(requestPanel).toBeVisible();
 
     // Verify the form is populated with existing request data
@@ -372,7 +372,7 @@ test.describe("Request Calendar", () => {
     );
 
     // Verify request panel opens
-    const requestPanel = requestTestBase.getRequestPanelPopover(page);
+    const requestPanel = requestTestBase.getRequestPanelDialog(page);
     await expect(requestPanel).toBeVisible();
 
     // Click delete button
@@ -422,7 +422,7 @@ test.describe("Request Calendar", () => {
     );
 
     // Verify request panel opens
-    const requestPanel = requestTestBase.getRequestPanelPopover(page);
+    const requestPanel = requestTestBase.getRequestPanelDialog(page);
     await expect(requestPanel).toBeVisible();
 
     // Click approve button (checkmark)
@@ -483,7 +483,7 @@ test.describe("Request Calendar", () => {
     );
 
     // Verify request panel opens
-    const requestPanel = requestTestBase.getRequestPanelPopover(page);
+    const requestPanel = requestTestBase.getRequestPanelDialog(page);
     await expect(requestPanel).toBeVisible();
 
     // Click rescind button
@@ -544,7 +544,7 @@ test.describe("Request Calendar", () => {
     );
 
     // Verify request panel opens
-    const requestPanel = requestTestBase.getRequestPanelPopover(page);
+    const requestPanel = requestTestBase.getRequestPanelDialog(page);
     await expect(requestPanel).toBeVisible();
 
     // Click reject button (close icon)

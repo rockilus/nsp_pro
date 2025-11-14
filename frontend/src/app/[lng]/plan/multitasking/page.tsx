@@ -10,6 +10,7 @@
 "use client";
 
 import React, { useState } from "react";
+import dayjs, { Dayjs } from "dayjs";
 import {
   Container,
   Typography,
@@ -46,25 +47,25 @@ function TabPanel({ children, value, index }: TabPanelProps) {
 export default function MultitaskingPage() {
   // Form state
   const [teamId, setTeamId] = useState("demo-team-001");
-  const [startDate, setStartDate] = useState<Date | null>(
-    new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // 7 days ago
+  const [startDate, setStartDate] = useState<Dayjs | null>(
+    dayjs().subtract(7, "day") // 7 days ago
   );
-  const [endDate, setEndDate] = useState<Date | null>(
-    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
+  const [endDate, setEndDate] = useState<Dayjs | null>(
+    dayjs().add(7, "day") // 7 days from now
   );
   const [enableQuery, setEnableQuery] = useState(false);
   const [tabValue, setTabValue] = useState(0);
   const [selectedShifts, setSelectedShifts] = useState<string[]>([]);
 
   // Helper functions to convert between Date and string
-  const formatDateForInput = (date: Date | null): string => {
+  const formatDateForInput = (date: Dayjs | null): string => {
     if (!date) return "";
-    return date.toISOString().split("T")[0];
+    return date.format("YYYY-MM-DD");
   };
 
-  const parseDateFromInput = (dateString: string): Date | null => {
+  const parseDateFromInput = (dateString: string): Dayjs | null => {
     if (!dateString) return null;
-    return new Date(dateString);
+    return dayjs(dateString);
   };
 
   const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,7 +80,7 @@ export default function MultitaskingPage() {
     if (!teamId || !startDate || !endDate) {
       return;
     }
-    if (startDate >= endDate) {
+    if (!startDate || !endDate || !startDate.isBefore(endDate)) {
       return;
     }
     setEnableQuery(true);
@@ -90,7 +91,9 @@ export default function MultitaskingPage() {
     setSelectedShifts([]);
   };
 
-  const isFormValid = teamId && startDate && endDate && startDate < endDate;
+  const isFormValid = Boolean(
+    teamId && startDate && endDate && startDate.isBefore(endDate)
+  );
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -112,7 +115,7 @@ export default function MultitaskingPage() {
           </Typography>
 
           <Grid container spacing={3} alignItems="center">
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 label="Team ID"
@@ -122,7 +125,7 @@ export default function MultitaskingPage() {
               />
             </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 label="Start Date"
@@ -136,7 +139,7 @@ export default function MultitaskingPage() {
               />
             </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 fullWidth
                 label="End Date"
@@ -150,7 +153,7 @@ export default function MultitaskingPage() {
               />
             </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Box sx={{ display: "flex", gap: 1 }}>
                 <Button
                   variant="contained"
@@ -197,8 +200,8 @@ export default function MultitaskingPage() {
           <TabPanel value={tabValue} index={0}>
             <MultitaskingConcurrencyDisplay
               teamId={teamId}
-              startDate={startDate}
-              endDate={endDate}
+              startDate={startDate!}
+              endDate={endDate!}
               enabled={enableQuery}
             />
           </TabPanel>
@@ -206,8 +209,8 @@ export default function MultitaskingPage() {
           <TabPanel value={tabValue} index={1}>
             <MultitaskingSelector
               teamId={teamId}
-              startDate={startDate}
-              endDate={endDate}
+              startDate={startDate!}
+              endDate={endDate!}
               onSelectionChange={setSelectedShifts}
               enabled={enableQuery}
             />
@@ -220,7 +223,7 @@ export default function MultitaskingPage() {
               </Typography>
 
               <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Typography variant="subtitle2" gutterBottom>
                     Request Payload:
                   </Typography>
@@ -232,8 +235,8 @@ export default function MultitaskingPage() {
                       {JSON.stringify(
                         {
                           team_id: teamId,
-                          start_date: Math.floor(startDate.getTime() / 1000),
-                          end_date: Math.floor(endDate.getTime() / 1000),
+                          start_date: startDate ? startDate.unix() : null,
+                          end_date: endDate ? endDate.unix() : null,
                         },
                         null,
                         2
@@ -242,7 +245,7 @@ export default function MultitaskingPage() {
                   </Paper>
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Typography variant="subtitle2" gutterBottom>
                     Endpoint:
                   </Typography>

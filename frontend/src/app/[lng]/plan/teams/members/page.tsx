@@ -1,18 +1,14 @@
 "use client";
 
+import React from "react";
 import { useSearchParams } from "next/navigation";
 // Components
 import MembersTab from "@/components/teams-settings/members/members-tab";
 // Styles
 import "@/styles/page.css";
 
-export default function Page({
-  params: { lng },
-}: {
-  params: {
-    lng: string;
-  };
-}) {
+export default function Page({ params }: { params: Promise<{ lng: string }> }) {
+  const { lng } = React.use(params as Promise<{ lng: string }>);
   const searchParams = useSearchParams();
 
   // Extract teamId from query parameters

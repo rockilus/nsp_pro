@@ -34,24 +34,20 @@ export default function BlockEditQty({
   const [valueState, setValueState] = useState<string>(initialValue);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isInitialFocus, setIsInitialFocus] = useState(true);
+  const [isDirty, setIsDirty] = useState(false);
 
-  useEffect(() => {
-    if (block !== null) {
-      setValueState(initialValue);
-    }
-  }, [block, initialValue]);
-
-  // Reset initial focus flag when component mounts
-  useEffect(() => {
-    setIsInitialFocus(true);
-  }, []);
+  // displayValue is derived from props when the user hasn't edited the input yet.
+  // This avoids calling setState inside effects when `block` changes.
+  const displayValue = !isDirty && block !== null ? initialValue() : valueState;
 
   const handleSubmit = useCallback(() => {
-    if (valueState !== "") {
+    const submittedValue =
+      !isDirty && block !== null ? initialValue() : valueState;
+    if (submittedValue !== "") {
       handleEditBlock({
         name: templateBlock.name,
         type: templateBlock.type,
-        value: parseInt(valueState),
+        value: parseInt(submittedValue),
       });
       if (error) {
         handleRemoveError(index);
@@ -66,6 +62,9 @@ export default function BlockEditQty({
     handleEditBlock,
     handleClose,
     handleRemoveError,
+    isDirty,
+    block,
+    initialValue,
   ]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -93,9 +92,10 @@ export default function BlockEditQty({
         <input
           ref={inputRef}
           type="number"
-          value={valueState}
+          value={displayValue}
           onChange={(e) => {
             setValueState(e.target.value);
+            setIsDirty(true);
           }}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}

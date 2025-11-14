@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  ChangeEvent,
-  useRef,
-  useEffect,
-  useCallback,
-} from "react";
+import React, { useState, ChangeEvent, useRef, useMemo } from "react";
 // MUI
 import Chip from "@mui/material/Chip";
 import ClearIcon from "@mui/icons-material/Clear";
@@ -34,10 +28,8 @@ export default function BlockEditList({
   handleClose: () => void;
   handleRemoveError: (index: number) => void;
 }) {
-  const initialValue = useCallback((): string[] => {
-    if (block === null) {
-      return [];
-    }
+  const valueState = useMemo((): string[] => {
+    if (block === null) return [];
     if (
       Array.isArray(block.value) &&
       (block.value as any[]).every((v: unknown) => typeof v === "string")
@@ -47,10 +39,8 @@ export default function BlockEditList({
     throw new Error("block.value is not an array");
   }, [block]);
 
-  const templateOptionsCast = useCallback((): string[] => {
-    if (templateBlock === null) {
-      return [];
-    }
+  const templateOptions = useMemo((): string[] => {
+    if (templateBlock === null) return [];
     if (
       Array.isArray(templateBlock.options) &&
       (templateBlock.options as any[]).every(
@@ -62,42 +52,43 @@ export default function BlockEditList({
     throw new Error("templateBlock.options is not an array of strings");
   }, [templateBlock]);
 
-  const [valueState, setValueState] = useState<string[]>(initialValue);
-  const [templateOptions, setTemplateOptions] =
-    useState<string[]>(templateOptionsCast);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredOptions, setFilteredOptions] = useState<string[]>(
-    templateOptions.filter((option) => !valueState.includes(option))
-  );
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (block !== null) {
-      setValueState(initialValue);
-    }
-  }, [block, initialValue]);
-
-  useEffect(() => {
-    if (templateBlock !== null) {
-      setTemplateOptions(templateOptionsCast);
-    }
-  }, [templateBlock, templateOptionsCast]);
+  const filteredOptions = useMemo(() => {
+    const base = templateOptions.filter(
+      (option) => !valueState.includes(option)
+    );
+    if (searchQuery === "") return base;
+    return base.filter((option) =>
+      option.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [templateOptions, valueState, searchQuery]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value.trim();
     setSearchQuery(query);
     if (query === "") {
-      setFilteredOptions(
-        templateOptions.filter((option) => !valueState.includes(option))
+      const newFilteredOptions = templateOptions.filter(
+        (option) => !valueState.includes(option)
       );
+      if (newFilteredOptions.length > 0) {
+        setSelectedOption(newFilteredOptions[0]);
+      } else {
+        setSelectedOption(null);
+      }
     } else {
       const newFilteredOptions = templateOptions.filter(
         (option) =>
           !valueState.includes(option) &&
           option.toLowerCase().includes(query.toLowerCase())
       );
-      setFilteredOptions(newFilteredOptions);
+      if (newFilteredOptions.length > 0) {
+        setSelectedOption(newFilteredOptions[0]);
+      } else {
+        setSelectedOption(null);
+      }
       if (newFilteredOptions.length > 0) {
         setSelectedOption(newFilteredOptions[0]);
       } else {
@@ -113,11 +104,14 @@ export default function BlockEditList({
         type: templateBlock.type,
         value: valueState.filter((option) => option !== optionToDelete),
       });
-      setFilteredOptions(
-        templateOptions.filter(
-          (option) => !valueState.includes(option) || option === optionToDelete
-        )
+      const newFilteredOptions = templateOptions.filter(
+        (option) => !valueState.includes(option) || option === optionToDelete
       );
+      if (newFilteredOptions.length > 0) {
+        setSelectedOption(newFilteredOptions[0]);
+      } else {
+        setSelectedOption(null);
+      }
     }
     // Update the external state for "selected" here
   };
@@ -159,11 +153,14 @@ export default function BlockEditList({
         type: templateBlock.type,
         value: [...valueState, newOption],
       });
-      setFilteredOptions(
-        templateOptions.filter(
-          (option) => !valueState.includes(option) && option !== newOption
-        )
+      const newFilteredOptions = templateOptions.filter(
+        (option) => !valueState.includes(option) && option !== newOption
       );
+      if (newFilteredOptions.length > 0) {
+        setSelectedOption(newFilteredOptions[0]);
+      } else {
+        setSelectedOption(null);
+      }
       setSearchQuery("");
       if (error) {
         handleRemoveError(index);

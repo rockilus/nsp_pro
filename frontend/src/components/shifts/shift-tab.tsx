@@ -8,7 +8,7 @@ import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import ShiftTable from "./shift-table";
 import TableFilterBar from "../table/TableFilterBar";
 import NewDimensionForm from "../shift-worker-shared/dimension/new-dimension-form";
-import PopoverRHS from "../inputs/popover-rhs";
+import DimensionDialog from "../shift-worker-shared/dimension/DimensionDialog";
 import TableAddButton from "../buttons/table-add-button";
 import LinkShiftDialog from "./link-shift/link-shift-dialog";
 // Skeletons
@@ -530,7 +530,7 @@ export default function ShiftTab({
                     handleClick={() => handleAddShift(true)}
                   />
                 )}
-                <PopoverRHS
+                <DimensionDialog
                   title={t("new_property")}
                   buttonContent={<TableAddButton text={t("property")} />}
                   content={

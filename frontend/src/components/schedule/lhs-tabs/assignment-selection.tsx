@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import dayjs from "dayjs";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
@@ -49,10 +49,11 @@ export default function AssignmentSelection({
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
-  const [selectedAssignmentState, setSelectedAssignmentState] =
-    useState<AssignmentT | null>(selectedAssignment?.assignment || null);
-  const [selectedAssignSchedule, setSelectedAssignSchedule] =
-    useState<ScheduleT | null>(null);
+  const selectedAssignmentState: AssignmentT | null =
+    selectedAssignment?.assignment || null;
+  const selectedAssignSchedule: ScheduleT | null = selectedAssignmentState
+    ? schedules.find((s) => s.id === selectedAssignmentState.scheduleId) || null
+    : null;
 
   const handleChangeAssignmentFixed = () => {
     if (!selectedAssignmentState) return;
@@ -71,16 +72,9 @@ export default function AssignmentSelection({
       (b) => b.objectiveCategory !== ObjectiveCategory.REQUEST
     ) || [];
 
-  useEffect(() => {
-    setSelectedAssignmentState(selectedAssignment?.assignment || null);
-    setSelectedAssignSchedule(
-      selectedAssignment
-        ? schedules.find(
-            (s) => s.id === selectedAssignment.assignment.scheduleId
-          ) || null
-        : null
-    );
-  }, [selectedAssignment, schedules]);
+  // selectedAssignmentState and selectedAssignSchedule are derived from
+  // props (selectedAssignment and schedules) so there's no need for a
+  // synchronizing effect that calls setState synchronously.
 
   return (
     <div>

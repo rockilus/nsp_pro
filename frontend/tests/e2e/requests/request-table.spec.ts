@@ -57,7 +57,7 @@ test.describe("Request Table actions", () => {
     await expect(editButton).toBeVisible();
     await editButton.click();
 
-    const popover = base.getRequestPanelPopover(page);
+    const popover = base.getRequestPanelDialog(page);
     await expect(popover).toBeVisible();
   });
 

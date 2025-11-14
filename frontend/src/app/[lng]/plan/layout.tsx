@@ -12,15 +12,16 @@ export async function generateStaticParams() {
   return languages.map((lng) => ({ lng }));
 }
 
-export default function Layout({
+export default async function Layout({
   children,
-  params: { lng },
+  params,
 }: {
   children: React.ReactNode;
-  params: {
+  params: Promise<{
     lng: string;
-  };
+  }>;
 }) {
+  const { lng } = await params;
   return (
     <ProtectedRoute requireAuth={true}>
       <UserProvider>

@@ -4,6 +4,7 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
+import dayjs, { Dayjs } from "dayjs";
 import { ShiftDemandConcurrency } from "@/types/multitasking";
 import { useGetShiftDemandConcurrency } from "@/hooks/useMultitasking";
 
@@ -13,7 +14,7 @@ import { useGetShiftDemandConcurrency } from "@/hooks/useMultitasking";
 export const multitaskingKeys = {
   all: ["multitasking"] as const,
   teams: (teamId: string) => [...multitaskingKeys.all, "team", teamId] as const,
-  concurrency: (teamId: string, startDate: Date, endDate: Date) =>
+  concurrency: (teamId: string, startDate: Dayjs, endDate: Dayjs) =>
     [
       ...multitaskingKeys.teams(teamId),
       "concurrency",
@@ -27,8 +28,8 @@ export const multitaskingKeys = {
  */
 export const useShiftDemandConcurrency = (
   teamId: string,
-  startDate: Date,
-  endDate: Date,
+  startDate: Dayjs,
+  endDate: Dayjs,
   enabled: boolean = true
 ) => {
   const getShiftDemandConcurrency = useGetShiftDemandConcurrency();

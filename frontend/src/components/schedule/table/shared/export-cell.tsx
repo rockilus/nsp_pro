@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, Dispatch, SetStateAction } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../../../app/i18n/client";
@@ -22,6 +22,138 @@ import {
 } from "../../../../types/schedule";
 
 dayjs.extend(utc);
+
+const PopoverContent = ({
+  t,
+  exportOptionsState,
+  setExportOptionsState,
+  ExportOptionsMap,
+  periodDates,
+  scheduleCampaign,
+  handleConfirmExport,
+}: {
+  t: (key: string) => string;
+  exportOptionsState: ExportOptionsT;
+  setExportOptionsState: Dispatch<SetStateAction<ExportOptionsT>>;
+  ExportOptionsMap: { value: number; label: string }[];
+  periodDates: periodDateT[];
+  scheduleCampaign: ScheduleT | null;
+  handleConfirmExport: () => void;
+}) => {
+  return (
+    <div className="popover-content-container">
+      <span className="subtitle">{t("export_to_excel")}</span>
+      <div className="period-selector">
+        <span className="period-selector-label">{t("period")}:</span>
+        <ToggleButtonGroup
+          color="primary"
+          value={exportOptionsState.periodOption}
+          exclusive
+          onChange={(
+            event: React.MouseEvent<HTMLElement>,
+            newAlignment: number
+          ) => {
+            if (newAlignment !== null) {
+              setExportOptionsState((prevState) => ({
+                ...prevState,
+                periodOption: newAlignment,
+              }));
+              if (newAlignment === ExportPeriodOptions.CURRENT_SELECTION) {
+                setExportOptionsState((prevState) => ({
+                  ...prevState,
+                  startDate: periodDates[0].date,
+                  endDate: periodDates[periodDates.length - 1].date,
+                }));
+              } else if (
+                newAlignment === ExportPeriodOptions.CAMPAIGN &&
+                scheduleCampaign
+              ) {
+                setExportOptionsState((prevState) => ({
+                  ...prevState,
+                  startDate: dayjs.utc(scheduleCampaign.startDate),
+                  endDate: dayjs.utc(scheduleCampaign.endDate),
+                }));
+              }
+            }
+          }}
+          aria-label="Platform"
+        >
+          {ExportOptionsMap.map((c) => (
+            <ToggleButton
+              key={c.value}
+              disabled={
+                c.value === ExportPeriodOptions.CAMPAIGN && !scheduleCampaign
+              }
+              value={c.value}
+              sx={{
+                textTransform: "none",
+                height: "25px",
+                fontSize: "0.8rem",
+              }}
+            >
+              {c.label}
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+      </div>
+      <div className="date-picker-container">
+        <DatePicker
+          disabled={
+            exportOptionsState.periodOption !== ExportPeriodOptions.CUSTOM
+          }
+          value={exportOptionsState.startDate}
+          onChange={(newValue) => {
+            setExportOptionsState((prevState) => ({
+              ...prevState,
+              startDate: newValue
+                ? dayjs.utc(newValue).startOf("day")
+                : dayjs.utc().startOf("day"),
+            }));
+          }}
+          sx={{
+            width: "160px",
+            "& .MuiOutlinedInput-input": {
+              fontSize: "0.875rem",
+              height: "35px",
+              paddingY: 0,
+            },
+          }}
+        />
+        <DatePicker
+          disabled={
+            exportOptionsState.periodOption !== ExportPeriodOptions.CUSTOM
+          }
+          value={exportOptionsState.endDate}
+          onChange={(newValue) => {
+            setExportOptionsState((prevState) => ({
+              ...prevState,
+              endDate: newValue
+                ? dayjs.utc(newValue).startOf("day")
+                : dayjs.utc().startOf("day"),
+            }));
+          }}
+          sx={{
+            width: "160px",
+            marginLeft: "10px",
+            "& .MuiOutlinedInput-input": {
+              fontSize: "0.875rem",
+              height: "35px",
+              paddingY: 0,
+            },
+          }}
+        />
+      </div>
+      <div className="confirm-export-button-container">
+        <button
+          className="export-to-excel-button"
+          onClick={handleConfirmExport}
+        >
+          {t("export_to_excel")}
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export default function ExportCell({
   lng,
@@ -104,96 +236,6 @@ export default function ExportCell({
     handleExportSchedule(exportOptionsState);
   };
 
-  const PopoverContent = () => {
-    return (
-      <div className="popover-content-container">
-        <span className="subtitle">{t("export_to_excel")}</span>
-        <div className="period-selector">
-          <span className="period-selector-label">{t("period")}:</span>
-          <ToggleButtonGroup
-            color="primary"
-            value={exportOptionsState.periodOption}
-            exclusive
-            onChange={handleChange}
-            aria-label="Platform"
-          >
-            {ExportOptionsMap.map((c) => (
-              <ToggleButton
-                key={c.value}
-                disabled={
-                  c.value === ExportPeriodOptions.CAMPAIGN && !scheduleCampaign
-                }
-                value={c.value}
-                sx={{
-                  textTransform: "none",
-                  height: "25px",
-                  fontSize: "0.8rem",
-                }}
-              >
-                {c.label}
-              </ToggleButton>
-            ))}
-          </ToggleButtonGroup>
-        </div>
-        <div className="date-picker-container">
-          <DatePicker
-            disabled={
-              exportOptionsState.periodOption !== ExportPeriodOptions.CUSTOM
-            }
-            value={exportOptionsState.startDate}
-            onChange={(newValue) => {
-              setExportOptionsState((prevState) => ({
-                ...prevState,
-                startDate: newValue
-                  ? dayjs.utc(newValue).startOf("day")
-                  : dayjs.utc().startOf("day"),
-              }));
-            }}
-            sx={{
-              width: "160px",
-              "& .MuiOutlinedInput-input": {
-                fontSize: "0.875rem",
-                height: "35px",
-                paddingY: 0,
-              },
-            }}
-          />
-          <DatePicker
-            disabled={
-              exportOptionsState.periodOption !== ExportPeriodOptions.CUSTOM
-            }
-            value={exportOptionsState.endDate}
-            onChange={(newValue) => {
-              setExportOptionsState((prevState) => ({
-                ...prevState,
-                endDate: newValue
-                  ? dayjs.utc(newValue).startOf("day")
-                  : dayjs.utc().startOf("day"),
-              }));
-            }}
-            sx={{
-              width: "160px",
-              marginLeft: "10px",
-              "& .MuiOutlinedInput-input": {
-                fontSize: "0.875rem",
-                height: "35px",
-                paddingY: 0,
-              },
-            }}
-          />
-        </div>
-        <div className="confirm-export-button-container">
-          <button
-            className="export-to-excel-button"
-            onClick={handleConfirmExport}
-          >
-            {t("export_to_excel")}
-          </button>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <TableCell
       sx={{
@@ -226,7 +268,15 @@ export default function ExportCell({
             },
           }}
         >
-          <PopoverContent />
+          <PopoverContent
+            t={t}
+            exportOptionsState={exportOptionsState}
+            setExportOptionsState={setExportOptionsState}
+            ExportOptionsMap={ExportOptionsMap}
+            periodDates={periodDates}
+            scheduleCampaign={scheduleCampaign}
+            handleConfirmExport={handleConfirmExport}
+          />
         </Popover>
       </div>
     </TableCell>

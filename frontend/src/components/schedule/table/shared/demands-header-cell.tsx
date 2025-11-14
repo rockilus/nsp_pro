@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../../../app/i18n/client";
@@ -13,6 +13,78 @@ import { periodDateT, ScheduleViewSettingsT } from "../../../../types/schedule";
 import { ShiftT, ShiftType } from "../../../../types/shift";
 
 dayjs.extend(utc);
+
+type CountsT = {
+  [id: string]: {
+    actual: number;
+    target: number;
+    staffingTotal: number;
+  };
+  total: {
+    actual: number;
+    target: number;
+    staffingTotal: number;
+  };
+};
+
+const DSDPopoverButton: React.FC<{ counts: CountsT }> = ({ counts }) => {
+  return (
+    <span
+      className={`dsd-stats-total ${
+        counts.total.actual !== counts.total.target ? "breach" : ""
+      }`}
+    >
+      {`${counts.total.actual} / ${counts.total.target}`}
+    </span>
+  );
+};
+
+const PopoverContent: React.FC<{
+  shiftsWorkNotDeleted: ShiftT[];
+  counts: CountsT;
+  scheduleViewSettings: ScheduleViewSettingsT;
+  t: (key: string) => string;
+}> = ({ shiftsWorkNotDeleted, counts, scheduleViewSettings, t }) => {
+  return (
+    <div>
+      <span className="subtitle">
+        {scheduleViewSettings.groupBy === "shift"
+          ? t("shift_count")
+          : t("worker_count")}
+      </span>
+      <div className="divider-popover" />
+      {shiftsWorkNotDeleted.map((shift) => {
+        return (
+          <div key={shift.id} className="container-dsd-item">
+            <div
+              className={`container-dsd-item-text ${
+                counts[shift.id].actual !== counts[shift.id].target
+                  ? "breach"
+                  : ""
+              }`}
+            >
+              <div className="shift-name">{shift.name}</div>
+              {scheduleViewSettings.groupBy === "worker" && (
+                <span className="dsd-stats staffing-count">{`(${
+                  counts[shift.id].staffingTotal
+                })`}</span>
+              )}
+              <div className="container-dsd-stats">
+                <span className="dsd-stats dsd-stats-actual">
+                  {counts[shift.id].actual}
+                </span>
+                <span className="dsd-stats dsd-stats-slash">/</span>
+                <span className="dsd-stats dsd-stats-target">
+                  {counts[shift.id].target}
+                </span>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 export default function DemandsHeaderCell({
   lng,
@@ -41,7 +113,6 @@ export default function DemandsHeaderCell({
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
     null
   );
-  const [shiftsWorkNotDeleted, setShiftWorkNotDeleted] = useState<ShiftT[]>([]);
 
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
@@ -54,65 +125,11 @@ export default function DemandsHeaderCell({
     setAnchorEl(null);
   };
 
-  const DSDPopoverButton = () => {
-    return (
-      <span
-        className={`dsd-stats-total ${
-          counts.total.actual !== counts.total.target && "breach"
-        }`}
-      >
-        {`${counts.total.actual} / ${counts.total.target}`}
-      </span>
-    );
-  };
-
-  const PopoverContent = () => {
-    return (
-      <div>
-        <span className="subtitle">
-          {scheduleViewSettings.groupBy === "shift"
-            ? t("shift_count")
-            : t("worker_count")}
-        </span>
-        <div className="divider-popover" />
-        {shiftsWorkNotDeleted.map((shift) => {
-          return (
-            <div key={shift.id} className="container-dsd-item">
-              <div
-                className={`container-dsd-item-text ${
-                  counts[shift.id].actual !== counts[shift.id].target &&
-                  "breach"
-                }`}
-              >
-                <div className="shift-name">{shift.name}</div>
-                {scheduleViewSettings.groupBy === "worker" && (
-                  <span className="dsd-stats staffing-count">{`(${
-                    counts[shift.id].staffingTotal
-                  })`}</span>
-                )}
-                <div className="container-dsd-stats">
-                  <span className="dsd-stats dsd-stats-actual">
-                    {counts[shift.id].actual}
-                  </span>
-                  <span className="dsd-stats dsd-stats-slash">/</span>
-                  <span className="dsd-stats dsd-stats-target">
-                    {counts[shift.id].target}
-                  </span>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  useEffect(() => {
-    const shiftWorkNotDeleted = shifts.filter(
+  const shiftsWorkNotDeleted = useMemo(() => {
+    return shifts.filter(
       (s) =>
         [ShiftType.NORMAL, ShiftType.DUTY].includes(s.shiftType) && !s.deleted
     );
-    setShiftWorkNotDeleted(shiftWorkNotDeleted);
   }, [shifts]);
 
   return (
@@ -124,7 +141,7 @@ export default function DemandsHeaderCell({
     >
       <div className="container-dsd-cell">
         <button onClick={handleClick}>
-          <DSDPopoverButton />
+          <DSDPopoverButton counts={counts} />
         </button>
         <Popover
           id={id}
@@ -145,7 +162,12 @@ export default function DemandsHeaderCell({
             },
           }}
         >
-          <PopoverContent />
+          <PopoverContent
+            shiftsWorkNotDeleted={shiftsWorkNotDeleted}
+            counts={counts}
+            scheduleViewSettings={scheduleViewSettings}
+            t={t}
+          />
         </Popover>
       </div>
     </TableCell>

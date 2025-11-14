@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useState, useEffect } from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 // MUI
 import Box from "@mui/material/Box";
 import TableCell from "@mui/material/TableCell";
@@ -17,15 +17,30 @@ export default function ShiftFieldCellAcronym({
   shift: ShiftT;
   editing: boolean;
   setEditing: Dispatch<SetStateAction<{}>>;
-  handleUpdateShift: (updatedShift: ShiftT) => void;
+  // allow async updates (parent may return a Promise)
+  handleUpdateShift: (updatedShift: ShiftT) => void | Promise<unknown>;
 }) {
   const [valueState, setValueState] = useState(shift.acronym);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const handleEditConfirm = () => {
-    if (valueState !== shift.acronym) {
-      handleUpdateShift({ ...shift, acronym: valueState });
-    }
-    setEditing({});
+    (async () => {
+      if (valueState !== shift.acronym) {
+        setIsUpdating(true);
+        const res = handleUpdateShift({ ...shift, acronym: valueState });
+        if (res && typeof (res as Promise<unknown>).then === "function") {
+          try {
+            await (res as Promise<unknown>);
+          } finally {
+            setIsUpdating(false);
+          }
+        } else {
+          setIsUpdating(false);
+        }
+      }
+
+      setEditing({});
+    })();
   };
 
   const handleEditCancel = () => {
@@ -33,19 +48,25 @@ export default function ShiftFieldCellAcronym({
     setValueState(shift.acronym);
   };
 
-  useEffect(() => {
-    setValueState(shift.acronym);
-  }, [shift.acronym]);
+  // We intentionally avoid setting local state from an effect to satisfy
+  // react-hooks rules. Instead we initialize the edit value when entering
+  // edit mode below.
 
   return (
     <TableCell
       component="th"
       scope="row"
-      onClick={() =>
-        shift.leaveType === ShiftLeaveType.NONE &&
-        shift.restType !== ShiftRestType.OFF &&
-        setEditing({ [shift.id]: "acronym" })
-      }
+      onClick={() => {
+        if (
+          shift.leaveType === ShiftLeaveType.NONE &&
+          shift.restType !== ShiftRestType.OFF &&
+          !isUpdating
+        ) {
+          // initialize local edit value from prop when entering edit mode
+          setValueState(shift.acronym);
+          setEditing({ [shift.id]: "acronym" });
+        }
+      }}
       sx={{
         paddingY: 0,
         cursor:
@@ -71,6 +92,7 @@ export default function ShiftFieldCellAcronym({
             }
           }}
           autoFocus
+          disabled={isUpdating}
         />
       ) : (
         <Box

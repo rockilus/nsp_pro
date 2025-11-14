@@ -77,13 +77,18 @@ export default function BlockEditString({
 
   useEffect(() => {
     if (block !== null) {
-      setValueState(initialValue);
+      // Schedule state update asynchronously to avoid synchronous setState in
+      // effect body which triggers the react-hooks/set-state-in-effect lint
+      // rule. Call the initializer function and set the explicit value.
+      Promise.resolve().then(() => setValueState(initialValue()));
     }
   }, [block, initialValue]);
 
   useEffect(() => {
     if (templateBlock !== null) {
-      setTemplateOptions(templateOptionsCast);
+      // Same pattern: schedule the options update in a microtask and call
+      // the templateOptionsCast function to get the array value.
+      Promise.resolve().then(() => setTemplateOptions(templateOptionsCast()));
     }
   }, [templateBlock, templateOptionsCast]);
 

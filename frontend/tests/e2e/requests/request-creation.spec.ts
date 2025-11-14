@@ -77,7 +77,7 @@ test.describe("Request Creation", () => {
     console.log(`[Test Run ${testRunId}] Cleanup completed`);
   });
 
-  test("should open request creation popover when clicking new request button", async ({
+  test("should open request creation dialog when clicking new request button", async ({
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
@@ -89,7 +89,7 @@ test.describe("Request Creation", () => {
     await newRequestButton.click();
 
     // Verify the popover opens
-    const popover = requestTestBase.getRequestPanelPopover(page);
+    const popover = requestTestBase.getRequestPanelDialog(page);
     await expect(popover).toBeVisible();
 
     // Verify popover has correct elements
@@ -359,7 +359,7 @@ test.describe("Request Creation", () => {
     await saveButton.click();
 
     // The popover should still be visible (not closed due to validation errors)
-    const popover = requestTestBase.getRequestPanelPopover(page);
+    const popover = requestTestBase.getRequestPanelDialog(page);
     await expect(popover).toBeVisible();
 
     // Check that validation errors are displayed using accessibility attribute

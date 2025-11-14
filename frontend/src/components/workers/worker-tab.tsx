@@ -8,10 +8,8 @@ import { useTranslation } from "../../app/i18n/client";
 import WorkerTable from "./worker-table";
 import TableFilterBar from "../table/TableFilterBar";
 import TableAddButton from "../buttons/table-add-button";
-import PopoverRHS from "../inputs/popover-rhs";
+import DimensionDialog from "../shift-worker-shared/dimension/DimensionDialog";
 import NewDimensionForm from "../shift-worker-shared/dimension/new-dimension-form";
-// Skeletons
-import TablesSkeleton from "../skeletons/tables-skeleton";
 // Hooks
 import { useTableState } from "../../hooks/useTableState";
 import {
@@ -96,7 +94,6 @@ export default function WorkerTab({
 }) {
   const { t } = useTranslation(lng, "worker-page");
 
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [dimensions, setDimensions] = useState<DimensionT[]>([]);
   const [dimEntries, setDimEntries] = useState<DimEntryT[]>([]);
@@ -419,7 +416,6 @@ export default function WorkerTab({
 
   useEffect(() => {
     const fetchWorkersTabData = async () => {
-      setIsLoading(true);
       if (selectedTeamId) {
         try {
           const {
@@ -434,8 +430,6 @@ export default function WorkerTab({
           setSpecialties(fetchedSpecialties);
         } catch (error) {
           console.error("Failed to fetch workers tab data:", error);
-        } finally {
-          setIsLoading(false);
         }
       }
     };
@@ -459,88 +453,84 @@ export default function WorkerTab({
 
   return (
     <div className="tab-container-wide">
-      {isLoading ? (
-        <TablesSkeleton numTables={1} numInternalRows={3} />
-      ) : (
-        selectedTeamId && (
-          <div>
-            {/* Title container */}
-            <div className="table-title-container">
-              <span
-                className="title"
-                role="heading"
-                aria-level={1}
-                data-testid="workers-page-heading"
-              >
-                {t("workers")}
-              </span>
-              <div style={{ display: "flex", gap: "8px" }}>
-                <TableAddButton
-                  text={t("worker")}
-                  handleClick={handleAddWorker}
-                />
-                <PopoverRHS
-                  title={t("new_property")}
-                  buttonContent={<TableAddButton text={t("property")} />}
-                  content={
-                    <NewDimensionForm
-                      lng={lng}
-                      selectedTeamId={selectedTeamId}
-                      dimensionType={DimensionType.WORKER}
-                      dimensions={dimensions}
-                      dimEntries={dimEntries}
-                      setOpenParent={setPopoverRhsOpen}
-                      handleAddDimension={handleAddDimension}
-                      handleUpdateDimension={handleUpdateDimension}
-                    />
-                  }
-                  open={popoverRhsOpen}
-                  setOpen={setPopoverRhsOpen}
-                />
-              </div>
-            </div>
-
-            {/* Filter/Sort toolbar */}
-            {showFilterToolbar && (
-              <TableFilterBar
-                filters={tableState.filters}
-                sort={tableState.sort}
-                onRemoveFilter={removeFilter}
-                onRemoveSort={() => updateSort(null)}
-                onResetAll={resetAll}
+      {selectedTeamId && (
+        <div>
+          {/* Title container */}
+          <div className="table-title-container">
+            <span
+              className="title"
+              role="heading"
+              aria-level={1}
+              data-testid="workers-page-heading"
+            >
+              {t("workers")}
+            </span>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <TableAddButton
+                text={t("worker")}
+                handleClick={handleAddWorker}
               />
-            )}
-
-            <WorkerTable
-              lng={lng}
-              selectedTeamId={selectedTeamId}
-              dimensions={dimensions}
-              dimEntries={dimEntries}
-              workers={filteredWorkers}
-              specialties={specialties}
-              defaultWorkerFields={DefaultWorkerFields}
-              tableHeight={tableHeight}
-              // Table state props
-              workerColumns={workerColumns}
-              currentSort={tableState.sort}
-              onSort={updateSort}
-              onFilter={addFilter}
-              handleAddWorker={handleAddWorker}
-              handleUpdateWorker={handleUpdateWorker}
-              handleDeleteWorker={handleDeleteWorker}
-              handleAddDimension={handleAddDimension}
-              handleUpdateDimension={handleUpdateDimension}
-              handleDeleteDimension={handleDeleteDimension}
-              handleAddDimEntry={handleAddDimEntry}
-              handleUpdateDimEntry={handleUpdateDimEntry}
-              handleDeleteDimEntry={handleDeleteDimEntry}
-              handleUpdateAttribute={handleUpdateAttribute}
-              handleAddSpecialty={handleAddSpecialty}
-              handleUpdateSpecialty={handleUpdateSpecialty}
-              handleDeleteSpecialty={handleDeleteSpecialty}
-            />
+              <DimensionDialog
+                title={t("new_property")}
+                buttonContent={<TableAddButton text={t("property")} />}
+                content={
+                  <NewDimensionForm
+                    lng={lng}
+                    selectedTeamId={selectedTeamId}
+                    dimensionType={DimensionType.WORKER}
+                    dimensions={dimensions}
+                    dimEntries={dimEntries}
+                    setOpenParent={setPopoverRhsOpen}
+                    handleAddDimension={handleAddDimension}
+                    handleUpdateDimension={handleUpdateDimension}
+                  />
+                }
+                open={popoverRhsOpen}
+                setOpen={setPopoverRhsOpen}
+              />
+            </div>
           </div>
-        )
+
+          {/* Filter/Sort toolbar */}
+          {showFilterToolbar && (
+            <TableFilterBar
+              filters={tableState.filters}
+              sort={tableState.sort}
+              onRemoveFilter={removeFilter}
+              onRemoveSort={() => updateSort(null)}
+              onResetAll={resetAll}
+            />
+          )}
+
+          <WorkerTable
+            lng={lng}
+            selectedTeamId={selectedTeamId}
+            dimensions={dimensions}
+            dimEntries={dimEntries}
+            workers={filteredWorkers}
+            specialties={specialties}
+            defaultWorkerFields={DefaultWorkerFields}
+            tableHeight={tableHeight}
+            // Table state props
+            workerColumns={workerColumns}
+            currentSort={tableState.sort}
+            onSort={updateSort}
+            onFilter={addFilter}
+            handleAddWorker={handleAddWorker}
+            handleUpdateWorker={handleUpdateWorker}
+            handleDeleteWorker={handleDeleteWorker}
+            handleAddDimension={handleAddDimension}
+            handleUpdateDimension={handleUpdateDimension}
+            handleDeleteDimension={handleDeleteDimension}
+            handleAddDimEntry={handleAddDimEntry}
+            handleUpdateDimEntry={handleUpdateDimEntry}
+            handleDeleteDimEntry={handleDeleteDimEntry}
+            handleUpdateAttribute={handleUpdateAttribute}
+            handleAddSpecialty={handleAddSpecialty}
+            handleUpdateSpecialty={handleUpdateSpecialty}
+            handleDeleteSpecialty={handleDeleteSpecialty}
+          />
+        </div>
       )}
     </div>
   );

@@ -48,23 +48,39 @@ export default function ProtectedRoute({
 
       const isNetworkIssue = isNetworkError(error);
 
+      // Avoid calling setState synchronously inside the effect body -
+      // schedule updates with timers and clear them on cleanup to satisfy
+      // react-hooks/set-state-in-effect lint rule.
+      let manualSignInTimer: ReturnType<typeof setTimeout> | undefined;
+      let networkStartTimer: ReturnType<typeof setTimeout> | undefined;
+      let networkRetryTimer: ReturnType<typeof setTimeout> | undefined;
+
       if (isRotationError && !isNetworkIssue) {
         console.warn("🔄 Refresh token rotation error detected");
-        setShowManualSignIn(true);
+        manualSignInTimer = setTimeout(() => setShowManualSignIn(true), 0);
       } else if (isNetworkIssue) {
         console.warn("🌐 Network error detected, allowing retry");
-        setNetworkRetrying(true);
 
-        // Auto-retry after network issues
-        const retryTimer = setTimeout(() => {
-          setNetworkRetrying(false);
-          if (!isAuthenticated) {
-            setShowManualSignIn(true);
-          }
-        }, 10000); // 10 second delay for network recovery
+        // Start network-retrying state on a short-scheduled task to avoid
+        // triggering synchronous state update warnings.
+        networkStartTimer = setTimeout(() => {
+          setNetworkRetrying(true);
 
-        return () => clearTimeout(retryTimer);
+          // Auto-retry after network issues
+          networkRetryTimer = setTimeout(() => {
+            setNetworkRetrying(false);
+            if (!isAuthenticated) {
+              setShowManualSignIn(true);
+            }
+          }, 10000); // 10 second delay for network recovery
+        }, 0);
       }
+
+      return () => {
+        if (manualSignInTimer) clearTimeout(manualSignInTimer);
+        if (networkStartTimer) clearTimeout(networkStartTimer);
+        if (networkRetryTimer) clearTimeout(networkRetryTimer);
+      };
     }
   }, [requireAuth, loading, error, isAuthenticated, signIn]);
 

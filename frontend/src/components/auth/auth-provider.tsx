@@ -5,21 +5,31 @@ import { AuthProvider as OidcAuthProvider } from "react-oidc-context";
 import { cognitoAuthConfig } from "../../config/cognito";
 import { AuthContextProvider } from "../../contexts/auth-context";
 import { env } from "@/config/env";
+import { CookiesProvider } from "react-cookie";
 
 interface AuthProviderProps {
   children: React.ReactNode;
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
+  // Wrap both development and production flows with CookiesProvider so
+  // any `useCookies` calls in the tree have a provider (fixes runtime
+  // "Missing <CookiesProvider>" error).
   if (env.isDevelopment) {
     // Development mode: AuthContextProvider handles dev auth internally
-    return <AuthContextProvider>{children}</AuthContextProvider>;
+    return (
+      <CookiesProvider>
+        <AuthContextProvider>{children}</AuthContextProvider>
+      </CookiesProvider>
+    );
   }
 
   // Production mode: use Cognito OIDC auth with wrapper
   return (
-    <OidcAuthProvider {...cognitoAuthConfig}>
-      <AuthContextProvider>{children}</AuthContextProvider>
-    </OidcAuthProvider>
+    <CookiesProvider>
+      <OidcAuthProvider {...cognitoAuthConfig}>
+        <AuthContextProvider>{children}</AuthContextProvider>
+      </OidcAuthProvider>
+    </CookiesProvider>
   );
 }

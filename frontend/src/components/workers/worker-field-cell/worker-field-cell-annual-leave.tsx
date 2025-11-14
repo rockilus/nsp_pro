@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useState, useEffect } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 // MUI
 import Box from "@mui/material/Box";
 import TableCell from "@mui/material/TableCell";
@@ -15,25 +15,39 @@ export default function WorkerFieldCellAnnualLeave({
   worker: WorkerT;
   editing: boolean;
   setEditing: Dispatch<SetStateAction<{}>>;
-  handleUpdateWorker: (updatedWorker: WorkerT) => void;
+  // handleUpdateWorker may return a Promise when the parent performs async updates
+  handleUpdateWorker: (updatedWorker: WorkerT) => void | Promise<unknown>;
 }) {
   const [valueState, setValueState] = useState<number | "">(worker.annualLeave);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // Reset the local state when the worker prop changes (after successful update)
-  useEffect(() => {
-    setValueState(worker.annualLeave);
-    setIsUpdating(false);
-  }, [worker.annualLeave]);
+  // NOTE:
+  // Avoid updating local state from an effect (calling setState in useEffect)
+  // to satisfy the react-hooks lint rule and avoid hook dependency-size errors.
+  // Instead, we initialize the local value when entering edit mode and
+  // clear the updating flag after the parent update completes (if a Promise
+  // is returned). This keeps the editing UX correct without side-effectful
+  // effects.
 
   const handleEditConfirm = async () => {
     if (valueState !== worker.annualLeave && valueState !== "") {
       setIsUpdating(true);
-      handleUpdateWorker({
+      const result = handleUpdateWorker({
         ...worker,
         annualLeave: valueState,
       });
-      // Don't reset isUpdating here - let useEffect handle it when worker updates
+
+      // If the handler returns a Promise, wait for it to settle before
+      // clearing the updating flag. Otherwise, clear immediately.
+      if (result && typeof (result as Promise<unknown>).then === "function") {
+        try {
+          await (result as Promise<unknown>);
+        } finally {
+          setIsUpdating(false);
+        }
+      } else {
+        setIsUpdating(false);
+      }
     } else if (valueState === "") {
       setValueState(worker.annualLeave);
     }
@@ -49,9 +63,14 @@ export default function WorkerFieldCellAnnualLeave({
     <TableCell
       component="th"
       scope="row"
-      onClick={() =>
-        !editing && !isUpdating && setEditing({ [worker.id]: "annualLeave" })
-      }
+      onClick={() => {
+        if (!editing && !isUpdating) {
+          // Initialize local input state when starting to edit so the input
+          // always reflects the current persisted value.
+          setValueState(worker.annualLeave);
+          setEditing({ [worker.id]: "annualLeave" });
+        }
+      }}
       sx={{
         paddingY: 0,
         textAlign: "center",

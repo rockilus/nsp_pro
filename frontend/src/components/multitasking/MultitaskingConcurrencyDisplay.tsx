@@ -6,6 +6,7 @@
  */
 
 import React from "react";
+import dayjs, { Dayjs } from "dayjs";
 import {
   Box,
   Card,
@@ -21,8 +22,8 @@ import { useShiftDemandConcurrency } from "@/app/lib/hooks/useMultitasking";
 
 interface MultitaskingConcurrencyDisplayProps {
   teamId: string;
-  startDate: Date;
-  endDate: Date;
+  startDate: Dayjs;
+  endDate: Dayjs;
   enabled?: boolean;
 }
 
@@ -71,7 +72,9 @@ export const MultitaskingConcurrencyDisplay: React.FC<
   }
 
   const formatDateRange = () => {
-    return `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+    return `${startDate.format("YYYY-MM-DD")} - ${endDate.format(
+      "YYYY-MM-DD"
+    )}`;
   };
 
   return (
@@ -92,7 +95,7 @@ export const MultitaskingConcurrencyDisplay: React.FC<
 
       <Grid container spacing={2}>
         {concurrencyList.map((concurrency) => (
-          <Grid item xs={12} md={6} lg={4} key={concurrency.shiftDemandId}>
+          <Grid size={{ xs: 12, md: 6, lg: 4 }} key={concurrency.shiftDemandId}>
             <Card elevation={2}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>

@@ -22,25 +22,27 @@ export async function generateStaticParams() {
 
 interface RootLayoutProps {
   children: React.ReactNode;
-  params: { lng: string };
+  params: Promise<{ lng: string }>;
 }
 
-export default function RootLayout({ children, params }: RootLayoutProps) {
+export default async function RootLayout({
+  children,
+  params,
+}: RootLayoutProps) {
+  const resolvedParams = await params;
+  const lng = resolvedParams.lng;
+
   // Validate language parameter
-  if (!languages.includes(params.lng)) {
+  if (!languages.includes(lng)) {
     notFound();
   }
 
+  // Only the root layout (src/app/layout.tsx) must render <html> and <body>.
+  // Child layouts should return elements that can be nested inside the root body.
   return (
-    <html lang={params.lng}>
-      <AppRouterCacheProvider>
-        <body className={inter.className}>
-          <LanguageProvider initialLanguage={params.lng}>
-            {/* <ImpersonationBanner /> */}
-            {children}
-          </LanguageProvider>
-        </body>
-      </AppRouterCacheProvider>
-    </html>
+    <LanguageProvider initialLanguage={lng}>
+      {/* <ImpersonationBanner /> */}
+      {children}
+    </LanguageProvider>
   );
 }

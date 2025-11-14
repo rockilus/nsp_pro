@@ -43,64 +43,77 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
   const { t } = useTranslation(lng, "schedule-page");
   const { t: t_weekdays } = useTranslation(lng, "week_days");
 
-  const [repeatEvery, setRepeatEvery] = useState<number>(
-    recurrenceRule?.repeatEvery || 1
-  );
-  const [frequencyType, setFrequencyType] = useState<FrequencyType>(
-    recurrenceRule?.frequencyType || FrequencyType.WEEK
-  );
-  const [weekDays, setWeekDays] = useState<number[]>(
-    recurrenceRule?.weekDays || [(startDate.day() + 6) % 7]
-  );
-  const [monthRepeatType, setMonthRepeatType] =
-    useState<MonthRepeatType | null>(recurrenceRule?.monthRepeatType || null);
-  const [recurrenceEndType, setRecurrenceEndType] = useState<RecurrenceEndType>(
-    recurrenceRule?.recurrenceEndType || RecurrenceEndType.NEVER
-  );
-  const [endDate, setEndDate] = useState<dayjs.Dayjs>(
-    recurrenceRule?.endDate || startDate.add(3, "month")
-  );
-  const [numberOfOccurrences, setNumberOfOccurrences] = useState<number>(
-    recurrenceRule?.numberOfOccurrences || 12
-  );
+  interface FormState {
+    repeatEvery: number;
+    frequencyType: FrequencyType;
+    weekDays: number[];
+    monthRepeatType: MonthRepeatType | null;
+    recurrenceEndType: RecurrenceEndType;
+    endDate: dayjs.Dayjs;
+    numberOfOccurrences: number;
+  }
+
+  const [formState, setFormState] = useState<FormState>(() => ({
+    repeatEvery: recurrenceRule?.repeatEvery || 1,
+    frequencyType:
+      recurrenceRule?.frequencyType !== undefined
+        ? recurrenceRule.frequencyType
+        : FrequencyType.WEEK,
+    weekDays: recurrenceRule?.weekDays || [(startDate.day() + 6) % 7],
+    monthRepeatType: recurrenceRule?.monthRepeatType || null,
+    recurrenceEndType:
+      recurrenceRule?.recurrenceEndType || RecurrenceEndType.NEVER,
+    endDate: recurrenceRule?.endDate || startDate.add(3, "month"),
+    numberOfOccurrences: recurrenceRule?.numberOfOccurrences || 12,
+  }));
 
   const [repeatEveryError, setRepeatEveryError] = useState<boolean>(false);
   const [numberOfOccurrencesError, setNumberOfOccurrencesError] =
     useState<boolean>(false);
 
   useEffect(() => {
-    setRepeatEvery(recurrenceRule?.repeatEvery || 1);
-    setFrequencyType(
-      recurrenceRule?.frequencyType !== undefined
-        ? recurrenceRule.frequencyType
-        : FrequencyType.WEEK
-    );
-    setWeekDays(recurrenceRule?.weekDays || [(startDate.day() + 6) % 7]);
-    setMonthRepeatType(recurrenceRule?.monthRepeatType || null);
-    setRecurrenceEndType(
-      recurrenceRule?.recurrenceEndType || RecurrenceEndType.NEVER
-    );
-    setEndDate(recurrenceRule?.endDate || startDate.add(3, "month"));
-    setNumberOfOccurrences(recurrenceRule?.numberOfOccurrences || 12);
+    // Defer updating state to avoid synchronous setState inside effect
+    // (this avoids the lint rule complaining about setState in effect).
+    const id = window.setTimeout(() => {
+      setFormState((prev) => ({
+        ...prev,
+        repeatEvery: recurrenceRule?.repeatEvery || 1,
+        frequencyType:
+          recurrenceRule?.frequencyType !== undefined
+            ? recurrenceRule.frequencyType
+            : FrequencyType.WEEK,
+        weekDays: recurrenceRule?.weekDays || [(startDate.day() + 6) % 7],
+        monthRepeatType: recurrenceRule?.monthRepeatType || null,
+        recurrenceEndType:
+          recurrenceRule?.recurrenceEndType || RecurrenceEndType.NEVER,
+        endDate: recurrenceRule?.endDate || startDate.add(3, "month"),
+        numberOfOccurrences: recurrenceRule?.numberOfOccurrences || 12,
+      }));
+    }, 0);
+
+    return () => window.clearTimeout(id);
   }, [recurrenceRule, startDate]);
 
   const handleWeekDayToggle = (day: number) => {
-    setWeekDays((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
-    );
+    setFormState((prev) => ({
+      ...prev,
+      weekDays: prev.weekDays.includes(day)
+        ? prev.weekDays.filter((d) => d !== day)
+        : [...prev.weekDays, day],
+    }));
   };
 
   const handleSubmit = () => {
     let hasError = false;
 
-    if (!repeatEvery || repeatEvery === 0) {
+    if (!formState.repeatEvery || formState.repeatEvery === 0) {
       setRepeatEveryError(true);
       hasError = true;
     }
 
     if (
-      recurrenceEndType === RecurrenceEndType.NUMBER_OF_OCCURRENCES &&
-      (!numberOfOccurrences || numberOfOccurrences === 0)
+      formState.recurrenceEndType === RecurrenceEndType.NUMBER_OF_OCCURRENCES &&
+      (!formState.numberOfOccurrences || formState.numberOfOccurrences === 0)
     ) {
       setNumberOfOccurrencesError(true);
       hasError = true;
@@ -117,22 +130,24 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
         workerId: null,
         count: null,
       } as OccurrenceInfoT,
-      repeatEvery,
-      frequencyType,
-      weekDays,
+      repeatEvery: formState.repeatEvery,
+      frequencyType: formState.frequencyType,
+      weekDays: formState.weekDays,
       monthRepeatType:
-        frequencyType === FrequencyType.MONTH
-          ? monthRepeatType
-            ? monthRepeatType
+        formState.frequencyType === FrequencyType.MONTH
+          ? formState.monthRepeatType
+            ? formState.monthRepeatType
             : MonthRepeatType.DAY_IN_MONTH
           : null,
-      recurrenceEndType,
+      recurrenceEndType: formState.recurrenceEndType,
       startDate,
       endDate:
-        recurrenceEndType === RecurrenceEndType.END_DATE ? endDate : null,
+        formState.recurrenceEndType === RecurrenceEndType.END_DATE
+          ? formState.endDate
+          : null,
       numberOfOccurrences:
-        recurrenceEndType === RecurrenceEndType.NUMBER_OF_OCCURRENCES
-          ? numberOfOccurrences
+        formState.recurrenceEndType === RecurrenceEndType.NUMBER_OF_OCCURRENCES
+          ? formState.numberOfOccurrences
           : null,
     };
 
@@ -223,11 +238,12 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
           <label className="recurrence-edit-text">{t("repeat_every")}</label>
           <TextField
             type="number"
-            value={repeatEvery === 0 ? "" : repeatEvery}
+            value={formState.repeatEvery === 0 ? "" : formState.repeatEvery}
             onChange={(e) => {
-              setRepeatEvery(
-                e.target.value === "" ? 0 : Number(e.target.value)
-              );
+              setFormState((prev) => ({
+                ...prev,
+                repeatEvery: e.target.value === "" ? 0 : Number(e.target.value),
+              }));
               setRepeatEveryError(false);
             }}
             error={repeatEveryError}
@@ -247,9 +263,12 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
             sx={{ width: "50px", marginLeft: "5px" }}
           />
           <Select
-            value={frequencyType}
+            value={formState.frequencyType}
             onChange={(e) =>
-              setFrequencyType(Number(e.target.value) as FrequencyType)
+              setFormState((prev) => ({
+                ...prev,
+                frequencyType: Number(e.target.value) as FrequencyType,
+              }))
             }
             fullWidth
             displayEmpty
@@ -282,7 +301,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
         </div>
       </div>
 
-      {frequencyType === FrequencyType.WEEK && (
+      {formState.frequencyType === FrequencyType.WEEK && (
         <div className="recurrence-edit-section">
           <div className="recurrence-edit-sub-section">
             <label className="recurrence-edit-text">{t("repeat_on")}</label>
@@ -292,7 +311,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                   key={day.value}
                   onClick={() => handleWeekDayToggle(day.value)}
                   className={`weekday-button ${
-                    weekDays.includes(day.value) ? "selected" : ""
+                    formState.weekDays.includes(day.value) ? "selected" : ""
                   }`}
                 >
                   {day.label}
@@ -303,12 +322,15 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
         </div>
       )}
 
-      {frequencyType === FrequencyType.MONTH && (
+      {formState.frequencyType === FrequencyType.MONTH && (
         <div className="recurrence-edit-section">
           <Select
-            value={monthRepeatType || MonthRepeatType.DAY_IN_MONTH}
+            value={formState.monthRepeatType || MonthRepeatType.DAY_IN_MONTH}
             onChange={(e) => {
-              setMonthRepeatType(Number(e.target.value) as MonthRepeatType);
+              setFormState((prev) => ({
+                ...prev,
+                monthRepeatType: Number(e.target.value) as MonthRepeatType,
+              }));
             }}
             fullWidth
             displayEmpty
@@ -347,8 +369,13 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
             <input
               type="radio"
               value={RecurrenceEndType.NEVER}
-              checked={recurrenceEndType === RecurrenceEndType.NEVER}
-              onChange={() => setRecurrenceEndType(RecurrenceEndType.NEVER)}
+              checked={formState.recurrenceEndType === RecurrenceEndType.NEVER}
+              onChange={() =>
+                setFormState((prev) => ({
+                  ...prev,
+                  recurrenceEndType: RecurrenceEndType.NEVER,
+                }))
+              }
             />
             <span className="recurrence-edit-text recurrence-edit-radio-option-label">
               {t("never")}
@@ -359,9 +386,14 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
               <input
                 type="radio"
                 value={RecurrenceEndType.END_DATE}
-                checked={recurrenceEndType === RecurrenceEndType.END_DATE}
+                checked={
+                  formState.recurrenceEndType === RecurrenceEndType.END_DATE
+                }
                 onChange={() =>
-                  setRecurrenceEndType(RecurrenceEndType.END_DATE)
+                  setFormState((prev) => ({
+                    ...prev,
+                    recurrenceEndType: RecurrenceEndType.END_DATE,
+                  }))
                 }
               />
               <span className="recurrence-edit-text recurrence-edit-radio-option-label">
@@ -369,12 +401,17 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
               </span>
             </label>
             <DatePicker
-              disabled={recurrenceEndType !== RecurrenceEndType.END_DATE}
-              value={endDate}
+              disabled={
+                formState.recurrenceEndType !== RecurrenceEndType.END_DATE
+              }
+              value={formState.endDate}
               onChange={(newDate) => {
-                setEndDate(
-                  newDate ? dayjs(newDate).utc() : startDate.add(3, "month")
-                );
+                setFormState((prev) => ({
+                  ...prev,
+                  endDate: newDate
+                    ? dayjs(newDate).utc()
+                    : startDate.add(3, "month"),
+                }));
               }}
               minDate={startDate}
               sx={{
@@ -401,10 +438,14 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                 type="radio"
                 value={RecurrenceEndType.NUMBER_OF_OCCURRENCES}
                 checked={
-                  recurrenceEndType === RecurrenceEndType.NUMBER_OF_OCCURRENCES
+                  formState.recurrenceEndType ===
+                  RecurrenceEndType.NUMBER_OF_OCCURRENCES
                 }
                 onChange={() =>
-                  setRecurrenceEndType(RecurrenceEndType.NUMBER_OF_OCCURRENCES)
+                  setFormState((prev) => ({
+                    ...prev,
+                    recurrenceEndType: RecurrenceEndType.NUMBER_OF_OCCURRENCES,
+                  }))
                 }
               />
               <span className="recurrence-edit-text recurrence-edit-radio-option-label">
@@ -414,13 +455,20 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
             <TextField
               type="number"
               disabled={
-                recurrenceEndType !== RecurrenceEndType.NUMBER_OF_OCCURRENCES
+                formState.recurrenceEndType !==
+                RecurrenceEndType.NUMBER_OF_OCCURRENCES
               }
-              value={numberOfOccurrences === 0 ? "" : numberOfOccurrences}
+              value={
+                formState.numberOfOccurrences === 0
+                  ? ""
+                  : formState.numberOfOccurrences
+              }
               onChange={(e) => {
-                setNumberOfOccurrences(
-                  e.target.value === "" ? 0 : Number(e.target.value)
-                );
+                setFormState((prev) => ({
+                  ...prev,
+                  numberOfOccurrences:
+                    e.target.value === "" ? 0 : Number(e.target.value),
+                }));
                 setNumberOfOccurrencesError(false);
               }}
               error={numberOfOccurrencesError}

@@ -48,7 +48,11 @@ export function useTranslation<
   const [cookies, setCookie] = useCookies([cookieName]);
   const ret = useTranslationOrg(ns, options);
   const { i18n } = ret;
-  const [activeLng, setActiveLng] = useState(i18n.resolvedLanguage);
+  // No local `activeLng` state here — `react-i18next`'s internal state
+  // (`i18n.resolvedLanguage`) will trigger re-renders via the hook return
+  // value. Previously we kept a separate `activeLng` state and updated it
+  // inside an effect which caused the `react-hooks/set-state-in-effect`
+  // ESLint error; that state was unused elsewhere so it was removed.
 
   useEffect(() => {
     if (!runsOnServerSide && lng && i18n.resolvedLanguage !== lng) {
@@ -56,10 +60,7 @@ export function useTranslation<
     }
   }, [lng, i18n]);
 
-  useEffect(() => {
-    if (activeLng === i18n.resolvedLanguage) return;
-    setActiveLng(i18n.resolvedLanguage);
-  }, [activeLng, i18n.resolvedLanguage]);
+  // No state sync effect required — let `react-i18next` handle updates.
 
   useEffect(() => {
     if (!lng || i18n.resolvedLanguage === lng) return;
@@ -85,7 +86,6 @@ export function useTranslation<
 //   const [cookies, setCookie] = useCookies([cookieName]);
 //   const ret = useTranslationOrg(ns, options);
 //   const { i18n } = ret;
-
 //   // console.log("lng", lng);
 //   // console.log("runsOnServerSide", runsOnServerSide);
 //   // console.log("i18n.resolvedLanguage", i18n.resolvedLanguage);
@@ -93,10 +93,6 @@ export function useTranslation<
 //   if (runsOnServerSide && lng && i18n.resolvedLanguage !== lng) {
 //     i18n.changeLanguage(lng);
 //   } else {
-//     // eslint-disable-next-line react-hooks/rules-of-hooks
-//     const [activeLng, setActiveLng] = useState(i18n.resolvedLanguage);
-
-//     console.log("activeLng", activeLng);
 
 //     // eslint-disable-next-line react-hooks/rules-of-hooks
 //     useEffect(() => {
