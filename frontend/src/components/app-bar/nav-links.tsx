@@ -98,7 +98,16 @@ export default function NavLinks({
         textColor="primary"
         indicatorColor="primary"
         variant="standard"
-        sx={{ height: "64px", display: "flex", alignItems: "center" }}
+        sx={{
+          height: "64px",
+          display: "flex",
+          alignItems: "center",
+          // make the indicator (underline) thicker
+          "& .MuiTabs-indicator": {
+            height: "4px",
+            // borderRadius: 2,
+          },
+        }}
       >
         {links.map((link) => (
           <Tab
