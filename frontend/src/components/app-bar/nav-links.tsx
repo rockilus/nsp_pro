@@ -87,7 +87,8 @@ export default function NavLinks({
 
   // Determine active tab by matching pathname with the link href pattern
   const activeRoute =
-    links.find((l) => pathname?.startsWith(`/${lng}/plan${l.route}`))?.route ?? false;
+    links.find((l) => pathname?.startsWith(`/${lng}/plan${l.route}`))?.route ??
+    false;
 
   return (
     <div className="nav-links-container">
@@ -109,6 +110,7 @@ export default function NavLinks({
             data-testid={`nav-link-${link.name}`}
             className="nav-link-link"
             disableRipple
+            sx={{ textTransform: "none", padding: "0 10px", minWidth: "auto" }}
           />
         ))}
       </Tabs>
