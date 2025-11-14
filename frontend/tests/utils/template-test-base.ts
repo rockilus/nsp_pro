@@ -1273,164 +1273,48 @@ export class TemplateTestBase {
 
   /**
    * Helper method to select a source week date
+   * Accepts date in MM/DD/YYYY format (as used in tests)
    */
   async selectSourceWeekDate(page: Page, date: string) {
-    const formElements = this.getBuildFromDemandsFormElements(page);
-
-    // Wait for the dialog to be visible and stable
-    await expect(formElements.dialog).toBeVisible();
-
-    // Try to find the date input - first try the specific input selector
-    let dateInput = formElements.sourceWeekDateInput;
-
-    // If that doesn't exist, try the input within the date picker
-    const inputExists = (await dateInput.count()) > 0;
-    if (!inputExists) {
-      dateInput = page
-        .locator('[data-testid="source-week-date-picker"] input')
-        .first();
-    }
+    const input = page.locator('[data-testid="source-week-date-input"]');
 
     // Wait for the input to be visible and enabled before interacting
-    await expect(dateInput).toBeVisible();
-    await expect(dateInput).toBeEnabled();
+    await expect(input).toBeVisible();
+    await expect(input).toBeEnabled();
 
-    // Click on the date input to focus it
-    await dateInput.click();
-
-    // Clear the input and type the new date. Some locales/formats use DD/MM/YYYY
-    // while others use MM/DD/YYYY. Try both if necessary and retry a couple
-    // of times to account for async processing inside MUI/XDatePicker.
-    const attempts = [
-      date, // try as provided (tests sometimes pass MM/DD/YYYY)
-      // If provided as MM/DD/YYYY, try converting to DD/MM/YYYY and vice versa
-    ];
-
-    // Helper to swap day/month if looks like MM/DD/YYYY
-    const swapDayMonth = (d: string) => {
-      const parts = d.split(/\D/);
-      if (parts.length === 3) {
-        return `${parts[1]}/${parts[0]}/${parts[2]}`;
-      }
-      return d;
-    };
-
-    attempts.push(swapDayMonth(date));
-
-    let lastValue = "";
-    for (const attempt of attempts) {
-      // clear + fill
-      await dateInput.fill("");
-      await dateInput.type(attempt, { delay: 10 });
-
-      // Press Enter to commit or Tab to blur depending on widget behavior
-      try {
-        await dateInput.press("Enter");
-      } catch (e) {
-        // ignore
-      }
-      await dateInput.press("Tab");
-
-      // Wait for the picker/input to process the value and reflect it in the DOM
-      await page.waitForFunction(
-        () => {
-          const el =
-            document.querySelector('[data-testid="source-week-date-input"]') ||
-            document.querySelector(
-              '[data-testid="source-week-date-picker"] input'
-            );
-          return !!(
-            el &&
-            (el as HTMLInputElement).value &&
-            (el as HTMLInputElement).value.trim().length > 0
-          );
-        },
-        null,
-        { timeout: 5000 }
-      );
-
-      // read current value
-      try {
-        lastValue = await dateInput.inputValue();
-      } catch (e) {
-        lastValue = "";
-      }
-
-      if (lastValue && lastValue.trim().length > 0) {
-        break;
-      }
-    }
-
-    // Finally assert that the input has some value (prefer exact match to provided date)
-    if (!lastValue || lastValue !== date) {
-      // As a last resort, set the input value directly via DOM and dispatch input/change
-      try {
-        await dateInput.evaluate((el: HTMLInputElement, v: string) => {
-          el.focus();
-          el.value = v;
-          el.dispatchEvent(new Event("input", { bubbles: true }));
-          el.dispatchEvent(new Event("change", { bubbles: true }));
-          el.blur();
-        }, date);
-
-        // Wait for the input to be updated in the DOM after direct value set
-        await page.waitForFunction(
-          () => {
-            const el =
-              document.querySelector(
-                '[data-testid="source-week-date-input"]'
-              ) ||
-              document.querySelector(
-                '[data-testid="source-week-date-picker"] input'
-              );
-            return !!(
-              el &&
-              (el as HTMLInputElement).value &&
-              (el as HTMLInputElement).value.trim().length > 0
-            );
-          },
-          null,
-          { timeout: 2000 }
-        );
-
-        // update lastValue
-        lastValue = await dateInput.inputValue();
-      } catch (e) {
-        // ignore evaluation errors and let the final expect surface failure
-      }
-
-      // Final check: accept the input if it represents the same ISO week as
-      // the requested date (robust to display format), or if it's any
-      // non-empty value.
-      const actual = await dateInput.inputValue();
-
-      // Try to parse dates in common formats
-      const formats = ["MM/DD/YYYY", "DD/MM/YYYY", "YYYY-MM-DD"];
-      const requested = dayjs(date, formats, true);
-      let actualParsed = dayjs(actual, formats, true);
-
-      // If strict parse failed for actual, try a non-strict parse as a fallback
-      if (!actualParsed.isValid()) {
-        actualParsed = dayjs(actual);
-      }
-
-      if (requested.isValid() && actualParsed.isValid()) {
-        // Use ISO week (week of year) comparison to be tolerant of formatting
-        if (requested.isSame(actualParsed, "week")) {
-          return;
-        }
-      }
-
-      // If actual is non-empty, accept it (we only need a selected week to proceed)
-      if (actual && actual.trim().length > 0) {
-        return;
-      }
-
-      // Otherwise surface a helpful error
+    // Convert incoming MM/DD/YYYY to dayjs and format as DD/MM/YYYY (app locale)
+    const d = dayjs.utc(date, "MM/DD/YYYY", true);
+    if (!d.isValid()) {
       throw new Error(
-        `Date input value mismatch. Expected a value representing the same week as '${date}', but found: '${actual}'`
+        `Invalid date string passed to selectSourceWeekDate: ${date}`
       );
     }
+    const formatted = d.format("DD/MM/YYYY");
+
+    // Set the value directly on the input element and trigger React's internal handlers
+    await input.evaluate((el: HTMLInputElement, v: string) => {
+      // Get the native setter to bypass React's value property
+      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype,
+        "value"
+      )?.set;
+
+      if (nativeInputValueSetter) {
+        nativeInputValueSetter.call(el, v);
+      } else {
+        el.value = v;
+      }
+
+      // Dispatch input event to trigger React's onChange handler
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+      
+      // Blur the input to ensure validation runs
+      el.blur();
+    }, formatted);
+
+    // Give the app time to process the change and run validation
+    await page.waitForTimeout(100);
   }
 
   /**
