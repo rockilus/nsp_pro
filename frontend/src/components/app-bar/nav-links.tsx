@@ -98,7 +98,7 @@ export default function NavLinks({
         textColor="primary"
         indicatorColor="primary"
         variant="standard"
-        sx={{ height: "64px" }}
+        sx={{ height: "64px", display: "flex", alignItems: "center" }}
       >
         {links.map((link) => (
           <Tab
@@ -110,7 +110,14 @@ export default function NavLinks({
             data-testid={`nav-link-${link.name}`}
             className="nav-link-link"
             disableRipple
-            sx={{ textTransform: "none", padding: "0 10px", minWidth: "auto" }}
+            sx={{
+              textTransform: "none",
+              padding: "0 10px",
+              minWidth: "auto",
+              minHeight: 64,
+              display: "flex",
+              alignItems: "center",
+            }}
           />
         ))}
       </Tabs>
