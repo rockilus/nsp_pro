@@ -1308,7 +1308,7 @@ export class TemplateTestBase {
       // Dispatch input event to trigger React's onChange handler
       el.dispatchEvent(new Event("input", { bubbles: true }));
       el.dispatchEvent(new Event("change", { bubbles: true }));
-      
+
       // Blur the input to ensure validation runs
       el.blur();
     }, formatted);
