@@ -1,3 +1,4 @@
+import src.routes.utils_routes as test_utils_routes
 from src.routes.assignment_routes import router as router_assignment
 from src.routes.attribute_routes import router as router_attribute
 from src.routes.breach_routes import router as router_breach
@@ -56,4 +57,5 @@ __all__ = [
     "router_test_utils",
     "router_user",
     "router_worker",
+    "test_utils_routes",
 ]
