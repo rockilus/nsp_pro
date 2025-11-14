@@ -528,16 +528,26 @@ export default function RequestTable({
       />
 
       <TableContainer
-        className="border border-gray-200 rounded-lg"
         data-testid="request-table"
+        sx={{
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: "8px",
+          overflow: "hidden",
+        }}
       >
         <Table size="small" aria-label="requests table">
           <TableHead>
-            <TableRow className="bg-gray-50">
+            <TableRow
+              sx={{ backgroundColor: (theme) => theme.palette.grey[50] }}
+            >
               {columns.map((column) => (
                 <TableCell
                   key={column.id}
-                  className="font-medium text-gray-700"
+                  sx={{
+                    fontWeight: 600,
+                    color: (theme) => theme.palette.grey[700],
+                  }}
                 >
                   <div className="flex items-center justify-between">
                     <span>{column.label}</span>
@@ -557,7 +567,13 @@ export default function RequestTable({
                   </div>
                 </TableCell>
               ))}
-              <TableCell className="font-medium text-gray-700 w-32">
+              <TableCell
+                sx={{
+                  fontWeight: 600,
+                  color: (theme) => theme.palette.grey[700],
+                  width: "8rem",
+                }}
+              >
                 Actions
               </TableCell>
             </TableRow>
@@ -568,19 +584,19 @@ export default function RequestTable({
               return (
                 <TableRow
                   key={request.id}
-                  className={`hover:bg-gray-50 ${
-                    !request.active ? "opacity-50" : ""
-                  } ${
-                    isPast && showPastRequests ? "bg-gray-25 opacity-75" : ""
-                  }`}
                   sx={{
                     "&:last-child td, &:last-child th": { border: 0 },
-                    ...(isPast &&
-                      showPastRequests && {
-                        "& .MuiTableCell-root": {
-                          color: "text.secondary",
-                        },
-                      }),
+                    "&:hover": {
+                      backgroundColor: (theme) => theme.palette.grey[50],
+                    },
+                    ...(!request.active ? { opacity: 0.5 } : {}),
+                    ...(isPast && showPastRequests
+                      ? {
+                          backgroundColor: (theme) => theme.palette.grey[100],
+                          opacity: 0.75,
+                          "& .MuiTableCell-root": { color: "text.secondary" },
+                        }
+                      : {}),
                   }}
                 >
                   <TableCell>
@@ -592,7 +608,7 @@ export default function RequestTable({
                           size="small"
                           variant="outlined"
                           color="default"
-                          className="text-xs opacity-60"
+                          sx={{ fontSize: "0.75rem", opacity: 0.6 }}
                         />
                       )}
                     </div>
