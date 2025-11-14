@@ -529,12 +529,12 @@ export default function RequestTable({
       />
 
       <TableContainer
+        className="request-table-container"
         data-testid="request-table"
         sx={{
           border: "1px solid",
           borderColor: "divider",
           borderRadius: "8px",
-          overflow: "hidden",
         }}
       >
         <Table size="small" aria-label="requests table">

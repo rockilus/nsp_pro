@@ -6,7 +6,9 @@
   width: 100%;
   overflow: auto;
   /* max-height: calc(100vh - 200px); */
-  height: calc(100vh - 185px);
+  height: calc(
+    100vh - 185px
+  ); /* 65 nav bar + 20 padding + 50 request tabs + 46 request toolbar + 5 at the bottom  */
   border: 1px solid rgba(224, 224, 224, 0.49);
   border-radius: 4px;
 }
