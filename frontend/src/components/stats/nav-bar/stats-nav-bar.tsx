@@ -191,20 +191,17 @@ export default function StatsNavBar({
         </div>
         <div className="stats-time-picker">
           <DatePicker
+            className="custom-date-picker"
             value={statsOptions.startDate}
             disabled={statsOptions.timeFrame !== StatsTimeFrameOptions.CUSTOM}
             onChange={handleChangeStartDate}
             sx={{
               width: "135px",
               marginRight: "5px",
-              "& .MuiOutlinedInput-input": {
-                fontSize: "0.875rem",
-                height: "35px",
-                paddingY: 0,
-              },
             }}
           />
           <DatePicker
+            className="custom-date-picker"
             value={statsOptions.endDate}
             disabled={statsOptions.timeFrame !== StatsTimeFrameOptions.CUSTOM}
             onChange={handleChangeEndDate}
