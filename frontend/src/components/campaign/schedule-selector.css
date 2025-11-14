@@ -52,6 +52,24 @@
   padding-bottom: 0;
 }
 
+/* Ensure MUI DatePicker root and input are 40px high and vertically centered */
+.custom-date-picker .MuiOutlinedInput-root,
+.custom-date-picker .MuiPickersInput-root,
+.custom-date-picker .MuiInputBase-root,
+.custom-date-picker .MuiPickersInputBase-root {
+  height: 40px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}
+.custom-date-picker .MuiOutlinedInput-input {
+  height: 40px;
+  line-height: 1;
+  padding-top: 0;
+  padding-bottom: 0;
+  box-sizing: border-box;
+}
+
 .status-chip {
   height: 40px;
   font-size: 0.75rem;
