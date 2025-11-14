@@ -15,3 +15,19 @@
     100vh - 140px
   ); /* 65 nav bar + 20 padding + 50 request tabs + 5 at the bottom  */
 }
+
+/* Sticky table header inside the scrollable request-table-container */
+.request-table-container thead th,
+.request-table-container thead td {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background-color: #fafafa; /* match other table headers */
+  border-bottom: 1px solid rgba(224, 224, 224, 0.8);
+}
+
+/* Ensure header cells have the expected padding/height (overrides if needed) */
+.request-table-container thead .MuiTableCell-root {
+  padding: 6px 8px;
+  height: 36px;
+}
