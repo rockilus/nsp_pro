@@ -1,0 +1,7 @@
+/* Component-scoped styles for request table */
+
+/* Small helper text used in table cells (e.g., weekday names) */
+.table-helper-text {
+  font-size: 0.75rem; /* ~text-xs */
+  color: #6b7280; /* gray-500 */
+}

@@ -27,6 +27,7 @@ import {
 } from "../../utils/shift-worker-option-display";
 // Styles
 import "../../styles/table-styles.css";
+import "./request-table.css";
 // Types
 import { WorkerT } from "../../types/worker";
 import {
@@ -143,7 +144,7 @@ const DateCell = ({ request }: { request: RequestT }) => {
     return (
       <div className="flex flex-col">
         <span className="font-medium">{request.startDate.format("MMM D")}</span>
-        <span className="text-xs text-gray-500">
+        <span className="table-helper-text">
           {request.startDate.format("dddd")}
         </span>
       </div>
@@ -155,7 +156,7 @@ const DateCell = ({ request }: { request: RequestT }) => {
           {request.startDate.format("MMM D")} -{" "}
           {request.endDate.format("MMM D")}
         </span>
-        <span className="text-xs text-gray-500">
+        <span className="table-helper-text">
           {request.startDate.format("ddd")} - {request.endDate.format("ddd")}
         </span>
       </div>
