@@ -24,8 +24,8 @@ from src.routes.sqs_solve_routes import router as router_sqs_solve
 from src.routes.stats_routes import router as router_stats
 from src.routes.team_invitation_routes import router as router_team_invitation
 from src.routes.team_routes import router as router_team
-from src.routes.test_utils_routes import router as router_test_utils
 from src.routes.user_routes import router as router_user
+from src.routes.utils_routes import router as router_test_utils
 from src.routes.worker_routes import router as router_worker
 
 __all__ = [
