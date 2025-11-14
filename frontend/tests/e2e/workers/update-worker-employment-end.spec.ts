@@ -181,9 +181,9 @@ test.describe("Worker Employment End Date Updates", () => {
     await permanentCheckbox.click();
     await expect(employmentEndDatePickerInput).toBeEnabled();
 
-    // Set a specific date
+    // Set a specific date using the helper method
     const newDate = "31/12/2025";
-    await employmentEndDatePickerInput.fill(newDate);
+    await workerTestBase.setEmploymentEndDate(page, newDate);
 
     // Click somewhere else to trigger blur event (save)
     const pageTitle = page.getByRole("heading", { name: "Workers" });
@@ -220,9 +220,9 @@ test.describe("Worker Employment End Date Updates", () => {
     await permanentCheckbox.click();
     await expect(employmentEndDatePickerInput).toBeEnabled();
 
-    // Set a specific date
+    // Set a specific date using the helper method
     const newDate = "15/06/2025";
-    await employmentEndDatePickerInput.fill(newDate);
+    await workerTestBase.setEmploymentEndDate(page, newDate);
 
     // Press Enter to save
     await employmentEndDatePickerInput.press("Enter");
@@ -262,9 +262,9 @@ test.describe("Worker Employment End Date Updates", () => {
     await permanentCheckbox.click();
     await expect(employmentEndDatePickerInput).toBeEnabled();
 
-    // Set a temporary date (but don't save it)
+    // Set a temporary date (but don't save it) using the helper method
     const tempDate = "01/01/2026";
-    await employmentEndDatePickerInput.fill(tempDate);
+    await workerTestBase.setEmploymentEndDate(page, tempDate);
 
     // Press Escape to cancel editing
     await employmentEndDatePickerInput.press("Escape");
@@ -303,9 +303,9 @@ test.describe("Worker Employment End Date Updates", () => {
     await permanentCheckbox.click();
     await expect(employmentEndDatePickerInput).toBeEnabled();
 
-    // Set a specific date
+    // Set a specific date using the helper method
     const specificDate = "30/11/2025";
-    await employmentEndDatePickerInput.fill(specificDate);
+    await workerTestBase.setEmploymentEndDate(page, specificDate);
 
     // Save by pressing Enter
     await employmentEndDatePickerInput.press("Enter");
