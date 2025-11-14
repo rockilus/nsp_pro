@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "@/app/i18n/client";
+// MUI
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
 // Styles
 import "./nav-links.css";
 // Types
@@ -82,29 +85,33 @@ export default function NavLinks({
     return canAccessPage(link.route, selectedTeam);
   });
 
+  // Determine active tab by matching pathname with the link href pattern
+  const activeRoute =
+    links.find((l) => pathname?.startsWith(`/${lng}/plan${l.route}`))?.route ?? false;
+
   return (
     <div className="nav-links-container">
-      {links.map((link) => {
-        return (
-          <div
+      <Tabs
+        value={activeRoute}
+        aria-label="main navigation tabs"
+        textColor="primary"
+        indicatorColor="primary"
+        variant="standard"
+        sx={{ height: "64px" }}
+      >
+        {links.map((link) => (
+          <Tab
             key={link.name}
-            className={`nav-link-container ${
-              pathname === link.href ? "active" : ""
-            }`}
+            value={link.route}
+            label={link.label}
+            component={Link}
+            href={link.href}
             data-testid={`nav-link-${link.name}`}
-          >
-            <Link className="nav-link-link" href={link.href}>
-              <span
-                className={`nav-link-label ${
-                  pathname === link.href ? "active" : ""
-                }`}
-              >
-                {link.label}
-              </span>
-            </Link>
-          </div>
-        );
-      })}
+            className="nav-link-link"
+            disableRipple
+          />
+        ))}
+      </Tabs>
     </div>
   );
 }
