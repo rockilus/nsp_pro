@@ -900,4 +900,57 @@ export class WorkerTestBase {
     // Give the app time to process the change and run validation
     await page.waitForTimeout(100);
   }
+
+  /**
+   * Sets the employment start date using the DatePicker input
+   * Accepts date in DD/MM/YYYY format (as displayed in the app)
+   * @param page - The Playwright page object
+   * @param date - The date string in DD/MM/YYYY format
+   * @param rowIndex - The row index (default: 0)
+   */
+  async setEmploymentStartDate(
+    page: Page,
+    date: string,
+    rowIndex: number = 0
+  ): Promise<void> {
+    const input = this.getWorkerEmploymentStartInput(page, rowIndex);
+
+    // Wait for the input to be visible and enabled before interacting
+    await expect(input).toBeVisible();
+    await expect(input).toBeEnabled();
+
+    // The date is already in DD/MM/YYYY format (app locale)
+    // Validate format
+    const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
+    if (!dateRegex.test(date)) {
+      throw new Error(
+        `Invalid date format passed to setEmploymentStartDate: ${date}. Expected DD/MM/YYYY format.`
+      );
+    }
+
+    // Set the value directly on the input element and trigger React's internal handlers
+    await input.evaluate((el: HTMLInputElement, v: string) => {
+      // Get the native setter to bypass React's value property
+      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype,
+        "value"
+      )?.set;
+
+      if (nativeInputValueSetter) {
+        nativeInputValueSetter.call(el, v);
+      } else {
+        el.value = v;
+      }
+
+      // Dispatch input event to trigger React's onChange handler
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+
+      // Blur the input to ensure validation runs
+      el.blur();
+    }, date);
+
+    // Give the app time to process the change and run validation
+    await page.waitForTimeout(100);
+  }
 }
