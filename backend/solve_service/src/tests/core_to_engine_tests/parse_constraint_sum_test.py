@@ -139,38 +139,25 @@ def make_simple_engine_inputs(
         ),
     ]
 
-    workers: List[Worker] = [
-        Worker(
-            id="w0",
-            team_id="t0",
-            name="Worker 0",
-            acronym="W0",
-            acronym_custom=False,
-            employment_start_date=date(2024, 1, 1),
-            employment_end_date=None,
-            weekly_hours=40,
-            weekly_hours_desired=40,
-            duties_per_month=5,
-            annual_leave=25,
-            specialty_ids=[],
-            deleted=False,
-        ),
-        Worker(
-            id="w1",
-            team_id="t0",
-            name="Worker 1",
-            acronym="W1",
-            acronym_custom=False,
-            employment_start_date=date(2024, 1, 1),
-            employment_end_date=None,
-            weekly_hours=40,
-            weekly_hours_desired=40,
-            duties_per_month=5,
-            annual_leave=25,
-            specialty_ids=[],
-            deleted=False,
-        ),
-    ]
+    workers: List[Worker] = []
+    for i in range(4):
+        workers.append(
+            Worker(
+                id=f"w{i}",
+                team_id="t0",
+                name=f"Worker {i}",
+                acronym=f"W{i}",
+                acronym_custom=False,
+                employment_start_date=date(2024, 1, 1),
+                employment_end_date=None,
+                weekly_hours=40,
+                weekly_hours_desired=40,
+                duties_per_month=5,
+                annual_leave=25,
+                specialty_ids=[],
+                deleted=False,
+            )
+        )
 
     # no dimensions/entries/attributes for this simple case
     dimensions: List[Dimension] = []
