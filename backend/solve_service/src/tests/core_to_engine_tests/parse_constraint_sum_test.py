@@ -617,3 +617,11 @@ def test_parse_constraints_sum_all_duties_ignores_ended_worker(ei) -> None:
 
     # And at least one active worker (w1) should be present
     assert "w1" in seen_workers
+
+    # Ensure only duty shifts are referenced in the constraint variables
+    duty_shift_ids = {
+        s.id for s in ei.shifts if s.shift_type == ShiftType.DUTY
+    }
+    for inner in actual.constraint_variables:
+        for var in inner:
+            assert var[2] in duty_shift_ids
