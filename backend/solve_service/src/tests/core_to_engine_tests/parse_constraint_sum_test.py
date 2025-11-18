@@ -178,6 +178,7 @@ def make_simple_engine_inputs(
     attributes: List[Attribute] = []
 
     # shift demands
+    shift_demands: List[ShiftDemandNew] = []
 
     # Create a minimal ConstraintBuildAugmented representing a SUM constraint
     cba = ConstraintBuildAugmented(
@@ -289,12 +290,18 @@ def make_simple_engine_inputs(
     )
 
 
+@pytest.fixture
+def ei(penalties_fix: Penalties, model_config_fix: ModelConfig):
+    """Provide a ready-to-use EngineInputsAugmented using project fixtures."""
+    return make_simple_engine_inputs(penalties_fix, model_config_fix)
+
+
 @pytest.mark.unit
-def test_parse_constraints_sum_returns_non_empty() -> None:
+def test_parse_constraints_sum_returns_non_empty(ei) -> None:
     """Simple test: parse_constraints returns a Constraints object
     for a SUM constraint.
     """
-    ei = make_simple_engine_inputs()
+    # use fixture-provided engine inputs
 
     # Build dim->attr maps (empty in this simple case)
     dim_to_attr_value_to_worker = build_dim_to_attr_value_to_owner(
@@ -382,12 +389,10 @@ def test_parse_constraints_sum_returns_non_empty() -> None:
 
 
 @pytest.mark.unit
-def test_parse_constraints_sum_ignores_workers_ended_before_schedule() -> None:
+def test_parse_constraints_sum_ignores_workers_ended_before_schedule(ei):
     """If a worker's employment_end_date is before the schedule start,
     they should not be included in SUM constraint variables.
     """
-    ei = make_simple_engine_inputs()
-
     # Set w0 employment_end_date to before the schedule start
     for w in ei.workers:
         if w.id == "w0":
@@ -441,13 +446,11 @@ def test_parse_constraints_sum_ignores_workers_ended_before_schedule() -> None:
 
 
 @pytest.mark.unit
-def test_parse_constraints_sum_all_workers_ignores_ended_worker() -> None:
+def test_parse_constraints_sum_all_workers_ignores_ended_worker(ei) -> None:
     """When the worker block refers to all workers and one worker's
     employment_end_date is before the schedule start, that worker
     should not be included in SUM constraint variables.
     """
-    ei = make_simple_engine_inputs()
-
     # Set w0 employment_end_date to before the schedule start
     for w in ei.workers:
         if w.id == "w0":
@@ -524,13 +527,11 @@ def test_parse_constraints_sum_all_workers_ignores_ended_worker() -> None:
 
 
 @pytest.mark.unit
-def test_parse_constraints_sum_all_duties_ignores_ended_worker() -> None:
+def test_parse_constraints_sum_all_duties_ignores_ended_worker(ei) -> None:
     """When the worker block refers to all workers and the shift block
     selects all duties, a worker whose employment_end_date is before
     the schedule start should be excluded from SUM constraint variables.
     """
-    ei = make_simple_engine_inputs()
-
     # Set w0 employment_end_date to before the schedule start
     for w in ei.workers:
         if w.id == "w0":
