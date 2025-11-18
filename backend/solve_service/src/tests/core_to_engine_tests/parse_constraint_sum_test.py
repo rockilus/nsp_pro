@@ -552,3 +552,104 @@ def test_parse_constraints_sum_all_workers_ignores_ended_worker() -> None:
 
     # And at least one active worker (w1) should be present
     assert "w1" in seen_workers
+
+
+@pytest.mark.unit
+def test_parse_constraints_sum_all_duties_ignores_ended_worker() -> None:
+    """When the worker block refers to all workers and the shift block
+    selects all duties, a worker whose employment_end_date is before
+    the schedule start should be excluded from SUM constraint variables.
+    """
+    ei = make_simple_engine_inputs()
+
+    # Set w0 employment_end_date to before the schedule start
+    for w in ei.workers:
+        if w.id == "w0":
+            w.employment_end_date = date(2024, 12, 31)
+
+    # Replace the worker block in the constraint to refer to 'all workers'
+    for i, b in enumerate(ei.cbs_augmented[0].blocks):
+        if b.name == BlockNameOptions.WORKER:
+            ei.cbs_augmented[0].blocks[i] = Block(
+                name=BlockNameOptions.WORKER,
+                type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                value=[
+                    ShiftWorkerOption(
+                        name="all workers",
+                        id="",
+                        id_type=SWOIdTypes.WORKER,
+                        is_bool_dim=False,
+                        category_name="All",
+                    )
+                ],
+            )
+            break
+
+    # Replace the shift block to select all duties
+    for i, b in enumerate(ei.cbs_augmented[0].blocks):
+        if b.name == BlockNameOptions.SHIFT:
+            ei.cbs_augmented[0].blocks[i] = Block(
+                name=BlockNameOptions.SHIFT,
+                type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                value=[
+                    ShiftWorkerOption(
+                        name=True,
+                        id="",
+                        id_type=SWOIdTypes.DUTY,
+                        is_bool_dim=True,
+                        category_name="Duties",
+                    )
+                ],
+            )
+            break
+
+    dim_to_attr_value_to_worker = build_dim_to_attr_value_to_owner(
+        ei.workers, ei.dimensions, ei.dim_entries, ei.attributes
+    )
+    dim_to_attr_value_to_shift = build_dim_to_attr_value_to_owner(
+        ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
+    )
+
+    dates_hist, dates_campaign = build_dates(
+        ei.schedule, ei.as_hist + ei.as_wip_fixed
+    )
+    periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
+    periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
+    periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
+
+    worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
+        ei.schedule, ei.workers, ei.as_hist + ei.as_wip_fixed, dates_campaign
+    )
+
+    out = parse_constraints(
+        cbas=ei.cbs_augmented,
+        schedule_id=ei.schedule.id,
+        workers=ei.workers,
+        worker_dim_dict=dim_to_attr_value_to_worker,
+        dates_hist=dates_hist,
+        dates_campaign=dates_campaign,
+        periods_weekly=periods_weekly,
+        periods_monthly=periods_monthly,
+        periods_yearly=periods_yearly,
+        worker_ids_to_worker_dates=worker_ids_to_worker_dates,
+        shifts=ei.shifts,
+        shift_dim_dict=dim_to_attr_value_to_shift,
+        penalties=ei.penalties,
+    )
+
+    # Ensure a SUM constraint was produced
+    assert out is not None
+    assert hasattr(out, "sum")
+    assert len(out.sum) == 1
+
+    actual = out.sum[0]
+
+    # No variable should reference w0 (ended before schedule)
+    seen_workers = set()
+    for inner in actual.constraint_variables:
+        for var in inner:
+            seen_workers.add(var[0])
+            assert var[0] != "w0"
+
+    # And at least one active worker (w1) should be present
+    assert "w1" in seen_workers
