@@ -18,6 +18,8 @@ from shared.schemas.core import (
     Schedule,
     Shift,
     Worker,
+    Staffing,
+    ShiftDemandNew,
     Dimension,
     DimEntry,
     Attribute,
@@ -26,28 +28,14 @@ from shared.schemas.core import (
     BlockNameOptions,
     BlockTypeOptions,
     ShiftWorkerOption,
+    ShiftType,
+    ShiftRestType,
+    ShiftLeaveType,
     SWOIdTypes,
-)
-from shared.schemas.core.shift import ShiftType, ShiftRestType, ShiftLeaveType
-
-from shared.schemas.core.constraint import (
-    Penalty,
-    CoveragePenalty,
-    UserConstraintPenalty,
-    ConfigurationConstraintPenalty,
-    SystemConstraintPenalty,
     Penalties,
+    ModelConfig,
 )
 
-from shared.schemas.core.engine import (
-    SolverParams,
-    CustomSolverParams,
-    ModelSetup,
-    SystemConstraints,
-    ConfigurationConstraints,
-    ModelConfig,
-    SolveStrategy,
-)
 
 from core_to_engine_service.build_dates import (
     build_dates,
@@ -60,7 +48,9 @@ from core_to_engine_service.build_periods import (
 )
 
 
-def make_simple_engine_inputs() -> EngineInputsAugmented:
+def make_simple_engine_inputs(
+    penalties_fix: Penalties, model_config_fix: ModelConfig
+) -> EngineInputsAugmented:
     """Build a minimal EngineInputsAugmented suitable for
     parsing a SUM constraint.
     """
@@ -87,7 +77,7 @@ def make_simple_engine_inputs() -> EngineInputsAugmented:
             acronym_custom=False,
             start_time=datetime(2025, 1, 1, tzinfo=timezone.utc),
             end_time=datetime(2025, 1, 1, 8, tzinfo=timezone.utc),
-            staffing=[],
+            staffing=[Staffing(specialty_id=None, staffing=1)],
             color="#000000",
             shift_type=ShiftType.NORMAL,
             rest_type=ShiftRestType.NONE,
@@ -104,13 +94,47 @@ def make_simple_engine_inputs() -> EngineInputsAugmented:
             acronym_custom=False,
             start_time=datetime(2025, 1, 1, 8, tzinfo=timezone.utc),
             end_time=datetime(2025, 1, 1, 16, tzinfo=timezone.utc),
-            staffing=[],
+            staffing=[Staffing(specialty_id=None, staffing=1)],
             color="#ffffff",
             shift_type=ShiftType.NORMAL,
             rest_type=ShiftRestType.NONE,
             leave_type=ShiftLeaveType.NONE,
             recuperation_time=0,
             recuperation_duty_id=None,
+            deleted=False,
+        ),
+        Shift(
+            id="sh2",
+            team_id="t0",
+            name="Shift 2",
+            acronym="S2",
+            acronym_custom=False,
+            start_time=datetime(2025, 1, 1, 8, tzinfo=timezone.utc),
+            end_time=datetime(2025, 1, 2, 8, tzinfo=timezone.utc),
+            staffing=[Staffing(specialty_id=None, staffing=1)],
+            color="#ffffff",
+            shift_type=ShiftType.DUTY,
+            rest_type=ShiftRestType.NONE,
+            leave_type=ShiftLeaveType.NONE,
+            recuperation_time=24,
+            recuperation_duty_id=None,
+            deleted=False,
+        ),
+        Shift(
+            id="sh3",
+            team_id="t0",
+            name="Recup Shift 2",
+            acronym="RS2",
+            acronym_custom=False,
+            start_time=datetime(2025, 1, 1, 8, tzinfo=timezone.utc),
+            end_time=datetime(2025, 1, 2, 8, tzinfo=timezone.utc),
+            staffing=[],
+            color="#ffffff",
+            shift_type=ShiftType.REST,
+            rest_type=ShiftRestType.RECUPERATION,
+            leave_type=ShiftLeaveType.NONE,
+            recuperation_time=0,
+            recuperation_duty_id="sh2",
             deleted=False,
         ),
     ]
@@ -153,62 +177,7 @@ def make_simple_engine_inputs() -> EngineInputsAugmented:
     dim_entries: List[DimEntry] = []
     attributes: List[Attribute] = []
 
-    # create minimal penalties
-    pen_small = Penalty(hard=1000, soft=10)
-    user_pen = UserConstraintPenalty(
-        eve=pen_small,
-        fai=pen_small,
-        fil=pen_small,
-        ord=pen_small,
-        seq=pen_small,
-        sum=pen_small,
-        request=pen_small,
-    )
-    coverage_pen = CoveragePenalty(duty=500, normal=200)
-    config_pen = ConfigurationConstraintPenalty(
-        coverage=coverage_pen,
-        duty_recup=100,
-        worker_shift_filter=50,
-        link_shift=50,
-        weekly_worktime_max=1000,
-        weekly_worktime_desired=800,
-        weekly_worktime_contract=900,
-        monthly_duties_max=20,
-        monthly_duties_desired=10,
-    )
-    system_pen = SystemConstraintPenalty(
-        weekly_target_work_time=100,
-        monthly_target_nb_duties=10,
-        special_days_target_nb_duties=5,
-    )
-    penalties = Penalties(
-        user_constraint=user_pen,
-        configuration_constraint=config_pen,
-        system_constraint=system_pen,
-    )
-
-    # minimal model config
-    solver_params = SolverParams()
-    custom_solver_params = CustomSolverParams(
-        limit_number_solution=None,
-        solve_strategy=SolveStrategy.HARD_TO_SOFT,
-    )
-    model_setup = ModelSetup(sol_hint=False)
-    system_constraints = SystemConstraints(
-        weekly_target_work_time=False,
-        weekly_target_worktime_tolerance=0.0,
-        monthly_target_nb_duties=False,
-        mthly_target_nb_duty_tolerance=0.0,
-        special_days_target_nb_duties=False,
-    )
-    configuration_constraints = ConfigurationConstraints(work_loads=False)
-    model_config = ModelConfig(
-        solver_params=solver_params,
-        custom_solver_params=custom_solver_params,
-        model_setup=model_setup,
-        system_constraints=system_constraints,
-        configuration_constraints=configuration_constraints,
-    )
+    # shift demands
 
     # Create a minimal ConstraintBuildAugmented representing a SUM constraint
     cba = ConstraintBuildAugmented(
@@ -316,7 +285,7 @@ def make_simple_engine_inputs() -> EngineInputsAugmented:
     )
 
     return EngineInputsAugmented.from_engine_inputs(
-        engine_inputs, penalties=penalties, model_config=model_config
+        engine_inputs, penalties=penalties_fix, model_config=model_config_fix
     )
 
 
