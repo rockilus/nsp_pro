@@ -432,6 +432,8 @@ def test_parse_constraints_sum_ignores_workers_ended_before_schedule(ei):
     assert len(out.sum) == 1
 
     actual = out.sum[0]
+    print(actual)
+    assert False
 
     # Assert that no variable references w0 (worker ended before schedule)
     for inner in actual.constraint_variables:

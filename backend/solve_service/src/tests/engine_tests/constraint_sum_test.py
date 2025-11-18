@@ -1,6 +1,6 @@
 import random
 from copy import deepcopy
-from datetime import date
+from datetime import date, timedelta
 from typing import Callable, List, Tuple
 
 import pytest
@@ -19,7 +19,18 @@ from shared.schemas.core import (
     ShiftType,
     Worker,
 )
-
+from shared.schemas.core import (
+    Block,
+    BlockNameOptions,
+    BlockTypeOptions,
+    ShiftWorkerOption,
+    SWOIdTypes,
+    Penalties,
+    ModelConfig,
+)
+from tests.core_to_engine_tests.parse_constraint_sum_test import (
+    make_simple_engine_inputs,
+)
 from engine import Inputs as InputsEngine
 from engine import Outputs, ProcessingCache
 from engine_to_core_service.build_breaches.build_breaches_model import (
@@ -111,7 +122,9 @@ class TestConstraintSum:
             | ConstraintSeq
             | ConstraintSum,
         ],
-        run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
+        run_engine_solve_from_engine_inputs: Callable[
+            [EngineInputsAugmented], Outputs
+        ],
     ) -> None:
         cba, constraint = constraint_sum_with_expected_output
         engine_inputs.cbs_augmented = [cba]
@@ -121,7 +134,8 @@ class TestConstraintSum:
         if isinstance(constraint, ConstraintSum):
             for cstr_vars in constraint.constraint_variables:
                 coord = [
-                    (var[0], date.fromisoformat(var[1]), var[2]) for var in cstr_vars
+                    (var[0], date.fromisoformat(var[1]), var[2])
+                    for var in cstr_vars
                 ]
                 nb_a_period = sum(
                     1
@@ -133,11 +147,17 @@ class TestConstraintSum:
                     )
                     in coord
                 )
-                if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
+                if (
+                    constraint.operator
+                    == ConstraintOperator.LESS_THAN_OR_EQUAL
+                ):
                     assert nb_a_period <= constraint.target_value
                 elif constraint.operator == ConstraintOperator.EQUAL:
                     assert nb_a_period == constraint.target_value
-                elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
+                elif (
+                    constraint.operator
+                    == ConstraintOperator.GREATER_THAN_OR_EQUAL
+                ):
                     assert nb_a_period >= constraint.target_value
         else:
             assert False
@@ -153,7 +173,9 @@ class TestConstraintSum:
             | ConstraintSeq
             | ConstraintSum,
         ],
-        run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
+        run_engine_solve_from_engine_inputs: Callable[
+            [EngineInputsAugmented], Outputs
+        ],
     ) -> None:
         cba, constraint = constraint_sum_with_expected_output
         cba_soft = deepcopy(cba)
@@ -165,7 +187,8 @@ class TestConstraintSum:
         if isinstance(constraint, ConstraintSum):
             for cstr_vars in constraint.constraint_variables:
                 coord = [
-                    (var[0], date.fromisoformat(var[1]), var[2]) for var in cstr_vars
+                    (var[0], date.fromisoformat(var[1]), var[2])
+                    for var in cstr_vars
                 ]
                 nb_a_period = sum(
                     1
@@ -177,11 +200,17 @@ class TestConstraintSum:
                     )
                     in coord
                 )
-                if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
+                if (
+                    constraint.operator
+                    == ConstraintOperator.LESS_THAN_OR_EQUAL
+                ):
                     assert nb_a_period <= constraint.target_value
                 elif constraint.operator == ConstraintOperator.EQUAL:
                     assert nb_a_period == constraint.target_value
-                elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
+                elif (
+                    constraint.operator
+                    == ConstraintOperator.GREATER_THAN_OR_EQUAL
+                ):
                     assert nb_a_period >= constraint.target_value
         else:
             assert False
@@ -214,7 +243,9 @@ class TestConstraintSum:
         constraint_soft = deepcopy(constraint)
         constraint_soft.id += "_soft"
         constraint_soft.hard = False
-        constraint_soft.penalty = engine_inputs.penalties.user_constraint.sum.soft
+        constraint_soft.penalty = (
+            engine_inputs.penalties.user_constraint.sum.soft
+        )
 
         if constraint.operator in [
             ConstraintOperator.LESS_THAN_OR_EQUAL,
@@ -234,7 +265,8 @@ class TestConstraintSum:
         if isinstance(constraint_hard, ConstraintSum):
             for cstr_vars in constraint.constraint_variables:
                 coord = [
-                    (var[0], date.fromisoformat(var[1]), var[2]) for var in cstr_vars
+                    (var[0], date.fromisoformat(var[1]), var[2])
+                    for var in cstr_vars
                 ]
                 nb_a_period = sum(
                     1
@@ -246,11 +278,17 @@ class TestConstraintSum:
                     )
                     in coord
                 )
-                if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
+                if (
+                    constraint.operator
+                    == ConstraintOperator.LESS_THAN_OR_EQUAL
+                ):
                     assert nb_a_period <= constraint.target_value
                 elif constraint.operator == ConstraintOperator.EQUAL:
                     assert nb_a_period == constraint.target_value
-                elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
+                elif (
+                    constraint.operator
+                    == ConstraintOperator.GREATER_THAN_OR_EQUAL
+                ):
                     assert nb_a_period >= constraint.target_value
         else:
             assert False
@@ -278,15 +316,26 @@ class TestConstraintSum:
                     assignment.date,
                     assignment.shift_id,
                 )
-                in [(var.worker_id, var.date, var.shift_id) for var in breach.variables]
+                in [
+                    (var.worker_id, var.date, var.shift_id)
+                    for var in breach.variables
+                ]
             )
-            if constraint_soft.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
+            if (
+                constraint_soft.operator
+                == ConstraintOperator.LESS_THAN_OR_EQUAL
+            ):
                 obj_value += penalty * max(
                     nb_a_period - constraint_soft.target_value, 0
                 )
             elif constraint_soft.operator == ConstraintOperator.EQUAL:
-                obj_value += penalty * abs(constraint_soft.target_value - nb_a_period)
-            elif constraint_soft.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
+                obj_value += penalty * abs(
+                    constraint_soft.target_value - nb_a_period
+                )
+            elif (
+                constraint_soft.operator
+                == ConstraintOperator.GREATER_THAN_OR_EQUAL
+            ):
                 obj_value += penalty * max(
                     constraint_soft.target_value - nb_a_period, 0
                 )
@@ -347,9 +396,15 @@ class TestConstraintSum:
                     assignment.date,
                     assignment.shift_id,
                 )
-                in [(var.worker_id, var.date, var.shift_id) for var in breach.variables]
+                in [
+                    (var.worker_id, var.date, var.shift_id)
+                    for var in breach.variables
+                ]
             )
-            if constraint_hard_copy.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
+            if (
+                constraint_hard_copy.operator
+                == ConstraintOperator.LESS_THAN_OR_EQUAL
+            ):
                 obj_value += penalty * max(
                     nb_a_period - constraint_hard_copy.target_value, 0
                 )
@@ -364,3 +419,151 @@ class TestConstraintSum:
                 obj_value += penalty * max(
                     constraint_hard_copy.target_value - nb_a_period, 0
                 )
+
+
+class TestConstraintSumRunParsedScenario:
+    """Run the same scenario as `parse_constraint_sum_test.py` but execute
+    the solver and validate behavior (SUM constraint enforcement and
+    worker filtering for ended contracts).
+    """
+
+    @pytest.mark.unit
+    def test_run_sum_constraint_basic(
+        self, penalties_fix: Penalties, model_config_fix: ModelConfig
+    ) -> None:
+        engine_inputs = make_simple_engine_inputs(
+            penalties_fix,
+            model_config_fix,
+        )
+
+        out = engine_solve_engine_inputs(engine_inputs)
+
+        # compute number of distinct ISO weeks in the schedule
+        start = engine_inputs.schedule.start_date
+        end = engine_inputs.schedule.end_date
+        dates = [
+            start + timedelta(days=i) for i in range((end - start).days + 1)
+        ]
+        weeks = {(d.isocalendar()[0], d.isocalendar()[1]) for d in dates}
+        num_weeks = len(weeks)
+
+        # SUM constraint targeted worker `w0` on `sh0` at most 2 per week
+        count_w0_sh0 = sum(
+            1
+            for a in out.assignments
+            if a.worker_id == "w0" and a.shift_id == "sh0"
+        )
+        assert count_w0_sh0 <= 2 * num_weeks
+
+    @pytest.mark.unit
+    def test_run_sum_ignores_worker_ended_before_schedule(
+        self, penalties_fix: Penalties, model_config_fix: ModelConfig
+    ) -> None:
+        engine_inputs = make_simple_engine_inputs(
+            penalties_fix,
+            model_config_fix,
+        )
+
+        # set w0 employment_end_date before schedule start
+        for w in engine_inputs.workers:
+            if w.id == "w0":
+                w.employment_end_date = date(2024, 12, 31)
+
+        out = engine_solve_engine_inputs(engine_inputs)
+
+        # ensure no assignment references w0
+        assert all(a.worker_id != "w0" for a in out.assignments)
+
+    @pytest.mark.unit
+    def test_run_sum_all_workers_ignores_ended_worker(
+        self, penalties_fix: Penalties, model_config_fix: ModelConfig
+    ) -> None:
+        engine_inputs = make_simple_engine_inputs(
+            penalties_fix,
+            model_config_fix,
+        )
+
+        # set w0 employment_end_date before schedule start
+        for w in engine_inputs.workers:
+            if w.id == "w0":
+                w.employment_end_date = date(2024, 12, 31)
+
+        # Replace worker block to select all workers
+        for i, b in enumerate(engine_inputs.cbs_augmented[0].blocks):
+            if b.name == BlockNameOptions.WORKER:
+                engine_inputs.cbs_augmented[0].blocks[i] = Block(
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                    value=[
+                        ShiftWorkerOption(
+                            name="all workers",
+                            id="",
+                            id_type=SWOIdTypes.WORKER,
+                            is_bool_dim=False,
+                            category_name="All",
+                        )
+                    ],
+                )
+                break
+
+        out = engine_solve_engine_inputs(engine_inputs)
+
+        # ensure no assignment references w0 and some other worker is assigned
+        assert all(a.worker_id != "w0" for a in out.assignments)
+        assert any(a.worker_id != "w0" for a in out.assignments)
+
+    @pytest.mark.unit
+    def test_run_sum_all_duties_ignores_ended_worker(
+        self, penalties_fix: Penalties, model_config_fix: ModelConfig
+    ) -> None:
+        engine_inputs = make_simple_engine_inputs(
+            penalties_fix,
+            model_config_fix,
+        )
+
+        # set w0 employment_end_date before schedule start
+        for w in engine_inputs.workers:
+            if w.id == "w0":
+                w.employment_end_date = date(2024, 12, 31)
+
+        # Replace the worker block to select all workers
+        for i, b in enumerate(engine_inputs.cbs_augmented[0].blocks):
+            if b.name == BlockNameOptions.WORKER:
+                engine_inputs.cbs_augmented[0].blocks[i] = Block(
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                    value=[
+                        ShiftWorkerOption(
+                            name="all workers",
+                            id="",
+                            id_type=SWOIdTypes.WORKER,
+                            is_bool_dim=False,
+                            category_name="All",
+                        )
+                    ],
+                )
+                break
+
+        # Replace the shift block to select all duties
+        for i, b in enumerate(engine_inputs.cbs_augmented[0].blocks):
+            if b.name == BlockNameOptions.SHIFT:
+                engine_inputs.cbs_augmented[0].blocks[i] = Block(
+                    name=BlockNameOptions.SHIFT,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                    value=[
+                        ShiftWorkerOption(
+                            name=True,
+                            id="",
+                            id_type=SWOIdTypes.DUTY,
+                            is_bool_dim=True,
+                            category_name="Duties",
+                        )
+                    ],
+                )
+                break
+
+        out = engine_solve_engine_inputs(engine_inputs)
+
+        # ensure no assignment references w0 and some other worker is assigned
+        assert all(a.worker_id != "w0" for a in out.assignments)
+        assert any(a.worker_id != "w0" for a in out.assignments)
