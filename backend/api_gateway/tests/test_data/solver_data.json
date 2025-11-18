@@ -47115,6 +47115,63 @@
                 ],
                 "hard": true,
                 "priority": "medium"
+            },
+            {
+                "_id": "6915bb0feb2a59b3643a15cd",
+                "team": "6894a0a6457cee1161ccd840",
+                "constraint_type": 0,
+                "template_id": "1",
+                "language": "fr",
+                "blocks": [
+                    {
+                        "name": 4,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": "all workers",
+                                "id": "",
+                                "id_type": 0,
+                                "is_bool_dim": false,
+                                "category_name": "All"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 5,
+                        "type": 0,
+                        "value": "doit faire"
+                    },
+                    {
+                        "name": 0,
+                        "type": 0,
+                        "value": "at most"
+                    },
+                    {
+                        "name": 1,
+                        "type": 1,
+                        "value": 2
+                    },
+                    {
+                        "name": 3,
+                        "type": 3,
+                        "value": [
+                            {
+                                "name": true,
+                                "id": "",
+                                "id_type": 5,
+                                "is_bool_dim": true,
+                                "category_name": "Duties"
+                            }
+                        ]
+                    },
+                    {
+                        "name": 2,
+                        "type": 0,
+                        "value": "per week"
+                    }
+                ],
+                "hard": false,
+                "priority": "medium"
             }
         ],
         "requests": [
@@ -50728,7 +50785,8 @@
                     "68c9a2bf241cb23d8fcff65a",
                     "68c9a2e9241cb23d8fcff65b",
                     "68c9a305241cb23d8fcff65c",
-                    "68c9a31e241cb23d8fcff65d"
+                    "68c9a31e241cb23d8fcff65d",
+                    "6915bb0feb2a59b3643a15cd"
                 ],
                 "quick_staffings": [],
                 "created_at": 1758044234,
