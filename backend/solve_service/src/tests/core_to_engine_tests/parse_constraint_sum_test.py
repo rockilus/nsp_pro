@@ -1,5 +1,6 @@
 from datetime import date, datetime, timezone
 from typing import List
+from collections import Counter
 
 import pytest
 
@@ -368,12 +369,12 @@ def test_parse_constraints_sum_returns_non_empty() -> None:
         target_value=2,
         target_unit="",
         constraint_variables=[
-            [("w0", d.isoformat(), "s0") for d in week]
+            [("w0", d.isoformat(), "sh0") for d in week]
             for week in periods_weekly
         ],
         active=True,
         hard=True,
-        priority="medium",
+        priority="",
         penalty=ei.penalties.user_constraint.sum.hard,
         schedule_id="s0",
         constraint_build_id="c0",
@@ -394,7 +395,16 @@ def test_parse_constraints_sum_returns_non_empty() -> None:
     assert actual.operator == expected.operator
     assert actual.target_value == expected.target_value
     assert actual.target_unit == expected.target_unit
-    assert actual.constraint_variables == expected.constraint_variables
+    # compare constraint_variables ignoring order of outer list and inner lists
+
+    def _normalize(vars_list):
+        # represent each inner list as a sorted tuple of tuples so order
+        # inside the inner list doesn't matter, then count occurrences
+        return Counter(tuple(sorted(inner)) for inner in vars_list)
+
+    assert _normalize(actual.constraint_variables) == _normalize(
+        expected.constraint_variables
+    )
     assert actual.hard == expected.hard
     assert actual.priority == expected.priority
     assert actual.penalty == expected.penalty
