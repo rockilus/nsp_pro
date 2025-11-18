@@ -99,7 +99,8 @@ class MapConstaint:
                 constraint_vars = []
                 for s in coord_shifts:
                     constraint_vars += [(w.id, d.isoformat(), s.id) for d in period]
-                constraints_vars.append(constraint_vars)
+                if constraint_vars:
+                    constraints_vars.append(constraint_vars)
         return ConstraintSum(
             id=cba.id,
             constraint_type=cba.constraint_type,
@@ -141,7 +142,8 @@ class MapConstaint:
                 )
                 for d in dates_cstr:
                     constraint_vars.append((w.id, d.isoformat(), s.id))
-                constraints_vars.append(constraint_vars)
+                if constraint_vars:
+                    constraints_vars.append(constraint_vars)
 
         return ConstraintSeq(
             id=cba.id,
