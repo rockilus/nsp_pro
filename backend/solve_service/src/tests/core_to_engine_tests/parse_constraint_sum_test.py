@@ -177,8 +177,15 @@ def make_simple_engine_inputs(
     dim_entries: List[DimEntry] = []
     attributes: List[Attribute] = []
 
-    # shift demands
+    # shift demands: create a demand of 1 for sh0, sh1 and sh2 for every
+    # day in the schedule (2025-01-01 and 2025-01-02)
     shift_demands: List[ShiftDemandNew] = []
+    schedule_dates = [date(2025, 1, 1), date(2025, 1, 2)]
+    for d in schedule_dates:
+        for sh_id in ("sh0", "sh1", "sh2"):
+            shift_demands.append(
+                ShiftDemandNew(date=d, shift_id=sh_id, team_id="t0", count=1)
+            )
 
     # Create a minimal ConstraintBuildAugmented representing a SUM constraint
     cba = ConstraintBuildAugmented(
@@ -279,7 +286,7 @@ def make_simple_engine_inputs(
         as_hist=[],
         as_wip_fixed=[],
         cbs_augmented=[cba],
-        shift_demands=[],
+        shift_demands=shift_demands,
         requests_work=[],
         requests_leave=[],
         model_output=None,
