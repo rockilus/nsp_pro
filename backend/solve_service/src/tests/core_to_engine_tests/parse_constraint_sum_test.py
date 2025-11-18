@@ -429,16 +429,7 @@ def test_parse_constraints_sum_ignores_workers_ended_before_schedule(ei):
     # Ensure a SUM constraint was produced
     assert out is not None
     assert hasattr(out, "sum")
-    assert len(out.sum) == 1
-
-    actual = out.sum[0]
-    print(actual)
-    assert False
-
-    # Assert that no variable references w0 (worker ended before schedule)
-    for inner in actual.constraint_variables:
-        for var in inner:
-            assert var[0] != "w0"
+    assert len(out.sum) == 0
 
 
 @pytest.mark.unit
@@ -520,6 +511,10 @@ def test_parse_constraints_sum_all_workers_ignores_ended_worker(ei) -> None:
 
     # And at least one active worker (w1) should be present
     assert "w1" in seen_workers
+
+    assert all(
+        len(cstr_vars) > 0 for cstr_vars in actual.constraint_variables
+    ), "Expected non-empty constraint variables for all periods"
 
 
 @pytest.mark.unit
