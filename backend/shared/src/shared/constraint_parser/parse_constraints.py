@@ -13,7 +13,7 @@ from shared.schemas.core import (
 )
 
 
-# pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments, too-many-locals, too-many-positional-arguments
 def parse_constraints(
     cbas: List[ConstraintBuildAugmented],
     schedule_id: str,
@@ -91,21 +91,11 @@ def parse_constraints(
         return len(cvars) > 0
 
     # Filter out constraints with empty constraint_variables
-    sum_constraints = [
-        c for c in sum_constraints if _has_non_empty_variables(c)
-    ]
-    seq_constraints = [
-        c for c in seq_constraints if _has_non_empty_variables(c)
-    ]
-    ord_constraints = [
-        c for c in ord_constraints if _has_non_empty_variables(c)
-    ]
-    fil_constraints = [
-        c for c in fil_constraints if _has_non_empty_variables(c)
-    ]
-    fai_constraints = [
-        c for c in fai_constraints if _has_non_empty_variables(c)
-    ]
+    sum_constraints = [c for c in sum_constraints if _has_non_empty_variables(c)]
+    seq_constraints = [c for c in seq_constraints if _has_non_empty_variables(c)]
+    ord_constraints = [c for c in ord_constraints if _has_non_empty_variables(c)]
+    fil_constraints = [c for c in fil_constraints if _has_non_empty_variables(c)]
+    fai_constraints = [c for c in fai_constraints if _has_non_empty_variables(c)]
 
     return Constraints(
         sum=sum_constraints,

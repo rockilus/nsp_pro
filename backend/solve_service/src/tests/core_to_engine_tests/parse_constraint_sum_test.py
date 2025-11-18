@@ -1,53 +1,52 @@
+from collections import Counter
 from datetime import date, datetime, timezone
 from typing import List
-from collections import Counter
 
 import pytest
-
 from shared.constraint_parser import (
     build_dim_to_attr_value_to_owner,
     parse_constraints,
 )
 from shared.schemas.core import (
-    EngineInputs,
-    EngineInputsAugmented,
-    ConstraintBuildAugmented,
-    ConstraintType,
-    ConstraintOperator,
-    ConstraintSum,
-    Schedule,
-    Shift,
-    Worker,
-    Staffing,
-    ShiftDemandNew,
-    Dimension,
-    DimEntry,
     Attribute,
-    ScheduleStatus,
     Block,
     BlockNameOptions,
     BlockTypeOptions,
-    ShiftWorkerOption,
-    ShiftType,
-    ShiftRestType,
-    ShiftLeaveType,
-    SWOIdTypes,
-    Penalties,
+    ConstraintBuildAugmented,
+    ConstraintOperator,
+    ConstraintSum,
+    ConstraintType,
+    Dimension,
+    DimEntry,
+    EngineInputs,
+    EngineInputsAugmented,
     ModelConfig,
+    Penalties,
+    Schedule,
+    ScheduleStatus,
+    Shift,
+    ShiftDemandNew,
+    ShiftLeaveType,
+    ShiftRestType,
+    ShiftType,
+    ShiftWorkerOption,
+    Staffing,
+    SWOIdTypes,
+    Worker,
 )
-
 
 from core_to_engine_service.build_dates import (
     build_dates,
     build_worker_ids_to_worker_dates,
 )
 from core_to_engine_service.build_periods import (
-    build_periods_weekly,
     build_periods_monthly,
+    build_periods_weekly,
     build_periods_yearly,
 )
 
 
+# pylint: disable=R0801
 def make_simple_engine_inputs(
     penalties_fix: Penalties, model_config_fix: ModelConfig
 ) -> EngineInputsAugmented:
@@ -290,8 +289,11 @@ def ei(penalties_fix: Penalties, model_config_fix: ModelConfig):
     return make_simple_engine_inputs(penalties_fix, model_config_fix)
 
 
+# pylint: disable=redefined-outer-name, too-many-locals
 @pytest.mark.unit
-def test_parse_constraints_sum_returns_non_empty(ei) -> None:
+def test_parse_constraints_sum_returns_non_empty(
+    ei: EngineInputsAugmented,
+) -> None:
     """Simple test: parse_constraints returns a Constraints object
     for a SUM constraint.
     """
@@ -305,9 +307,7 @@ def test_parse_constraints_sum_returns_non_empty(ei) -> None:
         ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
     )
 
-    dates_hist, dates_campaign = build_dates(
-        ei.schedule, ei.as_hist + ei.as_wip_fixed
-    )
+    dates_hist, dates_campaign = build_dates(ei.schedule, ei.as_hist + ei.as_wip_fixed)
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
@@ -339,8 +339,7 @@ def test_parse_constraints_sum_returns_non_empty(ei) -> None:
         target_value=2,
         target_unit="",
         constraint_variables=[
-            [("w0", d.isoformat(), "sh0") for d in week]
-            for week in periods_weekly
+            [("w0", d.isoformat(), "sh0") for d in week] for week in periods_weekly
         ],
         active=True,
         hard=True,
@@ -383,7 +382,9 @@ def test_parse_constraints_sum_returns_non_empty(ei) -> None:
 
 
 @pytest.mark.unit
-def test_parse_constraints_sum_ignores_workers_ended_before_schedule(ei):
+def test_parse_constraints_sum_ignores_workers_ended_before_schedule(
+    ei: EngineInputsAugmented,
+) -> None:
     """If a worker's employment_end_date is before the schedule start,
     they should not be included in SUM constraint variables.
     """
@@ -399,9 +400,7 @@ def test_parse_constraints_sum_ignores_workers_ended_before_schedule(ei):
         ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
     )
 
-    dates_hist, dates_campaign = build_dates(
-        ei.schedule, ei.as_hist + ei.as_wip_fixed
-    )
+    dates_hist, dates_campaign = build_dates(ei.schedule, ei.as_hist + ei.as_wip_fixed)
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
@@ -433,7 +432,9 @@ def test_parse_constraints_sum_ignores_workers_ended_before_schedule(ei):
 
 
 @pytest.mark.unit
-def test_parse_constraints_sum_all_workers_ignores_ended_worker(ei) -> None:
+def test_parse_constraints_sum_all_workers_ignores_ended_worker(
+    ei: EngineInputsAugmented,
+) -> None:
     """When the worker block refers to all workers and one worker's
     employment_end_date is before the schedule start, that worker
     should not be included in SUM constraint variables.
@@ -468,9 +469,7 @@ def test_parse_constraints_sum_all_workers_ignores_ended_worker(ei) -> None:
         ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
     )
 
-    dates_hist, dates_campaign = build_dates(
-        ei.schedule, ei.as_hist + ei.as_wip_fixed
-    )
+    dates_hist, dates_campaign = build_dates(ei.schedule, ei.as_hist + ei.as_wip_fixed)
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
@@ -518,7 +517,9 @@ def test_parse_constraints_sum_all_workers_ignores_ended_worker(ei) -> None:
 
 
 @pytest.mark.unit
-def test_parse_constraints_sum_all_duties_ignores_ended_worker(ei) -> None:
+def test_parse_constraints_sum_all_duties_ignores_ended_worker(
+    ei: EngineInputsAugmented,
+) -> None:
     """When the worker block refers to all workers and the shift block
     selects all duties, a worker whose employment_end_date is before
     the schedule start should be excluded from SUM constraint variables.
@@ -571,9 +572,7 @@ def test_parse_constraints_sum_all_duties_ignores_ended_worker(ei) -> None:
         ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
     )
 
-    dates_hist, dates_campaign = build_dates(
-        ei.schedule, ei.as_hist + ei.as_wip_fixed
-    )
+    dates_hist, dates_campaign = build_dates(ei.schedule, ei.as_hist + ei.as_wip_fixed)
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
@@ -616,9 +615,7 @@ def test_parse_constraints_sum_all_duties_ignores_ended_worker(ei) -> None:
     assert "w1" in seen_workers
 
     # Ensure only duty shifts are referenced in the constraint variables
-    duty_shift_ids = {
-        s.id for s in ei.shifts if s.shift_type == ShiftType.DUTY
-    }
+    duty_shift_ids = {s.id for s in ei.shifts if s.shift_type == ShiftType.DUTY}
     for inner in actual.constraint_variables:
         for var in inner:
             assert var[2] in duty_shift_ids
