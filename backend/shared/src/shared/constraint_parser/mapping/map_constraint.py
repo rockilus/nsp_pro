@@ -99,7 +99,8 @@ class MapConstaint:
                 constraint_vars = []
                 for s in coord_shifts:
                     constraint_vars += [(w.id, d.isoformat(), s.id) for d in period]
-                constraints_vars.append(constraint_vars)
+                if constraint_vars:
+                    constraints_vars.append(constraint_vars)
         return ConstraintSum(
             id=cba.id,
             constraint_type=cba.constraint_type,

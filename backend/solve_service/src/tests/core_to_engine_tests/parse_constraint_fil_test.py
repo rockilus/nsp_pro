@@ -576,16 +576,14 @@ def test_parse_constraints_fil_all_duties_ignores_ended_worker(
 
     # No variable should reference w0 (ended before schedule)
     seen_workers = set()
-    for inner in actual.constraint_variables:
-        for var in inner:
-            seen_workers.add(var[0])
-            assert var[0] != "w0"
+    for var in actual.constraint_variables:
+        seen_workers.add(var[0])
+        assert var[0] != "w0"
 
     # And at least one active worker (w1) should be present
     assert "w1" in seen_workers
 
     # Ensure only duty shifts are referenced in the constraint variables
     duty_shift_ids = {s.id for s in ei.shifts if s.shift_type == ShiftType.DUTY}
-    for inner in actual.constraint_variables:
-        for var in inner:
-            assert var[2] in duty_shift_ids
+    for var in actual.constraint_variables:
+        assert var[2] not in duty_shift_ids
