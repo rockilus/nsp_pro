@@ -1,5 +1,5 @@
 from collections import Counter
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import List
 
 import pytest
@@ -14,7 +14,7 @@ from shared.schemas.core import (
     BlockTypeOptions,
     ConstraintBuildAugmented,
     ConstraintOperator,
-    ConstraintSeq,
+    ConstraintOrd,
     ConstraintType,
     Dimension,
     DimEntry,
@@ -173,89 +173,11 @@ def make_simple_engine_inputs(
                 ShiftDemandNew(date=d, shift_id=sh_id, team_id="t0", count=1)
             )
 
-    # {
-    #     "id": "691cb5895c0140859a626f1d",
-    #     "teamId": "691c97395c0140859a6266fe",
-    #     "constraintType": 2,
-    #     "templateId": "2",
-    #     "language": "fr",
-    #     "blocks": [
-    #         {
-    #             "name": 0,
-    #             "type": 0,
-    #             "value": "no"
-    #         },
-    #         {
-    #             "name": 6,
-    #             "type": 3,
-    #             "value": [
-    #                 {
-    #                     "name": "Garde Mater",
-    #                     "id": "691c973b5c0140859a626749",
-    #                     "idType": 2,
-    #                     "isBoolDim": false,
-    #                     "categoryName": "Shifts"
-    #                 }
-    #             ]
-    #         },
-    #         {
-    #             "name": 1,
-    #             "type": 1,
-    #             "value": 1
-    #         },
-    #         {
-    #             "name": 5,
-    #             "type": 0,
-    #             "value": "jour"
-    #         },
-    #         {
-    #             "name": 2,
-    #             "type": 0,
-    #             "value": "after"
-    #         },
-    #         {
-    #             "name": 7,
-    #             "type": 3,
-    #             "value": [
-    #                 {
-    #                     "name": "ACA1",
-    #                     "id": "691c973b5c0140859a62674c",
-    #                     "idType": 2,
-    #                     "isBoolDim": false,
-    #                     "categoryName": "Shifts"
-    #                 }
-    #             ]
-    #         },
-    #         {
-    #             "name": 5,
-    #             "type": 0,
-    #             "value": "pour"
-    #         },
-    #         {
-    #             "name": 4,
-    #             "type": 3,
-    #             "value": [
-    #                 {
-    #                     "name": "Cédric Pepion",
-    #                     "id": "691c973a5c0140859a626713",
-    #                     "idType": 1,
-    #                     "isBoolDim": false,
-    #                     "categoryName": "Workers"
-    #                 }
-    #             ]
-    #         }
-    #     ],
-    #     "text": "Aucun garde mater 1 jour après aca1 pour cédric pepion.",
-    #     "hard": true,
-    #     "priority": "medium",
-    #     "active": true,
-    #     "missingAttributes": []
-    # }
     # Create a minimal ConstraintBuildAugmented representing a SUM constraint
     cba = ConstraintBuildAugmented(
         id="c0",
         team_id="t0",
-        constraint_type=ConstraintType.SEQ,
+        constraint_type=ConstraintType.ORD,
         template_id="tmpl",
         language="en",
         blocks=[
@@ -273,22 +195,22 @@ def make_simple_engine_inputs(
                         id="sh0",
                         id_type=SWOIdTypes.SHIFT,
                         is_bool_dim=False,
-                        category_name="shifts",
-                    )
+                        category_name="Shifts",
+                    ),
                 ],
             ),
             Block(
                 name=BlockNameOptions.NUMBER,
                 type=BlockTypeOptions.NUMBER,
-                value=2,
+                value=1,
             ),
             Block(
                 name=BlockNameOptions.TEXT,
                 type=BlockTypeOptions.STRING,
-                value="jour",
+                value="day",
             ),
             Block(
-                name=BlockNameOptions.OPERATOR,
+                name=BlockNameOptions.TIMING,
                 type=BlockTypeOptions.STRING,
                 value="after",
             ),
@@ -301,14 +223,14 @@ def make_simple_engine_inputs(
                         id="sh1",
                         id_type=SWOIdTypes.SHIFT,
                         is_bool_dim=False,
-                        category_name="shifts",
-                    )
+                        category_name="Shifts",
+                    ),
                 ],
             ),
             Block(
                 name=BlockNameOptions.TEXT,
                 type=BlockTypeOptions.STRING,
-                value="pour",
+                value="for",
             ),
             Block(
                 name=BlockNameOptions.WORKER,
@@ -319,7 +241,7 @@ def make_simple_engine_inputs(
                         id="w0",
                         id_type=SWOIdTypes.WORKER,
                         is_bool_dim=False,
-                        category_name="workers",
+                        category_name="Workers",
                     )
                 ],
             ),
@@ -361,7 +283,7 @@ def ei(penalties_fix: Penalties, model_config_fix: ModelConfig):
 
 # pylint: disable=redefined-outer-name, too-many-locals
 @pytest.mark.unit
-def test_parse_constraints_seq_returns_non_empty(
+def test_parse_constraints_ord_returns_non_empty(
     ei: EngineInputsAugmented,
 ) -> None:
     """Simple test: parse_constraints returns a Constraints object
@@ -377,9 +299,7 @@ def test_parse_constraints_seq_returns_non_empty(
         ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
     )
 
-    dates_hist, dates_campaign = build_dates(
-        ei.schedule, ei.as_hist + ei.as_wip_fixed
-    )
+    dates_hist, dates_campaign = build_dates(ei.schedule, ei.as_hist + ei.as_wip_fixed)
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
@@ -404,33 +324,39 @@ def test_parse_constraints_seq_returns_non_empty(
         penalties=ei.penalties,
     )
 
-    expected = ConstraintSeq(
+    expected = ConstraintOrd(
         id="c0",
-        constraint_type=ConstraintType.SEQ,
+        constraint_type=ConstraintType.ORD,
         operator=ConstraintOperator.NO,
-        target_value=1,
+        target_value=0,
         target_unit="",
+        shift_reference_ids=["sh0"],
+        shift_relative_ids=["sh1"],
+        interval=1,
         constraint_variables=[
-            [("w0", d.isoformat(), "sh0") for d in week]
-            for week in periods_weekly
+            (
+                ("w0", d.isoformat(), "sh0"),
+                ("w0", (d + timedelta(days=1)).isoformat(), "sh1"),
+            )
+            for d in dates_campaign[:-1]
         ],
         active=True,
         hard=True,
         priority="",
-        penalty=ei.penalties.user_constraint.seq.hard,
+        penalty=ei.penalties.user_constraint.ord.hard,
         schedule_id="s0",
         constraint_build_id="c0",
     )
 
     # basic assertions: output exists and SUM list is non-empty
     assert out is not None
-    assert hasattr(out, "seq")
-    assert len(out.seq) == 1
-    assert isinstance(out.seq[0], ConstraintSeq)
+    assert hasattr(out, "ord")
+    assert len(out.ord) == 1
+    assert isinstance(out.ord[0], ConstraintOrd)
 
     # detailed assertions: compare the produced SUM constraint to the
     # previously defined expected_out tuple (use expected_out[0])
-    actual = out.seq[0]
+    actual = out.ord[0]
 
     assert actual.id == expected.id
     assert actual.constraint_type == expected.constraint_type
@@ -455,7 +381,7 @@ def test_parse_constraints_seq_returns_non_empty(
 
 
 @pytest.mark.unit
-def test_parse_constraints_seq_ignores_workers_ended_before_schedule(
+def test_parse_constraints_ord_ignores_workers_ended_before_schedule(
     ei: EngineInputsAugmented,
 ) -> None:
     """If a worker's employment_end_date is before the schedule start,
@@ -473,9 +399,7 @@ def test_parse_constraints_seq_ignores_workers_ended_before_schedule(
         ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
     )
 
-    dates_hist, dates_campaign = build_dates(
-        ei.schedule, ei.as_hist + ei.as_wip_fixed
-    )
+    dates_hist, dates_campaign = build_dates(ei.schedule, ei.as_hist + ei.as_wip_fixed)
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
@@ -502,12 +426,12 @@ def test_parse_constraints_seq_ignores_workers_ended_before_schedule(
 
     # Ensure a SUM constraint was produced
     assert out is not None
-    assert hasattr(out, "seq")
-    assert len(out.seq) == 0
+    assert hasattr(out, "ord")
+    assert len(out.ord) == 0
 
 
 @pytest.mark.unit
-def test_parse_constraints_seq_all_workers_ignores_ended_worker(
+def test_parse_constraints_ord_all_workers_ignores_ended_worker(
     ei: EngineInputsAugmented,
 ) -> None:
     """When the worker block refers to all workers and one worker's
@@ -544,9 +468,7 @@ def test_parse_constraints_seq_all_workers_ignores_ended_worker(
         ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
     )
 
-    dates_hist, dates_campaign = build_dates(
-        ei.schedule, ei.as_hist + ei.as_wip_fixed
-    )
+    dates_hist, dates_campaign = build_dates(ei.schedule, ei.as_hist + ei.as_wip_fixed)
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
@@ -573,10 +495,10 @@ def test_parse_constraints_seq_all_workers_ignores_ended_worker(
 
     # Ensure a SUM constraint was produced
     assert out is not None
-    assert hasattr(out, "seq")
-    assert len(out.seq) == 1
+    assert hasattr(out, "ord")
+    assert len(out.ord) == 1
 
-    actual = out.seq[0]
+    actual = out.ord[0]
 
     # No variable should reference w0 (ended before schedule)
     seen_workers = set()
@@ -594,7 +516,7 @@ def test_parse_constraints_seq_all_workers_ignores_ended_worker(
 
 
 @pytest.mark.unit
-def test_parse_constraints_seq_all_duties_ignores_ended_worker(
+def test_parse_constraints_ord_all_duties_ignores_ended_worker(
     ei: EngineInputsAugmented,
 ) -> None:
     """When the worker block refers to all workers and the shift block
@@ -626,9 +548,9 @@ def test_parse_constraints_seq_all_duties_ignores_ended_worker(
 
     # Replace the shift block to select all duties
     for i, b in enumerate(ei.cbs_augmented[0].blocks):
-        if b.name == BlockNameOptions.SHIFT:
+        if b.name == BlockNameOptions.SHIFT_REFERENCE:
             ei.cbs_augmented[0].blocks[i] = Block(
-                name=BlockNameOptions.SHIFT,
+                name=BlockNameOptions.SHIFT_REFERENCE,
                 type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                 value=[
                     ShiftWorkerOption(
@@ -640,7 +562,21 @@ def test_parse_constraints_seq_all_duties_ignores_ended_worker(
                     )
                 ],
             )
-            break
+            continue
+        if b.name == BlockNameOptions.SHIFT_RELATIVE:
+            ei.cbs_augmented[0].blocks[i] = Block(
+                name=BlockNameOptions.SHIFT_RELATIVE,
+                type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                value=[
+                    ShiftWorkerOption(
+                        name=True,
+                        id="",
+                        id_type=SWOIdTypes.DUTY,
+                        is_bool_dim=True,
+                        category_name="Duties",
+                    )
+                ],
+            )
 
     dim_to_attr_value_to_worker = build_dim_to_attr_value_to_owner(
         ei.workers, ei.dimensions, ei.dim_entries, ei.attributes
@@ -649,9 +585,7 @@ def test_parse_constraints_seq_all_duties_ignores_ended_worker(
         ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
     )
 
-    dates_hist, dates_campaign = build_dates(
-        ei.schedule, ei.as_hist + ei.as_wip_fixed
-    )
+    dates_hist, dates_campaign = build_dates(ei.schedule, ei.as_hist + ei.as_wip_fixed)
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
@@ -678,10 +612,12 @@ def test_parse_constraints_seq_all_duties_ignores_ended_worker(
 
     # Ensure a SUM constraint was produced
     assert out is not None
-    assert hasattr(out, "seq")
-    assert len(out.seq) == 1
+    assert hasattr(out, "ord")
+    assert len(out.ord) == 1
 
-    actual = out.seq[0]
+    actual = out.ord[0]
+
+    print(actual.constraint_variables)
 
     # No variable should reference w0 (ended before schedule)
     seen_workers = set()
@@ -694,9 +630,7 @@ def test_parse_constraints_seq_all_duties_ignores_ended_worker(
     assert "w1" in seen_workers
 
     # Ensure only duty shifts are referenced in the constraint variables
-    duty_shift_ids = {
-        s.id for s in ei.shifts if s.shift_type == ShiftType.DUTY
-    }
+    duty_shift_ids = {s.id for s in ei.shifts if s.shift_type == ShiftType.DUTY}
     for inner in actual.constraint_variables:
         for var in inner:
             assert var[2] in duty_shift_ids

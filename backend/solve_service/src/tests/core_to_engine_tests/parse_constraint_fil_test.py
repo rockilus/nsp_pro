@@ -13,8 +13,8 @@ from shared.schemas.core import (
     BlockNameOptions,
     BlockTypeOptions,
     ConstraintBuildAugmented,
+    ConstraintFil,
     ConstraintOperator,
-    ConstraintSeq,
     ConstraintType,
     Dimension,
     DimEntry,
@@ -177,7 +177,7 @@ def make_simple_engine_inputs(
     cba = ConstraintBuildAugmented(
         id="c0",
         team_id="t0",
-        constraint_type=ConstraintType.SEQ,
+        constraint_type=ConstraintType.FIL,
         template_id="tmpl",
         language="en",
         blocks=[
@@ -195,24 +195,14 @@ def make_simple_engine_inputs(
                 ],
             ),
             Block(
-                name=BlockNameOptions.TEXT,
-                type=BlockTypeOptions.STRING,
-                value="should work",
-            ),
-            Block(
                 name=BlockNameOptions.OPERATOR,
                 type=BlockTypeOptions.STRING,
-                value="at most",
+                value="should only",
             ),
             Block(
-                name=BlockNameOptions.NUMBER,
-                type=BlockTypeOptions.NUMBER,
-                value=2,
-            ),
-            Block(
-                name=BlockNameOptions.TIMING,
+                name=BlockNameOptions.TEXT,
                 type=BlockTypeOptions.STRING,
-                value="consecutive",
+                value="work",
             ),
             Block(
                 name=BlockNameOptions.SHIFT,
@@ -224,7 +214,7 @@ def make_simple_engine_inputs(
                         id_type=SWOIdTypes.SHIFT,
                         is_bool_dim=False,
                         category_name="Shifts",
-                    )
+                    ),
                 ],
             ),
         ],
@@ -265,7 +255,7 @@ def ei(penalties_fix: Penalties, model_config_fix: ModelConfig):
 
 # pylint: disable=redefined-outer-name, too-many-locals
 @pytest.mark.unit
-def test_parse_constraints_seq_returns_non_empty(
+def test_parse_constraints_fil_returns_non_empty(
     ei: EngineInputsAugmented,
 ) -> None:
     """Simple test: parse_constraints returns a Constraints object
@@ -306,30 +296,39 @@ def test_parse_constraints_seq_returns_non_empty(
         penalties=ei.penalties,
     )
 
-    expected = ConstraintSeq(
+    shift_work_ids = [
+        s.id for s in ei.shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+    ]
+
+    expected = ConstraintFil(
         id="c0",
-        constraint_type=ConstraintType.SEQ,
-        operator=ConstraintOperator.LESS_THAN_OR_EQUAL,
-        target_value=2,
+        constraint_type=ConstraintType.FIL,
+        operator=ConstraintOperator.YES,
+        target_value=0,
         target_unit="",
-        constraint_variables=[[("w0", d.isoformat(), "sh0") for d in dates_campaign]],
+        constraint_variables=[
+            ("w0", d.isoformat(), s_id)
+            for d in dates_campaign
+            for s_id in shift_work_ids
+            if s_id != "sh0"
+        ],
         active=True,
         hard=True,
         priority="",
-        penalty=ei.penalties.user_constraint.seq.hard,
+        penalty=ei.penalties.user_constraint.fil.hard,
         schedule_id="s0",
         constraint_build_id="c0",
     )
 
     # basic assertions: output exists and SUM list is non-empty
     assert out is not None
-    assert hasattr(out, "seq")
-    assert len(out.seq) == 1
-    assert isinstance(out.seq[0], ConstraintSeq)
+    assert hasattr(out, "fil")
+    assert len(out.fil) == 1
+    assert isinstance(out.fil[0], ConstraintFil)
 
     # detailed assertions: compare the produced SUM constraint to the
     # previously defined expected_out tuple (use expected_out[0])
-    actual = out.seq[0]
+    actual = out.fil[0]
 
     assert actual.id == expected.id
     assert actual.constraint_type == expected.constraint_type
@@ -354,7 +353,7 @@ def test_parse_constraints_seq_returns_non_empty(
 
 
 @pytest.mark.unit
-def test_parse_constraints_seq_ignores_workers_ended_before_schedule(
+def test_parse_constraints_fil_ignores_workers_ended_before_schedule(
     ei: EngineInputsAugmented,
 ) -> None:
     """If a worker's employment_end_date is before the schedule start,
@@ -399,12 +398,12 @@ def test_parse_constraints_seq_ignores_workers_ended_before_schedule(
 
     # Ensure a SUM constraint was produced
     assert out is not None
-    assert hasattr(out, "seq")
-    assert len(out.seq) == 0
+    assert hasattr(out, "fil")
+    assert len(out.fil) == 0
 
 
 @pytest.mark.unit
-def test_parse_constraints_seq_all_workers_ignores_ended_worker(
+def test_parse_constraints_fil_all_workers_ignores_ended_worker(
     ei: EngineInputsAugmented,
 ) -> None:
     """When the worker block refers to all workers and one worker's
@@ -468,28 +467,27 @@ def test_parse_constraints_seq_all_workers_ignores_ended_worker(
 
     # Ensure a SUM constraint was produced
     assert out is not None
-    assert hasattr(out, "seq")
-    assert len(out.seq) == 1
+    assert hasattr(out, "fil")
+    assert len(out.fil) == 1
 
-    actual = out.seq[0]
+    actual = out.fil[0]
 
     # No variable should reference w0 (ended before schedule)
     seen_workers = set()
-    for inner in actual.constraint_variables:
-        for var in inner:
-            seen_workers.add(var[0])
-            assert var[0] != "w0"
+    for var in actual.constraint_variables:
+        seen_workers.add(var[0])
+        assert var[0] != "w0"
 
     # And at least one active worker (w1) should be present
     assert "w1" in seen_workers
 
-    assert all(
-        len(cstr_vars) > 0 for cstr_vars in actual.constraint_variables
+    assert len(
+        actual.constraint_variables
     ), "Expected non-empty constraint variables for all periods"
 
 
 @pytest.mark.unit
-def test_parse_constraints_seq_all_duties_ignores_ended_worker(
+def test_parse_constraints_fil_all_duties_ignores_ended_worker(
     ei: EngineInputsAugmented,
 ) -> None:
     """When the worker block refers to all workers and the shift block
@@ -571,10 +569,10 @@ def test_parse_constraints_seq_all_duties_ignores_ended_worker(
 
     # Ensure a SUM constraint was produced
     assert out is not None
-    assert hasattr(out, "seq")
-    assert len(out.seq) == 1
+    assert hasattr(out, "fil")
+    assert len(out.fil) == 1
 
-    actual = out.seq[0]
+    actual = out.fil[0]
 
     # No variable should reference w0 (ended before schedule)
     seen_workers = set()
