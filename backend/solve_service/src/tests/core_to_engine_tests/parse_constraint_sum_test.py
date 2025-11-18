@@ -410,3 +410,62 @@ def test_parse_constraints_sum_returns_non_empty() -> None:
     assert actual.penalty == expected.penalty
     assert actual.schedule_id == expected.schedule_id
     assert actual.constraint_build_id == expected.constraint_build_id
+
+
+@pytest.mark.unit
+def test_parse_constraints_sum_ignores_workers_ended_before_schedule() -> None:
+    """If a worker's employment_end_date is before the schedule start,
+    they should not be included in SUM constraint variables.
+    """
+    ei = make_simple_engine_inputs()
+
+    # Set w0 employment_end_date to before the schedule start
+    for w in ei.workers:
+        if w.id == "w0":
+            w.employment_end_date = date(2024, 12, 31)
+
+    dim_to_attr_value_to_worker = build_dim_to_attr_value_to_owner(
+        ei.workers, ei.dimensions, ei.dim_entries, ei.attributes
+    )
+    dim_to_attr_value_to_shift = build_dim_to_attr_value_to_owner(
+        ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
+    )
+
+    dates_hist, dates_campaign = build_dates(
+        ei.schedule, ei.as_hist + ei.as_wip_fixed
+    )
+    periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
+    periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
+    periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
+
+    worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
+        ei.schedule, ei.workers, ei.as_hist + ei.as_wip_fixed, dates_campaign
+    )
+
+    out = parse_constraints(
+        cbas=ei.cbs_augmented,
+        schedule_id=ei.schedule.id,
+        workers=ei.workers,
+        worker_dim_dict=dim_to_attr_value_to_worker,
+        dates_hist=dates_hist,
+        dates_campaign=dates_campaign,
+        periods_weekly=periods_weekly,
+        periods_monthly=periods_monthly,
+        periods_yearly=periods_yearly,
+        worker_ids_to_worker_dates=worker_ids_to_worker_dates,
+        shifts=ei.shifts,
+        shift_dim_dict=dim_to_attr_value_to_shift,
+        penalties=ei.penalties,
+    )
+
+    # Ensure a SUM constraint was produced
+    assert out is not None
+    assert hasattr(out, "sum")
+    assert len(out.sum) == 1
+
+    actual = out.sum[0]
+
+    # Assert that no variable references w0 (worker ended before schedule)
+    for inner in actual.constraint_variables:
+        for var in inner:
+            assert var[0] != "w0"
