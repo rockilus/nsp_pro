@@ -222,14 +222,27 @@ def make_simple_engine_inputs() -> EngineInputsAugmented:
                 type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                 value=[
                     ShiftWorkerOption(
-                        name="all workers",
-                        id="",
+                        name="Worker 0",
+                        id="w0",
                         id_type=SWOIdTypes.WORKER,
                         is_bool_dim=False,
-                        category_name="All",
+                        category_name="workers",
                     )
                 ],
             ),
+            # Block(
+            #     name=BlockNameOptions.WORKER,
+            #     type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+            #     value=[
+            #         ShiftWorkerOption(
+            #             name="all workers",
+            #             id="",
+            #             id_type=SWOIdTypes.WORKER,
+            #             is_bool_dim=False,
+            #             category_name="All",
+            #         )
+            #     ],
+            # ),
             Block(
                 name=BlockNameOptions.TEXT,
                 type=BlockTypeOptions.STRING,
@@ -348,28 +361,42 @@ def test_parse_constraints_sum_returns_non_empty() -> None:
         penalties=ei.penalties,
     )
 
-    expected_out = (
-        ConstraintSum(
-            id="c_sum_0",
-            constraint_type=ConstraintType.SUM,
-            operator=ConstraintOperator.GREATER_THAN_OR_EQUAL,
-            target_value=3,
-            target_unit="",
-            constraint_variables=[
-                [("w0", d.isoformat(), "s0") for d in week]
-                for week in periods_weekly
-            ],
-            active=True,
-            hard=True,
-            priority="medium",
-            penalty=ei.penalties.user_constraint.sum.hard,
-            schedule_id="sch0",
-            constraint_build_id="c_sum_0",
-        ),
+    expected = ConstraintSum(
+        id="c0",
+        constraint_type=ConstraintType.SUM,
+        operator=ConstraintOperator.LESS_THAN_OR_EQUAL,
+        target_value=2,
+        target_unit="",
+        constraint_variables=[
+            [("w0", d.isoformat(), "s0") for d in week]
+            for week in periods_weekly
+        ],
+        active=True,
+        hard=True,
+        priority="medium",
+        penalty=ei.penalties.user_constraint.sum.hard,
+        schedule_id="s0",
+        constraint_build_id="c0",
     )
 
     # basic assertions: output exists and SUM list is non-empty
     assert out is not None
     assert hasattr(out, "sum")
-    assert len(out.sum) >= 1
+    assert len(out.sum) == 1
     assert isinstance(out.sum[0], ConstraintSum)
+
+    # detailed assertions: compare the produced SUM constraint to the
+    # previously defined expected_out tuple (use expected_out[0])
+    actual = out.sum[0]
+
+    assert actual.id == expected.id
+    assert actual.constraint_type == expected.constraint_type
+    assert actual.operator == expected.operator
+    assert actual.target_value == expected.target_value
+    assert actual.target_unit == expected.target_unit
+    assert actual.constraint_variables == expected.constraint_variables
+    assert actual.hard == expected.hard
+    assert actual.priority == expected.priority
+    assert actual.penalty == expected.penalty
+    assert actual.schedule_id == expected.schedule_id
+    assert actual.constraint_build_id == expected.constraint_build_id
