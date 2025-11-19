@@ -409,7 +409,7 @@ def build_worker_schedule_rows_in_worksheet(
                             raise ValueError("invalid hex length")
                         int(border_color_val, 16)
                         bottom_side = Side(
-                            border_style="thick",
+                            border_style="medium",
                             color=border_color_val,
                         )
                         cell_shift_name.border = Border(bottom=bottom_side)
