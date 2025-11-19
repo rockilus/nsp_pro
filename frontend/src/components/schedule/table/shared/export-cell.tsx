@@ -4,7 +4,8 @@ import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../../../app/i18n/client";
 // MUI
 import IosShareIcon from "@mui/icons-material/IosShare";
-import Popover from "@mui/material/Popover";
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
 import TableCell from "@mui/material/TableCell";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
@@ -168,7 +169,7 @@ export default function ExportCell({
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
-  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const [open, setOpen] = useState(false);
   const [exportOptionsState, setExportOptionsState] = useState<ExportOptionsT>(
     scheduleCampaign
       ? {
@@ -183,9 +184,6 @@ export default function ExportCell({
         }
   );
 
-  const open = Boolean(anchorEl);
-  const id = open ? "simple-popover" : undefined;
-
   const ExportOptionsMap: { value: number; label: string }[] = [
     {
       value: ExportPeriodOptions.CURRENT_SELECTION,
@@ -197,11 +195,11 @@ export default function ExportCell({
   ];
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
+    setOpen(true);
   };
 
   const handleClose = () => {
-    setAnchorEl(null);
+    setOpen(false);
   };
 
   const handleChange = (
@@ -249,35 +247,29 @@ export default function ExportCell({
         <button className="export-button" onClick={handleClick}>
           <IosShareIcon sx={{ color: "#616161cf" }} />
         </button>
-        <Popover
-          id={id}
+        <Dialog
           open={open}
-          anchorEl={anchorEl}
           onClose={handleClose}
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "left",
-          }}
-          slotProps={{
-            paper: {
-              style: {
-                boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
-                padding: 20,
-                width: 450,
-              },
+          PaperProps={{
+            style: {
+              boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
+              padding: 20,
+              width: 500,
             },
           }}
         >
-          <PopoverContent
-            t={t}
-            exportOptionsState={exportOptionsState}
-            setExportOptionsState={setExportOptionsState}
-            ExportOptionsMap={ExportOptionsMap}
-            periodDates={periodDates}
-            scheduleCampaign={scheduleCampaign}
-            handleConfirmExport={handleConfirmExport}
-          />
-        </Popover>
+          <DialogContent>
+            <PopoverContent
+              t={t}
+              exportOptionsState={exportOptionsState}
+              setExportOptionsState={setExportOptionsState}
+              ExportOptionsMap={ExportOptionsMap}
+              periodDates={periodDates}
+              scheduleCampaign={scheduleCampaign}
+              handleConfirmExport={handleConfirmExport}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     </TableCell>
   );
