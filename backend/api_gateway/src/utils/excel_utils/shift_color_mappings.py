@@ -80,3 +80,10 @@ SHIFT_COLOR_MAPPINGS = {
         "text": "#3e2723",
     },
 }
+
+# Fallback/default colors used when a named mapping isn't found.
+DEFAULT_SHIFT_COLOR = {
+    "background": "#f5f5f5",
+    "sample": "#9e9e9e",
+    "text": "#212121",
+}

@@ -8,7 +8,7 @@ from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.cell.cell import Cell
 from shared.schemas.core import Assignment, Shift, ShiftType, Worker
-from .shift_color_mappings import SHIFT_COLOR_MAPPINGS
+from .shift_color_mappings import SHIFT_COLOR_MAPPINGS, DEFAULT_SHIFT_COLOR
 from pathlib import Path
 import logging
 
@@ -325,16 +325,19 @@ def build_worker_schedule_rows_in_worksheet(
                 # If the shift color is a named mapping (frontend keys),
                 # resolve it to a hex sample color (500) from the mapping.
                 if resolved_color and not resolved_color.startswith("#"):
-                    mapped = SHIFT_COLOR_MAPPINGS.get(resolved_color)
+                    # try direct key then lowercase key
+                    mapped = SHIFT_COLOR_MAPPINGS.get(resolved_color) or (
+                        SHIFT_COLOR_MAPPINGS.get(resolved_color.lower())
+                    )
                     if mapped:
                         resolved_color = mapped.get("sample", "")
                     else:
-                        # try lowercase key (some code uses lowercase names)
-                        mapped = SHIFT_COLOR_MAPPINGS.get(
-                            resolved_color.lower()
+                        # no mapping found: use default sample color and warn
+                        logging.getLogger(__name__).warning(
+                            "Unknown shift color '%s' - using default sample",
+                            resolved_color,
                         )
-                        if mapped:
-                            resolved_color = mapped.get("sample", "")
+                        resolved_color = DEFAULT_SHIFT_COLOR.get("sample", "")
 
                 if resolved_color:
                     color_hex = resolved_color.lstrip("#")
