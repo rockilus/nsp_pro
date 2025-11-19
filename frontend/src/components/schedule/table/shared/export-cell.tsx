@@ -54,6 +54,7 @@ const ExportDialogContent = ({
           aria-label="close"
           onClick={handleClose}
           className="close-button"
+          data-testid="export-dialog-close-button"
           sx={{ marginBottom: "16px" }}
         >
           <CloseIcon className="close-icon" />
@@ -65,6 +66,7 @@ const ExportDialogContent = ({
           color="primary"
           value={exportOptionsState.periodOption}
           exclusive
+          data-testid="export-period-toggle-group"
           onChange={(
             event: React.MouseEvent<HTMLElement>,
             newAlignment: number
@@ -101,6 +103,7 @@ const ExportDialogContent = ({
                 c.value === ExportPeriodOptions.CAMPAIGN && !scheduleCampaign
               }
               value={c.value}
+              data-testid={`export-period-option-${c.value}`}
               sx={{
                 textTransform: "none",
                 height: "25px",
@@ -126,6 +129,11 @@ const ExportDialogContent = ({
                 : dayjs.utc().startOf("day"),
             }));
           }}
+          slotProps={{
+            textField: {
+              inputProps: { "data-testid": "export-start-date-picker" },
+            },
+          }}
           sx={{
             width: "160px",
             "& .MuiOutlinedInput-input": {
@@ -148,6 +156,11 @@ const ExportDialogContent = ({
                 : dayjs.utc().startOf("day"),
             }));
           }}
+          slotProps={{
+            textField: {
+              inputProps: { "data-testid": "export-end-date-picker" },
+            },
+          }}
           sx={{
             width: "160px",
             marginLeft: "10px",
@@ -161,9 +174,9 @@ const ExportDialogContent = ({
       </div>
       <div className="confirm-export-button-container">
         <Button
-          // className="export-to-excel-button"
           onClick={handleConfirmExport}
           variant="contained"
+          data-testid="confirm-export-button"
           sx={{ textTransform: "none" }}
         >
           {t("export_to_excel")}
@@ -261,12 +274,17 @@ export default function ExportCell({
       }}
     >
       <div className="export-cell-container">
-        <button className="export-button" onClick={handleClick}>
+        <button
+          className="export-button"
+          onClick={handleClick}
+          data-testid="export-button"
+        >
           <IosShareIcon sx={{ color: "#616161cf" }} />
         </button>
         <Dialog
           open={open}
           onClose={handleClose}
+          data-testid="export-dialog"
           PaperProps={{
             style: {
               boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
