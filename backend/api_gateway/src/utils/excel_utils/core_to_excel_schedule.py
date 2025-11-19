@@ -11,7 +11,6 @@ from shared.schemas.core import Assignment, Shift, ShiftType, Worker
 from .shift_color_mappings import SHIFT_COLOR_MAPPINGS, DEFAULT_SHIFT_COLOR
 from pathlib import Path
 import logging
-from openpyxl.styles import Color
 from typing import Tuple
 
 
@@ -61,6 +60,13 @@ def core_to_excel_schedule(
         border_bottom_black,
         border_rigth_black_bottom_grey,
         border_bottom_grey,
+    )
+    # Add a legend sheet with shifts and workers tables side-by-side
+    ws_legend = wb.create_sheet(title="legend")
+    build_legend_worksheet(
+        ws_legend,
+        workers,
+        shifts,
     )
     return wb
 
@@ -583,3 +589,130 @@ def build_worker_schedule_rows_in_worksheet(
             ws.column_dimensions[get_column_letter(col_num)].width = 12
 
         row_num += worker_max_assignments[worker.id]
+
+
+def build_legend_worksheet(
+    ws: Worksheet, workers: List[Worker], shifts: List[Shift]
+) -> None:
+    """Build a legend worksheet showing two tables side-by-side.
+
+    Left table: Shifts (Acronym, Name, Start, End) — acronym sorted
+    alphabetically, with background/text color applied and a left
+    border for duty shifts.
+
+    Right table: Workers (Acronym, Name) — acronym sorted
+    alphabetically.
+    """
+    header_font = Font(bold=True)
+    center = Alignment(horizontal="center", vertical="center")
+
+    shifts_sorted = sorted(
+        shifts, key=lambda s: (getattr(s, "acronym", "") or "").upper()
+    )
+    workers_sorted = sorted(
+        workers, key=lambda w: (getattr(w, "acronym", "") or "").upper()
+    )
+
+    # Columns for shifts table: A-D
+    shifts_start_col = 1
+    shifts_cols = {
+        "acronym": shifts_start_col,
+        "name": shifts_start_col + 1,
+        "start": shifts_start_col + 2,
+        "end": shifts_start_col + 3,
+    }
+
+    # Columns for workers table: F-G (leave one column gap)
+    workers_start_col = shifts_start_col + 5
+    workers_cols = {
+        "acronym": workers_start_col,
+        "name": workers_start_col + 1,
+    }
+
+    # Write headers for shifts
+    ws[f"{get_column_letter(shifts_cols['acronym'])}1"].value = "Acronym"
+    ws[f"{get_column_letter(shifts_cols['name'])}1"].value = "Name"
+    ws[f"{get_column_letter(shifts_cols['start'])}1"].value = "Start"
+    ws[f"{get_column_letter(shifts_cols['end'])}1"].value = "End"
+    for c in shifts_cols.values():
+        cell = ws[f"{get_column_letter(c)}1"]
+        cell.font = header_font
+        cell.alignment = center
+
+    # Write headers for workers
+    ws[f"{get_column_letter(workers_cols['acronym'])}1"].value = "Acronym"
+    ws[f"{get_column_letter(workers_cols['name'])}1"].value = "Name"
+    for c in workers_cols.values():
+        cell = ws[f"{get_column_letter(c)}1"]
+        cell.font = header_font
+        cell.alignment = center
+
+    def _fmt_time_val(t):
+        if t is None:
+            return ""
+        if hasattr(t, "strftime"):
+            return t.strftime("%H:%M")
+        if isinstance(t, str):
+            return t[:5]
+        if hasattr(t, "hour"):
+            return f"{t.hour:02d}:{getattr(t, 'minute', 0):02d}"
+        return str(t)
+
+    # Fill shifts rows
+    row = 2
+    for s in shifts_sorted:
+        acr_cell = ws[f"{get_column_letter(shifts_cols['acronym'])}{row}"]
+        name_cell = ws[f"{get_column_letter(shifts_cols['name'])}{row}"]
+        start_cell = ws[f"{get_column_letter(shifts_cols['start'])}{row}"]
+        end_cell = ws[f"{get_column_letter(shifts_cols['end'])}{row}"]
+
+        acr = getattr(s, "acronym", "") or ""
+        name = getattr(s, "name", "") or ""
+        start = getattr(s, "start_time", None) or getattr(s, "startTime", None)
+        end = getattr(s, "end_time", None) or getattr(s, "endTime", None)
+
+        acr_cell.value = acr
+        name_cell.value = name
+        start_cell.value = _fmt_time_val(start)
+        end_cell.value = _fmt_time_val(end)
+
+        acr_cell.alignment = center
+        name_cell.alignment = Alignment(vertical="center")
+        start_cell.alignment = center
+        end_cell.alignment = center
+
+        fill_hex, text_hex, sample_hex = _get_shift_color_values(
+            getattr(s, "color", "")
+        )
+        _apply_fill_and_text(acr_cell, fill_hex, text_hex)
+        _apply_fill_and_text(name_cell, fill_hex, text_hex)
+
+        if getattr(s, "shift_type", None) == ShiftType.DUTY:
+            _apply_duty_border(
+                acr_cell,
+                sample_hex or DEFAULT_SHIFT_COLOR.get("sample", ""),
+                position="left",
+            )
+
+        row += 1
+
+    # Fill workers rows
+    row = 2
+    for w in workers_sorted:
+        acr_cell = ws[f"{get_column_letter(workers_cols['acronym'])}{row}"]
+        name_cell = ws[f"{get_column_letter(workers_cols['name'])}{row}"]
+        acr_cell.value = getattr(w, "acronym", "") or ""
+        name_cell.value = getattr(w, "name", "") or ""
+        acr_cell.alignment = center
+        name_cell.alignment = Alignment(vertical="center")
+        row += 1
+
+    # Adjust column widths
+    ws.column_dimensions[get_column_letter(shifts_cols["acronym"])].width = 12
+    ws.column_dimensions[get_column_letter(shifts_cols["name"])].width = 30
+    ws.column_dimensions[get_column_letter(shifts_cols["start"])].width = 10
+    ws.column_dimensions[get_column_letter(shifts_cols["end"])].width = 10
+    ws.column_dimensions[get_column_letter(workers_cols["acronym"])].width = 12
+    ws.column_dimensions[get_column_letter(workers_cols["name"])].width = 30
+
+    ws.freeze_panes = "A2"
