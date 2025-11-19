@@ -330,7 +330,9 @@ def build_worker_schedule_rows_in_worksheet(
                         resolved_color = mapped.get("sample", "")
                     else:
                         # try lowercase key (some code uses lowercase names)
-                        mapped = SHIFT_COLOR_MAPPINGS.get(resolved_color.lower())
+                        mapped = SHIFT_COLOR_MAPPINGS.get(
+                            resolved_color.lower()
+                        )
                         if mapped:
                             resolved_color = mapped.get("sample", "")
 
