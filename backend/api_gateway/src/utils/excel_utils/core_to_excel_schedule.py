@@ -313,6 +313,7 @@ def build_worker_schedule_rows_in_worksheet(
                 cell_shift_name: Cell = ws[
                     f"{get_column_letter(col_num)}{row_num_date}"
                 ]
+                cell_shift_name.data_type = "s"
                 cell_shift_name.value = shift_id_to_name.get(
                     assignment.shift_id, ""
                 )
@@ -339,7 +340,9 @@ def build_worker_schedule_rows_in_worksheet(
         for col_num in range(
             table_header_start_column, table_header_start_column + len(dates)
         ):
-            cell = ws[f"{get_column_letter(col_num)}{shift_last_row_num}"]
+            cell: Cell = ws[
+                f"{get_column_letter(col_num)}{shift_last_row_num}"
+            ]
             cell.border = border_bottom_grey
             ws.column_dimensions[get_column_letter(col_num)].width = 12
 
