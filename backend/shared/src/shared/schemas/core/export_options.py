@@ -31,9 +31,7 @@ class ExportOptions:
     @classmethod
     def from_dto(cls, dto: ExportOptionsDTO) -> "ExportOptions":
         data_snake = humps.decamelize(dto.model_dump())
-        data_snake["period_option"] = ExportPeriodOptions(
-            data_snake["period_option"]
-        )
+        data_snake["period_option"] = ExportPeriodOptions(data_snake["period_option"])
         data_snake["start_date"] = datetime.fromtimestamp(
             data_snake["start_date"], tz=timezone.utc
         ).date()

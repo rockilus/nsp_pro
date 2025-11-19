@@ -1,17 +1,17 @@
+import logging
 from datetime import date, datetime
-from typing import List
+from pathlib import Path
+from typing import List, Tuple
 
 from openpyxl import Workbook
+from openpyxl.cell.cell import Cell
 from openpyxl.drawing.image import Image
-from openpyxl.styles import Alignment, Border, Font, Side, PatternFill
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
-from openpyxl.cell.cell import Cell
 from shared.schemas.core import Assignment, Shift, ShiftType, Worker
-from .shift_color_mappings import SHIFT_COLOR_MAPPINGS, DEFAULT_SHIFT_COLOR
-from pathlib import Path
-import logging
-from typing import Tuple
+
+from .shift_color_mappings import DEFAULT_SHIFT_COLOR, SHIFT_COLOR_MAPPINGS
 
 
 def core_to_excel_schedule(
@@ -27,9 +27,7 @@ def core_to_excel_schedule(
         raise TypeError("Expected a Worksheet, but got a different type")
     ws_shift_schedule.title = "shift_schedule"
 
-    border_bottom_black = Border(
-        bottom=Side(border_style="thin", color="000000")
-    )
+    border_bottom_black = Border(bottom=Side(border_style="thin", color="000000"))
     border_rigth_black_bottom_grey = Border(
         right=Side(border_style="thin", color="000000"),
         bottom=Side(border_style="thin", color="dddddd"),
@@ -161,13 +159,12 @@ def add_logo_to_worksheet(ws: Worksheet) -> None:
     module_dir = Path(__file__).resolve().parent
     candidates = [module_dir / "rockilus_logo_blue.jpg"]
 
-    # Try to find a frontend/public fallback by walking up until we find a 'frontend' folder
+    # Try to find a frontend/public fallback by walking up until we find a
+    # 'frontend' folder
     p = module_dir
     while p != p.parent:
         if (p / "frontend").exists():
-            candidates.append(
-                p / "frontend" / "public" / "rockilus_logo_blue.jpg"
-            )
+            candidates.append(p / "frontend" / "public" / "rockilus_logo_blue.jpg")
             break
         p = p.parent
 
@@ -180,12 +177,14 @@ def add_logo_to_worksheet(ws: Worksheet) -> None:
                 ws.add_image(img, "A1")
                 return
             except Exception:
-                # If image could not be loaded for any reason, log and continue to next candidate
+                # If image could not be loaded for any reason, log and continue
+                # to next candidate
                 logging.getLogger(__name__).exception(
                     "Failed to load image from %s", candidate
                 )
 
-    # If we reach here, no image was found or loaded — log a warning and continue without a logo
+    # If we reach here, no image was found or loaded — log a warning and
+    # continue without a logo
     logging.getLogger(__name__).warning(
         "rockilus_logo_blue.jpg not found; skipping logo in Excel export"
     )
@@ -259,9 +258,7 @@ def _apply_fill_and_text(cell: Cell, fill_hex: str, text_hex: str) -> None:
             )
 
 
-def _apply_duty_border(
-    cell: Cell, sample_hex: str, position: str = "bottom"
-) -> None:
+def _apply_duty_border(cell: Cell, sample_hex: str, position: str = "bottom") -> None:
     """Apply a medium border on the given `position` ("bottom" or "left")
     using the provided sample color. Accepts RGB or AARRGGBB; converts to
     the format expected by openpyxl Side.color (RGB without alpha).
@@ -307,9 +304,7 @@ def _format_shift_time(shift: Shift) -> str:
     shift ends on the following day.
     """
     # attempt to get start/end attributes with common names
-    start = getattr(shift, "start_time", None) or getattr(
-        shift, "startTime", None
-    )
+    start = getattr(shift, "start_time", None) or getattr(shift, "startTime", None)
     end = getattr(shift, "end_time", None) or getattr(shift, "endTime", None)
 
     def fmt(t):
@@ -361,9 +356,7 @@ def build_dates_header_row_in_worksheet(
     border_bottom_black: Border,
 ) -> None:
     # Create column headers for the dates
-    for col_num, date_value in enumerate(
-        dates, start=table_header_start_column
-    ):
+    for col_num, date_value in enumerate(dates, start=table_header_start_column):
         col_letter = get_column_letter(col_num)
         cell_date: Cell = ws[f"{col_letter}{table_start_row}"]
         cell_date.value = date_value
@@ -404,14 +397,11 @@ def build_shift_schedule_rows_in_worksheet(
     row_num = table_start_row + 1
     # Populate the cells with worker names for each shift and date
     for shift in shifts_table:
-        for col_num, date_value in enumerate(
-            dates, start=table_header_start_column
-        ):
+        for col_num, date_value in enumerate(dates, start=table_header_start_column):
             shift_date_assignments = [
                 assignment
                 for assignment in assignments
-                if assignment.shift_id == shift.id
-                and assignment.date == date_value
+                if assignment.shift_id == shift.id and assignment.date == date_value
             ]
             shift_max_assignments[shift.id] = max(
                 shift_max_assignments[shift.id], len(shift_date_assignments)
@@ -432,9 +422,7 @@ def build_shift_schedule_rows_in_worksheet(
                     wrap_text=True,
                 )
                 # apply shift color/text but do NOT apply the duty bottom border here
-                fill_hex, text_hex, sample_hex = _get_shift_color_values(
-                    shift.color
-                )
+                fill_hex, text_hex, sample_hex = _get_shift_color_values(shift.color)
                 _apply_fill_and_text(cell_worker_name, fill_hex, text_hex)
                 row_num_date += 1
         # Create row header for the shift name
@@ -442,9 +430,7 @@ def build_shift_schedule_rows_in_worksheet(
         cell_shift_name.value = f"{shift.name} ({shift.acronym})"
         cell_shift_name.font = Font(bold=True)
         cell_shift_name.border = border_bottom_grey
-        cell_shift_name.alignment = Alignment(
-            vertical="center", wrap_text=True
-        )
+        cell_shift_name.alignment = Alignment(vertical="center", wrap_text=True)
 
         # Create a time cell in the column immediately to the right
         # of the shift name column. Note: `table_header_start_column`
@@ -486,9 +472,7 @@ def build_shift_schedule_rows_in_worksheet(
         for col_num in range(
             table_header_start_column, table_header_start_column + len(dates)
         ):
-            cell: Cell = ws[
-                f"{get_column_letter(col_num)}{shift_last_row_num}"
-            ]
+            cell: Cell = ws[f"{get_column_letter(col_num)}{shift_last_row_num}"]
             cell.border = border_bottom_grey
             ws.column_dimensions[get_column_letter(col_num)].width = 12
 
@@ -521,14 +505,11 @@ def build_worker_schedule_rows_in_worksheet(
     row_num = table_start_row + 1
     # Populate the cells with worker names for each shift and date
     for worker in workers_table:
-        for col_num, date_value in enumerate(
-            dates, start=table_header_start_column
-        ):
+        for col_num, date_value in enumerate(dates, start=table_header_start_column):
             worker_date_assignments = [
                 assignment
                 for assignment in assignments
-                if assignment.worker_id == worker.id
-                and assignment.date == date_value
+                if assignment.worker_id == worker.id and assignment.date == date_value
             ]
             worker_max_assignments[worker.id] = max(
                 worker_max_assignments[worker.id], len(worker_date_assignments)
@@ -550,12 +531,8 @@ def build_worker_schedule_rows_in_worksheet(
                 # border using the sample color (or fallback).
                 shift_obj = shift_id_to_obj.get(assignment.shift_id)
                 if shift_obj and shift_obj.shift_type == ShiftType.DUTY:
-                    border_color = sample_hex or DEFAULT_SHIFT_COLOR.get(
-                        "sample", ""
-                    )
-                    _apply_duty_border(
-                        cell_shift_name, border_color, position="bottom"
-                    )
+                    border_color = sample_hex or DEFAULT_SHIFT_COLOR.get("sample", "")
+                    _apply_duty_border(cell_shift_name, border_color, position="bottom")
                 cell_shift_name.alignment = Alignment(
                     horizontal="center", vertical="center"
                 )
@@ -582,15 +559,14 @@ def build_worker_schedule_rows_in_worksheet(
         for col_num in range(
             table_header_start_column, table_header_start_column + len(dates)
         ):
-            cell: Cell = ws[
-                f"{get_column_letter(col_num)}{shift_last_row_num}"
-            ]
+            cell: Cell = ws[f"{get_column_letter(col_num)}{shift_last_row_num}"]
             cell.border = border_bottom_grey
             ws.column_dimensions[get_column_letter(col_num)].width = 12
 
         row_num += worker_max_assignments[worker.id]
 
 
+# pylint: disable=too-many-statements
 def build_legend_worksheet(
     ws: Worksheet, workers: List[Worker], shifts: List[Shift]
 ) -> None:
@@ -662,9 +638,7 @@ def build_legend_worksheet(
         end_row=title_row,
         end_column=workers_cols["name"],
     )
-    wcell: Cell = ws[
-        f"{get_column_letter(workers_cols['acronym'])}{title_row}"
-    ]
+    wcell: Cell = ws[f"{get_column_letter(workers_cols['acronym'])}{title_row}"]
     wcell.value = "Workers"
     wcell.font = header_font
     wcell.alignment = center
@@ -677,15 +651,9 @@ def build_legend_worksheet(
     )
 
     # Write headers for shifts (now on header_row)
-    col_acr: Cell = ws[
-        f"{get_column_letter(shifts_cols["acronym"])}{header_row}"
-    ]
-    col_name: Cell = ws[
-        f"{get_column_letter(shifts_cols["name"])}{header_row}"
-    ]
-    col_start: Cell = ws[
-        f"{get_column_letter(shifts_cols["start"])}{header_row}"
-    ]
+    col_acr: Cell = ws[f"{get_column_letter(shifts_cols["acronym"])}{header_row}"]
+    col_name: Cell = ws[f"{get_column_letter(shifts_cols["name"])}{header_row}"]
+    col_start: Cell = ws[f"{get_column_letter(shifts_cols["start"])}{header_row}"]
     col_end: Cell = ws[f"{get_column_letter(shifts_cols["end"])}{header_row}"]
 
     col_acr.value = "Acronym"
@@ -697,12 +665,8 @@ def build_legend_worksheet(
         cell.alignment = center
 
     # Write headers for workers (now on header_row)
-    wcol_acr: Cell = ws[
-        f"{get_column_letter(workers_cols["acronym"])}{header_row}"
-    ]
-    wcol_name: Cell = ws[
-        f"{get_column_letter(workers_cols["name"])}{header_row}"
-    ]
+    wcol_acr: Cell = ws[f"{get_column_letter(workers_cols["acronym"])}{header_row}"]
+    wcol_name: Cell = ws[f"{get_column_letter(workers_cols["name"])}{header_row}"]
     wcol_acr.value = "Acronym"
     wcol_name.value = "Name"
     for cell in (wcol_acr, wcol_name):
@@ -723,13 +687,9 @@ def build_legend_worksheet(
     # Fill shifts rows (data starts on data_start_row)
     row = data_start_row
     for s in shifts_sorted:
-        acr_cell: Cell = ws[
-            f"{get_column_letter(shifts_cols['acronym'])}{row}"
-        ]
+        acr_cell: Cell = ws[f"{get_column_letter(shifts_cols['acronym'])}{row}"]
         name_cell: Cell = ws[f"{get_column_letter(shifts_cols['name'])}{row}"]
-        start_cell: Cell = ws[
-            f"{get_column_letter(shifts_cols['start'])}{row}"
-        ]
+        start_cell: Cell = ws[f"{get_column_letter(shifts_cols['start'])}{row}"]
         end_cell: Cell = ws[f"{get_column_letter(shifts_cols['end'])}{row}"]
 
         acr_cell.value = s.acronym
@@ -779,14 +739,12 @@ def build_legend_worksheet(
     # Fill workers rows (data starts on data_start_row)
     row = data_start_row
     for w in workers_sorted:
-        acr_cell: Cell = ws[
-            f"{get_column_letter(workers_cols['acronym'])}{row}"
-        ]
-        name_cell: Cell = ws[f"{get_column_letter(workers_cols['name'])}{row}"]
-        acr_cell.value = w.acronym
-        name_cell.value = w.name
-        acr_cell.alignment = center
-        name_cell.alignment = Alignment(vertical="center")
+        acr_cell_w: Cell = ws[f"{get_column_letter(workers_cols['acronym'])}{row}"]
+        name_cell_w: Cell = ws[f"{get_column_letter(workers_cols['name'])}{row}"]
+        acr_cell_w.value = w.acronym
+        name_cell_w.value = w.name
+        acr_cell_w.alignment = center
+        name_cell_w.alignment = Alignment(vertical="center")
         row += 1
 
     # Adjust column widths
