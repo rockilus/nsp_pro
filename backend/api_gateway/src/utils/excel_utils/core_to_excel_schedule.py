@@ -11,6 +11,8 @@ from shared.schemas.core import Assignment, Shift, ShiftType, Worker
 from .shift_color_mappings import SHIFT_COLOR_MAPPINGS, DEFAULT_SHIFT_COLOR
 from pathlib import Path
 import logging
+from openpyxl.styles import Color
+from typing import Tuple
 
 
 def core_to_excel_schedule(
@@ -175,6 +177,116 @@ def add_logo_to_worksheet(ws: Worksheet) -> None:
     )
 
 
+def _get_shift_color_values(color: str) -> Tuple[str, str, str]:
+    """Resolve color strings or named mappings into (fill_hex, text_hex, sample_hex).
+
+    Returns empty strings when no valid value could be resolved.
+    """
+    if not color:
+        return "", "", ""
+
+    # Named mapping (try exact then lowercase)
+    if not color.startswith("#"):
+        mapped = SHIFT_COLOR_MAPPINGS.get(color) or SHIFT_COLOR_MAPPINGS.get(
+            color.lower()
+        )
+        if mapped:
+            return (
+                mapped.get("background", ""),
+                mapped.get("text", ""),
+                mapped.get("sample", ""),
+            )
+        # fallback to default sample when unknown named color
+        return (
+            DEFAULT_SHIFT_COLOR.get("background", ""),
+            DEFAULT_SHIFT_COLOR.get("text", ""),
+            DEFAULT_SHIFT_COLOR.get("sample", ""),
+        )
+
+    # color is a hex string provided directly on shift
+    return (color, DEFAULT_SHIFT_COLOR.get("text", ""), color)
+
+
+def _apply_fill_and_text(cell: Cell, fill_hex: str, text_hex: str) -> None:
+    """Apply background fill and text color to a cell, validating hex codes.
+
+    Accepts RGB (#RRGGBB) or AARRGGBB. Invalid values are skipped with a warning.
+    """
+    if fill_hex:
+        color_hex = fill_hex.lstrip("#")
+        try:
+            if len(color_hex) == 6:
+                fill_argb = "FF" + color_hex
+            elif len(color_hex) == 8:
+                fill_argb = color_hex
+            else:
+                raise ValueError("invalid hex length")
+            int(fill_argb, 16)
+            cell.fill = PatternFill(fgColor=fill_argb, fill_type="solid")
+        except (ValueError, TypeError):
+            logging.getLogger(__name__).warning(
+                "Skipping invalid fill color for cell: %s", fill_hex
+            )
+
+    if text_hex:
+        text_hex_stripped = text_hex.lstrip("#")
+        try:
+            if len(text_hex_stripped) == 6:
+                text_argb = "FF" + text_hex_stripped
+            elif len(text_hex_stripped) == 8:
+                text_argb = text_hex_stripped
+            else:
+                raise ValueError("invalid hex length")
+            int(text_argb, 16)
+            cell.font = Font(color=text_argb)
+        except (ValueError, TypeError):
+            logging.getLogger(__name__).warning(
+                "Skipping invalid text color for cell: %s", text_hex
+            )
+
+
+def _apply_duty_border(
+    cell: Cell, sample_hex: str, position: str = "bottom"
+) -> None:
+    """Apply a medium border on the given `position` ("bottom" or "left")
+    using the provided sample color. Accepts RGB or AARRGGBB; converts to
+    the format expected by openpyxl Side.color (RGB without alpha).
+    """
+    if not sample_hex:
+        return
+    border_color = sample_hex.lstrip("#")
+    try:
+        if len(border_color) == 6:
+            border_color_val = border_color
+        elif len(border_color) == 8:
+            border_color_val = border_color[2:]
+        else:
+            raise ValueError("invalid hex length")
+        int(border_color_val, 16)
+        side = Side(border_style="medium", color=border_color_val)
+        # preserve other sides if they already exist on the cell
+        existing = getattr(cell, "border", None)
+        if position == "bottom":
+            new_border = Border(
+                left=getattr(existing, "left", None),
+                right=getattr(existing, "right", None),
+                top=getattr(existing, "top", None),
+                bottom=side,
+            )
+        else:
+            new_border = Border(
+                left=side,
+                right=getattr(existing, "right", None),
+                top=getattr(existing, "top", None),
+                bottom=getattr(existing, "bottom", None),
+            )
+        cell.border = new_border
+    except (ValueError, TypeError):
+        logging.getLogger(__name__).warning(
+            "Skipping duty border for cell: %s", sample_hex
+        )
+
+
 def build_dates_header_row_in_worksheet(
     ws: Worksheet,
     dates: List[date],
@@ -209,8 +321,9 @@ def build_shift_schedule_rows_in_worksheet(
     border_rigth_black_bottom_grey: Border,
     border_bottom_grey: Border,
 ) -> None:
-    # Create a dictionary to map shift IDs to shift names
+    # Create a dictionary to map worker IDs to names and acronyms
     worker_id_to_name = {w.id: w.name for w in workers}
+    worker_id_to_acronym = {w.id: getattr(w, "acronym", "") for w in workers}
     shift_ids_assigned = set(a.shift_id for a in assignments)
     shifts_table = [
         s
@@ -242,21 +355,34 @@ def build_shift_schedule_rows_in_worksheet(
                 cell_worker_name: Cell = ws[
                     f"{get_column_letter(col_num)}{row_num_date}"
                 ]
-                cell_worker_name.value = worker_id_to_name.get(
-                    assignment.worker_id, ""
+                # show worker acronym (fall back to full name)
+                cell_worker_name.value = worker_id_to_acronym.get(
+                    assignment.worker_id,
+                    worker_id_to_name.get(assignment.worker_id, ""),
                 )
                 cell_worker_name.alignment = Alignment(
                     horizontal="center",
                     vertical="center",
                     wrap_text=True,
                 )
+                # apply shift color/text but do NOT apply the duty bottom border here
+                fill_hex, text_hex, sample_hex = _get_shift_color_values(
+                    shift.color
+                )
+                _apply_fill_and_text(cell_worker_name, fill_hex, text_hex)
                 row_num_date += 1
         # Create row header for the shift name
         cell_shift_name: Cell = ws[f"A{row_num}"]
         cell_shift_name.value = shift.name
         cell_shift_name.font = Font(bold=True)
         cell_shift_name.border = border_rigth_black_bottom_grey
-        cell_shift_name.alignment = Alignment(vertical="center")
+        cell_shift_name.alignment = Alignment(
+            vertical="center", wrap_text=True
+        )
+        # If this shift is a duty, add a left border using the shift/sample color
+        if shift.shift_type == ShiftType.DUTY:
+            _, _, sample_hex = _get_shift_color_values(shift.color)
+            _apply_duty_border(cell_shift_name, sample_hex, position="left")
         shift_last_row_num = row_num + shift_max_assignments[shift.id] - 1
         if shift_max_assignments[shift.id] > 1:
             ws.merge_cells(
@@ -323,75 +449,10 @@ def build_worker_schedule_rows_in_worksheet(
                 # Use shift acronym (not full name) in worker schedule cells
                 acronym = shift_id_to_acronym.get(assignment.shift_id, "")
                 cell_shift_name.value = acronym
-                # Set background fill to the shift color if available
+                # Apply shift color/text using shared helper
                 color = shift_id_to_color.get(assignment.shift_id, "")
-                fill_hex = ""
-                text_hex = ""
-                sample_hex = ""
-
-                if color and not color.startswith("#"):
-                    # resolve named mapping (try exact then lowercase)
-                    mapped = SHIFT_COLOR_MAPPINGS.get(color) or (
-                        SHIFT_COLOR_MAPPINGS.get(color.lower())
-                    )
-                    if mapped:
-                        fill_hex = mapped.get("background", "")
-                        text_hex = mapped.get("text", "")
-                        sample_hex = mapped.get("sample", "")
-                    else:
-                        logging.getLogger(__name__).warning(
-                            "Unknown shift color '%s' - using default sample",
-                            color,
-                        )
-                        fill_hex = DEFAULT_SHIFT_COLOR.get("background", "")
-                        text_hex = DEFAULT_SHIFT_COLOR.get("text", "")
-                        sample_hex = DEFAULT_SHIFT_COLOR.get("sample", "")
-                elif color:
-                    # color is a hex string provided directly on shift
-                    fill_hex = color
-                    text_hex = DEFAULT_SHIFT_COLOR.get("text", "")
-                    sample_hex = color
-
-                # Apply fill (background) if we have a value
-                if fill_hex:
-                    color_hex = fill_hex.lstrip("#")
-                    try:
-                        if len(color_hex) == 6:
-                            fill_argb = "FF" + color_hex
-                        elif len(color_hex) == 8:
-                            fill_argb = color_hex
-                        else:
-                            raise ValueError("invalid hex length")
-                        int(fill_argb, 16)
-                        cell_shift_name.fill = PatternFill(
-                            fgColor=fill_argb,
-                            fill_type="solid",
-                        )
-                    except (ValueError, TypeError):
-                        logging.getLogger(__name__).warning(
-                            "Skipping invalid fill color for shift %s: %s",
-                            assignment.shift_id,
-                            fill_hex,
-                        )
-
-                # Apply text color if available
-                if text_hex:
-                    text_hex_stripped = text_hex.lstrip("#")
-                    try:
-                        if len(text_hex_stripped) == 6:
-                            text_argb = "FF" + text_hex_stripped
-                        elif len(text_hex_stripped) == 8:
-                            text_argb = text_hex_stripped
-                        else:
-                            raise ValueError("invalid hex length")
-                        int(text_argb, 16)
-                        cell_shift_name.font = Font(color=text_argb)
-                    except (ValueError, TypeError):
-                        logging.getLogger(__name__).warning(
-                            "Skipping invalid text color for shift %s: %s",
-                            assignment.shift_id,
-                            text_hex,
-                        )
+                fill_hex, text_hex, sample_hex = _get_shift_color_values(color)
+                _apply_fill_and_text(cell_shift_name, fill_hex, text_hex)
                 # If this assignment's shift is DUTY, draw a thick bottom
                 # border using the sample color (or fallback).
                 shift_obj = shift_id_to_obj.get(assignment.shift_id)
@@ -399,28 +460,9 @@ def build_worker_schedule_rows_in_worksheet(
                     border_color = sample_hex or DEFAULT_SHIFT_COLOR.get(
                         "sample", ""
                     )
-                    border_color_stripped = border_color.lstrip("#")
-                    try:
-                        # accept RGB or AARRGGBB
-                        if len(border_color_stripped) == 6:
-                            border_color_val = border_color_stripped
-                        elif len(border_color_stripped) == 8:
-                            # openpyxl Side.color expects RGB hex (no alpha)
-                            border_color_val = border_color_stripped[2:]
-                        else:
-                            raise ValueError("invalid hex length")
-                        int(border_color_val, 16)
-                        bottom_side = Side(
-                            border_style="medium",
-                            color=border_color_val,
-                        )
-                        cell_shift_name.border = Border(bottom=bottom_side)
-                    except (ValueError, TypeError):
-                        logging.getLogger(__name__).warning(
-                            "Skipping duty border for shift %s: %s",
-                            assignment.shift_id,
-                            border_color,
-                        )
+                    _apply_duty_border(
+                        cell_shift_name, border_color, position="bottom"
+                    )
                 cell_shift_name.alignment = Alignment(
                     horizontal="center", vertical="center"
                 )
