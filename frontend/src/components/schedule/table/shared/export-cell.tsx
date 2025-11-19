@@ -4,7 +4,7 @@ import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../../../app/i18n/client";
 // MUI
 import Button from "@mui/material/Button";
-import CancelIcon from "@mui/icons-material/Cancel";
+import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
 import IosShareIcon from "@mui/icons-material/IosShare";
 import Dialog from "@mui/material/Dialog";
@@ -35,6 +35,7 @@ const ExportDialogContent = ({
   periodDates,
   scheduleCampaign,
   handleConfirmExport,
+  handleClose,
 }: {
   t: (key: string) => string;
   exportOptionsState: ExportOptionsT;
@@ -43,10 +44,21 @@ const ExportDialogContent = ({
   periodDates: periodDateT[];
   scheduleCampaign: ScheduleT | null;
   handleConfirmExport: () => void;
+  handleClose: () => void;
 }) => {
   return (
     <div className="popover-content-container">
-      <span className="subtitle">{t("export_to_excel")}</span>
+      <div className="dialog-header">
+        <span className="title">{t("export_to_excel")}</span>
+        <IconButton
+          aria-label="close"
+          onClick={handleClose}
+          className="close-button"
+          sx={{ marginBottom: "16px" }}
+        >
+          <CloseIcon className="close-icon" />
+        </IconButton>
+      </div>
       <div className="period-selector">
         <span className="period-selector-label">{t("period")}:</span>
         <ToggleButtonGroup
@@ -272,6 +284,7 @@ export default function ExportCell({
               periodDates={periodDates}
               scheduleCampaign={scheduleCampaign}
               handleConfirmExport={handleConfirmExport}
+              handleClose={handleClose}
             />
           </DialogContent>
         </Dialog>
