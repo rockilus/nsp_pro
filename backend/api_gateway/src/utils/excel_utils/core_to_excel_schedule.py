@@ -289,6 +289,8 @@ def build_worker_schedule_rows_in_worksheet(
     # Create dictionaries to map shift IDs to acronyms and colors
     shift_id_to_acronym = {s.id: getattr(s, "acronym", "") for s in shifts}
     shift_id_to_color = {s.id: getattr(s, "color", "") for s in shifts}
+    # Map shift id to full Shift object for type checks
+    shift_id_to_obj = {s.id: s for s in shifts}
     worker_ids_assignments = set(a.worker_id for a in assignments)
     workers_table = [w for w in workers if w.id in worker_ids_assignments]
 
@@ -323,6 +325,7 @@ def build_worker_schedule_rows_in_worksheet(
                 color = shift_id_to_color.get(assignment.shift_id, "")
                 fill_hex = ""
                 text_hex = ""
+                sample_hex = ""
 
                 if color and not color.startswith("#"):
                     # resolve named mapping (try exact then lowercase)
@@ -332,6 +335,7 @@ def build_worker_schedule_rows_in_worksheet(
                     if mapped:
                         fill_hex = mapped.get("background", "")
                         text_hex = mapped.get("text", "")
+                        sample_hex = mapped.get("sample", "")
                     else:
                         logging.getLogger(__name__).warning(
                             "Unknown shift color '%s' - using default sample",
@@ -339,10 +343,12 @@ def build_worker_schedule_rows_in_worksheet(
                         )
                         fill_hex = DEFAULT_SHIFT_COLOR.get("background", "")
                         text_hex = DEFAULT_SHIFT_COLOR.get("text", "")
+                        sample_hex = DEFAULT_SHIFT_COLOR.get("sample", "")
                 elif color:
                     # color is a hex string provided directly on shift
                     fill_hex = color
                     text_hex = DEFAULT_SHIFT_COLOR.get("text", "")
+                    sample_hex = color
 
                 # Apply fill (background) if we have a value
                 if fill_hex:
@@ -383,6 +389,35 @@ def build_worker_schedule_rows_in_worksheet(
                             "Skipping invalid text color for shift %s: %s",
                             assignment.shift_id,
                             text_hex,
+                        )
+                # If this assignment's shift is DUTY, draw a thick bottom
+                # border using the sample color (or fallback).
+                shift_obj = shift_id_to_obj.get(assignment.shift_id)
+                if shift_obj and shift_obj.shift_type == ShiftType.DUTY:
+                    border_color = sample_hex or DEFAULT_SHIFT_COLOR.get(
+                        "sample", ""
+                    )
+                    border_color_stripped = border_color.lstrip("#")
+                    try:
+                        # accept RGB or AARRGGBB
+                        if len(border_color_stripped) == 6:
+                            border_color_val = border_color_stripped
+                        elif len(border_color_stripped) == 8:
+                            # openpyxl Side.color expects RGB hex (no alpha)
+                            border_color_val = border_color_stripped[2:]
+                        else:
+                            raise ValueError("invalid hex length")
+                        int(border_color_val, 16)
+                        bottom_side = Side(
+                            border_style="thick",
+                            color=border_color_val,
+                        )
+                        cell_shift_name.border = Border(bottom=bottom_side)
+                    except (ValueError, TypeError):
+                        logging.getLogger(__name__).warning(
+                            "Skipping duty border for shift %s: %s",
+                            assignment.shift_id,
+                            border_color,
                         )
                 cell_shift_name.alignment = Alignment(
                     horizontal="center", vertical="center"
