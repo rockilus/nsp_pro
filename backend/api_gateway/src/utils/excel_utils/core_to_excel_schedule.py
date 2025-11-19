@@ -373,7 +373,7 @@ def build_shift_schedule_rows_in_worksheet(
                 row_num_date += 1
         # Create row header for the shift name
         cell_shift_name: Cell = ws[f"A{row_num}"]
-        cell_shift_name.value = shift.name
+        cell_shift_name.value = f"{shift.name} ({shift.acronym})"
         cell_shift_name.font = Font(bold=True)
         cell_shift_name.border = border_rigth_black_bottom_grey
         cell_shift_name.alignment = Alignment(
