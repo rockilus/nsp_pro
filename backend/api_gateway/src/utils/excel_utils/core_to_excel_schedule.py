@@ -90,15 +90,6 @@ def build_shift_schedule_worksheet(
         border_bottom_black,
     )
 
-    # Add a Time header in the column between the shift name and dates
-    time_col_letter = get_column_letter(table_header_start_column)
-    cell_time_header: Cell = ws[f"{time_col_letter}{table_start_row}"]
-    cell_time_header.value = "Time"
-    cell_time_header.font = Font(bold=True)
-    cell_time_header.border = border_bottom_black
-    cell_time_header.alignment = Alignment(horizontal="center")
-    # Make the time column a bit wider
-    ws.column_dimensions[time_col_letter].width = 14
     # pass table_header_start_column + 1 so the rows builder knows
     # that the first date column is one column to the right (B is time)
     build_shift_schedule_rows_in_worksheet(
@@ -113,6 +104,7 @@ def build_shift_schedule_worksheet(
         border_bottom_grey,
     )
     ws.column_dimensions["A"].width = 17
+    ws.column_dimensions["B"].width = 14
     # Freeze the first 3 rows and the first column
     ws.freeze_panes = "B4"
     # Hide gridlines
@@ -442,7 +434,7 @@ def build_shift_schedule_rows_in_worksheet(
         cell_shift_name: Cell = ws[f"A{row_num}"]
         cell_shift_name.value = f"{shift.name} ({shift.acronym})"
         cell_shift_name.font = Font(bold=True)
-        cell_shift_name.border = border_rigth_black_bottom_grey
+        cell_shift_name.border = border_bottom_grey
         cell_shift_name.alignment = Alignment(
             vertical="center", wrap_text=True
         )
@@ -465,7 +457,6 @@ def build_shift_schedule_rows_in_worksheet(
         if shift.shift_type == ShiftType.DUTY:
             _, _, sample_hex = _get_shift_color_values(shift.color)
             _apply_duty_border(cell_shift_name, sample_hex, position="left")
-            _apply_duty_border(cell_time, sample_hex, position="left")
 
         shift_last_row_num = row_num + shift_max_assignments[shift.id] - 1
         if shift_max_assignments[shift.id] > 1:
@@ -487,13 +478,11 @@ def build_shift_schedule_rows_in_worksheet(
         for col_num in range(
             table_header_start_column, table_header_start_column + len(dates)
         ):
-            cell = ws[f"{get_column_letter(col_num)}{shift_last_row_num}"]
+            cell: Cell = ws[
+                f"{get_column_letter(col_num)}{shift_last_row_num}"
+            ]
             cell.border = border_bottom_grey
             ws.column_dimensions[get_column_letter(col_num)].width = 12
-
-        # Ensure the time column also gets the bottom border on the last row
-        time_bottom_cell: Cell = ws[f"{time_col_letter}{shift_last_row_num}"]
-        time_bottom_cell.border = border_bottom_grey
 
         row_num += shift_max_assignments[shift.id]
 
