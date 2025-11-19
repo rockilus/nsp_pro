@@ -7,6 +7,8 @@ from openpyxl.styles import Alignment, Border, Font, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
 from shared.schemas.core import Assignment, Shift, ShiftType, Worker
+from pathlib import Path
+import logging
 
 
 def core_to_excel_schedule(
@@ -22,7 +24,9 @@ def core_to_excel_schedule(
         raise TypeError("Expected a Worksheet, but got a different type")
     ws_shift_schedule.title = "shift_schedule"
 
-    border_bottom_black = Border(bottom=Side(border_style="thin", color="000000"))
+    border_bottom_black = Border(
+        bottom=Side(border_style="thin", color="000000")
+    )
     border_rigth_black_bottom_grey = Border(
         right=Side(border_style="thin", color="000000"),
         bottom=Side(border_style="thin", color="dddddd"),
@@ -136,10 +140,37 @@ def build_worker_schedule_worksheet(
 
 
 def add_logo_to_worksheet(ws: Worksheet) -> None:
-    img = Image("./backend/src/core_to_excel_service/rockilus_logo_blue.jpg")
-    img.width = 150
-    img.height = 20
-    ws.add_image(img, "A1")
+    module_dir = Path(__file__).resolve().parent
+    candidates = [module_dir / "rockilus_logo_blue.jpg"]
+
+    # Try to find a frontend/public fallback by walking up until we find a 'frontend' folder
+    p = module_dir
+    while p != p.parent:
+        if (p / "frontend").exists():
+            candidates.append(
+                p / "frontend" / "public" / "rockilus_logo_blue.jpg"
+            )
+            break
+        p = p.parent
+
+    for candidate in candidates:
+        if candidate.exists():
+            try:
+                img = Image(str(candidate))
+                img.width = 150
+                img.height = 20
+                ws.add_image(img, "A1")
+                return
+            except Exception:
+                # If image could not be loaded for any reason, log and continue to next candidate
+                logging.getLogger(__name__).exception(
+                    "Failed to load image from %s", candidate
+                )
+
+    # If we reach here, no image was found or loaded — log a warning and continue without a logo
+    logging.getLogger(__name__).warning(
+        "rockilus_logo_blue.jpg not found; skipping logo in Excel export"
+    )
 
 
 def build_dates_header_row_in_worksheet(
@@ -150,7 +181,9 @@ def build_dates_header_row_in_worksheet(
     border_bottom_black: Border,
 ) -> None:
     # Create column headers for the dates
-    for col_num, date_value in enumerate(dates, start=table_header_start_column):
+    for col_num, date_value in enumerate(
+        dates, start=table_header_start_column
+    ):
         col_letter = get_column_letter(col_num)
         cell_date = ws[f"{col_letter}{table_start_row}"]
         cell_date.value = date_value.strftime("%d/%m/%Y")
@@ -187,19 +220,26 @@ def build_shift_schedule_rows_in_worksheet(
     row_num = table_start_row + 1
     # Populate the cells with worker names for each shift and date
     for shift in shifts_table:
-        for col_num, date_value in enumerate(dates, start=table_header_start_column):
+        for col_num, date_value in enumerate(
+            dates, start=table_header_start_column
+        ):
             shift_date_assignments = [
                 assignment
                 for assignment in assignments
-                if assignment.shift_id == shift.id and assignment.date == date_value
+                if assignment.shift_id == shift.id
+                and assignment.date == date_value
             ]
             shift_max_assignments[shift.id] = max(
                 shift_max_assignments[shift.id], len(shift_date_assignments)
             )
             row_num_date = row_num
             for assignment in shift_date_assignments:
-                cell_worker_name = ws[f"{get_column_letter(col_num)}{row_num_date}"]
-                cell_worker_name.value = worker_id_to_name.get(assignment.worker_id, "")
+                cell_worker_name = ws[
+                    f"{get_column_letter(col_num)}{row_num_date}"
+                ]
+                cell_worker_name.value = worker_id_to_name.get(
+                    assignment.worker_id, ""
+                )
                 cell_worker_name.alignment = Alignment(
                     horizontal="center", vertical="center"
                 )
@@ -252,19 +292,26 @@ def build_worker_schedule_rows_in_worksheet(
     row_num = table_start_row + 1
     # Populate the cells with worker names for each shift and date
     for worker in workers_table:
-        for col_num, date_value in enumerate(dates, start=table_header_start_column):
+        for col_num, date_value in enumerate(
+            dates, start=table_header_start_column
+        ):
             worker_date_assignments = [
                 assignment
                 for assignment in assignments
-                if assignment.worker_id == worker.id and assignment.date == date_value
+                if assignment.worker_id == worker.id
+                and assignment.date == date_value
             ]
             worker_max_assignments[worker.id] = max(
                 worker_max_assignments[worker.id], len(worker_date_assignments)
             )
             row_num_date = row_num
             for assignment in worker_date_assignments:
-                cell_shift_name = ws[f"{get_column_letter(col_num)}{row_num_date}"]
-                cell_shift_name.value = shift_id_to_name.get(assignment.shift_id, "")
+                cell_shift_name = ws[
+                    f"{get_column_letter(col_num)}{row_num_date}"
+                ]
+                cell_shift_name.value = shift_id_to_name.get(
+                    assignment.shift_id, ""
+                )
                 cell_shift_name.alignment = Alignment(
                     horizontal="center", vertical="center"
                 )
