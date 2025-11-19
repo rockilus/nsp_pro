@@ -6,6 +6,7 @@ from openpyxl.drawing.image import Image
 from openpyxl.styles import Alignment, Border, Font, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
+from openpyxl.cell.cell import Cell
 from shared.schemas.core import Assignment, Shift, ShiftType, Worker
 from pathlib import Path
 import logging
@@ -185,8 +186,11 @@ def build_dates_header_row_in_worksheet(
         dates, start=table_header_start_column
     ):
         col_letter = get_column_letter(col_num)
-        cell_date = ws[f"{col_letter}{table_start_row}"]
-        cell_date.value = date_value.strftime("%d/%m/%Y")
+        cell_date: Cell = ws[f"{col_letter}{table_start_row}"]
+        cell_date.value = date_value
+        cell_date.data_type = "d"
+        # cell_date.number_format = 'dd/mm/yyyy'
+        # cell_date.value = date_value.strftime("%d/%m/%Y")
         cell_date.font = Font(bold=True)
         cell_date.border = border_bottom_black
         cell_date.alignment = Alignment(horizontal="center")
@@ -306,7 +310,7 @@ def build_worker_schedule_rows_in_worksheet(
             )
             row_num_date = row_num
             for assignment in worker_date_assignments:
-                cell_shift_name = ws[
+                cell_shift_name: Cell = ws[
                     f"{get_column_letter(col_num)}{row_num_date}"
                 ]
                 cell_shift_name.value = shift_id_to_name.get(
@@ -317,11 +321,11 @@ def build_worker_schedule_rows_in_worksheet(
                 )
                 row_num_date += 1
         # Create row header for the shift name
-        cell_shift_name = ws[f"A{row_num}"]
-        cell_shift_name.value = worker.name
-        cell_shift_name.font = Font(bold=True)
-        cell_shift_name.border = border_rigth_black_bottom_grey
-        cell_shift_name.alignment = Alignment(vertical="center")
+        cell_worker_name: Cell = ws[f"A{row_num}"]
+        cell_worker_name.value = worker.name
+        cell_worker_name.font = Font(bold=True)
+        cell_worker_name.border = border_rigth_black_bottom_grey
+        cell_worker_name.alignment = Alignment(vertical="center")
         shift_last_row_num = row_num + worker_max_assignments[worker.id] - 1
         if worker_max_assignments[worker.id] > 1:
             ws.merge_cells(
