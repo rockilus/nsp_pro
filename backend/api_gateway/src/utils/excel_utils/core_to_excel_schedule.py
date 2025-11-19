@@ -246,7 +246,9 @@ def build_shift_schedule_rows_in_worksheet(
                     assignment.worker_id, ""
                 )
                 cell_worker_name.alignment = Alignment(
-                    horizontal="center", vertical="center"
+                    horizontal="center",
+                    vertical="center",
+                    wrap_text=True,
                 )
                 row_num_date += 1
         # Create row header for the shift name
@@ -429,7 +431,10 @@ def build_worker_schedule_rows_in_worksheet(
         cell_worker_name.value = f"{worker.name} ({worker.acronym})"
         cell_worker_name.font = Font(bold=True)
         cell_worker_name.border = border_rigth_black_bottom_grey
-        cell_worker_name.alignment = Alignment(vertical="center")
+        cell_worker_name.alignment = Alignment(
+            vertical="center",
+            wrap_text=True,
+        )
         shift_last_row_num = row_num + worker_max_assignments[worker.id] - 1
         if worker_max_assignments[worker.id] > 1:
             ws.merge_cells(
