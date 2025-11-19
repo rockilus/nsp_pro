@@ -321,47 +321,68 @@ def build_worker_schedule_rows_in_worksheet(
                 cell_shift_name.value = acronym
                 # Set background fill to the shift color if available
                 color = shift_id_to_color.get(assignment.shift_id, "")
-                resolved_color = color or ""
-                # If the shift color is a named mapping (frontend keys),
-                # resolve it to a hex sample color (500) from the mapping.
-                if resolved_color and not resolved_color.startswith("#"):
-                    # try direct key then lowercase key
-                    mapped = SHIFT_COLOR_MAPPINGS.get(resolved_color) or (
-                        SHIFT_COLOR_MAPPINGS.get(resolved_color.lower())
+                fill_hex = ""
+                text_hex = ""
+
+                if color and not color.startswith("#"):
+                    # resolve named mapping (try exact then lowercase)
+                    mapped = SHIFT_COLOR_MAPPINGS.get(color) or (
+                        SHIFT_COLOR_MAPPINGS.get(color.lower())
                     )
                     if mapped:
-                        resolved_color = mapped.get("sample", "")
+                        fill_hex = mapped.get("background", "")
+                        text_hex = mapped.get("text", "")
                     else:
-                        # no mapping found: use default sample color and warn
                         logging.getLogger(__name__).warning(
                             "Unknown shift color '%s' - using default sample",
-                            resolved_color,
+                            color,
                         )
-                        resolved_color = DEFAULT_SHIFT_COLOR.get("sample", "")
+                        fill_hex = DEFAULT_SHIFT_COLOR.get("background", "")
+                        text_hex = DEFAULT_SHIFT_COLOR.get("text", "")
+                elif color:
+                    # color is a hex string provided directly on shift
+                    fill_hex = color
+                    text_hex = DEFAULT_SHIFT_COLOR.get("text", "")
 
-                if resolved_color:
-                    color_hex = resolved_color.lstrip("#")
-                    # Accept only RGB (6 hex) or AARRGGBB (8 hex).
-                    # Convert RGB -> ARGB by prepending opaque alpha.
+                # Apply fill (background) if we have a value
+                if fill_hex:
+                    color_hex = fill_hex.lstrip("#")
                     try:
                         if len(color_hex) == 6:
-                            color_argb = "FF" + color_hex
+                            fill_argb = "FF" + color_hex
                         elif len(color_hex) == 8:
-                            color_argb = color_hex
+                            fill_argb = color_hex
                         else:
                             raise ValueError("invalid hex length")
-                        # validate hex characters
-                        int(color_argb, 16)
-                        # Apply solid fill using fgColor (ARGB hex)
+                        int(fill_argb, 16)
                         cell_shift_name.fill = PatternFill(
-                            fgColor=color_argb,
+                            fgColor=fill_argb,
                             fill_type="solid",
                         )
                     except (ValueError, TypeError):
                         logging.getLogger(__name__).warning(
-                            "Skipping invalid color for shift %s: %s",
+                            "Skipping invalid fill color for shift %s: %s",
                             assignment.shift_id,
-                            resolved_color,
+                            fill_hex,
+                        )
+
+                # Apply text color if available
+                if text_hex:
+                    text_hex_stripped = text_hex.lstrip("#")
+                    try:
+                        if len(text_hex_stripped) == 6:
+                            text_argb = "FF" + text_hex_stripped
+                        elif len(text_hex_stripped) == 8:
+                            text_argb = text_hex_stripped
+                        else:
+                            raise ValueError("invalid hex length")
+                        int(text_argb, 16)
+                        cell_shift_name.font = Font(color=text_argb)
+                    except (ValueError, TypeError):
+                        logging.getLogger(__name__).warning(
+                            "Skipping invalid text color for shift %s: %s",
+                            assignment.shift_id,
+                            text_hex,
                         )
                 cell_shift_name.alignment = Alignment(
                     horizontal="center", vertical="center"
