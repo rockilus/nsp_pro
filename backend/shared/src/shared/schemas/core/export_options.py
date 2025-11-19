@@ -1,5 +1,5 @@
 from dataclasses import asdict, dataclass
-from datetime import date
+from datetime import date, datetime, timezone
 from enum import Enum
 
 import humps
@@ -31,5 +31,13 @@ class ExportOptions:
     @classmethod
     def from_dto(cls, dto: ExportOptionsDTO) -> "ExportOptions":
         data_snake = humps.decamelize(dto.model_dump())
-        data_snake["period_option"] = ExportPeriodOptions(data_snake["period_option"])
+        data_snake["period_option"] = ExportPeriodOptions(
+            data_snake["period_option"]
+        )
+        data_snake["start_date"] = datetime.fromtimestamp(
+            data_snake["start_date"], tz=timezone.utc
+        ).date()
+        data_snake["end_date"] = datetime.fromtimestamp(
+            data_snake["end_date"], tz=timezone.utc
+        ).date()
         return cls(**data_snake)
