@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import List
 
 from openpyxl import Workbook
@@ -629,25 +629,75 @@ def build_legend_worksheet(
         "name": workers_start_col + 1,
     }
 
-    # Write headers for shifts
-    ws[f"{get_column_letter(shifts_cols['acronym'])}1"].value = "Acronym"
-    ws[f"{get_column_letter(shifts_cols['name'])}1"].value = "Name"
-    ws[f"{get_column_letter(shifts_cols['start'])}1"].value = "Start"
-    ws[f"{get_column_letter(shifts_cols['end'])}1"].value = "End"
-    for c in shifts_cols.values():
-        cell = ws[f"{get_column_letter(c)}1"]
+    # Create a title row above the column headers and style it
+    title_row = 1
+    header_row = 2
+    data_start_row = 3
+
+    title_fill = PatternFill(fgColor="FFEEEEEE", fill_type="solid")
+
+    # Merge and write the "Shifts" title across the shifts table columns
+    ws.merge_cells(
+        start_row=title_row,
+        start_column=shifts_cols["acronym"],
+        end_row=title_row,
+        end_column=shifts_cols["end"],
+    )
+    tcell: Cell = ws[f"{get_column_letter(shifts_cols['acronym'])}{title_row}"]
+    tcell.value = "Shifts"
+    tcell.font = header_font
+    tcell.alignment = center
+    tcell.fill = title_fill
+
+    # Merge and write the "Workers" title across the workers table columns
+    ws.merge_cells(
+        start_row=title_row,
+        start_column=workers_cols["acronym"],
+        end_row=title_row,
+        end_column=workers_cols["name"],
+    )
+    wcell: Cell = ws[
+        f"{get_column_letter(workers_cols['acronym'])}{title_row}"
+    ]
+    wcell.value = "Workers"
+    wcell.font = header_font
+    wcell.alignment = center
+    wcell.fill = title_fill
+
+    # Write headers for shifts (now on header_row)
+    col_acr: Cell = ws[
+        f"{get_column_letter(shifts_cols["acronym"])}{header_row}"
+    ]
+    col_name: Cell = ws[
+        f"{get_column_letter(shifts_cols["name"])}{header_row}"
+    ]
+    col_start: Cell = ws[
+        f"{get_column_letter(shifts_cols["start"])}{header_row}"
+    ]
+    col_end: Cell = ws[f"{get_column_letter(shifts_cols["end"])}{header_row}"]
+
+    col_acr.value = "Acronym"
+    col_name.value = "Name"
+    col_start.value = "Start"
+    col_end.value = "End"
+    for cell in (col_acr, col_name, col_start, col_end):
         cell.font = header_font
         cell.alignment = center
 
-    # Write headers for workers
-    ws[f"{get_column_letter(workers_cols['acronym'])}1"].value = "Acronym"
-    ws[f"{get_column_letter(workers_cols['name'])}1"].value = "Name"
-    for c in workers_cols.values():
-        cell = ws[f"{get_column_letter(c)}1"]
+    # Write headers for workers (now on header_row)
+    wcol_acr: Cell = ws[
+        f"{get_column_letter(workers_cols["acronym"])}{header_row}"
+    ]
+    wcol_name: Cell = ws[
+        f"{get_column_letter(workers_cols["name"])}{header_row}"
+    ]
+    wcol_acr.value = "Acronym"
+    wcol_name.value = "Name"
+    for cell in (wcol_acr, wcol_name):
         cell.font = header_font
         cell.alignment = center
 
-    def _fmt_time_val(t):
+    def _fmt_time_val(t: datetime) -> str:
         if t is None:
             return ""
         if hasattr(t, "strftime"):
@@ -658,36 +708,33 @@ def build_legend_worksheet(
             return f"{t.hour:02d}:{getattr(t, 'minute', 0):02d}"
         return str(t)
 
-    # Fill shifts rows
-    row = 2
+    # Fill shifts rows (data starts on data_start_row)
+    row = data_start_row
     for s in shifts_sorted:
-        acr_cell = ws[f"{get_column_letter(shifts_cols['acronym'])}{row}"]
-        name_cell = ws[f"{get_column_letter(shifts_cols['name'])}{row}"]
-        start_cell = ws[f"{get_column_letter(shifts_cols['start'])}{row}"]
-        end_cell = ws[f"{get_column_letter(shifts_cols['end'])}{row}"]
+        acr_cell: Cell = ws[
+            f"{get_column_letter(shifts_cols['acronym'])}{row}"
+        ]
+        name_cell: Cell = ws[f"{get_column_letter(shifts_cols['name'])}{row}"]
+        start_cell: Cell = ws[
+            f"{get_column_letter(shifts_cols['start'])}{row}"
+        ]
+        end_cell: Cell = ws[f"{get_column_letter(shifts_cols['end'])}{row}"]
 
-        acr = getattr(s, "acronym", "") or ""
-        name = getattr(s, "name", "") or ""
-        start = getattr(s, "start_time", None) or getattr(s, "startTime", None)
-        end = getattr(s, "end_time", None) or getattr(s, "endTime", None)
-
-        acr_cell.value = acr
-        name_cell.value = name
-        start_cell.value = _fmt_time_val(start)
-        end_cell.value = _fmt_time_val(end)
+        acr_cell.value = s.acronym
+        name_cell.value = s.name
+        start_cell.value = _fmt_time_val(s.start_time)
+        end_cell.value = _fmt_time_val(s.end_time)
 
         acr_cell.alignment = center
         name_cell.alignment = Alignment(vertical="center")
         start_cell.alignment = center
         end_cell.alignment = center
 
-        fill_hex, text_hex, sample_hex = _get_shift_color_values(
-            getattr(s, "color", "")
-        )
+        fill_hex, text_hex, sample_hex = _get_shift_color_values(s.color)
         _apply_fill_and_text(acr_cell, fill_hex, text_hex)
         _apply_fill_and_text(name_cell, fill_hex, text_hex)
 
-        if getattr(s, "shift_type", None) == ShiftType.DUTY:
+        if s.shift_type == ShiftType.DUTY:
             _apply_duty_border(
                 acr_cell,
                 sample_hex or DEFAULT_SHIFT_COLOR.get("sample", ""),
@@ -696,16 +743,26 @@ def build_legend_worksheet(
 
         row += 1
 
-    # Fill workers rows
-    row = 2
+    # Fill workers rows (data starts on data_start_row)
+    row = data_start_row
     for w in workers_sorted:
-        acr_cell = ws[f"{get_column_letter(workers_cols['acronym'])}{row}"]
-        name_cell = ws[f"{get_column_letter(workers_cols['name'])}{row}"]
-        acr_cell.value = getattr(w, "acronym", "") or ""
-        name_cell.value = getattr(w, "name", "") or ""
+        acr_cell: Cell = ws[
+            f"{get_column_letter(workers_cols['acronym'])}{row}"
+        ]
+        name_cell: Cell = ws[f"{get_column_letter(workers_cols['name'])}{row}"]
+        acr_cell.value = w.acronym
+        name_cell.value = w.name
         acr_cell.alignment = center
         name_cell.alignment = Alignment(vertical="center")
         row += 1
+
+    # Remove horizontal borders in the separating/gap column so tables
+    # appear visually separated. The gap column is the column between
+    # the shifts and workers tables.
+    # gap_col_idx = shifts_start_col + 4
+    # for r in range(1, row):
+    #     gap_cell: Cell = ws[f"{get_column_letter(gap_col_idx)}{r}"]
+    #     gap_cell.border = Border(top=None, bottom=None)
 
     # Adjust column widths
     ws.column_dimensions[get_column_letter(shifts_cols["acronym"])].width = 12
@@ -714,5 +771,4 @@ def build_legend_worksheet(
     ws.column_dimensions[get_column_letter(shifts_cols["end"])].width = 10
     ws.column_dimensions[get_column_letter(workers_cols["acronym"])].width = 12
     ws.column_dimensions[get_column_letter(workers_cols["name"])].width = 30
-
-    ws.freeze_panes = "A2"
+    ws.freeze_panes = "A3"
