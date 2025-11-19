@@ -104,7 +104,8 @@ def build_shift_schedule_worksheet(
         border_bottom_grey,
     )
     ws.column_dimensions["A"].width = 17
-    ws.column_dimensions["B"].width = 14
+    # Make the time column approximately 66 points wide
+    ws.column_dimensions["B"].width = 11
     # Freeze the first 3 rows and the first column
     ws.freeze_panes = "B4"
     # Hide gridlines
@@ -453,7 +454,6 @@ def build_shift_schedule_rows_in_worksheet(
         # Style: italic, smaller font and dark grey text
         cell_time.font = Font(italic=True, size=10, color="FF424242")
         cell_time.border = border_rigth_black_bottom_grey
-        ws.column_dimensions[time_col_letter].width = 14
 
         # If this shift is a duty, add a left border using the shift/sample color
         if shift.shift_type == ShiftType.DUTY:
