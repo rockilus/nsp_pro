@@ -76,6 +76,20 @@ export class ExportTestBase {
     });
 
     console.log(`✅ Created test workers and shifts`);
+
+    // Create a campaign schedule to make the export button visible
+    const today = new Date();
+    const campaignStartDate = new Date(today);
+    campaignStartDate.setDate(today.getDate() - 7);
+    const campaignEndDate = new Date(today);
+    campaignEndDate.setDate(today.getDate() + 7);
+
+    await this.createCampaignSchedule(
+      campaignStartDate.toISOString().split("T")[0],
+      campaignEndDate.toISOString().split("T")[0]
+    );
+
+    console.log(`✅ Created campaign schedule for export testing`);
   }
 
   /**
