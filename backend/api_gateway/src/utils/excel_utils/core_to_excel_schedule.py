@@ -648,6 +648,12 @@ def build_legend_worksheet(
     tcell.font = header_font
     tcell.alignment = center
     tcell.fill = title_fill
+    tcell.border = Border(
+        left=Side(border_style="thin", color="aaaaaa"),
+        right=Side(border_style="thin", color="aaaaaa"),
+        top=Side(border_style="thin", color="aaaaaa"),
+        bottom=Side(border_style="thin", color="aaaaaa"),
+    )
 
     # Merge and write the "Workers" title across the workers table columns
     ws.merge_cells(
@@ -663,6 +669,12 @@ def build_legend_worksheet(
     wcell.font = header_font
     wcell.alignment = center
     wcell.fill = title_fill
+    wcell.border = Border(
+        left=Side(border_style="thin", color="aaaaaa"),
+        right=Side(border_style="thin", color="aaaaaa"),
+        top=Side(border_style="thin", color="aaaaaa"),
+        bottom=Side(border_style="thin", color="aaaaaa"),
+    )
 
     # Write headers for shifts (now on header_row)
     col_acr: Cell = ws[
@@ -755,14 +767,6 @@ def build_legend_worksheet(
         acr_cell.alignment = center
         name_cell.alignment = Alignment(vertical="center")
         row += 1
-
-    # Remove horizontal borders in the separating/gap column so tables
-    # appear visually separated. The gap column is the column between
-    # the shifts and workers tables.
-    # gap_col_idx = shifts_start_col + 4
-    # for r in range(1, row):
-    #     gap_cell: Cell = ws[f"{get_column_letter(gap_col_idx)}{r}"]
-    #     gap_cell.border = Border(top=None, bottom=None)
 
     # Adjust column widths
     ws.column_dimensions[get_column_letter(shifts_cols["acronym"])].width = 12
