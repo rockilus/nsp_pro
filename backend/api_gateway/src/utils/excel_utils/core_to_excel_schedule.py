@@ -735,7 +735,28 @@ def build_legend_worksheet(
         acr_cell.value = s.acronym
         name_cell.value = s.name
         start_cell.value = _fmt_time_val(s.start_time)
-        end_cell.value = _fmt_time_val(s.end_time)
+        # Determine if the shift ends on the following day and append superscript +1
+        end_val = _fmt_time_val(s.end_time)
+
+        def _to_minutes_local(t):
+            if t is None:
+                return None
+            if hasattr(t, "hour"):
+                return t.hour * 60 + getattr(t, "minute", 0)
+            if isinstance(t, str) and ":" in t:
+                parts = t.split(":")
+                try:
+                    return int(parts[0]) * 60 + int(parts[1][:2])
+                except Exception:
+                    return None
+            return None
+
+        s_min_l = _to_minutes_local(s.start_time)
+        e_min_l = _to_minutes_local(s.end_time)
+        if s_min_l is not None and e_min_l is not None and e_min_l <= s_min_l:
+            end_val = f"{end_val}⁺¹"
+
+        end_cell.value = end_val
 
         acr_cell.alignment = center
         name_cell.alignment = Alignment(vertical="center")
