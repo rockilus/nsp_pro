@@ -79,13 +79,28 @@ def build_shift_schedule_worksheet(
     table_start_row = 3
     table_header_start_column = 2
     add_logo_to_worksheet(ws)
+    # For the shift schedule we insert a time column between the
+    # shift name (col A) and the date columns. So shift the dates
+    # header one column to the right and add a 'Time' header in B.
     build_dates_header_row_in_worksheet(
         ws,
         dates,
-        table_header_start_column,
+        table_header_start_column + 1,
         table_start_row,
         border_bottom_black,
     )
+
+    # Add a Time header in the column between the shift name and dates
+    time_col_letter = get_column_letter(table_header_start_column)
+    cell_time_header: Cell = ws[f"{time_col_letter}{table_start_row}"]
+    cell_time_header.value = "Time"
+    cell_time_header.font = Font(bold=True)
+    cell_time_header.border = border_bottom_black
+    cell_time_header.alignment = Alignment(horizontal="center")
+    # Make the time column a bit wider
+    ws.column_dimensions[time_col_letter].width = 14
+    # pass table_header_start_column + 1 so the rows builder knows
+    # that the first date column is one column to the right (B is time)
     build_shift_schedule_rows_in_worksheet(
         ws,
         workers,
@@ -93,7 +108,7 @@ def build_shift_schedule_worksheet(
         assignments,
         dates,
         table_start_row,
-        table_header_start_column,
+        table_header_start_column + 1,
         border_rigth_black_bottom_grey,
         border_bottom_grey,
     )
@@ -287,6 +302,58 @@ def _apply_duty_border(
         )
 
 
+def _format_shift_time(shift: Shift) -> str:
+    """Return a formatted time range like 'HH:MM - HH:MM' and append
+    a superscript '+1' (using Unicode superscript characters) if the
+    shift ends on the following day.
+    """
+    # attempt to get start/end attributes with common names
+    start = getattr(shift, "start_time", None) or getattr(
+        shift, "startTime", None
+    )
+    end = getattr(shift, "end_time", None) or getattr(shift, "endTime", None)
+
+    def fmt(t):
+        if t is None:
+            return ""
+        if hasattr(t, "strftime"):
+            return t.strftime("%H:%M")
+        if isinstance(t, str):
+            return t[:5]
+        if hasattr(t, "hour"):
+            return f"{t.hour:02d}:{getattr(t, 'minute', 0):02d}"
+        return str(t)
+
+    s_str = fmt(start)
+    e_str = fmt(end)
+
+    def to_minutes(t):
+        if t is None:
+            return None
+        if hasattr(t, "hour"):
+            return t.hour * 60 + getattr(t, "minute", 0)
+        if isinstance(t, str) and ":" in t:
+            parts = t.split(":")
+            try:
+                return int(parts[0]) * 60 + int(parts[1][:2])
+            except Exception:
+                return None
+        return None
+
+    s_min = to_minutes(start)
+    e_min = to_minutes(end)
+    end_next_day = False
+    if s_min is not None and e_min is not None:
+        if e_min <= s_min:
+            end_next_day = True
+
+    time_str = f"{s_str} - {e_str}"
+    if end_next_day:
+        # use Unicode superscript plus and one
+        time_str = f"{time_str}⁺¹"
+    return time_str
+
+
 def build_dates_header_row_in_worksheet(
     ws: Worksheet,
     dates: List[date],
@@ -379,10 +446,27 @@ def build_shift_schedule_rows_in_worksheet(
         cell_shift_name.alignment = Alignment(
             vertical="center", wrap_text=True
         )
+
+        # Create a time cell in the column immediately to the right
+        # of the shift name column. Note: `table_header_start_column`
+        # here points to the first DATE column (we passed +1 earlier),
+        # so the time column is at index `table_header_start_column - 1`.
+        time_col_idx = table_header_start_column - 1
+        time_col_letter = get_column_letter(time_col_idx)
+        cell_time: Cell = ws[f"{time_col_letter}{row_num}"]
+        cell_time.value = _format_shift_time(shift)
+        cell_time.alignment = Alignment(
+            vertical="center", wrap_text=True, horizontal="center"
+        )
+        cell_time.border = border_rigth_black_bottom_grey
+        ws.column_dimensions[time_col_letter].width = 14
+
         # If this shift is a duty, add a left border using the shift/sample color
         if shift.shift_type == ShiftType.DUTY:
             _, _, sample_hex = _get_shift_color_values(shift.color)
             _apply_duty_border(cell_shift_name, sample_hex, position="left")
+            _apply_duty_border(cell_time, sample_hex, position="left")
+
         shift_last_row_num = row_num + shift_max_assignments[shift.id] - 1
         if shift_max_assignments[shift.id] > 1:
             ws.merge_cells(
@@ -391,13 +475,25 @@ def build_shift_schedule_rows_in_worksheet(
                 end_row=shift_last_row_num,
                 end_column=1,
             )
+            # Also merge the time column so it aligns with the shift name
+            ws.merge_cells(
+                start_row=row_num,
+                start_column=time_col_idx,
+                end_row=shift_last_row_num,
+                end_column=time_col_idx,
+            )
 
+        # Apply bottom border and width for date columns
         for col_num in range(
             table_header_start_column, table_header_start_column + len(dates)
         ):
             cell = ws[f"{get_column_letter(col_num)}{shift_last_row_num}"]
             cell.border = border_bottom_grey
             ws.column_dimensions[get_column_letter(col_num)].width = 12
+
+        # Ensure the time column also gets the bottom border on the last row
+        time_bottom_cell: Cell = ws[f"{time_col_letter}{shift_last_row_num}"]
+        time_bottom_cell.border = border_bottom_grey
 
         row_num += shift_max_assignments[shift.id]
 
