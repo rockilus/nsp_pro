@@ -3,6 +3,9 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../../../app/i18n/client";
 // MUI
+import Button from "@mui/material/Button";
+import CancelIcon from "@mui/icons-material/Cancel";
+import IconButton from "@mui/material/IconButton";
 import IosShareIcon from "@mui/icons-material/IosShare";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
@@ -24,7 +27,7 @@ import {
 
 dayjs.extend(utc);
 
-const PopoverContent = ({
+const ExportDialogContent = ({
   t,
   exportOptionsState,
   setExportOptionsState,
@@ -145,12 +148,14 @@ const PopoverContent = ({
         />
       </div>
       <div className="confirm-export-button-container">
-        <button
-          className="export-to-excel-button"
+        <Button
+          // className="export-to-excel-button"
           onClick={handleConfirmExport}
+          variant="contained"
+          sx={{ textTransform: "none" }}
         >
           {t("export_to_excel")}
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -259,7 +264,7 @@ export default function ExportCell({
           }}
         >
           <DialogContent>
-            <PopoverContent
+            <ExportDialogContent
               t={t}
               exportOptionsState={exportOptionsState}
               setExportOptionsState={setExportOptionsState}
