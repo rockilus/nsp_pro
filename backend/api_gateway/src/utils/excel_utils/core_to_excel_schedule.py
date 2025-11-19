@@ -322,7 +322,8 @@ def build_worker_schedule_rows_in_worksheet(
                 row_num_date += 1
         # Create row header for the shift name
         cell_worker_name: Cell = ws[f"A{row_num}"]
-        cell_worker_name.value = worker.name
+        cell_worker_name.data_type = "s"
+        cell_worker_name.value = f"{worker.name} ({worker.acronym})"
         cell_worker_name.font = Font(bold=True)
         cell_worker_name.border = border_rigth_black_bottom_grey
         cell_worker_name.alignment = Alignment(vertical="center")
