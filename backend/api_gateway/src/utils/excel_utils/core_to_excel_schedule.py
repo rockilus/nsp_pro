@@ -239,7 +239,7 @@ def build_shift_schedule_rows_in_worksheet(
             )
             row_num_date = row_num
             for assignment in shift_date_assignments:
-                cell_worker_name = ws[
+                cell_worker_name: Cell = ws[
                     f"{get_column_letter(col_num)}{row_num_date}"
                 ]
                 cell_worker_name.value = worker_id_to_name.get(
@@ -252,7 +252,7 @@ def build_shift_schedule_rows_in_worksheet(
                 )
                 row_num_date += 1
         # Create row header for the shift name
-        cell_shift_name = ws[f"A{row_num}"]
+        cell_shift_name: Cell = ws[f"A{row_num}"]
         cell_shift_name.value = shift.name
         cell_shift_name.font = Font(bold=True)
         cell_shift_name.border = border_rigth_black_bottom_grey
