@@ -450,6 +450,8 @@ def build_shift_schedule_rows_in_worksheet(
         cell_time.alignment = Alignment(
             vertical="center", wrap_text=True, horizontal="center"
         )
+        # Style: italic, smaller font and dark grey text
+        cell_time.font = Font(italic=True, size=10, color="FF424242")
         cell_time.border = border_rigth_black_bottom_grey
         ws.column_dimensions[time_col_letter].width = 14
 
