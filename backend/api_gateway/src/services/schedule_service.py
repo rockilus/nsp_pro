@@ -184,8 +184,13 @@ class ScheduleService(BaseService):
         shifts = self.collection.shift_db.get_shifts(team_id)
         if export_options.period_option == ExportPeriodOptions.ALL:
             assignments = self.collection.assignment_db.get_assignments(team_id)
-            start_date = min(assignment.date for assignment in assignments)
-            end_date = max(assignment.date for assignment in assignments)
+            today_date = date.today()
+            if assignments:
+                start_date = min(assignment.date for assignment in assignments)
+                end_date = max(assignment.date for assignment in assignments)
+            else:
+                start_date = today_date
+                end_date = start_date
             dates = [
                 start_date + timedelta(days=i)
                 for i in range((end_date - start_date).days + 1)

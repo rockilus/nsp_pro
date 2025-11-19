@@ -19,6 +19,8 @@ export default defineConfig({
   testDir: "./tests",
   /* Global setup for tests */
   globalSetup: require.resolve("./tests/utils/global-setup.ts"),
+  /* Global teardown for tests */
+  globalTeardown: require.resolve("./tests/utils/global-teardown.ts"),
   /* Exclude Jest tests from Playwright */
   testIgnore: ["**/tests/__tests__/**"],
   /* Run tests in files in parallel */

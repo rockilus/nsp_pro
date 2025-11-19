@@ -110,6 +110,37 @@ class APIClient {
     return response.json();
   }
 
+  /**
+   * Low-level request that returns the raw Response for cases like file downloads
+   */
+  async requestRaw(
+    endpoint: string,
+    options: ApiClientOptions = {},
+    user?: User | null
+  ): Promise<Response> {
+    const { requireAuth = true, ...restOptions } = options;
+    const headers = this.getAuthHeaders(user);
+
+    if (requireAuth && !env.isDevelopment && !user?.id_token) {
+      throw new Error("User not authenticated");
+    }
+
+    const response = await fetch(`${this.baseURL}${endpoint}`, {
+      ...restOptions,
+      headers: {
+        ...headers,
+        ...restOptions.headers,
+      },
+      credentials: env.isDevelopment
+        ? undefined
+        : user?.id_token
+        ? undefined
+        : "include",
+    });
+
+    return response;
+  }
+
   async get<T>(
     endpoint: string,
     user?: User | null,
@@ -125,6 +156,26 @@ class APIClient {
     options?: ApiClientOptions
   ): Promise<T> {
     return this.request<T>(
+      endpoint,
+      {
+        ...options,
+        method: "POST",
+        body: data ? JSON.stringify(data) : undefined,
+      },
+      user
+    );
+  }
+
+  /**
+   * Post that returns a raw Response (useful for blob downloads)
+   */
+  async postRaw(
+    endpoint: string,
+    data?: any,
+    user?: User | null,
+    options?: ApiClientOptions
+  ): Promise<Response> {
+    return this.requestRaw(
       endpoint,
       {
         ...options,
@@ -185,6 +236,11 @@ export function useApiClient() {
         apiClient.get<T>(endpoint, user, options),
       post: <T>(endpoint: string, data?: any, options?: ApiClientOptions) =>
         apiClient.post<T>(endpoint, data, user, options),
+      // Raw methods for blobs
+      getRaw: (endpoint: string, options?: ApiClientOptions) =>
+        apiClient.requestRaw(endpoint, options, user),
+      postRaw: (endpoint: string, data?: any, options?: ApiClientOptions) =>
+        apiClient.postRaw(endpoint, data, user, options),
       put: <T>(endpoint: string, data?: any, options?: ApiClientOptions) =>
         apiClient.put<T>(endpoint, data, user, options),
       delete: <T>(endpoint: string, options?: ApiClientOptions) =>
@@ -201,6 +257,11 @@ export function useSimpleApiClient() {
         apiClient.get<T>(endpoint, null, options),
       post: <T>(endpoint: string, data?: any, options?: ApiClientOptions) =>
         apiClient.post<T>(endpoint, data, null, options),
+      // Raw methods for blobs in simple client
+      getRaw: (endpoint: string, options?: ApiClientOptions) =>
+        apiClient.requestRaw(endpoint, options, null),
+      postRaw: (endpoint: string, data?: any, options?: ApiClientOptions) =>
+        apiClient.postRaw(endpoint, data, null, options),
       put: <T>(endpoint: string, data?: any, options?: ApiClientOptions) =>
         apiClient.put<T>(endpoint, data, null, options),
       delete: <T>(endpoint: string, options?: ApiClientOptions) =>

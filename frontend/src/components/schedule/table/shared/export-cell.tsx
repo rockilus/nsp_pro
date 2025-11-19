@@ -3,8 +3,12 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../../../app/i18n/client";
 // MUI
+import Button from "@mui/material/Button";
+import CloseIcon from "@mui/icons-material/Close";
+import IconButton from "@mui/material/IconButton";
 import IosShareIcon from "@mui/icons-material/IosShare";
-import Popover from "@mui/material/Popover";
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
 import TableCell from "@mui/material/TableCell";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
@@ -23,7 +27,7 @@ import {
 
 dayjs.extend(utc);
 
-const PopoverContent = ({
+const ExportDialogContent = ({
   t,
   exportOptionsState,
   setExportOptionsState,
@@ -31,6 +35,7 @@ const PopoverContent = ({
   periodDates,
   scheduleCampaign,
   handleConfirmExport,
+  handleClose,
 }: {
   t: (key: string) => string;
   exportOptionsState: ExportOptionsT;
@@ -39,16 +44,29 @@ const PopoverContent = ({
   periodDates: periodDateT[];
   scheduleCampaign: ScheduleT | null;
   handleConfirmExport: () => void;
+  handleClose: () => void;
 }) => {
   return (
     <div className="popover-content-container">
-      <span className="subtitle">{t("export_to_excel")}</span>
+      <div className="dialog-header">
+        <span className="title">{t("export_to_excel")}</span>
+        <IconButton
+          aria-label="close"
+          onClick={handleClose}
+          className="close-button"
+          data-testid="export-dialog-close-button"
+          sx={{ marginBottom: "16px" }}
+        >
+          <CloseIcon className="close-icon" />
+        </IconButton>
+      </div>
       <div className="period-selector">
         <span className="period-selector-label">{t("period")}:</span>
         <ToggleButtonGroup
           color="primary"
           value={exportOptionsState.periodOption}
           exclusive
+          data-testid="export-period-toggle-group"
           onChange={(
             event: React.MouseEvent<HTMLElement>,
             newAlignment: number
@@ -85,6 +103,7 @@ const PopoverContent = ({
                 c.value === ExportPeriodOptions.CAMPAIGN && !scheduleCampaign
               }
               value={c.value}
+              data-testid={`export-period-option-${c.value}`}
               sx={{
                 textTransform: "none",
                 height: "25px",
@@ -110,6 +129,11 @@ const PopoverContent = ({
                 : dayjs.utc().startOf("day"),
             }));
           }}
+          slotProps={{
+            textField: {
+              inputProps: { "data-testid": "export-start-date-picker" },
+            },
+          }}
           sx={{
             width: "160px",
             "& .MuiOutlinedInput-input": {
@@ -132,6 +156,11 @@ const PopoverContent = ({
                 : dayjs.utc().startOf("day"),
             }));
           }}
+          slotProps={{
+            textField: {
+              inputProps: { "data-testid": "export-end-date-picker" },
+            },
+          }}
           sx={{
             width: "160px",
             marginLeft: "10px",
@@ -144,12 +173,14 @@ const PopoverContent = ({
         />
       </div>
       <div className="confirm-export-button-container">
-        <button
-          className="export-to-excel-button"
+        <Button
           onClick={handleConfirmExport}
+          variant="contained"
+          data-testid="confirm-export-button"
+          sx={{ textTransform: "none" }}
         >
           {t("export_to_excel")}
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -168,7 +199,7 @@ export default function ExportCell({
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
-  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const [open, setOpen] = useState(false);
   const [exportOptionsState, setExportOptionsState] = useState<ExportOptionsT>(
     scheduleCampaign
       ? {
@@ -183,9 +214,6 @@ export default function ExportCell({
         }
   );
 
-  const open = Boolean(anchorEl);
-  const id = open ? "simple-popover" : undefined;
-
   const ExportOptionsMap: { value: number; label: string }[] = [
     {
       value: ExportPeriodOptions.CURRENT_SELECTION,
@@ -197,11 +225,11 @@ export default function ExportCell({
   ];
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
+    setOpen(true);
   };
 
   const handleClose = () => {
-    setAnchorEl(null);
+    setOpen(false);
   };
 
   const handleChange = (
@@ -246,38 +274,38 @@ export default function ExportCell({
       }}
     >
       <div className="export-cell-container">
-        <button className="export-button" onClick={handleClick}>
+        <button
+          className="export-button"
+          onClick={handleClick}
+          data-testid="export-button"
+        >
           <IosShareIcon sx={{ color: "#616161cf" }} />
         </button>
-        <Popover
-          id={id}
+        <Dialog
           open={open}
-          anchorEl={anchorEl}
           onClose={handleClose}
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "left",
-          }}
-          slotProps={{
-            paper: {
-              style: {
-                boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
-                padding: 20,
-                width: 450,
-              },
+          data-testid="export-dialog"
+          PaperProps={{
+            style: {
+              boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
+              padding: 20,
+              width: 500,
             },
           }}
         >
-          <PopoverContent
-            t={t}
-            exportOptionsState={exportOptionsState}
-            setExportOptionsState={setExportOptionsState}
-            ExportOptionsMap={ExportOptionsMap}
-            periodDates={periodDates}
-            scheduleCampaign={scheduleCampaign}
-            handleConfirmExport={handleConfirmExport}
-          />
-        </Popover>
+          <DialogContent>
+            <ExportDialogContent
+              t={t}
+              exportOptionsState={exportOptionsState}
+              setExportOptionsState={setExportOptionsState}
+              ExportOptionsMap={ExportOptionsMap}
+              periodDates={periodDates}
+              scheduleCampaign={scheduleCampaign}
+              handleConfirmExport={handleConfirmExport}
+              handleClose={handleClose}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     </TableCell>
   );

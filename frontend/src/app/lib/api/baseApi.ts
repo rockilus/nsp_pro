@@ -10,6 +10,13 @@ export interface AuthenticatedApiClient {
   post: <T>(endpoint: string, data?: any, options?: RequestInit) => Promise<T>;
   put: <T>(endpoint: string, data?: any, options?: RequestInit) => Promise<T>;
   delete: <T>(endpoint: string, options?: RequestInit) => Promise<T>;
+  // Optional raw methods for endpoints that return non-JSON (e.g. file downloads)
+  getRaw?: (endpoint: string, options?: RequestInit) => Promise<Response>;
+  postRaw?: (
+    endpoint: string,
+    data?: any,
+    options?: RequestInit
+  ) => Promise<Response>;
 }
 
 export interface ApiErrorResponse {
@@ -129,24 +136,48 @@ export abstract class BaseApi {
    * This is used for endpoints that return binary data (like file downloads)
    */
   protected static async makeBlobRequest(
-    authToken: string,
+    apiClientOrToken: AuthenticatedApiClient | string,
     method: "post" | "get",
     endpoint: string,
     data?: any
   ): Promise<Blob> {
-    if (!authToken) {
-      throw new Error("Authentication token is required");
-    }
-
     try {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
-        method: method.toUpperCase(),
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: data ? JSON.stringify(data) : undefined,
-      });
+      let response: Response;
+
+      // If an authenticated API client is provided and it exposes raw methods, use them
+      if (typeof apiClientOrToken !== "string") {
+        const apiClient = apiClientOrToken as AuthenticatedApiClient;
+
+        if (method === "post" && apiClient.postRaw) {
+          response = await apiClient.postRaw(endpoint, data);
+        } else if (method === "get" && apiClient.getRaw) {
+          response = await apiClient.getRaw(endpoint);
+        } else {
+          // Fallback to doing a raw fetch but attempt to use authless headers via a simple fetch
+          // (This should rarely happen if clients expose raw methods)
+          response = await fetch(`${this.baseUrl}${endpoint}`, {
+            method: method.toUpperCase(),
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: data ? JSON.stringify(data) : undefined,
+          });
+        }
+      } else {
+        // Legacy: token string provided
+        const authToken = apiClientOrToken as string;
+        if (!authToken) {
+          throw new Error("Authentication token is required");
+        }
+        response = await fetch(`${this.baseUrl}${endpoint}`, {
+          method: method.toUpperCase(),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: data ? JSON.stringify(data) : undefined,
+        });
+      }
 
       if (!response.ok) {
         const responseData = await response.json().catch(() => ({}));

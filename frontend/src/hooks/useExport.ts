@@ -5,6 +5,7 @@ import { ExportOptionsT } from "../types/schedule";
 import { ExportApi } from "../app/lib/api/exportApi";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
+import { useApiClient } from "../app/lib/api-client";
 import { env } from "@/config/env";
 
 //////////////////////////
@@ -16,6 +17,7 @@ import { env } from "@/config/env";
  */
 export function useExportSchedule() {
   const { user, isAuthenticated, loading } = useAuth();
+  const apiClient = useApiClient();
 
   const exportSchedule = useCallback(
     async (teamId: string, exportOptions: ExportOptionsT): Promise<void> => {
@@ -57,7 +59,7 @@ export function useExportSchedule() {
 
       try {
         const blob = await ExportApi.exportSchedule(
-          user.id_token,
+          apiClient,
           teamId.trim(),
           exportOptions
         );
@@ -80,7 +82,7 @@ export function useExportSchedule() {
         throw error;
       }
     },
-    [isAuthenticated, loading, user]
+    [isAuthenticated, loading, user, apiClient]
   );
 
   return exportSchedule;
@@ -91,6 +93,7 @@ export function useExportSchedule() {
  */
 export function useExportScheduleBlob() {
   const { user, isAuthenticated, loading } = useAuth();
+  const apiClient = useApiClient();
 
   const exportScheduleBlob = useCallback(
     async (teamId: string, exportOptions: ExportOptionsT): Promise<Blob> => {
@@ -127,7 +130,7 @@ export function useExportScheduleBlob() {
 
       try {
         return await ExportApi.exportSchedule(
-          user.id_token,
+          apiClient,
           teamId.trim(),
           exportOptions
         );
@@ -139,7 +142,7 @@ export function useExportScheduleBlob() {
         throw error;
       }
     },
-    [isAuthenticated, loading, user]
+    [isAuthenticated, loading, user, apiClient]
   );
 
   return exportScheduleBlob;

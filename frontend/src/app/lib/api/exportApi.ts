@@ -10,11 +10,14 @@ export class ExportApi extends BaseApi {
    * Export schedule to Excel file (authenticated)
    */
   static async exportSchedule(
-    authToken: string,
+    apiClient: AuthenticatedApiClient,
     teamId: string,
     exportOptions: ExportOptionsT
   ): Promise<Blob> {
     // Security: Input validation
+    if (!apiClient) {
+      throw new Error("API client is required for authenticated requests");
+    }
     if (!teamId) {
       throw new Error("Team ID is required");
     }
@@ -23,7 +26,7 @@ export class ExportApi extends BaseApi {
     }
 
     return await this.makeBlobRequest(
-      authToken,
+      apiClient,
       "post",
       `/export/teams/${teamId}`,
       fromExportOptionsT(exportOptions)
