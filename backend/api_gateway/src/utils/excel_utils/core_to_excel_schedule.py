@@ -3,11 +3,12 @@ from typing import List
 
 from openpyxl import Workbook
 from openpyxl.drawing.image import Image
-from openpyxl.styles import Alignment, Border, Font, Side
+from openpyxl.styles import Alignment, Border, Font, Side, PatternFill
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.cell.cell import Cell
 from shared.schemas.core import Assignment, Shift, ShiftType, Worker
+from .shift_color_mappings import SHIFT_COLOR_MAPPINGS
 from pathlib import Path
 import logging
 
@@ -285,12 +286,13 @@ def build_worker_schedule_rows_in_worksheet(
     border_rigth_black_bottom_grey: Border,
     border_bottom_grey: Border,
 ) -> None:
-    # Create a dictionary to map shift IDs to shift names
-    shift_id_to_name = {s.id: s.name for s in shifts}
+    # Create dictionaries to map shift IDs to acronyms and colors
+    shift_id_to_acronym = {s.id: getattr(s, "acronym", "") for s in shifts}
+    shift_id_to_color = {s.id: getattr(s, "color", "") for s in shifts}
     worker_ids_assignments = set(a.worker_id for a in assignments)
     workers_table = [w for w in workers if w.id in worker_ids_assignments]
 
-    # Create a dictionary to store the maximum number of assignments for each shift
+    # Create dict to store maximum assignments per worker
     worker_max_assignments = {w.id: 0 for w in workers}
 
     row_num = table_start_row + 1
@@ -314,9 +316,48 @@ def build_worker_schedule_rows_in_worksheet(
                     f"{get_column_letter(col_num)}{row_num_date}"
                 ]
                 cell_shift_name.data_type = "s"
-                cell_shift_name.value = shift_id_to_name.get(
-                    assignment.shift_id, ""
-                )
+                # Use shift acronym (not full name) in worker schedule cells
+                acronym = shift_id_to_acronym.get(assignment.shift_id, "")
+                cell_shift_name.value = acronym
+                # Set background fill to the shift color if available
+                color = shift_id_to_color.get(assignment.shift_id, "")
+                resolved_color = color or ""
+                # If the shift color is a named mapping (frontend keys),
+                # resolve it to a hex sample color (500) from the mapping.
+                if resolved_color and not resolved_color.startswith("#"):
+                    mapped = SHIFT_COLOR_MAPPINGS.get(resolved_color)
+                    if mapped:
+                        resolved_color = mapped.get("sample", "")
+                    else:
+                        # try lowercase key (some code uses lowercase names)
+                        mapped = SHIFT_COLOR_MAPPINGS.get(resolved_color.lower())
+                        if mapped:
+                            resolved_color = mapped.get("sample", "")
+
+                if resolved_color:
+                    color_hex = resolved_color.lstrip("#")
+                    # Accept only RGB (6 hex) or AARRGGBB (8 hex).
+                    # Convert RGB -> ARGB by prepending opaque alpha.
+                    try:
+                        if len(color_hex) == 6:
+                            color_argb = "FF" + color_hex
+                        elif len(color_hex) == 8:
+                            color_argb = color_hex
+                        else:
+                            raise ValueError("invalid hex length")
+                        # validate hex characters
+                        int(color_argb, 16)
+                        # Apply solid fill using fgColor (ARGB hex)
+                        cell_shift_name.fill = PatternFill(
+                            fgColor=color_argb,
+                            fill_type="solid",
+                        )
+                    except (ValueError, TypeError):
+                        logging.getLogger(__name__).warning(
+                            "Skipping invalid color for shift %s: %s",
+                            assignment.shift_id,
+                            resolved_color,
+                        )
                 cell_shift_name.alignment = Alignment(
                     horizontal="center", vertical="center"
                 )
