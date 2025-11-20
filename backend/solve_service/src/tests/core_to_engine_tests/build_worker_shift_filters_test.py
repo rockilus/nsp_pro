@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, timezone
 from typing import Dict, List, Set, Tuple
 
 from shared.schemas.core import (
@@ -10,6 +10,12 @@ from shared.schemas.core import (
     Shift,
     Worker,
     WorkerDates,
+)
+from shared.schemas.core import (
+    Staffing,
+    ShiftType,
+    ShiftRestType,
+    ShiftLeaveType,
 )
 
 from core_to_engine_service.build_worker_shift_filter import (
@@ -531,3 +537,102 @@ def test_shared_bool_all_workers_and_shifts_no_filtering(
 
     assert _to_set(out) == set()
     assert penalty == 17
+
+
+def test_duties_zero_prevents_duty_shifts() -> None:
+    # Build two workers: w0 with 0 duties, w1 with >0 duties
+    workers: List[Worker] = []
+    for i, duties in enumerate((0, 5)):
+        workers.append(
+            Worker(
+                id=f"w{i}",
+                team_id="t0",
+                name=f"Worker {i}",
+                acronym=f"W{i}",
+                acronym_custom=False,
+                employment_start_date=date(2024, 1, 1),
+                employment_end_date=None,
+                weekly_hours=40,
+                weekly_hours_desired=40,
+                duties_per_month=duties,
+                annual_leave=25,
+                specialty_ids=[],
+                deleted=False,
+            )
+        )
+
+    # Create one NORMAL and one DUTY shift
+    shifts: List[Shift] = [
+        Shift(
+            id="sh_normal",
+            team_id="t0",
+            name="Normal",
+            acronym="N",
+            acronym_custom=False,
+            start_time=datetime(2025, 1, 1, tzinfo=timezone.utc),
+            end_time=datetime(2025, 1, 1, 8, tzinfo=timezone.utc),
+            staffing=[Staffing(specialty_id=None, staffing=1)],
+            color="#000",
+            shift_type=ShiftType.NORMAL,
+            rest_type=ShiftRestType.NONE,
+            leave_type=ShiftLeaveType.NONE,
+            recuperation_time=0,
+            recuperation_duty_id=None,
+            deleted=False,
+        ),
+        Shift(
+            id="sh_duty",
+            team_id="t0",
+            name="Duty",
+            acronym="D",
+            acronym_custom=False,
+            start_time=datetime(2025, 1, 1, tzinfo=timezone.utc),
+            end_time=datetime(2025, 1, 2, tzinfo=timezone.utc),
+            staffing=[Staffing(specialty_id=None, staffing=1)],
+            color="#111",
+            shift_type=ShiftType.DUTY,
+            rest_type=ShiftRestType.NONE,
+            leave_type=ShiftLeaveType.NONE,
+            recuperation_time=24,
+            recuperation_duty_id=None,
+            deleted=False,
+        ),
+    ]
+
+    # Single campaign date
+    campaign_date = date(2025, 1, 1)
+    worker_dates: Dict[str, WorkerDates] = {
+        w.id: WorkerDates(dates_hist=[], dates_campaign=[campaign_date])
+        for w in workers
+    }
+
+    out, _ = build_worker_shift_filters(
+        workers=workers,
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=shifts,
+        dimensions=[],
+        attributes=[],
+        fixed_values={},
+        penalty=99,
+    )
+
+    # Expect w0 (duties=0) forbidden for duty shift
+    expected = {("w0", campaign_date.isoformat(), "sh_duty")}
+    assert _to_set(out) >= expected
+    # Ensure normal shift is not forbidden for w0
+    assert ("w0", campaign_date.isoformat(), "sh_normal") not in _to_set(out)
+
+    # Now set w0 duties to >0 and expect no forbidding for duty shifts
+    workers[0].duties_per_month = 3
+    out2, _ = build_worker_shift_filters(
+        workers=workers,
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=shifts,
+        dimensions=[],
+        attributes=[],
+        fixed_values={},
+        penalty=99,
+    )
+
+    assert ("w0", campaign_date.isoformat(), "sh_duty") not in _to_set(out2)
+    assert len(out2) == 0
