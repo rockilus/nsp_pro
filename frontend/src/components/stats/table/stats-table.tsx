@@ -147,12 +147,18 @@ export default function StatsTable({
   };
 
   // Compute color scales for heatmap
-  const { dataColorScale, totalsColorScale, perColumnScales } = useMemo(() => {
+  const {
+    dataColorScale,
+    totalsColorScale,
+    rowTotalsColorScale,
+    perColumnScales,
+  } = useMemo(() => {
     // Don't apply heatmap if disabled or loading
     if (!statsOptions.enableHeatmap || isLoadingStats) {
       return {
         dataColorScale: null,
         totalsColorScale: null,
+        rowTotalsColorScale: null,
         perColumnScales: new Map(),
       };
     }
@@ -172,19 +178,19 @@ export default function StatsTable({
       return {
         dataColorScale: null,
         totalsColorScale: null,
+        rowTotalsColorScale: null,
         perColumnScales: scales,
       };
     } else {
-      // Regular mode: one scale for data, one for totals
+      // Regular mode: one scale for data, separate scales for row totals and column totals
       const dataValues = stats.statsValues.map((v) => v.value);
-      const totalsValues = [
-        ...Object.values(workerSums),
-        ...Object.values(headerTotals),
-      ];
+      const columnTotalsValues = Object.values(headerTotals);
+      const rowTotalsValues = Object.values(workerSums);
 
       return {
         dataColorScale: createColorScale(dataValues),
-        totalsColorScale: createColorScale(totalsValues),
+        totalsColorScale: createColorScale(columnTotalsValues), // For total row
+        rowTotalsColorScale: createColorScale(rowTotalsValues), // For total column
         perColumnScales: new Map(),
       };
     }
@@ -360,7 +366,7 @@ export default function StatsTable({
                     padding: 0,
                     backgroundColor: getHeatmapColors(
                       workerSums[worker.id],
-                      totalsColorScale
+                      rowTotalsColorScale
                     ).backgroundColor,
                   }}
                 >
@@ -369,7 +375,7 @@ export default function StatsTable({
                     style={{
                       color: getHeatmapColors(
                         workerSums[worker.id],
-                        totalsColorScale
+                        rowTotalsColorScale
                       ).color,
                     }}
                   >
@@ -420,25 +426,8 @@ export default function StatsTable({
               );
             })}
             {!statsOptions.showFavorites && (
-              <TableCell
-                align="center"
-                sx={{
-                  padding: 0,
-                  backgroundColor: getHeatmapColors(
-                    overallTotal,
-                    totalsColorScale
-                  ).backgroundColor,
-                }}
-              >
-                <span
-                  className="row-value row-total"
-                  style={{
-                    color: getHeatmapColors(overallTotal, totalsColorScale)
-                      .color,
-                  }}
-                >
-                  {overallTotal}
-                </span>
+              <TableCell align="center" sx={{ padding: 0 }}>
+                <span className="row-value row-total">{overallTotal}</span>
               </TableCell>
             )}
           </TableRow>
