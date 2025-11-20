@@ -174,7 +174,7 @@ def core_to_engine_inputs(
         build_max_week_day_nb_duties_vars(
             workers_not_deleted,
             shift_duties_not_deleted,
-            periods_weekly,
+            dates_campaign,
             ws_to_dates,
         )
         if engine_inputs.model_config.system_constraints.max_week_day_nb_duties

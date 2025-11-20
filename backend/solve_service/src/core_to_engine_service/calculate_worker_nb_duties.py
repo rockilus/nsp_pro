@@ -243,10 +243,10 @@ def build_max_weekly_nb_duties_vars(
 def build_max_week_day_nb_duties_vars(
     worker_not_deleted: List[Worker],
     shift_duties_not_deleted: List[Shift],
-    periods_weekly: List[List[date]],
+    dates_campaign: List[date],
     ws_to_dates: Dict[Tuple[str, str], WorkerDates],
 ) -> List[List[List[Tuple[str, str, str]]]]:
-    """Builds max weekday nb duties variables structure.
+    """Builds max weekday nb duties variables structure from campaign dates.
 
     Returns a list per weekday (Monday=0 .. Sunday=6). Each weekday is a list
     of workers (only workers that have at least one duty assignment on that
@@ -255,11 +255,10 @@ def build_max_week_day_nb_duties_vars(
     has no duty assignments on that weekday it is omitted from that weekday's
     list. If no weekdays contain any assignments an empty list is returned.
     """
-    # collect all dates for each weekday across the weeks
+    # collect all dates for each weekday from the flat campaign dates list
     weekdays: List[List[date]] = [[] for _ in range(7)]
-    for week in periods_weekly:
-        for d in week:
-            weekdays[d.weekday()].append(d)
+    for d in dates_campaign:
+        weekdays[d.weekday()].append(d)
 
     weekday_entries_all: List[List[List[Tuple[str, str, str]]]] = []
     for weekday_dates in weekdays:
