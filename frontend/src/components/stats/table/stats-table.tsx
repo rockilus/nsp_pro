@@ -98,6 +98,10 @@ export default function StatsTable({
     return { workerSums: sums, headerTotals: totals, overallTotal: overall };
   }, [stats.statsValues, stats.statsHeaders]);
 
+  // Number of columns to span for separator row when totals are shown
+  const separatorColSpan =
+    stats.statsHeaders.length + 1 + (!statsOptions.showFavorites ? 2 : 0);
+
   const translateHeaderValue = (name: string): string => {
     const translations: Record<string, string> = {
       Monday: t_weekdays("monday"),
@@ -298,17 +302,26 @@ export default function StatsTable({
               </TableCell>
             ))}
             {!statsOptions.showFavorites && (
-              <TableCell
-                sx={{
-                  padding: 0,
-                  alignContent: "flex-start",
-                  backgroundColor: isLoadingStats ? "#f5f5f5" : "#ffffff",
-                }}
-              >
-                <div className="column-header-container">
-                  <span className="column-header">{t("total")}</span>
-                </div>
-              </TableCell>
+              <>
+                <TableCell
+                  sx={{
+                    padding: 0,
+                    width: "24px",
+                    backgroundColor: isLoadingStats ? "#f5f5f5" : "#ffffff",
+                  }}
+                />
+                <TableCell
+                  sx={{
+                    padding: 0,
+                    alignContent: "flex-start",
+                    backgroundColor: isLoadingStats ? "#f5f5f5" : "#ffffff",
+                  }}
+                >
+                  <div className="column-header-container">
+                    <span className="column-header">{t("total")}</span>
+                  </div>
+                </TableCell>
+              </>
             )}
           </TableRow>
         </TableHead>
@@ -360,31 +373,43 @@ export default function StatsTable({
                 );
               })}
               {!statsOptions.showFavorites && (
-                <TableCell
-                  align="center"
-                  sx={{
-                    padding: 0,
-                    backgroundColor: getHeatmapColors(
-                      workerSums[worker.id],
-                      rowTotalsColorScale
-                    ).backgroundColor,
-                  }}
-                >
-                  <span
-                    className="row-value row-total"
-                    style={{
-                      color: getHeatmapColors(
+                <>
+                  <TableCell sx={{ padding: 0 }} />
+                  <TableCell
+                    align="center"
+                    sx={{
+                      padding: 0,
+                      backgroundColor: getHeatmapColors(
                         workerSums[worker.id],
                         rowTotalsColorScale
-                      ).color,
+                      ).backgroundColor,
                     }}
                   >
-                    {workerSums[worker.id]}
-                  </span>
-                </TableCell>
+                    <span
+                      className="row-value row-total"
+                      style={{
+                        color: getHeatmapColors(
+                          workerSums[worker.id],
+                          rowTotalsColorScale
+                        ).color,
+                      }}
+                    >
+                      {workerSums[worker.id]}
+                    </span>
+                  </TableCell>
+                </>
               )}
             </TableRow>
           ))}
+          {/* Separator row between body and totals */}
+          {!statsOptions.showFavorites && (
+            <TableRow>
+              <TableCell
+                colSpan={separatorColSpan}
+                sx={{ padding: 0, height: "8px" }}
+              />
+            </TableRow>
+          )}
           <TableRow>
             <TableCell
               align="left"
@@ -427,9 +452,12 @@ export default function StatsTable({
               );
             })}
             {!statsOptions.showFavorites && (
-              <TableCell align="center" sx={{ padding: 0 }}>
-                <span className="row-value row-total">{overallTotal}</span>
-              </TableCell>
+              <>
+                <TableCell sx={{ padding: 0 }} />
+                <TableCell align="center" sx={{ padding: 0 }}>
+                  <span className="row-value row-total">{overallTotal}</span>
+                </TableCell>
+              </>
             )}
           </TableRow>
         </TableBody>
