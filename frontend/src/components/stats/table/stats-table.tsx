@@ -306,7 +306,8 @@ export default function StatsTable({
                 <TableCell
                   sx={{
                     padding: 0,
-                    width: "24px",
+                    width: "20px",
+                    height: "20px",
                     backgroundColor: isLoadingStats ? "#f5f5f5" : "#ffffff",
                     border: "none",
                   }}
@@ -375,7 +376,14 @@ export default function StatsTable({
               })}
               {!statsOptions.showFavorites && (
                 <>
-                  <TableCell sx={{ padding: 0, border: "none" }} />
+                  <TableCell
+                    sx={{
+                      padding: 0,
+                      border: "none",
+                      width: "20px",
+                      height: "20px",
+                    }}
+                  />
                   <TableCell
                     align="center"
                     sx={{
@@ -410,7 +418,14 @@ export default function StatsTable({
                 <TableCell key={header.id} sx={{ padding: 0, height: "8px" }} />
               ))}
               {/* Separator column cell: remove border only for this column */}
-              <TableCell sx={{ padding: 0, height: "8px", border: "none" }} />
+              <TableCell
+                sx={{
+                  padding: 0,
+                  width: "20px",
+                  height: "20px",
+                  border: "none",
+                }}
+              />
               <TableCell sx={{ padding: 0, height: "8px" }} />
             </TableRow>
           )}
@@ -457,7 +472,14 @@ export default function StatsTable({
             })}
             {!statsOptions.showFavorites && (
               <>
-                <TableCell sx={{ padding: 0, border: "none" }} />
+                <TableCell
+                  sx={{
+                    padding: 0,
+                    border: "none",
+                    width: "20px",
+                    height: "20px",
+                  }}
+                />
                 <TableCell align="center" sx={{ padding: 0 }}>
                   <span className="row-value row-total">{overallTotal}</span>
                 </TableCell>
