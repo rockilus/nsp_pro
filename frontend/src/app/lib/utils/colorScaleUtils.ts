@@ -3,12 +3,12 @@
  */
 
 import { scaleSequential } from "d3-scale";
-import { interpolateRdYlGn } from "d3-scale-chromatic";
+import { interpolateBlues } from "d3-scale-chromatic";
 import { rgb } from "d3-color";
 
 /**
  * Creates a D3 color scale for heatmap visualization
- * Uses reversed interpolateRdYlGn: red = high values, green = low values
+ * Uses blue gradient: light blue = low values, dark blue = high values
  *
  * @param values - Array of numeric values to scale
  * @returns D3 sequential scale or null if values are invalid
@@ -26,9 +26,9 @@ export function createColorScale(values: number[]) {
     return null;
   }
 
-  // Create scale with reversed interpolation (t => 1 - t reverses the gradient)
-  // This makes red = high values, green = low values
-  return scaleSequential([min, max], (t: number) => interpolateRdYlGn(1 - t));
+  // Create scale with blue gradient
+  // Light blue = low values, Dark blue = high values
+  return scaleSequential([min, max], interpolateBlues);
 }
 
 /**
