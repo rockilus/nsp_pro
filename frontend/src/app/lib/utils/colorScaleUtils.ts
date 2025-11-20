@@ -26,9 +26,11 @@ export function createColorScale(values: number[]) {
     return null;
   }
 
-  // Create scale with blue gradient
-  // Light blue = low values, Dark blue = high values
-  return scaleSequential([min, max], interpolateBlues);
+  // Create scale with lighter blue gradient
+  // Use only the lighter portion of the blues scale (0.2 to 0.7 range)
+  // to avoid very dark blues at the high end
+  //   return scaleSequential([min, max], interpolateBlues);
+  return scaleSequential([min, max], (t: number) => interpolateBlues(t * 0.7));
 }
 
 /**
