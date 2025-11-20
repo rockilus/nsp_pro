@@ -8,14 +8,12 @@ from shared.schemas.core import (
     DimensionEntryType,
     DimensionType,
     Shift,
+    ShiftLeaveType,
+    ShiftRestType,
+    ShiftType,
+    Staffing,
     Worker,
     WorkerDates,
-)
-from shared.schemas.core import (
-    Staffing,
-    ShiftType,
-    ShiftRestType,
-    ShiftLeaveType,
 )
 
 from core_to_engine_service.build_worker_shift_filter import (
