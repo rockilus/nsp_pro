@@ -15,6 +15,7 @@ export interface SerializedStatsOptions {
   headerUnit: HeaderUnitOptions;
   selectedShifts: ShiftWorkerOptionT[];
   showFavorites: boolean;
+  enableHeatmap?: boolean;
 }
 
 /**
@@ -128,6 +129,8 @@ export function validateStatsOptions(
       typeof options.showFavorites === "boolean"
         ? options.showFavorites
         : false,
+    enableHeatmap:
+      typeof options.enableHeatmap === "boolean" ? options.enableHeatmap : true,
   };
 }
 
@@ -156,5 +159,6 @@ export function getDefaultStatsOptions(
       },
     ],
     showFavorites: false,
+    enableHeatmap: true,
   };
 }

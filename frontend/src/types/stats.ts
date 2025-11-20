@@ -56,4 +56,5 @@ export type StatsOptionsT = {
   headerUnit: HeaderUnitOptions;
   selectedShifts: ShiftWorkerOptionT[];
   showFavorites: boolean;
+  enableHeatmap?: boolean;
 };

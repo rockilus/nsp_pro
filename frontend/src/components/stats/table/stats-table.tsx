@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
@@ -10,6 +10,11 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+// Utils
+import {
+  createColorScale,
+  getHeatmapColors,
+} from "../../../app/lib/utils/colorScaleUtils";
 // Styles
 import "./stats-table.css";
 // Types
@@ -65,32 +70,33 @@ export default function StatsTable({
     }
   };
 
-  // Calculate the sum of statsValue.value for each workerId
-  const workerSums: { [workerId: string]: number } = stats.statsValues.reduce(
-    (acc, statsValue) => {
-      if (!acc[statsValue.workerId]) {
-        acc[statsValue.workerId] = 0;
-      }
-      acc[statsValue.workerId] += statsValue.value;
-      return acc;
-    },
-    {} as { [workerId: string]: number }
-  );
+  // Calculate the sum of statsValue.value for each workerId and header totals
+  const { workerSums, headerTotals, overallTotal } = useMemo(() => {
+    const sums: { [workerId: string]: number } = stats.statsValues.reduce(
+      (acc, statsValue) => {
+        if (!acc[statsValue.workerId]) {
+          acc[statsValue.workerId] = 0;
+        }
+        acc[statsValue.workerId] += statsValue.value;
+        return acc;
+      },
+      {} as { [workerId: string]: number }
+    );
 
-  // Calculate the total for each header column
-  const headerTotals: { [headerId: string]: number } =
-    stats.statsHeaders.reduce((acc, header) => {
-      acc[header.id] = stats.statsValues
-        .filter((statsValue) => statsValue.headerId === header.id)
-        .reduce((sum, statsValue) => sum + statsValue.value, 0);
-      return acc;
-    }, {} as { [headerId: string]: number });
+    const totals: { [headerId: string]: number } = stats.statsHeaders.reduce(
+      (acc, header) => {
+        acc[header.id] = stats.statsValues
+          .filter((statsValue) => statsValue.headerId === header.id)
+          .reduce((sum, statsValue) => sum + statsValue.value, 0);
+        return acc;
+      },
+      {} as { [headerId: string]: number }
+    );
 
-  // Calculate the overall total for the total column
-  const overallTotal = Object.values(workerSums).reduce(
-    (sum, value) => sum + value,
-    0
-  );
+    const overall = Object.values(sums).reduce((sum, value) => sum + value, 0);
+
+    return { workerSums: sums, headerTotals: totals, overallTotal: overall };
+  }, [stats.statsValues, stats.statsHeaders]);
 
   const translateHeaderValue = (name: string): string => {
     const translations: Record<string, string> = {
@@ -139,6 +145,58 @@ export default function StatsTable({
 
     return translations[name] ? translations[name].substring(0, 3) : name;
   };
+
+  // Compute color scales for heatmap
+  const { dataColorScale, totalsColorScale, perColumnScales } = useMemo(() => {
+    // Don't apply heatmap if disabled or loading
+    if (!statsOptions.enableHeatmap || isLoadingStats) {
+      return {
+        dataColorScale: null,
+        totalsColorScale: null,
+        perColumnScales: new Map(),
+      };
+    }
+
+    if (statsOptions.showFavorites) {
+      // In favorites mode, create one scale per column
+      const scales = new Map<string, ReturnType<typeof createColorScale>>();
+
+      stats.statsHeaders.forEach((header) => {
+        const columnValues = stats.statsValues
+          .filter((v) => v.headerId === header.id)
+          .map((v) => v.value);
+
+        scales.set(header.id, createColorScale(columnValues));
+      });
+
+      return {
+        dataColorScale: null,
+        totalsColorScale: null,
+        perColumnScales: scales,
+      };
+    } else {
+      // Regular mode: one scale for data, one for totals
+      const dataValues = stats.statsValues.map((v) => v.value);
+      const totalsValues = [
+        ...Object.values(workerSums),
+        ...Object.values(headerTotals),
+      ];
+
+      return {
+        dataColorScale: createColorScale(dataValues),
+        totalsColorScale: createColorScale(totalsValues),
+        perColumnScales: new Map(),
+      };
+    }
+  }, [
+    stats.statsValues,
+    stats.statsHeaders,
+    statsOptions.enableHeatmap,
+    statsOptions.showFavorites,
+    isLoadingStats,
+    workerSums,
+    headerTotals,
+  ]);
 
   console.log("isLoadingStats", isLoadingStats);
 
@@ -268,27 +326,53 @@ export default function StatsTable({
                   stats.statsValues.find(
                     (s) => s.headerId === header.id && s.workerId === worker.id
                   ) || null;
+
+                if (!statsValue) return null;
+
+                // Get heatmap colors
+                const scale = statsOptions.showFavorites
+                  ? perColumnScales.get(header.id) || null
+                  : dataColorScale;
+                const heatmapColors = getHeatmapColors(statsValue.value, scale);
+
                 return (
-                  statsValue && (
-                    <TableCell
-                      key={wIndex + headerIndex}
-                      align="center"
-                      sx={{ padding: 0 }}
+                  <TableCell
+                    key={wIndex + headerIndex}
+                    align="center"
+                    sx={{
+                      padding: 0,
+                      backgroundColor: heatmapColors.backgroundColor,
+                    }}
+                  >
+                    <span
+                      className={`row-value ${quickStats ? "quick-stats" : ""}`}
+                      style={{ color: heatmapColors.color }}
                     >
-                      <span
-                        className={`row-value ${
-                          quickStats ? "quick-stats" : ""
-                        }`}
-                      >
-                        {statsValue.value}
-                      </span>
-                    </TableCell>
-                  )
+                      {statsValue.value}
+                    </span>
+                  </TableCell>
                 );
               })}
               {!statsOptions.showFavorites && (
-                <TableCell align="center" sx={{ padding: 0 }}>
-                  <span className="row-value row-total">
+                <TableCell
+                  align="center"
+                  sx={{
+                    padding: 0,
+                    backgroundColor: getHeatmapColors(
+                      workerSums[worker.id],
+                      totalsColorScale
+                    ).backgroundColor,
+                  }}
+                >
+                  <span
+                    className="row-value row-total"
+                    style={{
+                      color: getHeatmapColors(
+                        workerSums[worker.id],
+                        totalsColorScale
+                      ).color,
+                    }}
+                  >
                     {workerSums[worker.id]}
                   </span>
                 </TableCell>
@@ -308,16 +392,53 @@ export default function StatsTable({
                 {t("total")}
               </span>
             </TableCell>
-            {stats.statsHeaders.map((header) => (
-              <TableCell key={header.id} align="center" sx={{ padding: 0 }}>
-                <span className="row-value row-total">
-                  {headerTotals[header.id]}
-                </span>
-              </TableCell>
-            ))}
+            {stats.statsHeaders.map((header) => {
+              const scale = statsOptions.showFavorites
+                ? perColumnScales.get(header.id) || null
+                : totalsColorScale;
+              const heatmapColors = getHeatmapColors(
+                headerTotals[header.id],
+                scale
+              );
+
+              return (
+                <TableCell
+                  key={header.id}
+                  align="center"
+                  sx={{
+                    padding: 0,
+                    backgroundColor: heatmapColors.backgroundColor,
+                  }}
+                >
+                  <span
+                    className="row-value row-total"
+                    style={{ color: heatmapColors.color }}
+                  >
+                    {headerTotals[header.id]}
+                  </span>
+                </TableCell>
+              );
+            })}
             {!statsOptions.showFavorites && (
-              <TableCell align="center" sx={{ padding: 0 }}>
-                <span className="row-value row-total">{overallTotal}</span>
+              <TableCell
+                align="center"
+                sx={{
+                  padding: 0,
+                  backgroundColor: getHeatmapColors(
+                    overallTotal,
+                    totalsColorScale
+                  ).backgroundColor,
+                }}
+              >
+                <span
+                  className="row-value row-total"
+                  style={{
+                    color: getHeatmapColors(overallTotal, totalsColorScale)
+                      .color,
+                  }}
+                >
+                  {overallTotal}
+                </span>
               </TableCell>
             )}
           </TableRow>

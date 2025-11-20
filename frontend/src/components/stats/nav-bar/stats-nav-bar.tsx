@@ -4,6 +4,8 @@ import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import PaletteIcon from "@mui/icons-material/Palette";
+import PaletteOutlinedIcon from "@mui/icons-material/PaletteOutlined";
 import IconButton from "@mui/material/IconButton";
 import InputLabel from "@mui/material/InputLabel";
 import ToggleButton from "@mui/material/ToggleButton";
@@ -159,6 +161,14 @@ export default function StatsNavBar({
     handleUpdateStatsOptions(newStatsOptions);
   };
 
+  const handleToggleHeatmap = () => {
+    const newStatsOptions = {
+      ...statsOptions,
+      enableHeatmap: !statsOptions.enableHeatmap,
+    };
+    handleUpdateStatsOptions(newStatsOptions);
+  };
+
   return (
     <div className="stats-nav-bar-container">
       <div className="stats-time-options-container">
@@ -281,6 +291,23 @@ export default function StatsNavBar({
           />
         </div>
       </div>
+      <IconButton
+        onClick={handleToggleHeatmap}
+        sx={{
+          borderRadius: "50%",
+          color: statsOptions.enableHeatmap ? "#1976d2" : "#00000099",
+          backgroundColor: statsOptions.enableHeatmap
+            ? "rgba(25, 118, 210, 0.1)"
+            : "transparent",
+          "&:hover": {
+            backgroundColor: statsOptions.enableHeatmap
+              ? "rgba(25, 118, 210, 0.2)"
+              : "rgba(0, 0, 0, 0.1)",
+          },
+        }}
+      >
+        {statsOptions.enableHeatmap ? <PaletteIcon /> : <PaletteOutlinedIcon />}
+      </IconButton>
       <IconButton
         onClick={handleSwitchShowFavorites}
         sx={{
