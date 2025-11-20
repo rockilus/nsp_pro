@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 
 import pytest
 from shared.schemas.core import (
@@ -503,3 +503,50 @@ class TestWorkerShiftFiltersEngine:
         # objective_value should equal the coverage penalty for a normal shift
         expected_pen = ei.penalties.configuration_constraint.coverage.normal
         assert outputs.objective_value == expected_pen
+
+    def test_worker_with_zero_duties_not_assigned_to_duty(
+        self, ei_filters: EngineInputsAugmented
+    ) -> None:
+        """
+        Ensure workers with `duties_per_month == 0` are not assigned
+        DUTY shifts.
+        """
+        ei = ei_filters
+
+        # Make worker0 zero duties, worker1 allowed duties
+        ei.workers[0].duties_per_month = 0
+        ei.workers[1].duties_per_month = 5
+
+        # Convert second shift to DUTY. fixture already provides demands
+        ei.shifts[1].shift_type = ShiftType.DUTY
+        ei.shifts[1].recuperation_time = 24
+        ei.shifts.append(
+            Shift(
+                id="sh3",
+                team_id="t0",
+                name="Recup Shift 2",
+                acronym="RS2",
+                acronym_custom=False,
+                start_time=datetime(2025, 1, 1, 18, tzinfo=timezone.utc),
+                end_time=datetime(2025, 1, 2, 18, tzinfo=timezone.utc),
+                staffing=[],
+                color="#ffffff",
+                shift_type=ShiftType.REST,
+                rest_type=ShiftRestType.RECUPERATION,
+                leave_type=ShiftLeaveType.NONE,
+                recuperation_time=0,
+                recuperation_duty_id="s1",
+                deleted=False,
+            )
+        )
+
+        outputs: Outputs = engine_solve_engine_inputs(ei)
+
+        # Collect assigned workers for the duty shift
+        duty_shift_id = ei.shifts[1].id
+        assigned_workers_for_duty = [
+            a.worker_id for a in outputs.assignments if a.shift_id == duty_shift_id
+        ]
+        # worker0 (zero duties) must not be assigned to duty shift
+        assert "w0" not in assigned_workers_for_duty
+        # worker1 should be assigned when possible

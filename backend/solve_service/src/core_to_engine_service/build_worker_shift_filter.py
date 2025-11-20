@@ -505,6 +505,36 @@ def build_worker_shift_filters_bool_shift_true(
     return list(out)
 
 
+def build_worker_shift_filters_no_duties(
+    workers: List[Worker],
+    worker_ids_to_worker_dates: Dict[str, WorkerDates],
+    shifts: List[Shift],
+) -> List[Tuple[str, str, str]]:
+    """Forbid assigning workers with zero duties_per_month to DUTY shifts.
+
+    Returns list of (worker_id, date_iso, shift_id) invalid tuples.
+    """
+    out: Set[Tuple[str, str, str]] = set()
+
+    for worker in workers:
+        if worker.deleted:
+            continue
+        if worker.duties_per_month != 0:
+            continue
+        if worker.id not in worker_ids_to_worker_dates:
+            continue
+        dates = worker_ids_to_worker_dates[worker.id].dates_campaign
+
+        for shift in shifts:
+            if shift.deleted:
+                continue
+            if shift.shift_type == ShiftType.DUTY:
+                for d in dates:
+                    out.add((worker.id, d.isoformat(), shift.id))
+
+    return list(out)
+
+
 def build_worker_shift_filters(
     workers: List[Worker],
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
@@ -581,6 +611,12 @@ def build_worker_shift_filters(
             )
 
         combined_set = set(dim_out) | bool_out_set
+
+    # Forbid duty shifts for workers with zero duties_per_month
+    no_duty_out = build_worker_shift_filters_no_duties(
+        workers, worker_ids_to_worker_dates, shifts
+    )
+    combined_set |= set(no_duty_out)
 
     for assignment, value in fixed_values.items():
         if value == 1 and assignment in combined_set:
