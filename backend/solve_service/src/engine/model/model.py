@@ -39,9 +39,9 @@ class Model:
         self.model = cp_model.CpModel()
         self.variables: Dict[Tuple[str, str, str], cp_model.IntVar] = {}
         self.intervals: Dict[Tuple[str, str, str], cp_model.IntervalVar] = {}
-        self.assignment_wdss: Dict[Tuple[str, str, str, str], cp_model.IntVar] = (
-            {}
-        )  # worker, day, shift, specialty
+        self.assignment_wdss: Dict[
+            Tuple[str, str, str, str], cp_model.IntVar
+        ] = {}  # worker, day, shift, specialty
         self.model_config = model_config
 
         self.obj = Objective()
@@ -292,6 +292,16 @@ class Model:
             inputs.system_constraints.special_days_target_nb_duties
         )
 
+        # System constraint: max weekly number of duties across workers/weeks
+        # Format: (weeks x workers x assignments, penalty)
+        try:
+            self.add_max_weekly_nb_duties_constraints(
+                inputs.system_constraints.max_weekly_nb_duties
+            )
+        except Exception:
+            # be defensive: if structure is missing or empty, skip
+            pass
+
         self.add_objective()
         self.solve()
         self.print_model_metadata(
@@ -357,7 +367,9 @@ class Model:
 
     def add_duty_recup_constraints(
         self,
-        duty_recup_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], int]],
+        duty_recup_pairs: List[
+            Tuple[Tuple[str, str, str], Tuple[str, str, str], int]
+        ],
         hard_to_soft: bool,
     ) -> None:
         for duty, recup, penalty in duty_recup_pairs:
@@ -378,7 +390,9 @@ class Model:
 
     def add_link_shift_constraints(
         self,
-        ls_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], str, int]],
+        ls_pairs: List[
+            Tuple[Tuple[str, str, str], Tuple[str, str, str], str, int]
+        ],
     ) -> None:
         for s1, s2, ls_id, penalty in ls_pairs:
             s1_var = self.variables[s1]
@@ -408,7 +422,10 @@ class Model:
                 constraint_vars = [self.variables[a] for a in p_assignments]
                 if not hard_to_soft:
                     self.model.Add(
-                        sum(v * dur for v, dur in zip(constraint_vars, p_durations))
+                        sum(
+                            v * dur
+                            for v, dur in zip(constraint_vars, p_durations)
+                        )
                         <= p_target
                     )
                 else:
@@ -430,7 +447,9 @@ class Model:
                     )
                     self.model.Add(
                         weighted_sum
-                        == sum(v * d for v, d in zip(constraint_vars, p_durations))
+                        == sum(
+                            v * d for v, d in zip(constraint_vars, p_durations)
+                        )
                     )
                     weighted_sum_x100 = self.model.NewIntVar(
                         0,
@@ -544,7 +563,9 @@ class Model:
             )
             max_excess = self.model.NewIntVar(
                 0,
-                len(cstr_vars) * Constants.NUM_HOURS_DAY * Constants.NUM_MINUTES_HOUR,
+                len(cstr_vars)
+                * Constants.NUM_HOURS_DAY
+                * Constants.NUM_MINUTES_HOUR,
                 var_name,
             )
             self.model.AddMaxEquality(max_excess, excesses)
@@ -573,7 +594,9 @@ class Model:
                         * Constants.NUM_MINUTES_HOUR,
                         "",
                     )
-                    self.model.Add(delta == sum(v for v in constraint_vars) - p_target)
+                    self.model.Add(
+                        delta == sum(v for v in constraint_vars) - p_target
+                    )
                     excess = self.model.NewIntVar(
                         0,
                         len(constraint_vars)
@@ -591,7 +614,9 @@ class Model:
         for constraint in constraints:
             excesses = []
             cstr_vars = []
-            for assignments, target in zip(constraint.assignments, constraint.targets):
+            for assignments, target in zip(
+                constraint.assignments, constraint.targets
+            ):
                 constraint_vars = [self.variables[a] for a in assignments]
                 cstr_vars.extend(constraint_vars)
                 excess = self.model.NewIntVar(
@@ -626,13 +651,84 @@ class Model:
             self.obj.int_vars.append(max_excess)
             self.obj.int_coeffs.append(constraint.penalty)
 
+    def add_max_weekly_nb_duties_constraints(
+        self,
+        max_weekly_nb_duties: Tuple[
+            List[List[List[Tuple[str, str, str]]]], int
+        ],
+    ) -> None:
+        """Add objective term penalizing the maximum weekly duties across weeks.
+
+        The input is a tuple: (weeks_vars, penalty) where `weeks_vars` is
+        a list per week; each week is a list per worker; each worker is a
+        list of assignment tuples `(worker_id, date_iso, shift_id)`.
+
+        We compute for each worker the sum of their assignment bool vars in
+        the week, then the max across workers for that week, then the max
+        across weeks. The resulting global max IntVar is added to the
+        objective with coefficient equal to `penalty`.
+        """
+        if not max_weekly_nb_duties:
+            return
+        weeks_vars, penalty = max_weekly_nb_duties
+        if not weeks_vars:
+            return
+
+        # Determine an upper bound for the sums (max assignments any worker-week)
+        max_assignments = 0
+        for week in weeks_vars:
+            for worker_assignments in week:
+                if worker_assignments:
+                    max_assignments = max(
+                        max_assignments, len(worker_assignments)
+                    )
+        if max_assignments == 0:
+            return
+
+        week_max_vars = []
+        for week in weeks_vars:
+            if not week:
+                continue
+            worker_sum_vars = []
+            for worker_assignments in week:
+                if not worker_assignments:
+                    continue
+                # collect boolean vars for this worker-week
+                constraint_vars = [
+                    self.variables[a]
+                    for a in worker_assignments
+                    if a in self.variables
+                ]
+                if not constraint_vars:
+                    continue
+                sum_var = self.model.NewIntVar(0, len(constraint_vars), "")
+                self.model.Add(sum_var == sum(constraint_vars))
+                worker_sum_vars.append(sum_var)
+            if not worker_sum_vars:
+                continue
+            week_max = self.model.NewIntVar(0, max_assignments, "")
+            self.model.AddMaxEquality(week_max, worker_sum_vars)
+            week_max_vars.append(week_max)
+
+        if not week_max_vars:
+            return
+
+        global_max = self.model.NewIntVar(
+            0, max_assignments, "max_weekly_nb_duties"
+        )
+        self.model.AddMaxEquality(global_max, week_max_vars)
+        self.obj.int_vars.append(global_max)
+        self.obj.int_coeffs.append(penalty)
+
     def add_special_days_constraints(
         self, constraints: List[GroupsAssignmentsTargetConstraint]
     ) -> None:
         for constraint in constraints:
             excesses = []
             cstr_vars = []
-            for assignments, target in zip(constraint.assignments, constraint.targets):
+            for assignments, target in zip(
+                constraint.assignments, constraint.targets
+            ):
                 constraint_vars = [self.variables[a] for a in assignments]
                 cstr_vars.extend(constraint_vars)
                 excess = self.model.NewIntVar(
@@ -677,7 +773,9 @@ class Model:
                 #     None, [cstr_var], "worker_shift_filter"
                 # )
                 var_name = ""
-                cstr_vars: List[cp_model.IntVar | cp_model.NotBooleanVariable] = [
+                cstr_vars: List[
+                    cp_model.IntVar | cp_model.NotBooleanVariable
+                ] = [
                     cstr_var.Not()  # type: ignore
                 ]
                 lit = self.model.NewBoolVar(var_name)
@@ -706,7 +804,9 @@ class Model:
                 c_fil, hard_to_soft
             )
         for c_fai in constraints.fai:
-            self.add_constraint_factory.add_constraint_fai.add_constraint(c_fai)
+            self.add_constraint_factory.add_constraint_fai.add_constraint(
+                c_fai
+            )
 
     def add_objective(self) -> None:
         self.model.Minimize(
@@ -741,7 +841,9 @@ class Model:
         out.linearization_level = params.linearization_level
         out.cut_level = params.cut_level
         out.lns_initial_difficulty = params.lns_initial_difficulty
-        out.lns_initial_deterministic_limit = params.lns_initial_deterministic_limit
+        out.lns_initial_deterministic_limit = (
+            params.lns_initial_deterministic_limit
+        )
         out.instantiate_all_variables = params.instantiate_all_variables
         out.use_lns_only = params.use_lns_only
         out.use_combined_no_overlap = params.use_combined_no_overlap
@@ -764,7 +866,9 @@ class Model:
         out.core_minimization_level = params.core_minimization_level
         if params.random_seed is not None:
             out.random_seed = params.random_seed
-        out.probing_deterministic_time_limit = params.probing_deterministic_time_limit
+        out.probing_deterministic_time_limit = (
+            params.probing_deterministic_time_limit
+        )
         out.max_presolve_iterations = params.max_presolve_iterations
         out.cp_model_probing_level = params.cp_model_probing_level
         out.detect_table_with_cost = params.detect_table_with_cost
@@ -777,7 +881,9 @@ class Model:
         solution_callback = SolverSolutionCallback(
             limit=self.model_config.custom_solver_params.limit_number_solution
         )
-        solver_params = self.build_solver_params(self.model_config.solver_params)
+        solver_params = self.build_solver_params(
+            self.model_config.solver_params
+        )
         self.solver.parameters = solver_params
 
         def log_callback(string: str) -> None:
