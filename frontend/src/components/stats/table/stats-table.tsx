@@ -405,10 +405,13 @@ export default function StatsTable({
           {/* Separator row between body and totals */}
           {!statsOptions.showFavorites && (
             <TableRow>
-              <TableCell
-                colSpan={separatorColSpan}
-                sx={{ padding: 0, height: "8px" }}
-              />
+              <TableCell sx={{ padding: 0, height: "8px" }} />
+              {stats.statsHeaders.map((header) => (
+                <TableCell key={header.id} sx={{ padding: 0, height: "8px" }} />
+              ))}
+              {/* Separator column cell: remove border only for this column */}
+              <TableCell sx={{ padding: 0, height: "8px", border: "none" }} />
+              <TableCell sx={{ padding: 0, height: "8px" }} />
             </TableRow>
           )}
           <TableRow>
