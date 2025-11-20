@@ -308,6 +308,7 @@ export default function StatsTable({
                     padding: 0,
                     width: "24px",
                     backgroundColor: isLoadingStats ? "#f5f5f5" : "#ffffff",
+                    border: "none",
                   }}
                 />
                 <TableCell
@@ -374,7 +375,7 @@ export default function StatsTable({
               })}
               {!statsOptions.showFavorites && (
                 <>
-                  <TableCell sx={{ padding: 0 }} />
+                  <TableCell sx={{ padding: 0, border: "none" }} />
                   <TableCell
                     align="center"
                     sx={{
@@ -453,7 +454,7 @@ export default function StatsTable({
             })}
             {!statsOptions.showFavorites && (
               <>
-                <TableCell sx={{ padding: 0 }} />
+                <TableCell sx={{ padding: 0, border: "none" }} />
                 <TableCell align="center" sx={{ padding: 0 }}>
                   <span className="row-value row-total">{overallTotal}</span>
                 </TableCell>
