@@ -399,8 +399,9 @@ export default function StatsTable({
               </span>
             </TableCell>
             {stats.statsHeaders.map((header) => {
+              // In favorites mode, don't apply heatmap to totals row
               const scale = statsOptions.showFavorites
-                ? perColumnScales.get(header.id) || null
+                ? null
                 : totalsColorScale;
               const heatmapColors = getHeatmapColors(
                 headerTotals[header.id],
