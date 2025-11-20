@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
@@ -15,6 +15,8 @@ import {
   useAddHeader,
   useDeleteHeader,
 } from "../../hooks/useStats";
+import { useStatsOptions } from "../../app/lib/hooks/useStatsOptions";
+import { getDefaultStatsOptions } from "../../app/lib/utils/statsOptionsUtils";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "./stats-tab.css";
@@ -59,23 +61,18 @@ export default function StatsTab({
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [shiftOptions, setShiftOptions] = useState<ShiftWorkerOptionT[]>([]);
 
-  const [statsOptions, setStatsOptions] = useState<StatsOptionsT>({
-    timeFrame: StatsTimeFrameOptions.LTM,
-    startDate: dayjs.utc().startOf("day").subtract(1, "year"),
-    endDate: dayjs.utc().startOf("day"),
-    statsUnit: StatsUnitOptions.NB_DAYS_WORKED,
-    headerUnit: HeaderUnitOptions.WEEKDAY,
-    selectedShifts: [
-      {
-        name: "all shifts",
-        id: "",
-        idType: SWOIdTypes.NONE,
-        isBoolDim: false,
-        categoryName: "All",
-      },
-    ],
-    showFavorites: false,
-  });
+  // Use persistent stats options
+  const defaultOptions = getDefaultStatsOptions();
+
+  const [statsOptions, updateStatsOptions, resetStatsOptions] = useStatsOptions(
+    selectedTeamId || "",
+    defaultOptions
+  );
+
+  // resetStatsOptions can be called to reset all options to defaults
+  // Example: resetStatsOptions() - useful for settings reset UI
+
+  const hasInitialized = useRef(false);
 
   const statsUnitOptions: {
     name: StatsUnitOptions;
@@ -134,7 +131,7 @@ export default function StatsTab({
   const handleUpdateStatsOptions = async (newStatsOptions: StatsOptionsT) => {
     setIsLoadingStats(true);
     await handleGetStats(newStatsOptions);
-    setStatsOptions(newStatsOptions);
+    updateStatsOptions(newStatsOptions);
     setIsLoadingStats(false);
   };
 
@@ -171,55 +168,65 @@ export default function StatsTab({
 
   useEffect(() => {
     const fetchStatsTabData = async () => {
-      setIsLoading(true);
-      if (selectedTeamId) {
-        const {
-          scheduleCampaign: fetchedScheduleCampaign,
-          shifts: fetchedShifts,
-          workers: fetchedWorkers,
-          shiftOptions: fetchedShiftOptions,
-        }: {
-          scheduleCampaign: ScheduleT | null;
-          shifts: ShiftT[];
-          workers: WorkerT[];
-          shiftOptions: ShiftWorkerOptionT[];
-        } = await getStatsTabData(selectedTeamId);
-        setScheduleCampaign(fetchedScheduleCampaign);
-        setShifts(fetchedShifts);
-        setWorkers(fetchedWorkers);
-        setShiftOptions(fetchedShiftOptions);
-        setIsLoading(false);
+      if (!selectedTeamId) return;
 
-        const newStatsOptions: StatsOptionsT = {
-          timeFrame: fetchedScheduleCampaign
-            ? StatsTimeFrameOptions.CAMPAING
-            : StatsTimeFrameOptions.LTM,
-          startDate: fetchedScheduleCampaign
-            ? fetchedScheduleCampaign.startDate
-            : dayjs.utc().startOf("day").subtract(1, "year"),
-          endDate: fetchedScheduleCampaign
-            ? fetchedScheduleCampaign.endDate
-            : dayjs.utc().startOf("day"),
-          statsUnit: StatsUnitOptions.NB_DAYS_WORKED,
-          headerUnit: HeaderUnitOptions.WEEKDAY,
-          selectedShifts: [
-            {
-              name: "all shifts",
-              id: "",
-              idType: SWOIdTypes.NONE,
-              isBoolDim: false,
-              categoryName: "All",
-            },
-          ],
-          showFavorites: false,
-        };
-        const newStats = await getStats(selectedTeamId, newStatsOptions);
-        setStatsOptions(newStatsOptions);
+      setIsLoading(true);
+
+      const {
+        scheduleCampaign: fetchedScheduleCampaign,
+        shifts: fetchedShifts,
+        workers: fetchedWorkers,
+        shiftOptions: fetchedShiftOptions,
+      }: {
+        scheduleCampaign: ScheduleT | null;
+        shifts: ShiftT[];
+        workers: WorkerT[];
+        shiftOptions: ShiftWorkerOptionT[];
+      } = await getStatsTabData(selectedTeamId);
+
+      setScheduleCampaign(fetchedScheduleCampaign);
+      setShifts(fetchedShifts);
+      setWorkers(fetchedWorkers);
+      setShiftOptions(fetchedShiftOptions);
+      setIsLoading(false);
+
+      // Only initialize stats options once when component first loads
+      if (!hasInitialized.current) {
+        hasInitialized.current = true;
+
+        // If there's a campaign and the current options are not set to campaign, update them
+        if (
+          fetchedScheduleCampaign &&
+          statsOptions.timeFrame !== StatsTimeFrameOptions.CAMPAING
+        ) {
+          const campaignOptions: StatsOptionsT = {
+            ...statsOptions,
+            timeFrame: StatsTimeFrameOptions.CAMPAING,
+            startDate: fetchedScheduleCampaign.startDate,
+            endDate: fetchedScheduleCampaign.endDate,
+          };
+          updateStatsOptions(campaignOptions);
+          const newStats = await getStats(selectedTeamId, campaignOptions);
+          setStats(newStats);
+        } else {
+          // Use existing stats options from localStorage
+          const newStats = await getStats(selectedTeamId, statsOptions);
+          setStats(newStats);
+        }
+      } else {
+        // On subsequent loads (e.g., after team change), just fetch with current options
+        const newStats = await getStats(selectedTeamId, statsOptions);
         setStats(newStats);
       }
     };
-    fetchStatsTabData();
-  }, [selectedTeamId, getStatsTabData, getStats]);
+
+    // Reset initialization flag when team changes
+    if (selectedTeamId) {
+      hasInitialized.current = false;
+      fetchStatsTabData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTeamId]);
 
   return (
     <div className="tab-container-ultrawide">
