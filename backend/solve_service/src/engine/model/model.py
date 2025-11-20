@@ -719,10 +719,8 @@ class Model:
         if not week_max_vars:
             return
 
-        # Primary penalty: global max (avoid extreme concentration)
-        global_max = self.model.NewIntVar(
-            0, max_assignments, "max_weekly_nb_duties"
-        )
+        # Primary penalty: global max (avoid extreme concentration) max_weekly_nb_duties
+        global_max = self.model.NewIntVar(0, max_assignments, "")
         self.model.AddMaxEquality(global_max, week_max_vars)
         self.obj.int_vars.append(global_max)
         self.obj.int_coeffs.append(penalty)

@@ -191,6 +191,70 @@ def calculate_breach_penalty_nb_duties_target(
     return max(excesses) * group.penalty
 
 
+def calculate_breach_penalty_max_weekly_nb_duties(
+    assignments: List[Assignment],
+    max_weekly_nb_duties: tuple,
+) -> tuple:
+    """Calculate primary (global max) and secondary (stepped) penalties.
+
+    Returns a tuple `(total_penalty, breakdown_dict)` where `breakdown_dict`
+    contains keys `max` (primary penalty), `stepped_total` (sum of stepped
+    penalties) and `stepped_count` (number of worker-week entries contributing).
+    """
+    weeks_vars, penalty = max_weekly_nb_duties
+    if not weeks_vars:
+        return 0, {"max": 0, "stepped_total": 0, "stepped_count": 0}
+
+    # Compute counts per worker-week
+    worker_week_counts: List[int] = []
+    stepped_count = 0
+    stepped_total = 0
+    global_max = 0
+
+    for week in weeks_vars:
+        for worker_assignments in week:
+            if not worker_assignments:
+                continue
+            coords = {(w, d, s) for (w, d, s) in worker_assignments}
+            count = sum(
+                1
+                for a in assignments
+                if (a.worker_id, a.date.isoformat(), a.shift_id) in coords
+            )
+            worker_week_counts.append(count)
+            global_max = max(global_max, count)
+
+            # stepped penalties apply for counts >= 2 (model uses thresholds 2..max)
+            if count >= 2:
+                stepped_count += 1
+                # sum_{t=2..count} t^2 = sum_{t=1..count} t^2 - 1
+                c = count
+                sum_sq = c * (c + 1) * (2 * c + 1) // 6
+                stepped_sum = sum_sq - 1
+                # stepped penalty weight mirrors model: max(1, penalty // 20)
+                stepped_penalty_weight = max(1, penalty // 20)
+                stepped_total += stepped_sum * stepped_penalty_weight
+
+    primary = global_max * penalty
+    total = primary + stepped_total
+    return total, {
+        "max": primary,
+        "stepped_total": stepped_total,
+        "stepped_count": stepped_count,
+    }
+
+
+def calculate_breach_penalty_max_week_day_nb_duties(
+    assignments: List[Assignment],
+    max_week_day_nb_duties: tuple,
+) -> tuple:
+    """Same logic as weekly but applied per-weekday groups."""
+    # Structure: (weekday_entries_all, penalty)
+    return calculate_breach_penalty_max_weekly_nb_duties(
+        assignments, max_week_day_nb_duties
+    )
+
+
 def debug_breaches(
     outputs: Outputs,
     breaches: List[Breach],
@@ -231,7 +295,8 @@ def debug_breaches(
     #     for spe in w.specialty_ids:
     #         workers_by_spe_id.setdefault(spe, []).append(w)
     requests_by_id: Dict[str, Request] = {
-        r.id: r for r in engine_inputs.requests_leave + engine_inputs.requests_work
+        r.id: r
+        for r in engine_inputs.requests_leave + engine_inputs.requests_work
     }
 
     # Accumulators
@@ -250,7 +315,11 @@ def debug_breaches(
         # try to resolve based on category
         if b.objective_category == ObjectiveCategory.CONSTRAINT:
             # find constraint by objective_id
-            cstr = constraints_by_id.get(b.objective_id) if b.objective_id else None
+            cstr = (
+                constraints_by_id.get(b.objective_id)
+                if b.objective_id
+                else None
+            )
             if cstr is not None:
                 cstr = cast(Constraint, cstr)
                 constraint_type = cstr.constraint_type.name.lower()
@@ -270,7 +339,9 @@ def debug_breaches(
                         if cstr_seq.hard
                         else engine_inputs.penalties.user_constraint.seq.soft
                     )
-                    val = calculate_breach_penalty_seq(b, assignments, pen, cstr_seq)
+                    val = calculate_breach_penalty_seq(
+                        b, assignments, pen, cstr_seq
+                    )
                 elif isinstance(cstr, ConstraintFai):
                     # ConstraintFai has similar shape to seq; reuse seq penalty.
                     # Cast to ConstraintSeq for the calculator's signature.
@@ -297,7 +368,9 @@ def debug_breaches(
                         if cstr_sum.hard
                         else engine_inputs.penalties.user_constraint.sum.soft
                     )
-                    val = calculate_breach_penalty_sum(b, assignments, pen, cstr_sum)
+                    val = calculate_breach_penalty_sum(
+                        b, assignments, pen, cstr_sum
+                    )
                 else:
                     # fallback when the constraint type isn't one of the
                     # handled concrete classes (keep original behaviour)
@@ -315,7 +388,9 @@ def debug_breaches(
                 val = 0
 
         elif b.objective_category == ObjectiveCategory.REQUEST:
-            req = requests_by_id.get(b.objective_id) if b.objective_id else None
+            req = (
+                requests_by_id.get(b.objective_id) if b.objective_id else None
+            )
             if req is not None:
                 val = (
                     engine_inputs.penalties.user_constraint.request.hard
@@ -325,7 +400,11 @@ def debug_breaches(
 
         if b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND:
             # try to match a shift demand by assignments membership
-            sd = shift_demands_by_id.get(b.objective_id) if b.objective_id else None
+            sd = (
+                shift_demands_by_id.get(b.objective_id)
+                if b.objective_id
+                else None
+            )
             if sd is not None:
                 shift = shifts_by_id.get(sd.shift_id)
                 if shift is not None:
@@ -396,7 +475,9 @@ def debug_breaches(
                 (var.worker_id, var.date.isoformat(), var.shift_id)
                 for var in b.variables
             }
-            for group in inputs.system_constraints.special_days_target_nb_duties:
+            for (
+                group
+            ) in inputs.system_constraints.special_days_target_nb_duties:
                 c_vars_set = {a for ass in group.assignments for a in ass}
                 same_as_sets = b_vars_set == c_vars_set
                 if same_as_sets:
@@ -413,6 +494,58 @@ def debug_breaches(
             constraint_stats.setdefault(ctype, {"count": 0, "total": 0.0})
             constraint_stats[ctype]["count"] += 1
             constraint_stats[ctype]["total"] += val
+
+    # Handle max weekly / weekday duties penalties (they don't produce breaches)
+    special_stats: Dict[str, Dict[str, float]] = {}
+    # max weekly
+    try:
+        mw = inputs.system_constraints.max_weekly_nb_duties
+        if mw:
+            mw_val, mw_breakdown = (
+                calculate_breach_penalty_max_weekly_nb_duties(assignments, mw)
+            )
+            stats.setdefault(
+                "max_weekly_nb_duties", {"count": 0, "total": 0.0}
+            )
+            stats["max_weekly_nb_duties"]["count"] += 1
+            stats["max_weekly_nb_duties"]["total"] += mw_val
+            total_calc += mw_val
+            special_stats["max_weekly_nb_duties.max"] = {
+                "count": 1,
+                "total": float(mw_breakdown["max"]),
+            }
+            special_stats["max_weekly_nb_duties.stepped"] = {
+                "count": float(mw_breakdown["stepped_count"]),
+                "total": float(mw_breakdown["stepped_total"]),
+            }
+    except Exception:
+        pass
+
+    # max weekday
+    try:
+        md = inputs.system_constraints.max_week_day_nb_duties
+        if md:
+            md_val, md_breakdown = (
+                calculate_breach_penalty_max_week_day_nb_duties(
+                    assignments, md
+                )
+            )
+            stats.setdefault(
+                "max_week_day_nb_duties", {"count": 0, "total": 0.0}
+            )
+            stats["max_week_day_nb_duties"]["count"] += 1
+            stats["max_week_day_nb_duties"]["total"] += md_val
+            total_calc += md_val
+            special_stats["max_week_day_nb_duties.max"] = {
+                "count": 1,
+                "total": float(md_breakdown["max"]),
+            }
+            special_stats["max_week_day_nb_duties.stepped"] = {
+                "count": float(md_breakdown["stepped_count"]),
+                "total": float(md_breakdown["stepped_total"]),
+            }
+    except Exception:
+        pass
 
     # Print table
     rows: List[Tuple[str, int, float, float]] = []
@@ -456,7 +589,9 @@ def debug_breaches(
             avg = tot / cnt if cnt > 0 else 0.0
             rows_c.append((k, cnt, tot, avg))
 
-        print("\nBroken down constraint breaches (ObjectiveCategory.CONSTRAINT):")
+        print(
+            "\nBroken down constraint breaches (ObjectiveCategory.CONSTRAINT):"
+        )
         col1 = "ConstraintType"
         col2 = "Count"
         col3 = "Total"
@@ -472,11 +607,47 @@ def debug_breaches(
         for r in rows_c:
             print(f"{r[0]:<{w1}}{r[1]:>{w2}}{r[2]:>{w3}.0f}{r[3]:>{w4}.1f}")
         print("-" * (w1 + w2 + w3 + w4))
-        total_c_breaches = sum(int(v["count"]) for v in constraint_stats.values())
-        total_c_calc = sum(float(v["total"]) for v in constraint_stats.values())
+        total_c_breaches = sum(
+            int(v["count"]) for v in constraint_stats.values()
+        )
+        total_c_calc = sum(
+            float(v["total"]) for v in constraint_stats.values()
+        )
         print(
             f"{'TOTAL':<{w1}}{total_c_breaches:>{w2}}{total_c_calc:>{w3}.0f}"
             + f"{(total_c_calc / total_c_breaches if total_c_breaches else 0):>{w4}.1f}"
+        )
+
+    # Third table: breakdown for max-weekly / max-weekday penalties
+    if special_stats:
+        rows_s: List[Tuple[str, int, float, float]] = []
+        for k, v in sorted(special_stats.items()):
+            cnt = int(v["count"])
+            tot = float(v["total"])
+            avg = tot / cnt if cnt > 0 else 0.0
+            rows_s.append((k, cnt, tot, avg))
+
+        print("\nBroken down max-week penalties:")
+        col1 = "Category"
+        col2 = "Count"
+        col3 = "Total"
+        col4 = "Average"
+        w1 = max(len(col1), max((len(r[0]) for r in rows_s), default=0)) + 2
+        w2 = max(len(col2), 8)
+        w3 = max(len(col3), 12)
+        w4 = max(len(col4), 12)
+
+        header = f"{col1:<{w1}}{col2:>{w2}}{col3:>{w3}}{col4:>{w4}}"
+        print(header)
+        print("-" * (w1 + w2 + w3 + w4))
+        for r in rows_s:
+            print(f"{r[0]:<{w1}}{r[1]:>{w2}}{r[2]:>{w3}.0f}{r[3]:>{w4}.1f}")
+        print("-" * (w1 + w2 + w3 + w4))
+        total_s_breaches = sum(int(v["count"]) for v in special_stats.values())
+        total_s_calc = sum(float(v["total"]) for v in special_stats.values())
+        print(
+            f"{'TOTAL':<{w1}}{total_s_breaches:>{w2}}{total_s_calc:>{w3}.0f}"
+            + f"{(total_s_calc / total_s_breaches if total_s_breaches else 0):>{w4}.1f}"
         )
 
     # Checks vs engine outputs
