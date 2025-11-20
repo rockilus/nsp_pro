@@ -124,7 +124,9 @@ def calculate_worker_nb_duties(
             )
             adjusted_max_nb_duties = math.ceil(80 * coefficient)
 
-            worker_nb_duties[worker.id]["desired"].append(adjusted_desired_nb_duties)
+            worker_nb_duties[worker.id]["desired"].append(
+                adjusted_desired_nb_duties
+            )
             worker_nb_duties[worker.id]["max"].append(adjusted_max_nb_duties)
             worker_nb_duties[worker.id]["target"].append(
                 target_work_times[worker.id][period_index]
@@ -143,7 +145,9 @@ def calculate_proportional_nb_duties(
 
     period_index_to_required_nb_duties = {}
     for period_index, period in enumerate(periods):
-        shift_duty_ids = [s.id for s in shifts if s.shift_type == ShiftType.DUTY]
+        shift_duty_ids = [
+            s.id for s in shifts if s.shift_type == ShiftType.DUTY
+        ]
         period_dsds_duty = [
             dsd
             for dsd in shift_demands
@@ -153,7 +157,10 @@ def calculate_proportional_nb_duties(
             dsd.count for dsd in period_dsds_duty
         )
     total_period_desired_nb_duties: List[float] = [
-        sum(worker.duties_per_month * w_id_to_coef[worker.id][i] for worker in workers)
+        sum(
+            worker.duties_per_month * w_id_to_coef[worker.id][i]
+            for worker in workers
+        )
         for i in range(len(periods))
     ]
 
@@ -172,7 +179,9 @@ def calculate_proportional_nb_duties(
                 target_nb_duties = 0.0
             if worker.id not in w_id_to_target_nb_duties_by_period:
                 w_id_to_target_nb_duties_by_period[worker.id] = []
-            w_id_to_target_nb_duties_by_period[worker.id].append(target_nb_duties)
+            w_id_to_target_nb_duties_by_period[worker.id].append(
+                target_nb_duties
+            )
 
     return round_proportional_times(w_id_to_target_nb_duties_by_period)
 
@@ -219,7 +228,8 @@ def build_max_weekly_nb_duties_vars(
                     if key not in ws_to_dates:
                         continue
                     wdates = (
-                        ws_to_dates[key].dates_hist + ws_to_dates[key].dates_campaign
+                        ws_to_dates[key].dates_hist
+                        + ws_to_dates[key].dates_campaign
                     )
                     if d in wdates:
                         worker_assignments.append((w.id, d.isoformat(), s.id))
