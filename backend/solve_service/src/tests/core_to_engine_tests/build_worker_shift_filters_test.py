@@ -37,6 +37,7 @@ def _to_set(
     return set(tuples_list)
 
 
+# pylint: disable=R0801
 def test_no_shared_dimensions_returns_empty(workers_10: List[Worker]):
     # dimensions contain only worker-only or shift-only in the conftest fixture
     dimensions: List[Dimension] = []
