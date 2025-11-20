@@ -312,6 +312,7 @@ def debug_breaches(
         stats[cat]["count"] += 1
 
         val = 0
+        processed = False
         # try to resolve based on category
         if b.objective_category == ObjectiveCategory.CONSTRAINT:
             # find constraint by objective_id
@@ -321,6 +322,7 @@ def debug_breaches(
                 else None
             )
             if cstr is not None:
+                processed = True
                 cstr = cast(Constraint, cstr)
                 constraint_type = cstr.constraint_type.name.lower()
                 # Narrow by concrete type for safer access and static typing
@@ -332,6 +334,7 @@ def debug_breaches(
                         else engine_inputs.penalties.user_constraint.fil.soft
                     )
                     val = calculate_breach_penalty_fil(b, assignments, pen)
+                    # handled
                 elif isinstance(cstr, ConstraintSeq):
                     cstr_seq = cast(ConstraintSeq, cstr)
                     pen = (
@@ -350,6 +353,8 @@ def debug_breaches(
                         "Warning: Unhandled constraint type for breach debug: "
                         + f"{type(cstr)}"
                     )
+                    # still mark as handled by the CONSTRAINT branch
+                    processed = True
                     # val = calculate_breach_penalty_seq(
                     #     b, assignments, pen, cstr_fai
                     # )
@@ -361,6 +366,7 @@ def debug_breaches(
                         if cstr_ord.hard
                         else engine_inputs.penalties.user_constraint.ord.soft
                     )
+                    processed = True
                 elif isinstance(cstr, ConstraintSum):
                     cstr_sum = cast(ConstraintSum, cstr)
                     pen = (
@@ -371,6 +377,7 @@ def debug_breaches(
                     val = calculate_breach_penalty_sum(
                         b, assignments, pen, cstr_sum
                     )
+                    processed = True
                 else:
                     # fallback when the constraint type isn't one of the
                     # handled concrete classes (keep original behaviour)
@@ -378,6 +385,7 @@ def debug_breaches(
                         "Warning: Unhandled constraint type for breach debug: "
                         + f"{type(cstr)}"
                     )
+                    processed = True
             else:
                 # unknown constraint, cannot compute
                 constraint_type = "unknown"
@@ -386,6 +394,7 @@ def debug_breaches(
                     + "for breach debug."
                 )
                 val = 0
+                processed = True
 
         elif b.objective_category == ObjectiveCategory.REQUEST:
             req = (
@@ -397,6 +406,7 @@ def debug_breaches(
                     if req.hard
                     else engine_inputs.penalties.user_constraint.request.soft
                 )
+                processed = True
 
         if b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND:
             # try to match a shift demand by assignments membership
@@ -416,9 +426,11 @@ def debug_breaches(
                         if shift.shift_type == ShiftType.DUTY
                         else pen_coverage.normal
                     )
+                    processed = True
 
         elif b.objective_category == ObjectiveCategory.LINK_SHIFT:
             val = engine_inputs.penalties.configuration_constraint.link_shift
+            processed = True
 
         # elif b.objective_category.name == ObjectiveCategory.DUTY_RECUP.name:
         #     # find recup pair
@@ -454,6 +466,7 @@ def debug_breaches(
                     val = calculate_breach_penalty_work_time_week_target(
                         assignments, group_dur
                     )
+                    processed = True
                     break
 
         elif b.objective_category == ObjectiveCategory.DUTIES_PER_MONTH_TARGET:
@@ -468,6 +481,7 @@ def debug_breaches(
                     val = calculate_breach_penalty_nb_duties_target(
                         assignments, group, b.objective_category
                     )
+                    processed = True
                     break
 
         elif b.objective_category == ObjectiveCategory.SPECIAL_DAYS_TARGET:
@@ -484,6 +498,7 @@ def debug_breaches(
                     val = calculate_breach_penalty_nb_duties_target(
                         assignments, group, b.objective_category
                     )
+                    processed = True
                     break
 
         stats[cat]["total"] += val
@@ -494,6 +509,11 @@ def debug_breaches(
             constraint_stats.setdefault(ctype, {"count": 0, "total": 0.0})
             constraint_stats[ctype]["count"] += 1
             constraint_stats[ctype]["total"] += val
+
+        # If we didn't handle this breach in any branch above, print it for debugging
+        if not processed:
+            print("Warning: Breach was NOT processed by debug logic:")
+            print(b)
 
     # Handle max weekly / weekday duties penalties (they don't produce breaches)
     special_stats: Dict[str, Dict[str, float]] = {}
@@ -666,3 +686,5 @@ def debug_breaches(
     except Exception:
         # never break normal flow when debugging
         pass
+
+    print("DONE")
