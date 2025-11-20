@@ -145,6 +145,10 @@ class ConfigurationConstraintInputs:
 class SystemConstraintInputs:
     weekly_target_work_time: List[GroupsAssignmentsDurationsTargetConstraint]
     monthly_target_nb_duties: List[GroupsAssignmentsTargetConstraint]
+    max_weekly_nb_duties: Tuple[
+        List[List[List[Tuple[str, str, str]]]],  # week * worker * duties
+        int,
+    ]
     special_days_target_nb_duties: List[GroupsAssignmentsTargetConstraint]
 
 
@@ -304,4 +308,6 @@ class ProcessingCache:
     w_to_work_times: Dict[str, Dict[str, List[int]]]
     w_to_nb_duties: Dict[str, Dict[str, List[int]]]
     shift_id_to_duration: Dict[str, int]
-    dim_to_attr_value_to_shift: Dict[str, Dict[str | int | float | bool, List[str]]]
+    dim_to_attr_value_to_shift: Dict[
+        str, Dict[str | int | float | bool, List[str]]
+    ]
