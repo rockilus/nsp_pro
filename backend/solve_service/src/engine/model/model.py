@@ -721,8 +721,8 @@ class Model:
             0, max_assignments, "max_weekly_nb_duties"
         )
         self.model.AddMaxEquality(global_max, week_max_vars)
-        self.obj.int_vars.append(global_max)
-        self.obj.int_coeffs.append(penalty)
+        # self.obj.int_vars.append(global_max)
+        # self.obj.int_coeffs.append(penalty)
 
         # Secondary penalty: stepped penalties for each worker-week
         # Approximates quadratic penalty to encourage spreading
