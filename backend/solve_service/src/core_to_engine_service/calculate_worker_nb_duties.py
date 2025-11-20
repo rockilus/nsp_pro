@@ -188,3 +188,43 @@ def get_nb_days_in_months(dates_list: List[List[date]]) -> List[int]:
         else:
             days_in_months.append(0)
     return days_in_months
+
+
+def build_max_weekly_nb_duties_vars(
+    worker_not_deleted: List[Worker],
+    shift_duties_not_deleted: List[Shift],
+    periods_weekly: List[List[date]],
+    ws_to_dates: Dict[Tuple[str, str], WorkerDates],
+) -> List[List[List[Tuple[str, str, str]]]]:
+    """Builds max weekly nb duties variables structure.
+
+    Returns a list per week. Each week is a list of workers (only workers
+    that have at least one duty assignment in that week). Each worker entry
+    is a list of tuples (worker_id, date_iso, shift_id). No inner sublists
+    are empty; if a worker has no duty assignments in a week it is omitted
+    from that week's list. If no weeks contain any assignments an empty
+    list is returned.
+    """
+    weeks: List[List[List[Tuple[str, str, str]]]] = []
+    for week in periods_weekly:
+        week_entries: List[List[Tuple[str, str, str]]] = []
+        if not week:
+            # skip empty week periods to avoid empty sublists
+            continue
+        for w in worker_not_deleted:
+            worker_assignments: List[Tuple[str, str, str]] = []
+            for d in week:
+                for s in shift_duties_not_deleted:
+                    key = (w.id, s.id)
+                    if key not in ws_to_dates:
+                        continue
+                    wdates = (
+                        ws_to_dates[key].dates_hist + ws_to_dates[key].dates_campaign
+                    )
+                    if d in wdates:
+                        worker_assignments.append((w.id, d.isoformat(), s.id))
+            if worker_assignments:
+                week_entries.append(worker_assignments)
+        if week_entries:
+            weeks.append(week_entries)
+    return weeks
