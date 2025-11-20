@@ -33,7 +33,7 @@ penalties_prod = Penalties(
     ),
     system_constraint=SystemConstraintPenalty(
         weekly_target_work_time=5,
-        monthly_target_nb_duties=1,
+        monthly_target_nb_duties=100,
         special_days_target_nb_duties=1,
     ),
 )
