@@ -65,7 +65,11 @@ def build_breaches(
     #     processing_cache,
     # )
     # If an Outputs object was provided, print quick debugging stats
-    if outputs is not None and engine_inputs is not None and inputs is not None:
+    if (
+        outputs is not None
+        and engine_inputs is not None
+        and inputs is not None
+    ):
         try:
             debug_breaches(
                 outputs=outputs,
@@ -85,6 +89,8 @@ def build_breaches(
             ObjectiveCategory.WORK_TIME_WEEK_TARGET,
             ObjectiveCategory.DUTIES_PER_MONTH_TARGET,
             ObjectiveCategory.SPECIAL_DAYS_TARGET,
+            ObjectiveCategory.MAX_WEEKLY_NB_DUTIES,
+            ObjectiveCategory.MAX_WEEK_DAY_NB_DUTIES,
         ]
     ]
     # return breaches_model + breaches_not_model
