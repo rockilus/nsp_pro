@@ -169,7 +169,9 @@ def build_var_name_link_shift(
 #     )
 
 
-def build_var_name_seq(constraint: Constraint, span: List[cp_model.IntVar]) -> str:
+def build_var_name_seq(
+    constraint: Constraint, span: List[cp_model.IntVar]
+) -> str:
     # pylint: disable=protected-access
     return json.dumps(
         asdict(
@@ -193,3 +195,18 @@ def build_var_name_seq(constraint: Constraint, span: List[cp_model.IntVar]) -> s
 #         for shift_demand in coverage
 #         if shift_demand.nb_times_shift > 0  # QUICK FIX TO CHANGE XXX
 #     )
+
+
+def build_var_name_equity(
+    cstr_vars: List[cp_model.IntVar], category: ObjectiveCategory
+) -> str:
+    return json.dumps(
+        asdict(
+            VarName(
+                objective_id=None,
+                cstr_vars=[var.Name() for var in cstr_vars],
+                objective_category=category.value,
+                hard_to_soft=None,
+            )
+        )
+    )

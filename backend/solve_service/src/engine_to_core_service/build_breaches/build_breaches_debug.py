@@ -594,6 +594,13 @@ def debug_breaches(
 
     # Totals
     total_breaches = sum(int(v["count"]) for v in stats.values())
+    # For the engine output checks we want to exclude the special
+    # max-week / max-week-day categories because they don't produce
+    # engine breaches. Compute a separate total used only for those checks.
+    excluded_keys = {"max_weekly_nb_duties", "max_week_day_nb_duties"}
+    total_breaches_for_checks = sum(
+        int(v["count"]) for k, v in stats.items() if k not in excluded_keys
+    )
     print("-" * (w1 + w2 + w3 + w4))
     print(
         f"{'TOTAL':<{w1}}{total_breaches:>{w2}}{total_calc:>{w3}.0f}"
@@ -678,10 +685,12 @@ def debug_breaches(
             + f"calc: {total_calc} "
             + f"delta: {int(total_calc)-outputs.objective_value}"
         )
+        len_breaches = len(outputs.breaches)
+        delta_breaches = total_breaches_for_checks - len_breaches
         print(
-            f"  Raw engine breaches (outputs.breaches): {len(outputs.breaches)} vs "
-            + f"calc: {total_breaches} "
-            + f"delta: {total_breaches-len(outputs.breaches)}"
+            "  Raw engine breaches (outputs.breaches): "
+            + f"{len_breaches} vs calc: {total_breaches_for_checks} "
+            + f"delta: {delta_breaches}"
         )
     except Exception:
         # never break normal flow when debugging

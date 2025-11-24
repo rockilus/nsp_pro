@@ -203,6 +203,8 @@ class ObjectiveCategory(Enum):
     WORK_TIME_WEEK_TARGET = 9
     DUTIES_PER_MONTH_TARGET = 10
     SPECIAL_DAYS_TARGET = 11
+    MAX_WEEKLY_NB_DUTIES = 12
+    MAX_WEEK_DAY_NB_DUTIES = 13
 
 
 # pylint: disable=R0801
