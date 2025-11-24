@@ -1,7 +1,7 @@
 from dataclasses import asdict, dataclass, field
 from datetime import date
 from enum import Enum
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from ortools.sat.python import cp_model  # type: ignore
 from shared.schemas.core import Constraints, ModelConfig
@@ -278,6 +278,7 @@ class VarName:
     objective_category: int
     cstr_vars: List[str]
     hard_to_soft: bool | None
+    meta: Dict[str, Any] | None = None
 
 
 @dataclass
@@ -314,6 +315,4 @@ class ProcessingCache:
     w_to_work_times: Dict[str, Dict[str, List[int]]]
     w_to_nb_duties: Dict[str, Dict[str, List[int]]]
     shift_id_to_duration: Dict[str, int]
-    dim_to_attr_value_to_shift: Dict[
-        str, Dict[str | int | float | bool, List[str]]
-    ]
+    dim_to_attr_value_to_shift: Dict[str, Dict[str | int | float | bool, List[str]]]

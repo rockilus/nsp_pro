@@ -304,6 +304,8 @@ def debug_breaches(
     # Per-constraint-type breakdown for ObjectiveCategory.CONSTRAINT
     constraint_stats: Dict[str, Dict[str, float]] = {}
     total_calc = 0
+    found_max_weekly_breach = False
+    found_max_weekday_breach = False
     for b in breaches:
         # track concrete constraint type when objective category is CONSTRAINT
         constraint_type: str | None = None
@@ -432,6 +434,54 @@ def debug_breaches(
             val = engine_inputs.penalties.configuration_constraint.link_shift
             processed = True
 
+        elif b.objective_category == ObjectiveCategory.MAX_WEEKLY_NB_DUTIES:
+            # Expect meta to indicate primary or step
+            meta = getattr(b, "meta", None)
+            try:
+                mw = inputs.system_constraints.max_weekly_nb_duties
+                if meta and meta.get("type") == "primary":
+                    mw_val, mw_breakdown = (
+                        calculate_breach_penalty_max_weekly_nb_duties(
+                            assignments, mw
+                        )
+                    )
+                    val = mw_breakdown["max"]
+                    found_max_weekly_breach = True
+                    processed = True
+                elif meta and meta.get("type") == "step":
+                    threshold = int(meta.get("threshold", 0))
+                    penalty = mw[1]
+                    stepped_penalty_weight = max(1, penalty // 20)
+                    val = threshold * threshold * stepped_penalty_weight
+                    found_max_weekly_breach = True
+                    processed = True
+            except Exception:
+                # fallback to not failing debug
+                pass
+
+        elif b.objective_category == ObjectiveCategory.MAX_WEEK_DAY_NB_DUTIES:
+            meta = getattr(b, "meta", None)
+            try:
+                md = inputs.system_constraints.max_week_day_nb_duties
+                if meta and meta.get("type") == "primary":
+                    md_val, md_breakdown = (
+                        calculate_breach_penalty_max_week_day_nb_duties(
+                            assignments, md
+                        )
+                    )
+                    val = md_breakdown["max"]
+                    found_max_weekday_breach = True
+                    processed = True
+                elif meta and meta.get("type") == "step":
+                    threshold = int(meta.get("threshold", 0))
+                    penalty = md[1]
+                    stepped_penalty_weight = max(1, penalty // 20)
+                    val = threshold * threshold * stepped_penalty_weight
+                    found_max_weekday_breach = True
+                    processed = True
+            except Exception:
+                pass
+
         # elif b.objective_category.name == ObjectiveCategory.DUTY_RECUP.name:
         #     # find recup pair
         #     found = False
@@ -518,54 +568,58 @@ def debug_breaches(
     # Handle max weekly / weekday duties penalties (they don't produce breaches)
     special_stats: Dict[str, Dict[str, float]] = {}
     # max weekly
-    try:
-        mw = inputs.system_constraints.max_weekly_nb_duties
-        if mw:
-            mw_val, mw_breakdown = (
-                calculate_breach_penalty_max_weekly_nb_duties(assignments, mw)
-            )
-            stats.setdefault(
-                "max_weekly_nb_duties", {"count": 0, "total": 0.0}
-            )
-            stats["max_weekly_nb_duties"]["count"] += 1
-            stats["max_weekly_nb_duties"]["total"] += mw_val
-            total_calc += mw_val
-            special_stats["max_weekly_nb_duties.max"] = {
-                "count": 1,
-                "total": float(mw_breakdown["max"]),
-            }
-            special_stats["max_weekly_nb_duties.stepped"] = {
-                "count": float(mw_breakdown["stepped_count"]),
-                "total": float(mw_breakdown["stepped_total"]),
-            }
-    except Exception:
-        pass
+    if not found_max_weekly_breach:
+        try:
+            mw = inputs.system_constraints.max_weekly_nb_duties
+            if mw:
+                mw_val, mw_breakdown = (
+                    calculate_breach_penalty_max_weekly_nb_duties(
+                        assignments, mw
+                    )
+                )
+                stats.setdefault(
+                    "max_weekly_nb_duties", {"count": 0, "total": 0.0}
+                )
+                stats["max_weekly_nb_duties"]["count"] += 1
+                stats["max_weekly_nb_duties"]["total"] += mw_val
+                total_calc += mw_val
+                special_stats["max_weekly_nb_duties.max"] = {
+                    "count": 1,
+                    "total": float(mw_breakdown["max"]),
+                }
+                special_stats["max_weekly_nb_duties.stepped"] = {
+                    "count": float(mw_breakdown["stepped_count"]),
+                    "total": float(mw_breakdown["stepped_total"]),
+                }
+        except Exception:
+            pass
 
     # max weekday
-    try:
-        md = inputs.system_constraints.max_week_day_nb_duties
-        if md:
-            md_val, md_breakdown = (
-                calculate_breach_penalty_max_week_day_nb_duties(
-                    assignments, md
+    if not found_max_weekday_breach:
+        try:
+            md = inputs.system_constraints.max_week_day_nb_duties
+            if md:
+                md_val, md_breakdown = (
+                    calculate_breach_penalty_max_week_day_nb_duties(
+                        assignments, md
+                    )
                 )
-            )
-            stats.setdefault(
-                "max_week_day_nb_duties", {"count": 0, "total": 0.0}
-            )
-            stats["max_week_day_nb_duties"]["count"] += 1
-            stats["max_week_day_nb_duties"]["total"] += md_val
-            total_calc += md_val
-            special_stats["max_week_day_nb_duties.max"] = {
-                "count": 1,
-                "total": float(md_breakdown["max"]),
-            }
-            special_stats["max_week_day_nb_duties.stepped"] = {
-                "count": float(md_breakdown["stepped_count"]),
-                "total": float(md_breakdown["stepped_total"]),
-            }
-    except Exception:
-        pass
+                stats.setdefault(
+                    "max_week_day_nb_duties", {"count": 0, "total": 0.0}
+                )
+                stats["max_week_day_nb_duties"]["count"] += 1
+                stats["max_week_day_nb_duties"]["total"] += md_val
+                total_calc += md_val
+                special_stats["max_week_day_nb_duties.max"] = {
+                    "count": 1,
+                    "total": float(md_breakdown["max"]),
+                }
+                special_stats["max_week_day_nb_duties.stepped"] = {
+                    "count": float(md_breakdown["stepped_count"]),
+                    "total": float(md_breakdown["stepped_total"]),
+                }
+        except Exception:
+            pass
 
     # Print table
     rows: List[Tuple[str, int, float, float]] = []

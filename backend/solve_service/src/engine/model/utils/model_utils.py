@@ -169,9 +169,7 @@ def build_var_name_link_shift(
 #     )
 
 
-def build_var_name_seq(
-    constraint: Constraint, span: List[cp_model.IntVar]
-) -> str:
+def build_var_name_seq(constraint: Constraint, span: List[cp_model.IntVar]) -> str:
     # pylint: disable=protected-access
     return json.dumps(
         asdict(
@@ -207,6 +205,38 @@ def build_var_name_equity(
                 cstr_vars=[var.Name() for var in cstr_vars],
                 objective_category=category.value,
                 hard_to_soft=None,
+            )
+        )
+    )
+
+
+def build_var_name_generic(
+    objective_id: str | None,
+    cstr_vars: List[cp_model.IntVar],
+    category: ObjectiveCategory,
+    hard_to_soft: bool | None = None,
+    meta: dict | None = None,
+) -> str:
+    """Build a JSON VarName allowing arbitrary meta data.
+
+    `cstr_vars` can be a list of cp_model.IntVar or strings (var names).
+    """
+    # normalize cstr_vars to names
+    names: List[str] = []
+    for v in cstr_vars:
+        try:
+            names.append(v.Name())
+        except Exception:
+            names.append(str(v))
+
+    return json.dumps(
+        asdict(
+            VarName(
+                objective_id=objective_id,
+                cstr_vars=names,
+                objective_category=category.value,
+                hard_to_soft=hard_to_soft,
+                meta=meta,
             )
         )
     )

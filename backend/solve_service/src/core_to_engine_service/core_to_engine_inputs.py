@@ -47,8 +47,8 @@ from core_to_engine_service.build_worker_shift_filter import (
     build_worker_shift_filters,
 )
 from core_to_engine_service.calculate_worker_nb_duties import (
-    build_max_weekly_nb_duties_vars,
     build_max_week_day_nb_duties_vars,
+    build_max_weekly_nb_duties_vars,
     build_nb_duties_constraints,
     calculate_worker_nb_duties,
 )
@@ -71,9 +71,7 @@ def core_to_engine_inputs(
 ) -> Tuple[InputsEngine, ProcessingCache]:
     # Workers
     workers_not_deleted = [w for w in engine_inputs.workers if not w.deleted]
-    worker_not_deleted_ids = [
-        w.id for w in engine_inputs.workers if not w.deleted
-    ]
+    worker_not_deleted_ids = [w.id for w in engine_inputs.workers if not w.deleted]
     dim_to_attr_value_to_worker = build_dim_to_attr_value_to_owner(
         engine_inputs.workers,
         engine_inputs.dimensions,
@@ -100,13 +98,9 @@ def core_to_engine_inputs(
         for s in engine_inputs.shifts
         if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
     ]
-    shift_duties = [
-        s for s in engine_inputs.shifts if s.shift_type == ShiftType.DUTY
-    ]
+    shift_duties = [s for s in engine_inputs.shifts if s.shift_type == ShiftType.DUTY]
     shift_duties_not_deleted = [s for s in shift_duties if not s.deleted]
-    shift_id_to_duration_dict = _build_shift_id_to_duration_dict(
-        engine_inputs.shifts
-    )
+    shift_id_to_duration_dict = _build_shift_id_to_duration_dict(engine_inputs.shifts)
     dim_to_attr_value_to_shift = build_dim_to_attr_value_to_owner(
         engine_inputs.shifts,
         engine_inputs.dimensions,
@@ -418,6 +412,5 @@ def core_to_engine_inputs(
 
 def _build_shift_id_to_duration_dict(shifts: List[Shift]) -> Dict[str, int]:
     return {
-        s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1)
-        for s in shifts
+        s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1) for s in shifts
     }
