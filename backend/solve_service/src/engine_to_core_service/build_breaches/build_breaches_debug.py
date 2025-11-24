@@ -191,10 +191,6 @@ def calculate_breach_penalty_nb_duties_target(
     return max(excesses) * group.penalty
 
 
-# Removed wrapper `calculate_breach_penalty_max_weekly_nb_duties` per
-# refactor: callers should use the primary and stepped helpers directly.
-
-
 def calculate_breach_penalty_max_weekly_nb_duties_primary(
     assignments: List[Assignment],
     max_weekly_nb_duties: tuple,
@@ -294,33 +290,6 @@ def calculate_breach_penalty_max_weekly_nb_duties_stepped(
                 stepped_total += stepped_sum * stepped_penalty_weight
 
     return stepped_total, stepped_count
-
-
-def calculate_breach_penalty_max_week_day_nb_duties(
-    assignments: List[Assignment],
-    max_week_day_nb_duties: tuple,
-) -> tuple:
-    """Same logic as weekly but applied per-weekday groups."""
-    # Structure: (weekday_entries_all, penalty)
-    # Delegate to the primary and stepped helpers and return the same
-    # (total, breakdown) structure expected by callers.
-    primary, _ = calculate_breach_penalty_max_weekly_nb_duties_primary(
-        assignments, max_week_day_nb_duties
-    )
-    stepped_total, stepped_count = (
-        calculate_breach_penalty_max_weekly_nb_duties_stepped(
-            assignments, max_week_day_nb_duties
-        )
-    )
-    total = primary + stepped_total
-    return (
-        total,
-        {
-            "max": primary,
-            "stepped_total": stepped_total,
-            "stepped_count": stepped_count,
-        },
-    )
 
 
 def debug_breaches(
@@ -508,19 +477,15 @@ def debug_breaches(
             try:
                 mw = inputs.system_constraints.max_weekly_nb_duties
                 if meta and meta.get("type") == "primary":
-                    # Use primary and stepped helpers directly
+                    # For primary max-week breaches use only the weekly
+                    # primary helper. Stepped penalties are handled when
+                    # the breach type is 'step'.
                     primary, _ = (
                         calculate_breach_penalty_max_weekly_nb_duties_primary(
                             assignments, mw
                         )
                     )
-                    stepped_total, stepped_count = (
-                        calculate_breach_penalty_max_weekly_nb_duties_stepped(
-                            assignments, mw
-                        )
-                    )
                     val = primary
-                    # record special breakdowns (primary + stepped)
                     special_stats.setdefault(
                         "max_weekly_nb_duties.max", {"count": 0, "total": 0.0}
                     )
@@ -528,16 +493,6 @@ def debug_breaches(
                     special_stats["max_weekly_nb_duties.max"][
                         "total"
                     ] += float(primary)
-                    special_stats.setdefault(
-                        "max_weekly_nb_duties.stepped",
-                        {"count": 0, "total": 0.0},
-                    )
-                    special_stats["max_weekly_nb_duties.stepped"][
-                        "count"
-                    ] += float(stepped_count)
-                    special_stats["max_weekly_nb_duties.stepped"][
-                        "total"
-                    ] += float(stepped_total)
                     processed = True
                 elif meta and meta.get("type") == "step":
                     try:
@@ -569,13 +524,16 @@ def debug_breaches(
             try:
                 md = inputs.system_constraints.max_week_day_nb_duties
                 if meta and meta.get("type") == "primary":
-                    md_val, md_breakdown = (
-                        calculate_breach_penalty_max_week_day_nb_duties(
+                    # For primary max-week-day breaches use only the weekly
+                    # primary helper to compute the primary penalty. Do not
+                    # compute stepped penalties here (they are handled for
+                    # 'step' breaches).
+                    primary, _ = (
+                        calculate_breach_penalty_max_weekly_nb_duties_primary(
                             assignments, md
                         )
                     )
-                    val = md_breakdown["max"]
-                    # record special breakdowns (primary + stepped)
+                    val = primary
                     special_stats.setdefault(
                         "max_week_day_nb_duties.max",
                         {"count": 0, "total": 0.0},
@@ -583,17 +541,7 @@ def debug_breaches(
                     special_stats["max_week_day_nb_duties.max"]["count"] += 1
                     special_stats["max_week_day_nb_duties.max"][
                         "total"
-                    ] += float(md_breakdown["max"])
-                    special_stats.setdefault(
-                        "max_week_day_nb_duties.stepped",
-                        {"count": 0, "total": 0.0},
-                    )
-                    special_stats["max_week_day_nb_duties.stepped"][
-                        "count"
-                    ] += float(md_breakdown["stepped_count"])
-                    special_stats["max_week_day_nb_duties.stepped"][
-                        "total"
-                    ] += float(md_breakdown["stepped_total"])
+                    ] += float(primary)
                     processed = True
                 elif meta and meta.get("type") == "step":
                     try:
