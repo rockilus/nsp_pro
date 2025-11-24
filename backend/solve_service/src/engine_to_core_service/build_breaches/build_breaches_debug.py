@@ -227,6 +227,7 @@ def calculate_breach_penalty_max_weekly_nb_duties_primary(
 def calculate_breach_penalty_max_weekly_nb_duties_stepped(
     assignments: List[Assignment],
     max_weekly_nb_duties: tuple,
+    breach_vars: List[object] | None = None,
 ) -> tuple:
     """Calculate the secondary (stepped) penalties for weekly duties.
 
@@ -234,6 +235,40 @@ def calculate_breach_penalty_max_weekly_nb_duties_stepped(
     """
     weeks_vars, penalty = max_weekly_nb_duties
     if not weeks_vars:
+        return 0, 0
+
+    # If breach_vars is provided, compute the stepped penalty for the
+    # specific breach using its variables. Use getattr to avoid static
+    # type complaints when the variable objects don't have a strict
+    # declared type in the stubbed environment.
+    if breach_vars is not None:
+        b_coords = set()
+        for var in breach_vars:
+            try:
+                wid = getattr(var, "worker_id")
+                date_obj = getattr(var, "date")
+                sid = getattr(var, "shift_id")
+                d_iso = (
+                    date_obj.isoformat()
+                    if hasattr(date_obj, "isoformat")
+                    else str(date_obj)
+                )
+                b_coords.add((wid, d_iso, sid))
+            except Exception:
+                continue
+
+        count = sum(
+            1
+            for a in assignments
+            if (a.worker_id, a.date.isoformat(), a.shift_id) in b_coords
+        )
+
+        stepped_penalty_weight = max(1, penalty // 20)
+        if count >= 2:
+            c = count
+            sum_sq = c * (c + 1) * (2 * c + 1) // 6
+            stepped_sum = sum_sq - 1
+            return stepped_sum * stepped_penalty_weight, 1
         return 0, 0
 
     stepped_total = 0
@@ -505,20 +540,26 @@ def debug_breaches(
                     ] += float(stepped_total)
                     processed = True
                 elif meta and meta.get("type") == "step":
-                    threshold = int(meta.get("threshold", 0))
-                    penalty = mw[1]
-                    stepped_penalty_weight = max(1, penalty // 20)
-                    val = threshold * threshold * stepped_penalty_weight
-                    # record stepped entry for this threshold
-                    special_stats.setdefault(
-                        "max_weekly_nb_duties.stepped",
-                        {"count": 0, "total": 0.0},
-                    )
-                    special_stats["max_weekly_nb_duties.stepped"]["count"] += 1
-                    special_stats["max_weekly_nb_duties.stepped"][
-                        "total"
-                    ] += float(val)
-                    processed = True
+                    try:
+                        stepped_total, stepped_count = (
+                            calculate_breach_penalty_max_weekly_nb_duties_stepped(
+                                assignments, mw, breach_vars=b.variables
+                            )
+                        )
+                        val = stepped_total
+                        special_stats.setdefault(
+                            "max_weekly_nb_duties.stepped",
+                            {"count": 0, "total": 0.0},
+                        )
+                        special_stats["max_weekly_nb_duties.stepped"][
+                            "count"
+                        ] += stepped_count
+                        special_stats["max_weekly_nb_duties.stepped"][
+                            "total"
+                        ] += float(stepped_total)
+                        processed = True
+                    except Exception:
+                        pass
             except Exception:
                 # fallback to not failing debug
                 pass
@@ -555,22 +596,26 @@ def debug_breaches(
                     ] += float(md_breakdown["stepped_total"])
                     processed = True
                 elif meta and meta.get("type") == "step":
-                    threshold = int(meta.get("threshold", 0))
-                    penalty = md[1]
-                    stepped_penalty_weight = max(1, penalty // 20)
-                    val = threshold * threshold * stepped_penalty_weight
-                    # record stepped entry for this threshold
-                    special_stats.setdefault(
-                        "max_week_day_nb_duties.stepped",
-                        {"count": 0, "total": 0.0},
-                    )
-                    special_stats["max_week_day_nb_duties.stepped"][
-                        "count"
-                    ] += 1
-                    special_stats["max_week_day_nb_duties.stepped"][
-                        "total"
-                    ] += float(val)
-                    processed = True
+                    try:
+                        stepped_total, stepped_count = (
+                            calculate_breach_penalty_max_weekly_nb_duties_stepped(
+                                assignments, md, breach_vars=b.variables
+                            )
+                        )
+                        val = stepped_total
+                        special_stats.setdefault(
+                            "max_week_day_nb_duties.stepped",
+                            {"count": 0, "total": 0.0},
+                        )
+                        special_stats["max_week_day_nb_duties.stepped"][
+                            "count"
+                        ] += stepped_count
+                        special_stats["max_week_day_nb_duties.stepped"][
+                            "total"
+                        ] += float(stepped_total)
+                        processed = True
+                    except Exception:
+                        pass
             except Exception:
                 pass
 
