@@ -191,25 +191,54 @@ def calculate_breach_penalty_nb_duties_target(
     return max(excesses) * group.penalty
 
 
-def calculate_breach_penalty_max_weekly_nb_duties(
+# Removed wrapper `calculate_breach_penalty_max_weekly_nb_duties` per
+# refactor: callers should use the primary and stepped helpers directly.
+
+
+def calculate_breach_penalty_max_weekly_nb_duties_primary(
     assignments: List[Assignment],
     max_weekly_nb_duties: tuple,
 ) -> tuple:
-    """Calculate primary (global max) and secondary (stepped) penalties.
+    """Calculate the primary (global max) penalty for weekly duties.
 
-    Returns a tuple `(total_penalty, breakdown_dict)` where `breakdown_dict`
-    contains keys `max` (primary penalty), `stepped_total` (sum of stepped
-    penalties) and `stepped_count` (number of worker-week entries contributing).
+    Returns a tuple `(primary_penalty, global_max_count)`.
     """
     weeks_vars, penalty = max_weekly_nb_duties
     if not weeks_vars:
-        return 0, {"max": 0, "stepped_total": 0, "stepped_count": 0}
+        return 0, 0
 
-    # Compute counts per worker-week
-    worker_week_counts: List[int] = []
-    stepped_count = 0
-    stepped_total = 0
     global_max = 0
+    for week in weeks_vars:
+        for worker_assignments in week:
+            if not worker_assignments:
+                continue
+            coords = {(w, d, s) for (w, d, s) in worker_assignments}
+            count = sum(
+                1
+                for a in assignments
+                if (a.worker_id, a.date.isoformat(), a.shift_id) in coords
+            )
+            global_max = max(global_max, count)
+
+    primary = global_max * penalty
+    return primary, global_max
+
+
+def calculate_breach_penalty_max_weekly_nb_duties_stepped(
+    assignments: List[Assignment],
+    max_weekly_nb_duties: tuple,
+) -> tuple:
+    """Calculate the secondary (stepped) penalties for weekly duties.
+
+    Returns a tuple `(stepped_total, stepped_count)`.
+    """
+    weeks_vars, penalty = max_weekly_nb_duties
+    if not weeks_vars:
+        return 0, 0
+
+    stepped_total = 0
+    stepped_count = 0
+    stepped_penalty_weight = max(1, penalty // 20)
 
     for week in weeks_vars:
         for worker_assignments in week:
@@ -221,27 +250,15 @@ def calculate_breach_penalty_max_weekly_nb_duties(
                 for a in assignments
                 if (a.worker_id, a.date.isoformat(), a.shift_id) in coords
             )
-            worker_week_counts.append(count)
-            global_max = max(global_max, count)
-
-            # stepped penalties apply for counts >= 2 (model uses thresholds 2..max)
             if count >= 2:
                 stepped_count += 1
                 # sum_{t=2..count} t^2 = sum_{t=1..count} t^2 - 1
                 c = count
                 sum_sq = c * (c + 1) * (2 * c + 1) // 6
                 stepped_sum = sum_sq - 1
-                # stepped penalty weight mirrors model: max(1, penalty // 20)
-                stepped_penalty_weight = max(1, penalty // 20)
                 stepped_total += stepped_sum * stepped_penalty_weight
 
-    primary = global_max * penalty
-    total = primary + stepped_total
-    return total, {
-        "max": primary,
-        "stepped_total": stepped_total,
-        "stepped_count": stepped_count,
-    }
+    return stepped_total, stepped_count
 
 
 def calculate_breach_penalty_max_week_day_nb_duties(
@@ -250,8 +267,24 @@ def calculate_breach_penalty_max_week_day_nb_duties(
 ) -> tuple:
     """Same logic as weekly but applied per-weekday groups."""
     # Structure: (weekday_entries_all, penalty)
-    return calculate_breach_penalty_max_weekly_nb_duties(
+    # Delegate to the primary and stepped helpers and return the same
+    # (total, breakdown) structure expected by callers.
+    primary, _ = calculate_breach_penalty_max_weekly_nb_duties_primary(
         assignments, max_week_day_nb_duties
+    )
+    stepped_total, stepped_count = (
+        calculate_breach_penalty_max_weekly_nb_duties_stepped(
+            assignments, max_week_day_nb_duties
+        )
+    )
+    total = primary + stepped_total
+    return (
+        total,
+        {
+            "max": primary,
+            "stepped_total": stepped_total,
+            "stepped_count": stepped_count,
+        },
     )
 
 
@@ -440,12 +473,18 @@ def debug_breaches(
             try:
                 mw = inputs.system_constraints.max_weekly_nb_duties
                 if meta and meta.get("type") == "primary":
-                    mw_val, mw_breakdown = (
-                        calculate_breach_penalty_max_weekly_nb_duties(
+                    # Use primary and stepped helpers directly
+                    primary, _ = (
+                        calculate_breach_penalty_max_weekly_nb_duties_primary(
                             assignments, mw
                         )
                     )
-                    val = mw_breakdown["max"]
+                    stepped_total, stepped_count = (
+                        calculate_breach_penalty_max_weekly_nb_duties_stepped(
+                            assignments, mw
+                        )
+                    )
+                    val = primary
                     # record special breakdowns (primary + stepped)
                     special_stats.setdefault(
                         "max_weekly_nb_duties.max", {"count": 0, "total": 0.0}
@@ -453,17 +492,17 @@ def debug_breaches(
                     special_stats["max_weekly_nb_duties.max"]["count"] += 1
                     special_stats["max_weekly_nb_duties.max"][
                         "total"
-                    ] += float(mw_breakdown["max"])
+                    ] += float(primary)
                     special_stats.setdefault(
                         "max_weekly_nb_duties.stepped",
                         {"count": 0, "total": 0.0},
                     )
                     special_stats["max_weekly_nb_duties.stepped"][
                         "count"
-                    ] += float(mw_breakdown["stepped_count"])
+                    ] += float(stepped_count)
                     special_stats["max_weekly_nb_duties.stepped"][
                         "total"
-                    ] += float(mw_breakdown["stepped_total"])
+                    ] += float(stepped_total)
                     processed = True
                 elif meta and meta.get("type") == "step":
                     threshold = int(meta.get("threshold", 0))
