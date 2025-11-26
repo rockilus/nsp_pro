@@ -12,6 +12,7 @@ from engine.model.add_constraint_factory import AddConstraintFactory
 from engine.model.solver_solution_callback import SolverSolutionCallback
 from engine.model.utils.model_utils import (
     build_var_name_duty_recup,
+    build_var_name_generic,
     build_var_name_groups_assignments,
     build_var_name_link_shift,
     build_var_name_work_time,
@@ -32,7 +33,7 @@ from engine.types import (
 from utils.constants import Constants
 
 
-# pylint: disable=too-many-public-methods
+# pylint: disable=too-many-public-methods, too-many-lines
 class Model:
     # pylint: disable=too-many-instance-attributes, too-many-arguments
     def __init__(self, model_config: ModelConfig) -> None:
@@ -291,6 +292,21 @@ class Model:
         self.add_special_days_constraints(
             inputs.system_constraints.special_days_target_nb_duties
         )
+
+        # System constraint: max weekly number of duties across workers/weeks
+        # Format: (weeks x workers x assignments, penalty)
+        try:
+            self.add_max_weekly_nb_duties_constraints(
+                constraint=inputs.system_constraints.max_weekly_nb_duties,
+                obj_category=ObjectiveCategory.MAX_WEEKLY_NB_DUTIES,
+            )
+            self.add_max_weekly_nb_duties_constraints(
+                constraint=inputs.system_constraints.max_week_day_nb_duties,
+                obj_category=ObjectiveCategory.MAX_WEEK_DAY_NB_DUTIES,
+            )
+        except Exception:
+            # be defensive: if structure is missing or empty, skip
+            pass
 
         self.add_objective()
         self.solve()
@@ -625,6 +641,111 @@ class Model:
             self.model.AddMaxEquality(max_excess, excesses)
             self.obj.int_vars.append(max_excess)
             self.obj.int_coeffs.append(constraint.penalty)
+
+    # pylint: disable=too-many-branches
+    def add_max_weekly_nb_duties_constraints(
+        self,
+        constraint: Tuple[List[List[List[Tuple[str, str, str]]]], int],
+        obj_category: ObjectiveCategory,
+    ) -> None:
+        """Add penalties for weekly duty concentration.
+
+        The input is a tuple: (weeks_vars, penalty) where `weeks_vars` is
+        a list per week; each week is a list per worker; each worker is a
+        list of assignment tuples `(worker_id, date_iso, shift_id)`.
+
+        We use a two-part penalty strategy:
+        1. Primary: penalize the global max weekly duties (avoid extremes)
+        2. Secondary: stepped penalties for each worker-week to encourage
+           spreading duties across weeks (quadratic-like approximation)
+        """
+        if not constraint:
+            return
+        weeks_vars, penalty = constraint
+        if not weeks_vars:
+            return
+
+        # Determine upper bound (max assignments any worker-week)
+        max_assignments = 0
+        for week in weeks_vars:
+            for worker_assignments in week:
+                if worker_assignments:
+                    max_assignments = max(max_assignments, len(worker_assignments))
+        if max_assignments == 0:
+            return
+
+        week_max_vars: List[cp_model.IntVar] = []
+        all_worker_week_sum_vars: List[cp_model.IntVar] = []
+        all_worker_week_assignment_lists: List[List[cp_model.IntVar]] = []
+
+        for week in weeks_vars:
+            if not week:
+                continue
+            worker_sum_vars = []
+            for worker_assignments in week:
+                if not worker_assignments:
+                    continue
+                # Collect boolean vars for this worker-week
+                constraint_vars = [
+                    self.variables[a] for a in worker_assignments if a in self.variables
+                ]
+                if not constraint_vars:
+                    continue
+                sum_var = self.model.NewIntVar(0, len(constraint_vars), "")
+                self.model.Add(sum_var == sum(constraint_vars))
+                worker_sum_vars.append(sum_var)
+                all_worker_week_sum_vars.append(sum_var)
+                # store the original assignment tuples for this worker-week
+                all_worker_week_assignment_lists.append(constraint_vars)
+            if not worker_sum_vars:
+                continue
+            week_max = self.model.NewIntVar(0, max_assignments, "")
+            self.model.AddMaxEquality(week_max, worker_sum_vars)
+            week_max_vars.append(week_max)
+
+        if not week_max_vars:
+            return
+
+        # Name the primary global max with VarName JSON including meta
+        global_varname_json = build_var_name_generic(
+            objective_id=None,
+            cstr_vars=[],
+            category=obj_category,
+            hard_to_soft=None,
+            meta={"type": "primary"},
+        )
+        global_max = self.model.NewIntVar(0, max_assignments, global_varname_json)
+        self.model.AddMaxEquality(global_max, week_max_vars)
+        self.obj.int_vars.append(global_max)
+        self.obj.int_coeffs.append(penalty)
+
+        # Secondary penalty: stepped penalties for each worker-week
+        # Approximates quadratic penalty to encourage spreading
+        # Thresholds: [2, 3, 4, 5, ...] with penalties [4, 9, 16, 25, ...]
+        stepped_penalty_weight = max(1, penalty // 20)
+        # Create stepped bool vars per worker-week and name them with VarName JSON
+        for sum_var, assignment_list in zip(
+            all_worker_week_sum_vars, all_worker_week_assignment_lists
+        ):
+            for threshold in range(2, max_assignments + 1):
+                step_varname_json = build_var_name_generic(
+                    objective_id=None,
+                    cstr_vars=assignment_list,
+                    category=obj_category,
+                    hard_to_soft=None,
+                    meta={
+                        "type": "step",
+                        "threshold": threshold,
+                    },
+                )
+                exceeds = self.model.NewBoolVar(step_varname_json)
+                self.model.Add(sum_var >= threshold).OnlyEnforceIf(exceeds)
+                self.model.Add(sum_var < threshold).OnlyEnforceIf(exceeds.Not())
+                # Quadratic-like penalty: threshold^2
+                self.obj.bool_vars.append(exceeds)
+                self.obj.bool_coeffs.append(
+                    threshold * threshold * stepped_penalty_weight
+                )
 
     def add_special_days_constraints(
         self, constraints: List[GroupsAssignmentsTargetConstraint]

@@ -811,10 +811,19 @@ export default function ScheduleTab({
           setScheduleCampaign(updatedSchedule);
         }
 
-        // Update assignments (same logic as handleOutputEventSuccessSolution)
+        // Update assignments for the scheduleCampaign period (replace
+        // any existing assignments that fall within the campaign date range)
         if (newAssignments && scheduleCampaign) {
           setAssignments((prev) => [
-            ...prev.filter((a) => a.scheduleId !== scheduleCampaign.id),
+            // ...prev.filter((a) => a.scheduleId !== scheduleCampaign.id),
+            ...prev.filter((a) => {
+              // Keep assignments that are NOT within the campaign period.
+              // `a.date` is a dayjs.Dayjs; compare using day precision.
+              const inCampaignPeriod =
+                a.date.isSameOrAfter(scheduleCampaign.startDate, "day") &&
+                a.date.isSameOrBefore(scheduleCampaign.endDate, "day");
+              return !inCampaignPeriod;
+            }),
             ...newAssignments,
           ]);
         }

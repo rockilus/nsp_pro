@@ -47,6 +47,8 @@ from core_to_engine_service.build_worker_shift_filter import (
     build_worker_shift_filters,
 )
 from core_to_engine_service.calculate_worker_nb_duties import (
+    build_max_week_day_nb_duties_vars,
+    build_max_weekly_nb_duties_vars,
     build_nb_duties_constraints,
     calculate_worker_nb_duties,
 )
@@ -148,6 +150,29 @@ def core_to_engine_inputs(
         requests=engine_inputs.requests_leave,
         shift_demands=engine_inputs.shift_demands,
         periods=periods_monthly,
+    )
+
+    # Max weekly nb duties variables (weeks x workers x assignments lists)
+    max_weekly_nb_duties_vars = (
+        build_max_weekly_nb_duties_vars(
+            workers_not_deleted,
+            shift_duties_not_deleted,
+            periods_weekly,
+            ws_to_dates,
+        )
+        if engine_inputs.model_config.system_constraints.max_weekly_nb_duties
+        else []
+    )
+
+    max_week_day_nb_duties_vars = (
+        build_max_week_day_nb_duties_vars(
+            workers_not_deleted,
+            shift_duties_not_deleted,
+            dates_campaign,
+            ws_to_dates,
+        )
+        if engine_inputs.model_config.system_constraints.max_week_day_nb_duties
+        else []
     )
 
     # Fixed assignments
@@ -327,6 +352,16 @@ def core_to_engine_inputs(
                 .monthly_target_nb_duties
                 # fmt: on
                 else []
+            ),
+            # max_weekly_nb_duties: tuple (weeks x workers x assignments, penalty)
+            max_weekly_nb_duties=(
+                max_weekly_nb_duties_vars,
+                engine_inputs.penalties.system_constraint.max_weekly_nb_duties,
+            ),
+            # max_week_day_nb_duties: tuple (weekday * worker * duties, penalty)
+            max_week_day_nb_duties=(
+                max_week_day_nb_duties_vars,
+                engine_inputs.penalties.system_constraint.max_week_day_nb_duties,
             ),
             # special_days_target_nb_duties=[],
             special_days_target_nb_duties=(

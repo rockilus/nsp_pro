@@ -39,6 +39,8 @@ class SystemConstraints:
     weekly_target_worktime_tolerance: float
     monthly_target_nb_duties: bool
     mthly_target_nb_duty_tolerance: float
+    max_weekly_nb_duties: bool
+    max_week_day_nb_duties: bool
     special_days_target_nb_duties: bool
 
 

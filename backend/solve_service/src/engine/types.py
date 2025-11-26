@@ -1,7 +1,7 @@
 from dataclasses import asdict, dataclass, field
 from datetime import date
 from enum import Enum
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from ortools.sat.python import cp_model  # type: ignore
 from shared.schemas.core import Constraints, ModelConfig
@@ -145,6 +145,14 @@ class ConfigurationConstraintInputs:
 class SystemConstraintInputs:
     weekly_target_work_time: List[GroupsAssignmentsDurationsTargetConstraint]
     monthly_target_nb_duties: List[GroupsAssignmentsTargetConstraint]
+    max_weekly_nb_duties: Tuple[
+        List[List[List[Tuple[str, str, str]]]],  # week * worker * duties
+        int,
+    ]
+    max_week_day_nb_duties: Tuple[
+        List[List[List[Tuple[str, str, str]]]],  # weekday * worker * duties
+        int,
+    ]
     special_days_target_nb_duties: List[GroupsAssignmentsTargetConstraint]
 
 
@@ -195,6 +203,8 @@ class ObjectiveCategory(Enum):
     WORK_TIME_WEEK_TARGET = 9
     DUTIES_PER_MONTH_TARGET = 10
     SPECIAL_DAYS_TARGET = 11
+    MAX_WEEKLY_NB_DUTIES = 12
+    MAX_WEEK_DAY_NB_DUTIES = 13
 
 
 # pylint: disable=R0801
@@ -268,6 +278,7 @@ class VarName:
     objective_category: int
     cstr_vars: List[str]
     hard_to_soft: bool | None
+    meta: Dict[str, Any] | None = None
 
 
 @dataclass

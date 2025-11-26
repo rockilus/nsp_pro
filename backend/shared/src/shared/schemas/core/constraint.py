@@ -497,6 +497,8 @@ class ConfigurationConstraintPenalty:
 class SystemConstraintPenalty:
     weekly_target_work_time: int
     monthly_target_nb_duties: int
+    max_weekly_nb_duties: int
+    max_week_day_nb_duties: int
     special_days_target_nb_duties: int
 
     def apply_coefficient(self, coefficient: int) -> None:

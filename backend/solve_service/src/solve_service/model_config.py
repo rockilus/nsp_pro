@@ -94,6 +94,8 @@ model_config = ModelConfig(
         weekly_target_worktime_tolerance=0.2 if not test_mode else 0.0,
         monthly_target_nb_duties=not test_mode,
         mthly_target_nb_duty_tolerance=0.2 if not test_mode else 0.0,
+        max_weekly_nb_duties=not test_mode,
+        max_week_day_nb_duties=not test_mode,
         special_days_target_nb_duties=not test_mode,
     ),
 )

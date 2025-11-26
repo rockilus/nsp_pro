@@ -85,6 +85,8 @@ def build_breaches(
             ObjectiveCategory.WORK_TIME_WEEK_TARGET,
             ObjectiveCategory.DUTIES_PER_MONTH_TARGET,
             ObjectiveCategory.SPECIAL_DAYS_TARGET,
+            ObjectiveCategory.MAX_WEEKLY_NB_DUTIES,
+            ObjectiveCategory.MAX_WEEK_DAY_NB_DUTIES,
         ]
     ]
     # return breaches_model + breaches_not_model

@@ -101,6 +101,7 @@ def _parse_breaches_engine(
                 variables=[Variable(*v) for v in variables],
                 description="",
                 hard_to_soft=var_name.hard_to_soft,
+                meta=getattr(var_name, "meta", None),
             )
         )
     return out
