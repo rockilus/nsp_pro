@@ -1,0 +1,13 @@
+    "benoit_scenario_2": {
+        "specialties": [],
+        "workers": [],
+        "shifts": [],
+        "link_shifts": [],
+        "dimensions": [],
+        "dim_entries": [],
+        "attributes": [],
+        "shift_demands": [],
+        "constraints": [],
+        "requests": [],
+        "schedules": []
+    }
