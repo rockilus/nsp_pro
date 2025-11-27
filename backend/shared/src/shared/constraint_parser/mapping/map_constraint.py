@@ -55,7 +55,9 @@ class MapConstaint:
             periods_monthly,
             periods_yearly,
         )
-        self.map_shift = MapShift(shifts, shift_dim_dict, shift_ids_in_coverage)
+        self.map_shift = MapShift(
+            shifts, shift_dim_dict, shift_ids_in_coverage
+        )
 
     @staticmethod
     def calculate_prorated_target(
@@ -175,10 +177,14 @@ class MapConstaint:
                 + self.worker_ids_to_worker_dates[w.id].dates_campaign
             )
             for period in coord_days:
-                period = sorted(list(set(period).intersection(dates_worker_set)))
+                period = sorted(
+                    list(set(period).intersection(dates_worker_set))
+                )
                 constraint_vars = []
                 for s in coord_shifts:
-                    constraint_vars += [(w.id, d.isoformat(), s.id) for d in period]
+                    constraint_vars += [
+                        (w.id, d.isoformat(), s.id) for d in period
+                    ]
                 if constraint_vars:
                     constraints_vars.append(constraint_vars)
                     # Calculate pro-rated target for this period
@@ -186,7 +192,10 @@ class MapConstaint:
                         period, period_list
                     )
                     prorated_target = self.calculate_prorated_target(
-                        base_target, len(period), full_period_length, cstr_operator
+                        base_target,
+                        len(period),
+                        full_period_length,
+                        cstr_operator,
                     )
                     target_values.append(prorated_target)
 
@@ -265,7 +274,9 @@ class MapConstaint:
         coord_days = self.map_day.get_coords_days_ord(cba, interval)
         coord_shifts = self.map_shift.get_coords_shifts_ord(cba)
 
-        constraints_vars: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]] = []
+        constraints_vars: List[
+            Tuple[Tuple[str, str, str], Tuple[str, str, str]]
+        ] = []
         for w in coord_workers:
             worker_dates = (
                 self.worker_ids_to_worker_dates[w.id].dates_hist
@@ -285,7 +296,9 @@ class MapConstaint:
             id=cba.id,
             constraint_type=cba.constraint_type,
             operator=cstr_operator,
-            target_value=self.get_target_value(cba.blocks, cba.constraint_type),
+            target_value=self.get_target_value(
+                cba.blocks, cba.constraint_type
+            ),
             target_unit="",
             shift_reference_ids=[s.id for s, _ in coord_shifts],
             shift_relative_ids=[s.id for _, s in coord_shifts],
@@ -313,9 +326,13 @@ class MapConstaint:
 
         constraints_vars: List[Tuple[str, str, str]] = []
         for w in coord_workers:
-            dates_worker_set = set(self.worker_ids_to_worker_dates[w.id].dates_campaign)
+            dates_worker_set = set(
+                self.worker_ids_to_worker_dates[w.id].dates_campaign
+            )
 
-            dates_cstr = sorted(list(set(coord_days).intersection(dates_worker_set)))
+            dates_cstr = sorted(
+                list(set(coord_days).intersection(dates_worker_set))
+            )
             for d in dates_cstr:
                 for s in coord_shifts:
                     constraints_vars.append((w.id, d.isoformat(), s.id))
@@ -324,7 +341,9 @@ class MapConstaint:
             id=cba.id,
             constraint_type=cba.constraint_type,
             operator=cstr_operator,
-            target_value=self.get_target_value(cba.blocks, cba.constraint_type),
+            target_value=self.get_target_value(
+                cba.blocks, cba.constraint_type
+            ),
             target_unit="",
             constraint_variables=constraints_vars,
             active=cba.active,
@@ -361,7 +380,9 @@ class MapConstaint:
             id=cba.id,
             constraint_type=cba.constraint_type,
             operator=cstr_operator,
-            target_value=self.get_target_value(cba.blocks, cba.constraint_type),
+            target_value=self.get_target_value(
+                cba.blocks, cba.constraint_type
+            ),
             target_unit="",
             constraint_variables=constraints_vars,
             active=cba.active,
@@ -411,10 +432,14 @@ class MapConstaint:
                 + self.worker_ids_to_worker_dates[w.id].dates_campaign
             )
             for period in coord_days:
-                period = sorted(list(set(period).intersection(dates_worker_set)))
+                period = sorted(
+                    list(set(period).intersection(dates_worker_set))
+                )
                 constraint_vars = []
                 for s in coord_shifts:
-                    constraint_vars += [(w.id, d.isoformat(), s.id) for d in period]
+                    constraint_vars += [
+                        (w.id, d.isoformat(), s.id) for d in period
+                    ]
                 constraints_vars.append(constraint_vars)
                 # EVE constraint uses target_value=1 for all periods
                 target_values.append(1)
@@ -443,7 +468,9 @@ class MapConstaint:
     def integer_division_list(numerator: int, denominator: int) -> List[int]:
         quotient = numerator // denominator
         remainder = numerator % denominator
-        result = [quotient + 1] * remainder + [quotient] * (denominator - remainder)
+        result = [quotient + 1] * remainder + [quotient] * (
+            denominator - remainder
+        )
         return result
 
     def get_operator(
@@ -460,7 +487,9 @@ class MapConstaint:
             return ConstraintOperator.YES
         raise ValueError("Operator not found")
 
-    def get_target_value(self, blocks: List[Block], cstr_type: ConstraintType) -> int:
+    def get_target_value(
+        self, blocks: List[Block], cstr_type: ConstraintType
+    ) -> int:
         if cstr_type in [
             ConstraintType.ORD,
             ConstraintType.FIL,
