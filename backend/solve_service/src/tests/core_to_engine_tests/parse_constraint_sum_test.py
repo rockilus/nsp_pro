@@ -307,9 +307,7 @@ def test_parse_constraints_sum_returns_non_empty(
         ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
     )
 
-    dates_hist, dates_campaign = build_dates(
-        ei.schedule, ei.as_hist + ei.as_wip_fixed
-    )
+    dates_hist, dates_campaign = build_dates(ei.schedule, ei.as_hist + ei.as_wip_fixed)
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
@@ -341,8 +339,7 @@ def test_parse_constraints_sum_returns_non_empty(
         target_value=2,
         target_unit="",
         constraint_variables=[
-            [("w0", d.isoformat(), "sh0") for d in week]
-            for week in periods_weekly
+            [("w0", d.isoformat(), "sh0") for d in week] for week in periods_weekly
         ],
         target_values=[2] * len(periods_weekly),
         active=True,
@@ -404,9 +401,7 @@ def test_parse_constraints_sum_ignores_workers_ended_before_schedule(
         ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
     )
 
-    dates_hist, dates_campaign = build_dates(
-        ei.schedule, ei.as_hist + ei.as_wip_fixed
-    )
+    dates_hist, dates_campaign = build_dates(ei.schedule, ei.as_hist + ei.as_wip_fixed)
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
@@ -475,9 +470,7 @@ def test_parse_constraints_sum_all_workers_ignores_ended_worker(
         ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
     )
 
-    dates_hist, dates_campaign = build_dates(
-        ei.schedule, ei.as_hist + ei.as_wip_fixed
-    )
+    dates_hist, dates_campaign = build_dates(ei.schedule, ei.as_hist + ei.as_wip_fixed)
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
@@ -580,9 +573,7 @@ def test_parse_constraints_sum_all_duties_ignores_ended_worker(
         ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
     )
 
-    dates_hist, dates_campaign = build_dates(
-        ei.schedule, ei.as_hist + ei.as_wip_fixed
-    )
+    dates_hist, dates_campaign = build_dates(ei.schedule, ei.as_hist + ei.as_wip_fixed)
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
@@ -625,9 +616,7 @@ def test_parse_constraints_sum_all_duties_ignores_ended_worker(
     assert "w1" in seen_workers
 
     # Ensure only duty shifts are referenced in the constraint variables
-    duty_shift_ids = {
-        s.id for s in ei.shifts if s.shift_type == ShiftType.DUTY
-    }
+    duty_shift_ids = {s.id for s in ei.shifts if s.shift_type == ShiftType.DUTY}
     for inner in actual.constraint_variables:
         for var in inner:
             assert var[2] in duty_shift_ids

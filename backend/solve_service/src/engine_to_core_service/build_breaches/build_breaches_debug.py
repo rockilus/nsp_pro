@@ -78,19 +78,7 @@ def calculate_breach_penalty_seq(
         target_value = 0
         operator = None
     else:
-        # Find which period this breach belongs to
-        breach_tuples = {
-            (v.worker_id, v.date.isoformat(), v.shift_id)
-            for v in breach.variables
-        }
-        target_value = constraint.target_value  # default fallback
-        for period_idx, period_vars in enumerate(
-            constraint.constraint_variables
-        ):
-            period_tuples = set(period_vars)
-            if breach_tuples.issubset(period_tuples):
-                target_value = constraint.target_values[period_idx]
-                break
+        target_value = constraint.target_value
         operator = constraint.operator
 
     if operator is None:
@@ -134,13 +122,10 @@ def calculate_breach_penalty_sum(
     else:
         # Find which period this breach belongs to
         breach_tuples = {
-            (v.worker_id, v.date.isoformat(), v.shift_id)
-            for v in breach.variables
+            (v.worker_id, v.date.isoformat(), v.shift_id) for v in breach.variables
         }
         target_value = constraint.target_value  # default fallback
-        for period_idx, period_vars in enumerate(
-            constraint.constraint_variables
-        ):
+        for period_idx, period_vars in enumerate(constraint.constraint_variables):
             period_tuples = set(period_vars)
             if breach_tuples.issubset(period_tuples):
                 target_value = constraint.target_values[period_idx]
@@ -357,8 +342,7 @@ def debug_breaches(
     #     for spe in w.specialty_ids:
     #         workers_by_spe_id.setdefault(spe, []).append(w)
     requests_by_id: Dict[str, Request] = {
-        r.id: r
-        for r in engine_inputs.requests_leave + engine_inputs.requests_work
+        r.id: r for r in engine_inputs.requests_leave + engine_inputs.requests_work
     }
 
     # Accumulators
@@ -380,11 +364,7 @@ def debug_breaches(
         # try to resolve based on category
         if b.objective_category == ObjectiveCategory.CONSTRAINT:
             # find constraint by objective_id
-            cstr = (
-                constraints_by_id.get(b.objective_id)
-                if b.objective_id
-                else None
-            )
+            cstr = constraints_by_id.get(b.objective_id) if b.objective_id else None
             if cstr is not None:
                 processed = True
                 cstr = cast(Constraint, cstr)
@@ -406,9 +386,7 @@ def debug_breaches(
                         if cstr_seq.hard
                         else engine_inputs.penalties.user_constraint.seq.soft
                     )
-                    val = calculate_breach_penalty_seq(
-                        b, assignments, pen, cstr_seq
-                    )
+                    val = calculate_breach_penalty_seq(b, assignments, pen, cstr_seq)
                 elif isinstance(cstr, ConstraintFai):
                     # ConstraintFai has similar shape to seq; reuse seq penalty.
                     # Cast to ConstraintSeq for the calculator's signature.
@@ -438,9 +416,7 @@ def debug_breaches(
                         if cstr_sum.hard
                         else engine_inputs.penalties.user_constraint.sum.soft
                     )
-                    val = calculate_breach_penalty_sum(
-                        b, assignments, pen, cstr_sum
-                    )
+                    val = calculate_breach_penalty_sum(b, assignments, pen, cstr_sum)
                     processed = True
                 else:
                     # fallback when the constraint type isn't one of the
@@ -461,9 +437,7 @@ def debug_breaches(
                 processed = True
 
         elif b.objective_category == ObjectiveCategory.REQUEST:
-            req = (
-                requests_by_id.get(b.objective_id) if b.objective_id else None
-            )
+            req = requests_by_id.get(b.objective_id) if b.objective_id else None
             if req is not None:
                 val = (
                     engine_inputs.penalties.user_constraint.request.hard
@@ -474,11 +448,7 @@ def debug_breaches(
 
         if b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND:
             # try to match a shift demand by assignments membership
-            sd = (
-                shift_demands_by_id.get(b.objective_id)
-                if b.objective_id
-                else None
-            )
+            sd = shift_demands_by_id.get(b.objective_id) if b.objective_id else None
             if sd is not None:
                 shift = shifts_by_id.get(sd.shift_id)
                 if shift is not None:
@@ -505,19 +475,15 @@ def debug_breaches(
                     # For primary max-week breaches use only the weekly
                     # primary helper. Stepped penalties are handled when
                     # the breach type is 'step'.
-                    primary, _ = (
-                        calculate_breach_penalty_max_weekly_nb_duties_primary(
-                            assignments, mw
-                        )
+                    primary, _ = calculate_breach_penalty_max_weekly_nb_duties_primary(
+                        assignments, mw
                     )
                     val = primary
                     special_stats.setdefault(
                         "max_weekly_nb_duties.max", {"count": 0, "total": 0.0}
                     )
                     special_stats["max_weekly_nb_duties.max"]["count"] += 1
-                    special_stats["max_weekly_nb_duties.max"][
-                        "total"
-                    ] += float(primary)
+                    special_stats["max_weekly_nb_duties.max"]["total"] += float(primary)
                     processed = True
                 elif meta and meta.get("type") == "step":
                     try:
@@ -534,9 +500,9 @@ def debug_breaches(
                         special_stats["max_weekly_nb_duties.stepped"][
                             "count"
                         ] += stepped_count
-                        special_stats["max_weekly_nb_duties.stepped"][
-                            "total"
-                        ] += float(stepped_total)
+                        special_stats["max_weekly_nb_duties.stepped"]["total"] += float(
+                            stepped_total
+                        )
                         processed = True
                     except Exception:
                         pass
@@ -553,10 +519,8 @@ def debug_breaches(
                     # primary helper to compute the primary penalty. Do not
                     # compute stepped penalties here (they are handled for
                     # 'step' breaches).
-                    primary, _ = (
-                        calculate_breach_penalty_max_weekly_nb_duties_primary(
-                            assignments, md
-                        )
+                    primary, _ = calculate_breach_penalty_max_weekly_nb_duties_primary(
+                        assignments, md
                     )
                     val = primary
                     special_stats.setdefault(
@@ -564,9 +528,9 @@ def debug_breaches(
                         {"count": 0, "total": 0.0},
                     )
                     special_stats["max_week_day_nb_duties.max"]["count"] += 1
-                    special_stats["max_week_day_nb_duties.max"][
-                        "total"
-                    ] += float(primary)
+                    special_stats["max_week_day_nb_duties.max"]["total"] += float(
+                        primary
+                    )
                     processed = True
                 elif meta and meta.get("type") == "step":
                     try:
@@ -649,9 +613,7 @@ def debug_breaches(
                 (var.worker_id, var.date.isoformat(), var.shift_id)
                 for var in b.variables
             }
-            for (
-                group
-            ) in inputs.system_constraints.special_days_target_nb_duties:
+            for group in inputs.system_constraints.special_days_target_nb_duties:
                 c_vars_set = {a for ass in group.assignments for a in ass}
                 same_as_sets = b_vars_set == c_vars_set
                 if same_as_sets:
@@ -726,9 +688,7 @@ def debug_breaches(
             avg = tot / cnt if cnt > 0 else 0.0
             rows_c.append((k, cnt, tot, avg))
 
-        print(
-            "\nBroken down constraint breaches (ObjectiveCategory.CONSTRAINT):"
-        )
+        print("\nBroken down constraint breaches (ObjectiveCategory.CONSTRAINT):")
         col1 = "ConstraintType"
         col2 = "Count"
         col3 = "Total"
@@ -744,12 +704,8 @@ def debug_breaches(
         for r in rows_c:
             print(f"{r[0]:<{w1}}{r[1]:>{w2}}{r[2]:>{w3}.0f}{r[3]:>{w4}.1f}")
         print("-" * (w1 + w2 + w3 + w4))
-        total_c_breaches = sum(
-            int(v["count"]) for v in constraint_stats.values()
-        )
-        total_c_calc = sum(
-            float(v["total"]) for v in constraint_stats.values()
-        )
+        total_c_breaches = sum(int(v["count"]) for v in constraint_stats.values())
+        total_c_calc = sum(float(v["total"]) for v in constraint_stats.values())
         print(
             f"{'TOTAL':<{w1}}{total_c_breaches:>{w2}}{total_c_calc:>{w3}.0f}"
             + f"{(total_c_calc / total_c_breaches if total_c_breaches else 0):>{w4}.1f}"

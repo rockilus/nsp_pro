@@ -11,9 +11,7 @@ from utils.constants import Constants
 
 # pylint: disable=too-few-public-methods
 class AddConstraintSum(AddConstraint):
-    def add_constraint(
-        self, constraint: ConstraintSum, hard_to_soft: bool
-    ) -> None:
+    def add_constraint(self, constraint: ConstraintSum, hard_to_soft: bool) -> None:
         for period_idx, coords in enumerate(constraint.constraint_variables):
             constraint_vars = [self.variables[coord] for coord in coords]
             target_for_period = constraint.target_values[period_idx]
@@ -46,6 +44,7 @@ class AddConstraintSum(AddConstraint):
         #             )
         # else:
 
+    # pylint: disable=too-many-arguments
     def _add_constraint_sum_hour(
         self,
         constraint: ConstraintSum,
@@ -65,9 +64,7 @@ class AddConstraintSum(AddConstraint):
                     target_for_period * Constants.NUM_MINUTES_HOUR,
                     "",
                 )
-            elif (
-                constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL
-            ):
+            elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
                 sum_var = self.model.NewIntVar(
                     target_for_period * Constants.NUM_MINUTES_HOUR,
                     len(cstr_vars)
@@ -80,9 +77,7 @@ class AddConstraintSum(AddConstraint):
                     f"Sum constraint operator {constraint.operator} "
                     + "not implemented"
                 )
-            self.model.Add(
-                sum_var == sum(v * d for v, d in zip(cstr_vars, cstr_durs))
-            )
+            self.model.Add(sum_var == sum(v * d for v, d in zip(cstr_vars, cstr_durs)))
         # pylint: disable=R0801
         else:
             var_name = build_var_name_constraint(
@@ -134,9 +129,7 @@ class AddConstraintSum(AddConstraint):
                 self.model.AddAbsEquality(excess, delta)
                 self.obj.int_vars.append(excess)
                 self.obj.int_coeffs.append(constraint.penalty)
-            elif (
-                constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL
-            ):
+            elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
                 delta = self.model.NewIntVar(
                     -len(cstr_vars)
                     * Constants.NUM_HOURS_DAY
@@ -176,12 +169,8 @@ class AddConstraintSum(AddConstraint):
                     target_for_period,
                     "",
                 )
-            elif (
-                constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL
-            ):
-                sum_var = self.model.NewIntVar(
-                    target_for_period, len(cstr_vars), ""
-                )
+            elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
+                sum_var = self.model.NewIntVar(target_for_period, len(cstr_vars), "")
             else:
                 raise NotImplementedError(
                     f"Sum constraint operator {constraint.operator} "
@@ -193,9 +182,7 @@ class AddConstraintSum(AddConstraint):
                 constraint, cstr_vars, ObjectiveCategory.CONSTRAINT
             )
             if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
-                delta = self.model.NewIntVar(
-                    -len(cstr_vars), len(cstr_vars), ""
-                )
+                delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
                 self.model.Add(delta == sum(cstr_vars) - target_for_period)
                 excess = self.model.NewIntVar(
                     0,
@@ -206,9 +193,7 @@ class AddConstraintSum(AddConstraint):
                 self.obj.int_vars.append(excess)
                 self.obj.int_coeffs.append(constraint.penalty)
             elif constraint.operator == ConstraintOperator.EQUAL:
-                delta = self.model.NewIntVar(
-                    -len(cstr_vars), len(cstr_vars), ""
-                )
+                delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
                 self.model.Add(delta == sum(cstr_vars) - target_for_period)
                 excess = self.model.NewIntVar(
                     -len(cstr_vars),
@@ -218,12 +203,8 @@ class AddConstraintSum(AddConstraint):
                 self.model.AddAbsEquality(excess, delta)
                 self.obj.int_vars.append(excess)
                 self.obj.int_coeffs.append(constraint.penalty)
-            elif (
-                constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL
-            ):
-                delta = self.model.NewIntVar(
-                    -len(cstr_vars), len(cstr_vars), ""
-                )
+            elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
+                delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
                 self.model.Add(delta == target_for_period - sum(cstr_vars))
                 excess = self.model.NewIntVar(
                     0,

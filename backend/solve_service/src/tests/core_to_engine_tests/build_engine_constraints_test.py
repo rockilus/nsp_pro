@@ -62,9 +62,7 @@ class TestBuildQuickStaffingConstraints:
         )
 
         assert isinstance(constraints, list)
-        assert all(
-            isinstance(constraint, ConstraintSum) for constraint in constraints
-        )
+        assert all(isinstance(constraint, ConstraintSum) for constraint in constraints)
 
         expected_out = ConstraintSum(
             id="",
@@ -75,9 +73,7 @@ class TestBuildQuickStaffingConstraints:
             constraint_variables=[
                 [
                     (target_worker.id, d.isoformat(), target_shift.id)
-                    for d in worker_ids_to_worker_dates[
-                        target_worker.id
-                    ].dates_campaign
+                    for d in worker_ids_to_worker_dates[target_worker.id].dates_campaign
                 ]
             ],
             target_values=[target_qs.target],
