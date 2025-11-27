@@ -63,6 +63,7 @@ from engine import ConfigurationConstraintInputs
 from engine import Inputs as InputsEngine
 from engine import ModelSetup as ModelSetupEngine
 from engine import ProcessingCache, SolHint, SystemConstraintInputs
+from engine import Constraints
 
 
 # pylint: disable=too-many-arguments, too-many-locals, R0801
@@ -71,7 +72,9 @@ def core_to_engine_inputs(
 ) -> Tuple[InputsEngine, ProcessingCache]:
     # Workers
     workers_not_deleted = [w for w in engine_inputs.workers if not w.deleted]
-    worker_not_deleted_ids = [w.id for w in engine_inputs.workers if not w.deleted]
+    worker_not_deleted_ids = [
+        w.id for w in engine_inputs.workers if not w.deleted
+    ]
     dim_to_attr_value_to_worker = build_dim_to_attr_value_to_owner(
         engine_inputs.workers,
         engine_inputs.dimensions,
@@ -98,9 +101,13 @@ def core_to_engine_inputs(
         for s in engine_inputs.shifts
         if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
     ]
-    shift_duties = [s for s in engine_inputs.shifts if s.shift_type == ShiftType.DUTY]
+    shift_duties = [
+        s for s in engine_inputs.shifts if s.shift_type == ShiftType.DUTY
+    ]
     shift_duties_not_deleted = [s for s in shift_duties if not s.deleted]
-    shift_id_to_duration_dict = _build_shift_id_to_duration_dict(engine_inputs.shifts)
+    shift_id_to_duration_dict = _build_shift_id_to_duration_dict(
+        engine_inputs.shifts
+    )
     dim_to_attr_value_to_shift = build_dim_to_attr_value_to_owner(
         engine_inputs.shifts,
         engine_inputs.dimensions,
@@ -244,10 +251,10 @@ def core_to_engine_inputs(
         # ord=[],
         # fil=[],
         # fai=[],
-        # sum=constraints.sum,
-        # seq=constraints.seq,
-        # ord=constraints.ord,
-        # fil=constraints.fil,
+        #     sum=constraints.sum,
+        #     seq=constraints.seq,
+        #     ord=constraints.ord,
+        #     fil=constraints.fil,
         #     fai=constraints.fai,
         # ),
         configuration_constraints=ConfigurationConstraintInputs(
@@ -275,6 +282,7 @@ def core_to_engine_inputs(
                 engine_inputs.shift_demands,
                 engine_inputs.penalties.configuration_constraint.coverage,
             ),
+            # requests=[],
             requests=build_engine_requests(
                 worker_not_deleted_ids=worker_not_deleted_ids,
                 worker_ids_to_worker_dates=worker_ids_to_worker_dates,
@@ -412,5 +420,6 @@ def core_to_engine_inputs(
 
 def _build_shift_id_to_duration_dict(shifts: List[Shift]) -> Dict[str, int]:
     return {
-        s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1) for s in shifts
+        s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1)
+        for s in shifts
     }
