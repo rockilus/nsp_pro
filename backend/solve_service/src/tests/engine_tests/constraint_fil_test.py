@@ -35,7 +35,9 @@ class TestConstraintFil:
             | ConstraintSeq
             | ConstraintSum,
         ],
-        run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
+        run_engine_solve_from_engine_inputs: Callable[
+            [EngineInputsAugmented], Outputs
+        ],
     ) -> None:
         cba, constraint = constraint_fil_with_expected_output
         engine_inputs.cbs_augmented = [cba]
@@ -74,7 +76,9 @@ class TestConstraintFil:
             | ConstraintSeq
             | ConstraintSum,
         ],
-        run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
+        run_engine_solve_from_engine_inputs: Callable[
+            [EngineInputsAugmented], Outputs
+        ],
     ) -> None:
         cba, constraint = constraint_fil_with_expected_output
         cba_soft = deepcopy(cba)
@@ -135,21 +139,28 @@ class TestConstraintFil:
         assert isinstance(inputs.user_constraints.fil[0], ConstraintFil)
 
         constraint: ConstraintFil = inputs.user_constraints.fil[0]
-        worker_ids_cstr = list(set(var[0] for var in constraint.constraint_variables))
-        shift_ids_cstr = list(set(var[2] for var in constraint.constraint_variables))
+        worker_ids_cstr = list(
+            set(var[0] for var in constraint.constraint_variables)
+        )
+        shift_ids_cstr = list(
+            set(var[2] for var in constraint.constraint_variables)
+        )
         shift_ids_cstr_soft = [
             s_id for s_id in shift_work_ids if s_id not in shift_ids_cstr
         ]
         constraint_soft = deepcopy(constraint)
         constraint_soft.id += "_soft"
         constraint_soft.hard = False
-        constraint_soft.penalty = engine_inputs.penalties.user_constraint.fil.soft
+        constraint_soft.penalty = (
+            engine_inputs.penalties.user_constraint.fil.soft
+        )
 
         dates_campaign = [
             engine_inputs.schedule.start_date + timedelta(days=i)
             for i in range(
                 (
-                    engine_inputs.schedule.end_date - engine_inputs.schedule.start_date
+                    engine_inputs.schedule.end_date
+                    - engine_inputs.schedule.start_date
                 ).days
                 + 1
             )
@@ -182,6 +193,7 @@ class TestConstraintFil:
                         for s_id in shift_work_ids
                     ]
                 ],
+                target_values=[1],
                 active=True,
                 hard=True,
                 priority="medium",
@@ -242,7 +254,10 @@ class TestConstraintFil:
                     assignment.date,
                     assignment.shift_id,
                 )
-                in [(var.worker_id, var.date, var.shift_id) for var in breach.variables]
+                in [
+                    (var.worker_id, var.date, var.shift_id)
+                    for var in breach.variables
+                ]
             )
             obj_value += penalty * nb_a_period
         assert out.objective_value == obj_value
@@ -278,8 +293,12 @@ class TestConstraintFil:
         assert isinstance(inputs.user_constraints.fil[0], ConstraintFil)
 
         constraint: ConstraintFil = inputs.user_constraints.fil[0]
-        worker_ids_cstr = list(set(var[0] for var in constraint.constraint_variables))
-        shift_ids_cstr = list(set(var[2] for var in constraint.constraint_variables))
+        worker_ids_cstr = list(
+            set(var[0] for var in constraint.constraint_variables)
+        )
+        shift_ids_cstr = list(
+            set(var[2] for var in constraint.constraint_variables)
+        )
         shift_ids_cstr_hard = [
             s_id for s_id in shift_work_ids if s_id not in shift_ids_cstr
         ]
@@ -291,7 +310,8 @@ class TestConstraintFil:
             engine_inputs.schedule.start_date + timedelta(days=i)
             for i in range(
                 (
-                    engine_inputs.schedule.end_date - engine_inputs.schedule.start_date
+                    engine_inputs.schedule.end_date
+                    - engine_inputs.schedule.start_date
                 ).days
                 + 1
             )
@@ -324,6 +344,7 @@ class TestConstraintFil:
                         for s_id in shift_work_ids
                     ]
                 ],
+                target_values=[1],
                 active=True,
                 hard=True,
                 priority="medium",
@@ -353,7 +374,10 @@ class TestConstraintFil:
                     assignment.date,
                     assignment.shift_id,
                 )
-                in [(var.worker_id, var.date, var.shift_id) for var in breach.variables]
+                in [
+                    (var.worker_id, var.date, var.shift_id)
+                    for var in breach.variables
+                ]
             )
             obj_value += penalty * nb_a_period
         assert out.objective_value == obj_value

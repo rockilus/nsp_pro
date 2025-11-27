@@ -269,7 +269,9 @@ def dimensions() -> List[Dimension]:
 def dim_entries(dimensions: List[Dimension]) -> List[DimEntry]:  # noqa: F811
     locations = ["loc0", "loc1"]
     de_loc = [
-        DimEntry(id=f"de_loc_{i}", dimension_id=dim.id, name=loc, deleted=False)
+        DimEntry(
+            id=f"de_loc_{i}", dimension_id=dim.id, name=loc, deleted=False
+        )
         for i, loc in enumerate(locations)
         for dim in [d for d in dimensions if d.id == "dim0"]
     ]
@@ -491,7 +493,8 @@ shift_work_ids = [f"s{i}" for i in range(5)]
 start_date = date(2025, 1, 1)
 end_date = date(2025, 1, 31)
 dates_campaign = [
-    start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)
+    start_date + timedelta(days=i)
+    for i in range((end_date - start_date).days + 1)
 ]
 periods_weekly = build_periods_weekly([], dates_campaign)
 
@@ -499,18 +502,24 @@ periods_weekly = build_periods_weekly([], dates_campaign)
 def integer_division_list(numerator: int, denominator: int) -> List[int]:
     quotient = numerator // denominator
     remainder = numerator % denominator
-    result = [quotient + 1] * remainder + [quotient] * (denominator - remainder)
+    result = [quotient + 1] * remainder + [quotient] * (
+        denominator - remainder
+    )
     return result
 
 
 target_average = 1
-period_lengths = integer_division_list(len(dates_campaign), int(target_average))
+period_lengths = integer_division_list(
+    len(dates_campaign), int(target_average)
+)
 d_constraint_eve: List[List[date]] = []
 for index, period_length in enumerate(period_lengths):
     cum_days = sum(period_lengths[:index])
     start_date = dates_campaign[0] + timedelta(days=cum_days)
     end_date = start_date + timedelta(days=period_length - 1)
-    d_constraint_eve.append([d for d in dates_campaign if start_date <= d <= end_date])
+    d_constraint_eve.append(
+        [d for d in dates_campaign if start_date <= d <= end_date]
+    )
 
 test_data = [
     # Sequence
@@ -1140,8 +1149,10 @@ test_data = [
             target_value=3,
             target_unit="",
             constraint_variables=[
-                [("w0", d.isoformat(), "s0") for d in week] for week in periods_weekly
+                [("w0", d.isoformat(), "s0") for d in week]
+                for week in periods_weekly
             ],
+            target_values=[3] * len(periods_weekly),
             active=True,
             hard=True,
             priority="medium",
@@ -1219,8 +1230,10 @@ test_data = [
             target_value=1,
             target_unit="",
             constraint_variables=[
-                [("w0", d.isoformat(), "s0") for d in week] for week in periods_weekly
+                [("w0", d.isoformat(), "s0") for d in week]
+                for week in periods_weekly
             ],
+            target_values=[1] * len(periods_weekly),
             active=True,
             hard=True,
             priority="medium",
@@ -1298,8 +1311,10 @@ test_data = [
             target_value=2,
             target_unit="",
             constraint_variables=[
-                [("w0", d.isoformat(), "s0") for d in week] for week in periods_weekly
+                [("w0", d.isoformat(), "s0") for d in week]
+                for week in periods_weekly
             ],
+            target_values=[2] * len(periods_weekly),
             active=True,
             hard=True,
             priority="medium",
@@ -1894,7 +1909,9 @@ test_data = [
             operator=ConstraintOperator.NO,
             target_value=0,
             target_unit="",
-            constraint_variables=[("w0", d.isoformat(), "s0") for d in dates_campaign],
+            constraint_variables=[
+                ("w0", d.isoformat(), "s0") for d in dates_campaign
+            ],
             active=True,
             hard=True,
             priority="medium",
@@ -1970,6 +1987,7 @@ test_data = [
             constraint_variables=[
                 [("w0", d.isoformat(), "s0") for d in dates_campaign]
             ],
+            target_values=[1],
             active=True,
             hard=True,
             priority="medium",
@@ -2064,7 +2082,11 @@ test_data = [
 def generate_test_name(
     val: Tuple[
         ConstraintBuildAugmented,
-        ConstraintFai | ConstraintFil | ConstraintOrd | ConstraintSeq | ConstraintSum,
+        ConstraintFai
+        | ConstraintFil
+        | ConstraintOrd
+        | ConstraintSeq
+        | ConstraintSum,
     ],
 ):
     constraint, _ = val
@@ -2077,35 +2099,45 @@ def constraint_with_expected_output(request):
 
 
 @pytest.fixture(
-    params=[td for td in test_data if td[0].constraint_type == ConstraintType.SUM]
+    params=[
+        td for td in test_data if td[0].constraint_type == ConstraintType.SUM
+    ]
 )
 def constraint_sum_with_expected_output(request):
     return request.param
 
 
 @pytest.fixture(
-    params=[td for td in test_data if td[0].constraint_type == ConstraintType.SEQ]
+    params=[
+        td for td in test_data if td[0].constraint_type == ConstraintType.SEQ
+    ]
 )
 def constraint_seq_with_expected_output(request):
     return request.param
 
 
 @pytest.fixture(
-    params=[td for td in test_data if td[0].constraint_type == ConstraintType.ORD]
+    params=[
+        td for td in test_data if td[0].constraint_type == ConstraintType.ORD
+    ]
 )
 def constraint_ord_with_expected_output(request):
     return request.param
 
 
 @pytest.fixture(
-    params=[td for td in test_data if td[0].constraint_type == ConstraintType.FIL]
+    params=[
+        td for td in test_data if td[0].constraint_type == ConstraintType.FIL
+    ]
 )
 def constraint_fil_with_expected_output(request):
     return request.param
 
 
 @pytest.fixture
-def run_engine_solve_from_engine_inputs() -> Callable[[EngineInputsAugmented], Outputs]:
+def run_engine_solve_from_engine_inputs() -> (
+    Callable[[EngineInputsAugmented], Outputs]
+):
     def _run_engine_solve_from_engine_inputs(
         engine_inputs: EngineInputsAugmented,
     ) -> Outputs:

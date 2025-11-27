@@ -84,6 +84,7 @@ def _build_quick_staffing_constraints(
                 target_value=qs.target,
                 target_unit="shift",
                 constraint_variables=constraints_vars,
+                target_values=[qs.target],  # Single period for quick staffing
                 active=True,
                 hard=True,
                 priority="high",
