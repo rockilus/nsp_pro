@@ -1,3 +1,4 @@
+import math
 from datetime import date, timedelta
 from typing import Dict, List, Tuple
 
@@ -56,6 +57,70 @@ class MapConstaint:
         )
         self.map_shift = MapShift(shifts, shift_dim_dict, shift_ids_in_coverage)
 
+    @staticmethod
+    def calculate_prorated_target(
+        base_target: int,
+        actual_days: int,
+        full_period_days: int,
+        operator: ConstraintOperator | None,
+    ) -> int:
+        """
+        Calculate pro-rated target for a partial period.
+
+        Args:
+            base_target: The target value for a full period
+            actual_days: Number of days actually in the constraint period
+            full_period_days: Number of days in a complete period
+            operator: The constraint operator (affects rounding strategy)
+
+        Returns:
+            Pro-rated target value, rounded appropriately
+        """
+        if actual_days >= full_period_days:
+            # Period is complete or over-complete, use full target
+            return base_target
+
+        # Calculate ratio and pro-rate
+        ratio = actual_days / full_period_days
+        prorated = base_target * ratio
+
+        # Round based on operator to avoid impossible constraints
+        if operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
+            # Round down for >= constraints (easier to satisfy)
+            return math.floor(prorated)
+        elif operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
+            # Round up for <= constraints (easier to satisfy)
+            return math.ceil(prorated)
+        else:
+            # For EQUAL, use standard rounding
+            return round(prorated)
+
+    def get_full_period_length(
+        self, period: List[date], period_list: List[List[date]]
+    ) -> int:
+        """
+        Determine the full length of the period that the given period belongs to.
+
+        Args:
+            period: A list of dates representing (part of) a period
+            period_list: The full list of periods (weekly, monthly, or yearly)
+
+        Returns:
+            Number of days in the complete period
+        """
+        if not period:
+            return 1  # Avoid division by zero
+
+        # Find which period in period_list this period belongs to
+        period_set = set(period)
+        for full_period in period_list:
+            full_period_set = set(full_period)
+            if period_set.issubset(full_period_set):
+                return len(full_period)
+
+        # If not found in any period, assume period itself is complete
+        return len(period)
+
     def map_constraint_sum(
         self, cba: ConstraintBuildAugmented, schedule_id: str
     ) -> ConstraintSum:
@@ -63,6 +128,19 @@ class MapConstaint:
         coord_workers = self.map_worker.get_coord_workers(cba)
         coord_days = self.map_day.get_coords_days_sum(cba)
         coord_shifts = self.map_shift.get_coords_shifts(cba, cstr_operator)
+        base_target = self.get_target_value(cba.blocks, cba.constraint_type)
+
+        # Determine which period list to use for full period length calculation
+        selector = self.map_day.get_selector(cba.blocks, cba.constraint_type)
+        if selector.name == "WEEK":
+            period_list = self.map_day.periods_weekly
+        elif selector.name == "MONTH":
+            period_list = self.map_day.periods_monthly
+        elif selector.name == "YEAR":
+            period_list = self.map_day.periods_yearly
+        else:
+            period_list = [self.dates_campaign]  # ALL selector
+
         # w_vars, d_vars, s_vars = self.get_vars_coordinates(constraint)
         # if not all(isinstance(item, str) for item in s_vars):
         #     raise TypeError(
@@ -89,6 +167,8 @@ class MapConstaint:
         #             )
         # else:
         constraints_vars: List[List[Tuple[str, str, str]]] = []
+        target_values: List[int] = []
+
         for w in coord_workers:
             dates_worker_set = set(
                 self.worker_ids_to_worker_dates[w.id].dates_hist
@@ -101,13 +181,23 @@ class MapConstaint:
                     constraint_vars += [(w.id, d.isoformat(), s.id) for d in period]
                 if constraint_vars:
                     constraints_vars.append(constraint_vars)
+                    # Calculate pro-rated target for this period
+                    full_period_length = self.get_full_period_length(
+                        period, period_list
+                    )
+                    prorated_target = self.calculate_prorated_target(
+                        base_target, len(period), full_period_length, cstr_operator
+                    )
+                    target_values.append(prorated_target)
+
         return ConstraintSum(
             id=cba.id,
             constraint_type=cba.constraint_type,
             operator=cstr_operator,
-            target_value=self.get_target_value(cba.blocks, cba.constraint_type),
+            target_value=base_target,
             target_unit="",
             constraint_variables=constraints_vars,
+            target_values=target_values,
             active=cba.active,
             hard=cba.hard,
             priority=cba.priority,
@@ -314,6 +404,7 @@ class MapConstaint:
             )
 
         constraints_vars: List[List[Tuple[str, str, str]]] = []
+        target_values: List[int] = []
         for w in coord_workers:
             dates_worker_set = set(
                 self.worker_ids_to_worker_dates[w.id].dates_hist
@@ -325,6 +416,8 @@ class MapConstaint:
                 for s in coord_shifts:
                     constraint_vars += [(w.id, d.isoformat(), s.id) for d in period]
                 constraints_vars.append(constraint_vars)
+                # EVE constraint uses target_value=1 for all periods
+                target_values.append(1)
 
         return ConstraintSum(
             id=cba.id,
@@ -333,6 +426,7 @@ class MapConstaint:
             target_value=1,
             target_unit="day",
             constraint_variables=constraints_vars,
+            target_values=target_values,
             active=cba.active,
             hard=cba.hard,
             priority=cba.priority,

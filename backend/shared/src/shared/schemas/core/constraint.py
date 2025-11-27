@@ -336,6 +336,7 @@ class Constraint:
 @dataclass
 class ConstraintSum(Constraint):
     constraint_variables: List[List[Tuple[str, str, str]]]
+    target_values: List[int]  # One target per period in constraint_variables
 
 
 # for each worker and shift, list for days over which target periods are covered
