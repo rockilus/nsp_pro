@@ -197,6 +197,8 @@ class TestConstraintSum:
         out = run_engine_solve_from_engine_inputs(engine_inputs)
 
         if isinstance(constraint, ConstraintSum):
+            print(constraint)
+
             for period_idx, cstr_vars in enumerate(
                 constraint.constraint_variables
             ):

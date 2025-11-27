@@ -1327,7 +1327,7 @@ test_data = [
                 for week in periods_weekly
             ],
             target_values=[
-                0,
+                1,
                 2,
                 2,
                 2,
