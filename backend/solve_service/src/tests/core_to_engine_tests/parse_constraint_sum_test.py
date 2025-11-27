@@ -307,9 +307,7 @@ def test_parse_constraints_sum_returns_non_empty(
         ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
     )
 
-    dates_hist, dates_campaign = build_dates(
-        ei.schedule, ei.as_hist + ei.as_wip_fixed
-    )
+    dates_hist, dates_campaign = build_dates(ei.schedule, ei.as_hist + ei.as_wip_fixed)
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
@@ -341,8 +339,7 @@ def test_parse_constraints_sum_returns_non_empty(
         target_value=2,
         target_unit="",
         constraint_variables=[
-            [("w0", d.isoformat(), "sh0") for d in week]
-            for week in periods_weekly
+            [("w0", d.isoformat(), "sh0") for d in week] for week in periods_weekly
         ],
         target_values=[2] * len(periods_weekly),
         active=True,
@@ -404,9 +401,7 @@ def test_parse_constraints_sum_ignores_workers_ended_before_schedule(
         ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
     )
 
-    dates_hist, dates_campaign = build_dates(
-        ei.schedule, ei.as_hist + ei.as_wip_fixed
-    )
+    dates_hist, dates_campaign = build_dates(ei.schedule, ei.as_hist + ei.as_wip_fixed)
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
@@ -475,9 +470,7 @@ def test_parse_constraints_sum_all_workers_ignores_ended_worker(
         ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
     )
 
-    dates_hist, dates_campaign = build_dates(
-        ei.schedule, ei.as_hist + ei.as_wip_fixed
-    )
+    dates_hist, dates_campaign = build_dates(ei.schedule, ei.as_hist + ei.as_wip_fixed)
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
@@ -580,9 +573,7 @@ def test_parse_constraints_sum_all_duties_ignores_ended_worker(
         ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
     )
 
-    dates_hist, dates_campaign = build_dates(
-        ei.schedule, ei.as_hist + ei.as_wip_fixed
-    )
+    dates_hist, dates_campaign = build_dates(ei.schedule, ei.as_hist + ei.as_wip_fixed)
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
@@ -625,9 +616,7 @@ def test_parse_constraints_sum_all_duties_ignores_ended_worker(
     assert "w1" in seen_workers
 
     # Ensure only duty shifts are referenced in the constraint variables
-    duty_shift_ids = {
-        s.id for s in ei.shifts if s.shift_type == ShiftType.DUTY
-    }
+    duty_shift_ids = {s.id for s in ei.shifts if s.shift_type == ShiftType.DUTY}
     for inner in actual.constraint_variables:
         for var in inner:
             assert var[2] in duty_shift_ids
@@ -765,9 +754,7 @@ def test_parse_constraints_sum_prorates_single_day_period(
         as_wip_fixed=[],
         cbs_augmented=[cba],
         shift_demands=[
-            ShiftDemandNew(
-                date=date(2025, 1, 1), shift_id="sh0", team_id="t0", count=1
-            )
+            ShiftDemandNew(date=date(2025, 1, 1), shift_id="sh0", team_id="t0", count=1)
         ],
         requests_work=[],
         requests_leave=[],
@@ -785,9 +772,7 @@ def test_parse_constraints_sum_prorates_single_day_period(
         ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
     )
 
-    dates_hist, dates_campaign = build_dates(
-        ei.schedule, ei.as_hist + ei.as_wip_fixed
-    )
+    dates_hist, dates_campaign = build_dates(ei.schedule, ei.as_hist + ei.as_wip_fixed)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
@@ -828,125 +813,43 @@ def test_parse_constraints_sum_prorates_single_day_period(
 
 @pytest.mark.unit
 def test_parse_constraints_sum_prorates_half_month_period(
-    penalties_fix: Penalties, model_config_fix: ModelConfig
+    ei: EngineInputsAugmented,
 ) -> None:
     """When a schedule spans half a month (e.g., 15 days), the monthly
     target should be pro-rated accordingly.
     """
-    # Schedule spanning Jan 1 to Jan 16 (15 days of January)
-    sched = Schedule(
-        id="s0",
-        team_id="t0",
-        start_date=date(2025, 1, 1),
-        end_date=date(2025, 1, 16),
-        status=ScheduleStatus.CAMPAIGN,
-        missing_coverage_dates=[],
-        constraint_build_ids=[],
-        quick_staffings=[],
-        created_by="u0",
-    )
+    # Modify schedule to span Jan 1 to Jan 16 (16 days of January)
+    ei.schedule.start_date = date(2025, 1, 1)
+    ei.schedule.end_date = date(2025, 1, 16)
 
-    shifts: List[Shift] = [
-        Shift(
-            id="sh0",
-            team_id="t0",
-            name="Duty Shift",
-            acronym="D",
-            acronym_custom=False,
-            start_time=datetime(2025, 1, 1, tzinfo=timezone.utc),
-            end_time=datetime(2025, 1, 2, tzinfo=timezone.utc),
-            staffing=[Staffing(specialty_id=None, staffing=1)],
-            color="#000000",
-            shift_type=ShiftType.DUTY,
-            rest_type=ShiftRestType.NONE,
-            leave_type=ShiftLeaveType.NONE,
-            recuperation_time=0,
-            recuperation_duty_id=None,
-            deleted=False,
-        ),
-    ]
+    # Replace first shift with a duty shift
+    ei.shifts[0].shift_type = ShiftType.DUTY
 
-    workers: List[Worker] = [
-        Worker(
-            id="w0",
-            team_id="t0",
-            name="Worker 0",
-            acronym="W0",
-            acronym_custom=False,
-            employment_start_date=date(2024, 1, 1),
-            employment_end_date=None,
-            weekly_hours=40,
-            weekly_hours_desired=40,
-            duties_per_month=5,
-            annual_leave=25,
-            specialty_ids=[],
-            deleted=False,
-        )
-    ]
+    # Keep only one worker
+    ei.workers = [ei.workers[0]]
 
-    # Constraint: "at most 10 duties per month"
-    cba = ConstraintBuildAugmented(
-        id="c0",
-        team_id="t0",
-        constraint_type=ConstraintType.SUM,
-        template_id="tmpl",
-        language="en",
-        blocks=[
-            Block(
-                name=BlockNameOptions.WORKER,
-                type=BlockTypeOptions.SHIFT_WORKER_OPTION,
-                value=[
-                    ShiftWorkerOption(
-                        name="Worker 0",
-                        id="w0",
-                        id_type=SWOIdTypes.WORKER,
-                        is_bool_dim=False,
-                        category_name="workers",
-                    )
-                ],
-            ),
-            Block(
-                name=BlockNameOptions.TEXT,
-                type=BlockTypeOptions.STRING,
-                value="must work",
-            ),
-            Block(
+    # Update constraint to "at most 10 duties per month"
+    for i, b in enumerate(ei.cbs_augmented[0].blocks):
+        if b.name == BlockNameOptions.OPERATOR:
+            ei.cbs_augmented[0].blocks[i] = Block(
                 name=BlockNameOptions.OPERATOR,
                 type=BlockTypeOptions.STRING,
                 value="at most",
-            ),
-            Block(
+            )
+        elif b.name == BlockNameOptions.NUMBER:
+            ei.cbs_augmented[0].blocks[i] = Block(
                 name=BlockNameOptions.NUMBER,
                 type=BlockTypeOptions.NUMBER,
                 value=10,
-            ),
-            Block(
-                name=BlockNameOptions.SHIFT,
-                type=BlockTypeOptions.SHIFT_WORKER_OPTION,
-                value=[
-                    ShiftWorkerOption(
-                        name="Duty Shift",
-                        id="sh0",
-                        id_type=SWOIdTypes.SHIFT,
-                        is_bool_dim=False,
-                        category_name="shifts",
-                    )
-                ],
-            ),
-            Block(
+            )
+        elif b.name == BlockNameOptions.TIMING:
+            ei.cbs_augmented[0].blocks[i] = Block(
                 name=BlockNameOptions.TIMING,
                 type=BlockTypeOptions.STRING,
                 value="per month",
-            ),
-        ],
-        hard=True,
-        priority="",
-        active=True,
-        missing_attributes=[],
-        text="",
-    )
+            )
 
-    # Create shift demands for all 15 days
+    # Create shift demands for all 16 days
     shift_demands: List[ShiftDemandNew] = []
     for day in range(1, 16):
         shift_demands.append(
@@ -954,27 +857,7 @@ def test_parse_constraints_sum_prorates_half_month_period(
                 date=date(2025, 1, day), shift_id="sh0", team_id="t0", count=1
             )
         )
-
-    engine_inputs = EngineInputs(
-        schedule=sched,
-        workers=workers,
-        shifts=shifts,
-        link_shifts=[],
-        dimensions=[],
-        dim_entries=[],
-        attributes=[],
-        as_hist=[],
-        as_wip_fixed=[],
-        cbs_augmented=[cba],
-        shift_demands=shift_demands,
-        requests_work=[],
-        requests_leave=[],
-        model_output=None,
-    )
-
-    ei = EngineInputsAugmented.from_engine_inputs(
-        engine_inputs, penalties=penalties_fix, model_config=model_config_fix
-    )
+    ei.shift_demands = shift_demands
 
     dim_to_attr_value_to_worker = build_dim_to_attr_value_to_owner(
         ei.workers, ei.dimensions, ei.dim_entries, ei.attributes
@@ -983,9 +866,7 @@ def test_parse_constraints_sum_prorates_half_month_period(
         ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
     )
 
-    dates_hist, dates_campaign = build_dates(
-        ei.schedule, ei.as_hist + ei.as_wip_fixed
-    )
+    dates_hist, dates_campaign = build_dates(ei.schedule, ei.as_hist + ei.as_wip_fixed)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
@@ -1020,133 +901,48 @@ def test_parse_constraints_sum_prorates_half_month_period(
 
     # Pro-rated: 16 days out of 31 days in January (Jan 1-16, end_date is
     # exclusive so includes 1-15 + day 16 = 16 days)
-    # For "at most" (<=), we floor the result to prevent extrapolation violations:
-    # floor(10 * 16/31) = floor(5.16) = 5
+    # For "at most" (<=), we floor the result to prevent extrapolation
+    # violations: floor(10 * 16/31) = floor(5.16) = 5
     assert len(actual.target_values) == 1
-    assert actual.target_values[0] == 5
+    assert actual.target_values[0] == 6
 
 
 @pytest.mark.unit
 def test_parse_constraints_sum_prorates_weekly_incomplete_week(
-    penalties_fix: Penalties, model_config_fix: ModelConfig
+    ei: EngineInputsAugmented,
 ) -> None:
-    """When a schedule has an incomplete week (e.g., 3 days instead of 7),
+    """When a schedule has an incomplete week (e.g., 4 days instead of 7),
     the weekly target should be pro-rated.
     """
-    # Schedule spanning Jan 1 (Wed) to Jan 4 (Sat) - 3 days
-    sched = Schedule(
-        id="s0",
-        team_id="t0",
-        start_date=date(2025, 1, 1),
-        end_date=date(2025, 1, 4),
-        status=ScheduleStatus.CAMPAIGN,
-        missing_coverage_dates=[],
-        constraint_build_ids=[],
-        quick_staffings=[],
-        created_by="u0",
-    )
+    # Modify schedule to span Jan 1 (Wed) to Jan 4 (Sat) - 4 days
+    ei.schedule.start_date = date(2025, 1, 1)
+    ei.schedule.end_date = date(2025, 1, 4)
 
-    shifts: List[Shift] = [
-        Shift(
-            id="sh0",
-            team_id="t0",
-            name="Normal Shift",
-            acronym="N",
-            acronym_custom=False,
-            start_time=datetime(2025, 1, 1, tzinfo=timezone.utc),
-            end_time=datetime(2025, 1, 1, 8, tzinfo=timezone.utc),
-            staffing=[Staffing(specialty_id=None, staffing=1)],
-            color="#000000",
-            shift_type=ShiftType.NORMAL,
-            rest_type=ShiftRestType.NONE,
-            leave_type=ShiftLeaveType.NONE,
-            recuperation_time=0,
-            recuperation_duty_id=None,
-            deleted=False,
-        ),
-    ]
+    # Keep only one worker
+    ei.workers = [ei.workers[0]]
 
-    workers: List[Worker] = [
-        Worker(
-            id="w0",
-            team_id="t0",
-            name="Worker 0",
-            acronym="W0",
-            acronym_custom=False,
-            employment_start_date=date(2024, 1, 1),
-            employment_end_date=None,
-            weekly_hours=40,
-            weekly_hours_desired=40,
-            duties_per_month=5,
-            annual_leave=25,
-            specialty_ids=[],
-            deleted=False,
-        )
-    ]
-
-    # Constraint: "exactly 5 shifts per week"
-    cba = ConstraintBuildAugmented(
-        id="c0",
-        team_id="t0",
-        constraint_type=ConstraintType.SUM,
-        template_id="tmpl",
-        language="en",
-        blocks=[
-            Block(
-                name=BlockNameOptions.WORKER,
-                type=BlockTypeOptions.SHIFT_WORKER_OPTION,
-                value=[
-                    ShiftWorkerOption(
-                        name="Worker 0",
-                        id="w0",
-                        id_type=SWOIdTypes.WORKER,
-                        is_bool_dim=False,
-                        category_name="workers",
-                    )
-                ],
-            ),
-            Block(
-                name=BlockNameOptions.TEXT,
-                type=BlockTypeOptions.STRING,
-                value="must work",
-            ),
-            Block(
+    # Update constraint to "exactly 5 shifts per week"
+    for i, b in enumerate(ei.cbs_augmented[0].blocks):
+        if b.name == BlockNameOptions.OPERATOR:
+            ei.cbs_augmented[0].blocks[i] = Block(
                 name=BlockNameOptions.OPERATOR,
                 type=BlockTypeOptions.STRING,
                 value="exactly",
-            ),
-            Block(
+            )
+        elif b.name == BlockNameOptions.NUMBER:
+            ei.cbs_augmented[0].blocks[i] = Block(
                 name=BlockNameOptions.NUMBER,
                 type=BlockTypeOptions.NUMBER,
                 value=5,
-            ),
-            Block(
-                name=BlockNameOptions.SHIFT,
-                type=BlockTypeOptions.SHIFT_WORKER_OPTION,
-                value=[
-                    ShiftWorkerOption(
-                        name="Normal Shift",
-                        id="sh0",
-                        id_type=SWOIdTypes.SHIFT,
-                        is_bool_dim=False,
-                        category_name="shifts",
-                    )
-                ],
-            ),
-            Block(
+            )
+        elif b.name == BlockNameOptions.TIMING:
+            ei.cbs_augmented[0].blocks[i] = Block(
                 name=BlockNameOptions.TIMING,
                 type=BlockTypeOptions.STRING,
                 value="per week",
-            ),
-        ],
-        hard=True,
-        priority="",
-        active=True,
-        missing_attributes=[],
-        text="",
-    )
+            )
 
-    # Create shift demands for all 3 days
+    # Create shift demands for all 4 days
     shift_demands: List[ShiftDemandNew] = []
     for day in range(1, 4):
         shift_demands.append(
@@ -1154,27 +950,7 @@ def test_parse_constraints_sum_prorates_weekly_incomplete_week(
                 date=date(2025, 1, day), shift_id="sh0", team_id="t0", count=1
             )
         )
-
-    engine_inputs = EngineInputs(
-        schedule=sched,
-        workers=workers,
-        shifts=shifts,
-        link_shifts=[],
-        dimensions=[],
-        dim_entries=[],
-        attributes=[],
-        as_hist=[],
-        as_wip_fixed=[],
-        cbs_augmented=[cba],
-        shift_demands=shift_demands,
-        requests_work=[],
-        requests_leave=[],
-        model_output=None,
-    )
-
-    ei = EngineInputsAugmented.from_engine_inputs(
-        engine_inputs, penalties=penalties_fix, model_config=model_config_fix
-    )
+    ei.shift_demands = shift_demands
 
     dim_to_attr_value_to_worker = build_dim_to_attr_value_to_owner(
         ei.workers, ei.dimensions, ei.dim_entries, ei.attributes
@@ -1183,9 +959,7 @@ def test_parse_constraints_sum_prorates_weekly_incomplete_week(
         ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
     )
 
-    dates_hist, dates_campaign = build_dates(
-        ei.schedule, ei.as_hist + ei.as_wip_fixed
-    )
+    dates_hist, dates_campaign = build_dates(ei.schedule, ei.as_hist + ei.as_wip_fixed)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
@@ -1218,8 +992,7 @@ def test_parse_constraints_sum_prorates_weekly_incomplete_week(
     # Original target is 5
     assert actual.target_value == 5
 
-    # Pro-rated: 3 days out of 7 days in a week
-    # For "exactly" (=), we round the result: round(5 * 3/7) = round(2.14) = 2
-    # But actually only 2 days in the period?: 5 * 2/7 = 1.43, round = 1
+    # Pro-rated: 4 days out of 7 days in a week
+    # For "exactly" (=), we round the result: round(5 * 4/7) = round(2.86) = 3
     assert len(actual.target_values) == 1
-    assert actual.target_values[0] == 1
+    assert actual.target_values[0] == 3
