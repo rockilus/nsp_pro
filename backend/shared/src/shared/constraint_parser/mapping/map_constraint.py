@@ -55,7 +55,9 @@ class MapConstaint:
             periods_monthly,
             periods_yearly,
         )
-        self.map_shift = MapShift(shifts, shift_dim_dict, shift_ids_in_coverage)
+        self.map_shift = MapShift(
+            shifts, shift_dim_dict, shift_ids_in_coverage
+        )
 
     @staticmethod
     def calculate_prorated_target(
@@ -84,40 +86,49 @@ class MapConstaint:
         ratio = actual_days / full_period_days
         prorated = base_target * ratio
 
-        # Round based on operator to avoid impossible constraints
+        # Round based on operator
         if operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
-            # Round down for >= constraints (easier to satisfy)
+            # Round down for >= constraints (makes constraint easier to satisfy)
             return math.floor(prorated)
         if operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
-            # Round up for <= constraints (easier to satisfy)
+            # For <=, if the period is very incomplete (< 50%), use floor to prevent
+            # allowing more per-day rate than the full period. Otherwise use ceil.
+            if ratio < 0.5:
+                return math.floor(prorated)
             return math.ceil(prorated)
         # For EQUAL, use standard rounding
         return round(prorated)
 
     def get_full_period_length(
-        self, period: List[date], period_list: List[List[date]]
+        self, period: List[date], period_type: str
     ) -> int:
         """
-        Determine the full length of the period that the given period belongs to.
+        Determine the full calendar length of the period type (week/month/year).
 
         Args:
             period: A list of dates representing (part of) a period
-            period_list: The full list of periods (weekly, monthly, or yearly)
+            period_type: The period type ("WEEK", "MONTH", "YEAR", or "ALL")
 
         Returns:
-            Number of days in the complete period
+            Number of days in the complete calendar period
         """
+        import calendar as cal
+
         if not period:
             return 1  # Avoid division by zero
 
-        # Find which period in period_list this period belongs to
-        period_set = set(period)
-        for full_period in period_list:
-            full_period_set = set(full_period)
-            if period_set.issubset(full_period_set):
-                return len(full_period)
+        min_date = min(period)
 
-        # If not found in any period, assume period itself is complete
+        if period_type == "WEEK":
+            return 7
+        if period_type == "MONTH":
+            return cal.monthrange(min_date.year, min_date.month)[1]
+        if period_type == "YEAR":
+            if cal.isleap(min_date.year):
+                return 366
+            return 365
+
+        # For "ALL" or unknown types, return actual period length
         return len(period)
 
     def map_constraint_sum(
@@ -129,16 +140,8 @@ class MapConstaint:
         coord_shifts = self.map_shift.get_coords_shifts(cba, cstr_operator)
         base_target = self.get_target_value(cba.blocks, cba.constraint_type)
 
-        # Determine which period list to use for full period length calculation
+        # Determine the period type for pro-rating calculation
         selector = self.map_day.get_selector(cba.blocks, cba.constraint_type)
-        if selector.name == "WEEK":
-            period_list = self.map_day.periods_weekly
-        elif selector.name == "MONTH":
-            period_list = self.map_day.periods_monthly
-        elif selector.name == "YEAR":
-            period_list = self.map_day.periods_yearly
-        else:
-            period_list = [self.dates_campaign]  # ALL selector
 
         # w_vars, d_vars, s_vars = self.get_vars_coordinates(constraint)
         # if not all(isinstance(item, str) for item in s_vars):
@@ -174,15 +177,19 @@ class MapConstaint:
                 + self.worker_ids_to_worker_dates[w.id].dates_campaign
             )
             for period in coord_days:
-                period = sorted(list(set(period).intersection(dates_worker_set)))
+                period = sorted(
+                    list(set(period).intersection(dates_worker_set))
+                )
                 constraint_vars = []
                 for s in coord_shifts:
-                    constraint_vars += [(w.id, d.isoformat(), s.id) for d in period]
+                    constraint_vars += [
+                        (w.id, d.isoformat(), s.id) for d in period
+                    ]
                 if constraint_vars:
                     constraints_vars.append(constraint_vars)
                     # Calculate pro-rated target for this period
                     full_period_length = self.get_full_period_length(
-                        period, period_list
+                        period, selector.name
                     )
                     prorated_target = self.calculate_prorated_target(
                         base_target,
@@ -267,7 +274,9 @@ class MapConstaint:
         coord_days = self.map_day.get_coords_days_ord(cba, interval)
         coord_shifts = self.map_shift.get_coords_shifts_ord(cba)
 
-        constraints_vars: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]] = []
+        constraints_vars: List[
+            Tuple[Tuple[str, str, str], Tuple[str, str, str]]
+        ] = []
         for w in coord_workers:
             worker_dates = (
                 self.worker_ids_to_worker_dates[w.id].dates_hist
@@ -287,7 +296,9 @@ class MapConstaint:
             id=cba.id,
             constraint_type=cba.constraint_type,
             operator=cstr_operator,
-            target_value=self.get_target_value(cba.blocks, cba.constraint_type),
+            target_value=self.get_target_value(
+                cba.blocks, cba.constraint_type
+            ),
             target_unit="",
             shift_reference_ids=[s.id for s, _ in coord_shifts],
             shift_relative_ids=[s.id for _, s in coord_shifts],
@@ -315,9 +326,13 @@ class MapConstaint:
 
         constraints_vars: List[Tuple[str, str, str]] = []
         for w in coord_workers:
-            dates_worker_set = set(self.worker_ids_to_worker_dates[w.id].dates_campaign)
+            dates_worker_set = set(
+                self.worker_ids_to_worker_dates[w.id].dates_campaign
+            )
 
-            dates_cstr = sorted(list(set(coord_days).intersection(dates_worker_set)))
+            dates_cstr = sorted(
+                list(set(coord_days).intersection(dates_worker_set))
+            )
             for d in dates_cstr:
                 for s in coord_shifts:
                     constraints_vars.append((w.id, d.isoformat(), s.id))
@@ -326,7 +341,9 @@ class MapConstaint:
             id=cba.id,
             constraint_type=cba.constraint_type,
             operator=cstr_operator,
-            target_value=self.get_target_value(cba.blocks, cba.constraint_type),
+            target_value=self.get_target_value(
+                cba.blocks, cba.constraint_type
+            ),
             target_unit="",
             constraint_variables=constraints_vars,
             active=cba.active,
@@ -363,7 +380,9 @@ class MapConstaint:
             id=cba.id,
             constraint_type=cba.constraint_type,
             operator=cstr_operator,
-            target_value=self.get_target_value(cba.blocks, cba.constraint_type),
+            target_value=self.get_target_value(
+                cba.blocks, cba.constraint_type
+            ),
             target_unit="",
             constraint_variables=constraints_vars,
             active=cba.active,
@@ -413,10 +432,14 @@ class MapConstaint:
                 + self.worker_ids_to_worker_dates[w.id].dates_campaign
             )
             for period in coord_days:
-                period = sorted(list(set(period).intersection(dates_worker_set)))
+                period = sorted(
+                    list(set(period).intersection(dates_worker_set))
+                )
                 constraint_vars = []
                 for s in coord_shifts:
-                    constraint_vars += [(w.id, d.isoformat(), s.id) for d in period]
+                    constraint_vars += [
+                        (w.id, d.isoformat(), s.id) for d in period
+                    ]
                 constraints_vars.append(constraint_vars)
                 # EVE constraint uses target_value=1 for all periods
                 target_values.append(1)
@@ -445,7 +468,9 @@ class MapConstaint:
     def integer_division_list(numerator: int, denominator: int) -> List[int]:
         quotient = numerator // denominator
         remainder = numerator % denominator
-        result = [quotient + 1] * remainder + [quotient] * (denominator - remainder)
+        result = [quotient + 1] * remainder + [quotient] * (
+            denominator - remainder
+        )
         return result
 
     def get_operator(
@@ -462,7 +487,9 @@ class MapConstaint:
             return ConstraintOperator.YES
         raise ValueError("Operator not found")
 
-    def get_target_value(self, blocks: List[Block], cstr_type: ConstraintType) -> int:
+    def get_target_value(
+        self, blocks: List[Block], cstr_type: ConstraintType
+    ) -> int:
         if cstr_type in [
             ConstraintType.ORD,
             ConstraintType.FIL,
