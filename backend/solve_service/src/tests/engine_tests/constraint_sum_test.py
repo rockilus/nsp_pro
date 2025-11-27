@@ -29,6 +29,10 @@ from shared.schemas.core import (
 
 from engine import Inputs as InputsEngine
 from engine import Outputs, ProcessingCache
+from engine_to_core_service.build_breaches.build_breaches_debug import (
+    calculate_breach_penalty_sum,
+    convert_assignments_engine_to_core,
+)
 from engine_to_core_service.build_breaches.build_breaches_model import (
     _parse_breaches_engine,
 )
@@ -212,11 +216,7 @@ class TestConstraintSum:
                 )
                 # Use target_values (per period) if available, otherwise fall
                 # back to target_value
-                target = (
-                    constraint.target_values[period_idx]
-                    if constraint.target_values
-                    else constraint.target_value
-                )
+                target = constraint.target_values[period_idx]
                 if (
                     constraint.operator
                     == ConstraintOperator.LESS_THAN_OR_EQUAL
@@ -333,40 +333,16 @@ class TestConstraintSum:
             assert b_vars in constraint_soft.constraint_variables
 
         # Check objective value
+        # Convert engine assignments to shared assignments
+        assignments_core = convert_assignments_engine_to_core(
+            out.assignments, engine_inputs.schedule
+        )
         obj_value = 0
         penalty = engine_inputs.penalties.user_constraint.sum.soft
         for breach in breaches:
-            nb_a_period = sum(
-                1
-                for assignment in out.assignments
-                if (
-                    assignment.worker_id,
-                    assignment.date,
-                    assignment.shift_id,
-                )
-                in [
-                    (var.worker_id, var.date, var.shift_id)
-                    for var in breach.variables
-                ]
+            obj_value += calculate_breach_penalty_sum(
+                breach, assignments_core, penalty, constraint_soft
             )
-            if (
-                constraint_soft.operator
-                == ConstraintOperator.LESS_THAN_OR_EQUAL
-            ):
-                obj_value += penalty * max(
-                    nb_a_period - constraint_soft.target_value, 0
-                )
-            elif constraint_soft.operator == ConstraintOperator.EQUAL:
-                obj_value += penalty * abs(
-                    constraint_soft.target_value - nb_a_period
-                )
-            elif (
-                constraint_soft.operator
-                == ConstraintOperator.GREATER_THAN_OR_EQUAL
-            ):
-                obj_value += penalty * max(
-                    constraint_soft.target_value - nb_a_period, 0
-                )
         assert out.objective_value == obj_value
 
     def test_constraint_sum_hard_hard_conflic_obj_value(
