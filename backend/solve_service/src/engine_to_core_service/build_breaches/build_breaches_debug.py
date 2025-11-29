@@ -1,7 +1,9 @@
+from dataclasses import asdict
 from typing import Dict, List, Tuple, cast
 
 from shared.schemas.core import (
     Assignment,
+    AssignmentSource,
     Breach,
     Constraint,
     ConstraintFai,
@@ -12,6 +14,7 @@ from shared.schemas.core import (
     ConstraintSum,
     EngineInputsAugmented,
     Request,
+    Schedule,
     Shift,
     ShiftDemandNew,
     ShiftType,
@@ -19,12 +22,36 @@ from shared.schemas.core import (
 )
 from shared.schemas.core.breach import ObjectiveCategory
 
+from engine import Assignment as AssignmentEngine
 from engine.types import (
     GroupsAssignmentsDurationsTargetConstraint,
     GroupsAssignmentsTargetConstraint,
     Inputs,
     Outputs,
 )
+
+
+# pylint: disable=R0801
+def convert_assignments_engine_to_core(
+    as_engine: List[AssignmentEngine], schedule: Schedule
+) -> List[Assignment]:
+    """Convert engine Assignment objects to shared Assignment objects.
+
+    This helper is useful when calculating objective values in tests or
+    debug scenarios where you need to use breach penalty calculators
+    that expect shared Assignment types.
+    """
+    return [
+        Assignment(
+            **asdict(a),
+            id="",
+            team_id=schedule.team_id,
+            schedule_id=schedule.id,
+            fixed=False,
+            source=AssignmentSource.SOLVER,
+        )
+        for a in as_engine
+    ]
 
 
 # pylint: disable=too-many-arguments, too-many-locals, too-many-branches
@@ -120,7 +147,16 @@ def calculate_breach_penalty_sum(
         target_value = 0
         operator = None
     else:
-        target_value = constraint.target_value
+        # Find which period this breach belongs to
+        breach_tuples = {
+            (v.worker_id, v.date.isoformat(), v.shift_id) for v in breach.variables
+        }
+        target_value = constraint.target_value  # default fallback
+        for period_idx, period_vars in enumerate(constraint.constraint_variables):
+            period_tuples = set(period_vars)
+            if breach_tuples.issubset(period_tuples):
+                target_value = constraint.target_values[period_idx]
+                break
         operator = constraint.operator
 
     if operator is None:

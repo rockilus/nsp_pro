@@ -244,10 +244,10 @@ def core_to_engine_inputs(
         # ord=[],
         # fil=[],
         # fai=[],
-        # sum=constraints.sum,
-        # seq=constraints.seq,
-        # ord=constraints.ord,
-        # fil=constraints.fil,
+        #     sum=constraints.sum,
+        #     seq=constraints.seq,
+        #     ord=constraints.ord,
+        #     fil=constraints.fil,
         #     fai=constraints.fai,
         # ),
         configuration_constraints=ConfigurationConstraintInputs(
@@ -275,6 +275,7 @@ def core_to_engine_inputs(
                 engine_inputs.shift_demands,
                 engine_inputs.penalties.configuration_constraint.coverage,
             ),
+            # requests=[],
             requests=build_engine_requests(
                 worker_not_deleted_ids=worker_not_deleted_ids,
                 worker_ids_to_worker_dates=worker_ids_to_worker_dates,

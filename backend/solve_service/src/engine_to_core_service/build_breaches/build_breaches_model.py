@@ -210,6 +210,7 @@ def _get_constraint_by_id(
     return None
 
 
+# pylint: disable=too-many-locals
 def _build_description_breach_constraint_sum(
     workers: List[Worker],
     shifts: List[Shift],
@@ -229,7 +230,19 @@ def _build_description_breach_constraint_sum(
         for a in assignments
         if a.worker_id in workers_id and a.date in dates and a.shift_id in shifts_id
     )
-    diff = count - constraint.target_value
+
+    # Find which period this breach belongs to
+    breach_tuples = set(
+        (v.worker_id, v.date.isoformat(), v.shift_id) for v in breach.variables
+    )
+    target_for_period = constraint.target_value  # default fallback
+    for period_idx, period_vars in enumerate(constraint.constraint_variables):
+        period_tuples = set(period_vars)
+        if breach_tuples.issubset(period_tuples):
+            target_for_period = constraint.target_values[period_idx]
+            break
+
+    diff = count - target_for_period
     string_list = [
         str(abs(diff)),
         "shifts" if abs(diff) > 1 else "shift",

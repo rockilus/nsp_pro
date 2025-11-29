@@ -21,6 +21,7 @@ from shared.schemas.core import (
     QuickStaffing,
     Schedule,
     Shift,
+    ShiftDemandNew,
     ShiftType,
     ShiftWorkerOption,
     SWOIdTypes,
@@ -29,6 +30,10 @@ from shared.schemas.core import (
 
 from engine import Inputs as InputsEngine
 from engine import Outputs, ProcessingCache
+from engine_to_core_service.build_breaches.build_breaches_debug import (
+    calculate_breach_penalty_sum,
+    convert_assignments_engine_to_core,
+)
 from engine_to_core_service.build_breaches.build_breaches_model import (
     _parse_breaches_engine,
 )
@@ -129,7 +134,7 @@ class TestConstraintSum:
         out = run_engine_solve_from_engine_inputs(engine_inputs)
 
         if isinstance(constraint, ConstraintSum):
-            for cstr_vars in constraint.constraint_variables:
+            for period_idx, cstr_vars in enumerate(constraint.constraint_variables):
                 coord = [
                     (var[0], date.fromisoformat(var[1]), var[2]) for var in cstr_vars
                 ]
@@ -143,12 +148,19 @@ class TestConstraintSum:
                     )
                     in coord
                 )
+                # Use target_values (per period) if available, otherwise fall
+                # back to target_value
+                target = (
+                    constraint.target_values[period_idx]
+                    if constraint.target_values
+                    else constraint.target_value
+                )
                 if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
-                    assert nb_a_period <= constraint.target_value
+                    assert nb_a_period <= target
                 elif constraint.operator == ConstraintOperator.EQUAL:
-                    assert nb_a_period == constraint.target_value
+                    assert nb_a_period == target
                 elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
-                    assert nb_a_period >= constraint.target_value
+                    assert nb_a_period >= target
         else:
             assert False
 
@@ -173,7 +185,9 @@ class TestConstraintSum:
         out = run_engine_solve_from_engine_inputs(engine_inputs)
 
         if isinstance(constraint, ConstraintSum):
-            for cstr_vars in constraint.constraint_variables:
+            print(constraint)
+
+            for period_idx, cstr_vars in enumerate(constraint.constraint_variables):
                 coord = [
                     (var[0], date.fromisoformat(var[1]), var[2]) for var in cstr_vars
                 ]
@@ -187,12 +201,15 @@ class TestConstraintSum:
                     )
                     in coord
                 )
+                # Use target_values (per period) if available, otherwise fall
+                # back to target_value
+                target = constraint.target_values[period_idx]
                 if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
-                    assert nb_a_period <= constraint.target_value
+                    assert nb_a_period <= target
                 elif constraint.operator == ConstraintOperator.EQUAL:
-                    assert nb_a_period == constraint.target_value
+                    assert nb_a_period == target
                 elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
-                    assert nb_a_period >= constraint.target_value
+                    assert nb_a_period >= target
         else:
             assert False
 
@@ -231,9 +248,11 @@ class TestConstraintSum:
             ConstraintOperator.EQUAL,
         ]:
             constraint_soft.target_value = constraint.target_value + 1
+            constraint_soft.target_values = [v + 1 for v in constraint.target_values]
             constraint_soft.operator = ConstraintOperator.EQUAL
         elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
             constraint_soft.target_value = constraint.target_value - 1
+            constraint_soft.target_values = [v - 1 for v in constraint.target_values]
             constraint_soft.operator = ConstraintOperator.EQUAL
 
         inputs.user_constraints.sum.append(constraint_soft)
@@ -242,7 +261,7 @@ class TestConstraintSum:
 
         # Check assignments hard constraint
         if isinstance(constraint_hard, ConstraintSum):
-            for cstr_vars in constraint.constraint_variables:
+            for period_idx, cstr_vars in enumerate(constraint.constraint_variables):
                 coord = [
                     (var[0], date.fromisoformat(var[1]), var[2]) for var in cstr_vars
                 ]
@@ -256,12 +275,15 @@ class TestConstraintSum:
                     )
                     in coord
                 )
+                # Use target_values (per period) if available, otherwise fall
+                # back to target_value
+                target = constraint.target_values[period_idx]
                 if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
-                    assert nb_a_period <= constraint.target_value
+                    assert nb_a_period <= target
                 elif constraint.operator == ConstraintOperator.EQUAL:
-                    assert nb_a_period == constraint.target_value
+                    assert nb_a_period == target
                 elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
-                    assert nb_a_period >= constraint.target_value
+                    assert nb_a_period >= target
         else:
             assert False
 
@@ -277,29 +299,16 @@ class TestConstraintSum:
             assert b_vars in constraint_soft.constraint_variables
 
         # Check objective value
+        # Convert engine assignments to shared assignments
+        assignments_core = convert_assignments_engine_to_core(
+            out.assignments, engine_inputs.schedule
+        )
         obj_value = 0
         penalty = engine_inputs.penalties.user_constraint.sum.soft
         for breach in breaches:
-            nb_a_period = sum(
-                1
-                for assignment in out.assignments
-                if (
-                    assignment.worker_id,
-                    assignment.date,
-                    assignment.shift_id,
-                )
-                in [(var.worker_id, var.date, var.shift_id) for var in breach.variables]
+            obj_value += calculate_breach_penalty_sum(
+                breach, assignments_core, penalty, constraint_soft
             )
-            if constraint_soft.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
-                obj_value += penalty * max(
-                    nb_a_period - constraint_soft.target_value, 0
-                )
-            elif constraint_soft.operator == ConstraintOperator.EQUAL:
-                obj_value += penalty * abs(constraint_soft.target_value - nb_a_period)
-            elif constraint_soft.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
-                obj_value += penalty * max(
-                    constraint_soft.target_value - nb_a_period, 0
-                )
         assert out.objective_value == obj_value
 
     def test_constraint_sum_hard_hard_conflic_obj_value(
@@ -518,3 +527,166 @@ class TestConstraintSumRunParsedScenario:
         # ensure no assignment references w0 and some other worker is assigned
         assert all(a.worker_id != "w0" for a in out.assignments)
         assert any(a.worker_id != "w0" for a in out.assignments)
+
+    @pytest.mark.unit
+    def test_run_sum_prorates_single_day_monthly_constraint(
+        self, penalties_fix: Penalties, model_config_fix: ModelConfig
+    ) -> None:
+        """Verify solver respects pro-rated monthly targets for single-day schedule."""
+        engine_inputs = make_simple_engine_inputs(
+            penalties_fix,
+            model_config_fix,
+        )
+
+        # Modify schedule to span only Jan 1 (1 day)
+        engine_inputs.schedule.start_date = date(2025, 1, 1)
+        engine_inputs.schedule.end_date = date(2025, 1, 2)
+
+        # Change first shift to duty type
+        engine_inputs.shifts[0].shift_type = ShiftType.DUTY
+
+        # Update constraint to "at least 2 duties per month"
+        for i, b in enumerate(engine_inputs.cbs_augmented[0].blocks):
+            if b.name == BlockNameOptions.OPERATOR:
+                engine_inputs.cbs_augmented[0].blocks[i] = Block(
+                    name=BlockNameOptions.OPERATOR,
+                    type=BlockTypeOptions.STRING,
+                    value="at least",
+                )
+            elif b.name == BlockNameOptions.NUMBER:
+                engine_inputs.cbs_augmented[0].blocks[i] = Block(
+                    name=BlockNameOptions.NUMBER,
+                    type=BlockTypeOptions.NUMBER,
+                    value=2,
+                )
+            elif b.name == BlockNameOptions.TIMING:
+                engine_inputs.cbs_augmented[0].blocks[i] = Block(
+                    name=BlockNameOptions.TIMING,
+                    type=BlockTypeOptions.STRING,
+                    value="per month",
+                )
+
+        out = engine_solve_engine_inputs(engine_inputs)
+
+        # Pro-rated target is 0 for single day: floor(2 * 1/31) = 0
+        # With target=0, solver is free to assign any amount up to coverage
+        count_w0_sh0 = sum(
+            1 for a in out.assignments if a.worker_id == "w0" and a.shift_id == "sh0"
+        )
+        assert count_w0_sh0 <= 1
+
+    @pytest.mark.unit
+    def test_run_sum_prorates_half_month_constraint(
+        self, penalties_fix: Penalties, model_config_fix: ModelConfig
+    ) -> None:
+        """Verify solver respects pro-rated monthly targets for half-month schedule."""
+        engine_inputs = make_simple_engine_inputs(
+            penalties_fix,
+            model_config_fix,
+        )
+
+        # Modify schedule to span Jan 1-16 (15 days)
+        engine_inputs.schedule.start_date = date(2025, 1, 1)
+        engine_inputs.schedule.end_date = date(2025, 1, 16)
+
+        # Change first shift to duty type
+        engine_inputs.shifts[0].shift_type = ShiftType.DUTY
+
+        # Update constraint to "at most 10 duties per month"
+        for i, b in enumerate(engine_inputs.cbs_augmented[0].blocks):
+            if b.name == BlockNameOptions.OPERATOR:
+                engine_inputs.cbs_augmented[0].blocks[i] = Block(
+                    name=BlockNameOptions.OPERATOR,
+                    type=BlockTypeOptions.STRING,
+                    value="at most",
+                )
+            elif b.name == BlockNameOptions.NUMBER:
+                engine_inputs.cbs_augmented[0].blocks[i] = Block(
+                    name=BlockNameOptions.NUMBER,
+                    type=BlockTypeOptions.NUMBER,
+                    value=10,
+                )
+            elif b.name == BlockNameOptions.TIMING:
+                engine_inputs.cbs_augmented[0].blocks[i] = Block(
+                    name=BlockNameOptions.TIMING,
+                    type=BlockTypeOptions.STRING,
+                    value="per month",
+                )
+
+        # Create shift demands for all 15 days
+        shift_demands: List[ShiftDemandNew] = []
+        for day in range(1, 16):
+            shift_demands.append(
+                ShiftDemandNew(
+                    date=date(2025, 1, day),
+                    shift_id="sh0",
+                    team_id="t0",
+                    count=1,
+                )
+            )
+        engine_inputs.shift_demands = shift_demands
+
+        out = engine_solve_engine_inputs(engine_inputs)
+
+        # Pro-rated target is 5: floor(10 * 16/31) = 5
+        # Solver should assign at most 5
+        count_w0_sh0 = sum(
+            1 for a in out.assignments if a.worker_id == "w0" and a.shift_id == "sh0"
+        )
+        assert count_w0_sh0 <= 5
+
+    @pytest.mark.unit
+    def test_run_sum_prorates_incomplete_week_constraint(
+        self, penalties_fix: Penalties, model_config_fix: ModelConfig
+    ) -> None:
+        """Verify solver respects pro-rated weekly targets for incomplete week."""
+        engine_inputs = make_simple_engine_inputs(
+            penalties_fix,
+            model_config_fix,
+        )
+
+        # Modify schedule to span Jan 1-4 (3 days)
+        engine_inputs.schedule.start_date = date(2025, 1, 1)
+        engine_inputs.schedule.end_date = date(2025, 1, 4)
+
+        # First shift is already NORMAL type by default
+
+        # Update constraint to "exactly 5 shifts per week"
+        for i, b in enumerate(engine_inputs.cbs_augmented[0].blocks):
+            if b.name == BlockNameOptions.OPERATOR:
+                engine_inputs.cbs_augmented[0].blocks[i] = Block(
+                    name=BlockNameOptions.OPERATOR,
+                    type=BlockTypeOptions.STRING,
+                    value="exactly",
+                )
+            elif b.name == BlockNameOptions.NUMBER:
+                engine_inputs.cbs_augmented[0].blocks[i] = Block(
+                    name=BlockNameOptions.NUMBER,
+                    type=BlockTypeOptions.NUMBER,
+                    value=5,
+                )
+            elif b.name == BlockNameOptions.TIMING:
+                # Already "per week" by default in make_simple_engine_inputs
+                pass
+
+        # Create shift demands for all 3 days
+        shift_demands: List[ShiftDemandNew] = []
+        for day in range(1, 4):
+            shift_demands.append(
+                ShiftDemandNew(
+                    date=date(2025, 1, day),
+                    shift_id="sh0",
+                    team_id="t0",
+                    count=1,
+                )
+            )
+        engine_inputs.shift_demands = shift_demands
+
+        out = engine_solve_engine_inputs(engine_inputs)
+
+        # Pro-rated target is 2: round(5 * 3/7) = 2
+        # Solver should assign exactly 2
+        count_w0_sh0 = sum(
+            1 for a in out.assignments if a.worker_id == "w0" and a.shift_id == "sh0"
+        )
+        assert count_w0_sh0 == 3

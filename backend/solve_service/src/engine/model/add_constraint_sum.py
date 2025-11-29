@@ -12,9 +12,12 @@ from utils.constants import Constants
 # pylint: disable=too-few-public-methods
 class AddConstraintSum(AddConstraint):
     def add_constraint(self, constraint: ConstraintSum, hard_to_soft: bool) -> None:
-        for coords in constraint.constraint_variables:
+        for period_idx, coords in enumerate(constraint.constraint_variables):
             constraint_vars = [self.variables[coord] for coord in coords]
-            self._add_constraint_sum_other(constraint, constraint_vars, hard_to_soft)
+            target_for_period = constraint.target_values[period_idx]
+            self._add_constraint_sum_other(
+                constraint, constraint_vars, target_for_period, hard_to_soft
+            )
         # w_vars, d_vars, s_vars = self.get_vars_coordinates(constraint)
         # if not all(isinstance(item, str) for item in s_vars):
         #     raise TypeError(
@@ -41,27 +44,29 @@ class AddConstraintSum(AddConstraint):
         #             )
         # else:
 
+    # pylint: disable=too-many-arguments
     def _add_constraint_sum_hour(
         self,
         constraint: ConstraintSum,
         cstr_vars: List[cp_model.IntVar],
         cstr_durs: List[int],
+        target_for_period: int,
         hard_to_soft: bool,
     ) -> None:
         if constraint.hard and not hard_to_soft:
             if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
                 sum_var = self.model.NewIntVar(
-                    0, constraint.target_value * Constants.NUM_MINUTES_HOUR, ""
+                    0, target_for_period * Constants.NUM_MINUTES_HOUR, ""
                 )
             elif constraint.operator == ConstraintOperator.EQUAL:
                 sum_var = self.model.NewIntVar(
-                    constraint.target_value * Constants.NUM_MINUTES_HOUR,
-                    constraint.target_value * Constants.NUM_MINUTES_HOUR,
+                    target_for_period * Constants.NUM_MINUTES_HOUR,
+                    target_for_period * Constants.NUM_MINUTES_HOUR,
                     "",
                 )
             elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
                 sum_var = self.model.NewIntVar(
-                    constraint.target_value * Constants.NUM_MINUTES_HOUR,
+                    target_for_period * Constants.NUM_MINUTES_HOUR,
                     len(cstr_vars)
                     * Constants.NUM_HOURS_DAY
                     * Constants.NUM_MINUTES_HOUR,
@@ -80,7 +85,7 @@ class AddConstraintSum(AddConstraint):
             )
             if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
                 delta = self.model.NewIntVar(
-                    -constraint.target_value * Constants.NUM_MINUTES_HOUR,
+                    -target_for_period * Constants.NUM_MINUTES_HOUR,
                     len(cstr_vars)
                     * Constants.NUM_HOURS_DAY
                     * Constants.NUM_MINUTES_HOUR,
@@ -89,7 +94,7 @@ class AddConstraintSum(AddConstraint):
                 self.model.Add(
                     delta
                     == sum(v * d for v, d in zip(cstr_vars, cstr_durs))
-                    - constraint.target_value * Constants.NUM_MINUTES_HOUR
+                    - target_for_period * Constants.NUM_MINUTES_HOUR
                 )
                 excess = self.model.NewIntVar(
                     0,
@@ -103,7 +108,7 @@ class AddConstraintSum(AddConstraint):
                 self.obj.int_coeffs.append(constraint.penalty)
             elif constraint.operator == ConstraintOperator.EQUAL:
                 delta = self.model.NewIntVar(
-                    -constraint.target_value * Constants.NUM_MINUTES_HOUR,
+                    -target_for_period * Constants.NUM_MINUTES_HOUR,
                     len(cstr_vars)
                     * Constants.NUM_HOURS_DAY
                     * Constants.NUM_MINUTES_HOUR,
@@ -112,10 +117,10 @@ class AddConstraintSum(AddConstraint):
                 self.model.Add(
                     delta
                     == sum(v * d for v, d in zip(cstr_vars, cstr_durs))
-                    - constraint.target_value * Constants.NUM_MINUTES_HOUR
+                    - target_for_period * Constants.NUM_MINUTES_HOUR
                 )
                 excess = self.model.NewIntVar(
-                    -constraint.target_value * Constants.NUM_MINUTES_HOUR,
+                    -target_for_period * Constants.NUM_MINUTES_HOUR,
                     len(cstr_vars)
                     * Constants.NUM_HOURS_DAY
                     * Constants.NUM_MINUTES_HOUR,
@@ -129,12 +134,12 @@ class AddConstraintSum(AddConstraint):
                     -len(cstr_vars)
                     * Constants.NUM_HOURS_DAY
                     * Constants.NUM_MINUTES_HOUR,
-                    constraint.target_value * Constants.NUM_MINUTES_HOUR,
+                    target_for_period * Constants.NUM_MINUTES_HOUR,
                     "",
                 )
                 self.model.Add(
                     delta
-                    == constraint.target_value * Constants.NUM_MINUTES_HOUR
+                    == target_for_period * Constants.NUM_MINUTES_HOUR
                     - sum(v * d for v, d in zip(cstr_vars, cstr_durs))
                 )
                 excess = self.model.NewIntVar(
@@ -152,21 +157,20 @@ class AddConstraintSum(AddConstraint):
         self,
         constraint: ConstraintSum,
         cstr_vars: List[cp_model.IntVar],
+        target_for_period: int,
         hard_to_soft: bool,
     ) -> None:
         if constraint.hard and not hard_to_soft:
             if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
-                sum_var = self.model.NewIntVar(0, constraint.target_value, "")
+                sum_var = self.model.NewIntVar(0, target_for_period, "")
             elif constraint.operator == ConstraintOperator.EQUAL:
                 sum_var = self.model.NewIntVar(
-                    constraint.target_value,
-                    constraint.target_value,
+                    target_for_period,
+                    target_for_period,
                     "",
                 )
             elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
-                sum_var = self.model.NewIntVar(
-                    constraint.target_value, len(cstr_vars), ""
-                )
+                sum_var = self.model.NewIntVar(target_for_period, len(cstr_vars), "")
             else:
                 raise NotImplementedError(
                     f"Sum constraint operator {constraint.operator} "
@@ -179,7 +183,7 @@ class AddConstraintSum(AddConstraint):
             )
             if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
                 delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
-                self.model.Add(delta == sum(cstr_vars) - constraint.target_value)
+                self.model.Add(delta == sum(cstr_vars) - target_for_period)
                 excess = self.model.NewIntVar(
                     0,
                     len(cstr_vars),
@@ -190,7 +194,7 @@ class AddConstraintSum(AddConstraint):
                 self.obj.int_coeffs.append(constraint.penalty)
             elif constraint.operator == ConstraintOperator.EQUAL:
                 delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
-                self.model.Add(delta == sum(cstr_vars) - constraint.target_value)
+                self.model.Add(delta == sum(cstr_vars) - target_for_period)
                 excess = self.model.NewIntVar(
                     -len(cstr_vars),
                     len(cstr_vars),
@@ -201,7 +205,7 @@ class AddConstraintSum(AddConstraint):
                 self.obj.int_coeffs.append(constraint.penalty)
             elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
                 delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
-                self.model.Add(delta == constraint.target_value - sum(cstr_vars))
+                self.model.Add(delta == target_for_period - sum(cstr_vars))
                 excess = self.model.NewIntVar(
                     0,
                     len(cstr_vars),

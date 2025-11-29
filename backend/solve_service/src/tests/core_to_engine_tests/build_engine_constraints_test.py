@@ -76,6 +76,7 @@ class TestBuildQuickStaffingConstraints:
                     for d in worker_ids_to_worker_dates[target_worker.id].dates_campaign
                 ]
             ],
+            target_values=[target_qs.target],
             active=True,
             hard=True,
             priority="high",

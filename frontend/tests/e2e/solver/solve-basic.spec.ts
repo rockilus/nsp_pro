@@ -16,6 +16,7 @@ const TEST_SCENARIOS = [
   "basic_coverage",
   "benoit_scenario_0",
   "benoit_scenario_1",
+  "benoit_scenario_2",
 ] as const;
 
 test.describe("Solver - Basic Coverage", () => {

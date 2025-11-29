@@ -182,6 +182,7 @@ class TestConstraintFil:
                         for s_id in shift_work_ids
                     ]
                 ],
+                target_values=[1],
                 active=True,
                 hard=True,
                 priority="medium",
@@ -324,6 +325,7 @@ class TestConstraintFil:
                         for s_id in shift_work_ids
                     ]
                 ],
+                target_values=[1],
                 active=True,
                 hard=True,
                 priority="medium",

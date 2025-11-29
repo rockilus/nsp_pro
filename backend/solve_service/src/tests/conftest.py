@@ -1142,6 +1142,13 @@ test_data = [
             constraint_variables=[
                 [("w0", d.isoformat(), "s0") for d in week] for week in periods_weekly
             ],
+            target_values=[
+                2,
+                3,
+                3,
+                3,
+                2,
+            ],  # Pro-rated for incomplete first & last weeks
             active=True,
             hard=True,
             priority="medium",
@@ -1221,6 +1228,13 @@ test_data = [
             constraint_variables=[
                 [("w0", d.isoformat(), "s0") for d in week] for week in periods_weekly
             ],
+            target_values=[
+                1,
+                1,
+                1,
+                1,
+                1,
+            ],  # Pro-rated for incomplete first & last weeks
             active=True,
             hard=True,
             priority="medium",
@@ -1300,6 +1314,13 @@ test_data = [
             constraint_variables=[
                 [("w0", d.isoformat(), "s0") for d in week] for week in periods_weekly
             ],
+            target_values=[
+                1,
+                2,
+                2,
+                2,
+                1,
+            ],  # Pro-rated for incomplete first & last weeks
             active=True,
             hard=True,
             priority="medium",
@@ -1970,6 +1991,7 @@ test_data = [
             constraint_variables=[
                 [("w0", d.isoformat(), "s0") for d in dates_campaign]
             ],
+            target_values=[1],
             active=True,
             hard=True,
             priority="medium",
