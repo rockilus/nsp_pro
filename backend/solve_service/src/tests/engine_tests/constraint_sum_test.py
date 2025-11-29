@@ -1,8 +1,7 @@
 import random
 from copy import deepcopy
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from typing import Callable, List, Tuple
-from shared.schemas.core import ShiftDemandNew
 
 import pytest
 from shared.schemas.core import (
@@ -16,15 +15,13 @@ from shared.schemas.core import (
     ConstraintOrd,
     ConstraintSeq,
     ConstraintSum,
-    ConstraintType,
     EngineInputsAugmented,
     ModelConfig,
     Penalties,
     QuickStaffing,
     Schedule,
     Shift,
-    ShiftLeaveType,
-    ShiftRestType,
+    ShiftDemandNew,
     ShiftType,
     ShiftWorkerOption,
     SWOIdTypes,
@@ -129,9 +126,7 @@ class TestConstraintSum:
             | ConstraintSeq
             | ConstraintSum,
         ],
-        run_engine_solve_from_engine_inputs: Callable[
-            [EngineInputsAugmented], Outputs
-        ],
+        run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
     ) -> None:
         cba, constraint = constraint_sum_with_expected_output
         engine_inputs.cbs_augmented = [cba]
@@ -139,12 +134,9 @@ class TestConstraintSum:
         out = run_engine_solve_from_engine_inputs(engine_inputs)
 
         if isinstance(constraint, ConstraintSum):
-            for period_idx, cstr_vars in enumerate(
-                constraint.constraint_variables
-            ):
+            for period_idx, cstr_vars in enumerate(constraint.constraint_variables):
                 coord = [
-                    (var[0], date.fromisoformat(var[1]), var[2])
-                    for var in cstr_vars
+                    (var[0], date.fromisoformat(var[1]), var[2]) for var in cstr_vars
                 ]
                 nb_a_period = sum(
                     1
@@ -163,17 +155,11 @@ class TestConstraintSum:
                     if constraint.target_values
                     else constraint.target_value
                 )
-                if (
-                    constraint.operator
-                    == ConstraintOperator.LESS_THAN_OR_EQUAL
-                ):
+                if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
                     assert nb_a_period <= target
                 elif constraint.operator == ConstraintOperator.EQUAL:
                     assert nb_a_period == target
-                elif (
-                    constraint.operator
-                    == ConstraintOperator.GREATER_THAN_OR_EQUAL
-                ):
+                elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
                     assert nb_a_period >= target
         else:
             assert False
@@ -189,9 +175,7 @@ class TestConstraintSum:
             | ConstraintSeq
             | ConstraintSum,
         ],
-        run_engine_solve_from_engine_inputs: Callable[
-            [EngineInputsAugmented], Outputs
-        ],
+        run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
     ) -> None:
         cba, constraint = constraint_sum_with_expected_output
         cba_soft = deepcopy(cba)
@@ -203,12 +187,9 @@ class TestConstraintSum:
         if isinstance(constraint, ConstraintSum):
             print(constraint)
 
-            for period_idx, cstr_vars in enumerate(
-                constraint.constraint_variables
-            ):
+            for period_idx, cstr_vars in enumerate(constraint.constraint_variables):
                 coord = [
-                    (var[0], date.fromisoformat(var[1]), var[2])
-                    for var in cstr_vars
+                    (var[0], date.fromisoformat(var[1]), var[2]) for var in cstr_vars
                 ]
                 nb_a_period = sum(
                     1
@@ -223,17 +204,11 @@ class TestConstraintSum:
                 # Use target_values (per period) if available, otherwise fall
                 # back to target_value
                 target = constraint.target_values[period_idx]
-                if (
-                    constraint.operator
-                    == ConstraintOperator.LESS_THAN_OR_EQUAL
-                ):
+                if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
                     assert nb_a_period <= target
                 elif constraint.operator == ConstraintOperator.EQUAL:
                     assert nb_a_period == target
-                elif (
-                    constraint.operator
-                    == ConstraintOperator.GREATER_THAN_OR_EQUAL
-                ):
+                elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
                     assert nb_a_period >= target
         else:
             assert False
@@ -266,24 +241,18 @@ class TestConstraintSum:
         constraint_soft = deepcopy(constraint)
         constraint_soft.id += "_soft"
         constraint_soft.hard = False
-        constraint_soft.penalty = (
-            engine_inputs.penalties.user_constraint.sum.soft
-        )
+        constraint_soft.penalty = engine_inputs.penalties.user_constraint.sum.soft
 
         if constraint.operator in [
             ConstraintOperator.LESS_THAN_OR_EQUAL,
             ConstraintOperator.EQUAL,
         ]:
             constraint_soft.target_value = constraint.target_value + 1
-            constraint_soft.target_values = [
-                v + 1 for v in constraint.target_values
-            ]
+            constraint_soft.target_values = [v + 1 for v in constraint.target_values]
             constraint_soft.operator = ConstraintOperator.EQUAL
         elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
             constraint_soft.target_value = constraint.target_value - 1
-            constraint_soft.target_values = [
-                v - 1 for v in constraint.target_values
-            ]
+            constraint_soft.target_values = [v - 1 for v in constraint.target_values]
             constraint_soft.operator = ConstraintOperator.EQUAL
 
         inputs.user_constraints.sum.append(constraint_soft)
@@ -292,12 +261,9 @@ class TestConstraintSum:
 
         # Check assignments hard constraint
         if isinstance(constraint_hard, ConstraintSum):
-            for period_idx, cstr_vars in enumerate(
-                constraint.constraint_variables
-            ):
+            for period_idx, cstr_vars in enumerate(constraint.constraint_variables):
                 coord = [
-                    (var[0], date.fromisoformat(var[1]), var[2])
-                    for var in cstr_vars
+                    (var[0], date.fromisoformat(var[1]), var[2]) for var in cstr_vars
                 ]
                 nb_a_period = sum(
                     1
@@ -312,17 +278,11 @@ class TestConstraintSum:
                 # Use target_values (per period) if available, otherwise fall
                 # back to target_value
                 target = constraint.target_values[period_idx]
-                if (
-                    constraint.operator
-                    == ConstraintOperator.LESS_THAN_OR_EQUAL
-                ):
+                if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
                     assert nb_a_period <= target
                 elif constraint.operator == ConstraintOperator.EQUAL:
                     assert nb_a_period == target
-                elif (
-                    constraint.operator
-                    == ConstraintOperator.GREATER_THAN_OR_EQUAL
-                ):
+                elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
                     assert nb_a_period >= target
         else:
             assert False
@@ -406,15 +366,9 @@ class TestConstraintSum:
                     assignment.date,
                     assignment.shift_id,
                 )
-                in [
-                    (var.worker_id, var.date, var.shift_id)
-                    for var in breach.variables
-                ]
+                in [(var.worker_id, var.date, var.shift_id) for var in breach.variables]
             )
-            if (
-                constraint_hard_copy.operator
-                == ConstraintOperator.LESS_THAN_OR_EQUAL
-            ):
+            if constraint_hard_copy.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
                 obj_value += penalty * max(
                     nb_a_period - constraint_hard_copy.target_value, 0
                 )
@@ -451,17 +405,13 @@ class TestConstraintSumRunParsedScenario:
         # compute number of distinct ISO weeks in the schedule
         start = engine_inputs.schedule.start_date
         end = engine_inputs.schedule.end_date
-        dates = [
-            start + timedelta(days=i) for i in range((end - start).days + 1)
-        ]
+        dates = [start + timedelta(days=i) for i in range((end - start).days + 1)]
         weeks = {(d.isocalendar()[0], d.isocalendar()[1]) for d in dates}
         num_weeks = len(weeks)
 
         # SUM constraint targeted worker `w0` on `sh0` at most 2 per week
         count_w0_sh0 = sum(
-            1
-            for a in out.assignments
-            if a.worker_id == "w0" and a.shift_id == "sh0"
+            1 for a in out.assignments if a.worker_id == "w0" and a.shift_id == "sh0"
         )
         assert count_w0_sh0 <= 2 * num_weeks
 
@@ -621,9 +571,7 @@ class TestConstraintSumRunParsedScenario:
         # Pro-rated target is 0 for single day: floor(2 * 1/31) = 0
         # With target=0, solver is free to assign any amount up to coverage
         count_w0_sh0 = sum(
-            1
-            for a in out.assignments
-            if a.worker_id == "w0" and a.shift_id == "sh0"
+            1 for a in out.assignments if a.worker_id == "w0" and a.shift_id == "sh0"
         )
         assert count_w0_sh0 <= 1
 
@@ -683,9 +631,7 @@ class TestConstraintSumRunParsedScenario:
         # Pro-rated target is 5: floor(10 * 16/31) = 5
         # Solver should assign at most 5
         count_w0_sh0 = sum(
-            1
-            for a in out.assignments
-            if a.worker_id == "w0" and a.shift_id == "sh0"
+            1 for a in out.assignments if a.worker_id == "w0" and a.shift_id == "sh0"
         )
         assert count_w0_sh0 <= 5
 
@@ -741,8 +687,6 @@ class TestConstraintSumRunParsedScenario:
         # Pro-rated target is 2: round(5 * 3/7) = 2
         # Solver should assign exactly 2
         count_w0_sh0 = sum(
-            1
-            for a in out.assignments
-            if a.worker_id == "w0" and a.shift_id == "sh0"
+            1 for a in out.assignments if a.worker_id == "w0" and a.shift_id == "sh0"
         )
         assert count_w0_sh0 == 3
