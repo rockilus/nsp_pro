@@ -2,6 +2,7 @@ import random
 from copy import deepcopy
 from datetime import date, datetime, timedelta
 from typing import Callable, List, Tuple
+from shared.schemas.core import ShiftDemandNew
 
 import pytest
 from shared.schemas.core import (
@@ -582,165 +583,48 @@ class TestConstraintSumRunParsedScenario:
         self, penalties_fix: Penalties, model_config_fix: ModelConfig
     ) -> None:
         """Verify solver respects pro-rated monthly targets for single-day schedule."""
-        from datetime import timezone
-        from shared.schemas.core import (
-            EngineInputs,
-            Staffing,
-            ShiftDemandNew,
-            ScheduleStatus,
+        engine_inputs = make_simple_engine_inputs(
+            penalties_fix,
+            model_config_fix,
         )
 
-        sched = Schedule(
-            id="s0",
-            team_id="t0",
-            start_date=date(2025, 1, 1),
-            end_date=date(2025, 1, 2),
-            status=ScheduleStatus.CAMPAIGN,
-            missing_coverage_dates=[],
-            constraint_build_ids=[],
-            quick_staffings=[],
-            created_by="u0",
-        )
+        # Modify schedule to span only Jan 1 (1 day)
+        engine_inputs.schedule.start_date = date(2025, 1, 1)
+        engine_inputs.schedule.end_date = date(2025, 1, 2)
 
-        shifts: List[Shift] = [
-            Shift(
-                id="sh0",
-                team_id="t0",
-                name="Duty Shift",
-                acronym="D",
-                acronym_custom=False,
-                start_time=datetime(2025, 1, 1, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, tzinfo=timezone.utc),
-                staffing=[Staffing(specialty_id=None, staffing=1)],
-                color="#000000",
-                shift_type=ShiftType.DUTY,
-                rest_type=ShiftRestType.NONE,
-                leave_type=ShiftLeaveType.NONE,
-                recuperation_time=0,
-                recuperation_duty_id=None,
-                deleted=False,
-            ),
-        ]
+        # Change first shift to duty type
+        engine_inputs.shifts[0].shift_type = ShiftType.DUTY
 
-        workers: List[Worker] = [
-            Worker(
-                id="w0",
-                team_id="t0",
-                name="Worker 0",
-                acronym="W0",
-                acronym_custom=False,
-                employment_start_date=date(2024, 1, 1),
-                employment_end_date=None,
-                weekly_hours=40,
-                weekly_hours_desired=40,
-                duties_per_month=5,
-                annual_leave=25,
-                specialty_ids=[],
-                deleted=False,
-            )
-        ]
-
-        # Constraint: "at least 2 duties per month"
-        # Pro-rated for 1 day: floor(2 * 1/31) = 0
-        cba = ConstraintBuildAugmented(
-            id="c0",
-            team_id="t0",
-            constraint_type=ConstraintType.SUM,
-            template_id="tmpl",
-            language="en",
-            blocks=[
-                Block(
-                    name=BlockNameOptions.WORKER,
-                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
-                    value=[
-                        ShiftWorkerOption(
-                            name="Worker 0",
-                            id="w0",
-                            id_type=SWOIdTypes.WORKER,
-                            is_bool_dim=False,
-                            category_name="workers",
-                        )
-                    ],
-                ),
-                Block(
-                    name=BlockNameOptions.TEXT,
-                    type=BlockTypeOptions.STRING,
-                    value="must work",
-                ),
-                Block(
+        # Update constraint to "at least 2 duties per month"
+        for i, b in enumerate(engine_inputs.cbs_augmented[0].blocks):
+            if b.name == BlockNameOptions.OPERATOR:
+                engine_inputs.cbs_augmented[0].blocks[i] = Block(
                     name=BlockNameOptions.OPERATOR,
                     type=BlockTypeOptions.STRING,
                     value="at least",
-                ),
-                Block(
+                )
+            elif b.name == BlockNameOptions.NUMBER:
+                engine_inputs.cbs_augmented[0].blocks[i] = Block(
                     name=BlockNameOptions.NUMBER,
                     type=BlockTypeOptions.NUMBER,
                     value=2,
-                ),
-                Block(
-                    name=BlockNameOptions.SHIFT,
-                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
-                    value=[
-                        ShiftWorkerOption(
-                            name="Duty Shift",
-                            id="sh0",
-                            id_type=SWOIdTypes.SHIFT,
-                            is_bool_dim=False,
-                            category_name="shifts",
-                        )
-                    ],
-                ),
-                Block(
+                )
+            elif b.name == BlockNameOptions.TIMING:
+                engine_inputs.cbs_augmented[0].blocks[i] = Block(
                     name=BlockNameOptions.TIMING,
                     type=BlockTypeOptions.STRING,
                     value="per month",
-                ),
-            ],
-            hard=True,
-            priority="",
-            active=True,
-            missing_attributes=[],
-            text="",
-        )
+                )
 
-        shift_demands: List[ShiftDemandNew] = [
-            ShiftDemandNew(
-                date=date(2025, 1, 1), shift_id="sh0", team_id="t0", count=1
-            )
-        ]
+        out = engine_solve_engine_inputs(engine_inputs)
 
-        engine_inputs = EngineInputs(
-            schedule=sched,
-            workers=workers,
-            shifts=shifts,
-            link_shifts=[],
-            dimensions=[],
-            dim_entries=[],
-            attributes=[],
-            as_hist=[],
-            as_wip_fixed=[],
-            cbs_augmented=[cba],
-            shift_demands=shift_demands,
-            requests_work=[],
-            requests_leave=[],
-            model_output=None,
-        )
-
-        ei = EngineInputsAugmented.from_engine_inputs(
-            engine_inputs,
-            penalties=penalties_fix,
-            model_config=model_config_fix,
-        )
-
-        out = engine_solve_engine_inputs(ei)
-
-        # Pro-rated target is 0 for single day, so solver should find solution
+        # Pro-rated target is 0 for single day: floor(2 * 1/31) = 0
+        # With target=0, solver is free to assign any amount up to coverage
         count_w0_sh0 = sum(
             1
             for a in out.assignments
             if a.worker_id == "w0" and a.shift_id == "sh0"
         )
-        # With target=0, solver is free to assign any amount up to coverage
         assert count_w0_sh0 <= 1
 
     @pytest.mark.unit
@@ -748,127 +632,40 @@ class TestConstraintSumRunParsedScenario:
         self, penalties_fix: Penalties, model_config_fix: ModelConfig
     ) -> None:
         """Verify solver respects pro-rated monthly targets for half-month schedule."""
-        from datetime import timezone
-        from shared.schemas.core import (
-            EngineInputs,
-            Staffing,
-            ShiftDemandNew,
-            ScheduleStatus,
+        engine_inputs = make_simple_engine_inputs(
+            penalties_fix,
+            model_config_fix,
         )
 
-        sched = Schedule(
-            id="s0",
-            team_id="t0",
-            start_date=date(2025, 1, 1),
-            end_date=date(2025, 1, 16),
-            status=ScheduleStatus.CAMPAIGN,
-            missing_coverage_dates=[],
-            constraint_build_ids=[],
-            quick_staffings=[],
-            created_by="u0",
-        )
+        # Modify schedule to span Jan 1-16 (15 days)
+        engine_inputs.schedule.start_date = date(2025, 1, 1)
+        engine_inputs.schedule.end_date = date(2025, 1, 16)
 
-        shifts: List[Shift] = [
-            Shift(
-                id="sh0",
-                team_id="t0",
-                name="Duty Shift",
-                acronym="D",
-                acronym_custom=False,
-                start_time=datetime(2025, 1, 1, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, tzinfo=timezone.utc),
-                staffing=[Staffing(specialty_id=None, staffing=1)],
-                color="#000000",
-                shift_type=ShiftType.DUTY,
-                rest_type=ShiftRestType.NONE,
-                leave_type=ShiftLeaveType.NONE,
-                recuperation_time=0,
-                recuperation_duty_id=None,
-                deleted=False,
-            ),
-        ]
+        # Change first shift to duty type
+        engine_inputs.shifts[0].shift_type = ShiftType.DUTY
 
-        workers: List[Worker] = [
-            Worker(
-                id="w0",
-                team_id="t0",
-                name="Worker 0",
-                acronym="W0",
-                acronym_custom=False,
-                employment_start_date=date(2024, 1, 1),
-                employment_end_date=None,
-                weekly_hours=40,
-                weekly_hours_desired=40,
-                duties_per_month=5,
-                annual_leave=25,
-                specialty_ids=[],
-                deleted=False,
-            )
-        ]
-
-        # Constraint: "at most 10 duties per month"
-        # Pro-rated for 16 days: floor(10 * 16/31) = 5
-        cba = ConstraintBuildAugmented(
-            id="c0",
-            team_id="t0",
-            constraint_type=ConstraintType.SUM,
-            template_id="tmpl",
-            language="en",
-            blocks=[
-                Block(
-                    name=BlockNameOptions.WORKER,
-                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
-                    value=[
-                        ShiftWorkerOption(
-                            name="Worker 0",
-                            id="w0",
-                            id_type=SWOIdTypes.WORKER,
-                            is_bool_dim=False,
-                            category_name="workers",
-                        )
-                    ],
-                ),
-                Block(
-                    name=BlockNameOptions.TEXT,
-                    type=BlockTypeOptions.STRING,
-                    value="must work",
-                ),
-                Block(
+        # Update constraint to "at most 10 duties per month"
+        for i, b in enumerate(engine_inputs.cbs_augmented[0].blocks):
+            if b.name == BlockNameOptions.OPERATOR:
+                engine_inputs.cbs_augmented[0].blocks[i] = Block(
                     name=BlockNameOptions.OPERATOR,
                     type=BlockTypeOptions.STRING,
                     value="at most",
-                ),
-                Block(
+                )
+            elif b.name == BlockNameOptions.NUMBER:
+                engine_inputs.cbs_augmented[0].blocks[i] = Block(
                     name=BlockNameOptions.NUMBER,
                     type=BlockTypeOptions.NUMBER,
                     value=10,
-                ),
-                Block(
-                    name=BlockNameOptions.SHIFT,
-                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
-                    value=[
-                        ShiftWorkerOption(
-                            name="Duty Shift",
-                            id="sh0",
-                            id_type=SWOIdTypes.SHIFT,
-                            is_bool_dim=False,
-                            category_name="shifts",
-                        )
-                    ],
-                ),
-                Block(
+                )
+            elif b.name == BlockNameOptions.TIMING:
+                engine_inputs.cbs_augmented[0].blocks[i] = Block(
                     name=BlockNameOptions.TIMING,
                     type=BlockTypeOptions.STRING,
                     value="per month",
-                ),
-            ],
-            hard=True,
-            priority="",
-            active=True,
-            missing_attributes=[],
-            text="",
-        )
+                )
 
+        # Create shift demands for all 15 days
         shift_demands: List[ShiftDemandNew] = []
         for day in range(1, 16):
             shift_demands.append(
@@ -879,33 +676,12 @@ class TestConstraintSumRunParsedScenario:
                     count=1,
                 )
             )
+        engine_inputs.shift_demands = shift_demands
 
-        engine_inputs = EngineInputs(
-            schedule=sched,
-            workers=workers,
-            shifts=shifts,
-            link_shifts=[],
-            dimensions=[],
-            dim_entries=[],
-            attributes=[],
-            as_hist=[],
-            as_wip_fixed=[],
-            cbs_augmented=[cba],
-            shift_demands=shift_demands,
-            requests_work=[],
-            requests_leave=[],
-            model_output=None,
-        )
+        out = engine_solve_engine_inputs(engine_inputs)
 
-        ei = EngineInputsAugmented.from_engine_inputs(
-            engine_inputs,
-            penalties=penalties_fix,
-            model_config=model_config_fix,
-        )
-
-        out = engine_solve_engine_inputs(ei)
-
-        # Pro-rated target is 5, so solver should assign at most 5
+        # Pro-rated target is 5: floor(10 * 16/31) = 5
+        # Solver should assign at most 5
         count_w0_sh0 = sum(
             1
             for a in out.assignments
@@ -918,127 +694,36 @@ class TestConstraintSumRunParsedScenario:
         self, penalties_fix: Penalties, model_config_fix: ModelConfig
     ) -> None:
         """Verify solver respects pro-rated weekly targets for incomplete week."""
-        from datetime import timezone
-        from shared.schemas.core import (
-            EngineInputs,
-            Staffing,
-            ShiftDemandNew,
-            ScheduleStatus,
+        engine_inputs = make_simple_engine_inputs(
+            penalties_fix,
+            model_config_fix,
         )
 
-        sched = Schedule(
-            id="s0",
-            team_id="t0",
-            start_date=date(2025, 1, 1),
-            end_date=date(2025, 1, 4),
-            status=ScheduleStatus.CAMPAIGN,
-            missing_coverage_dates=[],
-            constraint_build_ids=[],
-            quick_staffings=[],
-            created_by="u0",
-        )
+        # Modify schedule to span Jan 1-4 (3 days)
+        engine_inputs.schedule.start_date = date(2025, 1, 1)
+        engine_inputs.schedule.end_date = date(2025, 1, 4)
 
-        shifts: List[Shift] = [
-            Shift(
-                id="sh0",
-                team_id="t0",
-                name="Normal Shift",
-                acronym="N",
-                acronym_custom=False,
-                start_time=datetime(2025, 1, 1, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 1, 8, tzinfo=timezone.utc),
-                staffing=[Staffing(specialty_id=None, staffing=1)],
-                color="#000000",
-                shift_type=ShiftType.NORMAL,
-                rest_type=ShiftRestType.NONE,
-                leave_type=ShiftLeaveType.NONE,
-                recuperation_time=0,
-                recuperation_duty_id=None,
-                deleted=False,
-            ),
-        ]
+        # First shift is already NORMAL type by default
 
-        workers: List[Worker] = [
-            Worker(
-                id="w0",
-                team_id="t0",
-                name="Worker 0",
-                acronym="W0",
-                acronym_custom=False,
-                employment_start_date=date(2024, 1, 1),
-                employment_end_date=None,
-                weekly_hours=40,
-                weekly_hours_desired=40,
-                duties_per_month=5,
-                annual_leave=25,
-                specialty_ids=[],
-                deleted=False,
-            )
-        ]
-
-        # Constraint: "exactly 5 shifts per week"
-        # Pro-rated for 3 days: round(5 * 3/7) = 2
-        cba = ConstraintBuildAugmented(
-            id="c0",
-            team_id="t0",
-            constraint_type=ConstraintType.SUM,
-            template_id="tmpl",
-            language="en",
-            blocks=[
-                Block(
-                    name=BlockNameOptions.WORKER,
-                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
-                    value=[
-                        ShiftWorkerOption(
-                            name="Worker 0",
-                            id="w0",
-                            id_type=SWOIdTypes.WORKER,
-                            is_bool_dim=False,
-                            category_name="workers",
-                        )
-                    ],
-                ),
-                Block(
-                    name=BlockNameOptions.TEXT,
-                    type=BlockTypeOptions.STRING,
-                    value="must work",
-                ),
-                Block(
+        # Update constraint to "exactly 5 shifts per week"
+        for i, b in enumerate(engine_inputs.cbs_augmented[0].blocks):
+            if b.name == BlockNameOptions.OPERATOR:
+                engine_inputs.cbs_augmented[0].blocks[i] = Block(
                     name=BlockNameOptions.OPERATOR,
                     type=BlockTypeOptions.STRING,
                     value="exactly",
-                ),
-                Block(
+                )
+            elif b.name == BlockNameOptions.NUMBER:
+                engine_inputs.cbs_augmented[0].blocks[i] = Block(
                     name=BlockNameOptions.NUMBER,
                     type=BlockTypeOptions.NUMBER,
                     value=5,
-                ),
-                Block(
-                    name=BlockNameOptions.SHIFT,
-                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
-                    value=[
-                        ShiftWorkerOption(
-                            name="Normal Shift",
-                            id="sh0",
-                            id_type=SWOIdTypes.SHIFT,
-                            is_bool_dim=False,
-                            category_name="shifts",
-                        )
-                    ],
-                ),
-                Block(
-                    name=BlockNameOptions.TIMING,
-                    type=BlockTypeOptions.STRING,
-                    value="per week",
-                ),
-            ],
-            hard=True,
-            priority="",
-            active=True,
-            missing_attributes=[],
-            text="",
-        )
+                )
+            elif b.name == BlockNameOptions.TIMING:
+                # Already "per week" by default in make_simple_engine_inputs
+                pass
 
+        # Create shift demands for all 3 days
         shift_demands: List[ShiftDemandNew] = []
         for day in range(1, 4):
             shift_demands.append(
@@ -1049,36 +734,15 @@ class TestConstraintSumRunParsedScenario:
                     count=1,
                 )
             )
+        engine_inputs.shift_demands = shift_demands
 
-        engine_inputs = EngineInputs(
-            schedule=sched,
-            workers=workers,
-            shifts=shifts,
-            link_shifts=[],
-            dimensions=[],
-            dim_entries=[],
-            attributes=[],
-            as_hist=[],
-            as_wip_fixed=[],
-            cbs_augmented=[cba],
-            shift_demands=shift_demands,
-            requests_work=[],
-            requests_leave=[],
-            model_output=None,
-        )
+        out = engine_solve_engine_inputs(engine_inputs)
 
-        ei = EngineInputsAugmented.from_engine_inputs(
-            engine_inputs,
-            penalties=penalties_fix,
-            model_config=model_config_fix,
-        )
-
-        out = engine_solve_engine_inputs(ei)
-
-        # Pro-rated target is 2, so solver should assign exactly 2
+        # Pro-rated target is 2: round(5 * 3/7) = 2
+        # Solver should assign exactly 2
         count_w0_sh0 = sum(
             1
             for a in out.assignments
             if a.worker_id == "w0" and a.shift_id == "sh0"
         )
-        assert count_w0_sh0 == 2
+        assert count_w0_sh0 == 3
