@@ -8,8 +8,8 @@ from shared.constraint_parser.parse_selected_shifts import (
 from shared.schemas.core import (
     Assignment,
     Attribute,
-    DimEntry,
     Dimension,
+    DimEntry,
     Request,
     RequestStatus,
     RequestType,
@@ -53,6 +53,7 @@ def _filter_campaign_dates(
     ]
 
 
+# pylint: disable=too-many-arguments
 def _zero_overlapping_shifts(
     out: Dict[Tuple[str, str, str], int],
     worker_id: str,
@@ -181,6 +182,7 @@ def _apply_negative_work_demand(
             out[req.worker_id, date_iso, shift_id] = 0
 
 
+# pylint: disable=too-many-arguments
 def _apply_single_shift_work_demand(
     out: Dict[Tuple[str, str, str], int],
     req: Request,

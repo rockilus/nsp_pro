@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 from datetime import date, datetime, timedelta
 from typing import Dict, List, Tuple
 
@@ -5,8 +6,8 @@ from shared.schemas.core import (
     Assignment,
     AssignmentSource,
     Attribute,
-    DimEntry,
     Dimension,
+    DimEntry,
     FulfillmentStatus,
     Request,
     RequestStatus,
@@ -597,6 +598,7 @@ class TestApplyLeaveRequests:
         assert out[("w0", "2025-01-02", "s_leave")] == 0
         assert out[("w0", "2025-01-02", "s_normal")] == 1
 
+    # pylint: disable=too-few-public-methods
     def test_apply_leave_request_invalid_shift(self) -> None:
         """Test that invalid shift_id is skipped."""
         campaign_dates = [date(2025, 1, 1)]
@@ -641,6 +643,7 @@ class TestApplyLeaveRequests:
         assert len(out) == 0
 
 
+# pylint: disable=too-few-public-methods
 class TestApplyWorkDemandRequests:
     """Test work demand request application functions."""
 
@@ -769,9 +772,11 @@ class TestApplyWorkDemandRequests:
         assert out[("w0", "2025-01-01", "s1")] == 0
 
 
+# pylint: disable=too-few-public-methods
 class TestZeroUnrequestedLeaveShifts:
     """Test _zero_unrequested_leave_shifts function."""
 
+    # pylint: disable=too-few-public-methods
     def test_zero_unrequested_leave_shifts(self) -> None:
         """Test zeroing leave shifts when no request exists."""
         workers_not_deleted = [
@@ -936,9 +941,11 @@ class TestZeroShiftsWithoutDemand:
         assert out[("w0", "2025-01-02", "s0")] == 0
 
 
+# pylint: disable=too-few-public-methods
 class TestCoreToEngineFixedValuesIntegration:
     """Integration tests for the full core_to_engine_fixed_values function."""
 
+    # pylint: disable=too-many-locals
     def test_full_integration_basic(self) -> None:
         """Test full function with a basic scenario."""
         # Setup workers
