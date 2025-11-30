@@ -1,5 +1,5 @@
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Dict, List
 
@@ -81,6 +81,26 @@ class Shift:
     recuperation_duty_id: str | None
     deleted: bool
 
+    def overlaps_with(self, other: "Shift") -> bool:
+        """Check if this shift overlaps with another shift in terms of time."""
+        date_ref = datetime.now(timezone.utc).date()
+
+        # Calculate start and end times for self
+        s1_diff_days = (self.end_time - self.start_time).days
+        s1_start = datetime.combine(date_ref, self.start_time.time())
+        s1_end = datetime.combine(date_ref, self.end_time.time()) + timedelta(
+            days=s1_diff_days
+        )
+
+        # Calculate start and end times for other
+        s2_diff_days = (other.end_time - other.start_time).days
+        s2_start = datetime.combine(date_ref, other.start_time.time())
+        s2_end = datetime.combine(date_ref, other.end_time.time()) + timedelta(
+            days=s2_diff_days
+        )
+
+        return s1_start < s2_end and s1_end > s2_start
+
     def to_dict(self) -> Dict:
         out = asdict(self)
         out["start_time"] = self.start_time.timestamp()
@@ -100,7 +120,9 @@ class Shift:
             name=data["name"],
             acronym=data["acronym"],
             acronym_custom=data["acronym_custom"],
-            start_time=datetime.fromtimestamp(data["start_time"], tz=timezone.utc),
+            start_time=datetime.fromtimestamp(
+                data["start_time"], tz=timezone.utc
+            ),
             end_time=datetime.fromtimestamp(data["end_time"], tz=timezone.utc),
             staffing=[Staffing(**s) for s in data["staffing"]],
             color=data["color"],
