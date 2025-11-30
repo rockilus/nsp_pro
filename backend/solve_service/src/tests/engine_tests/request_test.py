@@ -605,6 +605,7 @@ class TestRequestDeferred:
 class TestRequestApproved:
     """Test that APPROVED requests are respected by the solver."""
 
+    # pylint: disable=redefined-outer-name
     def test_approved_positive_work_demand_with_conflicting_deferred(
         self,
         sample_data_fixture: EngineInputsAugmented,  # noqa: F811
@@ -696,9 +697,7 @@ class TestRequestApproved:
             ),
             None,
         )
-        assert (
-            a_target is not None
-        ), "Approved positive work demand must be satisfied"
+        assert a_target is not None, "Approved positive work demand must be satisfied"
 
         # Check that there's a breach for the deferred negative request
         breaches: List[Breach] = _parse_breaches_engine(
@@ -712,6 +711,7 @@ class TestRequestApproved:
             deferred_breach is not None
         ), "Deferred negative request should be breached"
 
+    # pylint: disable=redefined-outer-name
     def test_approved_negative_work_demand_with_conflicting_deferred(
         self,
         sample_data_fixture: EngineInputsAugmented,  # noqa: F811
@@ -820,6 +820,7 @@ class TestRequestApproved:
             deferred_breach is not None
         ), "Deferred positive request should be breached"
 
+    # pylint: disable=redefined-outer-name, too-many-locals
     def test_approved_leave_request_with_conflicting_deferred_work_demand(
         self,
         sample_data_fixture: EngineInputsAugmented,  # noqa: F811
@@ -831,9 +832,7 @@ class TestRequestApproved:
         shifts: List[Shift] = sample_data_fixture.shifts
 
         # Find a normal work shift
-        work_shift = next(
-            (s for s in shifts if s.shift_type == ShiftType.NORMAL), None
-        )
+        work_shift = next((s for s in shifts if s.shift_type == ShiftType.NORMAL), None)
         assert work_shift is not None, "Test requires a normal work shift"
 
         workers: List[Worker] = sample_data_fixture.workers
@@ -933,9 +932,7 @@ class TestRequestApproved:
             ),
             None,
         )
-        assert (
-            leave_assignment is not None
-        ), "Approved leave request must be satisfied"
+        assert leave_assignment is not None, "Approved leave request must be satisfied"
 
         # Check that the worker is NOT assigned to the work shift
         # (leave takes precedence)
