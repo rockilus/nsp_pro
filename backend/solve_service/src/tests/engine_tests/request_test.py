@@ -40,7 +40,7 @@ from tests.sample_data import test_data_set_2
 
 
 # pylint: disable=too-few-public-methods, R0801
-class TestRequest:
+class TestRequestDeferred:
     # pylint: disable=redefined-outer-name
     def test_request_one_day_positive_hard(
         self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
@@ -599,3 +599,368 @@ class TestRequest:
         breaches = _parse_breaches_engine(engine_inputs.schedule, out.breaches)
         penalty = engine_inputs.penalties.user_constraint.request.hard
         assert out.objective_value == penalty * len(breaches)
+
+
+# pylint: disable=too-few-public-methods
+class TestRequestApproved:
+    """Test that APPROVED requests are respected by the solver."""
+
+    def test_approved_positive_work_demand_with_conflicting_deferred(
+        self,
+        sample_data_fixture: EngineInputsAugmented,  # noqa: F811
+    ) -> None:
+        """
+        Test that an APPROVED positive work demand request is satisfied
+        even when there's a conflicting DEFERRED negative request.
+        """
+        shifts: List[Shift] = sample_data_fixture.shifts
+        target_shift = shifts[0]
+
+        workers: List[Worker] = sample_data_fixture.workers
+        target_worker = workers[0]
+
+        schedule: Schedule = sample_data_fixture.schedule
+
+        # Create APPROVED positive request (worker wants this shift)
+        approved_request = Request(
+            id="approved_req",
+            team_id="t0",
+            worker_id=target_worker.id,
+            start_date=schedule.start_date,
+            end_date=schedule.start_date,
+            shift_id=None,
+            shift_options=[
+                ShiftWorkerOption(
+                    name=target_shift.name,
+                    id=target_shift.id,
+                    id_type=SWOIdTypes.SHIFT,
+                    is_bool_dim=False,
+                    category_name=target_shift.acronym,
+                )
+            ],
+            negative=False,
+            hard=True,
+            status=RequestStatus.APPROVED,
+            request_type=RequestType.WORK_DEMAND,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED,
+            comment="",
+            created_at=datetime.now(tz=timezone.utc),
+        )
+
+        # Create conflicting DEFERRED negative request
+        deferred_request = Request(
+            id="deferred_req",
+            team_id="t0",
+            worker_id=target_worker.id,
+            start_date=schedule.start_date,
+            end_date=schedule.start_date,
+            shift_id=None,
+            shift_options=[
+                ShiftWorkerOption(
+                    name=target_shift.name,
+                    id=target_shift.id,
+                    id_type=SWOIdTypes.SHIFT,
+                    is_bool_dim=False,
+                    category_name=target_shift.acronym,
+                )
+            ],
+            negative=True,
+            hard=True,
+            status=RequestStatus.DEFERRED,
+            request_type=RequestType.WORK_DEMAND,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED,
+            comment="",
+            created_at=datetime.now(tz=timezone.utc),
+        )
+
+        sample_data_fixture.requests_work = requests_to_requests_augmented(
+            requests=[approved_request, deferred_request],
+            workers=sample_data_fixture.workers,
+            shifts=sample_data_fixture.shifts,
+            dimensions=sample_data_fixture.dimensions,
+            dim_entries=sample_data_fixture.dim_entries,
+            attributes=sample_data_fixture.attributes,
+        )
+
+        outputs: Outputs = engine_solve_engine_inputs(sample_data_fixture)
+
+        # Check that the approved request is satisfied
+        assignments: List[Assignment] = outputs.assignments
+        a_target = next(
+            (
+                a
+                for a in assignments
+                if a.worker_id == target_worker.id
+                and a.date == schedule.start_date
+                and a.shift_id == target_shift.id
+            ),
+            None,
+        )
+        assert (
+            a_target is not None
+        ), "Approved positive work demand must be satisfied"
+
+        # Check that there's a breach for the deferred negative request
+        breaches: List[Breach] = _parse_breaches_engine(
+            sample_data_fixture.schedule, outputs.breaches
+        )
+        deferred_breach = next(
+            (b for b in breaches if b.objective_id == deferred_request.id),
+            None,
+        )
+        assert (
+            deferred_breach is not None
+        ), "Deferred negative request should be breached"
+
+    def test_approved_negative_work_demand_with_conflicting_deferred(
+        self,
+        sample_data_fixture: EngineInputsAugmented,  # noqa: F811
+    ) -> None:
+        """
+        Test that an APPROVED negative work demand request is respected
+        even when there's a conflicting DEFERRED positive request.
+        """
+        shifts: List[Shift] = sample_data_fixture.shifts
+        target_shift = shifts[0]
+
+        workers: List[Worker] = sample_data_fixture.workers
+        target_worker = workers[0]
+
+        schedule: Schedule = sample_data_fixture.schedule
+
+        # Create APPROVED negative request (worker doesn't want this shift)
+        approved_request = Request(
+            id="approved_neg_req",
+            team_id="t0",
+            worker_id=target_worker.id,
+            start_date=schedule.start_date,
+            end_date=schedule.start_date,
+            shift_id=None,
+            shift_options=[
+                ShiftWorkerOption(
+                    name=target_shift.name,
+                    id=target_shift.id,
+                    id_type=SWOIdTypes.SHIFT,
+                    is_bool_dim=False,
+                    category_name=target_shift.acronym,
+                )
+            ],
+            negative=True,
+            hard=True,
+            status=RequestStatus.APPROVED,
+            request_type=RequestType.WORK_DEMAND,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED,
+            comment="",
+            created_at=datetime.now(tz=timezone.utc),
+        )
+
+        # Create conflicting DEFERRED positive request
+        deferred_request = Request(
+            id="deferred_pos_req",
+            team_id="t0",
+            worker_id=target_worker.id,
+            start_date=schedule.start_date,
+            end_date=schedule.start_date,
+            shift_id=None,
+            shift_options=[
+                ShiftWorkerOption(
+                    name=target_shift.name,
+                    id=target_shift.id,
+                    id_type=SWOIdTypes.SHIFT,
+                    is_bool_dim=False,
+                    category_name=target_shift.acronym,
+                )
+            ],
+            negative=False,
+            hard=True,
+            status=RequestStatus.DEFERRED,
+            request_type=RequestType.WORK_DEMAND,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED,
+            comment="",
+            created_at=datetime.now(tz=timezone.utc),
+        )
+
+        sample_data_fixture.requests_work = requests_to_requests_augmented(
+            requests=[approved_request, deferred_request],
+            workers=sample_data_fixture.workers,
+            shifts=sample_data_fixture.shifts,
+            dimensions=sample_data_fixture.dimensions,
+            dim_entries=sample_data_fixture.dim_entries,
+            attributes=sample_data_fixture.attributes,
+        )
+
+        outputs: Outputs = engine_solve_engine_inputs(sample_data_fixture)
+
+        # Check that the approved negative request is respected
+        assignments: List[Assignment] = outputs.assignments
+        a_target = next(
+            (
+                a
+                for a in assignments
+                if a.worker_id == target_worker.id
+                and a.date == schedule.start_date
+                and a.shift_id == target_shift.id
+            ),
+            None,
+        )
+        assert a_target is None, (
+            "Approved negative work demand must be respected - "
+            "no assignment should exist"
+        )
+
+        # Check that there's a breach for the deferred positive request
+        breaches: List[Breach] = _parse_breaches_engine(
+            sample_data_fixture.schedule, outputs.breaches
+        )
+        deferred_breach = next(
+            (b for b in breaches if b.objective_id == deferred_request.id),
+            None,
+        )
+        assert (
+            deferred_breach is not None
+        ), "Deferred positive request should be breached"
+
+    def test_approved_leave_request_with_conflicting_deferred_work_demand(
+        self,
+        sample_data_fixture: EngineInputsAugmented,  # noqa: F811
+    ) -> None:
+        """
+        Test that an APPROVED leave request is satisfied
+        even when there's a conflicting DEFERRED work demand request.
+        """
+        shifts: List[Shift] = sample_data_fixture.shifts
+
+        # Find a normal work shift
+        work_shift = next(
+            (s for s in shifts if s.shift_type == ShiftType.NORMAL), None
+        )
+        assert work_shift is not None, "Test requires a normal work shift"
+
+        workers: List[Worker] = sample_data_fixture.workers
+        target_worker = workers[0]
+
+        schedule: Schedule = sample_data_fixture.schedule
+
+        # Create a leave shift for testing
+        leave_shift = Shift(
+            id="leave_vacation",
+            team_id="t0",
+            name="Vacation",
+            acronym="VAC",
+            acronym_custom=False,
+            start_time=datetime(2025, 1, 1, 0, 0),
+            end_time=datetime(2025, 1, 2, 0, 0),
+            staffing=[],
+            color="gray",
+            shift_type=ShiftType.LEAVE,
+            rest_type=ShiftRestType.NONE,
+            leave_type=ShiftLeaveType.VACATION,
+            recuperation_time=0,
+            recuperation_duty_id=None,
+            deleted=False,
+        )
+        sample_data_fixture.shifts.append(leave_shift)
+
+        # Create APPROVED leave request
+        approved_leave = Request(
+            id="approved_leave",
+            team_id="t0",
+            worker_id=target_worker.id,
+            start_date=schedule.start_date,
+            end_date=schedule.start_date,
+            shift_id=leave_shift.id,
+            shift_options=[],
+            negative=False,
+            hard=True,
+            status=RequestStatus.APPROVED,
+            request_type=RequestType.LEAVE,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED,
+            comment="",
+            created_at=datetime.now(tz=timezone.utc),
+        )
+
+        # Create conflicting DEFERRED work demand request
+        deferred_work = Request(
+            id="deferred_work",
+            team_id="t0",
+            worker_id=target_worker.id,
+            start_date=schedule.start_date,
+            end_date=schedule.start_date,
+            shift_id=None,
+            shift_options=[
+                ShiftWorkerOption(
+                    name=work_shift.name,
+                    id=work_shift.id,
+                    id_type=SWOIdTypes.SHIFT,
+                    is_bool_dim=False,
+                    category_name=work_shift.acronym,
+                )
+            ],
+            negative=False,
+            hard=True,
+            status=RequestStatus.DEFERRED,
+            request_type=RequestType.WORK_DEMAND,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED,
+            comment="",
+            created_at=datetime.now(tz=timezone.utc),
+        )
+
+        # Add leave request to requests_leave (which expects List[Request])
+        # The requests_to_requests_augmented returns RequestAugmented, so we
+        # convert back to Request for requests_leave
+        sample_data_fixture.requests_leave = [approved_leave]
+
+        sample_data_fixture.requests_work = requests_to_requests_augmented(
+            requests=[deferred_work],
+            workers=sample_data_fixture.workers,
+            shifts=sample_data_fixture.shifts,
+            dimensions=sample_data_fixture.dimensions,
+            dim_entries=sample_data_fixture.dim_entries,
+            attributes=sample_data_fixture.attributes,
+        )
+
+        outputs: Outputs = engine_solve_engine_inputs(sample_data_fixture)
+
+        # Check that the approved leave request is satisfied
+        assignments: List[Assignment] = outputs.assignments
+        leave_assignment = next(
+            (
+                a
+                for a in assignments
+                if a.worker_id == target_worker.id
+                and a.date == schedule.start_date
+                and a.shift_id == leave_shift.id
+            ),
+            None,
+        )
+        assert (
+            leave_assignment is not None
+        ), "Approved leave request must be satisfied"
+
+        # Check that the worker is NOT assigned to the work shift
+        # (leave takes precedence)
+        work_assignment = next(
+            (
+                a
+                for a in assignments
+                if a.worker_id == target_worker.id
+                and a.date == schedule.start_date
+                and a.shift_id == work_shift.id
+            ),
+            None,
+        )
+        assert (
+            work_assignment is None
+        ), "Worker on approved leave should not be assigned to work shift"
+
+        # Check that there's a breach for the deferred work demand
+        breaches: List[Breach] = _parse_breaches_engine(
+            sample_data_fixture.schedule, outputs.breaches
+        )
+        deferred_breach = next(
+            (b for b in breaches if b.objective_id == deferred_work.id),
+            None,
+        )
+        assert (
+            deferred_breach is not None
+        ), "Deferred work demand should be breached when leave is approved"
