@@ -45,9 +45,7 @@ class LinkShift:
                 message="Duplicate shift IDs found in link_shift.shift_ids.",
             )
         if len(shifts_ls) != len(self.shift_ids):
-            return ValidationResult(
-                is_valid=False, message="Shifts not found."
-            )
+            return ValidationResult(is_valid=False, message="Shifts not found.")
         if self.shifts_overlap(shifts_ls):
             return ValidationResult(is_valid=False, message="Shifts overlap.")
         for ls in ls_others:
