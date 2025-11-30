@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from typing import Dict, List, Tuple
 
 from shared.constraint_parser import build_dim_to_attr_value_to_owner
@@ -20,25 +20,6 @@ from shared.schemas.core import (
     Worker,
     WorkerDates,
 )
-
-
-def _shifts_overlap(shift1: Shift, shift2: Shift) -> bool:
-    """Check if two shifts have overlapping time periods."""
-    date_ref = datetime.now(timezone.utc).date()
-
-    s1_diff_days = (shift1.end_time - shift1.start_time).days
-    s1_start = datetime.combine(date_ref, shift1.start_time.time())
-    s1_end = datetime.combine(date_ref, shift1.end_time.time()) + timedelta(
-        days=s1_diff_days
-    )
-
-    s2_diff_days = (shift2.end_time - shift2.start_time).days
-    s2_start = datetime.combine(date_ref, shift2.start_time.time())
-    s2_end = datetime.combine(date_ref, shift2.end_time.time()) + timedelta(
-        days=s2_diff_days
-    )
-
-    return s1_start < s2_end and s1_end > s2_start
 
 
 # pylint: disable=too-many-arguments, R0801, too-many-locals, too-many-branches
@@ -119,7 +100,7 @@ def core_to_engine_fixed_values(
                 # Set overlapping normal/duty shifts to 0
                 for s in shifts:
                     if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]:
-                        if _shifts_overlap(leave_shift, s):
+                        if leave_shift.overlaps_with(s):
                             if (req.worker_id, date_iso, s.id) in out:
                                 out[req.worker_id, date_iso, s.id] = 0
 
@@ -177,7 +158,7 @@ def core_to_engine_fixed_values(
                                 ShiftType.NORMAL,
                                 ShiftType.DUTY,
                             ]:
-                                if _shifts_overlap(target_shift, s):
+                                if target_shift.overlaps_with(s):
                                     if (req.worker_id, date_iso, s.id) in out:
                                         out[req.worker_id, date_iso, s.id] = 0
 
@@ -193,7 +174,7 @@ def core_to_engine_fixed_values(
                                     ShiftType.NORMAL,
                                     ShiftType.DUTY,
                                 ]:
-                                    if _shifts_overlap(target_shift, s):
+                                    if target_shift.overlaps_with(s):
                                         key = (req.worker_id, date_iso, s.id)
                                         if key in out:
                                             out[key] = 0
