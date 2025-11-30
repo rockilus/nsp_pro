@@ -125,9 +125,7 @@ class TestFilterCampaignDates:
 
     def test_filter_campaign_dates_no_overlap(self) -> None:
         """Test filtering when request has no overlap with campaign."""
-        campaign_dates = [
-            date(2025, 2, 1) + timedelta(days=i) for i in range(5)
-        ]
+        campaign_dates = [date(2025, 2, 1) + timedelta(days=i) for i in range(5)]
 
         worker_dates = WorkerDates(
             dates_hist=[],
@@ -253,9 +251,7 @@ class TestZeroOverlappingShifts:
             ("w0", "2025-01-01", "s_other"): 1,
         }
 
-        _zero_overlapping_shifts(
-            out, "w0", "2025-01-01", reference_shift, shifts
-        )
+        _zero_overlapping_shifts(out, "w0", "2025-01-01", reference_shift, shifts)
 
         # Overlapping normal shift should be zeroed
         assert out[("w0", "2025-01-01", "s_normal")] == 0
@@ -309,9 +305,7 @@ class TestZeroOverlappingShifts:
             ("w0", "2025-01-01", "s_other"): 1,
         }
 
-        _zero_overlapping_shifts(
-            out, "w0", "2025-01-01", reference_shift, shifts
-        )
+        _zero_overlapping_shifts(out, "w0", "2025-01-01", reference_shift, shifts)
 
         # All shifts should remain unchanged
         assert out[("w0", "2025-01-01", "s_other")] == 1
@@ -396,9 +390,7 @@ class TestInitializeHistoricalAssignments:
 
         hist_dates = [date(2024, 12, 30), date(2024, 12, 31)]
         worker_ids_to_worker_dates = {
-            "w0": WorkerDates(
-                dates_hist=hist_dates, dates_campaign=[date(2025, 1, 1)]
-            )
+            "w0": WorkerDates(dates_hist=hist_dates, dates_campaign=[date(2025, 1, 1)])
         }
 
         shifts = [
@@ -454,9 +446,7 @@ class TestInitializeHistoricalAssignments:
 
         hist_dates = [date(2024, 12, 30), date(2024, 12, 31)]
         worker_ids_to_worker_dates = {
-            "w0": WorkerDates(
-                dates_hist=hist_dates, dates_campaign=[date(2025, 1, 1)]
-            )
+            "w0": WorkerDates(dates_hist=hist_dates, dates_campaign=[date(2025, 1, 1)])
         }
 
         shifts = [
@@ -682,9 +672,7 @@ class TestApplyWorkDemandRequests:
         target_shift_ids = ["s0"]
         dates_to_process = [date(2025, 1, 1)]
 
-        _apply_negative_work_demand(
-            out, request, target_shift_ids, dates_to_process
-        )
+        _apply_negative_work_demand(out, request, target_shift_ids, dates_to_process)
 
         # s0 should be zeroed, s1 should remain
         assert out[("w0", "2025-01-01", "s0")] == 0
@@ -972,9 +960,7 @@ class TestCoreToEngineFixedValuesIntegration:
         hist_dates = [date(2024, 12, 28), date(2024, 12, 29)]
         campaign_dates = [date(2025, 1, 1), date(2025, 1, 2)]
         worker_ids_to_worker_dates = {
-            "w0": WorkerDates(
-                dates_hist=hist_dates, dates_campaign=campaign_dates
-            )
+            "w0": WorkerDates(dates_hist=hist_dates, dates_campaign=campaign_dates)
         }
 
         # Setup shifts
