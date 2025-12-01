@@ -138,6 +138,8 @@ class CustomSolverParams:
 @dataclass
 class ModelSetup:
     sol_hint: bool
+    min_solve_time_seconds: int = 30
+    max_solve_time_seconds: int = 120
 
 
 @dataclass
