@@ -5,6 +5,7 @@ from shared.constraint_parser import (
 )
 from shared.schemas.core import (
     EngineInputsAugmented,
+    RequestStatus,
     Shift,
     ShiftRestType,
     ShiftType,
@@ -133,6 +134,16 @@ def core_to_engine_inputs(
         dates_campaign,
     )
 
+    # Requests
+    approved_requests = [
+        r
+        for r in engine_inputs.requests_work + engine_inputs.requests_leave
+        if r.status == RequestStatus.APPROVED
+    ]
+    deferred_requests = [
+        r for r in engine_inputs.requests_work if r.status == RequestStatus.DEFERRED
+    ]
+
     # Work times
     w_to_work_times = calculate_worker_work_times(
         engine_inputs.schedule,
@@ -184,6 +195,10 @@ def core_to_engine_inputs(
         engine_inputs.shift_demands,
         fixed_assignments,
         engine_inputs.requests_leave,
+        approved_requests,
+        engine_inputs.dimensions,
+        engine_inputs.dim_entries,
+        engine_inputs.attributes,
     )
 
     # Constraints:
@@ -282,7 +297,7 @@ def core_to_engine_inputs(
                 shift_not_deleted_ids=shift_not_deleted_ids,
                 shifts=shifts_not_deleted,
                 dim_to_attr_value_to_shift=dim_to_attr_value_to_shift,
-                requests=engine_inputs.requests_work,
+                requests=deferred_requests,
                 r_penalty=engine_inputs.penalties.user_constraint.request,
             ),
             duty_recup_pairs=build_duty_recup_pairs(
