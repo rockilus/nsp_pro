@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 # from google.protobuf import text_format  # type: ignore
 from ortools.sat.python import cp_model  # type: ignore
@@ -40,9 +40,9 @@ class Model:
         self.model = cp_model.CpModel()
         self.variables: Dict[Tuple[str, str, str], cp_model.IntVar] = {}
         self.intervals: Dict[Tuple[str, str, str], cp_model.IntervalVar] = {}
-        self.assignment_wdss: Dict[Tuple[str, str, str, str], cp_model.IntVar] = (
-            {}
-        )  # worker, day, shift, specialty
+        self.assignment_wdss: Dict[
+            Tuple[str, str, str, str], cp_model.IntVar
+        ] = {}  # worker, day, shift, specialty
         self.model_config = model_config
 
         self.obj = Objective()
@@ -373,7 +373,9 @@ class Model:
 
     def add_duty_recup_constraints(
         self,
-        duty_recup_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], int]],
+        duty_recup_pairs: List[
+            Tuple[Tuple[str, str, str], Tuple[str, str, str], int]
+        ],
         hard_to_soft: bool,
     ) -> None:
         for duty, recup, penalty in duty_recup_pairs:
@@ -394,7 +396,9 @@ class Model:
 
     def add_link_shift_constraints(
         self,
-        ls_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], str, int]],
+        ls_pairs: List[
+            Tuple[Tuple[str, str, str], Tuple[str, str, str], str, int]
+        ],
     ) -> None:
         for s1, s2, ls_id, penalty in ls_pairs:
             s1_var = self.variables[s1]
@@ -424,7 +428,10 @@ class Model:
                 constraint_vars = [self.variables[a] for a in p_assignments]
                 if not hard_to_soft:
                     self.model.Add(
-                        sum(v * dur for v, dur in zip(constraint_vars, p_durations))
+                        sum(
+                            v * dur
+                            for v, dur in zip(constraint_vars, p_durations)
+                        )
                         <= p_target
                     )
                 else:
@@ -446,7 +453,9 @@ class Model:
                     )
                     self.model.Add(
                         weighted_sum
-                        == sum(v * d for v, d in zip(constraint_vars, p_durations))
+                        == sum(
+                            v * d for v, d in zip(constraint_vars, p_durations)
+                        )
                     )
                     weighted_sum_x100 = self.model.NewIntVar(
                         0,
@@ -560,7 +569,9 @@ class Model:
             )
             max_excess = self.model.NewIntVar(
                 0,
-                len(cstr_vars) * Constants.NUM_HOURS_DAY * Constants.NUM_MINUTES_HOUR,
+                len(cstr_vars)
+                * Constants.NUM_HOURS_DAY
+                * Constants.NUM_MINUTES_HOUR,
                 var_name,
             )
             self.model.AddMaxEquality(max_excess, excesses)
@@ -589,7 +600,9 @@ class Model:
                         * Constants.NUM_MINUTES_HOUR,
                         "",
                     )
-                    self.model.Add(delta == sum(v for v in constraint_vars) - p_target)
+                    self.model.Add(
+                        delta == sum(v for v in constraint_vars) - p_target
+                    )
                     excess = self.model.NewIntVar(
                         0,
                         len(constraint_vars)
@@ -607,7 +620,9 @@ class Model:
         for constraint in constraints:
             excesses = []
             cstr_vars = []
-            for assignments, target in zip(constraint.assignments, constraint.targets):
+            for assignments, target in zip(
+                constraint.assignments, constraint.targets
+            ):
                 constraint_vars = [self.variables[a] for a in assignments]
                 cstr_vars.extend(constraint_vars)
                 excess = self.model.NewIntVar(
@@ -670,7 +685,9 @@ class Model:
         for week in weeks_vars:
             for worker_assignments in week:
                 if worker_assignments:
-                    max_assignments = max(max_assignments, len(worker_assignments))
+                    max_assignments = max(
+                        max_assignments, len(worker_assignments)
+                    )
         if max_assignments == 0:
             return
 
@@ -687,7 +704,9 @@ class Model:
                     continue
                 # Collect boolean vars for this worker-week
                 constraint_vars = [
-                    self.variables[a] for a in worker_assignments if a in self.variables
+                    self.variables[a]
+                    for a in worker_assignments
+                    if a in self.variables
                 ]
                 if not constraint_vars:
                     continue
@@ -714,7 +733,9 @@ class Model:
             hard_to_soft=None,
             meta={"type": "primary"},
         )
-        global_max = self.model.NewIntVar(0, max_assignments, global_varname_json)
+        global_max = self.model.NewIntVar(
+            0, max_assignments, global_varname_json
+        )
         self.model.AddMaxEquality(global_max, week_max_vars)
         self.obj.int_vars.append(global_max)
         self.obj.int_coeffs.append(penalty)
@@ -740,7 +761,9 @@ class Model:
                 )
                 exceeds = self.model.NewBoolVar(step_varname_json)
                 self.model.Add(sum_var >= threshold).OnlyEnforceIf(exceeds)
-                self.model.Add(sum_var < threshold).OnlyEnforceIf(exceeds.Not())
+                self.model.Add(sum_var < threshold).OnlyEnforceIf(
+                    exceeds.Not()
+                )
                 # Quadratic-like penalty: threshold^2
                 self.obj.bool_vars.append(exceeds)
                 self.obj.bool_coeffs.append(
@@ -753,7 +776,9 @@ class Model:
         for constraint in constraints:
             excesses = []
             cstr_vars = []
-            for assignments, target in zip(constraint.assignments, constraint.targets):
+            for assignments, target in zip(
+                constraint.assignments, constraint.targets
+            ):
                 constraint_vars = [self.variables[a] for a in assignments]
                 cstr_vars.extend(constraint_vars)
                 excess = self.model.NewIntVar(
@@ -798,7 +823,9 @@ class Model:
                 #     None, [cstr_var], "worker_shift_filter"
                 # )
                 var_name = ""
-                cstr_vars: List[cp_model.IntVar | cp_model.NotBooleanVariable] = [
+                cstr_vars: List[
+                    cp_model.IntVar | cp_model.NotBooleanVariable
+                ] = [
                     cstr_var.Not()  # type: ignore
                 ]
                 lit = self.model.NewBoolVar(var_name)
@@ -827,7 +854,9 @@ class Model:
                 c_fil, hard_to_soft
             )
         for c_fai in constraints.fai:
-            self.add_constraint_factory.add_constraint_fai.add_constraint(c_fai)
+            self.add_constraint_factory.add_constraint_fai.add_constraint(
+                c_fai
+            )
 
     def add_objective(self) -> None:
         self.model.Minimize(
@@ -862,7 +891,9 @@ class Model:
         out.linearization_level = params.linearization_level
         out.cut_level = params.cut_level
         out.lns_initial_difficulty = params.lns_initial_difficulty
-        out.lns_initial_deterministic_limit = params.lns_initial_deterministic_limit
+        out.lns_initial_deterministic_limit = (
+            params.lns_initial_deterministic_limit
+        )
         out.instantiate_all_variables = params.instantiate_all_variables
         out.use_lns_only = params.use_lns_only
         out.use_combined_no_overlap = params.use_combined_no_overlap
@@ -885,7 +916,9 @@ class Model:
         out.core_minimization_level = params.core_minimization_level
         if params.random_seed is not None:
             out.random_seed = params.random_seed
-        out.probing_deterministic_time_limit = params.probing_deterministic_time_limit
+        out.probing_deterministic_time_limit = (
+            params.probing_deterministic_time_limit
+        )
         out.max_presolve_iterations = params.max_presolve_iterations
         out.cp_model_probing_level = params.cp_model_probing_level
         out.detect_table_with_cost = params.detect_table_with_cost
@@ -893,12 +926,73 @@ class Model:
 
         return out
 
+    def estimate_time_limit(
+        self, hard_cap_seconds: Optional[int] = None
+    ) -> int:
+        """Estimate a reasonable time budget for the current model.
+
+        The estimator is a lightweight heuristic based on:
+        - number of boolean/integer decision variables (`self.variables`)
+        - number of optional intervals (`self.intervals`)
+        - number of objective terms (bool + int vars collected in `self.obj`)
+
+        The returned value is clamped to `hard_cap_seconds` when provided
+        and is always at least 1 second.
+        """
+        print("len(variables):", len(self.variables))
+        print("len(intervals):", len(self.intervals))
+        print("len(obj.bool_vars):", len(self.obj.bool_vars))
+        print("len(obj.int_vars):", len(self.obj.int_vars))
+
+        # Basic size metrics
+        num_vars = len(self.variables)
+        num_intervals = len(self.intervals)
+        num_obj_terms = len(self.obj.bool_vars) + len(self.obj.int_vars)
+
+        # Tunable coefficients (conservative defaults)
+        t0 = 1.0  # base seconds
+        alpha = 0.005  # seconds per boolean/int variable
+        beta = 0.08  # seconds per interval (intervals are more expensive)
+        gamma = 0.02  # seconds per objective term
+
+        estimate = (
+            t0
+            + alpha * num_vars
+            + beta * num_intervals
+            + gamma * num_obj_terms
+        )
+
+        # Convert to integer seconds and clamp
+        budget = max(1, int(round(estimate)))
+        if hard_cap_seconds is not None:
+            try:
+                hc = int(hard_cap_seconds)
+                budget = min(budget, hc)
+            except Exception:
+                # ignore malformed cap and return budget
+                pass
+        return budget
+
     def solve(self) -> None:
+        # Print a light-weight estimate of how much time this problem likely needs
+        # and clamp it to the configured hard cap. This is informational for now.
+        hard_cap = None
+        try:
+            hard_cap = self.model_config.solver_params.max_time_in_seconds
+        except Exception:
+            hard_cap = None
+        estimated_budget = self.estimate_time_limit(hard_cap_seconds=hard_cap)
+        print(
+            f"[Model] estimated_time_budget={estimated_budget} s (hard_cap={hard_cap})"
+        )
+
         # solution_printer = cp_model.ObjectiveSolutionPrinter()
         solution_callback = SolverSolutionCallback(
             limit=self.model_config.custom_solver_params.limit_number_solution
         )
-        solver_params = self.build_solver_params(self.model_config.solver_params)
+        solver_params = self.build_solver_params(
+            self.model_config.solver_params
+        )
         self.solver.parameters = solver_params
 
         def log_callback(string: str) -> None:
