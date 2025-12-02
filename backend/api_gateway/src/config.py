@@ -115,7 +115,7 @@ class AppConfig(BaseSettings):
 
     # App configuration
     max_schedule_duration_months: int = Field(
-        4, description="Maximum schedule duration in months"
+        3, description="Maximum schedule duration in months"
     )
 
     model_config = SettingsConfigDict(

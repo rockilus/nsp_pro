@@ -916,9 +916,12 @@ class Model:
 
         # Tunable coefficients (conservative defaults)
         t0 = 1.0  # base seconds
-        alpha = 4.5e-05  # seconds per variable
-        beta = 9.0e-05  # seconds per constraint
-        gamma = 5.0e-05  # seconds per objective var
+        # alpha = 4.5e-05  # seconds per variable
+        # beta = 9.0e-05  # seconds per constraint
+        # gamma = 5.0e-05  # seconds per objective var
+        alpha = 10.8e-05  # seconds per variable
+        beta = 21.6e-05  # seconds per constraint
+        gamma = 12.0e-05  # seconds per objective var
 
         estimate = t0 + alpha * num_vars + beta * num_constraints + gamma * num_obj_vars
 
@@ -973,6 +976,7 @@ class Model:
             max_seconds=self.model_config.model_setup.max_solve_time_seconds,
         )
         self.model_config.solver_params.max_time_in_seconds = estimated_budget
+        # self.model_config.solver_params.max_time_in_seconds = 90
 
         # Save human-readable proto for inspection/debugging (timestamped)
         # try:
