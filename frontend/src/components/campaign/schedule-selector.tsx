@@ -15,7 +15,10 @@ import "../../styles/text-styles.css";
 // Types
 import { ScheduleT, WorkTimeTableT } from "../../types/schedule";
 //Constants
-import { SolveStatusColors } from "../../constants/constants";
+import {
+  SolveStatusColors,
+  MAX_SCHEDULE_DURATION_MONTHS,
+} from "../../constants/constants";
 
 dayjs.extend(utc);
 
@@ -48,6 +51,10 @@ export default function ScheduleSelector({
     ? lastScheduleValidatedDate.add(1, "day")
     : today;
 
+  const maxEndFromStart = scheduleCampaign.startDate
+    ? scheduleCampaign.startDate.add(MAX_SCHEDULE_DURATION_MONTHS, "month")
+    : null;
+
   return (
     <div className="campaign-info-container">
       <div className="campaign-and-work-time">
@@ -65,12 +72,20 @@ export default function ScheduleSelector({
                   value={scheduleCampaign.startDate}
                   onChange={(newValue) => {
                     if (!newValue) return;
+                    const newStart = dayjs.utc(newValue);
+                    const maxEndForNewStart = newStart.add(
+                      MAX_SCHEDULE_DURATION_MONTHS,
+                      "month"
+                    );
+                    const newEnd = scheduleCampaign.endDate.isAfter(
+                      maxEndForNewStart
+                    )
+                      ? maxEndForNewStart
+                      : scheduleCampaign.endDate;
                     handleUpdateSchedule({
                       ...scheduleCampaign,
-                      startDate: dayjs.utc(newValue),
-                      endDate: newValue.isAfter(scheduleCampaign.endDate)
-                        ? newValue
-                        : scheduleCampaign.endDate,
+                      startDate: newStart,
+                      endDate: newEnd,
                     });
                   }}
                 />
@@ -86,12 +101,21 @@ export default function ScheduleSelector({
                 <DatePicker
                   className="custom-date-picker"
                   minDate={scheduleCampaign.startDate}
+                  maxDate={maxEndFromStart ?? undefined}
                   value={scheduleCampaign.endDate}
                   onChange={(newValue) => {
                     if (!newValue) return;
+                    const candidate = dayjs.utc(newValue);
+                    const maxAllowed = scheduleCampaign.startDate.add(
+                      MAX_SCHEDULE_DURATION_MONTHS,
+                      "month"
+                    );
+                    const finalEnd = candidate.isAfter(maxAllowed)
+                      ? maxAllowed
+                      : candidate;
                     handleUpdateSchedule({
                       ...scheduleCampaign,
-                      endDate: dayjs.utc(newValue),
+                      endDate: finalEnd,
                     });
                   }}
                 />
