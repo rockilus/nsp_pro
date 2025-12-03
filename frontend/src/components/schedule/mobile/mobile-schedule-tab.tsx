@@ -131,13 +131,13 @@ export default function MobileScheduleTab({
     return result;
   }, [periodStart]);
 
+  const today = dayjs.utc();
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const weekRefs = React.useRef<Array<HTMLDivElement | null>>([]);
 
   // On load, scroll to the week that contains today so current date appears at top
   useEffect(() => {
     if (isLoading) return;
-    const today = dayjs.utc();
     const idx = weeks.findIndex(
       (w) =>
         today.isSameOrAfter(w.start, "day") &&
@@ -160,7 +160,7 @@ export default function MobileScheduleTab({
         });
       }
     }
-  }, [isLoading, weeks]);
+  }, [isLoading, weeks, today]);
 
   // Build array of dayjs dates for the period
   const periodDates = useMemo(() => {
@@ -277,6 +277,7 @@ export default function MobileScheduleTab({
                 </Box>
 
                 {weekDates.map((d) => {
+                  const isToday = d.isSame(today, "day");
                   const key = d.utc().format("YYYY-MM-DD");
                   const items = assignmentsByDate.get(key) || [];
                   if (items.length === 0) return null;
@@ -305,13 +306,33 @@ export default function MobileScheduleTab({
                             mb: 1,
                           }}
                         >
-                          <Box sx={{ width: 64, textAlign: "center" }}>
+                          <Box
+                            sx={{
+                              width: 64,
+                              textAlign: "center",
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                            }}
+                          >
                             {idx === 0 ? (
                               <>
-                                <Typography variant="caption">
+                                <Typography
+                                  variant="caption"
+                                  sx={{ color: isToday && "#1a73e8" }}
+                                >
                                   {d.format("ddd")}
                                 </Typography>
-                                <Typography variant="h6">
+                                <Typography
+                                  variant="h6"
+                                  sx={{
+                                    width: 32,
+                                    height: 32,
+                                    borderRadius: isToday && "50%",
+                                    backgroundColor: isToday && "#1a73e8",
+                                    color: isToday && "#fff",
+                                  }}
+                                >
                                   {d.format("D")}
                                 </Typography>
                               </>
