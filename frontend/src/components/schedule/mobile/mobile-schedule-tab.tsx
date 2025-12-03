@@ -195,10 +195,12 @@ export default function MobileScheduleTab({
   }
 
   // Portrait behavior: render nothing if no assignments in the period
-  const hasAssignmentsInPeriod = periodDates.some(
-    (d) =>
-      (assignmentsByDate.get(d.utc().format("YYYY-MM-DD")) || []).length > 0
-  );
+  // Always show today's date in portrait, even if it has no assignments.
+  const hasAssignmentsInPeriod =
+    periodDates.some(
+      (d) =>
+        (assignmentsByDate.get(d.utc().format("YYYY-MM-DD")) || []).length > 0
+    ) || periodDates.some((d) => d.isSame(today, "day"));
 
   if (!hasAssignmentsInPeriod && !isLandscape) {
     return null;
@@ -280,7 +282,59 @@ export default function MobileScheduleTab({
                   const isToday = d.isSame(today, "day");
                   const key = d.utc().format("YYYY-MM-DD");
                   const items = assignmentsByDate.get(key) || [];
-                  if (items.length === 0) return null;
+
+                  // Hide days with no items, except always show today.
+                  if (items.length === 0 && !isToday) return null;
+
+                  // If there are no items but it's today, render a placeholder row.
+                  if (items.length === 0 && isToday) {
+                    return (
+                      <Box key={key} sx={{ mb: 1 }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            mb: 1,
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              width: 64,
+                              textAlign: "center",
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                            }}
+                          >
+                            <Typography
+                              variant="caption"
+                              sx={{ color: "#1a73e8" }}
+                            >
+                              {d.format("ddd")}
+                            </Typography>
+                            <Typography
+                              variant="h6"
+                              sx={{
+                                width: 32,
+                                height: 32,
+                                borderRadius: "50%",
+                                backgroundColor: "#1a73e8",
+                                color: "#fff",
+                              }}
+                            >
+                              {d.format("D")}
+                            </Typography>
+                          </Box>
+                          <Box sx={{ flex: 1 }}>
+                            <Typography variant="body2">
+                              {"Nothing planned"}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </Box>
+                    );
+                  }
 
                   // sort items by their shift start time
                   const sorted = [...items].sort((a: any, b: any) => {
