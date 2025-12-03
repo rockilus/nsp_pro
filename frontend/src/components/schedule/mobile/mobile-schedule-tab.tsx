@@ -145,13 +145,20 @@ export default function MobileScheduleTab({
     );
     const target = weekRefs.current[idx >= 0 ? idx : 0];
     if (target && containerRef.current) {
-      // scroll container so that target is at top
-      const containerTop = containerRef.current.getBoundingClientRect().top;
-      const targetTop = target.getBoundingClientRect().top;
-      containerRef.current.scrollTo({
-        top: containerRef.current.scrollTop + (targetTop - containerTop),
-        behavior: "auto",
-      });
+      try {
+        const container = containerRef.current as HTMLElement;
+        const targetEl = target as HTMLElement;
+        const top = targetEl.offsetTop - container.offsetTop;
+        container.scrollTo({ top, behavior: "auto" });
+      } catch (err) {
+        // fallback to bounding rect calculation
+        const containerTop = containerRef.current.getBoundingClientRect().top;
+        const targetTop = target.getBoundingClientRect().top;
+        containerRef.current.scrollTo({
+          top: containerRef.current.scrollTop + (targetTop - containerTop),
+          behavior: "auto",
+        });
+      }
     }
   }, [isLoading, weeks]);
 
@@ -232,7 +239,14 @@ export default function MobileScheduleTab({
 
       {/* Portrait: list grouped by date */}
       {!isLandscape ? (
-        <Box ref={containerRef}>
+        <Box
+          ref={containerRef}
+          sx={{
+            maxHeight: "calc(100vh - 160px)",
+            overflowY: "auto",
+            pb: 8,
+          }}
+        >
           {weeks.map((week, wi) => {
             // build dates for this week
             const weekDates: dayjs.Dayjs[] = [];
