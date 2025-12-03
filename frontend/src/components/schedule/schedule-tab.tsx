@@ -6,6 +6,8 @@ import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import MobileScheduleTab from "./mobile/mobile-schedule-tab";
 // Components
 import CurrentSelectionLHSTab from "./lhs-tabs/current-selection-lhs-tab";
 import BreachList from "./lhs-tabs/breach-list";
@@ -263,6 +265,8 @@ export default function ScheduleTab({
 
   const [selectedQuickStatsTimeFrame, setSelectedQuickStatsTimeFrame] =
     useState<StatsTimeFrameOptions>(StatsTimeFrameOptions.CAMPAING);
+
+  const isMobile = useMediaQuery("(max-width:600px)");
 
   const toggleTab = (tabName: string) => {
     if (selectedTab === tabName) {
@@ -1031,6 +1035,12 @@ export default function ScheduleTab({
       ) : null,
     },
   ];
+
+  if (isMobile) {
+    return (
+      <MobileScheduleTab lng={lng} teamWithMembership={teamWithMembership} />
+    );
+  }
 
   return (
     <div className="tab-container-ultrawide">
