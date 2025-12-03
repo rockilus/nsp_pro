@@ -2,6 +2,7 @@ import React from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { ShiftColorMappings } from "../../../constants/constants";
+import { ShiftType } from "@/types/shift";
 
 export default function AssignmentListItem({
   assignment,
@@ -18,6 +19,15 @@ export default function AssignmentListItem({
     text: "#212121",
   };
 
+  const startTime = shift?.startTime?.format
+    ? shift.startTime.format("HH:mm")
+    : "";
+  const endTime = shift?.endTime?.format ? shift.endTime.format("HH:mm") : "";
+  const endsNextDay =
+    shift && shift.startTime && shift.endTime
+      ? !shift.endTime.isSame(shift.startTime, "day")
+      : false;
+
   return (
     <Box
       onClick={onClick}
@@ -32,10 +42,30 @@ export default function AssignmentListItem({
         color: mapping.text,
       }}
     >
+      {/* Duty marker */}
+      <Box
+        sx={{
+          width: 6,
+          height: 40,
+          borderRadius: 1,
+          backgroundColor:
+            shift?.shiftType === ShiftType.DUTY
+              ? mapping.sample
+              : "transparent",
+        }}
+      />
+
       <Box sx={{ flex: 1 }}>
         <Typography variant="body2">{shift?.name || "—"}</Typography>
         <Typography variant="caption" color="inherit">
-          {assignment?.date ? new Date(assignment.date).toLocaleString() : ""}
+          {startTime && endTime ? (
+            <>
+              {startTime} - {endTime}
+              {endsNextDay && <sup>+1</sup>}
+            </>
+          ) : (
+            ""
+          )}
         </Typography>
       </Box>
     </Box>
