@@ -280,9 +280,22 @@ export default function MobileScheduleTab({
                   const key = d.utc().format("YYYY-MM-DD");
                   const items = assignmentsByDate.get(key) || [];
                   if (items.length === 0) return null;
+
+                  // sort items by their shift start time
+                  const sorted = [...items].sort((a: any, b: any) => {
+                    const sa = shifts.find((s: any) => s.id === a.shiftId);
+                    const sb = shifts.find((s: any) => s.id === b.shiftId);
+                    if (!sa || !sb) return 0;
+                    if (sa.startTime && sb.startTime) {
+                      if (sa.startTime.isBefore(sb.startTime)) return -1;
+                      if (sa.startTime.isAfter(sb.startTime)) return 1;
+                    }
+                    return 0;
+                  });
+
                   return (
                     <Box key={key} sx={{ mb: 1 }}>
-                      {items.map((a: any) => (
+                      {sorted.map((a: any, idx: number) => (
                         <Box
                           key={a.id}
                           sx={{
@@ -293,12 +306,18 @@ export default function MobileScheduleTab({
                           }}
                         >
                           <Box sx={{ width: 64, textAlign: "center" }}>
-                            <Typography variant="caption">
-                              {d.format("ddd")}
-                            </Typography>
-                            <Typography variant="h6">
-                              {d.format("D")}
-                            </Typography>
+                            {idx === 0 ? (
+                              <>
+                                <Typography variant="caption">
+                                  {d.format("ddd")}
+                                </Typography>
+                                <Typography variant="h6">
+                                  {d.format("D")}
+                                </Typography>
+                              </>
+                            ) : (
+                              <Box sx={{ height: 1 }} />
+                            )}
                           </Box>
                           <Box sx={{ flex: 1 }}>
                             <AssignmentListItem
