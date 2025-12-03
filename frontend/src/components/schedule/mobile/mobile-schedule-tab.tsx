@@ -118,6 +118,43 @@ export default function MobileScheduleTab({
     scheduleViewSettings.timeFrame
   );
 
+  // Build multiple weeks around the current period so the user can scroll across months
+  const weeks = useMemo(() => {
+    const center = periodStart.startOf("isoWeek");
+    const result: { start: dayjs.Dayjs; end: dayjs.Dayjs }[] = [];
+    const range = 8; // weeks before and after
+    for (let i = -range; i <= range; i++) {
+      const start = center.add(i, "week");
+      const end = start.add(6, "day");
+      result.push({ start, end });
+    }
+    return result;
+  }, [periodStart]);
+
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const weekRefs = React.useRef<Array<HTMLDivElement | null>>([]);
+
+  // On load, scroll to the week that contains today so current date appears at top
+  useEffect(() => {
+    if (isLoading) return;
+    const today = dayjs.utc();
+    const idx = weeks.findIndex(
+      (w) =>
+        today.isSameOrAfter(w.start, "day") &&
+        today.isSameOrBefore(w.end, "day")
+    );
+    const target = weekRefs.current[idx >= 0 ? idx : 0];
+    if (target && containerRef.current) {
+      // scroll container so that target is at top
+      const containerTop = containerRef.current.getBoundingClientRect().top;
+      const targetTop = target.getBoundingClientRect().top;
+      containerRef.current.scrollTo({
+        top: containerRef.current.scrollTop + (targetTop - containerTop),
+        behavior: "auto",
+      });
+    }
+  }, [isLoading, weeks]);
+
   // Build array of dayjs dates for the period
   const periodDates = useMemo(() => {
     const dates: dayjs.Dayjs[] = [];
@@ -170,13 +207,8 @@ export default function MobileScheduleTab({
   return (
     <Box sx={{ p: 1 }}>
       {/* Week header (portrait) */}
-      {!isLandscape && (
-        <Box sx={{ mb: 1 }}>
-          <Typography variant="subtitle1">
-            {formatWeekHeader(periodStart, periodEnd)}
-          </Typography>
-        </Box>
-      )}
+      {/* Top week header removed for portrait; headers are rendered per-week below */}
+      {/* Portrait: grouped by week; each week shows a header and day's assignments */}
 
       <Box sx={{ mb: 1 }}>
         <FormControl fullWidth>
@@ -200,41 +232,77 @@ export default function MobileScheduleTab({
 
       {/* Portrait: list grouped by date */}
       {!isLandscape ? (
-        <Box>
-          {periodDates.map((d) => {
-            const key = d.utc().format("YYYY-MM-DD");
-            const items = assignmentsByDate.get(key) || [];
-            if (items.length === 0) return null;
+        <Box ref={containerRef}>
+          {weeks.map((week, wi) => {
+            // build dates for this week
+            const weekDates: dayjs.Dayjs[] = [];
+            let cur = week.start;
+            while (cur.isBefore(week.end) || cur.isSame(week.end, "day")) {
+              weekDates.push(cur);
+              cur = cur.add(1, "day");
+            }
+
+            // determine if week has any assignments for the selected worker
+            const weekItems = weekDates.flatMap(
+              (d) => assignmentsByDate.get(d.utc().format("YYYY-MM-DD")) || []
+            );
+            if (weekItems.length === 0) return null;
+
             return (
-              <Box key={key} sx={{ mb: 1 }}>
-                {items.map((a: any) => (
-                  <Box
-                    key={a.id}
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1,
-                      mb: 1,
-                    }}
-                  >
-                    <Box sx={{ width: 64, textAlign: "center" }}>
-                      <Typography variant="caption">
-                        {d.format("ddd")}
-                      </Typography>
-                      <Typography variant="h6">{d.format("D")}</Typography>
+              <Box
+                key={week.start.utc().format("YYYY-MM-DD")}
+                ref={(el: HTMLDivElement | null) => {
+                  weekRefs.current[wi] = el;
+                }}
+                sx={{ mb: 2 }}
+              >
+                <Box sx={{ mb: 1 }}>
+                  <Typography variant="subtitle1">
+                    {formatWeekHeader(week.start, week.end)}
+                  </Typography>
+                </Box>
+
+                {weekDates.map((d) => {
+                  const key = d.utc().format("YYYY-MM-DD");
+                  const items = assignmentsByDate.get(key) || [];
+                  if (items.length === 0) return null;
+                  return (
+                    <Box key={key} sx={{ mb: 1 }}>
+                      {items.map((a: any) => (
+                        <Box
+                          key={a.id}
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            mb: 1,
+                          }}
+                        >
+                          <Box sx={{ width: 64, textAlign: "center" }}>
+                            <Typography variant="caption">
+                              {d.format("ddd")}
+                            </Typography>
+                            <Typography variant="h6">
+                              {d.format("D")}
+                            </Typography>
+                          </Box>
+                          <Box sx={{ flex: 1 }}>
+                            <AssignmentListItem
+                              assignment={a}
+                              shift={shifts.find(
+                                (s: any) => s.id === a.shiftId
+                              )}
+                              onClick={() => {
+                                setActiveAssignment(a);
+                                setSheetOpen(true);
+                              }}
+                            />
+                          </Box>
+                        </Box>
+                      ))}
                     </Box>
-                    <Box sx={{ flex: 1 }}>
-                      <AssignmentListItem
-                        assignment={a}
-                        shift={shifts.find((s: any) => s.id === a.shiftId)}
-                        onClick={() => {
-                          setActiveAssignment(a);
-                          setSheetOpen(true);
-                        }}
-                      />
-                    </Box>
-                  </Box>
-                ))}
+                  );
+                })}
               </Box>
             );
           })}
