@@ -10,7 +10,6 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
-import IconButton from "@mui/material/IconButton";
 import Fab from "@mui/material/Fab";
 import CircularProgress from "@mui/material/CircularProgress";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -23,7 +22,6 @@ import {
 import { useScheduleViewSettings } from "../../../app/lib/hooks/useScheduleViewSettings";
 import { getDefaultScheduleViewSettings } from "../../../app/lib/utils/scheduleViewSettingsUtils";
 import { computePeriodEndDate } from "../../../app/lib/utils/scheduleViewSettingsUtils";
-import { getPeriodStartEndDates } from "../schedule-utils";
 // Types
 import { TeamWithMembership } from "@/types/team";
 // Local components
@@ -144,34 +142,6 @@ export default function MobileScheduleTab({
     return map;
   }, [assignments, selectedWorkerId]);
 
-  const handlePrev = () => {
-    const isMonth = scheduleViewSettings.timeFrame === "month";
-    const newStart = scheduleViewSettings.periodStartDate.subtract(
-      1,
-      isMonth ? "month" : "week"
-    );
-    updateScheduleViewSettings({ periodStartDate: newStart });
-  };
-
-  const handleNext = () => {
-    const isMonth = scheduleViewSettings.timeFrame === "month";
-    const newStart = scheduleViewSettings.periodStartDate.add(
-      1,
-      isMonth ? "month" : "week"
-    );
-    updateScheduleViewSettings({ periodStartDate: newStart });
-  };
-
-  const handleToday = () => {
-    const newPeriodStart =
-      scheduleViewSettings.timeFrame === "week"
-        ? dayjs.utc().startOf("isoWeek")
-        : scheduleViewSettings.timeFrame === "month"
-        ? dayjs.utc().startOf("month")
-        : dayjs.utc();
-    updateScheduleViewSettings({ periodStartDate: newPeriodStart });
-  };
-
   if (isLoading) {
     return (
       <Box sx={{ p: 2, display: "flex", justifyContent: "center" }}>
@@ -180,21 +150,33 @@ export default function MobileScheduleTab({
     );
   }
 
+  // Portrait behavior: render nothing if no assignments in the period
+  const hasAssignmentsInPeriod = periodDates.some(
+    (d) =>
+      (assignmentsByDate.get(d.utc().format("YYYY-MM-DD")) || []).length > 0
+  );
+
+  if (!hasAssignmentsInPeriod && !isLandscape) {
+    return null;
+  }
+
+  const formatWeekHeader = (start: dayjs.Dayjs, end: dayjs.Dayjs) => {
+    if (start.month() === end.month() && start.year() === end.year()) {
+      return `${start.format("MMMM D")} - ${end.format("D")}`;
+    }
+    return `${start.format("MMMM D")} - ${end.format("MMMM D")}`;
+  };
+
   return (
     <Box sx={{ p: 1 }}>
-      <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-        <IconButton aria-label="prev" onClick={handlePrev} size="large">
-          ◀
-        </IconButton>
-        <Box sx={{ flex: 1, textAlign: "center" }}>
+      {/* Week header (portrait) */}
+      {!isLandscape && (
+        <Box sx={{ mb: 1 }}>
           <Typography variant="subtitle1">
-            {periodStart.format("LL")} – {periodEnd.format("LL")}
+            {formatWeekHeader(periodStart, periodEnd)}
           </Typography>
         </Box>
-        <IconButton aria-label="next" onClick={handleNext} size="large">
-          ▶
-        </IconButton>
-      </Box>
+      )}
 
       <Box sx={{ mb: 1 }}>
         <FormControl fullWidth>
@@ -222,31 +204,37 @@ export default function MobileScheduleTab({
           {periodDates.map((d) => {
             const key = d.utc().format("YYYY-MM-DD");
             const items = assignmentsByDate.get(key) || [];
+            if (items.length === 0) return null;
             return (
               <Box key={key} sx={{ mb: 1 }}>
-                <Typography variant="subtitle2">
-                  {d.format("dddd, LL")}
-                </Typography>
-                {items.length === 0 ? (
-                  <Typography
-                    color="textSecondary"
-                    sx={{ fontStyle: "italic" }}
+                {items.map((a: any) => (
+                  <Box
+                    key={a.id}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      mb: 1,
+                    }}
                   >
-                    {t("no_assignments") || "No assignments"}
-                  </Typography>
-                ) : (
-                  items.map((a: any) => (
-                    <AssignmentListItem
-                      key={a.id}
-                      assignment={a}
-                      shift={shifts.find((s: any) => s.id === a.shiftId)}
-                      onClick={() => {
-                        setActiveAssignment(a);
-                        setSheetOpen(true);
-                      }}
-                    />
-                  ))
-                )}
+                    <Box sx={{ width: 64, textAlign: "center" }}>
+                      <Typography variant="caption">
+                        {d.format("ddd")}
+                      </Typography>
+                      <Typography variant="h6">{d.format("D")}</Typography>
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <AssignmentListItem
+                        assignment={a}
+                        shift={shifts.find((s: any) => s.id === a.shiftId)}
+                        onClick={() => {
+                          setActiveAssignment(a);
+                          setSheetOpen(true);
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                ))}
               </Box>
             );
           })}
