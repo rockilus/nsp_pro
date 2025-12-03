@@ -13,6 +13,7 @@ import { DemandsResultT } from "./shiftDemand";
 import { ShiftDemandDTO } from "./shiftDemand";
 import { WorkerT } from "./worker";
 import { RecurrenceRuleT } from "./recurrence";
+import { MAX_SCHEDULE_DURATION_MONTHS } from "../constants/constants";
 
 // Schedule
 export type QuickStaffingT = {
@@ -222,4 +223,17 @@ export const toDuplicateResultT = (data: any): DuplicateResultT => {
       : null,
     demands: data.demands ? data.demands : null,
   };
+};
+
+/**
+ * Validate that a schedule duration does not exceed the maximum allowed months.
+ * Throws an Error when invalid.
+ */
+export const validateScheduleDuration = (schedule: ScheduleT): void => {
+  const maxEnd = schedule.startDate.add(MAX_SCHEDULE_DURATION_MONTHS, "month");
+  if (schedule.endDate.isAfter(maxEnd)) {
+    throw new Error(
+      `Schedule duration must be at most ${MAX_SCHEDULE_DURATION_MONTHS} months`
+    );
+  }
 };

@@ -113,6 +113,11 @@ class AppConfig(BaseSettings):
         None, description="Name of the SQS dead-letter queue"
     )
 
+    # App configuration
+    max_schedule_duration_months: int = Field(
+        3, description="Maximum schedule duration in months"
+    )
+
     model_config = SettingsConfigDict(
         env_prefix="",  # No prefix; can adjust if needed
         env_file=os.path.join(os.path.dirname(__file__), "..", ".env.development"),

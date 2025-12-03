@@ -382,6 +382,7 @@ def core_to_engine_fixed_values(
     workers_not_deleted: List[Worker],
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shifts: List[Shift],
+    shifts_not_deleted: List[Shift],
     daily_shift_demands: List[ShiftDemandNew],
     assignments: List[Assignment],
     requests: List[Request],
@@ -426,32 +427,40 @@ def core_to_engine_fixed_values(
 
     # Build shared context for request processing
     dim_to_attr_value_to_shift = build_dim_to_attr_value_to_owner(
-        shifts, dimensions, dim_entries, attributes
+        shifts_not_deleted, dimensions, dim_entries, attributes
     )
     shift_dict = {s.id: s for s in shifts}
 
     # Apply approved requests
     _apply_leave_requests(
-        out, approved_requests, worker_ids_to_worker_dates, shift_dict, shifts
+        out,
+        approved_requests,
+        worker_ids_to_worker_dates,
+        shift_dict,
+        shifts_not_deleted,
     )
     _apply_work_demand_requests(
         out,
         approved_requests,
         worker_ids_to_worker_dates,
         shift_dict,
-        shifts,
+        shifts_not_deleted,
         dim_to_attr_value_to_shift,
     )
 
     # Cleanup: zero out unrequested leaves and shifts without demand
     _zero_unrequested_leave_shifts(
-        out, workers_not_deleted, worker_ids_to_worker_dates, shifts, requests
+        out,
+        workers_not_deleted,
+        worker_ids_to_worker_dates,
+        shifts_not_deleted,
+        requests,
     )
     _zero_shifts_without_demand(
         out,
         workers_not_deleted,
         worker_ids_to_worker_dates,
-        shifts,
+        shifts_not_deleted,
         daily_shift_demands,
     )
 

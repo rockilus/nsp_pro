@@ -38,9 +38,9 @@ def get_max_time_in_seconds(is_test: bool, in_github: bool, cur_env: str) -> int
             return 3
         return 5
     if cur_env == "development":
-        return 60
+        return 120
     if cur_env == "production":
-        return 45
+        return 120
     return 30
 
 
@@ -87,7 +87,9 @@ model_config = ModelConfig(
     custom_solver_params=CustomSolverParams(
         limit_number_solution=None, solve_strategy=SolveStrategy.HARD_TO_SOFT
     ),
-    model_setup=ModelSetup(sol_hint=False),
+    model_setup=ModelSetup(
+        sol_hint=False, min_solve_time_seconds=30, max_solve_time_seconds=120
+    ),
     configuration_constraints=ConfigurationConstraints(work_loads=False),
     system_constraints=SystemConstraints(
         weekly_target_work_time=not test_mode,

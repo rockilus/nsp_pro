@@ -17,6 +17,7 @@ import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
 import { env } from "@/config/env";
+import { validateScheduleDuration } from "../types/schedule";
 
 //////////////////////////
 // Authenticated Schedule Hooks //
@@ -183,6 +184,18 @@ export function useUpdateSchedule() {
 
       if (!isAuthenticated || !user?.id_token) {
         throw new Error("User not authenticated - please sign in");
+      }
+
+      // Client-side pre-flight validation: ensure schedule duration within limits
+      try {
+        validateScheduleDuration(schedule);
+      } catch (e) {
+        // Surface a clear client-side error without calling the API
+        if (e instanceof Error) {
+          console.error("❌ Schedule validation failed:", e.message);
+          throw e;
+        }
+        throw new Error("Schedule validation failed");
       }
 
       try {

@@ -192,6 +192,7 @@ def core_to_engine_inputs(
         workers_not_deleted,
         worker_ids_to_worker_dates,
         engine_inputs.shifts,
+        shifts_not_deleted,
         engine_inputs.shift_demands,
         fixed_assignments,
         engine_inputs.requests_leave,

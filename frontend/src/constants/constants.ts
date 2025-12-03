@@ -182,6 +182,9 @@ export const ColorNoCoverage: string = "#E0E0E0";
 export const ColorPast: string = "#D5A8DC";
 export const ColorValidated: string = "#AFDCA8";
 
+// Maximum schedule/campaign duration in months (frontend mirror of shared)
+export const MAX_SCHEDULE_DURATION_MONTHS = 3;
+
 // User
 export const SignInGrantType: string = "password";
 

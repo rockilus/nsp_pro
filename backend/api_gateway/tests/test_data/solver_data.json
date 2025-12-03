@@ -52283,6 +52283,28 @@
                 "recuperation_time": 23,
                 "recuperation_duty": "6894b85c457cee1161ccd978",
                 "deleted": false
+            },
+            {
+                "_id": "6894baad457cee1161ccd9a7",
+                "team": "6894a0a6457cee1161ccd840",
+                "name": "",
+                "acronym": "",
+                "acronym_custom": false,
+                "start_time": 1754577000,
+                "end_time": 1754577000,
+                "staffing": [
+                    {
+                        "specialty": null,
+                        "staffing": 1
+                    }
+                ],
+                "color": "grey",
+                "shift_type": 0,
+                "rest_type": 0,
+                "leave_type": 0,
+                "recuperation_time": 0,
+                "recuperation_duty": null,
+                "deleted": true
             }
         ],
         "link_shifts": [

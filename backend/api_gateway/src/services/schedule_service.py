@@ -15,6 +15,7 @@ from shared.schemas.core import (
     WorkTimeTableData,
 )
 
+from src.config import config
 from src.services.assignment_service import AssignmentService
 from src.services.base_service import BaseService
 from src.utils.excel_utils import core_to_excel_schedule
@@ -46,6 +47,9 @@ class ScheduleService(BaseService):
         )
         end_date = start_date + timedelta(days=30)
         cbs = self.collection.constraint_build_db.get_constraint_builds(team_id)
+        # Ensure created campaign duration is within allowed bounds
+        self.validate_schedule_duration(start_date, end_date)
+
         campaign_created = self.collection.schedule_db.create_schedule(
             Schedule(
                 id="",
@@ -77,6 +81,9 @@ class ScheduleService(BaseService):
 
     def update_schedule(self, schedule_new: Schedule) -> Schedule:
         schedule_old = self.collection.schedule_db.get_schedule_by_id(schedule_new.id)
+        # Validate duration before applying updates
+        self.validate_schedule_duration(schedule_new.start_date, schedule_new.end_date)
+
         self.assignment_service.update_assignments_for_schedule_dates_change(
             schedule_new=schedule_new, schedule_old=schedule_old
         )
@@ -262,3 +269,18 @@ class ScheduleService(BaseService):
         if duplicate.options.copy_demands:
             print("Duplicating demands not implemented yet")
         return duplicate_result
+
+    @staticmethod
+    def validate_schedule_duration(start_date: date, end_date: date) -> None:
+        """Validate that the period between start_date and end_date is within
+        the allowed maximum schedule duration.
+
+        Raises:
+            ValueError: if the duration exceeds MAX_SCHEDULE_DURATION_MONTHS.
+        """
+        max_end = start_date + timedelta(days=config.max_schedule_duration_months * 30)
+        if end_date > max_end:
+            raise ValueError(
+                "Schedule duration must be at most "
+                + f"{config.max_schedule_duration_months} months"
+            )

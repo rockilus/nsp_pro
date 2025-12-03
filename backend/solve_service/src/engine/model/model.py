@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 # from google.protobuf import text_format  # type: ignore
+from google.protobuf import text_format  # type: ignore
 from ortools.sat.python import cp_model  # type: ignore
 
 # pylint: disable=no-name-in-module
@@ -893,7 +894,103 @@ class Model:
 
         return out
 
+    def estimate_time_limit(
+        self, min_seconds: int = 1, max_seconds: Optional[int] = None
+    ) -> int:
+        """Estimate a reasonable time budget for the current model.
+
+        The estimator is a lightweight heuristic based on:
+        - number of boolean/integer decision variables (`self.variables`)
+        - number of optional intervals (`self.intervals`)
+        - number of objective terms (bool + int vars collected in `self.obj`)
+
+        The returned value is clamped to `hard_cap_seconds` when provided
+        and is always at least 1 second.
+        """
+        proto = self.model.Proto()  # CpModelProto
+
+        # Basic size metrics
+        num_vars = len(proto.variables)
+        num_constraints = len(proto.constraints)
+        num_obj_vars = len(proto.objective.vars)
+
+        # Tunable coefficients (conservative defaults)
+        t0 = 1.0  # base seconds
+        # alpha = 4.5e-05  # seconds per variable
+        # beta = 9.0e-05  # seconds per constraint
+        # gamma = 5.0e-05  # seconds per objective var
+        alpha = 10.8e-05  # seconds per variable
+        beta = 21.6e-05  # seconds per constraint
+        gamma = 12.0e-05  # seconds per objective var
+
+        estimate = t0 + alpha * num_vars + beta * num_constraints + gamma * num_obj_vars
+
+        print(
+            f"[Model] time_limit_estimate: {estimate:.2f} s - "
+            f"min {min_seconds}s - max {max_seconds}s "
+            f"(vars={num_vars}, cstrs={num_constraints}, obj_vars={num_obj_vars})"
+        )
+
+        # Convert to integer seconds and clamp
+        budget = max(1, int(round(estimate)))
+        if max_seconds is not None:
+            try:
+                min_budget = int(min_seconds)
+                max_budget = int(max_seconds)
+                budget = max(min_budget, min(budget, max_budget))
+            except Exception:
+                # ignore malformed cap and return budget
+                pass
+        return budget
+
+    def save_cp_model_proto(self, path_txt: str) -> None:
+        """Write a human-readable text proto of the current CpModel to `path_txt`.
+
+        This only writes the text (pbtxt) representation using
+        google.protobuf.text_format.MessageToString(proto). Useful for
+        inspection and debugging.
+        """
+        try:
+            proto = self.model.Proto()
+        except Exception as exc:  # pragma: no cover - defensive
+            print(f"[Model] could not obtain model proto: {exc}")
+            return
+
+        try:
+            text = text_format.MessageToString(proto)
+        except Exception as exc:  # pragma: no cover - defensive
+            print(f"[Model] could not convert proto to text: {exc}")
+            return
+
+        try:
+            with open(path_txt, "w", encoding="utf-8") as f:
+                f.write(text)
+        except Exception as exc:  # pragma: no cover - defensive
+            print(f"[Model] could not write proto text to {path_txt}: {exc}")
+
     def solve(self) -> None:
+        # Print a light-weight estimate of how much time this problem likely needs
+        # and clamp it to the configured hard cap. This is informational for now.
+        estimated_budget = self.estimate_time_limit(
+            min_seconds=self.model_config.model_setup.min_solve_time_seconds,
+            max_seconds=self.model_config.model_setup.max_solve_time_seconds,
+        )
+        self.model_config.solver_params.max_time_in_seconds = estimated_budget
+        # self.model_config.solver_params.max_time_in_seconds = 90
+
+        # Save human-readable proto for inspection/debugging (timestamped)
+        # try:
+        #     ts = int(time.time())
+        #     out_dir = (
+        #         Path.cwd() / "backend/solve_service/src/engine/model_proto"
+        #     )
+        #     out_dir.mkdir(parents=True, exist_ok=True)
+        #     path = out_dir / f"cp_model_{ts}.pbtxt"
+        #     self.save_cp_model_proto(str(path))
+        #     print(f"[Model] saved model proto to {path}")
+        # except Exception as exc:  # pragma: no cover - best-effort
+        #     print(f"[Model] failed to save model proto: {exc}")
+
         # solution_printer = cp_model.ObjectiveSolutionPrinter()
         solution_callback = SolverSolutionCallback(
             limit=self.model_config.custom_solver_params.limit_number_solution

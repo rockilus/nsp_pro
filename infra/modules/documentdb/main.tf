@@ -42,6 +42,18 @@ resource "aws_security_group" "docdb" {
 
   # Inbound rules
   ingress {
+    description      = "Cloudshell access"
+    from_port        = 27017
+    to_port          = 27017
+    protocol         = "tcp"
+    cidr_blocks      = []
+    ipv6_cidr_blocks = []
+    prefix_list_ids  = []
+    security_groups  = []
+    self             = true
+  }
+
+  ingress {
     description     = "DocumentDB access from ECS services"
     from_port       = 27017
     to_port         = 27017
