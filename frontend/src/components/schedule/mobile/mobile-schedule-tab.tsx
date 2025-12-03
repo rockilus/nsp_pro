@@ -319,7 +319,9 @@ export default function MobileScheduleTab({
                               <>
                                 <Typography
                                   variant="caption"
-                                  sx={{ color: isToday && "#1a73e8" }}
+                                  sx={{
+                                    color: isToday ? "#1a73e8" : undefined,
+                                  }}
                                 >
                                   {d.format("ddd")}
                                 </Typography>
@@ -328,9 +330,11 @@ export default function MobileScheduleTab({
                                   sx={{
                                     width: 32,
                                     height: 32,
-                                    borderRadius: isToday && "50%",
-                                    backgroundColor: isToday && "#1a73e8",
-                                    color: isToday && "#fff",
+                                    borderRadius: isToday ? "50%" : undefined,
+                                    backgroundColor: isToday
+                                      ? "#1a73e8"
+                                      : undefined,
+                                    color: isToday ? "#fff" : undefined,
                                   }}
                                 >
                                   {d.format("D")}
