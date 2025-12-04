@@ -37,7 +37,7 @@ body {
   display: block;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 600px), ((max-width: 960px) and (orientation: landscape)) {
   .desktop-only-nav {
     display: none;
   }

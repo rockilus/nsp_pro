@@ -72,7 +72,9 @@ export default function MobileScheduleTab({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [visibleMonth, setVisibleMonth] = useState<string>("");
 
-  const isLandscape = useMediaQuery("(orientation: landscape)");
+  const isLandscape = useMediaQuery("(orientation: landscape)", {
+    noSsr: true,
+  });
 
   useEffect(() => {
     let mounted = true;

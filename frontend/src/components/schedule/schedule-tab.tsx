@@ -266,7 +266,10 @@ export default function ScheduleTab({
   const [selectedQuickStatsTimeFrame, setSelectedQuickStatsTimeFrame] =
     useState<StatsTimeFrameOptions>(StatsTimeFrameOptions.CAMPAING);
 
-  const isMobile = useMediaQuery("(max-width:600px)");
+  const isMobile = useMediaQuery(
+    "(max-width:600px), ((max-width:960px) and (orientation:landscape))",
+    { noSsr: true }
+  );
 
   const toggleTab = (tabName: string) => {
     if (selectedTab === tabName) {
