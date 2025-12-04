@@ -28,7 +28,7 @@ export default async function Layout({
         <TeamProvider>
           <div style={{ overflow: "hidden", height: "100vh" }}>
             <CssBaseline />
-            <header>
+            <header className="desktop-only-nav">
               <NavAppBar lng={lng} />
             </header>
             <main>{children}</main>

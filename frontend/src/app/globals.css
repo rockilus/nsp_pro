@@ -31,3 +31,14 @@ body {
     text-wrap: balance;
   }
 }
+
+/* Desktop navigation visibility */
+.desktop-only-nav {
+  display: block;
+}
+
+@media (max-width: 600px) {
+  .desktop-only-nav {
+    display: none;
+  }
+}
