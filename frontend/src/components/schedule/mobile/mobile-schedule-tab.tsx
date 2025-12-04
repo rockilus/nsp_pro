@@ -31,6 +31,7 @@ import { getDefaultScheduleViewSettings } from "../../../app/lib/utils/scheduleV
 import { computePeriodEndDate } from "../../../app/lib/utils/scheduleViewSettingsUtils";
 // Types
 import { TeamWithMembership } from "@/types/team";
+import { ShiftRestType } from "@/types/shift";
 // Local components
 import AssignmentListItem from "./assignment-list-item";
 import MobileAssignmentSheet from "./mobile-assignment-sheet";
@@ -279,15 +280,21 @@ export default function MobileScheduleTab({
   const assignmentsByDate = useMemo(() => {
     const map = new Map<string, any[]>();
     if (!selectedWorkerId) return map;
+
     for (const a of assignments) {
       if (a.workerId !== selectedWorkerId) continue;
+
+      const shift = shifts.find((s: any) => s.id === a.shiftId);
+      if (shift.restType === ShiftRestType.RECUPERATION) continue; // skip recuperation shifts
+
       const key = dayjs(a.date).utc().format("YYYY-MM-DD");
       const arr = map.get(key) || [];
       arr.push(a);
       map.set(key, arr);
     }
+
     return map;
-  }, [assignments, selectedWorkerId]);
+  }, [assignments, selectedWorkerId, shifts]);
 
   // Find current week for landscape view
   const currentWeek = useMemo(() => {
