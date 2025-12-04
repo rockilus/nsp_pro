@@ -273,16 +273,78 @@ export default function MobileScheduleTab({
     return map;
   }, [assignments, selectedWorkerId]);
 
-  // Find current week for landscape view
-  const currentWeek = useMemo(() => {
-    return (
-      weeks.find(
-        (w) =>
-          periodStart.isSameOrAfter(w.start, "day") &&
-          periodStart.isSameOrBefore(w.end, "day")
-      ) || weeks[0]
+  // Find current week for landscape view and adjacent weeks for carousel
+  const carouselWeeks = useMemo((): [
+    {
+      week: { start: dayjs.Dayjs; end: dayjs.Dayjs };
+      assignmentsByDate: Map<string, any[]>;
+    },
+    {
+      week: { start: dayjs.Dayjs; end: dayjs.Dayjs };
+      assignmentsByDate: Map<string, any[]>;
+    },
+    {
+      week: { start: dayjs.Dayjs; end: dayjs.Dayjs };
+      assignmentsByDate: Map<string, any[]>;
+    }
+  ] => {
+    const currentWeekIndex = weeks.findIndex(
+      (w) =>
+        periodStart.isSameOrAfter(w.start, "day") &&
+        periodStart.isSameOrBefore(w.end, "day")
     );
-  }, [weeks, periodStart]);
+
+    // Filter assignments for a given week
+    const filterAssignmentsForWeek = (week: {
+      start: dayjs.Dayjs;
+      end: dayjs.Dayjs;
+    }) => {
+      const weekMap = new Map<string, any[]>();
+      let current = week.start;
+      while (current.isSameOrBefore(week.end, "day")) {
+        const dateKey = current.format("YYYY-MM-DD");
+        weekMap.set(dateKey, assignmentsByDate.get(dateKey) || []);
+        current = current.add(1, "day");
+      }
+      return weekMap;
+    };
+
+    if (currentWeekIndex === -1 || weeks.length < 3) {
+      // Fallback: use first 3 weeks if current not found or not enough weeks
+      const week0 = weeks[0] || {
+        start: periodStart.startOf("isoWeek"),
+        end: periodStart.startOf("isoWeek").add(6, "day"),
+      };
+      const week1 = weeks[1] || {
+        start: periodStart.startOf("isoWeek").add(1, "week"),
+        end: periodStart.startOf("isoWeek").add(1, "week").add(6, "day"),
+      };
+      const week2 = weeks[2] || {
+        start: periodStart.startOf("isoWeek").add(2, "week"),
+        end: periodStart.startOf("isoWeek").add(2, "week").add(6, "day"),
+      };
+
+      return [
+        { week: week0, assignmentsByDate: filterAssignmentsForWeek(week0) },
+        { week: week1, assignmentsByDate: filterAssignmentsForWeek(week1) },
+        { week: week2, assignmentsByDate: filterAssignmentsForWeek(week2) },
+      ];
+    }
+
+    // Get prev, current, next weeks
+    const prevWeek = weeks[currentWeekIndex - 1] || weeks[currentWeekIndex];
+    const currentWeek = weeks[currentWeekIndex];
+    const nextWeek = weeks[currentWeekIndex + 1] || weeks[currentWeekIndex];
+
+    return [
+      { week: prevWeek, assignmentsByDate: filterAssignmentsForWeek(prevWeek) },
+      {
+        week: currentWeek,
+        assignmentsByDate: filterAssignmentsForWeek(currentWeek),
+      },
+      { week: nextWeek, assignmentsByDate: filterAssignmentsForWeek(nextWeek) },
+    ];
+  }, [weeks, periodStart, assignmentsByDate]);
 
   // Handle week navigation in landscape mode
   const handleWeekChange = (direction: number) => {
@@ -380,8 +442,7 @@ export default function MobileScheduleTab({
           />
         ) : (
           <LandscapeWeeklyCalendar
-            currentWeek={currentWeek}
-            assignmentsByDate={assignmentsByDate}
+            weeks={carouselWeeks}
             shifts={shifts}
             selectedWorkerId={selectedWorkerId}
             today={today}
