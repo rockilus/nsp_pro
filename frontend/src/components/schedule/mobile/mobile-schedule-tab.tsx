@@ -35,6 +35,7 @@ import { TeamWithMembership } from "@/types/team";
 import AssignmentListItem from "./assignment-list-item";
 import MobileAssignmentSheet from "./mobile-assignment-sheet";
 import PortraitScheduleList from "./portrait-schedule-list";
+import LandscapeWeeklyCalendar from "./landscape-weekly-calendar";
 import MobileNavAppBar from "../../app-bar/mobile-nav-app-bar";
 
 dayjs.extend(utc);
@@ -272,6 +273,32 @@ export default function MobileScheduleTab({
     return map;
   }, [assignments, selectedWorkerId]);
 
+  // Find current week for landscape view
+  const currentWeek = useMemo(() => {
+    return (
+      weeks.find(
+        (w) =>
+          periodStart.isSameOrAfter(w.start, "day") &&
+          periodStart.isSameOrBefore(w.end, "day")
+      ) || weeks[0]
+    );
+  }, [weeks, periodStart]);
+
+  // Handle week navigation in landscape mode
+  const handleWeekChange = (direction: number) => {
+    const newPeriodStart = periodStart.add(direction * 7, "day");
+    updateScheduleViewSettings({
+      ...scheduleViewSettings,
+      periodStartDate: newPeriodStart,
+    });
+
+    // Update visible month label
+    const monthLabel = newPeriodStart.format(
+      newPeriodStart.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY"
+    );
+    setVisibleMonth(monthLabel);
+  };
+
   // Build mobile navigation content that fills space between hamburger and avatar
   const scheduleMobileNav = (
     <Box
@@ -352,7 +379,16 @@ export default function MobileScheduleTab({
             onScroll={handleScroll}
           />
         ) : (
-          /* Landscape: simple weekly band */ <Box>To Come</Box>
+          <LandscapeWeeklyCalendar
+            currentWeek={currentWeek}
+            assignmentsByDate={assignmentsByDate}
+            shifts={shifts}
+            selectedWorkerId={selectedWorkerId}
+            today={today}
+            setActiveAssignment={setActiveAssignment}
+            setSheetOpen={setSheetOpen}
+            onWeekChange={handleWeekChange}
+          />
         )}
 
         <Fab
