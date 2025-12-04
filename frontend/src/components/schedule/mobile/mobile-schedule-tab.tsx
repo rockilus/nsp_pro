@@ -188,19 +188,35 @@ export default function MobileScheduleTab({
     }
   }, []);
 
-  // Scroll to today in the assignment list
+  // Scroll to today in the assignment list (portrait) or navigate to today's week (landscape)
   const handleScrollToToday = () => {
-    const idx = weeks.findIndex(
-      (w) =>
-        today.isSameOrAfter(w.start, "day") &&
-        today.isSameOrBefore(w.end, "day")
-    );
-    const target = weekRefs.current[idx >= 0 ? idx : 0];
-    if (target && containerRef.current) {
-      const container = containerRef.current as HTMLElement;
-      const targetEl = target as HTMLElement;
-      const top = targetEl.offsetTop - container.offsetTop;
-      container.scrollTo({ top, behavior: "smooth" });
+    if (isLandscape) {
+      // Landscape: update state to jump to today's week
+      const todayWeekStart = today.startOf("isoWeek");
+      updateScheduleViewSettings({
+        ...scheduleViewSettings,
+        timeFrame: "week",
+        periodStartDate: todayWeekStart,
+      });
+      // Update visible month label
+      const monthLabel = todayWeekStart.format(
+        todayWeekStart.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY"
+      );
+      setVisibleMonth(monthLabel);
+    } else {
+      // Portrait: existing scroll behavior
+      const idx = weeks.findIndex(
+        (w) =>
+          today.isSameOrAfter(w.start, "day") &&
+          today.isSameOrBefore(w.end, "day")
+      );
+      const target = weekRefs.current[idx >= 0 ? idx : 0];
+      if (target && containerRef.current) {
+        const container = containerRef.current as HTMLElement;
+        const targetEl = target as HTMLElement;
+        const top = targetEl.offsetTop - container.offsetTop;
+        container.scrollTo({ top, behavior: "smooth" });
+      }
     }
   };
 
