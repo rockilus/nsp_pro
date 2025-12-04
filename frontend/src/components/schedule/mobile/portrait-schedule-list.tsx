@@ -33,7 +33,7 @@ export default function PortraitScheduleList({
       ref={containerRef}
       onScroll={onScroll}
       sx={{
-        maxHeight: "calc(100vh - 160px)",
+        maxHeight: "calc(100vh - 65px)",
         overflowY: "auto",
         pb: 8,
       }}

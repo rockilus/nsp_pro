@@ -17,6 +17,7 @@ import IconButton from "@mui/material/IconButton";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import AddIcon from "@mui/icons-material/Add";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -327,30 +328,12 @@ export default function MobileScheduleTab({
   return (
     <>
       <MobileNavAppBar lng={lng} mobileContent={scheduleMobileNav} />
-      <Box sx={{ p: 1 }}>
+      <Box sx={{ padding: "0 8px" }}>
         {/* Week header (portrait) */}
         {/* Top week header removed for portrait; headers are rendered per-week below */}
         {/* Portrait: grouped by week; each week shows a header and day's assignments */}
 
-        <Box sx={{ mb: 1 }}>
-          <FormControl fullWidth>
-            <InputLabel id="mobile-worker-select-label">
-              {t("worker") || "Worker"}
-            </InputLabel>
-            <Select
-              labelId="mobile-worker-select-label"
-              value={selectedWorkerId || ""}
-              label={t("worker") || "Worker"}
-              onChange={(e) => setSelectedWorkerId(String(e.target.value))}
-            >
-              {workers.map((w: any) => (
-                <MenuItem key={w.id} value={w.id}>
-                  {w.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Box>
+        {/* Worker selection moved into Settings dialog to declutter main view */}
 
         {/* Portrait: list grouped by date */}
         {!isLandscape ? (
@@ -391,6 +374,25 @@ export default function MobileScheduleTab({
 
       <Dialog open={settingsOpen} onClose={() => setSettingsOpen(false)}>
         <DialogTitle>Settings</DialogTitle>
+        <DialogContent>
+          <FormControl fullWidth sx={{ mt: 1 }}>
+            <InputLabel id="mobile-worker-select-label">
+              {t("worker") || "Worker"}
+            </InputLabel>
+            <Select
+              labelId="mobile-worker-select-label"
+              value={selectedWorkerId || ""}
+              label={t("worker") || "Worker"}
+              onChange={(e) => setSelectedWorkerId(String(e.target.value))}
+            >
+              {workers.map((w: any) => (
+                <MenuItem key={w.id} value={w.id}>
+                  {w.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
         <DialogActions>
           <Button onClick={() => setSettingsOpen(false)}>Close</Button>
         </DialogActions>
