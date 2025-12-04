@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, forwardRef, useImperativeHandle, useRef } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import Box from "@mui/material/Box";
@@ -15,6 +15,7 @@ interface WeekGridProps {
   today: dayjs.Dayjs;
   setActiveAssignment: (assignment: any) => void;
   setSheetOpen: (open: boolean) => void;
+  onScroll?: (scrollTop: number) => void;
 }
 
 interface AssignmentPosition {
@@ -182,266 +183,277 @@ const calculateAssignmentPositions = (
   return positioned;
 };
 
-function WeekGrid({
-  week,
-  assignmentsByDate,
-  shifts,
-  today,
-  setActiveAssignment,
-  setSheetOpen,
-}: WeekGridProps) {
-  // Generate 7 days for the week
-  const weekDays = useMemo(() => {
-    const days: dayjs.Dayjs[] = [];
-    let current = week.start;
-    for (let i = 0; i < 7; i++) {
-      days.push(current);
-      current = current.add(1, "day");
-    }
-    return days;
-  }, [week]);
-
-  // Generate hour labels (00:00 - 23:00)
-  const hours = useMemo(() => {
-    return Array.from({ length: 24 }, (_, i) =>
-      dayjs.utc().hour(i).minute(0).format("HH:mm")
-    );
-  }, []);
-
-  // Calculate positioned assignments for each day
-  const positionedAssignmentsByDay = useMemo(() => {
-    const result: Map<string, PositionedAssignment[]> = new Map();
-
-    weekDays.forEach((day) => {
-      const dateKey = day.format("YYYY-MM-DD");
-      const dayAssignments = assignmentsByDate.get(dateKey) || [];
-      const positioned = calculateAssignmentPositions(
-        dayAssignments,
-        shifts,
-        day
-      );
-      result.set(dateKey, positioned);
-
-      // Also check for overnight assignments from the previous day
-      const prevDay = day.subtract(1, "day");
-      const prevDateKey = prevDay.format("YYYY-MM-DD");
-      const prevAssignments = assignmentsByDate.get(prevDateKey) || [];
-      const prevPositioned = calculateAssignmentPositions(
-        prevAssignments,
-        shifts,
-        prevDay
-      );
-
-      // Add second parts of overnight shifts to current day
-      const overnightSecondParts = prevPositioned.filter((p) => p.isSecondPart);
-      if (overnightSecondParts.length > 0) {
-        const existing = result.get(dateKey) || [];
-        result.set(dateKey, [...existing, ...overnightSecondParts]);
-      }
-    });
-
-    return result;
-  }, [weekDays, assignmentsByDate, shifts]);
-
-  // Render assignment block
-  const renderAssignment = (
-    positioned: PositionedAssignment,
-    dateKey: string
+const WeekGrid = forwardRef<HTMLDivElement, WeekGridProps>(
+  (
+    {
+      week,
+      assignmentsByDate,
+      shifts,
+      today,
+      setActiveAssignment,
+      setSheetOpen,
+      onScroll,
+    },
+    ref
   ) => {
-    const { assignment, shift, top, height, width, left } = positioned;
-    const colors = ShiftColorMappings[shift.color] || {
-      background: "#f5f5f5",
-      sample: "#9e9e9e",
-      text: "#212121",
-    };
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-    const isDuty = shift.shiftType === ShiftType.DUTY;
-    const startTime = dayjs.utc(shift.startTime).format("HH:mm");
-    const endTime = dayjs.utc(shift.endTime).format("HH:mm");
-    const endsNextDay = !dayjs
-      .utc(shift.endTime)
-      .isSame(dayjs.utc(shift.startTime), "day");
+    // Expose scrollTop via ref for external control
+    useImperativeHandle(
+      ref,
+      () => scrollContainerRef.current as HTMLDivElement
+    );
 
-    // Use acronym if block is too small (< 60px height)
-    // Assuming 24 hours fills viewport height, height % maps roughly to pixels
-    const useAcronym = height < 4; // ~60px if viewport is ~1440px tall
+    // Generate 7 days for the week
+    const weekDays = useMemo(() => {
+      const days: dayjs.Dayjs[] = [];
+      let current = week.start;
+      for (let i = 0; i < 7; i++) {
+        days.push(current);
+        current = current.add(1, "day");
+      }
+      return days;
+    }, [week]);
 
-    return (
-      <Box
-        key={`${assignment.id}-${positioned.isSecondPart ? "part2" : "part1"}`}
-        onClick={() => {
-          setActiveAssignment(assignment);
-          setSheetOpen(true);
-        }}
-        sx={{
-          position: "absolute",
-          top: `${top}%`,
-          height: `${height}%`,
-          left: `${left}%`,
-          width: `${width}%`,
-          backgroundColor: colors.background,
-          color: colors.text,
-          borderLeft: isDuty ? `6px solid ${colors.sample}` : "none",
-          borderRadius: 1,
-          padding: 0.5,
-          cursor: "pointer",
-          overflow: "hidden",
-          minHeight: "30px",
-          fontSize: "0.75rem",
-          display: "flex",
-          flexDirection: "column",
-          "&:hover": {
-            opacity: 0.9,
-          },
-        }}
-      >
-        <Typography
-          variant="caption"
+    // Generate hour labels (00:00 - 23:00)
+    const hours = useMemo(() => {
+      return Array.from({ length: 24 }, (_, i) =>
+        dayjs.utc().hour(i).minute(0).format("HH:mm")
+      );
+    }, []);
+
+    // Calculate positioned assignments for each day
+    const positionedAssignmentsByDay = useMemo(() => {
+      const result: Map<string, PositionedAssignment[]> = new Map();
+
+      weekDays.forEach((day) => {
+        const dateKey = day.format("YYYY-MM-DD");
+        const dayAssignments = assignmentsByDate.get(dateKey) || [];
+        const positioned = calculateAssignmentPositions(
+          dayAssignments,
+          shifts,
+          day
+        );
+        result.set(dateKey, positioned);
+
+        // Also check for overnight assignments from the previous day
+        const prevDay = day.subtract(1, "day");
+        const prevDateKey = prevDay.format("YYYY-MM-DD");
+        const prevAssignments = assignmentsByDate.get(prevDateKey) || [];
+        const prevPositioned = calculateAssignmentPositions(
+          prevAssignments,
+          shifts,
+          prevDay
+        );
+
+        // Add second parts of overnight shifts to current day
+        const overnightSecondParts = prevPositioned.filter(
+          (p) => p.isSecondPart
+        );
+        if (overnightSecondParts.length > 0) {
+          const existing = result.get(dateKey) || [];
+          result.set(dateKey, [...existing, ...overnightSecondParts]);
+        }
+      });
+
+      return result;
+    }, [weekDays, assignmentsByDate, shifts]);
+
+    // Render assignment block
+    const renderAssignment = (
+      positioned: PositionedAssignment,
+      dateKey: string
+    ) => {
+      const { assignment, shift, top, height, width, left } = positioned;
+      const colors = ShiftColorMappings[shift.color] || {
+        background: "#f5f5f5",
+        sample: "#9e9e9e",
+        text: "#212121",
+      };
+
+      const isDuty = shift.shiftType === ShiftType.DUTY;
+      const startTime = dayjs.utc(shift.startTime).format("HH:mm");
+      const endTime = dayjs.utc(shift.endTime).format("HH:mm");
+      const endsNextDay = !dayjs
+        .utc(shift.endTime)
+        .isSame(dayjs.utc(shift.startTime), "day");
+
+      // Use acronym if block is too small (< 60px height)
+      // Assuming 24 hours fills viewport height, height % maps roughly to pixels
+      const useAcronym = height < 4; // ~60px if viewport is ~1440px tall
+
+      return (
+        <Box
+          key={`${assignment.id}-${
+            positioned.isSecondPart ? "part2" : "part1"
+          }`}
+          onClick={() => {
+            setActiveAssignment(assignment);
+            setSheetOpen(true);
+          }}
           sx={{
-            fontWeight: 600,
-            fontSize: "0.7rem",
-            lineHeight: 1.2,
+            position: "absolute",
+            top: `${top}%`,
+            height: `${height}%`,
+            left: `${left}%`,
+            width: `${width}%`,
+            backgroundColor: colors.background,
+            color: colors.text,
+            borderLeft: isDuty ? `6px solid ${colors.sample}` : "none",
+            borderRadius: 1,
+            padding: 0.5,
+            cursor: "pointer",
             overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
+            minHeight: "30px",
+            fontSize: "0.75rem",
+            display: "flex",
+            flexDirection: "column",
+            "&:hover": {
+              opacity: 0.9,
+            },
           }}
         >
-          {useAcronym ? shift.acronym : shift.name}
-        </Typography>
-        {!useAcronym && (
           <Typography
             variant="caption"
             sx={{
-              fontSize: "0.65rem",
-              lineHeight: 1.1,
-              color: colors.text,
-              opacity: 0.9,
+              fontWeight: 600,
+              fontSize: "0.7rem",
+              lineHeight: 1.2,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
           >
-            {startTime} - {endTime}
-            {endsNextDay && <sup>+1</sup>}
+            {useAcronym ? shift.acronym : shift.name}
           </Typography>
-        )}
-      </Box>
-    );
-  };
-
-  return (
-    <Box
-      sx={{
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-      }}
-    >
-      {/* Day headers (sticky) */}
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: "45px repeat(7, 1fr)",
-          borderBottom: "2px solid #e0e0e0",
-          backgroundColor: "#fff",
-          position: "sticky",
-          top: 0,
-          zIndex: 10,
-        }}
-      >
-        <Box sx={{ padding: 1 }} /> {/* Empty corner */}
-        {weekDays.map((day) => {
-          const isToday = day.isSame(today, "day");
-          return (
-            <Box
-              key={day.format("YYYY-MM-DD")}
+          {!useAcronym && (
+            <Typography
+              variant="caption"
               sx={{
-                padding: 1,
-                textAlign: "center",
-                backgroundColor: isToday ? "#2196f3" : "transparent",
-                color: isToday ? "#fff" : "text.primary",
-                borderRadius: isToday ? 1 : 0,
+                fontSize: "0.65rem",
+                lineHeight: 1.1,
+                color: colors.text,
+                opacity: 0.9,
               }}
             >
-              <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                {day.format("ddd")}
-              </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                {day.format("D")}
-              </Typography>
-            </Box>
-          );
-        })}
-      </Box>
+              {startTime} - {endTime}
+              {endsNextDay && <sup>+1</sup>}
+            </Typography>
+          )}
+        </Box>
+      );
+    };
 
-      {/* Scrollable grid */}
+    return (
       <Box
         sx={{
-          flex: 1,
-          overflowY: "auto",
-          display: "grid",
-          gridTemplateColumns: "45px repeat(7, 1fr)",
-          position: "relative",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+          width: "100%",
         }}
       >
-        {/* Time column and hour grid lines */}
-        {hours.map((hour, index) => (
-          <React.Fragment key={hour}>
-            {/* Time label */}
-            <Box
-              sx={{
-                gridColumn: 1,
-                gridRow: index + 1,
-                padding: "4px 8px",
-                fontSize: "0.7rem",
-                color: "text.secondary",
-                textAlign: "right",
-                borderTop: "1px solid #e0e0e0",
-                height: "60px", // Each hour slot
-              }}
-            >
-              {hour}
-            </Box>
-
-            {/* Grid lines across day columns */}
-            {weekDays.map((day, dayIndex) => (
+        {/* Day headers row - just the 7 days without time column */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "repeat(7, 1fr)",
+            borderBottom: "2px solid #e0e0e0",
+            backgroundColor: "#fff",
+            position: "sticky",
+            top: 0,
+            zIndex: 10,
+            width: "100%",
+          }}
+        >
+          {weekDays.map((day) => {
+            const isToday = day.isSame(today, "day");
+            return (
               <Box
-                key={`${day.format("YYYY-MM-DD")}-${hour}`}
+                key={day.format("YYYY-MM-DD")}
                 sx={{
-                  gridColumn: dayIndex + 2,
-                  gridRow: index + 1,
-                  borderTop: "1px solid #e0e0e0",
-                  borderLeft: dayIndex === 0 ? "1px solid #e0e0e0" : "none",
-                  borderRight: "1px solid #e0e0e0",
-                  height: "60px",
-                  position: "relative",
+                  padding: 1,
+                  textAlign: "center",
+                  backgroundColor: isToday ? "#2196f3" : "transparent",
+                  color: isToday ? "#fff" : "text.primary",
+                  borderRadius: isToday ? 1 : 0,
                 }}
               >
-                {/* Render assignments for this day (positioned absolutely within the day column) */}
-                {index === 0 && ( // Only render once per day column
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: "1440px", // 24 hours * 60px per hour
-                    }}
-                  >
-                    {(
-                      positionedAssignmentsByDay.get(
-                        day.format("YYYY-MM-DD")
-                      ) || []
-                    ).map((positioned) =>
-                      renderAssignment(positioned, day.format("YYYY-MM-DD"))
-                    )}
-                  </Box>
-                )}
+                <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                  {day.format("ddd")}
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  {day.format("D")}
+                </Typography>
               </Box>
-            ))}
-          </React.Fragment>
-        ))}
+            );
+          })}
+        </Box>
+
+        {/* Scrollable grid - just the 7 day columns without time column */}
+        <Box
+          ref={scrollContainerRef}
+          onScroll={(e) => {
+            if (onScroll) {
+              onScroll((e.target as HTMLDivElement).scrollTop);
+            }
+          }}
+          sx={{
+            flex: 1,
+            overflowY: "auto",
+            display: "grid",
+            gridTemplateColumns: "repeat(7, 1fr)",
+            position: "relative",
+            width: "100%",
+          }}
+        >
+          {/* Grid lines and assignments for each day */}
+          {hours.map((hour, index) => (
+            <React.Fragment key={hour}>
+              {weekDays.map((day, dayIndex) => (
+                <Box
+                  key={`${day.format("YYYY-MM-DD")}-${hour}`}
+                  sx={{
+                    gridColumn: dayIndex + 1,
+                    gridRow: index + 1,
+                    borderTop: "1px solid #e0e0e0",
+                    borderLeft: dayIndex === 0 ? "1px solid #e0e0e0" : "none",
+                    borderRight: "1px solid #e0e0e0",
+                    height: "60px",
+                    position: "relative",
+                  }}
+                >
+                  {/* Render assignments for this day (positioned absolutely within the day column) */}
+                  {index === 0 && ( // Only render once per day column
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: "1440px", // 24 hours * 60px per hour
+                      }}
+                    >
+                      {(
+                        positionedAssignmentsByDay.get(
+                          day.format("YYYY-MM-DD")
+                        ) || []
+                      ).map((positioned) =>
+                        renderAssignment(positioned, day.format("YYYY-MM-DD"))
+                      )}
+                    </Box>
+                  )}
+                </Box>
+              ))}
+            </React.Fragment>
+          ))}
+        </Box>
       </Box>
-    </Box>
-  );
-}
+    );
+  }
+);
+
+WeekGrid.displayName = "WeekGrid";
 
 export default React.memo(WeekGrid);
