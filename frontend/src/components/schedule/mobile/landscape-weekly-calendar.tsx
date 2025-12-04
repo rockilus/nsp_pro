@@ -52,11 +52,21 @@ const calculateAssignmentGridPosition = (
   const startMinutes = getMinutesFromMidnight(startTime);
   const endMinutes = getMinutesFromMidnight(endTime);
 
-  // Check if shift ends on next day
+  // Treat an end at next-day midnight (00:00 of the following calendar day)
+  // as NOT an "overnight split" — it's the boundary case where the shift
+  // simply ends at midnight. For layout calculations we treat that
+  // midnight as minute 1440 so durations compute correctly.
+  const isMidnightNextDay =
+    endMinutes === 0 && endTime.isSame(startTime.add(1, "day").startOf("day"));
+
+  const effectiveEndMinutes = isMidnightNextDay ? 1440 : endMinutes;
+
+  // Check if shift ends on next day (but ignore the next-day midnight boundary)
   const endsNextDay =
-    endTime.isBefore(startTime) ||
-    !endTime.isSame(startTime, "day") ||
-    endMinutes < startMinutes;
+    !isMidnightNextDay &&
+    (endTime.isBefore(startTime) ||
+      !endTime.isSame(startTime, "day") ||
+      effectiveEndMinutes < startMinutes);
 
   if (endsNextDay) {
     // For overnight shifts, calculate as ending at midnight
@@ -68,7 +78,7 @@ const calculateAssignmentGridPosition = (
     };
   }
 
-  const duration = endMinutes - startMinutes;
+  const duration = effectiveEndMinutes - startMinutes;
   return {
     top: (startMinutes / 1440) * 100,
     height: (duration / 1440) * 100,
