@@ -319,25 +319,25 @@ export default function LandscapeWeeklyCalendar({
         result.set(dateKey, [...existing, ...overnightSecondParts]);
       }
 
-      // Check next day for overnight shifts that should START on current day
-      // (assignments are keyed by end date, so overnight shifts appear on next day)
-      const nextDay = day.add(1, "day");
-      const nextDateKey = nextDay.format("YYYY-MM-DD");
-      const nextAssignments = assignmentsByDate.get(nextDateKey) || [];
-      const nextPositioned = calculateAssignmentPositions(
-        nextAssignments,
-        shifts,
-        day // Use current day as reference for positioning
-      );
+      // // Check next day for overnight shifts that should START on current day
+      // // (assignments are keyed by end date, so overnight shifts appear on next day)
+      // const nextDay = day.add(1, "day");
+      // const nextDateKey = nextDay.format("YYYY-MM-DD");
+      // const nextAssignments = assignmentsByDate.get(nextDateKey) || [];
+      // const nextPositioned = calculateAssignmentPositions(
+      //   nextAssignments,
+      //   shifts,
+      //   day // Use current day as reference for positioning
+      // );
 
-      // Add first parts of overnight shifts to current day
-      const overnightFirstParts = nextPositioned.filter(
-        (p) => p.isOvernight && !p.isSecondPart
-      );
-      if (overnightFirstParts.length > 0) {
-        const existing = result.get(dateKey) || [];
-        result.set(dateKey, [...existing, ...overnightFirstParts]);
-      }
+      // // Add first parts of overnight shifts to current day
+      // const overnightFirstParts = nextPositioned.filter(
+      //   (p) => p.isOvernight && !p.isSecondPart
+      // );
+      // if (overnightFirstParts.length > 0) {
+      //   const existing = result.get(dateKey) || [];
+      //   result.set(dateKey, [...existing, ...overnightFirstParts]);
+      // }
     });
 
     return result;
