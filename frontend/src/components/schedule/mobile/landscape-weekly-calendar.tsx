@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import Box from "@mui/material/Box";
@@ -206,6 +206,30 @@ export default function LandscapeWeeklyCalendar({
   setSheetOpen,
   onWeekChange,
 }: LandscapeWeeklyCalendarProps) {
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    // Scroll to 08:00 on initial mount. Hour slot height is 60px.
+    const hourHeight = 60; // matches the hour slot height used in the grid
+    const defaultStartHour = 8;
+
+    if (!scrollContainerRef.current) {
+      // Wait for layout then try again in next frame
+      requestAnimationFrame(() => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTop = defaultStartHour * hourHeight;
+        }
+      });
+      return;
+    }
+
+    // Use requestAnimationFrame to ensure layout is ready
+    requestAnimationFrame(() => {
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTop = defaultStartHour * hourHeight;
+      }
+    });
+  }, []);
   // Generate 7 days for the week
   const weekDays = useMemo(() => {
     const days: dayjs.Dayjs[] = [];
@@ -492,6 +516,9 @@ export default function LandscapeWeeklyCalendar({
 
       {/* Scrollable grid */}
       <Box
+        ref={(el: HTMLDivElement | null) => {
+          scrollContainerRef.current = el;
+        }}
         sx={{
           flex: 1,
           overflowY: "auto",
