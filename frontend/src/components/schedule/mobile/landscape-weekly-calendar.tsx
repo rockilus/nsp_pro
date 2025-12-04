@@ -400,17 +400,32 @@ export default function LandscapeWeeklyCalendar({
             <Box
               key={day.format("YYYY-MM-DD")}
               sx={{
-                padding: 1,
+                padding: "2px",
                 textAlign: "center",
-                backgroundColor: isToday ? "#2196f3" : "transparent",
-                color: isToday ? "#fff" : "text.primary",
-                borderRadius: isToday ? 1 : 0,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
               }}
             >
-              <Typography variant="caption" sx={{ fontWeight: 600 }}>
+              <Typography
+                variant="caption"
+                sx={{ color: isToday ? "#1a73e8" : undefined }}
+              >
                 {day.format("ddd")}
               </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+              <Typography
+                variant="h6"
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: isToday ? "50%" : undefined,
+                  backgroundColor: isToday ? "#1a73e8" : undefined,
+                  color: isToday ? "#fff" : undefined,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
                 {day.format("D")}
               </Typography>
             </Box>
