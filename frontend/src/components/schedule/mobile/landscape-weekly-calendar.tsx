@@ -213,42 +213,79 @@ export default function LandscapeWeeklyCalendar({
   }, []);
 
   // Touch handling for swipe navigation
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  // Touch handling for swipe navigation — accept only axis-aligned swipes.
+  const [startX, setStartX] = useState<number | null>(null);
+  const [startY, setStartY] = useState<number | null>(null);
+  const [endX, setEndX] = useState<number | null>(null);
+  const [endY, setEndY] = useState<number | null>(null);
 
-  const minSwipeDistance = 50;
+  const minSwipeDistance = 50; // minimum px to consider a swipe
+  // Ratio required between primary axis and secondary axis to qualify as aligned.
+  const directionalRatioThreshold = 2; // primary must be >= 2x the other
 
   const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
+    const t = e.targetTouches[0];
+    setEndX(null);
+    setEndY(null);
+    setStartX(t.clientX);
+    setStartY(t.clientY);
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
+    const t = e.targetTouches[0];
+    setEndX(t.clientX);
+    setEndY(t.clientY);
   };
 
   const onTouchEnd = (e: React.TouchEvent) => {
-    // Use the final touch position from the event if touchMove wasn't fired
     const finalX =
-      touchEnd !== null && touchEnd !== undefined
-        ? touchEnd
+      endX !== null && endX !== undefined
+        ? endX
         : e.changedTouches?.[0]?.clientX ?? null;
+    const finalY =
+      endY !== null && endY !== undefined
+        ? endY
+        : e.changedTouches?.[0]?.clientY ?? null;
 
-    if (touchStart === null || finalX === null) return;
-
-    const distance = touchStart - finalX;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe) {
-      onWeekChange(1); // Next week
-    } else if (isRightSwipe) {
-      onWeekChange(-1); // Previous week
+    if (
+      startX === null ||
+      startY === null ||
+      finalX === null ||
+      finalY === null
+    ) {
+      setStartX(null);
+      setStartY(null);
+      setEndX(null);
+      setEndY(null);
+      return;
     }
 
-    // reset touch state
-    setTouchStart(null);
-    setTouchEnd(null);
+    const dx = finalX - startX;
+    const dy = finalY - startY;
+    const absX = Math.abs(dx);
+    const absY = Math.abs(dy);
+
+    const isMostlyHorizontal =
+      absX >= minSwipeDistance && absX >= absY * directionalRatioThreshold;
+    const isMostlyVertical =
+      absY >= minSwipeDistance && absY >= absX * directionalRatioThreshold;
+
+    if (isMostlyHorizontal) {
+      if (dx < 0) {
+        onWeekChange(1); // Next week (swipe left)
+      } else {
+        onWeekChange(-1); // Previous week (swipe right)
+      }
+    }
+
+    // If isMostlyVertical => do nothing here so native vertical scroll can occur.
+    // If neither (diagonal), ignore the gesture entirely.
+
+    // reset
+    setStartX(null);
+    setStartY(null);
+    setEndX(null);
+    setEndY(null);
   };
 
   // Calculate positioned assignments for each day
