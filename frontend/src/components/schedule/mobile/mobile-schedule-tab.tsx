@@ -284,10 +284,17 @@ export default function MobileScheduleTab({
       <Button
         onClick={handleScrollToToday}
         sx={{
-          minWidth: 40,
-          height: 40,
-          borderRadius: "50%",
+          minWidth: 30,
+          height: 30,
+          // Rounded-square (not fully circular) for a friendlier look
+          borderRadius: "6px",
           padding: 0,
+          color: "text.secondary",
+          // Slightly heavier border to visually match the month label weight
+          border: (theme) => `2px solid ${theme.palette.text.secondary}`,
+          backgroundColor: "transparent",
+          // Match the month label font weight
+          fontWeight: 600,
         }}
       >
         {dayjs.utc().format("D")}
