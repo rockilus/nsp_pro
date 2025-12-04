@@ -69,6 +69,7 @@ export default function MobileScheduleTab({
   const [sheetOpen, setSheetOpen] = useState(false);
   const [activeAssignment, setActiveAssignment] = useState<any | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [visibleMonth, setVisibleMonth] = useState<string>("");
 
   const isLandscape = useMediaQuery("(orientation: landscape)");
 
@@ -143,6 +144,45 @@ export default function MobileScheduleTab({
   const today = dayjs.utc();
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const weekRefs = React.useRef<Array<HTMLDivElement | null>>([]);
+  const weeksRef = React.useRef(weeks);
+
+  // Update weeksRef when weeks change
+  React.useEffect(() => {
+    weeksRef.current = weeks;
+  }, [weeks]);
+
+  // Detect visible month during scroll
+  const handleScroll = React.useCallback(() => {
+    if (!containerRef.current) return;
+
+    const container = containerRef.current;
+    const containerRect = container.getBoundingClientRect();
+    const containerTop = containerRect.top;
+    const containerHeight = container.clientHeight;
+    const viewportCenter = containerTop + containerHeight / 3; // Use top third for better UX
+
+    // Find which week is most visible (centered in viewport)
+    for (let i = 0; i < weekRefs.current.length; i++) {
+      const weekEl = weekRefs.current[i];
+      if (!weekEl) continue;
+
+      const weekRect = weekEl.getBoundingClientRect();
+      const weekTop = weekRect.top;
+      const weekBottom = weekRect.bottom;
+
+      // Check if this week contains the viewport center
+      if (weekTop <= viewportCenter && weekBottom >= viewportCenter) {
+        const week = weeksRef.current[i];
+        if (week) {
+          const newMonth = week.start.format(
+            week.start.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY"
+          );
+          setVisibleMonth(newMonth);
+        }
+        break;
+      }
+    }
+  }, []);
 
   // Scroll to today in the assignment list
   const handleScrollToToday = () => {
@@ -161,8 +201,9 @@ export default function MobileScheduleTab({
   };
 
   // On load, scroll to the week that contains today so current date appears at top
+  const hasScrolledRef = React.useRef(false);
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || hasScrolledRef.current) return;
     const idx = weeks.findIndex(
       (w) =>
         today.isSameOrAfter(w.start, "day") &&
@@ -175,6 +216,9 @@ export default function MobileScheduleTab({
         const targetEl = target as HTMLElement;
         const top = targetEl.offsetTop - container.offsetTop;
         container.scrollTo({ top, behavior: "auto" });
+        hasScrolledRef.current = true;
+        // Update visible month after initial scroll
+        setTimeout(() => handleScroll(), 100);
       } catch (err) {
         // fallback to bounding rect calculation
         const containerTop = containerRef.current.getBoundingClientRect().top;
@@ -183,9 +227,12 @@ export default function MobileScheduleTab({
           top: containerRef.current.scrollTop + (targetTop - containerTop),
           behavior: "auto",
         });
+        hasScrolledRef.current = true;
+        // Update visible month after initial scroll
+        setTimeout(() => handleScroll(), 100);
       }
     }
-  }, [isLoading, weeks, today]);
+  }, [isLoading, weeks, today, handleScroll]);
 
   // Build array of dayjs dates for the period
   const periodDates = useMemo(() => {
@@ -197,6 +244,17 @@ export default function MobileScheduleTab({
     }
     return dates;
   }, [periodStart, periodEnd]);
+
+  // Initialize visibleMonth based on periodStart (only on mount)
+  const hasInitializedMonthRef = React.useRef(false);
+  React.useEffect(() => {
+    if (hasInitializedMonthRef.current) return;
+    const monthLabel = periodStart.format(
+      periodStart.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY"
+    );
+    setVisibleMonth(monthLabel);
+    hasInitializedMonthRef.current = true;
+  }, [periodStart]);
 
   const assignmentsByDate = useMemo(() => {
     const map = new Map<string, any[]>();
@@ -212,14 +270,13 @@ export default function MobileScheduleTab({
   }, [assignments, selectedWorkerId]);
 
   // Build mobile navigation content
-  const monthLabel = periodStart.format(
-    periodStart.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY"
-  );
-
   const scheduleMobileNav = (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-        {monthLabel}
+      <Typography
+        variant="subtitle1"
+        sx={{ fontWeight: 600, color: "text.secondary" }}
+      >
+        {visibleMonth}
       </Typography>
       <IconButton onClick={() => setSettingsOpen(true)} size="small">
         <SettingsIcon />
@@ -289,6 +346,7 @@ export default function MobileScheduleTab({
             today={today}
             setActiveAssignment={setActiveAssignment}
             setSheetOpen={setSheetOpen}
+            onScroll={handleScroll}
           />
         ) : (
           /* Landscape: simple weekly band */ <Box>To Come</Box>

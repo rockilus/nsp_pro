@@ -13,6 +13,7 @@ type Props = {
   today: any;
   setActiveAssignment: (a: any) => void;
   setSheetOpen: (v: boolean) => void;
+  onScroll?: () => void;
 };
 
 export default function PortraitScheduleList({
@@ -25,10 +26,12 @@ export default function PortraitScheduleList({
   today,
   setActiveAssignment,
   setSheetOpen,
+  onScroll,
 }: Props) {
   return (
     <Box
       ref={containerRef}
+      onScroll={onScroll}
       sx={{
         maxHeight: "calc(100vh - 160px)",
         overflowY: "auto",
