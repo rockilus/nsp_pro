@@ -286,15 +286,20 @@ export default function MobileScheduleTab({
 
   // Handle week navigation in landscape mode
   const handleWeekChange = (direction: number) => {
-    const newPeriodStart = periodStart.add(direction * 7, "day");
+    // Navigate by whole weeks and ensure the settings use a week boundary so
+    // validation doesn't snap the date to a month start.
+    const newPeriodStart = periodStart.add(direction, "week");
+    const aligned = newPeriodStart.startOf("isoWeek");
+
     updateScheduleViewSettings({
       ...scheduleViewSettings,
-      periodStartDate: newPeriodStart,
+      timeFrame: "week",
+      periodStartDate: aligned,
     });
 
-    // Update visible month label
-    const monthLabel = newPeriodStart.format(
-      newPeriodStart.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY"
+    // Update visible month label based on the new week start
+    const monthLabel = aligned.format(
+      aligned.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY"
     );
     setVisibleMonth(monthLabel);
   };

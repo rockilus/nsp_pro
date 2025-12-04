@@ -227,10 +227,16 @@ export default function LandscapeWeeklyCalendar({
     setTouchEnd(e.targetTouches[0].clientX);
   };
 
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+  const onTouchEnd = (e: React.TouchEvent) => {
+    // Use the final touch position from the event if touchMove wasn't fired
+    const finalX =
+      touchEnd !== null && touchEnd !== undefined
+        ? touchEnd
+        : e.changedTouches?.[0]?.clientX ?? null;
 
-    const distance = touchStart - touchEnd;
+    if (touchStart === null || finalX === null) return;
+
+    const distance = touchStart - finalX;
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
 
@@ -239,6 +245,10 @@ export default function LandscapeWeeklyCalendar({
     } else if (isRightSwipe) {
       onWeekChange(-1); // Previous week
     }
+
+    // reset touch state
+    setTouchStart(null);
+    setTouchEnd(null);
   };
 
   // Calculate positioned assignments for each day
