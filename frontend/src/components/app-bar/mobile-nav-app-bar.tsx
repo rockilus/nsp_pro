@@ -41,18 +41,20 @@ const MobileNavAppBar = ({
       }}
     >
       <Toolbar sx={{ height: "64px", padding: "0 12px" }}>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            width: "100%",
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <IconButton onClick={() => setDrawerOpen(true)}>
-              <MenuIcon />
-            </IconButton>
+        <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
+          <IconButton onClick={() => setDrawerOpen(true)}>
+            <MenuIcon />
+          </IconButton>
+
+          <Box
+            sx={{
+              flex: 1,
+              display: "flex",
+              alignItems: "center",
+              ml: 1,
+              mr: 1,
+            }}
+          >
             {mobileContent || (
               <img
                 src="/rockilus_logo_blue.jpg"

@@ -269,36 +269,47 @@ export default function MobileScheduleTab({
     return map;
   }, [assignments, selectedWorkerId]);
 
-  // Build mobile navigation content
+  // Build mobile navigation content that fills space between hamburger and avatar
   const scheduleMobileNav = (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 1,
+        flex: 1,
+        justifyContent: "space-between",
+      }}
+    >
       <Typography
         variant="subtitle1"
         sx={{ fontWeight: 600, color: "text.secondary" }}
       >
         {visibleMonth}
       </Typography>
-      <IconButton onClick={() => setSettingsOpen(true)} size="small">
-        <SettingsIcon />
-      </IconButton>
-      <Button
-        onClick={handleScrollToToday}
-        sx={{
-          minWidth: 30,
-          height: 30,
-          // Rounded-square (not fully circular) for a friendlier look
-          borderRadius: "6px",
-          padding: 0,
-          color: "text.secondary",
-          // Slightly heavier border to visually match the month label weight
-          border: (theme) => `2px solid ${theme.palette.text.secondary}`,
-          backgroundColor: "transparent",
-          // Match the month label font weight
-          fontWeight: 600,
-        }}
-      >
-        {dayjs.utc().format("D")}
-      </Button>
+
+      <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+        <IconButton onClick={() => setSettingsOpen(true)} size="small">
+          <SettingsIcon />
+        </IconButton>
+        <Button
+          onClick={handleScrollToToday}
+          sx={{
+            minWidth: 30,
+            height: 30,
+            // Rounded-square (not fully circular) for a friendlier look
+            borderRadius: "6px",
+            padding: 0,
+            color: "text.secondary",
+            // Slightly heavier border to visually match the month label weight
+            border: (theme) => `2px solid ${theme.palette.text.secondary}`,
+            backgroundColor: "transparent",
+            // Match the month label font weight
+            fontWeight: 600,
+          }}
+        >
+          {dayjs.utc().format("D")}
+        </Button>
+      </Box>
     </Box>
   );
 
