@@ -109,7 +109,8 @@ const doAssignmentsOverlap = (a1: any, a2: any): boolean => {
 const calculateAssignmentPositions = (
   assignments: any[],
   shifts: any[],
-  date: dayjs.Dayjs
+  date: dayjs.Dayjs,
+  includeOvernightSecondPart: boolean = false
 ): PositionedAssignment[] => {
   // Get shift data for each assignment
   const assignmentsWithShifts = assignments
@@ -164,8 +165,9 @@ const calculateAssignmentPositions = (
         isSecondPart: false,
       });
 
-      // If overnight, add second part for next day
-      if (position.endsNextDay) {
+      // Only add second part for next day if explicitly requested
+      // This prevents duplicate rendering on the same day
+      if (position.endsNextDay && includeOvernightSecondPart) {
         const nextDayPosition = calculateOvernightSecondPart(item.shift);
         positioned.push({
           assignment: item.assignment,
@@ -295,10 +297,12 @@ export default function LandscapeWeeklyCalendar({
     weekDays.forEach((day) => {
       const dateKey = day.format("YYYY-MM-DD");
       const dayAssignments = assignmentsByDate.get(dateKey) || [];
+      // Don't include overnight second parts for current day assignments
       const positioned = calculateAssignmentPositions(
         dayAssignments,
         shifts,
-        day
+        day,
+        false // Don't add second parts here
       );
       result.set(dateKey, positioned);
 
@@ -306,10 +310,12 @@ export default function LandscapeWeeklyCalendar({
       const prevDay = day.subtract(1, "day");
       const prevDateKey = prevDay.format("YYYY-MM-DD");
       const prevAssignments = assignmentsByDate.get(prevDateKey) || [];
+      // Include overnight second parts for previous day assignments
       const prevPositioned = calculateAssignmentPositions(
         prevAssignments,
         shifts,
-        prevDay
+        prevDay,
+        true // Add second parts for overnight shifts
       );
 
       // Add second parts of overnight shifts to current day
@@ -318,26 +324,6 @@ export default function LandscapeWeeklyCalendar({
         const existing = result.get(dateKey) || [];
         result.set(dateKey, [...existing, ...overnightSecondParts]);
       }
-
-      // // Check next day for overnight shifts that should START on current day
-      // // (assignments are keyed by end date, so overnight shifts appear on next day)
-      // const nextDay = day.add(1, "day");
-      // const nextDateKey = nextDay.format("YYYY-MM-DD");
-      // const nextAssignments = assignmentsByDate.get(nextDateKey) || [];
-      // const nextPositioned = calculateAssignmentPositions(
-      //   nextAssignments,
-      //   shifts,
-      //   day // Use current day as reference for positioning
-      // );
-
-      // // Add first parts of overnight shifts to current day
-      // const overnightFirstParts = nextPositioned.filter(
-      //   (p) => p.isOvernight && !p.isSecondPart
-      // );
-      // if (overnightFirstParts.length > 0) {
-      //   const existing = result.get(dateKey) || [];
-      //   result.set(dateKey, [...existing, ...overnightFirstParts]);
-      // }
     });
 
     return result;
