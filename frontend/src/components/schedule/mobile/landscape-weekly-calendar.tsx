@@ -281,6 +281,26 @@ export default function LandscapeWeeklyCalendar({
         const existing = result.get(dateKey) || [];
         result.set(dateKey, [...existing, ...overnightSecondParts]);
       }
+
+      // Check next day for overnight shifts that should START on current day
+      // (assignments are keyed by end date, so overnight shifts appear on next day)
+      const nextDay = day.add(1, "day");
+      const nextDateKey = nextDay.format("YYYY-MM-DD");
+      const nextAssignments = assignmentsByDate.get(nextDateKey) || [];
+      const nextPositioned = calculateAssignmentPositions(
+        nextAssignments,
+        shifts,
+        day // Use current day as reference for positioning
+      );
+
+      // Add first parts of overnight shifts to current day
+      const overnightFirstParts = nextPositioned.filter(
+        (p) => p.isOvernight && !p.isSecondPart
+      );
+      if (overnightFirstParts.length > 0) {
+        const existing = result.get(dateKey) || [];
+        result.set(dateKey, [...existing, ...overnightFirstParts]);
+      }
     });
 
     return result;
@@ -325,7 +345,11 @@ export default function LandscapeWeeklyCalendar({
           backgroundColor: colors.background,
           color: colors.text,
           borderLeft: isDuty ? `6px solid ${colors.sample}` : "none",
-          borderRadius: 1,
+          borderRadius: positioned.isOvernight
+            ? "4px 4px 0 0" // First part: round top only
+            : positioned.isSecondPart
+            ? "0 0 4px 4px" // Second part: round bottom only
+            : 1, // Normal shift: round all corners
           padding: 0.5,
           cursor: "pointer",
           overflow: "hidden",
