@@ -13,7 +13,13 @@ import InputLabel from "@mui/material/InputLabel";
 import Fab from "@mui/material/Fab";
 import CircularProgress from "@mui/material/CircularProgress";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import IconButton from "@mui/material/IconButton";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogActions from "@mui/material/DialogActions";
 import AddIcon from "@mui/icons-material/Add";
+import SettingsIcon from "@mui/icons-material/Settings";
 // Hooks
 import {
   useGetScheduleAssignmentsData,
@@ -28,6 +34,7 @@ import { TeamWithMembership } from "@/types/team";
 import AssignmentListItem from "./assignment-list-item";
 import MobileAssignmentSheet from "./mobile-assignment-sheet";
 import PortraitScheduleList from "./portrait-schedule-list";
+import MobileNavAppBar from "../../app-bar/mobile-nav-app-bar";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -61,6 +68,7 @@ export default function MobileScheduleTab({
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [activeAssignment, setActiveAssignment] = useState<any | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const isLandscape = useMediaQuery("(orientation: landscape)");
 
@@ -136,6 +144,22 @@ export default function MobileScheduleTab({
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const weekRefs = React.useRef<Array<HTMLDivElement | null>>([]);
 
+  // Scroll to today in the assignment list
+  const handleScrollToToday = () => {
+    const idx = weeks.findIndex(
+      (w) =>
+        today.isSameOrAfter(w.start, "day") &&
+        today.isSameOrBefore(w.end, "day")
+    );
+    const target = weekRefs.current[idx >= 0 ? idx : 0];
+    if (target && containerRef.current) {
+      const container = containerRef.current as HTMLElement;
+      const targetEl = target as HTMLElement;
+      const top = targetEl.offsetTop - container.offsetTop;
+      container.scrollTo({ top, behavior: "smooth" });
+    }
+  };
+
   // On load, scroll to the week that contains today so current date appears at top
   useEffect(() => {
     if (isLoading) return;
@@ -187,74 +211,114 @@ export default function MobileScheduleTab({
     return map;
   }, [assignments, selectedWorkerId]);
 
+  // Build mobile navigation content
+  const monthLabel = periodStart.format(
+    periodStart.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY"
+  );
+
+  const scheduleMobileNav = (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+        {monthLabel}
+      </Typography>
+      <IconButton onClick={() => setSettingsOpen(true)} size="small">
+        <SettingsIcon />
+      </IconButton>
+      <Button
+        onClick={handleScrollToToday}
+        sx={{
+          minWidth: 40,
+          height: 40,
+          borderRadius: "50%",
+          padding: 0,
+        }}
+      >
+        {dayjs.utc().format("D")}
+      </Button>
+    </Box>
+  );
+
   if (isLoading) {
     return (
-      <Box sx={{ p: 2, display: "flex", justifyContent: "center" }}>
-        <CircularProgress />
-      </Box>
+      <>
+        <MobileNavAppBar lng={lng} mobileContent={scheduleMobileNav} />
+        <Box sx={{ p: 2, display: "flex", justifyContent: "center" }}>
+          <CircularProgress />
+        </Box>
+      </>
     );
   }
 
   return (
-    <Box sx={{ p: 1 }}>
-      {/* Week header (portrait) */}
-      {/* Top week header removed for portrait; headers are rendered per-week below */}
-      {/* Portrait: grouped by week; each week shows a header and day's assignments */}
+    <>
+      <MobileNavAppBar lng={lng} mobileContent={scheduleMobileNav} />
+      <Box sx={{ p: 1 }}>
+        {/* Week header (portrait) */}
+        {/* Top week header removed for portrait; headers are rendered per-week below */}
+        {/* Portrait: grouped by week; each week shows a header and day's assignments */}
 
-      <Box sx={{ mb: 1 }}>
-        <FormControl fullWidth>
-          <InputLabel id="mobile-worker-select-label">
-            {t("worker") || "Worker"}
-          </InputLabel>
-          <Select
-            labelId="mobile-worker-select-label"
-            value={selectedWorkerId || ""}
-            label={t("worker") || "Worker"}
-            onChange={(e) => setSelectedWorkerId(String(e.target.value))}
-          >
-            {workers.map((w: any) => (
-              <MenuItem key={w.id} value={w.id}>
-                {w.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <Box sx={{ mb: 1 }}>
+          <FormControl fullWidth>
+            <InputLabel id="mobile-worker-select-label">
+              {t("worker") || "Worker"}
+            </InputLabel>
+            <Select
+              labelId="mobile-worker-select-label"
+              value={selectedWorkerId || ""}
+              label={t("worker") || "Worker"}
+              onChange={(e) => setSelectedWorkerId(String(e.target.value))}
+            >
+              {workers.map((w: any) => (
+                <MenuItem key={w.id} value={w.id}>
+                  {w.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+
+        {/* Portrait: list grouped by date */}
+        {!isLandscape ? (
+          <PortraitScheduleList
+            weeks={weeks}
+            containerRef={containerRef}
+            weekRefs={weekRefs}
+            assignmentsByDate={assignmentsByDate}
+            periodDates={periodDates}
+            shifts={shifts}
+            today={today}
+            setActiveAssignment={setActiveAssignment}
+            setSheetOpen={setSheetOpen}
+          />
+        ) : (
+          /* Landscape: simple weekly band */ <Box>To Come</Box>
+        )}
+
+        <Fab
+          color="primary"
+          aria-label="create-assignment"
+          sx={{ position: "fixed", bottom: 16, right: 16 }}
+          onClick={() => {
+            setActiveAssignment(null);
+            setSheetOpen(true);
+          }}
+        >
+          <AddIcon />
+        </Fab>
+
+        <MobileAssignmentSheet
+          open={sheetOpen}
+          onClose={() => setSheetOpen(false)}
+          assignment={activeAssignment}
+        />
       </Box>
 
-      {/* Portrait: list grouped by date */}
-      {!isLandscape ? (
-        <PortraitScheduleList
-          weeks={weeks}
-          containerRef={containerRef}
-          weekRefs={weekRefs}
-          assignmentsByDate={assignmentsByDate}
-          periodDates={periodDates}
-          shifts={shifts}
-          today={today}
-          setActiveAssignment={setActiveAssignment}
-          setSheetOpen={setSheetOpen}
-        />
-      ) : (
-        /* Landscape: simple weekly band */ <Box>To Come</Box>
-      )}
-
-      <Fab
-        color="primary"
-        aria-label="create-assignment"
-        sx={{ position: "fixed", bottom: 16, right: 16 }}
-        onClick={() => {
-          setActiveAssignment(null);
-          setSheetOpen(true);
-        }}
-      >
-        <AddIcon />
-      </Fab>
-
-      <MobileAssignmentSheet
-        open={sheetOpen}
-        onClose={() => setSheetOpen(false)}
-        assignment={activeAssignment}
-      />
-    </Box>
+      <Dialog open={settingsOpen} onClose={() => setSettingsOpen(false)}>
+        <DialogTitle>Settings</DialogTitle>
+        <DialogActions>
+          <Button onClick={() => setSettingsOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }
