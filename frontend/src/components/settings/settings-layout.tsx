@@ -12,6 +12,7 @@ import IconButton from "@mui/material/IconButton";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 // Hooks
 import { useResponsiveSettings } from "@/hooks/useResponsiveSettings";
+import { useIsMobile } from "@/hooks/useIsMobile";
 // Styles
 import "./settings-layout.css";
 
@@ -29,7 +30,8 @@ export default function SettingsLayout({
 
   const pathname = usePathname();
   const router = useRouter();
-  const { isMobile, showNav, showContent } = useResponsiveSettings(lng);
+  const isMobile = useIsMobile();
+  const { showNav, showContent } = useResponsiveSettings(lng);
 
   // Back button handler for mobile
   const handleBack = () => {
