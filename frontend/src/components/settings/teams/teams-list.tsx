@@ -69,7 +69,7 @@ export default function TeamsList({
             onClick={() => {
               setSelectedTeamId(teamWithMembership.team.id);
               router.push(
-                `/${lng}/plan/teams/general/?teamId=${encodeURIComponent(
+                `/${lng}/plan/teams?teamId=${encodeURIComponent(
                   teamWithMembership.team.id
                 )}`
               );

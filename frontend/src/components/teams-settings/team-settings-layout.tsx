@@ -32,7 +32,17 @@ export default function TeamSettingsLayout({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { isMobile, showNav, showContent } = useResponsiveSettings(lng);
+  const { isMobile, showNav, showContent, shouldRedirect } =
+    useResponsiveSettings(lng);
+
+  const teamId = selectedTeam?.team.id;
+
+  // Redirect from base teams page to first child route when needed
+  React.useEffect(() => {
+    if (shouldRedirect && teamId) {
+      router.push(`/${lng}/plan/teams/general?teamId=${teamId}`);
+    }
+  }, [shouldRedirect, lng, router, teamId]);
 
   // Security: Only render if team is selected
   if (!selectedTeam) {
@@ -42,8 +52,6 @@ export default function TeamSettingsLayout({
       </div>
     );
   }
-
-  const teamId = selectedTeam.team.id;
 
   // Back to teams selection
   const handleBackToTeams = () => {
