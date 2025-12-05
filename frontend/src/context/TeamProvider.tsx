@@ -32,10 +32,12 @@ export function TeamProvider({
   // Check if we're on specific pages that don't require team selection
   const isTeamsPage = pathname.includes("/plan/settings/teams");
   const isProfilePage = pathname.includes("/plan/settings/profile");
+  const isPersonalInfoPage = pathname.includes("/plan/settings/personal-info");
+  const isSecurityPage = pathname.includes("/plan/settings/security");
 
   React.useEffect(() => {
     // Security: Only redirect authenticated users when necessary
-    if (!loading && !selectedTeam && !isTeamsPage && !isProfilePage) {
+    if (!loading && !selectedTeam && !isTeamsPage && !isProfilePage && !isPersonalInfoPage && !isSecurityPage) {
       const language = getLanguageFromPath();
 
       // Construct the teams page URL with the current language
@@ -47,6 +49,8 @@ export function TeamProvider({
     selectedTeam,
     isTeamsPage,
     isProfilePage,
+    isPersonalInfoPage,
+    isSecurityPage,
     router,
     loading,
     pathname,

@@ -20,19 +20,25 @@ export default function SettingsLayout({
     lng: string;
   };
 }) {
-  const { t } = useTranslation(lng, "app-bar");
+  const { t } = useTranslation(lng, "profile-page");
+  const { t: tAppBar } = useTranslation(lng, "app-bar");
 
   const pathname = usePathname();
 
   const links: { name: string; label: string; href: string }[] = [
     {
-      name: "profile",
-      label: t("profile"),
-      href: `/${lng}/plan/settings/profile`,
+      name: "personal-info",
+      label: t("personal_info"),
+      href: `/${lng}/plan/settings/personal-info`,
+    },
+    {
+      name: "security",
+      label: t("security_and_sign_in"),
+      href: `/${lng}/plan/settings/security`,
     },
     {
       name: "teams",
-      label: t("teams"),
+      label: tAppBar("teams"),
       href: `/${lng}/plan/settings/teams`,
     },
   ];

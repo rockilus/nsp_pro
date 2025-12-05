@@ -50,14 +50,9 @@ export default function AccountMenu({ lng }: { lng: string }) {
 
   const links: { name: string; label: string; href: string }[] = [
     {
-      name: "profile",
-      label: t("profile"),
-      href: `/${lng}/plan/settings/profile`,
-    },
-    {
-      name: "teams",
-      label: t("teams"),
-      href: `/${lng}/plan/settings/teams`,
+      name: "settings",
+      label: t("settings"),
+      href: `/${lng}/plan/settings/personal-info`,
     },
   ];
 

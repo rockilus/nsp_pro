@@ -14,6 +14,8 @@
     "password": "Mot de passe",
     "password_empty_error": "Le mot de passe ne peut pas être vide",
     "password_match_error": "Les mots de passe ne correspondent pas",
+    "personal_info": "Informations personnelles",
+    "security_and_sign_in": "Sécurité et connexion",
     "send_verification_email": "Envoyer un email de vérification",
     "update_password": "Mettre à jour le mot de passe",
     "user_profile": "Profil utilisateur",

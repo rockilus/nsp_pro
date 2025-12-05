@@ -14,6 +14,8 @@
     "password": "Contraseña",
     "password_empty_error": "La contraseña no puede estar vacía",
     "password_match_error": "Las contraseñas no coinciden",
+    "personal_info": "Información personal",
+    "security_and_sign_in": "Seguridad e inicio de sesión",
     "send_verification_email": "Enviar email de verificación",
     "update_password": "Actualizar contraseña",
     "user_profile": "Perfil de usuario",
