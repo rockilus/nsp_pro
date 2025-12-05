@@ -11,14 +11,16 @@ export default function SettingsPage({
 }) {
   const { lng } = React.use(params as Promise<{ lng: string }>);
   const router = useRouter();
-  const { showNav } = useResponsiveSettings(lng);
+  const { shouldRedirect } = useResponsiveSettings(lng);
 
-  // On desktop (when showNav is false for parent route), redirect to first child route
+  // Redirect to first child route based on device mode and orientation
+  // - Mobile portrait: stay on this page (show nav list)
+  // - Mobile landscape OR desktop: redirect to first child route
   React.useEffect(() => {
-    if (!showNav) {
+    if (shouldRedirect) {
       router.push(`/${lng}/plan/settings/personal-info`);
     }
-  }, [showNav, lng, router]);
+  }, [shouldRedirect, lng, router]);
 
   // On mobile, SettingsLayout handles rendering the navigation list
   return null;
