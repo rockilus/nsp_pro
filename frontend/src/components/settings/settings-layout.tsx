@@ -1,15 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useTranslation } from "@/app/i18n/client";
+import { getSettingsLinks } from "./settings-links";
 // MUI
 import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
-import IconButton from "@mui/material/IconButton";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 // Hooks
 import { useResponsiveSettings } from "@/hooks/useResponsiveSettings";
 import { useIsMobile, useIsLandscape } from "@/hooks/useIsMobile";
@@ -31,33 +29,11 @@ export default function SettingsLayout({
   const { t: tAppBar } = useTranslation(lng, "app-bar");
 
   const pathname = usePathname();
-  const router = useRouter();
   const isMobile = useIsMobile();
   const isLandscape = useIsLandscape();
   const { showNav, showContent } = useResponsiveSettings(lng);
 
-  // Back button handler for mobile
-  const handleBack = () => {
-    router.push(`/${lng}/plan/settings`);
-  };
-
-  const links: { name: string; label: string; href: string }[] = [
-    {
-      name: "personal-info",
-      label: t("personal_info"),
-      href: `/${lng}/plan/settings/personal-info`,
-    },
-    {
-      name: "security",
-      label: t("security_and_sign_in"),
-      href: `/${lng}/plan/settings/security`,
-    },
-    {
-      name: "teams",
-      label: tAppBar("teams"),
-      href: `/${lng}/plan/settings/teams`,
-    },
-  ];
+  const links = getSettingsLinks(lng, t, tAppBar);
 
   return (
     <div className="settings-layout">
