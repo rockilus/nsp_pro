@@ -78,11 +78,13 @@ export default function TeamSettingsLayout({
       {showNav && (
         <div className="team-settings-sidebar">
           {/* Team Header with Back Navigation */}
-          <NavigationHeader
-            title={selectedTeam.team.name}
-            onBack={handleBackToTeams}
-            showBackButton={true}
-          />
+          <div style={{ paddingLeft: "16px" }}>
+            <NavigationHeader
+              title={selectedTeam.team.name}
+              onBack={handleBackToTeams}
+              showBackButton={true}
+            />
+          </div>
 
           {/* Navigation List */}
           <List dense={true}>
