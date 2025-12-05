@@ -37,7 +37,14 @@ export function TeamProvider({
 
   React.useEffect(() => {
     // Security: Only redirect authenticated users when necessary
-    if (!loading && !selectedTeam && !isTeamsPage && !isProfilePage && !isPersonalInfoPage && !isSecurityPage) {
+    if (
+      !loading &&
+      !selectedTeam &&
+      !isTeamsPage &&
+      !isProfilePage &&
+      !isPersonalInfoPage &&
+      !isSecurityPage
+    ) {
       const language = getLanguageFromPath();
 
       // Construct the teams page URL with the current language

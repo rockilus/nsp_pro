@@ -13,10 +13,7 @@ import UserProfileRow from "./user-profile-row";
 // Skeletons
 import TablesSkeleton from "../../skeletons/tables-skeleton";
 // Actions
-import {
-  useGetUser,
-  useUpdateUser,
-} from "../../../hooks/useUser";
+import { useGetUser, useUpdateUser } from "../../../hooks/useUser";
 // Styles
 import "./user-profile-tab.css";
 import "../../../styles/text-styles.css";
