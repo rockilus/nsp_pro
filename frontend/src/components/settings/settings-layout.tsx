@@ -70,7 +70,10 @@ export default function SettingsLayout({
       {showNav && (
         <List
           dense={true}
-          sx={{ width: "20%", maxWidth: 360, borderRight: "1px solid #e5e7eb" }}
+          sx={{
+            width: isMobile ? "100%" : "20%",
+            maxWidth: isMobile ? "none" : 360,
+          }}
           className="settings-sidebar"
         >
           {links.map((link) => (

@@ -9,7 +9,6 @@
 .settings-sidebar {
   width: 20%;
   max-width: 360px;
-  border-right: 1px solid #e5e7eb;
 }
 
 .settings-content {
@@ -59,6 +58,10 @@
     flex-direction: row;
   }
 
+  .settings-sidebar {
+    border-right: 1px solid #e5e7eb;
+  }
+
   .mobile-back-button {
     display: none;
   }
@@ -73,7 +76,6 @@
   .settings-sidebar {
     width: 100%;
     max-width: none;
-    border-right: none;
     border-bottom: 1px solid #e5e7eb;
   }
 
