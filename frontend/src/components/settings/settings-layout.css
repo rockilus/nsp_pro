@@ -71,12 +71,13 @@
 @media (max-width: 768px) {
   .settings-layout {
     flex-direction: column;
+    min-height: 100vh;
   }
 
   .settings-sidebar {
     width: 100%;
     max-width: none;
-    border-bottom: 1px solid #e5e7eb;
+    background-color: #ffffff;
   }
 
   .settings-content {
