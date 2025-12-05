@@ -127,7 +127,7 @@ export default function TeamGeneralTab({
   }, [team]);
 
   return (
-    <div className="tab-container-wide">
+    <div>
       {isLoading ? (
         <TablesSkeleton numTables={1} numInternalRows={5} />
       ) : (

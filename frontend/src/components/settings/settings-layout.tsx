@@ -13,6 +13,8 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 // Hooks
 import { useResponsiveSettings } from "@/hooks/useResponsiveSettings";
 import { useIsMobile, useIsLandscape } from "@/hooks/useIsMobile";
+// Components
+import NavigationHeader from "@/components/common/navigation-header";
 // Styles
 import "./settings-layout.css";
 
@@ -61,25 +63,32 @@ export default function SettingsLayout({
     <div className="settings-layout">
       {/* Sidebar Menu */}
       {showNav && (
-        <List
-          dense={true}
-          sx={{
-            width: isMobile && !isLandscape ? "100%" : "20%",
-            maxWidth: isMobile && !isLandscape ? "none" : 360,
-          }}
-          className="settings-sidebar"
-        >
-          {links.map((link) => (
-            <ListItemButton
-              key={link.name}
-              selected={pathname.includes(link.name)}
-              LinkComponent={Link}
-              href={link.href}
-            >
-              <ListItemText primary={link.label} />
-            </ListItemButton>
-          ))}
-        </List>
+        <>
+          {isMobile && !isLandscape && (
+            <div style={{ paddingLeft: "16px" }}>
+              <NavigationHeader title={t("settings")} showBackButton={false} />
+            </div>
+          )}
+          <List
+            dense={true}
+            sx={{
+              width: isMobile && !isLandscape ? "100%" : "20%",
+              maxWidth: isMobile && !isLandscape ? "none" : 360,
+            }}
+            className="settings-sidebar"
+          >
+            {links.map((link) => (
+              <ListItemButton
+                key={link.name}
+                selected={pathname.includes(link.name)}
+                LinkComponent={Link}
+                href={link.href}
+              >
+                <ListItemText primary={link.label} />
+              </ListItemButton>
+            ))}
+          </List>
+        </>
       )}
 
       {/* Content Area */}

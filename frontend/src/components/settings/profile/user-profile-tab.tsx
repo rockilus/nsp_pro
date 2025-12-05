@@ -124,7 +124,7 @@ export default function UserProfileTab({ lng }: { lng: string }) {
   }, [user, fieldEditing]);
 
   return (
-    <div className="tab-container-wide">
+    <div>
       {isLoading ? (
         <TablesSkeleton numTables={1} numInternalRows={5} />
       ) : (

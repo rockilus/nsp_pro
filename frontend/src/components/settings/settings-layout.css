@@ -49,6 +49,7 @@
   .settings-layout {
     flex-direction: column;
     min-height: 100vh;
+    padding: 16px;
   }
 
   .settings-sidebar {
@@ -59,6 +60,6 @@
 
   .settings-content {
     width: 100%;
-    padding: 16px;
+    padding: 0;
   }
 }

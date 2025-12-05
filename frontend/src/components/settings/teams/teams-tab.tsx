@@ -121,7 +121,7 @@ export default function TeamsTab({
   }, [getUserTeamsWithMembershipsFn, getUserPendingInvitationsFn]);
 
   return (
-    <div className="tab-container-wide">
+    <div>
       <NavigationHeader
         title={t("teams")}
         onBack={() => router.push(`/${lng}/plan/settings`)}

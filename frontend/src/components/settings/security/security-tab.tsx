@@ -16,6 +16,7 @@ import { useGetUser, useUpdatePassword } from "../../../hooks/useUser";
 // Styles
 import "../../../styles/text-styles.css";
 import "../../../styles/tab-container-styles.css";
+import "../profile/user-profile-tab.css";
 // Types
 import { UserT } from "../../../types/user";
 
@@ -74,7 +75,7 @@ export default function SecurityTab({ lng }: { lng: string }) {
   }, [getUser]);
 
   return (
-    <div className="tab-container-wide">
+    <div>
       {isLoading ? (
         <TablesSkeleton numTables={1} numInternalRows={2} />
       ) : (
