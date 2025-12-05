@@ -12,7 +12,6 @@ import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import Fab from "@mui/material/Fab";
 import CircularProgress from "@mui/material/CircularProgress";
-import useMediaQuery from "@mui/material/useMediaQuery";
 import IconButton from "@mui/material/IconButton";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
@@ -22,6 +21,7 @@ import DialogActions from "@mui/material/DialogActions";
 import AddIcon from "@mui/icons-material/Add";
 import SettingsIcon from "@mui/icons-material/Settings";
 // Hooks
+import { useIsLandscape } from "@/hooks/useIsMobile";
 import {
   useGetScheduleAssignmentsData,
   useGetScheduleAssignmentsDataNoSolver,
@@ -73,9 +73,7 @@ export default function MobileScheduleTab({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [visibleMonth, setVisibleMonth] = useState<string>("");
 
-  const isLandscape = useMediaQuery("(orientation: landscape)", {
-    noSsr: true,
-  });
+  const isLandscape = useIsLandscape();
 
   useEffect(() => {
     let mounted = true;

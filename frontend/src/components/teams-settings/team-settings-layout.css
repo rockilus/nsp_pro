@@ -4,6 +4,7 @@
   height: 100%;
   min-height: 100vh;
   background-color: #ffffff;
+  flex-direction: column;
 }
 
 .team-settings-sidebar {
@@ -48,6 +49,13 @@
   overflow-y: auto;
 }
 
+/* Desktop layout */
+@media (min-width: 769px) {
+  .team-settings-layout {
+    flex-direction: row;
+  }
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .team-settings-layout {
@@ -58,6 +66,23 @@
     width: 100%;
     min-height: auto;
     border-right: none;
-    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .team-settings-content {
+    width: 100%;
+    padding: 16px;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .team-settings-layout {
+    flex-direction: column;
+  }
+
+  .team-settings-sidebar {
+    width: 100%;
+    min-height: auto;
+    border-right: none;
   }
 }

@@ -1,10 +1,13 @@
 import React, { ReactElement, useEffect, useState } from "react";
 import { useTranslation } from "../../../app/i18n/client";
+import { useRouter } from "next/navigation";
 // Components
 import TeamsList from "./teams-list";
 import NewTeamDialog from "./new-team-dialog";
 import UserTeamInvitationsList from "./user-team-invitations-list";
-// Skeletons
+import NavigationHeader from "@/components/common/navigation-header";
+// Hooks
+import { useIsMobile, useIsLandscape } from "../../../hooks/useIsMobile";
 // Actions
 import {
   useCreateTeam,
@@ -32,6 +35,9 @@ export default function TeamsTab({
   teamId: string | null;
 }) {
   const { t } = useTranslation(lng, "teams-page");
+  const router = useRouter();
+  const isMobile = useIsMobile();
+  const isLandscape = useIsLandscape();
 
   const [isLoading, setIsLoading] = useState(true);
   const [teams, setTeams] = useState<TeamWithMembership[]>([]);
@@ -115,16 +121,13 @@ export default function TeamsTab({
   }, [getUserTeamsWithMembershipsFn, getUserPendingInvitationsFn]);
 
   return (
-    <div className="tab-container-wide">
+    <div>
+      <NavigationHeader
+        title={t("teams")}
+        onBack={() => router.push(`/${lng}/plan/settings`)}
+        showBackButton={isMobile && !isLandscape}
+      />
       <div className="teams-tab-header">
-        <span
-          className="title"
-          role="heading"
-          aria-level={1}
-          data-testid="teams-page-heading"
-        >
-          {t("teams")}
-        </span>
         <NewTeamDialog lng={lng} handleCreateTeam={handleCreateTeam} />
       </div>
       {!isLoading && (

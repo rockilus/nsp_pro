@@ -1,5 +1,6 @@
 import React, { ReactElement, useEffect, useState, useRef } from "react";
 import { useTranslation } from "../../../app/i18n/client";
+import { useRouter } from "next/navigation";
 // MUI
 import Box from "@mui/material/Box";
 import EditIcon from "@mui/icons-material/Edit";
@@ -9,16 +10,14 @@ import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 // Components
-import ChangePasswordDialog from "./change-password-dialog";
 import UserProfileRow from "./user-profile-row";
+import NavigationHeader from "@/components/common/navigation-header";
 // Skeletons
 import TablesSkeleton from "../../skeletons/tables-skeleton";
+// Hooks
+import { useIsMobile, useIsLandscape } from "../../../hooks/useIsMobile";
 // Actions
-import {
-  useGetUser,
-  useUpdateUser,
-  useUpdatePassword,
-} from "../../../hooks/useUser";
+import { useGetUser, useUpdateUser } from "../../../hooks/useUser";
 // Styles
 import "./user-profile-tab.css";
 import "../../../styles/text-styles.css";
@@ -30,9 +29,11 @@ import { languages } from "../../../constants/constants";
 
 export default function UserProfileTab({ lng }: { lng: string }) {
   const { t } = useTranslation(lng, "profile-page");
+  const router = useRouter();
+  const isMobile = useIsMobile();
+  const isLandscape = useIsLandscape();
   const getUser = useGetUser();
   const updateUser = useUpdateUser();
-  const updatePassword = useUpdatePassword();
 
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<UserT | null>(null);
@@ -57,17 +58,6 @@ export default function UserProfileTab({ lng }: { lng: string }) {
     setUser(newUser);
   };
 
-  const handleUpdatePassword = async (passwordData: {
-    currentPassword: string;
-    newPassword: string;
-    newPasswordConfirm: string;
-  }) => {
-    if (!user) {
-      throw new Error("User not found");
-    }
-    await updatePassword(passwordData, user.id);
-  };
-
   const handleEditConfirm = () => {
     if (userState && user) {
       const userKeys = Object.keys(user);
@@ -82,7 +72,7 @@ export default function UserProfileTab({ lng }: { lng: string }) {
         }
       }
       if (userState.language !== lng) {
-        window.location.href = `/${userState.language}/plan/settings/profile`;
+        window.location.href = `/${userState.language}/plan/settings/personal-info`;
       }
     }
     setFieldEditing(null);
@@ -134,14 +124,16 @@ export default function UserProfileTab({ lng }: { lng: string }) {
   }, [user, fieldEditing]);
 
   return (
-    <div className="tab-container-wide">
+    <div>
       {isLoading ? (
         <TablesSkeleton numTables={1} numInternalRows={5} />
       ) : (
         <div className="user-profile-container">
-          <div>
-            <span className="title">{t("user_profile")}</span>
-          </div>
+          <NavigationHeader
+            title={t("personal_info")}
+            onBack={() => router.push(`/${lng}/plan/settings`)}
+            showBackButton={isMobile && !isLandscape}
+          />
           {user && userState ? (
             <div className="user-profile">
               <UserProfileRow
@@ -239,20 +231,6 @@ export default function UserProfileTab({ lng }: { lng: string }) {
                 }
                 editing={fieldEditing === "email"}
                 editButton={editButton(() => setFieldEditing("email"))}
-                handleEditConfirm={handleEditConfirm}
-                handleEditCancel={handleEditCancel}
-              />
-              <UserProfileRow
-                label={t("password")}
-                value={<span>●●●●●●●●●</span>}
-                valueEditing={<></>}
-                editing={false}
-                editButton={
-                  <ChangePasswordDialog
-                    lng={lng}
-                    handleUpdatePassword={handleUpdatePassword}
-                  />
-                }
                 handleEditConfirm={handleEditConfirm}
                 handleEditCancel={handleEditCancel}
               />

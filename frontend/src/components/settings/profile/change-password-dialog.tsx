@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI

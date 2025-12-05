@@ -1,16 +1,24 @@
-import SettingsLayout from "@/components/settings/settings-layout";
+"use client";
 
-export default async function Layout({
+import SettingsLayout from "@/components/settings/settings-layout";
+import MobileNavAppBar from "@/components/app-bar/mobile-nav-app-bar";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import React from "react";
+
+export default function Layout({
   children,
   params,
 }: {
   children: React.ReactNode;
-  // Next's generated types may make `params` a Promise in some versions.
-  // Accept a Promise that resolves to the params object.
   params: Promise<{ lng: string }>;
 }) {
-  // Await in case `params` is a Promise (safe to await even if it's already resolved).
-  const resolvedParams = await params;
+  const resolvedParams = React.use(params as Promise<{ lng: string }>);
+  const isMobile = useIsMobile();
 
-  return <SettingsLayout params={resolvedParams}>{children}</SettingsLayout>;
+  return (
+    <>
+      {isMobile && <MobileNavAppBar lng={resolvedParams.lng} />}
+      <SettingsLayout params={resolvedParams}>{children}</SettingsLayout>
+    </>
+  );
 }

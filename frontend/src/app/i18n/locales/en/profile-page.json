@@ -1,4 +1,5 @@
 {
+    "back": "Back",
     "cancel": "Cancel",
     "change_password": "Change password",
     "current_password": "Current password",
@@ -14,6 +15,8 @@
     "password": "Password",
     "password_empty_error": "Please enter a password",
     "password_match_error": "Passwords do not match",
+    "personal_info": "Personal Info",
+    "security_and_sign_in": "Security and Sign In",
     "send_verification_email": "Send verification email",
     "update_password": "Update password",
     "user_profile": "User profile",
