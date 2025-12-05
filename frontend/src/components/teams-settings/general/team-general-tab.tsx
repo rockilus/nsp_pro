@@ -1,5 +1,6 @@
 import React, { ReactElement, useEffect, useState, useCallback } from "react";
 import { useTranslation } from "../../../app/i18n/client";
+import { useRouter } from "next/navigation";
 // MUI
 import Box from "@mui/material/Box";
 import EditIcon from "@mui/icons-material/Edit";
@@ -8,10 +9,13 @@ import TextField from "@mui/material/TextField";
 import Checkbox from "@mui/material/Checkbox";
 // Components
 import UserProfileRow from "@/components/settings/profile/user-profile-row";
+import NavigationHeader from "@/components/common/navigation-header";
 // Context
 import { useTeam } from "@/context/TeamContext";
 // Skeletons
 import TablesSkeleton from "../../skeletons/tables-skeleton";
+// Hooks
+import { useIsMobile, useIsLandscape } from "../../../hooks/useIsMobile";
 // Actions
 import { useGetTeamById, useUpdateTeam } from "@/hooks/useTeam";
 // Styles
@@ -29,6 +33,9 @@ export default function TeamGeneralTab({
   selectedTeamId: string | null;
 }) {
   const { t } = useTranslation(lng, "teams-page");
+  const router = useRouter();
+  const isMobile = useIsMobile();
+  const isLandscape = useIsLandscape();
 
   const { updateTeamInContext } = useTeam();
 
@@ -125,9 +132,11 @@ export default function TeamGeneralTab({
         <TablesSkeleton numTables={1} numInternalRows={5} />
       ) : (
         <div className="team-general-container">
-          <div>
-            <span className="title">{t("general")}</span>
-          </div>
+          <NavigationHeader
+            title={t("general")}
+            onBack={() => router.push(`/${lng}/plan/settings/teams`)}
+            showBackButton={isMobile && !isLandscape}
+          />
           {team && teamState ? (
             <div className="team-general-content">
               <UserProfileRow

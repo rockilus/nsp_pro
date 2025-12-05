@@ -59,23 +59,6 @@ export default function SettingsLayout({
 
   return (
     <div className="settings-layout">
-      {/* Mobile Back Button */}
-      {isMobile && showContent && (
-        <div className="mobile-back-button">
-          <IconButton onClick={handleBack} aria-label={t("back")}>
-            <ArrowBackIcon />
-          </IconButton>
-          <span className="mobile-back-title">{tAppBar("settings")}</span>
-        </div>
-      )}
-
-      {/* Settings Title - Mobile Portrait Only */}
-      {isMobile && !isLandscape && showNav && (
-        <div style={{ padding: "24px 16px 0 16px" }}>
-          <span className="title">{tAppBar("settings")}</span>
-        </div>
-      )}
-
       {/* Sidebar Menu */}
       {showNav && (
         <List

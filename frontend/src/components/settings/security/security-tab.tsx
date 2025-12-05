@@ -2,11 +2,15 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "../../../app/i18n/client";
+import { useRouter } from "next/navigation";
 // Components
 import ChangePasswordDialog from "../profile/change-password-dialog";
 import UserProfileRow from "../profile/user-profile-row";
+import NavigationHeader from "@/components/common/navigation-header";
 // Skeletons
 import TablesSkeleton from "../../skeletons/tables-skeleton";
+// Hooks
+import { useIsMobile, useIsLandscape } from "../../../hooks/useIsMobile";
 // Actions
 import { useGetUser, useUpdatePassword } from "../../../hooks/useUser";
 // Styles
@@ -17,6 +21,9 @@ import { UserT } from "../../../types/user";
 
 export default function SecurityTab({ lng }: { lng: string }) {
   const { t } = useTranslation(lng, "profile-page");
+  const router = useRouter();
+  const isMobile = useIsMobile();
+  const isLandscape = useIsLandscape();
   const getUser = useGetUser();
   const updatePassword = useUpdatePassword();
 
@@ -72,9 +79,11 @@ export default function SecurityTab({ lng }: { lng: string }) {
         <TablesSkeleton numTables={1} numInternalRows={2} />
       ) : (
         <div className="user-profile-container">
-          <div>
-            <span className="title">{t("security_and_sign_in")}</span>
-          </div>
+          <NavigationHeader
+            title={t("security_and_sign_in")}
+            onBack={() => router.push(`/${lng}/plan/settings`)}
+            showBackButton={isMobile && !isLandscape}
+          />
           {user ? (
             <div className="user-profile">
               <UserProfileRow

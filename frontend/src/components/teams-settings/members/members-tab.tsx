@@ -1,10 +1,13 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "../../../app/i18n/client";
+import { useRouter } from "next/navigation";
 // Components
 import MembersList from "./members-list";
 import AddMemberDialog from "./add-member-dialog";
 import InvitationsList from "./invitations-list";
-// Skeletons
+import NavigationHeader from "@/components/common/navigation-header";
+// Hooks
+import { useIsMobile, useIsLandscape } from "../../../hooks/useIsMobile";
 // Actions
 import {
   useGetTeamUsersWithMemberships,
@@ -34,6 +37,9 @@ export default function MembersTab({
   teamId: string;
 }) {
   const { t } = useTranslation(lng, "teams-page");
+  const router = useRouter();
+  const isMobile = useIsMobile();
+  const isLandscape = useIsLandscape();
 
   const [isLoading, setIsLoading] = useState(true);
   const [users, setUsers] = useState<UserWithMembership[]>([]);
@@ -154,8 +160,12 @@ export default function MembersTab({
 
   return (
     <div className="tab-container-wide">
+      <NavigationHeader
+        title={t("members")}
+        onBack={() => router.push(`/${lng}/plan/settings/teams`)}
+        showBackButton={isMobile && !isLandscape}
+      />
       <div className="members-tab-header">
-        <span className="title">{t("members")}</span>
         <AddMemberDialog
           lng={lng}
           teamId={teamId}

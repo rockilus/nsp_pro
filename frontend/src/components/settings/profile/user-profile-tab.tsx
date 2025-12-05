@@ -1,5 +1,6 @@
 import React, { ReactElement, useEffect, useState, useRef } from "react";
 import { useTranslation } from "../../../app/i18n/client";
+import { useRouter } from "next/navigation";
 // MUI
 import Box from "@mui/material/Box";
 import EditIcon from "@mui/icons-material/Edit";
@@ -10,8 +11,11 @@ import Select, { SelectChangeEvent } from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 // Components
 import UserProfileRow from "./user-profile-row";
+import NavigationHeader from "@/components/common/navigation-header";
 // Skeletons
 import TablesSkeleton from "../../skeletons/tables-skeleton";
+// Hooks
+import { useIsMobile, useIsLandscape } from "../../../hooks/useIsMobile";
 // Actions
 import { useGetUser, useUpdateUser } from "../../../hooks/useUser";
 // Styles
@@ -25,6 +29,9 @@ import { languages } from "../../../constants/constants";
 
 export default function UserProfileTab({ lng }: { lng: string }) {
   const { t } = useTranslation(lng, "profile-page");
+  const router = useRouter();
+  const isMobile = useIsMobile();
+  const isLandscape = useIsLandscape();
   const getUser = useGetUser();
   const updateUser = useUpdateUser();
 
@@ -122,9 +129,11 @@ export default function UserProfileTab({ lng }: { lng: string }) {
         <TablesSkeleton numTables={1} numInternalRows={5} />
       ) : (
         <div className="user-profile-container">
-          <div>
-            <span className="title">{t("personal_info")}</span>
-          </div>
+          <NavigationHeader
+            title={t("personal_info")}
+            onBack={() => router.push(`/${lng}/plan/settings`)}
+            showBackButton={isMobile && !isLandscape}
+          />
           {user && userState ? (
             <div className="user-profile">
               <UserProfileRow

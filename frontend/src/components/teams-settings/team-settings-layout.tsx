@@ -9,9 +9,8 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import { ArrowBack } from "@mui/icons-material";
+// Components
+import NavigationHeader from "@/components/common/navigation-header";
 // Context
 import { useTeam } from "@/context/TeamContext";
 // Hooks
@@ -67,40 +66,15 @@ export default function TeamSettingsLayout({
 
   return (
     <div className="team-settings-layout">
-      {/* Mobile Back Button */}
-      {isMobile && showContent && (
-        <div className="mobile-back-button">
-          <IconButton onClick={handleBackToTeams} aria-label={t("back")}>
-            <ArrowBack />
-          </IconButton>
-          <span className="mobile-back-title">{selectedTeam.team.name}</span>
-        </div>
-      )}
-
       {/* Sidebar Navigation */}
       {showNav && (
         <div className="team-settings-sidebar">
-          {/* Team Header */}
-          <div className="team-settings-header">
-            <h1 className="team-settings-title">{selectedTeam.team.name}</h1>
-          </div>
-
-          {/* Back Button */}
-          <div className="team-settings-back-section">
-            <Button
-              startIcon={<ArrowBack />}
-              onClick={handleBackToTeams}
-              variant="outlined"
-              size="small"
-              fullWidth
-              sx={{
-                justifyContent: "flex-start",
-                textTransform: "none",
-              }}
-            >
-              {t("back_to_teams") || "Back to Teams"}
-            </Button>
-          </div>
+          {/* Team Header with Back Navigation */}
+          <NavigationHeader
+            title={selectedTeam.team.name}
+            onBack={handleBackToTeams}
+            showBackButton={true}
+          />
 
           {/* Navigation List */}
           <List dense={true}>
