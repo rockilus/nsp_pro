@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTranslation } from "@/app/i18n/client";
 import { getSettingsLinks } from "./settings-links";
+import React from "react";
 // MUI
 import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
@@ -29,11 +30,19 @@ export default function SettingsLayout({
   const { t: tAppBar } = useTranslation(lng, "app-bar");
 
   const pathname = usePathname();
+  const router = useRouter();
   const isMobile = useIsMobile();
   const isLandscape = useIsLandscape();
-  const { showNav, showContent } = useResponsiveSettings(lng);
+  const { showNav, showContent, shouldRedirect } = useResponsiveSettings(lng);
 
   const links = getSettingsLinks(lng, t, tAppBar);
+
+  // Redirect from base settings page to first child route when needed
+  React.useEffect(() => {
+    if (shouldRedirect) {
+      router.push(`/${lng}/plan/settings/personal-info`);
+    }
+  }, [shouldRedirect, lng, router]);
 
   return (
     <div className="settings-layout">

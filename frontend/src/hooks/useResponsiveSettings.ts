@@ -31,8 +31,8 @@ export function useResponsiveSettings(lng: string): ResponsiveSettingsReturn {
   const isLandscape = useIsLandscape();
 
   // Determine if we're on a parent route (settings root or teams root)
-  const settingsParentRoute = `/${lng}/plan/settings/`;
-  const teamsParentRoute = `/${lng}/plan/teams/`;
+  const settingsParentRoute = `/${lng}/plan/settings`;
+  const teamsParentRoute = `/${lng}/plan/teams`;
 
   const isParentRoute =
     pathname === settingsParentRoute ||
@@ -43,29 +43,28 @@ export function useResponsiveSettings(lng: string): ResponsiveSettingsReturn {
   // Redirect logic:
   // - Mobile portrait: no redirect (stay on parent to show nav list)
   // - Mobile landscape OR desktop: redirect to first child
-  const shouldRedirect = !isMobile || (isMobile && isLandscape);
-
-  console.log("shouldRedirect", shouldRedirect);
+  const desktopOrLandscape = !isMobile || (isMobile && isLandscape);
 
   // Desktop: always show both
-  if (!isMobile) {
+  if (desktopOrLandscape) {
     return {
       isMobile: false,
       showNav: true,
       showContent: true,
       isParentRoute,
-      shouldRedirect,
+      shouldRedirect: isParentRoute,
     };
   }
 
   // Mobile logic:
-  // - Parent route: show nav list only
-  // - Child route: show content only
+  // - Portrait on parent route: show nav list only
+  // - Portrait on child route: show content only
+  // - Landscape: always show content (redirect will handle parent routes)
   return {
     isMobile: true,
-    showNav: isParentRoute,
-    showContent: !isParentRoute,
+    showNav: isLandscape ? false : isParentRoute,
+    showContent: isLandscape ? true : !isParentRoute,
     isParentRoute,
-    shouldRedirect,
+    shouldRedirect: false,
   };
 }
