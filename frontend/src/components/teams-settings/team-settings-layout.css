@@ -4,6 +4,7 @@
   height: 100%;
   min-height: 100vh;
   background-color: #ffffff;
+  flex-direction: column;
 }
 
 .team-settings-sidebar {
@@ -46,6 +47,59 @@
   padding: 20px;
   background-color: #ffffff;
   overflow-y: auto;
+}
+
+/* Mobile back button */
+.mobile-back-button {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.mobile-back-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin-left: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+/* Desktop layout */
+@media (min-width: 769px) {
+  .team-settings-layout {
+    flex-direction: row;
+  }
+
+  .mobile-back-button {
+    display: none;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .team-settings-layout {
+    flex-direction: column;
+  }
+
+  .team-settings-sidebar {
+    width: 100%;
+    min-height: auto;
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .team-settings-content {
+    width: 100%;
+    padding: 16px;
+  }
 }
 
 /* Responsive design */

@@ -10,9 +10,12 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
 import { ArrowBack } from "@mui/icons-material";
 // Context
 import { useTeam } from "@/context/TeamContext";
+// Hooks
+import { useResponsiveSettings } from "@/hooks/useResponsiveSettings";
 // Styles
 import "./team-settings-layout.css";
 
@@ -30,6 +33,7 @@ export default function TeamSettingsLayout({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { isMobile, showNav, showContent } = useResponsiveSettings(lng);
 
   // Security: Only render if team is selected
   if (!selectedTeam) {
@@ -63,48 +67,60 @@ export default function TeamSettingsLayout({
 
   return (
     <div className="team-settings-layout">
+      {/* Mobile Back Button */}
+      {isMobile && showContent && (
+        <div className="mobile-back-button">
+          <IconButton onClick={handleBackToTeams} aria-label={t("back")}>
+            <ArrowBack />
+          </IconButton>
+          <span className="mobile-back-title">{selectedTeam.team.name}</span>
+        </div>
+      )}
+
       {/* Sidebar Navigation */}
-      <div className="team-settings-sidebar">
-        {/* Team Header */}
-        <div className="team-settings-header">
-          <h1 className="team-settings-title">{selectedTeam.team.name}</h1>
-        </div>
+      {showNav && (
+        <div className="team-settings-sidebar">
+          {/* Team Header */}
+          <div className="team-settings-header">
+            <h1 className="team-settings-title">{selectedTeam.team.name}</h1>
+          </div>
 
-        {/* Back Button */}
-        <div className="team-settings-back-section">
-          <Button
-            startIcon={<ArrowBack />}
-            onClick={handleBackToTeams}
-            variant="outlined"
-            size="small"
-            fullWidth
-            sx={{
-              justifyContent: "flex-start",
-              textTransform: "none",
-            }}
-          >
-            {t("back_to_teams") || "Back to Teams"}
-          </Button>
-        </div>
+          {/* Back Button */}
+          <div className="team-settings-back-section">
+            <Button
+              startIcon={<ArrowBack />}
+              onClick={handleBackToTeams}
+              variant="outlined"
+              size="small"
+              fullWidth
+              sx={{
+                justifyContent: "flex-start",
+                textTransform: "none",
+              }}
+            >
+              {t("back_to_teams") || "Back to Teams"}
+            </Button>
+          </div>
 
-        {/* Navigation List */}
-        <List dense={true}>
-          {teamLinks.map((link) => (
-            <ListItem key={link.name} disablePadding>
-              <ListItemButton
-                selected={pathname.includes(link.name)}
-                LinkComponent={Link}
-                href={link.href}
-              >
-                <ListItemText primary={link.label} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-      </div>
+          {/* Navigation List */}
+          <List dense={true}>
+            {teamLinks.map((link) => (
+              <ListItem key={link.name} disablePadding>
+                <ListItemButton
+                  selected={pathname.includes(link.name)}
+                  LinkComponent={Link}
+                  href={link.href}
+                >
+                  <ListItemText primary={link.label} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </div>
+      )}
 
       {/* Content Area */}
-      <div className="team-settings-content">{children}</div>
+      {showContent && <div className="team-settings-content">{children}</div>}
     </div>
   );
 }

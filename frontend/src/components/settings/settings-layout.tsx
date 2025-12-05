@@ -1,13 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTranslation } from "@/app/i18n/client";
 // MUI
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
+import IconButton from "@mui/material/IconButton";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+// Hooks
+import { useResponsiveSettings } from "@/hooks/useResponsiveSettings";
 // Styles
 import "./settings-layout.css";
 
@@ -24,6 +28,13 @@ export default function SettingsLayout({
   const { t: tAppBar } = useTranslation(lng, "app-bar");
 
   const pathname = usePathname();
+  const router = useRouter();
+  const { isMobile, showNav, showContent } = useResponsiveSettings(lng);
+
+  // Back button handler for mobile
+  const handleBack = () => {
+    router.push(`/${lng}/plan/settings`);
+  };
 
   const links: { name: string; label: string; href: string }[] = [
     {
@@ -45,25 +56,38 @@ export default function SettingsLayout({
 
   return (
     <div className="settings-layout">
+      {/* Mobile Back Button */}
+      {isMobile && showContent && (
+        <div className="mobile-back-button">
+          <IconButton onClick={handleBack} aria-label={t("back")}>
+            <ArrowBackIcon />
+          </IconButton>
+          <span className="mobile-back-title">{tAppBar("settings")}</span>
+        </div>
+      )}
+
       {/* Sidebar Menu */}
-      <List
-        dense={true}
-        sx={{ width: "20%", maxWidth: 360, borderRight: "1px solid #e5e7eb" }}
-      >
-        {links.map((link) => (
-          <ListItemButton
-            key={link.name}
-            selected={pathname.includes(link.name)}
-            LinkComponent={Link}
-            href={link.href}
-          >
-            <ListItemText primary={link.label} />
-          </ListItemButton>
-        ))}
-      </List>
+      {showNav && (
+        <List
+          dense={true}
+          sx={{ width: "20%", maxWidth: 360, borderRight: "1px solid #e5e7eb" }}
+          className="settings-sidebar"
+        >
+          {links.map((link) => (
+            <ListItemButton
+              key={link.name}
+              selected={pathname.includes(link.name)}
+              LinkComponent={Link}
+              href={link.href}
+            >
+              <ListItemText primary={link.label} />
+            </ListItemButton>
+          ))}
+        </List>
+      )}
 
       {/* Content Area */}
-      <div className="settings-content">{children}</div>
+      {showContent && <div className="settings-content">{children}</div>}
     </div>
   );
 }
