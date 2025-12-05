@@ -20,7 +20,11 @@ export default function NavigationHeader({
   return (
     <div className="navigation-header">
       {showBackButton && onBack && (
-        <IconButton onClick={onBack} aria-label="back">
+        <IconButton
+          onClick={onBack}
+          aria-label="back"
+          sx={{ padding: 0, marginRight: 1 }}
+        >
           <ArrowBackIcon />
         </IconButton>
       )}
