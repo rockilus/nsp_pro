@@ -569,6 +569,8 @@ export default function LandscapeWeeklyCalendar({
                       left: 0,
                       right: 0,
                       height: "1440px", // 24 hours * 60px per hour
+                      zIndex: 2,
+                      pointerEvents: "auto",
                     }}
                   >
                     {(

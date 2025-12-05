@@ -33,7 +33,6 @@ import { computePeriodEndDate } from "../../../app/lib/utils/scheduleViewSetting
 import { TeamWithMembership } from "@/types/team";
 import { ShiftRestType } from "@/types/shift";
 // Local components
-import AssignmentListItem from "./assignment-list-item";
 import AssignmentDialog from "../assignment-dialog";
 import PortraitScheduleList from "./portrait-schedule-list";
 import LandscapeWeeklyCalendar from "./landscape-weekly-calendar";
