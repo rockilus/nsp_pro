@@ -52,7 +52,7 @@ export default function AccountMenu({ lng }: { lng: string }) {
     {
       name: "settings",
       label: t("settings"),
-      href: `/${lng}/plan/settings/personal-info`,
+      href: `/${lng}/plan/settings/`,
     },
   ];
 

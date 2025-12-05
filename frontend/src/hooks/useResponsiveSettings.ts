@@ -1,7 +1,7 @@
 "use client";
 
-import { useMediaQuery } from "@mui/material";
 import { usePathname } from "next/navigation";
+import { useIsMobile } from "./useIsMobile";
 
 interface ResponsiveSettingsReturn {
   isMobile: boolean;
@@ -13,7 +13,7 @@ interface ResponsiveSettingsReturn {
 /**
  * Custom hook for responsive settings navigation
  *
- * On mobile (≤768px):
+ * On mobile:
  * - Parent routes (/plan/settings, /plan/teams): show only nav list
  * - Child routes (e.g., /plan/settings/personal-info): show only content with back button
  *
@@ -22,11 +22,11 @@ interface ResponsiveSettingsReturn {
  */
 export function useResponsiveSettings(lng: string): ResponsiveSettingsReturn {
   const pathname = usePathname();
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useIsMobile();
 
   // Determine if we're on a parent route (settings root or teams root)
-  const settingsParentRoute = `/${lng}/plan/settings`;
-  const teamsParentRoute = `/${lng}/plan/teams`;
+  const settingsParentRoute = `/${lng}/plan/settings/`;
+  const teamsParentRoute = `/${lng}/plan/teams/`;
 
   const isParentRoute =
     pathname === settingsParentRoute ||
