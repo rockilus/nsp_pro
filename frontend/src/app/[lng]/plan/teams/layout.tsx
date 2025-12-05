@@ -4,9 +4,12 @@ import React, { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 // Components
 import TeamSettingsLayout from "@/components/teams-settings/team-settings-layout";
+import MobileNavAppBar from "@/components/app-bar/mobile-nav-app-bar";
 import { RoleBased } from "@/components/access/role-based";
 // Context
 import { useTeam } from "@/context/TeamContext";
+// Hooks
+import { useIsMobile } from "@/hooks/useIsMobile";
 // Types
 import { PageRolePermissions } from "@/types/user";
 
@@ -21,6 +24,7 @@ export default function Layout({
   const searchParams = useSearchParams();
   const { selectedTeam, teams, loading, setSelectedTeamId } = useTeam();
   const { lng } = React.use(params as Promise<{ lng: string }>);
+  const isMobile = useIsMobile();
 
   // Extract teamId from query parameters
   const teamId = searchParams.get("teamId");
@@ -88,6 +92,7 @@ export default function Layout({
       role={selectedTeam.membership.role}
       allowedRoles={PageRolePermissions.teams}
     >
+      {isMobile && <MobileNavAppBar lng={lng} />}
       <TeamSettingsLayout params={{ lng }}>{children}</TeamSettingsLayout>
     </RoleBased>
   );
