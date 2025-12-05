@@ -134,7 +134,9 @@ export default function TeamGeneralTab({
         <div className="team-general-container">
           <NavigationHeader
             title={t("general")}
-            onBack={() => router.push(`/${lng}/plan/settings/teams`)}
+            onBack={() =>
+              router.push(`/${lng}/plan/teams?teamId=${selectedTeamId}`)
+            }
             showBackButton={isMobile && !isLandscape}
           />
           {team && teamState ? (

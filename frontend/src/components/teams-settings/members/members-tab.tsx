@@ -162,7 +162,7 @@ export default function MembersTab({
     <div>
       <NavigationHeader
         title={t("members")}
-        onBack={() => router.push(`/${lng}/plan/settings/teams`)}
+        onBack={() => router.push(`/${lng}/plan/teams?teamId=${teamId}`)}
         showBackButton={isMobile && !isLandscape}
       />
       <div className="members-tab-header">
