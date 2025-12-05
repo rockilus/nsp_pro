@@ -4,7 +4,7 @@ import React from "react";
 import IconButton from "@mui/material/IconButton";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 // Styles
-import "../../styles/navigation-styles.css";
+import "./navigation-styles.css";
 
 interface NavigationHeaderProps {
   title: string;
