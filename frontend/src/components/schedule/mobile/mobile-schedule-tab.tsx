@@ -34,7 +34,7 @@ import { TeamWithMembership } from "@/types/team";
 import { ShiftRestType } from "@/types/shift";
 // Local components
 import AssignmentListItem from "./assignment-list-item";
-import MobileAssignmentSheet from "./mobile-assignment-sheet";
+import AssignmentDialog from "../assignment-dialog";
 import PortraitScheduleList from "./portrait-schedule-list";
 import LandscapeWeeklyCalendar from "./landscape-weekly-calendar";
 import MobileNavAppBar from "../../app-bar/mobile-nav-app-bar";
@@ -424,10 +424,15 @@ export default function MobileScheduleTab({
           <AddIcon />
         </Fab>
 
-        <MobileAssignmentSheet
+        <AssignmentDialog
           open={sheetOpen}
           onClose={() => setSheetOpen(false)}
           assignment={activeAssignment}
+          shift={
+            activeAssignment
+              ? shifts.find((s) => s.id === activeAssignment.shiftId)
+              : null
+          }
         />
       </Box>
 
