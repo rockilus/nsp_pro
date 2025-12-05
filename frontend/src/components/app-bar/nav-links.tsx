@@ -6,6 +6,10 @@ import { useTranslation } from "@/app/i18n/client";
 // MUI
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemText from "@mui/material/ListItemText";
 // Styles
 import "./nav-links.css";
 // Types
@@ -131,5 +135,92 @@ export default function NavLinks({
         ))}
       </Tabs>
     </div>
+  );
+}
+
+export function NavLinksMobile({
+  lng,
+  selectedTeam,
+  onClick,
+}: {
+  lng: string;
+  selectedTeam: TeamWithMembership | null;
+  onClick?: () => void;
+}) {
+  const { t } = useTranslation(lng, "app-bar");
+  const pathname = usePathname();
+
+  const allLinks: {
+    name: string;
+    label: string;
+    href: string;
+    route: string;
+  }[] = [
+    {
+      name: "workers",
+      label: t("workers"),
+      href: `/${lng}/plan/workers`,
+      route: "/workers",
+    },
+    {
+      name: "shifts",
+      label: t("shifts"),
+      href: `/${lng}/plan/shifts`,
+      route: "/shifts",
+    },
+    {
+      name: "shift-demands",
+      label: t("shift_demands"),
+      href: `/${lng}/plan/shift-demands`,
+      route: "/shift-demands",
+    },
+    {
+      name: "constraints",
+      label: t("constraints"),
+      href: `/${lng}/plan/constraints`,
+      route: "/constraints",
+    },
+    {
+      name: "requests",
+      label: t("requests"),
+      href: `/${lng}/plan/requests`,
+      route: "/requests",
+    },
+    {
+      name: "campaign",
+      label: t("campaign"),
+      href: `/${lng}/plan/campaign`,
+      route: "/campaign",
+    },
+    {
+      name: "schedule",
+      label: t("schedule"),
+      href: `/${lng}/plan/schedule`,
+      route: "/schedule",
+    },
+    {
+      name: "stats",
+      label: t("stats"),
+      href: `/${lng}/plan/stats`,
+      route: "/stats",
+    },
+  ];
+
+  const links = allLinks.filter((link) => {
+    if (!link.route) return true;
+    if (!selectedTeam) return false;
+    return canAccessPage(link.route, selectedTeam);
+  });
+
+  return (
+    <List>
+      {links.map((link) => (
+        <ListItem key={link.name} disablePadding>
+          <ListItemButton component={Link} href={link.href} onClick={onClick}>
+            <ListItemText primary={link.label} />
+          </ListItemButton>
+        </ListItem>
+      ))}
+    </List>
   );
 }

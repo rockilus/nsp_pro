@@ -4,14 +4,13 @@ import * as React from "react";
 // MUI
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
-//Components
+// Components
 import AccountMenu from "./account-menu";
 import NavLinks from "./nav-links";
 // Context
 import { useTeam } from "@/context/TeamContext";
 // Styles
 import "./nav-app-bar.css";
-// Types
 
 const logoWidthOriginal = 753;
 const logoHeightOriginal = 98;
@@ -21,6 +20,7 @@ const logoHeight = logoHeightOriginal * logoAdjustFactor;
 
 const NavAppBar = ({ lng }: { lng: string }) => {
   const { selectedTeam } = useTeam();
+
   return (
     <AppBar
       position="static"
@@ -30,12 +30,7 @@ const NavAppBar = ({ lng }: { lng: string }) => {
         borderBottom: "1px solid lightgray",
       }}
     >
-      <Toolbar
-        sx={{
-          height: "64px",
-          padding: "0 24px",
-        }}
-      >
+      <Toolbar sx={{ height: "64px", padding: "0 12px" }}>
         <div className="app-bar-content-container">
           <img
             src="/rockilus_logo_blue.jpg"

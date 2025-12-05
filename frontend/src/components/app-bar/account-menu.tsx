@@ -6,10 +6,13 @@ import { useAuth } from "@/contexts/auth-context";
 import Link from "next/link";
 // MUI
 import AccountCircle from "@mui/icons-material/AccountCircle";
+import Avatar from "@mui/material/Avatar";
+import { useGetUser } from "@/hooks/useUser";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import CircularProgress from "@mui/material/CircularProgress";
+import { brown } from "@mui/material/colors";
 
 export default function AccountMenu({ lng }: { lng: string }) {
   const { t } = useTranslation(lng, "app-bar");
@@ -17,6 +20,33 @@ export default function AccountMenu({ lng }: { lng: string }) {
   const [isLoggingOut, setIsLoggingOut] = React.useState(false);
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [initials, setInitials] = React.useState<string | null>(null);
+
+  const getUser = useGetUser();
+
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const u = await getUser();
+        if (!mounted) return;
+        const parts = `${u.firstName || ""} ${u.lastName || ""}`.trim();
+        if (parts) {
+          const names = parts.split(" ");
+          const first = names[0]?.[0] ?? "";
+          const last = names.length > 1 ? names[names.length - 1][0] : "";
+          setInitials((first + last).toUpperCase());
+        } else if (u.email) {
+          setInitials(u.email[0].toUpperCase());
+        }
+      } catch (err) {
+        // ignore — fall back to icon
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [getUser]);
 
   const links: { name: string; label: string; href: string }[] = [
     {
@@ -60,9 +90,22 @@ export default function AccountMenu({ lng }: { lng: string }) {
         aria-controls="menu-appbar"
         aria-haspopup="true"
         onClick={handleMenu}
-        sx={{ color: "grey.700" }}
+        // sx={{ color: "grey.700" }}
       >
-        <AccountCircle />
+        {initials ? (
+          <Avatar
+            sx={{
+              width: 35,
+              height: 35,
+              bgcolor: brown[300],
+              fontSize: 16,
+            }}
+          >
+            {initials}
+          </Avatar>
+        ) : (
+          <AccountCircle />
+        )}
       </IconButton>
       <Menu
         id="menu-appbar"
