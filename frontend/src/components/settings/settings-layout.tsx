@@ -81,8 +81,8 @@ export default function SettingsLayout({
         <List
           dense={true}
           sx={{
-            width: isMobile ? "100%" : "20%",
-            maxWidth: isMobile ? "none" : 360,
+            width: isMobile && !isLandscape ? "100%" : "20%",
+            maxWidth: isMobile && !isLandscape ? "none" : 360,
           }}
           className="settings-sidebar"
         >
