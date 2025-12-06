@@ -153,11 +153,9 @@ export default function DateCarousel({
               alignItems: "center",
               scrollSnapAlign: "center",
               cursor: "pointer",
-              border: isSelected
-                ? "2px solid #1a73e8"
-                : "2px solid transparent",
-              borderRadius: 1,
-              transition: "border-color 0.2s",
+              backgroundColor: isSelected ? "#e3f2fd" : "transparent",
+              borderRadius: isSelected ? "24px" : undefined,
+              transition: "background-color 0.2s",
             }}
           >
             <Typography
