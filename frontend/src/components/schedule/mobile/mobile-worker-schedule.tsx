@@ -19,6 +19,7 @@ interface MobileWorkerScheduleProps {
   scheduleViewSettings: any;
   updateScheduleViewSettings: (settings: any) => void;
   onVisibleMonthChange: (month: string) => void;
+  onScrollToTodayReady: (handler: () => void) => void;
 }
 
 export default function MobileWorkerSchedule({
@@ -36,6 +37,7 @@ export default function MobileWorkerSchedule({
   scheduleViewSettings,
   updateScheduleViewSettings,
   onVisibleMonthChange,
+  onScrollToTodayReady,
 }: MobileWorkerScheduleProps) {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const weekRefs = React.useRef<Array<HTMLDivElement | null>>([]);
@@ -118,6 +120,11 @@ export default function MobileWorkerSchedule({
     onVisibleMonthChange,
     weeks,
   ]);
+
+  // Expose the scroll-to-today handler to parent
+  React.useEffect(() => {
+    onScrollToTodayReady(handleScrollToToday);
+  }, [handleScrollToToday, onScrollToTodayReady]);
 
   // On load, scroll to the week that contains today so current date appears at top
   useEffect(() => {

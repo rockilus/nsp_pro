@@ -66,6 +66,9 @@ export default function MobileScheduleTab({
 
   const isLandscape = useIsLandscape();
 
+  // Ref to store the scrollToToday handler from child component
+  const scrollToTodayRef = React.useRef<(() => void) | null>(null);
+
   useEffect(() => {
     let mounted = true;
     const fetch = async () => {
@@ -188,9 +191,11 @@ export default function MobileScheduleTab({
     );
   }, [weeks, periodStart]);
 
-  // Handle "scroll to today" callback from worker schedule view
+  // Handle "scroll to today" button click
   const handleScrollToToday = () => {
-    // This will be handled by MobileWorkerSchedule; just a placeholder for consistency
+    if (scrollToTodayRef.current) {
+      scrollToTodayRef.current();
+    }
   };
 
   // Build mobile navigation content that fills space between hamburger and avatar
@@ -234,9 +239,17 @@ export default function MobileScheduleTab({
             scheduleViewSettings={scheduleViewSettings}
             updateScheduleViewSettings={updateScheduleViewSettings}
             onVisibleMonthChange={setVisibleMonth}
+            onScrollToTodayReady={(handler) => {
+              scrollToTodayRef.current = handler;
+            }}
           />
         ) : (
-          <MobileTeamSchedule lng={lng} />
+          <MobileTeamSchedule
+            lng={lng}
+            onScrollToTodayReady={(handler) => {
+              scrollToTodayRef.current = handler;
+            }}
+          />
         )}
 
         <Fab
