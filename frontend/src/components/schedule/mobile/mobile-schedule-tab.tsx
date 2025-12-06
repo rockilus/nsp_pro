@@ -248,6 +248,11 @@ export default function MobileScheduleTab({
             lng={lng}
             weeks={weeks}
             today={today}
+            assignments={assignments}
+            workers={workers}
+            shifts={shifts}
+            setActiveAssignment={setActiveAssignment}
+            setSheetOpen={setSheetOpen}
             onVisibleMonthChange={setVisibleMonth}
             onScrollToTodayReady={(handler) => {
               scrollToTodayRef.current = handler;
@@ -274,6 +279,11 @@ export default function MobileScheduleTab({
           shift={
             activeAssignment
               ? shifts.find((s) => s.id === activeAssignment.shiftId)
+              : null
+          }
+          worker={
+            activeAssignment
+              ? workers.find((w) => w.id === activeAssignment.workerId)
               : null
           }
         />

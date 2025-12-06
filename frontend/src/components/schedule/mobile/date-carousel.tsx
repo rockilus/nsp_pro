@@ -7,6 +7,8 @@ import Typography from "@mui/material/Typography";
 interface DateCarouselProps {
   weeks: { start: dayjs.Dayjs; end: dayjs.Dayjs }[];
   today: dayjs.Dayjs;
+  selectedDate?: dayjs.Dayjs | null;
+  onDateSelect?: (date: dayjs.Dayjs) => void;
   onVisibleMonthChange: (month: string) => void;
   onScrollToTodayReady: (handler: () => void) => void;
 }
@@ -14,6 +16,8 @@ interface DateCarouselProps {
 export default function DateCarousel({
   weeks,
   today,
+  selectedDate,
+  onDateSelect,
   onVisibleMonthChange,
   onScrollToTodayReady,
 }: DateCarouselProps) {
@@ -131,6 +135,7 @@ export default function DateCarousel({
     >
       {allDates.map((date, index) => {
         const isToday = date.isSame(today, "day");
+        const isSelected = selectedDate?.isSame(date, "day");
         const key = date.format("YYYY-MM-DD");
 
         return (
@@ -139,6 +144,7 @@ export default function DateCarousel({
             ref={(el: HTMLDivElement | null) => {
               dateRefs.current[index] = el;
             }}
+            onClick={() => onDateSelect?.(date)}
             sx={{
               minWidth: 64,
               textAlign: "center",
@@ -147,6 +153,11 @@ export default function DateCarousel({
               alignItems: "center",
               scrollSnapAlign: "center",
               cursor: "pointer",
+              border: isSelected
+                ? "2px solid #1a73e8"
+                : "2px solid transparent",
+              borderRadius: 1,
+              transition: "border-color 0.2s",
             }}
           >
             <Typography

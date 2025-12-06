@@ -18,11 +18,13 @@ export default function AssignmentDialog({
   onClose,
   assignment,
   shift,
+  worker,
 }: {
   open: boolean;
   onClose: () => void;
   assignment: any | null;
   shift?: any | null;
+  worker?: any | null;
 }) {
   if (!assignment || !shift) {
     return (
@@ -95,6 +97,11 @@ export default function AssignmentDialog({
           />
 
           <Box sx={{ flex: 1 }}>
+            {worker && (
+              <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 500 }}>
+                {worker.name}
+              </Typography>
+            )}
             <Typography variant="body1" sx={{ mb: 1 }}>
               {endsNextDay ? overnightDisplay : sameDayDisplay}
             </Typography>
