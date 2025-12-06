@@ -246,6 +246,9 @@ export default function MobileScheduleTab({
         ) : (
           <MobileTeamSchedule
             lng={lng}
+            weeks={weeks}
+            today={today}
+            onVisibleMonthChange={setVisibleMonth}
             onScrollToTodayReady={(handler) => {
               scrollToTodayRef.current = handler;
             }}
