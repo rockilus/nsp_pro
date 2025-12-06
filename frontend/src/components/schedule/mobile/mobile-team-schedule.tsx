@@ -70,19 +70,28 @@ export default function MobileTeamSchedule({
   };
 
   return (
-    <Box>
-      {/* Horizontal date carousel */}
-      <DateCarousel
-        weeks={weeks}
-        today={today}
-        selectedDate={selectedDate}
-        onDateSelect={setSelectedDate}
-        onVisibleMonthChange={onVisibleMonthChange}
-        onScrollToTodayReady={onScrollToTodayReady}
-      />
+    <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      {/* Horizontal date carousel - fixed at top */}
+      <Box sx={{ flexShrink: 0 }}>
+        <DateCarousel
+          weeks={weeks}
+          today={today}
+          selectedDate={selectedDate}
+          onDateSelect={setSelectedDate}
+          onVisibleMonthChange={onVisibleMonthChange}
+          onScrollToTodayReady={onScrollToTodayReady}
+        />
+      </Box>
 
-      {/* Assignments list */}
-      <Box sx={{ px: 2 }}>
+      {/* Assignments list - scrollable */}
+      <Box
+        sx={{
+          flex: 1,
+          overflowY: "auto",
+          px: 2,
+          pb: 8,
+        }}
+      >
         {selectedDateAssignments.length === 0 ? (
           <Box
             sx={{

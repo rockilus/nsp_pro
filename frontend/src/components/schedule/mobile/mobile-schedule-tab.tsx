@@ -222,7 +222,7 @@ export default function MobileScheduleTab({
   return (
     <>
       <MobileNavAppBar lng={lng} mobileContent={scheduleMobileNav} />
-      <Box sx={{ padding: "0 8px" }}>
+      <Box sx={{ padding: "0 8px", height: "calc(100vh - 64px)" }}>
         {selectedView === "worker" ? (
           <MobileWorkerSchedule
             weeks={weeks}
