@@ -82,35 +82,30 @@ async def change_user_password_with_cognito(
         error_code = e.response["Error"]["Code"]
         error_message = e.response["Error"]["Message"]
 
-        log_error(
-            f"Cognito password change failed: {error_code} - {error_message}"
-        )
+        log_error(f"Cognito password change failed: {error_code} - {error_message}")
 
         # Map Cognito errors to application-specific errors
         if error_code == "NotAuthorizedException":
-            raise AuthnWrongCredentialsError(
-                "Current password is incorrect"
-            ) from e
-        elif error_code == "InvalidPasswordException":
+            raise AuthnWrongCredentialsError("Current password is incorrect") from e
+        if error_code == "InvalidPasswordException":
             raise AuthnPasswordPolicyViolationError(error_message) from e
-        elif error_code == "UserNotFoundException":
+        if error_code == "UserNotFoundException":
             raise AuthnUserNotFoundError("User not found") from e
-        elif error_code == "PasswordHistoryPolicyViolationException":
+        if error_code == "PasswordHistoryPolicyViolationException":
             raise AuthnPasswordPolicyViolationError(
                 "This password has been used recently. "
                 "Please choose a different password."
             ) from e
-        elif error_code == "TooManyRequestsException":
+        if error_code == "TooManyRequestsException":
             raise AuthnPasswordChangeError(
-                "Too many password change attempts. " "Please try again later."
+                "Too many password change attempts. Please try again later."
             ) from e
-        elif error_code == "LimitExceededException":
+        if error_code == "LimitExceededException":
             raise AuthnPasswordChangeError(
                 "Request limit exceeded. Please try again later."
             ) from e
-        elif error_code == "UserNotConfirmedException":
+        if error_code == "UserNotConfirmedException":
             raise AuthnPasswordChangeError("User account not confirmed") from e
-        else:
-            raise AuthnPasswordChangeError(
-                f"Failed to change password: {error_code}"
-            ) from e
+        raise AuthnPasswordChangeError(
+            f"Failed to change password: {error_code}"
+        ) from e

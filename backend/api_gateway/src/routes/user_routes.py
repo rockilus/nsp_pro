@@ -33,9 +33,7 @@ class NewUserInput(BaseModel):
     last_name: str
 
 
-@router.post(
-    "/users/onboard", dependencies=[Depends(verify_service_authentication)]
-)
+@router.post("/users/onboard", dependencies=[Depends(verify_service_authentication)])
 async def onboard_new_user(
     user_input: NewUserInput,
     user_service: UserService = Depends(get_user_service),
@@ -49,16 +47,13 @@ async def onboard_new_user(
         )
 
         log_info(
-            f"Successfully processed onboard request for user "
-            f"{user_input.email}"
+            f"Successfully processed onboard request for user " f"{user_input.email}"
         )
         return {"status": "success", "message": "User onboarded successfully"}
 
     except Exception as e:
         log_info(f"Failed to onboard user {user_input.email}: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail="Internal server error"
-        ) from e
+        raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.get("/users/me")
@@ -68,12 +63,8 @@ async def get_current_user(
 ) -> UserDTO:
     try:
         user_id = user_context.user_id
-        if not await authz_check(
-            user_context.user_id, "read", "user", user_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to read the user"
-            )
+        if not await authz_check(user_context.user_id, "read", "user", user_id):
+            raise NotAuthorizedError("You do not have permission to read the user")
         user = db_collections.user_db.get_user_by_id(user_id)
         if user is None:
             raise HTTPException(status_code=404, detail="User not found")
@@ -104,12 +95,7 @@ async def change_user_password(
             raise PasswordsDoNotMatchError("Passwords do not match")
 
         # Change password using Cognito
-        await user_service.change_user_password(
-            user_id=user_id,
-            recipe_user_id=None,  # Not used with Cognito
-            tenant_id="",  # Not used with Cognito
-            password_data=p_data,
-        )
+        await user_service.change_user_password(password_data=p_data)
 
         response = {"message": "Password updated successfully"}
     except Exception as e:
