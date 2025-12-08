@@ -1,21 +1,39 @@
-from supertokens_python.types import RecipeUserId
+from src.integrations.aws.cognito_client import (
+    change_user_password_with_cognito,
+)
 
 
 async def authn_change_password(
     user_id: str,
-    recipe_user_id: RecipeUserId,
+    recipe_user_id: None,
     tenant_id: str,
     current_password: str,
     new_password: str,
+    access_token: str,
 ) -> None:
-    # get the signed in user's email from the getUserById function
-    print(
-        "TO COME",
-        user_id,
-        recipe_user_id,
-        tenant_id,
-        current_password,
-        new_password,
+    """
+    Change user password using AWS Cognito.
+
+    Args:
+        user_id: User ID (Cognito sub) - kept for interface compatibility
+        recipe_user_id: Legacy parameter, not used with Cognito (pass None)
+        tenant_id: Legacy parameter, not used with Cognito
+        current_password: User's current password
+        new_password: New password to set
+        access_token: User's Cognito access token
+
+    Raises:
+        AuthnWrongCredentialsError: If current password is incorrect
+        AuthnPasswordPolicyViolationError: If new password doesn't meet
+            policy requirements
+        AuthnUserNotFoundError: If user is not found
+        AuthnPasswordChangeError: For other password change failures
+    """
+    # Use Cognito change_password API with access token
+    await change_user_password_with_cognito(
+        access_token=access_token,
+        current_password=current_password,
+        new_password=new_password,
     )
     # users_info = get_user(user_id)
 

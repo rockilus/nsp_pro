@@ -25,7 +25,7 @@ class UserService(BaseService):
             [str, RecipeUserIdType, str, str], Coroutine[Any, Any, None]
         ],
         authn_change_password: Callable[
-            [str, RecipeUserIdType, str, str, str], Coroutine[Any, Any, None]
+            [str, None, str, str, str, str], Coroutine[Any, Any, None]
         ],
     ):
         super().__init__(collection)
@@ -42,7 +42,8 @@ class UserService(BaseService):
         if existing_user is not None:
             # Log for audit purposes
             log_info(
-                f"User with id {user_id} already exists, " f"returning existing user"
+                f"User with id {user_id} already exists, "
+                f"returning existing user"
             )
             return existing_user
 
@@ -97,7 +98,7 @@ class UserService(BaseService):
     async def change_user_password(
         self,
         user_id: str,
-        recipe_user_id: RecipeUserIdType,
+        recipe_user_id: None,
         tenant_id: str,
         password_data: PasswordData,
     ) -> None:
@@ -107,6 +108,7 @@ class UserService(BaseService):
             tenant_id,
             password_data.current_password,
             password_data.new_password,
+            password_data.access_token,
         )
 
     def update_user_impersonating_user_id(

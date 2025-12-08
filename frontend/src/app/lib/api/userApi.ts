@@ -50,6 +50,7 @@ export class UserApi extends BaseApi {
       currentPassword: string;
       newPassword: string;
       newPasswordConfirm: string;
+      accessToken: string;
     },
     userId: string
   ): Promise<void> {
@@ -57,9 +58,10 @@ export class UserApi extends BaseApi {
     if (
       !passwordData.currentPassword ||
       !passwordData.newPassword ||
-      !passwordData.newPasswordConfirm
+      !passwordData.newPasswordConfirm ||
+      !passwordData.accessToken
     ) {
-      throw new Error("All password fields are required");
+      throw new Error("All password fields and access token are required");
     }
 
     if (!userId) {
