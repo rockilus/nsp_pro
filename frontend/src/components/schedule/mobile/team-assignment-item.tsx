@@ -7,6 +7,7 @@ import Typography from "@mui/material/Typography";
 import Chip from "@mui/material/Chip";
 // Types and constants
 import { ShiftColorMappings } from "../../../constants/constants";
+import { ShiftType } from "@/types/shift";
 
 interface TeamAssignmentItemProps {
   assignment: any;
@@ -89,7 +90,19 @@ export default function TeamAssignmentItem({
       </Box>
 
       {/* Second Row: Shift Chip aligned with Avatar */}
-      <Box sx={{ display: "flex", alignItems: "center", pl: "40px" }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, pl: "26px" }}>
+        {/* Duty marker */}
+        <Box
+          sx={{
+            width: 6,
+            height: 28,
+            borderRadius: 1,
+            backgroundColor:
+              shift?.shiftType === ShiftType.DUTY
+                ? mapping.sample
+                : "transparent",
+          }}
+        />
         <Chip
           label={shift?.name || "—"}
           size="small"
