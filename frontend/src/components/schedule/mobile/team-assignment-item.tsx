@@ -5,6 +5,7 @@ import Box from "@mui/material/Box";
 import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
 import Chip from "@mui/material/Chip";
+import { grey } from "@mui/material/colors";
 // Types and constants
 import { ShiftColorMappings } from "../../../constants/constants";
 import { ShiftType } from "@/types/shift";
@@ -61,7 +62,7 @@ export default function TeamAssignmentItem({
           sx={{
             width: 32,
             height: 32,
-            bgcolor: "#1a73e8",
+            bgcolor: grey[400],
             fontSize: "0.75rem",
             fontWeight: 600,
           }}
