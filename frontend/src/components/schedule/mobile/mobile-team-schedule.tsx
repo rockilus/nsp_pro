@@ -7,7 +7,7 @@ import Typography from "@mui/material/Typography";
 import DateCarousel from "./date-carousel";
 import TeamAssignmentItem from "./team-assignment-item";
 // Types
-import { ShiftRestType } from "@/types/shift";
+import { ShiftRestType, ShiftType } from "@/types/shift";
 
 interface MobileTeamScheduleProps {
   lng: string;
@@ -51,11 +51,28 @@ export default function MobileTeamSchedule({
       return shift && shift.restType !== ShiftRestType.RECUPERATION;
     });
 
-    // Sort by shift start time
+    // Sort by shift type (Duty, Normal, Other) then by start time
     return filtered.sort((a, b) => {
       const sa = shifts.find((s) => s.id === a.shiftId);
       const sb = shifts.find((s) => s.id === b.shiftId);
       if (!sa || !sb) return 0;
+
+      // Define priority order: Duty (1) > Normal (0) > Other (2, 3, etc.)
+      const getPriority = (shiftType: ShiftType) => {
+        if (shiftType === ShiftType.DUTY) return 0;
+        if (shiftType === ShiftType.NORMAL) return 1;
+        return 2; // REST, LEAVE, or any other types
+      };
+
+      const priorityA = getPriority(sa.shiftType);
+      const priorityB = getPriority(sb.shiftType);
+
+      // First sort by priority
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+      }
+
+      // Then sort by start time within same priority
       if (sa.startTime && sb.startTime) {
         if (sa.startTime.isBefore(sb.startTime)) return -1;
         if (sa.startTime.isAfter(sb.startTime)) return 1;
