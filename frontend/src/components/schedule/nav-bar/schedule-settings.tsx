@@ -17,7 +17,7 @@ import {
   Checkbox,
   FormControlLabel,
 } from "@mui/material";
-import SettingsIcon from "@mui/icons-material/Settings";
+import TuneIcon from "@mui/icons-material/Tune";
 // Components
 import ScheduleSettingsView from "./schedule-settings-view";
 // Styles
@@ -170,7 +170,7 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
   return (
     <div>
       <IconButton onClick={handleOpenPopover}>
-        <SettingsIcon />
+        <TuneIcon />
       </IconButton>
       <Popover
         open={Boolean(anchorEl)}

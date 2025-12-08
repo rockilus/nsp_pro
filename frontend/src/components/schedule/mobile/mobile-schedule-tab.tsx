@@ -5,21 +5,9 @@ import isoWeek from "dayjs/plugin/isoWeek";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
 import Fab from "@mui/material/Fab";
 import CircularProgress from "@mui/material/CircularProgress";
-import IconButton from "@mui/material/IconButton";
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
 import AddIcon from "@mui/icons-material/Add";
-import SettingsIcon from "@mui/icons-material/Settings";
 // Hooks
 import { useIsLandscape } from "@/hooks/useIsMobile";
 import {
@@ -34,9 +22,11 @@ import { TeamWithMembership } from "@/types/team";
 import { ShiftRestType } from "@/types/shift";
 // Local components
 import AssignmentDialog from "../assignment-dialog";
-import PortraitScheduleList from "./portrait-schedule-list";
-import LandscapeWeeklyCalendar from "./landscape-weekly-calendar";
 import MobileNavAppBar from "../../app-bar/mobile-nav-app-bar";
+import MobileScheduleNav from "./mobile-schedule-nav";
+import MobileScheduleSettings from "./mobile-schedule-settings";
+import MobileWorkerSchedule from "./mobile-worker-schedule";
+import MobileTeamSchedule from "./mobile-team-schedule";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -66,14 +56,15 @@ export default function MobileScheduleTab({
   const [workers, setWorkers] = useState<any[]>([]);
   const [shifts, setShifts] = useState<any[]>([]);
 
-  const [selectedWorkerId, setSelectedWorkerId] = useState<string | null>(null);
-
   const [sheetOpen, setSheetOpen] = useState(false);
   const [activeAssignment, setActiveAssignment] = useState<any | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [visibleMonth, setVisibleMonth] = useState<string>("");
 
   const isLandscape = useIsLandscape();
+
+  // Ref to store the scrollToToday handler from child component
+  const scrollToTodayRef = React.useRef<(() => void) | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -87,16 +78,26 @@ export default function MobileScheduleTab({
           setAssignments(assignments);
           setWorkers(workers);
           setShifts(shifts);
-          if (!selectedWorkerId && workers.length > 0) {
+
+          // Set default worker if none selected or selected worker doesn't exist
+          if (
+            workers.length > 0 &&
+            (!scheduleViewSettings.mobileSelectedWorkerId ||
+              !workers.find(
+                (w: any) => w.id === scheduleViewSettings.mobileSelectedWorkerId
+              ))
+          ) {
             // If member, try to preselect user's worker
             const userId =
               (teamWithMembership as any).membership?.userId || null;
             const memberWorker = userId
               ? workers.find((w: any) => w.userId === userId)
               : null;
-            setSelectedWorkerId(
-              (memberWorker && memberWorker.id) || workers[0].id
-            );
+            const defaultWorkerId =
+              (memberWorker && memberWorker.id) || workers[0].id;
+            updateScheduleViewSettings({
+              mobileSelectedWorkerId: defaultWorkerId,
+            });
           }
         } else {
           const { assignments, workers, shifts } =
@@ -107,8 +108,18 @@ export default function MobileScheduleTab({
           setAssignments(assignments);
           setWorkers(workers);
           setShifts(shifts);
-          if (!selectedWorkerId && workers.length > 0) {
-            setSelectedWorkerId(workers[0].id);
+
+          // Set default worker if none selected or selected worker doesn't exist
+          if (
+            workers.length > 0 &&
+            (!scheduleViewSettings.mobileSelectedWorkerId ||
+              !workers.find(
+                (w: any) => w.id === scheduleViewSettings.mobileSelectedWorkerId
+              ))
+          ) {
+            updateScheduleViewSettings({
+              mobileSelectedWorkerId: workers[0].id,
+            });
           }
         }
       } catch (err) {
@@ -122,7 +133,7 @@ export default function MobileScheduleTab({
       mounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teamWithMembership]);
+  }, [teamWithMembership, scheduleViewSettings.mobileSelectedWorkerId]);
 
   const periodStart = scheduleViewSettings.periodStartDate;
   const periodEnd = computePeriodEndDate(
@@ -144,113 +155,6 @@ export default function MobileScheduleTab({
   }, [periodStart]);
 
   const today = dayjs.utc();
-  const containerRef = React.useRef<HTMLDivElement | null>(null);
-  const weekRefs = React.useRef<Array<HTMLDivElement | null>>([]);
-  const weeksRef = React.useRef(weeks);
-
-  // Update weeksRef when weeks change
-  React.useEffect(() => {
-    weeksRef.current = weeks;
-  }, [weeks]);
-
-  // Detect visible month during scroll
-  const handleScroll = React.useCallback(() => {
-    if (!containerRef.current) return;
-
-    const container = containerRef.current;
-    const containerRect = container.getBoundingClientRect();
-    const containerTop = containerRect.top;
-    const containerHeight = container.clientHeight;
-    const viewportCenter = containerTop + containerHeight / 3; // Use top third for better UX
-
-    // Find which week is most visible (centered in viewport)
-    for (let i = 0; i < weekRefs.current.length; i++) {
-      const weekEl = weekRefs.current[i];
-      if (!weekEl) continue;
-
-      const weekRect = weekEl.getBoundingClientRect();
-      const weekTop = weekRect.top;
-      const weekBottom = weekRect.bottom;
-
-      // Check if this week contains the viewport center
-      if (weekTop <= viewportCenter && weekBottom >= viewportCenter) {
-        const week = weeksRef.current[i];
-        if (week) {
-          const newMonth = week.start.format(
-            week.start.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY"
-          );
-          setVisibleMonth(newMonth);
-        }
-        break;
-      }
-    }
-  }, []);
-
-  // Scroll to today in the assignment list (portrait) or navigate to today's week (landscape)
-  const handleScrollToToday = () => {
-    if (isLandscape) {
-      // Landscape: update state to jump to today's week
-      const todayWeekStart = today.startOf("isoWeek");
-      updateScheduleViewSettings({
-        ...scheduleViewSettings,
-        timeFrame: "week",
-        periodStartDate: todayWeekStart,
-      });
-      // Update visible month label
-      const monthLabel = todayWeekStart.format(
-        todayWeekStart.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY"
-      );
-      setVisibleMonth(monthLabel);
-    } else {
-      // Portrait: existing scroll behavior
-      const idx = weeks.findIndex(
-        (w) =>
-          today.isSameOrAfter(w.start, "day") &&
-          today.isSameOrBefore(w.end, "day")
-      );
-      const target = weekRefs.current[idx >= 0 ? idx : 0];
-      if (target && containerRef.current) {
-        const container = containerRef.current as HTMLElement;
-        const targetEl = target as HTMLElement;
-        const top = targetEl.offsetTop - container.offsetTop;
-        container.scrollTo({ top, behavior: "smooth" });
-      }
-    }
-  };
-
-  // On load, scroll to the week that contains today so current date appears at top
-  const hasScrolledRef = React.useRef(false);
-  useEffect(() => {
-    if (isLoading || hasScrolledRef.current) return;
-    const idx = weeks.findIndex(
-      (w) =>
-        today.isSameOrAfter(w.start, "day") &&
-        today.isSameOrBefore(w.end, "day")
-    );
-    const target = weekRefs.current[idx >= 0 ? idx : 0];
-    if (target && containerRef.current) {
-      try {
-        const container = containerRef.current as HTMLElement;
-        const targetEl = target as HTMLElement;
-        const top = targetEl.offsetTop - container.offsetTop;
-        container.scrollTo({ top, behavior: "auto" });
-        hasScrolledRef.current = true;
-        // Update visible month after initial scroll
-        setTimeout(() => handleScroll(), 100);
-      } catch (err) {
-        // fallback to bounding rect calculation
-        const containerTop = containerRef.current.getBoundingClientRect().top;
-        const targetTop = target.getBoundingClientRect().top;
-        containerRef.current.scrollTo({
-          top: containerRef.current.scrollTop + (targetTop - containerTop),
-          behavior: "auto",
-        });
-        hasScrolledRef.current = true;
-        // Update visible month after initial scroll
-        setTimeout(() => handleScroll(), 100);
-      }
-    }
-  }, [isLoading, weeks, today, handleScroll]);
 
   // Build array of dayjs dates for the period
   const periodDates = useMemo(() => {
@@ -276,10 +180,10 @@ export default function MobileScheduleTab({
 
   const assignmentsByDate = useMemo(() => {
     const map = new Map<string, any[]>();
-    if (!selectedWorkerId) return map;
+    if (!scheduleViewSettings.mobileSelectedWorkerId) return map;
 
     for (const a of assignments) {
-      if (a.workerId !== selectedWorkerId) continue;
+      if (a.workerId !== scheduleViewSettings.mobileSelectedWorkerId) continue;
 
       const shift = shifts.find((s: any) => s.id === a.shiftId);
       if (shift.restType === ShiftRestType.RECUPERATION) continue; // skip recuperation shifts
@@ -291,7 +195,7 @@ export default function MobileScheduleTab({
     }
 
     return map;
-  }, [assignments, selectedWorkerId, shifts]);
+  }, [assignments, scheduleViewSettings.mobileSelectedWorkerId, shifts]);
 
   // Find current week for landscape view
   const currentWeek = useMemo(() => {
@@ -304,68 +208,21 @@ export default function MobileScheduleTab({
     );
   }, [weeks, periodStart]);
 
-  // Handle week navigation in landscape mode
-  const handleWeekChange = (direction: number) => {
-    // Navigate by whole weeks and ensure the settings use a week boundary so
-    // validation doesn't snap the date to a month start.
-    const newPeriodStart = periodStart.add(direction, "week");
-    const aligned = newPeriodStart.startOf("isoWeek");
-
-    updateScheduleViewSettings({
-      ...scheduleViewSettings,
-      timeFrame: "week",
-      periodStartDate: aligned,
-    });
-
-    // Update visible month label based on the new week start
-    const monthLabel = aligned.format(
-      aligned.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY"
-    );
-    setVisibleMonth(monthLabel);
+  // Handle "scroll to today" button click
+  const handleScrollToToday = () => {
+    if (scrollToTodayRef.current) {
+      scrollToTodayRef.current();
+    }
   };
 
   // Build mobile navigation content that fills space between hamburger and avatar
   const scheduleMobileNav = (
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        gap: 1,
-        flex: 1,
-        justifyContent: "space-between",
-      }}
-    >
-      <Typography
-        variant="subtitle1"
-        sx={{ fontWeight: 600, color: "text.secondary" }}
-      >
-        {visibleMonth}
-      </Typography>
-
-      <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
-        <IconButton onClick={() => setSettingsOpen(true)} size="small">
-          <SettingsIcon />
-        </IconButton>
-        <Button
-          onClick={handleScrollToToday}
-          sx={{
-            minWidth: 30,
-            height: 30,
-            // Rounded-square (not fully circular) for a friendlier look
-            borderRadius: "6px",
-            padding: 0,
-            color: "text.secondary",
-            // Slightly heavier border to visually match the month label weight
-            border: (theme) => `2px solid ${theme.palette.text.secondary}`,
-            backgroundColor: "transparent",
-            // Match the month label font weight
-            fontWeight: 600,
-          }}
-        >
-          {dayjs.utc().format("D")}
-        </Button>
-      </Box>
-    </Box>
+    <MobileScheduleNav
+      visibleMonth={visibleMonth}
+      onSettingsClick={() => setSettingsOpen(true)}
+      onTodayClick={handleScrollToToday}
+      lng={lng}
+    />
   );
 
   if (isLoading) {
@@ -382,30 +239,43 @@ export default function MobileScheduleTab({
   return (
     <>
       <MobileNavAppBar lng={lng} mobileContent={scheduleMobileNav} />
-      <Box sx={{ padding: "0 8px" }}>
-        {!isLandscape ? (
-          <PortraitScheduleList
+      <Box sx={{ padding: "0 8px", height: "calc(100vh - 64px)" }}>
+        {scheduleViewSettings.mobileSelectedView === "worker" ? (
+          <MobileWorkerSchedule
             weeks={weeks}
-            containerRef={containerRef}
-            weekRefs={weekRefs}
+            currentWeek={currentWeek}
             assignmentsByDate={assignmentsByDate}
             periodDates={periodDates}
             shifts={shifts}
+            selectedWorkerId={
+              scheduleViewSettings.mobileSelectedWorkerId ?? null
+            }
             today={today}
+            isLandscape={isLandscape}
             setActiveAssignment={setActiveAssignment}
             setSheetOpen={setSheetOpen}
-            onScroll={handleScroll}
+            periodStart={periodStart}
+            scheduleViewSettings={scheduleViewSettings}
+            updateScheduleViewSettings={updateScheduleViewSettings}
+            onVisibleMonthChange={setVisibleMonth}
+            onScrollToTodayReady={(handler) => {
+              scrollToTodayRef.current = handler;
+            }}
           />
         ) : (
-          <LandscapeWeeklyCalendar
-            currentWeek={currentWeek}
-            assignmentsByDate={assignmentsByDate}
-            shifts={shifts}
-            selectedWorkerId={selectedWorkerId}
+          <MobileTeamSchedule
+            lng={lng}
+            weeks={weeks}
             today={today}
+            assignments={assignments}
+            workers={workers}
+            shifts={shifts}
             setActiveAssignment={setActiveAssignment}
             setSheetOpen={setSheetOpen}
-            onWeekChange={handleWeekChange}
+            onVisibleMonthChange={setVisibleMonth}
+            onScrollToTodayReady={(handler) => {
+              scrollToTodayRef.current = handler;
+            }}
           />
         )}
 
@@ -430,109 +300,28 @@ export default function MobileScheduleTab({
               ? shifts.find((s) => s.id === activeAssignment.shiftId)
               : null
           }
+          worker={
+            activeAssignment
+              ? workers.find((w) => w.id === activeAssignment.workerId)
+              : null
+          }
         />
       </Box>
 
-      <Dialog open={settingsOpen} onClose={() => setSettingsOpen(false)}>
-        <DialogTitle>Settings</DialogTitle>
-        <DialogContent>
-          <FormControl fullWidth sx={{ mt: 1 }}>
-            <InputLabel id="mobile-worker-select-label">
-              {t("worker") || "Worker"}
-            </InputLabel>
-            <Select
-              labelId="mobile-worker-select-label"
-              value={selectedWorkerId || ""}
-              label={t("worker") || "Worker"}
-              onChange={(e) => setSelectedWorkerId(String(e.target.value))}
-            >
-              {workers.map((w: any) => (
-                <MenuItem key={w.id} value={w.id}>
-                  {w.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setSettingsOpen(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
+      <MobileScheduleSettings
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        workers={workers}
+        selectedWorkerId={scheduleViewSettings.mobileSelectedWorkerId ?? null}
+        onWorkerChange={(workerId) =>
+          updateScheduleViewSettings({ mobileSelectedWorkerId: workerId })
+        }
+        selectedView={scheduleViewSettings.mobileSelectedView || "worker"}
+        onViewChange={(view) =>
+          updateScheduleViewSettings({ mobileSelectedView: view })
+        }
+        lng={lng}
+      />
     </>
   );
 }
-
-// CAROUSEL LOGIC FOR LANDSCAPE WEEKLY CALENDAR
-
-// // Find current week for landscape view and adjacent weeks for carousel
-//   const carouselWeeks = useMemo((): [
-//     {
-//       week: { start: dayjs.Dayjs; end: dayjs.Dayjs };
-//       assignmentsByDate: Map<string, any[]>;
-//     },
-//     {
-//       week: { start: dayjs.Dayjs; end: dayjs.Dayjs };
-//       assignmentsByDate: Map<string, any[]>;
-//     },
-//     {
-//       week: { start: dayjs.Dayjs; end: dayjs.Dayjs };
-//       assignmentsByDate: Map<string, any[]>;
-//     }
-//   ] => {
-//     const currentWeekIndex = weeks.findIndex(
-//       (w) =>
-//         periodStart.isSameOrAfter(w.start, "day") &&
-//         periodStart.isSameOrBefore(w.end, "day")
-//     );
-
-//     // Filter assignments for a given week
-//     const filterAssignmentsForWeek = (week: {
-//       start: dayjs.Dayjs;
-//       end: dayjs.Dayjs;
-//     }) => {
-//       const weekMap = new Map<string, any[]>();
-//       let current = week.start;
-//       while (current.isSameOrBefore(week.end, "day")) {
-//         const dateKey = current.format("YYYY-MM-DD");
-//         weekMap.set(dateKey, assignmentsByDate.get(dateKey) || []);
-//         current = current.add(1, "day");
-//       }
-//       return weekMap;
-//     };
-
-//     if (currentWeekIndex === -1 || weeks.length < 3) {
-//       // Fallback: use first 3 weeks if current not found or not enough weeks
-//       const week0 = weeks[0] || {
-//         start: periodStart.startOf("isoWeek"),
-//         end: periodStart.startOf("isoWeek").add(6, "day"),
-//       };
-//       const week1 = weeks[1] || {
-//         start: periodStart.startOf("isoWeek").add(1, "week"),
-//         end: periodStart.startOf("isoWeek").add(1, "week").add(6, "day"),
-//       };
-//       const week2 = weeks[2] || {
-//         start: periodStart.startOf("isoWeek").add(2, "week"),
-//         end: periodStart.startOf("isoWeek").add(2, "week").add(6, "day"),
-//       };
-
-//       return [
-//         { week: week0, assignmentsByDate: filterAssignmentsForWeek(week0) },
-//         { week: week1, assignmentsByDate: filterAssignmentsForWeek(week1) },
-//         { week: week2, assignmentsByDate: filterAssignmentsForWeek(week2) },
-//       ];
-//     }
-
-//     // Get prev, current, next weeks
-//     const prevWeek = weeks[currentWeekIndex - 1] || weeks[currentWeekIndex];
-//     const currentWeek = weeks[currentWeekIndex];
-//     const nextWeek = weeks[currentWeekIndex + 1] || weeks[currentWeekIndex];
-
-//     return [
-//       { week: prevWeek, assignmentsByDate: filterAssignmentsForWeek(prevWeek) },
-//       {
-//         week: currentWeek,
-//         assignmentsByDate: filterAssignmentsForWeek(currentWeek),
-//       },
-//       { week: nextWeek, assignmentsByDate: filterAssignmentsForWeek(nextWeek) },
-//     ];
-//   }, [weeks, periodStart, assignmentsByDate]);
