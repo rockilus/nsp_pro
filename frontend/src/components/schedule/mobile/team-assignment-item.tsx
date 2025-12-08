@@ -41,8 +41,8 @@ export default function TeamAssignmentItem({
       onClick={onClick}
       sx={{
         display: "flex",
-        alignItems: "center",
-        gap: 2,
+        flexDirection: "column",
+        gap: 1,
         p: 2,
         borderRadius: 1,
         cursor: onClick ? "pointer" : "default",
@@ -54,39 +54,29 @@ export default function TeamAssignmentItem({
         },
       }}
     >
-      {/* Worker Avatar */}
-      <Avatar
-        sx={{
-          width: 40,
-          height: 40,
-          bgcolor: "#1a73e8",
-          fontSize: "0.875rem",
-          fontWeight: 600,
-        }}
-      >
-        {worker?.acronym || "?"}
-      </Avatar>
+      {/* First Row: Avatar + Name + Time */}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <Avatar
+          sx={{
+            width: 32,
+            height: 32,
+            bgcolor: "#1a73e8",
+            fontSize: "0.75rem",
+            fontWeight: 600,
+          }}
+        >
+          {worker?.acronym || "?"}
+        </Avatar>
 
-      {/* Worker and Shift Details */}
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography variant="body1" sx={{ fontWeight: 500, mb: 0.5 }}>
+        <Typography variant="body1" sx={{ fontWeight: 500, flex: 1 }}>
           {worker?.name || "Unknown Worker"}
         </Typography>
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-          <Chip
-            label={shift?.name || "—"}
-            size="small"
-            sx={{
-              backgroundColor: mapping.background,
-              color: mapping.text,
-              fontWeight: 500,
-              fontSize: "0.75rem",
-            }}
-          />
-        </Box>
-
-        <Typography variant="caption" color="text.secondary">
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ whiteSpace: "nowrap" }}
+        >
           {startTime && endTime ? (
             <>
               {startTime} - {endTime}
@@ -96,6 +86,20 @@ export default function TeamAssignmentItem({
             ""
           )}
         </Typography>
+      </Box>
+
+      {/* Second Row: Shift Chip aligned with Avatar */}
+      <Box sx={{ display: "flex", alignItems: "center", pl: "40px" }}>
+        <Chip
+          label={shift?.name || "—"}
+          size="small"
+          sx={{
+            backgroundColor: mapping.background,
+            color: mapping.text,
+            fontWeight: 500,
+            fontSize: "0.9rem",
+          }}
+        />
       </Box>
     </Box>
   );
