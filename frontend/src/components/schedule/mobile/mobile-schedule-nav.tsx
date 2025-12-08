@@ -5,7 +5,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import Button from "@mui/material/Button";
-import SettingsIcon from "@mui/icons-material/Settings";
+import TuneIcon from "@mui/icons-material/Tune";
 
 interface MobileScheduleNavProps {
   visibleMonth: string;
@@ -39,7 +39,7 @@ export default function MobileScheduleNav({
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
         <IconButton onClick={onSettingsClick} size="small">
-          <SettingsIcon />
+          <TuneIcon />
         </IconButton>
         <Button
           onClick={onTodayClick}
