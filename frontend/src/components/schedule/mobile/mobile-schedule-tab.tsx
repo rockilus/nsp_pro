@@ -56,13 +56,10 @@ export default function MobileScheduleTab({
   const [workers, setWorkers] = useState<any[]>([]);
   const [shifts, setShifts] = useState<any[]>([]);
 
-  const [selectedWorkerId, setSelectedWorkerId] = useState<string | null>(null);
-
   const [sheetOpen, setSheetOpen] = useState(false);
   const [activeAssignment, setActiveAssignment] = useState<any | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [visibleMonth, setVisibleMonth] = useState<string>("");
-  const [selectedView, setSelectedView] = useState<"worker" | "team">("worker");
 
   const isLandscape = useIsLandscape();
 
@@ -81,16 +78,26 @@ export default function MobileScheduleTab({
           setAssignments(assignments);
           setWorkers(workers);
           setShifts(shifts);
-          if (!selectedWorkerId && workers.length > 0) {
+
+          // Set default worker if none selected or selected worker doesn't exist
+          if (
+            workers.length > 0 &&
+            (!scheduleViewSettings.mobileSelectedWorkerId ||
+              !workers.find(
+                (w: any) => w.id === scheduleViewSettings.mobileSelectedWorkerId
+              ))
+          ) {
             // If member, try to preselect user's worker
             const userId =
               (teamWithMembership as any).membership?.userId || null;
             const memberWorker = userId
               ? workers.find((w: any) => w.userId === userId)
               : null;
-            setSelectedWorkerId(
-              (memberWorker && memberWorker.id) || workers[0].id
-            );
+            const defaultWorkerId =
+              (memberWorker && memberWorker.id) || workers[0].id;
+            updateScheduleViewSettings({
+              mobileSelectedWorkerId: defaultWorkerId,
+            });
           }
         } else {
           const { assignments, workers, shifts } =
@@ -101,8 +108,18 @@ export default function MobileScheduleTab({
           setAssignments(assignments);
           setWorkers(workers);
           setShifts(shifts);
-          if (!selectedWorkerId && workers.length > 0) {
-            setSelectedWorkerId(workers[0].id);
+
+          // Set default worker if none selected or selected worker doesn't exist
+          if (
+            workers.length > 0 &&
+            (!scheduleViewSettings.mobileSelectedWorkerId ||
+              !workers.find(
+                (w: any) => w.id === scheduleViewSettings.mobileSelectedWorkerId
+              ))
+          ) {
+            updateScheduleViewSettings({
+              mobileSelectedWorkerId: workers[0].id,
+            });
           }
         }
       } catch (err) {
@@ -116,7 +133,7 @@ export default function MobileScheduleTab({
       mounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teamWithMembership]);
+  }, [teamWithMembership, scheduleViewSettings.mobileSelectedWorkerId]);
 
   const periodStart = scheduleViewSettings.periodStartDate;
   const periodEnd = computePeriodEndDate(
@@ -163,10 +180,10 @@ export default function MobileScheduleTab({
 
   const assignmentsByDate = useMemo(() => {
     const map = new Map<string, any[]>();
-    if (!selectedWorkerId) return map;
+    if (!scheduleViewSettings.mobileSelectedWorkerId) return map;
 
     for (const a of assignments) {
-      if (a.workerId !== selectedWorkerId) continue;
+      if (a.workerId !== scheduleViewSettings.mobileSelectedWorkerId) continue;
 
       const shift = shifts.find((s: any) => s.id === a.shiftId);
       if (shift.restType === ShiftRestType.RECUPERATION) continue; // skip recuperation shifts
@@ -178,7 +195,7 @@ export default function MobileScheduleTab({
     }
 
     return map;
-  }, [assignments, selectedWorkerId, shifts]);
+  }, [assignments, scheduleViewSettings.mobileSelectedWorkerId, shifts]);
 
   // Find current week for landscape view
   const currentWeek = useMemo(() => {
@@ -223,14 +240,16 @@ export default function MobileScheduleTab({
     <>
       <MobileNavAppBar lng={lng} mobileContent={scheduleMobileNav} />
       <Box sx={{ padding: "0 8px", height: "calc(100vh - 64px)" }}>
-        {selectedView === "worker" ? (
+        {scheduleViewSettings.mobileSelectedView === "worker" ? (
           <MobileWorkerSchedule
             weeks={weeks}
             currentWeek={currentWeek}
             assignmentsByDate={assignmentsByDate}
             periodDates={periodDates}
             shifts={shifts}
-            selectedWorkerId={selectedWorkerId}
+            selectedWorkerId={
+              scheduleViewSettings.mobileSelectedWorkerId ?? null
+            }
             today={today}
             isLandscape={isLandscape}
             setActiveAssignment={setActiveAssignment}
@@ -293,10 +312,14 @@ export default function MobileScheduleTab({
         open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
         workers={workers}
-        selectedWorkerId={selectedWorkerId}
-        onWorkerChange={setSelectedWorkerId}
-        selectedView={selectedView}
-        onViewChange={setSelectedView}
+        selectedWorkerId={scheduleViewSettings.mobileSelectedWorkerId ?? null}
+        onWorkerChange={(workerId) =>
+          updateScheduleViewSettings({ mobileSelectedWorkerId: workerId })
+        }
+        selectedView={scheduleViewSettings.mobileSelectedView || "worker"}
+        onViewChange={(view) =>
+          updateScheduleViewSettings({ mobileSelectedView: view })
+        }
         lng={lng}
       />
     </>

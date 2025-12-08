@@ -9,6 +9,10 @@ export interface SerializedScheduleViewSettings {
   showDailyShiftDemands: boolean;
   showRequests: boolean;
   periodStartDate: string; // ISO string
+  // Mobile-specific settings
+  mobileSelectedView?: "worker" | "team";
+  mobileSelectedWorkerId?: string | null;
+  mobileWeekStart?: string | null; // ISO date string
 }
 
 /**
@@ -85,6 +89,32 @@ export function validateScheduleViewSettings(
   // Ensure final date is UTC
   periodStartDate = periodStartDate.utc();
 
+  // Validate mobile-specific settings
+  const mobileSelectedView = ["worker", "team"].includes(
+    settings.mobileSelectedView as string
+  )
+    ? (settings.mobileSelectedView as "worker" | "team")
+    : "worker";
+
+  const mobileSelectedWorkerId =
+    settings.mobileSelectedWorkerId !== undefined
+      ? settings.mobileSelectedWorkerId
+      : null;
+
+  // Validate mobileWeekStart if present
+  let mobileWeekStart: string | null = null;
+  if (settings.mobileWeekStart) {
+    try {
+      const parsed = dayjs.utc(settings.mobileWeekStart);
+      if (parsed.isValid()) {
+        // Ensure it's aligned to the start of an ISO week
+        mobileWeekStart = parsed.startOf("isoWeek").format("YYYY-MM-DD");
+      }
+    } catch {
+      // Invalid date, keep as null
+    }
+  }
+
   return {
     timeFrame,
     groupBy,
@@ -101,6 +131,9 @@ export function validateScheduleViewSettings(
     showRequests:
       typeof settings.showRequests === "boolean" ? settings.showRequests : true,
     periodStartDate,
+    mobileSelectedView,
+    mobileSelectedWorkerId,
+    mobileWeekStart,
   };
 }
 
@@ -117,5 +150,8 @@ export function getDefaultScheduleViewSettings(
     showDailyShiftDemands: teamUseSolver,
     showRequests: true,
     periodStartDate: now.startOf("isoWeek"),
+    mobileSelectedView: "worker",
+    mobileSelectedWorkerId: null,
+    mobileWeekStart: null,
   };
 }

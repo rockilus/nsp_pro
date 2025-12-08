@@ -159,6 +159,10 @@ export type ScheduleViewSettingsT = {
   showDailyShiftDemands: boolean;
   showRequests: boolean;
   periodStartDate: dayjs.Dayjs;
+  // Mobile-specific settings
+  mobileSelectedView?: "worker" | "team";
+  mobileSelectedWorkerId?: string | null;
+  mobileWeekStart?: string | null; // ISO date string for landscape week start
 };
 
 export type DuplicateResultT = {
