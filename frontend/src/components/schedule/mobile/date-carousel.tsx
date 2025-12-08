@@ -108,8 +108,12 @@ export default function DateCarousel({
         inline: "center",
         behavior: "smooth",
       });
+      // Also select today's date
+      if (onDateSelect) {
+        onDateSelect(today);
+      }
     }
-  }, [todayIndex]);
+  }, [todayIndex, onDateSelect, today]);
 
   // Expose handler to parent
   React.useEffect(() => {
