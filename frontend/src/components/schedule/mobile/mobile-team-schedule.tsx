@@ -3,6 +3,8 @@ import dayjs from "dayjs";
 // MUI
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+// Hooks
+import { useIsLandscape } from "@/hooks/useIsMobile";
 // Local components
 import DateCarousel from "./date-carousel";
 import TeamAssignmentItem from "./team-assignment-item";
@@ -36,6 +38,8 @@ export default function MobileTeamSchedule({
 }: MobileTeamScheduleProps) {
   // Select today by default
   const [selectedDate, setSelectedDate] = useState<dayjs.Dayjs>(today);
+
+  const isLandscape = useIsLandscape();
 
   // Filter assignments for the selected date
   const selectedDateAssignments = useMemo(() => {
@@ -124,7 +128,15 @@ export default function MobileTeamSchedule({
             </Typography>
           </Box>
         ) : (
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: isLandscape
+                ? "repeat(auto-fill, minmax(300px, 1fr))"
+                : "1fr",
+              gap: 1.5,
+            }}
+          >
             {selectedDateAssignments.map((assignment) => {
               const worker = workers.find((w) => w.id === assignment.workerId);
               const shift = shifts.find((s) => s.id === assignment.shiftId);
