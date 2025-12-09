@@ -69,27 +69,4 @@ variable "hosted_zone_id" {
   default     = null
 }
 
-variable "branding_logo_url" {
-  description = "Public URL of the logo image for Cognito Hosted UI branding"
-  type        = string
-  default     = null
-}
-
-variable "branding_css_url" {
-  description = "Public URL of the custom CSS file for Cognito Hosted UI branding"
-  type        = string
-  default     = null
-}
-
-variable "branding_primary_color" {
-  description = "Primary brand color for Cognito Hosted UI (hex format)"
-  type        = string
-  default     = "#1E3A8A"
-}
-
-variable "branding_css_content" {
-  description = "Custom CSS content for Cognito Hosted UI branding"
-  type        = string
-  default     = ""
-}
 

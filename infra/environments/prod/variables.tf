@@ -108,12 +108,6 @@ variable "deletion_protection_cognito_user_pool_aws" {
   }
 }
 
-variable "cognito_branding_primary_color" {
-  description = "Primary brand color for Cognito Hosted UI (hex format)"
-  type        = string
-  default     = "#1E3A8A"
-}
-
 # SQS Configuration
 variable "sqs_visibility_timeout" {
   description = "Visibility timeout for SQS queue messages in seconds"
