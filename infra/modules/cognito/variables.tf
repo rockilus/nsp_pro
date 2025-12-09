@@ -58,7 +58,7 @@ variable "custom_domain_name" {
 }
 
 variable "certificate_arn" {
-  description = "ACM certificate ARN for custom domain (must be in same region as User Pool)"
+  description = "ACM certificate ARN for custom domain (must be in us-east-1 for Cognito/CloudFront)"
   type        = string
   default     = null
 }

@@ -72,7 +72,7 @@ module "cognito" {
 
   # Custom domain configuration
   custom_domain_name = var.cognito_custom_domain_name
-  certificate_arn    = module.route53.certificate_arn
+  certificate_arn    = module.route53.cloudfront_certificate_arn # Use us-east-1 cert for Cognito
   hosted_zone_id     = module.route53.hosted_zone_id
 
   depends_on = [module.route53]
