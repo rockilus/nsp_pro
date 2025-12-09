@@ -87,3 +87,9 @@ variable "branding_primary_color" {
   default     = "#1E3A8A"
 }
 
+variable "branding_css_content" {
+  description = "Custom CSS content for Cognito Hosted UI branding"
+  type        = string
+  default     = ""
+}
+

@@ -208,32 +208,16 @@ resource "aws_route53_record" "cognito_custom_domain" {
   depends_on = [aws_cognito_user_pool_domain.main]
 }
 
-# AWS Cloud Control: Cognito managed login branding with custom Rockilus assets
-resource "awscc_cognito_managed_login_branding" "branding" {
-  user_pool_id                = aws_cognito_user_pool.main.id
-  client_id                   = aws_cognito_user_pool_client.main.id
-  use_cognito_provided_values = var.branding_logo_url == null ? true : false
+# Cognito Hosted UI Customization with Rockilus branding
+resource "aws_cognito_user_pool_ui_customization" "main" {
+  user_pool_id = aws_cognito_user_pool.main.id
+  client_id    = aws_cognito_user_pool_client.main.id
 
-  # Custom assets configuration (only applied when URLs are provided)
-  assets = var.branding_logo_url != null ? [
-    {
-      category          = "PAGE_HEADER_LOGO"
-      color_mode        = "LIGHT"
-      extension         = "PNG"
-      logo_image_url    = var.branding_logo_url
-      favicon_image_url = var.branding_logo_url
-    },
-    {
-      category          = "FAVICON_ICO"
-      color_mode        = "LIGHT"
-      extension         = "PNG"
-      logo_image_url    = var.branding_logo_url
-      favicon_image_url = var.branding_logo_url
-    }
-  ] : null
+  # Custom CSS for branding
+  css = var.branding_css_content
 
-  # Custom styling configuration (CSS URL as string)
-  settings = var.branding_css_url
+  # Logo image (base64 encoded PNG)
+  image_file = var.branding_logo_url != null ? filebase64("${path.module}/../cognito-assets/assets/logo_dark.png") : null
 
   depends_on = [
     aws_cognito_user_pool_domain.main,

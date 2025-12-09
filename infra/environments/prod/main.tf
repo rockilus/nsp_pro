@@ -93,6 +93,7 @@ module "cognito" {
   # Custom branding configuration
   branding_logo_url      = module.cognito_assets.logo_url
   branding_css_url       = module.cognito_assets.css_url
+  branding_css_content   = file("${path.module}/../../modules/cognito-assets/cognito-custom.css")
   branding_primary_color = var.cognito_branding_primary_color
 
   depends_on = [module.route53, module.cognito_assets]
