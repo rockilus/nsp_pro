@@ -44,6 +44,27 @@ resource "aws_route53_record" "ns_delegation" {
   records = var.staging_name_servers
 }
 
+
+# Route53 A Record for Apex Domain
+# This module will create an alias A record for the apex only when a
+# CloudFront distribution domain and hosted zone ID are supplied. If you
+# are using a different target (S3 website endpoint, ALB, etc.), provide
+# an appropriate alias target and hosted zone ID, or bypass apex creation
+# by leaving the variables null.
+resource "aws_route53_record" "apex" {
+  count = var.environment == "prod" ? 1 : 0
+
+  zone_id = aws_route53_zone.main.zone_id
+  name    = var.domain_name # apex domain (e.g., rockilus.com)
+  type    = "A"
+
+  alias {
+    name                   = "www.rockilus.com"
+    zone_id                = aws_route53_zone.main.zone_id
+    evaluate_target_health = true
+  }
+}
+
 # DNSSEC Signing (for enhanced security)
 # resource "aws_route53_hosted_zone_dnssec" "main" {
 #   count = var.enable_dnssec ? 1 : 0
