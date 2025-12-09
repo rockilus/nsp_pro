@@ -217,7 +217,7 @@ resource "aws_cognito_user_pool_ui_customization" "main" {
   css = var.branding_css_content
 
   # Logo image (base64 encoded PNG)
-  image_file = var.branding_logo_url != null ? filebase64("${path.module}/../cognito-assets/assets/logo_dark.png") : null
+  image_file = var.branding_logo_url != null ? filebase64("${path.module}/../cognito-assets/assets/rockilus_logo_blue.jpg") : null
 
   depends_on = [
     aws_cognito_user_pool_domain.main,
