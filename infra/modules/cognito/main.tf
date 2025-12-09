@@ -208,13 +208,32 @@ resource "aws_route53_record" "cognito_custom_domain" {
   depends_on = [aws_cognito_user_pool_domain.main]
 }
 
-# AWS Cloud Control: Cognito managed login branding (uses AWS default hosted UI when no custom assets provided)
+# AWS Cloud Control: Cognito managed login branding with custom Rockilus assets
 resource "awscc_cognito_managed_login_branding" "branding" {
-  # This resource configures Cognito's hosted UI branding via the AWS Cloud Control provider.
-  # We intentionally do not upload custom assets here so AWS will serve the default hosted UI.
   user_pool_id                = aws_cognito_user_pool.main.id
   client_id                   = aws_cognito_user_pool_client.main.id
-  use_cognito_provided_values = true
+  use_cognito_provided_values = var.branding_logo_url == null ? true : false
+
+  # Custom assets configuration (only applied when URLs are provided)
+  assets = var.branding_logo_url != null ? [
+    {
+      category          = "PAGE_HEADER_LOGO"
+      color_mode        = "LIGHT"
+      extension         = "PNG"
+      logo_image_url    = var.branding_logo_url
+      favicon_image_url = var.branding_logo_url
+    },
+    {
+      category          = "FAVICON_ICO"
+      color_mode        = "LIGHT"
+      extension         = "PNG"
+      logo_image_url    = var.branding_logo_url
+      favicon_image_url = var.branding_logo_url
+    }
+  ] : null
+
+  # Custom styling configuration (CSS URL as string)
+  settings = var.branding_css_url
 
   depends_on = [
     aws_cognito_user_pool_domain.main,

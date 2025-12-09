@@ -56,6 +56,21 @@ module "ecr" {
   }
 }
 
+# Cognito assets bucket for Hosted UI branding (logo and CSS)
+module "cognito_assets" {
+  source = "../../modules/cognito-assets"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  tags = {
+    Environment = var.environment
+    Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
+    Project     = "NSP Pro"
+  }
+}
+
 module "cognito" {
   source = "../../modules/cognito"
 
@@ -75,7 +90,12 @@ module "cognito" {
   certificate_arn    = module.route53.cloudfront_certificate_arn # Use us-east-1 cert for Cognito
   hosted_zone_id     = module.route53.hosted_zone_id
 
-  depends_on = [module.route53]
+  # Custom branding configuration
+  branding_logo_url      = module.cognito_assets.logo_url
+  branding_css_url       = module.cognito_assets.css_url
+  branding_primary_color = var.cognito_branding_primary_color
+
+  depends_on = [module.route53, module.cognito_assets]
 }
 
 # IAM roles and policies module
