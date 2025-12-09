@@ -92,8 +92,10 @@ class AppConfig(BaseSettings):
     )
 
     # AWS Cognito configuration
-    cognito_user_pool_id: str = Field(..., description="AWS Cognito User Pool ID")
-    cognito_client_id: str = Field(..., description="AWS Cognito App Client ID")
+    cognito_user_pool_id: str | None = Field(
+        None, description="AWS Cognito User Pool ID"
+    )
+    cognito_client_id: str | None = Field(None, description="AWS Cognito App Client ID")
 
     # Development authentication fields
     dev_user_id: str = Field(
