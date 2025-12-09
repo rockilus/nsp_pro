@@ -52,6 +52,14 @@ resource "aws_ecs_task_definition" "main_service" {
           {
             name  = "BACKEND_API_KEY_SSM_PARAMETER_NAME"
             value = var.api_gateway_backend_api_key_parameter_name
+          },
+          {
+            name  = "COGNITO_USER_POOL_ID"
+            value = var.cognito_user_pool_id
+          },
+          {
+            name  = "COGNITO_CLIENT_ID"
+            value = var.cognito_client_id
           }
         ]
       )
