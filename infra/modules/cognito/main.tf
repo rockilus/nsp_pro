@@ -206,22 +206,22 @@ resource "aws_route53_record" "cognito_custom_domain" {
   depends_on = [aws_cognito_user_pool_domain.main]
 }
 
-# Cognito Hosted UI Customization with Rockilus branding
-# resource "aws_cognito_user_pool_ui_customization" "main" {
-#   user_pool_id = aws_cognito_user_pool.main.id
-#   client_id    = aws_cognito_user_pool_client.main.id
 
-#   # Custom CSS for branding
-#   css = file("${path.module}/../cognito-assets/cognito-custom.css")
+# AWS Cloud Control managed login branding (simple/default configuration)
+# This uses the awscc provider resource to attach a minimal branding configuration
+# for the managed hosted UI (managed_login_version = 2). It defers to Cognito
+# provided values and links the branding to the user pool and client we already
+# create above.
+resource "awscc_cognito_managed_login_branding" "branding" {
+  user_pool_id                = aws_cognito_user_pool.main.id
+  client_id                   = aws_cognito_user_pool_client.main.id
+  use_cognito_provided_values = true
 
-#   # Logo image (base64 encoded PNG)
-#   image_file = filebase64("${path.module}/../cognito-assets/assets/rockilus_logo_blue.jpg")
-
-#   depends_on = [
-#     aws_cognito_user_pool_domain.main,
-#     aws_cognito_user_pool_client.main,
-#   ]
-# }
+  depends_on = [
+    aws_cognito_user_pool_domain.main,
+    aws_cognito_user_pool_client.main,
+  ]
+}
 
 # Post-confirmation Lambda module
 module "post_confirmation_lambda" {
