@@ -49,7 +49,9 @@ function createEnvironmentConfig(): EnvironmentConfig {
       process.env.NEXT_PUBLIC_LOGOUT_REDIRECT_URI || "https://www.rockilus.com",
     cognitoDomain:
       process.env.NEXT_PUBLIC_COGNITO_DOMAIN ||
-      "https://eu-west-39tyn1ysf6.auth.eu-west-3.amazoncognito.com",
+      (isDevelopment
+        ? "https://auth.staging.rockilus.com"
+        : "https://auth.rockilus.com"),
   };
 }
 

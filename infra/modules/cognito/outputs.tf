@@ -25,11 +25,16 @@ output "user_pool_domain" {
 
 output "cognito_hosted_ui_url" {
   description = "URL of the Cognito hosted UI"
-  value       = "https://${aws_cognito_user_pool_domain.main.domain}.auth.${var.aws_region}.amazoncognito.com"
+  value       = var.custom_domain_name != null ? "https://${var.custom_domain_name}" : null
 }
 
 output "cognito_domain" {
-  description = "Cognito domain name"
-  value       = aws_cognito_user_pool_domain.main.domain
+  description = "Cognito domain name (custom or AWS-managed)"
+  value       = var.custom_domain_name != null ? var.custom_domain_name : null
+}
+
+output "cognito_cloudfront_distribution" {
+  description = "CloudFront distribution for custom domain (if applicable)"
+  value       = var.custom_domain_name != null ? aws_cognito_user_pool_domain.main[0].cloudfront_distribution : null
 }
 
