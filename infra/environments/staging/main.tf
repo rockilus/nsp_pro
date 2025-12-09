@@ -69,6 +69,13 @@ module "cognito" {
   landing_page_domain_name                  = var.landing_page_domain_name
   cognito_domain_prefix                     = var.cognito_domain_prefix
   deletion_protection_cognito_user_pool_aws = var.deletion_protection_cognito_user_pool_aws
+
+  # Custom domain configuration
+  custom_domain_name = var.cognito_custom_domain_name
+  certificate_arn    = module.route53.certificate_arn
+  hosted_zone_id     = module.route53.hosted_zone_id
+
+  depends_on = [module.route53]
 }
 
 # IAM roles and policies module
@@ -364,6 +371,9 @@ module "ecs" {
   main_service_operating_system_family = var.main_service_operating_system_family
   main_service_container_name          = var.main_service_container_name
 
+  # Cognito configuration
+  cognito_user_pool_id = module.cognito.user_pool_id
+  cognito_client_id    = module.cognito.user_pool_client_id
 
   # Solve service
   solve_service_environment_variables   = var.solve_service_environment_variables

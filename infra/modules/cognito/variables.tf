@@ -51,3 +51,21 @@ variable "deletion_protection_cognito_user_pool_aws" {
   }
 }
 
+variable "custom_domain_name" {
+  description = "Custom domain name for Cognito hosted UI (e.g., auth.rockilus.com). If provided, replaces AWS-managed domain."
+  type        = string
+  default     = null
+}
+
+variable "certificate_arn" {
+  description = "ACM certificate ARN for custom domain (must be in same region as User Pool)"
+  type        = string
+  default     = null
+}
+
+variable "hosted_zone_id" {
+  description = "Route53 hosted zone ID for custom domain DNS record"
+  type        = string
+  default     = null
+}
+

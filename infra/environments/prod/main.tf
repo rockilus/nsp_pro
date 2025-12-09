@@ -69,6 +69,13 @@ module "cognito" {
   landing_page_domain_name                  = var.landing_page_domain_name
   cognito_domain_prefix                     = var.cognito_domain_prefix
   deletion_protection_cognito_user_pool_aws = var.deletion_protection_cognito_user_pool_aws
+
+  # Custom domain configuration
+  custom_domain_name = var.cognito_custom_domain_name
+  certificate_arn    = module.route53.certificate_arn
+  hosted_zone_id     = module.route53.hosted_zone_id
+
+  depends_on = [module.route53]
 }
 
 # IAM roles and policies module

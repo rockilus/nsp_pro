@@ -80,6 +80,12 @@ variable "cognito_domain_prefix" {
   default     = null
 }
 
+variable "cognito_custom_domain_name" {
+  description = "Custom domain name for Cognito hosted UI (e.g., auth.rockilus.com)"
+  type        = string
+  default     = null
+}
+
 variable "landing_page_domain_name" {
   description = "Custom domain name for the landing page (e.g., landing.rockilus.com)"
   type        = string

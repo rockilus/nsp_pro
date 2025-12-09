@@ -180,13 +180,32 @@ resource "aws_cognito_user_pool_client" "main" {
 
 }
 
-# Cognito User Pool Domain - Required for hosted UI
+# Cognito User Pool Domain - Custom Domain
 resource "aws_cognito_user_pool_domain" "main" {
-  # domain       = var.cognito_domain_prefix != null ? var.cognito_domain_prefix : "${var.project_name}-${var.environment}"
-  domain       = var.cognito_domain_prefix
-  user_pool_id = aws_cognito_user_pool.main.id
+  count = var.custom_domain_name != null ? 1 : 0
 
-  managed_login_version = 2
+  domain          = var.custom_domain_name
+  certificate_arn = var.certificate_arn
+  user_pool_id    = aws_cognito_user_pool.main.id
+
+  depends_on = [aws_cognito_user_pool.main]
+}
+
+# Route53 DNS Record for Custom Domain
+resource "aws_route53_record" "cognito_custom_domain" {
+  count = var.custom_domain_name != null ? 1 : 0
+
+  zone_id = var.hosted_zone_id
+  name    = var.custom_domain_name
+  type    = "A"
+
+  alias {
+    name                   = aws_cognito_user_pool_domain.main[0].cloudfront_distribution
+    zone_id                = "Z2FDTNDATAQYW2" # CloudFront hosted zone ID (AWS constant)
+    evaluate_target_health = false
+  }
+
+  depends_on = [aws_cognito_user_pool_domain.main]
 }
 
 # AWS Cloud Control: Cognito managed login branding (uses AWS default hosted UI when no custom assets provided)
@@ -197,7 +216,6 @@ resource "awscc_cognito_managed_login_branding" "branding" {
   client_id                   = aws_cognito_user_pool_client.main.id
   use_cognito_provided_values = true
 
-  # Keep a dependency on the domain so ordering is correct during apply.
   depends_on = [
     aws_cognito_user_pool_domain.main,
     aws_cognito_user_pool_client.main,
