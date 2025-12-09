@@ -364,6 +364,9 @@ module "ecs" {
   main_service_operating_system_family = var.main_service_operating_system_family
   main_service_container_name          = var.main_service_container_name
 
+  # Cognito configuration
+  cognito_user_pool_id = module.cognito.user_pool_id
+  cognito_client_id    = module.cognito.user_pool_client_id
 
   # Solve service
   solve_service_environment_variables   = var.solve_service_environment_variables

@@ -24,9 +24,7 @@ class UserService(BaseService):
         authn_update_user_email: Callable[
             [str, RecipeUserIdType, str, str], Coroutine[Any, Any, None]
         ],
-        authn_change_password: Callable[
-            [str, RecipeUserIdType, str, str, str], Coroutine[Any, Any, None]
-        ],
+        authn_change_password: Callable[[str, str, str], Coroutine[Any, Any, None]],
     ):
         super().__init__(collection)
         self.authz_user_sync = authz_user_sync
@@ -94,19 +92,11 @@ class UserService(BaseService):
             user.id, recipe_user_id, tenant_id, user.email
         )
 
-    async def change_user_password(
-        self,
-        user_id: str,
-        recipe_user_id: RecipeUserIdType,
-        tenant_id: str,
-        password_data: PasswordData,
-    ) -> None:
+    async def change_user_password(self, password_data: PasswordData) -> None:
         await self.authn_change_password(
-            user_id,
-            recipe_user_id,
-            tenant_id,
             password_data.current_password,
             password_data.new_password,
+            password_data.access_token,
         )
 
     def update_user_impersonating_user_id(

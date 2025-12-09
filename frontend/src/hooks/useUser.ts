@@ -119,7 +119,7 @@ export function useUpdateUser() {
  */
 export function useUpdatePassword() {
   const apiClient = useApiClient();
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, loading, accessToken } = useAuth();
 
   const updatePassword = useCallback(
     async (
@@ -139,8 +139,19 @@ export function useUpdatePassword() {
         throw new Error("User not authenticated - please sign in");
       }
 
+      if (!accessToken) {
+        throw new Error("Access token not available - please sign in again");
+      }
+
       try {
-        await UserApi.updatePassword(apiClient, passwordData, userId);
+        await UserApi.updatePassword(
+          apiClient,
+          {
+            ...passwordData,
+            accessToken,
+          },
+          userId
+        );
       } catch (error) {
         console.error("❌ Failed to update password:", {
           error: error instanceof Error ? error.message : "Unknown error",
@@ -149,7 +160,7 @@ export function useUpdatePassword() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user, accessToken]
   );
 
   return updatePassword;

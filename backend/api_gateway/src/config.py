@@ -91,6 +91,12 @@ class AppConfig(BaseSettings):
         description="Endpoint URL for local AWS services (None for prod)",
     )
 
+    # AWS Cognito configuration
+    cognito_user_pool_id: str | None = Field(
+        None, description="AWS Cognito User Pool ID"
+    )
+    cognito_client_id: str | None = Field(None, description="AWS Cognito App Client ID")
+
     # Development authentication fields
     dev_user_id: str = Field(
         "dev-user-123",

@@ -6,7 +6,7 @@ export const cognitoAuthConfig = {
   redirect_uri: env.redirectUri,
   post_logout_redirect_uri: env.logoutRedirectUri,
   response_type: "code",
-  scope: "email openid phone",
+  scope: "email openid phone aws.cognito.signin.user.admin",
   automaticSilentRenew: true,
   includeIdTokenInSilentRenew: true,
   monitorSession: false,

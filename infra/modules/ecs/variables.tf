@@ -137,6 +137,17 @@ variable "main_service_operating_system_family" {
   default     = "LINUX" // Default value
 }
 
+# Cognito configuration
+variable "cognito_user_pool_id" {
+  description = "AWS Cognito User Pool ID for authentication"
+  type        = string
+}
+
+variable "cognito_client_id" {
+  description = "AWS Cognito App Client ID for authentication"
+  type        = string
+}
+
 # Solve service configuration
 variable "solve_service_environment_variables" {
   description = "List of environment variables for the solve service (each item is an object with name and value)"
