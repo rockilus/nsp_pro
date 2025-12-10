@@ -4,10 +4,10 @@ import Typography from "@mui/material/Typography";
 import Chip from "@mui/material/Chip";
 import { RequestT, RequestStatus, RequestType } from "@/types/request";
 import { ShiftT } from "@/types/shift";
-import { ShiftWorkerOptionT } from "@/types/constraint";
+import { ShiftWorkerOptionT, SWOIdTypes } from "@/types/constraint";
 import { WorkerT } from "@/types/worker";
 import {
-  getRequestTargetDisplayText,
+  getShiftWorkerOptionDisplayText,
   getShiftColors,
   getRequestStatusColor,
   getRequestStatusLabel,
@@ -40,31 +40,57 @@ export default function RequestListItem({
   // Get shift colors for the request
   const shiftColors = getShiftColors(request, shifts);
 
-  // Get date range text
-  const dateRangeText = request.startDate.isSame(request.endDate, "day")
-    ? request.startDate.format("MMM D")
-    : `${request.startDate.format("MMM D")} - ${request.endDate.format(
-        "MMM D"
-      )}`;
+  // Get emoji indicator
+  const getEmoji = () => {
+    if (isLeave) return "🏖️";
+    return request.negative ? "🙅" : "🙋";
+  };
 
-  // Get shift info text
-  let shiftInfoText = "";
-  if (isLeave) {
-    shiftInfoText = shift ? shift.name : t("all_day");
-  } else {
-    // Work request
-    if (request.shiftOptions.length === 0) {
-      shiftInfoText = t("no_preferences");
+  // Get shift names to display
+  const getShiftNames = (): { name: string; color: string }[] => {
+    if (isLeave) {
+      return shift
+        ? [{ name: shift.name, color: shift.color }]
+        : [{ name: t("all_day"), color: "grey" }];
     } else {
-      // Use the same utility as the table
-      shiftInfoText = getRequestTargetDisplayText(
-        request,
-        workers,
-        shifts,
-        t("not")
-      );
+      // Work request - get shift names from shiftOptions
+      if (request.shiftOptions.length === 0) {
+        return [{ name: t("no_preferences"), color: "grey" }];
+      }
+
+      const shiftNames = request.shiftOptions
+        .filter((swo) => swo.idType === SWOIdTypes.SHIFT)
+        .map((swo) => {
+          const foundShift = shifts.find((s) => s.id === swo.id);
+          return foundShift
+            ? { name: foundShift.name, color: foundShift.color }
+            : { name: swo.name as string, color: "grey" };
+        });
+
+      // If no shifts found in options, show the option names
+      if (shiftNames.length === 0) {
+        return request.shiftOptions.map((swo) => ({
+          name: getShiftWorkerOptionDisplayText(swo, workers, shifts, t("not")),
+          color: "grey",
+        }));
+      }
+
+      return shiftNames;
     }
-  }
+  };
+
+  // Check if request spans multiple days
+  const isMultiDay = !request.startDate.isSame(request.endDate, "day");
+
+  // Get date range text with weekday
+  const dateRangeText = isMultiDay
+    ? `${request.startDate.format("ddd, MMM D")} - ${request.endDate.format(
+        "ddd, MMM D"
+      )}`
+    : null;
+
+  const shiftNamesList = getShiftNames();
+  const emoji = getEmoji();
 
   return (
     <Box
@@ -76,12 +102,34 @@ export default function RequestListItem({
         p: 1.5,
         borderRadius: 1,
         cursor: onClick ? "pointer" : "default",
-        backgroundColor: shiftColors?.background || "#f5f5f5",
-        color: shiftColors?.text || "#212121",
-        border: `1px solid ${shiftColors?.sample || "#e0e0e0"}`,
+        backgroundColor: "#fff",
+        border: "1px solid #e0e0e0",
       }}
     >
-      {/* Header: Type and Status badges */}
+      {/* First line: Emoji + Shift names */}
+      <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+        <Typography variant="body2" sx={{ fontSize: "1.2rem" }}>
+          {emoji}
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{ fontWeight: 600, fontSize: "0.875rem" }}
+        >
+          {shiftNamesList.map((s) => s.name).join(", ")}
+        </Typography>
+      </Box>
+
+      {/* Second line: Date range (only if multi-day) */}
+      {isMultiDay && dateRangeText && (
+        <Typography
+          variant="body2"
+          sx={{ fontWeight: 500, fontSize: "0.875rem" }}
+        >
+          {dateRangeText}
+        </Typography>
+      )}
+
+      {/* Third line: Type and Status chips */}
       <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
         <Chip
           label={isWork ? t("work") : t("leave")}
@@ -105,16 +153,6 @@ export default function RequestListItem({
           }}
         />
       </Box>
-
-      {/* Date Range */}
-      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-        {dateRangeText}
-      </Typography>
-
-      {/* Shift Info */}
-      <Typography variant="caption" sx={{ opacity: 0.9 }}>
-        {shiftInfoText}
-      </Typography>
     </Box>
   );
 }
