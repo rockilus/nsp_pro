@@ -1,5 +1,6 @@
 import React from "react";
 import { useTranslation } from "../../app/i18n/client";
+import { useIsMobile } from "../../hooks/useIsMobile";
 // MUI
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
@@ -35,6 +36,7 @@ export default function RequestPanel({
   handleDenyRequest,
   hideButton = false,
   onClose,
+  open: externalOpen,
 }: {
   lng: string;
   teamId: string;
@@ -53,17 +55,24 @@ export default function RequestPanel({
   handleDenyRequest?: (requestId: string) => void;
   hideButton?: boolean;
   onClose?: () => void;
+  open?: boolean;
 }) {
   const { t } = useTranslation(lng, "request-page");
+  const isMobile = useIsMobile();
 
-  const [open, setOpen] = React.useState<boolean>(false);
+  const [internalOpen, setInternalOpen] = React.useState<boolean>(false);
+
+  // Use external open state if provided, otherwise use internal state
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setOpen(true);
+    setInternalOpen(true);
   };
 
   const handleClose = () => {
-    setOpen(false);
+    if (externalOpen === undefined) {
+      setInternalOpen(false);
+    }
     // Call external onClose if provided
     if (onClose) {
       onClose();
@@ -72,11 +81,11 @@ export default function RequestPanel({
 
   // Initialize with request data if provided (for calendar usage)
   React.useEffect(() => {
-    if (request && hideButton) {
+    if (request && hideButton && externalOpen === undefined) {
       // Auto-open for calendar usage (both create and edit scenarios)
-      setOpen(true);
+      setInternalOpen(true);
     }
-  }, [request, hideButton]);
+  }, [request, hideButton, externalOpen]);
 
   const id = open ? "request-dialog" : undefined;
 
@@ -119,35 +128,38 @@ export default function RequestPanel({
         id={id}
         open={open}
         onClose={handleClose}
-        maxWidth="sm"
+        // maxWidth="sm"
         fullWidth
+        fullScreen={isMobile}
         data-testid="request-panel-dialog"
       >
-        <DialogTitle>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <span>{t("new_request")}</span>
-            <IconButton
-              aria-label="close"
-              onClick={handleClose}
-              sx={{
-                color: (theme) => theme.palette.grey[500],
+        {!isMobile && (
+          <DialogTitle>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
               }}
-              // primary test id expected by E2E tests
-              data-testid="close-request-dialog-button"
-              // preserve legacy id for any internal selectors (kept as legacy data attribute)
-              data-legacy-testid="close-request-panel-button"
             >
-              <CloseIcon />
-            </IconButton>
-          </div>
-        </DialogTitle>
-        <DialogContent>
+              <span>{isEdit ? t("edit_request") : t("new_request")}</span>
+              <IconButton
+                aria-label="close"
+                onClick={handleClose}
+                sx={{
+                  color: (theme) => theme.palette.grey[500],
+                }}
+                // primary test id expected by E2E tests
+                data-testid="close-request-dialog-button"
+                // preserve legacy id for any internal selectors (kept as legacy data attribute)
+                data-legacy-testid="close-request-panel-button"
+              >
+                <CloseIcon />
+              </IconButton>
+            </div>
+          </DialogTitle>
+        )}
+        <DialogContent sx={isMobile ? { p: 0 } : undefined}>
           <RequestPanelContent
             lng={lng}
             teamId={teamId}
@@ -165,6 +177,9 @@ export default function RequestPanel({
             handleAcceptRequest={handleAcceptRequest}
             handleDenyRequest={handleDenyRequest}
             onClose={handleClose}
+            isMobile={isMobile}
+            title={isEdit ? t("edit_request") : t("new_request")}
+            fullWidth={isMobile}
           />
         </DialogContent>
       </Dialog>

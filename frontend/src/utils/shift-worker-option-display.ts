@@ -1,7 +1,7 @@
 import { ShiftWorkerOptionT, SWOIdTypes } from "../types/constraint";
 import { WorkerT } from "../types/worker";
 import { ShiftT } from "../types/shift";
-import { RequestT, RequestType } from "../types/request";
+import { RequestT, RequestType, RequestStatus } from "../types/request";
 import { ShiftColorMappings } from "../constants/constants";
 
 /**
@@ -163,4 +163,48 @@ export const getShiftColors = (
   }
 
   return null;
+};
+
+/**
+ * Get the MUI color for a request status
+ * @param status The request status
+ * @returns MUI color name for the status
+ */
+export const getRequestStatusColor = (
+  status: RequestStatus
+): "success" | "error" | "warning" | "default" => {
+  switch (status) {
+    case RequestStatus.APPROVED:
+      return "success";
+    case RequestStatus.DENIED:
+      return "error";
+    case RequestStatus.DEFERRED:
+      return "warning";
+    default:
+      return "default";
+  }
+};
+
+/**
+ * Get the display label for a request status
+ * @param status The request status
+ * @param t Translation function
+ * @returns Translated label for the status
+ */
+export const getRequestStatusLabel = (
+  status: RequestStatus,
+  t: (key: string) => string
+): string => {
+  switch (status) {
+    case RequestStatus.PENDING:
+      return t("pending");
+    case RequestStatus.APPROVED:
+      return t("approved");
+    case RequestStatus.DENIED:
+      return t("rejected");
+    case RequestStatus.DEFERRED:
+      return t("deferred");
+    default:
+      return "Unknown";
+  }
 };

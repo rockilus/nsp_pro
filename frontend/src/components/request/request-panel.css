@@ -1,8 +1,26 @@
 .request-panel-container {
   display: flex;
   flex-direction: column;
-  width: 350px;
+  width: 100%;
+  /* max-width: 350px; */
   padding: 16px;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 600px) {
+  .request-panel-container {
+    max-width: 100%;
+    padding: 16px 8px;
+  }
+
+  .variable-input-container {
+    margin-bottom: 12px;
+  }
+
+  .select-container {
+    margin-left: 4px;
+    margin-right: 8px;
+  }
 }
 
 .lhs-header-title {

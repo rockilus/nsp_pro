@@ -25,7 +25,9 @@ import Typography from "@mui/material/Typography";
 import RequestPanel from "./request-panel";
 import RequestTable from "./request-table";
 import { RequestCalendar } from "./request-calendar";
+import MobileRequestTab from "./mobile/mobile-request-tab";
 // Hooks
+import { useIsMobile } from "../../hooks/useIsMobile";
 import { useShiftDemands } from "../../app/lib/hooks/useShiftDemands";
 import {
   useAddRequest,
@@ -60,6 +62,7 @@ export default function RequestTab({
   userTeamRole: TeamMembershipRole;
 }) {
   const { t } = useTranslation(lng, "request-page");
+  const isMobile = useIsMobile();
 
   // Request hooks
   const addRequest = useAddRequest();
@@ -259,6 +262,29 @@ export default function RequestTab({
       }
     }
   }, [statusTab]);
+
+  // Render mobile version if on mobile device
+  if (isMobile) {
+    return (
+      <MobileRequestTab
+        lng={lng}
+        teamId={teamId}
+        userId={userId}
+        userTeamRole={userTeamRole}
+        requests={requests}
+        workers={workers}
+        shifts={shifts}
+        shiftOptions={shiftOptions}
+        isLoading={false}
+        handleAddRequest={handleAddRequest}
+        handleUpdateRequest={handleUpdateRequest}
+        handleDeleteRequest={handleDeleteRequest}
+        handleRescindRequest={handleRescindRequest}
+        handleAcceptRequest={handleAcceptRequest}
+        handleDenyRequest={handleDenyRequest}
+      />
+    );
+  }
 
   return (
     <div className="tab-container-wide" data-testid="request-tab">

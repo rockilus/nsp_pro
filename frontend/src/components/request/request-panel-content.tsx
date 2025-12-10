@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import { useTranslation } from "../../app/i18n/client";
 // MUI
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Checkbox from "@mui/material/Checkbox";
 import FormControl from "@mui/material/FormControl";
@@ -15,6 +16,7 @@ import Typography from "@mui/material/Typography";
 import WorkIcon from "@mui/icons-material/Work";
 import IconButton from "@mui/material/IconButton";
 import CheckIcon from "@mui/icons-material/Check";
+import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
 import UndoIcon from "@mui/icons-material/Undo";
 import ClearIcon from "@mui/icons-material/Clear";
@@ -24,6 +26,11 @@ import Chip from "@mui/material/Chip";
 import ShiftOptionsDisplay from "../stats/nav-bar/shift-options-display";
 // Styles
 import "./request-panel.css";
+// Utils
+import {
+  getRequestStatusColor,
+  getRequestStatusLabel,
+} from "../../utils/shift-worker-option-display";
 // Types
 import {
   RequestT,
@@ -54,6 +61,8 @@ export default function RequestPanelContent({
   handleDenyRequest,
   onClose,
   fullWidth = false,
+  isMobile = false,
+  title,
 }: {
   lng: string;
   teamId: string;
@@ -72,6 +81,8 @@ export default function RequestPanelContent({
   handleDenyRequest?: (requestId: string) => void;
   onClose?: () => void;
   fullWidth?: boolean;
+  isMobile?: boolean;
+  title?: string;
 }) {
   const { t } = useTranslation(lng, "request-page");
 
@@ -195,33 +206,6 @@ export default function RequestPanelContent({
       setDateRange(!request.startDate.isSame(request.endDate, "day"));
     }
   }, [request, isEdit]);
-
-  // Helper function to get status color and label (same as RequestTable)
-  const getStatusColor = (status: RequestStatus) => {
-    switch (status) {
-      case RequestStatus.APPROVED:
-        return "success";
-      case RequestStatus.DENIED:
-        return "error";
-      case RequestStatus.DEFERRED:
-        return "warning";
-      default:
-        return "default";
-    }
-  };
-
-  const getStatusLabel = (status: RequestStatus) => {
-    switch (status) {
-      case RequestStatus.PENDING:
-        return t("pending");
-      case RequestStatus.APPROVED:
-        return t("approved");
-      case RequestStatus.DENIED:
-        return t("rejected");
-      default:
-        return "Unknown";
-    }
-  };
 
   const handleSaveRequest = async () => {
     // Reset all errors
@@ -398,13 +382,42 @@ export default function RequestPanelContent({
 
   return (
     <div>
+      {/* Mobile header with close button */}
+      {isMobile && (
+        <Box
+          sx={{
+            position: "sticky",
+            top: 0,
+            zIndex: 1100,
+            backgroundColor: "background.paper",
+            borderBottom: 1,
+            borderColor: "divider",
+            p: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            {title || "Request"}
+          </Typography>
+          <IconButton
+            aria-label="close"
+            onClick={onClose}
+            edge="end"
+            data-testid="close-request-dialog-button"
+          >
+            <CloseIcon />
+          </IconButton>
+        </Box>
+      )}
       {/* Status chip and action buttons */}
       {isEdit && request && (
         <div className="flex items-center gap-2 mb-4">
           <Chip
-            label={getStatusLabel(requestState.status)}
+            label={getRequestStatusLabel(requestState.status, t)}
             size="small"
-            color={getStatusColor(requestState.status)}
+            color={getRequestStatusColor(requestState.status)}
             variant="filled"
           />
           {/* Action buttons for edit mode */}
