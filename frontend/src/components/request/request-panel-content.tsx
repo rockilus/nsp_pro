@@ -24,6 +24,11 @@ import Chip from "@mui/material/Chip";
 import ShiftOptionsDisplay from "../stats/nav-bar/shift-options-display";
 // Styles
 import "./request-panel.css";
+// Utils
+import {
+  getRequestStatusColor,
+  getRequestStatusLabel,
+} from "../../utils/shift-worker-option-display";
 // Types
 import {
   RequestT,
@@ -195,33 +200,6 @@ export default function RequestPanelContent({
       setDateRange(!request.startDate.isSame(request.endDate, "day"));
     }
   }, [request, isEdit]);
-
-  // Helper function to get status color and label (same as RequestTable)
-  const getStatusColor = (status: RequestStatus) => {
-    switch (status) {
-      case RequestStatus.APPROVED:
-        return "success";
-      case RequestStatus.DENIED:
-        return "error";
-      case RequestStatus.DEFERRED:
-        return "warning";
-      default:
-        return "default";
-    }
-  };
-
-  const getStatusLabel = (status: RequestStatus) => {
-    switch (status) {
-      case RequestStatus.PENDING:
-        return t("pending");
-      case RequestStatus.APPROVED:
-        return t("approved");
-      case RequestStatus.DENIED:
-        return t("rejected");
-      default:
-        return "Unknown";
-    }
-  };
 
   const handleSaveRequest = async () => {
     // Reset all errors
@@ -402,9 +380,9 @@ export default function RequestPanelContent({
       {isEdit && request && (
         <div className="flex items-center gap-2 mb-4">
           <Chip
-            label={getStatusLabel(requestState.status)}
+            label={getRequestStatusLabel(requestState.status, t)}
             size="small"
-            color={getStatusColor(requestState.status)}
+            color={getRequestStatusColor(requestState.status)}
             variant="filled"
           />
           {/* Action buttons for edit mode */}

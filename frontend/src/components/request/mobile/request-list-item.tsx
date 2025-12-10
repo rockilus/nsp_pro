@@ -9,6 +9,8 @@ import { WorkerT } from "@/types/worker";
 import {
   getRequestTargetDisplayText,
   getShiftColors,
+  getRequestStatusColor,
+  getRequestStatusLabel,
 } from "@/utils/shift-worker-option-display";
 
 interface RequestListItemProps {
@@ -34,35 +36,6 @@ export default function RequestListItem({
 }: RequestListItemProps) {
   const isWork = request.requestType === RequestType.WORK_DEMAND;
   const isLeave = request.requestType === RequestType.LEAVE;
-
-  // Get status info
-  const getStatusColor = (status: RequestStatus) => {
-    switch (status) {
-      case RequestStatus.APPROVED:
-        return "success";
-      case RequestStatus.DENIED:
-        return "error";
-      case RequestStatus.DEFERRED:
-        return "warning";
-      default:
-        return "default";
-    }
-  };
-
-  const getStatusLabel = (status: RequestStatus) => {
-    switch (status) {
-      case RequestStatus.PENDING:
-        return t("pending");
-      case RequestStatus.APPROVED:
-        return t("approved");
-      case RequestStatus.DENIED:
-        return t("rejected");
-      case RequestStatus.DEFERRED:
-        return t("deferred");
-      default:
-        return "Unknown";
-    }
-  };
 
   // Get shift colors for the request
   const shiftColors = getShiftColors(request, shifts);
@@ -122,9 +95,9 @@ export default function RequestListItem({
           }}
         />
         <Chip
-          label={getStatusLabel(request.status)}
+          label={getRequestStatusLabel(request.status, t)}
           size="small"
-          color={getStatusColor(request.status) as any}
+          color={getRequestStatusColor(request.status) as any}
           sx={{
             fontWeight: 500,
             fontSize: "0.7rem",

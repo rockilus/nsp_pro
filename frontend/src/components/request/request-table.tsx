@@ -24,6 +24,8 @@ import {
   getShiftWorkerOptionDisplayText,
   getRequestTargetDisplayText,
   getShiftColors,
+  getRequestStatusColor,
+  getRequestStatusLabel,
 } from "../../utils/shift-worker-option-display";
 // Styles
 import "../../styles/table-styles.css";
@@ -185,39 +187,11 @@ const TypeCell = ({ request }: { request: RequestT }) => {
 };
 
 const StatusCell = ({ request, t }: { request: RequestT; t: any }) => {
-  const getStatusColor = (status: RequestStatus) => {
-    switch (status) {
-      case RequestStatus.APPROVED:
-        return "success";
-      case RequestStatus.DENIED:
-        return "error";
-      case RequestStatus.DEFERRED:
-        return "warning";
-      default:
-        return "default";
-    }
-  };
-
-  const getStatusLabel = (status: RequestStatus) => {
-    switch (status) {
-      case RequestStatus.PENDING:
-        return t("pending");
-      case RequestStatus.APPROVED:
-        return t("approved");
-      case RequestStatus.DENIED:
-        return t("rejected");
-      // case RequestStatus.DEFERRED:
-      //   return t("deferred");
-      default:
-        return "Unknown";
-    }
-  };
-
   return (
     <Chip
-      label={getStatusLabel(request.status)}
+      label={getRequestStatusLabel(request.status, t)}
       size="small"
-      color={getStatusColor(request.status)}
+      color={getRequestStatusColor(request.status)}
       variant="filled"
     />
   );
