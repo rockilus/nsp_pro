@@ -79,6 +79,10 @@ export default function MobileRequestTab({
 
   const userWorker = workers.find((w) => w.userId === userId);
 
+  // Scroll handler refs - define early so they're available for scroll functions
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const weekRefs = React.useRef<Array<HTMLDivElement | null>>([]);
+  
   // Ref to store the scrollToToday handler from child component
   const scrollToTodayRef = React.useRef<(() => void) | null>(null);
 
@@ -193,10 +197,6 @@ export default function MobileRequestTab({
     />
   );
 
-  // Scroll handler refs
-  const containerRef = React.useRef<HTMLDivElement | null>(null);
-  const weekRefs = React.useRef<Array<HTMLDivElement | null>>([]);
-
   // Detect visible month on scroll
   const handleScroll = () => {
     if (!containerRef.current) return;
@@ -234,8 +234,8 @@ export default function MobileRequestTab({
       // Find the week containing today
       const todayWeekIndex = weeks.findIndex(
         (w) =>
-          today.isSameOrAfter(w.start, "day") &&
-          today.isSameOrBefore(w.end, "day")
+          (today.isAfter(w.start, "day") || today.isSame(w.start, "day")) &&
+          (today.isBefore(w.end, "day") || today.isSame(w.end, "day"))
       );
 
       if (todayWeekIndex >= 0 && weekRefs.current[todayWeekIndex]) {
