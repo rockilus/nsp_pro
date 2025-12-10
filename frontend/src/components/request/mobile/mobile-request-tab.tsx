@@ -7,8 +7,6 @@ import { useTranslation } from "../../../app/i18n/client";
 import Box from "@mui/material/Box";
 import Fab from "@mui/material/Fab";
 import CircularProgress from "@mui/material/CircularProgress";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
 import AddIcon from "@mui/icons-material/Add";
 // Hooks
 import {
@@ -26,7 +24,7 @@ import MobileNavAppBar from "../../app-bar/mobile-nav-app-bar";
 import MobileRequestNav from "./mobile-request-nav";
 import MobileRequestSettings from "./mobile-request-settings";
 import PortraitRequestList from "./portrait-request-list";
-import RequestPanelContent from "../request-panel-content";
+import RequestPanel from "../request-panel";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -298,29 +296,26 @@ export default function MobileRequestTab({
         </Fab>
 
         {/* Request Dialog - Full screen on mobile */}
-        <Dialog open={sheetOpen} onClose={() => setSheetOpen(false)} fullScreen>
-          <DialogContent sx={{ p: 0 }}>
-            <RequestPanelContent
-              lng={lng}
-              teamId={teamId}
-              isEdit={!!activeRequest}
-              request={activeRequest || undefined}
-              workers={workers.filter((w) => !w.deleted)}
-              shifts={shifts}
-              shiftOptions={shiftOptions}
-              userWorkerId={userWorker?.id || null}
-              userTeamRole={userTeamRole}
-              handleAddRequest={handleAddRequest}
-              handleUpdateRequest={handleUpdateRequest}
-              handleDeleteRequest={handleDeleteRequest}
-              handleRescindRequest={handleRescindRequest}
-              handleAcceptRequest={handleAcceptRequest}
-              handleDenyRequest={handleDenyRequest}
-              onClose={() => setSheetOpen(false)}
-              fullWidth={true}
-            />
-          </DialogContent>
-        </Dialog>
+        <RequestPanel
+          lng={lng}
+          teamId={teamId}
+          isEdit={!!activeRequest}
+          request={activeRequest}
+          workers={workers.filter((w) => !w.deleted)}
+          shifts={shifts}
+          shiftOptions={shiftOptions}
+          userWorkerId={userWorker?.id || null}
+          userTeamRole={userTeamRole}
+          handleAddRequest={handleAddRequest}
+          handleUpdateRequest={handleUpdateRequest}
+          handleDeleteRequest={handleDeleteRequest}
+          handleRescindRequest={handleRescindRequest}
+          handleAcceptRequest={handleAcceptRequest}
+          handleDenyRequest={handleDenyRequest}
+          hideButton={true}
+          open={sheetOpen}
+          onClose={() => setSheetOpen(false)}
+        />
       </Box>
 
       <MobileRequestSettings
