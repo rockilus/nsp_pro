@@ -25,17 +25,90 @@ export default function ProtectedRoute({
   const { isAuthenticated, loading, error, signIn } = useAuth();
   const [networkRetrying, setNetworkRetrying] = useState(false);
   const [showManualSignIn, setShowManualSignIn] = useState(false);
+  const [callbackTimeout, setCallbackTimeout] = useState(false);
 
   useEffect(() => {
+    // Check if we're handling an OAuth callback (has code and state in URL)
+    const isHandlingCallback =
+      typeof window !== "undefined" &&
+      window.location.search.includes("code=") &&
+      window.location.search.includes("state=");
+
+    if (isHandlingCallback) {
+      console.log(
+        "🔄 OAuth callback detected in URL, waiting for authentication..."
+      );
+      console.log("Auth state:", {
+        isAuthenticated,
+        loading,
+        hasError: !!error,
+      });
+
+      // Set a timeout for callback processing (10 seconds)
+      const callbackTimer = setTimeout(() => {
+        if (!isAuthenticated) {
+          console.error("❌ Callback processing timed out after 10 seconds");
+          setCallbackTimeout(true);
+          // Clean up the URL by removing query params
+          if (typeof window !== "undefined") {
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, "", cleanUrl);
+          }
+        }
+      }, 10000);
+
+      return () => clearTimeout(callbackTimer);
+    }
+
+    // If callback timed out, trigger manual sign-in
+    if (callbackTimeout && !isAuthenticated) {
+      console.log("🔄 Callback failed, triggering new sign-in...");
+      const resetTimer = setTimeout(() => {
+        setCallbackTimeout(false);
+        signIn();
+      }, 0);
+      return () => clearTimeout(resetTimer);
+    }
+
+    // Clean up URL if authenticated and still has callback params
+    if (isAuthenticated && isHandlingCallback) {
+      console.log("✅ Authentication successful, cleaning up URL...");
+      if (typeof window !== "undefined") {
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, "", cleanUrl);
+      }
+      return;
+    }
+
+    // Also don't redirect if we're still loading (might be processing callback)
+    if (loading) {
+      console.log("⏳ Still loading authentication state...");
+      return;
+    }
+
     if (requireAuth && !loading && !error && !isAuthenticated) {
-      // Delay automatic redirect to avoid issues during token refresh
+      // Immediate redirect (no delay) for better mobile Safari compatibility
       const timer = setTimeout(() => {
         if (!isAuthenticated && !loading && !error) {
+          console.log("🔐 ProtectedRoute: Initiating sign-in redirect");
           signIn();
         }
-      }, 1000);
+      }, 100); // Minimal 100ms delay to ensure component is mounted
 
-      return () => clearTimeout(timer);
+      // Show manual sign-in button after 2 seconds as fallback
+      const fallbackTimer = setTimeout(() => {
+        if (!isAuthenticated && !loading && !error) {
+          console.log(
+            "⚠️ Automatic redirect may have failed, showing manual sign-in button"
+          );
+          setShowManualSignIn(true);
+        }
+      }, 2000);
+
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(fallbackTimer);
+      };
     }
 
     // Handle specific refresh token rotation errors
@@ -82,7 +155,7 @@ export default function ProtectedRoute({
         if (networkRetryTimer) clearTimeout(networkRetryTimer);
       };
     }
-  }, [requireAuth, loading, error, isAuthenticated, signIn]);
+  }, [requireAuth, loading, error, isAuthenticated, signIn, callbackTimeout]);
 
   // Network connectivity issues
   if (networkRetrying || (error && isNetworkError(error))) {
@@ -200,8 +273,8 @@ export default function ProtectedRoute({
             gap={2}
           >
             <Alert severity="info" sx={{ mb: 2 }}>
-              <AlertTitle>Authentication Required</AlertTitle>
-              Your session has expired. Please sign in to continue.
+              <AlertTitle>Sign In Required</AlertTitle>
+              Please click the button below to sign in to NSP Pro.
             </Alert>
 
             <Button
@@ -212,6 +285,10 @@ export default function ProtectedRoute({
             >
               Sign In to NSP Pro
             </Button>
+
+            <Typography variant="caption" color="text.secondary">
+              Automatic redirect didn&apos;t work? Click the button above.
+            </Typography>
 
             <Typography
               variant="body2"

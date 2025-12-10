@@ -182,25 +182,23 @@ resource "aws_cognito_user_pool_client" "main" {
 
 # Cognito User Pool Domain - Custom Domain
 resource "aws_cognito_user_pool_domain" "main" {
-  count = var.custom_domain_name != null ? 1 : 0
-
   domain          = var.custom_domain_name
   certificate_arn = var.certificate_arn
   user_pool_id    = aws_cognito_user_pool.main.id
+
+  managed_login_version = 2
 
   depends_on = [aws_cognito_user_pool.main]
 }
 
 # Route53 DNS Record for Custom Domain
 resource "aws_route53_record" "cognito_custom_domain" {
-  count = var.custom_domain_name != null ? 1 : 0
-
   zone_id = var.hosted_zone_id
   name    = var.custom_domain_name
   type    = "A"
 
   alias {
-    name                   = aws_cognito_user_pool_domain.main[0].cloudfront_distribution
+    name                   = aws_cognito_user_pool_domain.main.cloudfront_distribution
     zone_id                = "Z2FDTNDATAQYW2" # CloudFront hosted zone ID (AWS constant)
     evaluate_target_health = false
   }
@@ -208,16 +206,16 @@ resource "aws_route53_record" "cognito_custom_domain" {
   depends_on = [aws_cognito_user_pool_domain.main]
 }
 
-# Cognito Hosted UI Customization with Rockilus branding
-resource "aws_cognito_user_pool_ui_customization" "main" {
-  user_pool_id = aws_cognito_user_pool.main.id
-  client_id    = aws_cognito_user_pool_client.main.id
 
-  # Custom CSS for branding
-  css = file("${path.module}/../cognito-assets/cognito-custom.css")
-
-  # Logo image (base64 encoded PNG)
-  image_file = filebase64("${path.module}/../cognito-assets/assets/rockilus_logo_blue.jpg")
+# AWS Cloud Control managed login branding (simple/default configuration)
+# This uses the awscc provider resource to attach a minimal branding configuration
+# for the managed hosted UI (managed_login_version = 2). It defers to Cognito
+# provided values and links the branding to the user pool and client we already
+# create above.
+resource "awscc_cognito_managed_login_branding" "branding" {
+  user_pool_id                = aws_cognito_user_pool.main.id
+  client_id                   = aws_cognito_user_pool_client.main.id
+  use_cognito_provided_values = true
 
   depends_on = [
     aws_cognito_user_pool_domain.main,

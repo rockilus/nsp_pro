@@ -35,6 +35,6 @@ output "cognito_domain" {
 
 output "cognito_cloudfront_distribution" {
   description = "CloudFront distribution for custom domain (if applicable)"
-  value       = var.custom_domain_name != null ? aws_cognito_user_pool_domain.main[0].cloudfront_distribution : null
+  value       = aws_cognito_user_pool_domain.main.cloudfront_distribution
 }
 
