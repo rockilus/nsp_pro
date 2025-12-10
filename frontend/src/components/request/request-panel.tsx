@@ -142,7 +142,7 @@ export default function RequestPanel({
                 alignItems: "center",
               }}
             >
-              <span>{t("new_request")}</span>
+              <span>{isEdit ? t("edit_request") : t("new_request")}</span>
               <IconButton
                 aria-label="close"
                 onClick={handleClose}
@@ -178,7 +178,7 @@ export default function RequestPanel({
             handleDenyRequest={handleDenyRequest}
             onClose={handleClose}
             isMobile={isMobile}
-            title={t("new_request")}
+            title={isEdit ? t("edit_request") : t("new_request")}
             fullWidth={isMobile}
           />
         </DialogContent>
