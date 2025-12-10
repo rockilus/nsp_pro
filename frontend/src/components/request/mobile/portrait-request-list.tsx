@@ -62,7 +62,12 @@ export default function PortraitRequestList({
         const weekItems = weekDates.flatMap(
           (d) => requestsByDate.get(d.utc().format("YYYY-MM-DD")) || []
         );
-        if (weekItems.length === 0) return null;
+
+        // Check if this week contains today
+        const weekContainsToday = weekDates.some((d) => d.isSame(today, "day"));
+
+        // Skip week if it has no items and doesn't contain today
+        if (weekItems.length === 0 && !weekContainsToday) return null;
 
         return (
           <Box
