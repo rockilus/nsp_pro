@@ -106,31 +106,26 @@ export default function RequestListItem({
         border: "1px solid #e0e0e0",
       }}
     >
-      {/* First line: Emoji + Shift names */}
-      <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-        <Typography variant="body2" sx={{ fontSize: "1.2rem" }}>
-          {emoji}
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{ fontWeight: 600, fontSize: "0.875rem" }}
-        >
-          {shiftNamesList.map((s) => s.name).join(", ")}
-        </Typography>
-      </Box>
-
-      {/* Second line: Date range (only if multi-day) */}
-      {isMultiDay && dateRangeText && (
-        <Typography
-          variant="body2"
-          sx={{ fontWeight: 500, fontSize: "0.875rem" }}
-        >
-          {dateRangeText}
-        </Typography>
-      )}
-
-      {/* Third line: Status chip */}
-      <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+      {/* First line: Emoji + Shift names + Status chip */}
+      <Box
+        sx={{
+          display: "flex",
+          gap: 1,
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Box sx={{ display: "flex", gap: 1, alignItems: "center", flex: 1 }}>
+          <Typography variant="body2" sx={{ fontSize: "1.2rem" }}>
+            {emoji}
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{ fontWeight: 600, fontSize: "0.875rem" }}
+          >
+            {shiftNamesList.map((s) => s.name).join(", ")}
+          </Typography>
+        </Box>
         <Chip
           label={getRequestStatusLabel(request.status, t)}
           size="small"
@@ -142,6 +137,16 @@ export default function RequestListItem({
           }}
         />
       </Box>
+
+      {/* Second line: Date range (only if multi-day) */}
+      {isMultiDay && dateRangeText && (
+        <Typography
+          variant="body2"
+          sx={{ fontWeight: 500, fontSize: "0.875rem" }}
+        >
+          {dateRangeText}
+        </Typography>
+      )}
     </Box>
   );
 }
