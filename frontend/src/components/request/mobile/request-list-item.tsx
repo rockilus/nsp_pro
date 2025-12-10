@@ -102,7 +102,7 @@ export default function RequestListItem({
         p: 1.5,
         borderRadius: 1,
         cursor: onClick ? "pointer" : "default",
-        backgroundColor: "#fff",
+        backgroundColor: isLeave ? "#ffebee" : "#fff",
         border: "1px solid #e0e0e0",
       }}
     >
@@ -129,19 +129,8 @@ export default function RequestListItem({
         </Typography>
       )}
 
-      {/* Third line: Type and Status chips */}
+      {/* Third line: Status chip */}
       <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-        <Chip
-          label={isWork ? t("work") : t("leave")}
-          size="small"
-          sx={{
-            backgroundColor: isWork ? "#1976d2" : "#9c27b0",
-            color: "white",
-            fontWeight: 500,
-            fontSize: "0.7rem",
-            height: 20,
-          }}
-        />
         <Chip
           label={getRequestStatusLabel(request.status, t)}
           size="small"
