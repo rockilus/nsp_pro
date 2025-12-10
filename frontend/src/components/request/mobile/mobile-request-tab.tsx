@@ -82,7 +82,7 @@ export default function MobileRequestTab({
   // Scroll handler refs - define early so they're available for scroll functions
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const weekRefs = React.useRef<Array<HTMLDivElement | null>>([]);
-  
+
   // Ref to store the scrollToToday handler from child component
   const scrollToTodayRef = React.useRef<(() => void) | null>(null);
 
