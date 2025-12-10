@@ -23,6 +23,19 @@ interface AuthContextType {
   signOutRedirect: () => Promise<void>;
 }
 
+/**
+ * Detects if the current device is mobile Safari
+ */
+const isMobileSafari = (): boolean => {
+  if (typeof window === "undefined") return false;
+  const ua = navigator.userAgent;
+  return (
+    /iPhone|iPad|iPod/.test(ua) &&
+    /Safari/.test(ua) &&
+    !/CriOS|FxiOS|OPiOS|mercury/.test(ua)
+  );
+};
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function useAuth(): AuthContextType {
@@ -342,13 +355,48 @@ function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signIn = async (): Promise<void> => {
+    try {
+      // Always use react-oidc-context's signinRedirect for proper state management
+      // This ensures the library can handle the callback correctly
+      console.log("🔐 Initiating auth redirect via react-oidc-context");
+
+      // Mobile Safari detection for logging
+      const isSafari = isMobileSafari();
+      if (isSafari) {
+        console.log("📱 Mobile Safari detected");
+      }
+
+      await auth.signinRedirect();
+    } catch (error) {
+      console.error("❌ Sign-in redirect failed:", error);
+
+      // Only use manual redirect as last resort if signinRedirect throws
+      // This should rarely happen
+      try {
+        const authUrl =
+          `${cognitoDomain}/oauth2/authorize?` +
+          `client_id=${cognitoAuthConfig.client_id}&` +
+          `response_type=${cognitoAuthConfig.response_type}&` +
+          `scope=${encodeURIComponent(cognitoAuthConfig.scope)}&` +
+          `redirect_uri=${encodeURIComponent(cognitoAuthConfig.redirect_uri)}`;
+
+        console.log("🔄 Falling back to window.location.href redirect");
+        window.location.href = authUrl;
+      } catch (fallbackError) {
+        console.error("❌ Fallback redirect also failed:", fallbackError);
+        throw fallbackError;
+      }
+    }
+  };
+
   const contextValue: AuthContextType = {
     user: auth.user,
     loading: auth.isLoading || loading || retryingRefresh,
     error: auth.error,
     isAuthenticated: auth.isAuthenticated,
     accessToken: auth.user?.access_token || null,
-    signIn: () => auth.signinRedirect(),
+    signIn,
     signOut,
     signOutRedirect,
   };
