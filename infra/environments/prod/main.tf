@@ -79,6 +79,25 @@ module "cognito" {
   depends_on = [module.route53]
 }
 
+# AWS SES for email sending
+module "ses" {
+  source = "../../modules/ses"
+
+  project_name       = var.project_name
+  environment        = var.environment
+  aws_region         = var.aws_region
+  domain_name        = var.ses_domain_name
+  from_email_address = var.ses_from_email_address
+  enable_dkim        = var.ses_enable_dkim
+
+  tags = {
+    Environment = var.environment
+    Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
+    Project     = "NSP Pro"
+  }
+}
+
 # IAM roles and policies module
 module "iam" {
   source = "../../modules/iam"

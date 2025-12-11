@@ -717,5 +717,24 @@ variable "permit_pdp_operating_system_family" {
   }
 }
 
+# SES Configuration
+variable "ses_domain_name" {
+  description = "Domain name to verify with SES (e.g., rockilus.com)"
+  type        = string
+  default     = "rockilus.com"
+}
+
+variable "ses_from_email_address" {
+  description = "Email address to verify with SES (e.g., noreply@rockilus.com)"
+  type        = string
+  default     = "noreply@rockilus.com"
+}
+
+variable "ses_enable_dkim" {
+  description = "Enable DKIM signing for the SES domain"
+  type        = bool
+  default     = true
+}
+
 
 
