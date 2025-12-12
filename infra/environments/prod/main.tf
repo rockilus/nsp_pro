@@ -499,10 +499,9 @@ module "ecs" {
   documentdb_secret_name                     = module.documentdb.credentials_secret_name
   api_gateway_backend_api_key_parameter_name = module.api_gateway.backend_api_key_parameter.name
 
-  # SQS Queue Names
-  sqs_solve_queue_name = module.sqs.solve_queue_name
-  sqs_solve_dlq_name   = module.sqs.solve_dlq_name
-  email_queue_url      = module.email_sqs.email_queue_url
+  # SQS Queue URLs (managed by Terraform)
+  sqs_solve_queue_url = module.sqs.solve_queue_url
+  sqs_email_queue_url = module.email_sqs.email_queue_url
 
   tags = {
     Environment = var.environment

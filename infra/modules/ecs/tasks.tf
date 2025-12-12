@@ -38,16 +38,12 @@ resource "aws_ecs_task_definition" "main_service" {
             value = var.aws_region
           },
           {
-            name  = "SQS_SOLVE_QUEUE_NAME"
-            value = var.sqs_solve_queue_name
+            name  = "AWS_SQS_SOLVE_QUEUE_URL"
+            value = var.sqs_solve_queue_url
           },
           {
-            name  = "SQS_SOLVE_DLQ_NAME"
-            value = var.sqs_solve_dlq_name
-          },
-          {
-            name  = "EMAIL_QUEUE_URL"
-            value = var.email_queue_url
+            name  = "AWS_SQS_EMAIL_QUEUE_URL"
+            value = var.sqs_email_queue_url
           },
           {
             name  = "DOCUMENTDB_SECRET_NAME"
@@ -161,12 +157,8 @@ resource "aws_ecs_task_definition" "solve_service" {
             value = var.aws_region
           },
           {
-            name  = "SQS_SOLVE_QUEUE_NAME"
-            value = var.sqs_solve_queue_name
-          },
-          {
-            name  = "SQS_SOLVE_DLQ_NAME"
-            value = var.sqs_solve_dlq_name
+            name  = "AWS_SQS_SOLVE_QUEUE_URL"
+            value = var.sqs_solve_queue_url
           },
           {
             name  = "DOCUMENTDB_SECRET_NAME"

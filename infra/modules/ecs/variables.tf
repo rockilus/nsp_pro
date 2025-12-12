@@ -282,20 +282,14 @@ variable "tags" {
   default     = {}
 }
 
-# SQS Queue Names
-variable "sqs_solve_queue_name" {
-  description = "Name of the SQS queue for solve requests"
+# SQS Queue URLs (managed by Terraform)
+variable "sqs_solve_queue_url" {
+  description = "URL of the SQS queue for solve requests"
   type        = string
   default     = ""
 }
 
-variable "sqs_solve_dlq_name" {
-  description = "Name of the SQS dead-letter queue for solve requests"
-  type        = string
-  default     = ""
-}
-
-variable "email_queue_url" {
+variable "sqs_email_queue_url" {
   description = "URL of the SQS queue for email processing"
   type        = string
   default     = ""
