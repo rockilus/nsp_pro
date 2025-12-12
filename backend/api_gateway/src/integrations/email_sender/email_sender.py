@@ -1,5 +1,4 @@
 import logging
-import os
 from typing import Dict, List
 
 import boto3  # type: ignore
@@ -58,10 +57,14 @@ class EmailSender:
             )
             logger.info("Email sent successfully: %s", response)
         except ClientError as e:
-            logger.error("Failed to send email: %s", e.response["Error"]["Message"])
+            logger.error(
+                "Failed to send email: %s", e.response["Error"]["Message"]
+            )
             raise
         except Exception as e:
-            logger.error("An unexpected error occurred while sending email: %s", e)
+            logger.error(
+                "An unexpected error occurred while sending email: %s", e
+            )
             raise
 
     def send_template_email(
@@ -71,31 +74,20 @@ class EmailSender:
         context: Dict,
         language: Language = Language.EN,
     ):
-        """Send an email using a template."""
-        subject, html_body = self._render_template(
-            template_name=template_name, context=context, language=language
+        """
+        Send an email using a template.
+
+        DEPRECATED: This method is deprecated. Templates are now managed
+        in infrastructure (S3) and rendered by Lambda email processor.
+        Use EmailQueueService to enqueue emails for async processing.
+        """
+        logger.warning(
+            "send_template_email is deprecated. Use EmailQueueService. "
+            "Template: %s, Language: %s",
+            template_name,
+            language.value,
         )
-        self.send_email(to_addresses=[to_address], subject=subject, html_body=html_body)
-
-    def _render_template(self, template_name: str, context: Dict, language: Language):
-        """Render the email template based on the template name and language."""
-        try:
-            # Load the template file based on the name and language
-            current_folder = os.path.dirname(__file__)
-            template_path = f"templates/{language.value}/{template_name}.html"
-            file_path = os.path.join(current_folder, template_path)
-            with open(file=file_path, mode="r", encoding="utf-8") as template_file:
-                template = template_file.read()
-
-            # Replace placeholders in the template with context values
-            html_body = template.format(**context)
-
-            # Extract the subject from the context
-            subject = context.get("subject", "No Subject")
-            return subject, html_body
-        except FileNotFoundError:
-            logger.error("Template not found: %s", template_name)
-            raise
-        except Exception as e:
-            logger.error("Failed to render template: %s", e)
-            raise
+        raise NotImplementedError(
+            "Template rendering moved to Lambda. "
+            "Use EmailQueueService to enqueue emails."
+        )

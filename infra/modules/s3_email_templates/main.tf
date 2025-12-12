@@ -13,15 +13,6 @@ resource "aws_s3_bucket" "email_templates" {
   )
 }
 
-# Enable versioning for template history
-resource "aws_s3_bucket_versioning" "email_templates" {
-  bucket = aws_s3_bucket.email_templates.id
-
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
-
 # Block all public access
 resource "aws_s3_bucket_public_access_block" "email_templates" {
   bucket = aws_s3_bucket.email_templates.id
@@ -32,18 +23,9 @@ resource "aws_s3_bucket_public_access_block" "email_templates" {
   restrict_public_buckets = true
 }
 
-# Lifecycle policy to manage old versions
+# Lifecycle policy to clean up incomplete uploads
 resource "aws_s3_bucket_lifecycle_configuration" "email_templates" {
   bucket = aws_s3_bucket.email_templates.id
-
-  rule {
-    id     = "delete-old-versions"
-    status = "Enabled"
-
-    noncurrent_version_expiration {
-      noncurrent_days = 90
-    }
-  }
 
   rule {
     id     = "abort-incomplete-multipart-uploads"
@@ -80,8 +62,7 @@ resource "aws_s3_bucket_policy" "email_templates" {
           AWS = var.lambda_role_arn
         }
         Action = [
-          "s3:GetObject",
-          "s3:GetObjectVersion"
+          "s3:GetObject"
         ]
         Resource = "${aws_s3_bucket.email_templates.arn}/*"
       },
@@ -92,8 +73,7 @@ resource "aws_s3_bucket_policy" "email_templates" {
           AWS = var.lambda_role_arn
         }
         Action = [
-          "s3:ListBucket",
-          "s3:GetBucketVersioning"
+          "s3:ListBucket"
         ]
         Resource = aws_s3_bucket.email_templates.arn
       }
