@@ -259,22 +259,6 @@ class TeamInvitationService(BaseService):
             # Log error but fall back to direct email
             print(f"Failed to enqueue email, falling back to direct: {e}")
 
-        # Fallback to direct email sending
-        # email_sender = EmailSender()
-        # email_sender.send_template_email(
-        #     to_address=invitation.email,
-        #     template_name="team_invitation_email",
-        #     context={
-        #         "subject": "Your invitation to join a team on Rockilus",
-        #         "recipient_name": recipient_name,
-        #         "sender_name": sender_name,
-        #         "team_name": team.name,
-        #         "invitation_link": invitation_link,
-        #     },
-        #     language=sender.language,
-        # )
-        # return
-
     def delete_team_invitation(self, invitation_id: str) -> None:
         self.collection.team_invitation_db.delete_invitation(
             invitation_id=invitation_id

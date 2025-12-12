@@ -9,6 +9,7 @@ the shared SQS service.
 from datetime import datetime, timezone
 
 from loguru import logger
+from shared.aws.config import create_aws_config
 from shared.aws.sqs_client import SQSClient
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import SolveRequestStatus, SolveTaskStatus
@@ -195,8 +196,6 @@ def create_sqs_solve_service(
     Returns:
         Configured APIGatewaySQSSolveService
     """
-    from shared.aws.config import create_aws_config
-
     # Create AWS config using shared factory
     aws_config = create_aws_config(config)
     sqs_client = SQSClient(aws_config)

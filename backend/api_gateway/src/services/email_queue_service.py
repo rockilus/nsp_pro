@@ -7,6 +7,7 @@ This service handles sending email messages to the email SQS queue.
 from datetime import datetime, timezone
 
 from loguru import logger
+from shared.aws.config import create_aws_config
 from shared.aws.sqs_client import SQSClient
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
@@ -88,6 +89,7 @@ class EmailQueueService(BaseService):
             )
             raise
 
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
     async def enqueue_team_invitation(
         self,
         to_address: str,
@@ -239,11 +241,10 @@ def create_email_queue_service(
     Returns:
         Configured EmailQueueService instance
     """
-    from shared.aws.config import create_aws_config
 
     if not config.sqs_email_queue_url:
         logger.warning(
-            "SQS_EMAIL_QUEUE_URL not configured. " "Email service will not function."
+            "SQS_EMAIL_QUEUE_URL not configured. Email service will not function."
         )
 
     # Create AWS config using shared factory

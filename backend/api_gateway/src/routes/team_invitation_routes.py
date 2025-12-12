@@ -174,7 +174,7 @@ async def resend_team_invitation_email(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to resend the team invitation.",
             )
-        invitation = service.resend_invite(invitation_id=invitation_id)
+        invitation = await service.resend_invite(invitation_id=invitation_id)
         if not invitation:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
