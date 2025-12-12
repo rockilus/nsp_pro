@@ -294,3 +294,9 @@ variable "sqs_solve_dlq_name" {
   type        = string
   default     = ""
 }
+
+variable "email_queue_url" {
+  description = "URL of the SQS queue for email processing"
+  type        = string
+  default     = ""
+}

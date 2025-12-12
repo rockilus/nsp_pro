@@ -46,6 +46,10 @@ resource "aws_ecs_task_definition" "main_service" {
             value = var.sqs_solve_dlq_name
           },
           {
+            name  = "EMAIL_QUEUE_URL"
+            value = var.email_queue_url
+          },
+          {
             name  = "DOCUMENTDB_SECRET_NAME"
             value = var.documentdb_secret_name
           },
