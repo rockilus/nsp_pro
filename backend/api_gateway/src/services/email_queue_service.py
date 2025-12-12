@@ -4,11 +4,9 @@ API Gateway Email Queue Service.
 This service handles sending email messages to the email SQS queue.
 """
 
-import json
 from datetime import datetime, timezone
 
 from loguru import logger
-from shared.aws.config import AWSConfig
 from shared.aws.sqs_client import SQSClient
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
@@ -71,13 +69,11 @@ class EmailQueueService(BaseService):
             # Convert to dict for SQS
             message_body = email_message.to_dict()
 
-            # Send to SQS
-            response = self.sqs_client.send_message(
+            # Send to SQS (returns message ID directly)
+            message_id = await self.sqs_client.send_message(
                 queue_url=self.queue_url,
-                message_body=json.dumps(message_body),
+                message_body=message_body,
             )
-
-            message_id = response.get("MessageId")
             logger.info(
                 f"Email enqueued successfully: message_id={message_id}, "
                 f"email_type={email_message.email_type}"
@@ -243,28 +239,20 @@ def create_email_queue_service(
     Returns:
         Configured EmailQueueService instance
     """
-    # Create AWS config
-    aws_config = AWSConfig(
-        region=config.aws_region,
-        access_key_id=config.aws_access_key_id,
-        secret_access_key=config.aws_secret_access_key,
-        session_token=config.aws_session_token,
-        localstack_endpoint=config.localstack_endpoint,
-    )
+    from shared.aws.config import create_aws_config
 
-    # Create SQS client
-    sqs_client = SQSClient(aws_config)
-
-    # Get queue URL from config
-    queue_url = config.email_queue_url
-
-    if not queue_url:
+    if not config.sqs_email_queue_url:
         logger.warning(
-            "EMAIL_QUEUE_URL not configured. Email service will not function."
+            "SQS_EMAIL_QUEUE_URL not configured. "
+            "Email service will not function."
         )
+
+    # Create AWS config using shared factory
+    aws_config = create_aws_config(config)
+    sqs_client = SQSClient(aws_config)
 
     return EmailQueueService(
         collection=collection,
         sqs_client=sqs_client,
-        queue_url=queue_url,
+        queue_url=config.sqs_email_queue_url or "",
     )

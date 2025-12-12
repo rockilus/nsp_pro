@@ -9,7 +9,6 @@ the shared SQS service.
 from datetime import datetime, timezone
 
 from loguru import logger
-from shared.aws.config import AWSConfig
 from shared.aws.sqs_client import SQSClient
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import SolveRequestStatus, SolveTaskStatus
@@ -45,7 +44,9 @@ class APIGatewaySQSSolveService(BaseService):
         super().__init__(collection)
         self.sqs_solve_service = sqs_solve_service
 
-    async def submit_solve_request(self, schedule_id: str, team_id: str, user_id: str):
+    async def submit_solve_request(
+        self, schedule_id: str, team_id: str, user_id: str
+    ):
         """
         Submit a solve request via SQS and create a SolveTaskStatus object.
         Returns the SolveTaskStatusSchema object (MongoDB schema).
@@ -76,7 +77,9 @@ class APIGatewaySQSSolveService(BaseService):
                         task_status_id=existing_status.id
                     )
             else:
-                raise ValueError(f"Schedule {schedule_id} is already being solved ")
+                raise ValueError(
+                    f"Schedule {schedule_id} is already being solved "
+                )
 
         try:
             # Submit to SQS
@@ -103,8 +106,10 @@ class APIGatewaySQSSolveService(BaseService):
                 result=None,
                 solver_output_metadata=None,
             )
-            sts_saved = self.collection.solve_task_status_db.create_solve_task_status(
-                solve_task_status=solve_task_status
+            sts_saved = (
+                self.collection.solve_task_status_db.create_solve_task_status(
+                    solve_task_status=solve_task_status
+                )
             )
 
             logger.info(
@@ -125,10 +130,8 @@ class APIGatewaySQSSolveService(BaseService):
         Get the current solve status for a solve task by solve_id.
         Returns the SolveTaskStatusResponseDTO or raises if not found.
         """
-        solve_task_status = (
-            self.collection.solve_task_status_db.get_solve_task_status_by_solve_id(
-                solve_id
-            )
+        solve_task_status = self.collection.solve_task_status_db.get_solve_task_status_by_solve_id(
+            solve_id
         )
         if not solve_task_status:
             raise ValueError(f"Solve task with id {solve_id} not found")
@@ -141,7 +144,9 @@ class APIGatewaySQSSolveService(BaseService):
             )
         return solve_task_status
 
-    async def get_latest_solve_status(self, schedule_id: str) -> SolveTaskStatus | None:
+    async def get_latest_solve_status(
+        self, schedule_id: str
+    ) -> SolveTaskStatus | None:
         """
         Get the latest completed solve status for a schedule by schedule_id.
         Returns the latest SolveTaskStatus or None if no completed
@@ -191,42 +196,21 @@ def create_sqs_solve_service(
     Factory function to create an API Gateway SQS Solve Service.
 
     Args:
-        schedule_service: Schedule service instance
+        collection: Database collections instance
 
     Returns:
         Configured APIGatewaySQSSolveService
     """
-    # Create AWS config and SQS client
-    # aws_config = AWSConfig(
-    #     region=config.aws_region,
-    #     aws_access_key_id=config.aws_access_key_id,
-    #     aws_secret_access_key=config.aws_secret_access_key,
-    #     endpoint_url=(
-    #         config.endpoint_url
-    #         if config.environment == "development"
-    #         else None
-    #     ),
-    #     sqs_solve_queue_name="nsp-pro-dev-solve-queue",
-    # )
-    # if config.aws_access_key_id is None or config.aws_secret_access_key is None:
-    #     raise ValueError(
-    #         "AWS credentials are not set. Please check your configuration."
-    #     )
+    from shared.aws.config import create_aws_config
 
-    aws_config = AWSConfig(
-        region=config.aws_region,
-        aws_access_key_id=config.aws_access_key_id,
-        aws_secret_access_key=config.aws_secret_access_key,
-        aws_session_token=config.aws_session_token,
-        endpoint_url=config.endpoint_url,
-        sqs_solve_queue_name=config.sqs_solve_queue_name,
-        sqs_solve_dlq_name=config.sqs_solve_dlq_name,
-        documentdb_secret_name=config.documentdb_secret_name,
-    )
+    # Create AWS config using shared factory
+    aws_config = create_aws_config(config)
     sqs_client = SQSClient(aws_config)
 
-    # Create shared SQS solve service
-    sqs_solve_service = SQSSolveService(sqs_client)
+    # Create shared SQS solve service with queue URL
+    sqs_solve_service = SQSSolveService(
+        sqs_client=sqs_client, queue_url=config.sqs_solve_queue_url
+    )
 
     return APIGatewaySQSSolveService(
         collection=collection,

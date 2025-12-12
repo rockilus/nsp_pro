@@ -62,8 +62,8 @@ class SQSSolveConsumer:
 
         while self.running:
             try:
-                # Poll for messages
-                messages = await self.sqs_solve_service.receive_solve_requests(
+                # Poll for messages (uses base class method)
+                messages = await self.sqs_solve_service.receive_messages(
                     max_messages=1, wait_time_seconds=20  # Long polling
                 )
 
@@ -81,7 +81,9 @@ class SQSSolveConsumer:
                 logger.error(f"Error in SQS consumer loop: {e}")
                 await asyncio.sleep(5)  # Wait before retrying
 
-    async def _process_message(self, message_data: SQSSolveQueueMessage) -> None:
+    async def _process_message(
+        self, message_data: SQSSolveQueueMessage
+    ) -> None:
         """
         Process a single solve request message.
 
@@ -114,7 +116,9 @@ class SQSSolveConsumer:
             )
 
             # Delete message from queue
-            await self.sqs_solve_service.delete_message(receipt_handle=receipt_handle)
+            await self.sqs_solve_service.delete_message(
+                receipt_handle=receipt_handle
+            )
 
             logger.info(
                 f"Successfully processed solve request for schedule "
@@ -127,19 +131,25 @@ class SQSSolveConsumer:
                 f"{message_content.schedule_id}: {e}"
             )
 
-            # Try to update schedule with failure, but always delete the message
+            # Update schedule with failure
             try:
-                await self._update_schedule_failure(message_id=message_id, error=str(e))
+                await self._update_schedule_failure(
+                    message_id=message_id, error=str(e)
+                )
             except Exception as update_exc:
                 logger.error(
                     f"Failed to update schedule failure for message {message_id}: "
                     + f"{update_exc}"
                 )
-            finally:
-                # Always delete message to prevent retry (or implement retry logic)
-                await self.sqs_solve_service.delete_message(receipt_handle)
 
-    async def _solve_schedule(self, message: SQSSolveMessage, message_id: str) -> Tuple[
+            # Only delete message on failure if we don't want retry
+            # For now, delete to prevent infinite retries
+            # TODO: Implement proper retry logic with max attempts
+            await self.sqs_solve_service.delete_message(receipt_handle)
+
+    async def _solve_schedule(
+        self, message: SQSSolveMessage, message_id: str
+    ) -> Tuple[
         ScheduleSolveStatus,
         List[Assignment],
         List[Breach],
@@ -164,7 +174,9 @@ class SQSSolveConsumer:
         engine_inputs = get_engine_inputs(
             schedule=schedule, collections=self.collections
         )
-        engine_outputs, processing_cache = solve_schedule(engine_inputs=engine_inputs)
+        engine_outputs, processing_cache = solve_schedule(
+            engine_inputs=engine_inputs
+        )
         schedule_solve_status, assignments, breaches, solver_output = (
             save_engine_outputs(
                 schedule=schedule,
@@ -230,10 +242,8 @@ class SQSSolveConsumer:
             result: The solve results
             task_id: The task/message ID
         """
-        solve_task_status = (
-            self.collections.solve_task_status_db.get_solve_task_status_by_solve_id(
-                solve_id=message_id
-            )
+        solve_task_status = self.collections.solve_task_status_db.get_solve_task_status_by_solve_id(
+            solve_id=message_id
         )
         if not solve_task_status:
             raise ValueError(f"Solve task with id {message_id} not found")
@@ -259,10 +269,8 @@ class SQSSolveConsumer:
             error: The error message
             task_id: The task/message ID
         """
-        solve_task_status = (
-            self.collections.solve_task_status_db.get_solve_task_status_by_solve_id(
-                solve_id=message_id
-            )
+        solve_task_status = self.collections.solve_task_status_db.get_solve_task_status_by_solve_id(
+            solve_id=message_id
         )
         if not solve_task_status:
             raise ValueError(f"Solve task with id {message_id} not found")

@@ -17,31 +17,14 @@ class SQSClient:
         """Initialize SQS client.
 
         Args:
-            config: AWS configuration. If None, uses default config.
+            config: AWS configuration.
         """
         self.config = config
         self._sqs_client: Optional[Any] = None
-        self.solve_queue_url: Optional[str] = None
-        self.dlq_url: Optional[str] = None
-        self._initialized = False
 
     @property
     def sqs(self) -> Any:
         """Get SQS client instance."""
-        # if self._sqs_client is None:
-        #     # session = boto3.Session(
-        #     #     aws_access_key_id=self.config.access_key_id,
-        #     #     aws_secret_access_key=self.config.secret_access_key,
-        #     #     region_name=self.config.region,
-        #     # )
-        #     # self._sqs_client = session.client("sqs")
-        #     self._sqs_client = boto3.client(
-        #         "sqs",
-        #         region_name=self.config.region,
-        #         aws_access_key_id=self.config.access_key_id,
-        #         aws_secret_access_key=self.config.secret_access_key,
-        #         endpoint_url=self.config.endpoint_url,
-        #     )
         if self._sqs_client is None:
             client_kwargs = {
                 "region_name": self.config.region,
@@ -51,120 +34,51 @@ class SQSClient:
                 "endpoint_url": self.config.endpoint_url,
             }
             self._sqs_client = boto3.client("sqs", **client_kwargs)
-            logger.debug(f"Initialized SQS client with config: {client_kwargs}")
-            try:
-                # Try listing queues as a simple connectivity/auth test
-                response = self.sqs.list_queues(MaxResults=10)
-                queue_urls = response.get("QueueUrls", [])
-                logger.info(f"Successfully connected to AWS SQS. Queues: {queue_urls}")
-            except ClientError as e:
-                logger.error(f"Failed to connect to AWS SQS: {e}")
+            logger.debug(
+                f"Initialized SQS client with region: {self.config.region}"
+            )
         return self._sqs_client
 
-    async def initialize_queues(self) -> None:
-        """Initialize SQS queues for solve service."""
-        if self._initialized:
-            return
+    async def send_message(
+        self,
+        queue_url: str,
+        message_body: Dict[str, Any],
+        message_attributes: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        """Send a message to an SQS queue.
 
+        Args:
+            queue_url: URL of the SQS queue
+            message_body: Message body as a dictionary
+            message_attributes: Optional message attributes
+
+        Returns:
+            Message ID
+
+        Raises:
+            ClientError: If sending message fails
+        """
         try:
-            # Create or get DLQ first if configured
-            if self.config.sqs_solve_dlq_name is not None:
-                logger.info("Ensuring DLQ exists...")
-                await self._ensure_dlq_exists()
+            send_params: Dict[str, Any] = {
+                "QueueUrl": queue_url,
+                "MessageBody": json.dumps(message_body),
+            }
+            if message_attributes:
+                send_params["MessageAttributes"] = message_attributes
 
-            # Create or get main solve queue with DLQ
-            logger.info("Ensuring solve queue exists...")
-            await self._ensure_solve_queue_exists()
-
-            self._initialized = True
-            logger.info(
-                f"SQS queues initialized: {self.solve_queue_url}, "
-                f"DLQ: {self.dlq_url}"
-            )
+            response = self.sqs.send_message(**send_params)
+            message_id = response["MessageId"]
+            logger.info(f"Sent SQS message {message_id} to queue {queue_url}")
+            return message_id
 
         except ClientError as e:
-            logger.error(f"Failed to initialize SQS queues: {e}")
+            logger.error(f"Failed to send SQS message to {queue_url}: {e}")
             raise
-
-    async def _ensure_dlq_exists(self) -> None:
-        """Ensure DLQ exists and get its URL."""
-        try:
-            # Try to get existing queue
-            logger.debug(f"Checking if {self.config.sqs_solve_dlq_name} DLQ exists...")
-            response = self.sqs.get_queue_url(QueueName=self.config.sqs_solve_dlq_name)
-            self.dlq_url = response["QueueUrl"]
-            logger.info(f"Using existing DLQ: {self.dlq_url}")
-
-        except ClientError as e:
-            error_code = e.response["Error"]["Code"]
-            if error_code == "AWS.SimpleQueueService.NonExistentQueue":
-                # Create new DLQ
-                response = self.sqs.create_queue(
-                    QueueName=self.config.sqs_solve_dlq_name,
-                    # Attributes={
-                    #     "MessageRetentionPeriod": str(
-                    #         self.config.sqs_message_retention_period
-                    #     ),
-                    #     "VisibilityTimeoutSeconds": "60",
-                    # },
-                )
-                self.dlq_url = response["QueueUrl"]
-                logger.info(f"Created new DLQ: {self.dlq_url}")
-            else:
-                raise
-
-    async def _ensure_solve_queue_exists(self) -> None:
-        """Ensure solve queue exists and get its URL."""
-        try:
-            # Try to get existing queue
-            logger.debug(
-                f"Checking if {self.config.sqs_solve_queue_name} solve queue exists..."
-            )
-            response = self.sqs.get_queue_url(
-                QueueName=self.config.sqs_solve_queue_name
-            )
-            self.solve_queue_url = response["QueueUrl"]
-            logger.info(f"Using existing solve queue: {self.solve_queue_url}")
-
-        except ClientError as e:
-            error_code = e.response["Error"]["Code"]
-            if error_code == "AWS.SimpleQueueService.NonExistentQueue":
-                # Get DLQ ARN for redrive policy
-                # dlq_attributes = self.sqs.get_queue_attributes(
-                #     QueueUrl=self.dlq_url, AttributeNames=["QueueArn"]
-                # )
-                # dlq_arn = dlq_attributes["Attributes"]["QueueArn"]
-
-                # Create new solve queue with DLQ
-                response = self.sqs.create_queue(
-                    QueueName=self.config.sqs_solve_queue_name,
-                    # Attributes={
-                    #     "VisibilityTimeoutSeconds": str(
-                    #         self.config.sqs_visibility_timeout_seconds
-                    #     ),
-                    #     "MessageRetentionPeriod": str(
-                    #         self.config.sqs_message_retention_period
-                    #     ),
-                    #     "ReceiveMessageWaitTimeSeconds": str(
-                    #         self.config.sqs_receive_message_wait_time
-                    #     ),
-                    #     "RedrivePolicy": json.dumps(
-                    #         {
-                    #             "deadLetterTargetArn": dlq_arn,
-                    #             "maxReceiveCount": (
-                    #                 self.config.sqs_max_receive_count
-                    #             ),
-                    #         }
-                    #     ),
-                    # },
-                )
-                self.solve_queue_url = response["QueueUrl"]
-                logger.info(f"Created new solve queue: {self.solve_queue_url}")
-            else:
-                raise
 
     async def send_solve_message(self, message_body: Dict[str, Any]) -> str:
         """Send solve request to SQS.
+
+        Deprecated: Use send_message() with explicit queue URL instead.
 
         Args:
             message_body: The solve request message body
@@ -175,37 +89,28 @@ class SQSClient:
         Raises:
             ClientError: If sending message fails
         """
-        if not self._initialized:
-            await self.initialize_queues()
-
-        try:
-            response = self.sqs.send_message(
-                QueueUrl=self.solve_queue_url,
-                MessageBody=json.dumps(message_body),
-                MessageAttributes={
-                    "ScheduleId": {
-                        "StringValue": message_body.get("schedule_id", ""),
-                        "DataType": "String",
-                    },
-                },
-            )
-            message_id = response["MessageId"]
-            logger.info(
-                f"Sent SQS message {message_id} for schedule "
-                f"{message_body.get('schedule_id')}"
-            )
-            return message_id
-
-        except ClientError as e:
-            logger.error(f"Failed to send SQS message: {e}")
-            raise
+        message_attributes = {
+            "ScheduleId": {
+                "StringValue": message_body.get("schedule_id", ""),
+                "DataType": "String",
+            },
+        }
+        return await self.send_message(
+            queue_url=self.config.sqs_solve_queue_url,
+            message_body=message_body,
+            message_attributes=message_attributes,
+        )
 
     async def receive_messages(
-        self, max_messages: int = 1, wait_time_seconds: Optional[int] = None
+        self,
+        queue_url: str,
+        max_messages: int = 1,
+        wait_time_seconds: int = 20,
     ) -> List[Dict[str, Any]]:
-        """Receive messages from solve queue.
+        """Receive messages from an SQS queue.
 
         Args:
+            queue_url: URL of the SQS queue
             max_messages: Maximum number of messages to receive
             wait_time_seconds: Long polling wait time
 
@@ -215,53 +120,49 @@ class SQSClient:
         Raises:
             ClientError: If receiving messages fails
         """
-        if not self._initialized:
-            await self.initialize_queues()
-
-        wait_time = (
-            wait_time_seconds
-            if wait_time_seconds is not None
-            else self.config.sqs_receive_message_wait_time
-        )
-
         try:
             response = self.sqs.receive_message(
-                QueueUrl=self.solve_queue_url,
+                QueueUrl=queue_url,
                 MaxNumberOfMessages=max_messages,
-                WaitTimeSeconds=wait_time,
+                WaitTimeSeconds=wait_time_seconds,
                 MessageAttributeNames=["All"],
             )
 
             return response.get("Messages", [])
 
         except ClientError as e:
-            logger.error(f"Failed to receive SQS messages: {e}")
+            logger.error(
+                f"Failed to receive SQS messages from {queue_url}: {e}"
+            )
             raise
 
-    async def delete_message(self, receipt_handle: str) -> None:
+    async def delete_message(
+        self, queue_url: str, receipt_handle: str
+    ) -> None:
         """Delete processed message from SQS.
 
         Args:
+            queue_url: URL of the SQS queue
             receipt_handle: Receipt handle of the message to delete
 
         Raises:
             ClientError: If deleting message fails
         """
-        if not self._initialized:
-            await self.initialize_queues()
-
         try:
             self.sqs.delete_message(
-                QueueUrl=self.solve_queue_url, ReceiptHandle=receipt_handle
+                QueueUrl=queue_url, ReceiptHandle=receipt_handle
             )
-            logger.debug(f"Deleted SQS message with handle: {receipt_handle}")
+            logger.debug(f"Deleted SQS message from {queue_url}")
 
         except ClientError as e:
-            logger.error(f"Failed to delete SQS message: {e}")
+            logger.error(f"Failed to delete SQS message from {queue_url}: {e}")
             raise
 
-    async def get_queue_attributes(self) -> Dict[str, str]:
+    async def get_queue_attributes(self, queue_url: str) -> Dict[str, str]:
         """Get queue attributes including message counts.
+
+        Args:
+            queue_url: URL of the SQS queue
 
         Returns:
             Dictionary of queue attributes
@@ -269,12 +170,9 @@ class SQSClient:
         Raises:
             ClientError: If getting attributes fails
         """
-        if not self._initialized:
-            await self.initialize_queues()
-
         try:
             response = self.sqs.get_queue_attributes(
-                QueueUrl=self.solve_queue_url,
+                QueueUrl=queue_url,
                 AttributeNames=[
                     "ApproximateNumberOfMessages",
                     "ApproximateNumberOfMessagesNotVisible",

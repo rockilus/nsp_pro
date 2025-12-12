@@ -17,7 +17,9 @@ class AWSConfig(BaseModel):
     """AWS configuration settings."""
 
     region: str = Field(default="eu-west-3", description="AWS region")
-    aws_access_key_id: Optional[str] = Field(None, description="AWS access key ID")
+    aws_access_key_id: Optional[str] = Field(
+        None, description="AWS access key ID"
+    )
     aws_secret_access_key: Optional[str] = Field(
         None, description="AWS secret access key"
     )
@@ -29,22 +31,10 @@ class AWSConfig(BaseModel):
         default=None, description="Custom endpoint URL for local AWS services"
     )
 
-    # SQS Configuration
-    sqs_solve_queue_name: str = Field(..., description="SQS solve queue name")
-    sqs_solve_dlq_name: Optional[str] = Field(
-        default=None, description="SQS solve DLQ name"
-    )
-    sqs_visibility_timeout_seconds: int = Field(
-        default=900, description="SQS visibility timeout in seconds"
-    )
-    sqs_message_retention_period: int = Field(
-        default=1209600, description="SQS message retention period in seconds"
-    )
-    sqs_receive_message_wait_time: int = Field(
-        default=20, description="SQS long polling wait time"
-    )
-    sqs_max_receive_count: int = Field(
-        default=3, description="Maximum receive count before moving to DLQ"
+    # SQS Configuration - Queue URLs (managed by Terraform)
+    sqs_solve_queue_url: str = Field(..., description="SQS solve queue URL")
+    sqs_email_queue_url: Optional[str] = Field(
+        default=None, description="SQS email queue URL"
     )
 
     # Secrets Manager Configuration
@@ -76,22 +66,14 @@ class AWSConfig(BaseModel):
             aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY", ""),
             aws_session_token=os.getenv("AWS_SESSION_TOKEN"),
             endpoint_url=os.getenv("AWS_ENDPOINT_URL"),
-            sqs_solve_queue_name=os.getenv("AWS_SQS_SOLVE_QUEUE_NAME", "solve-queue"),
-            sqs_solve_dlq_name=os.getenv("AWS_SQS_SOLVE_DLQ_NAME"),
-            sqs_visibility_timeout_seconds=int(
-                os.getenv("AWS_SQS_VISIBILITY_TIMEOUT_SECONDS", "900")
+            sqs_solve_queue_url=os.getenv(
+                "AWS_SQS_SOLVE_QUEUE_URL",
+                "http://localhost:4566/000000000000/solve-queue",
             ),
-            sqs_message_retention_period=int(
-                os.getenv("AWS_SQS_MESSAGE_RETENTION_PERIOD", "1209600")
-            ),
-            sqs_receive_message_wait_time=int(
-                os.getenv("AWS_SQS_RECEIVE_MESSAGE_WAIT_TIME", "20")
-            ),
-            sqs_max_receive_count=int(os.getenv("AWS_SQS_MAX_RECEIVE_COUNT", "3")),
+            sqs_email_queue_url=os.getenv("AWS_SQS_EMAIL_QUEUE_URL"),
             documentdb_secret_name=os.getenv(
                 "DOCUMENTDB_SECRET_NAME",
                 "",
-                # "rockilus/prod/documentdb/credentials",
             ),
         )
 
@@ -139,7 +121,9 @@ class AWSConfig(BaseModel):
                 sqs_receive_message_wait_time=int(
                     os.getenv("AWS_SQS_RECEIVE_MESSAGE_WAIT_TIME", "20")
                 ),
-                sqs_max_receive_count=int(os.getenv("AWS_SQS_MAX_RECEIVE_COUNT", "3")),
+                sqs_max_receive_count=int(
+                    os.getenv("AWS_SQS_MAX_RECEIVE_COUNT", "3")
+                ),
                 documentdb_secret_name=os.getenv(
                     "DOCUMENTDB_SECRET_NAME",
                     "",
@@ -150,7 +134,9 @@ class AWSConfig(BaseModel):
 
         except (BotoCoreError, ClientError) as e:
             error_code = (
-                getattr(e, "response", {}).get("Error", {}).get("Code", "Unknown")
+                getattr(e, "response", {})
+                .get("Error", {})
+                .get("Code", "Unknown")
             )
             log_error(
                 f"Failed to retrieve AWS credentials from boto3 session: "
@@ -190,3 +176,27 @@ class AWSConfig(BaseModel):
             kwargs["endpoint_url"] = self.endpoint_url
 
         return boto3.client(service_name, **kwargs)  # type: ignore
+
+
+def create_aws_config(app_config: Any) -> AWSConfig:
+    """Create AWSConfig from application config object.
+
+    This factory function provides a consistent way to construct AWSConfig
+    across different services, eliminating code duplication.
+
+    Args:
+        app_config: Application configuration object with AWS settings
+
+    Returns:
+        Configured AWSConfig instance
+    """
+    return AWSConfig(
+        region=app_config.aws_region,
+        aws_access_key_id=app_config.aws_access_key_id,
+        aws_secret_access_key=app_config.aws_secret_access_key,
+        aws_session_token=app_config.aws_session_token,
+        endpoint_url=app_config.endpoint_url,
+        sqs_solve_queue_url=app_config.sqs_solve_queue_url,
+        sqs_email_queue_url=getattr(app_config, "sqs_email_queue_url", None),
+        documentdb_secret_name=app_config.documentdb_secret_name,
+    )
