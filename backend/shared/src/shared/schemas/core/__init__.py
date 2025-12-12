@@ -45,6 +45,12 @@ from shared.schemas.core.dimension import (
     DimensionType,
     NewDimension,
 )
+from shared.schemas.core.email import (
+    EmailMessage,
+    EmailPriority,
+    EmailQueueMessage,
+    EmailType,
+)
 from shared.schemas.core.engine import (
     ConfigurationConstraints,
     CustomSolverParams,
@@ -176,6 +182,10 @@ __all__ = [
     "AttributeOwnerType",
     "Config",
     "Assignment",
+    "EmailMessage",
+    "EmailPriority",
+    "EmailQueueMessage",
+    "EmailType",
     "Block",
     "BlockNameOptions",
     "BlockTypeOptions",
