@@ -17,8 +17,8 @@ resource "aws_ses_email_identity" "sender" {
 
 # SES Configuration Set for tracking and monitoring
 resource "aws_ses_configuration_set" "main" {
-  #   name = "${var.project_name}-${var.environment}-ses-config"
-  name = "my-first-configuration-set"
+  name = "${var.project_name}-${var.environment}-ses-config"
+  #   name = "my-first-configuration-set"
 
   reputation_metrics_enabled = true
   sending_enabled            = true
