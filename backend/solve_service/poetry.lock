@@ -2361,7 +2361,7 @@ crt = ["botocore[crt] (>=1.37.4,<2.0a.0)"]
 
 [[package]]
 name = "shared"
-version = "0.1.345"
+version = "0.1.348"
 description = ""
 optional = false
 python-versions = ">=3.12,<=3.14"

@@ -12,7 +12,10 @@ from contextlib import asynccontextmanager
 from typing import Optional
 
 from loguru import logger
+from shared.aws.config import create_aws_config
+from shared.aws.sqs_client import SQSClient
 from shared.database.database_collections import DatabaseCollections
+from shared.services.sqs_solve_service import SQSSolveService
 
 from config import config
 from database_setup import setup_database, shutdown_database
@@ -71,14 +74,10 @@ class SolveService:
         try:
             async with self.database_lifespan() as collections:
                 # Create AWS configuration using shared factory
-                from shared.aws.config import create_aws_config
 
                 aws_config = create_aws_config(config)
 
                 # Create SQS client and service
-                from shared.aws.sqs_client import SQSClient
-                from shared.services.sqs_solve_service import SQSSolveService
-
                 sqs_client = SQSClient(aws_config)
                 sqs_service = SQSSolveService(
                     sqs_client=sqs_client,
