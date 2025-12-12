@@ -42,43 +42,10 @@ services:
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
       - AWS_DEFAULT_REGION=eu-west-3
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        echo "Creating SQS queues in LocalStack..."
-        
-        # Create solve DLQ
-        aws --endpoint-url=http://localstack:4566 sqs create-queue \
-          --queue-name nsp-pro-dev-solve-dlq \
-          --attributes MessageRetentionPeriod=1209600 || true
-        
-        # Get DLQ ARN
-        SOLVE_DLQ_ARN=$$(aws --endpoint-url=http://localstack:4566 sqs get-queue-attributes \
-          --queue-url http://localstack:4566/000000000000/nsp-pro-dev-solve-dlq \
-          --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
-        
-        # Create solve queue
-        aws --endpoint-url=http://localstack:4566 sqs create-queue \
-          --queue-name nsp-pro-dev-solve-queue \
-          --attributes "VisibilityTimeout=900,MessageRetentionPeriod=1209600,ReceiveMessageWaitTimeSeconds=20,RedrivePolicy={\\\"deadLetterTargetArn\\\":\\\"$$SOLVE_DLQ_ARN\\\",\\\"maxReceiveCount\\\":3}" || true
-        
-        # Create email DLQ
-        aws --endpoint-url=http://localstack:4566 sqs create-queue \
-          --queue-name nsp-pro-dev-email-dlq \
-          --attributes MessageRetentionPeriod=1209600 || true
-        
-        # Get email DLQ ARN
-        EMAIL_DLQ_ARN=$$(aws --endpoint-url=http://localstack:4566 sqs get-queue-attributes \
-          --queue-url http://localstack:4566/000000000000/nsp-pro-dev-email-dlq \
-          --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
-        
-        # Create email queue
-        aws --endpoint-url=http://localstack:4566 sqs create-queue \
-          --queue-name nsp-pro-dev-email-queue \
-          --attributes "VisibilityTimeout=300,MessageRetentionPeriod=1209600,ReceiveMessageWaitTimeSeconds=20,RedrivePolicy={\\\"deadLetterTargetArn\\\":\\\"$$EMAIL_DLQ_ARN\\\",\\\"maxReceiveCount\\\":3}" || true
-        
-        echo "✅ SQS queues created successfully!"
-        aws --endpoint-url=http://localstack:4566 sqs list-queues
+      - LOCALSTACK_ENDPOINT=http://localstack:4566
+    volumes:
+      - ./scripts/init-localstack-sqs.sh:/init-localstack-sqs.sh:ro
+    entrypoint: ["/bin/bash", "/init-localstack-sqs.sh"]
 
   # Permit.io PDP
   permit:

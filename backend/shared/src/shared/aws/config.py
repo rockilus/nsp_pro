@@ -17,7 +17,9 @@ class AWSConfig(BaseModel):
     """AWS configuration settings."""
 
     region: str = Field(default="eu-west-3", description="AWS region")
-    aws_access_key_id: Optional[str] = Field(None, description="AWS access key ID")
+    aws_access_key_id: Optional[str] = Field(
+        None, description="AWS access key ID"
+    )
     aws_secret_access_key: Optional[str] = Field(
         None, description="AWS secret access key"
     )
@@ -66,7 +68,7 @@ class AWSConfig(BaseModel):
             endpoint_url=os.getenv("AWS_ENDPOINT_URL"),
             sqs_solve_queue_url=os.getenv(
                 "AWS_SQS_SOLVE_QUEUE_URL",
-                "http://localhost:4566/000000000000/solve-queue",
+                "",
             ),
             sqs_email_queue_url=os.getenv("AWS_SQS_EMAIL_QUEUE_URL"),
             documentdb_secret_name=os.getenv(
@@ -108,7 +110,7 @@ class AWSConfig(BaseModel):
                 aws_session_token=credentials.token,
                 sqs_solve_queue_url=os.getenv(
                     "AWS_SQS_SOLVE_QUEUE_URL",
-                    "http://localhost:4566/000000000000/solve-queue",
+                    "",
                 ),
                 documentdb_secret_name=os.getenv(
                     "DOCUMENTDB_SECRET_NAME",
@@ -120,7 +122,9 @@ class AWSConfig(BaseModel):
 
         except (BotoCoreError, ClientError) as e:
             error_code = (
-                getattr(e, "response", {}).get("Error", {}).get("Code", "Unknown")
+                getattr(e, "response", {})
+                .get("Error", {})
+                .get("Code", "Unknown")
             )
             log_error(
                 f"Failed to retrieve AWS credentials from boto3 session: "
