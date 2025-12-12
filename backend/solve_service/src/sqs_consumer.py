@@ -138,7 +138,7 @@ class SQSSolveConsumer:
 
             # Only delete message on failure if we don't want retry
             # For now, delete to prevent infinite retries
-            # TODO: Implement proper retry logic with max attempts
+            # TO#DO: Implement proper retry logic with max attempts
             await self.sqs_solve_service.delete_message(receipt_handle)
 
     async def _solve_schedule(self, message: SQSSolveMessage, message_id: str) -> Tuple[
