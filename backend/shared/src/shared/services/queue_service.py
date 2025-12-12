@@ -47,9 +47,7 @@ class QueueService(ABC, Generic[TMessage, TQueueMessage]):
         raise NotImplementedError
 
     @abstractmethod
-    def _deserialize_message(
-        self, raw_message: Dict[str, Any]
-    ) -> TQueueMessage:
+    def _deserialize_message(self, raw_message: Dict[str, Any]) -> TQueueMessage:
         """Deserialize an SQS message to a domain queue message.
 
         Args:
@@ -155,9 +153,7 @@ class QueueService(ABC, Generic[TMessage, TQueueMessage]):
                     attributes.get("ApproximateNumberOfMessages", "0")
                 ),
                 "approximate_messages_not_visible": int(
-                    attributes.get(
-                        "ApproximateNumberOfMessagesNotVisible", "0"
-                    )
+                    attributes.get("ApproximateNumberOfMessagesNotVisible", "0")
                 ),
                 "approximate_messages_delayed": int(
                     attributes.get("ApproximateNumberOfMessagesDelayed", "0")
@@ -165,7 +161,5 @@ class QueueService(ABC, Generic[TMessage, TQueueMessage]):
             }
 
         except (ValueError, KeyError) as e:
-            logger.error(
-                f"Failed to get queue status for {self.queue_url}: {e}"
-            )
+            logger.error(f"Failed to get queue status for {self.queue_url}: {e}")
             raise

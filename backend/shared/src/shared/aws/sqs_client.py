@@ -34,9 +34,7 @@ class SQSClient:
                 "endpoint_url": self.config.endpoint_url,
             }
             self._sqs_client = boto3.client("sqs", **client_kwargs)
-            logger.debug(
-                f"Initialized SQS client with region: {self.config.region}"
-            )
+            logger.debug(f"Initialized SQS client with region: {self.config.region}")
         return self._sqs_client
 
     async def send_message(
@@ -131,14 +129,10 @@ class SQSClient:
             return response.get("Messages", [])
 
         except ClientError as e:
-            logger.error(
-                f"Failed to receive SQS messages from {queue_url}: {e}"
-            )
+            logger.error(f"Failed to receive SQS messages from {queue_url}: {e}")
             raise
 
-    async def delete_message(
-        self, queue_url: str, receipt_handle: str
-    ) -> None:
+    async def delete_message(self, queue_url: str, receipt_handle: str) -> None:
         """Delete processed message from SQS.
 
         Args:
@@ -149,9 +143,7 @@ class SQSClient:
             ClientError: If deleting message fails
         """
         try:
-            self.sqs.delete_message(
-                QueueUrl=queue_url, ReceiptHandle=receipt_handle
-            )
+            self.sqs.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
             logger.debug(f"Deleted SQS message from {queue_url}")
 
         except ClientError as e:

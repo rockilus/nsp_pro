@@ -26,9 +26,7 @@ class SQSSolveService(QueueService[SQSSolveMessage, SQSSolveQueueMessage]):
         """
         return message.to_dict()
 
-    def _deserialize_message(
-        self, raw_message: Dict[str, Any]
-    ) -> SQSSolveQueueMessage:
+    def _deserialize_message(self, raw_message: Dict[str, Any]) -> SQSSolveQueueMessage:
         """Deserialize an SQS message to a solve queue message.
 
         Args:

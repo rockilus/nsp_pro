@@ -20,9 +20,7 @@ class AppConfig(BaseSettings):
 
     # MongoDB configuration (development)
     mongodb_uri: str | None = Field(None, description="MongoDB connection URL")
-    mongodb_database_name: str = Field(
-        "test", description="MongoDB database name"
-    )
+    mongodb_database_name: str = Field("test", description="MongoDB database name")
 
     # DocumentDB configuration (production)
     use_documentdb: bool = Field(
@@ -98,9 +96,7 @@ class AppConfig(BaseSettings):
                 self.documentdb_secret_name
             )
 
-            log_info(
-                f"Retrieved DocumentDB credentials for host: {credentials.host}"
-            )
+            log_info(f"Retrieved DocumentDB credentials for host: {credentials.host}")
 
             return DatabaseConfig(
                 database_type=DatabaseType.DOCUMENTDB,
@@ -113,9 +109,7 @@ class AppConfig(BaseSettings):
             )
 
         except DocumentDBCredentialsError as e:
-            log_error(
-                f"Failed to retrieve DocumentDB credentials: {e.message}"
-            )
+            log_error(f"Failed to retrieve DocumentDB credentials: {e.message}")
             if e.missing_fields:
                 log_error(f"Missing credential fields: {e.missing_fields}")
             raise ValueError(
@@ -168,9 +162,7 @@ def download_documentdb_ca_bundle(
             )
             ca_bundle_path = os.path.abspath(ca_bundle_path)
 
-    ca_bundle_url = (
-        "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"
-    )
+    ca_bundle_url = "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"
 
     try:
         # Create directory if it doesn't exist and we have permission
@@ -189,9 +181,7 @@ def download_documentdb_ca_bundle(
         ssl_context.check_hostname = True
         ssl_context.verify_mode = ssl.CERT_REQUIRED
 
-        with urllib.request.urlopen(
-            ca_bundle_url, context=ssl_context
-        ) as response:
+        with urllib.request.urlopen(ca_bundle_url, context=ssl_context) as response:
             ca_content = response.read()
 
         # Validate certificate content before writing
@@ -201,9 +191,7 @@ def download_documentdb_ca_bundle(
         with open(ca_bundle_path, "wb") as f:
             f.write(ca_content)
 
-        print(
-            f"DocumentDB CA bundle downloaded and validated: {ca_bundle_path}"
-        )
+        print(f"DocumentDB CA bundle downloaded and validated: {ca_bundle_path}")
         # Update environment variable with actual path
         os.environ["DOCUMENTDB_CA_BUNDLE_PATH"] = ca_bundle_path
 
@@ -230,18 +218,14 @@ def initialize_environment() -> AppConfig:
         try:
             download_documentdb_ca_bundle()
         except ImportError:
-            log_info(
-                "CA bundle download not available, assuming bundle exists"
-            )
+            log_info("CA bundle download not available, assuming bundle exists")
 
     else:
         log_info("Running in development mode")
         os.environ["USE_DOCUMENTDB"] = "false"
 
         # Load local .env file
-        local_env_file = os.path.join(
-            os.path.dirname(__file__), ".env.development"
-        )
+        local_env_file = os.path.join(os.path.dirname(__file__), ".env.development")
         load_dotenv(local_env_file)
 
     try:

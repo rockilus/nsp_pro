@@ -115,9 +115,7 @@ class SolveService:
         """
 
         def signal_handler(signum, _):
-            logger.info(
-                f"Received signal {signum}, initiating graceful shutdown..."
-            )
+            logger.info(f"Received signal {signum}, initiating graceful shutdown...")
             self.shutdown_event.set()
 
         for sig in (signal.SIGTERM, signal.SIGINT):

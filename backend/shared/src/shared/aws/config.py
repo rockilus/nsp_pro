@@ -17,9 +17,7 @@ class AWSConfig(BaseModel):
     """AWS configuration settings."""
 
     region: str = Field(default="eu-west-3", description="AWS region")
-    aws_access_key_id: Optional[str] = Field(
-        None, description="AWS access key ID"
-    )
+    aws_access_key_id: Optional[str] = Field(None, description="AWS access key ID")
     aws_secret_access_key: Optional[str] = Field(
         None, description="AWS secret access key"
     )
@@ -108,21 +106,9 @@ class AWSConfig(BaseModel):
                 aws_access_key_id=credentials.access_key,
                 aws_secret_access_key=credentials.secret_key,
                 aws_session_token=credentials.token,
-                sqs_solve_queue_name=os.getenv(
-                    "AWS_SQS_SOLVE_QUEUE_NAME", "solve-queue"
-                ),
-                sqs_solve_dlq_name=os.getenv("AWS_SQS_SOLVE_DLQ_NAME"),
-                sqs_visibility_timeout_seconds=int(
-                    os.getenv("AWS_SQS_VISIBILITY_TIMEOUT_SECONDS", "900")
-                ),
-                sqs_message_retention_period=int(
-                    os.getenv("AWS_SQS_MESSAGE_RETENTION_PERIOD", "1209600")
-                ),
-                sqs_receive_message_wait_time=int(
-                    os.getenv("AWS_SQS_RECEIVE_MESSAGE_WAIT_TIME", "20")
-                ),
-                sqs_max_receive_count=int(
-                    os.getenv("AWS_SQS_MAX_RECEIVE_COUNT", "3")
+                sqs_solve_queue_url=os.getenv(
+                    "AWS_SQS_SOLVE_QUEUE_URL",
+                    "http://localhost:4566/000000000000/solve-queue",
                 ),
                 documentdb_secret_name=os.getenv(
                     "DOCUMENTDB_SECRET_NAME",
@@ -134,9 +120,7 @@ class AWSConfig(BaseModel):
 
         except (BotoCoreError, ClientError) as e:
             error_code = (
-                getattr(e, "response", {})
-                .get("Error", {})
-                .get("Code", "Unknown")
+                getattr(e, "response", {}).get("Error", {}).get("Code", "Unknown")
             )
             log_error(
                 f"Failed to retrieve AWS credentials from boto3 session: "

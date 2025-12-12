@@ -243,8 +243,7 @@ def create_email_queue_service(
 
     if not config.sqs_email_queue_url:
         logger.warning(
-            "SQS_EMAIL_QUEUE_URL not configured. "
-            "Email service will not function."
+            "SQS_EMAIL_QUEUE_URL not configured. " "Email service will not function."
         )
 
     # Create AWS config using shared factory

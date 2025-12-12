@@ -20,9 +20,7 @@ class EmailQueueService(QueueService[EmailMessage, EmailQueueMessage]):
         """
         return message.to_dict()
 
-    def _deserialize_message(
-        self, raw_message: Dict[str, Any]
-    ) -> EmailQueueMessage:
+    def _deserialize_message(self, raw_message: Dict[str, Any]) -> EmailQueueMessage:
         """Deserialize an SQS message to an email queue message.
 
         Args:
