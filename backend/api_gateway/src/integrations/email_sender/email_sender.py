@@ -57,14 +57,10 @@ class EmailSender:
             )
             logger.info("Email sent successfully: %s", response)
         except ClientError as e:
-            logger.error(
-                "Failed to send email: %s", e.response["Error"]["Message"]
-            )
+            logger.error("Failed to send email: %s", e.response["Error"]["Message"])
             raise
         except Exception as e:
-            logger.error(
-                "An unexpected error occurred while sending email: %s", e
-            )
+            logger.error("An unexpected error occurred while sending email: %s", e)
             raise
 
     def send_template_email(

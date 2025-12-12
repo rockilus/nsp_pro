@@ -75,7 +75,7 @@ class TeamInvitationService(BaseService):
         )
         if not team:
             raise ValueError("Team not found")
-        self.send_invitation_email(
+        await self.send_invitation_email(
             invitation=invitation, sender=sender, team=team
         )
         invitation.last_sent_at = datetime.now(tz=timezone.utc)
@@ -260,36 +260,37 @@ class TeamInvitationService(BaseService):
         )
 
         # Use email queue service if available, otherwise fall back to direct sending
-        if self.use_email_queue and self.email_queue_service:
-            try:
-                await self.email_queue_service.enqueue_team_invitation(
-                    to_address=invitation.email,
-                    recipient_name=recipient_name,
-                    sender_name=sender_name,
-                    team_name=team.name,
-                    invitation_link=invitation_link,
-                    language=sender.language,
-                )
-                return
-            except Exception as e:
-                # Log error but fall back to direct email
-                print(f"Failed to enqueue email, falling back to direct: {e}")
+        if not self.email_queue_service:
+            raise ValueError("Email queue service not configured")
+        try:
+            await self.email_queue_service.enqueue_team_invitation(
+                to_address=invitation.email,
+                recipient_name=recipient_name,
+                sender_name=sender_name,
+                team_name=team.name,
+                invitation_link=invitation_link,
+                language=sender.language,
+            )
+            return
+        except Exception as e:
+            # Log error but fall back to direct email
+            print(f"Failed to enqueue email, falling back to direct: {e}")
 
         # Fallback to direct email sending
-        email_sender = EmailSender()
-        email_sender.send_template_email(
-            to_address=invitation.email,
-            template_name="team_invitation_email",
-            context={
-                "subject": "Your invitation to join a team on Rockilus",
-                "recipient_name": recipient_name,
-                "sender_name": sender_name,
-                "team_name": team.name,
-                "invitation_link": invitation_link,
-            },
-            language=sender.language,
-        )
-        return
+        # email_sender = EmailSender()
+        # email_sender.send_template_email(
+        #     to_address=invitation.email,
+        #     template_name="team_invitation_email",
+        #     context={
+        #         "subject": "Your invitation to join a team on Rockilus",
+        #         "recipient_name": recipient_name,
+        #         "sender_name": sender_name,
+        #         "team_name": team.name,
+        #         "invitation_link": invitation_link,
+        #     },
+        #     language=sender.language,
+        # )
+        # return
 
     def delete_team_invitation(self, invitation_id: str) -> None:
         self.collection.team_invitation_db.delete_invitation(
