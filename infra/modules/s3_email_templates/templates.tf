@@ -5,15 +5,25 @@ locals {
   template_files = fileset(local.templates_path, "**/*.{html,css}")
 }
 
-# Upload all email templates to S3
+# Render template files with optional variables (logo_url) then upload
+locals {
+  rendered_templates = {
+    for f in local.template_files : f => templatefile("${local.templates_path}/${f}", {
+      logo_url     = var.logo_url
+      project_name = var.project_name
+      environment  = var.environment
+    })
+  }
+}
+
 resource "aws_s3_object" "email_templates" {
   for_each = local.template_files
 
   bucket       = aws_s3_bucket.email_templates.id
   key          = each.value
-  source       = "${local.templates_path}/${each.value}"
+  content      = local.rendered_templates[each.value]
   content_type = endswith(each.value, ".css") ? "text/css" : "text/html"
-  etag         = filemd5("${local.templates_path}/${each.value}")
+  etag         = md5(local.rendered_templates[each.value])
 
   tags = merge(
     var.tags,

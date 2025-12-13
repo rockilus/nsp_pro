@@ -229,6 +229,9 @@ module "s3_email_templates" {
   }
 
   depends_on = [module.email_lambda]
+
+  # Supply public logo URL from the public-assets module
+  logo_url = module.s3_public_assets.logo_url
 }
 
 # Public assets bucket for logos and other public files
@@ -245,7 +248,6 @@ module "s3_public_assets" {
     Purpose     = "Public Assets"
   }
 
-  depends_on = [module.s3_email_templates]
 }
 
 # Route 53 DNS management with SSL certificates

@@ -18,3 +18,9 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "logo_url" {
+  description = "Public URL for the logo to embed in templates"
+  type        = string
+  default     = ""
+}
