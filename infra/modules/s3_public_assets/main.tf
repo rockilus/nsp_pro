@@ -65,12 +65,11 @@ resource "aws_s3_bucket_policy" "public_assets" {
   })
 }
 
-# Upload the rockilus logo from the existing cognito-assets folder (repo-relative)
-resource "aws_s3_bucket_object" "logo" {
+// Upload the rockilus logo from the existing cognito-assets folder (repo-relative)
+resource "aws_s3_object" "logo" {
   bucket       = aws_s3_bucket.public_assets.id
   key          = var.logo_key
   source       = "${path.module}/../cognito-assets/assets/rockilus_logo_blue.jpg"
-  etag         = filemd5("${path.module}/../cognito-assets/assets/rockilus_logo_blue.jpg")
   content_type = "image/jpeg"
   acl          = var.acl
 }
