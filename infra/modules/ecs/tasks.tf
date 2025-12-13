@@ -38,11 +38,11 @@ resource "aws_ecs_task_definition" "main_service" {
             value = var.aws_region
           },
           {
-            name  = "AWS_SQS_SOLVE_QUEUE_URL"
+            name  = "SQS_SOLVE_QUEUE_URL"
             value = var.sqs_solve_queue_url
           },
           {
-            name  = "AWS_SQS_EMAIL_QUEUE_URL"
+            name  = "SQS_EMAIL_QUEUE_URL"
             value = var.sqs_email_queue_url
           },
           {
@@ -157,7 +157,7 @@ resource "aws_ecs_task_definition" "solve_service" {
             value = var.aws_region
           },
           {
-            name  = "AWS_SQS_SOLVE_QUEUE_URL"
+            name  = "SQS_SOLVE_QUEUE_URL"
             value = var.sqs_solve_queue_url
           },
           {
