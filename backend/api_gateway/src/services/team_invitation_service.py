@@ -27,7 +27,7 @@ class TeamInvitationService(BaseService):
         self,
         collection,
         team_membership_service: TeamMembershipService,
-        email_queue_service: EmailQueueService | None = None,
+        email_queue_service: EmailQueueService,
     ):
         super().__init__(collection)
         self.team_membership_service = team_membership_service
@@ -256,9 +256,7 @@ class TeamInvitationService(BaseService):
             f"?token={invitation.token}"
         )
 
-        # Use email queue service if available, otherwise fall back to direct sending
-        if not self.email_queue_service:
-            raise ValueError("Email queue service not configured")
+        # Use email queue service to send invitation
         try:
             await self.email_queue_service.enqueue_team_invitation(
                 to_address=invitation.email,
