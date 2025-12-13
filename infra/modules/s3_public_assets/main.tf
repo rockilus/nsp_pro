@@ -71,5 +71,5 @@ resource "aws_s3_object" "logo" {
   key          = var.logo_key
   source       = "${path.module}/assets/rockilus_logo_blue.jpg"
   content_type = "image/jpeg"
-  acl          = var.acl
+  #   acl          = var.acl
 }

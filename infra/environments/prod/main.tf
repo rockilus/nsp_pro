@@ -286,6 +286,31 @@ module "route53" {
   }
 }
 
+# Lightsail instance for WordPress landing page
+module "lightsail" {
+  source = "../../modules/lightsail"
+
+  project_name      = var.project_name
+  environment       = var.environment
+  availability_zone = var.lightsail_availability_zone
+  blueprint_id      = var.lightsail_blueprint_id
+  bundle_id         = var.lightsail_bundle_id
+
+  # DNS integration with Route53
+  route53_zone_id       = module.route53.hosted_zone_id
+  wordpress_domain_name = var.landing_page_domain_name
+
+  tags = {
+    Environment = var.environment
+    Owner       = "Marketing Team"
+    Compliance  = "Healthcare"
+    Project     = "NSP Pro"
+    ManagedBy   = "Terraform"
+  }
+
+  depends_on = [module.route53]
+}
+
 # Network Load Balancer for API Gateway VPC Link
 module "network_load_balancer" {
   source = "../../modules/network-load-balancer"
