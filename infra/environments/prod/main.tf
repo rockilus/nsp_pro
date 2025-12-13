@@ -231,6 +231,23 @@ module "s3_email_templates" {
   depends_on = [module.email_lambda]
 }
 
+# Public assets bucket for logos and other public files
+module "s3_public_assets" {
+  source = "../../modules/s3_public_assets"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  tags = {
+    Environment = var.environment
+    Owner       = "DevOps Team"
+    Project     = "NSP Pro"
+    Purpose     = "Public Assets"
+  }
+
+  depends_on = [module.s3_email_templates]
+}
+
 # Route 53 DNS management with SSL certificates
 module "route53" {
   source = "../../modules/route53"
