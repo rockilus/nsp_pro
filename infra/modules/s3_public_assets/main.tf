@@ -69,7 +69,7 @@ resource "aws_s3_bucket_policy" "public_assets" {
 resource "aws_s3_object" "logo" {
   bucket       = aws_s3_bucket.public_assets.id
   key          = var.logo_key
-  source       = "${path.module}/../cognito-assets/assets/rockilus_logo_blue.jpg"
+  source       = "${path.module}/assets/rockilus_logo_blue.jpg"
   content_type = "image/jpeg"
   acl          = var.acl
 }
