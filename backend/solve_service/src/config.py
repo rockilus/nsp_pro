@@ -57,18 +57,10 @@ class AppConfig(BaseSettings):
         description="Endpoint URL for local AWS services",
     )
 
-    # SQS configuration
-    sqs_solve_queue_name: str = Field(
-        "nsp-pro-dev-solve-queue", description="Name of the SQS solve queue"
-    )
-    sqs_solve_dlq_name: str | None = Field(
-        None, description="Name of the SQS dead-letter queue"
-    )
+    # SQS configuration - Queue URLs (managed by Terraform)
+    sqs_solve_queue_url: str = Field(..., description="URL of the SQS solve queue")
     sqs_visibility_timeout: int = Field(
         300, description="SQS message visibility timeout"
-    )
-    sqs_max_receive_count: int = Field(
-        3, description="Maximum receive count before DLQ"
     )
 
     model_config = SettingsConfigDict(

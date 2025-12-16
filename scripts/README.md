@@ -1,11 +1,12 @@
-# Development User Initialization
+# Development Scripts
 
-This directory contains scripts for setting up a test user in the development environment.
+This directory contains scripts for local development setup and testing.
 
 ## Files
 
 - `init-dev-user.sh`: Shell script that calls the `/users/onboard` endpoint to create a test user
 - `Dockerfile.init-user`: Docker container definition for running the init script
+- `init-localstack-sqs.sh`: Shell script to initialize SQS queues in LocalStack for local development
 
 ## Usage
 
@@ -45,6 +46,38 @@ The script creates a test user with the following details:
    - Creates the user in MongoDB
    - Sets up permissions in Permit.io
    - Returns success (idempotent - safe to run multiple times)
+
+## LocalStack SQS Initialization
+
+### init-localstack-sqs.sh
+
+Initializes SQS queues in LocalStack for local development and testing.
+
+**Created Queues:**
+- `nsp-pro-dev-solve-queue` - Main queue for solver requests
+- `nsp-pro-dev-solve-dlq` - Dead-letter queue for failed solve requests
+- `nsp-pro-dev-email-queue` - Main queue for email messages
+- `nsp-pro-dev-email-dlq` - Dead-letter queue for failed email sends
+
+**Queue URLs:**
+```
+http://localhost:4566/000000000000/nsp-pro-dev-solve-queue
+http://localhost:4566/000000000000/nsp-pro-dev-email-queue
+```
+
+**Usage:**
+
+The script runs automatically when using `docker-compose up` via the `localstack-init` service. To run manually:
+
+```bash
+# Make sure LocalStack is running
+docker-compose up -d localstack
+
+# Run the initialization script
+./scripts/init-localstack-sqs.sh
+```
+
+**Note:** When running docker-compose, the queues are automatically created by the `localstack-init` service before the application services start.
 
 ## Environment Variables
 

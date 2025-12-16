@@ -9,6 +9,51 @@ services:
   localstack:
     # No ports needed
     ports: []
+    environment:
+      - SERVICES=sqs
+      - DEBUG=1
+
+  # LocalStack SQS Queue Initializer for CI
+  localstack-init:
+    image: amazon/aws-cli:latest
+    depends_on:
+      localstack:
+        condition: service_healthy
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=eu-west-3
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Creating SQS queues in LocalStack..."
+        
+        aws --endpoint-url=http://localstack:4566 sqs create-queue \
+          --queue-name nsp-pro-dev-solve-dlq \
+          --attributes MessageRetentionPeriod=1209600 || true
+        
+        SOLVE_DLQ_ARN=$$(aws --endpoint-url=http://localstack:4566 sqs get-queue-attributes \
+          --queue-url http://localstack:4566/000000000000/nsp-pro-dev-solve-dlq \
+          --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
+        
+        aws --endpoint-url=http://localstack:4566 sqs create-queue \
+          --queue-name nsp-pro-dev-solve-queue \
+          --attributes "VisibilityTimeout=900,MessageRetentionPeriod=1209600,ReceiveMessageWaitTimeSeconds=20,RedrivePolicy={\\\"deadLetterTargetArn\\\":\\\"$$SOLVE_DLQ_ARN\\\",\\\"maxReceiveCount\\\":3}" || true
+        
+        aws --endpoint-url=http://localstack:4566 sqs create-queue \
+          --queue-name nsp-pro-dev-email-dlq \
+          --attributes MessageRetentionPeriod=1209600 || true
+        
+        EMAIL_DLQ_ARN=$$(aws --endpoint-url=http://localstack:4566 sqs get-queue-attributes \
+          --queue-url http://localstack:4566/000000000000/nsp-pro-dev-email-dlq \
+          --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
+        
+        aws --endpoint-url=http://localstack:4566 sqs create-queue \
+          --queue-name nsp-pro-dev-email-queue \
+          --attributes "VisibilityTimeout=300,MessageRetentionPeriod=1209600,ReceiveMessageWaitTimeSeconds=20,RedrivePolicy={\\\"deadLetterTargetArn\\\":\\\"$$EMAIL_DLQ_ARN\\\",\\\"maxReceiveCount\\\":3}" || true
+        
+        echo "✅ SQS queues created"
+        aws --endpoint-url=http://localstack:4566 sqs list-queues
 
   permit:
     # No ports needed
@@ -24,6 +69,9 @@ services:
     # The host network approach is simpler for Playwright
     ports:
       - "4000:4000" # Keep the port for Playwright access from the host
+
+    depends_on:
+      - localstack-init
 
     # Environment variables should be injected from GitHub Actions
     # env_file: null
@@ -56,6 +104,10 @@ services:
       - AWS_SECRET_ACCESS_KEY=test
       - ENDPOINT_URL=http://localstack:4566
 
+      # SQS Configuration - Queue URLs
+      - AWS_SQS_SOLVE_QUEUE_URL=http://localstack:4566/000000000000/nsp-pro-dev-solve-queue
+      - AWS_SQS_EMAIL_QUEUE_URL=http://localstack:4566/000000000000/nsp-pro-dev-email-queue
+
       # Development Authentication Configuration
       - DEV_USER_ID=64e9b7f1e13e4a1a9c8b4567
       - DEV_USER_EMAIL=testuser@example.com
@@ -63,8 +115,8 @@ services:
 
 
   solve-service:
-    # No changes needed here, as it doesn't have exposed ports or specific CI-only needs
-    # It just needs to connect to localstack and mongodb
+    depends_on:
+      - localstack-init
     # env_file: null
     environment:
       # Environment
@@ -81,10 +133,9 @@ services:
       - AWS_SESSION_TOKEN=
       - ENDPOINT_URL=http://localstack:4566
 
-      # SQS Configuration
-      - SQS_QUEUE_NAME=nsp-pro-dev-solve-queue
+      # SQS Configuration - Queue URLs
+      - AWS_SQS_SOLVE_QUEUE_URL=http://localstack:4566/000000000000/nsp-pro-dev-solve-queue
       - SQS_VISIBILITY_TIMEOUT=300
-      - SQS_MAX_RECEIVE_COUNT=3
 
   frontend:
     # Use the production build command

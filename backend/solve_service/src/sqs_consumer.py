@@ -62,8 +62,8 @@ class SQSSolveConsumer:
 
         while self.running:
             try:
-                # Poll for messages
-                messages = await self.sqs_solve_service.receive_solve_requests(
+                # Poll for messages (uses base class method)
+                messages = await self.sqs_solve_service.receive_messages(
                     max_messages=1, wait_time_seconds=20  # Long polling
                 )
 
@@ -127,7 +127,7 @@ class SQSSolveConsumer:
                 f"{message_content.schedule_id}: {e}"
             )
 
-            # Try to update schedule with failure, but always delete the message
+            # Update schedule with failure
             try:
                 await self._update_schedule_failure(message_id=message_id, error=str(e))
             except Exception as update_exc:
@@ -135,9 +135,11 @@ class SQSSolveConsumer:
                     f"Failed to update schedule failure for message {message_id}: "
                     + f"{update_exc}"
                 )
-            finally:
-                # Always delete message to prevent retry (or implement retry logic)
-                await self.sqs_solve_service.delete_message(receipt_handle)
+
+            # Only delete message on failure if we don't want retry
+            # For now, delete to prevent infinite retries
+            # TO#DO: Implement proper retry logic with max attempts
+            await self.sqs_solve_service.delete_message(receipt_handle)
 
     async def _solve_schedule(self, message: SQSSolveMessage, message_id: str) -> Tuple[
         ScheduleSolveStatus,

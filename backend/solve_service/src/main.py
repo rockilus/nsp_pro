@@ -12,9 +12,10 @@ from contextlib import asynccontextmanager
 from typing import Optional
 
 from loguru import logger
-from shared.aws.config import AWSConfig
+from shared.aws.config import create_aws_config
+from shared.aws.sqs_client import SQSClient
 from shared.database.database_collections import DatabaseCollections
-from shared.services.factory import create_sqs_solve_service
+from shared.services.sqs_solve_service import SQSSolveService
 
 from config import config
 from database_setup import setup_database, shutdown_database
@@ -65,27 +66,23 @@ class SolveService:
         """
         logger.info("Starting NSP Pro Solve Service...")
         logger.info(f"Environment: {config.environment}")
-        logger.info(f"SQS Queue: {config.sqs_solve_queue_name}")
+        logger.info(f"SQS Queue URL: {config.sqs_solve_queue_url}")
 
         # Set up signal handlers for graceful shutdown
         self._setup_signal_handlers()
 
         try:
             async with self.database_lifespan() as collections:
-                # Create AWS configuration
-                aws_config = AWSConfig(
-                    region=config.aws_region,
-                    aws_access_key_id=config.aws_access_key_id,
-                    aws_secret_access_key=config.aws_secret_access_key,
-                    aws_session_token=config.aws_session_token,
-                    endpoint_url=config.endpoint_url,
-                    sqs_solve_queue_name=config.sqs_solve_queue_name,
-                    sqs_solve_dlq_name=config.sqs_solve_dlq_name,
-                    documentdb_secret_name=config.documentdb_secret_name,
-                )
+                # Create AWS configuration using shared factory
 
-                # Create SQS service
-                sqs_service = await create_sqs_solve_service(config=aws_config)
+                aws_config = create_aws_config(config)
+
+                # Create SQS client and service
+                sqs_client = SQSClient(aws_config)
+                sqs_service = SQSSolveService(
+                    sqs_client=sqs_client,
+                    queue_url=config.sqs_solve_queue_url,
+                )
                 logger.info("SQS service created successfully")
 
                 # Create consumer with database collections

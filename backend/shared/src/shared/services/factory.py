@@ -32,12 +32,11 @@ async def create_sqs_solve_service(
     if not validate_aws_config(config):
         raise ValueError("Invalid AWS configuration")
 
-    # Create and initialize SQS client
+    # Create SQS client
     sqs_client = SQSClient(config)
-    await sqs_client.initialize_queues()
 
     # Create solve service
-    return SQSSolveService(sqs_client)
+    return SQSSolveService(sqs_client=sqs_client, queue_url=config.sqs_solve_queue_url)
 
 
 def create_sqs_client(config: Optional[AWSConfig] = None) -> SQSClient:

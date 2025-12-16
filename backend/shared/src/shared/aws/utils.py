@@ -15,18 +15,8 @@ def get_aws_config_from_env() -> AWSConfig:
         region=os.getenv("AWS_REGION", "us-east-1"),
         aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID", "test_access_key"),
         aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY", "test_secret_key"),
-        sqs_solve_queue_name=os.getenv("AWS_SQS_SOLVE_QUEUE_NAME", "nsp-solve-queue"),
-        sqs_solve_dlq_name=os.getenv("AWS_SQS_SOLVE_DLQ_NAME", "nsp-solve-dlq"),
-        sqs_visibility_timeout_seconds=int(
-            os.getenv("AWS_SQS_VISIBILITY_TIMEOUT_SECONDS", "900")
-        ),
-        sqs_message_retention_period=int(
-            os.getenv("AWS_SQS_MESSAGE_RETENTION_PERIOD", "1209600")
-        ),
-        sqs_receive_message_wait_time=int(
-            os.getenv("AWS_SQS_RECEIVE_MESSAGE_WAIT_TIME", "20")
-        ),
-        sqs_max_receive_count=int(os.getenv("AWS_SQS_MAX_RECEIVE_COUNT", "3")),
+        sqs_solve_queue_url=os.getenv("AWS_SQS_SOLVE_QUEUE_URL", ""),
+        sqs_email_queue_url=os.getenv("AWS_SQS_EMAIL_QUEUE_URL", ""),
         documentdb_secret_name=os.getenv("DOCUMENTDB_SECRET_NAME", ""),
     )
 
@@ -49,16 +39,8 @@ def validate_aws_config(config: AWSConfig) -> bool:
         return False
 
     # Validate queue names
-    # if not config.sqs_solve_queue_name or not config.sqs_solve_dlq_name:
-    if not config.sqs_solve_queue_name:
-        return False
-
-    # Validate numeric values
-    if config.sqs_visibility_timeout_seconds <= 0:
-        return False
-    if config.sqs_message_retention_period <= 0:
-        return False
-    if config.sqs_max_receive_count <= 0:
+    # if not config.sqs_solve_queue_name:
+    if not config.sqs_solve_queue_url:
         return False
 
     return True

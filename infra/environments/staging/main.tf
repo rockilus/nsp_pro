@@ -129,6 +129,106 @@ module "sqs" {
   depends_on = [module.iam]
 }
 
+# Email SQS infrastructure for asynchronous email processing
+module "email_sqs" {
+  source = "../../modules/email_sqs"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  # Configure queue settings
+  visibility_timeout_seconds = 60 # Lambda timeout
+  max_receive_count          = 3  # Retries before DLQ
+  kms_key_id                 = var.kms_key_id_sqs
+
+  # Service principals that can access the queue (API Gateway and Lambda)
+  allowed_principal_arns = [
+    module.iam.ecs_task_execution_role_arn
+  ]
+
+  # Alarm actions (e.g., SNS topic ARNs for notifications)
+  alarm_actions = var.sqs_alarm_actions
+
+  tags = {
+    Environment = var.environment
+    Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
+    Project     = "NSP Pro"
+    Purpose     = "Email Processing"
+  }
+
+  depends_on = [module.iam]
+}
+
+# Lambda function for processing email queue
+module "email_lambda" {
+  source = "../../modules/email_lambda"
+
+  project_name = var.project_name
+  environment  = var.environment
+  aws_region   = var.aws_region
+
+  # SQS queue configuration
+  sqs_queue_arn = module.email_sqs.email_queue_arn
+
+  # S3 templates bucket (use computed name, bucket created separately)
+  s3_templates_bucket_name = "${var.project_name}-${var.environment}-email-templates"
+  s3_templates_bucket_arn  = "arn:aws:s3:::${var.project_name}-${var.environment}-email-templates"
+
+  # SES configuration
+  ses_from_email        = "noreply@rockilus.com"
+  ses_configuration_set = "" # Optional: add if you have SES configuration set
+
+  tags = {
+    Environment = var.environment
+    Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
+    Project     = "NSP Pro"
+    Purpose     = "Email Processing"
+  }
+
+  depends_on = [module.email_sqs]
+}
+
+# S3 bucket for email templates
+module "s3_email_templates" {
+  source = "../../modules/s3_email_templates"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  # Lambda role needs read access to templates
+  lambda_role_arn = module.email_lambda.lambda_role_arn
+
+  tags = {
+    Environment = var.environment
+    Owner       = "DevOps Team"
+    Compliance  = "Healthcare"
+    Project     = "NSP Pro"
+    Purpose     = "Email Templates"
+  }
+
+  depends_on = [module.email_lambda]
+
+  # Supply public logo URL from the public-assets module
+  logo_url = module.s3_public_assets.logo_url
+}
+
+# Public assets bucket for logos and other public static files
+module "s3_public_assets" {
+  source = "../../modules/s3_public_assets"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  tags = {
+    Environment = var.environment
+    Owner       = "DevOps Team"
+    Project     = "NSP Pro"
+    Purpose     = "Public Assets"
+  }
+
+}
 
 # Route 53 DNS management with SSL certificates
 module "route53" {
@@ -398,9 +498,9 @@ module "ecs" {
   documentdb_secret_name                     = module.documentdb.credentials_secret_name
   api_gateway_backend_api_key_parameter_name = module.api_gateway.backend_api_key_parameter.name
 
-  # SQS Queue Names
-  sqs_solve_queue_name = module.sqs.solve_queue_name
-  sqs_solve_dlq_name   = module.sqs.solve_dlq_name
+  # SQS Queue URLs (managed by Terraform)
+  sqs_solve_queue_url = module.sqs.solve_queue_url
+  sqs_email_queue_url = module.email_sqs.email_queue_url
 
   tags = {
     Environment = var.environment
@@ -416,7 +516,8 @@ module "ecs" {
     module.iam,
     module.documentdb,
     module.security_groups,
-    module.sqs
+    module.sqs,
+    module.email_sqs
   ]
 }
 

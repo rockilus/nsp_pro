@@ -97,6 +97,26 @@ variable "landing_page_domain_name" {
   }
 }
 
+# Lightsail Configuration
+variable "lightsail_availability_zone" {
+  description = "AWS availability zone for the Lightsail WordPress instance"
+  type        = string
+  default     = "eu-west-3a"
+}
+
+variable "lightsail_blueprint_id" {
+  description = "Lightsail blueprint ID for WordPress (e.g., wordpress_6_4_2)"
+  type        = string
+  # default     = "wordpress_6_4_2"
+  default = "wordpress"
+}
+
+variable "lightsail_bundle_id" {
+  description = "Lightsail bundle ID determining instance size (e.g., nano_3_0, micro_3_0, small_3_0)"
+  type        = string
+  default     = "micro_3_0"
+}
+
 variable "deletion_protection_cognito_user_pool_aws" {
   description = "Enable deletion protection for the Cognito User Pool"
   type        = string
@@ -715,6 +735,25 @@ variable "permit_pdp_operating_system_family" {
     condition     = contains(["LINUX", "WINDOWS"], var.permit_pdp_operating_system_family)
     error_message = "Permit PDP operating system family must be either 'LINUX' or 'WINDOWS' for compatibility."
   }
+}
+
+# SES Configuration
+variable "ses_domain_name" {
+  description = "Domain name to verify with SES (e.g., rockilus.com)"
+  type        = string
+  default     = "rockilus.com"
+}
+
+variable "ses_from_email_address" {
+  description = "Email address to verify with SES (e.g., noreply@rockilus.com)"
+  type        = string
+  default     = "noreply@rockilus.com"
+}
+
+variable "ses_enable_dkim" {
+  description = "Enable DKIM signing for the SES domain"
+  type        = bool
+  default     = true
 }
 
 

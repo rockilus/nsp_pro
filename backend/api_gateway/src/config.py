@@ -111,12 +111,13 @@ class AppConfig(BaseSettings):
         description="Development API key for service authentication",
     )
 
-    # SQS Configuration
-    sqs_solve_queue_name: str = Field(
-        "nsp-pro-dev-solve-queue", description="Name of the SQS solve queue"
+    # SQS Configuration - Queue URLs (managed by Terraform)
+    sqs_solve_queue_url: str = Field(
+        ...,
+        description="URL of the SQS solve queue",
     )
-    sqs_solve_dlq_name: str | None = Field(
-        None, description="Name of the SQS dead-letter queue"
+    sqs_email_queue_url: str | None = Field(
+        None, description="URL of the SQS email queue"
     )
 
     # App configuration

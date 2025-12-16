@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campaña Iniciada</title>
+    <link rel="stylesheet" href="../styles/email_common.css">
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">¡Nueva Campaña Iniciada!</div>
+        <div class="email-body">
+            <p>Hola {recipient_name},</p>
+            <p>Se ha iniciado una nueva campaña de programación para <strong>{team_name}</strong>.</p>
+            <p><strong>Período de Campaña:</strong> {campaign_start_date} a {campaign_end_date}</p>
+            <p>Ahora puedes comenzar a trabajar en el horario haciendo clic en el botón de abajo:</p>
+            <a href="{campaign_link}" class="cta-button">Ver Campaña</a>
+            <div class="info-box">
+                <p><strong>Resumen Rápido:</strong></p>
+                <ul>
+                    <li>Duración: {campaign_duration_days} días</li>
+                    <li>Equipo: {team_name}</li>
+                </ul>
+            </div>
+        </div>
+        <div class="email-footer">
+            <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
+            <p>Gracias,<br>El Equipo de Rockilus</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,7 +1,6 @@
-from src.integrations import authentication, authorization, email_sender
+from src.integrations import authentication, authorization
 
 __all__ = [
     "authentication",
     "authorization",
-    "email_sender",
 ]

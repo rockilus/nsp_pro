@@ -9,7 +9,7 @@ the shared SQS service.
 from datetime import datetime, timezone
 
 from loguru import logger
-from shared.aws.config import AWSConfig
+from shared.aws.config import create_aws_config
 from shared.aws.sqs_client import SQSClient
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import SolveRequestStatus, SolveTaskStatus
@@ -191,42 +191,19 @@ def create_sqs_solve_service(
     Factory function to create an API Gateway SQS Solve Service.
 
     Args:
-        schedule_service: Schedule service instance
+        collection: Database collections instance
 
     Returns:
         Configured APIGatewaySQSSolveService
     """
-    # Create AWS config and SQS client
-    # aws_config = AWSConfig(
-    #     region=config.aws_region,
-    #     aws_access_key_id=config.aws_access_key_id,
-    #     aws_secret_access_key=config.aws_secret_access_key,
-    #     endpoint_url=(
-    #         config.endpoint_url
-    #         if config.environment == "development"
-    #         else None
-    #     ),
-    #     sqs_solve_queue_name="nsp-pro-dev-solve-queue",
-    # )
-    # if config.aws_access_key_id is None or config.aws_secret_access_key is None:
-    #     raise ValueError(
-    #         "AWS credentials are not set. Please check your configuration."
-    #     )
-
-    aws_config = AWSConfig(
-        region=config.aws_region,
-        aws_access_key_id=config.aws_access_key_id,
-        aws_secret_access_key=config.aws_secret_access_key,
-        aws_session_token=config.aws_session_token,
-        endpoint_url=config.endpoint_url,
-        sqs_solve_queue_name=config.sqs_solve_queue_name,
-        sqs_solve_dlq_name=config.sqs_solve_dlq_name,
-        documentdb_secret_name=config.documentdb_secret_name,
-    )
+    # Create AWS config using shared factory
+    aws_config = create_aws_config(config)
     sqs_client = SQSClient(aws_config)
 
-    # Create shared SQS solve service
-    sqs_solve_service = SQSSolveService(sqs_client)
+    # Create shared SQS solve service with queue URL
+    sqs_solve_service = SQSSolveService(
+        sqs_client=sqs_client, queue_url=config.sqs_solve_queue_url
+    )
 
     return APIGatewaySQSSolveService(
         collection=collection,

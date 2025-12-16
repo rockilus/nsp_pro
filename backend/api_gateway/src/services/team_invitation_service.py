@@ -17,8 +17,8 @@ from shared.schemas.core import (
 )
 
 from src.config import config
-from src.integrations.email_sender import EmailSender
 from src.services.base_service import BaseService
+from src.services.email_queue_service import EmailQueueService
 from src.services.team_membership_service import TeamMembershipService
 
 
@@ -27,9 +27,11 @@ class TeamInvitationService(BaseService):
         self,
         collection,
         team_membership_service: TeamMembershipService,
+        email_queue_service: EmailQueueService,
     ):
         super().__init__(collection)
         self.team_membership_service = team_membership_service
+        self.email_queue_service = email_queue_service
 
     async def create_team_invitation(
         self, invitation: TeamInvitation, sender_id: str
@@ -66,7 +68,9 @@ class TeamInvitationService(BaseService):
         team = self.collection.team_db.get_team_by_id(team_id=invitation.team_id)
         if not team:
             raise ValueError("Team not found")
-        self.send_invitation_email(invitation=invitation, sender=sender, team=team)
+        await self.send_invitation_email(
+            invitation=invitation, sender=sender, team=team
+        )
         invitation.last_sent_at = datetime.now(tz=timezone.utc)
         invitation = self.collection.team_invitation_db.create_invitation(
             invitation=invitation
@@ -129,7 +133,7 @@ class TeamInvitationService(BaseService):
             for invitation in invitations
         ]
 
-    def resend_invite(self, invitation_id: str) -> TeamInvitation | None:
+    async def resend_invite(self, invitation_id: str) -> TeamInvitation | None:
         invitation = self.collection.team_invitation_db.get_invitation_by_id(
             invitation_id=invitation_id,
         )
@@ -147,7 +151,9 @@ class TeamInvitationService(BaseService):
         team = self.collection.team_db.get_team_by_id(team_id=invitation.team_id)
         if not team:
             raise ValueError("Team not found")
-        self.send_invitation_email(invitation=invitation, sender=sender, team=team)
+        await self.send_invitation_email(
+            invitation=invitation, sender=sender, team=team
+        )
         invitation.last_sent_at = datetime.now(tz=timezone.utc)
         self.collection.team_invitation_db.update_invitation(invitation)
         return invitation
@@ -219,28 +225,36 @@ class TeamInvitationService(BaseService):
         self.collection.team_invitation_db.update_invitation(invitation)
         return True
 
-    def send_invitation_email(
+    async def send_invitation_email(
         self, invitation: TeamInvitation, sender: User, team: Team
     ) -> None:
         if not self.can_resend_invite(invitation):
             return
-        email_sender = EmailSender()
-        email_sender.send_template_email(
-            to_address=invitation.email,
-            template_name="team_invitation_email",
-            context={
-                "subject": "Your invitation to join a team on Rockilus",
-                "recipient_name": f"{invitation.first_name or ''}".strip()
-                + " "
-                + f"{invitation.last_name or ''}".strip(),
-                "sender_name": sender.first_name + " " + sender.last_name,
-                "team_name": team.name,
-                "invitation_link": f"{config.client_url}/en/plan/settings/teams"
-                + f"?token={invitation.token}",
-            },
-            language=sender.language,
+
+        recipient_name = f"{invitation.first_name or ''}".strip()
+        if invitation.last_name:
+            recipient_name += " " + invitation.last_name.strip()
+
+        sender_name = f"{sender.first_name} {sender.last_name}"
+        invitation_link = (
+            f"{config.client_url}/en/plan/settings/teams" f"?token={invitation.token}"
         )
-        return
+
+        # Use email queue service to send invitation
+        try:
+            await self.email_queue_service.enqueue_team_invitation(
+                to_address=invitation.email,
+                recipient_name=recipient_name,
+                sender_name=sender_name,
+                team_name=team.name,
+                invitation_link=invitation_link,
+                language=sender.language,
+            )
+            return
+        except Exception as e:
+            raise ValueError(
+                f"Failed to send invitation email to {invitation.email}: {e}"
+            ) from e
 
     def delete_team_invitation(self, invitation_id: str) -> None:
         self.collection.team_invitation_db.delete_invitation(
