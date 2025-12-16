@@ -5,7 +5,11 @@
  * 1. Backend API is running and accessible
  * 2. Test utilities are available
  * 3. Database can be reset successfully
- * 4. Test user is created for authentication
+ * 4. Default test user is created for authentication
+ *
+ * Note: Role-based tests (owner vs member) create their own users per test
+ * using RoleTestBase.setupRoleTests(). This global setup creates a default
+ * owner user for backward compatibility with existing tests.
  */
 
 import { chromium, FullConfig } from "@playwright/test";

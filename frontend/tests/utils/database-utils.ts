@@ -79,6 +79,23 @@ export interface UserCreationResult {
   message: string;
 }
 
+export interface AddTeamMemberResult {
+  success: boolean;
+  message: string;
+  membership_id: string;
+  user_id: string;
+  team_id: string;
+  role: string;
+}
+
+export interface TestUserWithRole {
+  userId: string;
+  email: string;
+  teamId: string;
+  role: "owner" | "member";
+  membershipId: string;
+}
+
 export interface SolverScenarioResult {
   scenario_name: string;
   specialties: SpecialtyT[];
@@ -420,6 +437,164 @@ export class DatabaseTestUtils {
       }
       throw new Error("Test user creation failed with unknown error");
     }
+  }
+
+  /**
+   * Add a user to a team with a specific role (owner or member)
+   * Uses the test utilities endpoint to directly create team memberships
+   */
+  async addTeamMember(
+    userId: string,
+    teamId: string,
+    role: "owner" | "member"
+  ): Promise<AddTeamMemberResult> {
+    try {
+      const response = await fetch(
+        `${testConfig.apiUrl}/test-utils/add-team-member`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-API-Key": testConfig.devApiKey,
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            team_id: teamId,
+            role: role,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to add team member (HTTP ${response.status}): ${errorText}`
+        );
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Adding team member failed: ${error.message}`);
+      }
+      throw new Error("Adding team member failed with unknown error");
+    }
+  }
+
+  /**
+   * Create a user with a specific role in a team
+   * This combines user creation and team membership assignment
+   */
+  async createUserWithRole(
+    userData: {
+      userId: string;
+      email: string;
+      username?: string;
+      firstName?: string;
+      lastName?: string;
+    },
+    teamId: string,
+    role: "owner" | "member"
+  ): Promise<TestUserWithRole> {
+    try {
+      // 1. Create the user first
+      await this.createTestUser({
+        user_id: userData.userId,
+        email: userData.email,
+        username: userData.username || userData.email.split("@")[0],
+        first_name: userData.firstName || "Test",
+        last_name: userData.lastName || "User",
+      });
+
+      console.log(`✅ Created user: ${userData.userId}`);
+
+      // 2. Add the user to the team with the specified role
+      const membershipResult = await this.addTeamMember(
+        userData.userId,
+        teamId,
+        role
+      );
+
+      console.log(
+        `✅ Added user ${userData.userId} to team ${teamId} as ${role}`
+      );
+
+      return {
+        userId: userData.userId,
+        email: userData.email,
+        teamId: teamId,
+        role: role,
+        membershipId: membershipResult.membership_id,
+      };
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to create user with role: ${error.message}`);
+      }
+      throw new Error("Failed to create user with role: unknown error");
+    }
+  }
+
+  /**
+   * Create an authenticated API client for a specific user
+   * This allows tests to make requests as different users by switching the X-Dev-User-ID header
+   */
+  createAuthenticatedClientForUser(userId: string): AuthenticatedApiClient {
+    const makeAuthenticatedRequest = async <T>(
+      method: string,
+      endpoint: string,
+      data?: any,
+      options: RequestInit = {}
+    ): Promise<T> => {
+      const authHeaders: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+
+      if (testConfig.environment === "development") {
+        authHeaders["X-Dev-User-ID"] = userId; // Use the specific user ID
+        authHeaders["X-API-Key"] = testConfig.devApiKey;
+      } else {
+        // For non-dev environments, would need proper auth token per user
+        authHeaders["Authorization"] = `Bearer ${testConfig.authToken}`;
+      }
+
+      const response = await fetch(`${testConfig.apiUrl}${endpoint}`, {
+        method: method.toUpperCase(),
+        ...options,
+        headers: {
+          ...authHeaders,
+          ...options.headers,
+        },
+        body: data ? JSON.stringify(data) : undefined,
+      });
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ detail: "Unknown error" }));
+
+        console.error(
+          `❌ API ${method} ${endpoint} failed for user ${userId}:`,
+          {
+            status: response.status,
+            statusText: response.statusText,
+            error: errorData,
+          }
+        );
+
+        throw new Error(
+          `${method} ${endpoint} failed: ${response.status} ${
+            errorData.detail || JSON.stringify(errorData)
+          }`
+        );
+      }
+
+      return response.json();
+    };
+
+    return {
+      makeAuthenticatedRequest,
+    };
   }
 
   /**
