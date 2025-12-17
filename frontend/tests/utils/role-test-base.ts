@@ -7,7 +7,7 @@
  */
 
 import { Page, expect } from "@playwright/test";
-import { DatabaseTestUtils, TestUserWithRole } from "./database-utils";
+import { DatabaseTestUtils, TestUserWithRole, TEST_USER_2 } from "./database-utils";
 import { testConfig } from "./test-config";
 
 export class RoleTestBase {
@@ -45,6 +45,10 @@ export class RoleTestBase {
     console.log(
       `Created test team: ${this.testTeam.name} (${this.testTeam.teamId})`
     );
+
+    // Add TEST_USER_2 as a team member for consistent multi-user scenarios
+    await this.dbUtils.addSecondUserToTeam(this.testTeam.teamId, "member");
+    console.log(`✅ Added TEST_USER_2 (${TEST_USER_2.user_id}) as team member`);
 
     // Create owner user
     const ownerUserId = `owner-${workerIndex}-${Date.now()}`;
@@ -109,6 +113,23 @@ export class RoleTestBase {
     });
 
     console.log(`🔄 Acting as member: ${this.memberUser.userId}`);
+  }
+
+  /**
+   * Switch page context to act as TEST_USER_2 (the second test user)
+   * This sets the X-Dev-User-ID header for all subsequent requests
+   */
+  async actAsSecondTestUser(page: Page): Promise<void> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupRoleTests() first.");
+    }
+
+    await page.setExtraHTTPHeaders({
+      "X-Dev-User-ID": TEST_USER_2.user_id,
+      "X-API-Key": testConfig.devApiKey,
+    });
+
+    console.log(`🔄 Acting as TEST_USER_2: ${TEST_USER_2.user_id}`);
   }
 
   /**
@@ -279,6 +300,17 @@ export class RoleTestBase {
       throw new Error("Member user not created. Call setupRoleTests() first.");
     }
     return this.memberUser;
+  }
+
+  /**
+   * Get the second test user (TEST_USER_2) details
+   * This user is automatically added as a member during setupRoleTests
+   */
+  getSecondTestUser(): typeof TEST_USER_2 {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupRoleTests() first.");
+    }
+    return TEST_USER_2;
   }
 
   /**
