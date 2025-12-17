@@ -131,7 +131,10 @@ export default function TeamGeneralTab({
       {isLoading ? (
         <TablesSkeleton numTables={1} numInternalRows={5} />
       ) : (
-        <div className="team-general-container">
+        <div
+          className="team-general-container"
+          data-testid="team-general-page-heading"
+        >
           <NavigationHeader
             title={t("general")}
             onBack={() =>

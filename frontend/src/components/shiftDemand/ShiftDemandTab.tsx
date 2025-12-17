@@ -855,7 +855,7 @@ function ShiftDemandTabInternal({
   // No shifts available
   if (shifts.length === 0) {
     return (
-      <div className="tab-container-ultrawide">
+      <div className="tab-container-ultrawide" data-testid="shift-demand-tab">
         <Paper elevation={1} sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom>
             {t("no_shifts_title")}

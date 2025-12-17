@@ -128,7 +128,10 @@ export default function UserProfileTab({ lng }: { lng: string }) {
       {isLoading ? (
         <TablesSkeleton numTables={1} numInternalRows={5} />
       ) : (
-        <div className="user-profile-container">
+        <div
+          className="user-profile-container"
+          data-testid="personal-info-page-heading"
+        >
           <NavigationHeader
             title={t("personal_info")}
             onBack={() => router.push(`/${lng}/plan/settings`)}

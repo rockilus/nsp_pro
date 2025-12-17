@@ -159,7 +159,7 @@ export default function MembersTab({
   }, [handleGetTeamUsersInvitationsAndWorkers]);
 
   return (
-    <div>
+    <div data-testid="team-members-page-heading">
       <NavigationHeader
         title={t("members")}
         onBack={() => router.push(`/${lng}/plan/teams?teamId=${teamId}`)}

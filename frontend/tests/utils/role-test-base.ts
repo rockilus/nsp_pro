@@ -162,6 +162,81 @@ export class RoleTestBase {
   }
 
   /**
+   * Navigate to shifts page as current user
+   */
+  async navigateToShiftsPage(page: Page): Promise<void> {
+    await this.navigateToPageWithTeamContext(page, "/en/plan/shifts/");
+  }
+
+  /**
+   * Navigate to shift demands page as current user
+   */
+  async navigateToShiftDemandsPage(page: Page): Promise<void> {
+    await this.navigateToPageWithTeamContext(page, "/en/plan/shift-demands/");
+  }
+
+  /**
+   * Navigate to constraints page as current user
+   */
+  async navigateToConstraintsPage(page: Page): Promise<void> {
+    await this.navigateToPageWithTeamContext(page, "/en/plan/constraints/");
+  }
+
+  /**
+   * Navigate to campaign page as current user
+   */
+  async navigateToCampaignPage(page: Page): Promise<void> {
+    await this.navigateToPageWithTeamContext(page, "/en/plan/campaign/");
+  }
+
+  /**
+   * Navigate to stats page as current user
+   */
+  async navigateToStatsPage(page: Page): Promise<void> {
+    await this.navigateToPageWithTeamContext(page, "/en/plan/stats/");
+  }
+
+  /**
+   * Navigate to personal info settings page as current user
+   */
+  async navigateToPersonalInfoPage(page: Page): Promise<void> {
+    await this.navigateToPageWithTeamContext(
+      page,
+      "/en/plan/settings/personal-info/"
+    );
+  }
+
+  /**
+   * Navigate to security settings page as current user
+   */
+  async navigateToSecurityPage(page: Page): Promise<void> {
+    await this.navigateToPageWithTeamContext(
+      page,
+      "/en/plan/settings/security/"
+    );
+  }
+
+  /**
+   * Navigate to team general settings page as current user
+   */
+  async navigateToTeamGeneralPage(page: Page): Promise<void> {
+    await this.navigateToPageWithTeamContext(
+      page,
+      `/en/plan/teams/general?teamId=${this.testTeam?.teamId}`
+    );
+  }
+
+  /**
+   * Navigate to team members settings page as current user
+   */
+  async navigateToTeamMembersPage(page: Page): Promise<void> {
+    await this.navigateToPageWithTeamContext(
+      page,
+      `/en/plan/teams/members?teamId=${this.testTeam?.teamId}`
+    );
+  }
+
+  /**
    * Verify that a page is accessible (no redirect or 403 error)
    */
   async verifyPageAccessible(page: Page, expectedUrl: string): Promise<void> {

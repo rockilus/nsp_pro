@@ -487,7 +487,7 @@ export default function ShiftTab({
   }, [selectedTeamId, getShiftsTabDataFn]);
 
   return (
-    <div className="tab-container-wide">
+    <div className="tab-container-wide" data-testid="shifts-page-heading">
       {isLoading ? (
         <TablesSkeleton numTables={2} numInternalRows={3} />
       ) : (

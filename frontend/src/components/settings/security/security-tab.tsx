@@ -79,7 +79,10 @@ export default function SecurityTab({ lng }: { lng: string }) {
       {isLoading ? (
         <TablesSkeleton numTables={1} numInternalRows={2} />
       ) : (
-        <div className="user-profile-container">
+        <div
+          className="user-profile-container"
+          data-testid="security-page-heading"
+        >
           <NavigationHeader
             title={t("security_and_sign_in")}
             onBack={() => router.push(`/${lng}/plan/settings`)}

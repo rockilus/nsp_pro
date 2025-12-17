@@ -134,7 +134,7 @@ export default function CampaignTab({
   }, [scheduleCampaign, teamWithMembership, workTimeTable, getWorkTimeTable]);
 
   return (
-    <div className="tab-container">
+    <div className="tab-container" data-testid="campaign-page-heading">
       {isLoading ? (
         <TablesSkeleton numTables={3} numInternalRows={3} />
       ) : scheduleCampaign ? (

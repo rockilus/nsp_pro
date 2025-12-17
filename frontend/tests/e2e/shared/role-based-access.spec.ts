@@ -66,6 +66,114 @@ test.describe("Role-Based Access Control", () => {
 
       await roleTestBase.verifyPageAccessible(page, "/settings/teams");
     });
+
+    test("owner can access shifts page", async ({ page }) => {
+      await roleTestBase.actAsOwner(page);
+      await roleTestBase.navigateToShiftsPage(page);
+
+      // Verify the shifts page is displayed
+      await expect(
+        page.locator('[data-testid="shifts-page-heading"]')
+      ).toBeVisible();
+
+      await roleTestBase.verifyPageAccessible(page, "/plan/shifts");
+    });
+
+    test("owner can access shift demands page", async ({ page }) => {
+      await roleTestBase.actAsOwner(page);
+      await roleTestBase.navigateToShiftDemandsPage(page);
+
+      // Verify the shift demands page is displayed
+      await expect(
+        page.locator('[data-testid="shift-demand-tab"]')
+      ).toBeVisible();
+
+      await roleTestBase.verifyPageAccessible(page, "/plan/shift-demands");
+    });
+
+    test("owner can access constraints page", async ({ page }) => {
+      await roleTestBase.actAsOwner(page);
+      await roleTestBase.navigateToConstraintsPage(page);
+
+      // Verify the constraints page is displayed
+      await expect(
+        page.locator('[data-testid="constraints-page-heading"]')
+      ).toBeVisible();
+
+      await roleTestBase.verifyPageAccessible(page, "/plan/constraints");
+    });
+
+    test("owner can access campaign page", async ({ page }) => {
+      await roleTestBase.actAsOwner(page);
+      await roleTestBase.navigateToCampaignPage(page);
+
+      // Verify the campaign page is displayed
+      await expect(
+        page.locator('[data-testid="campaign-page-heading"]')
+      ).toBeVisible();
+
+      await roleTestBase.verifyPageAccessible(page, "/plan/campaign");
+    });
+
+    test("owner can access stats page", async ({ page }) => {
+      await roleTestBase.actAsOwner(page);
+      await roleTestBase.navigateToStatsPage(page);
+
+      // Verify the stats page is displayed
+      await expect(
+        page.locator('[data-testid="stats-page-heading"]')
+      ).toBeVisible();
+
+      await roleTestBase.verifyPageAccessible(page, "/plan/stats");
+    });
+
+    test("owner can access personal info settings page", async ({ page }) => {
+      await roleTestBase.actAsOwner(page);
+      await roleTestBase.navigateToPersonalInfoPage(page);
+
+      // Verify the personal info page is displayed
+      await expect(
+        page.locator('[data-testid="personal-info-page-heading"]')
+      ).toBeVisible();
+
+      await roleTestBase.verifyPageAccessible(page, "/settings/personal-info");
+    });
+
+    test("owner can access security settings page", async ({ page }) => {
+      await roleTestBase.actAsOwner(page);
+      await roleTestBase.navigateToSecurityPage(page);
+
+      // Verify the security page is displayed
+      await expect(
+        page.locator('[data-testid="security-page-heading"]')
+      ).toBeVisible();
+
+      await roleTestBase.verifyPageAccessible(page, "/settings/security");
+    });
+
+    test("owner can access team general settings page", async ({ page }) => {
+      await roleTestBase.actAsOwner(page);
+      await roleTestBase.navigateToTeamGeneralPage(page);
+
+      // Verify the team general page is displayed
+      await expect(
+        page.locator('[data-testid="team-general-page-heading"]')
+      ).toBeVisible();
+
+      await roleTestBase.verifyPageAccessible(page, "/teams/general");
+    });
+
+    test("owner can access team members settings page", async ({ page }) => {
+      await roleTestBase.actAsOwner(page);
+      await roleTestBase.navigateToTeamMembersPage(page);
+
+      // Verify the team members page is displayed
+      await expect(
+        page.locator('[data-testid="team-members-page-heading"]')
+      ).toBeVisible();
+
+      await roleTestBase.verifyPageAccessible(page, "/teams/members");
+    });
   });
 
   test.describe("Member Access - Allowed Pages", () => {
