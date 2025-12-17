@@ -227,6 +227,42 @@ test.describe("Role-Based Access Control", () => {
       // TODO: Verify member can only see/manage their own requests
       // This depends on the actual UI implementation
     });
+
+    test("member can access personal info settings page", async ({ page }) => {
+      await roleTestBase.actAsMember(page);
+      await roleTestBase.navigateToPersonalInfoPage(page);
+
+      // Verify the personal info page is displayed
+      await expect(
+        page.locator('[data-testid="personal-info-page-heading"]')
+      ).toBeVisible();
+
+      await roleTestBase.verifyPageAccessible(page, "/settings/personal-info");
+    });
+
+    test("member can access security settings page", async ({ page }) => {
+      await roleTestBase.actAsMember(page);
+      await roleTestBase.navigateToSecurityPage(page);
+
+      // Verify the security page is displayed
+      await expect(
+        page.locator('[data-testid="security-page-heading"]')
+      ).toBeVisible();
+
+      await roleTestBase.verifyPageAccessible(page, "/settings/security");
+    });
+
+    test("member can access teams settings page", async ({ page }) => {
+      await roleTestBase.actAsMember(page);
+      await roleTestBase.navigateToTeamsPage(page);
+
+      // Verify the teams page is displayed
+      await expect(
+        page.locator('[data-testid="teams-page-heading"]')
+      ).toBeVisible();
+
+      await roleTestBase.verifyPageAccessible(page, "/settings/teams");
+    });
   });
 
   test.describe("Member Access - Restricted Pages", () => {
@@ -254,28 +290,142 @@ test.describe("Role-Based Access Control", () => {
       expect(currentUrl).not.toContain("/plan/workers");
     });
 
-    test("member cannot access teams settings page", async ({ page }) => {
+    test("member cannot access shifts page", async ({ page }) => {
       await roleTestBase.actAsMember(page);
 
-      // Try to navigate to teams settings page
-      await roleTestBase.navigateToTeamsPage(page);
+      // Try to navigate to shifts page
+      await roleTestBase.navigateToShiftsPage(page);
 
       // Wait a moment for any redirects to occur
       await page.waitForTimeout(1000);
 
-      // Verify we're NOT on the teams settings page
-      await roleTestBase.verifyPageNotAccessible(page, "/settings/teams");
+      // Verify we're NOT on the shifts page
+      await roleTestBase.verifyPageNotAccessible(page, "/plan/shifts");
 
       const currentUrl = page.url();
-      expect(currentUrl).not.toContain("/settings/teams");
+      expect(currentUrl).not.toContain("/plan/shifts");
     });
 
-    // TODO: Add tests for other owner-only pages as they're identified:
-    // - Shifts page
-    // - Constraints page
-    // - Shift demands page
-    // - Campaign page
-    // - Stats page
+    test("member cannot access shift demands page", async ({ page }) => {
+      await roleTestBase.actAsMember(page);
+
+      // Try to navigate to shift demands page
+      await roleTestBase.navigateToShiftDemandsPage(page);
+
+      // Wait a moment for any redirects to occur
+      await page.waitForTimeout(1000);
+
+      // Verify we're NOT on the shift demands page
+      await roleTestBase.verifyPageNotAccessible(page, "/plan/shift-demands");
+
+      const currentUrl = page.url();
+      expect(currentUrl).not.toContain("/plan/shift-demands");
+    });
+
+    test("member cannot access constraints page", async ({ page }) => {
+      await roleTestBase.actAsMember(page);
+
+      // Try to navigate to constraints page
+      await roleTestBase.navigateToConstraintsPage(page);
+
+      // Wait a moment for any redirects to occur
+      await page.waitForTimeout(1000);
+
+      // Verify we're NOT on the constraints page
+      await roleTestBase.verifyPageNotAccessible(page, "/plan/constraints");
+
+      const currentUrl = page.url();
+      expect(currentUrl).not.toContain("/plan/constraints");
+    });
+
+    test("member cannot access campaign page", async ({ page }) => {
+      await roleTestBase.actAsMember(page);
+
+      // Try to navigate to campaign page
+      await roleTestBase.navigateToCampaignPage(page);
+
+      // Wait a moment for any redirects to occur
+      await page.waitForTimeout(1000);
+
+      // Verify we're NOT on the campaign page
+      await roleTestBase.verifyPageNotAccessible(page, "/plan/campaign");
+
+      const currentUrl = page.url();
+      expect(currentUrl).not.toContain("/plan/campaign");
+    });
+
+    test("member cannot access stats page", async ({ page }) => {
+      await roleTestBase.actAsMember(page);
+
+      // Try to navigate to stats page
+      await roleTestBase.navigateToStatsPage(page);
+
+      // Wait a moment for any redirects to occur
+      await page.waitForTimeout(1000);
+
+      // Verify we're NOT on the stats page
+      await roleTestBase.verifyPageNotAccessible(page, "/plan/stats");
+
+      const currentUrl = page.url();
+      expect(currentUrl).not.toContain("/plan/stats");
+    });
+
+    test("member cannot access team general settings page", async ({
+      page,
+    }) => {
+      await roleTestBase.actAsMember(page);
+
+      // Try to navigate to team general settings page
+      await roleTestBase.navigateToTeamGeneralPage(page);
+
+      // Wait a moment for any redirects to occur
+      await page.waitForTimeout(1000);
+
+      // Verify we're NOT on the team general settings page
+      await roleTestBase.verifyPageNotAccessible(page, "/teams/general");
+
+      const currentUrl = page.url();
+      expect(currentUrl).not.toContain("/teams/general");
+    });
+
+    test("member cannot access team members settings page", async ({
+      page,
+    }) => {
+      await roleTestBase.actAsMember(page);
+
+      // Try to navigate to team members settings page
+      await roleTestBase.navigateToTeamMembersPage(page);
+
+      // Wait a moment for any redirects to occur
+      await page.waitForTimeout(1000);
+
+      // Verify we're NOT on the team members settings page
+      await roleTestBase.verifyPageNotAccessible(page, "/teams/members");
+
+      const currentUrl = page.url();
+      expect(currentUrl).not.toContain("/teams/members");
+    });
+
+    test("member cannot access dashboard page (admin only)", async ({
+      page,
+    }) => {
+      await roleTestBase.actAsMember(page);
+
+      // Try to navigate to dashboard page
+      await roleTestBase.navigateToDashboardPage(page);
+
+      // Member should be redirected away from dashboard page
+      // Dashboard is admin-only, not accessible to regular members
+
+      // Wait a moment for any redirects to occur
+      await page.waitForTimeout(1000);
+
+      // Verify we're NOT on the dashboard page
+      await roleTestBase.verifyPageNotAccessible(page, "/plan/dashboard");
+
+      const currentUrl = page.url();
+      expect(currentUrl).not.toContain("/plan/dashboard");
+    });
   });
 
   test.describe("API-Level Access Control", () => {
