@@ -174,6 +174,29 @@ test.describe("Role-Based Access Control", () => {
 
       await roleTestBase.verifyPageAccessible(page, "/teams/members");
     });
+
+    test("owner cannot access dashboard page (admin only)", async ({
+      page,
+    }) => {
+      await roleTestBase.actAsOwner(page);
+
+      // Try to navigate to dashboard page
+      await roleTestBase.navigateToDashboardPage(page);
+
+      // Owner should be redirected away from dashboard page
+      // Dashboard is admin-only, not accessible to regular owners
+
+      // Wait a moment for any redirects to occur
+      await page.waitForTimeout(1000);
+
+      // Verify we're NOT on the dashboard page
+      await roleTestBase.verifyPageNotAccessible(page, "/plan/dashboard");
+
+      // The user should be redirected somewhere else
+      // (exact destination depends on app routing logic)
+      const currentUrl = page.url();
+      expect(currentUrl).not.toContain("/plan/dashboard");
+    });
   });
 
   test.describe("Member Access - Allowed Pages", () => {

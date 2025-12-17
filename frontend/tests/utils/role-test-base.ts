@@ -237,6 +237,13 @@ export class RoleTestBase {
   }
 
   /**
+   * Navigate to dashboard page as current user (admin-only page)
+   */
+  async navigateToDashboardPage(page: Page): Promise<void> {
+    await this.navigateToPageWithTeamContext(page, "/en/plan/dashboard/");
+  }
+
+  /**
    * Verify that a page is accessible (no redirect or 403 error)
    */
   async verifyPageAccessible(page: Page, expectedUrl: string): Promise<void> {
