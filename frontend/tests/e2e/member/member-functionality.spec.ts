@@ -192,7 +192,7 @@ test.describe("Member: Navigation and UI", () => {
     await roleTestBase.navigateToSchedulePage(page);
 
     // Member should NOT see owner-only navigation links
-    // Based on PageRolePermissions, these are owner-only:
+    // Based on routeAccess configuration, these are owner-only:
     const ownerOnlyLinks = [
       "nav-link-workers",
       "nav-link-shifts",
@@ -217,7 +217,7 @@ test.describe("Member: Navigation and UI", () => {
     await roleTestBase.navigateToSchedulePage(page);
 
     // Member SHOULD see these navigation links
-    // Based on PageRolePermissions, these are accessible to members:
+    // Based on routeAccess configuration, these are accessible to members:
     const memberAllowedLinks = ["nav-link-schedule", "nav-link-requests"];
 
     for (const linkTestId of memberAllowedLinks) {

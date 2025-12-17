@@ -16,6 +16,30 @@ type AccessGuardProps = {
   showToast?: boolean; // Whether to show access denied message
 };
 
+/**
+ * Page-level access control guard with redirect and user notification.
+ *
+ * Use this component to protect entire pages based on user role and team features.
+ * Automatically redirects unauthorized users to an allowed page (default: /plan/schedule)
+ * and shows a toast notification explaining access denial.
+ *
+ * Access rules are centrally configured in `routeAccess` (see route-access.ts).
+ *
+ * **Important**: For hiding UI elements within accessible pages, use `RoleBased` instead.
+ *
+ * @example
+ * // Protect workers page (owner-only)
+ * <AccessGuard route="/workers" teamWithMembership={selectedTeam}>
+ *   <WorkersPageContent />
+ * </AccessGuard>
+ *
+ * @param route - Route identifier matching key in routeAccess configuration
+ * @param teamWithMembership - Current team and user membership information
+ * @param children - Page content to render if access is granted
+ * @param redirectTo - Destination for unauthorized users (default: "/plan/schedule")
+ * @param showToast - Whether to show access denied notification (default: true)
+ * @param fallback - Optional loading/fallback content while team is loading
+ */
 export function AccessGuard({
   route,
   teamWithMembership,
