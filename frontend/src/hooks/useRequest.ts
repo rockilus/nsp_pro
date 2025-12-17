@@ -5,6 +5,7 @@ import { AssignmentT } from "../types/assignment";
 import { WorkerT } from "../types/worker";
 import { ShiftT } from "../types/shift";
 import { ShiftWorkerOptionT } from "../types/constraint";
+import { TeamMembershipRole } from "@/types/team";
 // API Client
 import { RequestApi } from "../app/lib/api/requestApi";
 import { WorkerApi } from "../app/lib/api/workerApi";
@@ -332,7 +333,7 @@ export function useGetRequestsTabData() {
     async (
       teamId: string,
       userId: string,
-      userTeamRole: string
+      userTeamRole: TeamMembershipRole
     ): Promise<RequestsTabData> => {
       if (env.isDevelopment) {
         console.log("🔍 useGetRequestsTabData called:", {
@@ -360,7 +361,7 @@ export function useGetRequestsTabData() {
 
         // For team members, find their worker ID for filtering
         let userWorkerId: string | undefined;
-        if (userTeamRole === "member") {
+        if (userTeamRole === TeamMembershipRole.MEMBER) {
           const userWorker = workers.find((w) => w.userId === userId);
           if (userWorker) {
             userWorkerId = userWorker.id;
