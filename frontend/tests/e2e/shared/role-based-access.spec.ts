@@ -50,9 +50,7 @@ test.describe("Role-Based Access Control", () => {
       await roleTestBase.navigateToRequestsPage(page);
 
       // Verify the requests page is displayed
-      await expect(
-        page.locator('[data-testid="requests-page-heading"]')
-      ).toBeVisible();
+      await expect(page.locator('[data-testid="request-tab"]')).toBeVisible();
 
       await roleTestBase.verifyPageAccessible(page, "/plan/requests");
     });
@@ -91,9 +89,7 @@ test.describe("Role-Based Access Control", () => {
       await roleTestBase.navigateToRequestsPage(page);
 
       // Verify the requests page is displayed
-      await expect(
-        page.locator('[data-testid="requests-page-heading"]')
-      ).toBeVisible();
+      await expect(page.locator('[data-testid="request-tab"]')).toBeVisible();
 
       await roleTestBase.verifyPageAccessible(page, "/plan/requests");
 

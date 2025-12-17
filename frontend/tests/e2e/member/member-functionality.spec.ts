@@ -70,9 +70,7 @@ test.describe("Member: Personal Requests", () => {
     await roleTestBase.navigateToRequestsPage(page);
 
     // Verify requests page is accessible
-    await expect(
-      page.locator('[data-testid="requests-page-heading"]')
-    ).toBeVisible();
+    await expect(page.locator('[data-testid="request-tab"]')).toBeVisible();
   });
 
   test("member can create their own request", async ({ page }) => {
@@ -102,9 +100,7 @@ test.describe("Member: Personal Requests", () => {
 
     // TODO: Implement full test once request filtering is in place
     // For now, just verify the page loads
-    await expect(
-      page.locator('[data-testid="requests-page-heading"]')
-    ).toBeVisible();
+    await expect(page.locator('[data-testid="request-tab"]')).toBeVisible();
   });
 
   test("member cannot create requests for other workers", async ({ page }) => {
@@ -169,9 +165,7 @@ test.describe("Member: Personal Requests", () => {
     await roleTestBase.actAsMember(page);
     await roleTestBase.navigateToRequestsPage(page);
 
-    await expect(
-      page.locator('[data-testid="requests-page-heading"]')
-    ).toBeVisible();
+    await expect(page.locator('[data-testid="request-tab"]')).toBeVisible();
   });
 
   test("member can delete their own request", async ({ page }) => {
@@ -184,9 +178,7 @@ test.describe("Member: Personal Requests", () => {
     await roleTestBase.actAsMember(page);
     await roleTestBase.navigateToRequestsPage(page);
 
-    await expect(
-      page.locator('[data-testid="requests-page-heading"]')
-    ).toBeVisible();
+    await expect(page.locator('[data-testid="request-tab"]')).toBeVisible();
   });
 });
 
