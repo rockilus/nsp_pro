@@ -272,20 +272,13 @@ test.describe("Role-Based Access Control", () => {
       // Try to navigate to workers page
       await roleTestBase.navigateToWorkersPage(page);
 
-      // Member should be redirected away from workers page
-      // The exact behavior depends on the frontend implementation:
-      // - Could redirect to schedule/welcome page
-      // - Could show access denied message
-      // - Could redirect to a 403 page
-
-      // Wait a moment for any redirects to occur
-      await page.waitForTimeout(1000);
+      // Should be redirected to schedule page
+      await page.waitForURL(/\/plan\/schedule/, { timeout: 5000 });
+      await expect(page).toHaveURL(/\/plan\/schedule/);
 
       // Verify we're NOT on the workers page
       await roleTestBase.verifyPageNotAccessible(page, "/plan/workers");
 
-      // The user should be redirected somewhere else
-      // (exact destination depends on app routing logic)
       const currentUrl = page.url();
       expect(currentUrl).not.toContain("/plan/workers");
     });
@@ -296,8 +289,9 @@ test.describe("Role-Based Access Control", () => {
       // Try to navigate to shifts page
       await roleTestBase.navigateToShiftsPage(page);
 
-      // Wait a moment for any redirects to occur
-      await page.waitForTimeout(1000);
+      // Should be redirected to schedule page
+      await page.waitForURL(/\/plan\/schedule/, { timeout: 5000 });
+      await expect(page).toHaveURL(/\/plan\/schedule/);
 
       // Verify we're NOT on the shifts page
       await roleTestBase.verifyPageNotAccessible(page, "/plan/shifts");
@@ -312,8 +306,9 @@ test.describe("Role-Based Access Control", () => {
       // Try to navigate to shift demands page
       await roleTestBase.navigateToShiftDemandsPage(page);
 
-      // Wait a moment for any redirects to occur
-      await page.waitForTimeout(1000);
+      // Should be redirected to schedule page
+      await page.waitForURL(/\/plan\/schedule/, { timeout: 5000 });
+      await expect(page).toHaveURL(/\/plan\/schedule/);
 
       // Verify we're NOT on the shift demands page
       await roleTestBase.verifyPageNotAccessible(page, "/plan/shift-demands");
@@ -328,8 +323,9 @@ test.describe("Role-Based Access Control", () => {
       // Try to navigate to constraints page
       await roleTestBase.navigateToConstraintsPage(page);
 
-      // Wait a moment for any redirects to occur
-      await page.waitForTimeout(1000);
+      // Should be redirected to schedule page
+      await page.waitForURL(/\/plan\/schedule/, { timeout: 5000 });
+      await expect(page).toHaveURL(/\/plan\/schedule/);
 
       // Verify we're NOT on the constraints page
       await roleTestBase.verifyPageNotAccessible(page, "/plan/constraints");
@@ -344,8 +340,9 @@ test.describe("Role-Based Access Control", () => {
       // Try to navigate to campaign page
       await roleTestBase.navigateToCampaignPage(page);
 
-      // Wait a moment for any redirects to occur
-      await page.waitForTimeout(1000);
+      // Should be redirected to schedule page
+      await page.waitForURL(/\/plan\/schedule/, { timeout: 5000 });
+      await expect(page).toHaveURL(/\/plan\/schedule/);
 
       // Verify we're NOT on the campaign page
       await roleTestBase.verifyPageNotAccessible(page, "/plan/campaign");
@@ -360,8 +357,9 @@ test.describe("Role-Based Access Control", () => {
       // Try to navigate to stats page
       await roleTestBase.navigateToStatsPage(page);
 
-      // Wait a moment for any redirects to occur
-      await page.waitForTimeout(1000);
+      // Should be redirected to schedule page
+      await page.waitForURL(/\/plan\/schedule/, { timeout: 5000 });
+      await expect(page).toHaveURL(/\/plan\/schedule/);
 
       // Verify we're NOT on the stats page
       await roleTestBase.verifyPageNotAccessible(page, "/plan/stats");
@@ -378,8 +376,9 @@ test.describe("Role-Based Access Control", () => {
       // Try to navigate to team general settings page
       await roleTestBase.navigateToTeamGeneralPage(page);
 
-      // Wait a moment for any redirects to occur
-      await page.waitForTimeout(1000);
+      // Should be redirected to schedule page
+      await page.waitForURL(/\/plan\/schedule/, { timeout: 5000 });
+      await expect(page).toHaveURL(/\/plan\/schedule/);
 
       // Verify we're NOT on the team general settings page
       await roleTestBase.verifyPageNotAccessible(page, "/teams/general");
@@ -396,8 +395,9 @@ test.describe("Role-Based Access Control", () => {
       // Try to navigate to team members settings page
       await roleTestBase.navigateToTeamMembersPage(page);
 
-      // Wait a moment for any redirects to occur
-      await page.waitForTimeout(1000);
+      // Should be redirected to schedule page
+      await page.waitForURL(/\/plan\/schedule/, { timeout: 5000 });
+      await expect(page).toHaveURL(/\/plan\/schedule/);
 
       // Verify we're NOT on the team members settings page
       await roleTestBase.verifyPageNotAccessible(page, "/teams/members");
@@ -414,11 +414,9 @@ test.describe("Role-Based Access Control", () => {
       // Try to navigate to dashboard page
       await roleTestBase.navigateToDashboardPage(page);
 
-      // Member should be redirected away from dashboard page
-      // Dashboard is admin-only, not accessible to regular members
-
-      // Wait a moment for any redirects to occur
-      await page.waitForTimeout(1000);
+      // Should be redirected to schedule page
+      await page.waitForURL(/\/plan\/schedule/, { timeout: 5000 });
+      await expect(page).toHaveURL(/\/plan\/schedule/);
 
       // Verify we're NOT on the dashboard page
       await roleTestBase.verifyPageNotAccessible(page, "/plan/dashboard");
