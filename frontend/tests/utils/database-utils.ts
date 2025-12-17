@@ -1880,6 +1880,29 @@ export class DatabaseTestUtils {
     });
   }
 
+  /**
+   * Add the second test user (TEST_USER_2) to a team with a specific role
+   * This is an opt-in helper for tests that need multi-user scenarios.
+   *
+   * By default, TEST_USER_2 is NOT added to teams. Call this method explicitly
+   * in tests that require a second user.
+   *
+   * @param teamId - The team ID to add the user to
+   * @param role - The role for the user (default: "member")
+   * @returns The team membership details
+   *
+   * @example
+   * // In a test that needs a second user:
+   * await dbUtils.addSecondUserToTeam(teamId); // adds as member
+   * await dbUtils.addSecondUserToTeam(teamId, "owner"); // adds as owner
+   */
+  async addSecondUserToTeam(
+    teamId: string,
+    role: "owner" | "member" = "member"
+  ): Promise<AddTeamMemberResult> {
+    return this.addTeamMember(TEST_USER_2.user_id, teamId, role);
+  }
+
   //////////////////////////
   // Solver Test Scenario Methods
   //////////////////////////
@@ -1961,9 +1984,22 @@ export class DatabaseTestUtils {
  * Default test user credentials for use across tests
  */
 export const TEST_USER = {
-  user_id: "64e9b7f1e13e4a1a9c8b4567",
+  user_id: testConfig.devUserId || "64e9b7f1e13e4a1a9c8b4567",
   email: "testuser@example.com",
   username: "testuser",
   first_name: "Test",
   last_name: "User",
+} as const;
+
+/**
+ * Second test user credentials for multi-user test scenarios
+ * This user is created in global setup but NOT automatically added to teams.
+ * Use addSecondUserToTeam() to explicitly add this user to a team when needed.
+ */
+export const TEST_USER_2 = {
+  user_id: testConfig.devUserId2 || "64e9b7f1e13e4a1a9c8b4568",
+  email: "testuser2@example.com",
+  username: "testuser2",
+  first_name: "Test",
+  last_name: "User2",
 } as const;
