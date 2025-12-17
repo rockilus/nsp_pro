@@ -235,7 +235,10 @@ export default function ScheduleTabMember({
   // periodDates is now computed automatically from scheduleViewSettings
 
   return (
-    <div className="tab-container-ultrawide">
+    <div
+      className="tab-container-ultrawide"
+      data-testid="schedule-page-heading"
+    >
       <div>
         <ScheduleNavBar
           lng={lng}

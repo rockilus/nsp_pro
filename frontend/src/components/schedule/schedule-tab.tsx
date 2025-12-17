@@ -1044,7 +1044,10 @@ export default function ScheduleTab({
   }
 
   return (
-    <div className="tab-container-ultrawide">
+    <div
+      className="tab-container-ultrawide"
+      data-testid="schedule-page-heading"
+    >
       <div>
         {isLoadingSchedule ? (
           <div className="container-schedule-selector-skeleton">
