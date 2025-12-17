@@ -38,6 +38,7 @@ import {
   useDenyRequest,
   useGetRequestsTabData,
 } from "../../hooks/useRequest";
+import { useUserWorker } from "../../hooks/useUserWorker";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "../../styles/text-styles.css";
@@ -73,6 +74,16 @@ export default function RequestTab({
   const denyRequest = useDenyRequest();
   const getRequestsTabData = useGetRequestsTabData();
 
+  // Fetch user's worker for role-based filtering (cached via React Query)
+  const {
+    data: userWorker,
+    isLoading: isLoadingUserWorker,
+    error: userWorkerError,
+  } = useUserWorker(
+    teamId,
+    userTeamRole === TeamMembershipRole.MEMBER // Only fetch for members
+  );
+
   const [requests, setRequests] = useState<RequestT[]>([]);
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
@@ -95,8 +106,6 @@ export default function RequestTab({
       bufferDays: 0, // No buffer needed for requests view
     }
   );
-
-  const userWorker = workers.find((w) => w.userId === userId);
 
   // Filter requests based on past/future
   const { currentRequests, pastRequests } = useMemo(() => {
@@ -200,12 +209,19 @@ export default function RequestTab({
     const fetchRequestsTabData = async () => {
       if (teamId) {
         try {
+          // For members, pass userWorker.id to filter requests
+          // For owners, pass undefined to fetch all requests
+          const filterByWorkerId =
+            userTeamRole === TeamMembershipRole.MEMBER
+              ? userWorker?.id
+              : undefined;
+
           const {
             workers: fetchedWorkers,
             shifts: fetchedShifts,
             requests: fetchedRequests,
             shiftOptions: fetchedShiftOptions,
-          } = await getRequestsTabData(teamId, userId, userTeamRole);
+          } = await getRequestsTabData(teamId, filterByWorkerId);
           setWorkers(fetchedWorkers);
           setShifts(fetchedShifts);
           setRequests(fetchedRequests);
@@ -217,7 +233,7 @@ export default function RequestTab({
       }
     };
     fetchRequestsTabData();
-  }, [teamId, userId, userTeamRole, getRequestsTabData]);
+  }, [teamId, userTeamRole, userWorker, getRequestsTabData]);
 
   // ToggleButton state for request type
 

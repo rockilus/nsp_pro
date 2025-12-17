@@ -330,19 +330,14 @@ export function useGetRequestsTabData() {
   const getShiftOptions = useGetShiftOptions();
 
   const getRequestsTabData = useCallback(
-    async (
-      teamId: string,
-      userId: string,
-      userTeamRole: TeamMembershipRole
-    ): Promise<RequestsTabData> => {
+    async (teamId: string, userWorkerId?: string): Promise<RequestsTabData> => {
       if (env.isDevelopment) {
         console.log("🔍 useGetRequestsTabData called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
           teamId,
-          userId,
-          userTeamRole,
+          userWorkerId,
         });
       }
 
@@ -356,22 +351,10 @@ export function useGetRequestsTabData() {
       }
 
       try {
-        // First fetch workers to determine which worker belongs to the user
-        const workers = await WorkerApi.getAllWorkers(apiClient, teamId);
-
-        // For team members, find their worker ID for filtering
-        let userWorkerId: string | undefined;
-        if (userTeamRole === TeamMembershipRole.MEMBER) {
-          const userWorker = workers.find((w) => w.userId === userId);
-          if (userWorker) {
-            userWorkerId = userWorker.id;
-          }
-          // If no worker found for member, requests will be empty
-        }
-        // For owners, userWorkerId stays undefined (fetch all requests)
-
-        // Fetch remaining data in parallel
-        const [shifts, requests, shiftOptions] = await Promise.all([
+        // Fetch all data in parallel
+        // userWorkerId is passed directly from useUserWorker hook result
+        const [workers, shifts, requests, shiftOptions] = await Promise.all([
+          WorkerApi.getAllWorkers(apiClient, teamId),
           ShiftApi.getAllShifts(apiClient, teamId),
           RequestApi.getRequests(apiClient, teamId, userWorkerId),
           getShiftOptions(teamId),
