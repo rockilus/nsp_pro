@@ -7,7 +7,11 @@
  */
 
 import { Page, expect } from "@playwright/test";
-import { DatabaseTestUtils, TestUserWithRole, TEST_USER_2 } from "./database-utils";
+import {
+  DatabaseTestUtils,
+  TestUserWithRole,
+  TEST_USER_2,
+} from "./database-utils";
 import { testConfig } from "./test-config";
 
 export class RoleTestBase {
