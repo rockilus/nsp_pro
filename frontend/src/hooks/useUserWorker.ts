@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { WorkerT } from "../types/worker";
-import { WorkerApi } from "../app/lib/api/workerApi";
+import { UserApi } from "../app/lib/api/userApi";
 import { useApiClient } from "../app/lib/api-client";
 import { useAuth } from "../contexts/auth-context";
 
@@ -30,7 +30,7 @@ export function useUserWorker(
       if (!teamId) {
         return null;
       }
-      return await WorkerApi.getUserWorker(apiClient, teamId);
+      return await UserApi.getUserWorker(apiClient, teamId);
     },
     enabled: enabled && isAuthenticated && !!teamId && !!userId,
     staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
