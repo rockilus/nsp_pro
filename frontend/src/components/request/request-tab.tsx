@@ -205,7 +205,7 @@ export default function RequestTab({
             shifts: fetchedShifts,
             requests: fetchedRequests,
             shiftOptions: fetchedShiftOptions,
-          } = await getRequestsTabData(teamId);
+          } = await getRequestsTabData(teamId, userId, userTeamRole);
           setWorkers(fetchedWorkers);
           setShifts(fetchedShifts);
           setRequests(fetchedRequests);
@@ -217,7 +217,7 @@ export default function RequestTab({
       }
     };
     fetchRequestsTabData();
-  }, [teamId, getRequestsTabData]);
+  }, [teamId, userId, userTeamRole, getRequestsTabData]);
 
   // ToggleButton state for request type
 

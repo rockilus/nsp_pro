@@ -34,20 +34,25 @@ export class RequestApi extends BaseApi {
 
   /**
    * Get all requests for a team (authenticated)
+   * @param workerId Optional worker ID to filter requests (for team members)
    */
   static async getRequests(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
+    workerId?: string
   ): Promise<RequestT[]> {
     // Security: Input validation
     if (!teamId) {
       throw new Error("Team ID is required");
     }
 
+    // Build query string if workerId is provided
+    const queryParams = workerId ? `?worker_id=${workerId}` : "";
+
     const responseData = await this.makeRequest<any[]>(
       apiClient,
       "get",
-      `/requests/teams/${teamId}`
+      `/requests/teams/${teamId}${queryParams}`
     );
     return responseData.map(toRequestT);
   }

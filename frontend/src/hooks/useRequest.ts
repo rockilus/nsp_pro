@@ -321,6 +321,7 @@ export interface RequestsTabData {
 
 /**
  * Hook for getting all requests tab data (workers, shifts, requests, shift options)
+ * Implements role-based filtering: members see only their own requests, owners see all
  */
 export function useGetRequestsTabData() {
   const apiClient = useApiClient();
@@ -328,13 +329,19 @@ export function useGetRequestsTabData() {
   const getShiftOptions = useGetShiftOptions();
 
   const getRequestsTabData = useCallback(
-    async (teamId: string): Promise<RequestsTabData> => {
+    async (
+      teamId: string,
+      userId: string,
+      userTeamRole: string
+    ): Promise<RequestsTabData> => {
       if (env.isDevelopment) {
         console.log("🔍 useGetRequestsTabData called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
           teamId,
+          userId,
+          userTeamRole,
         });
       }
 
@@ -348,11 +355,24 @@ export function useGetRequestsTabData() {
       }
 
       try {
-        // Fetch all data in parallel for better performance
-        const [workers, shifts, requests, shiftOptions] = await Promise.all([
-          WorkerApi.getAllWorkers(apiClient, teamId),
+        // First fetch workers to determine which worker belongs to the user
+        const workers = await WorkerApi.getAllWorkers(apiClient, teamId);
+
+        // For team members, find their worker ID for filtering
+        let userWorkerId: string | undefined;
+        if (userTeamRole === "member") {
+          const userWorker = workers.find((w) => w.userId === userId);
+          if (userWorker) {
+            userWorkerId = userWorker.id;
+          }
+          // If no worker found for member, requests will be empty
+        }
+        // For owners, userWorkerId stays undefined (fetch all requests)
+
+        // Fetch remaining data in parallel
+        const [shifts, requests, shiftOptions] = await Promise.all([
           ShiftApi.getAllShifts(apiClient, teamId),
-          RequestApi.getRequests(apiClient, teamId),
+          RequestApi.getRequests(apiClient, teamId, userWorkerId),
           getShiftOptions(teamId),
         ]);
 
