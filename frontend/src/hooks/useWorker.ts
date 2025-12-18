@@ -138,7 +138,7 @@ export function useGetAllWorkers() {
       }
 
       try {
-        return await WorkerApi.getAllWorkers(apiClient, teamId);
+        return await WorkerApi.getWorkers(apiClient, teamId, undefined, true);
       } catch (error) {
         console.error("❌ Failed to get all workers:", {
           error: error instanceof Error ? error.message : "Unknown error",

@@ -354,7 +354,7 @@ export function useGetRequestsTabData() {
         // Fetch all data in parallel
         // userWorkerId is passed directly from useUserWorker hook result
         const [workers, shifts, requests, shiftOptions] = await Promise.all([
-          WorkerApi.getAllWorkers(apiClient, teamId),
+          WorkerApi.getWorkers(apiClient, teamId, undefined, true),
           ShiftApi.getAllShifts(apiClient, teamId),
           RequestApi.getRequests(apiClient, teamId, userWorkerId),
           getShiftOptions(teamId),

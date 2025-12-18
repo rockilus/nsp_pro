@@ -39,6 +39,11 @@ import {
   useGetRequestsTabData,
 } from "../../hooks/useRequest";
 import { useUserWorker } from "../../hooks/useUserWorker";
+import { useGetShiftOptions } from "../../hooks/useStats";
+import { useApiClient } from "../../app/lib/api-client";
+// API clients
+import { RequestApi } from "../../app/lib/api/requestApi";
+import { ShiftApi } from "../../app/lib/api/shiftApi";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "../../styles/text-styles.css";
@@ -64,6 +69,7 @@ export default function RequestTab({
 }) {
   const { t } = useTranslation(lng, "request-page");
   const isMobile = useIsMobile();
+  const apiClient = useApiClient();
 
   // Request hooks
   const addRequest = useAddRequest();
@@ -73,6 +79,7 @@ export default function RequestTab({
   const acceptRequest = useAcceptRequest();
   const denyRequest = useDenyRequest();
   const getRequestsTabData = useGetRequestsTabData();
+  const getShiftOptions = useGetShiftOptions();
 
   // Fetch user's worker for role-based filtering (cached via React Query)
   const {
@@ -216,16 +223,32 @@ export default function RequestTab({
               ? userWorker?.id
               : undefined;
 
-          const {
-            workers: fetchedWorkers,
-            shifts: fetchedShifts,
-            requests: fetchedRequests,
-            shiftOptions: fetchedShiftOptions,
-          } = await getRequestsTabData(teamId, filterByWorkerId);
-          setWorkers(fetchedWorkers);
-          setShifts(fetchedShifts);
-          setRequests(fetchedRequests);
-          setShiftOptions(fetchedShiftOptions);
+          // For members, we already have userWorker from cache - no need to fetch all workers
+          // For owners, fetch all workers for the UI
+          if (userTeamRole === TeamMembershipRole.MEMBER && userWorker) {
+            // Member: only fetch their own data
+            const [shifts, requests, shiftOptions] = await Promise.all([
+              ShiftApi.getAllShifts(apiClient, teamId),
+              RequestApi.getRequests(apiClient, teamId, userWorker.id),
+              getShiftOptions(teamId),
+            ]);
+            setWorkers([userWorker]); // Members only see their own worker
+            setShifts(shifts);
+            setRequests(requests);
+            setShiftOptions(shiftOptions);
+          } else {
+            // Owner: fetch all data including all workers
+            const {
+              workers: fetchedWorkers,
+              shifts: fetchedShifts,
+              requests: fetchedRequests,
+              shiftOptions: fetchedShiftOptions,
+            } = await getRequestsTabData(teamId, filterByWorkerId);
+            setWorkers(fetchedWorkers);
+            setShifts(fetchedShifts);
+            setRequests(fetchedRequests);
+            setShiftOptions(fetchedShiftOptions);
+          }
         } catch (error) {
           console.error("Failed to fetch requests tab data:", error);
           // Handle error appropriately
@@ -233,7 +256,14 @@ export default function RequestTab({
       }
     };
     fetchRequestsTabData();
-  }, [teamId, userTeamRole, userWorker, getRequestsTabData]);
+  }, [
+    teamId,
+    userTeamRole,
+    userWorker,
+    getRequestsTabData,
+    apiClient,
+    getShiftOptions,
+  ]);
 
   // ToggleButton state for request type
 

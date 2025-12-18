@@ -248,7 +248,7 @@ export function useGetConstraintsTabData() {
         const constraintsTabData = await Promise.all([
           ConstraintApi.getTemplates(apiClient, teamId),
           ConstraintApi.getConstraints(apiClient, teamId),
-          WorkerApi.getAllWorkers(apiClient, teamId),
+          WorkerApi.getWorkers(apiClient, teamId, undefined, true),
           ShiftApi.getShifts(apiClient, teamId),
         ]);
 

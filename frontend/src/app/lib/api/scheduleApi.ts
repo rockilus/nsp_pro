@@ -265,7 +265,7 @@ export class ScheduleApi extends BaseApi {
         RequestApi.getRequests(apiClient, teamId),
         this.getSchedules(apiClient, teamId),
         ShiftApi.getAllShifts(apiClient, teamId),
-        WorkerApi.getAllWorkers(apiClient, teamId),
+        WorkerApi.getWorkers(apiClient, teamId, undefined, true),
         StatsApi.getStats(apiClient, teamId, statsOptions),
       ]);
 
@@ -307,7 +307,7 @@ export class ScheduleApi extends BaseApi {
       const campaignTabData = await Promise.all([
         AssignmentApi.getAssignmentsByDates(apiClient, teamId),
         ShiftApi.getAllShifts(apiClient, teamId),
-        WorkerApi.getAllWorkers(apiClient, teamId),
+        WorkerApi.getWorkers(apiClient, teamId, undefined, true),
       ]);
 
       return {
@@ -360,7 +360,7 @@ export class ScheduleApi extends BaseApi {
       const campaignTabData = await Promise.all([
         AssignmentApi.getValidatedAssignments(apiClient, teamId),
         ShiftApi.getAllShifts(apiClient, teamId),
-        WorkerApi.getAllWorkers(apiClient, teamId),
+        WorkerApi.getWorkers(apiClient, teamId, undefined, true),
       ]);
 
       return {

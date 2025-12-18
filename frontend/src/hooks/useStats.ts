@@ -243,7 +243,7 @@ export function useGetStatsTabData() {
         const statsTabData = await Promise.all([
           ScheduleApi.getSchedules(apiClient, teamId),
           ShiftApi.getShifts(apiClient, teamId),
-          WorkerApi.getAllWorkers(apiClient, teamId),
+          WorkerApi.getWorkers(apiClient, teamId, undefined, true),
           StatsApi.getShiftOptions(apiClient, teamId),
         ]);
 
