@@ -5,6 +5,7 @@
     "do": "Do",
     "dont": "Don't",
     "edit_request": "Edit request",
+    "error_no_worker_assigned": "You are not associated with a worker profile. Please contact your team administrator.",
     "leave": "Leave",
     "new_request": "New request",
     "no": "No",

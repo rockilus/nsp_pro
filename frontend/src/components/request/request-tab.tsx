@@ -26,6 +26,7 @@ import RequestPanel from "./request-panel";
 import RequestTable from "./request-table";
 import { RequestCalendar } from "./request-calendar";
 import MobileRequestTab from "./mobile/mobile-request-tab";
+import ErrorFeedback from "../shiftDemand/ErrorFeedback";
 // Hooks
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { useShiftDemands } from "../../app/lib/hooks/useShiftDemands";
@@ -96,6 +97,13 @@ export default function RequestTab({
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [shiftOptions, setShiftOptions] = useState<ShiftWorkerOptionT[]>([]);
   const [showPastRequests, setShowPastRequests] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Check if member has no worker association
+  const memberHasNoWorker =
+    userTeamRole === TeamMembershipRole.MEMBER &&
+    !isLoadingUserWorker &&
+    userWorker === null;
 
   // React Query hooks for shift demands - use broader date range for requests calendar
   const {
@@ -216,6 +224,12 @@ export default function RequestTab({
     const fetchRequestsTabData = async () => {
       if (teamId) {
         try {
+          // Check if member has no worker association
+          if (memberHasNoWorker) {
+            setError(t("error_no_worker_assigned"));
+            return;
+          }
+
           // For members, pass userWorker.id to filter requests
           // For owners, pass undefined to fetch all requests
           const filterByWorkerId =
@@ -263,6 +277,8 @@ export default function RequestTab({
     getRequestsTabData,
     apiClient,
     getShiftOptions,
+    memberHasNoWorker,
+    t,
   ]);
 
   // ToggleButton state for request type
@@ -441,6 +457,7 @@ export default function RequestTab({
           />
         )}
       </div>
+      <ErrorFeedback error={error} onClose={() => setError(null)} />
     </div>
   );
 }

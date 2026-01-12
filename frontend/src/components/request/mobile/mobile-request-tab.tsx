@@ -25,6 +25,7 @@ import MobileRequestNav from "./mobile-request-nav";
 import MobileRequestSettings from "./mobile-request-settings";
 import PortraitRequestList from "./portrait-request-list";
 import RequestPanel from "../request-panel";
+import ErrorFeedback from "../../shiftDemand/ErrorFeedback";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -74,8 +75,13 @@ export default function MobileRequestTab({
   const [activeRequest, setActiveRequest] = useState<RequestT | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [visibleMonth, setVisibleMonth] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
 
   const userWorker = workers.find((w) => w.userId === userId);
+
+  // Check if member has no worker association
+  const memberHasNoWorker =
+    userTeamRole === TeamMembershipRole.MEMBER && !isLoading && !userWorker;
 
   // Scroll handler refs - define early so they're available for scroll functions
   const containerRef = React.useRef<HTMLDivElement | null>(null);
@@ -86,6 +92,12 @@ export default function MobileRequestTab({
 
   // Initialize default worker if none selected
   useEffect(() => {
+    // Check if member has no worker association
+    if (memberHasNoWorker) {
+      setError(t("error_no_worker_assigned"));
+      return;
+    }
+
     if (
       workers.length > 0 &&
       (!requestViewSettings.mobileSelectedWorkerId ||
@@ -104,6 +116,8 @@ export default function MobileRequestTab({
     requestViewSettings.mobileSelectedWorkerId,
     userWorker,
     updateRequestViewSettings,
+    memberHasNoWorker,
+    t,
   ]);
 
   // Filter requests by selected worker and past/future
@@ -332,6 +346,8 @@ export default function MobileRequestTab({
         }
         lng={lng}
       />
+
+      <ErrorFeedback error={error} onClose={() => setError(null)} />
     </>
   );
 }

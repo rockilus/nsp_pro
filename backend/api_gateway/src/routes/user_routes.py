@@ -90,10 +90,10 @@ async def get_user_worker_for_team(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
-) -> WorkerDTO:
+) -> WorkerDTO | None:
     """
     Get the worker associated with the authenticated user for a specific team.
-    Returns 404 if no worker is linked to the user for this team.
+    Returns None if no worker is linked to the user for this team.
     """
     try:
         user_id = user_context.user_id
@@ -110,10 +110,11 @@ async def get_user_worker_for_team(
         )
 
         if not workers:
-            raise HTTPException(
-                status_code=404,
-                detail=f"No worker found for user in team {team_id}",
+            log_info(
+                f"No worker found for user {user_id} in team {team_id}. "
+                "User may need worker association created by team admin."
             )
+            return None
 
         # Take first worker (assumption: one worker per user per team)
         worker = workers[0]
@@ -121,8 +122,9 @@ async def get_user_worker_for_team(
         # Log warning if multiple workers found
         if len(workers) > 1:
             log_info(
-                f"Warning: Multiple workers ({len(workers)}) found for user {user_id} "
-                f"in team {team_id}. Returning first worker: {worker.id}"
+                f"Warning: Multiple workers ({len(workers)}) found for "
+                f"user {user_id} in team {team_id}. "
+                f"Returning first worker: {worker.id}"
             )
 
         # Get attributes for the worker
@@ -131,9 +133,6 @@ async def get_user_worker_for_team(
         )
         response = worker.to_dto(attributes)
 
-    except HTTPException:
-        # Re-raise HTTP exceptions (404, etc.)
-        raise
     except Exception as e:
         log_info(f"Failed to get user worker for team {team_id}")
         handle_routes_errors(e)

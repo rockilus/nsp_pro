@@ -31,6 +31,7 @@
     "duties/month": "duties/month",
     "end": "End",
     "ends": "Ends",
+    "error_no_worker_assigned": "You are not associated with a worker profile. Please contact your team administrator.",
     "export_to_excel": "Export to Excel",
     "group_by": "Group by",
     "h/week": "h/week",

@@ -90,20 +90,17 @@ export class UserApi extends BaseApi {
       throw new Error("Team ID is required");
     }
 
-    try {
-      const responseData = await this.makeRequest<any>(
-        apiClient,
-        "get",
-        `/users/me/worker/teams/${teamId}`
-      );
-      return toWorkerT(responseData);
-    } catch (error: any) {
-      // Return null if worker not found (404)
-      if (error?.response?.status === 404) {
-        return null;
-      }
-      // Re-throw other errors
-      throw error;
+    const responseData = await this.makeRequest<any>(
+      apiClient,
+      "get",
+      `/users/me/worker/teams/${teamId}`
+    );
+
+    // Backend returns null if no worker is associated with the user
+    if (responseData === null) {
+      return null;
     }
+
+    return toWorkerT(responseData);
   }
 }

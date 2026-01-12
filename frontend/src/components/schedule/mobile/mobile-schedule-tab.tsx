@@ -18,7 +18,7 @@ import { useScheduleViewSettings } from "../../../app/lib/hooks/useScheduleViewS
 import { getDefaultScheduleViewSettings } from "../../../app/lib/utils/scheduleViewSettingsUtils";
 import { computePeriodEndDate } from "../../../app/lib/utils/scheduleViewSettingsUtils";
 // Types
-import { TeamWithMembership } from "@/types/team";
+import { TeamWithMembership, TeamMembershipRole } from "@/types/team";
 import { ShiftRestType } from "@/types/shift";
 // Local components
 import AssignmentDialog from "../assignment-dialog";
@@ -27,6 +27,8 @@ import MobileScheduleNav from "./mobile-schedule-nav";
 import MobileScheduleSettings from "./mobile-schedule-settings";
 import MobileWorkerSchedule from "./mobile-worker-schedule";
 import MobileTeamSchedule from "./mobile-team-schedule";
+import { useUserWorker } from "../../../hooks/useUserWorker";
+import ErrorFeedback from "../../shiftDemand/ErrorFeedback";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -51,6 +53,18 @@ export default function MobileScheduleTab({
   const getScheduleAssignmentsDataNoSolver =
     useGetScheduleAssignmentsDataNoSolver();
 
+  // Fetch user's worker for role-based checks (only for members)
+  const {
+    data: userWorker,
+    isLoading: isLoadingUserWorker,
+    error: userWorkerError,
+  } = useUserWorker(
+    teamWithMembership.team.id,
+    teamWithMembership.membership.role === TeamMembershipRole.MEMBER
+  );
+
+  const [error, setError] = useState<string | null>(null);
+
   const [isLoading, setIsLoading] = useState(true);
   const [assignments, setAssignments] = useState<any[]>([]);
   const [workers, setWorkers] = useState<any[]>([]);
@@ -71,6 +85,17 @@ export default function MobileScheduleTab({
     const fetch = async () => {
       setIsLoading(true);
       try {
+        // Check if member has no worker association
+        if (
+          teamWithMembership.membership.role === TeamMembershipRole.MEMBER &&
+          !isLoadingUserWorker &&
+          userWorker === null
+        ) {
+          setError(t("error_no_worker_assigned"));
+          if (mounted) setIsLoading(false);
+          return;
+        }
+
         if (teamWithMembership.team.useSolver) {
           const { assignments, workers, shifts } =
             await getScheduleAssignmentsData(teamWithMembership.team.id);
@@ -133,7 +158,13 @@ export default function MobileScheduleTab({
       mounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teamWithMembership, scheduleViewSettings.mobileSelectedWorkerId]);
+  }, [
+    teamWithMembership,
+    scheduleViewSettings.mobileSelectedWorkerId,
+    isLoadingUserWorker,
+    userWorker,
+    t,
+  ]);
 
   const periodStart = scheduleViewSettings.periodStartDate;
   const periodEnd = computePeriodEndDate(
@@ -322,6 +353,8 @@ export default function MobileScheduleTab({
         }
         lng={lng}
       />
+
+      <ErrorFeedback error={error} onClose={() => setError(null)} />
     </>
   );
 }

@@ -29,6 +29,7 @@
     "duties/month": "guardias/mes",
     "end": "Fin",
     "ends": "Acaba",
+    "error_no_worker_assigned": "No estás asociado con un perfil de trabajador. Por favor, contacta al administrador de tu equipo.",
     "export_to_excel": "Exportar a Excel",
     "group_by": "Agrupar por",
     "h/week": "h/semana",

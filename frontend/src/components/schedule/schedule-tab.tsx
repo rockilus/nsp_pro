@@ -52,6 +52,8 @@ import {
   useDuplicatePeriod,
 } from "../../hooks/useSchedule";
 import { useExportSchedule } from "../../hooks/useExport";
+import { useUserWorker } from "../../hooks/useUserWorker";
+import ErrorFeedback from "../shiftDemand/ErrorFeedback";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "./schedule-tab.css";
@@ -70,6 +72,7 @@ import {
   DuplicateResultT,
 } from "../../types/schedule";
 import { BreachT } from "@/types/breach";
+import { TeamMembershipRole } from "@/types/team";
 import {
   ShiftDemandCreateDTO,
   ShiftDemandUpdateDTO,
@@ -136,6 +139,18 @@ export default function ScheduleTab({
   const rescindRequest = useRescindRequest();
   const acceptRequest = useAcceptRequest();
   const denyRequest = useDenyRequest();
+
+  // Fetch user's worker for role-based checks (only for members)
+  const {
+    data: userWorker,
+    isLoading: isLoadingUserWorker,
+    error: userWorkerError,
+  } = useUserWorker(
+    teamWithMembership.team.id,
+    teamWithMembership.membership.role === TeamMembershipRole.MEMBER
+  );
+
+  const [error, setError] = useState<string | null>(null);
 
   const [isLoadingSchedule, setIsLoadingSchedule] = useState<boolean>(true);
   const [isLoadingAssignments, setIsLoadingAssignments] =
@@ -268,6 +283,19 @@ export default function ScheduleTab({
     useState<StatsTimeFrameOptions>(StatsTimeFrameOptions.CAMPAING);
 
   const isMobile = useIsMobile();
+
+  // Check if member has no worker association
+  useEffect(() => {
+    if (
+      teamWithMembership.membership.role === TeamMembershipRole.MEMBER &&
+      !isLoadingUserWorker &&
+      userWorker === null
+    ) {
+      setError(t("error_no_worker_assigned"));
+    } else {
+      setError(null);
+    }
+  }, [teamWithMembership.membership.role, isLoadingUserWorker, userWorker, t]);
 
   const toggleTab = (tabName: string) => {
     if (selectedTab === tabName) {
@@ -1127,6 +1155,7 @@ export default function ScheduleTab({
           )}
         </div>
       </div>
+      <ErrorFeedback error={error} onClose={() => setError(null)} />
     </div>
   );
 }
