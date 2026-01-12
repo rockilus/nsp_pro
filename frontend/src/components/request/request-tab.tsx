@@ -106,6 +106,7 @@ export default function RequestTab({
     userWorker === null;
 
   // React Query hooks for shift demands - use broader date range for requests calendar
+  // Only fetch shift demands for team owners
   const {
     demands: shiftDemands,
     demandsById: shiftDemandsById,
@@ -117,7 +118,7 @@ export default function RequestTab({
     dayjs().utc().startOf("year").toDate(), // Start of current year
     dayjs().utc().add(1, "year").endOf("year").toDate(), // End of next year
     {
-      enabled: true,
+      enabled: userTeamRole !== TeamMembershipRole.MEMBER,
       bufferDays: 0, // No buffer needed for requests view
     }
   );
