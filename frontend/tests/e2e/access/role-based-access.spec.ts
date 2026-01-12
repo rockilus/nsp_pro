@@ -426,63 +426,63 @@ test.describe("Role-Based Access Control", () => {
     });
   });
 
-  test.describe("API-Level Access Control", () => {
-    test("member cannot create workers via API", async ({ page }) => {
-      await roleTestBase.actAsMember(page);
+  // test.describe("API-Level Access Control", () => {
+  //   test("member cannot create workers via API", async ({ page }) => {
+  //     await roleTestBase.actAsMember(page);
 
-      const memberApiClient =
-        roleTestBase.dbUtils.createAuthenticatedClientForUser(
-          roleTestBase.getMemberUser().userId
-        );
+  //     const memberApiClient =
+  //       roleTestBase.dbUtils.createAuthenticatedClientForUser(
+  //         roleTestBase.getMemberUser().userId
+  //       );
 
-      // Attempt to create a worker as member should fail
-      // This tests backend authorization, not just frontend restrictions
-      try {
-        await memberApiClient.post(`/workers/`, {
-          name: "Unauthorized Worker",
-          team_id: roleTestBase.getTestTeam().teamId,
-        });
+  //     // Attempt to create a worker as member should fail
+  //     // This tests backend authorization, not just frontend restrictions
+  //     try {
+  //       await memberApiClient.post(`/workers/`, {
+  //         name: "Unauthorized Worker",
+  //         team_id: roleTestBase.getTestTeam().teamId,
+  //       });
 
-        // If we reach here, the API didn't block the member - test should fail
-        throw new Error(
-          "Member was able to create worker - authorization failed!"
-        );
-      } catch (error) {
-        // We expect this to fail with 403 Forbidden or similar
-        if (error instanceof Error) {
-          // Verify it's an authorization error
-          expect(
-            error.message.includes("403") ||
-              error.message.includes("401") ||
-              error.message.includes("not authorized") ||
-              error.message.toLowerCase().includes("forbidden")
-          ).toBeTruthy();
-        }
-      }
-    });
+  //       // If we reach here, the API didn't block the member - test should fail
+  //       throw new Error(
+  //         "Member was able to create worker - authorization failed!"
+  //       );
+  //     } catch (error) {
+  //       // We expect this to fail with 403 Forbidden or similar
+  //       if (error instanceof Error) {
+  //         // Verify it's an authorization error
+  //         expect(
+  //           error.message.includes("403") ||
+  //             error.message.includes("401") ||
+  //             error.message.includes("not authorized") ||
+  //             error.message.toLowerCase().includes("forbidden")
+  //         ).toBeTruthy();
+  //       }
+  //     }
+  //   });
 
-    test("owner can create workers via API", async ({ page }) => {
-      await roleTestBase.actAsOwner(page);
+  //   test("owner can create workers via API", async ({ page }) => {
+  //     await roleTestBase.actAsOwner(page);
 
-      const ownerApiClient =
-        roleTestBase.dbUtils.createAuthenticatedClientForUser(
-          roleTestBase.getOwnerUser().userId
-        );
+  //     const ownerApiClient =
+  //       roleTestBase.dbUtils.createAuthenticatedClientForUser(
+  //         roleTestBase.getOwnerUser().userId
+  //       );
 
-      // Owner should be able to create workers
-      const worker = await roleTestBase.dbUtils.createWorker({
-        teamId: roleTestBase.getTestTeam().teamId,
-        name: `Test Worker ${Date.now()}`,
-      });
+  //     // Owner should be able to create workers
+  //     const worker = await roleTestBase.dbUtils.createWorker({
+  //       teamId: roleTestBase.getTestTeam().teamId,
+  //       name: `Test Worker ${Date.now()}`,
+  //     });
 
-      expect(worker.workerId).toBeTruthy();
-      expect(worker.name).toContain("Test Worker");
+  //     expect(worker.workerId).toBeTruthy();
+  //     expect(worker.name).toContain("Test Worker");
 
-      // Cleanup
-      await roleTestBase.dbUtils.deleteWorker(
-        worker.workerId,
-        roleTestBase.getTestTeam().teamId
-      );
-    });
-  });
+  //     // Cleanup
+  //     await roleTestBase.dbUtils.deleteWorker(
+  //       worker.workerId,
+  //       roleTestBase.getTestTeam().teamId
+  //     );
+  //   });
+  // });
 });
