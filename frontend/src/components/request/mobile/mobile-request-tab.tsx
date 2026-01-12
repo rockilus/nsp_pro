@@ -8,6 +8,8 @@ import Box from "@mui/material/Box";
 import Fab from "@mui/material/Fab";
 import CircularProgress from "@mui/material/CircularProgress";
 import AddIcon from "@mui/icons-material/Add";
+import Alert from "@mui/material/Alert";
+import Typography from "@mui/material/Typography";
 // Hooks
 import {
   useRequestViewSettings,
@@ -25,7 +27,6 @@ import MobileRequestNav from "./mobile-request-nav";
 import MobileRequestSettings from "./mobile-request-settings";
 import PortraitRequestList from "./portrait-request-list";
 import RequestPanel from "../request-panel";
-import ErrorFeedback from "../../shiftDemand/ErrorFeedback";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -75,7 +76,6 @@ export default function MobileRequestTab({
   const [activeRequest, setActiveRequest] = useState<RequestT | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [visibleMonth, setVisibleMonth] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
 
   const userWorker = workers.find((w) => w.userId === userId);
 
@@ -94,7 +94,6 @@ export default function MobileRequestTab({
   useEffect(() => {
     // Check if member has no worker association
     if (memberHasNoWorker) {
-      setError(t("error_no_worker_assigned"));
       return;
     }
 
@@ -279,7 +278,24 @@ export default function MobileRequestTab({
   return (
     <>
       <MobileNavAppBar lng={lng} mobileContent={requestMobileNav} />
-      <Box sx={{ padding: "0 8px", height: "calc(100vh - 64px)" }}>
+      {memberHasNoWorker ? (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "calc(100vh - 128px)",
+            p: 3,
+          }}
+        >
+          <Alert severity="info" sx={{ maxWidth: "500px" }}>
+            <Typography variant="body1">
+              {t("error_no_worker_assigned")}
+            </Typography>
+          </Alert>
+        </Box>
+      ) : (
+        <Box sx={{ padding: "0 8px", height: "calc(100vh - 64px)" }}>
         <PortraitRequestList
           weeks={weeks}
           containerRef={containerRef}
@@ -330,24 +346,23 @@ export default function MobileRequestTab({
           open={sheetOpen}
           onClose={() => setSheetOpen(false)}
         />
+
+        <MobileRequestSettings
+          open={settingsOpen}
+          onClose={() => setSettingsOpen(false)}
+          workers={workers}
+          selectedWorkerId={requestViewSettings.mobileSelectedWorkerId}
+          onWorkerChange={(workerId) =>
+            updateRequestViewSettings({ mobileSelectedWorkerId: workerId })
+          }
+          showPastRequests={requestViewSettings.showPastRequests}
+          onShowPastRequestsChange={(show) =>
+            updateRequestViewSettings({ showPastRequests: show })
+          }
+          lng={lng}
+        />
       </Box>
-
-      <MobileRequestSettings
-        open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-        workers={workers}
-        selectedWorkerId={requestViewSettings.mobileSelectedWorkerId}
-        onWorkerChange={(workerId) =>
-          updateRequestViewSettings({ mobileSelectedWorkerId: workerId })
-        }
-        showPastRequests={requestViewSettings.showPastRequests}
-        onShowPastRequestsChange={(show) =>
-          updateRequestViewSettings({ showPastRequests: show })
-        }
-        lng={lng}
-      />
-
-      <ErrorFeedback error={error} onClose={() => setError(null)} />
+      )}
     </>
   );
 }

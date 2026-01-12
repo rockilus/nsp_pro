@@ -21,12 +21,13 @@ import Tab from "@mui/material/Tab";
 import Switch from "@mui/material/Switch";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
+import Alert from "@mui/material/Alert";
 // Components
 import RequestPanel from "./request-panel";
 import RequestTable from "./request-table";
 import { RequestCalendar } from "./request-calendar";
 import MobileRequestTab from "./mobile/mobile-request-tab";
-import ErrorFeedback from "../shiftDemand/ErrorFeedback";
 // Hooks
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { useShiftDemands } from "../../app/lib/hooks/useShiftDemands";
@@ -97,7 +98,6 @@ export default function RequestTab({
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [shiftOptions, setShiftOptions] = useState<ShiftWorkerOptionT[]>([]);
   const [showPastRequests, setShowPastRequests] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
 
   // Check if member has no worker association
   const memberHasNoWorker =
@@ -226,7 +226,6 @@ export default function RequestTab({
         try {
           // Check if member has no worker association
           if (memberHasNoWorker) {
-            setError(t("error_no_worker_assigned"));
             return;
           }
 
@@ -350,7 +349,24 @@ export default function RequestTab({
 
   return (
     <div className="tab-container-wide" data-testid="request-tab">
-      <div>
+      {memberHasNoWorker ? (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "400px",
+            p: 4,
+          }}
+        >
+          <Alert severity="info" sx={{ maxWidth: "600px" }}>
+            <Typography variant="body1">
+              {t("error_no_worker_assigned")}
+            </Typography>
+          </Alert>
+        </Box>
+      ) : (
+        <div>
         <div
           style={{
             display: "flex",
@@ -457,7 +473,7 @@ export default function RequestTab({
           />
         )}
       </div>
-      <ErrorFeedback error={error} onClose={() => setError(null)} />
+      )}
     </div>
   );
 }

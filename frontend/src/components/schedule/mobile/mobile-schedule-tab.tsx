@@ -8,6 +8,8 @@ import Box from "@mui/material/Box";
 import Fab from "@mui/material/Fab";
 import CircularProgress from "@mui/material/CircularProgress";
 import AddIcon from "@mui/icons-material/Add";
+import Alert from "@mui/material/Alert";
+import Typography from "@mui/material/Typography";
 // Hooks
 import { useIsLandscape } from "@/hooks/useIsMobile";
 import {
@@ -28,7 +30,6 @@ import MobileScheduleSettings from "./mobile-schedule-settings";
 import MobileWorkerSchedule from "./mobile-worker-schedule";
 import MobileTeamSchedule from "./mobile-team-schedule";
 import { useUserWorker } from "../../../hooks/useUserWorker";
-import ErrorFeedback from "../../shiftDemand/ErrorFeedback";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -63,7 +64,11 @@ export default function MobileScheduleTab({
     teamWithMembership.membership.role === TeamMembershipRole.MEMBER
   );
 
-  const [error, setError] = useState<string | null>(null);
+  // Check if member has no worker association
+  const memberHasNoWorker =
+    teamWithMembership.membership.role === TeamMembershipRole.MEMBER &&
+    !isLoadingUserWorker &&
+    userWorker === null;
 
   const [isLoading, setIsLoading] = useState(true);
   const [assignments, setAssignments] = useState<any[]>([]);
@@ -91,7 +96,6 @@ export default function MobileScheduleTab({
           !isLoadingUserWorker &&
           userWorker === null
         ) {
-          setError(t("error_no_worker_assigned"));
           if (mounted) setIsLoading(false);
           return;
         }
@@ -267,6 +271,29 @@ export default function MobileScheduleTab({
     );
   }
 
+  if (memberHasNoWorker) {
+    return (
+      <>
+        <MobileNavAppBar lng={lng} mobileContent={scheduleMobileNav} />
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "calc(100vh - 128px)",
+            p: 3,
+          }}
+        >
+          <Alert severity="info" sx={{ maxWidth: "500px" }}>
+            <Typography variant="body1">
+              {t("error_no_worker_assigned")}
+            </Typography>
+          </Alert>
+        </Box>
+      </>
+    );
+  }
+
   return (
     <>
       <MobileNavAppBar lng={lng} mobileContent={scheduleMobileNav} />
@@ -353,8 +380,6 @@ export default function MobileScheduleTab({
         }
         lng={lng}
       />
-
-      <ErrorFeedback error={error} onClose={() => setError(null)} />
     </>
   );
 }

@@ -53,7 +53,7 @@ import {
 } from "../../hooks/useSchedule";
 import { useExportSchedule } from "../../hooks/useExport";
 import { useUserWorker } from "../../hooks/useUserWorker";
-import ErrorFeedback from "../shiftDemand/ErrorFeedback";
+import Alert from "@mui/material/Alert";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "./schedule-tab.css";
@@ -150,7 +150,11 @@ export default function ScheduleTab({
     teamWithMembership.membership.role === TeamMembershipRole.MEMBER
   );
 
-  const [error, setError] = useState<string | null>(null);
+  // Check if member has no worker association
+  const memberHasNoWorker =
+    teamWithMembership.membership.role === TeamMembershipRole.MEMBER &&
+    !isLoadingUserWorker &&
+    userWorker === null;
 
   const [isLoadingSchedule, setIsLoadingSchedule] = useState<boolean>(true);
   const [isLoadingAssignments, setIsLoadingAssignments] =
@@ -283,19 +287,6 @@ export default function ScheduleTab({
     useState<StatsTimeFrameOptions>(StatsTimeFrameOptions.CAMPAING);
 
   const isMobile = useIsMobile();
-
-  // Check if member has no worker association
-  useEffect(() => {
-    if (
-      teamWithMembership.membership.role === TeamMembershipRole.MEMBER &&
-      !isLoadingUserWorker &&
-      userWorker === null
-    ) {
-      setError(t("error_no_worker_assigned"));
-    } else {
-      setError(null);
-    }
-  }, [teamWithMembership.membership.role, isLoadingUserWorker, userWorker, t]);
 
   const toggleTab = (tabName: string) => {
     if (selectedTab === tabName) {
@@ -1071,6 +1062,28 @@ export default function ScheduleTab({
     );
   }
 
+  if (memberHasNoWorker) {
+    return (
+      <div className="tab-container-ultrawide" data-testid="schedule-page-heading">
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "400px",
+            p: 4,
+          }}
+        >
+          <Alert severity="info" sx={{ maxWidth: "600px" }}>
+            <Typography variant="body1">
+              {t("error_no_worker_assigned")}
+            </Typography>
+          </Alert>
+        </Box>
+      </div>
+    );
+  }
+
   return (
     <div
       className="tab-container-ultrawide"
@@ -1155,7 +1168,6 @@ export default function ScheduleTab({
           )}
         </div>
       </div>
-      <ErrorFeedback error={error} onClose={() => setError(null)} />
     </div>
   );
 }
