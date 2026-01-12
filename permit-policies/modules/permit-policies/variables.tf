@@ -52,7 +52,8 @@ variable "member_permissions" {
   type        = list(string)
   default = [
     "read-workers", "update", "read-assignments-validated", "delete-request",
-    "create-request", "update-request", "read-requests", "read", "read-shifts"
+    "create-request", "update-request", "read-requests", "read", "read-shifts",
+    "read-shift-options"
   ]
 }
 
@@ -113,7 +114,8 @@ variable "super_admin_permissions" {
     "team:read-assignments-validated", "team:read-shift-demands", "team:update-dim-entry",
     "team:delete-coverage", "team:update-constraint", "team:create-shift-demand", "team:read",
     "worker:read", "team:create-demand", "request:create", "team:create-dimension",
-    "user:read-team-invitations", "team:delete", "team:read-fixed-assignments"
+    "user:read-team-invitations", "team:delete", "team:read-fixed-assignments", "team:approve-request",
+    "team:deny-request", "team:rescind-request"
   ]
 }
 
