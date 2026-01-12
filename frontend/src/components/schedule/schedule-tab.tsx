@@ -1064,7 +1064,10 @@ export default function ScheduleTab({
 
   if (memberHasNoWorker) {
     return (
-      <div className="tab-container-ultrawide" data-testid="schedule-page-heading">
+      <div
+        className="tab-container-ultrawide"
+        data-testid="schedule-page-heading"
+      >
         <Box
           sx={{
             display: "flex",

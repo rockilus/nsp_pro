@@ -367,66 +367,102 @@ export default function RequestTab({
         </Box>
       ) : (
         <div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 2,
-          }}
-        >
-          <Tabs
-            value={statusTab}
-            onChange={(_e, v) => setStatusTab(v)}
-            sx={{
-              marginLeft: 2,
-              "& .MuiTab-root": {
-                textTransform: "none",
-              },
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 2,
             }}
-            aria-label="Request Tabs"
-            data-testid="request-tabs"
           >
-            <Tab
-              label={t("requests") || "Requests"}
-              data-testid="requests-tab"
-            />
-            <Tab
-              label={t("calendar") || "Calendar"}
-              data-testid="calendar-tab"
-            />
-          </Tabs>
+            <Tabs
+              value={statusTab}
+              onChange={(_e, v) => setStatusTab(v)}
+              sx={{
+                marginLeft: 2,
+                "& .MuiTab-root": {
+                  textTransform: "none",
+                },
+              }}
+              aria-label="Request Tabs"
+              data-testid="request-tabs"
+            >
+              <Tab
+                label={t("requests") || "Requests"}
+                data-testid="requests-tab"
+              />
+              <Tab
+                label={t("calendar") || "Calendar"}
+                data-testid="calendar-tab"
+              />
+            </Tabs>
 
-          <div className="flex items-center gap-4">
-            {statusTab === 0 && (
-              <div className="flex items-center gap-2">
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={showPastRequests}
-                      onChange={(e) => setShowPastRequests(e.target.checked)}
-                      size="small"
-                      color="primary"
-                      data-testid="show-past-requests-switch"
-                    />
-                  }
-                  label={
-                    <Typography variant="body2" className="text-gray-600">
-                      {t("show_past") || "Show Past"}
-                    </Typography>
-                  }
-                />
-              </div>
-            )}
+            <div className="flex items-center gap-4">
+              {statusTab === 0 && (
+                <div className="flex items-center gap-2">
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={showPastRequests}
+                        onChange={(e) => setShowPastRequests(e.target.checked)}
+                        size="small"
+                        color="primary"
+                        data-testid="show-past-requests-switch"
+                      />
+                    }
+                    label={
+                      <Typography variant="body2" className="text-gray-600">
+                        {t("show_past") || "Show Past"}
+                      </Typography>
+                    }
+                  />
+                </div>
+              )}
 
-            <RequestPanel
+              <RequestPanel
+                lng={lng}
+                teamId={teamId}
+                isEdit={false}
+                workers={workers.filter((w) => !w.deleted)}
+                shifts={shifts}
+                shiftOptions={shiftOptions}
+                userWorkerId={userWorker?.id || null}
+                userTeamRole={userTeamRole}
+                handleAddRequest={handleAddRequest}
+                handleUpdateRequest={handleUpdateRequest}
+                handleDeleteRequest={handleDeleteRequest}
+                handleRescindRequest={handleRescindRequest}
+                handleAcceptRequest={handleAcceptRequest}
+                handleDenyRequest={handleDenyRequest}
+              />
+            </div>
+          </div>
+          {statusTab === 0 && (
+            <RequestTable
               lng={lng}
-              teamId={teamId}
-              isEdit={false}
-              workers={workers.filter((w) => !w.deleted)}
+              requests={displayRequests}
+              workers={workers}
               shifts={shifts}
               shiftOptions={shiftOptions}
               userWorkerId={userWorker?.id || null}
+              userTeamRole={userTeamRole}
+              handleUpdateRequest={handleUpdateRequest}
+              handleDeleteRequest={handleDeleteRequest}
+              handleRescindRequest={handleRescindRequest}
+              handleAcceptRequest={handleAcceptRequest}
+              handleDenyRequest={handleDenyRequest}
+              showPastRequests={showPastRequests}
+            />
+          )}
+          {statusTab === 1 && (
+            <RequestCalendar
+              workers={workers}
+              requests={requests}
+              shifts={shifts}
+              demands={shiftDemands}
+              lng={lng}
+              teamId={teamId}
+              shiftOptions={shiftOptions}
               userTeamRole={userTeamRole}
               handleAddRequest={handleAddRequest}
               handleUpdateRequest={handleUpdateRequest}
@@ -435,44 +471,8 @@ export default function RequestTab({
               handleAcceptRequest={handleAcceptRequest}
               handleDenyRequest={handleDenyRequest}
             />
-          </div>
+          )}
         </div>
-        {statusTab === 0 && (
-          <RequestTable
-            lng={lng}
-            requests={displayRequests}
-            workers={workers}
-            shifts={shifts}
-            shiftOptions={shiftOptions}
-            userWorkerId={userWorker?.id || null}
-            userTeamRole={userTeamRole}
-            handleUpdateRequest={handleUpdateRequest}
-            handleDeleteRequest={handleDeleteRequest}
-            handleRescindRequest={handleRescindRequest}
-            handleAcceptRequest={handleAcceptRequest}
-            handleDenyRequest={handleDenyRequest}
-            showPastRequests={showPastRequests}
-          />
-        )}
-        {statusTab === 1 && (
-          <RequestCalendar
-            workers={workers}
-            requests={requests}
-            shifts={shifts}
-            demands={shiftDemands}
-            lng={lng}
-            teamId={teamId}
-            shiftOptions={shiftOptions}
-            userTeamRole={userTeamRole}
-            handleAddRequest={handleAddRequest}
-            handleUpdateRequest={handleUpdateRequest}
-            handleDeleteRequest={handleDeleteRequest}
-            handleRescindRequest={handleRescindRequest}
-            handleAcceptRequest={handleAcceptRequest}
-            handleDenyRequest={handleDenyRequest}
-          />
-        )}
-      </div>
       )}
     </div>
   );
