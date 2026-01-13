@@ -88,7 +88,7 @@ test.describe("Request Page - Member User", () => {
         {
           name: dayShift.name,
           id: dayShift.id,
-          idType: "shift",
+          idType: 2,
           isBoolDim: false,
           categoryName: "Shifts",
         },
@@ -112,7 +112,7 @@ test.describe("Request Page - Member User", () => {
           {
             name: dayShift.name,
             id: dayShift.id,
-            idType: "shift",
+            idType: 2,
             isBoolDim: false,
             categoryName: "Shifts",
           },
