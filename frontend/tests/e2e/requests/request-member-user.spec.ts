@@ -26,6 +26,7 @@ test.describe("Request Page - Member User", () => {
   const roleTestBase = new RoleTestBase();
   const requestTestBase = new RequestTestBase();
   let testRunId: string;
+  let otherWorker: any;
 
   test.beforeEach(async ({ page }, testInfo) => {
     // Generate unique test run ID for data isolation
@@ -57,6 +58,67 @@ test.describe("Request Page - Member User", () => {
       `[${testRunId}] Created day shift: ${dayShift.name} (${dayShift.shiftId})`
     );
 
+    // Create another worker (not linked to member) as owner for testing isolation
+    await roleTestBase.actAsOwner(page);
+    otherWorker = await roleTestBase.dbUtils.createWorker({
+      teamId: testTeam.teamId,
+      name: `Other Worker ${testRunId}`,
+      acronym: "OTH",
+      weeklyHours: 40,
+      weeklyHoursDesired: 40,
+      dutiesPerMonth: 8,
+      annualLeave: 25,
+    });
+
+    console.log(
+      `[${testRunId}] Created other worker: ${otherWorker.name} (${otherWorker.workerId})`
+    );
+
+    // Create a request for the other worker as owner
+    const ownerUser = roleTestBase.getOwnerUser();
+    const ownerApiClient =
+      roleTestBase.dbUtils.createAuthenticatedClientForUser(ownerUser.userId);
+
+    const { RequestApi } = await import("../../../src/app/lib/api/requestApi");
+    const { ShiftApi } = await import("../../../src/app/lib/api/shiftApi");
+
+    const shifts = await ShiftApi.getAllShifts(ownerApiClient, testTeam.teamId);
+    const dayShiftForRequest = shifts.find(
+      (s) => s.shiftType === ShiftType.NORMAL
+    );
+
+    if (!dayShiftForRequest) {
+      throw new Error("No day shift found for request creation");
+    }
+
+    const tomorrow = dayjs.utc().add(1, "day");
+    const otherRequest = await RequestApi.addRequest(ownerApiClient, {
+      id: "",
+      teamId: testTeam.teamId,
+      workerId: otherWorker.workerId,
+      requestType: RequestType.WORK_DEMAND,
+      startDate: tomorrow,
+      endDate: tomorrow,
+      status: RequestStatus.PENDING,
+      negative: false,
+      shiftOptions: [
+        {
+          name: dayShiftForRequest.name,
+          id: dayShiftForRequest.id,
+          idType: "shift",
+          isBoolDim: false,
+          categoryName: "Shifts",
+        },
+      ],
+      fulfillmentStatus: "unfulfilled",
+      numAssignmentsFulfilled: 0,
+      numAssignmentsDesired: 1,
+    } as any);
+
+    console.log(
+      `[${testRunId}] Created request for other worker via API: ${otherRequest.id}`
+    );
+
     // Set up authentication and navigate to requests page as member
     await roleTestBase.actAsMember(page);
     await roleTestBase.navigateToRequestsPage(page);
@@ -69,8 +131,8 @@ test.describe("Request Page - Member User", () => {
     if (memberWorker) {
       await requestTestBase.openNewRequestPopover(page);
       await requestTestBase.selectRequestType(page, "work");
-      const tomorrow = dayjs.utc().add(1, "day");
-      await requestTestBase.setStartDate(page, tomorrow);
+      const tomorrowMember = dayjs.utc().add(1, "day");
+      await requestTestBase.setStartDate(page, tomorrowMember);
       await requestTestBase.setRequestPreference(page, "positive");
       await requestTestBase.selectShiftOptions(page);
       await requestTestBase.saveRequest(page);
@@ -149,79 +211,6 @@ test.describe("Request Page - Member User", () => {
   test("member cannot see other workers' requests in the table", async ({
     page,
   }) => {
-    const memberWorker = roleTestBase.getMemberWorker();
-    if (!memberWorker) {
-      throw new Error("Member worker not created");
-    }
-
-    const testTeam = roleTestBase.getTestTeam();
-    const ownerUser = roleTestBase.getOwnerUser();
-
-    // Create another worker (not linked to member) as owner
-    await roleTestBase.actAsOwner(page);
-    const otherWorker = await roleTestBase.dbUtils.createWorker({
-      teamId: testTeam.teamId,
-      name: `Other Worker ${testRunId}`,
-      acronym: "OTH",
-      weeklyHours: 40,
-      weeklyHoursDesired: 40,
-      dutiesPerMonth: 8,
-      annualLeave: 25,
-    });
-
-    console.log(
-      `[${testRunId}] Created other worker: ${otherWorker.name} (${otherWorker.workerId})`
-    );
-
-    // Create a request for the other worker as owner
-    const ownerApiClient =
-      roleTestBase.dbUtils.createAuthenticatedClientForUser(ownerUser.userId);
-
-    const { RequestApi } = await import("../../../src/app/lib/api/requestApi");
-    const { ShiftApi } = await import("../../../src/app/lib/api/shiftApi");
-
-    const shifts = await ShiftApi.getAllShifts(ownerApiClient, testTeam.teamId);
-    const dayShift = shifts.find((s) => s.shiftType === ShiftType.NORMAL);
-
-    if (!dayShift) {
-      throw new Error("No day shift found for request creation");
-    }
-
-    const tomorrow = dayjs.utc().add(1, "day");
-    const otherRequest = await RequestApi.addRequest(ownerApiClient, {
-      id: "",
-      teamId: testTeam.teamId,
-      workerId: otherWorker.workerId,
-      requestType: RequestType.WORK_DEMAND,
-      startDate: tomorrow,
-      endDate: tomorrow,
-      status: RequestStatus.PENDING,
-      negative: false,
-      shiftOptions: [
-        {
-          name: dayShift.name,
-          id: dayShift.id,
-          idType: "shift",
-          isBoolDim: false,
-          categoryName: "Shifts",
-        },
-      ],
-      fulfillmentStatus: "unfulfilled",
-      numAssignmentsFulfilled: 0,
-      numAssignmentsDesired: 1,
-    } as any);
-
-    console.log(
-      `[${testRunId}] Created request for other worker via API: ${otherRequest.id}`
-    );
-
-    // Switch back to member user
-    await roleTestBase.actAsMember(page);
-    await roleTestBase.navigateToRequestsPage(page);
-
-    // Wait for page to load
-    await expect(page.locator('[data-testid="request-tab"]')).toBeVisible();
-
     // Verify the table does NOT contain the other worker's request
     const otherWorkerCell = page.locator(`text=${otherWorker.name}`);
     await expect(otherWorkerCell).not.toBeVisible();
