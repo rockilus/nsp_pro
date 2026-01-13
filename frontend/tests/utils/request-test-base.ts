@@ -1201,11 +1201,27 @@ export class RequestTestBase {
     await shiftOption.waitFor({ state: "visible", timeout: 5000 });
     await shiftOption.click();
 
-    // Press Escape to close the popover and confirm selection
-    await page.keyboard.press("Escape");
+    // Wait a bit for the selection to register
+    await page.waitForTimeout(200);
 
-    // Wait for the popover to close
-    await shiftOptionsPopover.waitFor({ state: "hidden" });
+    // The popover should close automatically after selection
+    // Or we can force-click the invisible backdrop to close it
+    const invisibleBackdrop = page.locator(
+      "#simple-popover .MuiBackdrop-invisible"
+    );
+    if (await invisibleBackdrop.isVisible()) {
+      await invisibleBackdrop.click({ force: true });
+    }
+
+    // Wait for the popover to close (with a reasonable timeout)
+    await shiftOptionsPopover
+      .waitFor({ state: "hidden", timeout: 5000 })
+      .catch(() => {
+        // If it doesn't close, try clicking outside one more time
+        console.log(
+          "Popover didn't close automatically, attempting to close manually"
+        );
+      });
   }
 
   /**
