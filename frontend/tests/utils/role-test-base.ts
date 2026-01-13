@@ -357,15 +357,8 @@ export class RoleTestBase {
       annualLeave: 25,
     });
 
-    // Create authenticated client for the user
-    const apiClient = this.dbUtils.createAuthenticatedClientForUser(userId);
-
-    // Import WorkerApi dynamically to avoid circular dependencies
-    const { WorkerApi } = await import("../../src/app/lib/api/workerApi");
-
-    // Attach the user to the worker
-    await WorkerApi.attachUserToWorker(
-      apiClient,
+    // Attach the user to the worker using DatabaseTestUtils
+    await this.dbUtils.attachWorkerToUser(
       worker.workerId,
       userId,
       this.testTeam.teamId

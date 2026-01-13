@@ -845,6 +845,37 @@ export class DatabaseTestUtils {
   }
 
   /**
+   * Attach a user to a worker using the existing WorkerApi for consistent behavior
+   * This links a worker to a specific user, allowing member users to manage that worker
+   */
+  async attachWorkerToUser(
+    workerId: string,
+    userId: string,
+    teamId: string
+  ): Promise<WorkerT> {
+    try {
+      const result: WorkerT = await WorkerApi.attachUserToWorker(
+        this.testApiClient,
+        workerId,
+        userId,
+        teamId
+      );
+
+      return result;
+    } catch (error) {
+      // Enhanced error handling for test debugging
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to attach user ${userId} to worker ${workerId}: ${error.message}`
+        );
+      }
+      throw new Error(
+        `Failed to attach user ${userId} to worker ${workerId}: Unknown error`
+      );
+    }
+  }
+
+  /**
    * Create a shift using the existing ShiftApi for consistent behavior
    */
   async createShift(shiftData: {
