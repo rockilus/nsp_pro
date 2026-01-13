@@ -63,6 +63,21 @@ test.describe("Request Page - Member User", () => {
 
     // Wait for page to load
     await expect(page.locator('[data-testid="request-tab"]')).toBeVisible();
+
+    // Create a request for the member's worker via UI
+    const memberWorker = roleTestBase.getMemberWorker();
+    if (memberWorker) {
+      await requestTestBase.openNewRequestPopover(page);
+      await requestTestBase.selectRequestType(page, "work");
+      const tomorrow = dayjs.utc().add(1, "day");
+      await requestTestBase.setStartDate(page, tomorrow);
+      await requestTestBase.setRequestPreference(page, "positive");
+      await requestTestBase.selectShiftOptions(page);
+      await requestTestBase.saveRequest(page);
+
+      // Ensure the table shows the newly created request
+      await expect(requestTestBase.getRequestTable(page)).toBeVisible();
+    }
   });
 
   test.afterEach(async () => {
@@ -88,8 +103,8 @@ test.describe("Request Page - Member User", () => {
     await expect(workerSelect).toBeDisabled();
     await expect(workerSelect).toHaveValue(memberWorker.workerId);
 
-    // Set the request date (tomorrow)
-    const tomorrow = dayjs.utc().add(1, "day");
+    // Set the request date (the day after tomorrow)
+    const tomorrow = dayjs.utc().add(2, "day");
     await requestTestBase.setStartDate(page, tomorrow);
 
     // Set positive preference
@@ -120,58 +135,7 @@ test.describe("Request Page - Member User", () => {
       throw new Error("Member worker not created");
     }
 
-    const testTeam = roleTestBase.getTestTeam();
-    const memberUser = roleTestBase.getMemberUser();
-
-    // Create a request via API for the member's worker
-    const memberApiClient =
-      roleTestBase.dbUtils.createAuthenticatedClientForUser(memberUser.userId);
-
-    const { RequestApi } = await import("../../../src/app/lib/api/requestApi");
-    const { ShiftApi } = await import("../../../src/app/lib/api/shiftApi");
-
-    // Fetch shifts to get shift options
-    const shifts = await ShiftApi.getAllShifts(
-      memberApiClient,
-      testTeam.teamId
-    );
-    const dayShift = shifts.find((s) => s.shiftType === ShiftType.NORMAL);
-
-    if (!dayShift) {
-      throw new Error("No day shift found for request creation");
-    }
-
-    const tomorrow = dayjs.utc().add(1, "day");
-    const createdRequest = await RequestApi.addRequest(memberApiClient, {
-      id: "",
-      teamId: testTeam.teamId,
-      workerId: memberWorker.workerId,
-      requestType: RequestType.WORK_DEMAND,
-      startDate: tomorrow,
-      endDate: tomorrow,
-      status: RequestStatus.PENDING,
-      negative: false,
-      shiftOptions: [
-        {
-          name: dayShift.name,
-          id: dayShift.id,
-          idType: "shift",
-          isBoolDim: false,
-          categoryName: "Shifts",
-        },
-      ],
-      fulfillmentStatus: "unfulfilled",
-      numAssignmentsFulfilled: 0,
-      numAssignmentsDesired: 1,
-    } as any);
-
-    console.log(`[${testRunId}] Created request via API: ${createdRequest.id}`);
-
-    // Reload the page to fetch the new request
-    await page.reload();
-    await page.waitForLoadState("networkidle");
-
-    // Verify the request appears in the table
+    // Verify the request appears in the table (created in beforeEach)
     const requestTable = requestTestBase.getRequestTable(page);
     await expect(requestTable).toBeVisible();
 
