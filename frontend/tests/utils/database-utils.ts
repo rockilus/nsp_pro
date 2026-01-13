@@ -483,59 +483,6 @@ export class DatabaseTestUtils {
   }
 
   /**
-   * Create a user with a specific role in a team
-   * This combines user creation and team membership assignment
-   */
-  async createUserWithRole(
-    userData: {
-      userId: string;
-      email: string;
-      username?: string;
-      firstName?: string;
-      lastName?: string;
-    },
-    teamId: string,
-    role: "owner" | "member"
-  ): Promise<TestUserWithRole> {
-    try {
-      // 1. Create the user first
-      await this.createTestUser({
-        user_id: userData.userId,
-        email: userData.email,
-        username: userData.username || userData.email.split("@")[0],
-        first_name: userData.firstName || "Test",
-        last_name: userData.lastName || "User",
-      });
-
-      console.log(`✅ Created user: ${userData.userId}`);
-
-      // 2. Add the user to the team with the specified role
-      const membershipResult = await this.addTeamMember(
-        userData.userId,
-        teamId,
-        role
-      );
-
-      console.log(
-        `✅ Added user ${userData.userId} to team ${teamId} as ${role}`
-      );
-
-      return {
-        userId: userData.userId,
-        email: userData.email,
-        teamId: teamId,
-        role: role,
-        membershipId: membershipResult.membership_id,
-      };
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`Failed to create user with role: ${error.message}`);
-      }
-      throw new Error("Failed to create user with role: unknown error");
-    }
-  }
-
-  /**
    * Create an authenticated API client for a specific user
    * This allows tests to make requests as different users by switching the X-Dev-User-ID header
    */

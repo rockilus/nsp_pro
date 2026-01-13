@@ -35,7 +35,7 @@ test.describe("Request Page - Member User", () => {
 
     console.log(`[${testRunId}] Setting up member user test`);
 
-    // Setup role-based tests (creates team, owner, and member users)
+    // Setup role-based tests using global test users (TEST_USER as owner, TEST_USER_2 as member)
     await roleTestBase.setupRoleTests(workerIndex);
 
     // Create a worker for the member user

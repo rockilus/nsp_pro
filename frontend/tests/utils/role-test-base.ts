@@ -33,8 +33,10 @@ export class RoleTestBase {
    * Performs setup for role-based tests:
    * - Waits for API ready
    * - Verifies test utilities are available
-   * - Creates a test team
-   * - Creates an owner user and a member user
+   * - Acts as TEST_USER (team owner) to create team
+   * - Adds TEST_USER_2 as team member
+   *
+   * @param workerIndex - Worker index for unique naming
    */
   async setupRoleTests(workerIndex: number): Promise<void> {
     // Ensure the API is ready before running tests
@@ -48,46 +50,45 @@ export class RoleTestBase {
       );
     }
 
-    // Create a test team
+    // Import global test users
+    const { TEST_USER } = await import("./database-utils");
+
+    // Act as TEST_USER (will be the team owner when creating team)
+    console.log(`🔄 Acting as TEST_USER (${TEST_USER.user_id}) to create team`);
+
+    // Create a test team (TEST_USER becomes owner automatically)
     const uniqueTeamName = `Role Test Team ${workerIndex}-${Date.now()}`;
     this.testTeam = await this.dbUtils.createTeam({ name: uniqueTeamName });
     console.log(
       `Created test team: ${this.testTeam.name} (${this.testTeam.teamId})`
     );
+    console.log(`✅ TEST_USER (${TEST_USER.user_id}) is now team owner`);
 
-    // Add TEST_USER_2 as a team member for consistent multi-user scenarios
-    await this.dbUtils.addSecondUserToTeam(this.testTeam.teamId, "member");
-    console.log(`✅ Added TEST_USER_2 (${TEST_USER_2.user_id}) as team member`);
+    // Store owner user reference
+    this.ownerUser = {
+      userId: TEST_USER.user_id,
+      email: TEST_USER.email,
+      teamId: this.testTeam.teamId,
+      role: "owner",
+      membershipId: "", // Will be set by the team creation
+    };
 
-    // Create owner user
-    const ownerUserId = `owner-${workerIndex}-${Date.now()}`;
-    this.ownerUser = await this.dbUtils.createUserWithRole(
-      {
-        userId: ownerUserId,
-        email: `owner-${workerIndex}-${Date.now()}@test.com`,
-        username: `owner-${workerIndex}`,
-        firstName: "Owner",
-        lastName: "User",
-      },
-      this.testTeam.teamId,
-      "owner"
-    );
-    console.log(`✅ Created owner user: ${this.ownerUser.userId}`);
-
-    // Create member user
-    const memberUserId = `member-${workerIndex}-${Date.now()}`;
-    this.memberUser = await this.dbUtils.createUserWithRole(
-      {
-        userId: memberUserId,
-        email: `member-${workerIndex}-${Date.now()}@test.com`,
-        username: `member-${workerIndex}`,
-        firstName: "Member",
-        lastName: "User",
-      },
+    // Add TEST_USER_2 as team member
+    const membershipResult = await this.dbUtils.addTeamMember(
+      TEST_USER_2.user_id,
       this.testTeam.teamId,
       "member"
     );
-    console.log(`✅ Created member user: ${this.memberUser.userId}`);
+    console.log(`✅ Added TEST_USER_2 (${TEST_USER_2.user_id}) as team member`);
+
+    // Store member user reference
+    this.memberUser = {
+      userId: TEST_USER_2.user_id,
+      email: TEST_USER_2.email,
+      teamId: this.testTeam.teamId,
+      role: "member",
+      membershipId: membershipResult.membership_id,
+    };
   }
 
   /**
