@@ -74,72 +74,61 @@ test.describe("Request Page - Member User", () => {
       `[${testRunId}] Created other worker: ${otherWorker.name} (${otherWorker.workerId})`
     );
 
-    // Create a request for the other worker as owner
-    const ownerUser = roleTestBase.getOwnerUser();
-    const ownerApiClient =
-      roleTestBase.dbUtils.createAuthenticatedClientForUser(ownerUser.userId);
-
-    const { RequestApi } = await import("../../../src/app/lib/api/requestApi");
-    const { ShiftApi } = await import("../../../src/app/lib/api/shiftApi");
-
-    const shifts = await ShiftApi.getAllShifts(ownerApiClient, testTeam.teamId);
-    const dayShiftForRequest = shifts.find(
-      (s) => s.shiftType === ShiftType.NORMAL
-    );
-
-    if (!dayShiftForRequest) {
-      throw new Error("No day shift found for request creation");
-    }
-
+    // Create a request for the other worker using the same dayShift
     const tomorrow = dayjs.utc().add(1, "day");
-    const otherRequest = await RequestApi.addRequest(ownerApiClient, {
-      id: "",
+    await roleTestBase.dbUtils.createRequest({
       teamId: testTeam.teamId,
       workerId: otherWorker.workerId,
-      requestType: RequestType.WORK_DEMAND,
+      requestType: "work_demand",
       startDate: tomorrow,
       endDate: tomorrow,
-      status: RequestStatus.PENDING,
+      status: "pending",
       negative: false,
       shiftOptions: [
         {
-          name: dayShiftForRequest.name,
-          id: dayShiftForRequest.id,
+          name: dayShift.name,
+          id: dayShift.id,
           idType: "shift",
           isBoolDim: false,
           categoryName: "Shifts",
         },
       ],
-      fulfillmentStatus: "unfulfilled",
-      numAssignmentsFulfilled: 0,
-      numAssignmentsDesired: 1,
-    } as any);
+    });
 
-    console.log(
-      `[${testRunId}] Created request for other worker via API: ${otherRequest.id}`
-    );
+    console.log(`[${testRunId}] Created request for other worker via API`);
+
+    // Create a request for the member's worker using createRequest
+    const memberWorker = roleTestBase.getMemberWorker();
+    if (memberWorker) {
+      await roleTestBase.dbUtils.createRequest({
+        teamId: testTeam.teamId,
+        workerId: memberWorker.workerId,
+        requestType: "work_demand",
+        startDate: tomorrow,
+        endDate: tomorrow,
+        status: "pending",
+        negative: false,
+        shiftOptions: [
+          {
+            name: dayShift.name,
+            id: dayShift.id,
+            idType: "shift",
+            isBoolDim: false,
+            categoryName: "Shifts",
+          },
+        ],
+      });
+
+      console.log(`[${testRunId}] Created request for member worker via API`);
+    }
 
     // Set up authentication and navigate to requests page as member
     await roleTestBase.actAsMember(page);
     await roleTestBase.navigateToRequestsPage(page);
 
-    // Wait for page to load
+    // Wait for page to load and ensure the table shows the requests
     await expect(page.locator('[data-testid="request-tab"]')).toBeVisible();
-
-    // Create a request for the member's worker via UI
-    const memberWorker = roleTestBase.getMemberWorker();
-    if (memberWorker) {
-      await requestTestBase.openNewRequestPopover(page);
-      await requestTestBase.selectRequestType(page, "work");
-      const tomorrowMember = dayjs.utc().add(1, "day");
-      await requestTestBase.setStartDate(page, tomorrowMember);
-      await requestTestBase.setRequestPreference(page, "positive");
-      await requestTestBase.selectShiftOptions(page);
-      await requestTestBase.saveRequest(page);
-
-      // Ensure the table shows the newly created request
-      await expect(requestTestBase.getRequestTable(page)).toBeVisible();
-    }
+    await expect(requestTestBase.getRequestTable(page)).toBeVisible();
   });
 
   test.afterEach(async () => {

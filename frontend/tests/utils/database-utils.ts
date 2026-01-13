@@ -40,7 +40,13 @@ import {
   ShiftDemandTemplateUpdateDTO,
 } from "../../src/types/shift-demand-template";
 import { ShiftDemandDTO } from "../../src/types/shiftDemand";
-import { RequestT } from "../../src/types/request";
+import {
+  RequestT,
+  RequestType,
+  FulfillmentStatus,
+  RequestStatus,
+  fromRequestT,
+} from "../../src/types/request";
 import { ScheduleT, toScheduleT } from "../../src/types/schedule";
 import { testConfig } from "./test-config";
 import dayjs from "dayjs";
@@ -1703,14 +1709,14 @@ export class DatabaseTestUtils {
   //////////////////////////
 
   /**
-   * Create a request using the test API for consistent behavior
+   * Create a request using RequestApi for consistent behavior
    */
   async createRequest(requestData: {
     teamId: string;
     workerId: string;
     requestType: "work_demand" | "leave";
-    startDate: Date;
-    endDate: Date;
+    startDate: dayjs.Dayjs;
+    endDate: dayjs.Dayjs;
     status?: "pending" | "approved" | "denied" | "deferred";
     negative?: boolean;
     comment?: string;
@@ -1718,30 +1724,49 @@ export class DatabaseTestUtils {
     shiftOptions?: any[];
   }): Promise<any> {
     try {
+      if (
+        !Object.values(RequestType).includes(
+          requestData.requestType as RequestType
+        )
+      ) {
+        throw new Error(`Invalid RequestType: ${requestData.requestType}`);
+      }
+
+      if (
+        requestData.status &&
+        !Object.values(RequestStatus).includes(
+          requestData.status as RequestStatus
+        )
+      ) {
+        throw new Error(`Invalid RequestStatus: ${requestData.status}`);
+      }
+
       // RequestDTO expects camelCase fields
-      const requestPayload = {
+      const requestPayload: RequestT = {
         id: "",
         teamId: requestData.teamId,
-        requestType: requestData.requestType,
+        requestType: requestData.requestType as RequestType,
         workerId: requestData.workerId,
-        startDate: Math.floor(requestData.startDate.getTime() / 1000),
-        endDate: Math.floor(requestData.endDate.getTime() / 1000),
+        startDate: requestData.startDate,
+        endDate: requestData.endDate,
         shiftId: requestData.shiftId || null,
         shiftOptions: requestData.shiftOptions || [],
         negative: requestData.negative || false,
         hard: true,
-        status: requestData.status || "pending",
-        fulfillment: "not_processed",
+        status: (requestData.status as RequestStatus) || RequestStatus.PENDING,
+        fulfillment: FulfillmentStatus.NOT_PROCESSED,
         comment: requestData.comment || "",
-        createdAt: Math.floor(Date.now() / 1000),
+        createdAt: dayjs(),
         active: true,
         shiftTargetIds: [],
         missingAttributes: [],
       };
 
-      const response = await this.testApiClient.post<any>(
-        `/requests/teams/${requestData.teamId}`,
-        requestPayload
+      // Use RequestApi for consistent behavior
+      const response = await RequestApi.addRequest(
+        this.testApiClient,
+        requestPayload,
+        requestData.teamId
       );
 
       console.log(
