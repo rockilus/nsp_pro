@@ -19,6 +19,11 @@ export class RoleTestBase {
   protected testTeam: { teamId: string; name: string } | null = null;
   protected ownerUser: TestUserWithRole | null = null;
   protected memberUser: TestUserWithRole | null = null;
+  protected memberWorker: {
+    workerId: string;
+    name: string;
+    teamId: string;
+  } | null = null;
 
   constructor() {
     this.dbUtils = new DatabaseTestUtils();
@@ -325,5 +330,81 @@ export class RoleTestBase {
       throw new Error("Test team not created. Call setupRoleTests() first.");
     }
     return this.testTeam;
+  }
+
+  /**
+   * Create a worker and link it to a specific user
+   * @param userId - The user ID to link the worker to
+   * @param workerName - Name for the worker
+   * @returns The created and linked worker
+   */
+  async createWorkerForUser(
+    userId: string,
+    workerName: string
+  ): Promise<{ workerId: string; name: string; teamId: string }> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupRoleTests() first.");
+    }
+
+    // Create the worker via DatabaseTestUtils
+    const worker = await this.dbUtils.createWorker({
+      teamId: this.testTeam.teamId,
+      name: workerName,
+      acronym: workerName.substring(0, 3).toUpperCase(),
+      weeklyHours: 40,
+      weeklyHoursDesired: 40,
+      dutiesPerMonth: 8,
+      annualLeave: 25,
+    });
+
+    // Create authenticated client for the user
+    const apiClient = this.dbUtils.createAuthenticatedClientForUser(userId);
+
+    // Import WorkerApi dynamically to avoid circular dependencies
+    const { WorkerApi } = await import("../../src/app/lib/api/workerApi");
+
+    // Attach the user to the worker
+    await WorkerApi.attachUserToWorker(
+      apiClient,
+      worker.workerId,
+      userId,
+      this.testTeam.teamId
+    );
+
+    console.log(
+      `✅ Created worker ${workerName} (${worker.workerId}) and linked to user ${userId}`
+    );
+
+    return worker;
+  }
+
+  /**
+   * Create a worker and link it to the member user
+   * This is a convenience method that stores the worker for easy access
+   * @param workerName - Name for the worker (optional, defaults to "Member Worker")
+   * @returns The created and linked worker
+   */
+  async createWorkerForMember(
+    workerName?: string
+  ): Promise<{ workerId: string; name: string; teamId: string }> {
+    if (!this.memberUser) {
+      throw new Error("Member user not created. Call setupRoleTests() first.");
+    }
+
+    const name = workerName || `Member Worker ${Date.now()}`;
+    this.memberWorker = await this.createWorkerForUser(
+      this.memberUser.userId,
+      name
+    );
+
+    return this.memberWorker;
+  }
+
+  /**
+   * Get the member's worker (if created via createWorkerForMember)
+   * @returns The member's worker or null if not created
+   */
+  getMemberWorker(): { workerId: string; name: string; teamId: string } | null {
+    return this.memberWorker;
   }
 }
