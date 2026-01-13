@@ -46,8 +46,8 @@ test.describe("Request Page - Member User", () => {
     const dayShift = await roleTestBase.dbUtils.createShift({
       teamId: testTeam.teamId,
       name: `Day Shift ${testRunId}`,
-      startTime: dayjs.utc().hour(8).minute(0).second(0).toDate(),
-      endTime: dayjs.utc().hour(16).minute(0).second(0).toDate(),
+      startTime: dayjs.utc().hour(8).minute(0).second(0),
+      endTime: dayjs.utc().hour(16).minute(0).second(0),
       shiftType: ShiftType.NORMAL,
       color: "#4caf50",
       acronym: "DAY",
