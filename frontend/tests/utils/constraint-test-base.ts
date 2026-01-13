@@ -151,6 +151,9 @@ export class ConstraintTestBase {
       throw new Error("No test team created. Call setupConstraintTests first.");
     }
 
+    // Set authentication headers before any navigation
+    await this.dbUtils.authenticatePageAsTestUser(page);
+
     // Set the selected team in localStorage to bypass team selection
     await page.addInitScript((teamData) => {
       localStorage.setItem("selectedTeam", JSON.stringify(teamData));
