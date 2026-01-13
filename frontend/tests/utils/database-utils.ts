@@ -551,6 +551,50 @@ export class DatabaseTestUtils {
   }
 
   /**
+   * Set authentication headers for a Playwright page for a specific user
+   * This allows tests to make requests as different users
+   *
+   * @param page - Playwright page object
+   * @param userId - User ID to authenticate as
+   */
+  async authenticatePageAsUser(page: any, userId: string): Promise<void> {
+    if (testConfig.environment === "development") {
+      await page.setExtraHTTPHeaders({
+        "X-Dev-User-ID": userId,
+        "X-API-Key": testConfig.devApiKey,
+      });
+    } else {
+      // For staging/production, use Bearer token
+      await page.setExtraHTTPHeaders({
+        Authorization: `Bearer ${testConfig.authToken}`,
+      });
+    }
+  }
+
+  /**
+   * Set authentication headers for a Playwright page as TEST_USER
+   * Convenience method for the most common authentication scenario
+   *
+   * @param page - Playwright page object
+   */
+  async authenticatePageAsTestUser(page: any): Promise<void> {
+    await this.authenticatePageAsUser(page, testConfig.devUserId);
+  }
+
+  /**
+   * Set authentication headers for a Playwright page as TEST_USER_2
+   * Convenience method for secondary user authentication
+   *
+   * @param page - Playwright page object
+   */
+  async authenticatePageAsTestUser2(page: any): Promise<void> {
+    if (!testConfig.devUserId2) {
+      throw new Error("TEST_USER_ID_2 is not configured in test environment");
+    }
+    await this.authenticatePageAsUser(page, testConfig.devUserId2);
+  }
+
+  /**
    * Waits for required services (API and Permit.io) to be ready
    * This ensures dependencies are available before user creation
    */

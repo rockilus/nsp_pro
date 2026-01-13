@@ -369,6 +369,9 @@ export class RequestTestBase {
       throw new Error("Test team not created. Call setupRequestTests first.");
     }
 
+    // Set authentication headers before any navigation
+    await this.dbUtils.authenticatePageAsTestUser(page);
+
     // Disable caching to prevent cross-test contamination
     await page.route("**/*", (route) => {
       const headers = {

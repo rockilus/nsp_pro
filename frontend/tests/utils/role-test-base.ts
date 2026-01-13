@@ -100,10 +100,7 @@ export class RoleTestBase {
       throw new Error("Owner user not created. Call setupRoleTests() first.");
     }
 
-    await page.setExtraHTTPHeaders({
-      "X-Dev-User-ID": this.ownerUser.userId,
-      "X-API-Key": testConfig.devApiKey,
-    });
+    await this.dbUtils.authenticatePageAsUser(page, this.ownerUser.userId);
 
     console.log(`🔄 Acting as owner: ${this.ownerUser.userId}`);
   }
@@ -117,10 +114,7 @@ export class RoleTestBase {
       throw new Error("Member user not created. Call setupRoleTests() first.");
     }
 
-    await page.setExtraHTTPHeaders({
-      "X-Dev-User-ID": this.memberUser.userId,
-      "X-API-Key": testConfig.devApiKey,
-    });
+    await this.dbUtils.authenticatePageAsUser(page, this.memberUser.userId);
 
     console.log(`🔄 Acting as member: ${this.memberUser.userId}`);
   }
@@ -134,10 +128,7 @@ export class RoleTestBase {
       throw new Error("Test team not created. Call setupRoleTests() first.");
     }
 
-    await page.setExtraHTTPHeaders({
-      "X-Dev-User-ID": TEST_USER_2.user_id,
-      "X-API-Key": testConfig.devApiKey,
-    });
+    await this.dbUtils.authenticatePageAsTestUser2(page);
 
     console.log(`🔄 Acting as TEST_USER_2: ${TEST_USER_2.user_id}`);
   }
