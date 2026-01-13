@@ -83,8 +83,10 @@ test.describe("Request Page - Member User", () => {
     // Select work request type
     await requestTestBase.selectRequestType(page, "work");
 
-    // Select the member's worker (should be the only option)
-    await requestTestBase.selectWorker(page, memberWorker.name);
+    // Verify the worker select is disabled and shows the member's worker
+    const workerSelect = requestTestBase.getWorkerSelect(page);
+    await expect(workerSelect).toBeDisabled();
+    await expect(workerSelect).toHaveValue(memberWorker.workerId);
 
     // Set the request date (tomorrow)
     const tomorrow = dayjs.utc().add(1, "day");
