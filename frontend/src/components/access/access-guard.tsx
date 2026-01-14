@@ -49,23 +49,20 @@ export function AccessGuard({
   showToast = true,
 }: AccessGuardProps) {
   const router = useRouter();
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const allowed = teamWithMembership
     ? canAccessPage(route, teamWithMembership)
     : false;
 
+  // Set snackbar state based on access status and showToast flag
+  const [snackbarOpen, setSnackbarOpen] = useState(!allowed && showToast);
+
   useEffect(() => {
     if (!allowed) {
-      // Show user-friendly message
-      if (showToast) {
-        setSnackbarOpen(true);
-      }
-
       // Redirect to allowed page
       router.push(redirectTo);
     }
-  }, [allowed, redirectTo, showToast, router]);
+  }, [allowed, redirectTo, router]);
 
   const handleSnackbarClose = (
     event?: React.SyntheticEvent | Event,
