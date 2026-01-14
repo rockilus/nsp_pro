@@ -11,6 +11,7 @@
 
 import { Page } from "@playwright/test";
 import { DatabaseTestUtils, TEST_USER, TEST_USER_2 } from "./database-utils";
+import { testConfig } from "./test-config";
 import { ShiftType } from "../../src/types/shift";
 import { WorkerT } from "../../src/types/worker";
 import { ShiftT } from "../../src/types/shift";
@@ -19,11 +20,6 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
 dayjs.extend(utc);
-
-const testConfig = {
-  apiUrl: process.env.NEXT_PUBLIC_API_GATEWAY_URL || "http://localhost:8000",
-  frontendUrl: process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000",
-};
 
 export interface ScheduleSetupOptions {
   referenceDate: dayjs.Dayjs;
@@ -237,11 +233,14 @@ export class ScheduleTestBase {
     // Create assignments via API
     for (const assignmentData of assignments) {
       try {
-        await this.dbUtils.makeAuthenticatedRequest(
-          "POST",
-          `/assignments/teams/${this.testTeam.teamId}`,
-          assignmentData
-        );
+        await this.dbUtils.createAssignment({
+          teamId: this.testTeam.teamId,
+          workerId: assignmentData.workerId,
+          shiftId: assignmentData.shiftId,
+          date: assignmentData.date,
+          fixed: assignmentData.fixed,
+          comment: assignmentData.comment,
+        });
       } catch (error) {
         console.error(`Failed to create assignment:`, error);
       }
@@ -338,17 +337,14 @@ export class ScheduleTestBase {
 
     console.log(`📅 Creating campaign schedule: ${startDate} to ${endDate}`);
 
-    const result = await this.dbUtils.makeAuthenticatedRequest<{ id: string }>(
-      "POST",
-      `/schedules/teams/${this.testTeam.teamId}`,
-      {
-        startDate: startDate,
-        endDate: endDate,
-        status: "CAMPAIGN",
-      }
-    );
+    const result = await this.dbUtils.createSchedule({
+      teamId: this.testTeam.teamId,
+      startDate: startDate,
+      endDate: endDate,
+      status: "CAMPAIGN",
+    });
 
-    this.testSchedule = { scheduleId: result.id };
+    this.testSchedule = { scheduleId: result.scheduleId };
     return this.testSchedule;
   }
 

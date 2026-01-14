@@ -1934,6 +1934,167 @@ export class DatabaseTestUtils {
     });
   }
 
+  //////////////////////////
+  // Schedule Methods
+  //////////////////////////
+
+  /**
+   * Create a schedule (campaign or draft) using ScheduleApi for consistent behavior
+   */
+  async createSchedule(scheduleData: {
+    teamId: string;
+    startDate: string;
+    endDate: string;
+    status: "CAMPAIGN" | "DRAFT";
+  }): Promise<{
+    scheduleId: string;
+    startDate: string;
+    endDate: string;
+    status: string;
+  }> {
+    try {
+      const result = await this.makeAuthenticatedRequest<{
+        id: string;
+        start_date: string;
+        end_date: string;
+        status: string;
+      }>("POST", `/schedules/teams/${scheduleData.teamId}`, {
+        startDate: scheduleData.startDate,
+        endDate: scheduleData.endDate,
+        status: scheduleData.status,
+      });
+
+      return {
+        scheduleId: result.id,
+        startDate: result.start_date,
+        endDate: result.end_date,
+        status: result.status,
+      };
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to create schedule for team '${scheduleData.teamId}': ${error.message}`
+        );
+      }
+      throw new Error(
+        `Failed to create schedule for team '${scheduleData.teamId}': Unknown error`
+      );
+    }
+  }
+
+  /**
+   * Get schedules for a team
+   */
+  async getSchedules(teamId: string): Promise<any[]> {
+    try {
+      return await this.makeAuthenticatedRequest<any[]>(
+        "GET",
+        `/schedules/teams/${teamId}`
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to get schedules for team '${teamId}': ${error.message}`
+        );
+      }
+      throw new Error(
+        `Failed to get schedules for team '${teamId}': Unknown error`
+      );
+    }
+  }
+
+  //////////////////////////
+  // Assignment Methods
+  //////////////////////////
+
+  /**
+   * Create an assignment using AssignmentApi for consistent behavior
+   */
+  async createAssignment(assignmentData: {
+    teamId: string;
+    workerId: string;
+    shiftId: string;
+    date: string; // YYYY-MM-DD format
+    fixed?: boolean;
+    comment?: string;
+  }): Promise<any> {
+    try {
+      const result = await this.makeAuthenticatedRequest<any>(
+        "POST",
+        `/assignments/teams/${assignmentData.teamId}`,
+        {
+          assignment: {
+            workerId: assignmentData.workerId,
+            shiftId: assignmentData.shiftId,
+            date: assignmentData.date,
+            fixed: assignmentData.fixed ?? false,
+            comment: assignmentData.comment || null,
+          },
+          recurrence: null,
+        }
+      );
+
+      return result;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to create assignment: ${error.message}`);
+      }
+      throw new Error("Failed to create assignment: Unknown error");
+    }
+  }
+
+  /**
+   * Get assignments for a team by date range
+   */
+  async getAssignments(
+    teamId: string,
+    startDate?: string,
+    endDate?: string
+  ): Promise<any> {
+    try {
+      let endpoint = `/assignments/teams/${teamId}`;
+      const params = new URLSearchParams();
+      if (startDate) params.append("start_date", startDate);
+      if (endDate) params.append("end_date", endDate);
+
+      if (params.toString()) {
+        endpoint += `?${params.toString()}`;
+      }
+
+      return await this.makeAuthenticatedRequest<any>("GET", endpoint);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to get assignments for team '${teamId}': ${error.message}`
+        );
+      }
+      throw new Error(
+        `Failed to get assignments for team '${teamId}': Unknown error`
+      );
+    }
+  }
+
+  /**
+   * Delete an assignment
+   */
+  async deleteAssignment(assignmentId: string, teamId: string): Promise<any> {
+    try {
+      return await this.makeAuthenticatedRequest<any>(
+        "DELETE",
+        `/assignments/${assignmentId}/teams/${teamId}`
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to delete assignment '${assignmentId}': ${error.message}`
+        );
+      }
+      throw new Error(
+        `Failed to delete assignment '${assignmentId}': Unknown error`
+      );
+    }
+  }
+
   /**
    * Add the second test user (TEST_USER_2) to a team with a specific role
    * This is an opt-in helper for tests that need multi-user scenarios.
