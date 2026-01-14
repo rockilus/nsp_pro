@@ -16,6 +16,7 @@ import { ShiftType } from "../../src/types/shift";
 import { WorkerT } from "../../src/types/worker";
 import { ShiftT } from "../../src/types/shift";
 import { RequestT } from "../../src/types/request";
+import { SWOIdTypes } from "../../src/types/constraint";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
@@ -112,7 +113,7 @@ export class ScheduleTestBase {
       name: "Morning Shift",
       startTime: dayjs.utc().hour(8).minute(0).second(0),
       endTime: dayjs.utc().hour(16).minute(0).second(0),
-      shiftType: ShiftType.DUTY,
+      shiftType: ShiftType.NORMAL,
       acronym: "MS",
       color: "#4CAF50",
     });
@@ -122,7 +123,7 @@ export class ScheduleTestBase {
       name: "Afternoon Shift",
       startTime: dayjs.utc().hour(14).minute(0).second(0),
       endTime: dayjs.utc().hour(22).minute(0).second(0),
-      shiftType: ShiftType.DUTY,
+      shiftType: ShiftType.NORMAL,
       acronym: "AS",
       color: "#2196F3",
     });
@@ -159,7 +160,16 @@ export class ScheduleTestBase {
       status: "pending",
       negative: false,
       comment: "Test work demand request",
-      shiftId: morningShift.id,
+      shiftId: null,
+      shiftOptions: [
+        {
+          name: morningShift.name,
+          id: morningShift.id,
+          idType: SWOIdTypes.SHIFT,
+          isBoolDim: false,
+          categoryName: "Shifts",
+        },
+      ],
     });
     this.testRequests.push(testRequest);
     console.log(`✅ Created test request for ${worker2.name}`);
