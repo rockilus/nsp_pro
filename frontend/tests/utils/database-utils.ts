@@ -546,7 +546,14 @@ export class DatabaseTestUtils {
     };
 
     return {
-      makeAuthenticatedRequest,
+      get: <T>(endpoint: string, options?: RequestInit) =>
+        makeAuthenticatedRequest<T>("GET", endpoint, undefined, options),
+      post: <T>(endpoint: string, data?: any, options?: RequestInit) =>
+        makeAuthenticatedRequest<T>("POST", endpoint, data, options),
+      put: <T>(endpoint: string, data?: any, options?: RequestInit) =>
+        makeAuthenticatedRequest<T>("PUT", endpoint, data, options),
+      delete: <T>(endpoint: string, options?: RequestInit) =>
+        makeAuthenticatedRequest<T>("DELETE", endpoint, undefined, options),
     };
   }
 
