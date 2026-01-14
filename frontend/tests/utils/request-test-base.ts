@@ -648,8 +648,8 @@ export class RequestTestBase {
       teamId: this.testTeam.teamId,
       workerId: requestData.workerId,
       requestType: requestTypeMap[requestData.requestType],
-      startDate: requestData.startDate.toDate(),
-      endDate: requestData.endDate.toDate(),
+      startDate: requestData.startDate,
+      endDate: requestData.endDate,
       status: requestData.status
         ? requestStatusMap[requestData.status]
         : "pending",

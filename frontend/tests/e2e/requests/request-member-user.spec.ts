@@ -55,7 +55,7 @@ test.describe("Request Page - Member User", () => {
     });
 
     console.log(
-      `[${testRunId}] Created day shift: ${dayShift.name} (${dayShift.shiftId})`
+      `[${testRunId}] Created day shift: ${dayShift.name} (${dayShift.id})`
     );
 
     // Create another worker (not linked to member) as owner for testing isolation
