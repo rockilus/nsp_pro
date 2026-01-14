@@ -1941,48 +1941,19 @@ export class DatabaseTestUtils {
   //////////////////////////
 
   /**
-   * Create a schedule (campaign or draft) using direct API request
-   * Note: ScheduleApi.createSchedule doesn't support custom dates/status parameters,
-   * so we use direct API call to match backend endpoint requirements
+   * Create a schedule using ScheduleApi for consistent behavior
    */
-  async createSchedule(scheduleData: {
-    teamId: string;
-    startDate: string;
-    endDate: string;
-    status: "CAMPAIGN" | "DRAFT";
-  }): Promise<{
-    scheduleId: string;
-    startDate: string;
-    endDate: string;
-    status: string;
-  }> {
+  async createSchedule(teamId: string): Promise<ScheduleT> {
     try {
-      // Use direct API request as ScheduleApi.createSchedule doesn't support date/status params
-      const result = await this.makeAuthenticatedRequest<{
-        id: string;
-        start_date: string;
-        end_date: string;
-        status: string;
-      }>("POST", `/schedules/teams/${scheduleData.teamId}`, {
-        startDate: scheduleData.startDate,
-        endDate: scheduleData.endDate,
-        status: scheduleData.status,
-      });
-
-      return {
-        scheduleId: result.id,
-        startDate: result.start_date,
-        endDate: result.end_date,
-        status: result.status,
-      };
+      return await ScheduleApi.createSchedule(this.testApiClient, teamId);
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(
-          `Failed to create schedule for team '${scheduleData.teamId}': ${error.message}`
+          `Failed to create schedule for team '${teamId}': ${error.message}`
         );
       }
       throw new Error(
-        `Failed to create schedule for team '${scheduleData.teamId}': Unknown error`
+        `Failed to create schedule for team '${teamId}': Unknown error`
       );
     }
   }
@@ -2001,6 +1972,24 @@ export class DatabaseTestUtils {
       }
       throw new Error(
         `Failed to get schedules for team '${teamId}': Unknown error`
+      );
+    }
+  }
+
+  /**
+   * Update a schedule using ScheduleApi for consistent behavior
+   */
+  async updateSchedule(schedule: ScheduleT): Promise<ScheduleT> {
+    try {
+      return await ScheduleApi.updateSchedule(this.testApiClient, schedule);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to update schedule '${schedule.id}': ${error.message}`
+        );
+      }
+      throw new Error(
+        `Failed to update schedule '${schedule.id}': Unknown error`
       );
     }
   }

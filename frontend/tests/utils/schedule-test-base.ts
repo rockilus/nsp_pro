@@ -337,14 +337,17 @@ export class ScheduleTestBase {
 
     console.log(`📅 Creating campaign schedule: ${startDate} to ${endDate}`);
 
-    const result = await this.dbUtils.createSchedule({
-      teamId: this.testTeam.teamId,
-      startDate: startDate,
-      endDate: endDate,
-      status: "CAMPAIGN",
+    // Step 1: Create the schedule
+    const schedule = await this.dbUtils.createSchedule(this.testTeam.teamId);
+
+    // Step 2: Update with specific dates
+    const updatedSchedule = await this.dbUtils.updateSchedule({
+      ...schedule,
+      startDate: dayjs(startDate).utc(),
+      endDate: dayjs(endDate).utc(),
     });
 
-    this.testSchedule = { scheduleId: result.scheduleId };
+    this.testSchedule = { scheduleId: updatedSchedule.id };
     return this.testSchedule;
   }
 
