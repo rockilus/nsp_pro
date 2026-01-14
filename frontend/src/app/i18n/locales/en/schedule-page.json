@@ -41,6 +41,8 @@
     "month": "Month",
     "never": "Never",
     "no_assignment_selected_msg": "No assignment selected",
+    "no_assignment_yet_member": "No assignments yet",
+    "no_assignments_yet_owner": "No assignments yet. Start a new campaign to generate your first schedule, or create your first assignment.",
     "no_breach": "No breach",
     "no_requests": "No requests",
     "no_schedule_text": "Start a new campaign and solve it to get your schedule.",

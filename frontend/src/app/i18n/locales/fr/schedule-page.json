@@ -39,6 +39,8 @@
     "month": "Mois",
     "never": "Jamais",
     "no_assignment_selected_msg": "Aucune affectation sélectionnée",
+    "no_assignment_yet_member": "Aucune affectation pour le moment",
+    "no_assignments_yet_owner": "Aucune affectation pour le moment. Lancez une nouvelle campagne pour générer votre premier calendrier, ou créez votre première affectation.",
     "no_breach": "Aucune enfreinte",
     "no_requests": "Aucune demande",
     "no_schedule_text": "Start a new campaign and solve it to get your schedule.",

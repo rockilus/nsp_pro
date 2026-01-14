@@ -18,6 +18,7 @@ import ScheduleDisplay from "./table/schedule-display";
 import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
 import LHSTab from "./lhs-tabs/lhs-tab";
 import CreateAssignment from "./lhs-tabs/create-assignment";
+import NoAssignmentsDisplay from "./no-assignments-display";
 import { buildAssignmentsDataByOwnerAndDate } from "./table/shared/assignment-utils";
 import { getPeriodStartEndDates } from "./schedule-utils";
 import { computePeriodEndDate } from "../../app/lib/utils/scheduleViewSettingsUtils";
@@ -1131,23 +1132,15 @@ export default function ScheduleTab({
           (teamWithMembership.team.useSolver && isLoadingShiftDemands) ? (
             <ScheduleTableSkeleton />
           ) : assignments.length === 0 && !scheduleCampaign ? (
-            <Box
-              sx={{
-                margin: 2,
-                marginLeft: 0,
-                overflowX: "auto",
-                backgroundColor: "none",
-                width: "100%",
-              }}
-            >
-              <Typography
-                variant="body1"
-                color="textSecondary"
-                sx={{ fontStyle: "italic" }}
-              >
-                {t("no_schedule_text")}
-              </Typography>
-            </Box>
+            <NoAssignmentsDisplay
+              lng={lng}
+              teamWithMembership={teamWithMembership}
+              scheduleId={null}
+              workers={workers}
+              shifts={shifts}
+              handleCreateAssignment={handleCreateAssignment}
+              handleCreateShiftDemand={handleCreateShiftDemand}
+            />
           ) : (
             <ScheduleDisplay
               lng={lng}

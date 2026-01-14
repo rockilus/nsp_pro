@@ -39,6 +39,8 @@
     "month": "Mes",
     "never": "Nunca",
     "no_assignment_selected_msg": "No hay asignación seleccionada",
+    "no_assignment_yet_member": "Aún no hay asignaciones",
+    "no_assignments_yet_owner": "Aún no hay asignaciones. Inicia una nueva campaña para generar tu primer horario, o crea tu primera asignación.",
     "no_breach": "No hay incumplimiento",
     "no_requests": "No hay solicitudes",
     "no_schedule_text": "Inicia una nueva campaña y resuélvela para obtener tu horario.",
