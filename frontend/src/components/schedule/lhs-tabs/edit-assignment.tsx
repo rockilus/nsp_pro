@@ -70,7 +70,6 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
   recurrence,
 }) => {
   const { t } = useTranslation(lng, "schedule-page");
-  const { t: t_weekdays } = useTranslation(lng, "week_days");
 
   const [workerId, setWorkerId] = useState<string | null>(
     isEditing && assignment ? assignment.workerId : workerSelectedId
@@ -111,13 +110,13 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
 
   const describeRecurrenceRule = (rule: RecurrenceRuleT): string => {
     const weekdays = [
-      t_weekdays("monday"),
-      t_weekdays("tuesday"),
-      t_weekdays("wednesday"),
-      t_weekdays("thursday"),
-      t_weekdays("friday"),
-      t_weekdays("saturday"),
-      t_weekdays("sunday"),
+      t("monday"),
+      t("tuesday"),
+      t("wednesday"),
+      t("thursday"),
+      t("friday"),
+      t("saturday"),
+      t("sunday"),
     ];
 
     let description = "";

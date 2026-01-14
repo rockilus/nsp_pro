@@ -103,5 +103,12 @@
     "worker_count": "Nombre de travailleurs",
     "work_time_contract": "Temps de travail contractuel",
     "work_time_desired": "Temps de travail souhaité",
-    "year": "Année"
+    "year": "Année",
+    "monday": "Lundi",
+    "tuesday": "Mardi",
+    "wednesday": "Mercredi",
+    "thursday": "Jeudi",
+    "friday": "Vendredi",
+    "saturday": "Samedi",
+    "sunday": "Dimanche"
 }
