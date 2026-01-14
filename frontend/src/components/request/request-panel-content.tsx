@@ -482,23 +482,7 @@ export default function RequestPanelContent({
             </IconButton>
           )}
 
-          {handleDeleteRequest && (
-            <IconButton
-              size="small"
-              disabled={!canEdit}
-              onClick={() => {
-                handleDeleteRequest(request.id);
-                if (onClose) {
-                  onClose();
-                }
-              }}
-              title="Delete Request"
-              color="error"
-              data-testid={`delete-request-button-${request.id}`}
-            >
-              <DeleteIcon />
-            </IconButton>
-          )}
+          {/* Delete moved to mobile save area */}
         </div>
       )}
 
@@ -725,6 +709,22 @@ export default function RequestPanelContent({
           )}
         </div>
         <div className="save-button-container">
+          {isMobile && isEdit && request && handleDeleteRequest && (
+            <Button
+              variant="outlined"
+              color="error"
+              onClick={() => {
+                handleDeleteRequest(request.id);
+                if (onClose) onClose();
+              }}
+              disabled={!canEdit}
+              startIcon={<DeleteIcon />}
+              sx={{ marginRight: 2 }}
+              data-testid={`delete-request-button-${request.id}`}
+            >
+              {t("delete")}
+            </Button>
+          )}
           <Button
             variant="contained"
             color="primary"
