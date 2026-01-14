@@ -8,7 +8,6 @@ import "dayjs/locale/fr";
 import "dayjs/locale/es";
 // Components
 import ScheduleTab from "../../../../components/schedule/schedule-tab";
-import ScheduleTabMember from "@/components/schedule/schedule-tab-member";
 import { AccessGuard } from "@/components/access/access-guard";
 import ReactQueryProvider from "@/components/providers/ReactQueryProvider";
 // Context
@@ -38,14 +37,7 @@ export default function Page({ params }: { params: Promise<{ lng: string }> }) {
                   lng === "en" ? "en-gb" : lng === "es" ? "es" : "fr"
                 }
               >
-                {selectedTeam.membership.role === TeamMembershipRole.OWNER ? (
-                  <ScheduleTab lng={lng} teamWithMembership={selectedTeam} />
-                ) : (
-                  <ScheduleTabMember
-                    lng={lng}
-                    teamWithMembership={selectedTeam}
-                  />
-                )}
+                <ScheduleTab lng={lng} teamWithMembership={selectedTeam} />
               </LocalizationProvider>
             </SqsSolveProvider>
           </ReactQueryProvider>
