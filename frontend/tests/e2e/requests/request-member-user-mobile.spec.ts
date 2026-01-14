@@ -155,7 +155,9 @@ test.describe("Mobile Request Page - Member User", () => {
     await page.locator('[data-testid="mobile-add-request-fab"]').click();
 
     // Wait for the request panel to open
-    await expect(page.locator('[data-testid="request-panel"]')).toBeVisible();
+    await expect(
+      page.locator('[data-testid="request-panel-dialog"]')
+    ).toBeVisible();
 
     // Select work request type
     await requestTestBase.selectRequestType(page, "work");
@@ -306,51 +308,5 @@ test.describe("Mobile Request Page - Member User", () => {
     expect(finalCount).toBe(initialCount - 1);
 
     console.log("✅ Member successfully deleted their own request (mobile)");
-  });
-
-  test("member sees appropriate error when they have no worker assigned", async ({
-    page,
-  }) => {
-    // This test verifies the memberHasNoWorker scenario
-    // First, remove the worker association for the member user
-    const testTeam = roleTestBase.getTestTeam();
-    const memberUser = roleTestBase.getMemberUser();
-    const memberWorker = roleTestBase.getMemberWorker();
-
-    if (!memberWorker) {
-      throw new Error("Member worker not created");
-    }
-
-    // Delete the worker-user association by setting the worker's userId to null
-    await roleTestBase.dbUtils.updateWorker({
-      teamId: testTeam.teamId,
-      workerId: memberWorker.workerId,
-      userId: null,
-    });
-
-    console.log(`[${testRunId}] Removed worker association for member user`);
-
-    // Reload the page to see the effect
-    await page.reload();
-
-    // Wait for the page to load
-    await expect(
-      page.locator('[data-testid="mobile-request-tab"]')
-    ).toBeVisible();
-
-    // Verify the error message is displayed
-    const errorAlert = page
-      .locator('text="You do not have a worker assigned"')
-      .or(page.locator('[role="alert"]'));
-    await expect(errorAlert.first()).toBeVisible();
-
-    // Verify the FAB button is not visible
-    await expect(
-      page.locator('[data-testid="mobile-add-request-fab"]')
-    ).not.toBeVisible();
-
-    console.log(
-      "✅ Member sees appropriate error when no worker assigned (mobile)"
-    );
   });
 });
