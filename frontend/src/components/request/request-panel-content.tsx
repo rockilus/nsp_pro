@@ -720,7 +720,7 @@ export default function RequestPanelContent({
               disabled={!canEdit}
               startIcon={<DeleteIcon />}
               sx={{ marginRight: 2 }}
-              data-testid={`delete-request-button-${request.id}`}
+              data-testid={`delete-request-button`}
             >
               {t("delete")}
             </Button>

@@ -90,7 +90,7 @@ export default function RequestPanel({
   const id = open ? "request-dialog" : undefined;
 
   return (
-    <div>
+    <div data-testid="request-panel">
       {!hideButton && (
         <>
           {isEdit && request ? (

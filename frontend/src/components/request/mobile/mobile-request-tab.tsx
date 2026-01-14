@@ -276,7 +276,7 @@ export default function MobileRequestTab({
   );
 
   return (
-    <>
+    <Box data-testid="mobile-request-tab">
       <MobileNavAppBar lng={lng} mobileContent={requestMobileNav} />
       {memberHasNoWorker ? (
         <Box
@@ -316,6 +316,7 @@ export default function MobileRequestTab({
           <Fab
             color="primary"
             aria-label="create-request"
+            data-testid="mobile-add-request-fab"
             sx={{ position: "fixed", bottom: 16, right: 16 }}
             onClick={() => {
               setActiveRequest(null);
@@ -363,6 +364,6 @@ export default function MobileRequestTab({
           />
         </Box>
       )}
-    </>
+    </Box>
   );
 }
