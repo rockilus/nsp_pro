@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Link from "next/link";
 import { Box, Typography, Button, Dialog, DialogContent } from "@mui/material";
 import { useTranslation } from "../../app/i18n/client";
 // Components
@@ -11,6 +10,7 @@ import { ShiftT } from "../../types/shift";
 import { AssignmentT } from "../../types/assignment";
 import { RecurrenceRuleT } from "../../types/recurrence";
 import dayjs from "dayjs";
+import Link from "next/link";
 
 interface NoAssignmentsDisplayProps {
   lng: string;
@@ -123,25 +123,25 @@ export default function NoAssignmentsDisplay({
             justifyContent: "center",
           }}
         >
-          <Link href={`/${lng}/plan/campaign`}>
-            <Button
-              variant="outlined"
-              data-testid="create-campaign-button"
-              sx={{
-                borderRadius: "4px",
-                height: "40px",
-                padding: "0 20px",
-                fontSize: "0.9rem",
-                fontWeight: 550,
-                textTransform: "none",
-                backgroundColor: isHoveredCreateCampaign ? "#f0f0f0" : "white",
-              }}
-              onMouseEnter={() => setIsHoveredCreateCampaign(true)}
-              onMouseLeave={() => setIsHoveredCreateCampaign(false)}
-            >
-              {t("create_campaign")}
-            </Button>
-          </Link>
+          <Button
+            component={Link}
+            href={`/${lng}/plan/campaign`}
+            variant="outlined"
+            data-testid="create-campaign-button"
+            sx={{
+              borderRadius: "4px",
+              height: "40px",
+              padding: "0 20px",
+              fontSize: "0.9rem",
+              fontWeight: 550,
+              textTransform: "none",
+              backgroundColor: isHoveredCreateCampaign ? "#f0f0f0" : "white",
+            }}
+            onMouseEnter={() => setIsHoveredCreateCampaign(true)}
+            onMouseLeave={() => setIsHoveredCreateCampaign(false)}
+          >
+            {t("create_campaign")}
+          </Button>
           <Button
             variant="contained"
             data-testid="create-assignment-button"
