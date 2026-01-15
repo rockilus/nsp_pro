@@ -288,8 +288,11 @@ test.describe("Schedule Page - Owner without Assignments", () => {
       '[data-testid="edit-assignment-shift-select"]'
     );
     await shiftSelect.click();
-    // Select the first shift from the dropdown
-    await page.locator('li[role="option"]').first().click();
+
+    // Select the first test shift by ID
+    const testShifts = scheduleTestBase.getTestShifts();
+    const shiftToSelect = testShifts[0].id;
+    await page.locator(`[data-testid="shift-option-${shiftToSelect}"]`).click();
 
     // Click the Create button
     const createButton = dialog.locator(

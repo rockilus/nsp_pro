@@ -386,7 +386,12 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           }}
         >
           {shifts.map((s) => (
-            <MenuItem key={s.id} value={s.id} sx={{ fontSize: "0.9rem" }}>
+            <MenuItem
+              key={s.id}
+              value={s.id}
+              sx={{ fontSize: "0.9rem" }}
+              data-testid={`shift-option-${s.id}`}
+            >
               {s.name}
             </MenuItem>
           ))}
