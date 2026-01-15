@@ -268,14 +268,20 @@ test.describe("Schedule Page - Owner without Assignments", () => {
     const datePicker = dialog.locator(
       '[data-testid="edit-assignment-date-picker"]'
     );
-    await datePicker.click();
-    // Click today's date in the calendar picker
     const today = dayjs.utc();
-    const todayButton = page.getByRole("button", {
-      name: today.format("D"),
-      exact: true,
-    });
-    await todayButton.click();
+    const dateValue = today.format("DD/MM/YYYY");
+
+    // Wait for the input to be visible
+    await datePicker.waitFor({ state: "visible" });
+
+    // For MUI date pickers, use fill with force
+    await datePicker.fill("", { force: true }); // Clear first
+    await page.waitForTimeout(100);
+    await datePicker.fill(dateValue, { force: true }); // Then fill
+
+    // Press Enter to confirm the value
+    await datePicker.press("Enter");
+    await page.waitForTimeout(300);
 
     // Fill in the shift field
     const shiftSelect = dialog.locator(
