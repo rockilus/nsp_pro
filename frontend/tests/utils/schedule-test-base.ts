@@ -25,6 +25,7 @@ dayjs.extend(utc);
 export interface ScheduleSetupOptions {
   referenceDate: dayjs.Dayjs;
   createAssignments: boolean;
+  linkMemberToWorker?: boolean; // Default true - whether to link TEST_USER_2 to a worker
   campaignDates?: {
     start: string;
     end: string;
@@ -99,14 +100,19 @@ export class ScheduleTestBase {
     this.testWorkers.push(worker2);
     console.log(`✅ Created ${this.testWorkers.length} test workers`);
 
-    // 6. Link TEST_USER_2 to first worker
-    await this.dbUtils.attachWorkerToUser(
-      worker1.workerId,
-      TEST_USER_2.user_id,
-      this.testTeam.teamId
-    );
-    this.memberWorker = worker1;
-    console.log(`✅ Linked TEST_USER_2 to ${worker1.name}`);
+    // 6. Link TEST_USER_2 to first worker (if requested)
+    const shouldLinkMember = options.linkMemberToWorker !== false; // Default to true
+    if (shouldLinkMember) {
+      await this.dbUtils.attachWorkerToUser(
+        worker1.workerId,
+        TEST_USER_2.user_id,
+        this.testTeam.teamId
+      );
+      this.memberWorker = worker1;
+      console.log(`✅ Linked TEST_USER_2 to ${worker1.name}`);
+    } else {
+      console.log(`⏭️  Skipped linking TEST_USER_2 to worker`);
+    }
 
     // 7. Create work shifts (at least 2)
     const morningShift = await this.createShift({

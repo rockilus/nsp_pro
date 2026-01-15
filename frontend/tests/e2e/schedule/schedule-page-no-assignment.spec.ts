@@ -18,10 +18,11 @@ test.describe("Schedule Page - Member without Worker Profile", () => {
 
   test.beforeAll(async () => {
     // Setup schedule tests WITHOUT creating assignments or campaign
-    // Member will NOT have a worker profile linked (handled separately)
+    // Member will NOT have a worker profile linked
     await scheduleTestBase.setupScheduleTests(test.info().workerIndex, {
       referenceDate: dayjs.utc(),
       createAssignments: false,
+      linkMemberToWorker: false, // Do not link member to worker for this test
       // No campaign dates provided
     });
   });
