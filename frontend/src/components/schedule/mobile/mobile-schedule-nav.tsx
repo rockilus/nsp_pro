@@ -38,7 +38,11 @@ export default function MobileScheduleNav({
       </Typography>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
-        <IconButton onClick={onSettingsClick} size="small">
+        <IconButton
+          data-testid="mobile-schedule-settings-button"
+          onClick={onSettingsClick}
+          size="small"
+        >
           <TuneIcon />
         </IconButton>
         <Button

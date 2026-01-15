@@ -40,7 +40,11 @@ export default function MobileScheduleSettings({
   const { t } = useTranslation(lng, "schedule-page");
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog
+      data-testid="mobile-schedule-settings-dialog"
+      open={open}
+      onClose={onClose}
+    >
       <DialogTitle>Settings</DialogTitle>
       <DialogContent>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}>

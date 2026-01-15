@@ -191,32 +191,36 @@ export default function MobileWorkerSchedule({
 
   if (!isLandscape) {
     return (
-      <PortraitScheduleList
-        weeks={weeks}
-        containerRef={containerRef}
-        weekRefs={weekRefs}
-        assignmentsByDate={assignmentsByDate}
-        periodDates={periodDates}
-        shifts={shifts}
-        today={today}
-        setActiveAssignment={setActiveAssignment}
-        setSheetOpen={setSheetOpen}
-        onScroll={handleScroll}
-        lng={lng}
-      />
+      <div data-testid="mobile-worker-schedule">
+        <PortraitScheduleList
+          weeks={weeks}
+          containerRef={containerRef}
+          weekRefs={weekRefs}
+          assignmentsByDate={assignmentsByDate}
+          periodDates={periodDates}
+          shifts={shifts}
+          today={today}
+          setActiveAssignment={setActiveAssignment}
+          setSheetOpen={setSheetOpen}
+          onScroll={handleScroll}
+          lng={lng}
+        />
+      </div>
     );
   }
 
   return (
-    <LandscapeWeeklyCalendar
-      currentWeek={currentWeek}
-      assignmentsByDate={assignmentsByDate}
-      shifts={shifts}
-      selectedWorkerId={selectedWorkerId}
-      today={today}
-      setActiveAssignment={setActiveAssignment}
-      setSheetOpen={setSheetOpen}
-      onWeekChange={handleWeekChange}
-    />
+    <div data-testid="mobile-worker-schedule">
+      <LandscapeWeeklyCalendar
+        currentWeek={currentWeek}
+        assignmentsByDate={assignmentsByDate}
+        shifts={shifts}
+        selectedWorkerId={selectedWorkerId}
+        today={today}
+        setActiveAssignment={setActiveAssignment}
+        setSheetOpen={setSheetOpen}
+        onWeekChange={handleWeekChange}
+      />
+    </div>
   );
 }

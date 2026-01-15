@@ -276,6 +276,7 @@ export default function MobileScheduleTab({
       <>
         <MobileNavAppBar lng={lng} mobileContent={scheduleMobileNav} />
         <Box
+          data-testid="mobile-schedule-container"
           sx={{
             display: "flex",
             justifyContent: "center",
@@ -284,7 +285,11 @@ export default function MobileScheduleTab({
             p: 3,
           }}
         >
-          <Alert severity="info" sx={{ maxWidth: "500px" }}>
+          <Alert
+            data-testid="mobile-no-worker-profile-alert"
+            severity="info"
+            sx={{ maxWidth: "500px" }}
+          >
             <Typography variant="body1">
               {t("error_no_worker_assigned")}
             </Typography>
@@ -297,7 +302,10 @@ export default function MobileScheduleTab({
   return (
     <>
       <MobileNavAppBar lng={lng} mobileContent={scheduleMobileNav} />
-      <Box sx={{ padding: "0 8px", height: "calc(100vh - 64px)" }}>
+      <Box
+        data-testid="mobile-schedule-container"
+        sx={{ padding: "0 8px", height: "calc(100vh - 64px)" }}
+      >
         {scheduleViewSettings.mobileSelectedView === "worker" ? (
           <MobileWorkerSchedule
             weeks={weeks}
@@ -339,6 +347,7 @@ export default function MobileScheduleTab({
         )}
 
         <Fab
+          data-testid="mobile-create-assignment-fab"
           color="primary"
           aria-label="create-assignment"
           sx={{ position: "fixed", bottom: 16, right: 16 }}
