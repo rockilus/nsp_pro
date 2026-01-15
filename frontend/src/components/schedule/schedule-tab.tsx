@@ -27,6 +27,8 @@ import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
 import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
 // Actions
 import { useGetStats } from "../../hooks/useStats";
+import { useGetBreaches } from "../../hooks/useBreach";
+import { useGetSpecialties } from "../../hooks/useSpecialty";
 // Assignment Hooks
 import {
   useAddAssignmentAndRecurrence,
@@ -35,6 +37,7 @@ import {
 } from "../../hooks/useAssignment";
 // Request Hooks
 import {
+  useGetRequests,
   useAddRequest,
   useUpdateRequest,
   useDeleteRequest,
@@ -86,6 +89,7 @@ import {
 import { RequestT } from "../../types/request";
 import {
   StatsT,
+  StatsOptionsT,
   StatsTimeFrameOptions,
   StatsUnitOptions,
   HeaderUnitOptions,
@@ -116,6 +120,11 @@ export default function ScheduleTab({
 
   // Stats hook
   const getStats = useGetStats();
+
+  // Data hooks for owner-only data
+  const getBreaches = useGetBreaches();
+  const getSpecialties = useGetSpecialties();
+  const getRequests = useGetRequests();
 
   // Schedule hooks
   const validateSchedule = useValidateSchedule();
@@ -208,7 +217,9 @@ export default function ScheduleTab({
       scheduleViewSettings.timeFrame
     ).toDate(),
     {
-      enabled: teamWithMembership.team.useSolver,
+      enabled:
+        teamWithMembership.team.useSolver &&
+        teamWithMembership.membership.role !== TeamMembershipRole.MEMBER,
       bufferDays: 7, // Load extra days for better UX
     }
   );
@@ -924,17 +935,33 @@ export default function ScheduleTab({
 
         setIsLoadingAssignments(false);
 
-        // Fetch left-hand side bar data
-        const {
-          breaches: fetchedBreaches,
-          requests: fetchedRequests,
-          stats: fetchedStats,
-          specialties: fetchedSpecialties,
-        } = await getScheduleLHSData(teamWithMembership.team.id);
-        setBreaches(fetchedBreaches);
+        // Fetch requests (needed for both members and owners)
+        const fetchedRequests = await getRequests(teamWithMembership.team.id);
         setRequests(fetchedRequests);
-        setStats(fetchedStats);
-        setSpecialties(fetchedSpecialties);
+
+        // Fetch owner-only data conditionally
+        if (teamWithMembership.membership.role !== TeamMembershipRole.MEMBER) {
+          // Prepare stats options
+          const statsOptions: StatsOptionsT = {
+            timeFrame: StatsTimeFrameOptions.CAMPAING,
+            startDate: dayjs.utc().startOf("day").subtract(1, "year"),
+            endDate: dayjs.utc().startOf("day"),
+            statsUnit: StatsUnitOptions.NB_DAYS_WORKED,
+            headerUnit: HeaderUnitOptions.WEEK,
+            selectedShifts: [],
+            showFavorites: true,
+          };
+
+          const [fetchedBreaches, fetchedStats, fetchedSpecialties] =
+            await Promise.all([
+              getBreaches(teamWithMembership.team.id),
+              getStats(teamWithMembership.team.id, statsOptions),
+              getSpecialties(teamWithMembership.team.id),
+            ]);
+          setBreaches(fetchedBreaches);
+          setStats(fetchedStats);
+          setSpecialties(fetchedSpecialties);
+        }
 
         // const endTime = dayjs();
         // console.log("fetchData useEffect ended");
@@ -958,16 +985,24 @@ export default function ScheduleTab({
     getSchedules,
     getScheduleAssignmentsData,
     getScheduleAssignmentsDataNoSolver,
-    getScheduleLHSData,
+    getRequests,
+    getBreaches,
+    getStats,
+    getSpecialties,
   ]);
 
-  const lhsTabContent: LHSTabContentT[] = [
+  // Filter tabs based on user role - members don't see owner-only tabs
+  const isOwner =
+    teamWithMembership.membership.role !== TeamMembershipRole.MEMBER;
+
+  const allLhsTabContent: LHSTabContentT[] = [
     {
       name: "breaches",
       label: t("breaches"),
       content: (
         <BreachList lng={lng} breaches={breaches} onClose={handleCloseLHS} />
       ),
+      ownerOnly: true,
     },
     {
       name: "quick_staffing",
@@ -983,6 +1018,7 @@ export default function ScheduleTab({
           handleUpdateSchedule={handleUpdateSchedule}
         />
       ) : null,
+      ownerOnly: true,
     },
     {
       name: "quick_stats",
@@ -998,6 +1034,7 @@ export default function ScheduleTab({
           handleChangeStatsTimeFrame={handleChangeStatsTimeFrame}
         />
       ) : null,
+      ownerOnly: true,
     },
     {
       name: "selection",
@@ -1054,8 +1091,14 @@ export default function ScheduleTab({
           handleCreateShiftDemand={handleCreateShiftDemand}
         />
       ) : null,
+      ownerOnly: false,
     },
   ];
+
+  // Filter tabs based on role
+  const lhsTabContent: LHSTabContentT[] = allLhsTabContent.filter(
+    (tab) => isOwner || !tab.ownerOnly
+  );
 
   if (isMobile) {
     return (

@@ -94,6 +94,7 @@ export type LHSTabContentT = {
   name: string;
   label: string;
   content: ReactNode | null;
+  ownerOnly?: boolean;
 };
 
 export type periodDateT = {
