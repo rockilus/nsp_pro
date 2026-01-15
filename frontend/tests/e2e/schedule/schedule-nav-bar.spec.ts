@@ -1207,7 +1207,10 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
         console.log("⏭️  Solve button not visible (team may not use solver)");
       }
 
-      // Note: Validate button test can be added when we have its data-testid
+      // Check validate button
+      const validateButton = page.locator('[data-testid="validate-button"]');
+      await expect(validateButton).toBeVisible();
+      console.log("✅ Validate button is visible");
     });
   });
 
