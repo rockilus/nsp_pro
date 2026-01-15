@@ -510,15 +510,32 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       await timeFrameSelect.selectOption("month");
       await page.waitForTimeout(500);
 
-      // Get period label
+      // Get the selected month from localStorage
+      const testTeam = scheduleTestBase.getTestTeam();
+      if (!testTeam) {
+        throw new Error("Test team not found");
+      }
+
+      const scheduleViewSettings = await page.evaluate((teamId) => {
+        const settingsKey = `scheduleViewSettings_${teamId}`;
+        return JSON.parse(localStorage.getItem(settingsKey) || "{}");
+      }, testTeam.teamId);
+
+      const selectedMonth = dayjs.utc(scheduleViewSettings.periodStartDate);
+      const expectedLabel = selectedMonth.format("MMMM YYYY"); // e.g., "January 2026"
+
+      // Get period label and verify it matches the selected month
       const periodLabel = page.locator('[data-testid="time-nav-label"]');
       const labelText = await periodLabel.textContent();
 
-      // Should match format "January 2026" or "Jan - Feb 2026" or "Dec 2025 - Jan 2026"
-      expect(labelText).toBeTruthy();
-      expect(labelText?.length).toBeGreaterThan(0);
+      // Verify the label shows the full month name and year
+      expect(labelText).toBe(expectedLabel);
 
-      console.log(`✅ Period label displays correctly: "${labelText}"`);
+      console.log(
+        `✅ Period label displays correctly: "${labelText}" for month ${selectedMonth.format(
+          "YYYY-MM"
+        )}`
+      );
     });
 
     test("should display correct period in weekly view", async ({ page }) => {
