@@ -128,6 +128,37 @@ test.describe("Mobile Schedule Page - Member without Worker Profile", () => {
       "✅ Settings button correctly hidden for mobile member without worker profile"
     );
   });
+
+  test("should display error message in landscape mode when member has no worker profile", async ({
+    page,
+  }) => {
+    // Set landscape viewport
+    await page.setViewportSize({ width: 667, height: 375 });
+
+    // Reload to apply landscape layout
+    await page.reload();
+
+    // Wait for the mobile schedule page to render
+    await page.waitForSelector('[data-testid="mobile-schedule-container"]', {
+      timeout: 10000,
+    });
+
+    // Verify that the error alert is visible in landscape
+    const alert = page.locator(
+      '[data-testid="mobile-no-worker-profile-alert"]'
+    );
+    await expect(alert).toBeVisible();
+
+    // Verify that schedule content is NOT visible
+    const workerSchedule = page.locator(
+      '[data-testid="mobile-worker-schedule"]'
+    );
+    await expect(workerSchedule).not.toBeVisible();
+
+    console.log(
+      "✅ Error message displayed correctly in landscape mode for member without worker profile"
+    );
+  });
 });
 
 test.describe("Mobile Schedule Page - Owner without Assignments", () => {
@@ -238,6 +269,52 @@ test.describe("Mobile Schedule Page - Owner without Assignments", () => {
     await expect(alert).not.toBeVisible();
 
     console.log("✅ Mobile owner does not see worker profile error");
+  });
+
+  test("should display weekly schedule in landscape mode for owner", async ({
+    page,
+  }) => {
+    // Set landscape viewport
+    await page.setViewportSize({ width: 667, height: 375 });
+
+    // Reload to apply landscape layout
+    await page.reload();
+
+    // Wait for the mobile schedule page to render
+    await page.waitForSelector('[data-testid="mobile-schedule-container"]', {
+      timeout: 10000,
+    });
+
+    // Owner should see the schedule interface in landscape
+    const scheduleViews = page.locator(
+      '[data-testid="mobile-worker-schedule"], [data-testid="mobile-team-schedule"]'
+    );
+    await expect(scheduleViews.first()).toBeVisible();
+
+    console.log(
+      "✅ Weekly schedule displayed correctly in landscape mode for owner"
+    );
+  });
+
+  test("should display FAB in landscape mode for owner", async ({ page }) => {
+    // Set landscape viewport
+    await page.setViewportSize({ width: 667, height: 375 });
+
+    // Reload to apply landscape layout
+    await page.reload();
+
+    // Wait for the mobile schedule page to render
+    await page.waitForSelector('[data-testid="mobile-schedule-container"]', {
+      timeout: 10000,
+    });
+
+    // Verify that the FAB is visible in landscape
+    const fabButton = page.locator(
+      '[data-testid="mobile-create-assignment-fab"]'
+    );
+    await expect(fabButton).toBeVisible();
+
+    console.log("✅ FAB button displayed correctly in landscape mode for owner");
   });
 });
 
@@ -352,6 +429,56 @@ test.describe("Mobile Schedule Page - Member with Worker Profile but No Assignme
 
     console.log(
       "✅ FAB button correctly hidden - members cannot create assignments"
+    );
+  });
+
+  test("should display weekly schedule in landscape mode for member with worker", async ({
+    page,
+  }) => {
+    // Set landscape viewport
+    await page.setViewportSize({ width: 667, height: 375 });
+
+    // Reload to apply landscape layout
+    await page.reload();
+
+    // Wait for the mobile schedule page to render
+    await page.waitForSelector('[data-testid="mobile-schedule-container"]', {
+      timeout: 10000,
+    });
+
+    // Member should see the schedule interface in landscape
+    const scheduleViews = page.locator(
+      '[data-testid="mobile-worker-schedule"], [data-testid="mobile-team-schedule"]'
+    );
+    await expect(scheduleViews.first()).toBeVisible();
+
+    console.log(
+      "✅ Weekly schedule displayed correctly in landscape mode for member with worker"
+    );
+  });
+
+  test("should NOT display FAB in landscape mode for member", async ({
+    page,
+  }) => {
+    // Set landscape viewport
+    await page.setViewportSize({ width: 667, height: 375 });
+
+    // Reload to apply landscape layout
+    await page.reload();
+
+    // Wait for the mobile schedule page to render
+    await page.waitForSelector('[data-testid="mobile-schedule-container"]', {
+      timeout: 10000,
+    });
+
+    // Verify that the FAB is NOT visible for members in landscape
+    const fabButton = page.locator(
+      '[data-testid="mobile-create-assignment-fab"]'
+    );
+    await expect(fabButton).not.toBeVisible();
+
+    console.log(
+      "✅ FAB button correctly hidden in landscape mode for member"
     );
   });
 });
