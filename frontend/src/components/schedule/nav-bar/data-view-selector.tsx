@@ -32,6 +32,7 @@ export default function DataViewSelector({
 
   return (
     <div
+      data-testid="data-view-selector"
       style={{
         display: "flex",
         flexDirection: "row",
@@ -47,6 +48,7 @@ export default function DataViewSelector({
         aria-label="Platform"
       >
         <ToggleButton
+          data-testid="data-view-shift-button"
           value="shift"
           sx={{
             textTransform: "none",
@@ -57,6 +59,7 @@ export default function DataViewSelector({
           {t("shift")}
         </ToggleButton>
         <ToggleButton
+          data-testid="data-view-worker-button"
           value="worker"
           sx={{
             textTransform: "none",

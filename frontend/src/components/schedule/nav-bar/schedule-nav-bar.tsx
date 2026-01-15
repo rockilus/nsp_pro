@@ -63,6 +63,7 @@ export default function ScheduleNavBar({
 
   return (
     <div
+      data-testid="schedule-nav-bar"
       style={{
         width: "100%",
         display: "flex",
@@ -123,6 +124,7 @@ export default function ScheduleNavBar({
             >
               <Link href={`/${lng}/plan/campaign`}>
                 <button
+                  data-testid="nav-bar-create-campaign-button"
                   style={{
                     borderRadius: "4px",
                     border: "1px solid #e5e7eb",

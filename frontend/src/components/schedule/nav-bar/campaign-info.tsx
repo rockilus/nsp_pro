@@ -160,6 +160,7 @@ export default function CampaignInfo({
   return (
     <>
       <div
+        data-testid="campaign-info"
         style={{
           display: "flex",
           alignItems: "center",
@@ -178,6 +179,7 @@ export default function CampaignInfo({
           }}
         >
           <span
+            data-testid="campaign-period-label"
             style={{
               width: "100%",
               color: "#616161",
@@ -188,6 +190,7 @@ export default function CampaignInfo({
             {`${t("campaign")}:`}
           </span>
           <span
+            data-testid="campaign-period-dates"
             style={{
               width: "100%",
               color: "#616161",
