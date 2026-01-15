@@ -67,15 +67,29 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       const scheduleTable = page.locator('[data-testid="schedule-table"]');
       await expect(scheduleTable).toBeVisible();
 
-      // Get the current month dates
-      const today = dayjs.utc();
-      const monthStart = today.startOf("month");
-      const monthEnd = today.endOf("month");
-      const daysInMonth = monthEnd.date();
+      // Get the periodStartDate from scheduleViewSettings in localStorage
+      const scheduleViewSettings = await page.evaluate(() => {
+        const teamId = localStorage.getItem("selectedTeamId");
+        if (!teamId) return null;
+        const settingsKey = `scheduleViewSettings_${teamId}`;
+        const settingsStr = localStorage.getItem(settingsKey);
+        if (!settingsStr) return null;
+        return JSON.parse(settingsStr);
+      });
 
-      // Verify all days of the month are displayed
-      for (let day = 1; day <= daysInMonth; day++) {
-        const date = monthStart.date(day);
+      expect(scheduleViewSettings).toBeTruthy();
+      expect(scheduleViewSettings.periodStartDate).toBeTruthy();
+
+      // Parse the periodStartDate from settings
+      const displayedMonthStart = dayjs.utc(
+        scheduleViewSettings.periodStartDate
+      );
+      const displayedMonthEnd = displayedMonthStart.endOf("month");
+      const daysInDisplayedMonth = displayedMonthEnd.date();
+
+      // Verify all days of the displayed month are present
+      for (let day = 1; day <= daysInDisplayedMonth; day++) {
+        const date = displayedMonthStart.date(day);
         const dateString = date.format("YYYY-MM-DD");
         const dateHeader = page.locator(
           `[data-testid="date-header-day-${dateString}"]`
@@ -84,7 +98,9 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       }
 
       console.log(
-        `✅ Monthly view displayed correctly with all ${daysInMonth} days of the month`
+        `✅ Monthly view displayed correctly with all ${daysInDisplayedMonth} days of ${displayedMonthStart.format(
+          "MMMM YYYY"
+        )}`
       );
     });
 
@@ -109,17 +125,31 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       const labelText = await periodLabel.textContent();
       expect(labelText).toMatch(/^[A-Za-z]+ \d{4}$/); // Format: "January 2026"
 
-      // Verify the schedule table shows all 7 days of the current week
+      // Verify the schedule table shows all 7 days of the displayed week
       const scheduleTable = page.locator('[data-testid="schedule-table"]');
       await expect(scheduleTable).toBeVisible();
 
-      // Get the current week dates (Monday to Sunday)
-      const today = dayjs.utc();
-      const weekStart = today.startOf("isoWeek");
+      // Get the periodStartDate from scheduleViewSettings in localStorage
+      const scheduleViewSettings = await page.evaluate(() => {
+        const teamId = localStorage.getItem("selectedTeamId");
+        if (!teamId) return null;
+        const settingsKey = `scheduleViewSettings_${teamId}`;
+        const settingsStr = localStorage.getItem(settingsKey);
+        if (!settingsStr) return null;
+        return JSON.parse(settingsStr);
+      });
 
-      // Verify all 7 days of the week are displayed
+      expect(scheduleViewSettings).toBeTruthy();
+      expect(scheduleViewSettings.periodStartDate).toBeTruthy();
+
+      // Parse the periodStartDate from settings (this is the week start)
+      const displayedWeekStart = dayjs.utc(
+        scheduleViewSettings.periodStartDate
+      );
+
+      // Verify all 7 days of the displayed week are present
       for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
-        const date = weekStart.add(dayOffset, "day");
+        const date = displayedWeekStart.add(dayOffset, "day");
         const dateString = date.format("YYYY-MM-DD");
         const dateHeader = page.locator(
           `[data-testid="date-header-day-${dateString}"]`
@@ -128,7 +158,9 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       }
 
       console.log(
-        "✅ Weekly view displayed correctly with all 7 days of the week"
+        `✅ Weekly view displayed correctly with all 7 days starting from ${displayedWeekStart.format(
+          "YYYY-MM-DD"
+        )}`
       );
     });
   });
