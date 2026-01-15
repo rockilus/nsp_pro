@@ -54,7 +54,9 @@ export default function PortraitScheduleList({
         const weekItems = weekDates.flatMap(
           (d) => assignmentsByDate.get(d.utc().format("YYYY-MM-DD")) || []
         );
-        if (weekItems.length === 0) return null;
+        // Show week if it has items OR if it contains today's date
+        const weekContainsToday = weekDates.some((d) => d.isSame(today, "day"));
+        if (weekItems.length === 0 && !weekContainsToday) return null;
 
         return (
           <Box
