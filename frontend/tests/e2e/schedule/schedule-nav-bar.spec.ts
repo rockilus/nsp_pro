@@ -717,10 +717,8 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       // Verify shift button is selected
       expect(await shiftButton.getAttribute("aria-pressed")).toBe("true");
 
-      // Close popover by clicking outside
-      await page.click('[data-testid="schedule-nav-bar"]', {
-        position: { x: 10, y: 10 },
-      });
+      // Close popover
+      await page.keyboard.press("Escape");
       await page.waitForTimeout(300);
 
       // Verify schedule table is visible
@@ -753,9 +751,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       expect(await workerButton.getAttribute("aria-pressed")).toBe("true");
 
       // Close popover
-      await page.click('[data-testid="schedule-nav-bar"]', {
-        position: { x: 10, y: 10 },
-      });
+      await page.keyboard.press("Escape");
       await page.waitForTimeout(300);
 
       // Verify schedule table is visible
