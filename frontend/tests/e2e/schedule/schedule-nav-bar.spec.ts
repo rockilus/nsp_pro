@@ -544,15 +544,88 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       await timeFrameSelect.selectOption("week");
       await page.waitForTimeout(500);
 
-      // Get period label
+      const testTeam = scheduleTestBase.getTestTeam();
+      if (!testTeam) {
+        throw new Error("Test team not found");
+      }
+
       const periodLabel = page.locator('[data-testid="time-nav-label"]');
-      const labelText = await periodLabel.textContent();
 
-      // Week view shows the month of the middle of the week
-      expect(labelText).toBeTruthy();
-      expect(labelText).toMatch(/^[A-Za-z]+ \d{4}$/);
+      // Test case 1: Week spanning different years (Dec 2025 - Jan 2026)
+      // Should display: "Dec 2025 - Jan 2026"
+      const week1Start = dayjs.utc("2025-12-29");
+      await page.evaluate(
+        ({ teamId, periodStartDate }) => {
+          const settingsKey = `scheduleViewSettings_${teamId}`;
+          const settings = JSON.parse(
+            localStorage.getItem(settingsKey) || "{}"
+          );
+          settings.periodStartDate = periodStartDate;
+          settings.timeFrame = "week";
+          localStorage.setItem(settingsKey, JSON.stringify(settings));
+        },
+        { teamId: testTeam.teamId, periodStartDate: week1Start.toISOString() }
+      );
+      await page.reload();
+      await page.waitForSelector('[data-testid="schedule-nav-bar"]', {
+        timeout: 10000,
+      });
 
-      console.log(`✅ Week period label displays correctly: "${labelText}"`);
+      let labelText = await periodLabel.textContent();
+      expect(labelText).toBe("Dec 2025 - Jan 2026");
+      console.log(`✅ Week spanning years displays correctly: "${labelText}"`);
+
+      // Test case 2: Week within same month (Jan 5-11, 2026)
+      // Should display: "January 2026"
+      const week2Start = dayjs.utc("2026-01-05");
+      await page.evaluate(
+        ({ teamId, periodStartDate }) => {
+          const settingsKey = `scheduleViewSettings_${teamId}`;
+          const settings = JSON.parse(
+            localStorage.getItem(settingsKey) || "{}"
+          );
+          settings.periodStartDate = periodStartDate;
+          settings.timeFrame = "week";
+          localStorage.setItem(settingsKey, JSON.stringify(settings));
+        },
+        { teamId: testTeam.teamId, periodStartDate: week2Start.toISOString() }
+      );
+      await page.reload();
+      await page.waitForSelector('[data-testid="schedule-nav-bar"]', {
+        timeout: 10000,
+      });
+
+      labelText = await periodLabel.textContent();
+      expect(labelText).toBe("January 2026");
+      console.log(
+        `✅ Week within same month displays correctly: "${labelText}"`
+      );
+
+      // Test case 3: Week spanning different months, same year (Jan 26 - Feb 1, 2026)
+      // Should display: "Jan - Feb 2026"
+      const week3Start = dayjs.utc("2026-01-26");
+      await page.evaluate(
+        ({ teamId, periodStartDate }) => {
+          const settingsKey = `scheduleViewSettings_${teamId}`;
+          const settings = JSON.parse(
+            localStorage.getItem(settingsKey) || "{}"
+          );
+          settings.periodStartDate = periodStartDate;
+          settings.timeFrame = "week";
+          localStorage.setItem(settingsKey, JSON.stringify(settings));
+        },
+        { teamId: testTeam.teamId, periodStartDate: week3Start.toISOString() }
+      );
+      await page.reload();
+      await page.waitForSelector('[data-testid="schedule-nav-bar"]', {
+        timeout: 10000,
+      });
+
+      labelText = await periodLabel.textContent();
+      expect(labelText).toBe("Jan - Feb 2026");
+      console.log(
+        `✅ Week spanning months (same year) displays correctly: "${labelText}"`
+      );
     });
   });
 
