@@ -856,19 +856,21 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       // Set the period to today (which includes our test demand created on reference date)
       const today = dayjs.utc();
       await page.evaluate(
-        ({ teamId, periodStartDate, timeFrame }) => {
+        ({ teamId, periodStartDate, timeFrame, groupBy }) => {
           const settingsKey = `scheduleViewSettings_${teamId}`;
           const settings = JSON.parse(
             localStorage.getItem(settingsKey) || "{}"
           );
           settings.periodStartDate = periodStartDate;
           settings.timeFrame = timeFrame;
+          settings.groupBy = groupBy;
           localStorage.setItem(settingsKey, JSON.stringify(settings));
         },
         {
           teamId: testTeam.teamId,
           periodStartDate: today.startOf("month").toISOString(),
           timeFrame: "month",
+          groupBy: "shift",
         }
       );
       await page.reload();
