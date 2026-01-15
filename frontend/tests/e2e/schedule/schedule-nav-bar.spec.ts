@@ -182,54 +182,112 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
     test("should navigate to next week when next button is pressed", async ({
       page,
     }) => {
-      // Get initial period label
-      const periodLabel = page.locator('[data-testid="time-nav-label"]');
-      const initialLabel = await periodLabel.textContent();
+      // Get initial period
+      const testTeam = scheduleTestBase.getTestTeam();
+      if (!testTeam) {
+        throw new Error("Test team not found");
+      }
+
+      const initialSettings = await page.evaluate((teamId) => {
+        const settingsKey = `scheduleViewSettings_${teamId}`;
+        return JSON.parse(localStorage.getItem(settingsKey) || "{}");
+      }, testTeam.teamId);
+
+      const initialWeekStart = dayjs.utc(initialSettings.periodStartDate);
 
       // Click next button
       const nextButton = page.locator('[data-testid="time-nav-next"]');
       await nextButton.click();
       await page.waitForTimeout(500);
 
-      // Get new period label
-      const newLabel = await periodLabel.textContent();
+      // Get new period and verify it's one week later
+      const newSettings = await page.evaluate((teamId) => {
+        const settingsKey = `scheduleViewSettings_${teamId}`;
+        return JSON.parse(localStorage.getItem(settingsKey) || "{}");
+      }, testTeam.teamId);
 
-      // Labels might be the same if both weeks are in the same month
-      // but the underlying dates should have changed
-      // We'll verify the schedule table updated (assignments may be different)
-      const scheduleTable = page.locator('[data-testid="schedule-table"]');
-      await expect(scheduleTable).toBeVisible();
+      const newWeekStart = dayjs.utc(newSettings.periodStartDate);
+      const expectedWeekStart = initialWeekStart.add(1, "week");
 
-      console.log(`✅ Navigated from "${initialLabel}" to next week`);
+      // Verify the new week is exactly 7 days after the initial week
+      expect(newWeekStart.format("YYYY-MM-DD")).toBe(
+        expectedWeekStart.format("YYYY-MM-DD")
+      );
+
+      // Verify the first day is displayed
+      const firstDayHeader = page.locator(
+        `[data-testid="date-header-day-${newWeekStart.format("YYYY-MM-DD")}"]`
+      );
+      await expect(firstDayHeader).toBeVisible();
+
+      console.log(
+        `✅ Navigated from ${initialWeekStart.format(
+          "YYYY-MM-DD"
+        )} to ${newWeekStart.format("YYYY-MM-DD")}`
+      );
     });
 
     test("should navigate to previous week when previous button is pressed", async ({
       page,
     }) => {
+      const testTeam = scheduleTestBase.getTestTeam();
+      if (!testTeam) {
+        throw new Error("Test team not found");
+      }
+
       // Navigate to next week first so we can go back
       const nextButton = page.locator('[data-testid="time-nav-next"]');
       await nextButton.click();
       await page.waitForTimeout(500);
 
-      // Get current period label
-      const periodLabel = page.locator('[data-testid="time-nav-label"]');
-      const beforeLabel = await periodLabel.textContent();
+      // Get the current period after next navigation
+      const beforeSettings = await page.evaluate((teamId) => {
+        const settingsKey = `scheduleViewSettings_${teamId}`;
+        return JSON.parse(localStorage.getItem(settingsKey) || "{}");
+      }, testTeam.teamId);
+
+      const beforeWeekStart = dayjs.utc(beforeSettings.periodStartDate);
 
       // Click previous button
       const previousButton = page.locator('[data-testid="time-nav-previous"]');
       await previousButton.click();
       await page.waitForTimeout(500);
 
-      // Verify we navigated
-      const scheduleTable = page.locator('[data-testid="schedule-table"]');
-      await expect(scheduleTable).toBeVisible();
+      // Get new period and verify it's one week earlier
+      const afterSettings = await page.evaluate((teamId) => {
+        const settingsKey = `scheduleViewSettings_${teamId}`;
+        return JSON.parse(localStorage.getItem(settingsKey) || "{}");
+      }, testTeam.teamId);
 
-      console.log(`✅ Navigated from "${beforeLabel}" to previous week`);
+      const afterWeekStart = dayjs.utc(afterSettings.periodStartDate);
+      const expectedWeekStart = beforeWeekStart.subtract(1, "week");
+
+      // Verify the new week is exactly 7 days before
+      expect(afterWeekStart.format("YYYY-MM-DD")).toBe(
+        expectedWeekStart.format("YYYY-MM-DD")
+      );
+
+      // Verify the first day is displayed
+      const firstDayHeader = page.locator(
+        `[data-testid="date-header-day-${afterWeekStart.format("YYYY-MM-DD")}"]`
+      );
+      await expect(firstDayHeader).toBeVisible();
+
+      console.log(
+        `✅ Navigated from ${beforeWeekStart.format(
+          "YYYY-MM-DD"
+        )} to ${afterWeekStart.format("YYYY-MM-DD")}`
+      );
     });
 
     test("should navigate back to current week when today button is pressed", async ({
       page,
     }) => {
+      const testTeam = scheduleTestBase.getTestTeam();
+      if (!testTeam) {
+        throw new Error("Test team not found");
+      }
+
       // Navigate to a future week
       const nextButton = page.locator('[data-testid="time-nav-next"]');
       await nextButton.click();
@@ -239,25 +297,40 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       await nextButton.click();
       await page.waitForTimeout(500);
 
-      // Get current label
-      const periodLabel = page.locator('[data-testid="time-nav-label"]');
-      const futureLabel = await periodLabel.textContent();
-
       // Click today button
       const todayButton = page.locator('[data-testid="time-nav-today"]');
       await todayButton.click();
       await page.waitForTimeout(500);
 
-      // Get new label
-      const currentLabel = await periodLabel.textContent();
+      // Get the period after navigating to today
+      const currentSettings = await page.evaluate((teamId) => {
+        const settingsKey = `scheduleViewSettings_${teamId}`;
+        return JSON.parse(localStorage.getItem(settingsKey) || "{}");
+      }, testTeam.teamId);
 
-      // The current week should contain today's date
-      // Verify by checking that schedule table is visible
-      const scheduleTable = page.locator('[data-testid="schedule-table"]');
-      await expect(scheduleTable).toBeVisible();
+      const currentWeekStart = dayjs.utc(currentSettings.periodStartDate);
+      const currentWeekEnd = currentWeekStart.add(6, "days");
+      const today = dayjs.utc();
+
+      // Verify today falls within the displayed week
+      const todayDate = today.format("YYYY-MM-DD");
+      const weekStartDate = currentWeekStart.format("YYYY-MM-DD");
+      const weekEndDate = currentWeekEnd.format("YYYY-MM-DD");
+
+      expect(todayDate >= weekStartDate && todayDate <= weekEndDate).toBe(true);
+
+      // Verify the first day is displayed
+      const firstDayHeader = page.locator(
+        `[data-testid="date-header-day-${currentWeekStart.format(
+          "YYYY-MM-DD"
+        )}"]`
+      );
+      await expect(firstDayHeader).toBeVisible();
 
       console.log(
-        `✅ Navigated from future week "${futureLabel}" back to current week "${currentLabel}"`
+        `✅ Navigated to current week starting ${currentWeekStart.format(
+          "YYYY-MM-DD"
+        )} (contains today: ${todayDate})`
       );
     });
   });
@@ -273,61 +346,118 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
     test("should navigate to next month when next button is pressed", async ({
       page,
     }) => {
-      // Get initial period label
-      const periodLabel = page.locator('[data-testid="time-nav-label"]');
-      const initialLabel = await periodLabel.textContent();
+      const testTeam = scheduleTestBase.getTestTeam();
+      if (!testTeam) {
+        throw new Error("Test team not found");
+      }
+
+      // Get initial period
+      const initialSettings = await page.evaluate((teamId) => {
+        const settingsKey = `scheduleViewSettings_${teamId}`;
+        return JSON.parse(localStorage.getItem(settingsKey) || "{}");
+      }, testTeam.teamId);
+
+      const initialMonthStart = dayjs.utc(initialSettings.periodStartDate);
 
       // Click next button
       const nextButton = page.locator('[data-testid="time-nav-next"]');
       await nextButton.click();
       await page.waitForTimeout(500);
 
-      // Get new period label
-      const newLabel = await periodLabel.textContent();
+      // Get new period and verify it's the next month
+      const newSettings = await page.evaluate((teamId) => {
+        const settingsKey = `scheduleViewSettings_${teamId}`;
+        return JSON.parse(localStorage.getItem(settingsKey) || "{}");
+      }, testTeam.teamId);
 
-      // Verify the label changed (different month)
-      expect(newLabel).not.toBe(initialLabel);
+      const newMonthStart = dayjs.utc(newSettings.periodStartDate);
+      const expectedMonthStart = initialMonthStart
+        .add(1, "month")
+        .startOf("month");
 
-      // Verify schedule table is visible
-      const scheduleTable = page.locator('[data-testid="schedule-table"]');
-      await expect(scheduleTable).toBeVisible();
+      // Verify the new month is the next month
+      expect(newMonthStart.format("YYYY-MM")).toBe(
+        expectedMonthStart.format("YYYY-MM")
+      );
 
-      console.log(`✅ Navigated from "${initialLabel}" to "${newLabel}"`);
+      // Verify the first day is displayed
+      const firstDayHeader = page.locator(
+        `[data-testid="date-header-day-${newMonthStart.format("YYYY-MM-DD")}"]`
+      );
+      await expect(firstDayHeader).toBeVisible();
+
+      console.log(
+        `✅ Navigated from ${initialMonthStart.format(
+          "MMMM YYYY"
+        )} to ${newMonthStart.format("MMMM YYYY")}`
+      );
     });
 
     test("should navigate to previous month when previous button is pressed", async ({
       page,
     }) => {
+      const testTeam = scheduleTestBase.getTestTeam();
+      if (!testTeam) {
+        throw new Error("Test team not found");
+      }
+
       // Navigate to next month first
       const nextButton = page.locator('[data-testid="time-nav-next"]');
       await nextButton.click();
       await page.waitForTimeout(500);
 
-      // Get current period label
-      const periodLabel = page.locator('[data-testid="time-nav-label"]');
-      const beforeLabel = await periodLabel.textContent();
+      // Get the current period after next navigation
+      const beforeSettings = await page.evaluate((teamId) => {
+        const settingsKey = `scheduleViewSettings_${teamId}`;
+        return JSON.parse(localStorage.getItem(settingsKey) || "{}");
+      }, testTeam.teamId);
+
+      const beforeMonthStart = dayjs.utc(beforeSettings.periodStartDate);
 
       // Click previous button
       const previousButton = page.locator('[data-testid="time-nav-previous"]');
       await previousButton.click();
       await page.waitForTimeout(500);
 
-      // Get new label
-      const afterLabel = await periodLabel.textContent();
+      // Get new period and verify it's the previous month
+      const afterSettings = await page.evaluate((teamId) => {
+        const settingsKey = `scheduleViewSettings_${teamId}`;
+        return JSON.parse(localStorage.getItem(settingsKey) || "{}");
+      }, testTeam.teamId);
 
-      // Verify labels changed
-      expect(afterLabel).not.toBe(beforeLabel);
+      const afterMonthStart = dayjs.utc(afterSettings.periodStartDate);
+      const expectedMonthStart = beforeMonthStart
+        .subtract(1, "month")
+        .startOf("month");
 
-      // Verify schedule table is visible
-      const scheduleTable = page.locator('[data-testid="schedule-table"]');
-      await expect(scheduleTable).toBeVisible();
+      // Verify the new month is the previous month
+      expect(afterMonthStart.format("YYYY-MM")).toBe(
+        expectedMonthStart.format("YYYY-MM")
+      );
 
-      console.log(`✅ Navigated from "${beforeLabel}" to "${afterLabel}"`);
+      // Verify the first day is displayed
+      const firstDayHeader = page.locator(
+        `[data-testid="date-header-day-${afterMonthStart.format(
+          "YYYY-MM-DD"
+        )}"]`
+      );
+      await expect(firstDayHeader).toBeVisible();
+
+      console.log(
+        `✅ Navigated from ${beforeMonthStart.format(
+          "MMMM YYYY"
+        )} to ${afterMonthStart.format("MMMM YYYY")}`
+      );
     });
 
     test("should navigate back to current month when today button is pressed", async ({
       page,
     }) => {
+      const testTeam = scheduleTestBase.getTestTeam();
+      if (!testTeam) {
+        throw new Error("Test team not found");
+      }
+
       // Navigate to a future month
       const nextButton = page.locator('[data-testid="time-nav-next"]');
       await nextButton.click();
@@ -335,28 +465,38 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       await nextButton.click();
       await page.waitForTimeout(500);
 
-      // Get current label
-      const periodLabel = page.locator('[data-testid="time-nav-label"]');
-      const futureLabel = await periodLabel.textContent();
-
       // Click today button
       const todayButton = page.locator('[data-testid="time-nav-today"]');
       await todayButton.click();
       await page.waitForTimeout(500);
 
-      // Get new label - should be current month
-      const currentLabel = await periodLabel.textContent();
+      // Get the period after navigating to today
+      const currentSettings = await page.evaluate((teamId) => {
+        const settingsKey = `scheduleViewSettings_${teamId}`;
+        return JSON.parse(localStorage.getItem(settingsKey) || "{}");
+      }, testTeam.teamId);
 
-      // Verify we're back to a month containing today
+      const currentMonthStart = dayjs.utc(currentSettings.periodStartDate);
       const today = dayjs.utc();
-      expect(currentLabel).toContain(today.format("YYYY"));
+      const expectedMonthStart = today.startOf("month");
 
-      // Verify schedule table is visible
-      const scheduleTable = page.locator('[data-testid="schedule-table"]');
-      await expect(scheduleTable).toBeVisible();
+      // Verify the displayed month is the current month
+      expect(currentMonthStart.format("YYYY-MM")).toBe(
+        expectedMonthStart.format("YYYY-MM")
+      );
+
+      // Verify the first day is displayed
+      const firstDayHeader = page.locator(
+        `[data-testid="date-header-day-${currentMonthStart.format(
+          "YYYY-MM-DD"
+        )}"]`
+      );
+      await expect(firstDayHeader).toBeVisible();
 
       console.log(
-        `✅ Navigated from future month "${futureLabel}" back to current month "${currentLabel}"`
+        `✅ Navigated to current month ${currentMonthStart.format(
+          "MMMM YYYY"
+        )} (contains today: ${today.format("YYYY-MM-DD")})`
       );
     });
   });
