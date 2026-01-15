@@ -848,6 +848,34 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
     test("should show/hide demands when checkbox is toggled in shift view", async ({
       page,
     }) => {
+      const testTeam = scheduleTestBase.getTestTeam();
+      if (!testTeam) {
+        throw new Error("Test team not found");
+      }
+
+      // Set the period to today (which includes our test demand created on reference date)
+      const today = dayjs.utc();
+      await page.evaluate(
+        ({ teamId, periodStartDate, timeFrame }) => {
+          const settingsKey = `scheduleViewSettings_${teamId}`;
+          const settings = JSON.parse(
+            localStorage.getItem(settingsKey) || "{}"
+          );
+          settings.periodStartDate = periodStartDate;
+          settings.timeFrame = timeFrame;
+          localStorage.setItem(settingsKey, JSON.stringify(settings));
+        },
+        {
+          teamId: testTeam.teamId,
+          periodStartDate: today.startOf("month").toISOString(),
+          timeFrame: "month",
+        }
+      );
+      await page.reload();
+      await page.waitForSelector('[data-testid="schedule-nav-bar"]', {
+        timeout: 10000,
+      });
+
       // Ensure shift view
       const shiftButton = page.locator(
         '[data-testid="data-view-shift-button"]'
@@ -869,38 +897,43 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
         '[data-testid="settings-checkbox-demands"]'
       );
 
-      // Check if it exists (depends on team.useSolver)
-      const exists = (await demandsCheckbox.count()) > 0;
-
-      if (exists) {
-        // Check if it's currently checked
-        const isChecked = await demandsCheckbox.isChecked();
-
-        // Toggle it
-        if (isChecked) {
-          await demandsCheckbox.uncheck();
-          await page.waitForTimeout(500);
-          expect(await demandsCheckbox.isChecked()).toBe(false);
-
-          await demandsCheckbox.check();
-          await page.waitForTimeout(500);
-          expect(await demandsCheckbox.isChecked()).toBe(true);
-        } else {
-          await demandsCheckbox.check();
-          await page.waitForTimeout(500);
-          expect(await demandsCheckbox.isChecked()).toBe(true);
-
-          await demandsCheckbox.uncheck();
-          await page.waitForTimeout(500);
-          expect(await demandsCheckbox.isChecked()).toBe(false);
-        }
-
-        console.log("✅ Demands checkbox toggles correctly");
-      } else {
-        console.log(
-          "⏭️  Demands checkbox not visible (team may not use solver)"
-        );
+      // Ensure it's checked
+      const isChecked = await demandsCheckbox.isChecked();
+      if (!isChecked) {
+        await demandsCheckbox.check();
+        await page.waitForTimeout(500);
       }
+
+      // Close popover
+      await page.keyboard.press("Escape");
+      await page.waitForTimeout(300);
+
+      // Verify demand is visible in the schedule
+      // Use pattern matching for demand cells (data-testid="demand-cell-{id}")
+      const demandCells = page.locator('[data-testid^="demand-cell-"]');
+      const demandCount = await demandCells.count();
+      expect(demandCount).toBeGreaterThan(0);
+      console.log(`✅ Found ${demandCount} demand(s) displayed`);
+
+      // Open settings again
+      await settingsButton.click();
+      await expect(popover).toBeVisible();
+
+      // Uncheck demands checkbox
+      await demandsCheckbox.uncheck();
+      await page.waitForTimeout(500);
+
+      // Verify it's unchecked
+      expect(await demandsCheckbox.isChecked()).toBe(false);
+
+      // Close popover
+      await page.keyboard.press("Escape");
+      await page.waitForTimeout(300);
+
+      // Verify no demands are visible
+      const demandCountAfter = await demandCells.count();
+      expect(demandCountAfter).toBe(0);
+      console.log("✅ Demands correctly hidden when checkbox is unchecked");
     });
 
     test("should show/hide requests when checkbox is toggled in worker view", async ({

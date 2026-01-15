@@ -32,6 +32,7 @@ export default function DailyShiftDemandCell({
   return (
     <div
       className="dsd-cell-container"
+      data-testid={`demand-cell-${scheduleCellData.shiftDemandsData?.shiftDemand?.id}`}
       onClick={() => handleDemandSelection(scheduleCellData)}
       style={
         {
