@@ -941,6 +941,36 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
     test("should show/hide requests when checkbox is toggled in worker view", async ({
       page,
     }) => {
+      const testTeam = scheduleTestBase.getTestTeam();
+      if (!testTeam) {
+        throw new Error("Test team not found");
+      }
+
+      // Set the period to today (which includes our test request created on reference date)
+      const today = dayjs.utc();
+      await page.evaluate(
+        ({ teamId, periodStartDate, timeFrame, groupBy }) => {
+          const settingsKey = `scheduleViewSettings_${teamId}`;
+          const settings = JSON.parse(
+            localStorage.getItem(settingsKey) || "{}"
+          );
+          settings.periodStartDate = periodStartDate;
+          settings.timeFrame = timeFrame;
+          settings.groupBy = groupBy;
+          localStorage.setItem(settingsKey, JSON.stringify(settings));
+        },
+        {
+          teamId: testTeam.teamId,
+          periodStartDate: today.startOf("month").toISOString(),
+          timeFrame: "month",
+          groupBy: "worker",
+        }
+      );
+      await page.reload();
+      await page.waitForSelector('[data-testid="schedule-nav-bar"]', {
+        timeout: 10000,
+      });
+
       // Ensure worker view
       const workerButton = page.locator(
         '[data-testid="data-view-worker-button"]'
@@ -957,19 +987,48 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       const popover = page.locator('[data-testid="schedule-settings-popover"]');
       await expect(popover).toBeVisible();
 
-      // Get requests checkbox (currently disabled in the code)
+      // Get requests checkbox
       const requestsCheckbox = popover.locator(
         '[data-testid="settings-checkbox-requests"]'
       );
 
-      // Verify it exists
-      await expect(requestsCheckbox).toBeVisible();
+      // Ensure it's checked
+      const isChecked = await requestsCheckbox.isChecked();
+      if (!isChecked) {
+        await requestsCheckbox.check();
+        await page.waitForTimeout(500);
+      }
 
-      // Note: The checkbox is disabled in the current implementation
-      const isDisabled = await requestsCheckbox.isDisabled();
-      expect(isDisabled).toBe(true);
+      // Close popover
+      await page.keyboard.press("Escape");
+      await page.waitForTimeout(300);
 
-      console.log("✅ Requests checkbox is visible but disabled as expected");
+      // Verify request is visible in the schedule
+      // Use pattern matching for request cells (data-testid="request-cell-{id}")
+      const requestCells = page.locator('[data-testid^="request-cell-"]');
+      const requestCount = await requestCells.count();
+      expect(requestCount).toBeGreaterThan(0);
+      console.log(`✅ Found ${requestCount} request(s) displayed`);
+
+      // Open settings again
+      await settingsButton.click();
+      await expect(popover).toBeVisible();
+
+      // Uncheck requests checkbox
+      await requestsCheckbox.uncheck();
+      await page.waitForTimeout(500);
+
+      // Verify it's unchecked
+      expect(await requestsCheckbox.isChecked()).toBe(false);
+
+      // Close popover
+      await page.keyboard.press("Escape");
+      await page.waitForTimeout(300);
+
+      // Verify no requests are visible
+      const requestCountAfter = await requestCells.count();
+      expect(requestCountAfter).toBe(0);
+      console.log("✅ Requests correctly hidden when checkbox is unchecked");
     });
 
     test("should enable duplicate week only in weekly view", async ({
