@@ -30,6 +30,7 @@ export default function AssignmentCell({
   return (
     <div
       className="assignment-cell-container"
+      data-testid="assignment-cell"
       onClick={() => handleAssignmentSelection(assignmentData)}
       style={
         {

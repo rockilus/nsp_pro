@@ -764,6 +764,34 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
     test("should show/hide assignments when checkbox is toggled", async ({
       page,
     }) => {
+      const testTeam = scheduleTestBase.getTestTeam();
+      if (!testTeam) {
+        throw new Error("Test team not found");
+      }
+
+      // Set the period to today (which includes our test assignment created on reference date)
+      const today = dayjs.utc();
+      await page.evaluate(
+        ({ teamId, periodStartDate, timeFrame }) => {
+          const settingsKey = `scheduleViewSettings_${teamId}`;
+          const settings = JSON.parse(
+            localStorage.getItem(settingsKey) || "{}"
+          );
+          settings.periodStartDate = periodStartDate;
+          settings.timeFrame = timeFrame;
+          localStorage.setItem(settingsKey, JSON.stringify(settings));
+        },
+        {
+          teamId: testTeam.teamId,
+          periodStartDate: today.startOf("month").toISOString(),
+          timeFrame: "month",
+        }
+      );
+      await page.reload();
+      await page.waitForSelector('[data-testid="schedule-nav-bar"]', {
+        timeout: 10000,
+      });
+
       // Open settings
       const settingsButton = page.locator(
         '[data-testid="schedule-settings-button"]'
@@ -778,36 +806,42 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
         '[data-testid="settings-checkbox-assignments"]'
       );
 
-      // Check if it's currently checked
+      // Ensure it's checked
       const isChecked = await assignmentsCheckbox.isChecked();
-
-      // Uncheck it
-      if (isChecked) {
-        await assignmentsCheckbox.uncheck();
-        await page.waitForTimeout(500);
-
-        // Verify it's unchecked
-        expect(await assignmentsCheckbox.isChecked()).toBe(false);
-
-        // Check it again
+      if (!isChecked) {
         await assignmentsCheckbox.check();
         await page.waitForTimeout(500);
-
-        // Verify it's checked
-        expect(await assignmentsCheckbox.isChecked()).toBe(true);
-      } else {
-        // Check it
-        await assignmentsCheckbox.check();
-        await page.waitForTimeout(500);
-        expect(await assignmentsCheckbox.isChecked()).toBe(true);
-
-        // Uncheck it
-        await assignmentsCheckbox.uncheck();
-        await page.waitForTimeout(500);
-        expect(await assignmentsCheckbox.isChecked()).toBe(false);
       }
 
-      console.log("✅ Assignments checkbox toggles correctly");
+      // Close popover
+      await page.keyboard.press("Escape");
+      await page.waitForTimeout(300);
+
+      // Verify assignment is visible in the schedule
+      const assignmentCells = page.locator('[data-testid="assignment-cell"]');
+      const assignmentCount = await assignmentCells.count();
+      expect(assignmentCount).toBeGreaterThan(0);
+      console.log(`✅ Found ${assignmentCount} assignment(s) displayed`);
+
+      // Open settings again
+      await settingsButton.click();
+      await expect(popover).toBeVisible();
+
+      // Uncheck assignments checkbox
+      await assignmentsCheckbox.uncheck();
+      await page.waitForTimeout(500);
+
+      // Verify it's unchecked
+      expect(await assignmentsCheckbox.isChecked()).toBe(false);
+
+      // Close popover
+      await page.keyboard.press("Escape");
+      await page.waitForTimeout(300);
+
+      // Verify no assignments are visible
+      const assignmentCountAfter = await assignmentCells.count();
+      expect(assignmentCountAfter).toBe(0);
+      console.log("✅ Assignments correctly hidden when checkbox is unchecked");
     });
 
     test("should show/hide demands when checkbox is toggled in shift view", async ({
