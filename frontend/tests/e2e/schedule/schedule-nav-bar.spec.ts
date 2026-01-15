@@ -1181,11 +1181,11 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
         await statusChips.first().click();
         await page.waitForTimeout(500);
 
-        // Verify LHS panel opened (check for breaches tab or panel visibility)
-        // The exact test depends on LHS implementation
-        // For now, just verify no error occurred
+        // Verify LHS panel opened on breaches tab
+        const breachPanel = page.locator('[data-testid="breach-lhs-panel"]');
+        await expect(breachPanel).toBeVisible({ timeout: 3000 });
 
-        console.log("✅ Campaign status chip clicked successfully");
+        console.log("✅ Campaign status chip clicked and breaches panel opened");
       } else {
         console.log(
           "⏭️  No campaign status chip found (team may not use solver)"
