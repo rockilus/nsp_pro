@@ -314,7 +314,9 @@ test.describe("Mobile Schedule Page - Owner without Assignments", () => {
     );
     await expect(fabButton).toBeVisible();
 
-    console.log("✅ FAB button displayed correctly in landscape mode for owner");
+    console.log(
+      "✅ FAB button displayed correctly in landscape mode for owner"
+    );
   });
 });
 
@@ -477,8 +479,6 @@ test.describe("Mobile Schedule Page - Member with Worker Profile but No Assignme
     );
     await expect(fabButton).not.toBeVisible();
 
-    console.log(
-      "✅ FAB button correctly hidden in landscape mode for member"
-    );
+    console.log("✅ FAB button correctly hidden in landscape mode for member");
   });
 });
