@@ -319,6 +319,7 @@ export default function MobileScheduleTab({
             onScrollToTodayReady={(handler) => {
               scrollToTodayRef.current = handler;
             }}
+            lng={lng}
           />
         ) : (
           <MobileTeamSchedule

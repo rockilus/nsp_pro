@@ -20,6 +20,7 @@ interface MobileWorkerScheduleProps {
   updateScheduleViewSettings: (settings: any) => void;
   onVisibleMonthChange: (month: string) => void;
   onScrollToTodayReady: (handler: () => void) => void;
+  lng: string;
 }
 
 export default function MobileWorkerSchedule({
@@ -38,6 +39,7 @@ export default function MobileWorkerSchedule({
   updateScheduleViewSettings,
   onVisibleMonthChange,
   onScrollToTodayReady,
+  lng,
 }: MobileWorkerScheduleProps) {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const weekRefs = React.useRef<Array<HTMLDivElement | null>>([]);
@@ -200,6 +202,7 @@ export default function MobileWorkerSchedule({
         setActiveAssignment={setActiveAssignment}
         setSheetOpen={setSheetOpen}
         onScroll={handleScroll}
+        lng={lng}
       />
     );
   }
