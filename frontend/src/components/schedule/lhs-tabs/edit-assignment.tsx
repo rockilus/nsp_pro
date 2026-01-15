@@ -288,6 +288,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           fullWidth
           error={workerError}
           displayEmpty
+          data-testid="edit-assignment-worker-select"
           renderValue={(selected) => {
             if (selected === "") {
               return (
@@ -325,6 +326,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
               fullWidth: true,
               error: dateError,
               helperText: dateError ? t("edit-assignment.date-error") : "",
+              inputProps: { "data-testid": "edit-assignment-date-picker" },
             },
           }}
         />
@@ -366,6 +368,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           fullWidth
           error={shiftError}
           displayEmpty
+          data-testid="edit-assignment-shift-select"
           renderValue={(selected) => {
             if (selected === "") {
               return (
@@ -397,6 +400,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
             onClick={handleSaveClick}
             disabled={isSubmitting}
             className="create-button"
+            data-testid="edit-assignment-create-button"
           >
             {isSubmitting ? t("creating") : t("create")}
           </Button>

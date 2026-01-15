@@ -234,6 +234,75 @@ test.describe("Schedule Page - Owner without Assignments", () => {
     console.log("✅ Create assignment dialog opened correctly");
   });
 
+  test("should create assignment and display schedule table when form is filled and saved", async ({
+    page,
+  }) => {
+    // Wait for the schedule page to render
+    await page.waitForSelector('[data-testid="schedule-page-heading"]', {
+      timeout: 10000,
+    });
+
+    // Verify no schedule table exists initially
+    const scheduleTableBefore = page.locator('[data-testid="schedule-table"]');
+    await expect(scheduleTableBefore).not.toBeVisible();
+
+    // Click the "Create assignment" button to open the dialog
+    const createAssignmentButton = page.locator(
+      '[data-testid="create-assignment-button"]'
+    );
+    await createAssignmentButton.click();
+
+    // Wait for the create assignment dialog to be visible
+    const dialog = page.locator('[data-testid="create-assignment-dialog"]');
+    await expect(dialog).toBeVisible({ timeout: 5000 });
+
+    // Fill in the worker field
+    const workerSelect = dialog.locator(
+      '[data-testid="edit-assignment-worker-select"]'
+    );
+    await workerSelect.click();
+    // Select the first worker from the dropdown
+    await page.locator('li[role="option"]').first().click();
+
+    // Fill in the date field (use today's date)
+    const datePicker = dialog.locator(
+      '[data-testid="edit-assignment-date-picker"]'
+    );
+    await datePicker.click();
+    // Click today's date in the calendar picker
+    const today = dayjs.utc();
+    const todayButton = page.getByRole("button", {
+      name: today.format("D"),
+      exact: true,
+    });
+    await todayButton.click();
+
+    // Fill in the shift field
+    const shiftSelect = dialog.locator(
+      '[data-testid="edit-assignment-shift-select"]'
+    );
+    await shiftSelect.click();
+    // Select the first shift from the dropdown
+    await page.locator('li[role="option"]').first().click();
+
+    // Click the Create button
+    const createButton = dialog.locator(
+      '[data-testid="edit-assignment-create-button"]'
+    );
+    await createButton.click();
+
+    // Wait for the dialog to close
+    await expect(dialog).not.toBeVisible({ timeout: 5000 });
+
+    // Verify that the schedule table now appears
+    const scheduleTableAfter = page.locator('[data-testid="schedule-table"]');
+    await expect(scheduleTableAfter).toBeVisible({ timeout: 10000 });
+
+    console.log(
+      "✅ Assignment created successfully and schedule table is now visible"
+    );
+  });
+
   test("should not show member error for owner even without data", async ({
     page,
   }) => {

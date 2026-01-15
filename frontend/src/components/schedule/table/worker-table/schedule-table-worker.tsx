@@ -86,6 +86,7 @@ export default function ScheduleTableWorker({
     <TableContainer
       component={Paper}
       style={{ width: "100%", height: "calc(100vh - 104px)" }}
+      data-testid="schedule-table"
     >
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead
