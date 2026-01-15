@@ -68,14 +68,17 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       await expect(scheduleTable).toBeVisible();
 
       // Get the periodStartDate from scheduleViewSettings in localStorage
-      const scheduleViewSettings = await page.evaluate(() => {
-        const teamId = localStorage.getItem("selectedTeamId");
-        if (!teamId) return null;
+      const testTeam = scheduleTestBase.getTestTeam();
+      if (!testTeam) {
+        throw new Error("Test team not found");
+      }
+
+      const scheduleViewSettings = await page.evaluate((teamId) => {
         const settingsKey = `scheduleViewSettings_${teamId}`;
         const settingsStr = localStorage.getItem(settingsKey);
         if (!settingsStr) return null;
         return JSON.parse(settingsStr);
-      });
+      }, testTeam.teamId);
 
       expect(scheduleViewSettings).toBeTruthy();
       expect(scheduleViewSettings.periodStartDate).toBeTruthy();
@@ -130,14 +133,17 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       await expect(scheduleTable).toBeVisible();
 
       // Get the periodStartDate from scheduleViewSettings in localStorage
-      const scheduleViewSettings = await page.evaluate(() => {
-        const teamId = localStorage.getItem("selectedTeamId");
-        if (!teamId) return null;
+      const testTeam = scheduleTestBase.getTestTeam();
+      if (!testTeam) {
+        throw new Error("Test team not found");
+      }
+
+      const scheduleViewSettings = await page.evaluate((teamId) => {
         const settingsKey = `scheduleViewSettings_${teamId}`;
         const settingsStr = localStorage.getItem(settingsKey);
         if (!settingsStr) return null;
         return JSON.parse(settingsStr);
-      });
+      }, testTeam.teamId);
 
       expect(scheduleViewSettings).toBeTruthy();
       expect(scheduleViewSettings.periodStartDate).toBeTruthy();
