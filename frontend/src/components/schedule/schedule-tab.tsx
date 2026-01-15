@@ -1121,7 +1121,11 @@ export default function ScheduleTab({
             p: 4,
           }}
         >
-          <Alert severity="info" sx={{ maxWidth: "600px" }}>
+          <Alert
+            severity="info"
+            sx={{ maxWidth: "600px" }}
+            data-testid="no-worker-profile-alert"
+          >
             <Typography variant="body1">
               {t("error_no_worker_assigned")}
             </Typography>
