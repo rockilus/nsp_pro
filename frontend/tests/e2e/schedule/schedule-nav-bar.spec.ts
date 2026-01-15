@@ -818,7 +818,8 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       await page.waitForTimeout(300);
 
       // Verify assignment is visible in the schedule
-      const assignmentCells = page.locator('[data-testid="assignment-cell"]');
+      // Use pattern matching for assignment cells (data-testid="assignment-cell-{id}")
+      const assignmentCells = page.locator('[data-testid^="assignment-cell-"]');
       const assignmentCount = await assignmentCells.count();
       expect(assignmentCount).toBeGreaterThan(0);
       console.log(`✅ Found ${assignmentCount} assignment(s) displayed`);
