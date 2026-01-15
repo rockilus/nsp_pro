@@ -16,6 +16,7 @@ import { ShiftType } from "../../src/types/shift";
 import { WorkerT } from "../../src/types/worker";
 import { ShiftT } from "../../src/types/shift";
 import { RequestT } from "../../src/types/request";
+import { ScheduleT } from "../../src/types/schedule";
 import { SWOIdTypes } from "../../src/types/constraint";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
@@ -47,7 +48,7 @@ export class ScheduleTestBase {
   // Storage for created test entities
   protected testWorkers: Array<{ workerId: string; name: string }> = [];
   protected testShifts: ShiftT[] = [];
-  protected testSchedule: { scheduleId: string } | null = null;
+  protected testSchedule: ScheduleT | null = null;
   protected testRequests: RequestT[] = [];
   protected memberWorker: { workerId: string; name: string } | null = null;
 
@@ -346,7 +347,7 @@ export class ScheduleTestBase {
   async createCampaignSchedule(
     startDate: string,
     endDate: string
-  ): Promise<{ scheduleId: string }> {
+  ): Promise<ScheduleT> {
     if (!this.testTeam) {
       throw new Error("Test team not created. Call setupScheduleTests first.");
     }
@@ -363,7 +364,7 @@ export class ScheduleTestBase {
       endDate: dayjs(endDate).utc(),
     });
 
-    this.testSchedule = { scheduleId: updatedSchedule.id };
+    this.testSchedule = updatedSchedule;
     return this.testSchedule;
   }
 
@@ -440,7 +441,14 @@ export class ScheduleTestBase {
   /**
    * Get the test schedule (if created)
    */
-  getTestSchedule(): { scheduleId: string } | null {
+  getTestSchedule(): ScheduleT | null {
+    return this.testSchedule;
+  }
+
+  /**
+   * Get the campaign schedule (if created)
+   */
+  getCampaign(): ScheduleT | null {
     return this.testSchedule;
   }
 }

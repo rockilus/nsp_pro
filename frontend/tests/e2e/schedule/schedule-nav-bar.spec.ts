@@ -1150,7 +1150,23 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       expect(datesText).toBeTruthy();
       expect(datesText?.length).toBeGreaterThan(0);
 
-      console.log(`✅ Campaign dates displayed: "${datesText}"`);
+      // Verify the dates match the campaign dates from setup
+      const campaign = scheduleTestBase.getCampaign();
+      if (!campaign) {
+        throw new Error("Campaign not found");
+      }
+
+      // UI displays dates in "DD MMM YYYY" format
+      const expectedStartFormatted = campaign.startDate.format("D MMM YYYY");
+      const expectedEndFormatted = campaign.endDate.format("D MMM YYYY");
+
+      // Verify the displayed text contains the expected formatted dates
+      expect(datesText).toContain(expectedStartFormatted);
+      expect(datesText).toContain(expectedEndFormatted);
+
+      console.log(
+        `✅ Campaign dates displayed correctly: "${datesText}" (expected: ${expectedStartFormatted} to ${expectedEndFormatted})`
+      );
     });
 
     test("should open breaches in LHS panel when campaign status is clicked", async ({
