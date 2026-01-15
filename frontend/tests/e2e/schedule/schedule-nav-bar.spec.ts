@@ -63,7 +63,29 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       const labelText = await periodLabel.textContent();
       expect(labelText).toMatch(/^[A-Za-z]+ \d{4}$/); // Format: "January 2026"
 
-      console.log("✅ Monthly view displayed correctly");
+      // Verify the schedule table column headers show the days of the selected month
+      const scheduleTable = page.locator('[data-testid="schedule-table"]');
+      await expect(scheduleTable).toBeVisible();
+
+      // Get the current month dates
+      const today = dayjs.utc();
+      const monthStart = today.startOf("month");
+      const monthEnd = today.endOf("month");
+      const daysInMonth = monthEnd.date();
+
+      // Verify all days of the month are displayed
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = monthStart.date(day);
+        const dateString = date.format("YYYY-MM-DD");
+        const dateHeader = page.locator(
+          `[data-testid="date-header-day-${dateString}"]`
+        );
+        await expect(dateHeader).toBeVisible();
+      }
+
+      console.log(
+        `✅ Monthly view displayed correctly with all ${daysInMonth} days of the month`
+      );
     });
 
     test("should display weekly view when week is selected", async ({
@@ -87,7 +109,27 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       const labelText = await periodLabel.textContent();
       expect(labelText).toMatch(/^[A-Za-z]+ \d{4}$/); // Format: "January 2026"
 
-      console.log("✅ Weekly view displayed correctly");
+      // Verify the schedule table shows all 7 days of the current week
+      const scheduleTable = page.locator('[data-testid="schedule-table"]');
+      await expect(scheduleTable).toBeVisible();
+
+      // Get the current week dates (Monday to Sunday)
+      const today = dayjs.utc();
+      const weekStart = today.startOf("isoWeek");
+
+      // Verify all 7 days of the week are displayed
+      for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+        const date = weekStart.add(dayOffset, "day");
+        const dateString = date.format("YYYY-MM-DD");
+        const dateHeader = page.locator(
+          `[data-testid="date-header-day-${dateString}"]`
+        );
+        await expect(dateHeader).toBeVisible();
+      }
+
+      console.log(
+        "✅ Weekly view displayed correctly with all 7 days of the week"
+      );
     });
   });
 

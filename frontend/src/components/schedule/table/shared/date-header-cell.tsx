@@ -58,7 +58,12 @@ export default function DateHeaderCell({
           {periodDate.date.format("ddd")}
         </span>
         <div className={`month-day-container ${isToday && "today"}`}>
-          <span className={`month-day ${isToday && "today"}`}>
+          <span
+            className={`month-day ${isToday && "today"}`}
+            data-testid={`date-header-day-${periodDate.date.format(
+              "YYYY-MM-DD"
+            )}`}
+          >
             {periodDate.date.format("DD")}
           </span>
         </div>
