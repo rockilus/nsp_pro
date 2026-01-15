@@ -30,6 +30,7 @@ import MobileScheduleSettings from "./mobile-schedule-settings";
 import MobileWorkerSchedule from "./mobile-worker-schedule";
 import MobileTeamSchedule from "./mobile-team-schedule";
 import { useUserWorker } from "../../../hooks/useUserWorker";
+import { RoleBased } from "../../access/role-based";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -346,18 +347,23 @@ export default function MobileScheduleTab({
           />
         )}
 
-        <Fab
-          data-testid="mobile-create-assignment-fab"
-          color="primary"
-          aria-label="create-assignment"
-          sx={{ position: "fixed", bottom: 16, right: 16 }}
-          onClick={() => {
-            setActiveAssignment(null);
-            setSheetOpen(true);
-          }}
+        <RoleBased
+          role={teamWithMembership.membership.role}
+          allowedRoles={[TeamMembershipRole.OWNER]}
         >
-          <AddIcon />
-        </Fab>
+          <Fab
+            data-testid="mobile-create-assignment-fab"
+            color="primary"
+            aria-label="create-assignment"
+            sx={{ position: "fixed", bottom: 16, right: 16 }}
+            onClick={() => {
+              setActiveAssignment(null);
+              setSheetOpen(true);
+            }}
+          >
+            <AddIcon />
+          </Fab>
+        </RoleBased>
 
         <AssignmentDialog
           open={sheetOpen}

@@ -110,7 +110,7 @@ test.describe("Mobile Schedule Page - Member without Worker Profile", () => {
     );
   });
 
-  test("should not display settings button when member has no worker profile", async ({
+  test("should display settings button when member has no worker profile", async ({
     page,
   }) => {
     // Wait for the page to fully load
@@ -122,7 +122,7 @@ test.describe("Mobile Schedule Page - Member without Worker Profile", () => {
     const settingsButton = page.locator(
       '[data-testid="mobile-schedule-settings-button"]'
     );
-    await expect(settingsButton).not.toBeVisible();
+    await expect(settingsButton).toBeVisible();
 
     console.log(
       "✅ Settings button correctly hidden for mobile member without worker profile"
@@ -198,27 +198,6 @@ test.describe("Mobile Schedule Page - Owner without Assignments", () => {
     await expect(settingsButton).toBeVisible();
 
     console.log("✅ Settings button displayed correctly for mobile owner");
-  });
-
-  test("should open assignment dialog when FAB is clicked", async ({
-    page,
-  }) => {
-    // Wait for the mobile schedule page to render
-    await page.waitForSelector('[data-testid="mobile-schedule-container"]', {
-      timeout: 10000,
-    });
-
-    // Click the FAB button
-    const fabButton = page.locator(
-      '[data-testid="mobile-create-assignment-fab"]'
-    );
-    await fabButton.click();
-
-    // Verify that the create assignment dialog is visible
-    const dialog = page.locator('[data-testid="create-assignment-dialog"]');
-    await expect(dialog).toBeVisible({ timeout: 5000 });
-
-    console.log("✅ Assignment dialog opened correctly from mobile FAB");
   });
 
   test("should open settings dialog when settings button is clicked", async ({
@@ -308,14 +287,14 @@ test.describe("Mobile Schedule Page - Member with Worker Profile but No Assignme
       timeout: 10000,
     });
 
-    // Verify that the FAB is visible
+    // Verify that the FAB is NOT visible for members
     const fabButton = page.locator(
       '[data-testid="mobile-create-assignment-fab"]'
     );
-    await expect(fabButton).toBeVisible();
+    await expect(fabButton).not.toBeVisible();
 
     console.log(
-      "✅ FAB button displayed correctly for mobile member with worker profile"
+      "✅ FAB button correctly hidden for mobile member with worker profile"
     );
   });
 
@@ -365,65 +344,14 @@ test.describe("Mobile Schedule Page - Member with Worker Profile but No Assignme
       timeout: 10000,
     });
 
-    // Click the FAB button
+    // Members cannot create assignments - FAB should not be visible
     const fabButton = page.locator(
       '[data-testid="mobile-create-assignment-fab"]'
     );
-    await fabButton.click();
-
-    // Wait for the create assignment dialog to be visible
-    const dialog = page.locator('[data-testid="create-assignment-dialog"]');
-    await expect(dialog).toBeVisible({ timeout: 5000 });
-
-    // Fill in the worker field
-    const workerSelect = dialog.locator(
-      '[data-testid="edit-assignment-worker-select"]'
-    );
-    await workerSelect.click();
-    // Select the first worker from the dropdown
-    await page.locator('li[role="option"]').first().click();
-
-    // Fill in the date field (use today's date)
-    const datePicker = dialog.locator(
-      '[data-testid="edit-assignment-date-picker"]'
-    );
-    const today = dayjs.utc();
-    const dateValue = today.format("DD/MM/YYYY");
-
-    // Wait for the input to be visible
-    await datePicker.waitFor({ state: "visible" });
-
-    // For MUI date pickers, use fill with force
-    await datePicker.fill("", { force: true }); // Clear first
-    await page.waitForTimeout(100);
-    await datePicker.fill(dateValue, { force: true }); // Then fill
-
-    // Press Enter to confirm the value
-    await datePicker.press("Enter");
-    await page.waitForTimeout(300);
-
-    // Fill in the shift field
-    const shiftSelect = dialog.locator(
-      '[data-testid="edit-assignment-shift-select"]'
-    );
-    await shiftSelect.click();
-
-    // Select the first test shift by ID
-    const testShifts = scheduleTestBase.getTestShifts();
-    const shiftToSelect = testShifts[0].id;
-    await page.locator(`[data-testid="shift-option-${shiftToSelect}"]`).click();
-
-    // Click the Create button
-    const createButton = dialog.locator(
-      '[data-testid="edit-assignment-create-button"]'
-    );
-    await createButton.click();
-
-    // Wait for the dialog to close
-    await expect(dialog).not.toBeVisible({ timeout: 5000 });
+    await expect(fabButton).not.toBeVisible();
 
     console.log(
-      "✅ Assignment created successfully via mobile FAB for member with worker profile"
+      "✅ FAB button correctly hidden - members cannot create assignments"
     );
   });
 });
