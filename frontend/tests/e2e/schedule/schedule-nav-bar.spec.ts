@@ -1185,7 +1185,9 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
         const breachPanel = page.locator('[data-testid="breach-lhs-panel"]');
         await expect(breachPanel).toBeVisible({ timeout: 3000 });
 
-        console.log("✅ Campaign status chip clicked and breaches panel opened");
+        console.log(
+          "✅ Campaign status chip clicked and breaches panel opened"
+        );
       } else {
         console.log(
           "⏭️  No campaign status chip found (team may not use solver)"
