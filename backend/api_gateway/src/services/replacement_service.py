@@ -710,3 +710,6 @@ class ReplacementService(BaseService):
         constraints.fil = self._filter_all_constraint_fils(
             constraints, assignment.date.isoformat(), assignment.shift_id
         )
+
+        # Remove ConstraintFai as they are not relevant
+        constraints.fai = []
