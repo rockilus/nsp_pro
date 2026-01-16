@@ -16,6 +16,7 @@ from shared.schemas.core import (
     ConstraintBuild,
     ConstraintBuildAugmented,
     Constraints,
+    ConstraintFil,
     ConstraintOrd,
     ConstraintSeq,
     ConstraintSum,
@@ -504,6 +505,80 @@ class ReplacementService(BaseService):
 
         return filtered_ords
 
+    def _filter_constraint_fil_for_assignment(
+        self,
+        constraint_fil: ConstraintFil,
+        assignment_date_iso: str,
+        assignment_shift_id: str,
+    ) -> ConstraintFil | None:
+        """Filter a ConstraintFil to only include variables containing the
+        target date and shift.
+
+        Args:
+            constraint_fil: The ConstraintFil to filter
+            assignment_date_iso: Assignment date in ISO format
+                (e.g., "2025-01-15")
+            assignment_shift_id: Assignment shift ID
+
+        Returns:
+            A new ConstraintFil with filtered constraint_variables,
+            or None if no variables match.
+        """
+        filtered_variables = [
+            var
+            for var in constraint_fil.constraint_variables
+            if var[1] == assignment_date_iso and var[2] == assignment_shift_id
+        ]
+
+        # If no variables match, return None
+        if not filtered_variables:
+            return None
+
+        # Create a new ConstraintFil with filtered data
+        return ConstraintFil(
+            id=constraint_fil.id,
+            constraint_type=constraint_fil.constraint_type,
+            operator=constraint_fil.operator,
+            target_value=constraint_fil.target_value,
+            target_unit=constraint_fil.target_unit,
+            active=constraint_fil.active,
+            hard=constraint_fil.hard,
+            priority=constraint_fil.priority,
+            penalty=constraint_fil.penalty,
+            schedule_id=constraint_fil.schedule_id,
+            constraint_build_id=constraint_fil.constraint_build_id,
+            constraint_variables=filtered_variables,
+        )
+
+    def _filter_all_constraint_fils(
+        self,
+        constraints: Constraints,
+        assignment_date_iso: str,
+        assignment_shift_id: str,
+    ) -> List[ConstraintFil]:
+        """Filter all ConstraintFil objects to only include those relevant
+        to the assignment.
+
+        Args:
+            constraints: The Constraints object containing all constraint types
+            assignment_date_iso: Assignment date in ISO format
+            assignment_shift_id: Assignment shift ID
+
+        Returns:
+            A filtered list of ConstraintFil objects, excluding any that
+            have no matching variables.
+        """
+        filtered_fils = []
+
+        for constraint_fil in constraints.fil:
+            filtered_fil = self._filter_constraint_fil_for_assignment(
+                constraint_fil, assignment_date_iso, assignment_shift_id
+            )
+            if filtered_fil is not None:
+                filtered_fils.append(filtered_fil)
+
+        return filtered_fils
+
     def _process_replacement_data(
         self, assignment: Assignment, replacement_data: ReplacementData
     ):
@@ -628,5 +703,10 @@ class ReplacementService(BaseService):
 
         # Filter ConstraintOrd to only include those relevant to the assignment
         constraints.ord = self._filter_all_constraint_ords(
+            constraints, assignment.date.isoformat(), assignment.shift_id
+        )
+
+        # Filter ConstraintFil to only include those relevant to the assignment
+        constraints.fil = self._filter_all_constraint_fils(
             constraints, assignment.date.isoformat(), assignment.shift_id
         )
