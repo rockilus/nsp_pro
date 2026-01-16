@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 from enum import Enum
-from datetime import datetime
+from datetime import datetime, timedelta
 from shared.schemas.core import (
     Breach,
     Assignment,
@@ -21,8 +21,11 @@ from shared.schemas.core import (
     CoveragePenalty,
 )
 from src.services.base_service import BaseService
-from shared.constraint_parser.parse_constraints import parse_constraints
+from shared.constraint_parser import parse_constraints
 from shared.augment.cb_to_cb_augmented import cb_to_cb_augmented
+from shared.constraint_parser import (
+    build_dim_to_attr_value_to_owner,
+)
 
 
 class ReplacementCategory(Enum):
@@ -233,8 +236,21 @@ class ReplacementService(BaseService):
         )
 
     def _process_replacement_data(
-        self, assignment_ids: List[str], replacement_data: ReplacementData
+        self, assignment: Assignment, replacement_data: ReplacementData
     ):
+        dim_to_attr_value_to_worker = build_dim_to_attr_value_to_owner(
+            owners=replacement_data.workers,
+            dimensions=replacement_data.dimensions,
+            dim_entries=replacement_data.dim_entries,
+            attributes=replacement_data.attributes,
+        )
+        dim_to_attr_value_to_shift = build_dim_to_attr_value_to_owner(
+            owners=replacement_data.shifts,
+            dimensions=replacement_data.dimensions,
+            dim_entries=replacement_data.dim_entries,
+            attributes=replacement_data.attributes,
+        )
+
         cbs_augmented = [
             cb_to_cb_augmented(
                 cb=cb,
@@ -277,13 +293,34 @@ class ReplacementService(BaseService):
                 special_days_target_nb_duties=0,
             ),
         )
+
+        try:
+            a_date_minus_1_year = assignment.date.replace(
+                year=assignment.date.year - 1
+            )
+        except ValueError:
+            # Handles Feb 29 -> fallback to Feb 28 on non-leap year
+            a_date_minus_1_year = assignment.date.replace(
+                month=2, day=28, year=assignment.date.year - 1
+            )
+
+        min_hist_date = min(
+            a_date_minus_1_year,
+            min(a.date for a in replacement_data.assignments),
+        )
+
+        delta = assignment.date - min_hist_date
+        dates_hist = [
+            min_hist_date + timedelta(days=i) for i in range(delta.days + 1)
+        ]
+
         constraints = parse_constraints(
             cbas=cbs_augmented,
             schedule_id="",
             workers=replacement_data.workers,
             worker_dim_dict=dim_to_attr_value_to_worker,
             dates_hist=dates_hist,
-            dates_campaign=dates_campaign,
+            dates_campaign=[assignment.date],
             periods_weekly=periods_weekly,
             periods_monthly=periods_monthly,
             periods_yearly=periods_yearly,
