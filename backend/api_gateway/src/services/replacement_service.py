@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from enum import Enum
 from typing import List
 
@@ -14,7 +14,6 @@ from shared.schemas.core import (
     Breach,
     ConfigurationConstraintPenalty,
     ConstraintBuild,
-    ConstraintBuildAugmented,
     ConstraintFil,
     ConstraintOrd,
     Constraints,
@@ -130,6 +129,20 @@ class ReplacedShift:
 
 
 @dataclass
+class ReplacementContext:
+    """Pre-computed context for evaluating replacement candidates."""
+
+    target_assignment: Assignment
+    target_shift: Shift
+    assignment_date: date
+    workers: List[Worker]
+    shifts: List[Shift]
+    constraints: Constraints
+    a_filtered_out: List[tuple[str, str, str]]
+    assignments: List[Assignment]
+
+
+@dataclass
 class ReplacementData:
     workers: List[Worker]
     shifts: List[Shift]
@@ -149,9 +162,46 @@ class ReplacementService(BaseService):
             assignment_ids=[assignment_id],
             team_id=team_id,
         )
-        # Further processing to determine replacement candidates would go here.
-        # For brevity, this is left as a placeholder.
-        return []
+
+        # Get the target assignment
+        assignment = next(
+            (a for a in replacement_data.assignments if a.id == assignment_id),
+            None,
+        )
+        if not assignment:
+            raise ValueError(f"Assignment {assignment_id} not found")
+
+        # Process replacement data to build constraints and filters
+        constraints, a_filtered_out = self._process_replacement_data(
+            assignment, replacement_data
+        )
+
+        # Build replacement context once
+        context = self._build_replacement_context(
+            assignment=assignment,
+            replacement_data=replacement_data,
+            constraints=constraints,
+            a_filtered_out=a_filtered_out,
+        )
+
+        # Build replacement candidates for each worker
+        candidates = []
+        for worker in replacement_data.workers:
+            implications = self._build_replacement_implications(
+                worker=worker,
+                context=context,
+            )
+            # TODO: Determine category and rank based on implications
+            candidate = ReplacementCandidate(
+                worker_id=worker.id,
+                worker_name=worker.name,
+                rank=0,  # Placeholder
+                replacement_category=ReplacementCategory.CAN_DO,  # Placeholder
+                replacement_implications=implications,
+            )
+            candidates.append(candidate)
+
+        return candidates
 
     def get_assignment_swap_info(
         self,
@@ -159,10 +209,11 @@ class ReplacementService(BaseService):
         assignments_2_ids: List[str],
         team_id: str,
     ) -> None:
-        replacement_data = self._fetch_replacement_data(
+        _replacement_data = self._fetch_replacement_data(
             assignment_ids=assignments_1_ids + assignments_2_ids,
             team_id=team_id,
         )
+        # TODO: Implement swap evaluation logic
 
     def _fetch_replacement_data(
         self, assignment_ids: List[str], team_id: str
@@ -581,9 +632,134 @@ class ReplacementService(BaseService):
 
         return filtered_fils
 
+    def _build_replacement_context(
+        self,
+        assignment: Assignment,
+        replacement_data: ReplacementData,
+        constraints: Constraints,
+        a_filtered_out: List[tuple[str, str, str]],
+    ) -> ReplacementContext:
+        """Build pre-computed context for evaluating replacement candidates.
+
+        Args:
+            assignment: The target assignment to replace
+            replacement_data: All fetched data for replacements
+            constraints: Filtered constraints relevant to the assignment
+            a_filtered_out: Filtered worker-shift filter violations
+
+        Returns:
+            ReplacementContext with indexed lookups for efficient evaluation
+        """
+        # Find the target shift
+        target_shift = next(
+            (
+                s
+                for s in replacement_data.shifts
+                if s.id == assignment.shift_id
+            ),
+            None,
+        )
+        if not target_shift:
+            raise ValueError(f"Shift {assignment.shift_id} not found")
+
+        return ReplacementContext(
+            target_assignment=assignment,
+            target_shift=target_shift,
+            assignment_date=assignment.date,
+            workers=replacement_data.workers,
+            shifts=replacement_data.shifts,
+            constraints=constraints,
+            a_filtered_out=a_filtered_out,
+            assignments=replacement_data.assignments,
+        )
+
+    def _check_is_employed(
+        self, worker: Worker, context: ReplacementContext
+    ) -> bool:
+        """Check if worker is employed on the assignment date.
+
+        Args:
+            worker: The worker to check
+            context: Pre-computed replacement context
+
+        Returns:
+            True if worker is employed on the assignment date
+        """
+        assignment_date = context.assignment_date
+
+        # Check if started before or on assignment date
+        if worker.employment_start_date > assignment_date:
+            return False
+
+        # Check if still employed (no end date or end date after assignment)
+        if worker.employment_end_date is None:
+            return True
+
+        return assignment_date <= worker.employment_end_date
+
+    def _build_replacement_implications(
+        self, worker: Worker, context: ReplacementContext
+    ) -> ReplacementImplications:
+        """Build ReplacementImplications for a worker.
+
+        Args:
+            worker: The worker to evaluate
+            context: Pre-computed replacement context
+
+        Returns:
+            ReplacementImplications with all checks performed
+        """
+        # Can't do checks
+        is_employed = self._check_is_employed(worker, context)
+
+        # TODO: Implement remaining checks
+        # Placeholder values for now
+        return ReplacementImplications(
+            is_employed=is_employed,
+            has_specialty=True,  # TODO
+            isnt_on_leave=True,  # TODO
+            filter_hits=FilterHits(
+                isnt_filtered_out=True,  # TODO
+                filter_labels=[],  # TODO
+            ),
+            is_on_leave=False,  # TODO
+            overlap_minutes=OverlapHits(
+                hasnt_overlap=True,  # TODO
+                overlap_assignment_ids=[],  # TODO
+            ),
+            hard_constraint_hits=ConstraintHits(
+                meets_constraints=True,  # TODO
+                breaches=[],  # TODO
+            ),
+            request_hits=RequestHits(
+                has_no_request_conflict=True,  # TODO
+                conflicting_request_ids=[],  # TODO
+            ),
+            soft_constraint_hits=ConstraintHits(
+                meets_constraints=True,  # TODO
+                breaches=[],  # TODO
+            ),
+            new_monthly_duties=MonthlyDutiesImplications(
+                new_number_monthly_duties=0,  # TODO
+                new_monthly_duties_delta=0,  # TODO
+            ),
+            new_weekly_time=WeeklyWorkTimeImplications(
+                new_weekly_worked_minutes=0,  # TODO
+                new_weekly_time_delta_minutes=0,  # TODO
+            ),
+            nb_times_did_shift_ltm=LTMIndicator(
+                count=0,  # TODO
+                last_date=None,  # TODO
+            ),
+            nb_times_worked_weekday_ltm=LTMIndicator(
+                count=0,  # TODO
+                last_date=None,  # TODO
+            ),
+        )
+
     def _process_replacement_data(
         self, assignment: Assignment, replacement_data: ReplacementData
-    ):
+    ) -> tuple[Constraints, List[tuple[str, str, str]]]:
         dim_to_attr_value_to_worker = build_dim_to_attr_value_to_owner(
             owners=replacement_data.workers,
             dimensions=replacement_data.dimensions,
@@ -737,3 +913,5 @@ class ReplacementService(BaseService):
             if var[1] == assignment.date.isoformat()
             and var[2] == assignment.shift_id
         ]
+
+        return constraints, a_filtered_out
