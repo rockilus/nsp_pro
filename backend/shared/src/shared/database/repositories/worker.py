@@ -54,6 +54,29 @@ class WorkerRepository(BaseRepository[WorkerSchema]):
         workers = self.find_all({"team": team_id, "user_id": user_id})
         return [worker.to_core() for worker in workers]
 
+    def get_workers_by_ids(
+        self, worker_ids: List[str], raise_on_missing: bool = False
+    ) -> List[Worker]:
+        """Get multiple workers by their IDs.
+
+        Forgiving behavior by default: missing IDs are ignored. If
+        `raise_on_missing` is True, raises `ValueError` when any id is not
+        found.
+        """
+        if not worker_ids:
+            return []
+
+        workers = self.find_all({"_id": {"$in": worker_ids}})
+        results = [worker.to_core() for worker in workers]
+
+        if raise_on_missing:
+            found_ids = {r.id for r in results}
+            missing = [wid for wid in worker_ids if wid not in found_ids]
+            if missing:
+                raise ValueError(f"Workers not found for ids: {missing}")
+
+        return results
+
     def update_worker(self, worker: Worker) -> Worker:
         """Update a worker."""
         worker_schema = WorkerSchema.from_core(worker)

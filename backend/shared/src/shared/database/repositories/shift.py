@@ -81,10 +81,28 @@ class ShiftRepository(BaseRepository[ShiftSchema]):
             raise Exception(f"Shift with id {shift_id} not found")
         return shift.to_core()
 
-    def get_shifts_by_ids(self, shift_ids: List[str]) -> List[Shift]:
-        """Get multiple shifts by their IDs."""
+    def get_shifts_by_ids(
+        self, shift_ids: List[str], raise_on_missing: bool = False
+    ) -> List[Shift]:
+        """Get multiple shifts by their IDs.
+
+        Forgiving behavior by default: missing IDs are ignored. If
+        `raise_on_missing` is True, raises `ValueError` when any id is not
+        found.
+        """
+        if not shift_ids:
+            return []
+
         shifts = self.find_all({"_id": {"$in": shift_ids}})
-        return [shift.to_core() for shift in shifts]
+        results = [shift.to_core() for shift in shifts]
+
+        if raise_on_missing:
+            found_ids = {r.id for r in results}
+            missing = [sid for sid in shift_ids if sid not in found_ids]
+            if missing:
+                raise ValueError(f"Shifts not found for ids: {missing}")
+
+        return results
 
     def get_recuperation_shift(self, shift_id: str) -> Optional[Shift]:
         """Get the recuperation shift associated with a given shift ID."""

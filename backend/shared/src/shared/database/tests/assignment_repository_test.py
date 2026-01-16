@@ -1,5 +1,6 @@
 from datetime import date, datetime, time, timedelta, timezone
 
+import pytest
 import pytest_asyncio
 
 from shared.database.interface import DatabaseInterface
@@ -1144,3 +1145,22 @@ class TestAssignmentRepository:
 
         assert len(results) == 1
         assert results[0].id == created.id
+
+    def test_get_assignments_by_ids_strict_raises_on_missing(self):
+        """When raise_on_missing=True, a missing id raises ValueError."""
+        assignment = AssignmentSchema(
+            team="team1",
+            worker="worker1",
+            schedule="schedule1",
+            date=datetime(2023, 1, 1, tzinfo=timezone.utc),
+            shift="shift1",
+            fixed=False,
+            source=AssignmentSource.MANUAL.value,
+        )
+        created = self.repo.create(assignment)
+
+        assert created.id is not None
+        with pytest.raises(ValueError):
+            self.repo.get_assignments_by_ids(
+                [created.id, "missing_id"], raise_on_missing=True
+            )

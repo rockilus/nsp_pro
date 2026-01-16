@@ -132,17 +132,31 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         assignments = self.find_all({"schedule": {"$in": schedule_ids}})
         return [a.to_core() for a in assignments]
 
-    def get_assignments_by_ids(self, assignment_ids: List[str]) -> List[Assignment]:
+    def get_assignments_by_ids(
+        self, assignment_ids: List[str], raise_on_missing: bool = False
+    ) -> List[Assignment]:
         """Get assignments by a list of assignment IDs.
 
-        Forgiving behavior: missing IDs are ignored and the returned list may
-        be unordered (MongoDB `$in` does not guarantee input order).
+        Forgiving behavior (default): missing IDs are ignored and the
+        returned list may be unordered (MongoDB `$in` does not guarantee
+        input order).
+
+        If `raise_on_missing` is True, raise `ValueError` when any provided
+        id is not found.
         """
         if not assignment_ids:
             return []
 
         assignments = self.find_all({"_id": {"$in": assignment_ids}})
-        return [a.to_core() for a in assignments]
+        results = [a.to_core() for a in assignments]
+
+        if raise_on_missing:
+            found_ids = {r.id for r in results}
+            missing = [aid for aid in assignment_ids if aid not in found_ids]
+            if missing:
+                raise ValueError(f"Assignments not found for ids: {missing}")
+
+        return results
 
     def get_assignments_by_schedule_ids_and_date_range(
         self, schedule_ids: List[str], start_date: date, end_date: date

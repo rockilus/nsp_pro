@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+import pytest
 import pytest_asyncio
 
 from shared.database.interface import DatabaseInterface
@@ -316,6 +317,108 @@ class TestShiftRepository:
         shifts = self.repo.get_shifts("team1")
         assert len(shifts) == 1
         assert shifts[0].name == "Shift 1"
+
+    def test_get_shifts_by_ids_returns_matching_shifts(self):
+        """Test getting shifts by a list of shift IDs."""
+        shifts = [
+            ShiftSchema(
+                team="team1",
+                name="Shift 1",
+                acronym="S1",
+                acronym_custom=False,
+                start_time=1672560000.0,
+                end_time=1672588800.0,
+                staffing=[StaffingSchema(specialty="spec1", staffing=2)],
+                color="#FF0000",
+                shift_type=ShiftType.NORMAL.value,
+                rest_type=ShiftRestType.NONE,
+                leave_type=ShiftLeaveType.NONE,
+                recuperation_time=0,
+                recuperation_duty=None,
+                deleted=False,
+            ),
+            ShiftSchema(
+                team="team1",
+                name="Shift 2",
+                acronym="S2",
+                acronym_custom=False,
+                start_time=1672563600.0,
+                end_time=1672592400.0,
+                staffing=[StaffingSchema(specialty="spec2", staffing=1)],
+                color="#00FF00",
+                shift_type=ShiftType.DUTY.value,
+                rest_type=ShiftRestType.NONE,
+                leave_type=ShiftLeaveType.NONE,
+                recuperation_time=0,
+                recuperation_duty=None,
+                deleted=False,
+            ),
+        ]
+
+        created = self.repo.create_many(shifts)
+        shift_ids = [s.id for s in created if s.id is not None]
+
+        results = self.repo.get_shifts_by_ids(shift_ids)
+
+        assert len(results) == 2
+        assert set(r.id for r in results) == set(shift_ids)
+
+    def test_get_shifts_by_ids_with_empty_input_returns_empty(self):
+        """Calling with empty list returns empty list."""
+        results = self.repo.get_shifts_by_ids([])
+        assert results == []
+
+    def test_get_shifts_by_ids_ignores_missing_ids(self):
+        """Missing IDs are ignored; existing shifts are returned."""
+        shift = ShiftSchema(
+            team="team1",
+            name="Shift 1",
+            acronym="S1",
+            acronym_custom=False,
+            start_time=1672560000.0,
+            end_time=1672588800.0,
+            staffing=[StaffingSchema(specialty="spec1", staffing=2)],
+            color="#FF0000",
+            shift_type=ShiftType.NORMAL.value,
+            rest_type=ShiftRestType.NONE,
+            leave_type=ShiftLeaveType.NONE,
+            recuperation_time=0,
+            recuperation_duty=None,
+            deleted=False,
+        )
+        created = self.repo.create(shift)
+
+        assert created.id is not None
+        results = self.repo.get_shifts_by_ids([created.id, "missing_id"])
+
+        assert len(results) == 1
+        assert results[0].id == created.id
+
+    def test_get_shifts_by_ids_strict_raises_on_missing(self):
+        """When raise_on_missing=True, a missing id raises ValueError."""
+        shift = ShiftSchema(
+            team="team1",
+            name="Shift 1",
+            acronym="S1",
+            acronym_custom=False,
+            start_time=1672560000.0,
+            end_time=1672588800.0,
+            staffing=[StaffingSchema(specialty="spec1", staffing=2)],
+            color="#FF0000",
+            shift_type=ShiftType.NORMAL.value,
+            rest_type=ShiftRestType.NONE,
+            leave_type=ShiftLeaveType.NONE,
+            recuperation_time=0,
+            recuperation_duty=None,
+            deleted=False,
+        )
+        created = self.repo.create(shift)
+
+        assert created.id is not None
+        with pytest.raises(ValueError):
+            self.repo.get_shifts_by_ids(
+                [created.id, "missing_id"], raise_on_missing=True
+            )
 
     def test_get_shifts_not_deleted(self):
         """Test retrieving non-deleted shifts for a team."""
