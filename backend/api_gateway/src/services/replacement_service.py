@@ -16,6 +16,7 @@ from shared.schemas.core import (
     ConstraintBuild,
     ConstraintBuildAugmented,
     Constraints,
+    ConstraintSeq,
     ConstraintSum,
     CoveragePenalty,
     Dimension,
@@ -333,6 +334,87 @@ class ReplacementService(BaseService):
 
         return filtered_sums
 
+    def _filter_constraint_seq_for_assignment(
+        self,
+        constraint_seq: ConstraintSeq,
+        assignment_date_iso: str,
+        assignment_shift_id: str,
+    ) -> ConstraintSeq | None:
+        """Filter a ConstraintSeq to only include periods containing the
+        target date and shift.
+
+        Args:
+            constraint_seq: The ConstraintSeq to filter
+            assignment_date_iso: Assignment date in ISO format
+                (e.g., "2025-01-15")
+            assignment_shift_id: Assignment shift ID
+
+        Returns:
+            A new ConstraintSeq with filtered constraint_variables,
+            or None if no periods match.
+        """
+        filtered_variables = []
+
+        for period_vars in constraint_seq.constraint_variables:
+            # Check if any tuple in this period matches the assignment
+            # date and shift
+            has_match = any(
+                var[1] == assignment_date_iso and var[2] == assignment_shift_id
+                for var in period_vars
+            )
+
+            if has_match:
+                filtered_variables.append(period_vars)
+
+        # If no periods match, return None
+        if not filtered_variables:
+            return None
+
+        # Create a new ConstraintSeq with filtered data
+        return ConstraintSeq(
+            id=constraint_seq.id,
+            constraint_type=constraint_seq.constraint_type,
+            operator=constraint_seq.operator,
+            target_value=constraint_seq.target_value,
+            target_unit=constraint_seq.target_unit,
+            active=constraint_seq.active,
+            hard=constraint_seq.hard,
+            priority=constraint_seq.priority,
+            penalty=constraint_seq.penalty,
+            schedule_id=constraint_seq.schedule_id,
+            constraint_build_id=constraint_seq.constraint_build_id,
+            constraint_variables=filtered_variables,
+        )
+
+    def _filter_all_constraint_seqs(
+        self,
+        constraints: Constraints,
+        assignment_date_iso: str,
+        assignment_shift_id: str,
+    ) -> List[ConstraintSeq]:
+        """Filter all ConstraintSeq objects to only include those relevant
+        to the assignment.
+
+        Args:
+            constraints: The Constraints object containing all constraint types
+            assignment_date_iso: Assignment date in ISO format
+            assignment_shift_id: Assignment shift ID
+
+        Returns:
+            A filtered list of ConstraintSeq objects, excluding any that
+            have no matching periods.
+        """
+        filtered_seqs = []
+
+        for constraint_seq in constraints.seq:
+            filtered_seq = self._filter_constraint_seq_for_assignment(
+                constraint_seq, assignment_date_iso, assignment_shift_id
+            )
+            if filtered_seq is not None:
+                filtered_seqs.append(filtered_seq)
+
+        return filtered_seqs
+
     def _process_replacement_data(
         self, assignment: Assignment, replacement_data: ReplacementData
     ):
@@ -447,5 +529,10 @@ class ReplacementService(BaseService):
 
         # Filter ConstraintSum to only include those relevant to the assignment
         constraints.sum = self._filter_all_constraint_sums(
+            constraints, assignment.date.isoformat(), assignment.shift_id
+        )
+
+        # Filter ConstraintSeq to only include those relevant to the assignment
+        constraints.seq = self._filter_all_constraint_seqs(
             constraints, assignment.date.isoformat(), assignment.shift_id
         )
