@@ -697,6 +697,38 @@ class ReplacementService(BaseService):
 
         return assignment_date <= worker.employment_end_date
 
+    def _check_has_specialty(
+        self, worker: Worker, context: ReplacementContext
+    ) -> bool:
+        """Check if worker has required specialty for the shift.
+
+        Args:
+            worker: The worker to check
+            context: Pre-computed replacement context
+
+        Returns:
+            True if worker has at least one required specialty, or if
+            the shift has no specialty requirements
+        """
+        target_shift = context.target_shift
+
+        # Get all specialty requirements from the shift's staffing
+        required_specialty_ids = [
+            staffing.specialty_id
+            for staffing in target_shift.staffing
+            if staffing.specialty_id is not None
+        ]
+
+        # If no specialties required, any worker can do the shift
+        if not required_specialty_ids:
+            return True
+
+        # Check if worker has at least one of the required specialties
+        worker_specialty_set = set(worker.specialty_ids)
+        required_specialty_set = set(required_specialty_ids)
+
+        return bool(worker_specialty_set & required_specialty_set)
+
     def _build_replacement_implications(
         self, worker: Worker, context: ReplacementContext
     ) -> ReplacementImplications:
@@ -711,12 +743,13 @@ class ReplacementService(BaseService):
         """
         # Can't do checks
         is_employed = self._check_is_employed(worker, context)
+        has_specialty = self._check_has_specialty(worker, context)
 
         # TODO: Implement remaining checks
         # Placeholder values for now
         return ReplacementImplications(
             is_employed=is_employed,
-            has_specialty=True,  # TODO
+            has_specialty=has_specialty,
             isnt_on_leave=True,  # TODO
             filter_hits=FilterHits(
                 isnt_filtered_out=True,  # TODO
