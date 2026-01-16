@@ -1,31 +1,38 @@
 from dataclasses import dataclass
-from typing import List
-from enum import Enum
 from datetime import datetime, timedelta
-from shared.schemas.core import (
-    Breach,
-    Assignment,
-    Worker,
-    Shift,
-    Specialty,
-    Dimension,
-    DimEntry,
-    Attribute,
-    ConstraintBuildAugmented,
-    Penalty,
-    ConstraintBuild,
-    Penalties,
-    UserConstraintPenalty,
-    SystemConstraintPenalty,
-    ConfigurationConstraintPenalty,
-    CoveragePenalty,
-)
-from src.services.base_service import BaseService
-from shared.constraint_parser import parse_constraints
+from enum import Enum
+from typing import List
+
 from shared.augment.cb_to_cb_augmented import cb_to_cb_augmented
 from shared.constraint_parser import (
     build_dim_to_attr_value_to_owner,
+    parse_constraints,
 )
+from shared.schemas.core import (
+    Assignment,
+    Attribute,
+    Breach,
+    ConfigurationConstraintPenalty,
+    ConstraintBuild,
+    ConstraintBuildAugmented,
+    CoveragePenalty,
+    Dimension,
+    DimEntry,
+    Penalties,
+    Penalty,
+    Shift,
+    Specialty,
+    SystemConstraintPenalty,
+    UserConstraintPenalty,
+    Worker,
+)
+from shared.utils import (
+    build_periods_monthly,
+    build_periods_weekly,
+    build_periods_yearly,
+)
+
+from src.services.base_service import BaseService
 
 
 class ReplacementCategory(Enum):
@@ -313,6 +320,16 @@ class ReplacementService(BaseService):
         dates_hist = [
             min_hist_date + timedelta(days=i) for i in range(delta.days + 1)
         ]
+
+        periods_weekly = build_periods_weekly(
+            dates_hist=dates_hist, dates_campaign=[assignment.date]
+        )
+        periods_monthly = build_periods_monthly(
+            dates_hist=dates_hist, dates_campaign=[assignment.date]
+        )
+        periods_yearly = build_periods_yearly(
+            dates_hist=dates_hist, dates_campaign=[assignment.date]
+        )
 
         constraints = parse_constraints(
             cbas=cbs_augmented,
