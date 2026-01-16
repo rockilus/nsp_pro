@@ -24,6 +24,9 @@ from shared.schemas.core import (
     DimEntry,
     Penalties,
     Penalty,
+    Request,
+    RequestStatus,
+    RequestType,
     Shift,
     Specialty,
     SystemConstraintPenalty,
@@ -140,6 +143,7 @@ class ReplacementContext:
     constraints: Constraints
     a_filtered_out: List[tuple[str, str, str]]
     assignments: List[Assignment]
+    requests: List[Request]
 
 
 @dataclass
@@ -152,6 +156,7 @@ class ReplacementData:
     specialties: List[Specialty]
     constraints: List[ConstraintBuild]
     assignments: List[Assignment]
+    requests: List[Request]
 
 
 class ReplacementService(BaseService):
@@ -294,6 +299,15 @@ class ReplacementService(BaseService):
             end_date=latest_date,
         )
 
+        # Fetch all requests for the workers that might overlap
+        # with the date range
+        worker_ids = [w.id for w in workers]
+        requests = self.collection.request_db.get_requests_by_dates(
+            start_date=earliest_date_minus_1_year,
+            end_date=latest_date,
+            worker_ids=worker_ids,
+        )
+
         return ReplacementData(
             workers=workers,
             shifts=shifts,
@@ -303,6 +317,7 @@ class ReplacementService(BaseService):
             specialties=specialties,
             constraints=constraints,
             assignments=assignments,
+            requests=requests,
         )
 
     def _filter_constraint_sum_for_assignment(
@@ -671,6 +686,7 @@ class ReplacementService(BaseService):
             constraints=constraints,
             a_filtered_out=a_filtered_out,
             assignments=replacement_data.assignments,
+            requests=replacement_data.requests,
         )
 
     def _check_is_employed(
@@ -729,6 +745,33 @@ class ReplacementService(BaseService):
 
         return bool(worker_specialty_set & required_specialty_set)
 
+    def _check_isnt_on_leave(
+        self, worker: Worker, context: ReplacementContext
+    ) -> bool:
+        """Check if worker is NOT on leave on the assignment date.
+
+        Args:
+            worker: The worker to check
+            context: Pre-computed replacement context
+
+        Returns:
+            True if worker does NOT have an approved leave request
+            on the assignment date
+        """
+        assignment_date = context.assignment_date
+
+        # Check if worker has any approved leave request covering the date
+        for request in context.requests:
+            if (
+                request.worker_id == worker.id
+                and request.request_type == RequestType.LEAVE
+                and request.status == RequestStatus.APPROVED
+                and request.start_date <= assignment_date <= request.end_date
+            ):
+                return False  # Worker is on leave
+
+        return True  # Worker is not on leave
+
     def _build_replacement_implications(
         self, worker: Worker, context: ReplacementContext
     ) -> ReplacementImplications:
@@ -744,13 +787,14 @@ class ReplacementService(BaseService):
         # Can't do checks
         is_employed = self._check_is_employed(worker, context)
         has_specialty = self._check_has_specialty(worker, context)
+        isnt_on_leave = self._check_isnt_on_leave(worker, context)
 
         # TODO: Implement remaining checks
         # Placeholder values for now
         return ReplacementImplications(
             is_employed=is_employed,
             has_specialty=has_specialty,
-            isnt_on_leave=True,  # TODO
+            isnt_on_leave=isnt_on_leave,
             filter_hits=FilterHits(
                 isnt_filtered_out=True,  # TODO
                 filter_labels=[],  # TODO
