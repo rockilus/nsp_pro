@@ -16,6 +16,7 @@ from shared.schemas.core import (
     ConstraintBuild,
     ConstraintBuildAugmented,
     Constraints,
+    ConstraintOrd,
     ConstraintSeq,
     ConstraintSum,
     CoveragePenalty,
@@ -415,6 +416,94 @@ class ReplacementService(BaseService):
 
         return filtered_seqs
 
+    def _filter_constraint_ord_for_assignment(
+        self,
+        constraint_ord: ConstraintOrd,
+        assignment_date_iso: str,
+        assignment_shift_id: str,
+    ) -> ConstraintOrd | None:
+        """Filter a ConstraintOrd to only include tuples containing the
+        target date and shift.
+
+        Args:
+            constraint_ord: The ConstraintOrd to filter
+            assignment_date_iso: Assignment date in ISO format
+                (e.g., "2025-01-15")
+            assignment_shift_id: Assignment shift ID
+
+        Returns:
+            A new ConstraintOrd with filtered constraint_variables,
+            or None if no tuples match.
+        """
+        filtered_variables = []
+
+        for ref_tuple, rel_tuple in constraint_ord.constraint_variables:
+            # Check if either the reference or relative tuple matches
+            # the assignment date and shift
+            ref_match = (
+                ref_tuple[1] == assignment_date_iso
+                and ref_tuple[2] == assignment_shift_id
+            )
+            rel_match = (
+                rel_tuple[1] == assignment_date_iso
+                and rel_tuple[2] == assignment_shift_id
+            )
+
+            if ref_match or rel_match:
+                filtered_variables.append((ref_tuple, rel_tuple))
+
+        # If no tuples match, return None
+        if not filtered_variables:
+            return None
+
+        # Create a new ConstraintOrd with filtered data
+        return ConstraintOrd(
+            id=constraint_ord.id,
+            constraint_type=constraint_ord.constraint_type,
+            operator=constraint_ord.operator,
+            target_value=constraint_ord.target_value,
+            target_unit=constraint_ord.target_unit,
+            active=constraint_ord.active,
+            hard=constraint_ord.hard,
+            priority=constraint_ord.priority,
+            penalty=constraint_ord.penalty,
+            schedule_id=constraint_ord.schedule_id,
+            constraint_build_id=constraint_ord.constraint_build_id,
+            shift_reference_ids=constraint_ord.shift_reference_ids,
+            shift_relative_ids=constraint_ord.shift_relative_ids,
+            interval=constraint_ord.interval,
+            constraint_variables=filtered_variables,
+        )
+
+    def _filter_all_constraint_ords(
+        self,
+        constraints: Constraints,
+        assignment_date_iso: str,
+        assignment_shift_id: str,
+    ) -> List[ConstraintOrd]:
+        """Filter all ConstraintOrd objects to only include those relevant
+        to the assignment.
+
+        Args:
+            constraints: The Constraints object containing all constraint types
+            assignment_date_iso: Assignment date in ISO format
+            assignment_shift_id: Assignment shift ID
+
+        Returns:
+            A filtered list of ConstraintOrd objects, excluding any that
+            have no matching tuples.
+        """
+        filtered_ords = []
+
+        for constraint_ord in constraints.ord:
+            filtered_ord = self._filter_constraint_ord_for_assignment(
+                constraint_ord, assignment_date_iso, assignment_shift_id
+            )
+            if filtered_ord is not None:
+                filtered_ords.append(filtered_ord)
+
+        return filtered_ords
+
     def _process_replacement_data(
         self, assignment: Assignment, replacement_data: ReplacementData
     ):
@@ -534,5 +623,10 @@ class ReplacementService(BaseService):
 
         # Filter ConstraintSeq to only include those relevant to the assignment
         constraints.seq = self._filter_all_constraint_seqs(
+            constraints, assignment.date.isoformat(), assignment.shift_id
+        )
+
+        # Filter ConstraintOrd to only include those relevant to the assignment
+        constraints.ord = self._filter_all_constraint_ords(
             constraints, assignment.date.isoformat(), assignment.shift_id
         )
