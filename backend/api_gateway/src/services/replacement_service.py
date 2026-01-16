@@ -15,9 +15,9 @@ from shared.schemas.core import (
     ConfigurationConstraintPenalty,
     ConstraintBuild,
     ConstraintBuildAugmented,
-    Constraints,
     ConstraintFil,
     ConstraintOrd,
+    Constraints,
     ConstraintSeq,
     ConstraintSum,
     CoveragePenalty,
@@ -32,11 +32,13 @@ from shared.schemas.core import (
     Worker,
 )
 from shared.utils import (
+    BoolSharedPolicy,
+    build_dates_list,
     build_periods_monthly,
     build_periods_weekly,
     build_periods_yearly,
-    build_dates_list,
     build_worker_ids_to_worker_dates,
+    build_worker_shift_filters,
 )
 
 from src.services.base_service import BaseService
@@ -713,3 +715,17 @@ class ReplacementService(BaseService):
 
         # Remove ConstraintFai as they are not relevant
         constraints.fai = []
+
+        a_filtered_out, _ = build_worker_shift_filters(
+            workers=replacement_data.workers,
+            worker_ids_to_worker_dates=worker_ids_to_worker_dates,
+            shifts=replacement_data.shifts,
+            dimensions=replacement_data.dimensions,
+            attributes=replacement_data.attributes,
+            fixed_values={},
+            penalty=0,
+            shared_bool_policies={
+                d.id: BoolSharedPolicy.SHIFT_TRUE_ONLY
+                for d in replacement_data.dimensions
+            },
+        )
