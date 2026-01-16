@@ -3,6 +3,7 @@ from typing import List
 from enum import Enum
 from datetime import datetime
 from shared.schemas.core import Breach
+from src.services.base_service import BaseService
 
 
 class ReplacementCategory(Enum):
@@ -85,6 +86,23 @@ class ReplacementCandidate:
 
 
 @dataclass
-class ReplacemedShift:
+class ReplacedShift:
     shift_id: str
     filter_labels: List[str]
+
+
+class ReplacementService(BaseService):
+    def get_replacement_candidates(
+        self, assignment_id: str
+    ) -> List[ReplacementCandidate]:
+        pass
+
+    def get_assignment_swap_info(
+        self, assignments_1_ids: List[str], assignments_2_ids: List[str]
+    ) -> None:
+        assignments = self.collection.assignment_db.get_assignments_by_ids(
+            assignments_1_ids + assignments_2_ids
+        )
+
+    def _fetch_candidates_data(self, assignment_ids: List[str]) -> None:
+        pass

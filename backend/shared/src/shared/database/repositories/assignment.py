@@ -132,6 +132,18 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         assignments = self.find_all({"schedule": {"$in": schedule_ids}})
         return [a.to_core() for a in assignments]
 
+    def get_assignments_by_ids(self, assignment_ids: List[str]) -> List[Assignment]:
+        """Get assignments by a list of assignment IDs.
+
+        Forgiving behavior: missing IDs are ignored and the returned list may
+        be unordered (MongoDB `$in` does not guarantee input order).
+        """
+        if not assignment_ids:
+            return []
+
+        assignments = self.find_all({"_id": {"$in": assignment_ids}})
+        return [a.to_core() for a in assignments]
+
     def get_assignments_by_schedule_ids_and_date_range(
         self, schedule_ids: List[str], start_date: date, end_date: date
     ) -> List[Assignment]:

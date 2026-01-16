@@ -1089,3 +1089,58 @@ class TestAssignmentRepository:
         assert len(results) == 2
         assert all(result.schedule_id in schedule_ids for result in results)
         assert all(start_date <= result.date <= end_date for result in results)
+
+    def test_get_assignments_by_ids_returns_matching_assignments(self):
+        """Test getting assignments by a list of assignment IDs."""
+        assignments = [
+            AssignmentSchema(
+                team="team1",
+                worker="worker1",
+                schedule="schedule1",
+                date=datetime(2023, 1, 1, tzinfo=timezone.utc),
+                shift="shift1",
+                fixed=False,
+                source=AssignmentSource.MANUAL.value,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker2",
+                schedule="schedule2",
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc),
+                shift="shift2",
+                fixed=True,
+                source=AssignmentSource.MANUAL.value,
+            ),
+        ]
+
+        created = self.repo.create_many(assignments)
+        assignment_ids = [a.id for a in created if a.id is not None]
+
+        results = self.repo.get_assignments_by_ids(assignment_ids)
+
+        assert len(results) == 2
+        assert set(r.id for r in results) == set(assignment_ids)
+
+    def test_get_assignments_by_ids_with_empty_input_returns_empty(self):
+        """Calling with empty list returns empty list."""
+        results = self.repo.get_assignments_by_ids([])
+        assert results == []
+
+    def test_get_assignments_by_ids_ignores_missing_ids(self):
+        """Missing IDs are ignored; existing assignments are returned."""
+        assignment = AssignmentSchema(
+            team="team1",
+            worker="worker1",
+            schedule="schedule1",
+            date=datetime(2023, 1, 1, tzinfo=timezone.utc),
+            shift="shift1",
+            fixed=False,
+            source=AssignmentSource.MANUAL.value,
+        )
+        created = self.repo.create(assignment)
+
+        assert created.id is not None
+        results = self.repo.get_assignments_by_ids([created.id, "missing_id"])
+
+        assert len(results) == 1
+        assert results[0].id == created.id
