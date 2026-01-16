@@ -15,6 +15,8 @@ from shared.schemas.core import (
     ConfigurationConstraintPenalty,
     ConstraintBuild,
     ConstraintBuildAugmented,
+    Constraints,
+    ConstraintSum,
     CoveragePenalty,
     Dimension,
     DimEntry,
@@ -30,6 +32,8 @@ from shared.utils import (
     build_periods_monthly,
     build_periods_weekly,
     build_periods_yearly,
+    build_dates_list,
+    build_worker_ids_to_worker_dates,
 )
 
 from src.services.base_service import BaseService
@@ -174,7 +178,8 @@ class ReplacementService(BaseService):
             team_id=team_id
         )
 
-        # Verify that all workers and shifts referenced by the target assignments were fetched
+        # Verify that all workers and shifts referenced by the target
+        # assignments were fetched
         worker_ids_fetched = {w.id for w in workers}
         shift_ids_fetched = {s.id for s in shifts}
 
@@ -186,11 +191,13 @@ class ReplacementService(BaseService):
 
         if missing_worker_ids:
             raise ValueError(
-                f"Workers for assignments not found: {', '.join(sorted(missing_worker_ids))}"
+                f"Workers for assignments not found: "
+                f"{', '.join(sorted(missing_worker_ids))}"
             )
         if missing_shift_ids:
             raise ValueError(
-                f"Shifts for assignments not found: {', '.join(sorted(missing_shift_ids))}"
+                f"Shifts for assignments not found: "
+                f"{', '.join(sorted(missing_shift_ids))}"
             )
 
         dimensions = self.collection.dimension_db.get_dimensions(
@@ -241,6 +248,90 @@ class ReplacementService(BaseService):
             constraints=constraints,
             assignments=assignments,
         )
+
+    def _filter_constraint_sum_for_assignment(
+        self,
+        constraint_sum: ConstraintSum,
+        assignment_date_iso: str,
+        assignment_shift_id: str,
+    ) -> ConstraintSum | None:
+        """Filter a ConstraintSum to only include periods containing the
+        target date and shift.
+
+        Args:
+            constraint_sum: The ConstraintSum to filter
+            assignment_date_iso: Assignment date in ISO format
+                (e.g., "2025-01-15")
+            assignment_shift_id: Assignment shift ID
+
+        Returns:
+            A new ConstraintSum with filtered constraint_variables and
+            target_values, or None if no periods match.
+        """
+        filtered_variables = []
+        filtered_target_values = []
+
+        for i, period_vars in enumerate(constraint_sum.constraint_variables):
+            # Check if any tuple in this period matches the assignment
+            # date and shift
+            has_match = any(
+                var[1] == assignment_date_iso and var[2] == assignment_shift_id
+                for var in period_vars
+            )
+
+            if has_match:
+                filtered_variables.append(period_vars)
+                filtered_target_values.append(constraint_sum.target_values[i])
+
+        # If no periods match, return None
+        if not filtered_variables:
+            return None
+
+        # Create a new ConstraintSum with filtered data
+        return ConstraintSum(
+            id=constraint_sum.id,
+            constraint_type=constraint_sum.constraint_type,
+            operator=constraint_sum.operator,
+            target_value=constraint_sum.target_value,
+            target_unit=constraint_sum.target_unit,
+            active=constraint_sum.active,
+            hard=constraint_sum.hard,
+            priority=constraint_sum.priority,
+            penalty=constraint_sum.penalty,
+            schedule_id=constraint_sum.schedule_id,
+            constraint_build_id=constraint_sum.constraint_build_id,
+            constraint_variables=filtered_variables,
+            target_values=filtered_target_values,
+        )
+
+    def _filter_all_constraint_sums(
+        self,
+        constraints: Constraints,
+        assignment_date_iso: str,
+        assignment_shift_id: str,
+    ) -> List[ConstraintSum]:
+        """Filter all ConstraintSum objects to only include those relevant
+        to the assignment.
+
+        Args:
+            constraints: The Constraints object containing all constraint types
+            assignment_date_iso: Assignment date in ISO format
+            assignment_shift_id: Assignment shift ID
+
+        Returns:
+            A filtered list of ConstraintSum objects, excluding any that
+            have no matching periods.
+        """
+        filtered_sums = []
+
+        for constraint_sum in constraints.sum:
+            filtered_sum = self._filter_constraint_sum_for_assignment(
+                constraint_sum, assignment_date_iso, assignment_shift_id
+            )
+            if filtered_sum is not None:
+                filtered_sums.append(filtered_sum)
+
+        return filtered_sums
 
     def _process_replacement_data(
         self, assignment: Assignment, replacement_data: ReplacementData
@@ -316,10 +407,10 @@ class ReplacementService(BaseService):
             min(a.date for a in replacement_data.assignments),
         )
 
-        delta = assignment.date - min_hist_date
-        dates_hist = [
-            min_hist_date + timedelta(days=i) for i in range(delta.days + 1)
-        ]
+        dates_hist = build_dates_list(
+            start_date=min_hist_date,
+            end_date=assignment.date - timedelta(days=1),
+        )
 
         periods_weekly = build_periods_weekly(
             dates_hist=dates_hist, dates_campaign=[assignment.date]
@@ -329,6 +420,13 @@ class ReplacementService(BaseService):
         )
         periods_yearly = build_periods_yearly(
             dates_hist=dates_hist, dates_campaign=[assignment.date]
+        )
+
+        worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
+            start_date=assignment.date,
+            end_date=assignment.date,
+            workers=replacement_data.workers,
+            assignments=replacement_data.assignments,
         )
 
         constraints = parse_constraints(
@@ -345,4 +443,9 @@ class ReplacementService(BaseService):
             shifts=replacement_data.shifts,
             shift_dim_dict=dim_to_attr_value_to_shift,
             penalties=penalties,
+        )
+
+        # Filter ConstraintSum to only include those relevant to the assignment
+        constraints.sum = self._filter_all_constraint_sums(
+            constraints, assignment.date.isoformat(), assignment.shift_id
         )
