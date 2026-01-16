@@ -729,3 +729,11 @@ class ReplacementService(BaseService):
                 for d in replacement_data.dimensions
             },
         )
+
+        # Filter a_filtered_out to only include the assignment date and shift
+        a_filtered_out = [
+            var
+            for var in a_filtered_out
+            if var[1] == assignment.date.isoformat()
+            and var[2] == assignment.shift_id
+        ]
