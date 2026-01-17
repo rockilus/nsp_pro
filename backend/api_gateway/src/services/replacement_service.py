@@ -153,6 +153,7 @@ class ReplacementContext:
     dimensions: List[Dimension]
     dim_entries: List[DimEntry]
     attributes: List[Attribute]
+    shift_dim_dict: Dict
 
 
 @dataclass
@@ -186,8 +187,8 @@ class ReplacementService(BaseService):
             raise ValueError(f"Assignment {assignment_id} not found")
 
         # Process replacement data to build constraints and filters
-        constraints, a_filtered_out = self._process_replacement_data(
-            assignment, replacement_data
+        constraints, a_filtered_out, shift_dim_dict = (
+            self._process_replacement_data(assignment, replacement_data)
         )
 
         # Build replacement context once
@@ -196,6 +197,7 @@ class ReplacementService(BaseService):
             replacement_data=replacement_data,
             constraints=constraints,
             a_filtered_out=a_filtered_out,
+            shift_dim_dict=shift_dim_dict,
         )
 
         # Build replacement candidates for each worker
@@ -687,6 +689,7 @@ class ReplacementService(BaseService):
         replacement_data: ReplacementData,
         constraints: Constraints,
         a_filtered_out: List[tuple[str, str, str]],
+        shift_dim_dict: Dict,
     ) -> ReplacementContext:
         """Build pre-computed context for evaluating replacement candidates.
 
@@ -695,6 +698,7 @@ class ReplacementService(BaseService):
             replacement_data: All fetched data for replacements
             constraints: Filtered constraints relevant to the assignment
             a_filtered_out: Filtered worker-shift filter violations
+            shift_dim_dict: Pre-computed shift dimension dictionary
 
         Returns:
             ReplacementContext with indexed lookups for efficient evaluation
@@ -754,6 +758,7 @@ class ReplacementService(BaseService):
             dimensions=replacement_data.dimensions,
             dim_entries=replacement_data.dim_entries,
             attributes=replacement_data.attributes,
+            shift_dim_dict=shift_dim_dict,
         )
 
     def _check_is_employed(
@@ -907,14 +912,6 @@ class ReplacementService(BaseService):
         assignment_date = context.assignment_date
         conflicting_request_ids = []
 
-        # Build dim_to_attr_value_to_shift for parse_selected_shifts
-        shift_dim_dict = build_dim_to_attr_value_to_owner(
-            owners=context.shifts,
-            dimensions=context.dimensions,
-            dim_entries=context.dim_entries,
-            attributes=context.attributes,
-        )
-
         # Check all work demand requests for this worker
         for request_aug in context.requests_augmented:
             # Filter for this worker's approved work demand requests
@@ -938,7 +935,7 @@ class ReplacementService(BaseService):
                 selected_shifts=request_aug.shift_options,
                 missing_properties=request_aug.missing_attributes,
                 shifts=context.shifts,
-                shift_dim_dict=shift_dim_dict,
+                shift_dim_dict=context.shift_dim_dict,
             )
 
             # Check for conflict based on request type
@@ -1051,7 +1048,7 @@ class ReplacementService(BaseService):
 
     def _process_replacement_data(
         self, assignment: Assignment, replacement_data: ReplacementData
-    ) -> tuple[Constraints, List[tuple[str, str, str]]]:
+    ) -> tuple[Constraints, List[tuple[str, str, str]], Dict]:
         dim_to_attr_value_to_worker = build_dim_to_attr_value_to_owner(
             owners=replacement_data.workers,
             dimensions=replacement_data.dimensions,
@@ -1206,4 +1203,4 @@ class ReplacementService(BaseService):
             and var[2] == assignment.shift_id
         ]
 
-        return constraints, a_filtered_out
+        return constraints, a_filtered_out, dim_to_attr_value_to_shift
