@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from enum import Enum
-from typing import List
+from typing import Dict, List
 
 from shared.augment.cb_to_cb_augmented import cb_to_cb_augmented
 from shared.constraint_parser import (
@@ -143,6 +143,7 @@ class ReplacementContext:
     a_filtered_out: List[tuple[str, str, str]]
     assignments: List[Assignment]
     requests: List[Request]
+    assignment_times: Dict[str, tuple[datetime, datetime]]
 
 
 @dataclass
@@ -646,6 +647,31 @@ class ReplacementService(BaseService):
 
         return filtered_fils
 
+    def _compute_assignment_datetimes(
+        self, assignment: Assignment, shift: Shift
+    ) -> tuple[datetime, datetime]:
+        """Compute actual start and end datetimes for an assignment.
+
+        Args:
+            assignment: The assignment
+            shift: The shift for this assignment
+
+        Returns:
+            Tuple of (start_datetime, end_datetime)
+        """
+        # Combine assignment date with shift start time
+        start_dt = datetime.combine(
+            assignment.date, shift.start_time.time(), tzinfo=timezone.utc
+        )
+
+        # Handle shifts that end on following day
+        days_diff = (shift.end_time - shift.start_time).days
+        end_dt = datetime.combine(
+            assignment.date, shift.end_time.time(), tzinfo=timezone.utc
+        ) + timedelta(days=days_diff)
+
+        return start_dt, end_dt
+
     def _build_replacement_context(
         self,
         assignment: Assignment,
@@ -676,6 +702,16 @@ class ReplacementService(BaseService):
         if not target_shift:
             raise ValueError(f"Shift {assignment.shift_id} not found")
 
+        # Pre-compute start and end datetimes for all assignments
+        assignment_times = {}
+        shift_by_id = {s.id: s for s in replacement_data.shifts}
+        for assgn in replacement_data.assignments:
+            shift = shift_by_id.get(assgn.shift_id)
+            if shift:
+                assignment_times[assgn.id] = (
+                    self._compute_assignment_datetimes(assgn, shift)
+                )
+
         return ReplacementContext(
             target_assignment=assignment,
             target_shift=target_shift,
@@ -686,6 +722,7 @@ class ReplacementService(BaseService):
             a_filtered_out=a_filtered_out,
             assignments=replacement_data.assignments,
             requests=replacement_data.requests,
+            assignment_times=assignment_times,
         )
 
     def _check_is_employed(
@@ -774,7 +811,7 @@ class ReplacementService(BaseService):
     def _check_overlap_hits(
         self, worker: Worker, context: ReplacementContext
     ) -> OverlapHits:
-        """Check if worker has overlapping assignments on the target date.
+        """Check if worker has overlapping assignments with target shift.
 
         Args:
             worker: The worker to check
@@ -784,32 +821,38 @@ class ReplacementService(BaseService):
             OverlapHits with hasnt_overlap=False if overlaps exist,
             and list of overlapping assignment IDs
         """
-        assignment_date = context.assignment_date
-        target_shift = context.target_shift
         overlap_assignment_ids = []
 
-        # Find all assignments for this worker on the same date
-        worker_assignments_on_date = [
-            a
-            for a in context.assignments
-            if a.worker_id == worker.id and a.date == assignment_date
-        ]
+        # Get target assignment times
+        target_times = context.assignment_times.get(
+            context.target_assignment.id
+        )
+        if not target_times:
+            # If target times not found, cannot check overlap
+            return OverlapHits(hasnt_overlap=True, overlap_assignment_ids=[])
 
-        # Check each assignment for time overlap with the target shift
-        for assignment in worker_assignments_on_date:
+        target_start, target_end = target_times
+
+        # Check all worker assignments for time overlap
+        for assignment in context.assignments:
+            # Skip if not this worker
+            if assignment.worker_id != worker.id:
+                continue
+
             # Skip if it's the target assignment itself
             if assignment.id == context.target_assignment.id:
                 continue
 
-            # Find the shift for this assignment
-            assignment_shift = next(
-                (s for s in context.shifts if s.id == assignment.shift_id),
-                None,
-            )
+            # Get assignment times
+            assgn_times = context.assignment_times.get(assignment.id)
+            if not assgn_times:
+                continue
 
-            if assignment_shift and target_shift.overlaps_with(
-                assignment_shift
-            ):
+            assgn_start, assgn_end = assgn_times
+
+            # Check if time ranges overlap
+            # Two ranges overlap if: start1 < end2 AND end1 > start2
+            if target_start < assgn_end and target_end > assgn_start:
                 overlap_assignment_ids.append(assignment.id)
 
         return OverlapHits(
