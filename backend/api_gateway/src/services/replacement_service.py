@@ -4,9 +4,13 @@ from enum import Enum
 from typing import Dict, List
 
 from shared.augment.cb_to_cb_augmented import cb_to_cb_augmented
+from shared.augment.r_to_r_augmented import r_to_r_augmented
 from shared.constraint_parser import (
     build_dim_to_attr_value_to_owner,
     parse_constraints,
+)
+from shared.constraint_parser.parse_selected_shifts import (
+    parse_selected_shifts,
 )
 from shared.schemas.core import (
     Assignment,
@@ -144,6 +148,9 @@ class ReplacementContext:
     assignments: List[Assignment]
     requests: List[Request]
     assignment_times: Dict[str, tuple[datetime, datetime]]
+    dimensions: List[Dimension]
+    dim_entries: List[DimEntry]
+    attributes: List[Attribute]
 
 
 @dataclass
@@ -723,6 +730,9 @@ class ReplacementService(BaseService):
             assignments=replacement_data.assignments,
             requests=replacement_data.requests,
             assignment_times=assignment_times,
+            dimensions=replacement_data.dimensions,
+            dim_entries=replacement_data.dim_entries,
+            attributes=replacement_data.attributes,
         )
 
     def _check_is_employed(
@@ -860,6 +870,110 @@ class ReplacementService(BaseService):
             overlap_assignment_ids=overlap_assignment_ids,
         )
 
+    def _check_request_hits(
+        self, worker: Worker, context: ReplacementContext
+    ) -> RequestHits:
+        """Check if worker has request conflicts with target assignment.
+
+        Args:
+            worker: The worker to check
+            context: Pre-computed replacement context
+
+        Returns:
+            RequestHits with has_no_request_conflict=False if conflicts exist,
+            and list of conflicting request IDs
+        """
+        assignment_date = context.assignment_date
+        conflicting_request_ids = []
+
+        # Build dim_to_attr_value_to_shift for parse_selected_shifts
+        shift_dim_dict = build_dim_to_attr_value_to_owner(
+            owners=context.shifts,
+            dimensions=context.dimensions,
+            dim_entries=context.dim_entries,
+            attributes=context.attributes,
+        )
+
+        # Check all work demand requests for this worker
+        for request in context.requests:
+            # Filter for this worker's approved work demand requests
+            if (
+                request.worker_id != worker.id
+                or request.request_type != RequestType.WORK_DEMAND
+                or request.status != RequestStatus.APPROVED
+            ):
+                continue
+
+            # Check if request covers the assignment date
+            if not (request.start_date <= assignment_date <= request.end_date):
+                continue
+
+            # Augment request to check if it's active
+            request_augmented = r_to_r_augmented(
+                request=request,
+                worker=worker,
+                shifts=context.shifts,
+                dimensions=context.dimensions,
+                dim_entries=context.dim_entries,
+                attributes=context.attributes,
+            )
+
+            # Skip inactive requests
+            if not request_augmented.active:
+                continue
+
+            # Get the list of shift IDs for this request
+            shift_ids = parse_selected_shifts(
+                selected_shifts=request.shift_options,
+                missing_properties=request_augmented.missing_attributes,
+                shifts=context.shifts,
+                shift_dim_dict=shift_dim_dict,
+            )
+
+            # Check if target shift is in the request's shift list
+            if context.target_shift.id in shift_ids:
+                # Negative request = worker doesn't want this shift = conflict
+                if request.negative:
+                    conflicting_request_ids.append(request.id)
+                # Positive request = worker wants this shift = no conflict
+
+        return RequestHits(
+            has_no_request_conflict=len(conflicting_request_ids) == 0,
+            conflicting_request_ids=conflicting_request_ids,
+        )
+
+    def _check_filter_hits(
+        self, worker: Worker, context: ReplacementContext
+    ) -> FilterHits:
+        """Check if worker-shift-date combination is filtered out.
+
+        Args:
+            worker: The worker to check
+            context: Pre-computed replacement context
+
+        Returns:
+            FilterHits indicating if the combination is allowed
+        """
+        # Build the tuple for this worker-shift-date combination
+        assignment_tuple = (
+            worker.id,
+            context.assignment_date.isoformat(),
+            context.target_shift.id,
+        )
+
+        # Check if this combination is in the filtered-out list
+        isnt_filtered = assignment_tuple not in context.a_filtered_out
+
+        # TODO: Determine specific filter labels
+        # (dimension mismatch, bool policy, no duties, etc.)
+        # For now, provide generic label if filtered
+        filter_labels = [] if isnt_filtered else ["worker_shift_filter"]
+
+        return FilterHits(
+            isnt_filtered_out=isnt_filtered,
+            filter_labels=filter_labels,
+        )
+
     def _build_replacement_implications(
         self, worker: Worker, context: ReplacementContext
     ) -> ReplacementImplications:
@@ -877,6 +991,8 @@ class ReplacementService(BaseService):
         has_specialty = self._check_has_specialty(worker, context)
         isnt_on_leave = self._check_isnt_on_leave(worker, context)
         overlap_hits = self._check_overlap_hits(worker, context)
+        request_hits = self._check_request_hits(worker, context)
+        filter_hits = self._check_filter_hits(worker, context)
 
         # TODO: Implement remaining checks
         # Placeholder values for now
@@ -884,19 +1000,13 @@ class ReplacementService(BaseService):
             is_employed=is_employed,
             has_specialty=has_specialty,
             isnt_on_leave=isnt_on_leave,
-            filter_hits=FilterHits(
-                isnt_filtered_out=True,  # TODO
-                filter_labels=[],  # TODO
-            ),
+            filter_hits=filter_hits,
             overlap_hits=overlap_hits,
             hard_constraint_hits=ConstraintHits(
                 meets_constraints=True,  # TODO
                 breaches=[],  # TODO
             ),
-            request_hits=RequestHits(
-                has_no_request_conflict=True,  # TODO
-                conflicting_request_ids=[],  # TODO
-            ),
+            request_hits=request_hits,
             soft_constraint_hits=ConstraintHits(
                 meets_constraints=True,  # TODO
                 breaches=[],  # TODO
