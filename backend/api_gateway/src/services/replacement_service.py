@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from enum import Enum
-from typing import Dict, List
+from typing import Dict, List, Set, Tuple
 
 from shared.augment.cb_to_cb_augmented import cb_to_cb_augmented
 from shared.augment.r_to_r_augmented import r_to_r_augmented
@@ -14,11 +14,13 @@ from shared.constraint_parser.parse_selected_shifts import (
 )
 from shared.schemas.core import (
     Assignment,
+    AssignmentSource,
     Attribute,
     Breach,
     ConfigurationConstraintPenalty,
     ConstraintBuild,
     ConstraintFil,
+    ConstraintOperator,
     ConstraintOrd,
     Constraints,
     ConstraintSeq,
@@ -36,8 +38,10 @@ from shared.schemas.core import (
     Specialty,
     SystemConstraintPenalty,
     UserConstraintPenalty,
+    Variable,
     Worker,
 )
+from shared.schemas.core.breach import ObjectiveCategory
 from shared.utils import (
     BoolSharedPolicy,
     build_dates_list,
@@ -154,6 +158,7 @@ class ReplacementContext:
     dim_entries: List[DimEntry]
     attributes: List[Attribute]
     shift_dim_dict: Dict
+    assignment_tuples: Set[Tuple[str, str, str]]
 
 
 @dataclass
@@ -743,6 +748,12 @@ class ReplacementService(BaseService):
                 if request_aug.active:
                     requests_augmented.append(request_aug)
 
+        # Pre-compute assignment tuples for O(1) lookup
+        assignment_tuples = {
+            (a.worker_id, a.date.isoformat(), a.shift_id)
+            for a in replacement_data.assignments
+        }
+
         return ReplacementContext(
             target_assignment=assignment,
             target_shift=target_shift,
@@ -759,6 +770,7 @@ class ReplacementService(BaseService):
             dim_entries=replacement_data.dim_entries,
             attributes=replacement_data.attributes,
             shift_dim_dict=shift_dim_dict,
+            assignment_tuples=assignment_tuples,
         )
 
     def _check_is_employed(
@@ -991,6 +1003,208 @@ class ReplacementService(BaseService):
             filter_labels=filter_labels,
         )
 
+    def _create_hypothetical_assignment(
+        self, worker: Worker, context: ReplacementContext
+    ) -> Assignment:
+        """Create a hypothetical assignment for constraint checking.
+
+        Args:
+            worker: The candidate worker
+            context: Pre-computed replacement context
+
+        Returns:
+            Assignment object with candidate worker replacing target assignment
+        """
+        return Assignment(
+            id="",
+            team_id=context.target_assignment.team_id,
+            schedule_id=context.target_assignment.schedule_id,
+            worker_id=worker.id,
+            date=context.target_assignment.date,
+            shift_id=context.target_assignment.shift_id,
+            fixed=False,
+            source=AssignmentSource.SOLVER,
+        )
+
+    def _check_constraint_sum_hits(
+        self, worker: Worker, context: ReplacementContext, hard: bool
+    ) -> ConstraintHits:
+        """Check ConstraintSum violations for replacement.
+
+        Args:
+            worker: The candidate worker
+            context: Pre-computed replacement context
+            hard: True to check hard constraints, False for soft
+
+        Returns:
+            ConstraintHits with meets_constraints flag and breaches
+        """
+        breaches: List[Breach] = []
+        target_tuple = (
+            context.target_assignment.worker_id,
+            context.target_assignment.date.isoformat(),
+            context.target_assignment.shift_id,
+        )
+        candidate_tuple = (
+            worker.id,
+            context.target_assignment.date.isoformat(),
+            context.target_assignment.shift_id,
+        )
+
+        # Filter constraints by hardness
+        relevant_constraints = [
+            c for c in context.constraints.sum if c.hard == hard
+        ]
+
+        for constraint in relevant_constraints:
+            # For each period in the constraint
+            for period_idx, period_vars in enumerate(
+                constraint.constraint_variables
+            ):
+                # Check if this period contains the target assignment
+                period_tuples = set(period_vars)
+                if target_tuple not in period_tuples:
+                    continue
+
+                # Count assignments with candidate replacing target
+                # Count existing assignments minus target plus candidate
+                count = 0
+                breach_variables: List[Variable] = []
+
+                for var_tuple in period_tuples:
+                    # If this is the target assignment, replace with candidate
+                    if var_tuple == target_tuple:
+                        check_tuple = candidate_tuple
+                    else:
+                        check_tuple = var_tuple
+
+                    # Check if this assignment exists
+                    if check_tuple in context.assignment_tuples:
+                        count += 1
+                        # Add to breach variables for this period
+                        breach_variables.append(
+                            Variable(
+                                worker_id=check_tuple[0],
+                                date=datetime.fromisoformat(
+                                    check_tuple[1]
+                                ).date(),
+                                shift_id=check_tuple[2],
+                            )
+                        )
+
+                # Get target value for this period
+                target_value = constraint.target_values[period_idx]
+
+                # Calculate deviation based on operator
+                deviation = 0
+                if constraint.operator is None:
+                    deviation = abs(target_value - count)
+                elif (
+                    constraint.operator
+                    == ConstraintOperator.LESS_THAN_OR_EQUAL
+                ):
+                    deviation = max(count - target_value, 0)
+                elif constraint.operator == ConstraintOperator.EQUAL:
+                    deviation = abs(target_value - count)
+                elif (
+                    constraint.operator
+                    == ConstraintOperator.GREATER_THAN_OR_EQUAL
+                ):
+                    deviation = max(target_value - count, 0)
+                elif constraint.operator == ConstraintOperator.LESS_THAN:
+                    deviation = max(count - target_value + 1, 0)
+                elif constraint.operator == ConstraintOperator.GREATER_THAN:
+                    deviation = max(target_value - count + 1, 0)
+
+                # If there's a deviation, create a breach
+                if deviation > 0:
+                    breach = Breach(
+                        id="",
+                        schedule_id=(
+                            context.target_assignment.schedule_id or ""
+                        ),
+                        objective_id=constraint.id,
+                        objective_category=ObjectiveCategory.CONSTRAINT,
+                        variables=breach_variables,
+                        description="",
+                        hard_to_soft=None,
+                        meta=None,
+                    )
+                    breaches.append(breach)
+
+        return ConstraintHits(
+            meets_constraints=len(breaches) == 0,
+            breaches=breaches,
+        )
+
+    def _check_constraint_seq_hits(
+        self, _worker: Worker, _context: ReplacementContext, _hard: bool
+    ) -> ConstraintHits:
+        """Check ConstraintSeq violations for replacement.
+
+        TODO: Implement ConstraintSeq checking following ConstraintSum pattern.
+
+        Args:
+            _worker: The candidate worker
+            _context: Pre-computed replacement context
+            _hard: True to check hard constraints, False for soft
+
+        Returns:
+            ConstraintHits with meets_constraints flag and breaches
+        """
+        return ConstraintHits(meets_constraints=True, breaches=[])
+
+    def _check_constraint_ord_hits(
+        self, _worker: Worker, _context: ReplacementContext, _hard: bool
+    ) -> ConstraintHits:
+        """Check ConstraintOrd violations for replacement.
+
+        TODO: Implement ConstraintOrd checking following ConstraintSum pattern.
+
+        Args:
+            _worker: The candidate worker
+            _context: Pre-computed replacement context
+            _hard: True to check hard constraints, False for soft
+
+        Returns:
+            ConstraintHits with meets_constraints flag and breaches
+        """
+        return ConstraintHits(meets_constraints=True, breaches=[])
+
+    def _check_constraint_fil_hits(
+        self, _worker: Worker, _context: ReplacementContext, _hard: bool
+    ) -> ConstraintHits:
+        """Check ConstraintFil violations for replacement.
+
+        TODO: Implement ConstraintFil checking following ConstraintSum pattern.
+
+        Args:
+            _worker: The candidate worker
+            _context: Pre-computed replacement context
+            _hard: True to check hard constraints, False for soft
+
+        Returns:
+            ConstraintHits with meets_constraints flag and breaches
+        """
+        return ConstraintHits(meets_constraints=True, breaches=[])
+
+    def _check_constraint_fai_hits(
+        self, _worker: Worker, _context: ReplacementContext, _hard: bool
+    ) -> ConstraintHits:
+        """Check ConstraintFai violations for replacement.
+
+        TODO: Implement ConstraintFai checking following ConstraintSum pattern.
+
+        Args:
+            _worker: The candidate worker
+            _context: Pre-computed replacement context
+            _hard: True to check hard constraints, False for soft
+
+        Returns:
+            ConstraintHits with meets_constraints flag and breaches
+        """
+        return ConstraintHits(meets_constraints=True, breaches=[])
+
     def _build_replacement_implications(
         self, worker: Worker, context: ReplacementContext
     ) -> ReplacementImplications:
@@ -1011,6 +1225,14 @@ class ReplacementService(BaseService):
         request_hits = self._check_request_hits(worker, context)
         filter_hits = self._check_filter_hits(worker, context)
 
+        # Constraint checks
+        hard_constraint_hits = self._check_constraint_sum_hits(
+            worker, context, hard=True
+        )
+        soft_constraint_hits = self._check_constraint_sum_hits(
+            worker, context, hard=False
+        )
+
         # TODO: Implement remaining checks
         # Placeholder values for now
         return ReplacementImplications(
@@ -1019,15 +1241,9 @@ class ReplacementService(BaseService):
             isnt_on_leave=isnt_on_leave,
             filter_hits=filter_hits,
             overlap_hits=overlap_hits,
-            hard_constraint_hits=ConstraintHits(
-                meets_constraints=True,  # TODO
-                breaches=[],  # TODO
-            ),
+            hard_constraint_hits=hard_constraint_hits,
             request_hits=request_hits,
-            soft_constraint_hits=ConstraintHits(
-                meets_constraints=True,  # TODO
-                breaches=[],  # TODO
-            ),
+            soft_constraint_hits=soft_constraint_hits,
             new_monthly_duties=MonthlyDutiesImplications(
                 new_number_monthly_duties=0,  # TODO
                 new_monthly_duties_delta=0,  # TODO
