@@ -101,8 +101,7 @@ class ReplacementImplications:
     has_specialty: bool
     isnt_on_leave: bool
     filter_hits: FilterHits
-    is_on_leave: bool
-    overlap_minutes: OverlapHits
+    overlap_hits: OverlapHits
     hard_constraint_hits: ConstraintHits
     request_hits: RequestHits
 
@@ -772,6 +771,52 @@ class ReplacementService(BaseService):
 
         return True  # Worker is not on leave
 
+    def _check_overlap_hits(
+        self, worker: Worker, context: ReplacementContext
+    ) -> OverlapHits:
+        """Check if worker has overlapping assignments on the target date.
+
+        Args:
+            worker: The worker to check
+            context: Pre-computed replacement context
+
+        Returns:
+            OverlapHits with hasnt_overlap=False if overlaps exist,
+            and list of overlapping assignment IDs
+        """
+        assignment_date = context.assignment_date
+        target_shift = context.target_shift
+        overlap_assignment_ids = []
+
+        # Find all assignments for this worker on the same date
+        worker_assignments_on_date = [
+            a
+            for a in context.assignments
+            if a.worker_id == worker.id and a.date == assignment_date
+        ]
+
+        # Check each assignment for time overlap with the target shift
+        for assignment in worker_assignments_on_date:
+            # Skip if it's the target assignment itself
+            if assignment.id == context.target_assignment.id:
+                continue
+
+            # Find the shift for this assignment
+            assignment_shift = next(
+                (s for s in context.shifts if s.id == assignment.shift_id),
+                None,
+            )
+
+            if assignment_shift and target_shift.overlaps_with(
+                assignment_shift
+            ):
+                overlap_assignment_ids.append(assignment.id)
+
+        return OverlapHits(
+            hasnt_overlap=len(overlap_assignment_ids) == 0,
+            overlap_assignment_ids=overlap_assignment_ids,
+        )
+
     def _build_replacement_implications(
         self, worker: Worker, context: ReplacementContext
     ) -> ReplacementImplications:
@@ -788,6 +833,7 @@ class ReplacementService(BaseService):
         is_employed = self._check_is_employed(worker, context)
         has_specialty = self._check_has_specialty(worker, context)
         isnt_on_leave = self._check_isnt_on_leave(worker, context)
+        overlap_hits = self._check_overlap_hits(worker, context)
 
         # TODO: Implement remaining checks
         # Placeholder values for now
@@ -799,11 +845,7 @@ class ReplacementService(BaseService):
                 isnt_filtered_out=True,  # TODO
                 filter_labels=[],  # TODO
             ),
-            is_on_leave=False,  # TODO
-            overlap_minutes=OverlapHits(
-                hasnt_overlap=True,  # TODO
-                overlap_assignment_ids=[],  # TODO
-            ),
+            overlap_hits=overlap_hits,
             hard_constraint_hits=ConstraintHits(
                 meets_constraints=True,  # TODO
                 breaches=[],  # TODO
