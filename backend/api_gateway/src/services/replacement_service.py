@@ -29,6 +29,7 @@ from shared.schemas.core import (
     Penalties,
     Penalty,
     Request,
+    RequestAugmented,
     RequestStatus,
     RequestType,
     Shift,
@@ -147,6 +148,7 @@ class ReplacementContext:
     a_filtered_out: List[tuple[str, str, str]]
     assignments: List[Assignment]
     requests: List[Request]
+    requests_augmented: List[RequestAugmented]
     assignment_times: Dict[str, tuple[datetime, datetime]]
     dimensions: List[Dimension]
     dim_entries: List[DimEntry]
@@ -719,6 +721,22 @@ class ReplacementService(BaseService):
                     self._compute_assignment_datetimes(assgn, shift)
                 )
 
+        # Pre-compute augmented requests
+        worker_by_id = {w.id: w for w in replacement_data.workers}
+        requests_augmented = []
+        for request in replacement_data.requests:
+            worker = worker_by_id.get(request.worker_id)
+            if worker:
+                request_aug = r_to_r_augmented(
+                    request=request,
+                    worker=worker,
+                    shifts=replacement_data.shifts,
+                    dimensions=replacement_data.dimensions,
+                    dim_entries=replacement_data.dim_entries,
+                    attributes=replacement_data.attributes,
+                )
+                requests_augmented.append(request_aug)
+
         return ReplacementContext(
             target_assignment=assignment,
             target_shift=target_shift,
@@ -729,6 +747,7 @@ class ReplacementService(BaseService):
             a_filtered_out=a_filtered_out,
             assignments=replacement_data.assignments,
             requests=replacement_data.requests,
+            requests_augmented=requests_augmented,
             assignment_times=assignment_times,
             dimensions=replacement_data.dimensions,
             dim_entries=replacement_data.dim_entries,
@@ -895,37 +914,31 @@ class ReplacementService(BaseService):
         )
 
         # Check all work demand requests for this worker
-        for request in context.requests:
+        for request_aug in context.requests_augmented:
             # Filter for this worker's approved work demand requests
             if (
-                request.worker_id != worker.id
-                or request.request_type != RequestType.WORK_DEMAND
-                or request.status != RequestStatus.APPROVED
+                request_aug.worker_id != worker.id
+                or request_aug.request_type != RequestType.WORK_DEMAND
+                or request_aug.status != RequestStatus.APPROVED
             ):
                 continue
 
             # Check if request covers the assignment date
-            if not (request.start_date <= assignment_date <= request.end_date):
+            if not (
+                request_aug.start_date
+                <= assignment_date
+                <= request_aug.end_date
+            ):
                 continue
 
-            # Augment request to check if it's active
-            request_augmented = r_to_r_augmented(
-                request=request,
-                worker=worker,
-                shifts=context.shifts,
-                dimensions=context.dimensions,
-                dim_entries=context.dim_entries,
-                attributes=context.attributes,
-            )
-
             # Skip inactive requests
-            if not request_augmented.active:
+            if not request_aug.active:
                 continue
 
             # Get the list of shift IDs for this request
             shift_ids = parse_selected_shifts(
-                selected_shifts=request.shift_options,
-                missing_properties=request_augmented.missing_attributes,
+                selected_shifts=request_aug.shift_options,
+                missing_properties=request_aug.missing_attributes,
                 shifts=context.shifts,
                 shift_dim_dict=shift_dim_dict,
             )
@@ -933,8 +946,8 @@ class ReplacementService(BaseService):
             # Check if target shift is in the request's shift list
             if context.target_shift.id in shift_ids:
                 # Negative request = worker doesn't want this shift = conflict
-                if request.negative:
-                    conflicting_request_ids.append(request.id)
+                if request_aug.negative:
+                    conflicting_request_ids.append(request_aug.id)
                 # Positive request = worker wants this shift = no conflict
 
         return RequestHits(
