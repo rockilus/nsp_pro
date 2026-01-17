@@ -941,12 +941,21 @@ class ReplacementService(BaseService):
                 shift_dim_dict=shift_dim_dict,
             )
 
-            # Check if target shift is in the request's shift list
-            if context.target_shift.id in shift_ids:
-                # Negative request = worker doesn't want this shift = conflict
-                if request_aug.negative:
-                    conflicting_request_ids.append(request_aug.id)
-                # Positive request = worker wants this shift = no conflict
+            # Check for conflict based on request type
+            target_shift_in_list = context.target_shift.id in shift_ids
+            is_conflict = False
+
+            if request_aug.negative:
+                # Negative request: worker doesn't want these shifts
+                # Conflict if target shift is in the list
+                is_conflict = target_shift_in_list
+            else:
+                # Positive request: worker wants these specific shifts
+                # Conflict if target shift is NOT in the list
+                is_conflict = not target_shift_in_list
+
+            if is_conflict:
+                conflicting_request_ids.append(request_aug.id)
 
         return RequestHits(
             has_no_request_conflict=len(conflicting_request_ids) == 0,
