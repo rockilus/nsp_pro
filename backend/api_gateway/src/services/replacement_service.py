@@ -735,7 +735,9 @@ class ReplacementService(BaseService):
                     dim_entries=replacement_data.dim_entries,
                     attributes=replacement_data.attributes,
                 )
-                requests_augmented.append(request_aug)
+                # Only include active requests
+                if request_aug.active:
+                    requests_augmented.append(request_aug)
 
         return ReplacementContext(
             target_assignment=assignment,
@@ -929,10 +931,6 @@ class ReplacementService(BaseService):
                 <= assignment_date
                 <= request_aug.end_date
             ):
-                continue
-
-            # Skip inactive requests
-            if not request_aug.active:
                 continue
 
             # Get the list of shift IDs for this request
