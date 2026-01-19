@@ -1318,21 +1318,113 @@ class ReplacementService(BaseService):
         )
 
     def _check_constraint_ord_hits(
-        self, _worker: Worker, _context: ReplacementContext, _hard: bool
+        self, worker: Worker, context: ReplacementContext, hard: bool
     ) -> ConstraintHits:
         """Check ConstraintOrd violations for replacement.
 
-        TODO: Implement ConstraintOrd checking following ConstraintSum pattern.
+        ConstraintOrd checks ordering between assignment pairs:
+        - YES operator: if ref exists, rel must exist
+        - NO operator: if ref exists, rel must NOT exist
 
         Args:
-            _worker: The candidate worker
-            _context: Pre-computed replacement context
-            _hard: True to check hard constraints, False for soft
+            worker: The candidate worker
+            context: Pre-computed replacement context
+            hard: True to check hard constraints, False for soft
 
         Returns:
             ConstraintHits with meets_constraints flag and breaches
         """
-        return ConstraintHits(meets_constraints=True, breaches=[])
+        breaches: List[Breach] = []
+        target_tuple = (
+            context.target_assignment.worker_id,
+            context.target_assignment.date.isoformat(),
+            context.target_assignment.shift_id,
+        )
+        candidate_tuple = (
+            worker.id,
+            context.target_assignment.date.isoformat(),
+            context.target_assignment.shift_id,
+        )
+
+        # Filter constraints by hardness
+        relevant_constraints = [
+            c for c in context.constraints.ord if c.hard == hard
+        ]
+
+        for constraint in relevant_constraints:
+            # For each pair of (reference, relative) assignments
+            for ref_tuple, rel_tuple in constraint.constraint_variables:
+                # Check if target assignment is in this pair
+                if target_tuple not in (ref_tuple, rel_tuple):
+                    continue
+
+                # Replace target with candidate in the pair
+                check_ref_tuple = (
+                    candidate_tuple if ref_tuple == target_tuple else ref_tuple
+                )
+                check_rel_tuple = (
+                    candidate_tuple if rel_tuple == target_tuple else rel_tuple
+                )
+
+                # Check if assignments exist
+                ref_exists = check_ref_tuple in context.assignment_tuples
+                rel_exists = check_rel_tuple in context.assignment_tuples
+
+                # Check for violations based on operator
+                violation_found = False
+                breach_variables: List[Variable] = []
+
+                if constraint.operator == ConstraintOperator.YES:
+                    # If ref exists, rel must exist
+                    if ref_exists and not rel_exists:
+                        violation_found = True
+                elif constraint.operator == ConstraintOperator.NO:
+                    # If ref exists, rel must NOT exist
+                    if ref_exists and rel_exists:
+                        violation_found = True
+
+                # Create breach if violation found
+                if violation_found:
+                    # Include both reference and relative in breach vars
+                    if ref_exists:
+                        breach_variables.append(
+                            Variable(
+                                worker_id=check_ref_tuple[0],
+                                date=datetime.fromisoformat(
+                                    check_ref_tuple[1]
+                                ).date(),
+                                shift_id=check_ref_tuple[2],
+                            )
+                        )
+                    if rel_exists:
+                        breach_variables.append(
+                            Variable(
+                                worker_id=check_rel_tuple[0],
+                                date=datetime.fromisoformat(
+                                    check_rel_tuple[1]
+                                ).date(),
+                                shift_id=check_rel_tuple[2],
+                            )
+                        )
+
+                    breach = Breach(
+                        id="",
+                        schedule_id=(
+                            context.target_assignment.schedule_id or ""
+                        ),
+                        objective_id=constraint.id,
+                        objective_category=ObjectiveCategory.CONSTRAINT,
+                        variables=breach_variables,
+                        description="",
+                        hard_to_soft=None,
+                        meta=None,
+                    )
+                    breaches.append(breach)
+
+        return ConstraintHits(
+            meets_constraints=len(breaches) == 0,
+            breaches=breaches,
+        )
 
     def _check_constraint_fil_hits(
         self, _worker: Worker, _context: ReplacementContext, _hard: bool
@@ -1388,19 +1480,27 @@ class ReplacementService(BaseService):
         request_hits = self._check_request_hits(worker, context)
         filter_hits = self._check_filter_hits(worker, context)
 
-        # Constraint checks - combine sum and seq constraints
+        # Constraint checks - combine sum, seq, and ord constraints
         hard_sum_hits = self._check_constraint_sum_hits(
             worker, context, hard=True
         )
         hard_seq_hits = self._check_constraint_seq_hits(
             worker, context, hard=True
         )
+        hard_ord_hits = self._check_constraint_ord_hits(
+            worker, context, hard=True
+        )
         hard_constraint_hits = ConstraintHits(
             meets_constraints=(
                 hard_sum_hits.meets_constraints
                 and hard_seq_hits.meets_constraints
+                and hard_ord_hits.meets_constraints
             ),
-            breaches=hard_sum_hits.breaches + hard_seq_hits.breaches,
+            breaches=(
+                hard_sum_hits.breaches
+                + hard_seq_hits.breaches
+                + hard_ord_hits.breaches
+            ),
         )
 
         soft_sum_hits = self._check_constraint_sum_hits(
@@ -1409,12 +1509,20 @@ class ReplacementService(BaseService):
         soft_seq_hits = self._check_constraint_seq_hits(
             worker, context, hard=False
         )
+        soft_ord_hits = self._check_constraint_ord_hits(
+            worker, context, hard=False
+        )
         soft_constraint_hits = ConstraintHits(
             meets_constraints=(
                 soft_sum_hits.meets_constraints
                 and soft_seq_hits.meets_constraints
+                and soft_ord_hits.meets_constraints
             ),
-            breaches=soft_sum_hits.breaches + soft_seq_hits.breaches,
+            breaches=(
+                soft_sum_hits.breaches
+                + soft_seq_hits.breaches
+                + soft_ord_hits.breaches
+            ),
         )
 
         # TODO: Implement remaining checks
