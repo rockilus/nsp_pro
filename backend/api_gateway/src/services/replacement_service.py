@@ -225,17 +225,17 @@ class ReplacementService(BaseService):
 
         return candidates
 
-    def get_assignment_swap_info(
-        self,
-        assignments_1_ids: List[str],
-        assignments_2_ids: List[str],
-        team_id: str,
-    ) -> None:
-        _replacement_data = self._fetch_replacement_data(
-            assignment_ids=assignments_1_ids + assignments_2_ids,
-            team_id=team_id,
-        )
-        # TODO: Implement swap evaluation logic
+    # def get_assignment_swap_info(
+    #     self,
+    #     assignments_1_ids: List[str],
+    #     assignments_2_ids: List[str],
+    #     team_id: str,
+    # ) -> None:
+    #     _replacement_data = self._fetch_replacement_data(
+    #         assignment_ids=assignments_1_ids + assignments_2_ids,
+    #         team_id=team_id,
+    #     )
+    #     # TODO: Implement swap evaluation logic
 
     def _fetch_replacement_data(
         self, assignment_ids: List[str], team_id: str
@@ -936,8 +936,8 @@ class ReplacementService(BaseService):
                 continue
 
             # Check if request covers the assignment date
-            if not (
-                request_aug.start_date
+            if (
+                not request_aug.start_date
                 <= assignment_date
                 <= request_aug.end_date
             ):
