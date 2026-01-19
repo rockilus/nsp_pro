@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from enum import Enum
 from typing import Dict, List, Set, Tuple
 
@@ -35,6 +35,7 @@ from shared.schemas.core import (
     RequestStatus,
     RequestType,
     Shift,
+    ShiftType,
     Specialty,
     SystemConstraintPenalty,
     UserConstraintPenalty,
@@ -1501,6 +1502,221 @@ class ReplacementService(BaseService):
         """
         return ConstraintHits(meets_constraints=True, breaches=[])
 
+    def _calculate_new_monthly_duties(
+        self, worker: Worker, context: ReplacementContext
+    ) -> MonthlyDutiesImplications:
+        """Calculate the number of duty shifts the worker would have in
+        the target month if the replacement takes place.
+
+        Args:
+            worker: The worker to evaluate
+            context: Pre-computed replacement context
+
+        Returns:
+            MonthlyDutiesImplications with count and delta
+        """
+        target_year = context.assignment_date.year
+        target_month = context.assignment_date.month
+
+        # Create a shift_id to shift lookup
+        shift_lookup = {s.id: s for s in context.shifts}
+
+        # Count existing duty assignments in the target month
+        duty_count = 0
+        for assignment in context.assignments:
+            if (
+                assignment.worker_id == worker.id
+                and assignment.date.year == target_year
+                and assignment.date.month == target_month
+                and assignment.date != context.assignment_date
+            ):
+                shift = shift_lookup.get(assignment.shift_id)
+                if shift and shift.shift_type == ShiftType.DUTY:
+                    duty_count += 1
+
+        # Add 1 if the target shift is also a duty
+        if context.target_shift.shift_type == ShiftType.DUTY:
+            duty_count += 1
+
+        delta = duty_count - worker.duties_per_month
+
+        return MonthlyDutiesImplications(
+            new_number_monthly_duties=duty_count,
+            new_monthly_duties_delta=delta,
+        )
+
+    def _calculate_new_weekly_time(
+        self, worker: Worker, context: ReplacementContext
+    ) -> WeeklyWorkTimeImplications:
+        """Calculate the total minutes worked by the worker in the week of
+        the target assignment if the replacement takes place.
+
+        Args:
+            worker: The worker to evaluate
+            context: Pre-computed replacement context
+
+        Returns:
+            WeeklyWorkTimeImplications with minutes and delta
+        """
+        # Build weekly periods to find which week contains the target date
+        # Use a date range around the target date
+        start_date = context.assignment_date - timedelta(days=7)
+        end_date = context.assignment_date + timedelta(days=7)
+        dates_list = build_dates_list(start_date, end_date)
+
+        periods_weekly = build_periods_weekly([], dates_list)
+
+        # Find the period containing the target date
+        target_period = None
+        for period in periods_weekly:
+            if context.assignment_date in period:
+                target_period = period
+                break
+
+        if not target_period:
+            # Fallback: shouldn't happen, but return zero if we can't find the week
+            return WeeklyWorkTimeImplications(
+                new_weekly_worked_minutes=0,
+                new_weekly_time_delta_minutes=-(worker.weekly_hours * 60),
+            )
+
+        # Create a shift lookup
+        shift_lookup = {s.id: s for s in context.shifts}
+
+        # Calculate total worked minutes in the target week
+        total_minutes = 0
+        for assignment in context.assignments:
+            if (
+                assignment.worker_id == worker.id
+                and assignment.date in target_period
+                and assignment.date != context.assignment_date
+            ):
+                shift = shift_lookup.get(assignment.shift_id)
+                if shift:
+                    duration = shift.end_time - shift.start_time
+                    total_minutes += int(duration.total_seconds() / 60)
+
+        # Add the target shift's duration
+        target_duration = (
+            context.target_shift.end_time - context.target_shift.start_time
+        )
+        total_minutes += int(target_duration.total_seconds() / 60)
+
+        # Calculate delta (weekly_hours is in hours, convert to minutes)
+        expected_minutes = worker.weekly_hours * 60
+        delta = total_minutes - expected_minutes
+
+        return WeeklyWorkTimeImplications(
+            new_weekly_worked_minutes=total_minutes,
+            new_weekly_time_delta_minutes=delta,
+        )
+
+    def _calculate_nb_times_did_shift_ltm(
+        self, worker: Worker, context: ReplacementContext
+    ) -> LTMIndicator:
+        """Count how many times the worker did the specific shift in the
+        past 12 months, including the hypothetical replacement.
+
+        LTM = Last Twelve Months
+
+        Args:
+            worker: The worker to evaluate
+            context: Pre-computed replacement context
+
+        Returns:
+            LTMIndicator with count and last_date
+        """
+        # Define 12-month lookback period
+        lookback_start = context.assignment_date - timedelta(days=365)
+        lookback_end = context.assignment_date
+
+        # Filter assignments for this worker and shift in the lookback period
+        matching_assignments = [
+            a
+            for a in context.assignments
+            if a.worker_id == worker.id
+            and a.shift_id == context.target_shift.id
+            and lookback_start <= a.date < lookback_end
+        ]
+
+        # Sort by date to find the last occurrence
+        matching_assignments.sort(key=lambda a: a.date)
+
+        # Find last date (most recent before target date)
+        last_date = None
+        if matching_assignments:
+            last_assignment = matching_assignments[-1]
+            last_date = datetime.combine(
+                last_assignment.date, time.min, tzinfo=timezone.utc
+            )
+
+        # Count includes the hypothetical assignment
+        count = len(matching_assignments) + 1
+
+        return LTMIndicator(count=count, last_date=last_date)
+
+    def _calculate_nb_times_worked_weekday_ltm(
+        self, worker: Worker, context: ReplacementContext
+    ) -> LTMIndicator:
+        """Count how many times the worker worked on the same weekday
+        in the past 12 months, including the hypothetical replacement.
+
+        LTM = Last Twelve Months
+
+        Args:
+            worker: The worker to evaluate
+            context: Pre-computed replacement context
+
+        Returns:
+            LTMIndicator with count and last_date
+        """
+        # Define 12-month lookback period
+        lookback_start = context.assignment_date - timedelta(days=365)
+        lookback_end = context.assignment_date
+
+        # Get target weekday (0=Monday, 6=Sunday)
+        target_weekday = context.assignment_date.weekday()
+
+        # Create a shift lookup
+        shift_lookup = {s.id: s for s in context.shifts}
+
+        # Filter assignments for this worker on the same weekday
+        matching_assignments = []
+        for a in context.assignments:
+            if (
+                a.worker_id == worker.id
+                and a.date.weekday() == target_weekday
+                and lookback_start <= a.date < lookback_end
+            ):
+                shift = shift_lookup.get(a.shift_id)
+                # Only count actual work shifts (exclude rest/leave)
+                if shift and shift.shift_type in [
+                    ShiftType.NORMAL,
+                    ShiftType.DUTY,
+                ]:
+                    matching_assignments.append(a)
+
+        # Sort by date to find the last occurrence
+        matching_assignments.sort(key=lambda a: a.date)
+
+        # Find last date (most recent before target date)
+        last_date = None
+        if matching_assignments:
+            last_assignment = matching_assignments[-1]
+            last_date = datetime.combine(
+                last_assignment.date, time.min, tzinfo=timezone.utc
+            )
+
+        # Count includes the hypothetical assignment if it's a work shift
+        count = len(matching_assignments)
+        if context.target_shift.shift_type in [
+            ShiftType.NORMAL,
+            ShiftType.DUTY,
+        ]:
+            count += 1
+
+        return LTMIndicator(count=count, last_date=last_date)
+
     def _build_replacement_implications(
         self, worker: Worker, context: ReplacementContext
     ) -> ReplacementImplications:
@@ -1576,8 +1792,20 @@ class ReplacementService(BaseService):
             ),
         )
 
-        # TODO: Implement remaining checks
-        # Placeholder values for now
+        # Calculate monthly duties and weekly time implications
+        new_monthly_duties = self._calculate_new_monthly_duties(
+            worker, context
+        )
+        new_weekly_time = self._calculate_new_weekly_time(worker, context)
+
+        # Calculate LTM indicators
+        nb_times_did_shift_ltm = self._calculate_nb_times_did_shift_ltm(
+            worker, context
+        )
+        nb_times_worked_weekday_ltm = (
+            self._calculate_nb_times_worked_weekday_ltm(worker, context)
+        )
+
         return ReplacementImplications(
             is_employed=is_employed,
             has_specialty=has_specialty,
@@ -1587,22 +1815,10 @@ class ReplacementService(BaseService):
             hard_constraint_hits=hard_constraint_hits,
             request_hits=request_hits,
             soft_constraint_hits=soft_constraint_hits,
-            new_monthly_duties=MonthlyDutiesImplications(
-                new_number_monthly_duties=0,  # TODO
-                new_monthly_duties_delta=0,  # TODO
-            ),
-            new_weekly_time=WeeklyWorkTimeImplications(
-                new_weekly_worked_minutes=0,  # TODO
-                new_weekly_time_delta_minutes=0,  # TODO
-            ),
-            nb_times_did_shift_ltm=LTMIndicator(
-                count=0,  # TODO
-                last_date=None,  # TODO
-            ),
-            nb_times_worked_weekday_ltm=LTMIndicator(
-                count=0,  # TODO
-                last_date=None,  # TODO
-            ),
+            new_monthly_duties=new_monthly_duties,
+            new_weekly_time=new_weekly_time,
+            nb_times_did_shift_ltm=nb_times_did_shift_ltm,
+            nb_times_worked_weekday_ltm=nb_times_worked_weekday_ltm,
         )
 
     def _process_replacement_data(
