@@ -1138,21 +1138,184 @@ class ReplacementService(BaseService):
         )
 
     def _check_constraint_seq_hits(
-        self, _worker: Worker, _context: ReplacementContext, _hard: bool
+        self, worker: Worker, context: ReplacementContext, hard: bool
     ) -> ConstraintHits:
         """Check ConstraintSeq violations for replacement.
 
-        TODO: Implement ConstraintSeq checking following ConstraintSum pattern.
+        ConstraintSeq checks for consecutive assignments:
+        - LESS_THAN_OR_EQUAL: penalizes sequences longer than target
+        - GREATER_THAN_OR_EQUAL: penalizes bounded sequences shorter
+        - EQUAL: combines both checks
 
         Args:
-            _worker: The candidate worker
-            _context: Pre-computed replacement context
-            _hard: True to check hard constraints, False for soft
+            worker: The candidate worker
+            context: Pre-computed replacement context
+            hard: True to check hard constraints, False for soft
 
         Returns:
             ConstraintHits with meets_constraints flag and breaches
         """
-        return ConstraintHits(meets_constraints=True, breaches=[])
+        breaches: List[Breach] = []
+        target_tuple = (
+            context.target_assignment.worker_id,
+            context.target_assignment.date.isoformat(),
+            context.target_assignment.shift_id,
+        )
+        candidate_tuple = (
+            worker.id,
+            context.target_assignment.date.isoformat(),
+            context.target_assignment.shift_id,
+        )
+
+        # Filter constraints by hardness
+        relevant_constraints = [
+            c for c in context.constraints.seq if c.hard == hard
+        ]
+
+        for constraint in relevant_constraints:
+            # For each period in the constraint
+            for period_vars in constraint.constraint_variables:
+                # Check if this period contains the target assignment
+                period_tuples = set(period_vars)
+                if target_tuple not in period_tuples:
+                    continue
+
+                # Build assignment existence array with candidate replacing
+                # target. period_vars represents consecutive time slots
+                assignments_exist = []
+                for var_tuple in period_vars:
+                    # Replace target with candidate
+                    check_tuple = (
+                        candidate_tuple
+                        if var_tuple == target_tuple
+                        else var_tuple
+                    )
+                    assignments_exist.append(
+                        check_tuple in context.assignment_tuples
+                    )
+
+                # Check for violations based on operator
+                violation_found = False
+                breach_variables: List[Variable] = []
+
+                if constraint.operator in [
+                    ConstraintOperator.LESS_THAN_OR_EQUAL,
+                    ConstraintOperator.EQUAL,
+                ]:
+                    # Check for sequences longer than target_value
+                    # Use sliding window of size target_value + 1
+                    if len(assignments_exist) > constraint.target_value:
+                        for i in range(
+                            len(assignments_exist) - constraint.target_value
+                        ):
+                            window = assignments_exist[
+                                i : i + constraint.target_value + 1
+                            ]
+                            # If all assignments in window exist, breach
+                            if all(window):
+                                violation_found = True
+                                # Collect variables for this window
+                                for j in range(constraint.target_value + 1):
+                                    check_tuple = (
+                                        period_vars[i + j]
+                                        if period_vars[i + j] != target_tuple
+                                        else candidate_tuple
+                                    )
+                                    if (
+                                        check_tuple
+                                        in context.assignment_tuples
+                                    ):
+                                        breach_variables.append(
+                                            Variable(
+                                                worker_id=check_tuple[0],
+                                                date=datetime.fromisoformat(
+                                                    check_tuple[1]
+                                                ).date(),
+                                                shift_id=check_tuple[2],
+                                            )
+                                        )
+                                break
+
+                if (
+                    constraint.operator
+                    in [
+                        ConstraintOperator.GREATER_THAN_OR_EQUAL,
+                        ConstraintOperator.EQUAL,
+                    ]
+                    and not violation_found
+                ):
+                    # Check for bounded sequences shorter than target_value
+                    # Bounded = preceded/followed by non-assignment
+                    for length in range(1, constraint.target_value):
+                        for start in range(
+                            len(assignments_exist) - length + 1
+                        ):
+                            # Check bounded sequence of given length
+                            sequence = assignments_exist[
+                                start : start + length
+                            ]
+                            if not all(sequence):
+                                continue
+
+                            # Check if bounded (not part of longer seq)
+                            is_bounded = True
+                            if start > 0 and assignments_exist[start - 1]:
+                                is_bounded = False
+                            if (
+                                start + length < len(assignments_exist)
+                                and assignments_exist[start + length]
+                            ):
+                                is_bounded = False
+
+                            if is_bounded:
+                                violation_found = True
+                                # Collect variables for this sequence
+                                for j in range(length):
+                                    check_tuple = (
+                                        period_vars[start + j]
+                                        if (
+                                            period_vars[start + j]
+                                            != target_tuple
+                                        )
+                                        else candidate_tuple
+                                    )
+                                    if (
+                                        check_tuple
+                                        in context.assignment_tuples
+                                    ):
+                                        breach_variables.append(
+                                            Variable(
+                                                worker_id=check_tuple[0],
+                                                date=datetime.fromisoformat(
+                                                    check_tuple[1]
+                                                ).date(),
+                                                shift_id=check_tuple[2],
+                                            )
+                                        )
+                                break
+                        if violation_found:
+                            break
+
+                # Create breach if violation found
+                if violation_found and breach_variables:
+                    breach = Breach(
+                        id="",
+                        schedule_id=(
+                            context.target_assignment.schedule_id or ""
+                        ),
+                        objective_id=constraint.id,
+                        objective_category=ObjectiveCategory.CONSTRAINT,
+                        variables=breach_variables,
+                        description="",
+                        hard_to_soft=None,
+                        meta=None,
+                    )
+                    breaches.append(breach)
+
+        return ConstraintHits(
+            meets_constraints=len(breaches) == 0,
+            breaches=breaches,
+        )
 
     def _check_constraint_ord_hits(
         self, _worker: Worker, _context: ReplacementContext, _hard: bool
@@ -1225,12 +1388,33 @@ class ReplacementService(BaseService):
         request_hits = self._check_request_hits(worker, context)
         filter_hits = self._check_filter_hits(worker, context)
 
-        # Constraint checks
-        hard_constraint_hits = self._check_constraint_sum_hits(
+        # Constraint checks - combine sum and seq constraints
+        hard_sum_hits = self._check_constraint_sum_hits(
             worker, context, hard=True
         )
-        soft_constraint_hits = self._check_constraint_sum_hits(
+        hard_seq_hits = self._check_constraint_seq_hits(
+            worker, context, hard=True
+        )
+        hard_constraint_hits = ConstraintHits(
+            meets_constraints=(
+                hard_sum_hits.meets_constraints
+                and hard_seq_hits.meets_constraints
+            ),
+            breaches=hard_sum_hits.breaches + hard_seq_hits.breaches,
+        )
+
+        soft_sum_hits = self._check_constraint_sum_hits(
             worker, context, hard=False
+        )
+        soft_seq_hits = self._check_constraint_seq_hits(
+            worker, context, hard=False
+        )
+        soft_constraint_hits = ConstraintHits(
+            meets_constraints=(
+                soft_sum_hits.meets_constraints
+                and soft_seq_hits.meets_constraints
+            ),
+            breaches=soft_sum_hits.breaches + soft_seq_hits.breaches,
         )
 
         # TODO: Implement remaining checks
