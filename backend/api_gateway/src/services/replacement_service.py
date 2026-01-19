@@ -1427,21 +1427,62 @@ class ReplacementService(BaseService):
         )
 
     def _check_constraint_fil_hits(
-        self, _worker: Worker, _context: ReplacementContext, _hard: bool
+        self, worker: Worker, context: ReplacementContext, hard: bool
     ) -> ConstraintHits:
-        """Check ConstraintFil violations for replacement.
+        """Check if the worker replacement would violate any ConstraintFil.
 
-        TODO: Implement ConstraintFil checking following ConstraintSum pattern.
+        ConstraintFil specifies forbidden assignments. We check if assigning
+        the candidate worker to the target shift on the target date would
+        create a forbidden assignment.
 
         Args:
-            _worker: The candidate worker
-            _context: Pre-computed replacement context
-            _hard: True to check hard constraints, False for soft
+            worker: The candidate worker
+            context: Pre-computed replacement context
+            hard: If True, check hard constraints; if False, check soft
 
         Returns:
-            ConstraintHits with meets_constraints flag and breaches
+            ConstraintHits with meets_constraints flag and list of breaches
         """
-        return ConstraintHits(meets_constraints=True, breaches=[])
+        breaches = []
+
+        # Filter constraints by hardness
+        relevant_constraints = [
+            c for c in context.constraints.fil if c.hard == hard
+        ]
+
+        # Create the candidate tuple
+        candidate_tuple = (
+            worker.id,
+            context.assignment_date.isoformat(),
+            context.target_assignment.shift_id,
+        )
+
+        # Check each constraint
+        for constraint in relevant_constraints:
+            # Check if the candidate tuple is in the forbidden list
+            if candidate_tuple in constraint.constraint_variables:
+                # This is a breach - candidate would create a forbidden assignment
+                breach_variable = Variable(
+                    worker_id=worker.id,
+                    date=context.assignment_date,
+                    shift_id=context.target_assignment.shift_id,
+                )
+
+                breach = Breach(
+                    id="",
+                    schedule_id=context.target_assignment.schedule_id or "",
+                    objective_id=constraint.id,
+                    objective_category=ObjectiveCategory.CONSTRAINT,
+                    variables=[breach_variable],
+                    description="",
+                    hard_to_soft=None,
+                )
+                breaches.append(breach)
+
+        return ConstraintHits(
+            meets_constraints=len(breaches) == 0,
+            breaches=breaches,
+        )
 
     def _check_constraint_fai_hits(
         self, _worker: Worker, _context: ReplacementContext, _hard: bool
@@ -1490,16 +1531,21 @@ class ReplacementService(BaseService):
         hard_ord_hits = self._check_constraint_ord_hits(
             worker, context, hard=True
         )
+        hard_fil_hits = self._check_constraint_fil_hits(
+            worker, context, hard=True
+        )
         hard_constraint_hits = ConstraintHits(
             meets_constraints=(
                 hard_sum_hits.meets_constraints
                 and hard_seq_hits.meets_constraints
                 and hard_ord_hits.meets_constraints
+                and hard_fil_hits.meets_constraints
             ),
             breaches=(
                 hard_sum_hits.breaches
                 + hard_seq_hits.breaches
                 + hard_ord_hits.breaches
+                + hard_fil_hits.breaches
             ),
         )
 
@@ -1512,16 +1558,21 @@ class ReplacementService(BaseService):
         soft_ord_hits = self._check_constraint_ord_hits(
             worker, context, hard=False
         )
+        soft_fil_hits = self._check_constraint_fil_hits(
+            worker, context, hard=False
+        )
         soft_constraint_hits = ConstraintHits(
             meets_constraints=(
                 soft_sum_hits.meets_constraints
                 and soft_seq_hits.meets_constraints
                 and soft_ord_hits.meets_constraints
+                and soft_fil_hits.meets_constraints
             ),
             breaches=(
                 soft_sum_hits.breaches
                 + soft_seq_hits.breaches
                 + soft_ord_hits.breaches
+                + soft_fil_hits.breaches
             ),
         )
 
