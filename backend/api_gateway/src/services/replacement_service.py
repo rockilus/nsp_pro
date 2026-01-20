@@ -219,13 +219,19 @@ class ReplacementService(BaseService):
             candidate = ReplacementCandidate(
                 worker_id=worker.id,
                 worker_name=worker.name,
-                rank=0,  # TODO: Implement ranking logic
+                rank=0,  # Will be assigned by _rank_candidates
                 replacement_category=category,
                 replacement_implications=implications,
             )
             candidates.append(candidate)
 
-        return candidates
+        # Rank candidates based on their implications
+        ranked_candidates = self._rank_candidates(
+            candidates=candidates,
+            current_worker_id=assignment.worker_id,
+        )
+
+        return ranked_candidates
 
     # def get_assignment_swap_info(
     #     self,
@@ -1869,6 +1875,120 @@ class ReplacementService(BaseService):
 
         # No violations - worker can do the replacement
         return ReplacementCategory.CAN_DO
+
+    def _calculate_ranking_key(
+        self, implications: ReplacementImplications
+    ) -> tuple[int, int, int]:
+        """Calculate a sorting key for ranking replacement candidates.
+
+        The key is a tuple (priority_level, weekly_delta, monthly_delta) where:
+        - priority_level: 0 (best) to 10 (worst) based on constraint violations
+        - weekly_delta: new_weekly_time_delta_minutes (lower is better)
+        - monthly_delta: new_monthly_duties_delta (lower is better)
+
+        Priority levels from worst (10) to best (0):
+        10: not employed
+        9: lacks specialty
+        8: on leave
+        7: filtered out by worker-shift filters
+        6: has overlapping assignments
+        5: violates hard constraints
+        4: has request conflicts
+        3: violates soft constraints
+        2: exceeds monthly duties target
+        1: exceeds weekly time target
+        0: no violations (best)
+
+        Args:
+            implications: Pre-computed replacement implications
+
+        Returns:
+            Tuple for sorting (lower values rank better)
+        """
+        # Determine priority level based on violations (worst to best)
+        if not implications.is_employed:
+            priority = 10
+        elif not implications.has_specialty:
+            priority = 9
+        elif not implications.isnt_on_leave:
+            priority = 8
+        elif not implications.filter_hits.isnt_filtered_out:
+            priority = 7
+        elif not implications.overlap_hits.hasnt_overlap:
+            priority = 6
+        elif not implications.hard_constraint_hits.meets_constraints:
+            priority = 5
+        elif not implications.request_hits.has_no_request_conflict:
+            priority = 4
+        elif not implications.soft_constraint_hits.meets_constraints:
+            priority = 3
+        elif not implications.new_monthly_duties.meets_target:
+            priority = 2
+        elif not implications.new_weekly_time.meets_target:
+            priority = 1
+        else:
+            priority = 0
+
+        # Tie-breakers: use actual delta values (negative = under target = better)
+        weekly_delta = (
+            implications.new_weekly_time.new_weekly_time_delta_minutes
+        )
+        monthly_delta = (
+            implications.new_monthly_duties.new_monthly_duties_delta
+        )
+
+        return (priority, weekly_delta, monthly_delta)
+
+    def _rank_candidates(
+        self,
+        candidates: List[ReplacementCandidate],
+        current_worker_id: str,
+    ) -> List[ReplacementCandidate]:
+        """Rank replacement candidates based on their implications.
+
+        The current worker (doing the target assignment) receives rank 0.
+        Other candidates are ranked 1 (best replacement) to n-1 (worst).
+
+        Ranking is determined by:
+        1. Priority level (0=best to 10=worst) based on constraint violations
+        2. Weekly time delta (lower is better)
+        3. Monthly duties delta (lower is better)
+
+        Args:
+            candidates: List of candidates to rank
+            current_worker_id: Worker ID of the current assignment holder
+
+        Returns:
+            List of candidates with assigned ranks, sorted by rank
+        """
+        # Separate current worker from replacement candidates
+        current_worker_candidates = [
+            c for c in candidates if c.worker_id == current_worker_id
+        ]
+        replacement_candidates = [
+            c for c in candidates if c.worker_id != current_worker_id
+        ]
+
+        # Assign rank 0 to current worker
+        for candidate in current_worker_candidates:
+            candidate.rank = 0
+
+        # Sort replacement candidates by ranking key
+        replacement_candidates.sort(
+            key=lambda c: self._calculate_ranking_key(
+                c.replacement_implications
+            )
+        )
+
+        # Assign ranks 1 to n-1
+        for idx, candidate in enumerate(replacement_candidates, start=1):
+            candidate.rank = idx
+
+        # Combine and sort all candidates by rank
+        all_candidates = current_worker_candidates + replacement_candidates
+        all_candidates.sort(key=lambda c: c.rank)
+
+        return all_candidates
 
     def _process_replacement_data(
         self, assignment: Assignment, replacement_data: ReplacementData
