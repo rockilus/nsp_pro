@@ -90,12 +90,14 @@ class RequestHits:
 class MonthlyDutiesImplications:
     new_number_monthly_duties: int
     new_monthly_duties_delta: int
+    meets_target: bool
 
 
 @dataclass
 class WeeklyWorkTimeImplications:
     new_weekly_worked_minutes: int
     new_weekly_time_delta_minutes: int
+    meets_target: bool
 
 
 @dataclass
@@ -1539,10 +1541,12 @@ class ReplacementService(BaseService):
             duty_count += 1
 
         delta = duty_count - worker.duties_per_month
+        meets_target = duty_count <= worker.duties_per_month
 
         return MonthlyDutiesImplications(
             new_number_monthly_duties=duty_count,
             new_monthly_duties_delta=delta,
+            meets_target=meets_target,
         )
 
     def _calculate_new_weekly_time(
@@ -1605,10 +1609,12 @@ class ReplacementService(BaseService):
         # Calculate delta (weekly_hours is in hours, convert to minutes)
         expected_minutes = worker.weekly_hours * 60
         delta = total_minutes - expected_minutes
+        meets_target = total_minutes <= expected_minutes
 
         return WeeklyWorkTimeImplications(
             new_weekly_worked_minutes=total_minutes,
             new_weekly_time_delta_minutes=delta,
+            meets_target=meets_target,
         )
 
     def _calculate_nb_times_did_shift_ltm(
