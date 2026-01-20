@@ -584,3 +584,173 @@ def test_get_replacement_candidates_returns_candidates(
     mock_collection.shift_db.get_shifts_not_deleted.assert_called_once_with(
         team_id=base_team_id
     )
+
+
+def test_get_replacement_candidates_can_do_worker(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test replacement candidate with CAN_DO category.
+
+    This test verifies that a worker with no conflicts is correctly
+    categorized as CAN_DO with rank >= 1, and that all constraint
+    checks pass as expected.
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Find a target assignment for morning shift
+    target_assignment = next(
+        a for a in assignments if a.shift_id == "shift_morning"
+    )
+    target_worker_id = target_assignment.worker_id
+
+    # Find the morning shift
+    morning_shift = next(s for s in base_shifts if s.id == "shift_morning")
+
+    # Find a worker with no conflicting assignment on that date
+    # We need a worker that doesn't have any assignment on the target date
+    workers_with_assignments_on_date = {
+        a.worker_id for a in assignments if a.date == target_assignment.date
+    }
+
+    # Find first worker without assignment on that date
+    test_worker = next(
+        w for w in base_workers if w.id not in workers_with_assignments_on_date
+    )
+
+    # Mock get_assignments_by_ids to return the target assignment
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - Find target worker and test worker candidates
+    target_candidate = next(
+        c for c in candidates if c.worker_id == target_worker_id
+    )
+    test_candidate = next(
+        c for c in candidates if c.worker_id == test_worker.id
+    )
+
+    # Check target worker has rank 0
+    assert (
+        target_candidate.rank == 0
+    ), f"Target worker should have rank 0, got {target_candidate.rank}"
+
+    # Check test worker category
+    assert test_candidate.replacement_category.value == "can_do", (
+        f"Test worker should have CAN_DO category, "
+        f"got {test_candidate.replacement_category.value}"
+    )
+
+    # Check all constraints pass for test worker
+    implications = test_candidate.replacement_implications
+
+    assert implications.is_employed is True, "Test worker should be employed"
+    assert (
+        implications.has_specialty is True
+    ), "Test worker should have specialty (or none required)"
+    assert (
+        implications.isnt_on_leave is True
+    ), "Test worker should not be on leave"
+    assert (
+        implications.filter_hits.isnt_filtered_out is True
+    ), "Test worker should not be filtered out"
+    assert (
+        implications.overlap_hits.hasnt_overlap is True
+    ), "Test worker should not have overlapping assignments"
+    assert (
+        implications.hard_constraint_hits.meets_constraints is True
+    ), "Test worker should meet all hard constraints"
+    assert (
+        implications.request_hits.has_no_request_conflict is True
+    ), "Test worker should have no request conflicts"
+    assert (
+        implications.soft_constraint_hits.meets_constraints is True
+    ), "Test worker should meet all soft constraints"
+
+    # Check monthly duties implications
+    # The morning shift is NORMAL, not DUTY type, so adding it doesn't
+    # change the duty count. However, the delta might be negative if the
+    # test worker has existing duties in their current assignments
+    # We verify the structure is correct and values are computed
+    assert isinstance(
+        implications.new_monthly_duties.new_number_monthly_duties, int
+    ), "new_number_monthly_duties should be an integer"
+    assert isinstance(
+        implications.new_monthly_duties.new_monthly_duties_delta, int
+    ), "new_monthly_duties_delta should be an integer"
+    assert isinstance(
+        implications.new_monthly_duties.meets_target, bool
+    ), "meets_target should be a boolean"
+
+    # Check weekly time implications
+    # The test worker might have existing assignments in the week,
+    # so we verify the structure and that values are computed
+    assert isinstance(
+        implications.new_weekly_time.new_weekly_worked_minutes, int
+    ), "new_weekly_worked_minutes should be an integer"
+    assert (
+        implications.new_weekly_time.new_weekly_worked_minutes >= 0
+    ), "new_weekly_worked_minutes should be non-negative"
+    assert isinstance(
+        implications.new_weekly_time.new_weekly_time_delta_minutes, int
+    ), "new_weekly_time_delta_minutes should be an integer"
+    assert isinstance(
+        implications.new_weekly_time.meets_target, bool
+    ), "meets_target should be a boolean"
+
+    # Check LTM indicators
+    # Verify that the count and last_date are properly computed
+    assert isinstance(
+        implications.nb_times_did_shift_ltm.count, int
+    ), "nb_times_did_shift_ltm count should be an integer"
+    assert (
+        implications.nb_times_did_shift_ltm.count >= 0
+    ), "nb_times_did_shift_ltm count should be non-negative"
+
+    assert isinstance(
+        implications.nb_times_worked_weekday_ltm.count, int
+    ), "nb_times_worked_weekday_ltm count should be an integer"
+    assert (
+        implications.nb_times_worked_weekday_ltm.count >= 0
+    ), "nb_times_worked_weekday_ltm count should be non-negative"
+
+    # Check test worker rank
+    assert (
+        test_candidate.rank >= 1
+    ), f"Test worker rank should be >= 1, got {test_candidate.rank}"
+
+    # Check that CAN_DO workers rank better than COULD_DO or CANT_DO
+    # (excluding the current worker who has rank 0 regardless of category)
+    could_do_candidates = [
+        c
+        for c in candidates
+        if c.replacement_category.value == "could_do" and c.rank > 0
+    ]
+    cant_do_candidates = [
+        c
+        for c in candidates
+        if c.replacement_category.value == "cant_do" and c.rank > 0
+    ]
+
+    for could_do in could_do_candidates:
+        assert test_candidate.rank < could_do.rank, (
+            f"CAN_DO worker (rank {test_candidate.rank}) should have "
+            f"better rank than COULD_DO worker (rank {could_do.rank})"
+        )
+
+    for cant_do in cant_do_candidates:
+        assert test_candidate.rank < cant_do.rank, (
+            f"CAN_DO worker (rank {test_candidate.rank}) should have "
+            f"better rank than CANT_DO worker (rank {cant_do.rank})"
+        )
