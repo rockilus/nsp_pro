@@ -215,12 +215,12 @@ class ReplacementService(BaseService):
                 worker=worker,
                 context=context,
             )
-            # TODO: Determine category and rank based on implications
+            category = self._determine_replacement_category(implications)
             candidate = ReplacementCandidate(
                 worker_id=worker.id,
                 worker_name=worker.name,
-                rank=0,  # Placeholder
-                replacement_category=ReplacementCategory.CAN_DO,  # Placeholder
+                rank=0,  # TODO: Implement ranking logic
+                replacement_category=category,
                 replacement_implications=implications,
             )
             candidates.append(candidate)
@@ -1826,6 +1826,49 @@ class ReplacementService(BaseService):
             nb_times_did_shift_ltm=nb_times_did_shift_ltm,
             nb_times_worked_weekday_ltm=nb_times_worked_weekday_ltm,
         )
+
+    def _determine_replacement_category(
+        self, implications: ReplacementImplications
+    ) -> ReplacementCategory:
+        """Determine the replacement category based on implications.
+
+        Categorization logic:
+        - CANT_DO: Worker cannot perform the replacement due to hard constraints
+        - COULD_DO: Worker can perform replacement but violates soft constraints
+        - CAN_DO: Worker can perform replacement without violations
+
+        Args:
+            implications: Pre-computed replacement implications
+
+        Returns:
+            ReplacementCategory (CANT_DO, COULD_DO, or CAN_DO)
+        """
+        # Check CANT_DO conditions - any hard blocker
+        cant_do_conditions = [
+            not implications.is_employed,
+            not implications.has_specialty,
+            not implications.isnt_on_leave,
+            not implications.filter_hits.isnt_filtered_out,
+            not implications.overlap_hits.hasnt_overlap,
+            not implications.hard_constraint_hits.meets_constraints,
+            not implications.request_hits.has_no_request_conflict,
+        ]
+
+        if any(cant_do_conditions):
+            return ReplacementCategory.CANT_DO
+
+        # Check COULD_DO conditions - soft constraint violations
+        could_do_conditions = [
+            not implications.soft_constraint_hits.meets_constraints,
+            not implications.new_monthly_duties.meets_target,
+            not implications.new_weekly_time.meets_target,
+        ]
+
+        if any(could_do_conditions):
+            return ReplacementCategory.COULD_DO
+
+        # No violations - worker can do the replacement
+        return ReplacementCategory.CAN_DO
 
     def _process_replacement_data(
         self, assignment: Assignment, replacement_data: ReplacementData
