@@ -754,3 +754,233 @@ def test_get_replacement_candidates_can_do_worker(
             f"CAN_DO worker (rank {test_candidate.rank}) should have "
             f"better rank than CANT_DO worker (rank {cant_do.rank})"
         )
+
+
+def test_get_replacement_candidates_could_do_worker_exceeds_weekly_time(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test replacement candidate with COULD_DO category due to weekly time.
+
+    This test verifies that a worker who would exceed their weekly hours
+    target is correctly categorized as COULD_DO with appropriate ranking.
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Find a target assignment for morning shift
+    target_assignment = next(
+        a for a in assignments if a.shift_id == "shift_morning"
+    )
+    target_worker_id = target_assignment.worker_id
+
+    # Find the morning shift
+    morning_shift = next(s for s in base_shifts if s.id == "shift_morning")
+    morning_duration_minutes = 4 * 60  # 8am-12pm = 4 hours = 240 minutes
+
+    # Find a worker with no conflicting assignment on that date
+    workers_with_assignments_on_date = {
+        a.worker_id for a in assignments if a.date == target_assignment.date
+    }
+    test_worker = next(
+        w for w in base_workers if w.id not in workers_with_assignments_on_date
+    )
+
+    # Calculate the current work time for test worker in the target week
+    # Find the start of the week (Monday) containing the target assignment
+    target_date = target_assignment.date
+    days_since_monday = target_date.weekday()  # Monday is 0
+    week_start = target_date - timedelta(days=days_since_monday)
+    week_end = week_start + timedelta(days=6)  # Sunday
+
+    # Calculate current weekly work time for test worker
+    shift_by_id = {s.id: s for s in base_shifts}
+    current_weekly_minutes = 0
+    for assignment in assignments:
+        if (
+            assignment.worker_id == test_worker.id
+            and week_start <= assignment.date <= week_end
+        ):
+            shift = shift_by_id.get(assignment.shift_id)
+            if shift:
+                # Calculate shift duration
+                shift_duration = shift.end_time - shift.start_time
+                shift_minutes = int(shift_duration.total_seconds() / 60)
+                current_weekly_minutes += shift_minutes
+
+    # Set worker's weekly_hours to max(0, current_weekly_time - 1 hour)
+    # so that adding the morning shift would exceed the target
+    target_weekly_minutes = max(0, current_weekly_minutes - 60)
+    target_weekly_hours = target_weekly_minutes // 60
+
+    # Modify the test worker's weekly_hours
+    modified_test_worker = Worker(
+        id=test_worker.id,
+        team_id=test_worker.team_id,
+        name=test_worker.name,
+        acronym=test_worker.acronym,
+        acronym_custom=test_worker.acronym_custom,
+        employment_start_date=test_worker.employment_start_date,
+        employment_end_date=test_worker.employment_end_date,
+        weekly_hours=target_weekly_hours,
+        weekly_hours_desired=target_weekly_hours,
+        duties_per_month=test_worker.duties_per_month,
+        annual_leave=test_worker.annual_leave,
+        specialty_ids=test_worker.specialty_ids,
+        deleted=test_worker.deleted,
+        user_id=test_worker.user_id,
+    )
+
+    # Replace the test worker in the workers list
+    modified_workers = [
+        modified_test_worker if w.id == test_worker.id else w
+        for w in base_workers
+    ]
+
+    # Update the mock to return modified workers
+    mock_collection.worker_db.get_workers_not_deleted.return_value = (
+        modified_workers
+    )
+
+    # Mock get_assignments_by_ids to return the target assignment
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - Find target worker and test worker candidates
+    target_candidate = next(
+        c for c in candidates if c.worker_id == target_worker_id
+    )
+    test_candidate = next(
+        c for c in candidates if c.worker_id == test_worker.id
+    )
+
+    # Check target worker has rank 0
+    assert (
+        target_candidate.rank == 0
+    ), f"Target worker should have rank 0, got {target_candidate.rank}"
+
+    # Check test worker category
+    assert test_candidate.replacement_category.value == "could_do", (
+        f"Test worker should have COULD_DO category, "
+        f"got {test_candidate.replacement_category.value}"
+    )
+
+    # Check all constraints pass for test worker
+    implications = test_candidate.replacement_implications
+
+    assert implications.is_employed is True, "Test worker should be employed"
+    assert (
+        implications.has_specialty is True
+    ), "Test worker should have specialty (or none required)"
+    assert (
+        implications.isnt_on_leave is True
+    ), "Test worker should not be on leave"
+    assert (
+        implications.filter_hits.isnt_filtered_out is True
+    ), "Test worker should not be filtered out"
+    assert (
+        implications.overlap_hits.hasnt_overlap is True
+    ), "Test worker should not have overlapping assignments"
+    assert (
+        implications.hard_constraint_hits.meets_constraints is True
+    ), "Test worker should meet all hard constraints"
+    assert (
+        implications.request_hits.has_no_request_conflict is True
+    ), "Test worker should have no request conflicts"
+    assert (
+        implications.soft_constraint_hits.meets_constraints is True
+    ), "Test worker should meet all soft constraints"
+
+    # Check weekly time implications
+    # The worker should exceed their weekly hours target
+    expected_new_weekly_minutes = (
+        current_weekly_minutes + morning_duration_minutes
+    )
+    assert (
+        implications.new_weekly_time.new_weekly_worked_minutes
+        == expected_new_weekly_minutes
+    ), (
+        f"new_weekly_worked_minutes should be {expected_new_weekly_minutes}, "
+        f"got {implications.new_weekly_time.new_weekly_worked_minutes}"
+    )
+
+    expected_delta = expected_new_weekly_minutes - target_weekly_minutes
+    assert (
+        implications.new_weekly_time.new_weekly_time_delta_minutes
+        == expected_delta
+    ), (
+        f"new_weekly_time_delta_minutes should be {expected_delta}, "
+        f"got {implications.new_weekly_time.new_weekly_time_delta_minutes}"
+    )
+
+    assert (
+        implications.new_weekly_time.meets_target is False
+    ), "meets_target should be False since worker exceeds weekly hours"
+
+    # Check monthly duties implications (should be properly computed)
+    assert isinstance(
+        implications.new_monthly_duties.new_number_monthly_duties, int
+    ), "new_number_monthly_duties should be an integer"
+    assert isinstance(
+        implications.new_monthly_duties.new_monthly_duties_delta, int
+    ), "new_monthly_duties_delta should be an integer"
+    assert isinstance(
+        implications.new_monthly_duties.meets_target, bool
+    ), "meets_target should be a boolean"
+
+    # Check LTM indicators
+    assert isinstance(
+        implications.nb_times_did_shift_ltm.count, int
+    ), "nb_times_did_shift_ltm count should be an integer"
+    assert (
+        implications.nb_times_did_shift_ltm.count >= 0
+    ), "nb_times_did_shift_ltm count should be non-negative"
+
+    assert isinstance(
+        implications.nb_times_worked_weekday_ltm.count, int
+    ), "nb_times_worked_weekday_ltm count should be an integer"
+    assert (
+        implications.nb_times_worked_weekday_ltm.count >= 0
+    ), "nb_times_worked_weekday_ltm count should be non-negative"
+
+    # Check test worker rank
+    assert (
+        test_candidate.rank >= 1
+    ), f"Test worker rank should be >= 1, got {test_candidate.rank}"
+
+    # Check that COULD_DO workers rank between CAN_DO and CANT_DO
+    # (excluding the current worker who has rank 0 regardless of category)
+    can_do_candidates = [
+        c
+        for c in candidates
+        if c.replacement_category.value == "can_do" and c.rank > 0
+    ]
+    cant_do_candidates = [
+        c
+        for c in candidates
+        if c.replacement_category.value == "cant_do" and c.rank > 0
+    ]
+
+    # COULD_DO should rank worse than CAN_DO
+    for can_do in can_do_candidates:
+        assert test_candidate.rank > can_do.rank, (
+            f"COULD_DO worker (rank {test_candidate.rank}) should have "
+            f"worse rank than CAN_DO worker (rank {can_do.rank})"
+        )
+
+    # COULD_DO should rank better than CANT_DO
+    for cant_do in cant_do_candidates:
+        assert test_candidate.rank < cant_do.rank, (
+            f"COULD_DO worker (rank {test_candidate.rank}) should have "
+            f"better rank than CANT_DO worker (rank {cant_do.rank})"
+        )
