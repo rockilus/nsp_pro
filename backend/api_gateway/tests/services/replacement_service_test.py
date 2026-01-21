@@ -200,6 +200,251 @@ def generate_duty_assignments(
 
 
 # ============================================================================
+# Assertion Helpers
+# ============================================================================
+
+
+def assert_candidate(
+    candidate,
+    *,
+    expected_category: str = "can_do",
+    expected_rank_min: int | None = None,
+    expected_rank_max: int | None = None,
+    # CAN'T_DO checks (default: all pass)
+    is_employed: bool = True,
+    has_specialty: bool = True,
+    isnt_on_leave: bool = True,
+    isnt_filtered_out: bool = True,
+    hasnt_overlap: bool = True,
+    hard_constraints_met: bool = True,
+    no_request_conflict: bool = True,
+    # COULD_DO checks (default: all pass)
+    soft_constraints_met: bool = True,
+    weekly_time_meets_target: bool = True,
+    monthly_duties_meets_target: bool = True,
+    # Optional specific value assertions
+    expected_new_weekly_minutes: int | None = None,
+    expected_weekly_time_delta: int | None = None,
+    expected_new_monthly_duties: int | None = None,
+    expected_monthly_duties_delta: int | None = None,
+    expected_ltm_shift_count: int | None = None,
+    expected_ltm_weekday_count: int | None = None,
+    # Optional ranking validation
+    all_candidates: List = None,
+) -> None:
+    """Assert properties of a replacement candidate with sensible defaults.
+
+    By default, assumes a CAN_DO worker with all constraints passing.
+    Only specify parameters where you expect violations or need specific values.
+
+    Args:
+        candidate: The ReplacementCandidate to check
+        expected_category: Expected category ("can_do", "could_do", "cant_do")
+        expected_rank_min: Minimum expected rank (inclusive)
+        expected_rank_max: Maximum expected rank (inclusive)
+        is_employed: Whether worker should be employed
+        has_specialty: Whether worker should have required specialty
+        isnt_on_leave: Whether worker should not be on leave
+        isnt_filtered_out: Whether worker should not be filtered out
+        hasnt_overlap: Whether worker should not have overlapping assignments
+        hard_constraints_met: Whether hard constraints should be met
+        no_request_conflict: Whether there should be no request conflicts
+        soft_constraints_met: Whether soft constraints should be met
+        weekly_time_meets_target: Whether weekly time should meet target
+        monthly_duties_meets_target: Whether monthly duties should meet target
+        expected_new_weekly_minutes: Expected new weekly worked minutes
+        expected_weekly_time_delta: Expected weekly time delta in minutes
+        expected_new_monthly_duties: Expected new number of monthly duties
+        expected_monthly_duties_delta: Expected monthly duties delta
+        expected_ltm_shift_count: Expected LTM shift count
+        expected_ltm_weekday_count: Expected LTM weekday count
+        all_candidates: Optional list of all candidates for ranking validation
+    """
+    implications = candidate.replacement_implications
+
+    # Check category
+    assert candidate.replacement_category.value == expected_category, (
+        f"Expected category {expected_category}, "
+        f"got {candidate.replacement_category.value}"
+    )
+
+    # Check rank range
+    if expected_rank_min is not None:
+        assert (
+            candidate.rank >= expected_rank_min
+        ), f"Expected rank >= {expected_rank_min}, got {candidate.rank}"
+    if expected_rank_max is not None:
+        assert (
+            candidate.rank <= expected_rank_max
+        ), f"Expected rank <= {expected_rank_max}, got {candidate.rank}"
+
+    # CAN'T_DO checks
+    assert (
+        implications.is_employed is is_employed
+    ), f"Expected is_employed={is_employed}, got {implications.is_employed}"
+    assert (
+        implications.has_specialty is has_specialty
+    ), f"Expected has_specialty={has_specialty}, got {implications.has_specialty}"
+    assert (
+        implications.isnt_on_leave is isnt_on_leave
+    ), f"Expected isnt_on_leave={isnt_on_leave}, got {implications.isnt_on_leave}"
+    assert implications.filter_hits.isnt_filtered_out is isnt_filtered_out, (
+        f"Expected isnt_filtered_out={isnt_filtered_out}, "
+        f"got {implications.filter_hits.isnt_filtered_out}"
+    )
+    assert implications.overlap_hits.hasnt_overlap is hasnt_overlap, (
+        f"Expected hasnt_overlap={hasnt_overlap}, "
+        f"got {implications.overlap_hits.hasnt_overlap}"
+    )
+    assert (
+        implications.hard_constraint_hits.meets_constraints
+        is hard_constraints_met
+    ), (
+        f"Expected hard_constraints_met={hard_constraints_met}, "
+        f"got {implications.hard_constraint_hits.meets_constraints}"
+    )
+    assert (
+        implications.request_hits.has_no_request_conflict
+        is no_request_conflict
+    ), (
+        f"Expected no_request_conflict={no_request_conflict}, "
+        f"got {implications.request_hits.has_no_request_conflict}"
+    )
+
+    # COULD_DO checks
+    assert (
+        implications.soft_constraint_hits.meets_constraints
+        is soft_constraints_met
+    ), (
+        f"Expected soft_constraints_met={soft_constraints_met}, "
+        f"got {implications.soft_constraint_hits.meets_constraints}"
+    )
+    assert (
+        implications.new_weekly_time.meets_target is weekly_time_meets_target
+    ), (
+        f"Expected weekly_time_meets_target={weekly_time_meets_target}, "
+        f"got {implications.new_weekly_time.meets_target}"
+    )
+    assert (
+        implications.new_monthly_duties.meets_target
+        is monthly_duties_meets_target
+    ), (
+        f"Expected monthly_duties_meets_target={monthly_duties_meets_target}, "
+        f"got {implications.new_monthly_duties.meets_target}"
+    )
+
+    # Specific value checks
+    if expected_new_weekly_minutes is not None:
+        assert (
+            implications.new_weekly_time.new_weekly_worked_minutes
+            == expected_new_weekly_minutes
+        ), (
+            f"Expected new_weekly_worked_minutes={expected_new_weekly_minutes}, "
+            f"got {implications.new_weekly_time.new_weekly_worked_minutes}"
+        )
+    if expected_weekly_time_delta is not None:
+        assert (
+            implications.new_weekly_time.new_weekly_time_delta_minutes
+            == expected_weekly_time_delta
+        ), (
+            f"Expected new_weekly_time_delta_minutes={expected_weekly_time_delta}, "
+            f"got {implications.new_weekly_time.new_weekly_time_delta_minutes}"
+        )
+    if expected_new_monthly_duties is not None:
+        assert (
+            implications.new_monthly_duties.new_number_monthly_duties
+            == expected_new_monthly_duties
+        ), (
+            f"Expected new_number_monthly_duties={expected_new_monthly_duties}, "
+            f"got {implications.new_monthly_duties.new_number_monthly_duties}"
+        )
+    if expected_monthly_duties_delta is not None:
+        assert (
+            implications.new_monthly_duties.new_monthly_duties_delta
+            == expected_monthly_duties_delta
+        ), (
+            f"Expected new_monthly_duties_delta={expected_monthly_duties_delta}, "
+            f"got {implications.new_monthly_duties.new_monthly_duties_delta}"
+        )
+    if expected_ltm_shift_count is not None:
+        assert (
+            implications.nb_times_did_shift_ltm.count
+            == expected_ltm_shift_count
+        ), (
+            f"Expected nb_times_did_shift_ltm.count={expected_ltm_shift_count}, "
+            f"got {implications.nb_times_did_shift_ltm.count}"
+        )
+    if expected_ltm_weekday_count is not None:
+        assert (
+            implications.nb_times_worked_weekday_ltm.count
+            == expected_ltm_weekday_count
+        ), (
+            f"Expected nb_times_worked_weekday_ltm.count={expected_ltm_weekday_count}, "
+            f"got {implications.nb_times_worked_weekday_ltm.count}"
+        )
+
+    # Structure validation (types and ranges)
+    assert isinstance(
+        implications.new_monthly_duties.new_number_monthly_duties, int
+    )
+    assert isinstance(
+        implications.new_monthly_duties.new_monthly_duties_delta, int
+    )
+    assert isinstance(
+        implications.new_weekly_time.new_weekly_worked_minutes, int
+    )
+    assert implications.new_weekly_time.new_weekly_worked_minutes >= 0
+    assert isinstance(
+        implications.new_weekly_time.new_weekly_time_delta_minutes, int
+    )
+    assert isinstance(implications.nb_times_did_shift_ltm.count, int)
+    assert implications.nb_times_did_shift_ltm.count >= 0
+    assert isinstance(implications.nb_times_worked_weekday_ltm.count, int)
+    assert implications.nb_times_worked_weekday_ltm.count >= 0
+
+    # Ranking order validation if all_candidates provided
+    if all_candidates:
+        can_do = [
+            c
+            for c in all_candidates
+            if c.replacement_category.value == "can_do" and c.rank > 0
+        ]
+        could_do = [
+            c
+            for c in all_candidates
+            if c.replacement_category.value == "could_do" and c.rank > 0
+        ]
+        cant_do = [
+            c
+            for c in all_candidates
+            if c.replacement_category.value == "cant_do" and c.rank > 0
+        ]
+
+        if expected_category == "can_do" and candidate.rank > 0:
+            for could_do_c in could_do:
+                assert candidate.rank < could_do_c.rank, (
+                    f"CAN_DO candidate rank {candidate.rank} should be < "
+                    f"COULD_DO candidate rank {could_do_c.rank}"
+                )
+            for cant_do_c in cant_do:
+                assert candidate.rank < cant_do_c.rank, (
+                    f"CAN_DO candidate rank {candidate.rank} should be < "
+                    f"CANT_DO candidate rank {cant_do_c.rank}"
+                )
+        elif expected_category == "could_do" and candidate.rank > 0:
+            for can_do_c in can_do:
+                assert candidate.rank > can_do_c.rank, (
+                    f"COULD_DO candidate rank {candidate.rank} should be > "
+                    f"CAN_DO candidate rank {can_do_c.rank}"
+                )
+            for cant_do_c in cant_do:
+                assert candidate.rank < cant_do_c.rank, (
+                    f"COULD_DO candidate rank {candidate.rank} should be < "
+                    f"CANT_DO candidate rank {cant_do_c.rank}"
+                )
+
+
+# ============================================================================
 # Base Test Data Fixtures
 # ============================================================================
 
@@ -641,119 +886,22 @@ def test_get_replacement_candidates_can_do_worker(
         c for c in candidates if c.worker_id == test_worker.id
     )
 
-    # Check target worker has rank 0
-    assert (
-        target_candidate.rank == 0
-    ), f"Target worker should have rank 0, got {target_candidate.rank}"
-
-    # Check test worker category
-    assert test_candidate.replacement_category.value == "can_do", (
-        f"Test worker should have CAN_DO category, "
-        f"got {test_candidate.replacement_category.value}"
+    # Check target worker has rank 0 (category may be cant_do due to overlap with self)
+    assert_candidate(
+        target_candidate,
+        expected_category="cant_do",
+        expected_rank_min=0,
+        expected_rank_max=0,
+        hasnt_overlap=False,  # Target worker has overlap with their own assignment
     )
 
-    # Check all constraints pass for test worker
-    implications = test_candidate.replacement_implications
-
-    assert implications.is_employed is True, "Test worker should be employed"
-    assert (
-        implications.has_specialty is True
-    ), "Test worker should have specialty (or none required)"
-    assert (
-        implications.isnt_on_leave is True
-    ), "Test worker should not be on leave"
-    assert (
-        implications.filter_hits.isnt_filtered_out is True
-    ), "Test worker should not be filtered out"
-    assert (
-        implications.overlap_hits.hasnt_overlap is True
-    ), "Test worker should not have overlapping assignments"
-    assert (
-        implications.hard_constraint_hits.meets_constraints is True
-    ), "Test worker should meet all hard constraints"
-    assert (
-        implications.request_hits.has_no_request_conflict is True
-    ), "Test worker should have no request conflicts"
-    assert (
-        implications.soft_constraint_hits.meets_constraints is True
-    ), "Test worker should meet all soft constraints"
-
-    # Check monthly duties implications
-    # The morning shift is NORMAL, not DUTY type, so adding it doesn't
-    # change the duty count. However, the delta might be negative if the
-    # test worker has existing duties in their current assignments
-    # We verify the structure is correct and values are computed
-    assert isinstance(
-        implications.new_monthly_duties.new_number_monthly_duties, int
-    ), "new_number_monthly_duties should be an integer"
-    assert isinstance(
-        implications.new_monthly_duties.new_monthly_duties_delta, int
-    ), "new_monthly_duties_delta should be an integer"
-    assert isinstance(
-        implications.new_monthly_duties.meets_target, bool
-    ), "meets_target should be a boolean"
-
-    # Check weekly time implications
-    # The test worker might have existing assignments in the week,
-    # so we verify the structure and that values are computed
-    assert isinstance(
-        implications.new_weekly_time.new_weekly_worked_minutes, int
-    ), "new_weekly_worked_minutes should be an integer"
-    assert (
-        implications.new_weekly_time.new_weekly_worked_minutes >= 0
-    ), "new_weekly_worked_minutes should be non-negative"
-    assert isinstance(
-        implications.new_weekly_time.new_weekly_time_delta_minutes, int
-    ), "new_weekly_time_delta_minutes should be an integer"
-    assert isinstance(
-        implications.new_weekly_time.meets_target, bool
-    ), "meets_target should be a boolean"
-
-    # Check LTM indicators
-    # Verify that the count and last_date are properly computed
-    assert isinstance(
-        implications.nb_times_did_shift_ltm.count, int
-    ), "nb_times_did_shift_ltm count should be an integer"
-    assert (
-        implications.nb_times_did_shift_ltm.count >= 0
-    ), "nb_times_did_shift_ltm count should be non-negative"
-
-    assert isinstance(
-        implications.nb_times_worked_weekday_ltm.count, int
-    ), "nb_times_worked_weekday_ltm count should be an integer"
-    assert (
-        implications.nb_times_worked_weekday_ltm.count >= 0
-    ), "nb_times_worked_weekday_ltm count should be non-negative"
-
-    # Check test worker rank
-    assert (
-        test_candidate.rank >= 1
-    ), f"Test worker rank should be >= 1, got {test_candidate.rank}"
-
-    # Check that CAN_DO workers rank better than COULD_DO or CANT_DO
-    # (excluding the current worker who has rank 0 regardless of category)
-    could_do_candidates = [
-        c
-        for c in candidates
-        if c.replacement_category.value == "could_do" and c.rank > 0
-    ]
-    cant_do_candidates = [
-        c
-        for c in candidates
-        if c.replacement_category.value == "cant_do" and c.rank > 0
-    ]
-
-    for could_do in could_do_candidates:
-        assert test_candidate.rank < could_do.rank, (
-            f"CAN_DO worker (rank {test_candidate.rank}) should have "
-            f"better rank than COULD_DO worker (rank {could_do.rank})"
-        )
-
-    for cant_do in cant_do_candidates:
-        assert test_candidate.rank < cant_do.rank, (
-            f"CAN_DO worker (rank {test_candidate.rank}) should have "
-            f"better rank than CANT_DO worker (rank {cant_do.rank})"
-        )
+    # Check test worker is CAN_DO with rank >= 1, all constraints pass
+    assert_candidate(
+        test_candidate,
+        expected_category="can_do",
+        expected_rank_min=1,
+        all_candidates=candidates,
+    )
 
 
 def test_get_replacement_candidates_could_do_worker_exceeds_weekly_time(
@@ -864,126 +1012,30 @@ def test_get_replacement_candidates_could_do_worker_exceeds_weekly_time(
         c for c in candidates if c.worker_id == test_worker.id
     )
 
-    # Check target worker has rank 0
-    assert (
-        target_candidate.rank == 0
-    ), f"Target worker should have rank 0, got {target_candidate.rank}"
-
-    # Check test worker category
-    assert test_candidate.replacement_category.value == "could_do", (
-        f"Test worker should have COULD_DO category, "
-        f"got {test_candidate.replacement_category.value}"
+    # Check target worker has rank 0 (category may be cant_do due to overlap with self)
+    assert_candidate(
+        target_candidate,
+        expected_category="cant_do",
+        expected_rank_min=0,
+        expected_rank_max=0,
+        hasnt_overlap=False,  # Target worker has overlap with their own assignment
     )
 
-    # Check all constraints pass for test worker
-    implications = test_candidate.replacement_implications
-
-    assert implications.is_employed is True, "Test worker should be employed"
-    assert (
-        implications.has_specialty is True
-    ), "Test worker should have specialty (or none required)"
-    assert (
-        implications.isnt_on_leave is True
-    ), "Test worker should not be on leave"
-    assert (
-        implications.filter_hits.isnt_filtered_out is True
-    ), "Test worker should not be filtered out"
-    assert (
-        implications.overlap_hits.hasnt_overlap is True
-    ), "Test worker should not have overlapping assignments"
-    assert (
-        implications.hard_constraint_hits.meets_constraints is True
-    ), "Test worker should meet all hard constraints"
-    assert (
-        implications.request_hits.has_no_request_conflict is True
-    ), "Test worker should have no request conflicts"
-    assert (
-        implications.soft_constraint_hits.meets_constraints is True
-    ), "Test worker should meet all soft constraints"
-
-    # Check weekly time implications
-    # The worker should exceed their weekly hours target
+    # Check test worker is COULD_DO due to exceeding weekly time
     expected_new_weekly_minutes = (
         current_weekly_minutes + morning_duration_minutes
     )
-    assert (
-        implications.new_weekly_time.new_weekly_worked_minutes
-        == expected_new_weekly_minutes
-    ), (
-        f"new_weekly_worked_minutes should be {expected_new_weekly_minutes}, "
-        f"got {implications.new_weekly_time.new_weekly_worked_minutes}"
-    )
-
     expected_delta = expected_new_weekly_minutes - target_weekly_minutes
-    assert (
-        implications.new_weekly_time.new_weekly_time_delta_minutes
-        == expected_delta
-    ), (
-        f"new_weekly_time_delta_minutes should be {expected_delta}, "
-        f"got {implications.new_weekly_time.new_weekly_time_delta_minutes}"
+
+    assert_candidate(
+        test_candidate,
+        expected_category="could_do",
+        expected_rank_min=1,
+        weekly_time_meets_target=False,
+        expected_new_weekly_minutes=expected_new_weekly_minutes,
+        expected_weekly_time_delta=expected_delta,
+        all_candidates=candidates,
     )
-
-    assert (
-        implications.new_weekly_time.meets_target is False
-    ), "meets_target should be False since worker exceeds weekly hours"
-
-    # Check monthly duties implications (should be properly computed)
-    assert isinstance(
-        implications.new_monthly_duties.new_number_monthly_duties, int
-    ), "new_number_monthly_duties should be an integer"
-    assert isinstance(
-        implications.new_monthly_duties.new_monthly_duties_delta, int
-    ), "new_monthly_duties_delta should be an integer"
-    assert isinstance(
-        implications.new_monthly_duties.meets_target, bool
-    ), "meets_target should be a boolean"
-
-    # Check LTM indicators
-    assert isinstance(
-        implications.nb_times_did_shift_ltm.count, int
-    ), "nb_times_did_shift_ltm count should be an integer"
-    assert (
-        implications.nb_times_did_shift_ltm.count >= 0
-    ), "nb_times_did_shift_ltm count should be non-negative"
-
-    assert isinstance(
-        implications.nb_times_worked_weekday_ltm.count, int
-    ), "nb_times_worked_weekday_ltm count should be an integer"
-    assert (
-        implications.nb_times_worked_weekday_ltm.count >= 0
-    ), "nb_times_worked_weekday_ltm count should be non-negative"
-
-    # Check test worker rank
-    assert (
-        test_candidate.rank >= 1
-    ), f"Test worker rank should be >= 1, got {test_candidate.rank}"
-
-    # Check that COULD_DO workers rank between CAN_DO and CANT_DO
-    # (excluding the current worker who has rank 0 regardless of category)
-    can_do_candidates = [
-        c
-        for c in candidates
-        if c.replacement_category.value == "can_do" and c.rank > 0
-    ]
-    cant_do_candidates = [
-        c
-        for c in candidates
-        if c.replacement_category.value == "cant_do" and c.rank > 0
-    ]
-
-    # COULD_DO should rank worse than CAN_DO
-    for can_do in can_do_candidates:
-        assert test_candidate.rank > can_do.rank, (
-            f"COULD_DO worker (rank {test_candidate.rank}) should have "
-            f"worse rank than CAN_DO worker (rank {can_do.rank})"
-        )
-
-    # COULD_DO should rank better than CANT_DO
-    for cant_do in cant_do_candidates:
-        assert test_candidate.rank < cant_do.rank, (
-            f"COULD_DO worker (rank {test_candidate.rank}) should have "
-            f"better rank than CANT_DO worker (rank {cant_do.rank})"
-        )
 
 
 def test_get_replacement_candidates_could_do_worker_exceeds_monthly_duties(
@@ -1146,136 +1198,34 @@ def test_get_replacement_candidates_could_do_worker_exceeds_monthly_duties(
         c for c in candidates if c.worker_id == test_worker.id
     )
 
-    # Check target worker has rank 0
-    assert (
-        target_candidate.rank == 0
-    ), f"Target worker should have rank 0, got {target_candidate.rank}"
-
-    # Check test worker category
-    # Note: The test worker should be categorized as COULD_DO due to exceeding monthly duties
-    assert test_candidate.replacement_category.value == "could_do", (
-        f"Test worker should have COULD_DO category, "
-        f"got {test_candidate.replacement_category.value}"
+    # Check target worker has rank 0 (category may be cant_do due to overlap with self)
+    assert_candidate(
+        target_candidate,
+        expected_category="cant_do",
+        expected_rank_min=0,
+        expected_rank_max=0,
+        hasnt_overlap=False,  # Target worker has overlap with their own assignment
+        weekly_time_meets_target=False,  # Target worker also exceeds weekly time
     )
 
-    # Check all constraints pass for test worker
-    implications = test_candidate.replacement_implications
-    assert (
-        implications.has_specialty is True
-    ), "Test worker should have specialty (or none required)"
-    assert (
-        implications.isnt_on_leave is True
-    ), "Test worker should not be on leave"
-    assert (
-        implications.filter_hits.isnt_filtered_out is True
-    ), "Test worker should not be filtered out"
-    assert (
-        implications.overlap_hits.hasnt_overlap is True
-    ), "Test worker should not have overlapping assignments"
-    assert (
-        implications.hard_constraint_hits.meets_constraints is True
-    ), "Test worker should meet all hard constraints"
-    assert (
-        implications.request_hits.has_no_request_conflict is True
-    ), "Test worker should have no request conflicts"
-    assert (
-        implications.soft_constraint_hits.meets_constraints is True
-    ), "Test worker should meet all soft constraints"
-
-    # Check monthly duties implications
-    # The worker should exceed their monthly duties target
-    # They already have current_monthly_duties (which is >= 1), and adding this duty makes it current_monthly_duties + 1
-    # Note: If test_worker == target_worker, the service might compute it as replacing
-    # the existing duty (not adding), so the count stays the same
+    # Check test worker is COULD_DO due to exceeding monthly duties
     expected_new_monthly_duties = (
         current_monthly_duties + 1
         if test_worker.id != target_worker_id
         else current_monthly_duties
     )
-    assert (
-        implications.new_monthly_duties.new_number_monthly_duties
-        == expected_new_monthly_duties
-    ), (
-        f"new_number_monthly_duties should be {expected_new_monthly_duties}, "
-        f"got {implications.new_monthly_duties.new_number_monthly_duties}"
-    )
-
     expected_delta = expected_new_monthly_duties - target_duties_per_month
-    assert (
-        implications.new_monthly_duties.new_monthly_duties_delta
-        == expected_delta
-    ), (
-        f"new_monthly_duties_delta should be {expected_delta}, "
-        f"got {implications.new_monthly_duties.new_monthly_duties_delta}"
+
+    assert_candidate(
+        test_candidate,
+        expected_category="could_do",
+        expected_rank_min=1 if test_worker.id != target_worker_id else 0,
+        expected_rank_max=None if test_worker.id != target_worker_id else 0,
+        monthly_duties_meets_target=False,
+        weekly_time_meets_target=False,  # Test worker also exceeds weekly time
+        expected_new_monthly_duties=expected_new_monthly_duties,
+        expected_monthly_duties_delta=expected_delta,
+        all_candidates=(
+            candidates if test_worker.id != target_worker_id else None
+        ),
     )
-
-    assert (
-        implications.new_monthly_duties.meets_target is False
-    ), "meets_target should be False since worker exceeds monthly duties"
-
-    # Check weekly time implications (should be properly computed)
-    assert isinstance(
-        implications.new_weekly_time.new_weekly_worked_minutes, int
-    ), "new_weekly_worked_minutes should be an integer"
-    assert (
-        implications.new_weekly_time.new_weekly_worked_minutes >= 0
-    ), "new_weekly_worked_minutes should be non-negative"
-    assert isinstance(
-        implications.new_weekly_time.new_weekly_time_delta_minutes, int
-    ), "new_weekly_time_delta_minutes should be an integer"
-    assert isinstance(
-        implications.new_weekly_time.meets_target, bool
-    ), "meets_target should be a boolean"
-
-    # Check LTM indicators
-    assert isinstance(
-        implications.nb_times_did_shift_ltm.count, int
-    ), "nb_times_did_shift_ltm count should be an integer"
-    assert (
-        implications.nb_times_did_shift_ltm.count >= 0
-    ), "nb_times_did_shift_ltm count should be non-negative"
-
-    assert isinstance(
-        implications.nb_times_worked_weekday_ltm.count, int
-    ), "nb_times_worked_weekday_ltm count should be an integer"
-    assert (
-        implications.nb_times_worked_weekday_ltm.count >= 0
-    ), "nb_times_worked_weekday_ltm count should be non-negative"
-
-    # Check test worker rank
-    # Note: If test_worker is the target_worker, they always get rank 0
-    if test_worker.id == target_worker_id:
-        assert (
-            test_candidate.rank == 0
-        ), f"Target worker should have rank 0, got {test_candidate.rank}"
-    else:
-        assert (
-            test_candidate.rank >= 1
-        ), f"Test worker rank should be >= 1, got {test_candidate.rank}"
-
-        # Check that COULD_DO workers rank between CAN_DO and CANT_DO
-        # (excluding the current worker who has rank 0 regardless of category)
-        can_do_candidates = [
-            c
-            for c in candidates
-            if c.replacement_category.value == "can_do" and c.rank > 0
-        ]
-        cant_do_candidates = [
-            c
-            for c in candidates
-            if c.replacement_category.value == "cant_do" and c.rank > 0
-        ]
-
-        # COULD_DO should rank worse than CAN_DO
-        for can_do in can_do_candidates:
-            assert test_candidate.rank > can_do.rank, (
-                f"COULD_DO worker (rank {test_candidate.rank}) should have "
-                f"worse rank than CAN_DO worker (rank {can_do.rank})"
-            )
-
-        # COULD_DO should rank better than CANT_DO
-        for cant_do in cant_do_candidates:
-            assert test_candidate.rank < cant_do.rank, (
-                f"COULD_DO worker (rank {test_candidate.rank}) should have "
-                f"better rank than CANT_DO worker (rank {cant_do.rank})"
-            )
