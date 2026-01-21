@@ -984,3 +984,298 @@ def test_get_replacement_candidates_could_do_worker_exceeds_weekly_time(
             f"COULD_DO worker (rank {test_candidate.rank}) should have "
             f"better rank than CANT_DO worker (rank {cant_do.rank})"
         )
+
+
+def test_get_replacement_candidates_could_do_worker_exceeds_monthly_duties(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test replacement candidate with COULD_DO category due to monthly duties.
+
+    This test verifies that a worker who would exceed their monthly duty
+    target is correctly categorized as COULD_DO with appropriate ranking.
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Find a target assignment for duty shift
+    target_assignment = next(
+        a for a in assignments if a.shift_id == "shift_duty"
+    )
+    target_worker_id = target_assignment.worker_id
+
+    # Find the duty shift
+    duty_shift = next(s for s in base_shifts if s.id == "shift_duty")
+
+    # Pick a different worker (not the target worker) as the test worker
+    # Choose worker_2 if target is worker_1, otherwise choose worker_1
+    test_worker_id = (
+        "worker_2" if target_worker_id == "worker_1" else "worker_1"
+    )
+    test_worker = next(w for w in base_workers if w.id == test_worker_id)
+
+    # Remove any assignments for test worker on the target date and next day to avoid overlap
+    target_date = target_assignment.date
+    next_day = target_date + timedelta(days=1)
+    assignments = [
+        a
+        for a in assignments
+        if not (
+            a.worker_id == test_worker.id
+            and (a.date == target_date or a.date == next_day)
+        )
+    ]
+
+    # Calculate the current number of duties for test worker in the target month
+    month_start = date(target_date.year, target_date.month, 1)
+    if target_date.month == 12:
+        month_end = date(target_date.year + 1, 1, 1) - timedelta(days=1)
+    else:
+        month_end = date(
+            target_date.year, target_date.month + 1, 1
+        ) - timedelta(days=1)
+
+    # Count current duties for test worker in the target month
+    current_monthly_duties = 0
+    for assignment in assignments:
+        if (
+            assignment.worker_id == test_worker.id
+            and assignment.shift_id == "shift_duty"
+            and month_start <= assignment.date <= month_end
+        ):
+            current_monthly_duties += 1
+
+    # Set worker's duties_per_month to 1
+    target_duties_per_month = 1
+
+    # If the test worker has 0 duties in the target month, we need to add one
+    # so that the replacement would cause them to exceed their target
+    if current_monthly_duties == 0:
+        # Find another day in the same month where test worker has no conflict
+        # and assign them a duty shift on that day
+        all_dates_in_month = []
+        current = month_start
+        while current <= month_end:
+            all_dates_in_month.append(current)
+            current += timedelta(days=1)
+
+        # Find a date where test worker has no assignment and it's not the target date
+        for potential_date in all_dates_in_month:
+            if potential_date == target_assignment.date:
+                continue
+
+            # Check if test worker has any assignment on this date or the next day
+            next_day_check = potential_date + timedelta(days=1)
+            has_conflict = any(
+                a.worker_id == test_worker.id
+                and (a.date == potential_date or a.date == next_day_check)
+                for a in assignments
+            )
+
+            if not has_conflict:
+                # Add a duty assignment for test worker on this date
+                new_assignment = Assignment(
+                    id=f"assignment_duty_added_{test_worker.id}_{potential_date.isoformat()}",
+                    team_id=base_team_id,
+                    schedule_id=target_assignment.schedule_id,
+                    worker_id=test_worker.id,
+                    date=potential_date,
+                    shift_id="shift_duty",
+                    fixed=False,
+                    source=AssignmentSource.MANUAL,
+                    source_id=None,
+                    reference_assignment_id=None,
+                )
+                assignments.append(new_assignment)
+                current_monthly_duties = 1
+                break
+
+    # Modify the test worker's duties_per_month
+    modified_test_worker = Worker(
+        id=test_worker.id,
+        team_id=test_worker.team_id,
+        name=test_worker.name,
+        acronym=test_worker.acronym,
+        acronym_custom=test_worker.acronym_custom,
+        employment_start_date=test_worker.employment_start_date,
+        employment_end_date=test_worker.employment_end_date,
+        weekly_hours=test_worker.weekly_hours,
+        weekly_hours_desired=test_worker.weekly_hours_desired,
+        duties_per_month=target_duties_per_month,
+        annual_leave=test_worker.annual_leave,
+        specialty_ids=test_worker.specialty_ids,
+        deleted=test_worker.deleted,
+        user_id=test_worker.user_id,
+    )
+
+    # Replace the test worker in the workers list
+    modified_workers = [
+        modified_test_worker if w.id == test_worker.id else w
+        for w in base_workers
+    ]
+
+    # Update the mock to return modified workers and assignments
+    mock_collection.worker_db.get_workers_not_deleted.return_value = (
+        modified_workers
+    )
+
+    # Update the mock to return the potentially modified assignments
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = (
+        assignments
+    )
+
+    # Mock get_assignments_by_ids to return the target assignment
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - Find target worker and test worker candidates
+    target_candidate = next(
+        c for c in candidates if c.worker_id == target_worker_id
+    )
+    test_candidate = next(
+        c for c in candidates if c.worker_id == test_worker.id
+    )
+
+    # Check target worker has rank 0
+    assert (
+        target_candidate.rank == 0
+    ), f"Target worker should have rank 0, got {target_candidate.rank}"
+
+    # Check test worker category
+    # Note: The test worker should be categorized as COULD_DO due to exceeding monthly duties
+    assert test_candidate.replacement_category.value == "could_do", (
+        f"Test worker should have COULD_DO category, "
+        f"got {test_candidate.replacement_category.value}"
+    )
+
+    # Check all constraints pass for test worker
+    implications = test_candidate.replacement_implications
+    assert (
+        implications.has_specialty is True
+    ), "Test worker should have specialty (or none required)"
+    assert (
+        implications.isnt_on_leave is True
+    ), "Test worker should not be on leave"
+    assert (
+        implications.filter_hits.isnt_filtered_out is True
+    ), "Test worker should not be filtered out"
+    assert (
+        implications.overlap_hits.hasnt_overlap is True
+    ), "Test worker should not have overlapping assignments"
+    assert (
+        implications.hard_constraint_hits.meets_constraints is True
+    ), "Test worker should meet all hard constraints"
+    assert (
+        implications.request_hits.has_no_request_conflict is True
+    ), "Test worker should have no request conflicts"
+    assert (
+        implications.soft_constraint_hits.meets_constraints is True
+    ), "Test worker should meet all soft constraints"
+
+    # Check monthly duties implications
+    # The worker should exceed their monthly duties target
+    # They already have current_monthly_duties (which is >= 1), and adding this duty makes it current_monthly_duties + 1
+    # Note: If test_worker == target_worker, the service might compute it as replacing
+    # the existing duty (not adding), so the count stays the same
+    expected_new_monthly_duties = (
+        current_monthly_duties + 1
+        if test_worker.id != target_worker_id
+        else current_monthly_duties
+    )
+    assert (
+        implications.new_monthly_duties.new_number_monthly_duties
+        == expected_new_monthly_duties
+    ), (
+        f"new_number_monthly_duties should be {expected_new_monthly_duties}, "
+        f"got {implications.new_monthly_duties.new_number_monthly_duties}"
+    )
+
+    expected_delta = expected_new_monthly_duties - target_duties_per_month
+    assert (
+        implications.new_monthly_duties.new_monthly_duties_delta
+        == expected_delta
+    ), (
+        f"new_monthly_duties_delta should be {expected_delta}, "
+        f"got {implications.new_monthly_duties.new_monthly_duties_delta}"
+    )
+
+    assert (
+        implications.new_monthly_duties.meets_target is False
+    ), "meets_target should be False since worker exceeds monthly duties"
+
+    # Check weekly time implications (should be properly computed)
+    assert isinstance(
+        implications.new_weekly_time.new_weekly_worked_minutes, int
+    ), "new_weekly_worked_minutes should be an integer"
+    assert (
+        implications.new_weekly_time.new_weekly_worked_minutes >= 0
+    ), "new_weekly_worked_minutes should be non-negative"
+    assert isinstance(
+        implications.new_weekly_time.new_weekly_time_delta_minutes, int
+    ), "new_weekly_time_delta_minutes should be an integer"
+    assert isinstance(
+        implications.new_weekly_time.meets_target, bool
+    ), "meets_target should be a boolean"
+
+    # Check LTM indicators
+    assert isinstance(
+        implications.nb_times_did_shift_ltm.count, int
+    ), "nb_times_did_shift_ltm count should be an integer"
+    assert (
+        implications.nb_times_did_shift_ltm.count >= 0
+    ), "nb_times_did_shift_ltm count should be non-negative"
+
+    assert isinstance(
+        implications.nb_times_worked_weekday_ltm.count, int
+    ), "nb_times_worked_weekday_ltm count should be an integer"
+    assert (
+        implications.nb_times_worked_weekday_ltm.count >= 0
+    ), "nb_times_worked_weekday_ltm count should be non-negative"
+
+    # Check test worker rank
+    # Note: If test_worker is the target_worker, they always get rank 0
+    if test_worker.id == target_worker_id:
+        assert (
+            test_candidate.rank == 0
+        ), f"Target worker should have rank 0, got {test_candidate.rank}"
+    else:
+        assert (
+            test_candidate.rank >= 1
+        ), f"Test worker rank should be >= 1, got {test_candidate.rank}"
+
+        # Check that COULD_DO workers rank between CAN_DO and CANT_DO
+        # (excluding the current worker who has rank 0 regardless of category)
+        can_do_candidates = [
+            c
+            for c in candidates
+            if c.replacement_category.value == "can_do" and c.rank > 0
+        ]
+        cant_do_candidates = [
+            c
+            for c in candidates
+            if c.replacement_category.value == "cant_do" and c.rank > 0
+        ]
+
+        # COULD_DO should rank worse than CAN_DO
+        for can_do in can_do_candidates:
+            assert test_candidate.rank > can_do.rank, (
+                f"COULD_DO worker (rank {test_candidate.rank}) should have "
+                f"worse rank than CAN_DO worker (rank {can_do.rank})"
+            )
+
+        # COULD_DO should rank better than CANT_DO
+        for cant_do in cant_do_candidates:
+            assert test_candidate.rank < cant_do.rank, (
+                f"COULD_DO worker (rank {test_candidate.rank}) should have "
+                f"better rank than CANT_DO worker (rank {cant_do.rank})"
+            )
