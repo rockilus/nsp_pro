@@ -15,7 +15,11 @@ from shared.schemas.core import (
     Assignment,
     AssignmentSource,
     Attribute,
+    Block,
+    BlockNameOptions,
+    BlockTypeOptions,
     ConstraintBuild,
+    ConstraintType,
     DimEntry,
     Dimension,
     Request,
@@ -23,8 +27,10 @@ from shared.schemas.core import (
     ShiftLeaveType,
     ShiftRestType,
     ShiftType,
+    ShiftWorkerOption,
     Specialty,
     Staffing,
+    SWOIdTypes,
     Worker,
 )
 from src.services.replacement_service import ReplacementService
@@ -1229,3 +1235,286 @@ def test_get_replacement_candidates_could_do_worker_exceeds_monthly_duties(
             candidates if test_worker.id != target_worker_id else None
         ),
     )
+
+
+def test_get_replacement_candidates_could_do_worker_soft_constraint_breach(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test replacement candidate with COULD_DO category due to soft constraint breach.
+
+    This test verifies that a worker who would breach a soft sum constraint
+    is correctly categorized as COULD_DO with appropriate ranking.
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Find a target assignment for morning shift
+    target_assignment = next(
+        a
+        for a in assignments
+        if a.shift_id == "shift_morning" and a.date == date(2026, 1, 7)
+    )
+    target_worker_id = target_assignment.worker_id
+    target_date = target_assignment.date
+
+    # Find the morning shift
+    morning_shift = next(s for s in base_shifts if s.id == "shift_morning")
+
+    # Find a worker with no conflicting assignment on that date
+    workers_with_assignments_on_date = {
+        a.worker_id for a in assignments if a.date == target_date
+    }
+    test_worker = next(
+        w for w in base_workers if w.id not in workers_with_assignments_on_date
+    )
+
+    # Calculate the start of the week (Monday) containing the target assignment
+    days_since_monday = target_date.weekday()  # Monday is 0
+    week_start = target_date - timedelta(days=days_since_monday)
+    week_end = week_start + timedelta(days=6)  # Sunday
+
+    # Count current morning shifts for test worker in the target week
+    current_morning_shifts_count = 0
+    for assignment in assignments:
+        if (
+            assignment.worker_id == test_worker.id
+            and assignment.shift_id == "shift_morning"
+            and week_start <= assignment.date <= week_end
+        ):
+            current_morning_shifts_count += 1
+
+    # If test worker doesn't have at least 1 morning shift in target week,
+    # add one on a different day
+    if current_morning_shifts_count == 0:
+        # Find a day in the week where test worker has no assignment
+        for potential_date in [
+            week_start + timedelta(days=i) for i in range(7)
+        ]:
+            if potential_date == target_date:
+                continue
+
+            # Check if test worker has any assignment on this date
+            has_conflict = any(
+                a.worker_id == test_worker.id and a.date == potential_date
+                for a in assignments
+            )
+
+            if not has_conflict:
+                # Add a morning shift assignment for test worker
+                new_assignment = Assignment(
+                    id=f"assignment_morning_added_{test_worker.id}_{potential_date.isoformat()}",
+                    team_id=base_team_id,
+                    schedule_id="schedule_1",
+                    worker_id=test_worker.id,
+                    date=potential_date,
+                    shift_id="shift_morning",
+                    fixed=False,
+                    source=AssignmentSource.MANUAL,
+                )
+                assignments.append(new_assignment)
+                current_morning_shifts_count = 1
+                break
+
+    # Create a soft sum constraint: "test worker should work at most
+    # current_morning_shifts_count morning shifts per week"
+    # This should NOT be breached when we run the first check
+    constraint_id = "constraint_soft_sum_test"
+    constraint_build = ConstraintBuild(
+        id=constraint_id,
+        team_id=base_team_id,
+        constraint_type=ConstraintType.SUM,
+        template_id="template_sum_weekly",
+        language="en",
+        blocks=[
+            Block(
+                name=BlockNameOptions.WORKER,
+                type=BlockTypeOptions.LIST,
+                value=[
+                    ShiftWorkerOption(
+                        name=test_worker.name,
+                        id=test_worker.id,
+                        id_type=SWOIdTypes.WORKER,
+                        is_bool_dim=False,
+                        category_name="workers",
+                    )
+                ],
+            ),
+            Block(
+                name=BlockNameOptions.OPERATOR,
+                type=BlockTypeOptions.STRING,
+                value="at most",
+            ),
+            Block(
+                name=BlockNameOptions.NUMBER,
+                type=BlockTypeOptions.NUMBER,
+                value=current_morning_shifts_count + 1,
+            ),
+            Block(
+                name=BlockNameOptions.SHIFT,
+                type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                value=[
+                    ShiftWorkerOption(
+                        name=morning_shift.name,
+                        id=morning_shift.id,
+                        id_type=SWOIdTypes.SHIFT,
+                        is_bool_dim=False,
+                        category_name="shifts",
+                    )
+                ],
+            ),
+            Block(
+                name=BlockNameOptions.TIMING,
+                type=BlockTypeOptions.STRING,
+                value="per week",
+            ),
+        ],
+        hard=False,  # Soft constraint
+        priority="1",
+    )
+
+    # Update mocks to include the constraint
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = (
+        assignments
+    )
+    mock_collection.constraint_build_db.get_constraint_builds.return_value = [
+        constraint_build
+    ]
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+
+    # Act - First run with constraint that should NOT be breached
+    candidates_no_breach = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - Find test worker candidate (first run - no breach expected)
+    test_candidate_no_breach = next(
+        c for c in candidates_no_breach if c.worker_id == test_worker.id
+    )
+
+    # Test worker should have no soft constraint hits
+    assert (
+        test_candidate_no_breach.replacement_implications.soft_constraint_hits.meets_constraints
+        is True
+    ), "Test worker should meet soft constraints when at target"
+    assert (
+        len(
+            test_candidate_no_breach.replacement_implications.soft_constraint_hits.breaches
+        )
+        == 0
+    ), "Test worker should have no soft constraint breaches when at target"
+
+    # Now modify the constraint to target n-1 instead of n
+    # This means adding one more morning shift (via replacement) will breach it
+    constraint_build_breach = ConstraintBuild(
+        id=constraint_id,
+        team_id=base_team_id,
+        constraint_type=ConstraintType.SUM,
+        template_id="template_sum_weekly",
+        language="en",
+        blocks=[
+            Block(
+                name=BlockNameOptions.WORKER,
+                type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                value=[
+                    ShiftWorkerOption(
+                        name=test_worker.name,
+                        id=test_worker.id,
+                        id_type=SWOIdTypes.WORKER,
+                        is_bool_dim=False,
+                        category_name="workers",
+                    )
+                ],
+            ),
+            Block(
+                name=BlockNameOptions.OPERATOR,
+                type=BlockTypeOptions.STRING,
+                value="at most",
+            ),
+            Block(
+                name=BlockNameOptions.NUMBER,
+                type=BlockTypeOptions.NUMBER,
+                value=current_morning_shifts_count,  # Reduced by 1
+            ),
+            Block(
+                name=BlockNameOptions.SHIFT,
+                type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                value=[
+                    ShiftWorkerOption(
+                        name=morning_shift.name,
+                        id=morning_shift.id,
+                        id_type=SWOIdTypes.SHIFT,
+                        is_bool_dim=False,
+                        category_name="shifts",
+                    )
+                ],
+            ),
+            Block(
+                name=BlockNameOptions.TIMING,
+                type=BlockTypeOptions.STRING,
+                value="per week",
+            ),
+        ],
+        hard=False,  # Soft constraint
+        priority="1",
+    )
+
+    # Update mock with modified constraint
+    mock_collection.constraint_build_db.get_constraint_builds.return_value = [
+        constraint_build_breach
+    ]
+
+    # Act - Second run with constraint that SHOULD be breached
+    candidates_with_breach = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - Find target worker and test worker candidates
+    target_candidate = next(
+        c for c in candidates_with_breach if c.worker_id == target_worker_id
+    )
+    test_candidate = next(
+        c for c in candidates_with_breach if c.worker_id == test_worker.id
+    )
+
+    # Check target worker has rank 0
+    assert_candidate(
+        target_candidate,
+        expected_category="can_do",
+        expected_rank_min=0,
+        expected_rank_max=0,
+        hasnt_overlap=True,  # Target worker has overlap with their own assignment
+    )
+
+    # Check test worker is COULD_DO due to soft constraint breach
+    assert_candidate(
+        test_candidate,
+        expected_category="could_do",
+        expected_rank_min=1,
+        soft_constraints_met=False,  # Should breach soft constraint
+        all_candidates=candidates_with_breach,
+    )
+
+    # Verify the soft constraint breach details
+    assert (
+        len(
+            test_candidate.replacement_implications.soft_constraint_hits.breaches
+        )
+        > 0
+    ), "Test worker should have at least one soft constraint breach"
+
+    # Check that the breach is for our constraint
+    breach_constraint_ids = [
+        breach.objective_id
+        for breach in test_candidate.replacement_implications.soft_constraint_hits.breaches
+    ]
+    assert (
+        constraint_id in breach_constraint_ids
+    ), f"Expected constraint {constraint_id} in breaches, got {breach_constraint_ids}"
