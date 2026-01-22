@@ -1309,11 +1309,6 @@ class ReplacementService(BaseService):
             ConstraintHits with meets_constraints flag and breaches
         """
         breaches: List[Breach] = []
-        target_tuple = (
-            context.target_assignment.worker_id,
-            context.target_assignment.date.isoformat(),
-            context.target_assignment.shift_id,
-        )
         candidate_tuple = (
             worker.id,
             context.target_assignment.date.isoformat(),
@@ -1329,20 +1324,18 @@ class ReplacementService(BaseService):
             # For each pair of (reference, relative) assignments
             for ref_tuple, rel_tuple in constraint.constraint_variables:
                 # Check if target assignment is in this pair
-                if target_tuple not in (ref_tuple, rel_tuple):
+                if candidate_tuple not in (ref_tuple, rel_tuple):
                     continue
 
-                # Replace target with candidate in the pair
-                check_ref_tuple = (
-                    candidate_tuple if ref_tuple == target_tuple else ref_tuple
-                )
-                check_rel_tuple = (
-                    candidate_tuple if rel_tuple == target_tuple else rel_tuple
-                )
-
                 # Check if assignments exist
-                ref_exists = check_ref_tuple in context.assignment_tuples
-                rel_exists = check_rel_tuple in context.assignment_tuples
+                ref_exists = (
+                    ref_tuple in context.assignment_tuples
+                    or ref_tuple == candidate_tuple
+                )
+                rel_exists = (
+                    rel_tuple in context.assignment_tuples
+                    or rel_tuple == candidate_tuple
+                )
 
                 # Check for violations based on operator
                 violation_found = False
@@ -1363,21 +1356,21 @@ class ReplacementService(BaseService):
                     if ref_exists:
                         breach_variables.append(
                             Variable(
-                                worker_id=check_ref_tuple[0],
+                                worker_id=ref_tuple[0],
                                 date=datetime.fromisoformat(
-                                    check_ref_tuple[1]
+                                    ref_tuple[1]
                                 ).date(),
-                                shift_id=check_ref_tuple[2],
+                                shift_id=ref_tuple[2],
                             )
                         )
                     if rel_exists:
                         breach_variables.append(
                             Variable(
-                                worker_id=check_rel_tuple[0],
+                                worker_id=rel_tuple[0],
                                 date=datetime.fromisoformat(
-                                    check_rel_tuple[1]
+                                    rel_tuple[1]
                                 ).date(),
-                                shift_id=check_rel_tuple[2],
+                                shift_id=rel_tuple[2],
                             )
                         )
 
