@@ -1053,11 +1053,6 @@ class ReplacementService(BaseService):
             ConstraintHits with meets_constraints flag and breaches
         """
         breaches: List[Breach] = []
-        target_tuple = (
-            context.target_assignment.worker_id,
-            context.target_assignment.date.isoformat(),
-            context.target_assignment.shift_id,
-        )
         candidate_tuple = (
             worker.id,
             context.target_assignment.date.isoformat(),
@@ -1167,11 +1162,6 @@ class ReplacementService(BaseService):
             ConstraintHits with meets_constraints flag and breaches
         """
         breaches: List[Breach] = []
-        target_tuple = (
-            context.target_assignment.worker_id,
-            context.target_assignment.date.isoformat(),
-            context.target_assignment.shift_id,
-        )
         candidate_tuple = (
             worker.id,
             context.target_assignment.date.isoformat(),
@@ -1188,22 +1178,16 @@ class ReplacementService(BaseService):
             for period_vars in constraint.constraint_variables:
                 # Check if this period contains the target assignment
                 period_tuples = set(period_vars)
-                if target_tuple not in period_tuples:
+                if candidate_tuple not in period_tuples:
                     continue
 
                 # Build assignment existence array with candidate replacing
                 # target. period_vars represents consecutive time slots
-                assignments_exist = []
-                for var_tuple in period_vars:
-                    # Replace target with candidate
-                    check_tuple = (
-                        candidate_tuple
-                        if var_tuple == target_tuple
-                        else var_tuple
-                    )
-                    assignments_exist.append(
-                        check_tuple in context.assignment_tuples
-                    )
+                assignments_exist = [
+                    var_tuple
+                    for var_tuple in context.assignment_tuples
+                    if var_tuple in period_vars or var_tuple == candidate_tuple
+                ]
 
                 # Check for violations based on operator
                 violation_found = False
@@ -1227,11 +1211,7 @@ class ReplacementService(BaseService):
                                 violation_found = True
                                 # Collect variables for this window
                                 for j in range(constraint.target_value + 1):
-                                    check_tuple = (
-                                        period_vars[i + j]
-                                        if period_vars[i + j] != target_tuple
-                                        else candidate_tuple
-                                    )
+                                    check_tuple = period_vars[i + j]
                                     if (
                                         check_tuple
                                         in context.assignment_tuples
@@ -1282,14 +1262,7 @@ class ReplacementService(BaseService):
                                 violation_found = True
                                 # Collect variables for this sequence
                                 for j in range(length):
-                                    check_tuple = (
-                                        period_vars[start + j]
-                                        if (
-                                            period_vars[start + j]
-                                            != target_tuple
-                                        )
-                                        else candidate_tuple
-                                    )
+                                    check_tuple = period_vars[start + j]
                                     if (
                                         check_tuple
                                         in context.assignment_tuples
