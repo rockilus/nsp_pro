@@ -1181,104 +1181,94 @@ class ReplacementService(BaseService):
                 if candidate_tuple not in period_tuples:
                     continue
 
-                # Build assignment existence array with candidate replacing
-                # target. period_vars represents consecutive time slots
+                # Build boolean array aligned with period_vars positions
+                # True if assignment exists (including candidate replacement)
                 assignments_exist = [
-                    var_tuple
-                    for var_tuple in context.assignment_tuples
-                    if var_tuple in period_vars or var_tuple == candidate_tuple
+                    (
+                        var_tuple in context.assignment_tuples
+                        or var_tuple == candidate_tuple
+                    )
+                    for var_tuple in period_vars
                 ]
 
-                # Check for violations based on operator
+                # Extract all consecutive runs using run-length encoding
+                # Each run: (start_index, length)
+                runs: List[tuple[int, int]] = []
+                current_start = None
+                current_length = 0
+
+                for i, exists in enumerate(assignments_exist):
+                    if exists:
+                        if current_start is None:
+                            current_start = i
+                            current_length = 1
+                        else:
+                            current_length += 1
+                    else:
+                        if current_start is not None:
+                            runs.append((current_start, current_length))
+                            current_start = None
+                            current_length = 0
+
+                # Don't forget last run if it extends to end
+                if current_start is not None:
+                    runs.append((current_start, current_length))
+
+                # Check each run for violations
                 violation_found = False
                 breach_variables: List[Variable] = []
 
-                if constraint.operator in [
-                    ConstraintOperator.LESS_THAN_OR_EQUAL,
-                    ConstraintOperator.EQUAL,
-                ]:
-                    # Check for sequences longer than target_value
-                    # Use sliding window of size target_value + 1
-                    if len(assignments_exist) > constraint.target_value:
-                        for i in range(
-                            len(assignments_exist) - constraint.target_value
-                        ):
-                            window = assignments_exist[
-                                i : i + constraint.target_value + 1
-                            ]
-                            # If all assignments in window exist, breach
-                            if all(window):
-                                violation_found = True
-                                # Collect variables for this window
-                                for j in range(constraint.target_value + 1):
-                                    check_tuple = period_vars[i + j]
-                                    if (
-                                        check_tuple
-                                        in context.assignment_tuples
-                                    ):
-                                        breach_variables.append(
-                                            Variable(
-                                                worker_id=check_tuple[0],
-                                                date=datetime.fromisoformat(
-                                                    check_tuple[1]
-                                                ).date(),
-                                                shift_id=check_tuple[2],
-                                            )
-                                        )
-                                break
+                for start_idx, run_length in runs:
+                    run_violates = False
 
-                if (
-                    constraint.operator
-                    in [
+                    # Check LESS_THAN_OR_EQUAL: run too long
+                    if constraint.operator in [
+                        ConstraintOperator.LESS_THAN_OR_EQUAL,
+                        ConstraintOperator.EQUAL,
+                    ]:
+                        if run_length > constraint.target_value:
+                            run_violates = True
+
+                    # Check GREATER_THAN_OR_EQUAL: bounded run too short
+                    if constraint.operator in [
                         ConstraintOperator.GREATER_THAN_OR_EQUAL,
                         ConstraintOperator.EQUAL,
-                    ]
-                    and not violation_found
-                ):
-                    # Check for bounded sequences shorter than target_value
-                    # Bounded = preceded/followed by non-assignment
-                    for length in range(1, constraint.target_value):
-                        for start in range(
-                            len(assignments_exist) - length + 1
-                        ):
-                            # Check bounded sequence of given length
-                            sequence = assignments_exist[
-                                start : start + length
-                            ]
-                            if not all(sequence):
-                                continue
+                    ]:
+                        if run_length < constraint.target_value:
+                            # Check if run is bounded (has gaps before/after)
+                            has_gap_before = (
+                                start_idx == 0
+                                or not assignments_exist[start_idx - 1]
+                            )
+                            has_gap_after = (
+                                start_idx + run_length
+                                >= len(assignments_exist)
+                                or not assignments_exist[
+                                    start_idx + run_length
+                                ]
+                            )
 
-                            # Check if bounded (not part of longer seq)
-                            is_bounded = True
-                            if start > 0 and assignments_exist[start - 1]:
-                                is_bounded = False
-                            if (
-                                start + length < len(assignments_exist)
-                                and assignments_exist[start + length]
-                            ):
-                                is_bounded = False
+                            if has_gap_before and has_gap_after:
+                                run_violates = True
 
-                            if is_bounded:
-                                violation_found = True
-                                # Collect variables for this sequence
-                                for j in range(length):
-                                    check_tuple = period_vars[start + j]
-                                    if (
-                                        check_tuple
-                                        in context.assignment_tuples
-                                    ):
-                                        breach_variables.append(
-                                            Variable(
-                                                worker_id=check_tuple[0],
-                                                date=datetime.fromisoformat(
-                                                    check_tuple[1]
-                                                ).date(),
-                                                shift_id=check_tuple[2],
-                                            )
-                                        )
-                                break
-                        if violation_found:
-                            break
+                    # Collect breach variables for this violating run
+                    if run_violates:
+                        violation_found = True
+                        for offset in range(run_length):
+                            var_tuple = period_vars[start_idx + offset]
+                            # Only include existing assignments in breach
+                            if var_tuple in context.assignment_tuples:
+                                breach_variables.append(
+                                    Variable(
+                                        worker_id=var_tuple[0],
+                                        date=datetime.fromisoformat(
+                                            var_tuple[1]
+                                        ).date(),
+                                        shift_id=var_tuple[2],
+                                    )
+                                )
+                        # Break after finding first violation
+                        break
 
                 # Create breach if violation found
                 if violation_found and breach_variables:

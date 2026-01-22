@@ -111,7 +111,7 @@ class MapDay:
     ) -> List[date]:
         selector = self.get_selector(cba.blocks, cba.constraint_type)
 
-        target_abs = max(abs(target) - 1, 0)
+        target_abs = max(abs(target), 0)
         dates_constraint = self.dates_hist[-target_abs:] + self.dates_campaign
         if selector == VarDaySelectorOptions.ALL:
             return dates_constraint

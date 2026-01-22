@@ -1655,7 +1655,7 @@ def test_get_replacement_candidates_could_do_worker_soft_constraint_seq_breach(
                 value=3,
             ),
             Block(
-                name=BlockNameOptions.TEXT,
+                name=BlockNameOptions.TIMING,
                 type=BlockTypeOptions.STRING,
                 value="consecutive",
             ),
@@ -1760,7 +1760,7 @@ def test_get_replacement_candidates_could_do_worker_soft_constraint_seq_breach(
                 value=2,  # Reduced to 2 - should trigger breach
             ),
             Block(
-                name=BlockNameOptions.TEXT,
+                name=BlockNameOptions.TIMING,
                 type=BlockTypeOptions.STRING,
                 value="consecutive",
             ),
