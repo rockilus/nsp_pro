@@ -2915,3 +2915,255 @@ def test_get_replacement_candidates_request_for_replacement_shift_no_conflict(
         expected_category="can_do",
         no_request_conflict=True,
     )
+
+
+# ============================================================================
+# Overlap Handling Tests
+# ============================================================================
+
+
+def test_get_replacement_candidates_no_overlap_different_times_same_day(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test that non-overlapping assignments don't trigger overlap hits.
+
+    A worker with a night shift assignment should NOT have an overlap hit
+    when considered for a morning shift replacement on the same day,
+    since the shifts don't overlap in time.
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Select target assignment for morning shift
+    target_assignment = next(
+        a for a in assignments if a.shift_id == "shift_morning"
+    )
+    target_date = target_assignment.date
+
+    # Find a worker without assignment on target date
+    workers_with_assignments_on_date = {
+        a.worker_id for a in assignments if a.date == target_date
+    }
+    test_worker = next(
+        w for w in base_workers if w.id not in workers_with_assignments_on_date
+    )
+
+    # Create a night shift for the same day
+    # Night shift is 22:00 to 06:00 next day, morning is 08:00 to 16:00
+    # These don't overlap
+    night_assignment = Assignment(
+        id="assignment_night_nonoverlap",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=test_worker.id,
+        date=target_date,
+        shift_id="shift_night",
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    # Mock get_assignments_by_ids
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+
+    # Mock get_assignments_by_dates to include the night assignment
+    all_assignments = assignments + [night_assignment]
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = (
+        all_assignments
+    )
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - Find test worker candidate
+    test_candidate = next(
+        c for c in candidates if c.worker_id == test_worker.id
+    )
+
+    # Should be CAN_DO - night shift doesn't overlap with morning
+    assert_candidate(
+        test_candidate,
+        expected_category="can_do",
+        hasnt_overlap=True,
+    )
+
+
+def test_get_replacement_candidates_overlap_same_day(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test that overlapping assignments on same day trigger overlap hits.
+
+    A worker on duty shift (08:00 to 20:00) should have an overlap hit
+    when considered for a morning shift replacement (08:00 to 16:00)
+    on the same day.
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Select target assignment for morning shift
+    target_assignment = next(
+        a for a in assignments if a.shift_id == "shift_morning"
+    )
+    target_date = target_assignment.date
+
+    # Find a worker without assignment on target date
+    workers_with_assignments_on_date = {
+        a.worker_id for a in assignments if a.date == target_date
+    }
+    test_worker = next(
+        w for w in base_workers if w.id not in workers_with_assignments_on_date
+    )
+
+    # Create a duty assignment for the same day
+    # Duty is 08:00 to 20:00, morning is 08:00 to 16:00
+    # These overlap
+    duty_assignment = Assignment(
+        id="assignment_duty_overlap",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=test_worker.id,
+        date=target_date,
+        shift_id="shift_duty",
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    # Mock get_assignments_by_ids
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+
+    # Mock get_assignments_by_dates to include the duty assignment
+    all_assignments = assignments + [duty_assignment]
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = (
+        all_assignments
+    )
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - Find test worker candidate
+    test_candidate = next(
+        c for c in candidates if c.worker_id == test_worker.id
+    )
+
+    # Should be CANT_DO - duty shift overlaps with morning
+    assert_candidate(
+        test_candidate,
+        expected_category="cant_do",
+        hasnt_overlap=False,
+    )
+
+
+def test_get_replacement_candidates_overlap_from_previous_day(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test that multi-day shifts from previous day trigger overlap hits.
+
+    A worker on a 36-hour duty starting on the previous day should have
+    an overlap hit when considered for a morning shift replacement on
+    the next day.
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Select target assignment for morning shift
+    target_assignment = next(
+        a for a in assignments if a.shift_id == "shift_morning"
+    )
+    target_date = target_assignment.date
+    previous_date = target_date - timedelta(days=1)
+
+    # Find a worker without assignment on target date
+    workers_with_assignments_on_date = {
+        a.worker_id for a in assignments if a.date == target_date
+    }
+    test_worker = next(
+        w for w in base_workers if w.id not in workers_with_assignments_on_date
+    )
+
+    # Create a 36-hour duty shift (08:00 to 20:00 next day)
+    duty_36h = Shift(
+        id="shift_duty_36h",
+        team_id=base_team_id,
+        name="36h Duty",
+        acronym="D36",
+        acronym_custom=False,
+        start_time=create_shift_datetime(8, 0, 0),  # 08:00 day 0
+        end_time=create_shift_datetime(20, 0, 1),  # 20:00 day 1 (36 hours)
+        staffing=[
+            Staffing(specialty_id="specialty_general", staffing=1),
+        ],
+        color="#FF6B6B",
+        shift_type=ShiftType.DUTY,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.NONE,
+        recuperation_time=12,
+        recuperation_duty_id=None,
+        deleted=False,
+    )
+
+    # Create assignment for 36h duty starting previous day
+    duty_36h_assignment = Assignment(
+        id="assignment_duty_36h_overlap",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=test_worker.id,
+        date=previous_date,  # Starts on previous day
+        shift_id="shift_duty_36h",
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    # Mock get_assignments_by_ids
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+
+    # Mock get_assignments_by_dates to include the 36h duty assignment
+    all_assignments = assignments + [duty_36h_assignment]
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = (
+        all_assignments
+    )
+
+    # Mock shift_db to include the 36h duty shift
+    all_shifts = base_shifts + [duty_36h]
+    mock_collection.shift_db.get_shifts_not_deleted.return_value = all_shifts
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - Find test worker candidate
+    test_candidate = next(
+        c for c in candidates if c.worker_id == test_worker.id
+    )
+
+    # Should be CANT_DO - 36h duty from previous day overlaps with morning
+    assert_candidate(
+        test_candidate,
+        expected_category="cant_do",
+        hasnt_overlap=False,
+        weekly_time_meets_target=False,  # Likely exceeds weekly hours
+    )
