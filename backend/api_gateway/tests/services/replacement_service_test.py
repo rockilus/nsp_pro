@@ -2085,3 +2085,262 @@ def test_get_replacement_candidates_could_do_worker_soft_constraint_ord_breach(
     assert (
         constraint_id in breach_constraint_ids
     ), f"Expected constraint {constraint_id} in breaches, got {breach_constraint_ids}"
+
+
+def test_get_replacement_candidates_could_do_worker_soft_constraint_fil_breach(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test soft FIL constraint breach detection.
+
+    Creates a soft FIL constraint that filters a worker from a shift type,
+    and verifies that the system correctly identifies the breach when
+    recommending that worker as a replacement for that shift type.
+
+    Scenario:
+    1. Find morning shift assignment on Jan 7, 2026
+    2. Find test worker with no conflicts
+    3. Create soft FIL: "Test worker should not work night"
+    4. First run: No breach (morning shift allowed)
+    5. Change to: "Test worker should not work morning"
+    6. Second run: Breach detected (morning shift filtered)
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Find target assignment: morning shift on Jan 7, 2026
+    target_date = date(2026, 1, 7)
+    target_assignment = None
+    for a in assignments:
+        if a.shift_id == "shift_morning" and a.date == target_date:
+            target_assignment = a
+            break
+
+    # Fallback to first available morning shift if Jan 7 not found
+    if not target_assignment:
+        target_assignment = next(
+            a for a in assignments if a.shift_id == "shift_morning"
+        )
+        target_date = target_assignment.date
+
+    # Find test worker with no conflicting assignment on target date
+    assigned_worker_ids_on_date = {
+        a.worker_id for a in assignments if a.date == target_date
+    }
+    test_worker = next(
+        w for w in base_workers if w.id not in assigned_worker_ids_on_date
+    )
+
+    # Find night shift for initial constraint
+    morning_shift = next(s for s in base_shifts if s.id == "shift_morning")
+    night_shift = next(s for s in base_shifts if s.id == "shift_night")
+
+    # Create soft FIL constraint: "Test worker should not work morning"
+    # Block structure for FIL: WORKER, TEXT, SHIFT_REFERENCE
+    constraint_build_no_breach = ConstraintBuild(
+        id="constraint_fil_test_night",
+        team_id=base_team_id,
+        constraint_type=ConstraintType.FIL,
+        template_id="template_fil_worker_shift",
+        language="en",
+        blocks=[
+            Block(
+                name=BlockNameOptions.WORKER,
+                type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                value=[
+                    ShiftWorkerOption(
+                        name=test_worker.name,
+                        id=test_worker.id,
+                        id_type=SWOIdTypes.WORKER,
+                        is_bool_dim=False,
+                        category_name="workers",
+                    )
+                ],
+            ),
+            Block(
+                name=BlockNameOptions.OPERATOR,
+                type=BlockTypeOptions.STRING,
+                value="should not",
+            ),
+            Block(
+                name=BlockNameOptions.TEXT,
+                type=BlockTypeOptions.STRING,
+                value="work",
+            ),
+            Block(
+                name=BlockNameOptions.SHIFT,
+                type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                value=[
+                    ShiftWorkerOption(
+                        name=night_shift.name,
+                        id=night_shift.id,
+                        id_type=SWOIdTypes.SHIFT,
+                        is_bool_dim=False,
+                        category_name="shifts",
+                    )
+                ],
+            ),
+        ],
+        hard=False,
+        priority="high",
+    )
+
+    # Mock get_assignments_by_ids to return the target assignment
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+
+    # Mock constraint builds with no breach constraint (filters night, not morning)
+    mock_collection.constraint_build_db.get_constraint_builds.return_value = [
+        constraint_build_no_breach
+    ]
+
+    # First run: No breach expected (constraint filters night, target is morning)
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Find test worker in candidates
+    test_worker_candidate = next(
+        c for c in candidates if c.worker_id == test_worker.id
+    )
+
+    # Should have no soft constraint breach (morning shift not filtered)
+    assert_candidate(
+        test_worker_candidate,
+        expected_category="can_do",
+        soft_constraints_met=True,
+    )
+    assert (
+        len(
+            test_worker_candidate.replacement_implications.soft_constraint_hits.breaches
+        )
+        == 0
+    )
+
+    # Now modify constraint to create breach: "Test worker should not work morning"
+    constraint_build_with_breach = ConstraintBuild(
+        id="constraint_fil_test_morning",
+        team_id=base_team_id,
+        constraint_type=ConstraintType.FIL,
+        template_id="template_fil_worker_shift",
+        language="en",
+        blocks=[
+            Block(
+                name=BlockNameOptions.WORKER,
+                type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                value=[
+                    ShiftWorkerOption(
+                        name=test_worker.name,
+                        id=test_worker.id,
+                        id_type=SWOIdTypes.WORKER,
+                        is_bool_dim=False,
+                        category_name="workers",
+                    )
+                ],
+            ),
+            Block(
+                name=BlockNameOptions.OPERATOR,
+                type=BlockTypeOptions.STRING,
+                value="should not",
+            ),
+            Block(
+                name=BlockNameOptions.TEXT,
+                type=BlockTypeOptions.STRING,
+                value="work",
+            ),
+            Block(
+                name=BlockNameOptions.SHIFT,
+                type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                value=[
+                    ShiftWorkerOption(
+                        name=morning_shift.name,
+                        id=morning_shift.id,
+                        id_type=SWOIdTypes.SHIFT,
+                        is_bool_dim=False,
+                        category_name="shifts",
+                    )
+                ],
+            ),
+        ],
+        hard=False,
+        priority="high",
+    )
+
+    # Mock constraint builds with breach constraint (filters morning)
+    mock_collection.constraint_build_db.get_constraint_builds.return_value = [
+        constraint_build_with_breach
+    ]
+
+    # Second run: Breach expected (constraint now filters morning shift)
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Find target worker (currently assigned)
+    target_worker_candidate = next(
+        c for c in candidates if c.worker_id == target_assignment.worker_id
+    )
+
+    # Target worker should have rank 0
+    assert target_worker_candidate.rank == 0
+
+    # Find test worker in candidates
+    test_worker_candidate = next(
+        c for c in candidates if c.worker_id == test_worker.id
+    )
+
+    # Test worker should be COULD_DO with soft constraint breach
+    assert_candidate(
+        test_worker_candidate,
+        expected_category="could_do",
+        expected_rank_min=1,
+        is_employed=True,
+        has_specialty=True,
+        isnt_on_leave=True,
+        isnt_filtered_out=True,
+        hasnt_overlap=True,
+        hard_constraints_met=True,
+        no_request_conflict=True,
+        soft_constraints_met=False,
+        weekly_time_meets_target=True,
+        monthly_duties_meets_target=True,
+    )
+
+    # Verify soft constraint breach contains our constraint ID
+    breaches = (
+        test_worker_candidate.replacement_implications.soft_constraint_hits.breaches
+    )
+    assert len(breaches) > 0, "Expected at least one soft constraint breach"
+    breach_constraint_ids = [b.objective_id for b in breaches]
+    assert "constraint_fil_test_morning" in breach_constraint_ids
+
+    # Verify ranking: test worker rank should be >= 1
+    assert test_worker_candidate.rank >= 1
+
+    # Verify test worker rank is higher than CAN_DO workers
+    can_do_candidates = [
+        c for c in candidates if c.replacement_category.value == "can_do"
+    ]
+    if can_do_candidates:
+        max_can_do_rank = max(c.rank for c in can_do_candidates)
+        assert test_worker_candidate.rank > max_can_do_rank, (
+            f"COULD_DO worker rank ({test_worker_candidate.rank}) should be "
+            f"greater than max CAN_DO rank ({max_can_do_rank})"
+        )
+
+    # Verify test worker rank is lower than CANT_DO workers
+    cant_do_candidates = [
+        c for c in candidates if c.replacement_category.value == "cant_do"
+    ]
+    if cant_do_candidates:
+        min_cant_do_rank = min(c.rank for c in cant_do_candidates)
+        assert test_worker_candidate.rank < min_cant_do_rank, (
+            f"COULD_DO worker rank ({test_worker_candidate.rank}) should be "
+            f"less than min CANT_DO rank ({min_cant_do_rank})"
+        )
