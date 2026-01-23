@@ -15,6 +15,7 @@ from shared.schemas.core import (
     Assignment,
     AssignmentSource,
     Attribute,
+    AttributeOwnerType,
     Block,
     BlockNameOptions,
     BlockTypeOptions,
@@ -22,6 +23,8 @@ from shared.schemas.core import (
     ConstraintType,
     DimEntry,
     Dimension,
+    DimensionEntryType,
+    DimensionType,
     Request,
     RequestStatus,
     RequestType,
@@ -3431,3 +3434,514 @@ def test_get_replacement_candidates_overlap_all_shift_types(
         leave_assignment.id
         in leave_candidate.replacement_implications.overlap_hits.overlap_assignment_ids
     )
+
+
+# ============================================================================
+# Filter Hits Tests
+# ============================================================================
+
+
+def test_get_replacement_candidates_worker_without_attribute_filtered_out(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """
+    Test that a worker without any attribute is filtered out when replacing
+    a shift that has an attribute.
+    """
+    service, mock_db, base_assignments = mock_replacement_service
+
+    # Create a test dimension with WORKER and SHIFT types, DIM_ENTRIES entry type
+    test_dimension = Dimension(
+        id="test_dim_1",
+        team_id=base_team_id,
+        dim_types=[DimensionType.WORKER, DimensionType.SHIFT],
+        name="Skill Level",
+        entry_type=DimensionEntryType.DIM_ENTRIES,
+        deleted=False,
+    )
+
+    # Create two dim entries for this dimension
+    dim_entry_1 = DimEntry(
+        id="dim_entry_1",
+        dimension_id=test_dimension.id,
+        name="Level 1",
+        deleted=False,
+    )
+    dim_entry_2 = DimEntry(
+        id="dim_entry_2",
+        dimension_id=test_dimension.id,
+        name="Level 2",
+        deleted=False,
+    )
+
+    # Get morning shift and two workers for testing
+    morning_shift = next(s for s in base_shifts if s.id == "shift_morning")
+    worker_with_no_attr = base_workers[0]  # This worker has no attribute
+    worker_with_attr = base_workers[1]  # This worker has matching attribute
+
+    # Create attribute for morning shift with first dim entry
+    shift_attribute = Attribute(
+        id="attr_shift_1",
+        value=True,
+        owner_type=AttributeOwnerType.SHIFT,
+        owner_id=morning_shift.id,
+        dimension_id=test_dimension.id,
+        dim_entry_ids=[dim_entry_1.id],
+    )
+
+    # Create attribute for worker_with_attr with first dim entry (matching shift)
+    worker_attribute = Attribute(
+        id="attr_worker_1",
+        value=True,
+        owner_type=AttributeOwnerType.WORKER,
+        owner_id=worker_with_attr.id,
+        dimension_id=test_dimension.id,
+        dim_entry_ids=[dim_entry_1.id],
+    )
+
+    # Create an assignment to be replaced
+    replacement_date = date(2025, 1, 15)
+    assignment_to_replace = Assignment(
+        id="assignment_1",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=base_workers[2].id,
+        date=replacement_date,
+        shift_id=morning_shift.id,
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    # Update mock to return our test data
+    mock_db.assignment_db.get_assignments_by_ids.return_value = [
+        assignment_to_replace
+    ]
+    mock_db.get_assignments_by_team_id.return_value = base_assignments + [
+        assignment_to_replace
+    ]
+    mock_db.shift_db.get_shifts_not_deleted.return_value = base_shifts
+    mock_db.worker_db.get_workers_not_deleted.return_value = base_workers
+    mock_db.dimension_db.get_dimensions.return_value = [test_dimension]
+    mock_db.dim_entry_db.get_dim_entries_by_dim_ids.return_value = [
+        dim_entry_1,
+        dim_entry_2,
+    ]
+    mock_db.attribute_db.get_attributes_by_owner_ids.return_value = [
+        shift_attribute,
+        worker_attribute,
+    ]
+
+    candidates = service.get_replacement_candidates(
+        assignment_id=assignment_to_replace.id,
+        team_id=base_team_id,
+    )
+
+    # Find candidates for our test workers
+    no_attr_candidate = next(
+        (c for c in candidates if c.worker_id == worker_with_no_attr.id), None
+    )
+    with_attr_candidate = next(
+        (c for c in candidates if c.worker_id == worker_with_attr.id), None
+    )
+
+    assert no_attr_candidate is not None
+    assert with_attr_candidate is not None
+
+    # Worker without attribute should be filtered out
+    assert_candidate(
+        no_attr_candidate,
+        expected_category="cant_do",
+        isnt_filtered_out=False,
+    )
+    filter_hits = no_attr_candidate.replacement_implications.filter_hits
+    assert not filter_hits.isnt_filtered_out
+    assert len(filter_hits.filter_labels) > 0
+    assert any(
+        test_dimension.name in label and dim_entry_1.name in label
+        for label in filter_hits.filter_labels
+    )
+
+    # Worker with matching attribute should NOT be filtered out
+    assert_candidate(
+        with_attr_candidate,
+        expected_category="can_do",
+        isnt_filtered_out=True,
+    )
+    filter_hits = with_attr_candidate.replacement_implications.filter_hits
+    assert filter_hits.isnt_filtered_out
+    assert len(filter_hits.filter_labels) == 0
+
+
+def test_get_replacement_candidates_worker_with_different_attribute_filtered_out(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """
+    Test that a worker with a different attribute from the shift is filtered out.
+    """
+    service, mock_db, base_assignments = mock_replacement_service
+
+    # Create a test dimension
+    test_dimension = Dimension(
+        id="test_dim_1",
+        team_id=base_team_id,
+        dim_types=[DimensionType.WORKER, DimensionType.SHIFT],
+        name="Certification",
+        entry_type=DimensionEntryType.DIM_ENTRIES,
+        deleted=False,
+    )
+
+    # Create two dim entries
+    dim_entry_1 = DimEntry(
+        id="dim_entry_1",
+        dimension_id=test_dimension.id,
+        name="Basic",
+        deleted=False,
+    )
+    dim_entry_2 = DimEntry(
+        id="dim_entry_2",
+        dimension_id=test_dimension.id,
+        name="Advanced",
+        deleted=False,
+    )
+
+    # Get morning shift and workers
+    morning_shift = next(s for s in base_shifts if s.name == "Morning")
+    worker_with_matching_attr = base_workers[0]
+    worker_with_different_attr = base_workers[1]
+
+    # Create attribute for morning shift with first dim entry
+    shift_attribute = Attribute(
+        id="attr_shift_1",
+        value=True,
+        owner_type=AttributeOwnerType.SHIFT,
+        owner_id=morning_shift.id,
+        dimension_id=test_dimension.id,
+        dim_entry_ids=[dim_entry_1.id],
+    )
+
+    # Create attribute for first worker with first dim entry (matching)
+    worker_attribute_matching = Attribute(
+        id="attr_worker_1",
+        value=True,
+        owner_type=AttributeOwnerType.WORKER,
+        owner_id=worker_with_matching_attr.id,
+        dimension_id=test_dimension.id,
+        dim_entry_ids=[dim_entry_1.id],
+    )
+
+    # Create attribute for second worker with second dim entry (different)
+    worker_attribute_different = Attribute(
+        id="attr_worker_2",
+        value=True,
+        owner_type=AttributeOwnerType.WORKER,
+        owner_id=worker_with_different_attr.id,
+        dimension_id=test_dimension.id,
+        dim_entry_ids=[dim_entry_2.id],
+    )
+
+    # Create an assignment to be replaced
+    replacement_date = date(2025, 1, 15)
+    assignment_to_replace = Assignment(
+        id="assignment_1",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=base_workers[2].id,
+        date=replacement_date,
+        shift_id=morning_shift.id,
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    # Update mock
+    mock_db.get_assignments_by_id.return_value = [assignment_to_replace]
+    mock_db.get_assignments_by_team_id.return_value = base_assignments
+    mock_db.get_shifts_by_team_id.return_value = base_shifts
+    mock_db.get_workers_by_team_id.return_value = base_workers
+    mock_db.get_specialties_by_team_id.return_value = []
+    mock_db.get_requests_by_team_id.return_value = []
+    mock_db.get_constraint_builds_by_team_id.return_value = []
+    mock_db.get_dimensions_by_team_id.return_value = [test_dimension]
+    mock_db.get_dim_entries_by_team_id.return_value = [
+        dim_entry_1,
+        dim_entry_2,
+    ]
+    mock_db.get_attributes_by_team_id.return_value = [
+        shift_attribute,
+        worker_attribute_matching,
+        worker_attribute_different,
+    ]
+
+    candidates = service.get_replacement_candidates(
+        assignment_id=assignment_to_replace.id,
+        team_id=base_team_id,
+    )
+
+    # Find candidates
+    matching_candidate = next(
+        (c for c in candidates if c.worker.id == worker_with_matching_attr.id),
+        None,
+    )
+    different_candidate = next(
+        (
+            c
+            for c in candidates
+            if c.worker.id == worker_with_different_attr.id
+        ),
+        None,
+    )
+
+    assert matching_candidate is not None
+    assert different_candidate is not None
+
+    # Worker with matching attribute should NOT be filtered out
+    assert_candidate(
+        matching_candidate,
+        expected_category="can_do",
+        isnt_filtered_out=True,
+    )
+    filter_hits = matching_candidate.replacement_implications.filter_hits
+    assert filter_hits.isnt_filtered_out
+    assert len(filter_hits.filter_labels) == 0
+
+    # Worker with different attribute should be filtered out
+    assert_candidate(
+        different_candidate,
+        expected_category="cant_do",
+        isnt_filtered_out=False,
+    )
+    filter_hits = different_candidate.replacement_implications.filter_hits
+    assert not filter_hits.isnt_filtered_out
+    assert len(filter_hits.filter_labels) > 0
+    assert any(
+        test_dimension.name in label and dim_entry_1.name in label
+        for label in filter_hits.filter_labels
+    )
+
+
+def test_get_replacement_candidates_worker_with_same_attribute_not_filtered(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """
+    Test that a worker with the same attribute as the shift is NOT filtered out.
+    """
+    service, mock_db, base_assignments = mock_replacement_service
+
+    # Create a test dimension
+    test_dimension = Dimension(
+        id="test_dim_1",
+        team_id=base_team_id,
+        dim_types=[DimensionType.WORKER, DimensionType.SHIFT],
+        name="Department",
+        entry_type=DimensionEntryType.DIM_ENTRIES,
+        deleted=False,
+    )
+
+    # Create dim entries
+    dim_entry_1 = DimEntry(
+        id="dim_entry_1",
+        dimension_id=test_dimension.id,
+        name="Emergency",
+        deleted=False,
+    )
+    dim_entry_2 = DimEntry(
+        id="dim_entry_2",
+        dimension_id=test_dimension.id,
+        name="ICU",
+        deleted=False,
+    )
+
+    # Get morning shift and worker
+    morning_shift = next(s for s in base_shifts if s.name == "Morning")
+    worker_with_matching_attr = base_workers[0]
+
+    # Create attribute for morning shift
+    shift_attribute = Attribute(
+        id="attr_shift_1",
+        value=True,
+        owner_type=AttributeOwnerType.SHIFT,
+        owner_id=morning_shift.id,
+        dimension_id=test_dimension.id,
+        dim_entry_ids=[dim_entry_1.id],
+    )
+
+    # Create matching attribute for worker
+    worker_attribute = Attribute(
+        id="attr_worker_1",
+        value=True,
+        owner_type=AttributeOwnerType.WORKER,
+        owner_id=worker_with_matching_attr.id,
+        dimension_id=test_dimension.id,
+        dim_entry_ids=[dim_entry_1.id],
+    )
+
+    # Create an assignment to be replaced
+    replacement_date = date(2025, 1, 15)
+    assignment_to_replace = Assignment(
+        id="assignment_1",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=base_workers[2].id,
+        date=replacement_date,
+        shift_id=morning_shift.id,
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    # Update mock
+    mock_db.get_assignments_by_id.return_value = [assignment_to_replace]
+    mock_db.get_assignments_by_team_id.return_value = base_assignments
+    mock_db.get_shifts_by_team_id.return_value = base_shifts
+    mock_db.get_workers_by_team_id.return_value = base_workers
+    mock_db.get_specialties_by_team_id.return_value = []
+    mock_db.get_requests_by_team_id.return_value = []
+    mock_db.get_constraint_builds_by_team_id.return_value = []
+    mock_db.get_dimensions_by_team_id.return_value = [test_dimension]
+    mock_db.get_dim_entries_by_team_id.return_value = [
+        dim_entry_1,
+        dim_entry_2,
+    ]
+    mock_db.get_attributes_by_team_id.return_value = [
+        shift_attribute,
+        worker_attribute,
+    ]
+
+    candidates = service.get_replacement_candidates(
+        assignment_id=assignment_to_replace.id,
+        team_id=base_team_id,
+    )
+
+    # Find the candidate
+    matching_candidate = next(
+        (c for c in candidates if c.worker.id == worker_with_matching_attr.id),
+        None,
+    )
+
+    assert matching_candidate is not None
+
+    # Worker with matching attribute should NOT be filtered out
+    assert_candidate(
+        matching_candidate,
+        expected_category="can_do",
+        isnt_filtered_out=True,
+    )
+    filter_hits = matching_candidate.replacement_implications.filter_hits
+    assert filter_hits.isnt_filtered_out
+    assert len(filter_hits.filter_labels) == 0
+
+
+def test_get_replacement_candidates_worker_with_attribute_not_filtered_for_shift_without_attribute(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """
+    Test that a worker with an attribute is NOT filtered out when replacing
+    a shift that doesn't have any attribute.
+    """
+    service, mock_db, base_assignments = mock_replacement_service
+
+    # Create a test dimension
+    test_dimension = Dimension(
+        id="test_dim_1",
+        team_id=base_team_id,
+        dim_types=[DimensionType.WORKER, DimensionType.SHIFT],
+        name="Training",
+        entry_type=DimensionEntryType.DIM_ENTRIES,
+        deleted=False,
+    )
+
+    # Create dim entries
+    dim_entry_1 = DimEntry(
+        id="dim_entry_1",
+        dimension_id=test_dimension.id,
+        name="Trained",
+        deleted=False,
+    )
+    dim_entry_2 = DimEntry(
+        id="dim_entry_2",
+        dimension_id=test_dimension.id,
+        name="Expert",
+        deleted=False,
+    )
+
+    # Get morning shift (which will NOT have an attribute)
+    morning_shift = next(s for s in base_shifts if s.name == "Morning")
+    worker_with_attr = base_workers[0]
+
+    # Create attribute for worker only (shift has no attribute)
+    worker_attribute = Attribute(
+        id="attr_worker_1",
+        value=True,
+        owner_type=AttributeOwnerType.WORKER,
+        owner_id=worker_with_attr.id,
+        dimension_id=test_dimension.id,
+        dim_entry_ids=[dim_entry_1.id],
+    )
+
+    # Create an assignment to be replaced
+    replacement_date = date(2025, 1, 15)
+    assignment_to_replace = Assignment(
+        id="assignment_1",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=base_workers[2].id,
+        date=replacement_date,
+        shift_id=morning_shift.id,
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    # Update mock
+    mock_db.get_assignments_by_id.return_value = [assignment_to_replace]
+    mock_db.get_assignments_by_team_id.return_value = base_assignments
+    mock_db.get_shifts_by_team_id.return_value = base_shifts
+    mock_db.get_workers_by_team_id.return_value = base_workers
+    mock_db.get_specialties_by_team_id.return_value = []
+    mock_db.get_requests_by_team_id.return_value = []
+    mock_db.get_constraint_builds_by_team_id.return_value = []
+    mock_db.get_dimensions_by_team_id.return_value = [test_dimension]
+    mock_db.get_dim_entries_by_team_id.return_value = [
+        dim_entry_1,
+        dim_entry_2,
+    ]
+    mock_db.get_attributes_by_team_id.return_value = [worker_attribute]
+
+    candidates = service.get_replacement_candidates(
+        assignment_id=assignment_to_replace.id,
+        team_id=base_team_id,
+    )
+
+    # Find the candidate
+    worker_candidate = next(
+        (c for c in candidates if c.worker.id == worker_with_attr.id), None
+    )
+
+    assert worker_candidate is not None
+
+    # Worker with attribute should NOT be filtered out for shift without attribute
+    assert_candidate(
+        worker_candidate,
+        expected_category="can_do",
+        isnt_filtered_out=True,
+    )
+    filter_hits = worker_candidate.replacement_implications.filter_hits
+    assert filter_hits.isnt_filtered_out
+    assert len(filter_hits.filter_labels) == 0
