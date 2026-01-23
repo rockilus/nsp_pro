@@ -972,8 +972,21 @@ class ReplacementService(BaseService):
                 is_conflict = target_shift_in_list
             else:
                 # Positive request: worker wants these specific shifts
-                # Conflict if target shift is NOT in the list
-                is_conflict = not target_shift_in_list
+                # Logic:
+                # - If only one requested shift: conflict if it overlaps with target
+                # - If multiple requested shifts: conflict if ALL overlap with target
+                requested_shifts = [
+                    s for s in context.shifts if s.id in shift_ids
+                ]
+
+                # Multiple shifts: conflict if ALL overlap with target
+                is_conflict = (
+                    all(
+                        s.overlaps_with(context.target_shift)
+                        for s in requested_shifts
+                    )
+                    and not target_shift_in_list
+                )
 
             if is_conflict:
                 conflicting_request_ids.append(request_aug.id)
