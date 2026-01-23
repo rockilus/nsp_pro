@@ -23,6 +23,8 @@ from shared.schemas.core import (
     DimEntry,
     Dimension,
     Request,
+    RequestStatus,
+    RequestType,
     Shift,
     ShiftLeaveType,
     ShiftRestType,
@@ -2344,3 +2346,572 @@ def test_get_replacement_candidates_could_do_worker_soft_constraint_fil_breach(
             f"COULD_DO worker rank ({test_worker_candidate.rank}) should be "
             f"less than min CANT_DO rank ({min_cant_do_rank})"
         )
+
+
+# ============================================================================
+# Request Handling Tests
+# ============================================================================
+
+
+def test_get_replacement_candidates_only_approved_requests_considered(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test that only APPROVED requests are considered for conflicts.
+
+    Workers with PENDING, DENIED, or DEFERRED requests should not have
+    request conflicts triggered.
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Select target assignment for morning shift
+    target_assignment = next(
+        a for a in assignments if a.shift_id == "shift_morning"
+    )
+    target_date = target_assignment.date
+
+    # Find workers without assignments on target date
+    workers_with_assignments_on_date = {
+        a.worker_id for a in assignments if a.date == target_date
+    }
+    available_workers = [
+        w for w in base_workers if w.id not in workers_with_assignments_on_date
+    ]
+
+    # Need at least 4 workers for this test
+    assert len(available_workers) >= 4
+
+    # Create requests with different statuses for different workers
+    # Worker 0: APPROVED negative request (should conflict)
+    # Worker 1: PENDING negative request (should NOT conflict)
+    # Worker 2: DENIED negative request (should NOT conflict)
+    # Worker 3: DEFERRED negative request (should NOT conflict)
+
+    requests = [
+        Request.create_work_demand(
+            request_id="request_approved",
+            team_id=base_team_id,
+            worker_id=available_workers[0].id,
+            start_date=target_date,
+            end_date=target_date,
+            shift_options=[
+                ShiftWorkerOption(
+                    name="Morning Shift",
+                    id="shift_morning",
+                    id_type=SWOIdTypes.SHIFT,
+                    is_bool_dim=False,
+                    category_name="shifts",
+                )
+            ],
+            negative=True,  # Don't want to work morning
+            status=RequestStatus.APPROVED,
+        ),
+        Request.create_work_demand(
+            request_id="request_pending",
+            team_id=base_team_id,
+            worker_id=available_workers[1].id,
+            start_date=target_date,
+            end_date=target_date,
+            shift_options=[
+                ShiftWorkerOption(
+                    name="Morning Shift",
+                    id="shift_morning",
+                    id_type=SWOIdTypes.SHIFT,
+                    is_bool_dim=False,
+                    category_name="shifts",
+                )
+            ],
+            negative=True,
+            status=RequestStatus.PENDING,
+        ),
+        Request.create_work_demand(
+            request_id="request_denied",
+            team_id=base_team_id,
+            worker_id=available_workers[2].id,
+            start_date=target_date,
+            end_date=target_date,
+            shift_options=[
+                ShiftWorkerOption(
+                    name="Morning Shift",
+                    id="shift_morning",
+                    id_type=SWOIdTypes.SHIFT,
+                    is_bool_dim=False,
+                    category_name="shifts",
+                )
+            ],
+            negative=True,
+            status=RequestStatus.DENIED,
+        ),
+        Request.create_work_demand(
+            request_id="request_deferred",
+            team_id=base_team_id,
+            worker_id=available_workers[3].id,
+            start_date=target_date,
+            end_date=target_date,
+            shift_options=[
+                ShiftWorkerOption(
+                    name="Morning Shift",
+                    id="shift_morning",
+                    id_type=SWOIdTypes.SHIFT,
+                    is_bool_dim=False,
+                    category_name="shifts",
+                )
+            ],
+            negative=True,
+            status=RequestStatus.DEFERRED,
+        ),
+    ]
+
+    # Mock request_db to return these requests
+    mock_collection.request_db.get_requests_by_dates.return_value = requests
+
+    # Mock get_assignments_by_ids
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - Find candidates for each worker
+    worker_0_candidate = next(
+        c for c in candidates if c.worker_id == available_workers[0].id
+    )
+    worker_1_candidate = next(
+        c for c in candidates if c.worker_id == available_workers[1].id
+    )
+    worker_2_candidate = next(
+        c for c in candidates if c.worker_id == available_workers[2].id
+    )
+    worker_3_candidate = next(
+        c for c in candidates if c.worker_id == available_workers[3].id
+    )
+
+    # Worker 0 (APPROVED) should have request conflict (CANT_DO)
+    assert_candidate(
+        worker_0_candidate,
+        expected_category="cant_do",
+        no_request_conflict=False,
+    )
+
+    # Workers 1-3 (non-APPROVED) should NOT have request conflicts (CAN_DO)
+    assert_candidate(
+        worker_1_candidate,
+        expected_category="can_do",
+        no_request_conflict=True,
+    )
+    assert_candidate(
+        worker_2_candidate,
+        expected_category="can_do",
+        no_request_conflict=True,
+    )
+    assert_candidate(
+        worker_3_candidate,
+        expected_category="can_do",
+        no_request_conflict=True,
+    )
+
+
+def test_get_replacement_candidates_leave_request_triggers_isnt_on_leave(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test that conflicting LEAVE request triggers isnt_on_leave, not request_hits.
+
+    When a worker has an approved leave request for the replacement date,
+    it should fail the isnt_on_leave check but NOT be counted as a
+    request conflict.
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Select target assignment for morning shift
+    target_assignment = next(
+        a for a in assignments if a.shift_id == "shift_morning"
+    )
+    target_date = target_assignment.date
+
+    # Find a worker without assignment on target date
+    workers_with_assignments_on_date = {
+        a.worker_id for a in assignments if a.date == target_date
+    }
+    test_worker = next(
+        w for w in base_workers if w.id not in workers_with_assignments_on_date
+    )
+
+    # Find a leave shift (shift_leave_full_day or create one if needed)
+    # For this test, we'll use shift_leave_full_day from base_shifts
+    leave_shift = next(
+        (s for s in base_shifts if s.shift_type == ShiftType.LEAVE),
+        None,
+    )
+
+    # If no leave shift exists in base_shifts, we'll assume one exists
+    # with id "shift_leave_full_day"
+    leave_shift_id = leave_shift.id if leave_shift else "shift_leave_full_day"
+
+    # Create an APPROVED leave request for the test worker
+    leave_request = Request.create_leave_request(
+        request_id="request_leave",
+        team_id=base_team_id,
+        worker_id=test_worker.id,
+        start_date=target_date,
+        end_date=target_date,
+        shift_id=leave_shift_id,
+        status=RequestStatus.APPROVED,
+    )
+
+    # Mock request_db to return the leave request
+    mock_collection.request_db.get_requests_by_dates.return_value = [
+        leave_request
+    ]
+
+    # Mock get_assignments_by_ids
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - Find test worker candidate
+    test_candidate = next(
+        c for c in candidates if c.worker_id == test_worker.id
+    )
+
+    # Should be CANT_DO due to being on leave, but NOT due to request conflict
+    assert_candidate(
+        test_candidate,
+        expected_category="cant_do",
+        isnt_on_leave=False,  # Fails leave check
+        no_request_conflict=True,  # But NOT a request conflict
+    )
+
+
+def test_get_replacement_candidates_non_conflicting_work_request(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test that non-conflicting work request does not trigger request hit.
+
+    A worker requesting to work the night shift should not conflict with
+    a morning shift replacement on the same day.
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Select target assignment for morning shift
+    target_assignment = next(
+        a for a in assignments if a.shift_id == "shift_morning"
+    )
+    target_date = target_assignment.date
+
+    # Find a worker without assignment on target date
+    workers_with_assignments_on_date = {
+        a.worker_id for a in assignments if a.date == target_date
+    }
+    test_worker = next(
+        w for w in base_workers if w.id not in workers_with_assignments_on_date
+    )
+
+    # Create an APPROVED positive request for night shift (different from morning)
+    night_request = Request.create_work_demand(
+        request_id="request_night",
+        team_id=base_team_id,
+        worker_id=test_worker.id,
+        start_date=target_date,
+        end_date=target_date,
+        shift_options=[
+            ShiftWorkerOption(
+                name="Night Shift",
+                id="shift_night",
+                id_type=SWOIdTypes.SHIFT,
+                is_bool_dim=False,
+                category_name="shifts",
+            )
+        ],
+        negative=False,  # Positive request (wants to work night)
+        status=RequestStatus.APPROVED,
+    )
+
+    # Mock request_db to return the night request
+    mock_collection.request_db.get_requests_by_dates.return_value = [
+        night_request
+    ]
+
+    # Mock get_assignments_by_ids
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - Find test worker candidate
+    test_candidate = next(
+        c for c in candidates if c.worker_id == test_worker.id
+    )
+
+    # Should be CAN_DO - no conflict between night request and morning replacement
+    assert_candidate(
+        test_candidate,
+        expected_category="can_do",
+        no_request_conflict=True,
+    )
+
+
+def test_get_replacement_candidates_negative_request_conflicts(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test that negative work request triggers request hit.
+
+    A worker with an approved negative request (don't want morning shift)
+    should have a request conflict when considered for morning shift replacement.
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Select target assignment for morning shift
+    target_assignment = next(
+        a for a in assignments if a.shift_id == "shift_morning"
+    )
+    target_date = target_assignment.date
+
+    # Find a worker without assignment on target date
+    workers_with_assignments_on_date = {
+        a.worker_id for a in assignments if a.date == target_date
+    }
+    test_worker = next(
+        w for w in base_workers if w.id not in workers_with_assignments_on_date
+    )
+
+    # Create an APPROVED negative request for morning shift
+    negative_request = Request.create_work_demand(
+        request_id="request_no_morning",
+        team_id=base_team_id,
+        worker_id=test_worker.id,
+        start_date=target_date,
+        end_date=target_date,
+        shift_options=[
+            ShiftWorkerOption(
+                name="Morning Shift",
+                id="shift_morning",
+                id_type=SWOIdTypes.SHIFT,
+                is_bool_dim=False,
+                category_name="shifts",
+            )
+        ],
+        negative=True,  # Don't want morning shift
+        status=RequestStatus.APPROVED,
+    )
+
+    # Mock request_db to return the negative request
+    mock_collection.request_db.get_requests_by_dates.return_value = [
+        negative_request
+    ]
+
+    # Mock get_assignments_by_ids
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - Find test worker candidate
+    test_candidate = next(
+        c for c in candidates if c.worker_id == test_worker.id
+    )
+
+    # Should be CANT_DO due to request conflict
+    assert_candidate(
+        test_candidate,
+        expected_category="cant_do",
+        no_request_conflict=False,
+    )
+
+
+def test_get_replacement_candidates_positive_request_for_different_shift_conflicts(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test that positive work request for different shift triggers request hit.
+
+    A worker with an approved positive request for duty shift should have
+    a request conflict when considered for morning shift replacement on the
+    same day (assuming duty and morning overlap).
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Select target assignment for morning shift
+    target_assignment = next(
+        a for a in assignments if a.shift_id == "shift_morning"
+    )
+    target_date = target_assignment.date
+
+    # Find a worker without assignment on target date
+    workers_with_assignments_on_date = {
+        a.worker_id for a in assignments if a.date == target_date
+    }
+    test_worker = next(
+        w for w in base_workers if w.id not in workers_with_assignments_on_date
+    )
+
+    # Create an APPROVED positive request for duty shift (different from morning)
+    # Assuming duty shift overlaps with morning shift
+    positive_request = Request.create_work_demand(
+        request_id="request_duty",
+        team_id=base_team_id,
+        worker_id=test_worker.id,
+        start_date=target_date,
+        end_date=target_date,
+        shift_options=[
+            ShiftWorkerOption(
+                name="Morning Shift",
+                id="shift_duty",
+                id_type=SWOIdTypes.SHIFT,
+                is_bool_dim=False,
+                category_name="shifts",
+            )
+        ],
+        negative=False,  # Wants duty shift
+        status=RequestStatus.APPROVED,
+    )
+
+    # Mock request_db to return the positive request
+    mock_collection.request_db.get_requests_by_dates.return_value = [
+        positive_request
+    ]
+
+    # Mock get_assignments_by_ids
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - Find test worker candidate
+    test_candidate = next(
+        c for c in candidates if c.worker_id == test_worker.id
+    )
+
+    # Should be CANT_DO due to request conflict
+    # (can't do morning if they want duty on same day)
+    assert_candidate(
+        test_candidate,
+        expected_category="cant_do",
+        no_request_conflict=False,
+    )
+
+
+def test_get_replacement_candidates_request_for_replacement_shift_no_conflict(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test that request for the replacement shift does not trigger conflict.
+
+    A worker with an approved positive request for morning shift should NOT
+    have a request conflict when considered for morning shift replacement.
+    This is alignment, not conflict.
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Select target assignment for morning shift
+    target_assignment = next(
+        a for a in assignments if a.shift_id == "shift_morning"
+    )
+    target_date = target_assignment.date
+
+    # Find a worker without assignment on target date
+    workers_with_assignments_on_date = {
+        a.worker_id for a in assignments if a.date == target_date
+    }
+    test_worker = next(
+        w for w in base_workers if w.id not in workers_with_assignments_on_date
+    )
+
+    # Create an APPROVED positive request for morning shift (same as replacement)
+    matching_request = Request.create_work_demand(
+        request_id="request_morning",
+        team_id=base_team_id,
+        worker_id=test_worker.id,
+        start_date=target_date,
+        end_date=target_date,
+        shift_options=[
+            ShiftWorkerOption(
+                name="Morning Shift",
+                id="shift_morning",
+                id_type=SWOIdTypes.SHIFT,
+                is_bool_dim=False,
+                category_name="shifts",
+            )
+        ],
+        negative=False,  # Wants morning shift
+        status=RequestStatus.APPROVED,
+    )
+
+    # Mock request_db to return the matching request
+    mock_collection.request_db.get_requests_by_dates.return_value = [
+        matching_request
+    ]
+
+    # Mock get_assignments_by_ids
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - Find test worker candidate
+    test_candidate = next(
+        c for c in candidates if c.worker_id == test_worker.id
+    )
+
+    # Should be CAN_DO - requesting the same shift is alignment, not conflict
+    assert_candidate(
+        test_candidate,
+        expected_category="can_do",
+        no_request_conflict=True,
+    )
