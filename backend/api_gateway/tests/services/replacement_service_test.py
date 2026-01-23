@@ -2995,6 +2995,12 @@ def test_get_replacement_candidates_no_overlap_different_times_same_day(
         hasnt_overlap=True,
     )
 
+    # Verify that no overlapping assignments were found
+    assert (
+        test_candidate.replacement_implications.overlap_hits.overlap_assignment_ids
+        == []
+    )
+
 
 def test_get_replacement_candidates_overlap_same_day(
     mock_replacement_service: Tuple[
@@ -3067,6 +3073,12 @@ def test_get_replacement_candidates_overlap_same_day(
         test_candidate,
         expected_category="cant_do",
         hasnt_overlap=False,
+    )
+
+    # Verify that the overlapping assignment ID is present
+    assert (
+        duty_assignment.id
+        in test_candidate.replacement_implications.overlap_hits.overlap_assignment_ids
     )
 
 
@@ -3166,4 +3178,256 @@ def test_get_replacement_candidates_overlap_from_previous_day(
         expected_category="cant_do",
         hasnt_overlap=False,
         weekly_time_meets_target=False,  # Likely exceeds weekly hours
+    )
+
+    # Verify that the overlapping assignment ID is present
+    assert (
+        duty_36h_assignment.id
+        in test_candidate.replacement_implications.overlap_hits.overlap_assignment_ids
+    )
+
+
+def test_get_replacement_candidates_overlap_all_shift_types(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test that overlaps are detected for all shift types.
+
+    Overlaps should be caught regardless of shift type:
+    normal, duty, rest, and leave shifts.
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Select target assignment for morning shift
+    target_assignment = next(
+        a for a in assignments if a.shift_id == "shift_morning"
+    )
+    target_date = target_assignment.date
+
+    # Find 4 workers without assignments on target date
+    workers_with_assignments_on_date = {
+        a.worker_id for a in assignments if a.date == target_date
+    }
+    test_workers = [
+        w for w in base_workers if w.id not in workers_with_assignments_on_date
+    ][:4]
+
+    # Create overlapping shifts of different types
+    # 1. Normal shift (08:00 to 16:00 - same as morning)
+    normal_overlapping = Shift(
+        id="shift_normal_overlap",
+        team_id=base_team_id,
+        name="Normal Overlap",
+        acronym="NO",
+        acronym_custom=False,
+        start_time=create_shift_datetime(8, 0, 0),
+        end_time=create_shift_datetime(16, 0, 0),
+        staffing=[
+            Staffing(specialty_id="specialty_general", staffing=1),
+        ],
+        color="#00FF00",
+        shift_type=ShiftType.NORMAL,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.NONE,
+        recuperation_time=0,
+        recuperation_duty_id=None,
+        deleted=False,
+    )
+
+    # 2. Duty shift (08:00 to 20:00 - overlaps with morning)
+    duty_overlapping = Shift(
+        id="shift_duty_overlap_type",
+        team_id=base_team_id,
+        name="Duty Overlap",
+        acronym="DO",
+        acronym_custom=False,
+        start_time=create_shift_datetime(8, 0, 0),
+        end_time=create_shift_datetime(20, 0, 0),
+        staffing=[
+            Staffing(specialty_id="specialty_general", staffing=1),
+        ],
+        color="#FF0000",
+        shift_type=ShiftType.DUTY,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.NONE,
+        recuperation_time=12,
+        recuperation_duty_id=None,
+        deleted=False,
+    )
+
+    # 3. Rest shift (recuperation 08:00 to 16:00)
+    rest_overlapping = Shift(
+        id="shift_rest_overlap",
+        team_id=base_team_id,
+        name="Rest Overlap",
+        acronym="RO",
+        acronym_custom=False,
+        start_time=create_shift_datetime(8, 0, 0),
+        end_time=create_shift_datetime(16, 0, 0),
+        staffing=[
+            Staffing(specialty_id="specialty_general", staffing=1),
+        ],
+        color="#0000FF",
+        shift_type=ShiftType.REST,
+        rest_type=ShiftRestType.RECUPERATION,
+        leave_type=ShiftLeaveType.NONE,
+        recuperation_time=0,
+        recuperation_duty_id=None,
+        deleted=False,
+    )
+
+    # 4. Leave shift (vacation 08:00 to 16:00)
+    leave_overlapping = Shift(
+        id="shift_leave_overlap",
+        team_id=base_team_id,
+        name="Leave Overlap",
+        acronym="LO",
+        acronym_custom=False,
+        start_time=create_shift_datetime(8, 0, 0),
+        end_time=create_shift_datetime(16, 0, 0),
+        staffing=[
+            Staffing(specialty_id="specialty_general", staffing=1),
+        ],
+        color="#FFFF00",
+        shift_type=ShiftType.LEAVE,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.VACATION,
+        recuperation_time=0,
+        recuperation_duty_id=None,
+        deleted=False,
+    )
+
+    # Create assignments for each worker with different shift types
+    normal_assignment = Assignment(
+        id="assignment_normal_overlap",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=test_workers[0].id,
+        date=target_date,
+        shift_id="shift_normal_overlap",
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    duty_assignment = Assignment(
+        id="assignment_duty_overlap_type",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=test_workers[1].id,
+        date=target_date,
+        shift_id="shift_duty_overlap_type",
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    rest_assignment = Assignment(
+        id="assignment_rest_overlap",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=test_workers[2].id,
+        date=target_date,
+        shift_id="shift_rest_overlap",
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    leave_assignment = Assignment(
+        id="assignment_leave_overlap",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=test_workers[3].id,
+        date=target_date,
+        shift_id="shift_leave_overlap",
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    # Mock get_assignments_by_ids
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+
+    # Mock get_assignments_by_dates to include all overlapping assignments
+    all_assignments = assignments + [
+        normal_assignment,
+        duty_assignment,
+        rest_assignment,
+        leave_assignment,
+    ]
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = (
+        all_assignments
+    )
+
+    # Mock shift_db to include all shifts
+    all_shifts = base_shifts + [
+        normal_overlapping,
+        duty_overlapping,
+        rest_overlapping,
+        leave_overlapping,
+    ]
+    mock_collection.shift_db.get_shifts_not_deleted.return_value = all_shifts
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - Check each worker has overlap hit
+    normal_candidate = next(
+        c for c in candidates if c.worker_id == test_workers[0].id
+    )
+    duty_candidate = next(
+        c for c in candidates if c.worker_id == test_workers[1].id
+    )
+    rest_candidate = next(
+        c for c in candidates if c.worker_id == test_workers[2].id
+    )
+    leave_candidate = next(
+        c for c in candidates if c.worker_id == test_workers[3].id
+    )
+
+    # All should be CANT_DO due to overlap
+    assert_candidate(
+        normal_candidate,
+        expected_category="cant_do",
+        hasnt_overlap=False,
+    )
+    assert (
+        normal_assignment.id
+        in normal_candidate.replacement_implications.overlap_hits.overlap_assignment_ids
+    )
+
+    assert_candidate(
+        duty_candidate,
+        expected_category="cant_do",
+        hasnt_overlap=False,
+    )
+    assert (
+        duty_assignment.id
+        in duty_candidate.replacement_implications.overlap_hits.overlap_assignment_ids
+    )
+
+    assert_candidate(
+        rest_candidate,
+        expected_category="cant_do",
+        hasnt_overlap=False,
+    )
+    assert (
+        rest_assignment.id
+        in rest_candidate.replacement_implications.overlap_hits.overlap_assignment_ids
+    )
+
+    assert_candidate(
+        leave_candidate,
+        expected_category="cant_do",
+        hasnt_overlap=False,
+    )
+    assert (
+        leave_assignment.id
+        in leave_candidate.replacement_implications.overlap_hits.overlap_assignment_ids
     )
