@@ -4303,3 +4303,1001 @@ def test_get_replacement_candidates_leave_overlapping_with_morning_shift(
         isnt_on_leave=True,
         no_request_conflict=True,
     )
+
+
+# ============================================================================
+# Specialty Handling Tests
+# ============================================================================
+
+
+def test_get_replacement_candidates_shift_without_specialty_accepts_all(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test that shifts without specialty requirements accept all workers.
+
+    A shift with no specialty requirements in its staffing should be
+    acceptable to all workers regardless of their specialties.
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Create a shift with no specialty requirement
+    shift_no_specialty = Shift(
+        id="shift_no_specialty",
+        team_id=base_team_id,
+        name="General Shift",
+        acronym="GEN",
+        acronym_custom=False,
+        start_time=create_shift_datetime(8, 0, 0),
+        end_time=create_shift_datetime(16, 0, 0),
+        staffing=[
+            Staffing(specialty_id=None, staffing=1),  # No specialty required
+        ],
+        color="#00FF00",
+        shift_type=ShiftType.NORMAL,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.NONE,
+        recuperation_time=0,
+        recuperation_duty_id=None,
+        deleted=False,
+    )
+
+    # Create assignment to replace
+    replacement_date = date(2025, 1, 15)
+    target_assignment = Assignment(
+        id="assignment_no_specialty",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=base_workers[0].id,
+        date=replacement_date,
+        shift_id=shift_no_specialty.id,
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    # Create specialties
+    specialty_a = Specialty(
+        id="specialty_a",
+        team_id=base_team_id,
+        name="Specialty A",
+        deleted=False,
+    )
+
+    # Create workers with and without specialties
+    worker_with_specialty = Worker(
+        id="worker_with_spec",
+        team_id=base_team_id,
+        name="Worker With Specialty",
+        acronym="WWS",
+        acronym_custom=False,
+        employment_start_date=date(2024, 1, 1),
+        employment_end_date=None,
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=["specialty_a"],
+        deleted=False,
+    )
+
+    worker_without_specialty = Worker(
+        id="worker_no_spec",
+        team_id=base_team_id,
+        name="Worker Without Specialty",
+        acronym="WNS",
+        acronym_custom=False,
+        employment_start_date=date(2024, 1, 1),
+        employment_end_date=None,
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=[],
+        deleted=False,
+    )
+
+    # Mock data
+    all_workers = [worker_with_specialty, worker_without_specialty]
+    all_shifts = base_shifts + [shift_no_specialty]
+
+    mock_collection.worker_db.get_workers_not_deleted.return_value = (
+        all_workers
+    )
+    mock_collection.shift_db.get_shifts_not_deleted.return_value = all_shifts
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = [
+        target_assignment
+    ]
+    mock_collection.specialty_db.get_specialties.return_value = [specialty_a]
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - Both workers should be acceptable
+    candidate_with_specialty = next(
+        c for c in candidates if c.worker_id == worker_with_specialty.id
+    )
+    candidate_without_specialty = next(
+        c for c in candidates if c.worker_id == worker_without_specialty.id
+    )
+
+    # Both should be CAN_DO - no specialty requirement
+    assert_candidate(
+        candidate_with_specialty,
+        expected_category="can_do",
+        has_specialty=True,
+    )
+
+    assert_candidate(
+        candidate_without_specialty,
+        expected_category="can_do",
+        has_specialty=True,
+    )
+
+
+def test_get_replacement_candidates_specialty_covered_by_other_assignment(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test specialty requirement when covered by another assignment.
+
+    Shift requires: 1 no-specialty + 1 specialty A (2 staff total)
+    If another assignment exists with a worker having specialty A,
+    then any worker can replace (specialty requirement already covered).
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Create specialties
+    specialty_a = Specialty(
+        id="specialty_a",
+        team_id=base_team_id,
+        name="Specialty A",
+        deleted=False,
+    )
+
+    # Create shift requiring 1 no-specialty + 1 specialty A
+    shift_mixed_specialty = Shift(
+        id="shift_mixed",
+        team_id=base_team_id,
+        name="Mixed Specialty Shift",
+        acronym="MIX",
+        acronym_custom=False,
+        start_time=create_shift_datetime(8, 0, 0),
+        end_time=create_shift_datetime(16, 0, 0),
+        staffing=[
+            Staffing(specialty_id=None, staffing=1),
+            Staffing(specialty_id="specialty_a", staffing=1),
+        ],
+        color="#0000FF",
+        shift_type=ShiftType.NORMAL,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.NONE,
+        recuperation_time=0,
+        recuperation_duty_id=None,
+        deleted=False,
+    )
+
+    # Create workers
+    worker_with_specialty_a = Worker(
+        id="worker_with_a",
+        team_id=base_team_id,
+        name="Worker With A",
+        acronym="WWA",
+        acronym_custom=False,
+        employment_start_date=date(2024, 1, 1),
+        employment_end_date=None,
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=["specialty_a"],
+        deleted=False,
+    )
+
+    worker_without_specialty = Worker(
+        id="worker_no_spec",
+        team_id=base_team_id,
+        name="Worker Without Specialty",
+        acronym="WNS",
+        acronym_custom=False,
+        employment_start_date=date(2024, 1, 1),
+        employment_end_date=None,
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=[],
+        deleted=False,
+    )
+
+    worker_replacement_candidate = Worker(
+        id="worker_candidate",
+        team_id=base_team_id,
+        name="Candidate Worker",
+        acronym="CW",
+        acronym_custom=False,
+        employment_start_date=date(2024, 1, 1),
+        employment_end_date=None,
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=[],  # No specialty
+        deleted=False,
+    )
+
+    # Create assignments:
+    # 1. Target assignment to replace (worker without specialty)
+    # 2. Another assignment on same date/shift (worker WITH specialty A)
+    replacement_date = date(2025, 1, 15)
+
+    target_assignment = Assignment(
+        id="assignment_target",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=worker_without_specialty.id,
+        date=replacement_date,
+        shift_id=shift_mixed_specialty.id,
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    other_assignment = Assignment(
+        id="assignment_other_with_a",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=worker_with_specialty_a.id,  # Has specialty A
+        date=replacement_date,
+        shift_id=shift_mixed_specialty.id,
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    # Mock data
+    all_workers = [
+        worker_with_specialty_a,
+        worker_without_specialty,
+        worker_replacement_candidate,
+    ]
+    all_shifts = base_shifts + [shift_mixed_specialty]
+    all_assignments = [target_assignment, other_assignment]
+
+    mock_collection.worker_db.get_workers_not_deleted.return_value = (
+        all_workers
+    )
+    mock_collection.shift_db.get_shifts_not_deleted.return_value = all_shifts
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = (
+        all_assignments
+    )
+    mock_collection.specialty_db.get_specialties.return_value = [specialty_a]
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - Candidate without specialty should be acceptable
+    # because specialty A is already covered by the other assignment
+    candidate = next(
+        c for c in candidates if c.worker_id == worker_replacement_candidate.id
+    )
+
+    assert_candidate(
+        candidate,
+        expected_category="can_do",
+        has_specialty=True,  # Should pass because specialty is covered
+    )
+
+
+def test_get_replacement_candidates_specialty_not_covered_requires_specialty(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test specialty requirement when NOT covered by another assignment.
+
+    Shift requires: 1 no-specialty + 1 specialty A (2 staff total)
+    If another assignment exists with a worker WITHOUT specialty A,
+    then the replacement worker MUST have specialty A.
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Create specialties
+    specialty_a = Specialty(
+        id="specialty_a",
+        team_id=base_team_id,
+        name="Specialty A",
+        deleted=False,
+    )
+
+    # Create shift requiring 1 no-specialty + 1 specialty A
+    shift_mixed_specialty = Shift(
+        id="shift_mixed",
+        team_id=base_team_id,
+        name="Mixed Specialty Shift",
+        acronym="MIX",
+        acronym_custom=False,
+        start_time=create_shift_datetime(8, 0, 0),
+        end_time=create_shift_datetime(16, 0, 0),
+        staffing=[
+            Staffing(specialty_id=None, staffing=1),
+            Staffing(specialty_id="specialty_a", staffing=1),
+        ],
+        color="#0000FF",
+        shift_type=ShiftType.NORMAL,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.NONE,
+        recuperation_time=0,
+        recuperation_duty_id=None,
+        deleted=False,
+    )
+
+    # Create workers
+    worker_with_specialty_a = Worker(
+        id="worker_with_a",
+        team_id=base_team_id,
+        name="Worker With A",
+        acronym="WWA",
+        acronym_custom=False,
+        employment_start_date=date(2024, 1, 1),
+        employment_end_date=None,
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=["specialty_a"],
+        deleted=False,
+    )
+
+    worker_without_specialty = Worker(
+        id="worker_no_spec",
+        team_id=base_team_id,
+        name="Worker Without Specialty",
+        acronym="WNS",
+        acronym_custom=False,
+        employment_start_date=date(2024, 1, 1),
+        employment_end_date=None,
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=[],
+        deleted=False,
+    )
+
+    candidate_without_specialty = Worker(
+        id="candidate_no_spec",
+        team_id=base_team_id,
+        name="Candidate Without Specialty",
+        acronym="CNS",
+        acronym_custom=False,
+        employment_start_date=date(2024, 1, 1),
+        employment_end_date=None,
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=[],  # No specialty
+        deleted=False,
+    )
+
+    # Create assignments:
+    # 1. Target assignment to replace (worker WITH specialty A)
+    # 2. Another assignment on same date/shift (worker WITHOUT specialty)
+    replacement_date = date(2025, 1, 15)
+
+    target_assignment = Assignment(
+        id="assignment_target",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=worker_with_specialty_a.id,  # Has specialty A
+        date=replacement_date,
+        shift_id=shift_mixed_specialty.id,
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    other_assignment = Assignment(
+        id="assignment_other_no_spec",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=worker_without_specialty.id,  # No specialty
+        date=replacement_date,
+        shift_id=shift_mixed_specialty.id,
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    # Mock data
+    all_workers = [
+        worker_with_specialty_a,
+        worker_without_specialty,
+        candidate_without_specialty,
+    ]
+    all_shifts = base_shifts + [shift_mixed_specialty]
+    all_assignments = [target_assignment, other_assignment]
+
+    mock_collection.worker_db.get_workers_not_deleted.return_value = (
+        all_workers
+    )
+    mock_collection.shift_db.get_shifts_not_deleted.return_value = all_shifts
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = (
+        all_assignments
+    )
+    mock_collection.specialty_db.get_specialties.return_value = [specialty_a]
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - Candidate without specialty should be rejected
+    # because specialty A is NOT covered by the other assignment
+    candidate_no_spec = next(
+        c for c in candidates if c.worker_id == candidate_without_specialty.id
+    )
+
+    assert_candidate(
+        candidate_no_spec,
+        expected_category="cant_do",
+        has_specialty=False,  # Should fail because specialty A is required
+    )
+
+    # Worker with specialty A should be acceptable
+    candidate_with_a = next(
+        c for c in candidates if c.worker_id == worker_with_specialty_a.id
+    )
+
+    assert_candidate(
+        candidate_with_a,
+        expected_category="cant_do",  # Rank 0 - self
+        expected_rank_min=0,
+        expected_rank_max=0,
+        has_specialty=True,
+        hasnt_overlap=False,  # Overlaps with self
+    )
+
+
+def test_get_replacement_candidates_no_other_assignment_any_worker_acceptable(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test specialty requirement when no other assignments exist.
+
+    Shift requires: 1 no-specialty + 1 specialty A (2 staff total)
+    If no other assignment exists, any worker can replace because
+    we're just replacing one assignment, not filling the entire staffing.
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Create specialties
+    specialty_a = Specialty(
+        id="specialty_a",
+        team_id=base_team_id,
+        name="Specialty A",
+        deleted=False,
+    )
+
+    # Create shift requiring 1 no-specialty + 1 specialty A
+    shift_mixed_specialty = Shift(
+        id="shift_mixed",
+        team_id=base_team_id,
+        name="Mixed Specialty Shift",
+        acronym="MIX",
+        acronym_custom=False,
+        start_time=create_shift_datetime(8, 0, 0),
+        end_time=create_shift_datetime(16, 0, 0),
+        staffing=[
+            Staffing(specialty_id=None, staffing=1),
+            Staffing(specialty_id="specialty_a", staffing=1),
+        ],
+        color="#0000FF",
+        shift_type=ShiftType.NORMAL,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.NONE,
+        recuperation_time=0,
+        recuperation_duty_id=None,
+        deleted=False,
+    )
+
+    # Create workers
+    worker_with_specialty_a = Worker(
+        id="worker_with_a",
+        team_id=base_team_id,
+        name="Worker With A",
+        acronym="WWA",
+        acronym_custom=False,
+        employment_start_date=date(2024, 1, 1),
+        employment_end_date=None,
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=["specialty_a"],
+        deleted=False,
+    )
+
+    worker_without_specialty = Worker(
+        id="worker_no_spec",
+        team_id=base_team_id,
+        name="Worker Without Specialty",
+        acronym="WNS",
+        acronym_custom=False,
+        employment_start_date=date(2024, 1, 1),
+        employment_end_date=None,
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=[],
+        deleted=False,
+    )
+
+    # Create only ONE assignment (no other assignments on same date/shift)
+    replacement_date = date(2025, 1, 15)
+
+    target_assignment = Assignment(
+        id="assignment_target_only",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=worker_with_specialty_a.id,
+        date=replacement_date,
+        shift_id=shift_mixed_specialty.id,
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    # Mock data
+    all_workers = [worker_with_specialty_a, worker_without_specialty]
+    all_shifts = base_shifts + [shift_mixed_specialty]
+    all_assignments = [target_assignment]  # Only one assignment
+
+    mock_collection.worker_db.get_workers_not_deleted.return_value = (
+        all_workers
+    )
+    mock_collection.shift_db.get_shifts_not_deleted.return_value = all_shifts
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = (
+        all_assignments
+    )
+    mock_collection.specialty_db.get_specialties.return_value = [specialty_a]
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - Both workers should be acceptable when no other assignment exists
+    candidate_without = next(
+        c for c in candidates if c.worker_id == worker_without_specialty.id
+    )
+
+    assert_candidate(
+        candidate_without,
+        expected_category="can_do",
+        has_specialty=True,  # Should pass - no other assignments to compare
+    )
+
+
+def test_get_replacement_candidates_two_specialties_a_covered_needs_b(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test specialty requirement with two different specialties.
+
+    Shift requires: 1 specialty A + 1 specialty B (2 staff total)
+    If another assignment exists with specialty A,
+    then replacement worker must have specialty B.
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Create specialties
+    specialty_a = Specialty(
+        id="specialty_a",
+        team_id=base_team_id,
+        name="Specialty A",
+        deleted=False,
+    )
+    specialty_b = Specialty(
+        id="specialty_b",
+        team_id=base_team_id,
+        name="Specialty B",
+        deleted=False,
+    )
+
+    # Create shift requiring specialty A + specialty B
+    shift_two_specialties = Shift(
+        id="shift_two_spec",
+        team_id=base_team_id,
+        name="Two Specialties Shift",
+        acronym="TWO",
+        acronym_custom=False,
+        start_time=create_shift_datetime(8, 0, 0),
+        end_time=create_shift_datetime(16, 0, 0),
+        staffing=[
+            Staffing(specialty_id="specialty_a", staffing=1),
+            Staffing(specialty_id="specialty_b", staffing=1),
+        ],
+        color="#FF00FF",
+        shift_type=ShiftType.NORMAL,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.NONE,
+        recuperation_time=0,
+        recuperation_duty_id=None,
+        deleted=False,
+    )
+
+    # Create workers
+    worker_with_a = Worker(
+        id="worker_with_a",
+        team_id=base_team_id,
+        name="Worker With A",
+        acronym="WWA",
+        acronym_custom=False,
+        employment_start_date=date(2024, 1, 1),
+        employment_end_date=None,
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=["specialty_a"],
+        deleted=False,
+    )
+
+    worker_with_b = Worker(
+        id="worker_with_b",
+        team_id=base_team_id,
+        name="Worker With B",
+        acronym="WWB",
+        acronym_custom=False,
+        employment_start_date=date(2024, 1, 1),
+        employment_end_date=None,
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=["specialty_b"],
+        deleted=False,
+    )
+
+    worker_without_specialty = Worker(
+        id="worker_no_spec",
+        team_id=base_team_id,
+        name="Worker Without Specialty",
+        acronym="WNS",
+        acronym_custom=False,
+        employment_start_date=date(2024, 1, 1),
+        employment_end_date=None,
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=[],
+        deleted=False,
+    )
+
+    # Create assignments:
+    # 1. Target assignment to replace (worker WITH specialty B)
+    # 2. Another assignment on same date/shift (worker WITH specialty A)
+    replacement_date = date(2025, 1, 15)
+
+    target_assignment = Assignment(
+        id="assignment_target_b",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=worker_with_b.id,  # Has specialty B
+        date=replacement_date,
+        shift_id=shift_two_specialties.id,
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    other_assignment = Assignment(
+        id="assignment_other_a",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=worker_with_a.id,  # Has specialty A
+        date=replacement_date,
+        shift_id=shift_two_specialties.id,
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    # Mock data
+    all_workers = [worker_with_a, worker_with_b, worker_without_specialty]
+    all_shifts = base_shifts + [shift_two_specialties]
+    all_assignments = [target_assignment, other_assignment]
+
+    mock_collection.worker_db.get_workers_not_deleted.return_value = (
+        all_workers
+    )
+    mock_collection.shift_db.get_shifts_not_deleted.return_value = all_shifts
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = (
+        all_assignments
+    )
+    mock_collection.specialty_db.get_specialties.return_value = [
+        specialty_a,
+        specialty_b,
+    ]
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - Worker with B should be acceptable (replacing B with B)
+    candidate_with_b = next(
+        c for c in candidates if c.worker_id == worker_with_b.id
+    )
+
+    # Worker without specialty should be rejected (A is covered, needs B)
+    candidate_without = next(
+        c for c in candidates if c.worker_id == worker_without_specialty.id
+    )
+
+    assert_candidate(
+        candidate_with_b,
+        expected_category="cant_do",  # Rank 0 - self
+        expected_rank_min=0,
+        expected_rank_max=0,
+        has_specialty=True,
+        hasnt_overlap=False,  # Overlaps with self
+    )
+
+    assert_candidate(
+        candidate_without,
+        expected_category="cant_do",
+        has_specialty=False,  # Needs specialty B
+    )
+
+
+def test_get_replacement_candidates_two_specialties_neither_covered_needs_either(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test specialty requirement with two specialties, neither covered.
+
+    Shift requires: 1 specialty A + 1 specialty B (2 staff total)
+    If another assignment exists with a worker without A or B,
+    then replacement worker must have specialty A or B.
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Create specialties
+    specialty_a = Specialty(
+        id="specialty_a",
+        team_id=base_team_id,
+        name="Specialty A",
+        deleted=False,
+    )
+    specialty_b = Specialty(
+        id="specialty_b",
+        team_id=base_team_id,
+        name="Specialty B",
+        deleted=False,
+    )
+
+    # Create shift requiring specialty A + specialty B
+    shift_two_specialties = Shift(
+        id="shift_two_spec",
+        team_id=base_team_id,
+        name="Two Specialties Shift",
+        acronym="TWO",
+        acronym_custom=False,
+        start_time=create_shift_datetime(8, 0, 0),
+        end_time=create_shift_datetime(16, 0, 0),
+        staffing=[
+            Staffing(specialty_id="specialty_a", staffing=1),
+            Staffing(specialty_id="specialty_b", staffing=1),
+        ],
+        color="#FF00FF",
+        shift_type=ShiftType.NORMAL,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.NONE,
+        recuperation_time=0,
+        recuperation_duty_id=None,
+        deleted=False,
+    )
+
+    # Create workers
+    worker_with_a = Worker(
+        id="worker_with_a",
+        team_id=base_team_id,
+        name="Worker With A",
+        acronym="WWA",
+        acronym_custom=False,
+        employment_start_date=date(2024, 1, 1),
+        employment_end_date=None,
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=["specialty_a"],
+        deleted=False,
+    )
+
+    worker_with_b = Worker(
+        id="worker_with_b",
+        team_id=base_team_id,
+        name="Worker With B",
+        acronym="WWB",
+        acronym_custom=False,
+        employment_start_date=date(2024, 1, 1),
+        employment_end_date=None,
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=["specialty_b"],
+        deleted=False,
+    )
+
+    worker_without_specialty = Worker(
+        id="worker_no_spec",
+        team_id=base_team_id,
+        name="Worker Without Specialty",
+        acronym="WNS",
+        acronym_custom=False,
+        employment_start_date=date(2024, 1, 1),
+        employment_end_date=None,
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=[],
+        deleted=False,
+    )
+
+    candidate_without = Worker(
+        id="candidate_no_spec",
+        team_id=base_team_id,
+        name="Candidate Without Specialty",
+        acronym="CNS",
+        acronym_custom=False,
+        employment_start_date=date(2024, 1, 1),
+        employment_end_date=None,
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=[],
+        deleted=False,
+    )
+
+    # Create assignments:
+    # 1. Target assignment to replace (worker WITH specialty A)
+    # 2. Another assignment on same date/shift (worker WITHOUT any specialty)
+    replacement_date = date(2025, 1, 15)
+
+    target_assignment = Assignment(
+        id="assignment_target_a",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=worker_with_a.id,  # Has specialty A
+        date=replacement_date,
+        shift_id=shift_two_specialties.id,
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    other_assignment = Assignment(
+        id="assignment_other_none",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=worker_without_specialty.id,  # No specialty
+        date=replacement_date,
+        shift_id=shift_two_specialties.id,
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    # Mock data
+    all_workers = [
+        worker_with_a,
+        worker_with_b,
+        worker_without_specialty,
+        candidate_without,
+    ]
+    all_shifts = base_shifts + [shift_two_specialties]
+    all_assignments = [target_assignment, other_assignment]
+
+    mock_collection.worker_db.get_workers_not_deleted.return_value = (
+        all_workers
+    )
+    mock_collection.shift_db.get_shifts_not_deleted.return_value = all_shifts
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = (
+        all_assignments
+    )
+    mock_collection.specialty_db.get_specialties.return_value = [
+        specialty_a,
+        specialty_b,
+    ]
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert
+    # Worker with A should be acceptable (self, but overlaps)
+    candidate_with_a = next(
+        c for c in candidates if c.worker_id == worker_with_a.id
+    )
+
+    # Worker with B should be acceptable (has required specialty)
+    candidate_with_b = next(
+        c for c in candidates if c.worker_id == worker_with_b.id
+    )
+
+    # Candidate without specialty should be rejected (needs A or B)
+    candidate_no_spec = next(
+        c for c in candidates if c.worker_id == candidate_without.id
+    )
+
+    assert_candidate(
+        candidate_with_a,
+        expected_category="cant_do",  # Rank 0 - self
+        expected_rank_min=0,
+        expected_rank_max=0,
+        has_specialty=True,
+        hasnt_overlap=False,  # Overlaps with self
+    )
+
+    assert_candidate(
+        candidate_with_b,
+        expected_category="can_do",
+        has_specialty=True,  # Has specialty B (one of required)
+    )
+
+    assert_candidate(
+        candidate_no_spec,
+        expected_category="cant_do",
+        has_specialty=False,  # Needs A or B
+    )
