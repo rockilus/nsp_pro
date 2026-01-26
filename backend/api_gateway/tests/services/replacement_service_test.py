@@ -5301,3 +5301,326 @@ def test_get_replacement_candidates_two_specialties_neither_covered_needs_either
         expected_category="cant_do",
         has_specialty=False,  # Needs A or B
     )
+
+
+# ============================================================================
+# Employment Date Tests
+# ============================================================================
+
+
+def test_get_replacement_candidates_not_employed_before_start_date(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test that a worker is not eligible before their employment start date.
+
+    A worker with employment_start_date=2025-02-01 should not be eligible
+    for a shift on 2025-01-15 (before start date).
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Create a worker who hasn't started yet relative to replacement date
+    worker_not_started = Worker(
+        id="worker_future",
+        team_id=base_team_id,
+        name="Future Worker",
+        acronym="FW",
+        acronym_custom=False,
+        employment_start_date=date(2025, 2, 1),  # Starts Feb 1
+        employment_end_date=None,
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=[],
+        deleted=False,
+    )
+
+    worker_employed = Worker(
+        id="worker_employed",
+        team_id=base_team_id,
+        name="Employed Worker",
+        acronym="EW",
+        acronym_custom=False,
+        employment_start_date=date(2024, 1, 1),  # Started long ago
+        employment_end_date=None,
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=[],
+        deleted=False,
+    )
+
+    # Create assignment on Jan 15, 2025 (before worker_future's start date)
+    replacement_date = date(2025, 1, 15)
+    target_assignment = Assignment(
+        id="assignment_early",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=worker_employed.id,
+        date=replacement_date,
+        shift_id=base_shifts[0].id,  # Morning shift
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    # Mock data
+    all_workers = [worker_not_started, worker_employed]
+    mock_collection.worker_db.get_workers_not_deleted.return_value = (
+        all_workers
+    )
+    mock_collection.shift_db.get_shifts_not_deleted.return_value = base_shifts
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = [
+        target_assignment
+    ]
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - worker_not_started should be rejected (not employed yet)
+    candidate_future = next(
+        c for c in candidates if c.worker_id == worker_not_started.id
+    )
+
+    assert_candidate(
+        candidate_future,
+        expected_category="cant_do",
+        is_employed=False,  # Not employed on replacement date
+    )
+
+    # worker_employed should be acceptable
+    candidate_employed = next(
+        c for c in candidates if c.worker_id == worker_employed.id
+    )
+
+    assert_candidate(
+        candidate_employed,
+        expected_category="can_do",
+        is_employed=True,
+    )
+
+
+def test_get_replacement_candidates_not_employed_after_end_date(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test that a worker is not eligible after their employment end date.
+
+    A worker with employment_end_date=2025-01-10 should not be eligible
+    for a shift on 2025-01-15 (after end date).
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Create a worker who has already left
+    worker_departed = Worker(
+        id="worker_departed",
+        team_id=base_team_id,
+        name="Departed Worker",
+        acronym="DW",
+        acronym_custom=False,
+        employment_start_date=date(2024, 1, 1),
+        employment_end_date=date(2025, 1, 10),  # Left on Jan 10
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=[],
+        deleted=False,
+    )
+
+    worker_employed = Worker(
+        id="worker_employed",
+        team_id=base_team_id,
+        name="Employed Worker",
+        acronym="EW",
+        acronym_custom=False,
+        employment_start_date=date(2024, 1, 1),
+        employment_end_date=None,  # Still employed
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=[],
+        deleted=False,
+    )
+
+    # Create assignment on Jan 15, 2025 (after worker_departed's end date)
+    replacement_date = date(2025, 1, 15)
+    target_assignment = Assignment(
+        id="assignment_late",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=worker_employed.id,
+        date=replacement_date,
+        shift_id=base_shifts[0].id,  # Morning shift
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    # Mock data
+    all_workers = [worker_departed, worker_employed]
+    mock_collection.worker_db.get_workers_not_deleted.return_value = (
+        all_workers
+    )
+    mock_collection.shift_db.get_shifts_not_deleted.return_value = base_shifts
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = [
+        target_assignment
+    ]
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - worker_departed should be rejected (no longer employed)
+    candidate_departed = next(
+        c for c in candidates if c.worker_id == worker_departed.id
+    )
+
+    assert_candidate(
+        candidate_departed,
+        expected_category="cant_do",
+        is_employed=False,  # Employment ended before replacement date
+    )
+
+    # worker_employed should be acceptable
+    candidate_employed = next(
+        c for c in candidates if c.worker_id == worker_employed.id
+    )
+
+    assert_candidate(
+        candidate_employed,
+        expected_category="can_do",
+        is_employed=True,
+    )
+
+
+def test_get_replacement_candidates_employed_on_boundary_dates(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test that a worker is eligible on their start and end dates (inclusive).
+
+    A worker with employment period 2025-01-10 to 2025-01-20 should be
+    eligible on both Jan 10 and Jan 20 (boundary dates are inclusive).
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Create a worker with a specific employment period
+    worker_boundary = Worker(
+        id="worker_boundary",
+        team_id=base_team_id,
+        name="Boundary Worker",
+        acronym="BW",
+        acronym_custom=False,
+        employment_start_date=date(2025, 1, 10),
+        employment_end_date=date(2025, 1, 20),
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=[],
+        deleted=False,
+    )
+
+    # Test on start date (Jan 10)
+    replacement_date_start = date(2025, 1, 10)
+    target_assignment_start = Assignment(
+        id="assignment_start",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=base_workers[0].id,
+        date=replacement_date_start,
+        shift_id=base_shifts[0].id,
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    # Test on end date (Jan 20)
+    replacement_date_end = date(2025, 1, 20)
+    target_assignment_end = Assignment(
+        id="assignment_end",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=base_workers[0].id,
+        date=replacement_date_end,
+        shift_id=base_shifts[0].id,
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    # Mock data for start date test
+    all_workers = [worker_boundary] + base_workers
+    mock_collection.worker_db.get_workers_not_deleted.return_value = (
+        all_workers
+    )
+    mock_collection.shift_db.get_shifts_not_deleted.return_value = base_shifts
+
+    # Test start date
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment_start
+    ]
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = [
+        target_assignment_start
+    ]
+
+    candidates_start = service.get_replacement_candidates(
+        assignment_id=target_assignment_start.id,
+        team_id=base_team_id,
+    )
+
+    candidate_start = next(
+        c for c in candidates_start if c.worker_id == worker_boundary.id
+    )
+
+    assert_candidate(
+        candidate_start,
+        expected_category="can_do",
+        is_employed=True,  # Employed on start date (inclusive)
+    )
+
+    # Test end date
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment_end
+    ]
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = [
+        target_assignment_end
+    ]
+
+    candidates_end = service.get_replacement_candidates(
+        assignment_id=target_assignment_end.id,
+        team_id=base_team_id,
+    )
+
+    candidate_end = next(
+        c for c in candidates_end if c.worker_id == worker_boundary.id
+    )
+
+    assert_candidate(
+        candidate_end,
+        expected_category="can_do",
+        is_employed=True,  # Employed on end date (inclusive)
+    )
