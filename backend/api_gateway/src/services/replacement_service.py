@@ -814,15 +814,19 @@ class ReplacementService(BaseService):
     ) -> bool:
         """Check if worker has required specialty for the shift.
 
+        When replacing an assignment in a multi-staffed shift, this checks
+        if the worker can fill the specialty gap left by removing the target
+        assignment, considering other existing assignments for the same shift.
+
         Args:
             worker: The worker to check
             context: Pre-computed replacement context
 
         Returns:
-            True if worker has at least one required specialty, or if
-            the shift has no specialty requirements
+            True if worker has appropriate specialty to maintain shift staffing
         """
         target_shift = context.target_shift
+        assignment_date = context.assignment_date
 
         # Get all specialty requirements from the shift's staffing
         required_specialty_ids = [
@@ -835,11 +839,71 @@ class ReplacementService(BaseService):
         if not required_specialty_ids:
             return True
 
-        # Check if worker has at least one of the required specialties
-        worker_specialty_set = set(worker.specialty_ids)
-        required_specialty_set = set(required_specialty_ids)
+        # Find other assignments for the same shift on the same date
+        # (excluding the target assignment being replaced)
+        other_assignments = [
+            a
+            for a in context.assignments
+            if (
+                a.shift_id == target_shift.id
+                and a.date == assignment_date
+                and a.id != context.target_assignment.id
+            )
+        ]
 
-        return bool(worker_specialty_set & required_specialty_set)
+        # If no other assignments exist, any worker with any required specialty is acceptable
+        # (shift is understaffed, so we're just doing a 1-for-1 swap)
+        # If shift has specialty requirements, worker needs at least one of them
+        # If shift has no-specialty staffing (None), any worker without those specialties is OK too
+        if not other_assignments:
+            # Check if shift allows workers without specialty (has staffing with specialty_id=None)
+            has_no_specialty_slot = any(
+                staffing.specialty_id is None
+                for staffing in target_shift.staffing
+            )
+
+            if not required_specialty_ids:
+                # No specialties required at all - any worker is OK
+                return True
+
+            worker_specialty_set = set(worker.specialty_ids)
+            required_specialty_set = set(required_specialty_ids)
+
+            # Worker is OK if they have one of the required specialties
+            if worker_specialty_set & required_specialty_set:
+                return True
+
+            # OR if shift has no-specialty slot and worker has no required specialties
+            if has_no_specialty_slot:
+                return True
+
+            return False
+
+        # Build worker lookup
+        worker_by_id = {w.id: w for w in context.workers}
+
+        # Determine which specialties are covered by other assignments
+        covered_specialties = set()
+        for assignment in other_assignments:
+            other_worker = worker_by_id.get(assignment.worker_id)
+            if other_worker:
+                covered_specialties.update(other_worker.specialty_ids)
+
+        # Determine which required specialties are NOT yet covered
+        uncovered_specialties = [
+            spec_id
+            for spec_id in required_specialty_ids
+            if spec_id not in covered_specialties
+        ]
+
+        # If all required specialties are already covered, any worker is acceptable
+        if not uncovered_specialties:
+            return True
+
+        # Worker must have at least one of the uncovered specialties
+        worker_specialty_set = set(worker.specialty_ids)
+        uncovered_specialty_set = set(uncovered_specialties)
+        return bool(worker_specialty_set & uncovered_specialty_set)
 
     def _check_isnt_on_leave(
         self, worker: Worker, context: ReplacementContext

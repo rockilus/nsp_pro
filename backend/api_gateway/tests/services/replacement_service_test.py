@@ -4346,19 +4346,6 @@ def test_get_replacement_candidates_shift_without_specialty_accepts_all(
         deleted=False,
     )
 
-    # Create assignment to replace
-    replacement_date = date(2025, 1, 15)
-    target_assignment = Assignment(
-        id="assignment_no_specialty",
-        team_id=base_team_id,
-        schedule_id=None,
-        worker_id=base_workers[0].id,
-        date=replacement_date,
-        shift_id=shift_no_specialty.id,
-        fixed=False,
-        source=AssignmentSource.MANUAL,
-    )
-
     # Create specialties
     specialty_a = Specialty(
         id="specialty_a",
@@ -4398,6 +4385,19 @@ def test_get_replacement_candidates_shift_without_specialty_accepts_all(
         annual_leave=25,
         specialty_ids=[],
         deleted=False,
+    )
+
+    # Create assignment to replace
+    replacement_date = date(2025, 1, 15)
+    target_assignment = Assignment(
+        id="assignment_no_specialty",
+        team_id=base_team_id,
+        schedule_id=None,
+        worker_id=worker_without_specialty.id,  # Use test worker
+        date=replacement_date,
+        shift_id=shift_no_specialty.id,
+        fixed=False,
+        source=AssignmentSource.MANUAL,
     )
 
     # Mock data
@@ -4767,18 +4767,18 @@ def test_get_replacement_candidates_specialty_not_covered_requires_specialty(
         has_specialty=False,  # Should fail because specialty A is required
     )
 
-    # Worker with specialty A should be acceptable
+    # Worker with specialty A should be acceptable (they're replacing themselves)
     candidate_with_a = next(
         c for c in candidates if c.worker_id == worker_with_specialty_a.id
     )
 
     assert_candidate(
         candidate_with_a,
-        expected_category="cant_do",  # Rank 0 - self
+        expected_category="can_do",  # Self-replacement is valid
         expected_rank_min=0,
         expected_rank_max=0,
         has_specialty=True,
-        hasnt_overlap=False,  # Overlaps with self
+        # Note: hasnt_overlap=True because self-replacement is filtered from overlaps
     )
 
 
@@ -5076,11 +5076,11 @@ def test_get_replacement_candidates_two_specialties_a_covered_needs_b(
 
     assert_candidate(
         candidate_with_b,
-        expected_category="cant_do",  # Rank 0 - self
+        expected_category="can_do",  # Self-replacement is valid
         expected_rank_min=0,
         expected_rank_max=0,
         has_specialty=True,
-        hasnt_overlap=False,  # Overlaps with self
+        # Note: hasnt_overlap=True because self-replacement is filtered from overlaps
     )
 
     assert_candidate(
@@ -5283,11 +5283,11 @@ def test_get_replacement_candidates_two_specialties_neither_covered_needs_either
 
     assert_candidate(
         candidate_with_a,
-        expected_category="cant_do",  # Rank 0 - self
+        expected_category="can_do",  # Self-replacement is valid
         expected_rank_min=0,
         expected_rank_max=0,
         has_specialty=True,
-        hasnt_overlap=False,  # Overlaps with self
+        # Note: hasnt_overlap=True because self-replacement is filtered from overlaps
     )
 
     assert_candidate(
