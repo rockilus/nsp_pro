@@ -846,15 +846,23 @@ class ReplacementService(BaseService):
     ) -> bool:
         """Check if worker is NOT on leave on the assignment date.
 
+        Only approved leave requests that overlap with the target shift
+        cause this check to fail. The leave shift must time-overlap with
+        the target shift being replaced.
+
         Args:
             worker: The worker to check
             context: Pre-computed replacement context
 
         Returns:
             True if worker does NOT have an approved leave request
-            on the assignment date
+            that overlaps with the target shift
         """
         assignment_date = context.assignment_date
+        target_shift = context.target_shift
+
+        # Build shift lookup dictionary
+        shift_by_id = {s.id: s for s in context.shifts}
 
         # Check if worker has any approved leave request covering the date
         for request in context.requests:
@@ -864,9 +872,17 @@ class ReplacementService(BaseService):
                 and request.status == RequestStatus.APPROVED
                 and request.start_date <= assignment_date <= request.end_date
             ):
-                return False  # Worker is on leave
+                # Get the leave shift
+                leave_shift = shift_by_id.get(request.shift_id)
+                if not leave_shift:
+                    # If leave shift not found, assume it conflicts (conservative)
+                    return False
 
-        return True  # Worker is not on leave
+                # Check if leave shift overlaps with target shift
+                if target_shift.overlaps_with(leave_shift):
+                    return False  # Worker is on leave during target shift
+
+        return True  # Worker is not on leave or leave doesn't overlap
 
     def _check_overlap_hits(
         self, worker: Worker, context: ReplacementContext

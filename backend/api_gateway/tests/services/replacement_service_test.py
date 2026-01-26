@@ -3950,3 +3950,356 @@ def test_get_replacement_candidates_worker_with_attribute_not_filtered_for_shift
     filter_hits = worker_candidate.replacement_implications.filter_hits
     assert filter_hits.isnt_filtered_out
     assert len(filter_hits.filter_labels) == 0
+
+
+def test_get_replacement_candidates_only_approved_leave_triggers_isnt_on_leave(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test that only APPROVED leave requests trigger isnt_on_leave failure.
+
+    Pending, denied, and deferred leave requests should NOT prevent a worker
+    from being considered for replacement. Only approved leave requests
+    should cause isnt_on_leave to be False.
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Select target assignment for morning shift
+    target_assignment = next(
+        a for a in assignments if a.shift_id == "shift_morning"
+    )
+    target_date = target_assignment.date
+
+    # Find workers without assignments on target date
+    workers_with_assignments_on_date = {
+        a.worker_id for a in assignments if a.date == target_date
+    }
+    available_workers = [
+        w for w in base_workers if w.id not in workers_with_assignments_on_date
+    ]
+
+    # We need at least 4 workers for this test
+    assert len(available_workers) >= 4, "Need at least 4 workers for this test"
+
+    worker_approved = available_workers[0]
+    worker_pending = available_workers[1]
+    worker_denied = available_workers[2]
+    worker_deferred = available_workers[3]
+
+    # Create leave shift (full day leave 00:00-23:59)
+    leave_shift_full_day = Shift(
+        id="shift_leave_full_day",
+        team_id=base_team_id,
+        name="Full Day Leave",
+        acronym="FDL",
+        acronym_custom=False,
+        start_time=create_shift_datetime(0, 0, 0),
+        end_time=create_shift_datetime(23, 59, 0),
+        staffing=[],
+        color="#808080",
+        shift_type=ShiftType.LEAVE,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.VACATION,
+        recuperation_time=0,
+        recuperation_duty_id=None,
+        deleted=False,
+    )
+
+    # Create leave requests with different statuses
+    approved_leave = Request.create_leave_request(
+        request_id="leave_approved",
+        team_id=base_team_id,
+        worker_id=worker_approved.id,
+        start_date=target_date,
+        end_date=target_date,
+        shift_id=leave_shift_full_day.id,
+        status=RequestStatus.APPROVED,
+    )
+
+    pending_leave = Request.create_leave_request(
+        request_id="leave_pending",
+        team_id=base_team_id,
+        worker_id=worker_pending.id,
+        start_date=target_date,
+        end_date=target_date,
+        shift_id=leave_shift_full_day.id,
+        status=RequestStatus.PENDING,
+    )
+
+    denied_leave = Request.create_leave_request(
+        request_id="leave_denied",
+        team_id=base_team_id,
+        worker_id=worker_denied.id,
+        start_date=target_date,
+        end_date=target_date,
+        shift_id=leave_shift_full_day.id,
+        status=RequestStatus.DENIED,
+    )
+
+    deferred_leave = Request.create_leave_request(
+        request_id="leave_deferred",
+        team_id=base_team_id,
+        worker_id=worker_deferred.id,
+        start_date=target_date,
+        end_date=target_date,
+        shift_id=leave_shift_full_day.id,
+        status=RequestStatus.DEFERRED,
+    )
+
+    # Mock request_db to return all leave requests
+    mock_collection.request_db.get_requests_by_dates.return_value = [
+        approved_leave,
+        pending_leave,
+        denied_leave,
+        deferred_leave,
+    ]
+
+    # Mock shift_db to include the leave shift
+    all_shifts = base_shifts + [leave_shift_full_day]
+    mock_collection.shift_db.get_shifts_not_deleted.return_value = all_shifts
+
+    # Mock get_assignments_by_ids
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - Find candidates for each worker
+    candidate_approved = next(
+        c for c in candidates if c.worker_id == worker_approved.id
+    )
+    candidate_pending = next(
+        c for c in candidates if c.worker_id == worker_pending.id
+    )
+    candidate_denied = next(
+        c for c in candidates if c.worker_id == worker_denied.id
+    )
+    candidate_deferred = next(
+        c for c in candidates if c.worker_id == worker_deferred.id
+    )
+
+    # Only APPROVED leave should fail isnt_on_leave
+    assert_candidate(
+        candidate_approved,
+        expected_category="cant_do",
+        isnt_on_leave=False,
+        no_request_conflict=True,
+    )
+
+    # Pending, denied, and deferred should all be CAN_DO
+    assert_candidate(
+        candidate_pending,
+        expected_category="can_do",
+        isnt_on_leave=True,
+        no_request_conflict=True,
+    )
+
+    assert_candidate(
+        candidate_denied,
+        expected_category="can_do",
+        isnt_on_leave=True,
+        no_request_conflict=True,
+    )
+
+    assert_candidate(
+        candidate_deferred,
+        expected_category="can_do",
+        isnt_on_leave=True,
+        no_request_conflict=True,
+    )
+
+
+def test_get_replacement_candidates_leave_overlapping_with_morning_shift(
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
+    base_workers: List[Worker],
+    base_shifts: List[Shift],
+    base_team_id: str,
+) -> None:
+    """Test leave request overlap detection for morning shift replacement.
+
+    - Full-day leave (00:00-23:59) should conflict with morning shift (08:00-16:00)
+    - Morning leave (08:00-12:00) should conflict with morning shift (08:00-16:00)
+    - Afternoon leave (12:00-16:00) should NOT conflict with morning shift (08:00-12:00 in this variant)
+    """
+    service, mock_collection, assignments = mock_replacement_service
+
+    # Select target assignment for morning shift (08:00-16:00)
+    target_assignment = next(
+        a for a in assignments if a.shift_id == "shift_morning"
+    )
+    target_date = target_assignment.date
+
+    # Find workers without assignments on target date
+    workers_with_assignments_on_date = {
+        a.worker_id for a in assignments if a.date == target_date
+    }
+    available_workers = [
+        w for w in base_workers if w.id not in workers_with_assignments_on_date
+    ]
+
+    # We need at least 3 workers for this test
+    assert len(available_workers) >= 3, "Need at least 3 workers for this test"
+
+    worker_full_day = available_workers[0]
+    worker_morning = available_workers[1]
+    worker_afternoon = available_workers[2]
+
+    # Create leave shifts with different time ranges
+    leave_shift_full_day = Shift(
+        id="shift_leave_full_day_overlap",
+        team_id=base_team_id,
+        name="Full Day Leave",
+        acronym="FDL",
+        acronym_custom=False,
+        start_time=create_shift_datetime(0, 0, 0),
+        end_time=create_shift_datetime(23, 59, 0),
+        staffing=[],
+        color="#808080",
+        shift_type=ShiftType.LEAVE,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.VACATION,
+        recuperation_time=0,
+        recuperation_duty_id=None,
+        deleted=False,
+    )
+
+    leave_shift_morning = Shift(
+        id="shift_leave_morning_overlap",
+        team_id=base_team_id,
+        name="Morning Leave",
+        acronym="ML",
+        acronym_custom=False,
+        start_time=create_shift_datetime(
+            8, 0, 0
+        ),  # Overlaps with morning shift
+        end_time=create_shift_datetime(12, 0, 0),
+        staffing=[],
+        color="#808080",
+        shift_type=ShiftType.LEAVE,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.VACATION_MORNING,
+        recuperation_time=0,
+        recuperation_duty_id=None,
+        deleted=False,
+    )
+
+    leave_shift_afternoon = Shift(
+        id="shift_leave_afternoon_no_overlap",
+        team_id=base_team_id,
+        name="Afternoon Leave",
+        acronym="AL",
+        acronym_custom=False,
+        start_time=create_shift_datetime(13, 0, 0),  # After morning shift ends
+        end_time=create_shift_datetime(18, 0, 0),
+        staffing=[],
+        color="#808080",
+        shift_type=ShiftType.LEAVE,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.VACATION_AFTERNOON,
+        recuperation_time=0,
+        recuperation_duty_id=None,
+        deleted=False,
+    )
+
+    # Create approved leave requests for each worker
+    leave_full_day = Request.create_leave_request(
+        request_id="leave_full_day",
+        team_id=base_team_id,
+        worker_id=worker_full_day.id,
+        start_date=target_date,
+        end_date=target_date,
+        shift_id=leave_shift_full_day.id,
+        status=RequestStatus.APPROVED,
+    )
+
+    leave_morning = Request.create_leave_request(
+        request_id="leave_morning",
+        team_id=base_team_id,
+        worker_id=worker_morning.id,
+        start_date=target_date,
+        end_date=target_date,
+        shift_id=leave_shift_morning.id,
+        status=RequestStatus.APPROVED,
+    )
+
+    leave_afternoon = Request.create_leave_request(
+        request_id="leave_afternoon",
+        team_id=base_team_id,
+        worker_id=worker_afternoon.id,
+        start_date=target_date,
+        end_date=target_date,
+        shift_id=leave_shift_afternoon.id,
+        status=RequestStatus.APPROVED,
+    )
+
+    # Mock request_db to return all leave requests
+    mock_collection.request_db.get_requests_by_dates.return_value = [
+        leave_full_day,
+        leave_morning,
+        leave_afternoon,
+    ]
+
+    # Mock shift_db to include all leave shifts
+    all_shifts = base_shifts + [
+        leave_shift_full_day,
+        leave_shift_morning,
+        leave_shift_afternoon,
+    ]
+    mock_collection.shift_db.get_shifts_not_deleted.return_value = all_shifts
+
+    # Mock get_assignments_by_ids
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        target_assignment
+    ]
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id=target_assignment.id,
+        team_id=base_team_id,
+    )
+
+    # Assert - Find candidates for each worker
+    candidate_full_day = next(
+        c for c in candidates if c.worker_id == worker_full_day.id
+    )
+    candidate_morning = next(
+        c for c in candidates if c.worker_id == worker_morning.id
+    )
+    candidate_afternoon = next(
+        c for c in candidates if c.worker_id == worker_afternoon.id
+    )
+
+    # Full day leave overlaps with morning shift - should be CANT_DO
+    assert_candidate(
+        candidate_full_day,
+        expected_category="cant_do",
+        isnt_on_leave=False,
+        no_request_conflict=True,
+    )
+
+    # Morning leave overlaps with morning shift - should be CANT_DO
+    assert_candidate(
+        candidate_morning,
+        expected_category="cant_do",
+        isnt_on_leave=False,
+        no_request_conflict=True,
+    )
+
+    # Afternoon leave does NOT overlap with morning shift - should be CAN_DO
+    assert_candidate(
+        candidate_afternoon,
+        expected_category="can_do",
+        isnt_on_leave=True,
+        no_request_conflict=True,
+    )
