@@ -436,32 +436,85 @@ def test_validate_swap_invalid_overlap(
 ) -> None:
     """Test invalid swap due to overlapping shifts.
 
-    Worker A has morning shift on Day X.
+    Worker A has morning shift on Day X and afternoon shift on Day Y.
     Worker B has morning + afternoon shifts on Day Y.
-    After swap, Worker A would have overlapping morning + afternoon on Day Y.
+    Worker A swaps morning on Day X for Worker B's morning + afternoon on Day Y.
+    After swap, Worker A has conflicting afternoon shifts on Day Y (overlap).
     """
     service, mock_collection, assignments = mock_replacement_service
 
-    # Find Worker A with single morning shift
-    target_date_a = date(2026, 1, 5)
-    worker_a_assignment = next(
-        a
-        for a in assignments
-        if a.date == target_date_a and a.shift_id == "shift_morning"
+    # Day X and Day Y
+    target_date_x = date(2026, 1, 5)
+    target_date_y = date(2026, 1, 12)
+
+    # Find Worker A with morning shift on Day X
+    worker_a_morning_x = next(
+        (
+            a
+            for a in assignments
+            if a.date == target_date_x and a.shift_id == "shift_morning"
+        ),
+        None,
     )
 
-    # Find Worker B with morning AND afternoon on a different day
-    target_date_b = date(2026, 1, 12)
+    # Find or create Worker A's afternoon shift on Day Y
+    worker_a_afternoon_y = next(
+        (
+            a
+            for a in assignments
+            if a.date == target_date_y
+            and a.shift_id == "shift_afternoon"
+            and a.worker_id
+            == (
+                worker_a_morning_x.worker_id
+                if worker_a_morning_x
+                else "worker_1"
+            )
+        ),
+        None,
+    )
+
+    # Create assignments if not found
+    if not worker_a_morning_x:
+        worker_a_morning_x = Assignment(
+            id="test_worker_a_morning_x",
+            team_id=base_team_id,
+            schedule_id=None,
+            worker_id="worker_1",
+            date=target_date_x,
+            shift_id="shift_morning",
+            fixed=False,
+            source=AssignmentSource.MANUAL,
+        )
+        assignments.append(worker_a_morning_x)
+
+    if not worker_a_afternoon_y:
+        worker_a_afternoon_y = Assignment(
+            id="test_worker_a_afternoon_y",
+            team_id=base_team_id,
+            schedule_id=None,
+            worker_id=worker_a_morning_x.worker_id,
+            date=target_date_y,
+            shift_id="shift_afternoon",
+            fixed=False,
+            source=AssignmentSource.MANUAL,
+        )
+        assignments.append(worker_a_afternoon_y)
+
+    # Find Worker B with morning AND afternoon on Day Y (different worker)
     worker_b_assignments = [
         a
         for a in assignments
-        if a.date == target_date_b
+        if a.date == target_date_y
         and a.shift_id in ["shift_morning", "shift_afternoon"]
-        and a.worker_id != worker_a_assignment.worker_id
+        and a.worker_id != worker_a_morning_x.worker_id
     ]
 
-    # Filter to get a worker with both shifts
+    # Filter to get a worker with both shifts on Day Y
     worker_b_id = None
+    worker_b_morning_y = None
+    worker_b_afternoon_y = None
+
     for a in worker_b_assignments:
         other_shift = next(
             (
@@ -473,32 +526,75 @@ def test_validate_swap_invalid_overlap(
         )
         if other_shift:
             worker_b_id = a.worker_id
-            worker_b_assignments = [a, other_shift]
+            if a.shift_id == "shift_morning":
+                worker_b_morning_y = a
+                worker_b_afternoon_y = other_shift
+            else:
+                worker_b_afternoon_y = a
+                worker_b_morning_y = other_shift
             break
 
-    # If we can't find overlapping assignments in base data, skip this test
-    if not worker_b_id or len(worker_b_assignments) != 2:
-        pytest.skip("Could not find overlapping assignments in test data")
+    # Create Worker B assignments if not found
+    if not worker_b_id:
+        worker_b_id = (
+            "worker_2"
+            if worker_a_morning_x.worker_id != "worker_2"
+            else "worker_3"
+        )
+        worker_b_morning_y = Assignment(
+            id="test_worker_b_morning_y",
+            team_id=base_team_id,
+            schedule_id=None,
+            worker_id=worker_b_id,
+            date=target_date_y,
+            shift_id="shift_morning",
+            fixed=False,
+            source=AssignmentSource.MANUAL,
+        )
+        worker_b_afternoon_y = Assignment(
+            id="test_worker_b_afternoon_y",
+            team_id=base_team_id,
+            schedule_id=None,
+            worker_id=worker_b_id,
+            date=target_date_y,
+            shift_id="shift_afternoon",
+            fixed=False,
+            source=AssignmentSource.MANUAL,
+        )
+        assignments.extend([worker_b_morning_y, worker_b_afternoon_y])
 
-    all_swap_assignments = [worker_a_assignment] + worker_b_assignments
+    # The swap: Worker A swaps morning on Day X for Worker B's morning + afternoon on Day Y
+    # Worker A keeps their afternoon on Day Y (not part of swap)
+    # After swap, Worker A would have:
+    # - Worker B's morning on Day Y (from swap)
+    # - Worker B's afternoon on Day Y (from swap) <- CONFLICT with Worker A's existing afternoon
+    # - Worker A's own afternoon on Day Y (not swapped)
 
-    # Mock get_assignments_by_ids
+    all_swap_assignments = [
+        worker_a_morning_x,
+        worker_b_morning_y,
+        worker_b_afternoon_y,
+    ]
+
+    # Mock get_assignments_by_ids to return the swap assignments
     mock_collection.assignment_db.get_assignments_by_ids.return_value = (
         all_swap_assignments
     )
 
     # Act
     result = service.validate_assignment_swap(
-        worker_a_assignment_ids=[worker_a_assignment.id],
-        worker_b_assignment_ids=[a.id for a in worker_b_assignments],
+        worker_a_assignment_ids=[worker_a_morning_x.id],
+        worker_b_assignment_ids=[
+            worker_b_morning_y.id,
+            worker_b_afternoon_y.id,
+        ],
         team_id=base_team_id,
     )
 
-    # Assert - swap should be invalid
+    # Assert - swap should be invalid due to overlap
     assert_swap_invalid(result)
-    # Worker A would get both morning + afternoon, causing overlap
-    # (though the overlap check might not trigger since they're different shift types
-    # in our base data - the constraint system will catch other issues)
+    # Worker A would receive Worker B's afternoon on Day Y,
+    # but Worker A already has an afternoon shift on Day Y, creating an overlap
 
 
 # ============================================================================
