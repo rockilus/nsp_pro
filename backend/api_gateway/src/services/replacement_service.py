@@ -178,6 +178,58 @@ class ReplacementData:
     requests: List[Request]
 
 
+@dataclass
+class SwapAssignmentInfo:
+    """Information about one worker's assignments in a swap."""
+
+    worker_id: str
+    worker_name: str
+    assignment_ids: List[str]
+    current_implications: List[ReplacementImplications]  # One per assignment
+    swapped_implications: List[ReplacementImplications]  # One per swapped assignment
+
+
+@dataclass
+class SwapValidationResult:
+    """Result of validating an assignment swap between two workers."""
+
+    is_valid: bool  # True if both workers can perform the swap
+    worker_a_info: SwapAssignmentInfo
+    worker_b_info: SwapAssignmentInfo
+    validation_message: str  # Human-readable message about the swap validity
+
+
+@dataclass
+class SwapContext:
+    """Pre-computed context for evaluating a swap between two workers."""
+
+    # Original assignment data
+    worker_a_assignments: List[Assignment]
+    worker_b_assignments: List[Assignment]
+    worker_a: Worker
+    worker_b: Worker
+
+    # Shared context data
+    workers: List[Worker]
+    shifts: List[Shift]
+    constraints: Constraints
+    a_filtered_out: List[tuple[str, str, str]]
+    assignments: List[Assignment]
+    requests: List[Request]
+    requests_augmented: List[RequestAugmented]
+    assignment_times: Dict[str, tuple[datetime, datetime]]
+    dimensions: List[Dimension]
+    dim_entries: List[DimEntry]
+    attributes: List[Attribute]
+    shift_dim_dict: Dict
+
+    # Current state
+    current_assignment_tuples: Set[Tuple[str, str, str]]
+
+    # Swapped state (with both swaps applied)
+    swapped_assignment_tuples: Set[Tuple[str, str, str]]
+
+
 # pylint: disable=too-many-lines, too-few-public-methods
 class ReplacementService(BaseService):
     def get_replacement_candidates(
@@ -234,6 +286,137 @@ class ReplacementService(BaseService):
         )
 
         return ranked_candidates
+
+    # pylint: disable=too-many-locals
+    def validate_assignment_swap(
+        self,
+        worker_a_assignment_ids: List[str],
+        worker_b_assignment_ids: List[str],
+        team_id: str,
+    ) -> SwapValidationResult:
+        """
+        Validate whether two workers can swap their assignments.
+
+        Args:
+            worker_a_assignment_ids: List of assignment IDs for worker A
+            worker_b_assignment_ids: List of assignment IDs for worker B
+            team_id: Team ID
+
+        Returns:
+            SwapValidationResult with detailed implications for both workers
+        """
+        # Fetch all data for both sets of assignments
+        all_assignment_ids = worker_a_assignment_ids + worker_b_assignment_ids
+        replacement_data = self._fetch_replacement_data(
+            assignment_ids=all_assignment_ids,
+            team_id=team_id,
+        )
+
+        # Get the actual assignments
+        worker_a_assignments = [
+            a for a in replacement_data.assignments if a.id in worker_a_assignment_ids
+        ]
+        worker_b_assignments = [
+            a for a in replacement_data.assignments if a.id in worker_b_assignment_ids
+        ]
+
+        # Validate we found all assignments
+        if len(worker_a_assignments) != len(worker_a_assignment_ids):
+            missing = set(worker_a_assignment_ids) - {
+                a.id for a in worker_a_assignments
+            }
+            raise ValueError(f"Worker A assignments not found: {missing}")
+        if len(worker_b_assignments) != len(worker_b_assignment_ids):
+            missing = set(worker_b_assignment_ids) - {
+                a.id for a in worker_b_assignments
+            }
+            raise ValueError(f"Worker B assignments not found: {missing}")
+
+        # Verify assignments belong to exactly two workers
+        worker_a_id = worker_a_assignments[0].worker_id
+        worker_b_id = worker_b_assignments[0].worker_id
+
+        if any(a.worker_id != worker_a_id for a in worker_a_assignments):
+            raise ValueError("All worker A assignments must belong to the same worker")
+        if any(a.worker_id != worker_b_id for a in worker_b_assignments):
+            raise ValueError("All worker B assignments must belong to the same worker")
+        if worker_a_id == worker_b_id:
+            raise ValueError("Cannot swap assignments of the same worker")
+
+        # Get worker objects
+        worker_a = next(
+            (w for w in replacement_data.workers if w.id == worker_a_id), None
+        )
+        worker_b = next(
+            (w for w in replacement_data.workers if w.id == worker_b_id), None
+        )
+
+        if not worker_a or not worker_b:
+            raise ValueError("Worker not found in team")
+
+        # Process replacement data for multiple assignments
+        all_assignments = worker_a_assignments + worker_b_assignments
+        constraints, a_filtered_out, shift_dim_dict = (
+            self._process_replacement_data_for_multiple(
+                assignments=all_assignments,
+                replacement_data=replacement_data,
+            )
+        )
+
+        # Build swap context
+        swap_context = self._build_swap_context(
+            worker_a_assignments=worker_a_assignments,
+            worker_b_assignments=worker_b_assignments,
+            worker_a=worker_a,
+            worker_b=worker_b,
+            replacement_data=replacement_data,
+            constraints=constraints,
+            a_filtered_out=a_filtered_out,
+            shift_dim_dict=shift_dim_dict,
+        )
+
+        # Evaluate implications for worker A
+        worker_a_info = self._build_swap_implications_for_worker(
+            worker=worker_a,
+            worker_assignments=worker_a_assignments,
+            swapped_assignments=worker_b_assignments,
+            swap_context=swap_context,
+        )
+
+        # Evaluate implications for worker B
+        worker_b_info = self._build_swap_implications_for_worker(
+            worker=worker_b,
+            worker_assignments=worker_b_assignments,
+            swapped_assignments=worker_a_assignments,
+            swap_context=swap_context,
+        )
+
+        # Determine if swap is valid (both workers pass all hard constraints)
+        worker_a_can_do_swap = all(
+            self._can_do_assignment(impl) for impl in worker_a_info.swapped_implications
+        )
+        worker_b_can_do_swap = all(
+            self._can_do_assignment(impl) for impl in worker_b_info.swapped_implications
+        )
+
+        is_valid = worker_a_can_do_swap and worker_b_can_do_swap
+
+        # Build validation message
+        if is_valid:
+            validation_message = "Swap is valid for both workers"
+        elif not worker_a_can_do_swap and not worker_b_can_do_swap:
+            validation_message = "Swap is invalid for both workers"
+        elif not worker_a_can_do_swap:
+            validation_message = f"Swap is invalid for {worker_a.name}"
+        else:
+            validation_message = f"Swap is invalid for {worker_b.name}"
+
+        return SwapValidationResult(
+            is_valid=is_valid,
+            worker_a_info=worker_a_info,
+            worker_b_info=worker_b_info,
+            validation_message=validation_message,
+        )
 
     # def get_assignment_swap_info(
     #     self,
@@ -2118,3 +2301,477 @@ class ReplacementService(BaseService):
         ]
 
         return constraints, a_filtered_out, dim_to_attr_value_to_shift
+
+    def _process_replacement_data_for_multiple(
+        self,
+        assignments: List[Assignment],
+        replacement_data: ReplacementData,
+    ) -> tuple[Constraints, List[tuple[str, str, str]], Dict]:
+        """
+        Process replacement data for multiple assignments (used in swap validation).
+
+        Similar to _process_replacement_data but handles multiple date/shift pairs.
+
+        Args:
+            assignments: List of assignments to consider
+            replacement_data: Fetched replacement data
+
+        Returns:
+            Tuple of (Constraints, filtered_out_tuples, shift_dim_dict)
+        """
+        if not assignments:
+            raise ValueError("At least one assignment must be provided")
+
+        # Use the first assignment as reference for building base constraints
+        reference_assignment = assignments[0]
+
+        dim_to_attr_value_to_worker = build_dim_to_attr_value_to_owner(
+            owners=replacement_data.workers,
+            dimensions=replacement_data.dimensions,
+            dim_entries=replacement_data.dim_entries,
+            attributes=replacement_data.attributes,
+        )
+        dim_to_attr_value_to_shift = build_dim_to_attr_value_to_owner(
+            owners=replacement_data.shifts,
+            dimensions=replacement_data.dimensions,
+            dim_entries=replacement_data.dim_entries,
+            attributes=replacement_data.attributes,
+        )
+
+        cbs_augmented = [
+            cb_to_cb_augmented(
+                cb=cb,
+                workers=replacement_data.workers,
+                shifts=replacement_data.shifts,
+                dimensions=replacement_data.dimensions,
+                dim_entries=replacement_data.dim_entries,
+                attributes=replacement_data.attributes,
+                specialties=replacement_data.specialties,
+            )
+            for cb in replacement_data.constraints
+        ]
+        cbs_augmented = [cb for cb in cbs_augmented if cb.active]
+        penalties = Penalties(
+            user_constraint=UserConstraintPenalty(
+                eve=Penalty(hard=0, soft=0),
+                fai=Penalty(hard=0, soft=0),
+                fil=Penalty(hard=0, soft=0),
+                ord=Penalty(hard=0, soft=0),
+                seq=Penalty(hard=0, soft=0),
+                sum=Penalty(hard=0, soft=0),
+                request=Penalty(hard=0, soft=0),
+            ),
+            configuration_constraint=ConfigurationConstraintPenalty(
+                coverage=CoveragePenalty(duty=0, normal=0),
+                duty_recup=0,
+                worker_shift_filter=0,
+                link_shift=0,
+                weekly_worktime_max=0,
+                weekly_worktime_desired=0,
+                weekly_worktime_contract=0,
+                monthly_duties_max=0,
+                monthly_duties_desired=0,
+            ),
+            system_constraint=SystemConstraintPenalty(
+                weekly_target_work_time=0,
+                monthly_target_nb_duties=0,
+                max_weekly_nb_duties=0,
+                max_week_day_nb_duties=0,
+                special_days_target_nb_duties=0,
+            ),
+        )
+
+        try:
+            ref_date_minus_1_year = reference_assignment.date.replace(
+                year=reference_assignment.date.year - 1
+            )
+        except ValueError:
+            # Handles Feb 29 -> fallback to Feb 28 on non-leap year
+            ref_date_minus_1_year = reference_assignment.date.replace(
+                month=2, day=28, year=reference_assignment.date.year - 1
+            )
+
+        min_hist_date = min(
+            ref_date_minus_1_year,
+            min(a.date for a in replacement_data.assignments),
+        )
+
+        max_date = max(a.date for a in replacement_data.assignments)
+
+        dates_hist = build_dates_list(
+            start_date=min_hist_date,
+            end_date=reference_assignment.date - timedelta(days=1),
+        )
+
+        dates_campaign = build_dates_list(
+            start_date=reference_assignment.date, end_date=max_date
+        )
+
+        periods_weekly = build_periods_weekly(
+            dates_hist=dates_hist, dates_campaign=dates_campaign
+        )
+        periods_monthly = build_periods_monthly(
+            dates_hist=dates_hist, dates_campaign=dates_campaign
+        )
+        periods_yearly = build_periods_yearly(
+            dates_hist=dates_hist, dates_campaign=dates_campaign
+        )
+
+        worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
+            start_date=reference_assignment.date,
+            end_date=max_date,
+            workers=replacement_data.workers,
+            assignments=replacement_data.assignments,
+        )
+
+        constraints = parse_constraints(
+            cbas=cbs_augmented,
+            schedule_id="",
+            workers=replacement_data.workers,
+            worker_dim_dict=dim_to_attr_value_to_worker,
+            dates_hist=dates_hist,
+            dates_campaign=dates_campaign,
+            periods_weekly=periods_weekly,
+            periods_monthly=periods_monthly,
+            periods_yearly=periods_yearly,
+            worker_ids_to_worker_dates=worker_ids_to_worker_dates,
+            shifts=replacement_data.shifts,
+            shift_dim_dict=dim_to_attr_value_to_shift,
+            penalties=penalties,
+        )
+
+        # Filter constraints for all assignments involved
+        # We'll keep constraints that are relevant to any of the assignment
+        # date/shift pairs
+        date_shift_pairs = [(a.date.isoformat(), a.shift_id) for a in assignments]
+
+        filtered_sums: List[ConstraintSum] = []
+        for constraint_sum in constraints.sum:
+            for date_iso, shift_id in date_shift_pairs:
+                filtered_sum = self._filter_constraint_sum_for_assignment(
+                    constraint_sum, date_iso, shift_id
+                )
+                if filtered_sum:
+                    filtered_sums.append(filtered_sum)
+                    break  # Don't add the same constraint multiple times
+
+        filtered_seqs: List[ConstraintSeq] = []
+        for constraint_seq in constraints.seq:
+            for date_iso, shift_id in date_shift_pairs:
+                filtered_seq = self._filter_constraint_seq_for_assignment(
+                    constraint_seq, date_iso, shift_id
+                )
+                if filtered_seq:
+                    filtered_seqs.append(filtered_seq)
+                    break
+
+        filtered_ords: List[ConstraintOrd] = []
+        for constraint_ord in constraints.ord:
+            for date_iso, shift_id in date_shift_pairs:
+                filtered_ord = self._filter_constraint_ord_for_assignment(
+                    constraint_ord, date_iso, shift_id
+                )
+                if filtered_ord:
+                    filtered_ords.append(filtered_ord)
+                    break
+
+        filtered_fils: List[ConstraintFil] = []
+        for constraint_fil in constraints.fil:
+            for date_iso, shift_id in date_shift_pairs:
+                filtered_fil = self._filter_constraint_fil_for_assignment(
+                    constraint_fil, date_iso, shift_id
+                )
+                if filtered_fil:
+                    filtered_fils.append(filtered_fil)
+                    break
+
+        constraints.sum = filtered_sums
+        constraints.seq = filtered_seqs
+        constraints.ord = filtered_ords
+        constraints.fil = filtered_fils
+        constraints.fai = []
+
+        a_filtered_out, _ = build_worker_shift_filters(
+            workers=replacement_data.workers,
+            worker_ids_to_worker_dates=worker_ids_to_worker_dates,
+            shifts=replacement_data.shifts,
+            dimensions=replacement_data.dimensions,
+            attributes=replacement_data.attributes,
+            fixed_values={},
+            penalty=0,
+            shared_bool_policies={
+                d.id: BoolSharedPolicy.SHIFT_TRUE_ONLY
+                for d in replacement_data.dimensions
+            },
+        )
+
+        # Filter a_filtered_out to only include the relevant date/shift pairs
+        a_filtered_out = [
+            var
+            for var in a_filtered_out
+            if any(
+                var[1] == date_iso and var[2] == shift_id
+                for date_iso, shift_id in date_shift_pairs
+            )
+        ]
+
+        return constraints, a_filtered_out, dim_to_attr_value_to_shift
+
+    # pylint: disable=too-many-arguments, too-many-locals
+    def _build_swap_context(
+        self,
+        worker_a_assignments: List[Assignment],
+        worker_b_assignments: List[Assignment],
+        worker_a: Worker,
+        worker_b: Worker,
+        replacement_data: ReplacementData,
+        constraints: Constraints,
+        a_filtered_out: List[tuple[str, str, str]],
+        shift_dim_dict: Dict,
+    ) -> SwapContext:
+        """
+        Build context for evaluating an assignment swap.
+
+        Args:
+            worker_a_assignments: Original assignments for worker A
+            worker_b_assignments: Original assignments for worker B
+            worker_a: Worker A object
+            worker_b: Worker B object
+            replacement_data: Fetched replacement data
+            constraints: Parsed constraints (already filtered for relevant dates/shifts)
+            a_filtered_out: Filtered-out assignment tuples
+            shift_dim_dict: Shift dimension dictionary
+
+        Returns:
+            SwapContext with pre-computed data for both workers
+        """
+        # Get shift objects
+        shifts_dict = {s.id: s for s in replacement_data.shifts}
+
+        # Compute assignment times for all assignments
+        assignment_times = {}
+        for assignment in replacement_data.assignments:
+            shift = shifts_dict.get(assignment.shift_id)
+            if shift:
+                start_time, end_time = self._compute_assignment_datetimes(
+                    assignment, shift
+                )
+                assignment_times[assignment.id] = (start_time, end_time)
+
+        # Augment requests
+        worker_by_id = {w.id: w for w in replacement_data.workers}
+        requests_augmented = []
+        for req in replacement_data.requests:
+            worker = worker_by_id.get(req.worker_id)
+            if worker:
+                request_aug = r_to_r_augmented(
+                    request=req,
+                    worker=worker,
+                    shifts=replacement_data.shifts,
+                    dimensions=replacement_data.dimensions,
+                    dim_entries=replacement_data.dim_entries,
+                    attributes=replacement_data.attributes,
+                )
+                # Filter to only active requests
+                if request_aug.status == RequestStatus.APPROVED:
+                    requests_augmented.append(request_aug)
+
+        # Build current assignment tuples
+        current_assignment_tuples = {
+            (a.worker_id, a.date.isoformat(), a.shift_id)
+            for a in replacement_data.assignments
+        }
+
+        # Build swapped assignment tuples
+        swapped_assignment_tuples = current_assignment_tuples.copy()
+
+        # Remove original assignments
+        for assignment in worker_a_assignments:
+            swapped_assignment_tuples.discard(
+                (
+                    assignment.worker_id,
+                    assignment.date.isoformat(),
+                    assignment.shift_id,
+                )
+            )
+        for assignment in worker_b_assignments:
+            swapped_assignment_tuples.discard(
+                (
+                    assignment.worker_id,
+                    assignment.date.isoformat(),
+                    assignment.shift_id,
+                )
+            )
+
+        # Add swapped assignments (A gets B's dates/shifts, B gets A's dates/shifts)
+        for assignment in worker_a_assignments:
+            swapped_assignment_tuples.add(
+                (worker_b.id, assignment.date.isoformat(), assignment.shift_id)
+            )
+        for assignment in worker_b_assignments:
+            swapped_assignment_tuples.add(
+                (worker_a.id, assignment.date.isoformat(), assignment.shift_id)
+            )
+
+        return SwapContext(
+            worker_a_assignments=worker_a_assignments,
+            worker_b_assignments=worker_b_assignments,
+            worker_a=worker_a,
+            worker_b=worker_b,
+            workers=replacement_data.workers,
+            shifts=replacement_data.shifts,
+            constraints=constraints,
+            a_filtered_out=a_filtered_out,
+            assignments=replacement_data.assignments,
+            requests=replacement_data.requests,
+            requests_augmented=requests_augmented,
+            assignment_times=assignment_times,
+            dimensions=replacement_data.dimensions,
+            dim_entries=replacement_data.dim_entries,
+            attributes=replacement_data.attributes,
+            shift_dim_dict=shift_dim_dict,
+            current_assignment_tuples=current_assignment_tuples,
+            swapped_assignment_tuples=swapped_assignment_tuples,
+        )
+
+    def _build_swap_implications_for_worker(
+        self,
+        worker: Worker,
+        worker_assignments: List[Assignment],
+        swapped_assignments: List[Assignment],
+        swap_context: SwapContext,
+    ) -> SwapAssignmentInfo:
+        """
+        Build implications for one worker in a swap.
+
+        Args:
+            worker: The worker being evaluated
+            worker_assignments: The worker's original assignments
+            swapped_assignments: The assignments the worker would receive
+            swap_context: Pre-computed swap context
+
+        Returns:
+            SwapAssignmentInfo with current and swapped implications
+        """
+        # Evaluate current assignments
+        current_implications = []
+        for assignment in worker_assignments:
+            # Build a ReplacementContext for this specific assignment
+            context = self._build_replacement_context_from_swap_context(
+                assignment=assignment,
+                swap_context=swap_context,
+                use_swapped_state=False,
+            )
+            implications = self._build_replacement_implications(
+                worker=worker, context=context
+            )
+            current_implications.append(implications)
+
+        # Evaluate swapped assignments (worker would do the other worker's assignments)
+        swapped_implications = []
+        for other_assignment in swapped_assignments:
+            # Create a hypothetical assignment where this worker does the
+            # other's assignment
+            hypothetical_assignment = Assignment(
+                id=f"swap_{other_assignment.id}",
+                team_id=other_assignment.team_id,
+                schedule_id=other_assignment.schedule_id,
+                worker_id=worker.id,  # This worker instead
+                date=other_assignment.date,
+                shift_id=other_assignment.shift_id,
+                fixed=False,
+                source=AssignmentSource.MANUAL,
+                source_id=None,
+                reference_assignment_id=None,
+            )
+
+            # Build a ReplacementContext for this hypothetical assignment
+            context = self._build_replacement_context_from_swap_context(
+                assignment=hypothetical_assignment,
+                swap_context=swap_context,
+                use_swapped_state=True,
+            )
+            implications = self._build_replacement_implications(
+                worker=worker, context=context
+            )
+            swapped_implications.append(implications)
+
+        return SwapAssignmentInfo(
+            worker_id=worker.id,
+            worker_name=worker.name,
+            assignment_ids=[a.id for a in worker_assignments],
+            current_implications=current_implications,
+            swapped_implications=swapped_implications,
+        )
+
+    def _build_replacement_context_from_swap_context(
+        self,
+        assignment: Assignment,
+        swap_context: SwapContext,
+        use_swapped_state: bool,
+    ) -> ReplacementContext:
+        """
+        Build a ReplacementContext from a SwapContext for a specific assignment.
+
+        Args:
+            assignment: The assignment to build context for
+            swap_context: The pre-computed swap context
+            use_swapped_state: If True, use swapped assignment tuples; else use current
+
+        Returns:
+            ReplacementContext for the specific assignment
+        """
+        # Get the target shift
+        target_shift = next(
+            (s for s in swap_context.shifts if s.id == assignment.shift_id),
+            None,
+        )
+        if not target_shift:
+            raise ValueError(f"Shift {assignment.shift_id} not found")
+
+        # Choose which assignment tuples to use
+        assignment_tuples = (
+            swap_context.swapped_assignment_tuples
+            if use_swapped_state
+            else swap_context.current_assignment_tuples
+        )
+
+        return ReplacementContext(
+            target_assignment=assignment,
+            target_shift=target_shift,
+            assignment_date=assignment.date,
+            workers=swap_context.workers,
+            shifts=swap_context.shifts,
+            constraints=swap_context.constraints,
+            a_filtered_out=swap_context.a_filtered_out,
+            assignments=swap_context.assignments,
+            requests=swap_context.requests,
+            requests_augmented=swap_context.requests_augmented,
+            assignment_times=swap_context.assignment_times,
+            dimensions=swap_context.dimensions,
+            dim_entries=swap_context.dim_entries,
+            attributes=swap_context.attributes,
+            shift_dim_dict=swap_context.shift_dim_dict,
+            assignment_tuples=assignment_tuples,
+        )
+
+    def _can_do_assignment(self, implications: ReplacementImplications) -> bool:
+        """
+        Check if implications indicate the assignment can be done (no hard
+        constraint violations).
+
+        Args:
+            implications: ReplacementImplications to check
+
+        Returns:
+            True if all hard constraints are met
+        """
+        return (
+            implications.is_employed
+            and implications.has_specialty
+            and implications.isnt_on_leave
+            and implications.filter_hits.isnt_filtered_out
+            and implications.overlap_hits.hasnt_overlap
+            and implications.hard_constraint_hits.meets_constraints
+            and implications.request_hits.has_no_request_conflict
+        )
