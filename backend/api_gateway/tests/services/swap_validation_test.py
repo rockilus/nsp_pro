@@ -352,6 +352,10 @@ def test_validate_swap_multi_assignment_valid(
     mock_collection.assignment_db.get_assignments_by_ids.return_value = (
         all_swap_assignments
     )
+    # Mock get_assignments_by_dates to include all assignments (including newly created ones)
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = (
+        assignments
+    )
 
     # Act
     result = service.validate_assignment_swap(
@@ -579,6 +583,10 @@ def test_validate_swap_invalid_overlap(
     # Mock get_assignments_by_ids to return the swap assignments
     mock_collection.assignment_db.get_assignments_by_ids.return_value = (
         all_swap_assignments
+    )
+    # Mock get_assignments_by_dates to include all assignments (including newly created ones)
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = (
+        assignments
     )
 
     # Act
