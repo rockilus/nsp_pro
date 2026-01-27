@@ -203,18 +203,23 @@ class SwapValidationResult:
 class SwapContext:
     """Pre-computed context for evaluating a swap between two workers."""
 
-    # Original assignment data
-    worker_a_assignments: List[Assignment]
-    worker_b_assignments: List[Assignment]
+    # Workers involved in the swap
     worker_a: Worker
     worker_b: Worker
+
+    # Assignment sets for the swap
+    all_current_assignments: List[Assignment]  # All current assignments
+    all_swapped_assignments: List[Assignment]  # All after swap
+    worker_a_current_assignments: List[Assignment]  # A's being swapped
+    worker_b_current_assignments: List[Assignment]  # B's being swapped
+    worker_a_swapped_assignments: List[Assignment]  # New for A (from B)
+    worker_b_swapped_assignments: List[Assignment]  # New for B (from A)
 
     # Shared context data
     workers: List[Worker]
     shifts: List[Shift]
     constraints: Constraints
     a_filtered_out: List[tuple[str, str, str]]
-    assignments: List[Assignment]
     requests: List[Request]
     requests_augmented: List[RequestAugmented]
     assignment_times: Dict[str, tuple[datetime, datetime]]
@@ -223,10 +228,8 @@ class SwapContext:
     attributes: List[Attribute]
     shift_dim_dict: Dict
 
-    # Current state
+    # Assignment tuples for quick lookup
     current_assignment_tuples: Set[Tuple[str, str, str]]
-
-    # Swapped state (with both swaps applied)
     swapped_assignment_tuples: Set[Tuple[str, str, str]]
 
 
@@ -378,16 +381,16 @@ class ReplacementService(BaseService):
         # Evaluate implications for worker A
         worker_a_info = self._build_swap_implications_for_worker(
             worker=worker_a,
-            worker_assignments=worker_a_assignments,
-            swapped_assignments=worker_b_assignments,
+            worker_assignments=swap_context.worker_a_current_assignments,
+            swapped_assignments=swap_context.worker_a_swapped_assignments,
             swap_context=swap_context,
         )
 
         # Evaluate implications for worker B
         worker_b_info = self._build_swap_implications_for_worker(
             worker=worker_b,
-            worker_assignments=worker_b_assignments,
-            swapped_assignments=worker_a_assignments,
+            worker_assignments=swap_context.worker_b_current_assignments,
+            swapped_assignments=swap_context.worker_b_swapped_assignments,
             swap_context=swap_context,
         )
 
@@ -2613,16 +2616,73 @@ class ReplacementService(BaseService):
                 (worker_a.id, assignment.date.isoformat(), assignment.shift_id)
             )
 
+        # Create actual Assignment objects for swapped assignments
+        worker_a_swapped_assignments = []
+        for assignment in worker_b_assignments:
+            swapped_assignment = Assignment(
+                id=f"swap_{assignment.id}_to_{worker_a.id}",
+                team_id=assignment.team_id,
+                schedule_id=assignment.schedule_id,
+                worker_id=worker_a.id,  # Worker A gets B's assignments
+                date=assignment.date,
+                shift_id=assignment.shift_id,
+                fixed=False,
+                source=AssignmentSource.MANUAL,
+                source_id=None,
+                reference_assignment_id=assignment.id,
+            )
+            worker_a_swapped_assignments.append(swapped_assignment)
+            # Add to assignment_times
+            if assignment.id in assignment_times:
+                assignment_times[swapped_assignment.id] = assignment_times[
+                    assignment.id
+                ]
+
+        worker_b_swapped_assignments = []
+        for assignment in worker_a_assignments:
+            swapped_assignment = Assignment(
+                id=f"swap_{assignment.id}_to_{worker_b.id}",
+                team_id=assignment.team_id,
+                schedule_id=assignment.schedule_id,
+                worker_id=worker_b.id,  # Worker B gets A's assignments
+                date=assignment.date,
+                shift_id=assignment.shift_id,
+                fixed=False,
+                source=AssignmentSource.MANUAL,
+                source_id=None,
+                reference_assignment_id=assignment.id,
+            )
+            worker_b_swapped_assignments.append(swapped_assignment)
+            # Add to assignment_times
+            if assignment.id in assignment_times:
+                assignment_times[swapped_assignment.id] = assignment_times[
+                    assignment.id
+                ]
+
+        # Build all_swapped_assignments: all current assignments except
+        # the ones being swapped, plus the new swapped assignments
+        all_swapped_assignments = [
+            a
+            for a in replacement_data.assignments
+            if a.id
+            not in {assgn.id for assgn in worker_a_assignments + worker_b_assignments}
+        ]
+        all_swapped_assignments.extend(worker_a_swapped_assignments)
+        all_swapped_assignments.extend(worker_b_swapped_assignments)
+
         return SwapContext(
-            worker_a_assignments=worker_a_assignments,
-            worker_b_assignments=worker_b_assignments,
             worker_a=worker_a,
             worker_b=worker_b,
+            all_current_assignments=replacement_data.assignments,
+            all_swapped_assignments=all_swapped_assignments,
+            worker_a_current_assignments=worker_a_assignments,
+            worker_b_current_assignments=worker_b_assignments,
+            worker_a_swapped_assignments=worker_a_swapped_assignments,
+            worker_b_swapped_assignments=worker_b_swapped_assignments,
             workers=replacement_data.workers,
             shifts=replacement_data.shifts,
             constraints=constraints,
             a_filtered_out=a_filtered_out,
-            assignments=replacement_data.assignments,
             requests=replacement_data.requests,
             requests_augmented=requests_augmented,
             assignment_times=assignment_times,
@@ -2668,26 +2728,12 @@ class ReplacementService(BaseService):
             current_implications.append(implications)
 
         # Evaluate swapped assignments (worker would do the other worker's assignments)
+        # Use the pre-created swapped assignments from SwapContext
         swapped_implications = []
-        for other_assignment in swapped_assignments:
-            # Create a hypothetical assignment where this worker does the
-            # other's assignment
-            hypothetical_assignment = Assignment(
-                id=f"swap_{other_assignment.id}",
-                team_id=other_assignment.team_id,
-                schedule_id=other_assignment.schedule_id,
-                worker_id=worker.id,  # This worker instead
-                date=other_assignment.date,
-                shift_id=other_assignment.shift_id,
-                fixed=False,
-                source=AssignmentSource.MANUAL,
-                source_id=None,
-                reference_assignment_id=None,
-            )
-
-            # Build a ReplacementContext for this hypothetical assignment
+        for swapped_assignment in swapped_assignments:
+            # Build a ReplacementContext for this swapped assignment
             context = self._build_replacement_context_from_swap_context(
-                assignment=hypothetical_assignment,
+                assignment=swapped_assignment,
                 swap_context=swap_context,
                 use_swapped_state=True,
             )
@@ -2729,7 +2775,12 @@ class ReplacementService(BaseService):
         if not target_shift:
             raise ValueError(f"Shift {assignment.shift_id} not found")
 
-        # Choose which assignment tuples to use
+        # Choose which assignments and assignment tuples to use
+        assignments = (
+            swap_context.all_swapped_assignments
+            if use_swapped_state
+            else swap_context.all_current_assignments
+        )
         assignment_tuples = (
             swap_context.swapped_assignment_tuples
             if use_swapped_state
@@ -2744,7 +2795,7 @@ class ReplacementService(BaseService):
             shifts=swap_context.shifts,
             constraints=swap_context.constraints,
             a_filtered_out=swap_context.a_filtered_out,
-            assignments=swap_context.assignments,
+            assignments=assignments,
             requests=swap_context.requests,
             requests_augmented=swap_context.requests_augmented,
             assignment_times=swap_context.assignment_times,
