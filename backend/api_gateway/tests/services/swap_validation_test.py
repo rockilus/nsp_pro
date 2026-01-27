@@ -10,7 +10,7 @@ from typing import List, Tuple
 from unittest.mock import MagicMock
 
 import pytest
-from shared.schemas.core import Assignment
+from shared.schemas.core import Assignment, AssignmentSource
 
 from src.services.replacement_service import (
     ReplacementService,
@@ -52,7 +52,9 @@ def assert_swap_invalid(
         expected_invalid_for: Expected string in validation message
             (e.g., "both", "Worker 1", or None for any invalid)
     """
-    assert result.is_valid is False, "Expected swap to be invalid, but it was valid"
+    assert (
+        result.is_valid is False
+    ), "Expected swap to be invalid, but it was valid"
     if expected_invalid_for:
         assert expected_invalid_for in result.validation_message, (
             f"Expected '{expected_invalid_for}' in message, "
@@ -133,7 +135,8 @@ def assert_worker_cannot_do_swap(
 
     if expected_failure:
         assert expected_failure in failure_types, (
-            f"Expected failure type '{expected_failure}', " f"but got: {failure_types}"
+            f"Expected failure type '{expected_failure}', "
+            f"but got: {failure_types}"
         )
 
 
@@ -151,7 +154,9 @@ def assert_swap_implications_structure(info: SwapAssignmentInfo) -> None:
     assert len(info.current_implications) == len(
         info.assignment_ids
     ), "Current implications count should match assignment count"
-    assert len(info.swapped_implications) > 0, "Should have swapped implications"
+    assert (
+        len(info.swapped_implications) > 0
+    ), "Should have swapped implications"
 
 
 # ============================================================================
@@ -160,7 +165,9 @@ def assert_swap_implications_structure(info: SwapAssignmentInfo) -> None:
 
 
 def test_validate_swap_simple_valid_swap(
-    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
     base_team_id: str,
 ) -> None:
     """Test valid swap between two workers with single assignments.
@@ -172,7 +179,9 @@ def test_validate_swap_simple_valid_swap(
 
     # Find two workers with morning shifts on different days
     # We'll pick the first and second morning shift assignments
-    morning_assignments = [a for a in assignments if a.shift_id == "shift_morning"]
+    morning_assignments = [
+        a for a in assignments if a.shift_id == "shift_morning"
+    ]
 
     # Make sure they're on different dates
     worker_a_assignment = morning_assignments[0]
@@ -213,7 +222,9 @@ def test_validate_swap_simple_valid_swap(
 
 
 def test_validate_swap_multi_assignment_valid(
-    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
     base_team_id: str,
 ) -> None:
     """Test valid swap with multiple assignments per worker.
@@ -238,6 +249,43 @@ def test_validate_swap_multi_assignment_valid(
                 worker_a_assignments.append(a)
                 break
 
+    # If worker_a doesn't have both shifts, create the missing one
+    if len(worker_a_assignments) == 1:
+        existing_shift = worker_a_assignments[0].shift_id
+        missing_shift_id = (
+            "shift_afternoon"
+            if existing_shift == "shift_morning"
+            else "shift_morning"
+        )
+        missing_assignment = Assignment(
+            id=f"test_assignment_{worker_a_assignments[0].worker_id}_{missing_shift_id}",
+            team_id=base_team_id,
+            schedule_id=None,
+            worker_id=worker_a_assignments[0].worker_id,
+            date=target_date,
+            shift_id=missing_shift_id,
+            fixed=False,
+            source=AssignmentSource.MANUAL,
+        )
+        worker_a_assignments.append(missing_assignment)
+        assignments.append(missing_assignment)
+    elif len(worker_a_assignments) == 0:
+        # No assignments found, create both
+        worker_id = "worker_1"
+        for shift_id in ["shift_morning", "shift_afternoon"]:
+            new_assignment = Assignment(
+                id=f"test_assignment_{worker_id}_{shift_id}",
+                team_id=base_team_id,
+                schedule_id=None,
+                worker_id=worker_id,
+                date=target_date,
+                shift_id=shift_id,
+                fixed=False,
+                source=AssignmentSource.MANUAL,
+            )
+            worker_a_assignments.append(new_assignment)
+            assignments.append(new_assignment)
+
     # Find another worker with morning and afternoon on a different day
     worker_b_assignments: List[Assignment] = []
     target_date_b = date(2026, 1, 12)  # Different weekday
@@ -253,6 +301,47 @@ def test_validate_swap_multi_assignment_valid(
             elif a.worker_id == worker_b_assignments[0].worker_id:
                 worker_b_assignments.append(a)
                 break
+
+    # If worker_b doesn't have both shifts, create the missing one
+    if len(worker_b_assignments) == 1:
+        existing_shift = worker_b_assignments[0].shift_id
+        missing_shift_id = (
+            "shift_afternoon"
+            if existing_shift == "shift_morning"
+            else "shift_morning"
+        )
+        missing_assignment = Assignment(
+            id=f"test_assignment_{worker_b_assignments[0].worker_id}_{missing_shift_id}",
+            team_id=base_team_id,
+            schedule_id=None,
+            worker_id=worker_b_assignments[0].worker_id,
+            date=target_date_b,
+            shift_id=missing_shift_id,
+            fixed=False,
+            source=AssignmentSource.MANUAL,
+        )
+        worker_b_assignments.append(missing_assignment)
+        assignments.append(missing_assignment)
+    elif len(worker_b_assignments) == 0:
+        # No assignments found, create both for a different worker
+        worker_id = (
+            "worker_2"
+            if worker_a_assignments[0].worker_id != "worker_2"
+            else "worker_3"
+        )
+        for shift_id in ["shift_morning", "shift_afternoon"]:
+            new_assignment = Assignment(
+                id=f"test_assignment_{worker_id}_{shift_id}",
+                team_id=base_team_id,
+                schedule_id=None,
+                worker_id=worker_id,
+                date=target_date_b,
+                shift_id=shift_id,
+                fixed=False,
+                source=AssignmentSource.MANUAL,
+            )
+            worker_b_assignments.append(new_assignment)
+            assignments.append(new_assignment)
 
     assert len(worker_a_assignments) == 2, "Worker A should have 2 assignments"
     assert len(worker_b_assignments) == 2, "Worker B should have 2 assignments"
@@ -286,7 +375,9 @@ def test_validate_swap_multi_assignment_valid(
 
 
 def test_validate_swap_same_day_different_shifts(
-    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
     base_team_id: str,
 ) -> None:
     """Test valid swap where workers exchange shifts on the same day.
@@ -338,7 +429,9 @@ def test_validate_swap_same_day_different_shifts(
 
 
 def test_validate_swap_invalid_overlap(
-    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
     base_team_id: str,
 ) -> None:
     """Test invalid swap due to overlapping shifts.
@@ -414,13 +507,17 @@ def test_validate_swap_invalid_overlap(
 
 
 def test_validate_swap_raises_on_missing_assignment(
-    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
     base_team_id: str,
 ) -> None:
     """Test that swap validation raises error when assignment not found."""
     service, mock_collection, assignments = mock_replacement_service
 
-    worker_a_assignment = next(a for a in assignments if a.shift_id == "shift_morning")
+    worker_a_assignment = next(
+        a for a in assignments if a.shift_id == "shift_morning"
+    )
 
     # Mock to return only one assignment (missing the second)
     mock_collection.assignment_db.get_assignments_by_ids.return_value = [
@@ -437,7 +534,9 @@ def test_validate_swap_raises_on_missing_assignment(
 
 
 def test_validate_swap_raises_on_same_worker(
-    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
     base_team_id: str,
 ) -> None:
     """Test that swap validation raises error when trying to swap same worker's
@@ -445,7 +544,9 @@ def test_validate_swap_raises_on_same_worker(
     service, mock_collection, assignments = mock_replacement_service
 
     # Find two assignments from the same worker
-    worker_assignments = [a for a in assignments if a.worker_id == "worker_1"][:2]
+    worker_assignments = [a for a in assignments if a.worker_id == "worker_1"][
+        :2
+    ]
 
     # Mock get_assignments_by_ids
     mock_collection.assignment_db.get_assignments_by_ids.return_value = (
@@ -453,7 +554,9 @@ def test_validate_swap_raises_on_same_worker(
     )
 
     # Act & Assert
-    with pytest.raises(ValueError, match="Cannot swap assignments of the same worker"):
+    with pytest.raises(
+        ValueError, match="Cannot swap assignments of the same worker"
+    ):
         service.validate_assignment_swap(
             worker_a_assignment_ids=[worker_assignments[0].id],
             worker_b_assignment_ids=[worker_assignments[1].id],
@@ -462,7 +565,9 @@ def test_validate_swap_raises_on_same_worker(
 
 
 def test_validate_swap_raises_on_mixed_workers(
-    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
+    mock_replacement_service: Tuple[
+        ReplacementService, MagicMock, List[Assignment]
+    ],
     base_team_id: str,
 ) -> None:
     """Test that swap validation raises error when worker A assignments belong
@@ -470,9 +575,15 @@ def test_validate_swap_raises_on_mixed_workers(
     service, mock_collection, assignments = mock_replacement_service
 
     # Get assignments from three different workers
-    worker_1_assignment = next(a for a in assignments if a.worker_id == "worker_1")
-    worker_2_assignment = next(a for a in assignments if a.worker_id == "worker_2")
-    worker_3_assignment = next(a for a in assignments if a.worker_id == "worker_3")
+    worker_1_assignment = next(
+        a for a in assignments if a.worker_id == "worker_1"
+    )
+    worker_2_assignment = next(
+        a for a in assignments if a.worker_id == "worker_2"
+    )
+    worker_3_assignment = next(
+        a for a in assignments if a.worker_id == "worker_3"
+    )
 
     # Mock get_assignments_by_ids
     mock_collection.assignment_db.get_assignments_by_ids.return_value = [
