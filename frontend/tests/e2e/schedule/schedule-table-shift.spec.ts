@@ -548,15 +548,49 @@ test.describe("ScheduleTableShift - Member Tests", () => {
         timeout: 5000,
       });
 
-      // Members should only see validated assignments
-      // This is controlled by the data fetching logic, not the UI
-      // We can verify that assignments are displayed
-      const assignmentCells = page.locator('[data-testid^="assignment-cell-"]');
-      const assignmentCount = await assignmentCells.count();
+      // Step 1: Verify members do NOT see campaign assignments before validation
+      const assignmentCellsBefore = page.locator(
+        '[data-testid^="assignment-cell-"]',
+      );
+      const assignmentCountBefore = await assignmentCellsBefore.count();
 
-      // May be 0 if no validated schedules exist yet
+      expect(assignmentCountBefore).toBe(0);
       console.log(
-        `ℹ️ Found ${assignmentCount} validated assignment(s) for member`,
+        "✅ Members correctly see no campaign assignments before validation",
+      );
+
+      // Step 2: Validate the schedule as owner (via API)
+      const campaign = scheduleTestBase.getCampaign();
+      expect(campaign).not.toBeNull();
+
+      if (!campaign) {
+        throw new Error("Campaign schedule not available");
+      }
+
+      // Temporarily act as owner to validate the schedule
+      await scheduleTestBase.actAsOwner(page);
+      await scheduleTestBase.validateSchedule(campaign.id);
+      console.log("✅ Schedule validated via API as owner");
+
+      // Step 3: Switch back to member and refresh to see validated assignments
+      await scheduleTestBase.actAsMember(page);
+      await page.reload();
+      await page.waitForLoadState("networkidle");
+
+      // Wait for the schedule table to render
+      await page.waitForSelector('[data-testid="schedule-table-shift"]', {
+        timeout: 10000,
+      });
+
+      // Step 4: Verify members now see validated assignments
+      const assignmentCellsAfter = page.locator(
+        '[data-testid^="assignment-cell-"]',
+      );
+      const assignmentCountAfter = await assignmentCellsAfter.count();
+
+      expect(assignmentCountAfter).toBeGreaterThan(0);
+      console.log(
+        `✅ Members correctly see ${assignmentCountAfter} validated assignment(s) after validation`,
       );
     });
 
