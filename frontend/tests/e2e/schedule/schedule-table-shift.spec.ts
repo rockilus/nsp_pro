@@ -83,45 +83,43 @@ test.describe("ScheduleTableShift - Owner Tests", () => {
     }) => {
       // Get the campaign schedule
       const campaign = scheduleTestBase.getCampaign();
+      expect(campaign).not.toBeNull();
 
-      if (campaign) {
-        // Validate the current schedule using the API
-        await scheduleTestBase.validateSchedule(campaign.id);
-
-        console.log("✅ Schedule validated via API");
-
-        // Navigate to previous period to see validated schedule
-        const previousButton = page.locator(
-          '[data-testid="time-nav-previous"]',
-        );
-        await previousButton.click();
-
-        await page.waitForTimeout(1000);
-
-        // Check for validated status logo
-        const validatedStatusLogo = page.locator(
-          '[data-testid="schedule-status-1"]',
-        );
-
-        const count = await validatedStatusLogo.count();
-        if (count > 0) {
-          const firstLogo = validatedStatusLogo.first();
-          await expect(firstLogo).toBeVisible();
-          await expect(firstLogo).toContainText("v");
-
-          console.log(
-            "✅ Schedule status 'v' displayed correctly for validated dates",
-          );
-        } else {
-          console.log(
-            "ℹ️ No validated schedule status found in previous period",
-          );
-        }
-      } else {
-        console.log(
-          "ℹ️ No campaign schedule available, skipping validated status test",
-        );
+      if (!campaign) {
+        throw new Error("Campaign schedule not available");
       }
+
+      // Validate the current schedule using the API
+      await scheduleTestBase.validateSchedule(campaign.id);
+
+      console.log("✅ Schedule validated via API");
+
+      // Refresh the page to see validated schedule
+      await page.reload();
+      await page.waitForLoadState("networkidle");
+
+      // Wait for the schedule table to render
+      await page.waitForSelector('[data-testid="schedule-table-shift"]', {
+        timeout: 10000,
+      });
+
+      // Check for validated status logo
+      const validatedStatusLogo = page.locator(
+        '[data-testid="schedule-status-1"]',
+      );
+
+      // There should be at least one validated status indicator
+      const count = await validatedStatusLogo.count();
+      expect(count).toBeGreaterThan(0);
+
+      // Verify the content is 'v'
+      const firstLogo = validatedStatusLogo.first();
+      await expect(firstLogo).toBeVisible();
+      await expect(firstLogo).toContainText("v");
+
+      console.log(
+        "✅ Schedule status 'v' displayed correctly for validated dates",
+      );
     });
   });
 
