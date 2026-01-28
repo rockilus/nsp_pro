@@ -40,7 +40,7 @@ export default function ShiftRowHeaderCell({
           assignments,
           shiftDemands,
           scheduleCampaign.startDate,
-          scheduleCampaign.endDate
+          scheduleCampaign.endDate,
         )
       : { countActual: 0, countTarget: 0 };
 
@@ -72,14 +72,23 @@ export default function ShiftRowHeaderCell({
               className={`shift-stats-total ${
                 shiftCountActual !== shiftCountTarget && "breach"
               }`}
+              data-testid={`shift-count-${shift.id}`}
             >
               {`${shiftCountActual} / ${shiftCountTarget}`}
             </span>
           )}
         </div>
         <div className="shift-row-header-cell-right">
-          <span className="shift-time">{shift.startTime.format("HH:mm")}</span>
-          <span className="shift-time">
+          <span
+            className="shift-time"
+            data-testid={`shift-time-start-${shift.id}`}
+          >
+            {shift.startTime.format("HH:mm")}
+          </span>
+          <span
+            className="shift-time"
+            data-testid={`shift-time-end-${shift.id}`}
+          >
             {shift.endTime.format("HH:mm")}
             {!shift.endTime.isSame(shift.startTime, "day") && <sup>+1</sup>}
           </span>

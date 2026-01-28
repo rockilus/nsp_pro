@@ -56,6 +56,7 @@ export default function DailyShiftDemandRow({
         backgroundColor: "white",
         boxShadow: "1px 1px 0px 0px rgba(224, 224, 224, 1)",
       }}
+      data-testid="shift-count-row"
     >
       <TableCell
         sx={{
@@ -66,6 +67,7 @@ export default function DailyShiftDemandRow({
           padding: 0,
           width: "100px",
         }}
+        data-testid="shift-count-row-label"
       >
         <div className="dsd-row-label-container">
           <span className="dsd-row-label">

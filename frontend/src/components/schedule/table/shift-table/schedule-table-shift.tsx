@@ -12,6 +12,7 @@ import DailyShiftDemandRow from "../shared/daily-shift-demand-row";
 import ShiftTableRow from "./shift-table-row";
 import { buildScheduleCellDict } from "../shared/assignment-utils";
 import { getRelevantShifts } from "./shift-table-utils";
+import { RoleBased } from "../../../access/role-based";
 // Types
 import { ShiftT } from "../../../../types/shift";
 import { WorkerT } from "../../../../types/worker";
@@ -77,14 +78,14 @@ export default function ScheduleTableShift({
     requests,
     workers,
     shifts,
-    breaches
+    breaches,
   );
 
   return (
     <TableContainer
       component={Paper}
       style={{ width: "100%", height: "calc(100vh - 104px)" }}
-      data-testid="schedule-table"
+      data-testid="schedule-table-shift"
     >
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead
@@ -97,12 +98,16 @@ export default function ScheduleTableShift({
         >
           <DatesHeaderRow
             lng={lng}
+            teamWithMembership={teamWithMembership}
             periodDates={periodDates}
             scheduleCampaign={scheduleCampaign}
             handleExportSchedule={handleExportSchedule}
           />
-          {teamWithMembership.membership.role === TeamMembershipRole.OWNER &&
-            teamWithMembership.team.useSolver && (
+          <RoleBased
+            role={teamWithMembership.membership.role}
+            allowedRoles={[TeamMembershipRole.OWNER]}
+          >
+            {teamWithMembership.team.useSolver && (
               <DailyShiftDemandRow
                 lng={lng}
                 shifts={shifts}
@@ -112,6 +117,7 @@ export default function ScheduleTableShift({
                 scheduleViewSettings={scheduleViewSettings}
               />
             )}
+          </RoleBased>
         </TableHead>
         <TableBody>
           {shiftsForHeader.map((shift, shiftIndex) => (

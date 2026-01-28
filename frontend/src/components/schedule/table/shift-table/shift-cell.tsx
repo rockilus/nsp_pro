@@ -6,6 +6,7 @@ import TableCell from "@mui/material/TableCell";
 // Components
 import AssignmentCell from "../shared/assignment-cell";
 import DailyShiftDemandCell from "../shared/daily-shift-demand-cell";
+import { RoleBased } from "../../../access/role-based";
 // Styles
 import "./shift-cell.css";
 // Types
@@ -17,8 +18,10 @@ import {
   ScheduleViewSettingsT,
 } from "../../../../types/schedule";
 import { CreateAssignmentT } from "@/types/assignment";
+import { TeamMembershipRole, TeamWithMembership } from "@/types/team";
 
 export default function ShiftCell({
+  teamWithMembership,
   periodDate,
   shift,
   scheduleCellData,
@@ -27,6 +30,7 @@ export default function ShiftCell({
   handleDemandSelection,
   handleOpenCreateAssignment,
 }: {
+  teamWithMembership: TeamWithMembership;
   periodDate: periodDateT;
   shift: ShiftT;
   scheduleCellData: ScheduleCellDataT | null;
@@ -44,6 +48,9 @@ export default function ShiftCell({
         padding: 0,
         position: "relative",
       }}
+      data-testid={`shift-cell-${shift.id}-${periodDate.date.format(
+        "YYYY-MM-DD",
+      )}`}
     >
       {scheduleViewSettings.showAssignments &&
         scheduleCellData?.assignmentsData.map((aData) => {
@@ -53,41 +60,55 @@ export default function ShiftCell({
               assignmentData={aData}
               scheduleViewSettings={scheduleViewSettings}
               handleAssignmentSelection={handleAssignmentSelection}
+              teamWithMembership={teamWithMembership}
             />
           );
         })}
-      {scheduleViewSettings.showDailyShiftDemands &&
-        scheduleCellData?.shiftDemandsData && (
-          <DailyShiftDemandCell
-            scheduleCellData={scheduleCellData}
-            handleDemandSelection={handleDemandSelection}
-          />
-        )}
-      <IconButton
-        className="add-icon-button"
-        sx={{
-          position: "absolute",
-          bottom: -12, // Adjust spacing from the bottom
-          right: "50%",
-          transform: "translateX(50%)",
-          opacity: 0,
-          transition: "opacity 0.3s",
-          padding: 0,
-          zIndex: 10,
-          pointerEvents: "auto",
-        }}
-        onClick={() =>
-          handleOpenCreateAssignment({
-            scheduleId: periodDate.scheduleId,
-            workerId: null,
-            shiftId: shift.id,
-            date: periodDate.date,
-            haveDemand: !!scheduleCellData?.shiftDemandsData?.shiftDemand,
-          })
-        }
+      <RoleBased
+        role={teamWithMembership.membership.role}
+        allowedRoles={[TeamMembershipRole.OWNER]}
       >
-        <AddCircleIcon />
-      </IconButton>
+        {scheduleViewSettings.showDailyShiftDemands &&
+          scheduleCellData?.shiftDemandsData && (
+            <DailyShiftDemandCell
+              scheduleCellData={scheduleCellData}
+              handleDemandSelection={handleDemandSelection}
+            />
+          )}
+      </RoleBased>
+      <RoleBased
+        role={teamWithMembership.membership.role}
+        allowedRoles={[TeamMembershipRole.OWNER]}
+      >
+        <IconButton
+          className="add-icon-button"
+          sx={{
+            position: "absolute",
+            bottom: -12,
+            right: "50%",
+            transform: "translateX(50%)",
+            opacity: 0,
+            transition: "opacity 0.3s",
+            padding: 0,
+            zIndex: 10,
+            pointerEvents: "auto",
+          }}
+          data-testid={`add-assignment-button-${shift.id}-${periodDate.date.format(
+            "YYYY-MM-DD",
+          )}`}
+          onClick={() =>
+            handleOpenCreateAssignment({
+              scheduleId: periodDate.scheduleId,
+              workerId: null,
+              shiftId: shift.id,
+              date: periodDate.date,
+              haveDemand: !!scheduleCellData?.shiftDemandsData?.shiftDemand,
+            })
+          }
+        >
+          <AddCircleIcon />
+        </IconButton>
+      </RoleBased>
     </TableCell>
   );
 }
