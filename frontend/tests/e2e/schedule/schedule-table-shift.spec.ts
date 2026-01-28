@@ -61,7 +61,7 @@ test.describe("ScheduleTableShift - Owner Tests", () => {
 
       // Check for schedule status logo with 'c' (campaign)
       const campaignStatusLogo = page.locator(
-        '[data-testid="schedule-status-campaign"]',
+        '[data-testid="schedule-status-0"]',
       );
 
       // There should be at least one campaign status indicator
@@ -104,7 +104,7 @@ test.describe("ScheduleTableShift - Owner Tests", () => {
 
         // Check for validated status logo
         const validatedStatusLogo = page.locator(
-          '[data-testid="schedule-status-validated"]',
+          '[data-testid="schedule-status-1"]',
         );
 
         const count = await validatedStatusLogo.count();
