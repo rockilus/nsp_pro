@@ -45,7 +45,7 @@ export default function MobileScheduleTab({
   const { t } = useTranslation(lng, "schedule-page");
 
   const defaultSettings = getDefaultScheduleViewSettings(
-    teamWithMembership.team.useSolver
+    teamWithMembership.team.useSolver,
   );
 
   const [scheduleViewSettings, updateScheduleViewSettings] =
@@ -62,7 +62,7 @@ export default function MobileScheduleTab({
     error: userWorkerError,
   } = useUserWorker(
     teamWithMembership.team.id,
-    teamWithMembership.membership.role === TeamMembershipRole.MEMBER
+    teamWithMembership.membership.role === TeamMembershipRole.MEMBER,
   );
 
   // Check if member has no worker association
@@ -114,7 +114,8 @@ export default function MobileScheduleTab({
             workers.length > 0 &&
             (!scheduleViewSettings.mobileSelectedWorkerId ||
               !workers.find(
-                (w: any) => w.id === scheduleViewSettings.mobileSelectedWorkerId
+                (w: any) =>
+                  w.id === scheduleViewSettings.mobileSelectedWorkerId,
               ))
           ) {
             // If member, try to preselect user's worker
@@ -132,7 +133,7 @@ export default function MobileScheduleTab({
         } else {
           const { assignments, workers, shifts } =
             await getScheduleAssignmentsDataNoSolver(
-              teamWithMembership.team.id
+              teamWithMembership.team.id,
             );
           if (!mounted) return;
           setAssignments(assignments);
@@ -144,7 +145,8 @@ export default function MobileScheduleTab({
             workers.length > 0 &&
             (!scheduleViewSettings.mobileSelectedWorkerId ||
               !workers.find(
-                (w: any) => w.id === scheduleViewSettings.mobileSelectedWorkerId
+                (w: any) =>
+                  w.id === scheduleViewSettings.mobileSelectedWorkerId,
               ))
           ) {
             updateScheduleViewSettings({
@@ -174,7 +176,7 @@ export default function MobileScheduleTab({
   const periodStart = scheduleViewSettings.periodStartDate;
   const periodEnd = computePeriodEndDate(
     scheduleViewSettings.periodStartDate,
-    scheduleViewSettings.timeFrame
+    scheduleViewSettings.timeFrame,
   );
 
   // Build multiple weeks around the current period so the user can scroll across months
@@ -208,7 +210,7 @@ export default function MobileScheduleTab({
   React.useEffect(() => {
     if (hasInitializedMonthRef.current) return;
     const monthLabel = periodStart.format(
-      periodStart.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY"
+      periodStart.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY",
     );
     setVisibleMonth(monthLabel);
     hasInitializedMonthRef.current = true;
@@ -239,7 +241,7 @@ export default function MobileScheduleTab({
       weeks.find(
         (w) =>
           periodStart.isSameOrAfter(w.start, "day") &&
-          periodStart.isSameOrBefore(w.end, "day")
+          periodStart.isSameOrBefore(w.end, "day"),
       ) || weeks[0]
     );
   }, [weeks, periodStart]);
@@ -395,6 +397,7 @@ export default function MobileScheduleTab({
           updateScheduleViewSettings({ mobileSelectedView: view })
         }
         lng={lng}
+        userRole={teamWithMembership.membership.role}
       />
     </>
   );
