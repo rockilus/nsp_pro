@@ -65,7 +65,7 @@ export class ScheduleTestBase {
    */
   async setupScheduleTests(
     workerIndex: number,
-    options: ScheduleSetupOptions
+    options: ScheduleSetupOptions,
   ): Promise<void> {
     // 1. Wait for API to be ready
     await this.dbUtils.waitForApiReady();
@@ -107,7 +107,7 @@ export class ScheduleTestBase {
       await this.dbUtils.attachWorkerToUser(
         worker1.workerId,
         TEST_USER_2.user_id,
-        this.testTeam.teamId
+        this.testTeam.teamId,
       );
       this.memberWorker = worker1;
       console.log(`✅ Linked TEST_USER_2 to ${worker1.name}`);
@@ -190,10 +190,10 @@ export class ScheduleTestBase {
     if (options.campaignDates) {
       await this.createCampaignSchedule(
         options.campaignDates.start,
-        options.campaignDates.end
+        options.campaignDates.end,
       );
       console.log(
-        `✅ Created campaign schedule: ${options.campaignDates.start} to ${options.campaignDates.end}`
+        `✅ Created campaign schedule: ${options.campaignDates.start} to ${options.campaignDates.end}`,
       );
     }
   }
@@ -202,7 +202,7 @@ export class ScheduleTestBase {
    * Create test assignments for reference date and random dates in following month
    */
   private async createTestAssignments(
-    referenceDate: dayjs.Dayjs
+    referenceDate: dayjs.Dayjs,
   ): Promise<void> {
     if (
       !this.testTeam ||
@@ -346,7 +346,7 @@ export class ScheduleTestBase {
    */
   async createCampaignSchedule(
     startDate: string,
-    endDate: string
+    endDate: string,
   ): Promise<ScheduleT> {
     if (!this.testTeam) {
       throw new Error("Test team not created. Call setupScheduleTests first.");
@@ -366,6 +366,24 @@ export class ScheduleTestBase {
 
     this.testSchedule = updatedSchedule;
     return this.testSchedule;
+  }
+
+  /**
+   * Validate a schedule for testing
+   */
+  async validateSchedule(scheduleId: string): Promise<ScheduleT> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupScheduleTests first.");
+    }
+
+    console.log(`✅ Validating schedule: ${scheduleId}`);
+
+    const validatedSchedule = await this.dbUtils.validateSchedule(
+      scheduleId,
+      this.testTeam.teamId,
+    );
+
+    return validatedSchedule;
   }
 
   /**
@@ -392,7 +410,7 @@ export class ScheduleTestBase {
     await page.waitForLoadState("networkidle");
 
     console.log(
-      `✅ Navigated to schedule page for team: ${this.testTeam.name}`
+      `✅ Navigated to schedule page for team: ${this.testTeam.name}`,
     );
   }
 

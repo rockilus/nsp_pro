@@ -81,18 +81,14 @@ test.describe("ScheduleTableShift - Owner Tests", () => {
     test("should display schedule status 'v' for validated dates in date header cells", async ({
       page,
     }) => {
-      // Navigate to a time period that might have validated schedules
-      // First, validate the current schedule
-      const validateButton = page.locator('[data-testid="validate-button"]');
+      // Get the campaign schedule
+      const campaign = scheduleTestBase.getCampaign();
 
-      // Check if validate button exists (campaign must be created)
-      const validateButtonCount = await validateButton.count();
-      if (validateButtonCount > 0) {
-        // Click validate button
-        await validateButton.click();
+      if (campaign) {
+        // Validate the current schedule using the API
+        await scheduleTestBase.validateSchedule(campaign.id);
 
-        // Wait for validation to complete
-        await page.waitForTimeout(2000);
+        console.log("✅ Schedule validated via API");
 
         // Navigate to previous period to see validated schedule
         const previousButton = page.locator(
@@ -123,7 +119,7 @@ test.describe("ScheduleTableShift - Owner Tests", () => {
         }
       } else {
         console.log(
-          "ℹ️ No validate button available, skipping validated status test",
+          "ℹ️ No campaign schedule available, skipping validated status test",
         );
       }
     });
