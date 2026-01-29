@@ -20,7 +20,9 @@ export default function DailyShiftDemandCell({
       0
     ) || 0;
 
-  const countActual = Math.floor(assignmentsCount / shiftStaffingTotal);
+  const countActual = shiftStaffingTotal > 0
+    ? Math.floor(assignmentsCount / shiftStaffingTotal)
+    : 0;
   const countTarget =
     scheduleCellData.shiftDemandsData?.shiftDemand?.count || 0;
 

@@ -71,7 +71,9 @@ export default function DemandSelection({
     0
   );
 
-  const countActual = Math.floor(assignmentsCount / shiftStaffingTotal);
+  const countActual = shiftStaffingTotal > 0
+    ? Math.floor(assignmentsCount / shiftStaffingTotal)
+    : 0;
 
   const handleDecreaseDSD = async () => {
     if (shiftDemand.count <= 1) {
