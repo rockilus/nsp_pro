@@ -86,7 +86,7 @@ describe("DailyShiftDemandCell", () => {
 
       const actualCountElements = screen.getAllByText("2");
       expect(actualCountElements).toHaveLength(2); // Both actual and target are 2
-      expect(screen.getByText("/")).toBeInTheDocument();
+      expect(screen.getByText("/")).toBeTruthy();
     });
 
     it("should display correct actual/target counts when staffing is not met", () => {
@@ -100,9 +100,9 @@ describe("DailyShiftDemandCell", () => {
         />,
       );
 
-      expect(screen.getByText("0")).toBeInTheDocument();
-      expect(screen.getByText("/")).toBeInTheDocument();
-      expect(screen.getByText("2")).toBeInTheDocument();
+      expect(screen.getByText("0")).toBeTruthy();
+      expect(screen.getByText("/")).toBeTruthy();
+      expect(screen.getByText("2")).toBeTruthy();
     });
 
     it("should call handleDemandSelection when clicked", () => {
@@ -138,7 +138,7 @@ describe("DailyShiftDemandCell", () => {
       // Should show 0/3 instead of Infinity/3 or NaN/3
       const actualCountElements = screen.getAllByText("0");
       expect(actualCountElements.length).toBeGreaterThan(0);
-      expect(screen.getByText("3")).toBeInTheDocument();
+      expect(screen.getByText("3")).toBeTruthy();
     });
 
     it("should display 0 as actual count when all staffing values are 0", () => {
@@ -153,8 +153,8 @@ describe("DailyShiftDemandCell", () => {
       );
 
       // Should show 0/2
-      expect(screen.getByText("0")).toBeInTheDocument();
-      expect(screen.getByText("2")).toBeInTheDocument();
+      expect(screen.getByText("0")).toBeTruthy();
+      expect(screen.getByText("2")).toBeTruthy();
     });
 
     it("should not throw error when rendering with zero staffing", () => {
@@ -200,7 +200,7 @@ describe("DailyShiftDemandCell", () => {
       );
 
       const cellContainer = container.querySelector(".dsd-cell-container");
-      expect(cellContainer).toBeInTheDocument();
+      expect(cellContainer).toBeTruthy();
       // Green background color should be applied via CSS variables
     });
 
@@ -215,7 +215,7 @@ describe("DailyShiftDemandCell", () => {
       );
 
       const cellContainer = container.querySelector(".dsd-cell-container");
-      expect(cellContainer).toBeInTheDocument();
+      expect(cellContainer).toBeTruthy();
       // Red background color should be applied when 0 !== 5
     });
   });
