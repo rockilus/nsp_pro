@@ -20,7 +20,7 @@ interface DemandSelectionProps {
   specialties: SpecialtyT[];
   handleUpdateShiftDemand: (
     demandId: string,
-    updates: Partial<ShiftDemandUpdateDTO>
+    updates: Partial<ShiftDemandUpdateDTO>,
   ) => Promise<void>;
   handleDeleteShiftDemand: (demandId: string) => Promise<void>;
 }
@@ -68,12 +68,13 @@ export default function DemandSelection({
   const assignmentsCount = assignments.length;
   const shiftStaffingTotal = shift.staffing.reduce(
     (sum: number, staffing) => sum + staffing.staffing,
-    0
+    0,
   );
 
-  const countActual = shiftStaffingTotal > 0
-    ? Math.floor(assignmentsCount / shiftStaffingTotal)
-    : 0;
+  const countActual =
+    shiftStaffingTotal > 0
+      ? Math.floor(assignmentsCount / shiftStaffingTotal)
+      : 0;
 
   const handleDecreaseDSD = async () => {
     if (shiftDemand.count <= 1) {
@@ -156,7 +157,7 @@ export default function DemandSelection({
             <span className="demand-selection-staffing-required-count">
               {shift.staffing.reduce(
                 (sum: number, staffing) => sum + staffing.staffing,
-                0
+                0,
               ) * shiftDemand.count}
             </span>
           </div>
