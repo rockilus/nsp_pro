@@ -4,6 +4,8 @@ import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { useTranslation } from "../../../../app/i18n/client";
 // MUI
 import TableCell from "@mui/material/TableCell";
+// Components
+import { RoleBased } from "@/components/access/role-based";
 // Styles
 import "./worker-row-header-cell.css";
 // Types
@@ -11,6 +13,7 @@ import { ShiftT, ShiftType } from "../../../../types/shift";
 import { WorkerT } from "../../../../types/worker";
 import { ScheduleT } from "../../../../types/schedule";
 import { AssignmentT } from "@/types/assignment";
+import { TeamMembershipRole } from "@/types/team";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -21,12 +24,14 @@ export default function WorkerRowHeaderCell({
   worker,
   assignments,
   scheduleCampaign,
+  teamMembershipRole,
 }: {
   lng: string;
   shifts: ShiftT[];
   worker: WorkerT;
   assignments: AssignmentT[];
   scheduleCampaign: ScheduleT | null;
+  teamMembershipRole: TeamMembershipRole;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -35,14 +40,17 @@ export default function WorkerRowHeaderCell({
         (assignment) =>
           assignment.workerId === worker.id &&
           assignment.date.isSameOrAfter(scheduleCampaign.startDate, "day") &&
-          assignment.date.isSameOrBefore(scheduleCampaign.endDate, "day")
+          assignment.date.isSameOrBefore(scheduleCampaign.endDate, "day"),
       )
     : [];
 
-  const shiftMap: { [key: string]: ShiftT } = shifts.reduce((map, shift) => {
-    map[shift.id] = shift;
-    return map;
-  }, {} as { [key: string]: ShiftT });
+  const shiftMap: { [key: string]: ShiftT } = shifts.reduce(
+    (map, shift) => {
+      map[shift.id] = shift;
+      return map;
+    },
+    {} as { [key: string]: ShiftT },
+  );
 
   const calcWeeklyWorkTimeActual = () => {
     if (!scheduleCampaign) return 0;
@@ -59,7 +67,7 @@ export default function WorkerRowHeaderCell({
         }
         return acc;
       },
-      0
+      0,
     );
     const numWeeksSchedule =
       (scheduleCampaign.endDate.diff(scheduleCampaign.startDate, "day") + 1) /
@@ -77,12 +85,12 @@ export default function WorkerRowHeaderCell({
         }
         return acc;
       },
-      0
+      0,
     );
     const numMonthsSchedule = scheduleCampaign.endDate.diff(
       scheduleCampaign.startDate,
       "month",
-      true
+      true,
     );
     return workerTotalDutiesActual / numMonthsSchedule;
   };
@@ -106,39 +114,52 @@ export default function WorkerRowHeaderCell({
           className="worker-name"
           data-testid={`worker-name-${worker.id}`}
         >{`${worker.name} (${worker.acronym})`}</span>
-        {scheduleCampaign && (
-          <div className="worker-stats-item">
+        <RoleBased
+          role={teamMembershipRole}
+          allowedRoles={[TeamMembershipRole.OWNER]}
+        >
+          {scheduleCampaign && (
             <div
-              className={`worker-stats-container ${
-                workerWeeklyWorkTimeActual > worker.weeklyHoursDesired &&
-                "breach"
-              }`}
+              className="worker-stats-item"
+              data-testid={`worker-stats-hours-${worker.id}`}
             >
-              <span className="worker-stats">
-                {workerWeeklyWorkTimeActual.toFixed(1)}
-              </span>
-              <span className="worker-stats-slash">/</span>
-              <span className="worker-stats">{worker.weeklyHoursDesired}</span>
+              <div
+                className={`worker-stats-container ${
+                  workerWeeklyWorkTimeActual > worker.weeklyHoursDesired &&
+                  "breach"
+                }`}
+              >
+                <span className="worker-stats">
+                  {workerWeeklyWorkTimeActual.toFixed(1)}
+                </span>
+                <span className="worker-stats-slash">/</span>
+                <span className="worker-stats">
+                  {worker.weeklyHoursDesired}
+                </span>
+              </div>
+              <span className="worker-stats-label">{t("h/week")}</span>
             </div>
-            <span className="worker-stats-label">{t("h/week")}</span>
-          </div>
-        )}
-        {scheduleCampaign && (
-          <div className="worker-stats-item">
+          )}
+          {scheduleCampaign && (
             <div
-              className={`worker-stats-container ${
-                workerDutiesPerMonthActual > worker.dutiesPerMonth && "breach"
-              }`}
+              className="worker-stats-item"
+              data-testid={`worker-stats-duties-${worker.id}`}
             >
-              <span className="worker-stats">
-                {workerDutiesPerMonthActual.toFixed(1)}
-              </span>
-              <span className="worker-stats-slash">/</span>
-              <span className="worker-stats">{worker.dutiesPerMonth}</span>
+              <div
+                className={`worker-stats-container ${
+                  workerDutiesPerMonthActual > worker.dutiesPerMonth && "breach"
+                }`}
+              >
+                <span className="worker-stats">
+                  {workerDutiesPerMonthActual.toFixed(1)}
+                </span>
+                <span className="worker-stats-slash">/</span>
+                <span className="worker-stats">{worker.dutiesPerMonth}</span>
+              </div>
+              <span className="worker-stats-label">{t("duties/month")}</span>
             </div>
-            <span className="worker-stats-label">{t("duties/month")}</span>
-          </div>
-        )}
+          )}
+        </RoleBased>
       </div>
     </TableCell>
   );
