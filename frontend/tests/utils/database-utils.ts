@@ -2040,6 +2040,7 @@ export class DatabaseTestUtils {
     date: string; // YYYY-MM-DD format
     fixed?: boolean;
     comment?: string;
+    scheduleId?: string | null;
   }): Promise<any> {
     try {
       // Construct AssignmentT object
@@ -2050,7 +2051,7 @@ export class DatabaseTestUtils {
         date: dayjs(assignmentData.date).utc(),
         fixed: assignmentData.fixed ?? false,
         teamId: assignmentData.teamId,
-        scheduleId: null,
+        scheduleId: assignmentData.scheduleId ?? null,
         source: AssignmentSource.MANUAL,
         referenceAssignmentId: null,
         sourceId: null,

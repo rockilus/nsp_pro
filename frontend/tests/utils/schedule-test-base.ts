@@ -181,12 +181,7 @@ export class ScheduleTestBase {
     this.testRequests.push(testRequest);
     console.log(`✅ Created test request for ${worker2.name}`);
 
-    // 10. Create assignments if requested
-    if (options.createAssignments) {
-      await this.createTestAssignments(options.referenceDate);
-    }
-
-    // 11. Create campaign schedule if dates provided
+    // 10. Create campaign schedule if dates provided (before creating assignments)
     if (options.campaignDates) {
       await this.createCampaignSchedule(
         options.campaignDates.start,
@@ -195,6 +190,11 @@ export class ScheduleTestBase {
       console.log(
         `✅ Created campaign schedule: ${options.campaignDates.start} to ${options.campaignDates.end}`,
       );
+    }
+
+    // 11. Create assignments if requested
+    if (options.createAssignments) {
+      await this.createTestAssignments(options.referenceDate);
     }
   }
 
@@ -257,6 +257,7 @@ export class ScheduleTestBase {
           date: assignmentData.date,
           fixed: assignmentData.fixed,
           comment: assignmentData.comment,
+          scheduleId: this.testSchedule?.id ?? null,
         });
       } catch (error) {
         console.error(`Failed to create assignment:`, error);
