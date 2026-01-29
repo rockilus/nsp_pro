@@ -2073,36 +2073,6 @@ export class DatabaseTestUtils {
   }
 
   /**
-   * Get assignments for a team by date range using AssignmentApi for consistent behavior
-   */
-  async getAssignments(
-    teamId: string,
-    startDate?: string,
-    endDate?: string,
-  ): Promise<any> {
-    try {
-      const startDateDayjs = startDate ? dayjs(startDate).utc() : undefined;
-      const endDateDayjs = endDate ? dayjs(endDate).utc() : undefined;
-
-      return await AssignmentApi.getAssignmentsByDates(
-        this.testApiClient,
-        teamId,
-        startDateDayjs,
-        endDateDayjs,
-      );
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(
-          `Failed to get assignments for team '${teamId}': ${error.message}`,
-        );
-      }
-      throw new Error(
-        `Failed to get assignments for team '${teamId}': Unknown error`,
-      );
-    }
-  }
-
-  /**
    * Delete an assignment using AssignmentApi for consistent behavior
    */
   async deleteAssignment(assignmentId: string, teamId: string): Promise<any> {

@@ -229,64 +229,6 @@ export class ScheduleApi extends BaseApi {
   }
 
   /**
-   * Get schedule tab data (combination of multiple data sources)
-   */
-  static async getScheduleTabData(
-    apiClient: AuthenticatedApiClient,
-    teamId: string,
-  ): Promise<{
-    assignments: any;
-    breaches: any[];
-    requests: any[];
-    schedule: ScheduleT[];
-    shifts: ShiftT[];
-    workers: WorkerT[];
-    stats: any;
-  }> {
-    // Security: Input validation
-    if (!teamId) {
-      throw new Error("Team ID is required");
-    }
-
-    try {
-      const statsOptions: StatsOptionsT = {
-        timeFrame: StatsTimeFrameOptions.CAMPAING,
-        startDate: dayjs.utc().startOf("day").subtract(1, "year"),
-        endDate: dayjs.utc().startOf("day"),
-        statsUnit: StatsUnitOptions.NB_DAYS_WORKED,
-        headerUnit: HeaderUnitOptions.WEEK,
-        selectedShifts: [],
-        showFavorites: true,
-      };
-
-      const campaignTabData = await Promise.all([
-        AssignmentApi.getAssignmentsByDates(apiClient, teamId),
-        BreachApi.getBreaches(apiClient, teamId),
-        RequestApi.getRequests(apiClient, teamId),
-        this.getSchedules(apiClient, teamId),
-        ShiftApi.getAllShifts(apiClient, teamId),
-        WorkerApi.getWorkers(apiClient, teamId, undefined, true),
-        StatsApi.getStats(apiClient, teamId, statsOptions),
-      ]);
-
-      return {
-        assignments: campaignTabData[0],
-        breaches: campaignTabData[1],
-        requests: campaignTabData[2],
-        schedule: campaignTabData[3],
-        shifts: campaignTabData[4],
-        workers: campaignTabData[5],
-        stats: campaignTabData[6],
-      };
-    } catch (error) {
-      console.error("Failed to fetch schedule tab data:", error);
-      throw new Error(
-        "Failed to fetch schedule tab data, please try again later",
-      );
-    }
-  }
-
-  /**
    * Get schedule assignments data
    */
   static async getScheduleAssignmentsData(

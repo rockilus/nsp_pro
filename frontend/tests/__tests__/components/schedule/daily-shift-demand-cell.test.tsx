@@ -1,7 +1,17 @@
 import { describe, it, expect, jest } from "@jest/globals";
 import { render, screen, fireEvent } from "@testing-library/react";
+import "@testing-library/jest-dom";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import DailyShiftDemandCell from "../../../../src/components/schedule/table/shared/daily-shift-demand-cell";
 import type { ScheduleCellDataT } from "../../../../src/types/schedule";
+import {
+  ShiftType,
+  ShiftRestType,
+  ShiftLeaveType,
+} from "../../../../src/types/shift";
+
+dayjs.extend(utc);
 
 /**
  * Test suite for DailyShiftDemandCell component
@@ -25,19 +35,34 @@ describe("DailyShiftDemandCell", () => {
         id: "demand-1",
         count: shiftDemandCount,
         shiftId: "shift-1",
-        date: "2026-01-29",
+        date: dayjs("2026-01-29").unix(),
+        teamId: "team-1",
+        notes: null,
+        source: "manual" as const,
+        sourceId: null,
+        createdAt: dayjs().unix(),
+        updatedAt: dayjs().unix(),
       },
       shift: {
         id: "shift-1",
+        teamId: "team-1",
         name: "Morning Shift",
+        acronym: "MS",
+        acronymCustom: false,
         staffing: staffingValues.map((staffing, idx) => ({
           specialtyId: idx === 0 ? null : `specialty-${idx}`,
           staffing,
         })),
-        shiftType: "REGULAR",
-        startTime: "08:00",
-        endTime: "16:00",
-        isRest: false,
+        color: "#000000",
+        shiftType: ShiftType.NORMAL,
+        restType: ShiftRestType.NONE,
+        leaveType: ShiftLeaveType.NONE,
+        startTime: dayjs.utc("08:00", "HH:mm"),
+        endTime: dayjs.utc("16:00", "HH:mm"),
+        recuperationTime: 0,
+        recuperationDutyId: null,
+        deleted: false,
+        attributes: [],
       },
     },
     requests: [],

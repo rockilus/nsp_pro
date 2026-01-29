@@ -21,6 +21,8 @@ from src.integrations.authorization import authz_check
 from src.security.user_context import UserContext
 from src.services.assignment_service import AssignmentService
 
+# pylint: disable=too-many-arguments, too-many-positional-arguments
+
 router = APIRouter()
 
 
@@ -43,9 +45,7 @@ async def create_assignment(
         r_data: Optional[RecurrenceRule] = None
         if recurrence:
             r_data = RecurrenceRule.from_dto(recurrence)
-        ar_result = assignment_service.create_assignment_and_recurrence(
-            a_data, r_data
-        )
+        ar_result = assignment_service.create_assignment_and_recurrence(a_data, r_data)
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to create assignment")
@@ -128,9 +128,7 @@ async def update_assignment(
             if recurrence_update_scope
             else None
         )
-        recurrence_data = (
-            RecurrenceRule.from_dto(recurrence) if recurrence else None
-        )
+        recurrence_data = RecurrenceRule.from_dto(recurrence) if recurrence else None
         ar_result = assignment_service.update_assignment_and_recurrence(
             assignment_new=assignment_data,
             recurrence_update_scope=recurrence_update_scope_data,

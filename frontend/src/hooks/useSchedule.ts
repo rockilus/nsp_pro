@@ -370,50 +370,6 @@ export function useDuplicatePeriod() {
 }
 
 /**
- * Hook for getting schedule tab data
- */
-export function useGetScheduleTabData() {
-  const apiClient = useApiClient();
-  const { user, isAuthenticated, loading } = useAuth();
-
-  const getScheduleTabData = useCallback(
-    async (
-      teamId: string,
-    ): Promise<{
-      assignments: any;
-      breaches: any[];
-      requests: any[];
-      schedule: ScheduleT[];
-      shifts: ShiftT[];
-      workers: WorkerT[];
-      stats: any;
-    }> => {
-      // Security: Validate authentication state
-      if (loading) {
-        throw new Error("Authentication still loading - please wait");
-      }
-
-      if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
-      }
-
-      try {
-        return await ScheduleApi.getScheduleTabData(apiClient, teamId);
-      } catch (error) {
-        console.error("❌ Failed to get schedule tab data:", {
-          error: error instanceof Error ? error.message : "Unknown error",
-          timestamp: new Date().toISOString(),
-        });
-        throw error;
-      }
-    },
-    [apiClient, isAuthenticated, loading, user],
-  );
-
-  return getScheduleTabData;
-}
-
-/**
  * Hook for getting schedule assignments data
  */
 export function useGetScheduleAssignmentsData() {
