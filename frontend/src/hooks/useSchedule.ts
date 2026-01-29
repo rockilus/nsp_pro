@@ -71,7 +71,7 @@ export function useCreateSchedule() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return createSchedule;
@@ -114,7 +114,7 @@ export function useGetSchedules() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getSchedules;
@@ -152,7 +152,7 @@ export function useGetWorkTimeTable() {
         return await ScheduleApi.getWorkTimeTable(
           apiClient,
           scheduleId,
-          teamId
+          teamId,
         );
       } catch (error) {
         console.error("❌ Failed to get work time table:", {
@@ -162,7 +162,7 @@ export function useGetWorkTimeTable() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getWorkTimeTable;
@@ -208,7 +208,7 @@ export function useUpdateSchedule() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return updateSchedule;
@@ -242,7 +242,7 @@ export function useDeleteSchedule() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return deleteSchedule;
@@ -270,7 +270,7 @@ export function useValidateSchedule() {
         return await ScheduleApi.validateSchedule(
           apiClient,
           scheduleId,
-          teamId
+          teamId,
         );
       } catch (error) {
         console.error("❌ Failed to validate schedule:", {
@@ -280,7 +280,7 @@ export function useValidateSchedule() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return validateSchedule;
@@ -310,7 +310,7 @@ export function useExportSchedule() {
         return await ScheduleApi.exportSchedule(
           apiClient,
           teamId,
-          exportOptions
+          exportOptions,
         );
       } catch (error) {
         console.error("❌ Failed to export schedule:", {
@@ -320,7 +320,7 @@ export function useExportSchedule() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return exportSchedule;
@@ -337,7 +337,7 @@ export function useDuplicatePeriod() {
     async (
       duplicateRequest: DuplicateRequestT,
       campaignId: string,
-      teamId: string
+      teamId: string,
     ): Promise<DuplicateResultT> => {
       // Security: Validate authentication state
       if (loading) {
@@ -353,7 +353,7 @@ export function useDuplicatePeriod() {
           apiClient,
           duplicateRequest,
           campaignId,
-          teamId
+          teamId,
         );
       } catch (error) {
         console.error("❌ Failed to duplicate period:", {
@@ -363,7 +363,7 @@ export function useDuplicatePeriod() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return duplicatePeriod;
@@ -378,7 +378,7 @@ export function useGetScheduleTabData() {
 
   const getScheduleTabData = useCallback(
     async (
-      teamId: string
+      teamId: string,
     ): Promise<{
       assignments: any;
       breaches: any[];
@@ -407,7 +407,7 @@ export function useGetScheduleTabData() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getScheduleTabData;
@@ -422,7 +422,8 @@ export function useGetScheduleAssignmentsData() {
 
   const getScheduleAssignmentsData = useCallback(
     async (
-      teamId: string
+      teamId: string,
+      includeCampaign: boolean = true,
     ): Promise<{
       assignments: AssignmentT[];
       recurrences: RecurrenceRuleT[];
@@ -439,7 +440,11 @@ export function useGetScheduleAssignmentsData() {
       }
 
       try {
-        return await ScheduleApi.getScheduleAssignmentsData(apiClient, teamId);
+        return await ScheduleApi.getScheduleAssignmentsData(
+          apiClient,
+          teamId,
+          includeCampaign,
+        );
       } catch (error) {
         console.error("❌ Failed to get schedule assignments data:", {
           error: error instanceof Error ? error.message : "Unknown error",
@@ -448,7 +453,7 @@ export function useGetScheduleAssignmentsData() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getScheduleAssignmentsData;
@@ -463,7 +468,8 @@ export function useGetScheduleAssignmentsDataNoSolver() {
 
   const getScheduleAssignmentsDataNoSolver = useCallback(
     async (
-      teamId: string
+      teamId: string,
+      includeCampaign: boolean = true,
     ): Promise<{
       assignments: AssignmentT[];
       recurrences: RecurrenceRuleT[];
@@ -482,7 +488,8 @@ export function useGetScheduleAssignmentsDataNoSolver() {
       try {
         return await ScheduleApi.getScheduleAssignmentsDataNoSolver(
           apiClient,
-          teamId
+          teamId,
+          includeCampaign,
         );
       } catch (error) {
         console.error(
@@ -490,58 +497,15 @@ export function useGetScheduleAssignmentsDataNoSolver() {
           {
             error: error instanceof Error ? error.message : "Unknown error",
             timestamp: new Date().toISOString(),
-          }
+          },
         );
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getScheduleAssignmentsDataNoSolver;
-}
-
-/**
- * Hook for getting schedule assignments data for members
- */
-export function useGetScheduleAssignmentsDataMember() {
-  const apiClient = useApiClient();
-  const { user, isAuthenticated, loading } = useAuth();
-
-  const getScheduleAssignmentsDataMember = useCallback(
-    async (
-      teamId: string
-    ): Promise<{
-      assignments: AssignmentT[];
-      shifts: ShiftT[];
-      workers: WorkerT[];
-    }> => {
-      // Security: Validate authentication state
-      if (loading) {
-        throw new Error("Authentication still loading - please wait");
-      }
-
-      if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
-      }
-
-      try {
-        return await ScheduleApi.getScheduleAssignmentsDataMember(
-          apiClient,
-          teamId
-        );
-      } catch (error) {
-        console.error("❌ Failed to get schedule assignments data (member):", {
-          error: error instanceof Error ? error.message : "Unknown error",
-          timestamp: new Date().toISOString(),
-        });
-        throw error;
-      }
-    },
-    [apiClient, isAuthenticated, loading, user]
-  );
-
-  return getScheduleAssignmentsDataMember;
 }
 
 /**
@@ -553,7 +517,7 @@ export function useGetScheduleLHSData() {
 
   const getScheduleLHSData = useCallback(
     async (
-      teamId: string
+      teamId: string,
     ): Promise<{
       breaches: any[];
       requests: any[];
@@ -579,7 +543,7 @@ export function useGetScheduleLHSData() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getScheduleLHSData;

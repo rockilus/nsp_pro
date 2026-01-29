@@ -101,9 +101,16 @@ export default function MobileScheduleTab({
           return;
         }
 
+        // Determine if user should see campaign assignments (owners/leaders only)
+        const includeCampaign =
+          teamWithMembership.membership.role !== TeamMembershipRole.MEMBER;
+
         if (teamWithMembership.team.useSolver) {
           const { assignments, workers, shifts } =
-            await getScheduleAssignmentsData(teamWithMembership.team.id);
+            await getScheduleAssignmentsData(
+              teamWithMembership.team.id,
+              includeCampaign,
+            );
           if (!mounted) return;
           setAssignments(assignments);
           setWorkers(workers);
@@ -134,6 +141,7 @@ export default function MobileScheduleTab({
           const { assignments, workers, shifts } =
             await getScheduleAssignmentsDataNoSolver(
               teamWithMembership.team.id,
+              includeCampaign,
             );
           if (!mounted) return;
           setAssignments(assignments);
