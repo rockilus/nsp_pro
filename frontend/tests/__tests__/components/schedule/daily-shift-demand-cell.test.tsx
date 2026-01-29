@@ -1,7 +1,7 @@
 import { describe, it, expect, jest } from "@jest/globals";
 import { render, screen, fireEvent } from "@testing-library/react";
-import DailyShiftDemandCell from "../../../src/components/schedule/table/shared/daily-shift-demand-cell";
-import type { ScheduleCellDataT } from "../../../src/types/schedule";
+import DailyShiftDemandCell from "../../../../src/components/schedule/table/shared/daily-shift-demand-cell";
+import type { ScheduleCellDataT } from "../../../../src/types/schedule";
 
 /**
  * Test suite for DailyShiftDemandCell component
