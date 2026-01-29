@@ -39,11 +39,18 @@ test.describe("ScheduleTableWorker - Owner Tests", () => {
     await scheduleTestBase.actAsOwner(page);
     await scheduleTestBase.navigateToSchedulePage(page);
 
-    // Switch to worker view
-    const workerViewButton = page.locator(
-      'button[aria-label="Switch to Worker View"]',
-    );
-    await workerViewButton.click();
+    // Update scheduleViewSettings to worker view in localStorage
+    const teamId = scheduleTestBase.getTestTeam()?.teamId;
+    await page.evaluate((teamId) => {
+      const storageKey = `scheduleViewSettings_${teamId}`;
+      const settings = JSON.parse(localStorage.getItem(storageKey) || "{}");
+      settings.groupBy = "worker";
+      localStorage.setItem(storageKey, JSON.stringify(settings));
+    }, teamId);
+
+    // Reload the page to apply settings
+    await page.reload();
+    await page.waitForLoadState("networkidle");
 
     // Wait for the schedule table to render
     await page.waitForSelector('[data-testid="schedule-table-worker"]', {
@@ -105,13 +112,7 @@ test.describe("ScheduleTableWorker - Owner Tests", () => {
       await page.reload();
       await page.waitForLoadState("networkidle");
 
-      // Switch to worker view again after reload
-      const workerViewButton = page.locator(
-        'button[aria-label="Switch to Worker View"]',
-      );
-      await workerViewButton.click();
-
-      // Wait for the schedule table to render
+      // Wait for the schedule table to render (settings already in localStorage)
       await page.waitForSelector('[data-testid="schedule-table-worker"]', {
         timeout: 10000,
       });
@@ -355,11 +356,18 @@ test.describe("ScheduleTableWorker - Member Tests", () => {
     await scheduleTestBase.actAsMember(page);
     await scheduleTestBase.navigateToSchedulePage(page);
 
-    // Switch to worker view
-    const workerViewButton = page.locator(
-      'button[aria-label="Switch to Worker View"]',
-    );
-    await workerViewButton.click();
+    // Update scheduleViewSettings to worker view in localStorage
+    const teamId = scheduleTestBase.getTestTeam()?.teamId;
+    await page.evaluate((teamId) => {
+      const storageKey = `scheduleViewSettings_${teamId}`;
+      const settings = JSON.parse(localStorage.getItem(storageKey) || "{}");
+      settings.groupBy = "worker";
+      localStorage.setItem(storageKey, JSON.stringify(settings));
+    }, teamId);
+
+    // Reload the page to apply settings
+    await page.reload();
+    await page.waitForLoadState("networkidle");
 
     // Wait for the schedule table to render
     await page.waitForSelector('[data-testid="schedule-table-worker"]', {

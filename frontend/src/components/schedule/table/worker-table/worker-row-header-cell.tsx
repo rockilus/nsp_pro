@@ -13,7 +13,7 @@ import { ShiftT, ShiftType } from "../../../../types/shift";
 import { WorkerT } from "../../../../types/worker";
 import { ScheduleT } from "../../../../types/schedule";
 import { AssignmentT } from "@/types/assignment";
-import { TeamMembershipRole } from "@/types/team";
+import { TeamWithMembership, TeamMembershipRole } from "@/types/team";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -24,14 +24,14 @@ export default function WorkerRowHeaderCell({
   worker,
   assignments,
   scheduleCampaign,
-  teamMembershipRole,
+  teamWithMembership,
 }: {
   lng: string;
   shifts: ShiftT[];
   worker: WorkerT;
   assignments: AssignmentT[];
   scheduleCampaign: ScheduleT | null;
-  teamMembershipRole: TeamMembershipRole;
+  teamWithMembership: TeamWithMembership;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -115,7 +115,7 @@ export default function WorkerRowHeaderCell({
           data-testid={`worker-name-${worker.id}`}
         >{`${worker.name} (${worker.acronym})`}</span>
         <RoleBased
-          role={teamMembershipRole}
+          role={teamWithMembership.membership.role}
           allowedRoles={[TeamMembershipRole.OWNER]}
         >
           {scheduleCampaign && (

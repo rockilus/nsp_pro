@@ -20,7 +20,7 @@ import {
 import { CreateAssignmentT } from "@/types/assignment";
 import { AssignmentDataDictT } from "@/types/assignment";
 import { RequestT } from "../../../../types/request";
-import { TeamMembershipRole } from "@/types/team";
+import { TeamMembershipRole, TeamWithMembership } from "@/types/team";
 
 export default function WorkerCell({
   periodDate,
@@ -28,7 +28,7 @@ export default function WorkerCell({
   shifts,
   scheduleCellData,
   scheduleViewSettings,
-  teamMembershipRole,
+  teamWithMembership,
   handleAssignmentSelection,
   handleRequestSelection,
   handleOpenCreateAssignment,
@@ -38,7 +38,7 @@ export default function WorkerCell({
   shifts: ShiftT[];
   scheduleCellData: ScheduleCellDataT | null;
   scheduleViewSettings: ScheduleViewSettingsT;
-  teamMembershipRole: TeamMembershipRole;
+  teamWithMembership: TeamWithMembership;
   handleAssignmentSelection: (seletedCell: AssignmentDataDictT) => void;
   handleRequestSelection?: (request: RequestT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
@@ -61,6 +61,7 @@ export default function WorkerCell({
               assignmentData={aData}
               scheduleViewSettings={scheduleViewSettings}
               handleAssignmentSelection={handleAssignmentSelection}
+              teamWithMembership={teamWithMembership}
             />
           );
         })}
@@ -76,7 +77,7 @@ export default function WorkerCell({
           );
         })}
       <RoleBased
-        role={teamMembershipRole}
+        role={teamWithMembership.membership.role}
         allowedRoles={[TeamMembershipRole.OWNER]}
       >
         <IconButton

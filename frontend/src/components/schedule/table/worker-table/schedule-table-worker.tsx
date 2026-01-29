@@ -102,6 +102,7 @@ export default function ScheduleTableWorker({
             periodDates={periodDates}
             scheduleCampaign={scheduleCampaign}
             handleExportSchedule={handleExportSchedule}
+            teamWithMembership={teamWithMembership}
           />
           {teamWithMembership.membership.role === TeamMembershipRole.OWNER &&
             teamWithMembership.team.useSolver && (
@@ -127,7 +128,7 @@ export default function ScheduleTableWorker({
               periodDates={periodDates}
               scheduleCellsDict={scheduleCellDict}
               scheduleViewSettings={scheduleViewSettings}
-              teamMembershipRole={teamWithMembership.membership.role}
+              teamWithMembership={teamWithMembership}
               handleAssignmentSelection={handleAssignmentSelection}
               handleRequestSelection={handleRequestSelection}
               handleOpenCreateAssignment={handleOpenCreateAssignment}

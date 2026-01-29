@@ -20,7 +20,7 @@ import {
   CreateAssignmentT,
 } from "@/types/assignment";
 import { RequestT } from "../../../../types/request";
-import { TeamMembershipRole } from "@/types/team";
+import { TeamWithMembership } from "@/types/team";
 
 export default function WorkerTableRow({
   lng,
@@ -31,7 +31,7 @@ export default function WorkerTableRow({
   periodDates,
   scheduleCellsDict,
   scheduleViewSettings,
-  teamMembershipRole,
+  teamWithMembership,
   handleAssignmentSelection,
   handleRequestSelection,
   handleOpenCreateAssignment,
@@ -44,7 +44,7 @@ export default function WorkerTableRow({
   periodDates: periodDateT[];
   scheduleCellsDict: ScheduleCellsDictT;
   scheduleViewSettings: ScheduleViewSettingsT;
-  teamMembershipRole: TeamMembershipRole;
+  teamWithMembership: TeamWithMembership;
   handleAssignmentSelection: (selectedCell: AssignmentDataDictT) => void;
   handleRequestSelection?: (request: RequestT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
@@ -57,7 +57,7 @@ export default function WorkerTableRow({
         worker={worker}
         assignments={assignments}
         scheduleCampaign={scheduleCampaign}
-        teamMembershipRole={teamMembershipRole}
+        teamWithMembership={teamWithMembership}
       />
       {periodDates.map((pDate, dateIndex) => {
         const scheduleCellDataKey = generateOwnerIdDateKey(
@@ -73,7 +73,7 @@ export default function WorkerTableRow({
             shifts={shifts}
             scheduleCellData={scheduleCellData}
             scheduleViewSettings={scheduleViewSettings}
-            teamMembershipRole={teamMembershipRole}
+            teamWithMembership={teamWithMembership}
             handleAssignmentSelection={handleAssignmentSelection}
             handleRequestSelection={handleRequestSelection}
             handleOpenCreateAssignment={handleOpenCreateAssignment}
