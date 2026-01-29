@@ -533,19 +533,21 @@ test.describe("ScheduleTableWorker - Member Tests", () => {
   });
 
   test.describe("Requests Display", () => {
-    test("should display request cells for members", async ({ page }) => {
-      // Requests should be visible to members in worker view
-      const requestCells = page.locator('[data-testid^="request-cell-"]');
+    test("should not display request cells for members", async ({ page }) => {
+      // Wait for table to load
+      await page.waitForSelector('[data-testid="schedule-table-worker"]', {
+        timeout: 5000,
+      });
 
-      // Check if any request cells exist
+      // Verify no request cells are visible
+      const requestCells = page.locator('[data-testid^="request-cell-"]');
       const count = await requestCells.count();
 
       if (count > 0) {
-        await expect(requestCells.first()).toBeVisible();
-        console.log("✅ Request cells displayed for members");
-      } else {
-        console.log("ℹ️ No requests found in this test scenario");
+        await expect(requestCells.first()).not.toBeVisible();
       }
+
+      console.log("✅ Request cells correctly hidden for members");
     });
   });
 

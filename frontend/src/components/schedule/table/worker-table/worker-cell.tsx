@@ -65,17 +65,22 @@ export default function WorkerCell({
             />
           );
         })}
-      {scheduleViewSettings.showRequests &&
-        scheduleCellData?.requests.map((request) => {
-          return (
-            <RequestCell
-              key={request.id}
-              request={request}
-              shifts={shifts}
-              handleRequestSelection={handleRequestSelection}
-            />
-          );
-        })}
+      <RoleBased
+        role={teamWithMembership.membership.role}
+        allowedRoles={[TeamMembershipRole.OWNER]}
+      >
+        {scheduleViewSettings.showRequests &&
+          scheduleCellData?.requests.map((request) => {
+            return (
+              <RequestCell
+                key={request.id}
+                request={request}
+                shifts={shifts}
+                handleRequestSelection={handleRequestSelection}
+              />
+            );
+          })}
+      </RoleBased>
       <RoleBased
         role={teamWithMembership.membership.role}
         allowedRoles={[TeamMembershipRole.OWNER]}
