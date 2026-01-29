@@ -146,7 +146,9 @@ test.describe("ScheduleTableWorker - Owner Tests", () => {
       await expect(shiftCountRow).toBeVisible();
 
       // Check for the "Daily Demand" label or similar
-      const shiftCountLabel = page.locator('[data-testid="shift-count-label"]');
+      const shiftCountLabel = page.locator(
+        '[data-testid="shift-count-row-label"]',
+      );
       await expect(shiftCountLabel).toBeVisible();
 
       console.log("✅ Daily shift demand row is displayed with label");
@@ -326,9 +328,11 @@ test.describe("ScheduleTableWorker - Owner Tests", () => {
       const addButton = workerCells.first().locator(".add-icon-button");
       await addButton.click({ force: true });
 
-      // Wait for the create assignment panel to open
-      const createAssignmentPanel = page.locator('text="Create Assignment"');
-      await expect(createAssignmentPanel).toBeVisible({ timeout: 5000 });
+      // Verify CreateAssignment panel is open
+      const createAssignmentPanel = page.locator(
+        ".create-assignment-container",
+      );
+      await expect(createAssignmentPanel).toBeVisible({ timeout: 3000 });
 
       console.log("✅ CreateAssignment panel opened on add button click");
     });
@@ -481,16 +485,6 @@ test.describe("ScheduleTableWorker - Member Tests", () => {
       await page.reload();
       await page.waitForLoadState("networkidle");
 
-      // Switch to worker view again
-      const workerViewButton = page.locator(
-        'button[aria-label="Switch to Worker View"]',
-      );
-      await workerViewButton.click();
-
-      await page.waitForSelector('[data-testid="schedule-table-worker"]', {
-        timeout: 10000,
-      });
-
       // Find assignment cells
       const assignmentCells = page.locator('[data-testid^="assignment-cell-"]');
 
@@ -510,16 +504,6 @@ test.describe("ScheduleTableWorker - Member Tests", () => {
         await scheduleTestBase.validateSchedule(campaign.id);
         await page.reload();
         await page.waitForLoadState("networkidle");
-
-        // Switch to worker view
-        const workerViewButton = page.locator(
-          'button[aria-label="Switch to Worker View"]',
-        );
-        await workerViewButton.click();
-
-        await page.waitForSelector('[data-testid="schedule-table-worker"]', {
-          timeout: 10000,
-        });
       }
 
       // Find and click on an assignment cell
