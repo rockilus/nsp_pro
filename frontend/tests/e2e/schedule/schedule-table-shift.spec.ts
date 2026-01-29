@@ -151,7 +151,7 @@ test.describe("ScheduleTableShift - Owner Tests", () => {
       // These cells should show format like "2 / 3" (actual / target)
       const demandsCells = page
         .locator('[data-testid="shift-count-row"]')
-        .locator("td");
+        .locator("th");
       const cellCount = await demandsCells.count();
 
       expect(cellCount).toBeGreaterThan(1); // At least label cell + date cells
