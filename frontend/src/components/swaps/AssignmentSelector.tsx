@@ -120,7 +120,6 @@ export default function AssignmentSelector({
                   <ListItem
                     key={data.assignment.id}
                     disablePadding
-                    data-assignment-id={data.assignment.id}
                     data-testid={`assignment-${data.assignment.id}`}
                   >
                     <ListItemButton
@@ -179,7 +178,6 @@ export default function AssignmentSelector({
                       hover
                       onClick={() => handleToggle(data.assignment.id)}
                       sx={{ cursor: "pointer" }}
-                      data-assignment-id={data.assignment.id}
                       data-testid={`assignment-${data.assignment.id}`}
                     >
                       <TableCell padding="checkbox">

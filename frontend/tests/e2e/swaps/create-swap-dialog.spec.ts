@@ -113,7 +113,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       // Verify these assignments are visible
       for (const assignment of noScheduleAssignments) {
         const assignmentElement = page.locator(
-          `[data-assignment-id="${assignment.id}"]`,
+          `[data-testid={assignment-${assignment.id}}]`,
         );
         await expect(assignmentElement).toBeVisible();
       }
