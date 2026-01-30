@@ -120,9 +120,10 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       // Get assignments not associated with schedule
       const tomorrow = dayjs.utc().add(1, "day").startOf("day");
       const noScheduleAssignments = swapTestBase
-        .getAssignmentsWithoutSchedule()
+        .getTestAssignments()
         .filter((a) => a.workerId === testWorkerId)
-        .filter((a) => dayjs.utc(a.startDate).isSameOrAfter(tomorrow, "day"));
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
+        .filter((a) => a.scheduleId === null); // No schedule
       expect(noScheduleAssignments.length).toBeGreaterThan(0);
 
       console.log(noScheduleAssignments);

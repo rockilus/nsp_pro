@@ -15,7 +15,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { DatabaseTestUtils, TEST_USER, TEST_USER_2 } from "./database-utils";
 import { ShiftT, ShiftType } from "../../src/types/shift";
-import { ScheduleT } from "../../src/types/schedule";
+import { ScheduleT, ScheduleStatus } from "../../src/types/schedule";
 import { AssignmentT } from "../../src/types/assignment";
 import { testConfig } from "./test-config";
 
@@ -42,13 +42,7 @@ export class SwapTestBase {
   // Storage for created test entities
   protected testWorkers: Array<{ workerId: string; name: string }> = [];
   protected testShifts: ShiftT[] = [];
-  protected testSchedules: {
-    campaign: ScheduleT | null;
-    validated: ScheduleT | null;
-  } = {
-    campaign: null,
-    validated: null,
-  };
+  protected testSchedules: ScheduleT[] = [];
   protected testAssignments: AssignmentT[] = [];
   protected memberWorker: { workerId: string; name: string } | null = null;
 
@@ -166,11 +160,12 @@ export class SwapTestBase {
     const campaignSchedule = await this.dbUtils.createSchedule(
       this.testTeam.teamId,
     );
-    this.testSchedules.campaign = await this.dbUtils.updateSchedule({
+    const updatedCampaign = await this.dbUtils.updateSchedule({
       ...campaignSchedule,
       startDate: dayjs(campaignStart).utc(),
       endDate: dayjs(campaignEnd).utc(),
     });
+    this.testSchedules.push(updatedCampaign);
 
     // Create validated schedule for current month
     const validatedStart = referenceDate.startOf("month").format("YYYY-MM-DD");
@@ -190,10 +185,11 @@ export class SwapTestBase {
     });
 
     // Validate the schedule
-    this.testSchedules.validated = await this.dbUtils.validateSchedule(
+    const validatedScheduleResult = await this.dbUtils.validateSchedule(
       updatedValidated.id,
       this.testTeam.teamId,
     );
+    this.testSchedules.push(validatedScheduleResult);
 
     console.log("✅ Created campaign and validated schedules");
   }
@@ -244,7 +240,10 @@ export class SwapTestBase {
     }
 
     // Create assignments with validated schedule (in current month, future dates)
-    if (this.testSchedules.validated) {
+    const validatedSchedule = this.testSchedules.find(
+      (s) => s.status === ScheduleStatus.VALIDATED,
+    );
+    if (validatedSchedule) {
       const validatedDate1 = tomorrow.add(2, "days");
       const validatedDate2 = tomorrow.add(5, "days");
 
@@ -254,7 +253,7 @@ export class SwapTestBase {
           workerId: worker.workerId,
           shiftId: this.testShifts[1].id,
           date: validatedDate1.format("YYYY-MM-DD"),
-          scheduleId: this.testSchedules.validated.id,
+          scheduleId: validatedSchedule.id,
           fixed: false,
           comment: "Validated schedule assignment",
         });
@@ -265,7 +264,7 @@ export class SwapTestBase {
           workerId: worker.workerId,
           shiftId: this.testShifts[0].id,
           date: validatedDate2.format("YYYY-MM-DD"),
-          scheduleId: this.testSchedules.validated.id,
+          scheduleId: validatedSchedule.id,
           fixed: false,
           comment: "Validated schedule assignment 2",
         });
@@ -274,7 +273,10 @@ export class SwapTestBase {
     }
 
     // Create assignments with campaign schedule (next month)
-    if (this.testSchedules.campaign) {
+    const campaignSchedule = this.testSchedules.find(
+      (s) => s.status === ScheduleStatus.CAMPAIGN,
+    );
+    if (campaignSchedule) {
       const nextMonth = referenceDate.add(1, "month");
       const campaignDate1 = nextMonth.date(5);
       const campaignDate2 = nextMonth.date(15);
@@ -285,7 +287,7 @@ export class SwapTestBase {
           workerId: worker.workerId,
           shiftId: this.testShifts[0].id,
           date: campaignDate1.format("YYYY-MM-DD"),
-          scheduleId: this.testSchedules.campaign.id,
+          scheduleId: campaignSchedule.id,
           fixed: false,
           comment: "Campaign schedule assignment",
         });
@@ -296,7 +298,7 @@ export class SwapTestBase {
           workerId: worker.workerId,
           shiftId: this.testShifts[1].id,
           date: campaignDate2.format("YYYY-MM-DD"),
-          scheduleId: this.testSchedules.campaign.id,
+          scheduleId: campaignSchedule.id,
           fixed: false,
           comment: "Campaign schedule assignment 2",
         });
@@ -423,16 +425,9 @@ export class SwapTestBase {
   }
 
   /**
-   * Get the campaign schedule
+   * Get all test schedules
    */
-  getCampaignSchedule(): ScheduleT | null {
-    return this.testSchedules.campaign;
-  }
-
-  /**
-   * Get the validated schedule
-   */
-  getValidatedSchedule(): ScheduleT | null {
-    return this.testSchedules.validated;
+  getTestSchedules(): ScheduleT[] {
+    return this.testSchedules;
   }
 }
