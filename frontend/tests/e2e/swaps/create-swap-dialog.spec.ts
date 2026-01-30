@@ -86,6 +86,9 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       // Select first worker
       await page.click('[data-testid="worker-select"]');
 
+      // Wait for the MUI menu to open
+      await page.waitForSelector('[role="listbox"]', { state: "visible" });
+
       const testWorkers = swapTestBase.getTestWorkers();
       await page.click(
         `[data-testid="worker-option-${testWorkers[0].workerId}"]`,
@@ -116,8 +119,9 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       await page.waitForTimeout(1000);
 
       // Get assignments not associated with schedule
-      const noScheduleAssignments =
-        swapTestBase.getAssignmentsWithoutSchedule();
+      const noScheduleAssignments = swapTestBase
+        .getAssignmentsWithoutSchedule()
+        .filter((a) => a.workerId === testWorkers[0].workerId);
       expect(noScheduleAssignments.length).toBeGreaterThan(0);
 
       console.log(noScheduleAssignments);
@@ -125,7 +129,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       // Verify these assignments are visible
       for (const assignment of noScheduleAssignments) {
         const assignmentElement = page.locator(
-          `[data-testid={assignment-${assignment.id}}]`,
+          `[data-testid="assignment-${assignment.id}"]`,
         );
         await expect(assignmentElement).toBeVisible();
       }
