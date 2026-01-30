@@ -132,8 +132,8 @@ export default function CreateSwapDialog({
             apiClient,
             teamId,
             false,
-            dayjs().subtract(60, "day"),
-            dayjs().add(60, "day"),
+            dayjs().add(1, "day"),
+            undefined,
             selectedWorkerId,
           );
 
@@ -163,8 +163,8 @@ export default function CreateSwapDialog({
               apiClient,
               teamId,
               false,
-              dayjs().subtract(60, "day"),
-              dayjs().add(60, "day"),
+              dayjs().add(1, "day"),
+              undefined,
               targetWorkerId,
             );
 
