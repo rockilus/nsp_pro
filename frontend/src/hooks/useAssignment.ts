@@ -27,7 +27,7 @@ export function useAddAssignmentAndRecurrence() {
   const addAssignmentAndRecurrence = useCallback(
     async (
       assignment: AssignmentT,
-      recurrence: RecurrenceRuleT | null = null
+      recurrence: RecurrenceRuleT | null = null,
     ): Promise<AssignmentsRecurrencesResultT> => {
       if (env.isDevelopment) {
         console.log("🔍 useAddAssignmentAndRecurrence called:", {
@@ -58,7 +58,7 @@ export function useAddAssignmentAndRecurrence() {
         const result = await AssignmentApi.addAssignmentAndRecurrence(
           apiClient,
           assignment,
-          recurrence
+          recurrence,
         );
 
         if (env.isDevelopment) {
@@ -74,118 +74,10 @@ export function useAddAssignmentAndRecurrence() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return addAssignmentAndRecurrence;
-}
-
-/**
- * Hook for getting assignments by date range
- */
-export function useGetAssignmentsByDates() {
-  const apiClient = useApiClient();
-  const { user, isAuthenticated, loading } = useAuth();
-
-  const getAssignmentsByDates = useCallback(
-    async (
-      teamId: string,
-      startDate?: dayjs.Dayjs,
-      endDate?: dayjs.Dayjs
-    ): Promise<AssignmentsRecurrencesResultT> => {
-      if (env.isDevelopment) {
-        console.log("🔍 useGetAssignmentsByDates called:", {
-          timestamp: new Date().toISOString(),
-          isAuthenticated,
-          hasUser: !!user,
-          teamId,
-          startDate: startDate?.format("YYYY-MM-DD"),
-          endDate: endDate?.format("YYYY-MM-DD"),
-        });
-      }
-
-      // Security: Validate authentication state
-      if (loading) {
-        throw new Error("Authentication still loading - please wait");
-      }
-
-      if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
-      }
-
-      try {
-        return await AssignmentApi.getAssignmentsByDates(
-          apiClient,
-          teamId,
-          startDate,
-          endDate
-        );
-      } catch (error) {
-        console.error("❌ Failed to fetch assignments:", {
-          error: error instanceof Error ? error.message : "Unknown error",
-          timestamp: new Date().toISOString(),
-        });
-        throw error;
-      }
-    },
-    [apiClient, isAuthenticated, loading, user]
-  );
-
-  return getAssignmentsByDates;
-}
-
-/**
- * Hook for getting validated assignments by date range
- */
-export function useGetValidatedAssignments() {
-  const apiClient = useApiClient();
-  const { user, isAuthenticated, loading } = useAuth();
-
-  const getValidatedAssignments = useCallback(
-    async (
-      teamId: string,
-      startDate?: dayjs.Dayjs,
-      endDate?: dayjs.Dayjs
-    ): Promise<AssignmentT[]> => {
-      if (env.isDevelopment) {
-        console.log("🔍 useGetValidatedAssignments called:", {
-          timestamp: new Date().toISOString(),
-          isAuthenticated,
-          hasUser: !!user,
-          teamId,
-          startDate: startDate?.format("YYYY-MM-DD"),
-          endDate: endDate?.format("YYYY-MM-DD"),
-        });
-      }
-
-      // Security: Validate authentication state
-      if (loading) {
-        throw new Error("Authentication still loading - please wait");
-      }
-
-      if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
-      }
-
-      try {
-        return await AssignmentApi.getValidatedAssignments(
-          apiClient,
-          teamId,
-          startDate,
-          endDate
-        );
-      } catch (error) {
-        console.error("❌ Failed to fetch validated assignments:", {
-          error: error instanceof Error ? error.message : "Unknown error",
-          timestamp: new Date().toISOString(),
-        });
-        throw error;
-      }
-    },
-    [apiClient, isAuthenticated, loading, user]
-  );
-
-  return getValidatedAssignments;
 }
 
 /**
@@ -200,7 +92,7 @@ export function useUpdateAssignmentAndRecurrence() {
       assignment: AssignmentT,
       teamId: string,
       recurrenceRule: RecurrenceRuleT | null = null,
-      recurrenceUpdateScope: RecurrenceUpdateScope | null = null
+      recurrenceUpdateScope: RecurrenceUpdateScope | null = null,
     ): Promise<AssignmentsRecurrencesResultT> => {
       // Security: Validate authentication state
       if (loading) {
@@ -217,7 +109,7 @@ export function useUpdateAssignmentAndRecurrence() {
           assignment,
           teamId,
           recurrenceRule,
-          recurrenceUpdateScope
+          recurrenceUpdateScope,
         );
       } catch (error) {
         console.error("❌ Failed to update assignment:", {
@@ -227,7 +119,7 @@ export function useUpdateAssignmentAndRecurrence() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return updateAssignmentAndRecurrence;
@@ -245,7 +137,7 @@ export function useDeleteAssignment() {
       assignmentId: string,
       teamId: string,
       recurrenceId: string | null = null,
-      recurrenceUpdateScope: RecurrenceUpdateScope | null = null
+      recurrenceUpdateScope: RecurrenceUpdateScope | null = null,
     ): Promise<AssignmentsRecurrencesResultT> => {
       // Security: Validate authentication state
       if (loading) {
@@ -262,7 +154,7 @@ export function useDeleteAssignment() {
           assignmentId,
           teamId,
           recurrenceId,
-          recurrenceUpdateScope
+          recurrenceUpdateScope,
         );
       } catch (error) {
         console.error("❌ Failed to delete assignment:", {
@@ -272,7 +164,7 @@ export function useDeleteAssignment() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return deleteAssignment;

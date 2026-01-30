@@ -8,6 +8,8 @@ import Box from "@mui/material/Box";
 import Fab from "@mui/material/Fab";
 import CircularProgress from "@mui/material/CircularProgress";
 import AddIcon from "@mui/icons-material/Add";
+import Alert from "@mui/material/Alert";
+import Typography from "@mui/material/Typography";
 // Hooks
 import {
   useRequestViewSettings,
@@ -77,6 +79,10 @@ export default function MobileRequestTab({
 
   const userWorker = workers.find((w) => w.userId === userId);
 
+  // Check if member has no worker association
+  const memberHasNoWorker =
+    userTeamRole === TeamMembershipRole.MEMBER && !isLoading && !userWorker;
+
   // Scroll handler refs - define early so they're available for scroll functions
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const weekRefs = React.useRef<Array<HTMLDivElement | null>>([]);
@@ -86,6 +92,11 @@ export default function MobileRequestTab({
 
   // Initialize default worker if none selected
   useEffect(() => {
+    // Check if member has no worker association
+    if (memberHasNoWorker) {
+      return;
+    }
+
     if (
       workers.length > 0 &&
       (!requestViewSettings.mobileSelectedWorkerId ||
@@ -104,6 +115,8 @@ export default function MobileRequestTab({
     requestViewSettings.mobileSelectedWorkerId,
     userWorker,
     updateRequestViewSettings,
+    memberHasNoWorker,
+    t,
   ]);
 
   // Filter requests by selected worker and past/future
@@ -263,75 +276,94 @@ export default function MobileRequestTab({
   );
 
   return (
-    <>
+    <Box data-testid="mobile-request-tab">
       <MobileNavAppBar lng={lng} mobileContent={requestMobileNav} />
-      <Box sx={{ padding: "0 8px", height: "calc(100vh - 64px)" }}>
-        <PortraitRequestList
-          weeks={weeks}
-          containerRef={containerRef}
-          weekRefs={weekRefs}
-          requestsByDate={requestsByDate}
-          periodDates={[]}
-          shifts={shifts}
-          workers={workers}
-          shiftOptions={shiftOptions}
-          today={today}
-          lng={lng}
-          t={t}
-          setActiveRequest={setActiveRequest}
-          setSheetOpen={setSheetOpen}
-          onScroll={handleScroll}
-        />
-
-        <Fab
-          color="primary"
-          aria-label="create-request"
-          sx={{ position: "fixed", bottom: 16, right: 16 }}
-          onClick={() => {
-            setActiveRequest(null);
-            setSheetOpen(true);
+      {memberHasNoWorker ? (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "calc(100vh - 128px)",
+            p: 3,
           }}
         >
-          <AddIcon />
-        </Fab>
+          <Alert severity="info" sx={{ maxWidth: "500px" }}>
+            <Typography variant="body1">
+              {t("error_no_worker_assigned")}
+            </Typography>
+          </Alert>
+        </Box>
+      ) : (
+        <Box sx={{ padding: "0 8px", height: "calc(100vh - 64px)" }}>
+          <PortraitRequestList
+            weeks={weeks}
+            containerRef={containerRef}
+            weekRefs={weekRefs}
+            requestsByDate={requestsByDate}
+            periodDates={[]}
+            shifts={shifts}
+            workers={workers}
+            shiftOptions={shiftOptions}
+            today={today}
+            lng={lng}
+            t={t}
+            setActiveRequest={setActiveRequest}
+            setSheetOpen={setSheetOpen}
+            onScroll={handleScroll}
+          />
 
-        {/* Request Dialog - Full screen on mobile */}
-        <RequestPanel
-          lng={lng}
-          teamId={teamId}
-          isEdit={!!activeRequest}
-          request={activeRequest}
-          workers={workers.filter((w) => !w.deleted)}
-          shifts={shifts}
-          shiftOptions={shiftOptions}
-          userWorkerId={userWorker?.id || null}
-          userTeamRole={userTeamRole}
-          handleAddRequest={handleAddRequest}
-          handleUpdateRequest={handleUpdateRequest}
-          handleDeleteRequest={handleDeleteRequest}
-          handleRescindRequest={handleRescindRequest}
-          handleAcceptRequest={handleAcceptRequest}
-          handleDenyRequest={handleDenyRequest}
-          hideButton={true}
-          open={sheetOpen}
-          onClose={() => setSheetOpen(false)}
-        />
-      </Box>
+          <Fab
+            color="primary"
+            aria-label="create-request"
+            data-testid="mobile-add-request-fab"
+            sx={{ position: "fixed", bottom: 16, right: 16 }}
+            onClick={() => {
+              setActiveRequest(null);
+              setSheetOpen(true);
+            }}
+          >
+            <AddIcon />
+          </Fab>
 
-      <MobileRequestSettings
-        open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-        workers={workers}
-        selectedWorkerId={requestViewSettings.mobileSelectedWorkerId}
-        onWorkerChange={(workerId) =>
-          updateRequestViewSettings({ mobileSelectedWorkerId: workerId })
-        }
-        showPastRequests={requestViewSettings.showPastRequests}
-        onShowPastRequestsChange={(show) =>
-          updateRequestViewSettings({ showPastRequests: show })
-        }
-        lng={lng}
-      />
-    </>
+          {/* Request Dialog - Full screen on mobile */}
+          <RequestPanel
+            lng={lng}
+            teamId={teamId}
+            isEdit={!!activeRequest}
+            request={activeRequest}
+            workers={workers.filter((w) => !w.deleted)}
+            shifts={shifts}
+            shiftOptions={shiftOptions}
+            userWorkerId={userWorker?.id || null}
+            userTeamRole={userTeamRole}
+            handleAddRequest={handleAddRequest}
+            handleUpdateRequest={handleUpdateRequest}
+            handleDeleteRequest={handleDeleteRequest}
+            handleRescindRequest={handleRescindRequest}
+            handleAcceptRequest={handleAcceptRequest}
+            handleDenyRequest={handleDenyRequest}
+            hideButton={true}
+            open={sheetOpen}
+            onClose={() => setSheetOpen(false)}
+          />
+
+          <MobileRequestSettings
+            open={settingsOpen}
+            onClose={() => setSettingsOpen(false)}
+            workers={workers}
+            selectedWorkerId={requestViewSettings.mobileSelectedWorkerId}
+            onWorkerChange={(workerId) =>
+              updateRequestViewSettings({ mobileSelectedWorkerId: workerId })
+            }
+            showPastRequests={requestViewSettings.showPastRequests}
+            onShowPastRequestsChange={(show) =>
+              updateRequestViewSettings({ showPastRequests: show })
+            }
+            lng={lng}
+          />
+        </Box>
+      )}
+    </Box>
   );
 }

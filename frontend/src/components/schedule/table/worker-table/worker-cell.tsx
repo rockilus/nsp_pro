@@ -6,6 +6,7 @@ import TableCell from "@mui/material/TableCell";
 // Components
 import AssignmentCell from "../shared/assignment-cell";
 import RequestCell from "../shared/request-cell";
+import { RoleBased } from "@/components/access/role-based";
 // Styles
 import "./worker-cell.css";
 // Types
@@ -19,6 +20,7 @@ import {
 import { CreateAssignmentT } from "@/types/assignment";
 import { AssignmentDataDictT } from "@/types/assignment";
 import { RequestT } from "../../../../types/request";
+import { TeamMembershipRole, TeamWithMembership } from "@/types/team";
 
 export default function WorkerCell({
   periodDate,
@@ -26,6 +28,7 @@ export default function WorkerCell({
   shifts,
   scheduleCellData,
   scheduleViewSettings,
+  teamWithMembership,
   handleAssignmentSelection,
   handleRequestSelection,
   handleOpenCreateAssignment,
@@ -35,6 +38,7 @@ export default function WorkerCell({
   shifts: ShiftT[];
   scheduleCellData: ScheduleCellDataT | null;
   scheduleViewSettings: ScheduleViewSettingsT;
+  teamWithMembership: TeamWithMembership;
   handleAssignmentSelection: (seletedCell: AssignmentDataDictT) => void;
   handleRequestSelection?: (request: RequestT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
@@ -57,45 +61,56 @@ export default function WorkerCell({
               assignmentData={aData}
               scheduleViewSettings={scheduleViewSettings}
               handleAssignmentSelection={handleAssignmentSelection}
+              teamWithMembership={teamWithMembership}
             />
           );
         })}
-      {scheduleViewSettings.showRequests &&
-        scheduleCellData?.requests.map((request) => {
-          return (
-            <RequestCell
-              key={request.id}
-              request={request}
-              shifts={shifts}
-              handleRequestSelection={handleRequestSelection}
-            />
-          );
-        })}
-      <IconButton
-        className="add-icon-button"
-        sx={{
-          position: "absolute",
-          bottom: -12, // Adjust spacing from the bottom
-          right: "50%",
-          transform: "translateX(50%)",
-          opacity: 0,
-          transition: "opacity 0.3s",
-          padding: 0,
-          zIndex: 10,
-          pointerEvents: "auto",
-        }}
-        onClick={() =>
-          handleOpenCreateAssignment({
-            scheduleId: periodDate.scheduleId,
-            workerId: worker.id,
-            shiftId: null,
-            date: periodDate.date,
-            haveDemand: false,
-          })
-        }
+      <RoleBased
+        role={teamWithMembership.membership.role}
+        allowedRoles={[TeamMembershipRole.OWNER]}
       >
-        <AddCircleIcon />
-      </IconButton>
+        {scheduleViewSettings.showRequests &&
+          scheduleCellData?.requests.map((request) => {
+            return (
+              <RequestCell
+                key={request.id}
+                request={request}
+                shifts={shifts}
+                handleRequestSelection={handleRequestSelection}
+              />
+            );
+          })}
+      </RoleBased>
+      <RoleBased
+        role={teamWithMembership.membership.role}
+        allowedRoles={[TeamMembershipRole.OWNER]}
+      >
+        <IconButton
+          className="add-icon-button"
+          sx={{
+            position: "absolute",
+            bottom: -12, // Adjust spacing from the bottom
+            right: "50%",
+            transform: "translateX(50%)",
+            opacity: 0,
+            transition: "opacity 0.3s",
+            padding: 0,
+            zIndex: 10,
+            pointerEvents: "auto",
+          }}
+          onClick={() =>
+            handleOpenCreateAssignment({
+              scheduleId: periodDate.scheduleId,
+              workerId: worker.id,
+              shiftId: null,
+              date: periodDate.date,
+              haveDemand: false,
+            })
+          }
+        >
+          <AddCircleIcon />
+        </IconButton>
+      </RoleBased>
     </TableCell>
   );
 }

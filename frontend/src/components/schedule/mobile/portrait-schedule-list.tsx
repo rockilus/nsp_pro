@@ -2,6 +2,7 @@ import React from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import AssignmentListItem from "./assignment-list-item";
+import { useTranslation } from "../../../app/i18n/client";
 
 type Props = {
   weeks: { start: any; end: any }[];
@@ -14,6 +15,7 @@ type Props = {
   setActiveAssignment: (a: any) => void;
   setSheetOpen: (v: boolean) => void;
   onScroll?: () => void;
+  lng: string;
 };
 
 export default function PortraitScheduleList({
@@ -27,7 +29,10 @@ export default function PortraitScheduleList({
   setActiveAssignment,
   setSheetOpen,
   onScroll,
+  lng,
 }: Props) {
+  const { t } = useTranslation(lng, "schedule-page");
+
   return (
     <Box
       ref={containerRef}
@@ -49,7 +54,9 @@ export default function PortraitScheduleList({
         const weekItems = weekDates.flatMap(
           (d) => assignmentsByDate.get(d.utc().format("YYYY-MM-DD")) || []
         );
-        if (weekItems.length === 0) return null;
+        // Show week if it has items OR if it contains today's date
+        const weekContainsToday = weekDates.some((d) => d.isSame(today, "day"));
+        if (weekItems.length === 0 && !weekContainsToday) return null;
 
         return (
           <Box
@@ -115,7 +122,7 @@ export default function PortraitScheduleList({
                       </Box>
                       <Box sx={{ flex: 1 }}>
                         <Typography variant="body2">
-                          {"Nothing planned"}
+                          {t("nothing_planned")}
                         </Typography>
                       </Box>
                     </Box>

@@ -127,7 +127,7 @@ export default function TeamsTab({
         onBack={() => router.push(`/${lng}/plan/settings`)}
         showBackButton={isMobile && !isLandscape}
       />
-      <div className="teams-tab-header">
+      <div className="teams-tab-header" data-testid="teams-page-heading">
         <NewTeamDialog lng={lng} handleCreateTeam={handleCreateTeam} />
       </div>
       {!isLoading && (

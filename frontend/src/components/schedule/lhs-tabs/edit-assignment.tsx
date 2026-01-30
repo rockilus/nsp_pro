@@ -70,7 +70,6 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
   recurrence,
 }) => {
   const { t } = useTranslation(lng, "schedule-page");
-  const { t: t_weekdays } = useTranslation(lng, "week_days");
 
   const [workerId, setWorkerId] = useState<string | null>(
     isEditing && assignment ? assignment.workerId : workerSelectedId
@@ -111,13 +110,13 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
 
   const describeRecurrenceRule = (rule: RecurrenceRuleT): string => {
     const weekdays = [
-      t_weekdays("monday"),
-      t_weekdays("tuesday"),
-      t_weekdays("wednesday"),
-      t_weekdays("thursday"),
-      t_weekdays("friday"),
-      t_weekdays("saturday"),
-      t_weekdays("sunday"),
+      t("monday"),
+      t("tuesday"),
+      t("wednesday"),
+      t("thursday"),
+      t("friday"),
+      t("saturday"),
+      t("sunday"),
     ];
 
     let description = "";
@@ -289,6 +288,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           fullWidth
           error={workerError}
           displayEmpty
+          data-testid="edit-assignment-worker-select"
           renderValue={(selected) => {
             if (selected === "") {
               return (
@@ -326,6 +326,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
               fullWidth: true,
               error: dateError,
               helperText: dateError ? t("edit-assignment.date-error") : "",
+              inputProps: { "data-testid": "edit-assignment-date-picker" },
             },
           }}
         />
@@ -367,6 +368,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           fullWidth
           error={shiftError}
           displayEmpty
+          data-testid="edit-assignment-shift-select"
           renderValue={(selected) => {
             if (selected === "") {
               return (
@@ -384,7 +386,12 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           }}
         >
           {shifts.map((s) => (
-            <MenuItem key={s.id} value={s.id} sx={{ fontSize: "0.9rem" }}>
+            <MenuItem
+              key={s.id}
+              value={s.id}
+              sx={{ fontSize: "0.9rem" }}
+              data-testid={`shift-option-${s.id}`}
+            >
               {s.name}
             </MenuItem>
           ))}
@@ -398,6 +405,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
             onClick={handleSaveClick}
             disabled={isSubmitting}
             className="create-button"
+            data-testid="edit-assignment-create-button"
           >
             {isSubmitting ? t("creating") : t("create")}
           </Button>

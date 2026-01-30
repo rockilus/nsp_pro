@@ -33,7 +33,8 @@ module "permit_policies" {
     # Additional dev permissions
     "create-worker", "update-worker", "delete-worker",
     "read-schedules", "create-schedule", "update-schedule",
-    "read-assignments", "create-assignment", "update-assignment"
+    "read-assignments", "create-assignment", "update-assignment",
+    "read-shift-options"
   ]
 
   tags = {

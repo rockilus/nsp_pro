@@ -14,6 +14,8 @@ import { ShiftApi } from "../../src/app/lib/api/shiftApi";
 import { ShiftDemandApi } from "../../src/app/lib/api/shiftDemandApi";
 import { ShiftDemandTemplateApi } from "../../src/app/lib/api/shiftDemandTemplateApi";
 import { RequestApi } from "../../src/app/lib/api/requestApi";
+import { ScheduleApi } from "../../src/app/lib/api/scheduleApi";
+import { AssignmentApi } from "../../src/app/lib/api/assignmentApi";
 import { AuthenticatedApiClient } from "../../src/app/lib/api/baseApi";
 import { TeamWithMembership } from "../../src/types/team";
 import { WorkerT, toWorkerT } from "../../src/types/worker";
@@ -40,11 +42,17 @@ import {
   ShiftDemandTemplateUpdateDTO,
 } from "../../src/types/shift-demand-template";
 import { ShiftDemandDTO } from "../../src/types/shiftDemand";
-import { RequestT } from "../../src/types/request";
+import {
+  RequestT,
+  RequestType,
+  FulfillmentStatus,
+  RequestStatus,
+  fromRequestT,
+} from "../../src/types/request";
 import { ScheduleT, toScheduleT } from "../../src/types/schedule";
 import { testConfig } from "./test-config";
 import dayjs from "dayjs";
-import { AssignmentT } from "@/types/assignment";
+import { AssignmentT, AssignmentSource } from "@/types/assignment";
 
 export interface DatabaseResetOptions {
   collections?: string[];
@@ -79,6 +87,23 @@ export interface UserCreationResult {
   message: string;
 }
 
+export interface AddTeamMemberResult {
+  success: boolean;
+  message: string;
+  membership_id: string;
+  user_id: string;
+  team_id: string;
+  role: string;
+}
+
+export interface TestUserWithRole {
+  userId: string;
+  email: string;
+  teamId: string;
+  role: "owner" | "member";
+  membershipId: string;
+}
+
 export interface SolverScenarioResult {
   scenario_name: string;
   specialties: SpecialtyT[];
@@ -108,7 +133,7 @@ export class DatabaseTestUtils {
   async makeAuthenticatedRequest<T>(
     method: "GET" | "POST" | "PUT" | "DELETE",
     endpoint: string,
-    data?: any
+    data?: any,
   ): Promise<T> {
     const authHeaders = this.getAuthHeaders();
 
@@ -125,7 +150,7 @@ export class DatabaseTestUtils {
       throw new Error(
         `API ${method} ${endpoint} failed: ${response.status} ${
           errorData.detail || JSON.stringify(errorData)
-        }`
+        }`,
       );
     }
 
@@ -145,7 +170,7 @@ export class DatabaseTestUtils {
       // Development mode: use X-Dev headers (same as main app)
       if (!testConfig.devUserId || !testConfig.devApiKey) {
         throw new Error(
-          "Development environment requires TEST_USER_ID and TEST_API_KEY to be set"
+          "Development environment requires TEST_USER_ID and TEST_API_KEY to be set",
         );
       }
 
@@ -158,7 +183,7 @@ export class DatabaseTestUtils {
       // Staging/Production: use Bearer token
       if (!testConfig.authToken) {
         throw new Error(
-          `${testConfig.environment} environment requires TEST_AUTH_TOKEN to be set`
+          `${testConfig.environment} environment requires TEST_AUTH_TOKEN to be set`,
         );
       }
 
@@ -177,7 +202,7 @@ export class DatabaseTestUtils {
       method: string,
       endpoint: string,
       data?: any,
-      options: RequestInit = {}
+      options: RequestInit = {},
     ): Promise<T> => {
       const authHeaders = this.getAuthHeaders();
 
@@ -208,7 +233,7 @@ export class DatabaseTestUtils {
         throw new Error(
           `API ${method} ${endpoint} failed: ${response.status} - ${
             errorData.detail || response.statusText
-          }`
+          }`,
         );
       }
 
@@ -231,7 +256,7 @@ export class DatabaseTestUtils {
    * Reset database collections for testing
    */
   async resetDatabase(
-    options: DatabaseResetOptions = {}
+    options: DatabaseResetOptions = {},
   ): Promise<DatabaseResetResponse> {
     const response = await fetch(
       `${testConfig.apiUrl}/test-utils/reset-database`,
@@ -245,7 +270,7 @@ export class DatabaseTestUtils {
           preserve_system_data: options.preserveSystemData ?? true,
           confirmation_token: testConfig.confirmationToken,
         }),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -255,7 +280,7 @@ export class DatabaseTestUtils {
       throw new Error(
         `Database reset failed (${response.status}): ${
           errorData.detail || response.statusText
-        }`
+        }`,
       );
     }
 
@@ -267,7 +292,7 @@ export class DatabaseTestUtils {
    */
   async dryRunReset(collections?: string[]): Promise<DryRunResponse> {
     const url = new URL(
-      `${testConfig.apiUrl}/test-utils/reset-database/dry-run`
+      `${testConfig.apiUrl}/test-utils/reset-database/dry-run`,
     );
 
     if (collections && collections.length > 0) {
@@ -283,7 +308,7 @@ export class DatabaseTestUtils {
       throw new Error(
         `Dry run failed (${response.status}): ${
           errorData.detail || response.statusText
-        }`
+        }`,
       );
     }
 
@@ -408,7 +433,7 @@ export class DatabaseTestUtils {
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(
-          `Failed to create test user (HTTP ${response.status}): ${errorText}`
+          `Failed to create test user (HTTP ${response.status}): ${errorText}`,
         );
       }
 
@@ -420,6 +445,162 @@ export class DatabaseTestUtils {
       }
       throw new Error("Test user creation failed with unknown error");
     }
+  }
+
+  /**
+   * Add a user to a team with a specific role (owner or member)
+   * Uses the test utilities endpoint to directly create team memberships
+   */
+  async addTeamMember(
+    userId: string,
+    teamId: string,
+    role: "owner" | "member",
+  ): Promise<AddTeamMemberResult> {
+    try {
+      const response = await fetch(
+        `${testConfig.apiUrl}/test-utils/add-team-member`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-API-Key": testConfig.devApiKey,
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            team_id: teamId,
+            role: role,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to add team member (HTTP ${response.status}): ${errorText}`,
+        );
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Adding team member failed: ${error.message}`);
+      }
+      throw new Error("Adding team member failed with unknown error");
+    }
+  }
+
+  /**
+   * Create an authenticated API client for a specific user
+   * This allows tests to make requests as different users by switching the X-Dev-User-ID header
+   */
+  createAuthenticatedClientForUser(userId: string): AuthenticatedApiClient {
+    const makeAuthenticatedRequest = async <T>(
+      method: string,
+      endpoint: string,
+      data?: any,
+      options: RequestInit = {},
+    ): Promise<T> => {
+      const authHeaders: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+
+      if (testConfig.environment === "development") {
+        authHeaders["X-Dev-User-ID"] = userId; // Use the specific user ID
+        authHeaders["X-API-Key"] = testConfig.devApiKey;
+      } else {
+        // For non-dev environments, would need proper auth token per user
+        authHeaders["Authorization"] = `Bearer ${testConfig.authToken}`;
+      }
+
+      const response = await fetch(`${testConfig.apiUrl}${endpoint}`, {
+        method: method.toUpperCase(),
+        ...options,
+        headers: {
+          ...authHeaders,
+          ...options.headers,
+        },
+        body: data ? JSON.stringify(data) : undefined,
+      });
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ detail: "Unknown error" }));
+
+        console.error(
+          `❌ API ${method} ${endpoint} failed for user ${userId}:`,
+          {
+            status: response.status,
+            statusText: response.statusText,
+            error: errorData,
+          },
+        );
+
+        throw new Error(
+          `${method} ${endpoint} failed: ${response.status} ${
+            errorData.detail || JSON.stringify(errorData)
+          }`,
+        );
+      }
+
+      return response.json();
+    };
+
+    return {
+      get: <T>(endpoint: string, options?: RequestInit) =>
+        makeAuthenticatedRequest<T>("GET", endpoint, undefined, options),
+      post: <T>(endpoint: string, data?: any, options?: RequestInit) =>
+        makeAuthenticatedRequest<T>("POST", endpoint, data, options),
+      put: <T>(endpoint: string, data?: any, options?: RequestInit) =>
+        makeAuthenticatedRequest<T>("PUT", endpoint, data, options),
+      delete: <T>(endpoint: string, options?: RequestInit) =>
+        makeAuthenticatedRequest<T>("DELETE", endpoint, undefined, options),
+    };
+  }
+
+  /**
+   * Set authentication headers for a Playwright page for a specific user
+   * This allows tests to make requests as different users
+   *
+   * @param page - Playwright page object
+   * @param userId - User ID to authenticate as
+   */
+  async authenticatePageAsUser(page: any, userId: string): Promise<void> {
+    if (testConfig.environment === "development") {
+      await page.setExtraHTTPHeaders({
+        "X-Dev-User-ID": userId,
+        "X-API-Key": testConfig.devApiKey,
+      });
+    } else {
+      // For staging/production, use Bearer token
+      await page.setExtraHTTPHeaders({
+        Authorization: `Bearer ${testConfig.authToken}`,
+      });
+    }
+  }
+
+  /**
+   * Set authentication headers for a Playwright page as TEST_USER
+   * Convenience method for the most common authentication scenario
+   *
+   * @param page - Playwright page object
+   */
+  async authenticatePageAsTestUser(page: any): Promise<void> {
+    await this.authenticatePageAsUser(page, testConfig.devUserId);
+  }
+
+  /**
+   * Set authentication headers for a Playwright page as TEST_USER_2
+   * Convenience method for secondary user authentication
+   *
+   * @param page - Playwright page object
+   */
+  async authenticatePageAsTestUser2(page: any): Promise<void> {
+    if (!testConfig.devUserId2) {
+      throw new Error("TEST_USER_ID_2 is not configured in test environment");
+    }
+    await this.authenticatePageAsUser(page, testConfig.devUserId2);
   }
 
   /**
@@ -466,7 +647,7 @@ export class DatabaseTestUtils {
       // Use the existing TeamApi with our test client
       const result: TeamWithMembership = await TeamApi.createTeam(
         this.testApiClient,
-        teamData.name
+        teamData.name,
       );
 
       return {
@@ -477,11 +658,11 @@ export class DatabaseTestUtils {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
         throw new Error(
-          `Failed to create team '${teamData.name}': ${error.message}`
+          `Failed to create team '${teamData.name}': ${error.message}`,
         );
       }
       throw new Error(
-        `Failed to create team '${teamData.name}': Unknown error`
+        `Failed to create team '${teamData.name}': Unknown error`,
       );
     }
   }
@@ -529,7 +710,7 @@ export class DatabaseTestUtils {
       // Use the existing WorkerApi with our test client
       const result: WorkerT = await WorkerApi.addWorker(
         this.testApiClient,
-        worker
+        worker,
       );
 
       return {
@@ -541,11 +722,11 @@ export class DatabaseTestUtils {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
         throw new Error(
-          `Failed to create worker '${workerData.name}': ${error.message}`
+          `Failed to create worker '${workerData.name}': ${error.message}`,
         );
       }
       throw new Error(
-        `Failed to create worker '${workerData.name}': Unknown error`
+        `Failed to create worker '${workerData.name}': Unknown error`,
       );
     }
   }
@@ -566,7 +747,7 @@ export class DatabaseTestUtils {
       dutiesPerMonth?: number;
       annualLeave?: number;
       specialtyIds?: string[];
-    }
+    },
   ): Promise<{ workerId: string; name: string; teamId: string }> {
     try {
       // First, get the current worker data
@@ -575,7 +756,7 @@ export class DatabaseTestUtils {
 
       if (!currentWorker) {
         throw new Error(
-          `Worker with ID '${workerId}' not found in team '${teamId}'`
+          `Worker with ID '${workerId}' not found in team '${teamId}'`,
         );
       }
 
@@ -604,7 +785,7 @@ export class DatabaseTestUtils {
       // Use the existing WorkerApi with our test client
       const result: WorkerT = await WorkerApi.updateWorker(
         this.testApiClient,
-        updatedWorker
+        updatedWorker,
       );
 
       return {
@@ -616,7 +797,7 @@ export class DatabaseTestUtils {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
         throw new Error(
-          `Failed to update worker '${workerId}': ${error.message}`
+          `Failed to update worker '${workerId}': ${error.message}`,
         );
       }
       throw new Error(`Failed to update worker '${workerId}': Unknown error`);
@@ -629,7 +810,7 @@ export class DatabaseTestUtils {
   async updateWorkerName(
     workerId: string,
     teamId: string,
-    newName: string
+    newName: string,
   ): Promise<{ workerId: string; name: string; teamId: string }> {
     return this.updateWorker(workerId, teamId, { name: newName });
   }
@@ -645,7 +826,7 @@ export class DatabaseTestUtils {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
         throw new Error(
-          `Failed to delete worker '${workerId}': ${error.message}`
+          `Failed to delete worker '${workerId}': ${error.message}`,
         );
       }
       throw new Error(`Failed to delete worker '${workerId}': Unknown error`);
@@ -664,7 +845,38 @@ export class DatabaseTestUtils {
       throw new Error(
         `Failed to get workers for team '${teamId}': ${
           error instanceof Error ? error.message : "Unknown error"
-        }`
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Attach a user to a worker using the existing WorkerApi for consistent behavior
+   * This links a worker to a specific user, allowing member users to manage that worker
+   */
+  async attachWorkerToUser(
+    workerId: string,
+    userId: string,
+    teamId: string,
+  ): Promise<WorkerT> {
+    try {
+      const result: WorkerT = await WorkerApi.attachUserToWorker(
+        this.testApiClient,
+        workerId,
+        userId,
+        teamId,
+      );
+
+      return result;
+    } catch (error) {
+      // Enhanced error handling for test debugging
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to attach user ${userId} to worker ${workerId}: ${error.message}`,
+        );
+      }
+      throw new Error(
+        `Failed to attach user ${userId} to worker ${workerId}: Unknown error`,
       );
     }
   }
@@ -713,11 +925,11 @@ export class DatabaseTestUtils {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
         throw new Error(
-          `Failed to create shift '${shiftData.name}': ${error.message}`
+          `Failed to create shift '${shiftData.name}': ${error.message}`,
         );
       }
       throw new Error(
-        `Failed to create shift '${shiftData.name}': Unknown error`
+        `Failed to create shift '${shiftData.name}': Unknown error`,
       );
     }
   }
@@ -730,7 +942,7 @@ export class DatabaseTestUtils {
       // Use the existing ShiftApi with our test client
       const result: ShiftT[] = await ShiftApi.getAllShifts(
         this.testApiClient,
-        teamId
+        teamId,
       );
 
       return result;
@@ -738,11 +950,11 @@ export class DatabaseTestUtils {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
         throw new Error(
-          `Failed to get all shifts for team '${teamId}': ${error.message}`
+          `Failed to get all shifts for team '${teamId}': ${error.message}`,
         );
       }
       throw new Error(
-        `Failed to get all shifts for team '${teamId}': Unknown error`
+        `Failed to get all shifts for team '${teamId}': Unknown error`,
       );
     }
   }
@@ -771,7 +983,7 @@ export class DatabaseTestUtils {
       const result: SpecialtyT = await SpecialtyApi.addSpecialty(
         this.testApiClient,
         newSpecialty,
-        specialtyData.teamId
+        specialtyData.teamId,
       );
 
       return {
@@ -783,11 +995,11 @@ export class DatabaseTestUtils {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
         throw new Error(
-          `Failed to create specialty '${specialtyData.name}': ${error.message}`
+          `Failed to create specialty '${specialtyData.name}': ${error.message}`,
         );
       }
       throw new Error(
-        `Failed to create specialty '${specialtyData.name}': Unknown error`
+        `Failed to create specialty '${specialtyData.name}': Unknown error`,
       );
     }
   }
@@ -800,19 +1012,19 @@ export class DatabaseTestUtils {
     teamId: string,
     updates: {
       name?: string;
-    }
+    },
   ): Promise<{ specialtyId: string; name: string; teamId: string }> {
     try {
       // First get the current specialty to merge with updates
       const specialties = await SpecialtyApi.getSpecialties(
         this.testApiClient,
-        teamId
+        teamId,
       );
       const currentSpecialty = specialties.find((s) => s.id === specialtyId);
 
       if (!currentSpecialty) {
         throw new Error(
-          `Specialty with ID '${specialtyId}' not found in team '${teamId}'`
+          `Specialty with ID '${specialtyId}' not found in team '${teamId}'`,
         );
       }
 
@@ -826,7 +1038,7 @@ export class DatabaseTestUtils {
       const result: SpecialtyT = await SpecialtyApi.updateSpecialty(
         this.testApiClient,
         updatedSpecialty,
-        teamId
+        teamId,
       );
 
       return {
@@ -838,11 +1050,11 @@ export class DatabaseTestUtils {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
         throw new Error(
-          `Failed to update specialty '${specialtyId}': ${error.message}`
+          `Failed to update specialty '${specialtyId}': ${error.message}`,
         );
       }
       throw new Error(
-        `Failed to update specialty '${specialtyId}': Unknown error`
+        `Failed to update specialty '${specialtyId}': Unknown error`,
       );
     }
   }
@@ -856,17 +1068,17 @@ export class DatabaseTestUtils {
       await SpecialtyApi.deleteSpecialty(
         this.testApiClient,
         specialtyId,
-        teamId
+        teamId,
       );
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
         throw new Error(
-          `Failed to delete specialty '${specialtyId}': ${error.message}`
+          `Failed to delete specialty '${specialtyId}': ${error.message}`,
         );
       }
       throw new Error(
-        `Failed to delete specialty '${specialtyId}': Unknown error`
+        `Failed to delete specialty '${specialtyId}': Unknown error`,
       );
     }
   }
@@ -879,7 +1091,7 @@ export class DatabaseTestUtils {
       // Use the existing SpecialtyApi with our test client
       const result: SpecialtyT[] = await SpecialtyApi.getSpecialties(
         this.testApiClient,
-        teamId
+        teamId,
       );
 
       return result;
@@ -887,11 +1099,11 @@ export class DatabaseTestUtils {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
         throw new Error(
-          `Failed to get specialties for team '${teamId}': ${error.message}`
+          `Failed to get specialties for team '${teamId}': ${error.message}`,
         );
       }
       throw new Error(
-        `Failed to get specialties for team '${teamId}': Unknown error`
+        `Failed to get specialties for team '${teamId}': Unknown error`,
       );
     }
   }
@@ -931,7 +1143,7 @@ export class DatabaseTestUtils {
       const result = await DimensionApi.addDimension(
         this.testApiClient,
         newDimension,
-        dimensionData.dimEntries || []
+        dimensionData.dimEntries || [],
       );
 
       return {
@@ -943,11 +1155,11 @@ export class DatabaseTestUtils {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
         throw new Error(
-          `Failed to create dimension '${dimensionData.name}': ${error.message}`
+          `Failed to create dimension '${dimensionData.name}': ${error.message}`,
         );
       }
       throw new Error(
-        `Failed to create dimension '${dimensionData.name}': Unknown error`
+        `Failed to create dimension '${dimensionData.name}': Unknown error`,
       );
     }
   }
@@ -961,7 +1173,7 @@ export class DatabaseTestUtils {
       teamId: string;
       name?: string;
       entryType?: DimensionEntryType;
-    }
+    },
   ): Promise<{ dimensionId: string; name: string; teamId: string }> {
     try {
       // First get the current dimension to merge updates
@@ -981,7 +1193,7 @@ export class DatabaseTestUtils {
       // Use the existing DimensionApi with our test client
       const result = await DimensionApi.updateDimension(
         this.testApiClient,
-        updatedDimension
+        updatedDimension,
       );
 
       return {
@@ -993,11 +1205,11 @@ export class DatabaseTestUtils {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
         throw new Error(
-          `Failed to update dimension '${dimensionId}': ${error.message}`
+          `Failed to update dimension '${dimensionId}': ${error.message}`,
         );
       }
       throw new Error(
-        `Failed to update dimension '${dimensionId}': Unknown error`
+        `Failed to update dimension '${dimensionId}': Unknown error`,
       );
     }
   }
@@ -1011,17 +1223,17 @@ export class DatabaseTestUtils {
       await DimensionApi.deleteDimension(
         this.testApiClient,
         dimensionId,
-        teamId
+        teamId,
       );
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
         throw new Error(
-          `Failed to delete dimension '${dimensionId}': ${error.message}`
+          `Failed to delete dimension '${dimensionId}': ${error.message}`,
         );
       }
       throw new Error(
-        `Failed to delete dimension '${dimensionId}': Unknown error`
+        `Failed to delete dimension '${dimensionId}': Unknown error`,
       );
     }
   }
@@ -1031,14 +1243,14 @@ export class DatabaseTestUtils {
    */
   async getDimensions(
     teamId: string,
-    dimensionType?: DimensionType
+    dimensionType?: DimensionType,
   ): Promise<DimensionT[]> {
     try {
       // Use the existing DimensionApi with our test client
       const result = await DimensionApi.getDimensions(
         this.testApiClient,
         teamId,
-        dimensionType ? [dimensionType] : undefined
+        dimensionType ? [dimensionType] : undefined,
       );
 
       return result.dimensions;
@@ -1046,11 +1258,11 @@ export class DatabaseTestUtils {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
         throw new Error(
-          `Failed to get dimensions for team '${teamId}': ${error.message}`
+          `Failed to get dimensions for team '${teamId}': ${error.message}`,
         );
       }
       throw new Error(
-        `Failed to get dimensions for team '${teamId}': Unknown error`
+        `Failed to get dimensions for team '${teamId}': Unknown error`,
       );
     }
   }
@@ -1089,7 +1301,7 @@ export class DatabaseTestUtils {
       const result = await AttributeApi.createAttribute(
         this.testApiClient,
         newAttribute,
-        attributeData.teamId
+        attributeData.teamId,
       );
 
       return {
@@ -1115,7 +1327,7 @@ export class DatabaseTestUtils {
     updates: {
       value?: string | number | boolean;
       dimEntryIds?: string[];
-    }
+    },
   ): Promise<{
     attributeId: string;
     value: string | number | boolean;
@@ -1141,7 +1353,7 @@ export class DatabaseTestUtils {
       const result = await AttributeApi.updateAttribute(
         this.testApiClient,
         updatedAttribute,
-        teamId
+        teamId,
       );
 
       return {
@@ -1153,11 +1365,11 @@ export class DatabaseTestUtils {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
         throw new Error(
-          `Failed to update attribute '${attributeId}': ${error.message}`
+          `Failed to update attribute '${attributeId}': ${error.message}`,
         );
       }
       throw new Error(
-        `Failed to update attribute '${attributeId}': Unknown error`
+        `Failed to update attribute '${attributeId}': Unknown error`,
       );
     }
   }
@@ -1171,17 +1383,17 @@ export class DatabaseTestUtils {
       await AttributeApi.deleteAttribute(
         this.testApiClient,
         attributeId,
-        teamId
+        teamId,
       );
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
         throw new Error(
-          `Failed to delete attribute '${attributeId}': ${error.message}`
+          `Failed to delete attribute '${attributeId}': ${error.message}`,
         );
       }
       throw new Error(
-        `Failed to delete attribute '${attributeId}': Unknown error`
+        `Failed to delete attribute '${attributeId}': Unknown error`,
       );
     }
   }
@@ -1195,7 +1407,7 @@ export class DatabaseTestUtils {
       const result = await AttributeApi.getAttributesByOwner(
         this.testApiClient,
         ownerId,
-        teamId
+        teamId,
       );
 
       return result;
@@ -1203,11 +1415,11 @@ export class DatabaseTestUtils {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
         throw new Error(
-          `Failed to get attributes for owner '${ownerId}': ${error.message}`
+          `Failed to get attributes for owner '${ownerId}': ${error.message}`,
         );
       }
       throw new Error(
-        `Failed to get attributes for owner '${ownerId}': Unknown error`
+        `Failed to get attributes for owner '${ownerId}': Unknown error`,
       );
     }
   }
@@ -1236,7 +1448,7 @@ export class DatabaseTestUtils {
       const result = await ShiftDemandApi.createShiftDemand(
         this.testApiClient,
         options.teamId,
-        shiftDemandData
+        shiftDemandData,
       );
 
       return result;
@@ -1254,14 +1466,14 @@ export class DatabaseTestUtils {
   async getShiftDemandsByPeriod(
     teamId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<any[]> {
     try {
       const result = await ShiftDemandApi.getShiftDemandsByPeriod(
         this.testApiClient,
         teamId,
         startDate,
-        endDate
+        endDate,
       );
 
       return result;
@@ -1283,7 +1495,7 @@ export class DatabaseTestUtils {
   }): Promise<{ templateId: string; name: string; teamId: string }> {
     try {
       console.log(
-        `📝 Creating shift demand template "${templateData.name}" for team ${templateData.teamId}...`
+        `📝 Creating shift demand template "${templateData.name}" for team ${templateData.teamId}...`,
       );
 
       // Create template data in the format expected by the API
@@ -1297,7 +1509,7 @@ export class DatabaseTestUtils {
         await ShiftDemandTemplateApi.createTemplate(
           this.testApiClient,
           templateData.teamId,
-          createData
+          createData,
         );
 
       console.log(`✅ Template created with ID: ${result.id}`);
@@ -1322,7 +1534,7 @@ export class DatabaseTestUtils {
   async updateShiftDemandTemplate(
     templateId: string,
     teamId: string,
-    updates: Partial<ShiftDemandTemplateUpdateDTO>
+    updates: Partial<ShiftDemandTemplateUpdateDTO>,
   ): Promise<ShiftDemandTemplateDTO> {
     try {
       // Use the wrapped API client to call the template update endpoint
@@ -1330,7 +1542,7 @@ export class DatabaseTestUtils {
         this.testApiClient,
         templateId,
         teamId,
-        updates as any
+        updates as any,
       );
       return result;
     } catch (error) {
@@ -1344,7 +1556,7 @@ export class DatabaseTestUtils {
    */
   async deleteShiftDemandTemplate(
     templateId: string,
-    teamId: string
+    teamId: string,
   ): Promise<void> {
     try {
       console.log(`🗑️ Deleting shift demand template ${templateId}...`);
@@ -1353,7 +1565,7 @@ export class DatabaseTestUtils {
       await ShiftDemandTemplateApi.deleteTemplate(
         this.testApiClient,
         templateId,
-        teamId
+        teamId,
       );
 
       console.log(`✅ Template deleted successfully`);
@@ -1402,11 +1614,11 @@ export class DatabaseTestUtils {
 
       const createdConstraint = await this.testApiClient.post<any>(
         `/constraints/teams/${constraintData.teamId}`,
-        constraintToCreate
+        constraintToCreate,
       );
 
       console.log(
-        `Created constraint: ${createdConstraint.text} (${createdConstraint.id})`
+        `Created constraint: ${createdConstraint.text} (${createdConstraint.id})`,
       );
       return {
         constraintId: createdConstraint.id,
@@ -1436,14 +1648,14 @@ export class DatabaseTestUtils {
       hard?: boolean;
       priority?: string;
       active?: boolean;
-    }
+    },
   ): Promise<{ constraintId: string; teamId: string }> {
     try {
       // Make direct API calls instead of using dynamic import
 
       // First get the current constraint
       const constraints = await this.testApiClient.get<any[]>(
-        `/constraints/teams/${teamId}`
+        `/constraints/teams/${teamId}`,
       );
       const currentConstraint = constraints.find((c) => c.id === constraintId);
 
@@ -1458,7 +1670,7 @@ export class DatabaseTestUtils {
 
       const result = await this.testApiClient.put<any>(
         `/constraints/${constraintId}/teams/${teamId}`,
-        updatedConstraint
+        updatedConstraint,
       );
 
       console.log(`Updated constraint: ${result.text} (${result.id})`);
@@ -1481,7 +1693,7 @@ export class DatabaseTestUtils {
   async deleteConstraint(constraintId: string, teamId: string): Promise<void> {
     try {
       await this.testApiClient.delete<void>(
-        `/constraints/${constraintId}/teams/${teamId}`
+        `/constraints/${constraintId}/teams/${teamId}`,
       );
       console.log(`Deleted constraint: ${constraintId}`);
     } catch (error) {
@@ -1499,10 +1711,10 @@ export class DatabaseTestUtils {
   async getConstraints(teamId: string): Promise<any[]> {
     try {
       const constraints = await this.testApiClient.get<any[]>(
-        `/constraints/teams/${teamId}`
+        `/constraints/teams/${teamId}`,
       );
       console.log(
-        `Retrieved ${constraints.length} constraints for team ${teamId}`
+        `Retrieved ${constraints.length} constraints for team ${teamId}`,
       );
       return constraints;
     } catch (error) {
@@ -1521,10 +1733,10 @@ export class DatabaseTestUtils {
     try {
       // Make direct API call instead of using dynamic import
       const templates = await this.testApiClient.get<any[]>(
-        `/constraint-templates/teams/${teamId}`
+        `/constraint-templates/teams/${teamId}`,
       );
       console.log(
-        `Retrieved ${templates.length} constraint templates for team ${teamId}`
+        `Retrieved ${templates.length} constraint templates for team ${teamId}`,
       );
       return templates;
     } catch (error) {
@@ -1550,14 +1762,14 @@ export class DatabaseTestUtils {
   //////////////////////////
 
   /**
-   * Create a request using the test API for consistent behavior
+   * Create a request using RequestApi for consistent behavior
    */
   async createRequest(requestData: {
     teamId: string;
     workerId: string;
     requestType: "work_demand" | "leave";
-    startDate: Date;
-    endDate: Date;
+    startDate: dayjs.Dayjs;
+    endDate: dayjs.Dayjs;
     status?: "pending" | "approved" | "denied" | "deferred";
     negative?: boolean;
     comment?: string;
@@ -1565,34 +1777,53 @@ export class DatabaseTestUtils {
     shiftOptions?: any[];
   }): Promise<any> {
     try {
+      if (
+        !Object.values(RequestType).includes(
+          requestData.requestType as RequestType,
+        )
+      ) {
+        throw new Error(`Invalid RequestType: ${requestData.requestType}`);
+      }
+
+      if (
+        requestData.status &&
+        !Object.values(RequestStatus).includes(
+          requestData.status as RequestStatus,
+        )
+      ) {
+        throw new Error(`Invalid RequestStatus: ${requestData.status}`);
+      }
+
       // RequestDTO expects camelCase fields
-      const requestPayload = {
+      const requestPayload: RequestT = {
         id: "",
         teamId: requestData.teamId,
-        requestType: requestData.requestType,
+        requestType: requestData.requestType as RequestType,
         workerId: requestData.workerId,
-        startDate: Math.floor(requestData.startDate.getTime() / 1000),
-        endDate: Math.floor(requestData.endDate.getTime() / 1000),
+        startDate: requestData.startDate,
+        endDate: requestData.endDate,
         shiftId: requestData.shiftId || null,
         shiftOptions: requestData.shiftOptions || [],
         negative: requestData.negative || false,
         hard: true,
-        status: requestData.status || "pending",
-        fulfillment: "not_processed",
+        status: (requestData.status as RequestStatus) || RequestStatus.PENDING,
+        fulfillment: FulfillmentStatus.NOT_PROCESSED,
         comment: requestData.comment || "",
-        createdAt: Math.floor(Date.now() / 1000),
+        createdAt: dayjs(),
         active: true,
         shiftTargetIds: [],
         missingAttributes: [],
       };
 
-      const response = await this.testApiClient.post<any>(
-        `/requests/teams/${requestData.teamId}`,
-        requestPayload
+      // Use RequestApi for consistent behavior
+      const response = await RequestApi.addRequest(
+        this.testApiClient,
+        requestPayload,
+        requestData.teamId,
       );
 
       console.log(
-        `Created request for worker ${requestData.workerId} in team ${requestData.teamId}`
+        `Created request for worker ${requestData.workerId} in team ${requestData.teamId}`,
       );
 
       return response;
@@ -1601,7 +1832,7 @@ export class DatabaseTestUtils {
       throw new Error(
         `Failed to create request: ${
           error instanceof Error ? error.message : "Unknown error"
-        }`
+        }`,
       );
     }
   }
@@ -1612,7 +1843,7 @@ export class DatabaseTestUtils {
   async deleteRequest(requestId: string, teamId: string): Promise<void> {
     try {
       await this.testApiClient.delete(
-        `/requests/${requestId}?teamId=${teamId}`
+        `/requests/${requestId}?teamId=${teamId}`,
       );
       console.log(`Deleted request ${requestId} from team ${teamId}`);
     } catch (error) {
@@ -1620,7 +1851,7 @@ export class DatabaseTestUtils {
       throw new Error(
         `Failed to delete request: ${
           error instanceof Error ? error.message : "Unknown error"
-        }`
+        }`,
       );
     }
   }
@@ -1631,7 +1862,7 @@ export class DatabaseTestUtils {
   async getRequests(teamId: string): Promise<any[]> {
     try {
       const response = await this.testApiClient.get<any[]>(
-        `/requests?teamId=${teamId}`
+        `/requests?teamId=${teamId}`,
       );
       return response;
     } catch (error) {
@@ -1639,7 +1870,7 @@ export class DatabaseTestUtils {
       throw new Error(
         `Failed to get requests: ${
           error instanceof Error ? error.message : "Unknown error"
-        }`
+        }`,
       );
     }
   }
@@ -1652,13 +1883,13 @@ export class DatabaseTestUtils {
    */
   async approveRequest(
     requestId: string,
-    teamId: string
+    teamId: string,
   ): Promise<{ request: RequestT; assignments: AssignmentT[] }> {
     try {
       const { request, assignments } = await RequestApi.acceptRequest(
         this.testApiClient,
         requestId,
-        teamId
+        teamId,
       );
       return { request, assignments };
     } catch (error) {
@@ -1666,7 +1897,7 @@ export class DatabaseTestUtils {
       throw new Error(
         `Failed to approve request '${requestId}': ${
           error instanceof Error ? error.message : "Unknown error"
-        }`
+        }`,
       );
     }
   }
@@ -1682,7 +1913,7 @@ export class DatabaseTestUtils {
       const deniedRequest = await RequestApi.denyRequest(
         this.testApiClient,
         requestId,
-        teamId
+        teamId,
       );
       return deniedRequest;
     } catch (error) {
@@ -1690,7 +1921,7 @@ export class DatabaseTestUtils {
       throw new Error(
         `Failed to deny request '${requestId}': ${
           error instanceof Error ? error.message : "Unknown error"
-        }`
+        }`,
       );
     }
   }
@@ -1706,6 +1937,189 @@ export class DatabaseTestUtils {
   }
 
   //////////////////////////
+  // Schedule Methods
+  //////////////////////////
+
+  /**
+   * Create a schedule using ScheduleApi for consistent behavior
+   */
+  async createSchedule(teamId: string): Promise<ScheduleT> {
+    try {
+      return await ScheduleApi.createSchedule(this.testApiClient, teamId);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to create schedule for team '${teamId}': ${error.message}`,
+        );
+      }
+      throw new Error(
+        `Failed to create schedule for team '${teamId}': Unknown error`,
+      );
+    }
+  }
+
+  /**
+   * Get schedules for a team using ScheduleApi for consistent behavior
+   */
+  async getSchedules(teamId: string): Promise<ScheduleT[]> {
+    try {
+      return await ScheduleApi.getSchedules(this.testApiClient, teamId);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to get schedules for team '${teamId}': ${error.message}`,
+        );
+      }
+      throw new Error(
+        `Failed to get schedules for team '${teamId}': Unknown error`,
+      );
+    }
+  }
+
+  /**
+   * Update a schedule using ScheduleApi for consistent behavior
+   */
+  async updateSchedule(schedule: ScheduleT): Promise<ScheduleT> {
+    try {
+      return await ScheduleApi.updateSchedule(this.testApiClient, schedule);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to update schedule '${schedule.id}': ${error.message}`,
+        );
+      }
+      throw new Error(
+        `Failed to update schedule '${schedule.id}': Unknown error`,
+      );
+    }
+  }
+
+  /**
+   * Validate a schedule using ScheduleApi for consistent behavior
+   */
+  async validateSchedule(
+    scheduleId: string,
+    teamId: string,
+  ): Promise<ScheduleT> {
+    if (!scheduleId) {
+      throw new Error("Schedule ID is required");
+    }
+    if (!teamId) {
+      throw new Error("Team ID is required");
+    }
+
+    try {
+      const validatedSchedule = await ScheduleApi.validateSchedule(
+        this.testApiClient,
+        scheduleId,
+        teamId,
+      );
+      console.log(`✅ Validated schedule: ${validatedSchedule.id}`);
+      return validatedSchedule;
+    } catch (error) {
+      console.error("Failed to validate schedule:", error);
+      throw new Error(
+        `Failed to validate schedule: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  //////////////////////////
+  // Assignment Methods
+  //////////////////////////
+
+  /**
+   * Create an assignment using AssignmentApi for consistent behavior
+   */
+  async createAssignment(assignmentData: {
+    teamId: string;
+    workerId: string;
+    shiftId: string;
+    date: string; // YYYY-MM-DD format
+    fixed?: boolean;
+    comment?: string;
+    scheduleId?: string | null;
+  }): Promise<any> {
+    try {
+      // Construct AssignmentT object
+      const assignment: AssignmentT = {
+        id: "", // Will be generated by backend
+        workerId: assignmentData.workerId,
+        shiftId: assignmentData.shiftId,
+        date: dayjs(assignmentData.date).utc(),
+        fixed: assignmentData.fixed ?? false,
+        teamId: assignmentData.teamId,
+        scheduleId: assignmentData.scheduleId ?? null,
+        source: AssignmentSource.MANUAL,
+        referenceAssignmentId: null,
+        sourceId: null,
+      };
+
+      const result = await AssignmentApi.addAssignmentAndRecurrence(
+        this.testApiClient,
+        assignment,
+        null, // No recurrence
+      );
+
+      return result;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to create assignment: ${error.message}`);
+      }
+      throw new Error("Failed to create assignment: Unknown error");
+    }
+  }
+
+  /**
+   * Delete an assignment using AssignmentApi for consistent behavior
+   */
+  async deleteAssignment(assignmentId: string, teamId: string): Promise<any> {
+    try {
+      return await AssignmentApi.deleteAssignment(
+        this.testApiClient,
+        assignmentId,
+        teamId,
+        null, // No recurrence
+        null, // No recurrence update scope
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to delete assignment '${assignmentId}': ${error.message}`,
+        );
+      }
+      throw new Error(
+        `Failed to delete assignment '${assignmentId}': Unknown error`,
+      );
+    }
+  }
+
+  /**
+   * Add the second test user (TEST_USER_2) to a team with a specific role
+   * This is an opt-in helper for tests that need multi-user scenarios.
+   *
+   * By default, TEST_USER_2 is NOT added to teams. Call this method explicitly
+   * in tests that require a second user.
+   *
+   * @param teamId - The team ID to add the user to
+   * @param role - The role for the user (default: "member")
+   * @returns The team membership details
+   *
+   * @example
+   * // In a test that needs a second user:
+   * await dbUtils.addSecondUserToTeam(teamId); // adds as member
+   * await dbUtils.addSecondUserToTeam(teamId, "owner"); // adds as owner
+   */
+  async addSecondUserToTeam(
+    teamId: string,
+    role: "owner" | "member" = "member",
+  ): Promise<AddTeamMemberResult> {
+    return this.addTeamMember(TEST_USER_2.user_id, teamId, role);
+  }
+
+  //////////////////////////
   // Solver Test Scenario Methods
   //////////////////////////
 
@@ -1715,7 +2129,7 @@ export class DatabaseTestUtils {
    */
   async loadSolverScenario(
     scenarioName: string,
-    teamId: string
+    teamId: string,
   ): Promise<SolverScenarioResult> {
     try {
       // Backend returns an object with scenario_name, workers and shifts
@@ -1753,7 +2167,7 @@ export class DatabaseTestUtils {
       throw new Error(
         `Failed to load scenario '${scenarioName}': ${
           error instanceof Error ? error.message : "Unknown error"
-        }`
+        }`,
       );
     }
   }
@@ -1766,7 +2180,7 @@ export class DatabaseTestUtils {
     try {
       // The route returns a simple array of scenario names
       const result = await this.testApiClient.get<string[]>(
-        "/test-utils/scenarios"
+        "/test-utils/scenarios",
       );
 
       console.log(`✅ Found ${result.length} available scenarios`);
@@ -1776,7 +2190,7 @@ export class DatabaseTestUtils {
       throw new Error(
         `Failed to list solver scenarios: ${
           error instanceof Error ? error.message : "Unknown error"
-        }`
+        }`,
       );
     }
   }
@@ -1786,9 +2200,22 @@ export class DatabaseTestUtils {
  * Default test user credentials for use across tests
  */
 export const TEST_USER = {
-  user_id: "64e9b7f1e13e4a1a9c8b4567",
+  user_id: testConfig.devUserId || "64e9b7f1e13e4a1a9c8b4567",
   email: "testuser@example.com",
   username: "testuser",
   first_name: "Test",
   last_name: "User",
+} as const;
+
+/**
+ * Second test user credentials for multi-user test scenarios
+ * This user is created in global setup but NOT automatically added to teams.
+ * Use addSecondUserToTeam() to explicitly add this user to a team when needed.
+ */
+export const TEST_USER_2 = {
+  user_id: testConfig.devUserId2 || "64e9b7f1e13e4a1a9c8b4568",
+  email: "testuser2@example.com",
+  username: "testuser2",
+  first_name: "Test",
+  last_name: "User2",
 } as const;

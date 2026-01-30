@@ -7,6 +7,7 @@ import DataViewSelector from "./data-view-selector";
 import { TimeNavigation } from "../../common/TimeNavigation";
 import CampaignInfo from "./campaign-info";
 import ScheduleSettings from "./schedule-settings";
+import { RoleBased } from "../../access/role-based";
 // Types
 import {
   ScheduleT,
@@ -62,6 +63,7 @@ export default function ScheduleNavBar({
 
   return (
     <div
+      data-testid="schedule-nav-bar"
       style={{
         width: "100%",
         display: "flex",
@@ -84,59 +86,67 @@ export default function ScheduleNavBar({
         scheduleViewSettings={scheduleViewSettings}
         updateScheduleViewSettings={updateScheduleViewSettings}
       />
-      <ScheduleSettings
-        lng={lng}
-        teamWithMembership={teamWithMembership}
-        campaign={scheduleCampaign}
-        startDate={currentPeriodStart}
-        endDate={currentPeriodEnd}
-        scheduleViewSettings={scheduleViewSettings}
-        handleSendDuplicateRequest={handleSendDuplicateRequest}
-        updateScheduleViewSettings={updateScheduleViewSettings}
-        handleChangeTimeFrame={handleChangeTimeFrame}
-      />
-      {teamWithMembership.membership.role === TeamMembershipRole.OWNER &&
-        (scheduleCampaign ? (
-          <CampaignInfo
+      <RoleBased
+        role={teamWithMembership.membership.role}
+        allowedRoles={[TeamMembershipRole.OWNER]}
+      >
+        <>
+          <ScheduleSettings
             lng={lng}
             teamWithMembership={teamWithMembership}
-            scheduleCampaign={scheduleCampaign}
-            handleValidateSchedule={handleValidateSchedule}
-            handleOpenLHS={handleOpenLHS}
-            useSqsWorkflow={useSqsWorkflow}
-            onSqsSolveComplete={onSqsSolveComplete}
+            campaign={scheduleCampaign}
+            startDate={currentPeriodStart}
+            endDate={currentPeriodEnd}
+            scheduleViewSettings={scheduleViewSettings}
+            handleSendDuplicateRequest={handleSendDuplicateRequest}
+            updateScheduleViewSettings={updateScheduleViewSettings}
+            handleChangeTimeFrame={handleChangeTimeFrame}
           />
-        ) : (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-end",
-              width: "470px",
-            }}
-          >
-            <Link href={`/${lng}/plan/campaign`}>
-              <button
-                style={{
-                  borderRadius: "4px",
-                  border: "1px solid #e5e7eb",
-                  height: "35px",
-                  padding: "0 15px",
-                  fontSize: "0.9rem",
-                  fontWeight: 550,
-                  color: "#616161",
-                  backgroundColor: isHoveredCreateCampaign
-                    ? "#f0f0f0"
-                    : "white",
-                }}
-                onMouseEnter={() => setIsHoveredCreateCampaign(true)}
-                onMouseLeave={() => setIsHoveredCreateCampaign(false)}
-              >
-                {t("create_campaign")}
-              </button>
-            </Link>
-          </div>
-        ))}
+
+          {scheduleCampaign ? (
+            <CampaignInfo
+              lng={lng}
+              teamWithMembership={teamWithMembership}
+              scheduleCampaign={scheduleCampaign}
+              handleValidateSchedule={handleValidateSchedule}
+              handleOpenLHS={handleOpenLHS}
+              useSqsWorkflow={useSqsWorkflow}
+              onSqsSolveComplete={onSqsSolveComplete}
+            />
+          ) : (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-end",
+                width: "470px",
+              }}
+            >
+              <Link href={`/${lng}/plan/campaign`}>
+                <button
+                  data-testid="nav-bar-create-campaign-button"
+                  style={{
+                    borderRadius: "4px",
+                    border: "1px solid #e5e7eb",
+                    height: "35px",
+                    padding: "0 15px",
+                    fontSize: "0.9rem",
+                    fontWeight: 550,
+                    color: "#616161",
+                    backgroundColor: isHoveredCreateCampaign
+                      ? "#f0f0f0"
+                      : "white",
+                  }}
+                  onMouseEnter={() => setIsHoveredCreateCampaign(true)}
+                  onMouseLeave={() => setIsHoveredCreateCampaign(false)}
+                >
+                  {t("create_campaign")}
+                </button>
+              </Link>
+            </div>
+          )}
+        </>
+      </RoleBased>
     </div>
   );
 }

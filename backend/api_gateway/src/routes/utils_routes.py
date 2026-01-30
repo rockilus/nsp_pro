@@ -17,6 +17,7 @@ from shared.database.reset_service import (
     DatabaseResetService,
 )
 from shared.logger import log_info
+from shared.schemas.core import TeamMembership, TeamMembershipRole
 
 from src.config import config
 from src.dependencies import get_test_service, get_user_context
@@ -26,6 +27,7 @@ from src.integrations.authorization import (
     authz_delete_all_instances,
 )
 from src.security.user_context import UserContext
+from src.services.team_membership_service import TeamMembershipService
 from src.services.test_service import SolverTestScenariosService
 
 
@@ -33,6 +35,12 @@ def get_database_interface(request: Request):
     """Get database interface from app state."""
     db_collections = request.app.state.db_collections
     return db_collections.database_interface
+
+
+def get_team_membership_service(request: Request) -> TeamMembershipService:
+    """Get team membership service from app state."""
+    db_collections = request.app.state.db_collections
+    return TeamMembershipService(collection=db_collections)
 
 
 class DatabaseResetRequest(BaseModel):
@@ -317,6 +325,110 @@ async def list_scenarios(
 
     except Exception as e:
         logger.error(f"Failed to list scenarios: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to list scenarios: {str(e)}",
+        ) from e
+
+
+class AddTeamMemberRequest(BaseModel):
+    """Request model for adding a team member in test environments."""
+
+    user_id: str
+    team_id: str
+    role: str  # "owner" or "member"
+
+
+class AddTeamMemberResponse(BaseModel):
+    """Response model for adding a team member."""
+
+    success: bool
+    message: str
+    membership_id: str
+    user_id: str
+    team_id: str
+    role: str
+
+
+@router.post("/add-team-member", response_model=AddTeamMemberResponse)
+async def add_team_member(
+    request: AddTeamMemberRequest,
+    _: None = Depends(get_test_environment_only),
+    team_membership_service: TeamMembershipService = Depends(
+        get_team_membership_service
+    ),
+) -> AddTeamMemberResponse:
+    """
+    Add a user to a team with a specific role (test environment only).
+
+    This endpoint bypasses the normal invitation flow and directly creates
+    team memberships for testing purposes. It's only available in test
+    environments.
+
+    Args:
+        request: Team member addition request parameters
+        _: Test environment validation dependency
+        team_membership_service: Team membership service dependency
+
+    Returns:
+        AddTeamMemberResponse with operation results
+
+    Raises:
+        HTTPException: If operation fails or invalid role provided
+    """
+    try:
+        # Validate role
+        role_value = request.role.lower()
+        if role_value not in ["owner", "member"]:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Invalid role '{request.role}'. " "Must be 'owner' or 'member'."
+                ),
+            )
+
+        # Map string role to enum
+        role_enum = (
+            TeamMembershipRole.OWNER
+            if role_value == "owner"
+            else TeamMembershipRole.MEMBER
+        )
+
+        logger.info(
+            f"Adding user {request.user_id} to team {request.team_id} "
+            f"with role {role_value}"
+        )
+
+        # Create team membership
+        membership = TeamMembership(
+            id="",
+            user_id=request.user_id,
+            team_id=request.team_id,
+            role=role_enum,
+        )
+
+        created_membership = await team_membership_service.create_team_membership(
+            membership
+        )
+
+        logger.info(f"Successfully added team member: {created_membership.id}")
+
+        return AddTeamMemberResponse(
+            success=True,
+            message=(
+                f"User {request.user_id} added to team "
+                f"{request.team_id} as {role_value}"
+            ),
+            membership_id=created_membership.id,
+            user_id=created_membership.user_id,
+            team_id=created_membership.team_id,
+            role=created_membership.role.value,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to add team member: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail=f"Failed to list scenarios: {str(e)}",

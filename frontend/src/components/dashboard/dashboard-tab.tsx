@@ -105,7 +105,7 @@ export default function DashboardTab({ lng }: { lng: string }) {
   }, [getUsersDashboard]);
 
   return (
-    <div className="tab-container-wide">
+    <div className="tab-container-wide" data-testid="dashboard-page-heading">
       <TableContainer>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>

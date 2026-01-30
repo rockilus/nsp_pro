@@ -7,6 +7,7 @@ import {
   ScheduleViewSettingsT,
 } from "../../../../types/schedule";
 import { ShiftType } from "@/types/shift";
+import { TeamMembershipRole, TeamWithMembership } from "@/types/team";
 // Constants
 import { ShiftColorMappings } from "../../../../constants/constants";
 
@@ -14,10 +15,12 @@ export default function AssignmentCell({
   assignmentData,
   scheduleViewSettings,
   handleAssignmentSelection,
+  teamWithMembership,
 }: {
   assignmentData: AssignmentDataT;
   scheduleViewSettings: ScheduleViewSettingsT;
   handleAssignmentSelection: (seletedCell: AssignmentDataT) => void;
+  teamWithMembership: TeamWithMembership;
 }) {
   const { background, sample, text } = ShiftColorMappings[
     assignmentData.shift.color
@@ -30,11 +33,20 @@ export default function AssignmentCell({
   return (
     <div
       className="assignment-cell-container"
-      onClick={() => handleAssignmentSelection(assignmentData)}
+      data-testid={`assignment-cell-${assignmentData.assignment.id}`}
+      onClick={() => {
+        if (teamWithMembership.membership.role === TeamMembershipRole.OWNER) {
+          handleAssignmentSelection(assignmentData);
+        }
+      }}
       style={
         {
           "--bg-color": background,
           "--text-color": text,
+          cursor:
+            teamWithMembership.membership.role === TeamMembershipRole.OWNER
+              ? "pointer"
+              : "default",
         } as React.CSSProperties
       }
     >
@@ -44,10 +56,10 @@ export default function AssignmentCell({
             ? assignmentData.shift.name
             : assignmentData.shift.acronym
           : scheduleViewSettings.groupBy === "shift"
-          ? scheduleViewSettings.timeFrame === "week"
-            ? assignmentData.worker.name
-            : assignmentData.worker.acronym
-          : null}
+            ? scheduleViewSettings.timeFrame === "week"
+              ? assignmentData.worker.name
+              : assignmentData.worker.acronym
+            : null}
       </span>
       {scheduleViewSettings.groupBy === "worker" &&
         scheduleViewSettings.timeFrame === "week" && (
@@ -60,7 +72,7 @@ export default function AssignmentCell({
               {assignmentData.shift.endTime.format("HH:mm")}
               {!assignmentData.shift.endTime.isSame(
                 assignmentData.shift.startTime,
-                "day"
+                "day",
               ) && <sup>+1</sup>}
             </span>
           </div>

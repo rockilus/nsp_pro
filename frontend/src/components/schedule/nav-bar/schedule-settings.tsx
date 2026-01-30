@@ -169,10 +169,14 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
 
   return (
     <div>
-      <IconButton onClick={handleOpenPopover}>
+      <IconButton
+        data-testid="schedule-settings-button"
+        onClick={handleOpenPopover}
+      >
         <TuneIcon />
       </IconButton>
       <Popover
+        data-testid="schedule-settings-popover"
         open={Boolean(anchorEl)}
         anchorEl={anchorEl}
         onClose={handleClosePopover}
@@ -198,6 +202,7 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
                 {t("tools")}
               </h4>
               <MenuItem
+                data-testid="settings-duplicate-week-button"
                 onClick={handleDuplicateWeek}
                 disabled={
                   !campaign ||
@@ -215,6 +220,7 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
       </Popover>
 
       <Dialog
+        data-testid="duplicate-week-dialog"
         open={isDuplicateDialogOpen}
         onClose={() => setDuplicateDialogOpen(false)}
       >

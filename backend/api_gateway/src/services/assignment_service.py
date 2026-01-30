@@ -365,13 +365,27 @@ class AssignmentService(BaseService):
         team_id: str,
         start_date: Optional[date] = None,
         end_date: Optional[date] = None,
+        include_campaign: bool = False,
     ) -> AssignmentsRecurrencesResult:
+        # Fetch all assignments first
         if start_date is None or end_date is None:
             assignments = self.collection.assignment_db.get_assignments(team_id)
         else:
             assignments = self.collection.assignment_db.get_assignments_by_dates(
                 team_id, start_date, end_date
             )
+
+        # If include_campaign is False, filter out campaign assignments
+        if not include_campaign:
+            schedules = self.collection.schedule_db.get_schedules(team_id=team_id)
+            campaign_schedule_ids = {
+                s.id for s in schedules if s.status == ScheduleStatus.CAMPAIGN
+            }
+            # Filter out assignments belonging to campaign schedules
+            assignments = [
+                a for a in assignments if a.schedule_id not in campaign_schedule_ids
+            ]
+
         recurrences = self.collection.recurrence_db.get_recurrences_by_team_id(
             team_id=team_id
         )
@@ -385,31 +399,6 @@ class AssignmentService(BaseService):
             recurrence_updated=None,
             recurrences_deleted_ids=[],
         )
-
-    def get_assignments_validated(
-        self,
-        team_id: str,
-        start_date: Optional[date] = None,
-        end_date: Optional[date] = None,
-    ) -> List[Assignment]:
-        schedules = self.collection.schedule_db.get_schedules(team_id=team_id)
-        schedule_valid_ids = [
-            s.id for s in schedules if s.status == ScheduleStatus.VALIDATED
-        ]
-        if not schedule_valid_ids:
-            return []
-        if start_date is None or end_date is None:
-            return self.collection.assignment_db.get_assignments_by_schedule_ids(
-                schedule_ids=schedule_valid_ids
-            )
-        # fmt: off
-        return self.collection.assignment_db\
-            .get_assignments_by_schedule_ids_and_date_range(
-                schedule_ids=schedule_valid_ids,
-                start_date=start_date,
-                end_date=end_date,
-            )
-        # fmt: on
 
     def update_assignment_and_recurrence(
         self,

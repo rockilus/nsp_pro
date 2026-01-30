@@ -5,6 +5,7 @@ import { AssignmentT } from "../types/assignment";
 import { WorkerT } from "../types/worker";
 import { ShiftT } from "../types/shift";
 import { ShiftWorkerOptionT } from "../types/constraint";
+import { TeamMembershipRole } from "@/types/team";
 // API Client
 import { RequestApi } from "../app/lib/api/requestApi";
 import { WorkerApi } from "../app/lib/api/workerApi";
@@ -321,6 +322,7 @@ export interface RequestsTabData {
 
 /**
  * Hook for getting all requests tab data (workers, shifts, requests, shift options)
+ * Implements role-based filtering: members see only their own requests, owners see all
  */
 export function useGetRequestsTabData() {
   const apiClient = useApiClient();
@@ -328,13 +330,14 @@ export function useGetRequestsTabData() {
   const getShiftOptions = useGetShiftOptions();
 
   const getRequestsTabData = useCallback(
-    async (teamId: string): Promise<RequestsTabData> => {
+    async (teamId: string, userWorkerId?: string): Promise<RequestsTabData> => {
       if (env.isDevelopment) {
         console.log("🔍 useGetRequestsTabData called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
           teamId,
+          userWorkerId,
         });
       }
 
@@ -348,11 +351,12 @@ export function useGetRequestsTabData() {
       }
 
       try {
-        // Fetch all data in parallel for better performance
+        // Fetch all data in parallel
+        // userWorkerId is passed directly from useUserWorker hook result
         const [workers, shifts, requests, shiftOptions] = await Promise.all([
-          WorkerApi.getAllWorkers(apiClient, teamId),
+          WorkerApi.getWorkers(apiClient, teamId, undefined, true),
           ShiftApi.getAllShifts(apiClient, teamId),
-          RequestApi.getRequests(apiClient, teamId),
+          RequestApi.getRequests(apiClient, teamId, userWorkerId),
           getShiftOptions(teamId),
         ]);
 

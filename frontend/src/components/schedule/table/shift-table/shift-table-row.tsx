@@ -57,12 +57,13 @@ export default function ShiftTableRow({
       {periodDates.map((pDate, dateIndex) => {
         const scheduleCellDataKey = generateOwnerIdDateKey(
           shift.id,
-          pDate.date
+          pDate.date,
         );
         const scheduleCellData = scheduleCellsDict[scheduleCellDataKey] || null;
         return (
           <ShiftCell
             key={dateIndex}
+            teamWithMembership={teamWithMembership}
             periodDate={pDate}
             shift={shift}
             scheduleCellData={scheduleCellData}

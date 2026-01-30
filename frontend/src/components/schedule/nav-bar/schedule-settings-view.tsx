@@ -101,6 +101,7 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
           style={{ marginLeft: "8px" }}
         >
           <ToggleButton
+            data-testid="settings-timeframe-week"
             value="week"
             sx={{
               textTransform: "none",
@@ -112,6 +113,7 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
             {t("week")}
           </ToggleButton>
           <ToggleButton
+            data-testid="settings-timeframe-month"
             value="month"
             sx={{
               textTransform: "none",
@@ -135,6 +137,7 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
           style={{ marginLeft: "8px" }}
         >
           <ToggleButton
+            data-testid="settings-groupby-shift"
             value="shift"
             sx={{
               textTransform: "none",
@@ -146,6 +149,7 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
             {t("shift")}
           </ToggleButton>
           <ToggleButton
+            data-testid="settings-groupby-worker"
             value="worker"
             sx={{
               textTransform: "none",
@@ -163,6 +167,7 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
           <FormControlLabel
             control={
               <Checkbox
+                data-testid="settings-checkbox-assignments"
                 checked={scheduleViewSettings.showAssignments}
                 onChange={handleShowAssignmentsToggle}
                 size="small"
@@ -178,6 +183,7 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
             <FormControlLabel
               control={
                 <Checkbox
+                  data-testid="settings-checkbox-demands"
                   checked={scheduleViewSettings.showDailyShiftDemands}
                   onChange={handleShowDailyShiftDemandsToggle}
                   size="small"
@@ -191,10 +197,10 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
           <FormControlLabel
             control={
               <Checkbox
+                data-testid="settings-checkbox-requests"
                 checked={scheduleViewSettings.showRequests}
                 onChange={handleShowRequestsToggle}
                 size="small"
-                disabled={true}
               />
             }
             label={

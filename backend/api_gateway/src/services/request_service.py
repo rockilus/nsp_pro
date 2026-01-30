@@ -50,7 +50,27 @@ class RequestService(BaseService):
         new_request = self.collection.request_db.create_request(request)
         return self._to_request_augmented(new_request)
 
-    def get_requests(self, team_id: str) -> List[RequestAugmented]:
+    def get_requests(
+        self, team_id: str, worker_id: str | None = None
+    ) -> List[RequestAugmented]:
+        """Get requests for a team, optionally filtered by worker_id.
+
+        Args:
+            team_id: Team ID to get requests for
+            worker_id: Optional worker ID to filter requests. If None, returns
+            all team requests.
+
+        Returns:
+            List of augmented request objects
+        """
+        if worker_id:
+            # Filter by specific worker
+            worker = self.collection.worker_db.get_worker_by_id(worker_id)
+            if not worker or worker.team_id != team_id:
+                return []  # Worker not found or doesn't belong to team
+            requests = self.collection.request_db.get_requests([worker_id])
+            return self._to_requests_augmented(requests, team_id)
+        # Get all requests for team (existing behavior)
         workers = self.collection.worker_db.get_workers(team_id)
         requests = self.collection.request_db.get_requests([w.id for w in workers])
         return self._to_requests_augmented(requests, team_id)

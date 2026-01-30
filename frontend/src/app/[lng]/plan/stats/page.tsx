@@ -8,31 +8,31 @@ import "dayjs/locale/fr";
 import "dayjs/locale/es";
 // Components
 import StatsTab from "../../../../components/stats/stats-tab";
-import { RoleBased } from "@/components/access/role-based";
+import { AccessGuard } from "@/components/access/access-guard";
 // Context
 import { useTeam } from "@/context/TeamContext";
 // Styles
 import "../../../../styles/page.css";
-// Types
-import { PageRolePermissions } from "@/types/user";
 
 export default function Page({ params }: { params: Promise<{ lng: string }> }) {
   const { selectedTeam } = useTeam();
   const { lng } = React.use(params as Promise<{ lng: string }>);
 
   return (
-    <RoleBased
-      role={selectedTeam?.membership.role || null}
-      allowedRoles={PageRolePermissions.stats}
-    >
-      <div className="page-layout">
-        <LocalizationProvider
-          dateAdapter={AdapterDayjs}
-          adapterLocale={lng === "en" ? "en-gb" : lng === "es" ? "es" : "fr"}
-        >
-          <StatsTab lng={lng} selectedTeamId={selectedTeam?.team.id || null} />
-        </LocalizationProvider>
-      </div>
-    </RoleBased>
+    selectedTeam && (
+      <AccessGuard route="/stats" teamWithMembership={selectedTeam}>
+        <div className="page-layout">
+          <LocalizationProvider
+            dateAdapter={AdapterDayjs}
+            adapterLocale={lng === "en" ? "en-gb" : lng === "es" ? "es" : "fr"}
+          >
+            <StatsTab
+              lng={lng}
+              selectedTeamId={selectedTeam?.team.id || null}
+            />
+          </LocalizationProvider>
+        </div>
+      </AccessGuard>
+    )
   );
 }

@@ -14,6 +14,12 @@ export const routeAccess: Record<
   "/shift-demands": { roles: [TeamMembershipRole.OWNER] },
   "/stats": { roles: [TeamMembershipRole.OWNER] },
   "/teams": { roles: [TeamMembershipRole.OWNER] },
+  "/requests": {
+    roles: [TeamMembershipRole.OWNER, TeamMembershipRole.MEMBER],
+  },
+  "/schedule": {
+    roles: [TeamMembershipRole.OWNER, TeamMembershipRole.MEMBER],
+  },
 };
 
 // export const routeAccess: Record<string, { roles?: string[]; features?: string[] }> = {

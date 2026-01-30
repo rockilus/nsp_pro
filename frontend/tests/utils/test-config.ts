@@ -44,6 +44,8 @@ export interface TestConfig {
   authToken: string;
   /** Development User ID for X-Dev-User-ID header */
   devUserId: string;
+  /** Optional second Development User ID for multi-user test scenarios */
+  devUserId2?: string;
   /** Development API Key for X-API-Key header */
   devApiKey: string;
   /** Test environment (development, staging, production) */
@@ -117,6 +119,7 @@ export function loadTestConfig(): TestConfig {
     environment,
     authToken: process.env.TEST_AUTH_TOKEN || "",
     devUserId: process.env.TEST_USER_ID || "",
+    devUserId2: process.env.TEST_USER_ID_2,
     devApiKey: process.env.TEST_API_KEY || process.env.DEV_API_KEY || "",
     confirmationToken:
       process.env.TEST_CONFIRMATION_TOKEN || "test-reset-confirm",

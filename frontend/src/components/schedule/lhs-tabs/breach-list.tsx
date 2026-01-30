@@ -66,7 +66,7 @@ export default function BreachList({
   };
 
   return (
-    <div className="breach-lhs-tab-container">
+    <div className="breach-lhs-tab-container" data-testid="breach-lhs-panel">
       <LHSHEader lhsHeaderTitle={t("breaches")} onClose={onClose} />
       <div>
         {categoryMap.map((c) => (

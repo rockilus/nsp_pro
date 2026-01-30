@@ -3,6 +3,7 @@
  */
 
 import { UserT, toUserT, fromUserT } from "../../../types/user";
+import { WorkerT, toWorkerT } from "../../../types/worker";
 import { BaseApi, AuthenticatedApiClient } from "./baseApi";
 
 export class UserApi extends BaseApi {
@@ -74,5 +75,32 @@ export class UserApi extends BaseApi {
       `/users/${userId}/change-password`,
       passwordData
     );
+  }
+
+  /**
+   * Get authenticated user's worker for a specific team (authenticated)
+   * Returns null if no worker is found for the user in this team
+   */
+  static async getUserWorker(
+    apiClient: AuthenticatedApiClient,
+    teamId: string
+  ): Promise<WorkerT | null> {
+    // Security: Input validation
+    if (!teamId) {
+      throw new Error("Team ID is required");
+    }
+
+    const responseData = await this.makeRequest<any>(
+      apiClient,
+      "get",
+      `/users/me/worker/teams/${teamId}`
+    );
+
+    // Backend returns null if no worker is associated with the user
+    if (responseData === null) {
+      return null;
+    }
+
+    return toWorkerT(responseData);
   }
 }

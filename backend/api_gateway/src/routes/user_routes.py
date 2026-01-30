@@ -5,6 +5,7 @@ from pydantic import BaseModel, EmailStr
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas.core import PasswordData
+from shared.schemas.dto import WorkerDTO
 from shared.schemas.dto.user import PasswordDataDTO, UserDTO
 
 from src.dependencies import (
@@ -72,6 +73,59 @@ async def get_current_user(
     except Exception as e:
         log_info("Failed to get current user")
         handle_routes_errors(e)
+    return response
+
+
+@router.get("/users/me/worker/teams/{team_id}")
+async def get_user_worker_for_team(
+    team_id: str,
+    user_context: UserContext = Depends(get_user_context),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
+) -> WorkerDTO | None:
+    """
+    Get the worker associated with the authenticated user for a specific team.
+    Returns None if no worker is linked to the user for this team.
+    """
+    try:
+        user_id = user_context.user_id
+
+        # Check permission to read workers for this team
+        if not await authz_check(user_id, "read-workers", "team", team_id):
+            raise NotAuthorizedError(
+                "You do not have permission to access workers for this team"
+            )
+
+        # Get workers linked to this user for the specified team
+        workers = db_collections.worker_db.get_workers_by_team_and_user(
+            team_id=team_id, user_id=user_id
+        )
+
+        if not workers:
+            log_info(
+                f"No worker found for user {user_id} in team {team_id}. "
+                "User may need worker association created by team admin."
+            )
+            return None
+
+        # Take first worker (assumption: one worker per user per team)
+        worker = workers[0]
+
+        # Log warning if multiple workers found
+        if len(workers) > 1:
+            log_info(
+                f"Warning: Multiple workers ({len(workers)}) found for "
+                f"user {user_id} in team {team_id}. "
+                f"Returning first worker: {worker.id}"
+            )
+
+        # Get attributes for the worker
+        attributes = db_collections.attribute_db.get_attributes_by_owner_id(worker.id)
+        response = worker.to_dto(attributes)
+
+    except Exception as e:
+        log_info(f"Failed to get user worker for team {team_id}")
+        handle_routes_errors(e)
+
     return response
 
 

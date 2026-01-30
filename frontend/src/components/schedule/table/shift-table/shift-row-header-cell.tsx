@@ -3,6 +3,7 @@ import React from "react";
 import TableCell from "@mui/material/TableCell";
 // Components
 import { countShiftsTotalPeriod } from "../shared/assignment-count-methods";
+import { RoleBased } from "@/components/access/role-based";
 // Styles
 import "./shift-row-header-cell.css";
 // Types
@@ -10,6 +11,7 @@ import { ShiftT, ShiftType } from "../../../../types/shift";
 import { ScheduleT } from "../../../../types/schedule";
 import { ShiftDemandDTO } from "@/types/shiftDemand";
 import { AssignmentT } from "@/types/assignment";
+import { TeamMembershipRole } from "@/types/team";
 // Constants
 import { ShiftColorMappings } from "../../../../constants/constants";
 import { TeamWithMembership } from "@/types/team";
@@ -40,7 +42,7 @@ export default function ShiftRowHeaderCell({
           assignments,
           shiftDemands,
           scheduleCampaign.startDate,
-          scheduleCampaign.endDate
+          scheduleCampaign.endDate,
         )
       : { countActual: 0, countTarget: 0 };
 
@@ -67,19 +69,33 @@ export default function ShiftRowHeaderCell({
             className="shift-name"
             data-testid={`shift-name-${shift.id}`}
           >{`${shift.name} (${shift.acronym})`}</span>
-          {teamWithMembership.team.useSolver && scheduleCampaign && (
-            <span
-              className={`shift-stats-total ${
-                shiftCountActual !== shiftCountTarget && "breach"
-              }`}
-            >
-              {`${shiftCountActual} / ${shiftCountTarget}`}
-            </span>
-          )}
+          <RoleBased
+            role={teamWithMembership.membership.role}
+            allowedRoles={[TeamMembershipRole.OWNER]}
+          >
+            {teamWithMembership.team.useSolver && scheduleCampaign && (
+              <span
+                className={`shift-stats-total ${
+                  shiftCountActual !== shiftCountTarget && "breach"
+                }`}
+                data-testid={`shift-count-${shift.id}`}
+              >
+                {`${shiftCountActual} / ${shiftCountTarget}`}
+              </span>
+            )}
+          </RoleBased>
         </div>
         <div className="shift-row-header-cell-right">
-          <span className="shift-time">{shift.startTime.format("HH:mm")}</span>
-          <span className="shift-time">
+          <span
+            className="shift-time"
+            data-testid={`shift-time-start-${shift.id}`}
+          >
+            {shift.startTime.format("HH:mm")}
+          </span>
+          <span
+            className="shift-time"
+            data-testid={`shift-time-end-${shift.id}`}
+          >
             {shift.endTime.format("HH:mm")}
             {!shift.endTime.isSame(shift.startTime, "day") && <sup>+1</sup>}
           </span>

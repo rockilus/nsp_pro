@@ -18,6 +18,7 @@ import ScheduleDisplay from "./table/schedule-display";
 import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
 import LHSTab from "./lhs-tabs/lhs-tab";
 import CreateAssignment from "./lhs-tabs/create-assignment";
+import NoAssignmentsDisplay from "./no-assignments-display";
 import { buildAssignmentsDataByOwnerAndDate } from "./table/shared/assignment-utils";
 import { getPeriodStartEndDates } from "./schedule-utils";
 import { computePeriodEndDate } from "../../app/lib/utils/scheduleViewSettingsUtils";
@@ -26,6 +27,8 @@ import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
 import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
 // Actions
 import { useGetStats } from "../../hooks/useStats";
+import { useGetBreaches } from "../../hooks/useBreach";
+import { useGetSpecialties } from "../../hooks/useSpecialty";
 // Assignment Hooks
 import {
   useAddAssignmentAndRecurrence,
@@ -34,6 +37,7 @@ import {
 } from "../../hooks/useAssignment";
 // Request Hooks
 import {
+  useGetRequests,
   useAddRequest,
   useUpdateRequest,
   useDeleteRequest,
@@ -52,6 +56,8 @@ import {
   useDuplicatePeriod,
 } from "../../hooks/useSchedule";
 import { useExportSchedule } from "../../hooks/useExport";
+import { useUserWorker } from "../../hooks/useUserWorker";
+import Alert from "@mui/material/Alert";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "./schedule-tab.css";
@@ -70,6 +76,7 @@ import {
   DuplicateResultT,
 } from "../../types/schedule";
 import { BreachT } from "@/types/breach";
+import { TeamMembershipRole } from "@/types/team";
 import {
   ShiftDemandCreateDTO,
   ShiftDemandUpdateDTO,
@@ -82,6 +89,7 @@ import {
 import { RequestT } from "../../types/request";
 import {
   StatsT,
+  StatsOptionsT,
   StatsTimeFrameOptions,
   StatsUnitOptions,
   HeaderUnitOptions,
@@ -113,6 +121,11 @@ export default function ScheduleTab({
   // Stats hook
   const getStats = useGetStats();
 
+  // Data hooks for owner-only data
+  const getBreaches = useGetBreaches();
+  const getSpecialties = useGetSpecialties();
+  const getRequests = useGetRequests();
+
   // Schedule hooks
   const validateSchedule = useValidateSchedule();
   const updateSchedule = useUpdateSchedule();
@@ -137,6 +150,22 @@ export default function ScheduleTab({
   const acceptRequest = useAcceptRequest();
   const denyRequest = useDenyRequest();
 
+  // Fetch user's worker for role-based checks (only for members)
+  const {
+    data: userWorker,
+    isLoading: isLoadingUserWorker,
+    error: userWorkerError,
+  } = useUserWorker(
+    teamWithMembership.team.id,
+    teamWithMembership.membership.role === TeamMembershipRole.MEMBER,
+  );
+
+  // Check if member has no worker association
+  const memberHasNoWorker =
+    teamWithMembership.membership.role === TeamMembershipRole.MEMBER &&
+    !isLoadingUserWorker &&
+    userWorker === null;
+
   const [isLoadingSchedule, setIsLoadingSchedule] = useState<boolean>(true);
   const [isLoadingAssignments, setIsLoadingAssignments] =
     useState<boolean>(true);
@@ -146,7 +175,7 @@ export default function ScheduleTab({
   const [requests, setRequests] = useState<RequestT[]>([]);
   const [schedulesValidated, setSchedulesValidated] = useState<ScheduleT[]>([]);
   const [scheduleCampaign, setScheduleCampaign] = useState<ScheduleT | null>(
-    null
+    null,
   );
   const [assignments, setAssignments] = useState<AssignmentT[]>([]);
   const [recurrences, setRecurrences] = useState<RecurrenceRuleT[]>([]);
@@ -156,7 +185,7 @@ export default function ScheduleTab({
 
   // Use persistent schedule view settings
   const defaultSettings = getDefaultScheduleViewSettings(
-    teamWithMembership.team.useSolver
+    teamWithMembership.team.useSolver,
   );
 
   const [
@@ -185,17 +214,19 @@ export default function ScheduleTab({
     scheduleViewSettings.periodStartDate.toDate(),
     computePeriodEndDate(
       scheduleViewSettings.periodStartDate,
-      scheduleViewSettings.timeFrame
+      scheduleViewSettings.timeFrame,
     ).toDate(),
     {
-      enabled: teamWithMembership.team.useSolver,
+      enabled:
+        teamWithMembership.team.useSolver &&
+        teamWithMembership.membership.role !== TeamMembershipRole.MEMBER,
       bufferDays: 7, // Load extra days for better UX
-    }
+    },
   );
 
   // Mutation hooks for shift demands
   const shiftDemandMutations = useShiftDemandMutations(
-    teamWithMembership.team.id
+    teamWithMembership.team.id,
   );
 
   const getScheduleFromDate = useCallback(
@@ -211,14 +242,14 @@ export default function ScheduleTab({
       const validatedSchedule = schedulesValidated.find(
         (s) =>
           date.isSameOrBefore(s.endDate, "day") &&
-          date.isSameOrAfter(s.startDate, "day")
+          date.isSameOrAfter(s.startDate, "day"),
       );
       if (validatedSchedule) {
         return validatedSchedule;
       }
       return null;
     },
-    [scheduleCampaign, schedulesValidated]
+    [scheduleCampaign, schedulesValidated],
   );
 
   const buildDates = useCallback(
@@ -240,7 +271,7 @@ export default function ScheduleTab({
       }
       return dates;
     },
-    [getScheduleFromDate]
+    [getScheduleFromDate],
   );
 
   // Compute periodDates from the centralized date state
@@ -250,14 +281,14 @@ export default function ScheduleTab({
         scheduleViewSettings.periodStartDate,
         computePeriodEndDate(
           scheduleViewSettings.periodStartDate,
-          scheduleViewSettings.timeFrame
-        )
+          scheduleViewSettings.timeFrame,
+        ),
       ),
     [
       scheduleViewSettings.periodStartDate,
       scheduleViewSettings.timeFrame,
       buildDates,
-    ]
+    ],
   );
 
   const [selectedTab, setSelectedTab] = useState<string | null>(null);
@@ -285,7 +316,7 @@ export default function ScheduleTab({
   };
 
   const handleDemandSelection = (
-    selectedScheduleCellData: ScheduleCellDataT
+    selectedScheduleCellData: ScheduleCellDataT,
   ) => {
     setSelectedDemand(selectedScheduleCellData);
     setSelectedAssignment(null);
@@ -320,7 +351,7 @@ export default function ScheduleTab({
     try {
       const newSchedule = await validateSchedule(
         scheduleId,
-        teamWithMembership.team.id
+        teamWithMembership.team.id,
       );
       setScheduleCampaign(null);
       setSchedulesValidated([...schedulesValidated, newSchedule]);
@@ -342,13 +373,13 @@ export default function ScheduleTab({
   const handleSendDuplicateRequest = async (
     request: DuplicateRequestT,
     campaignId: string,
-    teamId: string
+    teamId: string,
   ) => {
     try {
       const duplicateResult = await duplicatePeriod(
         request,
         campaignId,
-        teamId
+        teamId,
       );
       handleDuplicateResult(duplicateResult);
       const newPeriodStart = request.targetPeriod.startDate.startOf("isoWeek");
@@ -368,7 +399,7 @@ export default function ScheduleTab({
     shiftId: string,
     date: dayjs.Dayjs,
     count: number,
-    notes?: string
+    notes?: string,
   ) => {
     try {
       const demandData: Omit<ShiftDemandCreateDTO, "teamId"> = {
@@ -395,7 +426,7 @@ export default function ScheduleTab({
 
   const handleUpdateShiftDemand = async (
     demandId: string,
-    updates: Partial<ShiftDemandUpdateDTO>
+    updates: Partial<ShiftDemandUpdateDTO>,
   ) => {
     try {
       // Get the updated shift demand from the mutation response
@@ -454,10 +485,10 @@ export default function ScheduleTab({
     try {
       const updatedRequest = await updateRequest(
         request,
-        teamWithMembership.team.id
+        teamWithMembership.team.id,
       );
       setRequests(
-        requests.map((r) => (r.id === updatedRequest.id ? updatedRequest : r))
+        requests.map((r) => (r.id === updatedRequest.id ? updatedRequest : r)),
       );
       setSelectedRequest(updatedRequest);
     } catch (error) {
@@ -480,19 +511,19 @@ export default function ScheduleTab({
     try {
       const result = await rescindRequest(
         requestId,
-        teamWithMembership.team.id
+        teamWithMembership.team.id,
       );
       const rescindedRequest = result.request;
       const assignmentsDeletedIds = result.assignmentsDeletedIds || [];
 
       setRequests((prev) =>
-        prev.map((r) => (r.id === rescindedRequest.id ? rescindedRequest : r))
+        prev.map((r) => (r.id === rescindedRequest.id ? rescindedRequest : r)),
       );
       setSelectedRequest(rescindedRequest);
 
       if (assignmentsDeletedIds.length > 0) {
         setAssignments((prev) =>
-          prev.filter((a) => !assignmentsDeletedIds.includes(a.id))
+          prev.filter((a) => !assignmentsDeletedIds.includes(a.id)),
         );
       }
     } catch (error) {
@@ -508,7 +539,7 @@ export default function ScheduleTab({
 
       // Update requests list and selected request
       setRequests((prev) =>
-        prev.map((r) => (r.id === acceptedRequest.id ? acceptedRequest : r))
+        prev.map((r) => (r.id === acceptedRequest.id ? acceptedRequest : r)),
       );
       setSelectedRequest(acceptedRequest);
 
@@ -530,10 +561,10 @@ export default function ScheduleTab({
     try {
       const deniedRequest = await denyRequest(
         requestId,
-        teamWithMembership.team.id
+        teamWithMembership.team.id,
       );
       setRequests(
-        requests.map((r) => (r.id === deniedRequest.id ? deniedRequest : r))
+        requests.map((r) => (r.id === deniedRequest.id ? deniedRequest : r)),
       );
       setSelectedRequest(deniedRequest);
     } catch (error) {
@@ -546,13 +577,13 @@ export default function ScheduleTab({
   //////////////////////////
 
   const updateAssignmentsAndRecurrencesStates = (
-    ARResult: AssignmentsRecurrencesResultT
+    ARResult: AssignmentsRecurrencesResultT,
   ) => {
     setAssignments((prev) => {
       let updatedAssignments = prev.map(
         (a) =>
           ARResult.assignmentsUpdated.find((updated) => updated.id === a.id) ||
-          a
+          a,
       );
 
       if (ARResult.assignmentsCreated.length > 0) {
@@ -564,7 +595,7 @@ export default function ScheduleTab({
 
       if (ARResult.assignmentsDeletedIds.length > 0) {
         updatedAssignments = updatedAssignments.filter(
-          (a) => !ARResult.assignmentsDeletedIds.includes(a.id)
+          (a) => !ARResult.assignmentsDeletedIds.includes(a.id),
         );
       }
 
@@ -587,14 +618,14 @@ export default function ScheduleTab({
             ? recurrence.id === ARResult.recurrenceUpdated.id
               ? ARResult.recurrenceUpdated
               : recurrence
-            : recurrence
+            : recurrence,
         );
       }
 
       if (ARResult.recurrencesDeletedIds.length > 0) {
         updatedRecurrences = updatedRecurrences.filter(
           (recurrence) =>
-            !ARResult.recurrencesDeletedIds.includes(recurrence.id)
+            !ARResult.recurrencesDeletedIds.includes(recurrence.id),
         );
       }
 
@@ -603,7 +634,7 @@ export default function ScheduleTab({
   };
 
   const handleOpenCreateAssignment = (
-    createAssignmentData: CreateAssignmentT
+    createAssignmentData: CreateAssignmentT,
   ) => {
     setCreateAssignmentData(createAssignmentData);
     setSelectedTab("create_assignment");
@@ -618,7 +649,7 @@ export default function ScheduleTab({
 
   const handleCreateAssignment = async (
     assignment: AssignmentT,
-    recurrence: RecurrenceRuleT | null = null
+    recurrence: RecurrenceRuleT | null = null,
   ) => {
     const ARResult = await addAssignmentAndRecurrence(assignment, recurrence);
     setAssignments([...assignments, ...ARResult.assignmentsCreated]);
@@ -633,7 +664,7 @@ export default function ScheduleTab({
       workers,
       shifts,
       breaches,
-      requests
+      requests,
     );
     const newSelectedCell = Object.values(assignDict)[0][0];
     setSelectedAssignment(newSelectedCell);
@@ -643,13 +674,13 @@ export default function ScheduleTab({
   const handleUpdateAssignment = async (
     assignment: AssignmentT,
     recurrence: RecurrenceRuleT | null = null,
-    recurrenceUpdateScope: RecurrenceUpdateScope | null = null
+    recurrenceUpdateScope: RecurrenceUpdateScope | null = null,
   ) => {
     const ARResult = await updateAssignmentAndRecurrence(
       assignment,
       teamWithMembership.team.id,
       recurrence,
-      recurrenceUpdateScope
+      recurrenceUpdateScope,
     );
 
     updateAssignmentsAndRecurrencesStates(ARResult);
@@ -661,7 +692,7 @@ export default function ScheduleTab({
       workers,
       shifts,
       breaches,
-      requests
+      requests,
     );
     const newSelectedCell = Object.values(assignDict)[0][0];
     setSelectedAssignment(newSelectedCell);
@@ -672,13 +703,13 @@ export default function ScheduleTab({
   const handleDeleteAssignment = async (
     assignmentId: string,
     recurrenceId: string | null = null,
-    recurrenceUpdateScope: RecurrenceUpdateScope | null = null
+    recurrenceUpdateScope: RecurrenceUpdateScope | null = null,
   ) => {
     const ARResult = await deleteAssignment(
       assignmentId,
       teamWithMembership.team.id,
       recurrenceId,
-      recurrenceUpdateScope
+      recurrenceUpdateScope,
     );
     updateAssignmentsAndRecurrencesStates(ARResult);
     setSelectedAssignment(null);
@@ -686,7 +717,7 @@ export default function ScheduleTab({
 
   const updateSelectedPeriod = (
     newPeriodStart: dayjs.Dayjs,
-    newPeriodEnd: dayjs.Dayjs
+    newPeriodEnd: dayjs.Dayjs,
   ) => {
     updateScheduleViewSettings({
       periodStartDate: newPeriodStart,
@@ -699,14 +730,14 @@ export default function ScheduleTab({
       scheduleViewSettings.timeFrame === "week"
         ? dayjs.utc().startOf("isoWeek")
         : scheduleViewSettings.timeFrame === "month"
-        ? dayjs.utc().startOf("month")
-        : dayjs.utc(); // Default to current time if neither "week" nor "month"
+          ? dayjs.utc().startOf("month")
+          : dayjs.utc(); // Default to current time if neither "week" nor "month"
     const newPeriodEnd =
       scheduleViewSettings.timeFrame === "week"
         ? dayjs.utc().endOf("isoWeek")
         : scheduleViewSettings.timeFrame === "month"
-        ? dayjs.utc().endOf("month")
-        : dayjs.utc(); // Default to current time if neither "week" nor "month"
+          ? dayjs.utc().endOf("month")
+          : dayjs.utc(); // Default to current time if neither "week" nor "month"
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
 
@@ -714,11 +745,11 @@ export default function ScheduleTab({
     const isMonth = scheduleViewSettings.timeFrame === "month";
     const newPeriodStart = scheduleViewSettings.periodStartDate.subtract(
       1,
-      isMonth ? "month" : "week"
+      isMonth ? "month" : "week",
     );
     const newPeriodEnd = computePeriodEndDate(
       newPeriodStart,
-      scheduleViewSettings.timeFrame
+      scheduleViewSettings.timeFrame,
     );
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
@@ -727,11 +758,11 @@ export default function ScheduleTab({
     const isMonth = scheduleViewSettings.timeFrame === "month";
     const newPeriodStart = scheduleViewSettings.periodStartDate.add(
       1,
-      isMonth ? "month" : "week"
+      isMonth ? "month" : "week",
     );
     const newPeriodEnd = computePeriodEndDate(
       newPeriodStart,
-      scheduleViewSettings.timeFrame
+      scheduleViewSettings.timeFrame,
     );
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
@@ -744,7 +775,10 @@ export default function ScheduleTab({
       getPeriodStartEndDates(
         newTimeFrame,
         scheduleViewSettings.periodStartDate,
-        computePeriodEndDate(scheduleViewSettings.periodStartDate, newTimeFrame)
+        computePeriodEndDate(
+          scheduleViewSettings.periodStartDate,
+          newTimeFrame,
+        ),
       );
 
     // Step 2: Update schedule view settings with both new timeFrame and new start date
@@ -759,7 +793,7 @@ export default function ScheduleTab({
   //////////////////////////
 
   const handleChangeStatsTimeFrame = async (
-    timeFrame: StatsTimeFrameOptions
+    timeFrame: StatsTimeFrameOptions,
   ) => {
     const newStatsOptions = {
       timeFrame,
@@ -772,7 +806,7 @@ export default function ScheduleTab({
     };
     const newStats = await getStats(
       teamWithMembership.team.id,
-      newStatsOptions
+      newStatsOptions,
     );
     setStats(newStats);
     setSelectedQuickStatsTimeFrame(timeFrame);
@@ -842,13 +876,13 @@ export default function ScheduleTab({
         if (newRequests) {
           setRequests((prev) =>
             prev.map(
-              (r) => newRequests.find((nr: RequestT) => nr.id === r.id) || r
-            )
+              (r) => newRequests.find((nr: RequestT) => nr.id === r.id) || r,
+            ),
           );
         }
       }
     },
-    [scheduleCampaign]
+    [scheduleCampaign],
   );
 
   useEffect(() => {
@@ -864,15 +898,19 @@ export default function ScheduleTab({
         const fetchedSchedule = await getSchedules(teamWithMembership.team.id);
         setScheduleCampaign(
           fetchedSchedule.find(
-            (s: ScheduleT) => s.status === ScheduleStatus.CAMPAIGN
-          ) || null
+            (s: ScheduleT) => s.status === ScheduleStatus.CAMPAIGN,
+          ) || null,
         );
         setSchedulesValidated(
           fetchedSchedule.filter(
-            (s: ScheduleT) => s.status === ScheduleStatus.VALIDATED
-          )
+            (s: ScheduleT) => s.status === ScheduleStatus.VALIDATED,
+          ),
         );
         setIsLoadingSchedule(false);
+
+        // Determine if user should see campaign assignments (owners/leaders only)
+        const includeCampaign =
+          teamWithMembership.membership.role !== TeamMembershipRole.MEMBER;
 
         // Fetch assignment data
         if (teamWithMembership.team.useSolver) {
@@ -881,7 +919,10 @@ export default function ScheduleTab({
             recurrences: fetchedRecurrences,
             workers: fetchedWorkers,
             shifts: fetchedShifts,
-          } = await getScheduleAssignmentsData(teamWithMembership.team.id);
+          } = await getScheduleAssignmentsData(
+            teamWithMembership.team.id,
+            includeCampaign,
+          );
           setAssignments(fetchedAssignments);
           setRecurrences(fetchedRecurrences);
           setWorkers(fetchedWorkers);
@@ -894,7 +935,8 @@ export default function ScheduleTab({
             workers: fetchedWorkers,
             shifts: fetchedShifts,
           } = await getScheduleAssignmentsDataNoSolver(
-            teamWithMembership.team.id
+            teamWithMembership.team.id,
+            includeCampaign,
           );
           setAssignments(fetchedAssignments);
           setRecurrences(fetchedRecurrences);
@@ -904,17 +946,33 @@ export default function ScheduleTab({
 
         setIsLoadingAssignments(false);
 
-        // Fetch left-hand side bar data
-        const {
-          breaches: fetchedBreaches,
-          requests: fetchedRequests,
-          stats: fetchedStats,
-          specialties: fetchedSpecialties,
-        } = await getScheduleLHSData(teamWithMembership.team.id);
-        setBreaches(fetchedBreaches);
+        // Fetch requests (needed for both members and owners)
+        const fetchedRequests = await getRequests(teamWithMembership.team.id);
         setRequests(fetchedRequests);
-        setStats(fetchedStats);
-        setSpecialties(fetchedSpecialties);
+
+        // Fetch owner-only data conditionally
+        if (teamWithMembership.membership.role !== TeamMembershipRole.MEMBER) {
+          // Prepare stats options
+          const statsOptions: StatsOptionsT = {
+            timeFrame: StatsTimeFrameOptions.CAMPAING,
+            startDate: dayjs.utc().startOf("day").subtract(1, "year"),
+            endDate: dayjs.utc().startOf("day"),
+            statsUnit: StatsUnitOptions.NB_DAYS_WORKED,
+            headerUnit: HeaderUnitOptions.WEEK,
+            selectedShifts: [],
+            showFavorites: true,
+          };
+
+          const [fetchedBreaches, fetchedStats, fetchedSpecialties] =
+            await Promise.all([
+              getBreaches(teamWithMembership.team.id),
+              getStats(teamWithMembership.team.id, statsOptions),
+              getSpecialties(teamWithMembership.team.id),
+            ]);
+          setBreaches(fetchedBreaches);
+          setStats(fetchedStats);
+          setSpecialties(fetchedSpecialties);
+        }
 
         // const endTime = dayjs();
         // console.log("fetchData useEffect ended");
@@ -938,16 +996,24 @@ export default function ScheduleTab({
     getSchedules,
     getScheduleAssignmentsData,
     getScheduleAssignmentsDataNoSolver,
-    getScheduleLHSData,
+    getRequests,
+    getBreaches,
+    getStats,
+    getSpecialties,
   ]);
 
-  const lhsTabContent: LHSTabContentT[] = [
+  // Filter tabs based on user role - members don't see owner-only tabs
+  const isOwner =
+    teamWithMembership.membership.role !== TeamMembershipRole.MEMBER;
+
+  const allLhsTabContent: LHSTabContentT[] = [
     {
       name: "breaches",
       label: t("breaches"),
       content: (
         <BreachList lng={lng} breaches={breaches} onClose={handleCloseLHS} />
       ),
+      ownerOnly: true,
     },
     {
       name: "quick_staffing",
@@ -963,6 +1029,7 @@ export default function ScheduleTab({
           handleUpdateSchedule={handleUpdateSchedule}
         />
       ) : null,
+      ownerOnly: true,
     },
     {
       name: "quick_stats",
@@ -978,6 +1045,7 @@ export default function ScheduleTab({
           handleChangeStatsTimeFrame={handleChangeStatsTimeFrame}
         />
       ) : null,
+      ownerOnly: true,
     },
     {
       name: "selection",
@@ -1034,8 +1102,14 @@ export default function ScheduleTab({
           handleCreateShiftDemand={handleCreateShiftDemand}
         />
       ) : null,
+      ownerOnly: false,
     },
   ];
+
+  // Filter tabs based on role
+  const lhsTabContent: LHSTabContentT[] = allLhsTabContent.filter(
+    (tab) => isOwner || !tab.ownerOnly,
+  );
 
   if (isMobile) {
     return (
@@ -1043,8 +1117,40 @@ export default function ScheduleTab({
     );
   }
 
+  if (memberHasNoWorker) {
+    return (
+      <div
+        className="tab-container-ultrawide"
+        data-testid="schedule-page-heading"
+      >
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "400px",
+            p: 4,
+          }}
+        >
+          <Alert
+            severity="info"
+            sx={{ maxWidth: "600px" }}
+            data-testid="no-worker-profile-alert"
+          >
+            <Typography variant="body1">
+              {t("error_no_worker_assigned")}
+            </Typography>
+          </Alert>
+        </Box>
+      </div>
+    );
+  }
+
   return (
-    <div className="tab-container-ultrawide">
+    <div
+      className="tab-container-ultrawide"
+      data-testid="schedule-page-heading"
+    >
       <div>
         {isLoadingSchedule ? (
           <div className="container-schedule-selector-skeleton">
@@ -1057,7 +1163,7 @@ export default function ScheduleTab({
             currentPeriodStart={scheduleViewSettings.periodStartDate}
             currentPeriodEnd={computePeriodEndDate(
               scheduleViewSettings.periodStartDate,
-              scheduleViewSettings.timeFrame
+              scheduleViewSettings.timeFrame,
             )}
             scheduleCampaign={scheduleCampaign}
             scheduleViewSettings={scheduleViewSettings}
@@ -1084,23 +1190,15 @@ export default function ScheduleTab({
           (teamWithMembership.team.useSolver && isLoadingShiftDemands) ? (
             <ScheduleTableSkeleton />
           ) : assignments.length === 0 && !scheduleCampaign ? (
-            <Box
-              sx={{
-                margin: 2,
-                marginLeft: 0,
-                overflowX: "auto",
-                backgroundColor: "none",
-                width: "100%",
-              }}
-            >
-              <Typography
-                variant="body1"
-                color="textSecondary"
-                sx={{ fontStyle: "italic" }}
-              >
-                {t("no_schedule_text")}
-              </Typography>
-            </Box>
+            <NoAssignmentsDisplay
+              lng={lng}
+              teamWithMembership={teamWithMembership}
+              scheduleId={null}
+              workers={workers}
+              shifts={shifts}
+              handleCreateAssignment={handleCreateAssignment}
+              handleCreateShiftDemand={handleCreateShiftDemand}
+            />
           ) : (
             <ScheduleDisplay
               lng={lng}

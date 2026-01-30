@@ -131,6 +131,9 @@ export class DimensionTestBase extends WorkerTestBase {
       );
     }
 
+    // Set authentication headers before any navigation
+    await this.dbUtils.authenticatePageAsTestUser(page);
+
     // Navigate to the application first to establish a valid document context
     await page.goto(`${testConfig.frontendUrl}/en/plan/shifts/`);
 

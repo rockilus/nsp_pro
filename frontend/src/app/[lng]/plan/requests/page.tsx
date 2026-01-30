@@ -8,15 +8,13 @@ import "dayjs/locale/fr";
 import "dayjs/locale/es";
 // Components
 import RequestTab from "../../../../components/request/request-tab";
-import { RoleBased } from "@/components/access/role-based";
+import { AccessGuard } from "@/components/access/access-guard";
 import ReactQueryProvider from "@/components/providers/ReactQueryProvider";
 // Context
 import { useTeam } from "@/context/TeamContext";
 import { useUser } from "@/context/UserContext";
 // Styles
 import "../../../../styles/page.css";
-// Types
-import { PageRolePermissions } from "@/types/user";
 
 export default function Page({ params }: { params: Promise<{ lng: string }> }) {
   const { selectedTeam } = useTeam();
@@ -26,10 +24,7 @@ export default function Page({ params }: { params: Promise<{ lng: string }> }) {
   return (
     selectedTeam &&
     user && (
-      <RoleBased
-        role={selectedTeam.membership.role}
-        allowedRoles={PageRolePermissions.requests}
-      >
+      <AccessGuard route="/requests" teamWithMembership={selectedTeam}>
         <div className="page-layout">
           <ReactQueryProvider>
             <LocalizationProvider
@@ -47,7 +42,7 @@ export default function Page({ params }: { params: Promise<{ lng: string }> }) {
             </LocalizationProvider>
           </ReactQueryProvider>
         </div>
-      </RoleBased>
+      </AccessGuard>
     )
   );
 }

@@ -124,6 +124,7 @@ export default function RequestCell({
 
   return (
     <div
+      data-testid={`request-cell-${request.id}`}
       className={`rc-container${getStatusClass()}`}
       style={
         {

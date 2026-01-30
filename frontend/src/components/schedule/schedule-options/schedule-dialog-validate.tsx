@@ -35,6 +35,7 @@ export default function ScheduleDialogValidate({
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
       <Button
+        data-testid="validate-button"
         variant="outlined"
         onClick={handleClickOpen}
         sx={{

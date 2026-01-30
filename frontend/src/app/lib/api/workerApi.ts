@@ -30,42 +30,48 @@ export class WorkerApi extends BaseApi {
 
   /**
    * Get workers by team ID (authenticated)
+   * @param workerId Optional worker ID to filter by specific worker
+   * @param includeDeleted Whether to include deleted workers (default: false)
    */
   static async getWorkers(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
+    workerId?: string,
+    includeDeleted: boolean = false
   ): Promise<WorkerT[]> {
     // Security: Input validation
     if (!teamId) {
       throw new Error("Team ID is required");
     }
 
+    // Build query parameters
+    const params = new URLSearchParams();
+    if (workerId) {
+      params.append("worker_id", workerId);
+    }
+    if (includeDeleted) {
+      params.append("include_deleted", "true");
+    }
+    const queryString = params.toString();
+
     const responseData = await this.makeRequest<any[]>(
       apiClient,
       "get",
-      `/workers/teams/${teamId}`
+      `/workers/teams/${teamId}${queryString ? `?${queryString}` : ""}`
     );
     return responseData.map((worker: any) => toWorkerT(worker));
   }
 
   /**
-   * Get all workers by team ID (authenticated)
+   * Get all workers by team ID including deleted (authenticated)
+   * @deprecated Use getWorkers(apiClient, teamId, undefined, true) instead
    */
   static async getAllWorkers(
     apiClient: AuthenticatedApiClient,
     teamId: string
   ): Promise<WorkerT[]> {
-    // Security: Input validation
-    if (!teamId) {
-      throw new Error("Team ID is required");
-    }
-
-    const responseData = await this.makeRequest<any[]>(
-      apiClient,
-      "get",
-      `/workers/all/teams/${teamId}`
-    );
-    return responseData.map((worker: any) => toWorkerT(worker));
+    // Wrapper for backward compatibility - calls getWorkers with include_deleted=true
+    return this.getWorkers(apiClient, teamId, undefined, true);
   }
 
   /**

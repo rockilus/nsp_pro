@@ -1,7 +1,7 @@
 import time as time_module
-from typing import List
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from shared.logger import log_info
 from shared.schemas.core import Request
 from shared.schemas.dto import RequestDTO
@@ -62,16 +62,45 @@ async def create_request(
 @router.get("/requests/teams/{team_id}")
 async def get_requests(
     team_id: str,
+    worker_id: Optional[str] = Query(
+        None, description="Optional worker ID to filter requests"
+    ),
     user_context: UserContext = Depends(get_user_context),
     request_service: RequestService = Depends(get_request_service),
 ) -> List[RequestDTO]:
     try:
-        if not await authz_check(
-            user_context.user_id, "read-requests", "team", team_id
-        ):
+        user_id = user_context.user_id
+        if not await authz_check(user_id, "read-requests", "team", team_id):
             raise NotAuthorizedError("You do not have permission to get requests")
+
+        # Get user role to determine filtering behavior
+        roles = await authz_role_assignments_list(
+            user_id=user_id,
+            resource="team",
+            resource_instance_key=team_id,
+        )
+        if len(roles) != 1:
+            raise NotAuthorizedError("You do not have permission to get requests")
+
+        team_role = roles[0]
+
+        # If member role, auto-detect their worker and filter
+        filter_worker_id = None
+        if team_role == "member":
+            # Get workers linked to this user
+            workers = request_service.collection.worker_db.get_workers_by_team_and_user(
+                team_id=team_id, user_id=user_id
+            )
+            if workers:
+                # Use first worker (assumption: one worker per user per team)
+                filter_worker_id = workers[0].id
+            # If no worker found, filter_worker_id stays None (returns empty)
+        elif worker_id:
+            # Owner explicitly filtering by worker_id
+            filter_worker_id = worker_id
+
         start_time = time_module.time()
-        requests = request_service.get_requests(team_id)
+        requests = request_service.get_requests(team_id, worker_id=filter_worker_id)
         response = [r.to_dto() for r in requests]
         end_time = time_module.time()
         time_taken = round(end_time - start_time)

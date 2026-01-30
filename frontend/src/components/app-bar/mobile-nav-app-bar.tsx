@@ -56,6 +56,7 @@ const MobileNavAppBar = ({
             }}
           >
             {mobileContent || (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src="/rockilus_logo_blue.jpg"
                 alt="logo"

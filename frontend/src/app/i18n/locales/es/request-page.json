@@ -5,6 +5,7 @@
     "do": "Hacer",
     "dont": "No hacer",
     "edit_request": "Editar solicitud",
+    "error_no_worker_assigned": "No estás asociado con un perfil de trabajador. Por favor, contacta al administrador de tu equipo.",
     "leave": "Descanso",
     "new_request": "Nueva solicitud",
     "no": "No",

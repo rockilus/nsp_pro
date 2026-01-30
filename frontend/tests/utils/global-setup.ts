@@ -5,11 +5,16 @@
  * 1. Backend API is running and accessible
  * 2. Test utilities are available
  * 3. Database can be reset successfully
- * 4. Test user is created for authentication
+ * 4. Default test user is created for authentication
+ *
+ * Note: Role-based tests (owner vs member) create their own users per test
+ * using RoleTestBase.setupRoleTests(). This global setup creates a default
+ * owner user for backward compatibility with existing tests.
  */
 
 import { chromium, FullConfig } from "@playwright/test";
 import { DatabaseTestUtils } from "./database-utils";
+import { testConfig } from "./test-config";
 
 async function globalSetup(config: FullConfig) {
   console.log("🚀 Starting global test setup...");
@@ -52,6 +57,25 @@ async function globalSetup(config: FullConfig) {
       // Don't fail the entire setup if user creation fails
       // Tests can handle authentication scenarios individually
       console.warn("⚠️ Continuing with setup despite user creation failure");
+    }
+
+    // Create second test user for multi-user test scenarios
+    console.log("👤 Creating second test user...");
+    try {
+      const user2Result = await dbUtils.createTestUser({
+        user_id: testConfig.devUserId2 || "64e9b7f1e13e4a1a9c8b4568",
+        email: "testuser2@example.com",
+        username: "testuser2",
+        first_name: "Test",
+        last_name: "User2",
+      });
+      console.log("✅ Second test user created successfully");
+      console.log(`   ${user2Result.message}`);
+    } catch (error) {
+      console.error("❌ Failed to create second test user:", error);
+      console.warn(
+        "⚠️ Continuing with setup despite second user creation failure"
+      );
     }
 
     // Optional: Verify we can create and query a browser for testing

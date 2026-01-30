@@ -32,6 +32,7 @@ const NavAppBar = ({ lng }: { lng: string }) => {
     >
       <Toolbar sx={{ height: "64px", padding: "0 12px" }}>
         <div className="app-bar-content-container">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/rockilus_logo_blue.jpg"
             alt="logo"

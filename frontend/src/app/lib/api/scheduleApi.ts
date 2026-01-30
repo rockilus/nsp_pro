@@ -44,7 +44,7 @@ export class ScheduleApi extends BaseApi {
    */
   static async createSchedule(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<ScheduleT> {
     // Security: Input validation
     if (!teamId) {
@@ -54,7 +54,7 @@ export class ScheduleApi extends BaseApi {
     const responseData = await this.makeRequest<any>(
       apiClient,
       "post",
-      `/schedules/teams/${teamId}`
+      `/schedules/teams/${teamId}`,
     );
     return toScheduleT(responseData) as ScheduleT;
   }
@@ -64,7 +64,7 @@ export class ScheduleApi extends BaseApi {
    */
   static async getSchedules(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<ScheduleT[]> {
     // Security: Input validation
     if (!teamId) {
@@ -74,7 +74,7 @@ export class ScheduleApi extends BaseApi {
     const responseData = await this.makeRequest<any[]>(
       apiClient,
       "get",
-      `/schedules/teams/${teamId}`
+      `/schedules/teams/${teamId}`,
     );
     return responseData.map(toScheduleT) as ScheduleT[];
   }
@@ -85,7 +85,7 @@ export class ScheduleApi extends BaseApi {
   static async getWorkTimeTable(
     apiClient: AuthenticatedApiClient,
     scheduleId: string,
-    teamId: string
+    teamId: string,
   ): Promise<WorkTimeTableT> {
     // Security: Input validation
     if (!scheduleId) {
@@ -98,7 +98,7 @@ export class ScheduleApi extends BaseApi {
     const responseData = await this.makeRequest<WorkTimeTableT>(
       apiClient,
       "get",
-      `/schedules/${scheduleId}/work-time-table/teams/${teamId}`
+      `/schedules/${scheduleId}/work-time-table/teams/${teamId}`,
     );
     return responseData;
   }
@@ -108,7 +108,7 @@ export class ScheduleApi extends BaseApi {
    */
   static async updateSchedule(
     apiClient: AuthenticatedApiClient,
-    schedule: ScheduleT
+    schedule: ScheduleT,
   ): Promise<ScheduleT> {
     // Security: Input validation
     if (!schedule || !schedule.id) {
@@ -122,7 +122,7 @@ export class ScheduleApi extends BaseApi {
       apiClient,
       "put",
       `/schedules/${schedule.id}/teams/${schedule.teamId}`,
-      fromScheduleT(schedule)
+      fromScheduleT(schedule),
     );
     return toScheduleT(responseData);
   }
@@ -133,7 +133,7 @@ export class ScheduleApi extends BaseApi {
   static async deleteSchedule(
     apiClient: AuthenticatedApiClient,
     scheduleId: string,
-    teamId: string
+    teamId: string,
   ): Promise<void> {
     // Security: Input validation
     if (!scheduleId) {
@@ -146,7 +146,7 @@ export class ScheduleApi extends BaseApi {
     await this.makeRequest<void>(
       apiClient,
       "delete",
-      `/schedules/${scheduleId}/teams/${teamId}`
+      `/schedules/${scheduleId}/teams/${teamId}`,
     );
   }
 
@@ -156,7 +156,7 @@ export class ScheduleApi extends BaseApi {
   static async validateSchedule(
     apiClient: AuthenticatedApiClient,
     scheduleId: string,
-    teamId: string
+    teamId: string,
   ): Promise<ScheduleT> {
     // Security: Input validation
     if (!scheduleId) {
@@ -169,7 +169,7 @@ export class ScheduleApi extends BaseApi {
     const responseData = await this.makeRequest<any>(
       apiClient,
       "post",
-      `/schedules/${scheduleId}/validate/teams/${teamId}`
+      `/schedules/${scheduleId}/validate/teams/${teamId}`,
     );
     return toScheduleT(responseData);
   }
@@ -180,7 +180,7 @@ export class ScheduleApi extends BaseApi {
   static async exportSchedule(
     apiClient: AuthenticatedApiClient,
     teamId: string,
-    exportOptions: ExportOptionsT
+    exportOptions: ExportOptionsT,
   ): Promise<any> {
     // Security: Input validation
     if (!teamId) {
@@ -194,7 +194,7 @@ export class ScheduleApi extends BaseApi {
       apiClient,
       "post",
       `/schedules/export/teams/${teamId}`,
-      fromExportOptionsT(exportOptions)
+      fromExportOptionsT(exportOptions),
     );
     return responseData;
   }
@@ -206,7 +206,7 @@ export class ScheduleApi extends BaseApi {
     apiClient: AuthenticatedApiClient,
     duplicateRequest: DuplicateRequestT,
     campaignId: string,
-    teamId: string
+    teamId: string,
   ): Promise<DuplicateResultT> {
     // Security: Input validation
     if (!duplicateRequest) {
@@ -223,67 +223,9 @@ export class ScheduleApi extends BaseApi {
       apiClient,
       "post",
       `/schedules/${campaignId}/duplicate-period/teams/${teamId}`,
-      fromDuplicateRequestT(duplicateRequest)
+      fromDuplicateRequestT(duplicateRequest),
     );
     return toDuplicateResultT(responseData) as DuplicateResultT;
-  }
-
-  /**
-   * Get schedule tab data (combination of multiple data sources)
-   */
-  static async getScheduleTabData(
-    apiClient: AuthenticatedApiClient,
-    teamId: string
-  ): Promise<{
-    assignments: any;
-    breaches: any[];
-    requests: any[];
-    schedule: ScheduleT[];
-    shifts: ShiftT[];
-    workers: WorkerT[];
-    stats: any;
-  }> {
-    // Security: Input validation
-    if (!teamId) {
-      throw new Error("Team ID is required");
-    }
-
-    try {
-      const statsOptions: StatsOptionsT = {
-        timeFrame: StatsTimeFrameOptions.CAMPAING,
-        startDate: dayjs.utc().startOf("day").subtract(1, "year"),
-        endDate: dayjs.utc().startOf("day"),
-        statsUnit: StatsUnitOptions.NB_DAYS_WORKED,
-        headerUnit: HeaderUnitOptions.WEEK,
-        selectedShifts: [],
-        showFavorites: true,
-      };
-
-      const campaignTabData = await Promise.all([
-        AssignmentApi.getAssignmentsByDates(apiClient, teamId),
-        BreachApi.getBreaches(apiClient, teamId),
-        RequestApi.getRequests(apiClient, teamId),
-        this.getSchedules(apiClient, teamId),
-        ShiftApi.getAllShifts(apiClient, teamId),
-        WorkerApi.getAllWorkers(apiClient, teamId),
-        StatsApi.getStats(apiClient, teamId, statsOptions),
-      ]);
-
-      return {
-        assignments: campaignTabData[0],
-        breaches: campaignTabData[1],
-        requests: campaignTabData[2],
-        schedule: campaignTabData[3],
-        shifts: campaignTabData[4],
-        workers: campaignTabData[5],
-        stats: campaignTabData[6],
-      };
-    } catch (error) {
-      console.error("Failed to fetch schedule tab data:", error);
-      throw new Error(
-        "Failed to fetch schedule tab data, please try again later"
-      );
-    }
   }
 
   /**
@@ -291,7 +233,8 @@ export class ScheduleApi extends BaseApi {
    */
   static async getScheduleAssignmentsData(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
+    includeCampaign: boolean = true,
   ): Promise<{
     assignments: AssignmentT[];
     recurrences: RecurrenceRuleT[];
@@ -305,9 +248,9 @@ export class ScheduleApi extends BaseApi {
 
     try {
       const campaignTabData = await Promise.all([
-        AssignmentApi.getAssignmentsByDates(apiClient, teamId),
+        AssignmentApi.getAssignments(apiClient, teamId, includeCampaign),
         ShiftApi.getAllShifts(apiClient, teamId),
-        WorkerApi.getAllWorkers(apiClient, teamId),
+        WorkerApi.getWorkers(apiClient, teamId, undefined, true),
       ]);
 
       return {
@@ -319,7 +262,7 @@ export class ScheduleApi extends BaseApi {
     } catch (error) {
       console.error("Failed to fetch schedule assignments data:", error);
       throw new Error(
-        "Failed to fetch schedule assignments data, please try again later"
+        "Failed to fetch schedule assignments data, please try again later",
       );
     }
   }
@@ -329,7 +272,8 @@ export class ScheduleApi extends BaseApi {
    */
   static async getScheduleAssignmentsDataNoSolver(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
+    includeCampaign: boolean = true,
   ): Promise<{
     assignments: AssignmentT[];
     recurrences: RecurrenceRuleT[];
@@ -337,43 +281,7 @@ export class ScheduleApi extends BaseApi {
     workers: WorkerT[];
   }> {
     // Same implementation as getScheduleAssignmentsData for now
-    return this.getScheduleAssignmentsData(apiClient, teamId);
-  }
-
-  /**
-   * Get schedule assignments data for members
-   */
-  static async getScheduleAssignmentsDataMember(
-    apiClient: AuthenticatedApiClient,
-    teamId: string
-  ): Promise<{
-    assignments: AssignmentT[];
-    shifts: ShiftT[];
-    workers: WorkerT[];
-  }> {
-    // Security: Input validation
-    if (!teamId) {
-      throw new Error("Team ID is required");
-    }
-
-    try {
-      const campaignTabData = await Promise.all([
-        AssignmentApi.getValidatedAssignments(apiClient, teamId),
-        ShiftApi.getAllShifts(apiClient, teamId),
-        WorkerApi.getAllWorkers(apiClient, teamId),
-      ]);
-
-      return {
-        assignments: campaignTabData[0],
-        shifts: campaignTabData[1],
-        workers: campaignTabData[2],
-      };
-    } catch (error) {
-      console.error("Failed to fetch schedule assignments data:", error);
-      throw new Error(
-        "Failed to fetch schedule assignments data, please try again later"
-      );
-    }
+    return this.getScheduleAssignmentsData(apiClient, teamId, includeCampaign);
   }
 
   /**
@@ -381,7 +289,7 @@ export class ScheduleApi extends BaseApi {
    */
   static async getScheduleLHSData(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<{
     breaches: any[];
     requests: any[];
@@ -420,7 +328,7 @@ export class ScheduleApi extends BaseApi {
     } catch (error) {
       console.error("Failed to fetch schedule LHS data:", error);
       throw new Error(
-        "Failed to fetch schedule LHS data, please try again later"
+        "Failed to fetch schedule LHS data, please try again later",
       );
     }
   }

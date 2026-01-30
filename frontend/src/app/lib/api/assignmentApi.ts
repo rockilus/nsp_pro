@@ -27,7 +27,7 @@ export class AssignmentApi extends BaseApi {
   static async addAssignmentAndRecurrence(
     apiClient: AuthenticatedApiClient,
     assignment: AssignmentT,
-    recurrence: RecurrenceRuleT | null = null
+    recurrence: RecurrenceRuleT | null = null,
   ): Promise<AssignmentsRecurrencesResultT> {
     // Security: Input validation
     if (!assignment || !assignment.teamId) {
@@ -41,19 +41,20 @@ export class AssignmentApi extends BaseApi {
       {
         assignment: fromAssignmentT(assignment),
         recurrence: recurrence ? fromRecurrenceRuleT(recurrence) : null,
-      }
+      },
     );
     return toAssignmentsRecurrencesResultT(responseData);
   }
 
   /**
-   * Get assignments by date range (authenticated)
+   * Get assignments by date range with optional campaign inclusion (authenticated)
    */
-  static async getAssignmentsByDates(
+  static async getAssignments(
     apiClient: AuthenticatedApiClient,
     teamId: string,
+    includeCampaign: boolean = false,
     startDate?: dayjs.Dayjs,
-    endDate?: dayjs.Dayjs
+    endDate?: dayjs.Dayjs,
   ): Promise<AssignmentsRecurrencesResultT> {
     // Security: Input validation
     if (!teamId) {
@@ -64,50 +65,25 @@ export class AssignmentApi extends BaseApi {
     const endDateStr = endDate ? endDate.unix() : null;
 
     let endpoint = `/assignments/teams/${teamId}`;
-    if (startDateStr && endDateStr) {
-      endpoint += `?start_date=${startDateStr}&end_date=${endDateStr}`;
-    }
-
-    const responseData = await this.makeRequest<any>(
-      apiClient,
-      "get",
-      endpoint
-    );
-    return toAssignmentsRecurrencesResultT(responseData);
-  }
-
-  /**
-   * Get validated assignments by date range (authenticated)
-   */
-  static async getValidatedAssignments(
-    apiClient: AuthenticatedApiClient,
-    teamId: string,
-    startDate?: dayjs.Dayjs,
-    endDate?: dayjs.Dayjs
-  ): Promise<AssignmentT[]> {
-    // Security: Input validation
-    if (!teamId) {
-      throw new Error("Team ID is required");
-    }
-
-    const startDateStr = startDate ? startDate.format("YYYY-MM-DD") : undefined;
-    const endDateStr = endDate ? endDate.format("YYYY-MM-DD") : undefined;
-
-    let endpoint = `/assignments/validated/teams/${teamId}`;
     const params = new URLSearchParams();
-    if (startDateStr) params.append("start_date", startDateStr);
-    if (endDateStr) params.append("end_date", endDateStr);
+    if (startDateStr && endDateStr) {
+      params.append("start_date", startDateStr.toString());
+      params.append("end_date", endDateStr.toString());
+    }
+    if (includeCampaign) {
+      params.append("include_campaign", "true");
+    }
 
     if (params.toString()) {
       endpoint += `?${params.toString()}`;
     }
 
-    const responseData = await this.makeRequest<any[]>(
+    const responseData = await this.makeRequest<any>(
       apiClient,
       "get",
-      endpoint
+      endpoint,
     );
-    return responseData.map(toAssignmentT);
+    return toAssignmentsRecurrencesResultT(responseData);
   }
 
   /**
@@ -118,7 +94,7 @@ export class AssignmentApi extends BaseApi {
     assignment: AssignmentT,
     teamId: string,
     recurrenceRule: RecurrenceRuleT | null = null,
-    recurrenceUpdateScope: RecurrenceUpdateScope | null = null
+    recurrenceUpdateScope: RecurrenceUpdateScope | null = null,
   ): Promise<AssignmentsRecurrencesResultT> {
     // Security: Input validation
     if (!assignment || !assignment.id) {
@@ -141,7 +117,7 @@ export class AssignmentApi extends BaseApi {
         assignment: fromAssignmentT(assignment),
         recurrence: recurrenceRule ? fromRecurrenceRuleT(recurrenceRule) : null,
         recurrence_update_scope: recurrenceUpdateScope,
-      }
+      },
     );
     return toAssignmentsRecurrencesResultT(responseData);
   }
@@ -154,7 +130,7 @@ export class AssignmentApi extends BaseApi {
     assignmentId: string,
     teamId: string,
     recurrenceId: string | null = null,
-    recurrenceUpdateScope: RecurrenceUpdateScope | null = null
+    recurrenceUpdateScope: RecurrenceUpdateScope | null = null,
   ): Promise<AssignmentsRecurrencesResultT> {
     // Security: Input validation
     if (!assignmentId) {
@@ -171,7 +147,7 @@ export class AssignmentApi extends BaseApi {
     if (recurrenceUpdateScope !== null) {
       params.append(
         "recurrence_update_scope",
-        recurrenceUpdateScope.toString()
+        recurrenceUpdateScope.toString(),
       );
     }
 
@@ -183,7 +159,7 @@ export class AssignmentApi extends BaseApi {
     const responseData = await this.makeRequest<any>(
       apiClient,
       "delete",
-      endpoint
+      endpoint,
     );
     return toAssignmentsRecurrencesResultT(responseData);
   }

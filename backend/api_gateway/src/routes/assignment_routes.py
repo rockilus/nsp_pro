@@ -1,6 +1,6 @@
 import time as time_module
 from datetime import date
-from typing import List, Optional
+from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
 from shared.logger import log_info
@@ -20,6 +20,8 @@ from src.errors import NotAuthorizedError, handle_routes_errors
 from src.integrations.authorization import authz_check
 from src.security.user_context import UserContext
 from src.services.assignment_service import AssignmentService
+
+# pylint: disable=too-many-arguments, too-many-positional-arguments
 
 router = APIRouter()
 
@@ -56,61 +58,45 @@ async def get_assignments(
     team_id: str,
     start_date: Optional[date] = Query(None, alias="start_date"),
     end_date: Optional[date] = Query(None, alias="end_date"),
+    include_campaign: bool = Query(False, alias="include_campaign"),
     user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(
         get_assignment_service,
     ),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
+        # Check if user has permission to read assignments
         if not await authz_check(
             user_context.user_id, "read-assignments", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to get assignments",
-            )
+            # If user doesn't have read-assignments (i.e., they're a member),
+            # check if they have read-assignments-validated permission
+            if not await authz_check(
+                user_context.user_id,
+                "read-assignments-validated",
+                "team",
+                team_id,
+            ):
+                raise NotAuthorizedError(
+                    "You do not have permission to get assignments",
+                )
+            # Members are not allowed to request campaign assignments
+            if include_campaign:
+                raise NotAuthorizedError(
+                    "You do not have permission to access campaign assignments",
+                )
+
         start_time = time_module.time()
         ar_result = assignment_service.get_assignments_and_recurrences(
             team_id,
             start_date,
             end_date,
+            include_campaign,
         )
         response = ar_result.to_dto()
         end_time = time_module.time()
         time_taken = round(end_time - start_time)
         print(f"Time taken to get assignments: {time_taken} seconds")
-    except Exception as e:
-        log_info("Failed to get assignments")
-        handle_routes_errors(e)
-    return response
-
-
-# pylint: disable=R0801
-@router.get("/assignments/validated/teams/{team_id}")
-async def get_assignments_validated(
-    team_id: str,
-    start_date: Optional[date] = Query(None, alias="start_date"),
-    end_date: Optional[date] = Query(None, alias="end_date"),
-    user_context: UserContext = Depends(get_user_context),
-    assignment_service: AssignmentService = Depends(
-        get_assignment_service,
-    ),
-) -> List[AssignmentDTO]:
-    try:
-        if not await authz_check(
-            user_context.user_id,
-            "read-assignments-validated",
-            "team",
-            team_id,
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to get assignments",
-            )
-        assignments = assignment_service.get_assignments_validated(
-            team_id=team_id,
-            start_date=start_date,
-            end_date=end_date,
-        )
-        response = [a.to_dto() for a in assignments]
     except Exception as e:
         log_info("Failed to get assignments")
         handle_routes_errors(e)

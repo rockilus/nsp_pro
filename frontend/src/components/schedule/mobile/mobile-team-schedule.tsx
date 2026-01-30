@@ -91,7 +91,10 @@ export default function MobileTeamSchedule({
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+    <Box
+      data-testid="mobile-team-schedule"
+      sx={{ display: "flex", flexDirection: "column", height: "100%" }}
+    >
       {/* Horizontal date carousel - fixed at top */}
       <Box sx={{ flexShrink: 0 }}>
         <DateCarousel

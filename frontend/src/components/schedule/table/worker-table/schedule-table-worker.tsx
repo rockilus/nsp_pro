@@ -68,7 +68,7 @@ export default function ScheduleTableWorker({
   const workersForHeader = getRelevantWorkers(
     workers,
     assignments,
-    scheduleCampaign
+    scheduleCampaign,
   );
 
   const scheduleCellDict = buildScheduleCellDict(
@@ -79,13 +79,14 @@ export default function ScheduleTableWorker({
     requests,
     workers,
     shifts,
-    breaches
+    breaches,
   );
 
   return (
     <TableContainer
       component={Paper}
       style={{ width: "100%", height: "calc(100vh - 104px)" }}
+      data-testid="schedule-table-worker"
     >
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead
@@ -101,6 +102,7 @@ export default function ScheduleTableWorker({
             periodDates={periodDates}
             scheduleCampaign={scheduleCampaign}
             handleExportSchedule={handleExportSchedule}
+            teamWithMembership={teamWithMembership}
           />
           {teamWithMembership.membership.role === TeamMembershipRole.OWNER &&
             teamWithMembership.team.useSolver && (
@@ -126,6 +128,7 @@ export default function ScheduleTableWorker({
               periodDates={periodDates}
               scheduleCellsDict={scheduleCellDict}
               scheduleViewSettings={scheduleViewSettings}
+              teamWithMembership={teamWithMembership}
               handleAssignmentSelection={handleAssignmentSelection}
               handleRequestSelection={handleRequestSelection}
               handleOpenCreateAssignment={handleOpenCreateAssignment}

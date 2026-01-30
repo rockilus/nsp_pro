@@ -17,10 +17,13 @@ export default function DailyShiftDemandCell({
   const shiftStaffingTotal =
     scheduleCellData.shiftDemandsData?.shift.staffing.reduce(
       (sum, staffing) => sum + staffing.staffing,
-      0
+      0,
     ) || 0;
 
-  const countActual = Math.floor(assignmentsCount / shiftStaffingTotal);
+  const countActual =
+    shiftStaffingTotal > 0
+      ? Math.floor(assignmentsCount / shiftStaffingTotal)
+      : 0;
   const countTarget =
     scheduleCellData.shiftDemandsData?.shiftDemand?.count || 0;
 
@@ -32,6 +35,7 @@ export default function DailyShiftDemandCell({
   return (
     <div
       className="dsd-cell-container"
+      data-testid={`demand-cell-${scheduleCellData.shiftDemandsData?.shiftDemand?.id}`}
       onClick={() => handleDemandSelection(scheduleCellData)}
       style={
         {

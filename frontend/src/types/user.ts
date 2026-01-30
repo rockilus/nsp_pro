@@ -68,16 +68,3 @@ export const toUserDashboardT = (data: any): UserDashboardT => {
     user: data.user ? toUserT(data.user) : null,
   };
 };
-
-export const PageRolePermissions = {
-  welcome: [TeamMembershipRole.OWNER, TeamMembershipRole.MEMBER],
-  workers: [TeamMembershipRole.OWNER],
-  shifts: [TeamMembershipRole.OWNER],
-  constraints: [TeamMembershipRole.OWNER],
-  requests: [TeamMembershipRole.OWNER, TeamMembershipRole.MEMBER],
-  campaign: [TeamMembershipRole.OWNER],
-  schedule: [TeamMembershipRole.OWNER, TeamMembershipRole.MEMBER],
-  "shift-demands": [TeamMembershipRole.OWNER],
-  stats: [TeamMembershipRole.OWNER],
-  teams: [TeamMembershipRole.OWNER],
-};

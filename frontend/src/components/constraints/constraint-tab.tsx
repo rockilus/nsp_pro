@@ -128,7 +128,10 @@ export default function ConstraintTab({
         <div>Please select a team</div>
       ) : (
         <div className="tab-container" data-testid="constraint-tab">
-          <div className="title-container">
+          <div
+            className="title-container"
+            data-testid="constraints-page-heading"
+          >
             <span className="title">{t("constraints")}</span>
             <TableAddButton
               text={t("constraint")}

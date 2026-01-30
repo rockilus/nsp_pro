@@ -8,6 +8,8 @@ import Box from "@mui/material/Box";
 import Fab from "@mui/material/Fab";
 import CircularProgress from "@mui/material/CircularProgress";
 import AddIcon from "@mui/icons-material/Add";
+import Alert from "@mui/material/Alert";
+import Typography from "@mui/material/Typography";
 // Hooks
 import { useIsLandscape } from "@/hooks/useIsMobile";
 import {
@@ -18,7 +20,7 @@ import { useScheduleViewSettings } from "../../../app/lib/hooks/useScheduleViewS
 import { getDefaultScheduleViewSettings } from "../../../app/lib/utils/scheduleViewSettingsUtils";
 import { computePeriodEndDate } from "../../../app/lib/utils/scheduleViewSettingsUtils";
 // Types
-import { TeamWithMembership } from "@/types/team";
+import { TeamWithMembership, TeamMembershipRole } from "@/types/team";
 import { ShiftRestType } from "@/types/shift";
 // Local components
 import AssignmentDialog from "../assignment-dialog";
@@ -27,6 +29,8 @@ import MobileScheduleNav from "./mobile-schedule-nav";
 import MobileScheduleSettings from "./mobile-schedule-settings";
 import MobileWorkerSchedule from "./mobile-worker-schedule";
 import MobileTeamSchedule from "./mobile-team-schedule";
+import { useUserWorker } from "../../../hooks/useUserWorker";
+import { RoleBased } from "../../access/role-based";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -41,7 +45,7 @@ export default function MobileScheduleTab({
   const { t } = useTranslation(lng, "schedule-page");
 
   const defaultSettings = getDefaultScheduleViewSettings(
-    teamWithMembership.team.useSolver
+    teamWithMembership.team.useSolver,
   );
 
   const [scheduleViewSettings, updateScheduleViewSettings] =
@@ -50,6 +54,22 @@ export default function MobileScheduleTab({
   const getScheduleAssignmentsData = useGetScheduleAssignmentsData();
   const getScheduleAssignmentsDataNoSolver =
     useGetScheduleAssignmentsDataNoSolver();
+
+  // Fetch user's worker for role-based checks (only for members)
+  const {
+    data: userWorker,
+    isLoading: isLoadingUserWorker,
+    error: userWorkerError,
+  } = useUserWorker(
+    teamWithMembership.team.id,
+    teamWithMembership.membership.role === TeamMembershipRole.MEMBER,
+  );
+
+  // Check if member has no worker association
+  const memberHasNoWorker =
+    teamWithMembership.membership.role === TeamMembershipRole.MEMBER &&
+    !isLoadingUserWorker &&
+    userWorker === null;
 
   const [isLoading, setIsLoading] = useState(true);
   const [assignments, setAssignments] = useState<any[]>([]);
@@ -71,9 +91,26 @@ export default function MobileScheduleTab({
     const fetch = async () => {
       setIsLoading(true);
       try {
+        // Check if member has no worker association
+        if (
+          teamWithMembership.membership.role === TeamMembershipRole.MEMBER &&
+          !isLoadingUserWorker &&
+          userWorker === null
+        ) {
+          if (mounted) setIsLoading(false);
+          return;
+        }
+
+        // Determine if user should see campaign assignments (owners/leaders only)
+        const includeCampaign =
+          teamWithMembership.membership.role !== TeamMembershipRole.MEMBER;
+
         if (teamWithMembership.team.useSolver) {
           const { assignments, workers, shifts } =
-            await getScheduleAssignmentsData(teamWithMembership.team.id);
+            await getScheduleAssignmentsData(
+              teamWithMembership.team.id,
+              includeCampaign,
+            );
           if (!mounted) return;
           setAssignments(assignments);
           setWorkers(workers);
@@ -84,7 +121,8 @@ export default function MobileScheduleTab({
             workers.length > 0 &&
             (!scheduleViewSettings.mobileSelectedWorkerId ||
               !workers.find(
-                (w: any) => w.id === scheduleViewSettings.mobileSelectedWorkerId
+                (w: any) =>
+                  w.id === scheduleViewSettings.mobileSelectedWorkerId,
               ))
           ) {
             // If member, try to preselect user's worker
@@ -102,7 +140,8 @@ export default function MobileScheduleTab({
         } else {
           const { assignments, workers, shifts } =
             await getScheduleAssignmentsDataNoSolver(
-              teamWithMembership.team.id
+              teamWithMembership.team.id,
+              includeCampaign,
             );
           if (!mounted) return;
           setAssignments(assignments);
@@ -114,7 +153,8 @@ export default function MobileScheduleTab({
             workers.length > 0 &&
             (!scheduleViewSettings.mobileSelectedWorkerId ||
               !workers.find(
-                (w: any) => w.id === scheduleViewSettings.mobileSelectedWorkerId
+                (w: any) =>
+                  w.id === scheduleViewSettings.mobileSelectedWorkerId,
               ))
           ) {
             updateScheduleViewSettings({
@@ -133,12 +173,18 @@ export default function MobileScheduleTab({
       mounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teamWithMembership, scheduleViewSettings.mobileSelectedWorkerId]);
+  }, [
+    teamWithMembership,
+    scheduleViewSettings.mobileSelectedWorkerId,
+    isLoadingUserWorker,
+    userWorker,
+    t,
+  ]);
 
   const periodStart = scheduleViewSettings.periodStartDate;
   const periodEnd = computePeriodEndDate(
     scheduleViewSettings.periodStartDate,
-    scheduleViewSettings.timeFrame
+    scheduleViewSettings.timeFrame,
   );
 
   // Build multiple weeks around the current period so the user can scroll across months
@@ -172,7 +218,7 @@ export default function MobileScheduleTab({
   React.useEffect(() => {
     if (hasInitializedMonthRef.current) return;
     const monthLabel = periodStart.format(
-      periodStart.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY"
+      periodStart.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY",
     );
     setVisibleMonth(monthLabel);
     hasInitializedMonthRef.current = true;
@@ -203,7 +249,7 @@ export default function MobileScheduleTab({
       weeks.find(
         (w) =>
           periodStart.isSameOrAfter(w.start, "day") &&
-          periodStart.isSameOrBefore(w.end, "day")
+          periodStart.isSameOrBefore(w.end, "day"),
       ) || weeks[0]
     );
   }, [weeks, periodStart]);
@@ -236,10 +282,41 @@ export default function MobileScheduleTab({
     );
   }
 
+  if (memberHasNoWorker) {
+    return (
+      <>
+        <MobileNavAppBar lng={lng} mobileContent={scheduleMobileNav} />
+        <Box
+          data-testid="mobile-schedule-container"
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "calc(100vh - 128px)",
+            p: 3,
+          }}
+        >
+          <Alert
+            data-testid="mobile-no-worker-profile-alert"
+            severity="info"
+            sx={{ maxWidth: "500px" }}
+          >
+            <Typography variant="body1">
+              {t("error_no_worker_assigned")}
+            </Typography>
+          </Alert>
+        </Box>
+      </>
+    );
+  }
+
   return (
     <>
       <MobileNavAppBar lng={lng} mobileContent={scheduleMobileNav} />
-      <Box sx={{ padding: "0 8px", height: "calc(100vh - 64px)" }}>
+      <Box
+        data-testid="mobile-schedule-container"
+        sx={{ padding: "0 8px", height: "calc(100vh - 64px)" }}
+      >
         {scheduleViewSettings.mobileSelectedView === "worker" ? (
           <MobileWorkerSchedule
             weeks={weeks}
@@ -261,6 +338,7 @@ export default function MobileScheduleTab({
             onScrollToTodayReady={(handler) => {
               scrollToTodayRef.current = handler;
             }}
+            lng={lng}
           />
         ) : (
           <MobileTeamSchedule
@@ -279,17 +357,23 @@ export default function MobileScheduleTab({
           />
         )}
 
-        <Fab
-          color="primary"
-          aria-label="create-assignment"
-          sx={{ position: "fixed", bottom: 16, right: 16 }}
-          onClick={() => {
-            setActiveAssignment(null);
-            setSheetOpen(true);
-          }}
+        <RoleBased
+          role={teamWithMembership.membership.role}
+          allowedRoles={[TeamMembershipRole.OWNER]}
         >
-          <AddIcon />
-        </Fab>
+          <Fab
+            data-testid="mobile-create-assignment-fab"
+            color="primary"
+            aria-label="create-assignment"
+            sx={{ position: "fixed", bottom: 16, right: 16 }}
+            onClick={() => {
+              setActiveAssignment(null);
+              setSheetOpen(true);
+            }}
+          >
+            <AddIcon />
+          </Fab>
+        </RoleBased>
 
         <AssignmentDialog
           open={sheetOpen}
@@ -321,6 +405,7 @@ export default function MobileScheduleTab({
           updateScheduleViewSettings({ mobileSelectedView: view })
         }
         lng={lng}
+        userRole={teamWithMembership.membership.role}
       />
     </>
   );

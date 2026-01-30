@@ -5,13 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 // Components
 import TeamSettingsLayout from "@/components/teams-settings/team-settings-layout";
 import MobileNavAppBar from "@/components/app-bar/mobile-nav-app-bar";
-import { RoleBased } from "@/components/access/role-based";
+import { AccessGuard } from "@/components/access/access-guard";
 // Context
 import { useTeam } from "@/context/TeamContext";
 // Hooks
 import { useIsMobile } from "@/hooks/useIsMobile";
-// Types
-import { PageRolePermissions } from "@/types/user";
 
 export default function Layout({
   children,
@@ -88,12 +86,9 @@ export default function Layout({
 
   // Team-specific settings pages with role-based access
   return (
-    <RoleBased
-      role={selectedTeam.membership.role}
-      allowedRoles={PageRolePermissions.teams}
-    >
+    <AccessGuard route="/teams" teamWithMembership={selectedTeam}>
       {isMobile && <MobileNavAppBar lng={lng} />}
       <TeamSettingsLayout params={{ lng }}>{children}</TeamSettingsLayout>
-    </RoleBased>
+    </AccessGuard>
   );
 }

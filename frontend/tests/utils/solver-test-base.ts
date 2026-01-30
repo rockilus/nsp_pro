@@ -104,6 +104,9 @@ export class SolverTestBase {
   ): Promise<SolverScenarioResult> {
     const scenario = await this.loadScenario(scenarioName);
 
+    // Set authentication headers before any navigation
+    await this.dbUtils.authenticatePageAsTestUser(page);
+
     // Navigate to schedule page FIRST to establish proper origin
     await page.goto(`${testConfig.frontendUrl}/en/plan/schedule/`);
     await page.waitForLoadState("domcontentloaded");

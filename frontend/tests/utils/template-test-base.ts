@@ -389,6 +389,9 @@ export class TemplateTestBase {
       );
     }
 
+    // Set authentication headers before any navigation
+    await this.dbUtils.authenticatePageAsTestUser(page);
+
     // Navigate to the shift demands page (same pattern as working tests)
     await page.goto(`${testConfig.frontendUrl}/en/plan/shift-demands`);
 

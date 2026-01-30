@@ -94,6 +94,7 @@ export default function RequestListItem({
 
   return (
     <Box
+      data-testid={`mobile-request-item-${request.id}`}
       onClick={onClick}
       sx={{
         display: "flex",

@@ -23,6 +23,7 @@ export default function SavedCell({
     <TableCell>
       <div className="saved-cell-container">
         {database && (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src="/mongodb_logo.png"
             alt="MongoDB logo"
@@ -31,6 +32,7 @@ export default function SavedCell({
           />
         )}
         {authn && (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src="/supertokens_logo.png"
             alt="SuperTokens logo"
@@ -39,6 +41,7 @@ export default function SavedCell({
           />
         )}
         {authz && (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src="/permit_logo.jpeg"
             alt="Permit.io logo"

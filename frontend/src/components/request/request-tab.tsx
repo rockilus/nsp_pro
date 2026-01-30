@@ -21,6 +21,8 @@ import Tab from "@mui/material/Tab";
 import Switch from "@mui/material/Switch";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
+import Alert from "@mui/material/Alert";
 // Components
 import RequestPanel from "./request-panel";
 import RequestTable from "./request-table";
@@ -38,6 +40,12 @@ import {
   useDenyRequest,
   useGetRequestsTabData,
 } from "../../hooks/useRequest";
+import { useUserWorker } from "../../hooks/useUserWorker";
+import { useGetShiftOptions } from "../../hooks/useStats";
+import { useApiClient } from "../../app/lib/api-client";
+// API clients
+import { RequestApi } from "../../app/lib/api/requestApi";
+import { ShiftApi } from "../../app/lib/api/shiftApi";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "../../styles/text-styles.css";
@@ -63,6 +71,7 @@ export default function RequestTab({
 }) {
   const { t } = useTranslation(lng, "request-page");
   const isMobile = useIsMobile();
+  const apiClient = useApiClient();
 
   // Request hooks
   const addRequest = useAddRequest();
@@ -72,6 +81,17 @@ export default function RequestTab({
   const acceptRequest = useAcceptRequest();
   const denyRequest = useDenyRequest();
   const getRequestsTabData = useGetRequestsTabData();
+  const getShiftOptions = useGetShiftOptions();
+
+  // Fetch user's worker for role-based filtering (cached via React Query)
+  const {
+    data: userWorker,
+    isLoading: isLoadingUserWorker,
+    error: userWorkerError,
+  } = useUserWorker(
+    teamId,
+    userTeamRole === TeamMembershipRole.MEMBER // Only fetch for members
+  );
 
   const [requests, setRequests] = useState<RequestT[]>([]);
   const [workers, setWorkers] = useState<WorkerT[]>([]);
@@ -79,7 +99,14 @@ export default function RequestTab({
   const [shiftOptions, setShiftOptions] = useState<ShiftWorkerOptionT[]>([]);
   const [showPastRequests, setShowPastRequests] = useState<boolean>(false);
 
+  // Check if member has no worker association
+  const memberHasNoWorker =
+    userTeamRole === TeamMembershipRole.MEMBER &&
+    !isLoadingUserWorker &&
+    userWorker === null;
+
   // React Query hooks for shift demands - use broader date range for requests calendar
+  // Only fetch shift demands for team owners
   const {
     demands: shiftDemands,
     demandsById: shiftDemandsById,
@@ -91,12 +118,10 @@ export default function RequestTab({
     dayjs().utc().startOf("year").toDate(), // Start of current year
     dayjs().utc().add(1, "year").endOf("year").toDate(), // End of next year
     {
-      enabled: true,
+      enabled: userTeamRole !== TeamMembershipRole.MEMBER,
       bufferDays: 0, // No buffer needed for requests view
     }
   );
-
-  const userWorker = workers.find((w) => w.userId === userId);
 
   // Filter requests based on past/future
   const { currentRequests, pastRequests } = useMemo(() => {
@@ -200,16 +225,44 @@ export default function RequestTab({
     const fetchRequestsTabData = async () => {
       if (teamId) {
         try {
-          const {
-            workers: fetchedWorkers,
-            shifts: fetchedShifts,
-            requests: fetchedRequests,
-            shiftOptions: fetchedShiftOptions,
-          } = await getRequestsTabData(teamId);
-          setWorkers(fetchedWorkers);
-          setShifts(fetchedShifts);
-          setRequests(fetchedRequests);
-          setShiftOptions(fetchedShiftOptions);
+          // Check if member has no worker association
+          if (memberHasNoWorker) {
+            return;
+          }
+
+          // For members, pass userWorker.id to filter requests
+          // For owners, pass undefined to fetch all requests
+          const filterByWorkerId =
+            userTeamRole === TeamMembershipRole.MEMBER
+              ? userWorker?.id
+              : undefined;
+
+          // For members, we already have userWorker from cache - no need to fetch all workers
+          // For owners, fetch all workers for the UI
+          if (userTeamRole === TeamMembershipRole.MEMBER && userWorker) {
+            // Member: only fetch their own data
+            const [shifts, requests, shiftOptions] = await Promise.all([
+              ShiftApi.getAllShifts(apiClient, teamId),
+              RequestApi.getRequests(apiClient, teamId, userWorker.id),
+              getShiftOptions(teamId),
+            ]);
+            setWorkers([userWorker]); // Members only see their own worker
+            setShifts(shifts);
+            setRequests(requests);
+            setShiftOptions(shiftOptions);
+          } else {
+            // Owner: fetch all data including all workers
+            const {
+              workers: fetchedWorkers,
+              shifts: fetchedShifts,
+              requests: fetchedRequests,
+              shiftOptions: fetchedShiftOptions,
+            } = await getRequestsTabData(teamId, filterByWorkerId);
+            setWorkers(fetchedWorkers);
+            setShifts(fetchedShifts);
+            setRequests(fetchedRequests);
+            setShiftOptions(fetchedShiftOptions);
+          }
         } catch (error) {
           console.error("Failed to fetch requests tab data:", error);
           // Handle error appropriately
@@ -217,7 +270,16 @@ export default function RequestTab({
       }
     };
     fetchRequestsTabData();
-  }, [teamId, getRequestsTabData]);
+  }, [
+    teamId,
+    userTeamRole,
+    userWorker,
+    getRequestsTabData,
+    apiClient,
+    getShiftOptions,
+    memberHasNoWorker,
+    t,
+  ]);
 
   // ToggleButton state for request type
 
@@ -288,67 +350,120 @@ export default function RequestTab({
 
   return (
     <div className="tab-container-wide" data-testid="request-tab">
-      <div>
-        <div
-          style={{
+      {memberHasNoWorker ? (
+        <Box
+          sx={{
             display: "flex",
-            justifyContent: "space-between",
+            justifyContent: "center",
             alignItems: "center",
-            marginBottom: 2,
+            minHeight: "400px",
+            p: 4,
           }}
         >
-          <Tabs
-            value={statusTab}
-            onChange={(_e, v) => setStatusTab(v)}
-            sx={{
-              marginLeft: 2,
-              "& .MuiTab-root": {
-                textTransform: "none",
-              },
+          <Alert severity="info" sx={{ maxWidth: "600px" }}>
+            <Typography variant="body1">
+              {t("error_no_worker_assigned")}
+            </Typography>
+          </Alert>
+        </Box>
+      ) : (
+        <div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 2,
             }}
-            aria-label="Request Tabs"
-            data-testid="request-tabs"
           >
-            <Tab
-              label={t("requests") || "Requests"}
-              data-testid="requests-tab"
-            />
-            <Tab
-              label={t("calendar") || "Calendar"}
-              data-testid="calendar-tab"
-            />
-          </Tabs>
+            <Tabs
+              value={statusTab}
+              onChange={(_e, v) => setStatusTab(v)}
+              sx={{
+                marginLeft: 2,
+                "& .MuiTab-root": {
+                  textTransform: "none",
+                },
+              }}
+              aria-label="Request Tabs"
+              data-testid="request-tabs"
+            >
+              <Tab
+                label={t("requests") || "Requests"}
+                data-testid="requests-tab"
+              />
+              <Tab
+                label={t("calendar") || "Calendar"}
+                data-testid="calendar-tab"
+              />
+            </Tabs>
 
-          <div className="flex items-center gap-4">
-            {statusTab === 0 && (
-              <div className="flex items-center gap-2">
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={showPastRequests}
-                      onChange={(e) => setShowPastRequests(e.target.checked)}
-                      size="small"
-                      color="primary"
-                      data-testid="show-past-requests-switch"
-                    />
-                  }
-                  label={
-                    <Typography variant="body2" className="text-gray-600">
-                      {t("show_past") || "Show Past"}
-                    </Typography>
-                  }
-                />
-              </div>
-            )}
+            <div className="flex items-center gap-4">
+              {statusTab === 0 && (
+                <div className="flex items-center gap-2">
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={showPastRequests}
+                        onChange={(e) => setShowPastRequests(e.target.checked)}
+                        size="small"
+                        color="primary"
+                        data-testid="show-past-requests-switch"
+                      />
+                    }
+                    label={
+                      <Typography variant="body2" className="text-gray-600">
+                        {t("show_past") || "Show Past"}
+                      </Typography>
+                    }
+                  />
+                </div>
+              )}
 
-            <RequestPanel
+              <RequestPanel
+                lng={lng}
+                teamId={teamId}
+                isEdit={false}
+                workers={workers.filter((w) => !w.deleted)}
+                shifts={shifts}
+                shiftOptions={shiftOptions}
+                userWorkerId={userWorker?.id || null}
+                userTeamRole={userTeamRole}
+                handleAddRequest={handleAddRequest}
+                handleUpdateRequest={handleUpdateRequest}
+                handleDeleteRequest={handleDeleteRequest}
+                handleRescindRequest={handleRescindRequest}
+                handleAcceptRequest={handleAcceptRequest}
+                handleDenyRequest={handleDenyRequest}
+              />
+            </div>
+          </div>
+          {statusTab === 0 && (
+            <RequestTable
               lng={lng}
-              teamId={teamId}
-              isEdit={false}
-              workers={workers.filter((w) => !w.deleted)}
+              requests={displayRequests}
+              workers={workers}
               shifts={shifts}
               shiftOptions={shiftOptions}
               userWorkerId={userWorker?.id || null}
+              userTeamRole={userTeamRole}
+              handleUpdateRequest={handleUpdateRequest}
+              handleDeleteRequest={handleDeleteRequest}
+              handleRescindRequest={handleRescindRequest}
+              handleAcceptRequest={handleAcceptRequest}
+              handleDenyRequest={handleDenyRequest}
+              showPastRequests={showPastRequests}
+            />
+          )}
+          {statusTab === 1 && (
+            <RequestCalendar
+              workers={workers}
+              requests={requests}
+              shifts={shifts}
+              demands={shiftDemands}
+              lng={lng}
+              teamId={teamId}
+              shiftOptions={shiftOptions}
               userTeamRole={userTeamRole}
               handleAddRequest={handleAddRequest}
               handleUpdateRequest={handleUpdateRequest}
@@ -357,44 +472,9 @@ export default function RequestTab({
               handleAcceptRequest={handleAcceptRequest}
               handleDenyRequest={handleDenyRequest}
             />
-          </div>
+          )}
         </div>
-        {statusTab === 0 && (
-          <RequestTable
-            lng={lng}
-            requests={displayRequests}
-            workers={workers}
-            shifts={shifts}
-            shiftOptions={shiftOptions}
-            userWorkerId={userWorker?.id || null}
-            userTeamRole={userTeamRole}
-            handleUpdateRequest={handleUpdateRequest}
-            handleDeleteRequest={handleDeleteRequest}
-            handleRescindRequest={handleRescindRequest}
-            handleAcceptRequest={handleAcceptRequest}
-            handleDenyRequest={handleDenyRequest}
-            showPastRequests={showPastRequests}
-          />
-        )}
-        {statusTab === 1 && (
-          <RequestCalendar
-            workers={workers}
-            requests={requests}
-            shifts={shifts}
-            demands={shiftDemands}
-            lng={lng}
-            teamId={teamId}
-            shiftOptions={shiftOptions}
-            userTeamRole={userTeamRole}
-            handleAddRequest={handleAddRequest}
-            handleUpdateRequest={handleUpdateRequest}
-            handleDeleteRequest={handleDeleteRequest}
-            handleRescindRequest={handleRescindRequest}
-            handleAcceptRequest={handleAcceptRequest}
-            handleDenyRequest={handleDenyRequest}
-          />
-        )}
-      </div>
+      )}
     </div>
   );
 }

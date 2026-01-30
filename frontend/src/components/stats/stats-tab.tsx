@@ -229,7 +229,7 @@ export default function StatsTab({
   }, [selectedTeamId]);
 
   return (
-    <div className="tab-container-ultrawide">
+    <div className="tab-container-ultrawide" data-testid="stats-page-heading">
       <div className="tab-container-column">
         {isLoading ? (
           <div className="container-schedule-selector-skeleton">
