@@ -191,16 +191,30 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
     }) => {
       // Select first worker
       const testWorkers = swapTestBase.getTestWorkers();
+      const testWorkerId = testWorkers[0].workerId;
       await page.click('[data-testid="worker-select"]');
-      await page.click(
-        `[data-testid="worker-option-${testWorkers[0].workerId}"]`,
-      );
+      await page.click(`[data-testid="worker-option-${testWorkerId}"]`);
 
       // Wait for assignments to load
       await page.waitForTimeout(1000);
 
+      const testSchedules = swapTestBase.getTestSchedules();
+      const campaignScheduleIds = testSchedules
+        .filter((s) => s.status === ScheduleStatus.CAMPAIGN)
+        .map((s) => s.id);
+      expect(campaignScheduleIds.length).toBeGreaterThan(0);
+
       // Get assignments associated with campaign schedule
-      const campaignAssignments = swapTestBase.getCampaignScheduleAssignments();
+      const tomorrow = dayjs.utc().add(1, "day").startOf("day");
+      const campaignAssignments = swapTestBase
+        .getTestAssignments()
+        .filter((a) => a.workerId === testWorkerId)
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
+        .filter(
+          (a) =>
+            a.scheduleId !== null && campaignScheduleIds.includes(a.scheduleId),
+        ); // Campaign schedule
+      expect(campaignAssignments.length).toBeGreaterThan(0);
 
       // Verify these assignments are NOT visible
       for (const assignment of campaignAssignments) {
