@@ -54,7 +54,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
 
     test("should list all workers in the dropdown", async ({ page }) => {
       // Click on the worker selection dropdown
-      await page.click('label:has-text("Select Worker")');
+      await page.click('[data-testid="worker-select"]');
 
       // Get all workers from test data
       const testWorkers = swapTestBase.getTestWorkers();

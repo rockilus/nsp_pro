@@ -50,11 +50,11 @@ interface CreateSwapDialogProps {
 }
 
 const steps = [
-  "Select Worker & Offered Assignments",
-  "Choose Swap Type",
-  "Target Details",
-  "Add Comment",
-  "Review & Submit",
+  "Select offered assignments",
+  "Choose swap type",
+  "Target details",
+  "Add comment",
+  "Review & submit",
 ];
 
 export default function CreateSwapDialog({
