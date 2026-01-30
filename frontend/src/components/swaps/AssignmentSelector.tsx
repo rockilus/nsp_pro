@@ -33,6 +33,7 @@ import { WorkerT } from "../../types/worker";
 import { LinkShiftT } from "../../types/shift";
 import { AssignmentApi } from "../../app/lib/api/assignmentApi";
 import { LinkShiftApi } from "../../app/lib/api/linkShiftApi";
+import { ShiftApi } from "../../app/lib/api/shiftApi";
 import { useApiClient } from "../../app/lib/api-client";
 
 interface AssignmentSelectorProps {
@@ -93,30 +94,36 @@ export default function AssignmentSelector({
         const start = minDate || dayjs().subtract(30, "day");
         const end = maxDate || dayjs().add(30, "day");
 
-        // Fetch assignments and link shifts in parallel
-        const [assignmentResult, linkShiftResult] = await Promise.all([
-          AssignmentApi.getAssignments(
-            apiClient,
-            teamId,
-            false,
-            start,
-            end,
-            workerId,
-          ),
-          LinkShiftApi.getLinkShifts(apiClient, teamId),
-        ]);
+        // Fetch assignments, shifts, and link shifts in parallel
+        const [assignmentResult, shiftsResult, linkShiftResult] =
+          await Promise.all([
+            AssignmentApi.getAssignments(
+              apiClient,
+              teamId,
+              false,
+              start,
+              end,
+              workerId,
+            ),
+            ShiftApi.getShifts(apiClient, teamId),
+            LinkShiftApi.getLinkShifts(apiClient, teamId),
+          ]);
+
+        // Create shift map for quick lookup
+        const shiftMap = new Map(
+          shiftsResult.map((shift) => [shift.id, shift]),
+        );
 
         // Extract assignments from result
         const allAssignments: AssignmentDataDictT[] =
           assignmentResult.assignmentsRead.map((assignment) => {
-            // For simplification, create minimal AssignmentDataDictT structure
-            // In production, you'd need to fetch full worker/shift data
+            const shift = shiftMap.get(assignment.shiftId);
             return {
               assignment,
               worker:
                 workers.find((w) => w.id === assignment.workerId) ||
                 ({} as WorkerT),
-              shift: {} as any, // Would need to fetch shifts
+              shift: shift || ({} as any),
               recurrence: null,
               breaches: [],
               requests: [],
@@ -182,9 +189,10 @@ export default function AssignmentSelector({
     return Object.entries(groups)
       .map(([dateStr, assignments]) => ({
         date: dayjs(dateStr),
-        assignments: assignments.sort((a, b) =>
-          a.shift.startTime.isBefore(b.shift.startTime) ? -1 : 1,
-        ),
+        assignments: assignments.sort((a, b) => {
+          if (!a.shift?.startTime || !b.shift?.startTime) return 0;
+          return a.shift.startTime.isBefore(b.shift.startTime) ? -1 : 1;
+        }),
       }))
       .sort((a, b) => (a.date.isBefore(b.date) ? -1 : 1));
   }, [assignments]);
