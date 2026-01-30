@@ -228,6 +228,132 @@ class EmailQueueService(BaseService):
 
         return await self._enqueue_email(email_message)
 
+    async def enqueue_direct_swap_invitation(
+        self,
+        to_address: str,
+        recipient_name: str,
+        creator_name: str,
+        team_name: str,
+        swap_link: str,
+        comment: str = "",
+        language: Language = Language.EN,
+    ) -> str:
+        """
+        Enqueue a direct swap invitation email.
+
+        Args:
+            to_address: Recipient email address
+            recipient_name: Name of the target worker
+            creator_name: Name of the worker who created the swap
+            team_name: Name of the team
+            swap_link: Link to view and accept/decline the swap
+            comment: Optional comment from the creator
+            language: Language for the email (default: EN)
+
+        Returns:
+            SQS message ID
+        """
+        email_message = EmailMessage(
+            to_address=to_address,
+            template_name="direct_swap_invitation_email",
+            context={
+                "subject": f"Swap Invitation from {creator_name}",
+                "recipient_name": recipient_name,
+                "creator_name": creator_name,
+                "team_name": team_name,
+                "swap_link": swap_link,
+                "comment": comment,
+            },
+            language=language.value,
+            priority=EmailPriority.HIGH,
+            email_type=EmailType.SWAP_INVITATION,
+            created_at=datetime.now(tz=timezone.utc),
+        )
+
+        return await self._enqueue_email(email_message)
+
+    async def enqueue_open_swap_new_bid(
+        self,
+        to_address: str,
+        recipient_name: str,
+        bidder_name: str,
+        team_name: str,
+        swap_link: str,
+        language: Language = Language.EN,
+    ) -> str:
+        """
+        Enqueue a notification for a new bid on an open swap.
+
+        Args:
+            to_address: Recipient email address (swap creator)
+            recipient_name: Name of the swap creator
+            bidder_name: Name of the worker who placed the bid
+            team_name: Name of the team
+            swap_link: Link to view the swap and bids
+            language: Language for the email (default: EN)
+
+        Returns:
+            SQS message ID
+        """
+        email_message = EmailMessage(
+            to_address=to_address,
+            template_name="open_swap_new_bid_email",
+            context={
+                "subject": f"New Bid on Your Swap Request from {bidder_name}",
+                "recipient_name": recipient_name,
+                "bidder_name": bidder_name,
+                "team_name": team_name,
+                "swap_link": swap_link,
+            },
+            language=language.value,
+            priority=EmailPriority.NORMAL,
+            email_type=EmailType.SWAP_BID,
+            created_at=datetime.now(tz=timezone.utc),
+        )
+
+        return await self._enqueue_email(email_message)
+
+    async def enqueue_swap_approved(
+        self,
+        to_address: str,
+        recipient_name: str,
+        approver_name: str,
+        team_name: str,
+        schedule_link: str,
+        language: Language = Language.EN,
+    ) -> str:
+        """
+        Enqueue a notification for an approved swap.
+
+        Args:
+            to_address: Recipient email address (worker involved in swap)
+            recipient_name: Name of the worker
+            approver_name: Name of the team leader who approved
+            team_name: Name of the team
+            schedule_link: Link to view the updated schedule
+            language: Language for the email (default: EN)
+
+        Returns:
+            SQS message ID
+        """
+        email_message = EmailMessage(
+            to_address=to_address,
+            template_name="swap_approved_email",
+            context={
+                "subject": "Your Swap Request Has Been Approved",
+                "recipient_name": recipient_name,
+                "approver_name": approver_name,
+                "team_name": team_name,
+                "schedule_link": schedule_link,
+            },
+            language=language.value,
+            priority=EmailPriority.HIGH,
+            email_type=EmailType.SWAP_APPROVED,
+            created_at=datetime.now(tz=timezone.utc),
+        )
+
+        return await self._enqueue_email(email_message)
+
 
 def create_email_queue_service(
     collection: DatabaseCollections,

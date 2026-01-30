@@ -44,6 +44,7 @@ variable "leader_permissions" {
     "delete-demand", "create-request", "read-shift-demands", "approve-request",
     "deny-request",
     "rescind-request",
+    "create-swap", "read-swap", "approve-swap",
   ]
 }
 
@@ -53,7 +54,7 @@ variable "member_permissions" {
   default = [
     "read-workers", "update", "read-assignments-validated", "delete-request",
     "create-request", "update-request", "read-requests", "read", "read-shifts",
-    "read-shift-options"
+    "read-shift-options", "create-swap", "read-swap"
   ]
 }
 

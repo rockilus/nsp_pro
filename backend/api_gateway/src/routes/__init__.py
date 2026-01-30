@@ -23,6 +23,7 @@ from src.routes.shift_routes import router as router_shift
 from src.routes.specialty_routes import router as router_specialty
 from src.routes.sqs_solve_routes import router as router_sqs_solve
 from src.routes.stats_routes import router as router_stats
+from src.routes.swap_routes import router as router_swap
 from src.routes.team_invitation_routes import router as router_team_invitation
 from src.routes.team_routes import router as router_team
 from src.routes.user_routes import router as router_user
@@ -52,6 +53,7 @@ __all__ = [
     "router_specialty",
     "router_sqs_solve",
     "router_stats",
+    "router_swap",
     "router_team_invitation",
     "router_team",
     "router_test_utils",

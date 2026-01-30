@@ -76,6 +76,12 @@ export default function NavLinks({
       route: "/schedule",
     },
     {
+      name: "swaps",
+      label: t("swaps"),
+      href: `/${lng}/plan/swaps`,
+      route: "/swaps",
+    },
+    {
       name: "stats",
       label: t("stats"),
       href: `/${lng}/plan/stats`,
@@ -197,6 +203,12 @@ export function NavLinksMobile({
       label: t("schedule"),
       href: `/${lng}/plan/schedule`,
       route: "/schedule",
+    },
+    {
+      name: "swaps",
+      label: t("swaps"),
+      href: `/${lng}/plan/swaps`,
+      route: "/swaps",
     },
     {
       name: "stats",
