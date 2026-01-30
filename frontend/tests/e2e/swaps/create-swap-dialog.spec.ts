@@ -110,18 +110,19 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
     }) => {
       // Select first worker
       const testWorkers = swapTestBase.getTestWorkers();
+      const testWorkerId = testWorkers[0].workerId;
       await page.click('[data-testid="worker-select"]');
-      await page.click(
-        `[data-testid="worker-option-${testWorkers[0].workerId}"]`,
-      );
+      await page.click(`[data-testid="worker-option-${testWorkerId}"]`);
 
       // Wait for assignments to load
       await page.waitForTimeout(1000);
 
       // Get assignments not associated with schedule
+      const tomorrow = dayjs.utc().add(1, "day").startOf("day");
       const noScheduleAssignments = swapTestBase
         .getAssignmentsWithoutSchedule()
-        .filter((a) => a.workerId === testWorkers[0].workerId);
+        .filter((a) => a.workerId === testWorkerId)
+        .filter((a) => dayjs.utc(a.startDate).isSameOrAfter(tomorrow, "day"));
       expect(noScheduleAssignments.length).toBeGreaterThan(0);
 
       console.log(noScheduleAssignments);
