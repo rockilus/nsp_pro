@@ -196,7 +196,11 @@ export default function CreateSwapDialog({
                   data-testid="worker-select"
                 >
                   {workers.map((worker) => (
-                    <MenuItem key={worker.id} value={worker.id}>
+                    <MenuItem
+                      key={worker.id}
+                      value={worker.id}
+                      data-testid={`worker-option-${worker.id}`}
+                    >
                       {worker.name}
                     </MenuItem>
                   ))}
@@ -309,7 +313,11 @@ export default function CreateSwapDialog({
                 {workers
                   .filter((w) => w.id !== selectedWorkerId)
                   .map((worker) => (
-                    <MenuItem key={worker.id} value={worker.id}>
+                    <MenuItem
+                      key={worker.id}
+                      value={worker.id}
+                      data-testid={`worker-option-${worker.id}`}
+                    >
                       {worker.name}
                     </MenuItem>
                   ))}
