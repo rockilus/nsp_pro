@@ -148,7 +148,33 @@ export class SwapTestBase {
       throw new Error("Test team not created");
     }
 
-    // Create campaign schedule for next month
+    // Create validated schedule first (for current month)
+    // This will initially be CAMPAIGN, then we validate it
+    const validatedStart = referenceDate.startOf("month").format("YYYY-MM-DD");
+    const validatedEnd = referenceDate.endOf("month").format("YYYY-MM-DD");
+
+    console.log(
+      `📅 Creating validated schedule: ${validatedStart} to ${validatedEnd}`,
+    );
+
+    const validatedSchedule = await this.dbUtils.createSchedule(
+      this.testTeam.teamId,
+    );
+    const updatedValidated = await this.dbUtils.updateSchedule({
+      ...validatedSchedule,
+      startDate: dayjs(validatedStart).utc(),
+      endDate: dayjs(validatedEnd).utc(),
+    });
+
+    // Validate the schedule (changes status from CAMPAIGN to VALIDATED)
+    const validatedScheduleResult = await this.dbUtils.validateSchedule(
+      updatedValidated.id,
+      this.testTeam.teamId,
+    );
+    this.testSchedules.push(validatedScheduleResult);
+
+    // Now create campaign schedule for next month
+    // Since the first schedule is now VALIDATED, this will create a new CAMPAIGN
     const nextMonth = referenceDate.add(1, "month");
     const campaignStart = nextMonth.startOf("month").format("YYYY-MM-DD");
     const campaignEnd = nextMonth.endOf("month").format("YYYY-MM-DD");
@@ -167,31 +193,8 @@ export class SwapTestBase {
     });
     this.testSchedules.push(updatedCampaign);
 
-    // Create validated schedule for current month
-    const validatedStart = referenceDate.startOf("month").format("YYYY-MM-DD");
-    const validatedEnd = referenceDate.endOf("month").format("YYYY-MM-DD");
-
-    console.log(
-      `📅 Creating validated schedule: ${validatedStart} to ${validatedEnd}`,
-    );
-
-    const validatedSchedule = await this.dbUtils.createSchedule(
-      this.testTeam.teamId,
-    );
-    const updatedValidated = await this.dbUtils.updateSchedule({
-      ...validatedSchedule,
-      startDate: dayjs(validatedStart).utc(),
-      endDate: dayjs(validatedEnd).utc(),
-    });
-
-    // Validate the schedule
-    const validatedScheduleResult = await this.dbUtils.validateSchedule(
-      updatedValidated.id,
-      this.testTeam.teamId,
-    );
-    this.testSchedules.push(validatedScheduleResult);
-
     console.log("✅ Created campaign and validated schedules");
+    console.log(this.testSchedules);
   }
 
   /**
