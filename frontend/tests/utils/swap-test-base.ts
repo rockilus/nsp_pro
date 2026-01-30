@@ -225,7 +225,7 @@ export class SwapTestBase {
     }
 
     // Create assignments without schedule association (tomorrow and future)
-    const tomorrow = today.add(1, "day");
+    const tomorrow = today.add(1, "day").utc();
     for (const worker of this.testWorkers) {
       const assignment = await this.dbUtils.createAssignment({
         teamId: this.testTeam.teamId,
