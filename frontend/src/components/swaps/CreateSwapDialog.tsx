@@ -127,18 +127,21 @@ export default function CreateSwapDialog({
     if (activeStep === 4 && offeredAssignmentIds.length > 0 && apiClient) {
       const loadAssignmentDetails = async () => {
         try {
-          const result = await AssignmentApi.getAssignments(
+          // Fetch assignments for the selected worker
+          const offeredResult = await AssignmentApi.getAssignments(
             apiClient,
             teamId,
             false,
             dayjs().subtract(60, "day"),
             dayjs().add(60, "day"),
+            selectedWorkerId,
           );
 
-          // Extract assignments from result
-          const allAssignments: AssignmentDataDictT[] =
-            result.assignmentsRead.map((assignment) => {
-              return {
+          // Extract offered assignments
+          const offeredAssignmentsData: AssignmentDataDictT[] =
+            offeredResult.assignmentsRead
+              .filter((a) => offeredAssignmentIds.includes(a.id))
+              .map((assignment) => ({
                 assignment,
                 worker:
                   workers.find((w) => w.id === assignment.workerId) ||
@@ -147,24 +150,38 @@ export default function CreateSwapDialog({
                 recurrence: null,
                 breaches: [],
                 requests: [],
-              } as AssignmentDataDictT;
-            });
+              }));
+          setOfferedAssignments(offeredAssignmentsData);
 
-          // Filter offered assignments
-          const offered = allAssignments.filter((a) =>
-            offeredAssignmentIds.includes(a.assignment.id),
-          );
-          setOfferedAssignments(offered);
-
-          // Filter requested assignments (if direct swap)
+          // Fetch requested assignments for target worker (if direct swap)
           if (
             swapType === SwapType.DIRECT &&
-            requestedAssignmentIds.length > 0
+            requestedAssignmentIds.length > 0 &&
+            targetWorkerId
           ) {
-            const requested = allAssignments.filter((a) =>
-              requestedAssignmentIds.includes(a.assignment.id),
+            const requestedResult = await AssignmentApi.getAssignments(
+              apiClient,
+              teamId,
+              false,
+              dayjs().subtract(60, "day"),
+              dayjs().add(60, "day"),
+              targetWorkerId,
             );
-            setRequestedAssignments(requested);
+
+            const requestedAssignmentsData: AssignmentDataDictT[] =
+              requestedResult.assignmentsRead
+                .filter((a) => requestedAssignmentIds.includes(a.id))
+                .map((assignment) => ({
+                  assignment,
+                  worker:
+                    workers.find((w) => w.id === assignment.workerId) ||
+                    ({} as WorkerT),
+                  shift: {} as any,
+                  recurrence: null,
+                  breaches: [],
+                  requests: [],
+                }));
+            setRequestedAssignments(requestedAssignmentsData);
           }
         } catch (err) {
           console.error("Failed to load assignment details:", err);

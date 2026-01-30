@@ -95,7 +95,14 @@ export default function AssignmentSelector({
 
         // Fetch assignments and link shifts in parallel
         const [assignmentResult, linkShiftResult] = await Promise.all([
-          AssignmentApi.getAssignments(apiClient, teamId, false, start, end),
+          AssignmentApi.getAssignments(
+            apiClient,
+            teamId,
+            false,
+            start,
+            end,
+            workerId,
+          ),
           LinkShiftApi.getLinkShifts(apiClient, teamId),
         ]);
 

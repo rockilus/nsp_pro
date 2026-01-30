@@ -55,6 +55,7 @@ export class AssignmentApi extends BaseApi {
     includeCampaign: boolean = false,
     startDate?: dayjs.Dayjs,
     endDate?: dayjs.Dayjs,
+    workerId?: string,
   ): Promise<AssignmentsRecurrencesResultT> {
     // Security: Input validation
     if (!teamId) {
@@ -72,6 +73,9 @@ export class AssignmentApi extends BaseApi {
     }
     if (includeCampaign) {
       params.append("include_campaign", "true");
+    }
+    if (workerId) {
+      params.append("worker_id", workerId);
     }
 
     if (params.toString()) {

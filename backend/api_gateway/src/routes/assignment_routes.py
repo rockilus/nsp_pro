@@ -45,7 +45,9 @@ async def create_assignment(
         r_data: Optional[RecurrenceRule] = None
         if recurrence:
             r_data = RecurrenceRule.from_dto(recurrence)
-        ar_result = assignment_service.create_assignment_and_recurrence(a_data, r_data)
+        ar_result = assignment_service.create_assignment_and_recurrence(
+            a_data, r_data
+        )
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to create assignment")
@@ -59,6 +61,7 @@ async def get_assignments(
     start_date: Optional[date] = Query(None, alias="start_date"),
     end_date: Optional[date] = Query(None, alias="end_date"),
     include_campaign: bool = Query(False, alias="include_campaign"),
+    worker_id: Optional[str] = Query(None, alias="worker_id"),
     user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(
         get_assignment_service,
@@ -92,6 +95,7 @@ async def get_assignments(
             start_date,
             end_date,
             include_campaign,
+            worker_id,
         )
         response = ar_result.to_dto()
         end_time = time_module.time()
@@ -128,7 +132,9 @@ async def update_assignment(
             if recurrence_update_scope
             else None
         )
-        recurrence_data = RecurrenceRule.from_dto(recurrence) if recurrence else None
+        recurrence_data = (
+            RecurrenceRule.from_dto(recurrence) if recurrence else None
+        )
         ar_result = assignment_service.update_assignment_and_recurrence(
             assignment_new=assignment_data,
             recurrence_update_scope=recurrence_update_scope_data,
