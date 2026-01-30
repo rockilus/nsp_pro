@@ -124,7 +124,7 @@ export default function CreateSwapDialog({
 
   // Load assignment details for review step
   useEffect(() => {
-    if (activeStep === 4 && offeredAssignmentIds.length > 0) {
+    if (activeStep === 4 && offeredAssignmentIds.length > 0 && apiClient) {
       const loadAssignmentDetails = async () => {
         try {
           const result = await AssignmentApi.getAssignments(
@@ -172,13 +172,15 @@ export default function CreateSwapDialog({
       };
       loadAssignmentDetails();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     activeStep,
-    offeredAssignmentIds,
-    requestedAssignmentIds,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    JSON.stringify(offeredAssignmentIds),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    JSON.stringify(requestedAssignmentIds),
     swapType,
     teamId,
-    apiClient,
   ]);
 
   const handleNext = () => {

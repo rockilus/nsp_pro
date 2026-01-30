@@ -77,8 +77,10 @@ export default function AssignmentSelector({
   // Load assignments and link shifts
   useEffect(() => {
     const loadData = async () => {
-      if (!teamId) {
-        setError("Team ID is required");
+      if (!teamId || !apiClient) {
+        if (!teamId) {
+          setError("Team ID is required");
+        }
         setLoading(false);
         return;
       }
@@ -148,13 +150,14 @@ export default function AssignmentSelector({
     };
 
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     teamId,
     selectedWorkerId,
-    minDate,
-    maxDate,
-    apiClient,
-    excludeAssignmentIds,
+    minDate?.format("YYYY-MM-DD"),
+    maxDate?.format("YYYY-MM-DD"),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    JSON.stringify(excludeAssignmentIds),
   ]);
 
   // Group assignments by date
