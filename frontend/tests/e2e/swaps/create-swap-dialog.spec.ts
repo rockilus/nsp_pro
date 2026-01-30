@@ -110,6 +110,8 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
         swapTestBase.getAssignmentsWithoutSchedule();
       expect(noScheduleAssignments.length).toBeGreaterThan(0);
 
+      console.log(noScheduleAssignments);
+
       // Verify these assignments are visible
       for (const assignment of noScheduleAssignments) {
         const assignmentElement = page.locator(

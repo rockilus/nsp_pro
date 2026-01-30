@@ -2041,7 +2041,7 @@ export class DatabaseTestUtils {
     fixed?: boolean;
     comment?: string;
     scheduleId?: string | null;
-  }): Promise<any> {
+  }): Promise<AssignmentT> {
     try {
       // Construct AssignmentT object
       const assignment: AssignmentT = {
@@ -2063,7 +2063,11 @@ export class DatabaseTestUtils {
         null, // No recurrence
       );
 
-      return result;
+      // Return the first created assignment
+      if (result.assignmentsCreated.length === 0) {
+        throw new Error("No assignment was created");
+      }
+      return result.assignmentsCreated[0];
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Failed to create assignment: ${error.message}`);
