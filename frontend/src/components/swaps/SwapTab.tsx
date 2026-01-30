@@ -116,8 +116,8 @@ export default function SwapTab({
           getAssignments(
             teamId,
             false,
-            dayjs().subtract(60, "day"),
-            dayjs().add(60, "day"),
+            dayjs.utc().add(1, "day").startOf("day"),
+            undefined,
           ),
         ]);
 
