@@ -287,6 +287,7 @@ export default function CreateSwapDialog({
                     setSelectedWorkerId(e.target.value);
                     setOfferedAssignmentIds([]); // Reset selections
                   }}
+                  data-testid="worker-select"
                 >
                   {workers.map((worker) => (
                     <MenuItem key={worker.id} value={worker.id}>
@@ -305,7 +306,7 @@ export default function CreateSwapDialog({
             )}
 
             {selectedWorkerId && (
-              <>
+              <Box data-testid="assignment-selector">
                 <Typography variant="subtitle2" gutterBottom>
                   Select Assignments to Offer
                 </Typography>
@@ -317,7 +318,7 @@ export default function CreateSwapDialog({
                   minDate={dayjs()}
                   allowMultiple={true}
                 />
-              </>
+              </Box>
             )}
           </Box>
         );
@@ -559,7 +560,13 @@ export default function CreateSwapDialog({
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="md"
+      fullWidth
+      data-testid="create-swap-dialog"
+    >
       <DialogTitle>Create Swap Request</DialogTitle>
       <DialogContent>
         <Box sx={{ mt: 2 }}>
@@ -581,16 +588,29 @@ export default function CreateSwapDialog({
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} disabled={loading}>
+        <Button
+          onClick={handleClose}
+          disabled={loading}
+          data-testid="cancel-button"
+        >
           Cancel
         </Button>
         {activeStep > 0 && (
-          <Button onClick={handleBack} disabled={loading}>
+          <Button
+            onClick={handleBack}
+            disabled={loading}
+            data-testid="back-button"
+          >
             Back
           </Button>
         )}
         {activeStep < steps.length - 1 ? (
-          <Button onClick={handleNext} variant="contained" disabled={loading}>
+          <Button
+            onClick={handleNext}
+            variant="contained"
+            disabled={loading}
+            data-testid="next-button"
+          >
             Next
           </Button>
         ) : (
@@ -599,6 +619,7 @@ export default function CreateSwapDialog({
             variant="contained"
             color="primary"
             disabled={loading}
+            data-testid="submit-button"
           >
             {loading ? "Creating..." : "Create Swap"}
           </Button>

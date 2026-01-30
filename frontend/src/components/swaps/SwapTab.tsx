@@ -175,6 +175,7 @@ export default function SwapTab({
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => setCreateDialogOpen(true)}
+          data-testid="create-swap-button"
         >
           Create Swap
         </Button>

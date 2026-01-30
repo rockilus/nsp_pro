@@ -282,7 +282,12 @@ export default function AssignmentSelector({
                 const isLinked = linkedShiftIds.length > 1;
 
                 return (
-                  <ListItem key={data.assignment.id} disablePadding>
+                  <ListItem
+                    key={data.assignment.id}
+                    disablePadding
+                    data-assignment-id={data.assignment.id}
+                    data-testid={`assignment-${data.assignment.id}`}
+                  >
                     <ListItemButton
                       onClick={() => handleToggle(data.assignment.id)}
                       dense
@@ -349,6 +354,8 @@ export default function AssignmentSelector({
                       hover
                       onClick={() => handleToggle(data.assignment.id)}
                       sx={{ cursor: "pointer" }}
+                      data-assignment-id={data.assignment.id}
+                      data-testid={`assignment-${data.assignment.id}`}
                     >
                       <TableCell padding="checkbox">
                         <Checkbox checked={isSelected} />
