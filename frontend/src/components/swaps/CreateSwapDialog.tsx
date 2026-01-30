@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -30,9 +30,6 @@ import { SwapType } from "../../types/swap";
 import { WorkerT } from "../../types/worker";
 import { AssignmentDataDictT } from "../../types/assignment";
 import AssignmentSelector from "./AssignmentSelector";
-import { WorkerApi } from "../../app/lib/api/workerApi";
-import { AssignmentApi } from "../../app/lib/api/assignmentApi";
-import { useApiClient } from "../../app/lib/api-client";
 
 interface CreateSwapDialogProps {
   open: boolean;
@@ -47,6 +44,8 @@ interface CreateSwapDialogProps {
   teamId: string;
   currentUserId: string;
   isLeader: boolean;
+  workers: WorkerT[];
+  assignments: AssignmentDataDictT[];
 }
 
 const steps = [
@@ -64,8 +63,9 @@ export default function CreateSwapDialog({
   teamId,
   currentUserId,
   isLeader,
+  workers,
+  assignments,
 }: CreateSwapDialogProps) {
-  const apiClient = useApiClient();
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -82,123 +82,31 @@ export default function CreateSwapDialog({
   >([]);
   const [comment, setComment] = useState<string>("");
 
-  // Data
-  const [workers, setWorkers] = useState<WorkerT[]>([]);
-  const [offeredAssignments, setOfferedAssignments] = useState<
-    AssignmentDataDictT[]
-  >([]);
-  const [requestedAssignments, setRequestedAssignments] = useState<
-    AssignmentDataDictT[]
-  >([]);
-
-  // Load workers
+  // Initialize selected worker
   useEffect(() => {
-    if (open && teamId) {
-      const loadWorkers = async () => {
-        try {
-          const workerList = await WorkerApi.getWorkers(
-            apiClient,
-            teamId,
-            undefined,
-            false,
-          );
-          setWorkers(workerList);
-
-          // If not leader, pre-select current user as the worker
-          if (!isLeader) {
-            const currentWorker = workerList.find(
-              (w) => w.id === currentUserId,
-            );
-            if (currentWorker) {
-              setSelectedWorkerId(currentWorker.id);
-            }
-          }
-        } catch (err) {
-          console.error("Failed to load workers:", err);
-          setError("Failed to load workers");
-        }
-      };
-      loadWorkers();
+    if (open && !isLeader && !selectedWorkerId) {
+      const currentWorker = workers.find((w) => w.id === currentUserId);
+      if (currentWorker) {
+        setSelectedWorkerId(currentWorker.id);
+      }
     }
-  }, [open, teamId, currentUserId, isLeader, apiClient]);
+  }, [open, isLeader, currentUserId, workers, selectedWorkerId]);
 
-  // Load assignment details for review step
-  useEffect(() => {
-    if (activeStep === 4 && offeredAssignmentIds.length > 0 && apiClient) {
-      const loadAssignmentDetails = async () => {
-        try {
-          // Fetch assignments for the selected worker
-          const offeredResult = await AssignmentApi.getAssignments(
-            apiClient,
-            teamId,
-            false,
-            dayjs().add(1, "day"),
-            undefined,
-            selectedWorkerId,
-          );
+  // Filter assignment details for review step
+  const offeredAssignments = useMemo(() => {
+    return assignments.filter((a) =>
+      offeredAssignmentIds.includes(a.assignment.id),
+    );
+  }, [assignments, offeredAssignmentIds]);
 
-          // Extract offered assignments
-          const offeredAssignmentsData: AssignmentDataDictT[] =
-            offeredResult.assignmentsRead
-              .filter((a) => offeredAssignmentIds.includes(a.id))
-              .map((assignment) => ({
-                assignment,
-                worker:
-                  workers.find((w) => w.id === assignment.workerId) ||
-                  ({} as WorkerT),
-                shift: {} as any,
-                recurrence: null,
-                breaches: [],
-                requests: [],
-              }));
-          setOfferedAssignments(offeredAssignmentsData);
-
-          // Fetch requested assignments for target worker (if direct swap)
-          if (
-            swapType === SwapType.DIRECT &&
-            requestedAssignmentIds.length > 0 &&
-            targetWorkerId
-          ) {
-            const requestedResult = await AssignmentApi.getAssignments(
-              apiClient,
-              teamId,
-              false,
-              dayjs().add(1, "day"),
-              undefined,
-              targetWorkerId,
-            );
-
-            const requestedAssignmentsData: AssignmentDataDictT[] =
-              requestedResult.assignmentsRead
-                .filter((a) => requestedAssignmentIds.includes(a.id))
-                .map((assignment) => ({
-                  assignment,
-                  worker:
-                    workers.find((w) => w.id === assignment.workerId) ||
-                    ({} as WorkerT),
-                  shift: {} as any,
-                  recurrence: null,
-                  breaches: [],
-                  requests: [],
-                }));
-            setRequestedAssignments(requestedAssignmentsData);
-          }
-        } catch (err) {
-          console.error("Failed to load assignment details:", err);
-        }
-      };
-      loadAssignmentDetails();
+  const requestedAssignments = useMemo(() => {
+    if (swapType === SwapType.DIRECT && requestedAssignmentIds.length > 0) {
+      return assignments.filter((a) =>
+        requestedAssignmentIds.includes(a.assignment.id),
+      );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    activeStep,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    JSON.stringify(offeredAssignmentIds),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    JSON.stringify(requestedAssignmentIds),
-    swapType,
-    teamId,
-  ]);
+    return [];
+  }, [assignments, requestedAssignmentIds, swapType]);
 
   const handleNext = () => {
     // Validation before moving to next step
@@ -266,8 +174,6 @@ export default function CreateSwapDialog({
     setRequestedAssignmentIds([]);
     setComment("");
     setError(null);
-    setOfferedAssignments([]);
-    setRequestedAssignments([]);
     onClose();
   };
 
@@ -311,11 +217,13 @@ export default function CreateSwapDialog({
                   Select Assignments to Offer
                 </Typography>
                 <AssignmentSelector
-                  teamId={teamId}
                   selectedAssignmentIds={offeredAssignmentIds}
                   onSelectionChange={setOfferedAssignmentIds}
-                  workerId={selectedWorkerId}
-                  minDate={dayjs()}
+                  assignments={assignments.filter(
+                    (a) =>
+                      a.assignment.workerId === selectedWorkerId &&
+                      a.assignment.date.isAfter(dayjs(), "day"),
+                  )}
                   allowMultiple={true}
                 />
               </Box>
@@ -414,11 +322,13 @@ export default function CreateSwapDialog({
                   Select Requested Assignments
                 </Typography>
                 <AssignmentSelector
-                  teamId={teamId}
                   selectedAssignmentIds={requestedAssignmentIds}
                   onSelectionChange={setRequestedAssignmentIds}
-                  workerId={targetWorkerId}
-                  minDate={dayjs()}
+                  assignments={assignments.filter(
+                    (a) =>
+                      a.assignment.workerId === targetWorkerId &&
+                      a.assignment.date.isAfter(dayjs(), "day"),
+                  )}
                   allowMultiple={true}
                 />
               </>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import dayjs from "dayjs";
 import {
   Box,
   Button,
@@ -16,11 +17,27 @@ import {
 } from "@mui/material";
 import { SwapHoriz as SwapIcon, Add as AddIcon } from "@mui/icons-material";
 import { SwapRequestT, SwapStatus, SwapType } from "../../types/swap";
-import { SwapApi } from "../../app/lib/api/swapApi";
-import { useApiClient } from "../../app/lib/api-client";
+import { WorkerT } from "../../types/worker";
+import { ShiftT } from "../../types/shift";
+import { LinkShiftT } from "../../types/shift";
+import { AssignmentDataDictT } from "../../types/assignment";
 import CreateSwapDialog from "./CreateSwapDialog";
 import SwapDetailDialog from "./SwapDetailDialog";
 import { TeamWithMembership } from "../../types/team";
+import { useGetWorkers } from "../../hooks/useWorker";
+import { useGetShifts } from "../../hooks/useShift";
+import { useGetLinkShifts } from "../../hooks/useLinkShift";
+import { useGetAssignments } from "../../hooks/useAssignment";
+import {
+  useGetSwaps,
+  useGetSwapById,
+  useCreateSwap,
+  useAddBid,
+  useAcceptBid,
+  useAcceptDirectSwap,
+  useApproveSwap,
+  useCancelSwap,
+} from "../../hooks/useSwap";
 
 const statusColors: Record<
   SwapStatus,
@@ -49,12 +66,31 @@ export default function SwapTab({
   currentUserId,
 }: SwapTabProps) {
   const teamId = teamWithMembership.team.id;
-  const apiClient = useApiClient();
+
+  // Hooks
+  const getSwaps = useGetSwaps();
+  const getSwapById = useGetSwapById();
+  const createSwap = useCreateSwap();
+  const addBid = useAddBid();
+  const acceptBid = useAcceptBid();
+  const acceptDirectSwap = useAcceptDirectSwap();
+  const approveSwap = useApproveSwap();
+  const cancelSwap = useCancelSwap();
+  const getWorkers = useGetWorkers();
+  const getShifts = useGetShifts();
+  const getLinkShifts = useGetLinkShifts();
+  const getAssignments = useGetAssignments();
 
   const [currentTab, setCurrentTab] = useState<SwapStatus | "all">("all");
   const [swaps, setSwaps] = useState<SwapRequestT[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Data states
+  const [workers, setWorkers] = useState<WorkerT[]>([]);
+  const [shifts, setShifts] = useState<ShiftT[]>([]);
+  const [linkShifts, setLinkShifts] = useState<LinkShiftT[]>([]);
+  const [assignments, setAssignments] = useState<AssignmentDataDictT[]>([]);
 
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -64,25 +100,81 @@ export default function SwapTab({
   // Check if user is a leader
   const isLeader = teamWithMembership.membership.role === "owner";
 
-  useEffect(() => {
-    loadSwaps();
-  }, [teamId, currentTab]);
+  const loadInitialData = useCallback(async () => {
+    if (!teamId) return;
 
-  const loadSwaps = async () => {
-    if (!apiClient || !teamId) return;
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Load workers, shifts, link shifts, and assignments in parallel
+      const [workersData, shiftsData, linkShiftsData, assignmentsResult] =
+        await Promise.all([
+          getWorkers(teamId),
+          getShifts(teamId),
+          getLinkShifts(teamId),
+          getAssignments(
+            teamId,
+            false,
+            dayjs().subtract(60, "day"),
+            dayjs().add(60, "day"),
+          ),
+        ]);
+
+      setWorkers(workersData);
+      setShifts(shiftsData);
+      setLinkShifts(linkShiftsData);
+
+      // Build assignment data dict
+      const shiftMap = new Map(shiftsData.map((shift) => [shift.id, shift]));
+      const workerMap = new Map(
+        workersData.map((worker) => [worker.id, worker]),
+      );
+
+      const assignmentsData: AssignmentDataDictT[] =
+        assignmentsResult.assignmentsRead.map((assignment) => ({
+          assignment,
+          worker: workerMap.get(assignment.workerId) || ({} as WorkerT),
+          shift: shiftMap.get(assignment.shiftId) || ({} as ShiftT),
+          recurrence: null,
+          breaches: [],
+          requests: [],
+        }));
+
+      setAssignments(assignmentsData);
+    } catch (err: any) {
+      console.error("Failed to load initial data:", err);
+      setError(err.message || "Failed to load data");
+    } finally {
+      setLoading(false);
+    }
+  }, [teamId, getWorkers, getShifts, getLinkShifts, getAssignments]);
+
+  const loadSwaps = useCallback(async () => {
+    if (!teamId) return;
 
     try {
       setLoading(true);
       setError(null);
       const status = currentTab === "all" ? undefined : currentTab;
-      const data = await SwapApi.getSwapsForTeam(apiClient, teamId, status);
+      const data = await getSwaps(teamId, status);
       setSwaps(data);
     } catch (err: any) {
       setError(err.message || "Failed to load swaps");
     } finally {
       setLoading(false);
     }
-  };
+  }, [teamId, currentTab, getSwaps]);
+
+  // Load initial data
+  useEffect(() => {
+    loadInitialData();
+  }, [loadInitialData]);
+
+  // Load swaps when tab changes
+  useEffect(() => {
+    loadSwaps();
+  }, [loadSwaps]);
 
   const handleTabChange = (
     _event: React.SyntheticEvent,
@@ -103,9 +195,9 @@ export default function SwapTab({
     targetWorkerId: string | null;
     comment: string;
   }) => {
-    if (!apiClient || !teamId) return;
+    if (!teamId) return;
 
-    await SwapApi.createSwap(apiClient, teamId, swapData);
+    await createSwap(teamId, swapData);
     loadSwaps();
   };
 
@@ -114,41 +206,36 @@ export default function SwapTab({
     bidderWorkerId: string,
     bidAssignmentIds: string[],
   ) => {
-    if (!apiClient) return;
-    await SwapApi.addBid(apiClient, swapId, bidderWorkerId, bidAssignmentIds);
+    await addBid(swapId, bidderWorkerId, bidAssignmentIds);
     loadSwaps();
     // Refresh selected swap
-    const updatedSwap = await SwapApi.getSwapById(apiClient, swapId);
+    const updatedSwap = await getSwapById(swapId);
     setSelectedSwap(updatedSwap);
   };
 
   const handleAcceptBid = async (swapId: string, bidId: string) => {
-    if (!apiClient) return;
-    await SwapApi.acceptBid(apiClient, swapId, bidId);
+    await acceptBid(swapId, bidId);
     loadSwaps();
-    const updatedSwap = await SwapApi.getSwapById(apiClient, swapId);
+    const updatedSwap = await getSwapById(swapId);
     setSelectedSwap(updatedSwap);
   };
 
   const handleAcceptDirectSwap = async (swapId: string) => {
-    if (!apiClient) return;
-    await SwapApi.acceptDirectSwap(apiClient, swapId);
+    await acceptDirectSwap(swapId);
     loadSwaps();
-    const updatedSwap = await SwapApi.getSwapById(apiClient, swapId);
+    const updatedSwap = await getSwapById(swapId);
     setSelectedSwap(updatedSwap);
   };
 
   const handleApproveSwap = async (swapId: string) => {
-    if (!apiClient) return;
-    await SwapApi.approveSwap(apiClient, swapId);
+    await approveSwap(swapId);
     loadSwaps();
-    const updatedSwap = await SwapApi.getSwapById(apiClient, swapId);
+    const updatedSwap = await getSwapById(swapId);
     setSelectedSwap(updatedSwap);
   };
 
   const handleCancelSwap = async (swapId: string) => {
-    if (!apiClient) return;
-    await SwapApi.cancelSwap(apiClient, swapId);
+    await cancelSwap(swapId);
     loadSwaps();
   };
 
@@ -306,6 +393,8 @@ export default function SwapTab({
         teamId={teamId}
         currentUserId={currentUserId}
         isLeader={isLeader}
+        workers={workers}
+        assignments={assignments}
       />
 
       {/* Swap Detail Dialog */}
@@ -316,6 +405,8 @@ export default function SwapTab({
         teamId={teamId}
         currentUserId={currentUserId}
         isLeader={isLeader}
+        workers={workers}
+        assignments={assignments}
         onAddBid={
           selectedSwap
             ? (workerId, bidIds) =>

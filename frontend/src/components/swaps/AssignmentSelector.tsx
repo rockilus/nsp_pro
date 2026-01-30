@@ -1,13 +1,16 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import {
   Box,
   Checkbox,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
+  Chip,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Paper,
   Table,
   TableBody,
   TableCell,
@@ -15,35 +18,17 @@ import {
   TableHead,
   TableRow,
   Typography,
-  Chip,
-  Paper,
-  CircularProgress,
   Alert,
-  useMediaQuery,
   useTheme,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  ListItemIcon,
+  useMediaQuery,
 } from "@mui/material";
 import dayjs from "dayjs";
-import { AssignmentT, AssignmentDataDictT } from "../../types/assignment";
-import { WorkerT } from "../../types/worker";
-import { LinkShiftT } from "../../types/shift";
-import { AssignmentApi } from "../../app/lib/api/assignmentApi";
-import { LinkShiftApi } from "../../app/lib/api/linkShiftApi";
-import { ShiftApi } from "../../app/lib/api/shiftApi";
-import { useApiClient } from "../../app/lib/api-client";
+import { AssignmentDataDictT } from "../../types/assignment";
 
 interface AssignmentSelectorProps {
-  teamId: string;
   selectedAssignmentIds: string[];
   onSelectionChange: (assignmentIds: string[]) => void;
-  workerId?: string; // Optional: filter by specific worker
-  excludeAssignmentIds?: string[]; // Optional: exclude certain assignments
-  minDate?: dayjs.Dayjs; // Optional: filter by date range
-  maxDate?: dayjs.Dayjs;
+  assignments: AssignmentDataDictT[];
   allowMultiple?: boolean; // Default true
 }
 
@@ -53,126 +38,13 @@ interface GroupedAssignment {
 }
 
 export default function AssignmentSelector({
-  teamId,
   selectedAssignmentIds,
   onSelectionChange,
-  workerId,
-  excludeAssignmentIds = [],
-  minDate,
-  maxDate,
+  assignments,
   allowMultiple = true,
 }: AssignmentSelectorProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const apiClient = useApiClient();
-
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [assignments, setAssignments] = useState<AssignmentDataDictT[]>([]);
-  const [linkShifts, setLinkShifts] = useState<LinkShiftT[]>([]);
-  const [workers, setWorkers] = useState<WorkerT[]>([]);
-  const [selectedWorkerId, setSelectedWorkerId] = useState<string>(
-    workerId || "",
-  );
-
-  // Load assignments and link shifts
-  useEffect(() => {
-    const loadData = async () => {
-      if (!teamId || !apiClient) {
-        if (!teamId) {
-          setError("Team ID is required");
-        }
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Determine date range (default to +/- 30 days from now)
-        const start = minDate || dayjs().subtract(30, "day");
-        const end = maxDate || dayjs().add(30, "day");
-
-        // Fetch assignments, shifts, and link shifts in parallel
-        const [assignmentResult, shiftsResult, linkShiftResult] =
-          await Promise.all([
-            AssignmentApi.getAssignments(
-              apiClient,
-              teamId,
-              false,
-              start,
-              end,
-              workerId,
-            ),
-            ShiftApi.getShifts(apiClient, teamId),
-            LinkShiftApi.getLinkShifts(apiClient, teamId),
-          ]);
-
-        // Create shift map for quick lookup
-        const shiftMap = new Map(
-          shiftsResult.map((shift) => [shift.id, shift]),
-        );
-
-        // Extract assignments from result
-        const allAssignments: AssignmentDataDictT[] =
-          assignmentResult.assignmentsRead.map((assignment) => {
-            const shift = shiftMap.get(assignment.shiftId);
-            return {
-              assignment,
-              worker:
-                workers.find((w) => w.id === assignment.workerId) ||
-                ({} as WorkerT),
-              shift: shift || ({} as any),
-              recurrence: null,
-              breaches: [],
-              requests: [],
-            } as AssignmentDataDictT;
-          });
-
-        // Filter by worker if specified
-        let filteredAssignments = allAssignments;
-        if (selectedWorkerId) {
-          filteredAssignments = allAssignments.filter(
-            (a) => a.assignment.workerId === selectedWorkerId,
-          );
-        }
-
-        // Exclude specified assignments
-        if (excludeAssignmentIds.length > 0) {
-          filteredAssignments = filteredAssignments.filter(
-            (a) => !excludeAssignmentIds.includes(a.assignment.id),
-          );
-        }
-
-        setAssignments(filteredAssignments);
-        setLinkShifts(linkShiftResult);
-
-        // Extract unique workers for filter
-        const uniqueWorkers = Array.from(
-          new Map(allAssignments.map((a) => [a.worker.id, a.worker])).values(),
-        );
-        setWorkers(uniqueWorkers);
-      } catch (err) {
-        console.error("Failed to load assignments:", err);
-        setError(
-          err instanceof Error ? err.message : "Failed to load assignments",
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    teamId,
-    selectedWorkerId,
-    minDate?.format("YYYY-MM-DD"),
-    maxDate?.format("YYYY-MM-DD"),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    JSON.stringify(excludeAssignmentIds),
-  ]);
 
   // Group assignments by date
   const groupedAssignments = useMemo(() => {
@@ -197,12 +69,6 @@ export default function AssignmentSelector({
       .sort((a, b) => (a.date.isBefore(b.date) ? -1 : 1));
   }, [assignments]);
 
-  // Check if a shift is linked with others
-  const getLinkedShiftIds = (shiftId: string): string[] => {
-    const linkShift = linkShifts.find((ls) => ls.shiftIds.includes(shiftId));
-    return linkShift ? linkShift.shiftIds : [];
-  };
-
   // Handle selection toggle
   const handleToggle = (assignmentId: string) => {
     if (!allowMultiple) {
@@ -222,24 +88,6 @@ export default function AssignmentSelector({
     onSelectionChange(newSelected);
   };
 
-  // Render loading state
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" p={3}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  // Render error state
-  if (error) {
-    return (
-      <Alert severity="error" sx={{ m: 2 }}>
-        {error}
-      </Alert>
-    );
-  }
-
   // Render empty state
   if (assignments.length === 0) {
     return (
@@ -251,25 +99,6 @@ export default function AssignmentSelector({
 
   return (
     <Box>
-      {/* Worker filter (only show if workerId prop not provided) */}
-      {!workerId && workers.length > 1 && (
-        <FormControl fullWidth sx={{ mb: 2 }}>
-          <InputLabel>Filter by Worker</InputLabel>
-          <Select
-            value={selectedWorkerId}
-            label="Filter by Worker"
-            onChange={(e) => setSelectedWorkerId(e.target.value)}
-          >
-            <MenuItem value="">All Workers</MenuItem>
-            {workers.map((worker) => (
-              <MenuItem key={worker.id} value={worker.id}>
-                {worker.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      )}
-
       {/* Assignment list */}
       {isMobile ? (
         // Mobile: List view
@@ -286,8 +115,6 @@ export default function AssignmentSelector({
                 const isSelected = selectedAssignmentIds.includes(
                   data.assignment.id,
                 );
-                const linkedShiftIds = getLinkedShiftIds(data.shift.id);
-                const isLinked = linkedShiftIds.length > 1;
 
                 return (
                   <ListItem
@@ -314,14 +141,6 @@ export default function AssignmentSelector({
                             <Typography variant="body2">
                               {data.shift.name}
                             </Typography>
-                            {isLinked && (
-                              <Chip
-                                label="Linked"
-                                size="small"
-                                color="info"
-                                sx={{ height: 20 }}
-                              />
-                            )}
                           </Box>
                         }
                         secondary={`${data.shift.startTime.format("HH:mm")} - ${data.shift.endTime.format("HH:mm")} • ${data.worker.name}`}
@@ -353,8 +172,6 @@ export default function AssignmentSelector({
                   const isSelected = selectedAssignmentIds.includes(
                     data.assignment.id,
                   );
-                  const linkedShiftIds = getLinkedShiftIds(data.shift.id);
-                  const isLinked = linkedShiftIds.length > 1;
 
                   return (
                     <TableRow
@@ -375,9 +192,6 @@ export default function AssignmentSelector({
                       <TableCell>
                         <Box display="flex" alignItems="center" gap={1}>
                           {data.shift.name}
-                          {isLinked && (
-                            <Chip label="Linked" size="small" color="info" />
-                          )}
                         </Box>
                       </TableCell>
                       <TableCell>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -31,9 +31,6 @@ import { SwapRequestT, SwapBidT, SwapType, SwapStatus } from "../../types/swap";
 import { AssignmentDataDictT } from "../../types/assignment";
 import { WorkerT } from "../../types/worker";
 import AssignmentSelector from "./AssignmentSelector";
-import { AssignmentApi } from "../../app/lib/api/assignmentApi";
-import { WorkerApi } from "../../app/lib/api/workerApi";
-import { useApiClient } from "../../app/lib/api-client";
 
 interface SwapDetailDialogProps {
   open: boolean;
@@ -42,6 +39,8 @@ interface SwapDetailDialogProps {
   teamId: string;
   currentUserId: string;
   isLeader: boolean;
+  workers: WorkerT[];
+  assignments: AssignmentDataDictT[];
   onAddBid?: (workerId: string, bidAssignmentIds: string[]) => Promise<void>;
   onAcceptBid?: (bidId: string) => Promise<void>;
   onAcceptDirectSwap?: () => Promise<void>;
@@ -56,13 +55,14 @@ export default function SwapDetailDialog({
   teamId,
   currentUserId,
   isLeader,
+  workers,
+  assignments,
   onAddBid,
   onAcceptBid,
   onAcceptDirectSwap,
   onApprove,
   onCancel,
 }: SwapDetailDialogProps) {
-  const apiClient = useApiClient();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tabValue, setTabValue] = useState(0);
@@ -71,80 +71,25 @@ export default function SwapDetailDialog({
   const [showAddBid, setShowAddBid] = useState(false);
   const [bidAssignmentIds, setBidAssignmentIds] = useState<string[]>([]);
 
-  // Assignment and worker data
-  const [offeredAssignments, setOfferedAssignments] = useState<
-    AssignmentDataDictT[]
-  >([]);
-  const [requestedAssignments, setRequestedAssignments] = useState<
-    AssignmentDataDictT[]
-  >([]);
-  const [workers, setWorkers] = useState<WorkerT[]>([]);
+  // Filter assignments for current swap
+  const offeredAssignments = useMemo(() => {
+    if (!swap) return [];
+    return assignments.filter((a) =>
+      swap.offeredAssignmentIds.includes(a.assignment.id),
+    );
+  }, [swap, assignments]);
 
-  // Load assignment and worker details
-  useEffect(() => {
-    if (open && swap) {
-      const loadDetails = async () => {
-        try {
-          setLoading(true);
-          setError(null);
-
-          // Load workers and assignments in parallel
-          const [workerList, assignmentResult] = await Promise.all([
-            WorkerApi.getWorkers(apiClient, teamId, undefined, false),
-            AssignmentApi.getAssignments(
-              apiClient,
-              teamId,
-              false,
-              dayjs().subtract(60, "day"),
-              dayjs().add(60, "day"),
-            ),
-          ]);
-
-          setWorkers(workerList);
-
-          // Extract assignments from result
-          const allAssignments: AssignmentDataDictT[] =
-            assignmentResult.assignmentsRead.map((assignment) => {
-              return {
-                assignment,
-                worker:
-                  workerList.find((w) => w.id === assignment.workerId) ||
-                  ({} as WorkerT),
-                shift: {} as any,
-                recurrence: null,
-                breaches: [],
-                requests: [],
-              } as AssignmentDataDictT;
-            });
-
-          // Filter offered assignments
-          const offered = allAssignments.filter((a) =>
-            swap.offeredAssignmentIds.includes(a.assignment.id),
-          );
-          setOfferedAssignments(offered);
-
-          // Filter requested assignments (if direct swap)
-          if (
-            swap.swapType === SwapType.DIRECT &&
-            swap.requestedAssignmentIds &&
-            swap.requestedAssignmentIds.length > 0
-          ) {
-            const requested = allAssignments.filter((a) =>
-              swap.requestedAssignmentIds!.includes(a.assignment.id),
-            );
-            setRequestedAssignments(requested);
-          }
-        } catch (err) {
-          console.error("Failed to load swap details:", err);
-          setError("Failed to load swap details");
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      loadDetails();
-    }
-  }, [open, swap, teamId, apiClient]);
+  const requestedAssignments = useMemo(() => {
+    if (
+      !swap ||
+      swap.swapType !== SwapType.DIRECT ||
+      !swap.requestedAssignmentIds
+    )
+      return [];
+    return assignments.filter((a) =>
+      swap.requestedAssignmentIds!.includes(a.assignment.id),
+    );
+  }, [swap, assignments]);
 
   const handleAddBid = async () => {
     if (!onAddBid || bidAssignmentIds.length === 0) return;
@@ -433,12 +378,16 @@ export default function SwapDetailDialog({
                       Select Your Assignments to Bid
                     </Typography>
                     <AssignmentSelector
-                      teamId={teamId}
                       selectedAssignmentIds={bidAssignmentIds}
                       onSelectionChange={setBidAssignmentIds}
-                      workerId={currentUserId}
-                      excludeAssignmentIds={swap.offeredAssignmentIds}
-                      minDate={dayjs()}
+                      assignments={assignments.filter(
+                        (a) =>
+                          a.assignment.workerId === currentUserId &&
+                          !swap.offeredAssignmentIds.includes(
+                            a.assignment.id,
+                          ) &&
+                          a.assignment.date.isAfter(dayjs(), "day"),
+                      )}
                       allowMultiple={true}
                     />
                     <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
