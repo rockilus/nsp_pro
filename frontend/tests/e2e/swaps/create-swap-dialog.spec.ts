@@ -12,11 +12,13 @@ import { test, expect } from "@playwright/test";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { SwapTestBase } from "../../utils/swap-test-base";
 import { ScheduleStatus } from "@/types/schedule";
 
 dayjs.extend(utc);
 dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
 
 test.describe("CreateSwapDialog - Owner Tests", () => {
   const swapTestBase = new SwapTestBase();
@@ -234,16 +236,22 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
     }) => {
       // Select first worker
       const testWorkers = swapTestBase.getTestWorkers();
+      const testWorkerId = testWorkers[0].workerId;
       await page.click('[data-testid="worker-select"]');
-      await page.click(
-        `[data-testid="worker-option-${testWorkers[0].workerId}"]`,
-      );
+      await page.click(`[data-testid="worker-option-${testWorkerId}"]`);
 
       // Wait for assignments to load
       await page.waitForTimeout(1000);
 
       // Get today's assignments (should not be visible)
-      const todayAssignments = swapTestBase.getTodayAssignments();
+      const todayAssignments = swapTestBase
+        .getTestAssignments()
+        .filter(
+          (a) =>
+            a.workerId === testWorkerId &&
+            dayjs.utc(a.date).isSameOrBefore(dayjs.utc(), "day"),
+        );
+      expect(todayAssignments.length).toBeGreaterThan(0);
 
       // Verify today's assignments are NOT visible
       for (const assignment of todayAssignments) {
@@ -254,7 +262,13 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       }
 
       // Get future assignments (should be visible)
-      const futureAssignments = swapTestBase.getFutureAssignments();
+      const futureAssignments = swapTestBase
+        .getTestAssignments()
+        .filter(
+          (a) =>
+            a.workerId === testWorkerId &&
+            dayjs.utc(a.date).isAfter(dayjs.utc(), "day"),
+        );
       expect(futureAssignments.length).toBeGreaterThan(0);
 
       // Verify future assignments ARE visible
@@ -277,30 +291,66 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       if (testWorkers.length < 2) {
         test.skip(true, "Need at least 2 workers for this test");
       }
+      const testWorkerId1 = testWorkers[0].workerId;
+      const testWorkerId2 = testWorkers[1].workerId;
 
       // Select first worker
       await page.click('[data-testid="worker-select"]');
-      await page.click(
-        `[data-testid="worker-option-${testWorkers[0].workerId}"]`,
-      );
+      await page.click(`[data-testid="worker-option-${testWorkerId1}"]`);
       await page.waitForTimeout(1000);
 
       // Count assignments for first worker
-      const firstWorkerAssignments = await page
-        .locator('[data-testid^="assignment-"]')
-        .count();
+      const testSchedules = swapTestBase.getTestSchedules();
+      const campaignScheduleIds = testSchedules
+        .filter((s) => s.status === ScheduleStatus.CAMPAIGN)
+        .map((s) => s.id);
+      expect(campaignScheduleIds.length).toBeGreaterThan(0);
+
+      // Get assignments associated with campaign schedule
+      const tomorrow = dayjs.utc().add(1, "day").startOf("day");
+      const firstWorkerAssignments = swapTestBase
+        .getTestAssignments()
+        .filter((a) => a.workerId === testWorkerId1)
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
+        .filter(
+          (a) =>
+            a.scheduleId === null ||
+            (a.scheduleId !== null &&
+              !campaignScheduleIds.includes(a.scheduleId)),
+        ); // Not campaign schedule
+      expect(firstWorkerAssignments.length).toBeGreaterThan(0);
+
+      for (const assignment of firstWorkerAssignments) {
+        const assignmentElement = page.locator(
+          `[data-testid="assignment-${assignment.id}"]`,
+        );
+        await expect(assignmentElement).toBeVisible();
+      }
 
       // Switch to second worker
       await page.click('[data-testid="worker-select"]');
-      await page.click(
-        `[data-testid="worker-option-${testWorkers[1].workerId}"]`,
-      );
+      await page.click(`[data-testid="worker-option-${testWorkerId2}"]`);
       await page.waitForTimeout(1000);
 
       // Count assignments for second worker
-      const secondWorkerAssignments = await page
-        .locator('[data-testid^="assignment-"]')
-        .count();
+      const secondWorkerAssignments = swapTestBase
+        .getTestAssignments()
+        .filter((a) => a.workerId === testWorkerId2)
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
+        .filter(
+          (a) =>
+            a.scheduleId === null ||
+            (a.scheduleId !== null &&
+              !campaignScheduleIds.includes(a.scheduleId)),
+        ); // Not campaign schedule
+      expect(secondWorkerAssignments.length).toBeGreaterThan(0);
+
+      for (const assignment of secondWorkerAssignments) {
+        const assignmentElement = page.locator(
+          `[data-testid="assignment-${assignment.id}"]`,
+        );
+        await expect(assignmentElement).toBeVisible();
+      }
 
       // Assignments should be different (unless workers have same assignments)
       console.log(
