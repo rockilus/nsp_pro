@@ -162,7 +162,6 @@ export default function AssignmentSelector({
                 <TableCell>Worker</TableCell>
                 <TableCell>Shift</TableCell>
                 <TableCell>Time</TableCell>
-                <TableCell>Status</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -195,11 +194,6 @@ export default function AssignmentSelector({
                       <TableCell>
                         {data.shift.startTime.format("HH:mm")} -{" "}
                         {data.shift.endTime.format("HH:mm")}
-                      </TableCell>
-                      <TableCell>
-                        {data.assignment.fixed && (
-                          <Chip label="Fixed" size="small" color="warning" />
-                        )}
                       </TableCell>
                     </TableRow>
                   );
