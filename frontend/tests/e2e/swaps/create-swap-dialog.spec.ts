@@ -56,6 +56,9 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       // Click on the worker selection dropdown
       await page.click('[data-testid="worker-select"]');
 
+      // Wait for the MUI menu to open
+      await page.waitForSelector('[role="listbox"]', { state: "visible" });
+
       // Get all workers from test data
       const testWorkers = swapTestBase.getTestWorkers();
       expect(testWorkers.length).toBeGreaterThan(0);
@@ -82,6 +85,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
 
       // Select first worker
       await page.click('[data-testid="worker-select"]');
+
       const testWorkers = swapTestBase.getTestWorkers();
       await page.click(
         `[data-testid="worker-option-${testWorkers[0].workerId}"]`,
