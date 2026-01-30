@@ -13,6 +13,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import { SwapTestBase } from "../../utils/swap-test-base";
+import { ScheduleStatus } from "@/types/schedule";
 
 dayjs.extend(utc);
 dayjs.extend(isSameOrAfter);
@@ -128,8 +129,6 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
         .filter((a) => a.scheduleId === null); // No schedule
       expect(noScheduleAssignments.length).toBeGreaterThan(0);
 
-      console.log(noScheduleAssignments);
-
       // Verify these assignments are visible
       for (const assignment of noScheduleAssignments) {
         const assignmentElement = page.locator(
@@ -148,23 +147,36 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
     }) => {
       // Select first worker
       const testWorkers = swapTestBase.getTestWorkers();
+      const testWorkerId = testWorkers[0].workerId;
       await page.click('[data-testid="worker-select"]');
-      await page.click(
-        `[data-testid="worker-option-${testWorkers[0].workerId}"]`,
-      );
+      await page.click(`[data-testid="worker-option-${testWorkerId}"]`);
 
       // Wait for assignments to load
       await page.waitForTimeout(1000);
 
+      const testSchedules = swapTestBase.getTestSchedules();
+      const validatedScheduleIds = testSchedules
+        .filter((s) => s.status === ScheduleStatus.VALIDATED)
+        .map((s) => s.id);
+      expect(validatedScheduleIds.length).toBeGreaterThan(0);
+
       // Get assignments associated with validated schedule
-      const validatedAssignments =
-        swapTestBase.getValidatedScheduleAssignments();
+      const tomorrow = dayjs.utc().add(1, "day").startOf("day");
+      const validatedAssignments = swapTestBase
+        .getTestAssignments()
+        .filter((a) => a.workerId === testWorkerId)
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
+        .filter(
+          (a) =>
+            a.scheduleId !== null &&
+            validatedScheduleIds.includes(a.scheduleId),
+        ); // Validated schedule
       expect(validatedAssignments.length).toBeGreaterThan(0);
 
       // Verify these assignments are visible
       for (const assignment of validatedAssignments) {
         const assignmentElement = page.locator(
-          `[data-assignment-id="${assignment.id}"]`,
+          `[data-testid="assignment-${assignment.id}"]`,
         );
         await expect(assignmentElement).toBeVisible();
       }
@@ -193,7 +205,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       // Verify these assignments are NOT visible
       for (const assignment of campaignAssignments) {
         const assignmentElement = page.locator(
-          `[data-assignment-id="${assignment.id}"]`,
+          `[data-testid="assignment-${assignment.id}"]`,
         );
         await expect(assignmentElement).not.toBeVisible();
       }
@@ -222,7 +234,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       // Verify today's assignments are NOT visible
       for (const assignment of todayAssignments) {
         const assignmentElement = page.locator(
-          `[data-assignment-id="${assignment.id}"]`,
+          `[data-testid="assignment-${assignment.id}"]`,
         );
         await expect(assignmentElement).not.toBeVisible();
       }
@@ -234,7 +246,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       // Verify future assignments ARE visible
       for (const assignment of futureAssignments) {
         const assignmentElement = page.locator(
-          `[data-assignment-id="${assignment.id}"]`,
+          `[data-testid="assignment-${assignment.id}"]`,
         );
         await expect(assignmentElement).toBeVisible();
       }
@@ -410,7 +422,7 @@ test.describe("CreateSwapDialog - Member Tests", () => {
       // Verify only member's assignments are visible
       for (const assignment of memberAssignments) {
         const assignmentElement = page.locator(
-          `[data-assignment-id="${assignment.id}"]`,
+          `[data-testid="assignment-${assignment.id}"]`,
         );
         await expect(assignmentElement).toBeVisible();
       }
@@ -430,7 +442,7 @@ test.describe("CreateSwapDialog - Member Tests", () => {
       const campaignAssignments = swapTestBase.getCampaignScheduleAssignments();
       for (const assignment of campaignAssignments) {
         const assignmentElement = page.locator(
-          `[data-assignment-id="${assignment.id}"]`,
+          `[data-testid="assignment-${assignment.id}"]`,
         );
         await expect(assignmentElement).not.toBeVisible();
       }
@@ -439,7 +451,7 @@ test.describe("CreateSwapDialog - Member Tests", () => {
       const todayAssignments = swapTestBase.getTodayAssignments();
       for (const assignment of todayAssignments) {
         const assignmentElement = page.locator(
-          `[data-assignment-id="${assignment.id}"]`,
+          `[data-testid="assignment-${assignment.id}"]`,
         );
         await expect(assignmentElement).not.toBeVisible();
       }
@@ -452,7 +464,7 @@ test.describe("CreateSwapDialog - Member Tests", () => {
 
       for (const assignment of memberFutureAssignments) {
         const assignmentElement = page.locator(
-          `[data-assignment-id="${assignment.id}"]`,
+          `[data-testid="assignment-${assignment.id}"]`,
         );
         await expect(assignmentElement).toBeVisible();
       }
