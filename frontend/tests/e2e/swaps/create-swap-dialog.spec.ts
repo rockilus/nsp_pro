@@ -63,7 +63,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       // Verify each worker appears in the dropdown
       for (const worker of testWorkers) {
         const workerOption = page.locator(
-          `[data-testid="worker-option-${worker.id}"]`,
+          `[data-testid="worker-option-${worker.workerId}"]`,
         );
         await expect(workerOption).toBeVisible();
       }
@@ -83,7 +83,9 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       // Select first worker
       await page.click('[data-testid="worker-select"]');
       const testWorkers = swapTestBase.getTestWorkers();
-      await page.click(`[data-testid="worker-option-${testWorkers[0].id}"]`);
+      await page.click(
+        `[data-testid="worker-option-${testWorkers[0].workerId}"]`,
+      );
 
       // Now assignment selector should be visible
       const assignmentSelectorAfter = page.locator(
@@ -102,7 +104,9 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       // Select first worker
       const testWorkers = swapTestBase.getTestWorkers();
       await page.click('[data-testid="worker-select"]');
-      await page.click(`[data-testid="worker-option-${testWorkers[0].id}"]`);
+      await page.click(
+        `[data-testid="worker-option-${testWorkers[0].workerId}"]`,
+      );
 
       // Wait for assignments to load
       await page.waitForTimeout(1000);
@@ -133,7 +137,9 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       // Select first worker
       const testWorkers = swapTestBase.getTestWorkers();
       await page.click('[data-testid="worker-select"]');
-      await page.click(`[data-testid="worker-option-${testWorkers[0].id}"]`);
+      await page.click(
+        `[data-testid="worker-option-${testWorkers[0].workerId}"]`,
+      );
 
       // Wait for assignments to load
       await page.waitForTimeout(1000);
@@ -162,7 +168,9 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       // Select first worker
       const testWorkers = swapTestBase.getTestWorkers();
       await page.click('[data-testid="worker-select"]');
-      await page.click(`[data-testid="worker-option-${testWorkers[0].id}"]`);
+      await page.click(
+        `[data-testid="worker-option-${testWorkers[0].workerId}"]`,
+      );
 
       // Wait for assignments to load
       await page.waitForTimeout(1000);
@@ -189,7 +197,9 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       // Select first worker
       const testWorkers = swapTestBase.getTestWorkers();
       await page.click('[data-testid="worker-select"]');
-      await page.click(`[data-testid="worker-option-${testWorkers[0].id}"]`);
+      await page.click(
+        `[data-testid="worker-option-${testWorkers[0].workerId}"]`,
+      );
 
       // Wait for assignments to load
       await page.waitForTimeout(1000);
@@ -232,7 +242,9 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
 
       // Select first worker
       await page.click('[data-testid="worker-select"]');
-      await page.click(`[data-testid="worker-option-${testWorkers[0].id}"]`);
+      await page.click(
+        `[data-testid="worker-option-${testWorkers[0].workerId}"]`,
+      );
       await page.waitForTimeout(1000);
 
       // Count assignments for first worker
@@ -242,7 +254,9 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
 
       // Switch to second worker
       await page.click('[data-testid="worker-select"]');
-      await page.click(`[data-testid="worker-option-${testWorkers[1].id}"]`);
+      await page.click(
+        `[data-testid="worker-option-${testWorkers[1].workerId}"]`,
+      );
       await page.waitForTimeout(1000);
 
       // Count assignments for second worker
@@ -277,7 +291,9 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       // Select worker but no assignments
       const testWorkers = swapTestBase.getTestWorkers();
       await page.click('[data-testid="worker-select"]');
-      await page.click(`[data-testid="worker-option-${testWorkers[0].id}"]`);
+      await page.click(
+        `[data-testid="worker-option-${testWorkers[0].workerId}"]`,
+      );
 
       // Try to click Next
       await page.click('[data-testid="next-button"]');
