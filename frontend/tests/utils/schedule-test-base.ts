@@ -218,7 +218,7 @@ export class ScheduleTestBase {
     assignments.push({
       workerId: this.testWorkers[0].workerId,
       shiftId: this.testShifts[0].id,
-      date: referenceDate.format("YYYY-MM-DD"),
+      date: referenceDate,
       fixed: false,
       comment: "Test assignment on reference date",
     });
@@ -241,7 +241,7 @@ export class ScheduleTestBase {
       assignments.push({
         workerId: randomWorker.workerId,
         shiftId: randomShift.id,
-        date: date.format("YYYY-MM-DD"),
+        date: date,
         fixed: false,
         comment: "Test assignment in next month",
       });
