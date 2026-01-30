@@ -11,9 +11,11 @@
 import { test, expect } from "@playwright/test";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import { SwapTestBase } from "../../utils/swap-test-base";
 
 dayjs.extend(utc);
+dayjs.extend(isSameOrAfter);
 
 test.describe("CreateSwapDialog - Owner Tests", () => {
   const swapTestBase = new SwapTestBase();
