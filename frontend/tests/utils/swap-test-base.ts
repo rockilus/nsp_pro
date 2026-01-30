@@ -49,19 +49,7 @@ export class SwapTestBase {
     campaign: null,
     validated: null,
   };
-  protected testAssignments: {
-    noSchedule: AssignmentT[];
-    validated: AssignmentT[];
-    campaign: AssignmentT[];
-    today: AssignmentT[];
-    future: AssignmentT[];
-  } = {
-    noSchedule: [],
-    validated: [],
-    campaign: [],
-    today: [],
-    future: [],
-  };
+  protected testAssignments: AssignmentT[] = [];
   protected memberWorker: { workerId: string; name: string } | null = null;
 
   constructor() {
@@ -237,7 +225,7 @@ export class SwapTestBase {
         fixed: false,
         comment: "Today's assignment - should not appear in swap dialog",
       });
-      this.testAssignments.today.push(assignment);
+      this.testAssignments.push(assignment);
     }
 
     // Create assignments without schedule association (tomorrow and future)
@@ -252,8 +240,7 @@ export class SwapTestBase {
         fixed: false,
         comment: "No schedule assignment",
       });
-      this.testAssignments.noSchedule.push(assignment);
-      this.testAssignments.future.push(assignment);
+      this.testAssignments.push(assignment);
     }
 
     // Create assignments with validated schedule (in current month, future dates)
@@ -271,8 +258,7 @@ export class SwapTestBase {
           fixed: false,
           comment: "Validated schedule assignment",
         });
-        this.testAssignments.validated.push(assignment1);
-        this.testAssignments.future.push(assignment1);
+        this.testAssignments.push(assignment1);
 
         const assignment2 = await this.dbUtils.createAssignment({
           teamId: this.testTeam.teamId,
@@ -283,8 +269,7 @@ export class SwapTestBase {
           fixed: false,
           comment: "Validated schedule assignment 2",
         });
-        this.testAssignments.validated.push(assignment2);
-        this.testAssignments.future.push(assignment2);
+        this.testAssignments.push(assignment2);
       }
     }
 
@@ -304,7 +289,7 @@ export class SwapTestBase {
           fixed: false,
           comment: "Campaign schedule assignment",
         });
-        this.testAssignments.campaign.push(assignment1);
+        this.testAssignments.push(assignment1);
 
         const assignment2 = await this.dbUtils.createAssignment({
           teamId: this.testTeam.teamId,
@@ -315,17 +300,11 @@ export class SwapTestBase {
           fixed: false,
           comment: "Campaign schedule assignment 2",
         });
-        this.testAssignments.campaign.push(assignment2);
+        this.testAssignments.push(assignment2);
       }
     }
 
-    console.log(
-      `✅ Created test assignments:
-      - Today: ${this.testAssignments.today.length}
-      - No schedule (future): ${this.testAssignments.noSchedule.length}
-      - Validated: ${this.testAssignments.validated.length}
-      - Campaign: ${this.testAssignments.campaign.length}`,
-    );
+    console.log(`✅ Created ${this.testAssignments.length} test assignments`);
   }
 
   /**
@@ -437,50 +416,10 @@ export class SwapTestBase {
   }
 
   /**
-   * Get assignments without schedule association
+   * Get all test assignments
    */
-  getAssignmentsWithoutSchedule(): AssignmentT[] {
-    return this.testAssignments.noSchedule;
-  }
-
-  /**
-   * Get assignments associated with validated schedule
-   */
-  getValidatedScheduleAssignments(): AssignmentT[] {
-    return this.testAssignments.validated;
-  }
-
-  /**
-   * Get assignments associated with campaign schedule
-   */
-  getCampaignScheduleAssignments(): AssignmentT[] {
-    return this.testAssignments.campaign;
-  }
-
-  /**
-   * Get today's assignments (should not be visible in swap dialog)
-   */
-  getTodayAssignments(): AssignmentT[] {
-    return this.testAssignments.today;
-  }
-
-  /**
-   * Get future assignments (should be visible in swap dialog)
-   */
-  getFutureAssignments(): AssignmentT[] {
-    return this.testAssignments.future;
-  }
-
-  /**
-   * Get assignments for the member's worker only
-   */
-  getMemberWorkerAssignments(): AssignmentT[] {
-    if (!this.memberWorker) {
-      return [];
-    }
-    return this.testAssignments.future.filter(
-      (a) => a.workerId === this.memberWorker!.workerId,
-    );
+  getTestAssignments(): AssignmentT[] {
+    return this.testAssignments;
   }
 
   /**
