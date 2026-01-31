@@ -89,14 +89,8 @@ export default function CreateSwapDialog({
 
   // Initialize selected worker
   useEffect(() => {
-    console.log("In useEffect");
-    console.log("open", open);
-    console.log("role", role);
-
     if (open && role === TeamMembershipRole.MEMBER) {
       const currentWorker = workers.find((w) => w.userId === currentUserId);
-      console.log("currentUserId", currentUserId);
-      console.log("currentWorker", currentWorker);
 
       if (currentWorker) {
         setSelectedWorkerId(currentWorker.id);
