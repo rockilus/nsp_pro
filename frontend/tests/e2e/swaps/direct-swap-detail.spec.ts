@@ -13,6 +13,9 @@ import utc from "dayjs/plugin/utc";
 import { SwapTestBase } from "../../utils/swap-test-base";
 import { SwapStatus } from "../../../src/types/swap";
 import { TEST_USER, TEST_USER_2 } from "../../utils/database-utils";
+import type { AssignmentT } from "../../../src/types/assignment";
+import { ShiftType } from "../../../src/types/shift";
+import { ShiftRestType } from "../../../src/types/shift";
 
 dayjs.extend(utc);
 
@@ -701,7 +704,7 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
         (a: any) => a.id === offeredAssignmentId,
       );
       expect(assignment).toBeDefined();
-      expect(assignment.workerId).toBe(worker2Id);
+      expect(assignment!.workerId).toBe(worker2Id);
     }
 
     // Verify the 1 duty shift now belongs to worker1
@@ -710,7 +713,7 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
         (a: any) => a.id === requestedAssignmentId,
       );
       expect(assignment).toBeDefined();
-      expect(assignment.workerId).toBe(worker1Id);
+      expect(assignment!.workerId).toBe(worker1Id);
     }
 
     // Verify audit data contains all 3 assignments (2 normal + 1 duty)
@@ -719,6 +722,414 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
 
     console.log(
       "✅ Duty swap completed successfully: 2 normal shifts swapped for 1 duty shift",
+    );
+  });
+});
+
+test.describe("Direct Swap Detail - Reversion Tests", () => {
+  const swapTestBase = new SwapTestBase();
+  let completedSwapId: string;
+
+  test.beforeAll(async () => {
+    // Setup with assignments and swaps
+    const today = dayjs.utc();
+    await swapTestBase.setupSwapTests(test.info().workerIndex + 3000, {
+      referenceDate: today,
+      createAssignments: true,
+      linkMemberToWorker: true,
+    });
+  });
+
+  test.beforeEach(async ({ page }) => {
+    // Authenticate as owner (leader)
+    await swapTestBase.actAsOwner(page);
+    await swapTestBase.navigateToSwapPage(page);
+  });
+
+  test("should allow leader to revert a completed swap", async ({ page }) => {
+    const swaps = swapTestBase.getTestSwaps();
+    expect(swaps.length).toBeGreaterThan(0);
+
+    const testSwap = swaps[0];
+
+    // Step 1: Accept the swap (as target worker)
+    await swapTestBase.acceptDirectSwap(testSwap.id);
+
+    // Step 2: Approve the swap (as leader)
+    const approvedSwap = await swapTestBase.approveSwap(testSwap.id);
+    expect(approvedSwap.status).toBe(SwapStatus.COMPLETED);
+    completedSwapId = approvedSwap.id;
+
+    // Step 3: Revert the swap (as leader)
+    const revertedSwap = await swapTestBase.revertSwap(completedSwapId);
+
+    // Verify swap status changed to REVERTED
+    expect(revertedSwap.status).toBe(SwapStatus.REVERTED);
+
+    console.log("✅ Swap successfully reverted");
+  });
+
+  test("should set revertedAt timestamp when swap is reverted", async ({
+    page,
+  }) => {
+    const swaps = swapTestBase.getTestSwaps();
+    const testSwap = swaps[0];
+
+    // Accept and approve swap
+    await swapTestBase.acceptDirectSwap(testSwap.id);
+    await swapTestBase.approveSwap(testSwap.id);
+
+    // Record time before reversion
+    const beforeRevert = dayjs.utc();
+
+    // Revert the swap
+    const revertedSwap = await swapTestBase.revertSwap(testSwap.id);
+
+    // Verify revertedAt is set and reasonable
+    expect(revertedSwap.revertedAt).not.toBeNull();
+    expect(revertedSwap.revertedAt!.isValid()).toBe(true);
+
+    // Check that revertedAt is after the start time and not in the future
+    const afterRevert = dayjs.utc();
+    expect(
+      revertedSwap.revertedAt!.isSameOrAfter(
+        beforeRevert.subtract(10, "second"),
+      ),
+    ).toBe(true);
+    expect(
+      revertedSwap.revertedAt!.isSameOrBefore(afterRevert.add(10, "second")),
+    ).toBe(true);
+
+    console.log("✅ revertedAt timestamp correctly set");
+  });
+
+  test("should set revertedByUserId to leader when reverted", async ({
+    page,
+  }) => {
+    const swaps = swapTestBase.getTestSwaps();
+    const testSwap = swaps[0];
+
+    // Accept and approve swap
+    await swapTestBase.acceptDirectSwap(testSwap.id);
+    await swapTestBase.approveSwap(testSwap.id);
+
+    // Revert the swap
+    const revertedSwap = await swapTestBase.revertSwap(testSwap.id);
+
+    // Verify revertedByUserId is set to TEST_USER (owner/leader)
+    expect(revertedSwap.revertedByUserId).toBe(TEST_USER.user_id);
+
+    console.log("✅ revertedByUserId correctly set to leader");
+  });
+
+  test("should preserve audit data after reversion", async ({ page }) => {
+    const swaps = swapTestBase.getTestSwaps();
+    const testSwap = swaps[0];
+
+    // Accept and approve swap
+    await swapTestBase.acceptDirectSwap(testSwap.id);
+    const approvedSwap = await swapTestBase.approveSwap(testSwap.id);
+
+    // Verify audit data was created during approval
+    expect(approvedSwap.auditData.length).toBeGreaterThan(0);
+    const originalAuditData = approvedSwap.auditData;
+
+    // Revert the swap
+    const revertedSwap = await swapTestBase.revertSwap(testSwap.id);
+
+    // Verify audit data is preserved (not cleared)
+    expect(revertedSwap.auditData.length).toBe(originalAuditData.length);
+    expect(revertedSwap.auditData).toEqual(originalAuditData);
+
+    console.log("✅ Audit data preserved after reversion");
+  });
+
+  test("should restore offered assignments to original worker after reversion", async ({
+    page,
+  }) => {
+    const swaps = swapTestBase.getTestSwaps();
+    const testSwap = swaps[0];
+    const workers = swapTestBase.getTestWorkers();
+    const creatorWorker = workers[0];
+
+    // Get original assignments before swap
+    const assignmentsBeforeSwap = await swapTestBase.getAssignments(
+      true,
+      undefined,
+      undefined,
+    );
+
+    // Find offered assignments and verify they belong to creator worker
+    const offeredAssignmentsBefore = assignmentsBeforeSwap.filter((a) =>
+      testSwap.offeredAssignmentIds.includes(a.id),
+    );
+    expect(
+      offeredAssignmentsBefore.every(
+        (a) => a.workerId === creatorWorker.workerId,
+      ),
+    ).toBe(true);
+
+    // Accept, approve, and revert swap
+    await swapTestBase.acceptDirectSwap(testSwap.id);
+    await swapTestBase.approveSwap(testSwap.id);
+    await swapTestBase.revertSwap(testSwap.id);
+
+    // Get assignments after reversion
+    const assignmentsAfterRevert = await swapTestBase.getAssignments(
+      true,
+      undefined,
+      undefined,
+    );
+
+    // Verify offered assignments are back to original worker
+    const offeredAssignmentsAfter = assignmentsAfterRevert.filter((a) =>
+      testSwap.offeredAssignmentIds.includes(a.id),
+    );
+
+    for (const assignment of offeredAssignmentsAfter) {
+      expect(assignment.workerId).toBe(creatorWorker.workerId);
+    }
+
+    console.log(
+      `✅ All ${offeredAssignmentsBefore.length} offered assignments restored to creator`,
+    );
+  });
+
+  test("should restore requested assignments to original worker after reversion", async ({
+    page,
+  }) => {
+    const swaps = swapTestBase.getTestSwaps();
+    const testSwap = swaps[0];
+    const workers = swapTestBase.getTestWorkers();
+    const targetWorker = workers[1];
+
+    // Get original assignments before swap
+    const assignmentsBeforeSwap = await swapTestBase.getAssignments(
+      true,
+      undefined,
+      undefined,
+    );
+
+    // Find requested assignments and verify they belong to target worker
+    const requestedAssignmentsBefore = assignmentsBeforeSwap.filter(
+      (a) =>
+        testSwap.requestedAssignmentIds &&
+        testSwap.requestedAssignmentIds.includes(a.id),
+    );
+    expect(
+      requestedAssignmentsBefore.every(
+        (a) => a.workerId === targetWorker.workerId,
+      ),
+    ).toBe(true);
+
+    // Accept, approve, and revert swap
+    await swapTestBase.acceptDirectSwap(testSwap.id);
+    await swapTestBase.approveSwap(testSwap.id);
+    await swapTestBase.revertSwap(testSwap.id);
+
+    // Get assignments after reversion
+    const assignmentsAfterRevert = await swapTestBase.getAssignments(
+      true,
+      undefined,
+      undefined,
+    );
+
+    // Verify requested assignments are back to original worker
+    const requestedAssignmentsAfter = assignmentsAfterRevert.filter(
+      (a) =>
+        testSwap.requestedAssignmentIds &&
+        testSwap.requestedAssignmentIds.includes(a.id),
+    );
+
+    for (const assignment of requestedAssignmentsAfter) {
+      expect(assignment.workerId).toBe(targetWorker.workerId);
+    }
+
+    console.log(
+      `✅ All ${requestedAssignmentsBefore.length} requested assignments restored to target`,
+    );
+  });
+
+  test("should maintain shift and date for assignments after reversion", async ({
+    page,
+  }) => {
+    const swaps = swapTestBase.getTestSwaps();
+    const testSwap = swaps[0];
+
+    // Get assignments before swap
+    const assignmentsBeforeSwap = await swapTestBase.getAssignments(
+      true,
+      undefined,
+      undefined,
+    );
+
+    // Map assignment IDs to their shift/date info
+    const assignmentDetails = new Map<
+      string,
+      { shiftId: string; date: string }
+    >();
+    for (const assignmentId of [
+      ...testSwap.offeredAssignmentIds,
+      ...(testSwap.requestedAssignmentIds || []),
+    ]) {
+      const assignment = assignmentsBeforeSwap.find(
+        (a) => a.id === assignmentId,
+      );
+      if (assignment) {
+        assignmentDetails.set(assignment.id, {
+          shiftId: assignment.shiftId,
+          date: assignment.date.format("YYYY-MM-DD"),
+        });
+      }
+    }
+
+    // Accept, approve, and revert swap
+    await swapTestBase.acceptDirectSwap(testSwap.id);
+    await swapTestBase.approveSwap(testSwap.id);
+    await swapTestBase.revertSwap(testSwap.id);
+
+    // Get assignments after reversion
+    const assignmentsAfterRevert = await swapTestBase.getAssignments(
+      true,
+      undefined,
+      undefined,
+    );
+
+    // Verify shift and date remain unchanged
+    for (const [assignmentId, originalDetails] of assignmentDetails) {
+      const assignment = assignmentsAfterRevert.find(
+        (a) => a.id === assignmentId,
+      );
+      expect(assignment).toBeDefined();
+      expect(assignment!.shiftId).toBe(originalDetails.shiftId);
+      expect(assignment!.date.format("YYYY-MM-DD")).toBe(originalDetails.date);
+    }
+
+    console.log(
+      "✅ All assignments maintained their shift and date after reversion",
+    );
+  });
+
+  test("should restore recuperation assignments when reverting DUTY shift swap", async ({
+    page,
+  }) => {
+    const swaps = swapTestBase.getTestSwaps();
+    const workers = swapTestBase.getTestWorkers();
+    const shifts = swapTestBase.getTestShifts();
+
+    // Find a swap involving a DUTY shift
+    const dutyShift = shifts.find((s) => s.shiftType === ShiftType.DUTY);
+    if (!dutyShift) {
+      console.log("⚠️ No DUTY shift found, skipping test");
+      return;
+    }
+
+    // Find the recuperation shift linked to the duty shift
+    const recupShift = shifts.find(
+      (s) =>
+        s.shiftType === ShiftType.REST &&
+        s.restType === ShiftRestType.RECUPERATION &&
+        s.recuperationDutyId === dutyShift.id,
+    );
+
+    if (!recupShift) {
+      console.log("⚠️ No recuperation shift found, skipping test");
+      return;
+    }
+
+    // Find a swap with duty shift assignments
+    let dutySwap = null;
+    for (const swap of swaps) {
+      const assignments = await swapTestBase.getAssignments(
+        true,
+        undefined,
+        undefined,
+      );
+      const hasOfferedDuty = assignments.some(
+        (a) =>
+          swap.offeredAssignmentIds.includes(a.id) &&
+          a.shiftId === dutyShift.id,
+      );
+      const hasRequestedDuty =
+        swap.requestedAssignmentIds &&
+        assignments.some(
+          (a) =>
+            swap.requestedAssignmentIds!.includes(a.id) &&
+            a.shiftId === dutyShift.id,
+        );
+
+      if (hasOfferedDuty || hasRequestedDuty) {
+        dutySwap = swap;
+        break;
+      }
+    }
+
+    if (!dutySwap) {
+      console.log("⚠️ No swap with DUTY shift found, skipping test");
+      return;
+    }
+
+    // Get all assignments before swap (including recuperation)
+    const assignmentsBeforeSwap = await swapTestBase.getAssignments(
+      true,
+      undefined,
+      undefined,
+    );
+
+    // Find duty assignments and their linked recuperation assignments
+    const dutyAssignments = assignmentsBeforeSwap.filter(
+      (a) => a.shiftId === dutyShift.id,
+    );
+    const recupAssignments = assignmentsBeforeSwap.filter(
+      (a) => a.shiftId === recupShift.id,
+    );
+
+    // Map duty assignments to their recuperation assignments
+    const dutyToRecupMap = new Map<string, AssignmentT>();
+    for (const dutyAssignment of dutyAssignments) {
+      const recupAssignment = recupAssignments.find(
+        (r) =>
+          r.workerId === dutyAssignment.workerId &&
+          r.date.isSame(dutyAssignment.date.add(1, "day"), "day"),
+      );
+      if (recupAssignment) {
+        dutyToRecupMap.set(dutyAssignment.id, recupAssignment);
+      }
+    }
+
+    // Accept, approve, and revert swap
+    await swapTestBase.acceptDirectSwap(dutySwap.id);
+    await swapTestBase.approveSwap(dutySwap.id);
+    await swapTestBase.revertSwap(dutySwap.id);
+
+    // Get assignments after reversion
+    const assignmentsAfterRevert = await swapTestBase.getAssignments(
+      true,
+      undefined,
+      undefined,
+    );
+
+    // Verify duty assignments and their recuperation assignments are restored
+    for (const [dutyAssignmentId, originalRecupAssignment] of dutyToRecupMap) {
+      const dutyAssignmentAfter = assignmentsAfterRevert.find(
+        (a) => a.id === dutyAssignmentId,
+      );
+      const recupAssignmentAfter = assignmentsAfterRevert.find(
+        (a) => a.id === originalRecupAssignment.id,
+      );
+
+      // Both should exist
+      expect(dutyAssignmentAfter).toBeDefined();
+      expect(recupAssignmentAfter).toBeDefined();
+
+      // Both should have the same worker (restored)
+      expect(dutyAssignmentAfter!.workerId).toBe(
+        recupAssignmentAfter!.workerId,
+      );
+    }
+
+    console.log(
+      `✅ Recuperation assignments correctly restored for ${dutyToRecupMap.size} DUTY assignments`,
     );
   });
 });

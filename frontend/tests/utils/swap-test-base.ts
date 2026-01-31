@@ -805,6 +805,13 @@ export class SwapTestBase {
   }
 
   /**
+   * Revert a completed swap (team leader reverts)
+   */
+  async revertSwap(swapId: string): Promise<SwapRequestT> {
+    return await this.dbUtils.revertSwap(swapId);
+  }
+
+  /**
    * Get assignments for the test team
    */
   async getAssignments(

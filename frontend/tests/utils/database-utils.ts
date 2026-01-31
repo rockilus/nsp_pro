@@ -2497,6 +2497,57 @@ export class DatabaseTestUtils {
   }
 
   /**
+   * Revert a completed swap (leader action)
+   * This restores assignments to their original workers before the swap
+   */
+  async revertSwap(swapId: string): Promise<SwapRequestT> {
+    try {
+      const response = await this.testApiClient.post<any>(
+        `/swaps/${swapId}/revert`,
+        {},
+      );
+
+      console.log(`✅ Reverted swap: ${swapId}`);
+
+      return {
+        id: response.id,
+        teamId: response.teamId,
+        createdByUserId: response.createdByUserId,
+        swapType: response.swapType,
+        status: response.status,
+        offeredAssignmentIds: response.offeredAssignmentIds,
+        requestedAssignmentIds: response.requestedAssignmentIds,
+        targetWorkerId: response.targetWorkerId,
+        comment: response.comment,
+        bids: (response.bids || []).map((bid: any) => ({
+          id: bid.id,
+          workerId: bid.workerId,
+          offeredAssignmentIds: bid.offeredAssignmentIds,
+          createdAt: dayjs.unix(bid.createdAt),
+          accepted: bid.accepted,
+        })),
+        createdAt: dayjs.unix(response.createdAt),
+        completedAt: response.completedAt
+          ? dayjs.unix(response.completedAt)
+          : null,
+        completedByUserId: response.completedByUserId,
+        revertedAt: response.revertedAt
+          ? dayjs.unix(response.revertedAt)
+          : null,
+        revertedByUserId: response.revertedByUserId,
+        auditData: response.auditData || [],
+      };
+    } catch (error) {
+      console.error("Failed to revert swap:", error);
+      throw new Error(
+        `Failed to revert swap: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
    * Delete a swap
    */
   async deleteSwap(swapId: string): Promise<void> {
