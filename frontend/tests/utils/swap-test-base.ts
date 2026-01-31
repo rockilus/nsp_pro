@@ -310,27 +310,51 @@ export class SwapTestBase {
       const validatedDate2 = tomorrow.add(5, "days");
 
       for (const worker of this.testWorkers) {
-        const assignment1 = await this.dbUtils.createAssignment({
+        // Create 2 assignments on validatedDate1 (morning + afternoon)
+        const assignment1Morning = await this.dbUtils.createAssignment({
           teamId: this.testTeam.teamId,
           workerId: worker.workerId,
-          shiftId: this.testShifts[1].id,
+          shiftId: this.testShifts[0].id, // Morning shift
           date: validatedDate1,
           scheduleId: validatedSchedule.id,
           fixed: false,
-          comment: "Validated schedule assignment",
+          comment: "Validated schedule assignment 1 - Morning",
         });
-        this.testAssignments.push(assignment1);
+        this.testAssignments.push(assignment1Morning);
 
-        const assignment2 = await this.dbUtils.createAssignment({
+        const assignment1Afternoon = await this.dbUtils.createAssignment({
           teamId: this.testTeam.teamId,
           workerId: worker.workerId,
-          shiftId: this.testShifts[0].id,
+          shiftId: this.testShifts[1].id, // Afternoon shift
+          date: validatedDate1,
+          scheduleId: validatedSchedule.id,
+          fixed: false,
+          comment: "Validated schedule assignment 1 - Afternoon",
+        });
+        this.testAssignments.push(assignment1Afternoon);
+
+        // Create 2 assignments on validatedDate2 (morning + afternoon)
+        const assignment2Morning = await this.dbUtils.createAssignment({
+          teamId: this.testTeam.teamId,
+          workerId: worker.workerId,
+          shiftId: this.testShifts[0].id, // Morning shift
           date: validatedDate2,
           scheduleId: validatedSchedule.id,
           fixed: false,
-          comment: "Validated schedule assignment 2",
+          comment: "Validated schedule assignment 2 - Morning",
         });
-        this.testAssignments.push(assignment2);
+        this.testAssignments.push(assignment2Morning);
+
+        const assignment2Afternoon = await this.dbUtils.createAssignment({
+          teamId: this.testTeam.teamId,
+          workerId: worker.workerId,
+          shiftId: this.testShifts[1].id, // Afternoon shift
+          date: validatedDate2,
+          scheduleId: validatedSchedule.id,
+          fixed: false,
+          comment: "Validated schedule assignment 2 - Afternoon",
+        });
+        this.testAssignments.push(assignment2Afternoon);
       }
 
       // Create assignments for BOTH linked shifts on the same day for linked shift testing
@@ -448,44 +472,63 @@ export class SwapTestBase {
       (a, b) => a.date.valueOf() - b.date.valueOf(),
     );
 
-    // Worker1 offers 2 assignments from the earliest date
-    const worker1Date1 = worker1SortedByDate[0].date;
-    const worker1Date1Assignments = worker1SortedByDate.filter((a) =>
-      a.date.isSame(worker1Date1, "day"),
-    );
-
-    // Worker2 offers 2 assignments from a different date
-    const worker2Date2 = worker2SortedByDate.find(
-      (a) => !a.date.isSame(worker1Date1, "day"),
-    )?.date;
-
-    if (!worker2Date2) {
-      console.log(
-        "⏭️  Cannot create swap - need assignments on different dates",
-      );
-      return;
+    // Group assignments by date for each worker
+    const worker1ByDate = new Map<string, typeof worker1Assignments>();
+    for (const assignment of worker1SortedByDate) {
+      const dateKey = assignment.date.format("YYYY-MM-DD");
+      if (!worker1ByDate.has(dateKey)) {
+        worker1ByDate.set(dateKey, []);
+      }
+      worker1ByDate.get(dateKey)!.push(assignment);
     }
 
-    const worker2Date2Assignments = worker2SortedByDate.filter((a) =>
-      a.date.isSame(worker2Date2, "day"),
-    );
+    const worker2ByDate = new Map<string, typeof worker2Assignments>();
+    for (const assignment of worker2SortedByDate) {
+      const dateKey = assignment.date.format("YYYY-MM-DD");
+      if (!worker2ByDate.has(dateKey)) {
+        worker2ByDate.set(dateKey, []);
+      }
+      worker2ByDate.get(dateKey)!.push(assignment);
+    }
 
-    if (
-      worker1Date1Assignments.length < 2 ||
-      worker2Date2Assignments.length < 2
-    ) {
+    // Find a date where Worker1 has at least 2 assignments
+    let worker1OfferIds: string[] | null = null;
+    let worker1Date: string | null = null;
+    for (const [dateKey, assignments] of worker1ByDate.entries()) {
+      if (assignments.length >= 2) {
+        worker1OfferIds = assignments.slice(0, 2).map((a) => a.id);
+        worker1Date = dateKey;
+        break;
+      }
+    }
+
+    // Find a DIFFERENT date where Worker2 has at least 2 assignments
+    let worker2OfferIds: string[] | null = null;
+    let worker2Date: string | null = null;
+    for (const [dateKey, assignments] of worker2ByDate.entries()) {
+      if (assignments.length >= 2 && dateKey !== worker1Date) {
+        worker2OfferIds = assignments.slice(0, 2).map((a) => a.id);
+        worker2Date = dateKey;
+        break;
+      }
+    }
+
+    if (!worker1OfferIds || !worker2OfferIds) {
       console.log(
         "⏭️  Skipping swap creation - not enough assignments on different dates",
       );
+      console.log(
+        `   Worker1 dates: ${Array.from(worker1ByDate.keys())
+          .map((k) => `${k}(${worker1ByDate.get(k)?.length})`)
+          .join(", ")}`,
+      );
+      console.log(
+        `   Worker2 dates: ${Array.from(worker2ByDate.keys())
+          .map((k) => `${k}(${worker2ByDate.get(k)?.length})`)
+          .join(", ")}`,
+      );
       return;
     }
-
-    const worker1OfferIds = worker1Date1Assignments
-      .slice(0, 2)
-      .map((a) => a.id);
-    const worker2OfferIds = worker2Date2Assignments
-      .slice(0, 2)
-      .map((a) => a.id);
 
     const directSwap1 = await this.dbUtils.createSwap({
       teamId: this.testTeam.teamId,
