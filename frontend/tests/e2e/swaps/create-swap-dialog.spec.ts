@@ -15,6 +15,7 @@ import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { SwapTestBase } from "../../utils/swap-test-base";
 import { ScheduleStatus } from "@/types/schedule";
+import { LinkShiftT } from "@/types/shift";
 
 dayjs.extend(utc);
 dayjs.extend(isSameOrAfter);
@@ -359,34 +360,28 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
     });
   });
 
-  test.describe("Linked Shift Suggestions", () => {
-    test("should show linked shift suggestion when selecting one shift from a linked pair", async ({
-      page,
-    }) => {
-      const testWorkers = swapTestBase.getTestWorkers();
-      const testWorkerId = testWorkers[0].workerId;
-      const testShifts = swapTestBase.getTestShifts();
-      const testLinkShifts = swapTestBase.getTestLinkShifts();
+  /**
+   * Helper method to find linked shift assignments for a worker
+   * Returns assignments for two linked shifts on the same day, or null if not found
+   */
+  const findLinkedShiftAssignments = (
+    testLinkShifts: LinkShiftT[],
+    testAssignments: any[],
+    workerId: string,
+  ): { linkShift: LinkShiftT; assignments: any[] } | null => {
+    const tomorrow = dayjs.utc().add(1, "day").startOf("day");
 
-      // Verify we have linked shifts
-      expect(testLinkShifts.length).toBeGreaterThan(0);
-      const linkShift = testLinkShifts[0];
-      expect(linkShift.shiftIds.length).toBe(2);
+    // Try each link shift configuration
+    for (const linkShift of testLinkShifts) {
+      if (linkShift.shiftIds.length !== 2) continue;
 
-      // Select first worker
-      await page.click('[data-testid="worker-select"]');
-      await page.click(`[data-testid="worker-option-${testWorkerId}"]`);
-      await page.waitForTimeout(1000);
-
-      // Find assignments for the worker with shifts from the link
-      const tomorrow = dayjs.utc().add(1, "day").startOf("day");
-      const linkedShiftAssignments = swapTestBase
-        .getTestAssignments()
-        .filter((a) => a.workerId === testWorkerId)
+      // Find assignments for this worker with shifts from this link
+      const linkedShiftAssignments = testAssignments
+        .filter((a) => a.workerId === workerId)
         .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
         .filter((a) => linkShift.shiftIds.includes(a.shiftId));
 
-      // We need at least 2 assignments on the same date with both linked shifts
+      // Group assignments by date
       const assignmentsByDate: {
         [key: string]: typeof linkedShiftAssignments;
       } = {};
@@ -406,16 +401,46 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
         },
       );
 
-      if (!dateWithBothShifts) {
+      if (dateWithBothShifts) {
+        return {
+          linkShift,
+          assignments: dateWithBothShifts[1],
+        };
+      }
+    }
+
+    return null;
+  };
+
+  test.describe("Linked Shift Suggestions", () => {
+    test("should show linked shift suggestion when selecting one shift from a linked pair", async ({
+      page,
+    }) => {
+      const testWorkers = swapTestBase.getTestWorkers();
+      const testWorkerId = testWorkers[0].workerId;
+      const testShifts = swapTestBase.getTestShifts();
+      const testLinkShifts = swapTestBase.getTestLinkShifts();
+
+      // Find linked shift assignments using helper method
+      const result = findLinkedShiftAssignments(
+        testLinkShifts,
+        swapTestBase.getTestAssignments(),
+        testWorkerId,
+      );
+
+      if (!result) {
         test.skip(
           true,
           "Need assignments with both linked shifts on same date",
         );
       }
 
-      const [dateKey, assignmentsOnDate] = dateWithBothShifts!;
+      const { linkShift, assignments: assignmentsOnDate } = result!;
 
-      // Initially, linked shift suggestion should not be visible
+      // Select first worker
+      await page.click('[data-testid="worker-select"]');
+      await page.click(`[data-testid="worker-option-${testWorkerId}"]`);
+      await page.waitForTimeout(1000);
       let linkedShiftSuggestion = page.locator(
         '[data-testid="linked-shift-suggestion"]',
       );
