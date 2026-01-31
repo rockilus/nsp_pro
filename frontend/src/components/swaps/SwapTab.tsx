@@ -172,6 +172,37 @@ export default function SwapTab({
     }
   }, [teamId, currentTab, getSwaps]);
 
+  const loadAssignments = useCallback(async () => {
+    if (!teamId) return;
+
+    try {
+      const assignmentsResult = await getAssignments(
+        teamId,
+        false,
+        dayjs.utc().add(1, "day").startOf("day"),
+        undefined,
+      );
+
+      // Build assignment data dict
+      const shiftMap = new Map(shifts.map((shift) => [shift.id, shift]));
+      const workerMap = new Map(workers.map((worker) => [worker.id, worker]));
+
+      const assignmentsData: AssignmentDataDictT[] =
+        assignmentsResult.assignmentsRead.map((assignment) => ({
+          assignment,
+          worker: workerMap.get(assignment.workerId) || ({} as WorkerT),
+          shift: shiftMap.get(assignment.shiftId) || ({} as ShiftT),
+          recurrence: null,
+          breaches: [],
+          requests: [],
+        }));
+
+      setAssignments(assignmentsData);
+    } catch (err: any) {
+      console.error("Failed to load assignments:", err);
+    }
+  }, [teamId, getAssignments, workers, shifts]);
+
   // Load initial data
   useEffect(() => {
     loadInitialData();
@@ -237,9 +268,7 @@ export default function SwapTab({
 
   const handleApproveSwap = async (swapId: string) => {
     await approveSwap(swapId);
-    loadSwaps();
-    const updatedSwap = await getSwapById(swapId);
-    setSelectedSwap(updatedSwap);
+    await Promise.all([loadSwaps(), loadAssignments()]);
   };
 
   const handleDenySwap = async (swapId: string) => {

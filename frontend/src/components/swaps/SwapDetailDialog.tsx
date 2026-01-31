@@ -152,6 +152,7 @@ export default function SwapDetailDialog({
       setLoading(true);
       setError(null);
       await onApprove();
+      onClose();
     } catch (err) {
       console.error("Failed to approve swap:", err);
       setError(err instanceof Error ? err.message : "Failed to approve swap");
