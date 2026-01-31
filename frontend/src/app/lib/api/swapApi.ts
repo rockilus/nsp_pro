@@ -23,11 +23,20 @@ export class SwapApi extends BaseApi {
       throw new Error("Team ID and offered assignments are required");
     }
 
+    // Send only the fields needed for creation (not the full swap object)
+    const createPayload = {
+      swapType: swap.swapType,
+      offeredAssignmentIds: swap.offeredAssignmentIds,
+      requestedAssignmentIds: swap.requestedAssignmentIds || null,
+      targetWorkerId: swap.targetWorkerId || null,
+      comment: swap.comment || "",
+    };
+
     const responseData = await this.makeRequest<any>(
       apiClient,
       "post",
       `/swaps/teams/${teamId}`,
-      fromSwapRequestT(swap as SwapRequestT),
+      createPayload,
     );
     return toSwapRequestT(responseData);
   }

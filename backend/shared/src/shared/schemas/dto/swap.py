@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class SwapBidDTO(BaseModel):
@@ -9,6 +9,15 @@ class SwapBidDTO(BaseModel):
     offeredAssignmentIds: List[str]
     createdAt: float
     accepted: bool
+
+
+class CreateSwapRequestDTO(BaseModel):
+    """Input DTO for creating a new swap request (client-provided fields only)."""
+    swapType: str
+    offeredAssignmentIds: List[str] = Field(min_length=1)
+    requestedAssignmentIds: List[str] | None = None
+    targetWorkerId: str | None = None
+    comment: str = ""
 
 
 class SwapRequestDTO(BaseModel):

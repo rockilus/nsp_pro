@@ -4,8 +4,8 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends
 from shared.logger import log_info
-from shared.schemas.core import SwapRequest, SwapStatus
-from shared.schemas.dto import SwapRequestDTO
+from shared.schemas.core import SwapStatus, SwapType
+from shared.schemas.dto import CreateSwapRequestDTO, SwapRequestDTO
 
 from src.dependencies import get_swap_service, get_user_context
 from src.errors import NotAuthorizedError, handle_routes_errors
@@ -21,7 +21,7 @@ router = APIRouter()
 @router.post("/swaps/teams/{team_id}", status_code=201)
 async def create_swap_request(
     team_id: str,
-    swap_request: SwapRequestDTO,
+    swap_request: CreateSwapRequestDTO,
     user_context: UserContext = Depends(get_user_context),
     swap_service: SwapService = Depends(get_swap_service),
 ) -> SwapRequestDTO:
@@ -33,21 +33,17 @@ async def create_swap_request(
                 "You do not have permission to create a swap request"
             )
 
-        # Convert from DTO
-        swap_data = SwapRequest.from_dto(swap_request)
-
-        # Validate team_id matches
-        if swap_data.team_id != team_id:
-            raise ValueError("team_id in body must match team_id in URL")
+        # Parse swap type
+        swap_type = SwapType(swap_request.swapType)
 
         # Create the swap request
         created_swap = swap_service.create_swap_request(
-            team_id=swap_data.team_id,
-            swap_type=swap_data.swap_type,
-            offered_assignment_ids=swap_data.offered_assignment_ids,
-            comment=swap_data.comment,
-            requested_assignment_ids=swap_data.requested_assignment_ids,
-            target_worker_id=swap_data.target_worker_id,
+            team_id=team_id,
+            swap_type=swap_type,
+            offered_assignment_ids=swap_request.offeredAssignmentIds,
+            comment=swap_request.comment,
+            requested_assignment_ids=swap_request.requestedAssignmentIds,
+            target_worker_id=swap_request.targetWorkerId,
         )
 
         response = created_swap.to_dto()
