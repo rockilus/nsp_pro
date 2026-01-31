@@ -805,6 +805,28 @@ export class SwapTestBase {
   }
 
   /**
+   * Get assignments for the test team
+   */
+  async getAssignments(
+    includeCampaign: boolean = false,
+    startDate?: dayjs.Dayjs,
+    endDate?: dayjs.Dayjs,
+    workerId?: string,
+  ): Promise<AssignmentT[]> {
+    if (!this.testTeam) {
+      throw new Error("Test team not initialized");
+    }
+    const result = await this.dbUtils.getAssignments(
+      this.testTeam.teamId,
+      includeCampaign,
+      startDate,
+      endDate,
+      workerId,
+    );
+    return result.assignments;
+  }
+
+  /**
    * Approve a swap as member (should fail with permission error)
    */
   async approveSwapAsMember(swapId: string): Promise<SwapRequestT> {

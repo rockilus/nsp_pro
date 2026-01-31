@@ -567,29 +567,25 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     await swapTestBase.acceptDirectSwap(testSwap.id);
     await swapTestBase.approveSwap(testSwap.id);
 
-    // Fetch all assignments after swap
-    const assignmentsResult = await swapTestBase.makeAuthenticatedRequest(
-      "GET",
-      `/assignments/teams/${teamId}`,
-    );
-    const allAssignments = assignmentsResult.assignmentsRead;
+    // Fetch all assignments after swap using AssignmentApi
+    const allAssignments = await swapTestBase.getAssignments();
 
     // Verify offered assignments now belong to worker2
     for (const offeredAssignmentId of originalOfferedAssignments) {
       const assignment = allAssignments.find(
-        (a: any) => a.id === offeredAssignmentId,
+        (a) => a.id === offeredAssignmentId,
       );
       expect(assignment).toBeDefined();
-      expect(assignment.workerId).toBe(worker2Id);
+      expect(assignment!.workerId).toBe(worker2Id);
     }
 
     // Verify requested assignments now belong to worker1
     for (const requestedAssignmentId of originalRequestedAssignments) {
       const assignment = allAssignments.find(
-        (a: any) => a.id === requestedAssignmentId,
+        (a) => a.id === requestedAssignmentId,
       );
       expect(assignment).toBeDefined();
-      expect(assignment.workerId).toBe(worker1Id);
+      expect(assignment!.workerId).toBe(worker1Id);
     }
 
     console.log("✅ Assignments successfully swapped between workers");
@@ -602,12 +598,8 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     const testSwap = swaps[0];
     const teamId = swapTestBase.getTestTeam()!.teamId;
 
-    // Get original assignment details
-    const assignmentsBeforeResult = await swapTestBase.makeAuthenticatedRequest(
-      "GET",
-      `/assignments/teams/${teamId}`,
-    );
-    const assignmentsBefore = assignmentsBeforeResult.assignmentsRead;
+    // Get original assignment details using AssignmentApi
+    const assignmentsBefore = await swapTestBase.getAssignments();
 
     // Store original shift and date for each assignment
     const originalData = new Map();
@@ -615,13 +607,11 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
       ...testSwap.offeredAssignmentIds,
       ...(testSwap.requestedAssignmentIds || []),
     ]) {
-      const assignment = assignmentsBefore.find(
-        (a: any) => a.id === assignmentId,
-      );
+      const assignment = assignmentsBefore.find((a) => a.id === assignmentId);
       if (assignment) {
         originalData.set(assignmentId, {
           shiftId: assignment.shiftId,
-          date: assignment.date,
+          date: assignment.date.format("YYYY-MM-DD"),
         });
       }
     }
@@ -630,21 +620,17 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     await swapTestBase.acceptDirectSwap(testSwap.id);
     await swapTestBase.approveSwap(testSwap.id);
 
-    // Fetch assignments after swap
-    const assignmentsAfterResult = await swapTestBase.makeAuthenticatedRequest(
-      "GET",
-      `/assignments/teams/${teamId}`,
-    );
-    const assignmentsAfter = assignmentsAfterResult.assignmentsRead;
+    // Fetch assignments after swap using AssignmentApi
+    const assignmentsAfter = await swapTestBase.getAssignments();
 
     // Verify each assignment kept its original shift and date
     for (const [assignmentId, original] of originalData.entries()) {
       const assignmentAfter = assignmentsAfter.find(
-        (a: any) => a.id === assignmentId,
+        (a) => a.id === assignmentId,
       );
       expect(assignmentAfter).toBeDefined();
-      expect(assignmentAfter.shiftId).toBe(original.shiftId);
-      expect(assignmentAfter.date).toBe(original.date);
+      expect(assignmentAfter!.shiftId).toBe(original.shiftId);
+      expect(assignmentAfter!.date.format("YYYY-MM-DD")).toBe(original.date);
     }
 
     console.log(
@@ -706,12 +692,8 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     await swapTestBase.acceptDirectSwap(dutySwap.id);
     await swapTestBase.approveSwap(dutySwap.id);
 
-    // Fetch all assignments after swap
-    const assignmentsResult = await swapTestBase.makeAuthenticatedRequest(
-      "GET",
-      `/assignments/teams/${teamId}`,
-    );
-    const allAssignments = assignmentsResult.assignmentsRead;
+    // Fetch all assignments after swap using AssignmentApi
+    const allAssignments = await swapTestBase.getAssignments();
 
     // Verify the 2 normal shifts (morning + afternoon) now belong to worker2
     for (const offeredAssignmentId of dutySwap.offeredAssignmentIds) {

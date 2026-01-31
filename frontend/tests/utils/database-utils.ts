@@ -2513,6 +2513,47 @@ export class DatabaseTestUtils {
       );
     }
   }
+
+  //////////////////////////
+  // Assignment Methods
+  //////////////////////////
+
+  /**
+   * Get assignments for a team using the existing AssignmentApi for consistent behavior
+   */
+  async getAssignments(
+    teamId: string,
+    includeCampaign: boolean = false,
+    startDate?: dayjs.Dayjs,
+    endDate?: dayjs.Dayjs,
+    workerId?: string,
+  ): Promise<{ assignments: AssignmentT[] }> {
+    try {
+      const result = await AssignmentApi.getAssignments(
+        this.testApiClient,
+        teamId,
+        includeCampaign,
+        startDate,
+        endDate,
+        workerId,
+      );
+
+      console.log(
+        `✅ Retrieved ${result.assignments.length} assignments for team ${teamId}`,
+      );
+
+      return {
+        assignments: result.assignments,
+      };
+    } catch (error) {
+      console.error("Failed to get assignments:", error);
+      throw new Error(
+        `Failed to get assignments: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
 }
 
 /**
