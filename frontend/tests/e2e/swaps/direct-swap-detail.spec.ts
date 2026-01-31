@@ -291,6 +291,65 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
 
     console.log("✅ Status correctly shows PENDING_APPROVAL after acceptance");
   });
+
+  test("should NOT show approve button for member even when swap is pending approval", async ({
+    page,
+  }) => {
+    const swaps = swapTestBase.getTestSwaps();
+    const testSwap = swaps[0];
+
+    // First, accept the swap via API (changes status to PENDING_APPROVAL)
+    const dbUtils = (swapTestBase as any).dbUtils;
+    await dbUtils.acceptDirectSwap(testSwap.id);
+
+    // Reload page to see updated status
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+
+    // Open swap
+    await page.click('[data-testid="view-details-button"]');
+    await page.waitForSelector('[data-testid="swap-detail-dialog"]');
+
+    // Verify status is PENDING_APPROVAL
+    const statusChip = page.locator('[data-testid="swap-status-chip"]');
+    await expect(statusChip).toContainText("pending_approval");
+
+    // Approve button should NOT be visible for member user
+    const approveButton = page.locator('[data-testid="approve-swap-button"]');
+    await expect(approveButton).not.toBeVisible();
+
+    console.log(
+      "✅ Approve button correctly hidden for member even when swap is PENDING_APPROVAL",
+    );
+  });
+
+  test("should NOT allow member to approve swap via API", async ({ page }) => {
+    const swaps = swapTestBase.getTestSwaps();
+    const testSwap = swaps[0];
+
+    // First, accept the swap via API (changes status to PENDING_APPROVAL)
+    const dbUtils = (swapTestBase as any).dbUtils;
+    await dbUtils.acceptDirectSwap(testSwap.id);
+
+    // Try to approve swap as member (should fail with permission error)
+    let approvalFailed = false;
+    try {
+      await dbUtils.approveSwap(testSwap.id);
+    } catch (error: any) {
+      approvalFailed = true;
+      // Verify it's a permission/authorization error
+      expect(error.message).toMatch(/permission|forbidden|unauthorized|403/i);
+    }
+
+    // Verify the approval attempt failed
+    expect(approvalFailed).toBe(true);
+
+    // Verify swap status is still PENDING_APPROVAL (not COMPLETED)
+    const swapAfterAttempt = await dbUtils.getSwapById(testSwap.id);
+    expect(swapAfterAttempt.status).toBe(SwapStatus.PENDING_APPROVAL);
+
+    console.log("✅ Member correctly prevented from approving swap via API");
+  });
 });
 
 test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {

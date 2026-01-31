@@ -13,6 +13,7 @@
 import { Page } from "@playwright/test";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import { DatabaseTestUtils, TEST_USER, TEST_USER_2 } from "./database-utils";
 import { ShiftT, ShiftType, LinkShiftT } from "../../src/types/shift";
 import { ScheduleT, ScheduleStatus } from "../../src/types/schedule";
@@ -21,6 +22,7 @@ import { SwapRequestT } from "../../src/types/swap";
 import { testConfig } from "./test-config";
 
 dayjs.extend(utc);
+dayjs.extend(isSameOrAfter);
 
 export interface SwapSetupOptions {
   referenceDate: dayjs.Dayjs;
