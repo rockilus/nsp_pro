@@ -79,6 +79,12 @@ async def get_swap_requests(
         # Get swaps
         swaps = swap_service.get_swaps_for_team(team_id, status_filter)
 
+        # Filter out cancelled swaps unless explicitly requested
+        if status_filter is None:
+            swaps = [
+                swap for swap in swaps if swap.status != SwapStatus.CANCELLED
+            ]
+
         response = [swap.to_dto() for swap in swaps]
     except Exception as e:
         log_info(f"Failed to get swap requests: {e}")
