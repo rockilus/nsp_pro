@@ -759,26 +759,6 @@ test.describe("CreateSwapDialog - Member Tests", () => {
       console.log("✅ Worker selection hidden for team members");
     });
 
-    test("should show info message with pre-selected worker for members", async ({
-      page,
-    }) => {
-      // Verify info alert is visible
-      const infoAlert = page.locator(
-        '[role="alert"]:has-text("Creating swap for")',
-      );
-      await expect(infoAlert).toBeVisible();
-
-      // Get member worker
-      const memberWorker = swapTestBase.getMemberWorker();
-      expect(memberWorker).not.toBeNull();
-
-      // Verify the alert mentions the member's worker name
-      const alertText = await infoAlert.textContent();
-      expect(alertText).toContain(memberWorker!.name);
-
-      console.log(`✅ Pre-selected worker info shown: ${memberWorker!.name}`);
-    });
-
     test("should automatically show assignments for member's worker", async ({
       page,
     }) => {

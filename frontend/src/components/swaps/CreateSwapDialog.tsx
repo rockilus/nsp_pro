@@ -220,13 +220,6 @@ export default function CreateSwapDialog({
               </FormControl>
             </RoleBased>
 
-            {role === TeamMembershipRole.MEMBER && selectedWorkerId && (
-              <Alert severity="info" sx={{ mb: 2 }}>
-                Creating swap for:{" "}
-                {workers.find((w) => w.id === selectedWorkerId)?.name}
-              </Alert>
-            )}
-
             {selectedWorkerId && (
               <Box data-testid="assignment-selector">
                 <Typography variant="subtitle2" gutterBottom>
