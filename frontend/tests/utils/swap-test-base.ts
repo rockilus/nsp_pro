@@ -252,6 +252,14 @@ export class SwapTestBase {
       this.testAssignments.push(assignment);
     }
 
+    // Find morning and afternoon shifts for linked shift testing
+    const morningShift = this.testShifts.find(
+      (s) => s.name === "Morning Shift",
+    );
+    const afternoonShift = this.testShifts.find(
+      (s) => s.name === "Afternoon Shift",
+    );
+
     // Create assignments with validated schedule (in current month, future dates)
     const validatedSchedule = this.testSchedules.find(
       (s) => s.status === ScheduleStatus.VALIDATED,
@@ -282,6 +290,36 @@ export class SwapTestBase {
           comment: "Validated schedule assignment 2",
         });
         this.testAssignments.push(assignment2);
+      }
+
+      // Create assignments for BOTH linked shifts on the same day for linked shift testing
+      if (morningShift && afternoonShift) {
+        const linkedShiftDate = tomorrow.add(3, "days");
+        for (const worker of this.testWorkers) {
+          // Morning shift assignment
+          const morningAssignment = await this.dbUtils.createAssignment({
+            teamId: this.testTeam.teamId,
+            workerId: worker.workerId,
+            shiftId: morningShift.id,
+            date: linkedShiftDate,
+            scheduleId: validatedSchedule.id,
+            fixed: false,
+            comment: "Linked shift - Morning",
+          });
+          this.testAssignments.push(morningAssignment);
+
+          // Afternoon shift assignment
+          const afternoonAssignment = await this.dbUtils.createAssignment({
+            teamId: this.testTeam.teamId,
+            workerId: worker.workerId,
+            shiftId: afternoonShift.id,
+            date: linkedShiftDate,
+            scheduleId: validatedSchedule.id,
+            fixed: false,
+            comment: "Linked shift - Afternoon",
+          });
+          this.testAssignments.push(afternoonAssignment);
+        }
       }
     }
 
