@@ -2539,11 +2539,11 @@ export class DatabaseTestUtils {
       );
 
       console.log(
-        `✅ Retrieved ${result.assignments.length} assignments for team ${teamId}`,
+        `✅ Retrieved ${result.assignmentsRead.length} assignments for team ${teamId}`,
       );
 
       return {
-        assignments: result.assignments,
+        assignments: result.assignmentsRead,
       };
     } catch (error) {
       console.error("Failed to get assignments:", error);
