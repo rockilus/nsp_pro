@@ -130,19 +130,19 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
     }
   });
 
-  test("should show cancel button for swap creator", async ({ page }) => {
+  test("should show delete button for swap creator", async ({ page }) => {
     // Open first swap
     await page.click('[data-testid="view-details-button"]');
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
-    // Verify cancel button is visible
-    const cancelButton = page.locator('[data-testid="cancel-swap-button"]');
-    await expect(cancelButton).toBeVisible();
+    // Verify delete button is visible
+    const deleteButton = page.locator('[data-testid="delete-swap-button"]');
+    await expect(deleteButton).toBeVisible();
 
-    console.log("✅ Cancel button visible for swap creator");
+    console.log("✅ Delete button visible for swap creator");
   });
 
-  test("should be able to cancel swap", async ({ page }) => {
+  test("should be able to delete swap", async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
     const testSwap = swaps[0];
 
@@ -150,9 +150,9 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
     await page.click('[data-testid="view-details-button"]');
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
-    // Click cancel button
-    const cancelButton = page.locator('[data-testid="cancel-swap-button"]');
-    await cancelButton.click();
+    // Click delete button
+    const deleteButton = page.locator('[data-testid="delete-swap-button"]');
+    await deleteButton.click();
 
     // Wait for dialog to close
     await page.waitForSelector('[data-testid="swap-detail-dialog"]', {
@@ -160,12 +160,17 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
       timeout: 10000,
     });
 
-    // Verify swap is cancelled by checking via API
+    // Verify swap is deleted by checking it no longer exists via API
     const dbUtils = (swapTestBase as any).dbUtils;
-    const updatedSwap = await dbUtils.getSwapById(testSwap.id);
-    expect(updatedSwap.status).toBe(SwapStatus.DENIED);
+    let swapDeleted = false;
+    try {
+      await dbUtils.getSwapById(testSwap.id);
+    } catch (error) {
+      swapDeleted = true;
+    }
+    expect(swapDeleted).toBe(true);
 
-    console.log("✅ Swap successfully cancelled");
+    console.log("✅ Swap successfully deleted");
   });
 
   test("should show target worker acceptance status (before acceptance)", async ({
@@ -208,16 +213,16 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
     await swapTestBase.navigateToSwapPage(page);
   });
 
-  test("should NOT show cancel button for target worker", async ({ page }) => {
+  test("should NOT show delete button for target worker", async ({ page }) => {
     // Open first swap
     await page.click('[data-testid="view-details-button"]');
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
-    // Verify cancel button is NOT visible for target worker
-    const cancelButton = page.locator('[data-testid="cancel-swap-button"]');
-    await expect(cancelButton).not.toBeVisible();
+    // Verify delete button is NOT visible for target worker
+    const deleteButton = page.locator('[data-testid="delete-swap-button"]');
+    await expect(deleteButton).not.toBeVisible();
 
-    console.log("✅ Cancel button correctly hidden for target worker");
+    console.log("✅ Delete button correctly hidden for target worker");
   });
 
   test("should show accept button for target worker when swap is active", async ({
