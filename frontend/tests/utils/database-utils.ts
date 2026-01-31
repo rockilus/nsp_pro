@@ -53,6 +53,7 @@ import { ScheduleT, toScheduleT } from "../../src/types/schedule";
 import { testConfig } from "./test-config";
 import dayjs from "dayjs";
 import { AssignmentT, AssignmentSource } from "@/types/assignment";
+import { LinkShiftApi } from "@/app/lib/api/linkShiftApi";
 
 export interface DatabaseResetOptions {
   collections?: string[];
@@ -956,6 +957,37 @@ export class DatabaseTestUtils {
       throw new Error(
         `Failed to get all shifts for team '${teamId}': Unknown error`,
       );
+    }
+  }
+
+  /**
+   * Create a link shift using the existing LinkShiftApi for consistent behavior
+   */
+  async createLinkShift(linkShiftData: {
+    teamId: string;
+    shiftIds: string[];
+  }): Promise<LinkShiftT> {
+    try {
+      const apiClient = this.createAuthenticatedClientForUser(
+        TEST_USER.user_id,
+      );
+
+      const linkShift: LinkShiftT = {
+        id: "", // Will be assigned by backend
+        teamId: linkShiftData.teamId,
+        shiftIds: linkShiftData.shiftIds,
+      };
+
+      const createdLinkShift = await LinkShiftApi.createLinkShift(
+        apiClient,
+        linkShift,
+      );
+      return createdLinkShift;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to create link shift: ${error.message}`);
+      }
+      throw new Error(`Failed to create link shift: ${String(error)}`);
     }
   }
 

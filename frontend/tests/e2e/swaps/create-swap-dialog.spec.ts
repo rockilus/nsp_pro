@@ -359,6 +359,248 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
     });
   });
 
+  test.describe("Linked Shift Suggestions", () => {
+    test("should show linked shift suggestion when selecting one shift from a linked pair", async ({
+      page,
+    }) => {
+      const testWorkers = swapTestBase.getTestWorkers();
+      const testWorkerId = testWorkers[0].workerId;
+      const testShifts = swapTestBase.getTestShifts();
+      const testLinkShifts = swapTestBase.getTestLinkShifts();
+
+      // Verify we have linked shifts
+      expect(testLinkShifts.length).toBeGreaterThan(0);
+      const linkShift = testLinkShifts[0];
+      expect(linkShift.shiftIds.length).toBe(2);
+
+      // Select first worker
+      await page.click('[data-testid="worker-select"]');
+      await page.click(`[data-testid="worker-option-${testWorkerId}"]`);
+      await page.waitForTimeout(1000);
+
+      // Find assignments for the worker with shifts from the link
+      const tomorrow = dayjs.utc().add(1, "day").startOf("day");
+      const linkedShiftAssignments = swapTestBase
+        .getTestAssignments()
+        .filter((a) => a.workerId === testWorkerId)
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
+        .filter((a) => linkShift.shiftIds.includes(a.shiftId));
+
+      // We need at least 2 assignments on the same date with both linked shifts
+      const assignmentsByDate: {
+        [key: string]: typeof linkedShiftAssignments;
+      } = {};
+      linkedShiftAssignments.forEach((a) => {
+        const dateKey = dayjs.utc(a.date).format("YYYY-MM-DD");
+        if (!assignmentsByDate[dateKey]) {
+          assignmentsByDate[dateKey] = [];
+        }
+        assignmentsByDate[dateKey].push(a);
+      });
+
+      // Find a date with both linked shifts assigned
+      const dateWithBothShifts = Object.entries(assignmentsByDate).find(
+        ([_, assignments]) => {
+          const shiftIds = new Set(assignments.map((a) => a.shiftId));
+          return linkShift.shiftIds.every((sid: string) => shiftIds.has(sid));
+        },
+      );
+
+      if (!dateWithBothShifts) {
+        test.skip(
+          true,
+          "Need assignments with both linked shifts on same date",
+        );
+      }
+
+      const [dateKey, assignmentsOnDate] = dateWithBothShifts!;
+
+      // Initially, linked shift suggestion should not be visible
+      let linkedShiftSuggestion = page.locator(
+        '[data-testid="linked-shift-suggestion"]',
+      );
+      await expect(linkedShiftSuggestion).not.toBeVisible();
+
+      // Select the first linked shift assignment
+      const firstAssignment = assignmentsOnDate[0];
+      await page.click(`[data-testid="assignment-${firstAssignment.id}"]`);
+      await page.waitForTimeout(500);
+
+      // Now the linked shift suggestion should appear
+      linkedShiftSuggestion = page.locator(
+        '[data-testid="linked-shift-suggestion"]',
+      );
+      await expect(linkedShiftSuggestion).toBeVisible();
+
+      // Verify the suggestion mentions the linked shift
+      const suggestionText = await linkedShiftSuggestion.textContent();
+      expect(suggestionText).toContain("Linked shift assignments available");
+      expect(suggestionText).toContain("linked shift assignment");
+
+      // Find the other linked shift name
+      const otherShiftId = linkShift.shiftIds.find(
+        (sid: string) => sid !== firstAssignment.shiftId,
+      );
+      const otherShift = testShifts.find((s) => s.id === otherShiftId);
+      expect(otherShift).toBeDefined();
+      expect(suggestionText).toContain(otherShift!.name);
+
+      console.log(
+        "✅ Linked shift suggestion appears when selecting one shift from linked pair",
+      );
+    });
+
+    test("should add all linked shifts when clicking 'Add All' button", async ({
+      page,
+    }) => {
+      const testWorkers = swapTestBase.getTestWorkers();
+      const testWorkerId = testWorkers[0].workerId;
+      const testLinkShifts = swapTestBase.getTestLinkShifts();
+
+      expect(testLinkShifts.length).toBeGreaterThan(0);
+      const linkShift = testLinkShifts[0];
+
+      // Select first worker
+      await page.click('[data-testid="worker-select"]');
+      await page.click(`[data-testid="worker-option-${testWorkerId}"]`);
+      await page.waitForTimeout(1000);
+
+      // Find assignments with both linked shifts on same date
+      const tomorrow = dayjs.utc().add(1, "day").startOf("day");
+      const linkedShiftAssignments = swapTestBase
+        .getTestAssignments()
+        .filter((a) => a.workerId === testWorkerId)
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
+        .filter((a) => linkShift.shiftIds.includes(a.shiftId));
+
+      const assignmentsByDate: {
+        [key: string]: typeof linkedShiftAssignments;
+      } = {};
+      linkedShiftAssignments.forEach((a) => {
+        const dateKey = dayjs.utc(a.date).format("YYYY-MM-DD");
+        if (!assignmentsByDate[dateKey]) {
+          assignmentsByDate[dateKey] = [];
+        }
+        assignmentsByDate[dateKey].push(a);
+      });
+
+      const dateWithBothShifts = Object.entries(assignmentsByDate).find(
+        ([_, assignments]) => {
+          const shiftIds = new Set(assignments.map((a) => a.shiftId));
+          return linkShift.shiftIds.every((sid: string) => shiftIds.has(sid));
+        },
+      );
+
+      if (!dateWithBothShifts) {
+        test.skip(
+          true,
+          "Need assignments with both linked shifts on same date",
+        );
+      }
+
+      const [dateKey, assignmentsOnDate] = dateWithBothShifts!;
+
+      // Select the first linked shift assignment
+      const firstAssignment = assignmentsOnDate[0];
+      await page.click(`[data-testid="assignment-${firstAssignment.id}"]`);
+      await page.waitForTimeout(500);
+
+      // Verify suggestion appears
+      const linkedShiftSuggestion = page.locator(
+        '[data-testid="linked-shift-suggestion"]',
+      );
+      await expect(linkedShiftSuggestion).toBeVisible();
+
+      // Click the "Add All" button
+      const addAllButton = page.locator(
+        '[data-testid="add-all-linked-shifts"]',
+      );
+      await expect(addAllButton).toBeVisible();
+      await addAllButton.click();
+      await page.waitForTimeout(500);
+
+      // Verify all linked shift assignments are now selected (checkboxes checked)
+      for (const assignment of assignmentsOnDate) {
+        const assignmentRow = page.locator(
+          `[data-testid="assignment-${assignment.id}"]`,
+        );
+        const checkbox = assignmentRow.locator('input[type="checkbox"]');
+        await expect(checkbox).toBeChecked();
+      }
+
+      // Suggestion should disappear after all are selected
+      await expect(linkedShiftSuggestion).not.toBeVisible();
+
+      console.log(
+        "✅ 'Add All' button successfully adds all linked shift assignments",
+      );
+    });
+
+    test("should not show suggestion if linked shift assignment not available", async ({
+      page,
+    }) => {
+      const testWorkers = swapTestBase.getTestWorkers();
+      const testWorkerId = testWorkers[0].workerId;
+      const testLinkShifts = swapTestBase.getTestLinkShifts();
+
+      expect(testLinkShifts.length).toBeGreaterThan(0);
+      const linkShift = testLinkShifts[0];
+
+      // Select first worker
+      await page.click('[data-testid="worker-select"]');
+      await page.click(`[data-testid="worker-option-${testWorkerId}"]`);
+      await page.waitForTimeout(1000);
+
+      // Find a date where worker has only ONE of the linked shifts
+      const tomorrow = dayjs.utc().add(1, "day").startOf("day");
+      const linkedShiftAssignments = swapTestBase
+        .getTestAssignments()
+        .filter((a) => a.workerId === testWorkerId)
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
+        .filter((a) => linkShift.shiftIds.includes(a.shiftId));
+
+      const assignmentsByDate: {
+        [key: string]: typeof linkedShiftAssignments;
+      } = {};
+      linkedShiftAssignments.forEach((a) => {
+        const dateKey = dayjs.utc(a.date).format("YYYY-MM-DD");
+        if (!assignmentsByDate[dateKey]) {
+          assignmentsByDate[dateKey] = [];
+        }
+        assignmentsByDate[dateKey].push(a);
+      });
+
+      // Find a date with only ONE of the linked shifts
+      const dateWithOnlyOneShift = Object.entries(assignmentsByDate).find(
+        ([_, assignments]) => {
+          const shiftIds = new Set(assignments.map((a) => a.shiftId));
+          return shiftIds.size === 1; // Only one unique shift ID
+        },
+      );
+
+      if (!dateWithOnlyOneShift) {
+        test.skip(true, "Need assignment with only one of the linked shifts");
+      }
+
+      const [dateKey, assignmentsOnDate] = dateWithOnlyOneShift!;
+      const assignment = assignmentsOnDate[0];
+
+      // Select the assignment
+      await page.click(`[data-testid="assignment-${assignment.id}"]`);
+      await page.waitForTimeout(500);
+
+      // Linked shift suggestion should NOT appear
+      const linkedShiftSuggestion = page.locator(
+        '[data-testid="linked-shift-suggestion"]',
+      );
+      await expect(linkedShiftSuggestion).not.toBeVisible();
+
+      console.log(
+        "✅ No linked shift suggestion when other shift not available on that date",
+      );
+    });
+  });
+
   test.describe("Multi-step Form Navigation", () => {
     test("should validate worker selection before proceeding", async ({
       page,

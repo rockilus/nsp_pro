@@ -263,12 +263,14 @@ export default function AssignmentSelector({
         <Alert
           severity="info"
           sx={{ mt: 2 }}
+          data-testid="linked-shift-suggestion"
           action={
             <Button
               color="inherit"
               size="small"
               startIcon={<AddIcon />}
               onClick={handleAddSuggested}
+              data-testid="add-all-linked-shifts"
             >
               Add All
             </Button>

@@ -14,7 +14,7 @@ import { Page } from "@playwright/test";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { DatabaseTestUtils, TEST_USER, TEST_USER_2 } from "./database-utils";
-import { ShiftT, ShiftType } from "../../src/types/shift";
+import { ShiftT, ShiftType, LinkShiftT } from "../../src/types/shift";
 import { ScheduleT, ScheduleStatus } from "../../src/types/schedule";
 import { AssignmentT } from "../../src/types/assignment";
 import { testConfig } from "./test-config";
@@ -42,6 +42,7 @@ export class SwapTestBase {
   // Storage for created test entities
   protected testWorkers: Array<{ workerId: string; name: string }> = [];
   protected testShifts: ShiftT[] = [];
+  protected testLinkShifts: LinkShiftT[] = [];
   protected testSchedules: ScheduleT[] = [];
   protected testAssignments: AssignmentT[] = [];
   protected memberWorker: { workerId: string; name: string } | null = null;
@@ -113,7 +114,7 @@ export class SwapTestBase {
     const morningShift = await this.createShift({
       name: "Morning Shift",
       startTime: dayjs.utc().hour(8).minute(0).second(0),
-      endTime: dayjs.utc().hour(16).minute(0).second(0),
+      endTime: dayjs.utc().hour(12).minute(0).second(0),
       shiftType: ShiftType.NORMAL,
       acronym: "MS",
       color: "#4CAF50",
@@ -130,6 +131,15 @@ export class SwapTestBase {
     });
     this.testShifts.push(afternoonShift);
     console.log(`✅ Created ${this.testShifts.length} test shifts`);
+
+    // 7.5. Create link shift linking morning and afternoon shifts
+    const linkShift = await this.createLinkShift({
+      shiftIds: [morningShift.id, afternoonShift.id],
+    });
+    this.testLinkShifts.push(linkShift);
+    console.log(
+      `✅ Created link shift linking ${this.testShifts.length} shifts`,
+    );
 
     // 8. Create schedules (campaign and validated)
     await this.createSchedules(options.referenceDate);
@@ -365,6 +375,22 @@ export class SwapTestBase {
   }
 
   /**
+   * Create a link shift for the test team
+   */
+  async createLinkShift(linkShiftData: {
+    shiftIds: string[];
+  }): Promise<LinkShiftT> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created");
+    }
+
+    return await this.dbUtils.createLinkShift({
+      teamId: this.testTeam.teamId,
+      shiftIds: linkShiftData.shiftIds,
+    });
+  }
+
+  /**
    * Navigate to swap page for the test team
    */
   async navigateToSwapPage(page: Page): Promise<void> {
@@ -411,6 +437,13 @@ export class SwapTestBase {
    */
   getTestShifts(): ShiftT[] {
     return this.testShifts;
+  }
+
+  /**
+   * Get the created test link shifts
+   */
+  getTestLinkShifts(): LinkShiftT[] {
+    return this.testLinkShifts;
   }
 
   /**
