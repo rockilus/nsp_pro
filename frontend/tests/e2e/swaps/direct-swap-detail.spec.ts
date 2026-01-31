@@ -493,6 +493,27 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     const swaps = swapTestBase.getTestSwaps();
     const testSwap = swaps[0];
 
+    // Get all test assignments and filter to swap assignments only
+    const allAssignments = swapTestBase.getTestAssignments();
+    const swapAssignmentIds = [
+      ...testSwap.offeredAssignmentIds,
+      ...(testSwap.requestedAssignmentIds || []),
+    ];
+
+    // Store original assignment data before swap
+    const originalAssignments = new Map();
+    for (const assignmentId of swapAssignmentIds) {
+      const assignment = allAssignments.find((a) => a.id === assignmentId);
+      if (assignment) {
+        originalAssignments.set(assignmentId, {
+          id: assignment.id,
+          workerId: assignment.workerId,
+          shiftId: assignment.shiftId,
+          dateIso: assignment.date.format("YYYY-MM-DD"),
+        });
+      }
+    }
+
     // Accept and approve via API
     await swapTestBase.acceptDirectSwap(testSwap.id);
     const completedSwap = await swapTestBase.approveSwap(testSwap.id);
@@ -502,21 +523,27 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     expect(completedSwap.auditData.length).toBeGreaterThan(0);
 
     // Verify auditData contains entries for all swapped assignments
-    const totalAssignments =
-      testSwap.offeredAssignmentIds.length +
-      (testSwap.requestedAssignmentIds?.length || 0);
+    const totalAssignments = swapAssignmentIds.length;
     expect(completedSwap.auditData.length).toBe(totalAssignments);
 
-    // Verify each audit entry has required fields
+    // Verify each audit entry matches the original assignment data
     for (const audit of completedSwap.auditData) {
-      expect(audit.assignmentId).toBeDefined();
-      expect(audit.workerId).toBeDefined();
-      expect(audit.shiftId).toBeDefined();
-      expect(audit.dateIso).toBeDefined();
+      const original = originalAssignments.get(audit.assignmentId);
+      expect(original).toBeDefined();
+      expect(audit.assignmentId).toBe(original.id);
+      expect(audit.workerId).toBe(original.workerId);
+      expect(audit.shiftId).toBe(original.shiftId);
+      expect(audit.dateIso).toBe(original.dateIso);
     }
 
+    // Verify auditData contains only the offered and requested assignments
+    const auditAssignmentIds = completedSwap.auditData.map(
+      (a) => a.assignmentId,
+    );
+    expect(auditAssignmentIds.sort()).toEqual(swapAssignmentIds.sort());
+
     console.log(
-      `✅ auditData populated with ${completedSwap.auditData.length} entries`,
+      `✅ auditData populated with ${completedSwap.auditData.length} entries matching original assignment data`,
     );
   });
 
