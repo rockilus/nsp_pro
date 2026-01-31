@@ -265,8 +265,7 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
     await page.waitForTimeout(2000);
 
     // Verify swap status changed to PENDING_APPROVAL via API
-    const dbUtils = (swapTestBase as any).dbUtils;
-    const updatedSwap = await dbUtils.getSwapById(testSwap.id);
+    const updatedSwap = await swapTestBase.getSwapById(testSwap.id);
     expect(updatedSwap.status).toBe(SwapStatus.PENDING_APPROVAL);
 
     console.log("✅ Direct swap accepted, status changed to PENDING_APPROVAL");
@@ -279,8 +278,7 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
     const testSwap = swaps[0];
 
     // First, accept the swap via API
-    const dbUtils = (swapTestBase as any).dbUtils;
-    await dbUtils.acceptDirectSwap(testSwap.id);
+    await swapTestBase.acceptDirectSwap(testSwap.id);
 
     // Reload page to see updated status
     await page.reload();
@@ -310,8 +308,7 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
     const testSwap = swaps[0];
 
     // First, accept the swap via API (changes status to PENDING_APPROVAL)
-    const dbUtils = (swapTestBase as any).dbUtils;
-    await dbUtils.acceptDirectSwap(testSwap.id);
+    await swapTestBase.acceptDirectSwap(testSwap.id);
 
     // Reload page to see updated status
     await page.reload();
@@ -339,13 +336,12 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
     const testSwap = swaps[0];
 
     // First, accept the swap via API (changes status to PENDING_APPROVAL)
-    const dbUtils = (swapTestBase as any).dbUtils;
-    await dbUtils.acceptDirectSwap(testSwap.id);
+    await swapTestBase.acceptDirectSwap(testSwap.id);
 
     // Try to approve swap as member (should fail with permission error)
     let approvalFailed = false;
     try {
-      await dbUtils.approveSwap(testSwap.id);
+      await swapTestBase.approveSwap(testSwap.id);
     } catch (error: any) {
       approvalFailed = true;
       // Verify it's a permission/authorization error
@@ -356,7 +352,7 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
     expect(approvalFailed).toBe(true);
 
     // Verify swap status is still PENDING_APPROVAL (not COMPLETED)
-    const swapAfterAttempt = await dbUtils.getSwapById(testSwap.id);
+    const swapAfterAttempt = await swapTestBase.getSwapById(testSwap.id);
     expect(swapAfterAttempt.status).toBe(SwapStatus.PENDING_APPROVAL);
 
     console.log("✅ Member correctly prevented from approving swap via API");
@@ -402,8 +398,7 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     const testSwap = swaps[0];
 
     // First, accept the swap as target worker via API
-    const dbUtils = (swapTestBase as any).dbUtils;
-    await dbUtils.acceptDirectSwap(testSwap.id);
+    await swapTestBase.acceptDirectSwap(testSwap.id);
 
     // Reload page to see updated status
     await page.reload();
@@ -429,8 +424,7 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     const testSwap = swaps[0];
 
     // First, accept the swap as target worker via API
-    const dbUtils = (swapTestBase as any).dbUtils;
-    await dbUtils.acceptDirectSwap(testSwap.id);
+    await swapTestBase.acceptDirectSwap(testSwap.id);
 
     // Reload page
     await page.reload();
@@ -448,7 +442,7 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     await page.waitForTimeout(2000);
 
     // Verify swap status changed to COMPLETED via API
-    const completedSwap = await dbUtils.getSwapById(testSwap.id);
+    const completedSwap = await swapTestBase.getSwapById(testSwap.id);
     expect(completedSwap.status).toBe(SwapStatus.COMPLETED);
 
     console.log("✅ Swap status changed to COMPLETED after approval");
@@ -461,9 +455,8 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     const testSwap = swaps[0];
 
     // Accept and approve via API
-    const dbUtils = (swapTestBase as any).dbUtils;
-    await dbUtils.acceptDirectSwap(testSwap.id);
-    const completedSwap = await dbUtils.approveSwap(testSwap.id);
+    await swapTestBase.acceptDirectSwap(testSwap.id);
+    const completedSwap = await swapTestBase.approveSwap(testSwap.id);
 
     // Verify completedAt is set
     expect(completedSwap.completedAt).not.toBeNull();
@@ -485,9 +478,8 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     const testSwap = swaps[0];
 
     // Accept and approve via API
-    const dbUtils = (swapTestBase as any).dbUtils;
-    await dbUtils.acceptDirectSwap(testSwap.id);
-    const completedSwap = await dbUtils.approveSwap(testSwap.id);
+    await swapTestBase.acceptDirectSwap(testSwap.id);
+    const completedSwap = await swapTestBase.approveSwap(testSwap.id);
 
     // Verify completedByUserId is set to the team leader (TEST_USER)
     expect(completedSwap.completedByUserId).toBe(TEST_USER.user_id);
@@ -502,9 +494,8 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     const testSwap = swaps[0];
 
     // Accept and approve via API
-    const dbUtils = (swapTestBase as any).dbUtils;
-    await dbUtils.acceptDirectSwap(testSwap.id);
-    const completedSwap = await dbUtils.approveSwap(testSwap.id);
+    await swapTestBase.acceptDirectSwap(testSwap.id);
+    const completedSwap = await swapTestBase.approveSwap(testSwap.id);
 
     // Verify auditData is populated
     expect(completedSwap.auditData).toBeDefined();
@@ -538,7 +529,6 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     const teamId = swapTestBase.getTestTeam()!.teamId;
 
     // Get original assignments before swap
-    const dbUtils = (swapTestBase as any).dbUtils;
     const originalOfferedAssignments = testSwap.offeredAssignmentIds;
     const originalRequestedAssignments = testSwap.requestedAssignmentIds || [];
 
@@ -547,11 +537,11 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     const worker2Id = workers[1].workerId;
 
     // Accept and approve swap
-    await dbUtils.acceptDirectSwap(testSwap.id);
-    await dbUtils.approveSwap(testSwap.id);
+    await swapTestBase.acceptDirectSwap(testSwap.id);
+    await swapTestBase.approveSwap(testSwap.id);
 
     // Fetch all assignments after swap
-    const assignmentsResult = await dbUtils.makeAuthenticatedRequest(
+    const assignmentsResult = await swapTestBase.makeAuthenticatedRequest(
       "GET",
       `/assignments/teams/${teamId}`,
     );
@@ -586,8 +576,7 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     const teamId = swapTestBase.getTestTeam()!.teamId;
 
     // Get original assignment details
-    const dbUtils = (swapTestBase as any).dbUtils;
-    const assignmentsBeforeResult = await dbUtils.makeAuthenticatedRequest(
+    const assignmentsBeforeResult = await swapTestBase.makeAuthenticatedRequest(
       "GET",
       `/assignments/teams/${teamId}`,
     );
@@ -611,11 +600,11 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     }
 
     // Accept and approve swap
-    await dbUtils.acceptDirectSwap(testSwap.id);
-    await dbUtils.approveSwap(testSwap.id);
+    await swapTestBase.acceptDirectSwap(testSwap.id);
+    await swapTestBase.approveSwap(testSwap.id);
 
     // Fetch assignments after swap
-    const assignmentsAfterResult = await dbUtils.makeAuthenticatedRequest(
+    const assignmentsAfterResult = await swapTestBase.makeAuthenticatedRequest(
       "GET",
       `/assignments/teams/${teamId}`,
     );
@@ -643,9 +632,8 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     const testSwap = swaps[0];
 
     // Accept and approve via API
-    const dbUtils = (swapTestBase as any).dbUtils;
-    await dbUtils.acceptDirectSwap(testSwap.id);
-    await dbUtils.approveSwap(testSwap.id);
+    await swapTestBase.acceptDirectSwap(testSwap.id);
+    await swapTestBase.approveSwap(testSwap.id);
 
     // Reload page
     await page.reload();
@@ -678,9 +666,6 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     const workers = swapTestBase.getTestWorkers();
     const teamId = swapTestBase.getTestTeam()!.teamId;
 
-    // Get original assignments before swap
-    const dbUtils = (swapTestBase as any).dbUtils;
-
     // Worker1 offered 2 normal shifts (morning + afternoon)
     expect(dutySwap.offeredAssignmentIds.length).toBe(2);
 
@@ -691,11 +676,11 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     const worker2Id = workers[1].workerId;
 
     // Accept and approve the duty swap
-    await dbUtils.acceptDirectSwap(dutySwap.id);
-    await dbUtils.approveSwap(dutySwap.id);
+    await swapTestBase.acceptDirectSwap(dutySwap.id);
+    await swapTestBase.approveSwap(dutySwap.id);
 
     // Fetch all assignments after swap
-    const assignmentsResult = await dbUtils.makeAuthenticatedRequest(
+    const assignmentsResult = await swapTestBase.makeAuthenticatedRequest(
       "GET",
       `/assignments/teams/${teamId}`,
     );
@@ -720,7 +705,7 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     }
 
     // Verify audit data contains all 3 assignments (2 normal + 1 duty)
-    const completedDutySwap = await dbUtils.getSwapById(dutySwap.id);
+    const completedDutySwap = await swapTestBase.getSwapById(dutySwap.id);
     expect(completedDutySwap.auditData.length).toBe(3);
 
     console.log(

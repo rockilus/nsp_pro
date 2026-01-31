@@ -782,4 +782,40 @@ export class SwapTestBase {
   getTestSwaps(): SwapRequestT[] {
     return this.testSwaps;
   }
+
+  /**
+   * Get a swap by ID
+   */
+  async getSwapById(swapId: string): Promise<SwapRequestT> {
+    return await this.dbUtils.getSwapById(swapId);
+  }
+
+  /**
+   * Accept a direct swap (target worker accepts)
+   */
+  async acceptDirectSwap(swapId: string): Promise<SwapRequestT> {
+    return await this.dbUtils.acceptDirectSwap(swapId);
+  }
+
+  /**
+   * Approve a swap (team leader approves)
+   */
+  async approveSwap(swapId: string): Promise<SwapRequestT> {
+    return await this.dbUtils.approveSwap(swapId);
+  }
+
+  /**
+   * Make an authenticated request to the API
+   */
+  async makeAuthenticatedRequest<T>(
+    method: "GET" | "POST" | "PUT" | "DELETE",
+    endpoint: string,
+    data?: any,
+  ): Promise<T> {
+    return await this.dbUtils.makeAuthenticatedRequest<T>(
+      method,
+      endpoint,
+      data,
+    );
+  }
 }
