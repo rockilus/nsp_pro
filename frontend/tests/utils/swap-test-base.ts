@@ -15,7 +15,12 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import { DatabaseTestUtils, TEST_USER, TEST_USER_2 } from "./database-utils";
-import { ShiftT, ShiftType, LinkShiftT } from "../../src/types/shift";
+import {
+  ShiftT,
+  ShiftType,
+  ShiftRestType,
+  LinkShiftT,
+} from "../../src/types/shift";
 import { ScheduleT, ScheduleStatus } from "../../src/types/schedule";
 import { AssignmentT } from "../../src/types/assignment";
 import { SwapRequestT } from "../../src/types/swap";
@@ -143,15 +148,18 @@ export class SwapTestBase {
       shiftType: ShiftType.DUTY,
       acronym: "DS",
       color: "#FF5722",
+      recuperationTime: 24,
     });
     this.testShifts.push(dutyShift);
 
     // Create recuperation shift (linked to duty shift)
     const recuperationShift = await this.createShift({
       name: "Recuperation Shift",
-      startTime: dayjs.utc().hour(0).minute(0).second(0),
-      endTime: dayjs.utc().hour(23).minute(59).second(59),
+      startTime: dutyShift.endTime,
+      endTime: dutyShift.endTime.add(1, "day"),
       shiftType: ShiftType.REST,
+      restType: ShiftRestType.RECUPERATION,
+      recuperationDutyId: dutyShift.id,
       acronym: "RS",
       color: "#9E9E9E",
     });
@@ -606,6 +614,9 @@ export class SwapTestBase {
     shiftType: ShiftType;
     acronym?: string;
     color?: string;
+    recuperationTime?: number;
+    restType?: ShiftRestType;
+    recuperationDutyId?: string | null;
   }): Promise<ShiftT> {
     if (!this.testTeam) {
       throw new Error("Test team not created");
@@ -619,6 +630,13 @@ export class SwapTestBase {
       shiftType: shiftData.shiftType,
       acronym: shiftData.acronym,
       color: shiftData.color,
+      ...(shiftData.recuperationTime !== undefined && {
+        recuperationTime: shiftData.recuperationTime,
+      }),
+      ...(shiftData.restType !== undefined && { restType: shiftData.restType }),
+      ...(shiftData.recuperationDutyId !== undefined && {
+        recuperationDutyId: shiftData.recuperationDutyId,
+      }),
     });
   }
 

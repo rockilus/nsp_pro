@@ -897,6 +897,8 @@ export class DatabaseTestUtils {
     leaveType?: ShiftLeaveType;
     color?: string;
     acronym?: string;
+    recuperationTime?: number;
+    recuperationDutyId?: string | null;
   }): Promise<ShiftT> {
     try {
       const shift: ShiftT = {
@@ -913,8 +915,8 @@ export class DatabaseTestUtils {
         restType: shiftData.restType ?? ShiftRestType.NONE,
         leaveType: shiftData.leaveType ?? ShiftLeaveType.NONE,
         color: shiftData.color ?? "#FFFFFF",
-        recuperationTime: 0,
-        recuperationDutyId: null,
+        recuperationTime: shiftData.recuperationTime ?? 0,
+        recuperationDutyId: shiftData.recuperationDutyId ?? null,
         deleted: false,
         attributes: [],
       };
