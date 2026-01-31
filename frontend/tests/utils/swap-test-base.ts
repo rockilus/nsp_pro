@@ -134,7 +134,31 @@ export class SwapTestBase {
       color: "#2196F3",
     });
     this.testShifts.push(afternoonShift);
-    console.log(`✅ Created ${this.testShifts.length} test shifts`);
+
+    // Create duty shift (24-hour shift)
+    const dutyShift = await this.createShift({
+      name: "Duty Shift",
+      startTime: dayjs.utc().hour(8).minute(0).second(0),
+      endTime: dayjs.utc().add(1, "day").hour(8).minute(0).second(0),
+      shiftType: ShiftType.DUTY,
+      acronym: "DS",
+      color: "#FF5722",
+    });
+    this.testShifts.push(dutyShift);
+
+    // Create recuperation shift (linked to duty shift)
+    const recuperationShift = await this.createShift({
+      name: "Recuperation Shift",
+      startTime: dayjs.utc().hour(0).minute(0).second(0),
+      endTime: dayjs.utc().hour(23).minute(59).second(59),
+      shiftType: ShiftType.REST,
+      acronym: "RS",
+      color: "#9E9E9E",
+    });
+    this.testShifts.push(recuperationShift);
+    console.log(
+      `✅ Created ${this.testShifts.length} test shifts (including duty and recuperation)`,
+    );
 
     // 7.5. Create link shift linking morning and afternoon shifts
     const linkShift = await this.createLinkShift({
@@ -384,7 +408,7 @@ export class SwapTestBase {
 
     const tomorrow = dayjs.utc().add(1, "day").startOf("day");
 
-    // Get assignments for Worker 1 (morning shifts, tomorrow and day after)
+    // Get assignments for Worker 1
     const worker1 = this.testWorkers[0];
     const worker1Assignments = this.testAssignments.filter(
       (a) =>
@@ -393,7 +417,7 @@ export class SwapTestBase {
         a.scheduleId !== null, // Only from schedules
     );
 
-    // Get assignments for Worker 2 (afternoon shifts, same dates)
+    // Get assignments for Worker 2
     const worker2 = this.testWorkers[1];
     const worker2Assignments = this.testAssignments.filter(
       (a) =>
@@ -407,23 +431,142 @@ export class SwapTestBase {
       return;
     }
 
-    // Create a direct swap: Worker1 offers 2 assignments -> Worker2 offers 2 assignments
-    const worker1OfferIds = worker1Assignments.slice(0, 2).map((a) => a.id);
-    const worker2OfferIds = worker2Assignments.slice(0, 2).map((a) => a.id);
+    // SWAP 1: Worker1 offers 2 assignments on DATE1 -> Worker2 offers 2 assignments on DATE2 (different dates)
+    // Sort assignments by date to ensure we pick from different dates
+    const worker1SortedByDate = [...worker1Assignments].sort(
+      (a, b) => a.date.valueOf() - b.date.valueOf(),
+    );
+    const worker2SortedByDate = [...worker2Assignments].sort(
+      (a, b) => a.date.valueOf() - b.date.valueOf(),
+    );
 
-    const directSwap = await this.dbUtils.createSwap({
+    // Worker1 offers 2 assignments from the earliest date
+    const worker1Date1 = worker1SortedByDate[0].date;
+    const worker1Date1Assignments = worker1SortedByDate.filter((a) =>
+      a.date.isSame(worker1Date1, "day"),
+    );
+
+    // Worker2 offers 2 assignments from a different date
+    const worker2Date2 = worker2SortedByDate.find(
+      (a) => !a.date.isSame(worker1Date1, "day"),
+    )?.date;
+
+    if (!worker2Date2) {
+      console.log(
+        "⏭️  Cannot create swap - need assignments on different dates",
+      );
+      return;
+    }
+
+    const worker2Date2Assignments = worker2SortedByDate.filter((a) =>
+      a.date.isSame(worker2Date2, "day"),
+    );
+
+    if (
+      worker1Date1Assignments.length < 2 ||
+      worker2Date2Assignments.length < 2
+    ) {
+      console.log(
+        "⏭️  Skipping swap creation - not enough assignments on different dates",
+      );
+      return;
+    }
+
+    const worker1OfferIds = worker1Date1Assignments
+      .slice(0, 2)
+      .map((a) => a.id);
+    const worker2OfferIds = worker2Date2Assignments
+      .slice(0, 2)
+      .map((a) => a.id);
+
+    const directSwap1 = await this.dbUtils.createSwap({
       teamId: this.testTeam.teamId,
       offeredAssignmentIds: worker1OfferIds,
       requestedAssignmentIds: worker2OfferIds,
       swapType: "direct",
       targetWorkerId: worker2.workerId,
-      comment: "Test direct swap - Worker 1 to Worker 2",
+      comment: "Test direct swap - 2 normal shifts on different dates",
     });
 
-    this.testSwaps.push(directSwap);
+    this.testSwaps.push(directSwap1);
+
+    // SWAP 2: Create assignments with duty shift for duty swap test
+    // Worker1 offers 2 normal shifts (morning + afternoon) on one date
+    // Worker2 offers 1 duty shift on another date
+    const dutyShift = this.testShifts.find(
+      (s) => s.shiftType === ShiftType.DUTY,
+    );
+    const morningShift = this.testShifts.find(
+      (s) => s.name === "Morning Shift",
+    );
+    const afternoonShift = this.testShifts.find(
+      (s) => s.name === "Afternoon Shift",
+    );
+
+    if (dutyShift && morningShift && afternoonShift) {
+      const validatedSchedule = this.testSchedules.find(
+        (s) => s.status === ScheduleStatus.VALIDATED,
+      );
+
+      if (validatedSchedule) {
+        // Create 2 normal shifts for Worker1 on a specific date (e.g., tomorrow + 10 days)
+        const worker1DutySwapDate = tomorrow.add(10, "days");
+
+        const worker1MorningAssignment = await this.dbUtils.createAssignment({
+          teamId: this.testTeam.teamId,
+          workerId: worker1.workerId,
+          shiftId: morningShift.id,
+          date: worker1DutySwapDate,
+          scheduleId: validatedSchedule.id,
+          fixed: false,
+          comment: "For duty swap test - morning",
+        });
+        this.testAssignments.push(worker1MorningAssignment);
+
+        const worker1AfternoonAssignment = await this.dbUtils.createAssignment({
+          teamId: this.testTeam.teamId,
+          workerId: worker1.workerId,
+          shiftId: afternoonShift.id,
+          date: worker1DutySwapDate,
+          scheduleId: validatedSchedule.id,
+          fixed: false,
+          comment: "For duty swap test - afternoon",
+        });
+        this.testAssignments.push(worker1AfternoonAssignment);
+
+        // Create 1 duty shift for Worker2 on a different date (e.g., tomorrow + 12 days)
+        const worker2DutySwapDate = tomorrow.add(12, "days");
+
+        const worker2DutyAssignment = await this.dbUtils.createAssignment({
+          teamId: this.testTeam.teamId,
+          workerId: worker2.workerId,
+          shiftId: dutyShift.id,
+          date: worker2DutySwapDate,
+          scheduleId: validatedSchedule.id,
+          fixed: false,
+          comment: "For duty swap test - duty shift",
+        });
+        this.testAssignments.push(worker2DutyAssignment);
+
+        // Create the duty swap
+        const dutySwap = await this.dbUtils.createSwap({
+          teamId: this.testTeam.teamId,
+          offeredAssignmentIds: [
+            worker1MorningAssignment.id,
+            worker1AfternoonAssignment.id,
+          ],
+          requestedAssignmentIds: [worker2DutyAssignment.id],
+          swapType: "direct",
+          targetWorkerId: worker2.workerId,
+          comment: "Test duty swap - 2 normal shifts for 1 duty shift",
+        });
+
+        this.testSwaps.push(dutySwap);
+      }
+    }
 
     console.log(
-      `✅ Created ${this.testSwaps.length} test swaps (direct swap between Worker1 and Worker2)`,
+      `✅ Created ${this.testSwaps.length} test swaps (including duty swap scenario)`,
     );
   }
 

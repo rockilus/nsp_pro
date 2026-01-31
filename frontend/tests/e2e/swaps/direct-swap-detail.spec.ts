@@ -650,4 +650,70 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
 
     console.log("✅ Audit trail tab visible for completed swap");
   });
+
+  test("should correctly swap 2 normal shifts for 1 duty shift", async ({
+    page,
+  }) => {
+    const swaps = swapTestBase.getTestSwaps();
+
+    // Find the duty swap (second swap in the array)
+    const dutySwap = swaps.find((s) => s.comment?.includes("duty swap"));
+
+    if (!dutySwap) {
+      console.log("⏭️  Duty swap not found, skipping test");
+      return;
+    }
+
+    const workers = swapTestBase.getTestWorkers();
+    const teamId = swapTestBase.getTestTeam()!.teamId;
+
+    // Get original assignments before swap
+    const dbUtils = (swapTestBase as any).dbUtils;
+
+    // Worker1 offered 2 normal shifts (morning + afternoon)
+    expect(dutySwap.offeredAssignmentIds.length).toBe(2);
+
+    // Worker2 offered 1 duty shift
+    expect(dutySwap.requestedAssignmentIds?.length).toBe(1);
+
+    const worker1Id = workers[0].workerId;
+    const worker2Id = workers[1].workerId;
+
+    // Accept and approve the duty swap
+    await dbUtils.acceptDirectSwap(dutySwap.id);
+    await dbUtils.approveSwap(dutySwap.id);
+
+    // Fetch all assignments after swap
+    const assignmentsResult = await dbUtils.makeAuthenticatedRequest(
+      "GET",
+      `/assignments/teams/${teamId}`,
+    );
+    const allAssignments = assignmentsResult.assignmentsRead;
+
+    // Verify the 2 normal shifts (morning + afternoon) now belong to worker2
+    for (const offeredAssignmentId of dutySwap.offeredAssignmentIds) {
+      const assignment = allAssignments.find(
+        (a: any) => a.id === offeredAssignmentId,
+      );
+      expect(assignment).toBeDefined();
+      expect(assignment.workerId).toBe(worker2Id);
+    }
+
+    // Verify the 1 duty shift now belongs to worker1
+    for (const requestedAssignmentId of dutySwap.requestedAssignmentIds!) {
+      const assignment = allAssignments.find(
+        (a: any) => a.id === requestedAssignmentId,
+      );
+      expect(assignment).toBeDefined();
+      expect(assignment.workerId).toBe(worker1Id);
+    }
+
+    // Verify audit data contains all 3 assignments (2 normal + 1 duty)
+    const completedDutySwap = await dbUtils.getSwapById(dutySwap.id);
+    expect(completedDutySwap.auditData.length).toBe(3);
+
+    console.log(
+      "✅ Duty swap completed successfully: 2 normal shifts swapped for 1 duty shift",
+    );
+  });
 });
