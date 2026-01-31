@@ -185,8 +185,7 @@ export default function SwapTab({
 
   const getFilteredSwaps = () => {
     if (currentTab === "all") {
-      // Exclude cancelled swaps from the 'all' tab
-      return swaps.filter((swap) => swap.status !== SwapStatus.CANCELLED);
+      return swaps;
     }
     return swaps.filter((swap) => swap.status === currentTab);
   };
