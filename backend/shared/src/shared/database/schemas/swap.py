@@ -17,6 +17,7 @@ class SwapRequestSchema(DocumentBaseSchema):
     """Swap request schema for validation."""
 
     team: str
+    created_by_user: str
     swap_type: str
     status: str
     offered_assignment_ids: List[str]
@@ -42,6 +43,7 @@ class SwapRequestSchema(DocumentBaseSchema):
         doc_dict = self.to_mongo()
         doc_dict["id"] = doc_dict.pop("_id")
         doc_dict["team_id"] = doc_dict.pop("team")
+        doc_dict["created_by_user_id"] = doc_dict.pop("created_by_user")
         doc_dict["swap_type"] = SwapType(doc_dict["swap_type"])
         doc_dict["status"] = SwapStatus(doc_dict["status"])
         doc_dict["target_worker_id"] = doc_dict.pop("target_worker", None)
@@ -67,6 +69,7 @@ class SwapRequestSchema(DocumentBaseSchema):
         return cls(
             id=swap_request.id,
             team=swap_request.team_id,
+            created_by_user=swap_request.created_by_user_id,
             swap_type=swap_request.swap_type.value,
             status=swap_request.status.value,
             offered_assignment_ids=swap_request.offered_assignment_ids,

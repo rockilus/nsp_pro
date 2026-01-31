@@ -39,6 +39,7 @@ async def create_swap_request(
         # Create the swap request
         created_swap = swap_service.create_swap_request(
             team_id=team_id,
+            created_by_user_id=user_context.user_id,
             swap_type=swap_type,
             offered_assignment_ids=swap_request.offeredAssignmentIds,
             comment=swap_request.comment,
