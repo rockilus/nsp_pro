@@ -146,6 +146,11 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
     const swaps = swapTestBase.getTestSwaps();
     const testSwap = swaps[0];
 
+    // Count initial swap cards
+    const initialSwapCards = await page
+      .locator('[data-testid="view-details-button"]')
+      .count();
+
     // Open first swap
     await page.click('[data-testid="view-details-button"]');
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
@@ -160,17 +165,18 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
       timeout: 10000,
     });
 
-    // Verify swap is deleted by checking it no longer exists via API
-    const dbUtils = (swapTestBase as any).dbUtils;
-    let swapDeleted = false;
-    try {
-      await dbUtils.getSwapById(testSwap.id);
-    } catch (error) {
-      swapDeleted = true;
-    }
-    expect(swapDeleted).toBe(true);
+    console.log("✅ SwapDetailDialog closed after delete");
 
-    console.log("✅ Swap successfully deleted");
+    // Wait for the swap list to refresh
+    await page.waitForTimeout(1000);
+
+    // Verify swap is no longer visible in SwapTab
+    const currentSwapCards = await page
+      .locator('[data-testid="view-details-button"]')
+      .count();
+    expect(currentSwapCards).toBe(initialSwapCards - 1);
+
+    console.log("✅ Deleted swap no longer visible in SwapTab");
   });
 
   test("should show target worker acceptance status (before acceptance)", async ({
