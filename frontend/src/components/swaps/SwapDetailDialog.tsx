@@ -245,10 +245,14 @@ export default function SwapDetailDialog({
     swap.status === SwapStatus.ACTIVE &&
     swap.bids.length > 0;
 
+  // Find the worker associated with the current user
+  const currentUserWorker = workers.find((w) => w.userId === currentUserId);
+
   const canAcceptDirectSwap =
     swap.swapType === SwapType.DIRECT &&
     swap.status === SwapStatus.ACTIVE &&
-    swap.targetWorkerId === currentUserId;
+    currentUserWorker !== undefined &&
+    swap.targetWorkerId === currentUserWorker.id;
 
   const canApprove = swap.status === SwapStatus.PENDING_APPROVAL && isLeader;
 
@@ -259,7 +263,7 @@ export default function SwapDetailDialog({
   const canDelete =
     (swap.status === SwapStatus.ACTIVE ||
       swap.status === SwapStatus.PENDING_APPROVAL) &&
-    (isLeader || swap.offeredAssignmentIds.length > 0); // Simplification - check if user owns offered assignments
+    (isLeader || swap.createdByUserId === currentUserId); // Simplification - check if user owns offered assignments
 
   return (
     <Dialog
