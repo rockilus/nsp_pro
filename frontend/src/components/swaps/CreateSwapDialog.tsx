@@ -145,12 +145,22 @@ export default function CreateSwapDialog({
     }
 
     setError(null);
-    setActiveStep((prev) => prev + 1);
+    // Skip target details step (step 2) for open swaps
+    if (activeStep === 1 && swapType === SwapType.OPEN) {
+      setActiveStep((prev) => prev + 2);
+    } else {
+      setActiveStep((prev) => prev + 1);
+    }
   };
 
   const handleBack = () => {
     setError(null);
-    setActiveStep((prev) => prev - 1);
+    // Skip target details step (step 2) when going back from comment step with open swap
+    if (activeStep === 3 && swapType === SwapType.OPEN) {
+      setActiveStep((prev) => prev - 2);
+    } else {
+      setActiveStep((prev) => prev - 1);
+    }
   };
 
   const handleSubmit = async () => {
