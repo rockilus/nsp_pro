@@ -39,7 +39,7 @@ interface CreateSwapDialogProps {
   onClose: () => void;
   onSubmit: (swapData: {
     offeredAssignmentIds: string[];
-    requestedAssignmentIds: string[];
+    requestedAssignmentIds: string[] | null;
     swapType: SwapType;
     targetWorkerId: string | null;
     comment: string;
@@ -165,7 +165,7 @@ export default function CreateSwapDialog({
       await onSubmit({
         offeredAssignmentIds,
         requestedAssignmentIds:
-          swapType === SwapType.DIRECT ? requestedAssignmentIds : [],
+          swapType === SwapType.DIRECT ? requestedAssignmentIds : null,
         swapType,
         targetWorkerId: swapType === SwapType.DIRECT ? targetWorkerId : null,
         comment,
