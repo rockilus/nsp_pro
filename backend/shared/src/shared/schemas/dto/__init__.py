@@ -63,7 +63,11 @@ from shared.schemas.dto.stats import (
     StatsOptionsDTO,
     StatsValueDTO,
 )
-from shared.schemas.dto.swap import CreateSwapRequestDTO, SwapBidDTO, SwapRequestDTO
+from shared.schemas.dto.swap import (
+    CreateSwapRequestDTO,
+    SwapBidDTO,
+    SwapRequestDTO,
+)
 from shared.schemas.dto.team import (
     MembershipForTeamWithMembershipDTO,
     TeamDTO,

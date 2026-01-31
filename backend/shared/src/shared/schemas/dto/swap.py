@@ -13,6 +13,7 @@ class SwapBidDTO(BaseModel):
 
 class CreateSwapRequestDTO(BaseModel):
     """Input DTO for creating a new swap request (client-provided fields only)."""
+
     swapType: str
     offeredAssignmentIds: List[str] = Field(min_length=1)
     requestedAssignmentIds: List[str] | None = None
