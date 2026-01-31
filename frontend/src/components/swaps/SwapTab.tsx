@@ -395,6 +395,7 @@ export default function SwapTab({
         isLeader={isLeader}
         workers={workers}
         assignments={assignments}
+        linkShifts={linkShifts}
       />
 
       {/* Swap Detail Dialog */}
@@ -407,6 +408,7 @@ export default function SwapTab({
         isLeader={isLeader}
         workers={workers}
         assignments={assignments}
+        linkShifts={linkShifts}
         onAddBid={
           selectedSwap
             ? (workerId, bidIds) =>

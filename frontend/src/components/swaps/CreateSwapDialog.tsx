@@ -29,6 +29,7 @@ import dayjs from "dayjs";
 import { SwapType } from "../../types/swap";
 import { WorkerT } from "../../types/worker";
 import { AssignmentDataDictT } from "../../types/assignment";
+import { LinkShiftT } from "../../types/shift";
 import AssignmentSelector from "./AssignmentSelector";
 
 interface CreateSwapDialogProps {
@@ -46,6 +47,7 @@ interface CreateSwapDialogProps {
   isLeader: boolean;
   workers: WorkerT[];
   assignments: AssignmentDataDictT[];
+  linkShifts: LinkShiftT[];
 }
 
 const steps = [
@@ -65,6 +67,7 @@ export default function CreateSwapDialog({
   isLeader,
   workers,
   assignments,
+  linkShifts,
 }: CreateSwapDialogProps) {
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -228,6 +231,7 @@ export default function CreateSwapDialog({
                       a.assignment.workerId === selectedWorkerId &&
                       a.assignment.date.isAfter(dayjs(), "day"),
                   )}
+                  linkShifts={linkShifts}
                   allowMultiple={true}
                 />
               </Box>
@@ -337,6 +341,7 @@ export default function CreateSwapDialog({
                       a.assignment.workerId === targetWorkerId &&
                       a.assignment.date.isAfter(dayjs(), "day"),
                   )}
+                  linkShifts={linkShifts}
                   allowMultiple={true}
                 />
               </>

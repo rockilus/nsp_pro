@@ -21,14 +21,18 @@ import {
   Alert,
   useTheme,
   useMediaQuery,
+  Button,
 } from "@mui/material";
+import { Add as AddIcon } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { AssignmentDataDictT } from "../../types/assignment";
+import { LinkShiftT } from "../../types/shift";
 
 interface AssignmentSelectorProps {
   selectedAssignmentIds: string[];
   onSelectionChange: (assignmentIds: string[]) => void;
   assignments: AssignmentDataDictT[];
+  linkShifts: LinkShiftT[];
   allowMultiple?: boolean; // Default true
 }
 
@@ -41,6 +45,7 @@ export default function AssignmentSelector({
   selectedAssignmentIds,
   onSelectionChange,
   assignments,
+  linkShifts,
   allowMultiple = true,
 }: AssignmentSelectorProps) {
   const theme = useTheme();
@@ -68,6 +73,55 @@ export default function AssignmentSelector({
       }))
       .sort((a, b) => (a.date.isBefore(b.date) ? -1 : 1));
   }, [assignments]);
+
+  // Find suggested linked shift assignments
+  const suggestedLinkedAssignments = useMemo(() => {
+    const suggested: AssignmentDataDictT[] = [];
+    const selectedSet = new Set(selectedAssignmentIds);
+
+    // Get selected assignments
+    const selectedAssignments = assignments.filter((a) =>
+      selectedSet.has(a.assignment.id),
+    );
+
+    // For each selected assignment, check if it has linked shifts
+    selectedAssignments.forEach((selectedAssignment) => {
+      const shiftId = selectedAssignment.assignment.shiftId;
+      const workerId = selectedAssignment.assignment.workerId;
+      const date = selectedAssignment.assignment.date;
+
+      // Find linked shifts
+      const linkShift = linkShifts.find((ls) => ls.shiftIds.includes(shiftId));
+      if (!linkShift) return;
+
+      // Get other shift IDs in the link
+      const linkedShiftIds = linkShift.shiftIds.filter((id) => id !== shiftId);
+
+      // Find assignments for the same worker on the same date with linked shifts
+      linkedShiftIds.forEach((linkedShiftId) => {
+        const linkedAssignment = assignments.find(
+          (a) =>
+            a.assignment.workerId === workerId &&
+            a.assignment.date.format("YYYY-MM-DD") ===
+              date.format("YYYY-MM-DD") &&
+            a.assignment.shiftId === linkedShiftId &&
+            !selectedSet.has(a.assignment.id),
+        );
+
+        if (linkedAssignment && !suggested.includes(linkedAssignment)) {
+          suggested.push(linkedAssignment);
+        }
+      });
+    });
+
+    return suggested;
+  }, [assignments, selectedAssignmentIds, linkShifts]);
+
+  // Handle adding all suggested assignments
+  const handleAddSuggested = () => {
+    const newIds = suggestedLinkedAssignments.map((a) => a.assignment.id);
+    onSelectionChange([...selectedAssignmentIds, ...newIds]);
+  };
 
   // Handle selection toggle
   const handleToggle = (assignmentId: string) => {
@@ -204,14 +258,41 @@ export default function AssignmentSelector({
         </TableContainer>
       )}
 
-      {/* Selection summary */}
-      {selectedAssignmentIds.length > 0 && (
-        <Box sx={{ mt: 2, p: 2, bgcolor: "grey.50", borderRadius: 1 }}>
-          <Typography variant="body2" color="text.secondary">
-            Selected: {selectedAssignmentIds.length} assignment
-            {selectedAssignmentIds.length !== 1 ? "s" : ""}
+      {/* Linked shift suggestions */}
+      {suggestedLinkedAssignments.length > 0 && (
+        <Alert
+          severity="info"
+          sx={{ mt: 2 }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              startIcon={<AddIcon />}
+              onClick={handleAddSuggested}
+            >
+              Add All
+            </Button>
+          }
+        >
+          <Typography variant="body2" fontWeight="medium" gutterBottom>
+            Linked shift assignments available
           </Typography>
-        </Box>
+          <Typography variant="body2">
+            Consider adding {suggestedLinkedAssignments.length} linked shift
+            assignment{suggestedLinkedAssignments.length !== 1 ? "s" : ""} to
+            keep shifts together:
+          </Typography>
+          <Box sx={{ mt: 1 }}>
+            {suggestedLinkedAssignments.map((data) => (
+              <Chip
+                key={data.assignment.id}
+                label={`${data.shift.name} on ${data.assignment.date.format("MMM D")}`}
+                size="small"
+                sx={{ mr: 0.5, mt: 0.5 }}
+              />
+            ))}
+          </Box>
+        </Alert>
       )}
     </Box>
   );

@@ -30,6 +30,7 @@ import dayjs from "dayjs";
 import { SwapRequestT, SwapBidT, SwapType, SwapStatus } from "../../types/swap";
 import { AssignmentDataDictT } from "../../types/assignment";
 import { WorkerT } from "../../types/worker";
+import { LinkShiftT } from "../../types/shift";
 import AssignmentSelector from "./AssignmentSelector";
 
 interface SwapDetailDialogProps {
@@ -41,6 +42,7 @@ interface SwapDetailDialogProps {
   isLeader: boolean;
   workers: WorkerT[];
   assignments: AssignmentDataDictT[];
+  linkShifts: LinkShiftT[];
   onAddBid?: (workerId: string, bidAssignmentIds: string[]) => Promise<void>;
   onAcceptBid?: (bidId: string) => Promise<void>;
   onAcceptDirectSwap?: () => Promise<void>;
@@ -57,6 +59,7 @@ export default function SwapDetailDialog({
   isLeader,
   workers,
   assignments,
+  linkShifts,
   onAddBid,
   onAcceptBid,
   onAcceptDirectSwap,
@@ -388,6 +391,7 @@ export default function SwapDetailDialog({
                           ) &&
                           a.assignment.date.isAfter(dayjs(), "day"),
                       )}
+                      linkShifts={linkShifts}
                       allowMultiple={true}
                     />
                     <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
