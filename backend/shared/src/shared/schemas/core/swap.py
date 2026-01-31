@@ -92,7 +92,6 @@ class SwapRequest:
     id: str
     team_id: str
     schedule_id: str | None  # Can be None for cross-schedule swaps in the future
-    created_by_worker_id: str
     swap_type: SwapType
     status: SwapStatus
     offered_assignment_ids: List[str]  # Assignments offered by the creator
@@ -140,7 +139,6 @@ class SwapRequest:
             id=data["id"],
             team_id=data["team_id"],
             schedule_id=data.get("schedule_id"),
-            created_by_worker_id=data["created_by_worker_id"],
             swap_type=SwapType(data["swap_type"]),
             status=SwapStatus(data["status"]),
             offered_assignment_ids=data["offered_assignment_ids"],

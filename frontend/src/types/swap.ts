@@ -31,7 +31,6 @@ export type SwapRequestT = {
   id: string;
   teamId: string;
   scheduleId: string | null;
-  createdByWorkerId: string;
   swapType: SwapType;
   status: SwapStatus;
   offeredAssignmentIds: string[];
@@ -71,7 +70,6 @@ export function toSwapRequestT(data: any): SwapRequestT {
     id: data.id,
     teamId: data.teamId,
     scheduleId: data.scheduleId,
-    createdByWorkerId: data.createdByWorkerId,
     swapType: data.swapType as SwapType,
     status: data.status as SwapStatus,
     offeredAssignmentIds: data.offeredAssignmentIds,
@@ -91,7 +89,6 @@ export function fromSwapRequestT(swap: Partial<SwapRequestT>): any {
     id: swap.id,
     teamId: swap.teamId,
     scheduleId: swap.scheduleId,
-    createdByWorkerId: swap.createdByWorkerId,
     swapType: swap.swapType,
     status: swap.status,
     offeredAssignmentIds: swap.offeredAssignmentIds,

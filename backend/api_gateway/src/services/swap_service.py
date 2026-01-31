@@ -33,7 +33,6 @@ class SwapService(BaseService):
     def create_swap_request(
         self,
         team_id: str,
-        created_by_worker_id: str,
         swap_type: SwapType,
         offered_assignment_ids: List[str],
         comment: str,
@@ -45,7 +44,6 @@ class SwapService(BaseService):
 
         Args:
             team_id: Team ID
-            created_by_worker_id: Worker creating the swap
             swap_type: DIRECT or OPEN
             offered_assignment_ids: Assignments being offered for swap
             comment: Optional comment about the swap
@@ -58,10 +56,26 @@ class SwapService(BaseService):
         Raises:
             ValueError: If validation fails
         """
-        # Validate assignments exist and belong to the creator
-        offered_assignments = self._validate_and_fetch_assignments(
-            offered_assignment_ids, created_by_worker_id, team_id
+        # Validate assignments exist and get the creator from the first assignment
+        offered_assignments = self.collection.assignment_db.get_assignments_by_ids(
+            assignment_ids=offered_assignment_ids
         )
+
+        if not offered_assignments or len(offered_assignments) != len(
+            offered_assignment_ids
+        ):
+            raise ValueError("Some offered assignments not found")
+
+        # Get the worker ID from the first assignment
+        created_by_worker_id = offered_assignments[0].worker_id
+
+        # Validate all assignments belong to the same worker
+        if not all(a.worker_id == created_by_worker_id for a in offered_assignments):
+            raise ValueError("All offered assignments must belong to the same worker")
+
+        # Validate all assignments belong to the team
+        if not all(a.team_id == team_id for a in offered_assignments):
+            raise ValueError("All offered assignments must belong to the team")
 
         # Validate shift types (no campaign schedules, only work shifts)
         self._validate_shift_types(offered_assignments)
@@ -100,7 +114,6 @@ class SwapService(BaseService):
             id=str(uuid4()),
             team_id=team_id,
             schedule_id=schedule_id,
-            created_by_worker_id=created_by_worker_id,
             swap_type=swap_type,
             status=SwapStatus.ACTIVE,
             offered_assignment_ids=offered_assignment_ids,
@@ -148,8 +161,18 @@ class SwapService(BaseService):
         if swap.status != SwapStatus.ACTIVE:
             raise ValueError(f"Swap is not active (status: {swap.status.value})")
 
+        # Get creator worker ID from offered assignments
+        offered_assignments_for_creator = (
+            self.collection.assignment_db.get_assignments_by_ids(
+                assignment_ids=swap.offered_assignment_ids
+            )
+        )
+        if not offered_assignments_for_creator:
+            raise ValueError("Offered assignments not found")
+        creator_worker_id = offered_assignments_for_creator[0].worker_id
+
         # Validate bidder is not the creator
-        if bidder_worker_id == swap.created_by_worker_id:
+        if bidder_worker_id == creator_worker_id:
             raise ValueError("Cannot bid on your own swap request")
 
         # Validate offered assignments
@@ -452,7 +475,11 @@ class SwapService(BaseService):
             requested_assignments  # type: ignore
         )
 
-        creator_worker_id = swap.created_by_worker_id
+        # Get creator worker ID from offered assignments
+        offered_worker_id_set = {a.worker_id for a in offered_assignments if a}
+        if len(offered_worker_id_set) != 1:
+            raise ValueError("Offered assignments belong to multiple workers")
+        creator_worker_id = offered_worker_id_set.pop()
         target_worker_id = swap.target_worker_id
 
         # Swap the workers

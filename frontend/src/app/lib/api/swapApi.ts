@@ -19,8 +19,8 @@ export class SwapApi extends BaseApi {
     teamId: string,
     swap: Partial<SwapRequestT>,
   ): Promise<SwapRequestT> {
-    if (!teamId || !swap.createdByWorkerId || !swap.offeredAssignmentIds) {
-      throw new Error("Team ID, creator, and offered assignments are required");
+    if (!teamId || !swap.offeredAssignmentIds) {
+      throw new Error("Team ID and offered assignments are required");
     }
 
     const responseData = await this.makeRequest<any>(

@@ -18,7 +18,6 @@ class SwapRequestSchema(DocumentBaseSchema):
 
     team: str
     schedule: Optional[str] = None
-    created_by_worker: str
     swap_type: str
     status: str
     offered_assignment_ids: List[str]
@@ -45,7 +44,6 @@ class SwapRequestSchema(DocumentBaseSchema):
         doc_dict["id"] = doc_dict.pop("_id")
         doc_dict["team_id"] = doc_dict.pop("team")
         doc_dict["schedule_id"] = doc_dict.pop("schedule", None)
-        doc_dict["created_by_worker_id"] = doc_dict.pop("created_by_worker")
         doc_dict["swap_type"] = SwapType(doc_dict["swap_type"])
         doc_dict["status"] = SwapStatus(doc_dict["status"])
         doc_dict["target_worker_id"] = doc_dict.pop("target_worker", None)
@@ -67,7 +65,6 @@ class SwapRequestSchema(DocumentBaseSchema):
             id=swap_request.id,
             team=swap_request.team_id,
             schedule=swap_request.schedule_id,
-            created_by_worker=swap_request.created_by_worker_id,
             swap_type=swap_request.swap_type.value,
             status=swap_request.status.value,
             offered_assignment_ids=swap_request.offered_assignment_ids,
