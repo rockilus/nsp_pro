@@ -106,6 +106,30 @@ export default function SwapTab({
   // Check if user is a leader
   const isLeader = teamWithMembership.membership.role === "owner";
 
+  // Helper function to process assignments with worker and shift data
+  const buildAssignmentDataDict = useCallback(
+    (
+      assignmentsRead: any[],
+      workersData: WorkerT[],
+      shiftsData: ShiftT[],
+    ): AssignmentDataDictT[] => {
+      const shiftMap = new Map(shiftsData.map((shift) => [shift.id, shift]));
+      const workerMap = new Map(
+        workersData.map((worker) => [worker.id, worker]),
+      );
+
+      return assignmentsRead.map((assignment) => ({
+        assignment,
+        worker: workerMap.get(assignment.workerId) || ({} as WorkerT),
+        shift: shiftMap.get(assignment.shiftId) || ({} as ShiftT),
+        recurrence: null,
+        breaches: [],
+        requests: [],
+      }));
+    },
+    [],
+  );
+
   const loadInitialData = useCallback(async () => {
     if (!teamId) return;
 
@@ -131,21 +155,11 @@ export default function SwapTab({
       setShifts(shiftsData);
       setLinkShifts(linkShiftsData);
 
-      // Build assignment data dict
-      const shiftMap = new Map(shiftsData.map((shift) => [shift.id, shift]));
-      const workerMap = new Map(
-        workersData.map((worker) => [worker.id, worker]),
+      const assignmentsData = buildAssignmentDataDict(
+        assignmentsResult.assignmentsRead,
+        workersData,
+        shiftsData,
       );
-
-      const assignmentsData: AssignmentDataDictT[] =
-        assignmentsResult.assignmentsRead.map((assignment) => ({
-          assignment,
-          worker: workerMap.get(assignment.workerId) || ({} as WorkerT),
-          shift: shiftMap.get(assignment.shiftId) || ({} as ShiftT),
-          recurrence: null,
-          breaches: [],
-          requests: [],
-        }));
 
       setAssignments(assignmentsData);
     } catch (err: any) {
@@ -154,7 +168,14 @@ export default function SwapTab({
     } finally {
       setLoading(false);
     }
-  }, [teamId, getWorkers, getShifts, getLinkShifts, getAssignments]);
+  }, [
+    teamId,
+    getWorkers,
+    getShifts,
+    getLinkShifts,
+    getAssignments,
+    buildAssignmentDataDict,
+  ]);
 
   const loadSwaps = useCallback(async () => {
     if (!teamId) return;
@@ -183,25 +204,17 @@ export default function SwapTab({
         undefined,
       );
 
-      // Build assignment data dict
-      const shiftMap = new Map(shifts.map((shift) => [shift.id, shift]));
-      const workerMap = new Map(workers.map((worker) => [worker.id, worker]));
-
-      const assignmentsData: AssignmentDataDictT[] =
-        assignmentsResult.assignmentsRead.map((assignment) => ({
-          assignment,
-          worker: workerMap.get(assignment.workerId) || ({} as WorkerT),
-          shift: shiftMap.get(assignment.shiftId) || ({} as ShiftT),
-          recurrence: null,
-          breaches: [],
-          requests: [],
-        }));
+      const assignmentsData = buildAssignmentDataDict(
+        assignmentsResult.assignmentsRead,
+        workers,
+        shifts,
+      );
 
       setAssignments(assignmentsData);
     } catch (err: any) {
       console.error("Failed to load assignments:", err);
     }
-  }, [teamId, getAssignments, workers, shifts]);
+  }, [teamId, getAssignments, workers, shifts, buildAssignmentDataDict]);
 
   // Load initial data
   useEffect(() => {
