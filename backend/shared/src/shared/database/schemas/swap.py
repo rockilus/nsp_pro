@@ -1,6 +1,6 @@
 """Swap request schema for database validation."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from shared.database.schemas.base import DocumentBaseSchema
@@ -25,10 +25,10 @@ class SwapRequestSchema(DocumentBaseSchema):
     target_worker: Optional[str] = None
     comment: str
     bids: List[Dict[str, Any]]  # List of bid dictionaries
-    created_at: datetime
-    completed_at: Optional[datetime] = None
+    created_at: float
+    completed_at: Optional[float] = None
     completed_by_user: Optional[str] = None
-    reverted_at: Optional[datetime] = None
+    reverted_at: Optional[float] = None
     reverted_by_user: Optional[str] = None
     audit_data: List[Dict[str, Any]]  # List of audit data dictionaries
 
@@ -51,6 +51,19 @@ class SwapRequestSchema(DocumentBaseSchema):
         doc_dict["target_worker_id"] = doc_dict.pop("target_worker", None)
         doc_dict["completed_by_user_id"] = doc_dict.pop("completed_by_user", None)
         doc_dict["reverted_by_user_id"] = doc_dict.pop("reverted_by_user", None)
+
+        # Convert timestamps to datetime with UTC timezone
+        doc_dict["created_at"] = datetime.fromtimestamp(
+            doc_dict["created_at"], tz=timezone.utc
+        )
+        if doc_dict.get("completed_at") is not None:
+            doc_dict["completed_at"] = datetime.fromtimestamp(
+                doc_dict["completed_at"], tz=timezone.utc
+            )
+        if doc_dict.get("reverted_at") is not None:
+            doc_dict["reverted_at"] = datetime.fromtimestamp(
+                doc_dict["reverted_at"], tz=timezone.utc
+            )
 
         # Convert bids from dicts to SwapBid objects
         doc_dict["bids"] = [SwapBid.from_dict(bid) for bid in doc_dict.get("bids", [])]
@@ -75,10 +88,18 @@ class SwapRequestSchema(DocumentBaseSchema):
             target_worker=swap_request.target_worker_id,
             comment=swap_request.comment,
             bids=[bid.to_dict() for bid in swap_request.bids],
-            created_at=swap_request.created_at,
-            completed_at=swap_request.completed_at,
+            created_at=swap_request.created_at.timestamp(),
+            completed_at=(
+                swap_request.completed_at.timestamp()
+                if swap_request.completed_at
+                else None
+            ),
             completed_by_user=swap_request.completed_by_user_id,
-            reverted_at=swap_request.reverted_at,
+            reverted_at=(
+                swap_request.reverted_at.timestamp()
+                if swap_request.reverted_at
+                else None
+            ),
             reverted_by_user=swap_request.reverted_by_user_id,
             audit_data=[audit.to_dict() for audit in swap_request.audit_data],
         )
