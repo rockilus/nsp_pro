@@ -52,7 +52,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       page,
     }) => {
       // Verify worker selection dropdown is visible
-      const workerSelect = page.locator('label:has-text("Select Worker")');
+      const workerSelect = page.locator('[data-testid="worker-select"]');
       await expect(workerSelect).toBeVisible();
 
       console.log("✅ Worker selection dropdown visible for team leader");
@@ -753,7 +753,7 @@ test.describe("CreateSwapDialog - Member Tests", () => {
       page,
     }) => {
       // Verify worker selection dropdown is NOT visible
-      const workerSelect = page.locator('label:has-text("Select Worker")');
+      const workerSelect = page.locator('[data-testid="worker-select"]');
       await expect(workerSelect).not.toBeVisible();
 
       console.log("✅ Worker selection hidden for team members");
