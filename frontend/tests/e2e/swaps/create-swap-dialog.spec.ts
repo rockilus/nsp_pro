@@ -782,8 +782,23 @@ test.describe("CreateSwapDialog - Member Tests", () => {
       const memberWorker = swapTestBase.getMemberWorker();
       expect(memberWorker).not.toBeNull();
 
-      // Get assignments for member's worker
-      const memberAssignments = swapTestBase.getMemberWorkerAssignments();
+      // Get assignments for member's worker using explicit filtering
+      const tomorrow = dayjs.utc().add(1, "day").startOf("day");
+      const testSchedules = swapTestBase.getTestSchedules();
+      const campaignScheduleIds = testSchedules
+        .filter((s) => s.status === ScheduleStatus.CAMPAIGN)
+        .map((s) => s.id);
+
+      const memberAssignments = swapTestBase
+        .getTestAssignments()
+        .filter((a) => a.workerId === memberWorker!.workerId)
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
+        .filter(
+          (a) =>
+            a.scheduleId === null ||
+            (a.scheduleId !== null &&
+              !campaignScheduleIds.includes(a.scheduleId)),
+        );
       expect(memberAssignments.length).toBeGreaterThan(0);
 
       // Verify only member's assignments are visible
@@ -805,8 +820,27 @@ test.describe("CreateSwapDialog - Member Tests", () => {
       // Wait for assignments to load
       await page.waitForTimeout(1000);
 
+      const memberWorker = swapTestBase.getMemberWorker();
+      expect(memberWorker).not.toBeNull();
+
+      const testSchedules = swapTestBase.getTestSchedules();
+      const campaignScheduleIds = testSchedules
+        .filter((s) => s.status === ScheduleStatus.CAMPAIGN)
+        .map((s) => s.id);
+      expect(campaignScheduleIds.length).toBeGreaterThan(0);
+
       // Should not show campaign assignments
-      const campaignAssignments = swapTestBase.getCampaignScheduleAssignments();
+      const tomorrow = dayjs.utc().add(1, "day").startOf("day");
+      const campaignAssignments = swapTestBase
+        .getTestAssignments()
+        .filter((a) => a.workerId === memberWorker!.workerId)
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
+        .filter(
+          (a) =>
+            a.scheduleId !== null && campaignScheduleIds.includes(a.scheduleId),
+        );
+      expect(campaignAssignments.length).toBeGreaterThan(0);
+
       for (const assignment of campaignAssignments) {
         const assignmentElement = page.locator(
           `[data-testid="assignment-${assignment.id}"]`,
@@ -815,7 +849,15 @@ test.describe("CreateSwapDialog - Member Tests", () => {
       }
 
       // Should not show today's assignments
-      const todayAssignments = swapTestBase.getTodayAssignments();
+      const todayAssignments = swapTestBase
+        .getTestAssignments()
+        .filter(
+          (a) =>
+            a.workerId === memberWorker!.workerId &&
+            dayjs.utc(a.date).isSameOrBefore(dayjs.utc(), "day"),
+        );
+      expect(todayAssignments.length).toBeGreaterThan(0);
+
       for (const assignment of todayAssignments) {
         const assignmentElement = page.locator(
           `[data-testid="assignment-${assignment.id}"]`,
@@ -824,12 +866,22 @@ test.describe("CreateSwapDialog - Member Tests", () => {
       }
 
       // Should show future assignments
-      const futureAssignments = swapTestBase.getFutureAssignments();
-      const memberFutureAssignments = futureAssignments.filter(
-        (a) => a.workerId === swapTestBase.getMemberWorker()?.workerId,
-      );
+      const futureAssignments = swapTestBase
+        .getTestAssignments()
+        .filter(
+          (a) =>
+            a.workerId === memberWorker!.workerId &&
+            dayjs.utc(a.date).isAfter(dayjs.utc(), "day"),
+        )
+        .filter(
+          (a) =>
+            a.scheduleId === null ||
+            (a.scheduleId !== null &&
+              !campaignScheduleIds.includes(a.scheduleId)),
+        );
+      expect(futureAssignments.length).toBeGreaterThan(0);
 
-      for (const assignment of memberFutureAssignments) {
+      for (const assignment of futureAssignments) {
         const assignmentElement = page.locator(
           `[data-testid="assignment-${assignment.id}"]`,
         );
