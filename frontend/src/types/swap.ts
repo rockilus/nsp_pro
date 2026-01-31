@@ -30,7 +30,6 @@ export type SwapAuditDataT = {
 export type SwapRequestT = {
   id: string;
   teamId: string;
-  scheduleId: string | null;
   swapType: SwapType;
   status: SwapStatus;
   offeredAssignmentIds: string[];
@@ -69,7 +68,6 @@ export function toSwapRequestT(data: any): SwapRequestT {
   return {
     id: data.id,
     teamId: data.teamId,
-    scheduleId: data.scheduleId,
     swapType: data.swapType as SwapType,
     status: data.status as SwapStatus,
     offeredAssignmentIds: data.offeredAssignmentIds,
@@ -88,7 +86,6 @@ export function fromSwapRequestT(swap: Partial<SwapRequestT>): any {
   return {
     id: swap.id,
     teamId: swap.teamId,
-    scheduleId: swap.scheduleId,
     swapType: swap.swapType,
     status: swap.status,
     offeredAssignmentIds: swap.offeredAssignmentIds,

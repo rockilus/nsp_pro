@@ -57,8 +57,10 @@ class SwapService(BaseService):
             ValueError: If validation fails
         """
         # Validate assignments exist and get the creator from the first assignment
-        offered_assignments = self.collection.assignment_db.get_assignments_by_ids(
-            assignment_ids=offered_assignment_ids
+        offered_assignments = (
+            self.collection.assignment_db.get_assignments_by_ids(
+                assignment_ids=offered_assignment_ids
+            )
         )
 
         if not offered_assignments or len(offered_assignments) != len(
@@ -70,8 +72,12 @@ class SwapService(BaseService):
         created_by_worker_id = offered_assignments[0].worker_id
 
         # Validate all assignments belong to the same worker
-        if not all(a.worker_id == created_by_worker_id for a in offered_assignments):
-            raise ValueError("All offered assignments must belong to the same worker")
+        if not all(
+            a.worker_id == created_by_worker_id for a in offered_assignments
+        ):
+            raise ValueError(
+                "All offered assignments must belong to the same worker"
+            )
 
         # Validate all assignments belong to the team
         if not all(a.team_id == team_id for a in offered_assignments):
@@ -79,11 +85,6 @@ class SwapService(BaseService):
 
         # Validate shift types (no campaign schedules, only work shifts)
         self._validate_shift_types(offered_assignments)
-
-        # Get schedule_id (all assignments should be from the same schedule)
-        schedule_id = (
-            offered_assignments[0].schedule_id if offered_assignments else None
-        )
 
         # For direct swaps, validate the requested assignments
         if swap_type == SwapType.DIRECT:
@@ -98,10 +99,12 @@ class SwapService(BaseService):
             self._validate_shift_types(requested_assignments)
 
             # Validate the swap is feasible
-            validation_result = self.replacement_service.validate_assignment_swap(
-                worker_a_assignment_ids=offered_assignment_ids,
-                worker_b_assignment_ids=requested_assignment_ids,
-                team_id=team_id,
+            validation_result = (
+                self.replacement_service.validate_assignment_swap(
+                    worker_a_assignment_ids=offered_assignment_ids,
+                    worker_b_assignment_ids=requested_assignment_ids,
+                    team_id=team_id,
+                )
             )
 
             if not validation_result.is_valid:
@@ -113,7 +116,6 @@ class SwapService(BaseService):
         swap_request = SwapRequest(
             id=str(uuid4()),
             team_id=team_id,
-            schedule_id=schedule_id,
             swap_type=swap_type,
             status=SwapStatus.ACTIVE,
             offered_assignment_ids=offered_assignment_ids,
@@ -159,7 +161,9 @@ class SwapService(BaseService):
         if swap.swap_type != SwapType.OPEN:
             raise ValueError("Can only bid on open swaps")
         if swap.status != SwapStatus.ACTIVE:
-            raise ValueError(f"Swap is not active (status: {swap.status.value})")
+            raise ValueError(
+                f"Swap is not active (status: {swap.status.value})"
+            )
 
         # Get creator worker ID from offered assignments
         offered_assignments_for_creator = (
@@ -209,7 +213,9 @@ class SwapService(BaseService):
         updated_swap = self.collection.swap_db.update_swap_request(swap)
         return updated_swap
 
-    def accept_bid_on_open_swap(self, swap_id: str, bid_id: str) -> SwapRequest:
+    def accept_bid_on_open_swap(
+        self, swap_id: str, bid_id: str
+    ) -> SwapRequest:
         """
         Accept a bid on an open swap, moving it to PENDING_APPROVAL status.
 
@@ -233,7 +239,9 @@ class SwapService(BaseService):
         if swap.swap_type != SwapType.OPEN:
             raise ValueError("Can only accept bids on open swaps")
         if swap.status != SwapStatus.ACTIVE:
-            raise ValueError(f"Swap is not active (status: {swap.status.value})")
+            raise ValueError(
+                f"Swap is not active (status: {swap.status.value})"
+            )
 
         # Find and accept the bid
         bid = next((b for b in swap.bids if b.id == bid_id), None)
@@ -274,7 +282,9 @@ class SwapService(BaseService):
         if swap.swap_type != SwapType.DIRECT:
             raise ValueError("Can only accept direct swaps")
         if swap.status != SwapStatus.ACTIVE:
-            raise ValueError(f"Swap is not active (status: {swap.status.value})")
+            raise ValueError(
+                f"Swap is not active (status: {swap.status.value})"
+            )
 
         # Move to pending approval
         swap.status = SwapStatus.PENDING_APPROVAL
@@ -342,7 +352,9 @@ class SwapService(BaseService):
 
         # Can only cancel active or pending approval swaps
         if swap.status not in [SwapStatus.ACTIVE, SwapStatus.PENDING_APPROVAL]:
-            raise ValueError(f"Cannot cancel swap with status: {swap.status.value}")
+            raise ValueError(
+                f"Cannot cancel swap with status: {swap.status.value}"
+            )
 
         # Update status
         swap.status = SwapStatus.CANCELLED
@@ -414,10 +426,14 @@ class SwapService(BaseService):
                     assignment.schedule_id
                 )
                 if schedule and schedule.status == ScheduleStatus.CAMPAIGN:
-                    raise ValueError("Cannot swap assignments from campaign schedules")
+                    raise ValueError(
+                        "Cannot swap assignments from campaign schedules"
+                    )
 
             # Check shift type
-            shift = self.collection.shift_db.get_shift_by_id(assignment.shift_id)
+            shift = self.collection.shift_db.get_shift_by_id(
+                assignment.shift_id
+            )
             if not shift:
                 raise ValueError(f"Shift {assignment.shift_id} not found")
 
@@ -437,7 +453,9 @@ class SwapService(BaseService):
         3. Handles linked recuperation assignments for DUTY shifts
         """
         if not swap.requested_assignment_ids or not swap.target_worker_id:
-            raise ValueError("Cannot execute swap without requested assignments")
+            raise ValueError(
+                "Cannot execute swap without requested assignments"
+            )
 
         # Fetch all assignments
         offered_assignments = [
@@ -450,7 +468,9 @@ class SwapService(BaseService):
         ]
 
         if None in offered_assignments + requested_assignments:
-            raise ValueError("One or more assignments in the swap were not found")
+            raise ValueError(
+                "One or more assignments in the swap were not found"
+            )
 
         # Build audit data before making changes
         audit_data = []
@@ -502,13 +522,13 @@ class SwapService(BaseService):
                 all_assignments.append(assignment)
 
                 # Check if this is a DUTY assignment with a recuperation
-                shift = self.collection.shift_db.get_shift_by_id(assignment.shift_id)
+                shift = self.collection.shift_db.get_shift_by_id(
+                    assignment.shift_id
+                )
                 if shift and shift.shift_type == ShiftType.DUTY:
                     # Find recuperation assignment
-                    recup_assignment = (
-                        self.collection.assignment_db.get_assignment_by_reference(
-                            assignment.id
-                        )
+                    recup_assignment = self.collection.assignment_db.get_assignment_by_reference(
+                        assignment.id
                     )
                     if recup_assignment:
                         all_assignments.append(recup_assignment)

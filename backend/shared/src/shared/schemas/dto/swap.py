@@ -24,7 +24,6 @@ class CreateSwapRequestDTO(BaseModel):
 class SwapRequestDTO(BaseModel):
     id: str
     teamId: str
-    scheduleId: str | None
     swapType: str
     status: str
     offeredAssignmentIds: List[str]
