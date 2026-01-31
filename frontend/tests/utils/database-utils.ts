@@ -54,6 +54,7 @@ import { testConfig } from "./test-config";
 import dayjs from "dayjs";
 import { AssignmentT, AssignmentSource } from "@/types/assignment";
 import { LinkShiftApi } from "@/app/lib/api/linkShiftApi";
+import { SwapRequestT } from "@/types/swap";
 
 export interface DatabaseResetOptions {
   collections?: string[];
@@ -2225,6 +2226,293 @@ export class DatabaseTestUtils {
       console.error("Failed to list solver scenarios:", error);
       throw new Error(
         `Failed to list solver scenarios: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  //////////////////////////
+  // Swap Methods
+  //////////////////////////
+
+  /**
+   * Create a swap using the existing SwapApi for consistent behavior
+   */
+  async createSwap(swapData: {
+    teamId: string;
+    offeredAssignmentIds: string[];
+    requestedAssignmentIds: string[];
+    swapType: "direct" | "open";
+    targetWorkerId: string | null;
+    comment: string;
+  }): Promise<SwapRequestT> {
+    try {
+      const response = await this.testApiClient.post<any>(
+        `/swaps/teams/${swapData.teamId}`,
+        {
+          swapType: swapData.swapType,
+          offeredAssignmentIds: swapData.offeredAssignmentIds,
+          requestedAssignmentIds: swapData.requestedAssignmentIds,
+          targetWorkerId: swapData.targetWorkerId,
+          comment: swapData.comment,
+        },
+      );
+
+      console.log(`✅ Created swap: ${response.id}`);
+
+      // Convert response to SwapRequestT
+      return {
+        id: response.id,
+        teamId: response.teamId,
+        createdByUserId: response.createdByUserId,
+        swapType: response.swapType,
+        status: response.status,
+        offeredAssignmentIds: response.offeredAssignmentIds,
+        requestedAssignmentIds: response.requestedAssignmentIds,
+        targetWorkerId: response.targetWorkerId,
+        comment: response.comment,
+        bids: (response.bids || []).map((bid: any) => ({
+          id: bid.id,
+          workerId: bid.workerId,
+          offeredAssignmentIds: bid.offeredAssignmentIds,
+          createdAt: dayjs.unix(bid.createdAt),
+          accepted: bid.accepted,
+        })),
+        createdAt: dayjs.unix(response.createdAt),
+        completedAt: response.completedAt
+          ? dayjs.unix(response.completedAt)
+          : null,
+        completedByUserId: response.completedByUserId,
+        auditData: response.auditData || [],
+      };
+    } catch (error) {
+      console.error("Failed to create swap:", error);
+      throw new Error(
+        `Failed to create swap: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Get all swaps for a team
+   */
+  async getSwaps(
+    teamId: string,
+    status?: "active" | "pending_approval" | "completed" | "cancelled",
+  ): Promise<SwapRequestT[]> {
+    try {
+      let endpoint = `/swaps/teams/${teamId}`;
+      if (status) {
+        endpoint += `?status=${status}`;
+      }
+
+      const response = await this.testApiClient.get<any[]>(endpoint);
+
+      return response.map((swap) => ({
+        id: swap.id,
+        teamId: swap.teamId,
+        createdByUserId: swap.createdByUserId,
+        swapType: swap.swapType,
+        status: swap.status,
+        offeredAssignmentIds: swap.offeredAssignmentIds,
+        requestedAssignmentIds: swap.requestedAssignmentIds,
+        targetWorkerId: swap.targetWorkerId,
+        comment: swap.comment,
+        bids: (swap.bids || []).map((bid: any) => ({
+          id: bid.id,
+          workerId: bid.workerId,
+          offeredAssignmentIds: bid.offeredAssignmentIds,
+          createdAt: dayjs.unix(bid.createdAt),
+          accepted: bid.accepted,
+        })),
+        createdAt: dayjs.unix(swap.createdAt),
+        completedAt: swap.completedAt ? dayjs.unix(swap.completedAt) : null,
+        completedByUserId: swap.completedByUserId,
+        auditData: swap.auditData || [],
+      }));
+    } catch (error) {
+      console.error("Failed to get swaps:", error);
+      throw new Error(
+        `Failed to get swaps: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Get a specific swap by ID
+   */
+  async getSwapById(swapId: string): Promise<SwapRequestT> {
+    try {
+      const response = await this.testApiClient.get<any>(`/swaps/${swapId}`);
+
+      return {
+        id: response.id,
+        teamId: response.teamId,
+        createdByUserId: response.createdByUserId,
+        swapType: response.swapType,
+        status: response.status,
+        offeredAssignmentIds: response.offeredAssignmentIds,
+        requestedAssignmentIds: response.requestedAssignmentIds,
+        targetWorkerId: response.targetWorkerId,
+        comment: response.comment,
+        bids: (response.bids || []).map((bid: any) => ({
+          id: bid.id,
+          workerId: bid.workerId,
+          offeredAssignmentIds: bid.offeredAssignmentIds,
+          createdAt: dayjs.unix(bid.createdAt),
+          accepted: bid.accepted,
+        })),
+        createdAt: dayjs.unix(response.createdAt),
+        completedAt: response.completedAt
+          ? dayjs.unix(response.completedAt)
+          : null,
+        completedByUserId: response.completedByUserId,
+        auditData: response.auditData || [],
+      };
+    } catch (error) {
+      console.error("Failed to get swap by ID:", error);
+      throw new Error(
+        `Failed to get swap by ID: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Accept a direct swap invitation (target worker accepts)
+   */
+  async acceptDirectSwap(swapId: string): Promise<SwapRequestT> {
+    try {
+      const response = await this.testApiClient.post<any>(
+        `/swaps/${swapId}/accept`,
+        {},
+      );
+
+      console.log(`✅ Accepted direct swap: ${swapId}`);
+
+      return {
+        id: response.id,
+        teamId: response.teamId,
+        createdByUserId: response.createdByUserId,
+        swapType: response.swapType,
+        status: response.status,
+        offeredAssignmentIds: response.offeredAssignmentIds,
+        requestedAssignmentIds: response.requestedAssignmentIds,
+        targetWorkerId: response.targetWorkerId,
+        comment: response.comment,
+        bids: (response.bids || []).map((bid: any) => ({
+          id: bid.id,
+          workerId: bid.workerId,
+          offeredAssignmentIds: bid.offeredAssignmentIds,
+          createdAt: dayjs.unix(bid.createdAt),
+          accepted: bid.accepted,
+        })),
+        createdAt: dayjs.unix(response.createdAt),
+        completedAt: response.completedAt
+          ? dayjs.unix(response.completedAt)
+          : null,
+        completedByUserId: response.completedByUserId,
+        auditData: response.auditData || [],
+      };
+    } catch (error) {
+      console.error("Failed to accept direct swap:", error);
+      throw new Error(
+        `Failed to accept direct swap: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Approve a swap (leader completes the swap)
+   */
+  async approveSwap(swapId: string): Promise<SwapRequestT> {
+    try {
+      const response = await this.testApiClient.post<any>(
+        `/swaps/${swapId}/approve`,
+        {},
+      );
+
+      console.log(`✅ Approved swap: ${swapId}`);
+
+      return {
+        id: response.id,
+        teamId: response.teamId,
+        createdByUserId: response.createdByUserId,
+        swapType: response.swapType,
+        status: response.status,
+        offeredAssignmentIds: response.offeredAssignmentIds,
+        requestedAssignmentIds: response.requestedAssignmentIds,
+        targetWorkerId: response.targetWorkerId,
+        comment: response.comment,
+        bids: (response.bids || []).map((bid: any) => ({
+          id: bid.id,
+          workerId: bid.workerId,
+          offeredAssignmentIds: bid.offeredAssignmentIds,
+          createdAt: dayjs.unix(bid.createdAt),
+          accepted: bid.accepted,
+        })),
+        createdAt: dayjs.unix(response.createdAt),
+        completedAt: response.completedAt
+          ? dayjs.unix(response.completedAt)
+          : null,
+        completedByUserId: response.completedByUserId,
+        auditData: response.auditData || [],
+      };
+    } catch (error) {
+      console.error("Failed to approve swap:", error);
+      throw new Error(
+        `Failed to approve swap: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Cancel a swap
+   */
+  async cancelSwap(swapId: string): Promise<SwapRequestT> {
+    try {
+      const response = await this.testApiClient.delete<any>(`/swaps/${swapId}`);
+
+      console.log(`✅ Cancelled swap: ${swapId}`);
+
+      return {
+        id: response.id,
+        teamId: response.teamId,
+        createdByUserId: response.createdByUserId,
+        swapType: response.swapType,
+        status: response.status,
+        offeredAssignmentIds: response.offeredAssignmentIds,
+        requestedAssignmentIds: response.requestedAssignmentIds,
+        targetWorkerId: response.targetWorkerId,
+        comment: response.comment,
+        bids: (response.bids || []).map((bid: any) => ({
+          id: bid.id,
+          workerId: bid.workerId,
+          offeredAssignmentIds: bid.offeredAssignmentIds,
+          createdAt: dayjs.unix(bid.createdAt),
+          accepted: bid.accepted,
+        })),
+        createdAt: dayjs.unix(response.createdAt),
+        completedAt: response.completedAt
+          ? dayjs.unix(response.completedAt)
+          : null,
+        completedByUserId: response.completedByUserId,
+        auditData: response.auditData || [],
+      };
+    } catch (error) {
+      console.error("Failed to cancel swap:", error);
+      throw new Error(
+        `Failed to cancel swap: ${
           error instanceof Error ? error.message : "Unknown error"
         }`,
       );

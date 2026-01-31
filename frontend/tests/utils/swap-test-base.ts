@@ -17,6 +17,7 @@ import { DatabaseTestUtils, TEST_USER, TEST_USER_2 } from "./database-utils";
 import { ShiftT, ShiftType, LinkShiftT } from "../../src/types/shift";
 import { ScheduleT, ScheduleStatus } from "../../src/types/schedule";
 import { AssignmentT } from "../../src/types/assignment";
+import { SwapRequestT } from "../../src/types/swap";
 import { testConfig } from "./test-config";
 
 dayjs.extend(utc);
@@ -45,6 +46,7 @@ export class SwapTestBase {
   protected testLinkShifts: LinkShiftT[] = [];
   protected testSchedules: ScheduleT[] = [];
   protected testAssignments: AssignmentT[] = [];
+  protected testSwaps: SwapRequestT[] = [];
   protected memberWorker: { workerId: string; name: string } | null = null;
 
   constructor() {
@@ -147,6 +149,11 @@ export class SwapTestBase {
     // 9. Create assignments if requested
     if (options.createAssignments) {
       await this.createTestAssignments(options.referenceDate);
+    }
+
+    // 10. Create test swaps
+    if (options.createAssignments && this.testAssignments.length > 0) {
+      await this.createTestSwaps();
     }
   }
 
@@ -361,6 +368,64 @@ export class SwapTestBase {
   }
 
   /**
+   * Create test direct swaps between workers
+   */
+  private async createTestSwaps(): Promise<void> {
+    if (
+      !this.testTeam ||
+      this.testWorkers.length < 2 ||
+      this.testAssignments.length === 0
+    ) {
+      console.log("⏭️  Skipping swap creation - insufficient data");
+      return;
+    }
+
+    const tomorrow = dayjs.utc().add(1, "day").startOf("day");
+
+    // Get assignments for Worker 1 (morning shifts, tomorrow and day after)
+    const worker1 = this.testWorkers[0];
+    const worker1Assignments = this.testAssignments.filter(
+      (a) =>
+        a.workerId === worker1.workerId &&
+        a.date.isSameOrAfter(tomorrow, "day") &&
+        a.scheduleId !== null, // Only from schedules
+    );
+
+    // Get assignments for Worker 2 (afternoon shifts, same dates)
+    const worker2 = this.testWorkers[1];
+    const worker2Assignments = this.testAssignments.filter(
+      (a) =>
+        a.workerId === worker2.workerId &&
+        a.date.isSameOrAfter(tomorrow, "day") &&
+        a.scheduleId !== null, // Only from schedules
+    );
+
+    if (worker1Assignments.length < 2 || worker2Assignments.length < 2) {
+      console.log("⏭️  Skipping swap creation - not enough assignments");
+      return;
+    }
+
+    // Create a direct swap: Worker1 offers 2 assignments -> Worker2 offers 2 assignments
+    const worker1OfferIds = worker1Assignments.slice(0, 2).map((a) => a.id);
+    const worker2OfferIds = worker2Assignments.slice(0, 2).map((a) => a.id);
+
+    const directSwap = await this.dbUtils.createSwap({
+      teamId: this.testTeam.teamId,
+      offeredAssignmentIds: worker1OfferIds,
+      requestedAssignmentIds: worker2OfferIds,
+      swapType: "direct",
+      targetWorkerId: worker2.workerId,
+      comment: "Test direct swap - Worker 1 to Worker 2",
+    });
+
+    this.testSwaps.push(directSwap);
+
+    console.log(
+      `✅ Created ${this.testSwaps.length} test swaps (direct swap between Worker1 and Worker2)`,
+    );
+  }
+
+  /**
    * Create a worker for the test team
    */
   async createWorker(workerData: {
@@ -503,5 +568,12 @@ export class SwapTestBase {
    */
   getTestSchedules(): ScheduleT[] {
     return this.testSchedules;
+  }
+
+  /**
+   * Get all test swaps
+   */
+  getTestSwaps(): SwapRequestT[] {
+    return this.testSwaps;
   }
 }

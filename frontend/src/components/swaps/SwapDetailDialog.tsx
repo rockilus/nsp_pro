@@ -220,24 +220,39 @@ export default function SwapDetailDialog({
     (isLeader || swap.offeredAssignmentIds.length > 0); // Simplification - check if user owns offered assignments
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      data-testid="swap-detail-dialog"
+    >
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h6">Swap Request Details</Typography>
-          <IconButton onClick={onClose} size="small">
+          <IconButton
+            onClick={onClose}
+            size="small"
+            data-testid="close-dialog-button"
+          >
             <CloseIcon />
           </IconButton>
         </Box>
       </DialogTitle>
       <DialogContent>
         {loading && !swap ? (
-          <Box display="flex" justifyContent="center" p={3}>
+          <Box
+            display="flex"
+            justifyContent="center"
+            p={3}
+            data-testid="loading-indicator"
+          >
             <CircularProgress />
           </Box>
         ) : (
           <Box>
             {error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
+              <Alert severity="error" sx={{ mb: 2 }} data-testid="error-alert">
                 {error}
               </Alert>
             )}
@@ -257,8 +272,13 @@ export default function SwapDetailDialog({
                       : "Open Swap"
                   }
                   color="primary"
+                  data-testid="swap-type-chip"
                 />
-                <Chip label={swap.status} color={getStatusColor(swap.status)} />
+                <Chip
+                  label={swap.status}
+                  color={getStatusColor(swap.status)}
+                  data-testid="swap-status-chip"
+                />
               </Box>
               <Typography variant="body2" color="text.secondary">
                 Created: {swap.createdAt.format("MMM D, YYYY HH:mm")}
@@ -276,12 +296,17 @@ export default function SwapDetailDialog({
               onChange={(_, newValue) => setTabValue(newValue)}
               sx={{ mb: 2 }}
             >
-              <Tab label="Details" />
+              <Tab label="Details" data-testid="details-tab" />
               {swap.swapType === SwapType.OPEN && (
-                <Tab label={`Bids (${swap.bids.length})`} />
+                <Tab
+                  label={`Bids (${swap.bids.length})`}
+                  data-testid="bids-tab"
+                />
               )}
               {swap.status === SwapStatus.COMPLETED &&
-                swap.auditData.length > 0 && <Tab label="Audit Trail" />}
+                swap.auditData.length > 0 && (
+                  <Tab label="Audit Trail" data-testid="audit-trail-tab" />
+                )}
             </Tabs>
 
             {/* Tab Content */}
@@ -300,7 +325,7 @@ export default function SwapDetailDialog({
                 <Divider sx={{ my: 2 }} />
 
                 {/* Offered Assignments */}
-                <Box sx={{ mb: 2 }}>
+                <Box sx={{ mb: 2 }} data-testid="offered-assignments-section">
                   <Typography
                     variant="subtitle2"
                     color="text.secondary"
@@ -309,7 +334,11 @@ export default function SwapDetailDialog({
                     Offered Assignments ({offeredAssignments.length})
                   </Typography>
                   {offeredAssignments.map((data) => (
-                    <Paper key={data.assignment.id} sx={{ p: 1, mb: 1 }}>
+                    <Paper
+                      key={data.assignment.id}
+                      sx={{ p: 1, mb: 1 }}
+                      data-testid={`offered-assignment-${data.assignment.id}`}
+                    >
                       <Typography variant="body2">
                         {data.assignment.date.format("MMM D, YYYY")} -{" "}
                         {data.shift.name}
@@ -326,7 +355,10 @@ export default function SwapDetailDialog({
                 {swap.swapType === SwapType.DIRECT && swap.targetWorkerId && (
                   <>
                     <Divider sx={{ my: 2 }} />
-                    <Box sx={{ mb: 2 }}>
+                    <Box
+                      sx={{ mb: 2 }}
+                      data-testid="requested-assignments-section"
+                    >
                       <Typography
                         variant="subtitle2"
                         color="text.secondary"
@@ -334,11 +366,19 @@ export default function SwapDetailDialog({
                       >
                         Requested Assignments ({requestedAssignments.length})
                       </Typography>
-                      <Typography variant="body2" sx={{ mb: 1 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ mb: 1 }}
+                        data-testid="target-worker-name"
+                      >
                         From: {getWorkerName(swap.targetWorkerId)}
                       </Typography>
                       {requestedAssignments.map((data) => (
-                        <Paper key={data.assignment.id} sx={{ p: 1, mb: 1 }}>
+                        <Paper
+                          key={data.assignment.id}
+                          sx={{ p: 1, mb: 1 }}
+                          data-testid={`requested-assignment-${data.assignment.id}`}
+                        >
                           <Typography variant="body2">
                             {data.assignment.date.format("MMM D, YYYY")} -{" "}
                             {data.shift.name}
@@ -399,6 +439,7 @@ export default function SwapDetailDialog({
                         onClick={handleAddBid}
                         variant="contained"
                         disabled={bidAssignmentIds.length === 0 || loading}
+                        data-testid="submit-bid-button"
                       >
                         Submit Bid
                       </Button>
@@ -408,6 +449,7 @@ export default function SwapDetailDialog({
                           setBidAssignmentIds([]);
                         }}
                         disabled={loading}
+                        data-testid="cancel-bid-button"
                       >
                         Cancel
                       </Button>
@@ -420,6 +462,7 @@ export default function SwapDetailDialog({
                         onClick={() => setShowAddBid(true)}
                         variant="contained"
                         sx={{ mb: 2 }}
+                        data-testid="add-bid-button"
                       >
                         Add Your Bid
                       </Button>
@@ -526,13 +569,22 @@ export default function SwapDetailDialog({
         <Box display="flex" justifyContent="space-between" width="100%" px={1}>
           <Box>
             {canCancel && (
-              <Button onClick={handleCancel} color="error" disabled={loading}>
+              <Button
+                onClick={handleCancel}
+                color="error"
+                disabled={loading}
+                data-testid="cancel-swap-button"
+              >
                 Cancel Swap
               </Button>
             )}
           </Box>
           <Box display="flex" gap={1}>
-            <Button onClick={onClose} disabled={loading}>
+            <Button
+              onClick={onClose}
+              disabled={loading}
+              data-testid="close-button"
+            >
               Close
             </Button>
             {canAcceptDirectSwap && (
@@ -541,6 +593,7 @@ export default function SwapDetailDialog({
                 variant="contained"
                 color="primary"
                 disabled={loading}
+                data-testid="accept-direct-swap-button"
               >
                 Accept Swap
               </Button>
@@ -551,6 +604,7 @@ export default function SwapDetailDialog({
                 variant="contained"
                 color="success"
                 disabled={loading}
+                data-testid="approve-swap-button"
               >
                 Approve Swap
               </Button>

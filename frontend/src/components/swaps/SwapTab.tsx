@@ -351,7 +351,11 @@ export default function SwapTab({
             </CardContent>
 
             <CardActions>
-              <Button size="small" onClick={() => openDetailDialog(swap)}>
+              <Button
+                size="small"
+                onClick={() => openDetailDialog(swap)}
+                data-testid="view-details-button"
+              >
                 View Details
               </Button>
 
