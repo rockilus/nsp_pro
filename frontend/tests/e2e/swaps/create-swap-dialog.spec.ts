@@ -705,16 +705,14 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
 
       // Should move to step 2: swap type selection
       // Verify we're on the swap type step by checking for radio buttons
-      const directSwapRadio = page.locator(
-        'input[type="radio"][value="DIRECT"]',
-      );
-      const openSwapRadio = page.locator('input[type="radio"][value="OPEN"]');
+      const directSwapRadio = page.locator('[data-testid="direct-swap-radio"]');
+      const openSwapRadio = page.locator('[data-testid="open-swap-radio"]');
 
       await expect(directSwapRadio).toBeVisible();
       await expect(openSwapRadio).toBeVisible();
 
       // Verify step title/content
-      const swapTypeHeading = page.locator('text="Choose Swap Type"');
+      const swapTypeHeading = page.locator('[data-testid="swap-type-heading"]');
       await expect(swapTypeHeading).toBeVisible();
 
       console.log(
@@ -917,16 +915,14 @@ test.describe("CreateSwapDialog - Member Tests", () => {
       await page.click('[data-testid="next-button"]');
 
       // Should move to step 2: swap type selection
-      const directSwapRadio = page.locator(
-        'input[type="radio"][value="DIRECT"]',
-      );
-      const openSwapRadio = page.locator('input[type="radio"][value="OPEN"]');
+      const directSwapRadio = page.locator('[data-testid="direct-swap-radio"]');
+      const openSwapRadio = page.locator('[data-testid="open-swap-radio"]');
 
       await expect(directSwapRadio).toBeVisible();
       await expect(openSwapRadio).toBeVisible();
 
       // Verify step title/content
-      const swapTypeHeading = page.locator('text="Choose Swap Type"');
+      const swapTypeHeading = page.locator('[data-testid="swap-type-heading"]');
       await expect(swapTypeHeading).toBeVisible();
 
       console.log(

@@ -243,7 +243,11 @@ export default function CreateSwapDialog({
         // Step 2: Swap type selection
         return (
           <Box>
-            <Typography variant="subtitle1" gutterBottom>
+            <Typography
+              variant="subtitle1"
+              gutterBottom
+              data-testid="swap-type-heading"
+            >
               Choose Swap Type
             </Typography>
             <RadioGroup
@@ -258,7 +262,7 @@ export default function CreateSwapDialog({
               <Paper sx={{ p: 2, mb: 2 }}>
                 <FormControlLabel
                   value={SwapType.DIRECT}
-                  control={<Radio />}
+                  control={<Radio data-testid="direct-swap-radio" />}
                   label={
                     <Box>
                       <Typography variant="body1" fontWeight="medium">
@@ -274,7 +278,7 @@ export default function CreateSwapDialog({
               <Paper sx={{ p: 2 }}>
                 <FormControlLabel
                   value={SwapType.OPEN}
-                  control={<Radio />}
+                  control={<Radio data-testid="open-swap-radio" />}
                   label={
                     <Box>
                       <Typography variant="body1" fontWeight="medium">
