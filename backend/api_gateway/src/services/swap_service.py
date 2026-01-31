@@ -98,20 +98,6 @@ class SwapService(BaseService):
             )
             self._validate_shift_types(requested_assignments)
 
-            # Validate the swap is feasible
-            validation_result = (
-                self.replacement_service.validate_assignment_swap(
-                    worker_a_assignment_ids=offered_assignment_ids,
-                    worker_b_assignment_ids=requested_assignment_ids,
-                    team_id=team_id,
-                )
-            )
-
-            if not validation_result.is_valid:
-                raise ValueError(
-                    f"Swap validation failed: {validation_result.validation_message}"
-                )
-
         # Create the swap request
         swap_request = SwapRequest(
             id=str(uuid4()),
