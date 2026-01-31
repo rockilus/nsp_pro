@@ -805,6 +805,49 @@ export class SwapTestBase {
   }
 
   /**
+   * Approve a swap as member (should fail with permission error)
+   */
+  async approveSwapAsMember(swapId: string): Promise<SwapRequestT> {
+    // Create a client authenticated as TEST_USER_2 (member)
+    const memberClient = this.dbUtils.createAuthenticatedClientForUser(
+      TEST_USER_2.user_id,
+    );
+
+    // Make the approve request as member
+    const response = await memberClient.post<any>(
+      `/swaps/${swapId}/approve`,
+      {},
+    );
+
+    return {
+      id: response.id,
+      teamId: response.teamId,
+      createdByUserId: response.createdByUserId,
+      swapType: response.swapType,
+      status: response.status,
+      offeredAssignmentIds: response.offeredAssignmentIds,
+      requestedAssignmentIds: response.requestedAssignmentIds,
+      targetWorkerId: response.targetWorkerId,
+      comment: response.comment,
+      bids: (response.bids || []).map((bid: any) => ({
+        id: bid.id,
+        workerId: bid.workerId,
+        offeredAssignmentIds: bid.offeredAssignmentIds,
+        createdAt: dayjs.unix(bid.createdAt),
+        accepted: bid.accepted,
+      })),
+      createdAt: dayjs.unix(response.createdAt),
+      completedAt: response.completedAt
+        ? dayjs.unix(response.completedAt)
+        : null,
+      completedByUserId: response.completedByUserId,
+      revertedAt: response.revertedAt ? dayjs.unix(response.revertedAt) : null,
+      revertedByUserId: response.revertedByUserId,
+      auditData: response.auditData || [],
+    };
+  }
+
+  /**
    * Make an authenticated request to the API
    */
   async makeAuthenticatedRequest<T>(
