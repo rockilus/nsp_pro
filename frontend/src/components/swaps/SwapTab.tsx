@@ -392,7 +392,7 @@ export default function SwapTab({
         onSubmit={handleCreateSwap}
         teamId={teamId}
         currentUserId={currentUserId}
-        isLeader={isLeader}
+        role={teamWithMembership.membership.role}
         workers={workers}
         assignments={assignments}
         linkShifts={linkShifts}

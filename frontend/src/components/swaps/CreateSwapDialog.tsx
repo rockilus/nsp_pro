@@ -30,7 +30,9 @@ import { SwapType } from "../../types/swap";
 import { WorkerT } from "../../types/worker";
 import { AssignmentDataDictT } from "../../types/assignment";
 import { LinkShiftT } from "../../types/shift";
+import { TeamMembershipRole } from "../../types/team";
 import AssignmentSelector from "./AssignmentSelector";
+import { RoleBased } from "../access/role-based";
 
 interface CreateSwapDialogProps {
   open: boolean;
@@ -44,7 +46,7 @@ interface CreateSwapDialogProps {
   }) => Promise<void>;
   teamId: string;
   currentUserId: string;
-  isLeader: boolean;
+  role: TeamMembershipRole | null;
   workers: WorkerT[];
   assignments: AssignmentDataDictT[];
   linkShifts: LinkShiftT[];
@@ -64,7 +66,7 @@ export default function CreateSwapDialog({
   onSubmit,
   teamId,
   currentUserId,
-  isLeader,
+  role,
   workers,
   assignments,
   linkShifts,
@@ -87,13 +89,20 @@ export default function CreateSwapDialog({
 
   // Initialize selected worker
   useEffect(() => {
-    if (open && !isLeader && !selectedWorkerId) {
-      const currentWorker = workers.find((w) => w.id === currentUserId);
+    console.log("In useEffect");
+    console.log("open", open);
+    console.log("role", role);
+
+    if (open && role === TeamMembershipRole.MEMBER) {
+      const currentWorker = workers.find((w) => w.userId === currentUserId);
+      console.log("currentUserId", currentUserId);
+      console.log("currentWorker", currentWorker);
+
       if (currentWorker) {
         setSelectedWorkerId(currentWorker.id);
       }
     }
-  }, [open, isLeader, currentUserId, workers, selectedWorkerId]);
+  }, [open, role, currentUserId, workers]);
 
   // Filter assignment details for review step
   const offeredAssignments = useMemo(() => {
@@ -186,7 +195,7 @@ export default function CreateSwapDialog({
         // Step 1: Worker selection and offered assignments
         return (
           <Box>
-            {isLeader && (
+            <RoleBased role={role} allowedRoles={[TeamMembershipRole.OWNER]}>
               <FormControl fullWidth sx={{ mb: 3 }}>
                 <InputLabel>Select Worker</InputLabel>
                 <Select
@@ -209,9 +218,9 @@ export default function CreateSwapDialog({
                   ))}
                 </Select>
               </FormControl>
-            )}
+            </RoleBased>
 
-            {!isLeader && selectedWorkerId && (
+            {role === TeamMembershipRole.MEMBER && selectedWorkerId && (
               <Alert severity="info" sx={{ mb: 2 }}>
                 Creating swap for:{" "}
                 {workers.find((w) => w.id === selectedWorkerId)?.name}
