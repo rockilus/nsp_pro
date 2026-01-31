@@ -16,11 +16,10 @@ class SwapType(Enum):
 
 class SwapStatus(Enum):
     ACTIVE = "active"  # Swap is available for bids or waiting for acceptance
-    PENDING_APPROVAL = (
-        "pending_approval"  # Workers agreed, waiting for leader approval
-    )
+    PENDING_APPROVAL = "pending_approval"  # Workers agreed, waiting for leader approval
     COMPLETED = "completed"  # Approved and assignments swapped
-    CANCELLED = "cancelled"  # Cancelled by creator or leader
+    DENIED = "denied"  # Denied by leader during approval
+    REVERTED = "reverted"  # Completed swap that was reversed
 
 
 @dataclass
@@ -44,9 +43,7 @@ class SwapBid:
             id=data["id"],
             worker_id=data["worker_id"],
             offered_assignment_ids=data["offered_assignment_ids"],
-            created_at=datetime.fromtimestamp(
-                data["created_at"], tz=timezone.utc
-            ),
+            created_at=datetime.fromtimestamp(data["created_at"], tz=timezone.utc),
             accepted=data.get("accepted", False),
         )
 
@@ -102,16 +99,14 @@ class SwapRequest:
     requested_assignment_ids: (
         List[str] | None
     )  # Assignments requested (None for open swaps)
-    target_worker_id: (
-        str | None
-    )  # Target worker for direct swaps (None for open swaps)
+    target_worker_id: str | None  # Target worker for direct swaps (None for open swaps)
     comment: str
     bids: List[SwapBid] = field(default_factory=list)  # Bids for open swaps
-    created_at: datetime = field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: datetime | None = None
     completed_by_user_id: str | None = None
+    reverted_at: datetime | None = None
+    reverted_by_user_id: str | None = None
     audit_data: List[SwapAuditData] = field(
         default_factory=list
     )  # Original assignment details
@@ -120,22 +115,14 @@ class SwapRequest:
         """Validate the swap request data based on swap type."""
         if self.swap_type == SwapType.DIRECT:
             if not self.target_worker_id:
-                raise ValueError(
-                    "Direct swaps must specify a target_worker_id"
-                )
+                raise ValueError("Direct swaps must specify a target_worker_id")
             if not self.requested_assignment_ids:
-                raise ValueError(
-                    "Direct swaps must specify requested_assignment_ids"
-                )
+                raise ValueError("Direct swaps must specify requested_assignment_ids")
         elif self.swap_type == SwapType.OPEN:
             if self.target_worker_id is not None:
-                raise ValueError(
-                    "Open swaps should not have a target_worker_id"
-                )
+                raise ValueError("Open swaps should not have a target_worker_id")
             if self.requested_assignment_ids is not None:
-                raise ValueError(
-                    "Open swaps should not have requested_assignment_ids"
-                )
+                raise ValueError("Open swaps should not have requested_assignment_ids")
 
     def to_dict(self) -> Dict:
         out = asdict(self)
@@ -145,6 +132,7 @@ class SwapRequest:
         out["completed_at"] = (
             self.completed_at.timestamp() if self.completed_at else None
         )
+        out["reverted_at"] = self.reverted_at.timestamp() if self.reverted_at else None
         out["bids"] = [bid.to_dict() for bid in self.bids]
         out["audit_data"] = [audit.to_dict() for audit in self.audit_data]
         return out
@@ -162,18 +150,20 @@ class SwapRequest:
             target_worker_id=data.get("target_worker_id"),
             comment=data.get("comment", ""),
             bids=[SwapBid.from_dict(b) for b in data.get("bids", [])],
-            created_at=datetime.fromtimestamp(
-                data["created_at"], tz=timezone.utc
-            ),
+            created_at=datetime.fromtimestamp(data["created_at"], tz=timezone.utc),
             completed_at=(
                 datetime.fromtimestamp(data["completed_at"], tz=timezone.utc)
                 if data.get("completed_at")
                 else None
             ),
             completed_by_user_id=data.get("completed_by_user_id"),
-            audit_data=[
-                SwapAuditData.from_dict(a) for a in data.get("audit_data", [])
-            ],
+            reverted_at=(
+                datetime.fromtimestamp(data["reverted_at"], tz=timezone.utc)
+                if data.get("reverted_at")
+                else None
+            ),
+            reverted_by_user_id=data.get("reverted_by_user_id"),
+            audit_data=[SwapAuditData.from_dict(a) for a in data.get("audit_data", [])],
         )
 
     def to_dto(self) -> SwapRequestDTO:
@@ -184,6 +174,7 @@ class SwapRequest:
         data["completed_at"] = (
             self.completed_at.timestamp() if self.completed_at else None
         )
+        data["reverted_at"] = self.reverted_at.timestamp() if self.reverted_at else None
         data["bids"] = [bid.to_dto().model_dump() for bid in self.bids]
         # audit_data is kept as list of dicts
         as_dict = humps.camelize(data)
@@ -203,9 +194,13 @@ class SwapRequest:
             if data_dict.get("completed_at")
             else None
         )
+        data_dict["reverted_at"] = (
+            datetime.fromtimestamp(data_dict["reverted_at"], tz=timezone.utc)
+            if data_dict.get("reverted_at")
+            else None
+        )
         data_dict["bids"] = [
-            SwapBid.from_dto(SwapBidDTO(**b))
-            for b in data_dict.get("bids", [])
+            SwapBid.from_dto(SwapBidDTO(**b)) for b in data_dict.get("bids", [])
         ]
         data_dict["audit_data"] = [
             SwapAuditData.from_dict(a) for a in data_dict.get("audit_data", [])

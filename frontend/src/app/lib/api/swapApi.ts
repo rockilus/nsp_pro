@@ -169,9 +169,9 @@ export class SwapApi extends BaseApi {
   }
 
   /**
-   * Cancel a swap request
+   * Deny a swap request (leader only)
    */
-  static async cancelSwap(
+  static async denySwap(
     apiClient: AuthenticatedApiClient,
     swapId: string,
   ): Promise<SwapRequestT> {
@@ -181,9 +181,42 @@ export class SwapApi extends BaseApi {
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "delete",
-      `/swaps/${swapId}`,
+      "post",
+      `/swaps/${swapId}/deny`,
     );
     return toSwapRequestT(responseData);
+  }
+
+  /**
+   * Revert a completed swap (leader only)
+   */
+  static async revertSwap(
+    apiClient: AuthenticatedApiClient,
+    swapId: string,
+  ): Promise<SwapRequestT> {
+    if (!swapId) {
+      throw new Error("Swap ID is required");
+    }
+
+    const responseData = await this.makeRequest<any>(
+      apiClient,
+      "post",
+      `/swaps/${swapId}/revert`,
+    );
+    return toSwapRequestT(responseData);
+  }
+
+  /**
+   * Delete a swap request
+   */
+  static async deleteSwap(
+    apiClient: AuthenticatedApiClient,
+    swapId: string,
+  ): Promise<void> {
+    if (!swapId) {
+      throw new Error("Swap ID is required");
+    }
+
+    await this.makeRequest<void>(apiClient, "delete", `/swaps/${swapId}`);
   }
 }

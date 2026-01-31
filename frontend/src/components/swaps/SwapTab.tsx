@@ -36,7 +36,9 @@ import {
   useAcceptBid,
   useAcceptDirectSwap,
   useApproveSwap,
-  useCancelSwap,
+  useDeleteSwap,
+  useDenySwap,
+  useRevertSwap,
 } from "../../hooks/useSwap";
 
 const statusColors: Record<
@@ -46,14 +48,16 @@ const statusColors: Record<
   [SwapStatus.ACTIVE]: "warning",
   [SwapStatus.PENDING_APPROVAL]: "default",
   [SwapStatus.COMPLETED]: "success",
-  [SwapStatus.CANCELLED]: "error",
+  [SwapStatus.DENIED]: "error",
+  [SwapStatus.REVERTED]: "warning",
 };
 
 const statusLabels: Record<SwapStatus, string> = {
   [SwapStatus.ACTIVE]: "Active",
   [SwapStatus.PENDING_APPROVAL]: "Pending Approval",
   [SwapStatus.COMPLETED]: "Completed",
-  [SwapStatus.CANCELLED]: "Cancelled",
+  [SwapStatus.DENIED]: "Denied",
+  [SwapStatus.REVERTED]: "Reverted",
 };
 
 interface SwapTabProps {
@@ -75,7 +79,9 @@ export default function SwapTab({
   const acceptBid = useAcceptBid();
   const acceptDirectSwap = useAcceptDirectSwap();
   const approveSwap = useApproveSwap();
-  const cancelSwap = useCancelSwap();
+  const deleteSwap = useDeleteSwap();
+  const denySwap = useDenySwap();
+  const revertSwap = useRevertSwap();
   const getWorkers = useGetWorkers();
   const getShifts = useGetShifts();
   const getLinkShifts = useGetLinkShifts();
@@ -192,7 +198,7 @@ export default function SwapTab({
 
   const handleCreateSwap = async (swapData: {
     offeredAssignmentIds: string[];
-    requestedAssignmentIds: string[];
+    requestedAssignmentIds: string[] | null;
     swapType: SwapType;
     targetWorkerId: string | null;
     comment: string;
@@ -236,8 +242,22 @@ export default function SwapTab({
     setSelectedSwap(updatedSwap);
   };
 
-  const handleCancelSwap = async (swapId: string) => {
-    await cancelSwap(swapId);
+  const handleDenySwap = async (swapId: string) => {
+    await denySwap(swapId);
+    loadSwaps();
+    const updatedSwap = await getSwapById(swapId);
+    setSelectedSwap(updatedSwap);
+  };
+
+  const handleRevertSwap = async (swapId: string) => {
+    await revertSwap(swapId);
+    loadSwaps();
+    const updatedSwap = await getSwapById(swapId);
+    setSelectedSwap(updatedSwap);
+  };
+
+  const handleDeleteSwap = async (swapId: string) => {
+    await deleteSwap(swapId);
     loadSwaps();
   };
 
@@ -434,8 +454,14 @@ export default function SwapTab({
         onApprove={
           selectedSwap ? () => handleApproveSwap(selectedSwap.id) : undefined
         }
-        onCancel={
-          selectedSwap ? () => handleCancelSwap(selectedSwap.id) : undefined
+        onDeny={
+          selectedSwap ? () => handleDenySwap(selectedSwap.id) : undefined
+        }
+        onRevert={
+          selectedSwap ? () => handleRevertSwap(selectedSwap.id) : undefined
+        }
+        onDelete={
+          selectedSwap ? () => handleDeleteSwap(selectedSwap.id) : undefined
         }
       />
     </Container>

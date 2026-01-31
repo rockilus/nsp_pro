@@ -2286,6 +2286,10 @@ export class DatabaseTestUtils {
           ? dayjs.unix(response.completedAt)
           : null,
         completedByUserId: response.completedByUserId,
+        revertedAt: response.revertedAt
+          ? dayjs.unix(response.revertedAt)
+          : null,
+        revertedByUserId: response.revertedByUserId,
         auditData: response.auditData || [],
       };
     } catch (error) {
@@ -2333,6 +2337,8 @@ export class DatabaseTestUtils {
         createdAt: dayjs.unix(swap.createdAt),
         completedAt: swap.completedAt ? dayjs.unix(swap.completedAt) : null,
         completedByUserId: swap.completedByUserId,
+        revertedAt: swap.revertedAt ? dayjs.unix(swap.revertedAt) : null,
+        revertedByUserId: swap.revertedByUserId,
         auditData: swap.auditData || [],
       }));
     } catch (error) {
@@ -2374,6 +2380,10 @@ export class DatabaseTestUtils {
           ? dayjs.unix(response.completedAt)
           : null,
         completedByUserId: response.completedByUserId,
+        revertedAt: response.revertedAt
+          ? dayjs.unix(response.revertedAt)
+          : null,
+        revertedByUserId: response.revertedByUserId,
         auditData: response.auditData || [],
       };
     } catch (error) {
@@ -2420,6 +2430,10 @@ export class DatabaseTestUtils {
           ? dayjs.unix(response.completedAt)
           : null,
         completedByUserId: response.completedByUserId,
+        revertedAt: response.revertedAt
+          ? dayjs.unix(response.revertedAt)
+          : null,
+        revertedByUserId: response.revertedByUserId,
         auditData: response.auditData || [],
       };
     } catch (error) {
@@ -2466,6 +2480,10 @@ export class DatabaseTestUtils {
           ? dayjs.unix(response.completedAt)
           : null,
         completedByUserId: response.completedByUserId,
+        revertedAt: response.revertedAt
+          ? dayjs.unix(response.revertedAt)
+          : null,
+        revertedByUserId: response.revertedByUserId,
         auditData: response.auditData || [],
       };
     } catch (error) {
@@ -2479,42 +2497,17 @@ export class DatabaseTestUtils {
   }
 
   /**
-   * Cancel a swap
+   * Delete a swap
    */
-  async cancelSwap(swapId: string): Promise<SwapRequestT> {
+  async deleteSwap(swapId: string): Promise<void> {
     try {
-      const response = await this.testApiClient.delete<any>(`/swaps/${swapId}`);
+      await this.testApiClient.delete<void>(`/swaps/${swapId}`);
 
-      console.log(`✅ Cancelled swap: ${swapId}`);
-
-      return {
-        id: response.id,
-        teamId: response.teamId,
-        createdByUserId: response.createdByUserId,
-        swapType: response.swapType,
-        status: response.status,
-        offeredAssignmentIds: response.offeredAssignmentIds,
-        requestedAssignmentIds: response.requestedAssignmentIds,
-        targetWorkerId: response.targetWorkerId,
-        comment: response.comment,
-        bids: (response.bids || []).map((bid: any) => ({
-          id: bid.id,
-          workerId: bid.workerId,
-          offeredAssignmentIds: bid.offeredAssignmentIds,
-          createdAt: dayjs.unix(bid.createdAt),
-          accepted: bid.accepted,
-        })),
-        createdAt: dayjs.unix(response.createdAt),
-        completedAt: response.completedAt
-          ? dayjs.unix(response.completedAt)
-          : null,
-        completedByUserId: response.completedByUserId,
-        auditData: response.auditData || [],
-      };
+      console.log(`✅ Deleted swap: ${swapId}`);
     } catch (error) {
-      console.error("Failed to cancel swap:", error);
+      console.error("Failed to delete swap:", error);
       throw new Error(
-        `Failed to cancel swap: ${
+        `Failed to delete swap: ${
           error instanceof Error ? error.message : "Unknown error"
         }`,
       );

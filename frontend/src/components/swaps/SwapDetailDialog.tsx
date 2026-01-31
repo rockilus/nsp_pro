@@ -47,7 +47,9 @@ interface SwapDetailDialogProps {
   onAcceptBid?: (bidId: string) => Promise<void>;
   onAcceptDirectSwap?: () => Promise<void>;
   onApprove?: () => Promise<void>;
-  onCancel?: () => Promise<void>;
+  onDeny?: () => Promise<void>;
+  onRevert?: () => Promise<void>;
+  onDelete?: () => Promise<void>;
 }
 
 export default function SwapDetailDialog({
@@ -64,7 +66,9 @@ export default function SwapDetailDialog({
   onAcceptBid,
   onAcceptDirectSwap,
   onApprove,
-  onCancel,
+  onDeny,
+  onRevert,
+  onDelete,
 }: SwapDetailDialogProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -156,17 +160,47 @@ export default function SwapDetailDialog({
     }
   };
 
-  const handleCancel = async () => {
-    if (!onCancel) return;
+  const handleDeny = async () => {
+    if (!onDeny) return;
 
     try {
       setLoading(true);
       setError(null);
-      await onCancel();
+      await onDeny();
+    } catch (err) {
+      console.error("Failed to deny swap:", err);
+      setError(err instanceof Error ? err.message : "Failed to deny swap");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRevert = async () => {
+    if (!onRevert) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+      await onRevert();
+    } catch (err) {
+      console.error("Failed to revert swap:", err);
+      setError(err instanceof Error ? err.message : "Failed to revert swap");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!onDelete) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+      await onDelete();
       onClose();
     } catch (err) {
-      console.error("Failed to cancel swap:", err);
-      setError(err instanceof Error ? err.message : "Failed to cancel swap");
+      console.error("Failed to delete swap:", err);
+      setError(err instanceof Error ? err.message : "Failed to delete swap");
     } finally {
       setLoading(false);
     }
@@ -179,7 +213,7 @@ export default function SwapDetailDialog({
 
   const getStatusColor = (
     status: SwapStatus,
-  ): "default" | "info" | "warning" | "success" => {
+  ): "default" | "info" | "warning" | "success" | "error" => {
     switch (status) {
       case SwapStatus.ACTIVE:
         return "info";
@@ -187,6 +221,10 @@ export default function SwapDetailDialog({
         return "warning";
       case SwapStatus.COMPLETED:
         return "success";
+      case SwapStatus.DENIED:
+        return "error";
+      case SwapStatus.REVERTED:
+        return "warning";
       default:
         return "default";
     }
@@ -214,7 +252,11 @@ export default function SwapDetailDialog({
 
   const canApprove = swap.status === SwapStatus.PENDING_APPROVAL && isLeader;
 
-  const canCancel =
+  const canDeny = swap.status === SwapStatus.PENDING_APPROVAL && isLeader;
+
+  const canRevert = swap.status === SwapStatus.COMPLETED && isLeader;
+
+  const canDelete =
     (swap.status === SwapStatus.ACTIVE ||
       swap.status === SwapStatus.PENDING_APPROVAL) &&
     (isLeader || swap.offeredAssignmentIds.length > 0); // Simplification - check if user owns offered assignments
@@ -567,15 +609,35 @@ export default function SwapDetailDialog({
       </DialogContent>
       <DialogActions>
         <Box display="flex" justifyContent="space-between" width="100%" px={1}>
-          <Box>
-            {canCancel && (
+          <Box display="flex" gap={1}>
+            {canDelete && (
               <Button
-                onClick={handleCancel}
+                onClick={handleDelete}
                 color="error"
                 disabled={loading}
-                data-testid="cancel-swap-button"
+                data-testid="delete-swap-button"
               >
-                Cancel Swap
+                Delete Swap
+              </Button>
+            )}
+            {canDeny && (
+              <Button
+                onClick={handleDeny}
+                color="error"
+                disabled={loading}
+                data-testid="deny-swap-button"
+              >
+                Deny Swap
+              </Button>
+            )}
+            {canRevert && (
+              <Button
+                onClick={handleRevert}
+                color="warning"
+                disabled={loading}
+                data-testid="revert-swap-button"
+              >
+                Revert Swap
               </Button>
             )}
           </Box>

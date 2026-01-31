@@ -35,4 +35,6 @@ class SwapRequestDTO(BaseModel):
     createdAt: float
     completedAt: float | None
     completedByUserId: str | None
+    revertedAt: float | None
+    revertedByUserId: str | None
     auditData: List[Dict]  # List of SwapAuditData dicts

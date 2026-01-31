@@ -163,7 +163,7 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
     // Verify swap is cancelled by checking via API
     const dbUtils = (swapTestBase as any).dbUtils;
     const updatedSwap = await dbUtils.getSwapById(testSwap.id);
-    expect(updatedSwap.status).toBe(SwapStatus.CANCELLED);
+    expect(updatedSwap.status).toBe(SwapStatus.DENIED);
 
     console.log("✅ Swap successfully cancelled");
   });

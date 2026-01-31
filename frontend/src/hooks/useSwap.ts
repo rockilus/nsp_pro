@@ -111,7 +111,7 @@ export function useCreateSwap() {
       teamId: string,
       swapData: {
         offeredAssignmentIds: string[];
-        requestedAssignmentIds: string[];
+        requestedAssignmentIds: string[] | null;
         swapType: SwapType;
         targetWorkerId: string | null;
         comment: string;
@@ -336,14 +336,14 @@ export function useApproveSwap() {
 /**
  * Hook for cancelling a swap
  */
-export function useCancelSwap() {
+export function useDeleteSwap() {
   const apiClient = useApiClient();
   const { user, isAuthenticated, loading } = useAuth();
 
-  const cancelSwap = useCallback(
+  const deleteSwap = useCallback(
     async (swapId: string): Promise<void> => {
       if (env.isDevelopment) {
-        console.log("🔍 useCancelSwap called:", {
+        console.log("🔍 useDeleteSwap called:", {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -361,9 +361,9 @@ export function useCancelSwap() {
       }
 
       try {
-        await SwapApi.cancelSwap(apiClient, swapId);
+        await SwapApi.deleteSwap(apiClient, swapId);
       } catch (error) {
-        console.error("❌ Failed to cancel swap:", {
+        console.error("❌ Failed to delete swap:", {
           error: error instanceof Error ? error.message : "Unknown error",
           timestamp: new Date().toISOString(),
         });
@@ -373,5 +373,91 @@ export function useCancelSwap() {
     [apiClient, isAuthenticated, loading, user],
   );
 
-  return cancelSwap;
+  return deleteSwap;
+}
+
+/**
+ * Hook for denying a swap (leader only)
+ */
+export function useDenySwap() {
+  const apiClient = useApiClient();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  const denySwap = useCallback(
+    async (swapId: string): Promise<SwapRequestT> => {
+      if (env.isDevelopment) {
+        console.log("🔍 useDenySwap called:", {
+          timestamp: new Date().toISOString(),
+          isAuthenticated,
+          hasUser: !!user,
+          swapId,
+        });
+      }
+
+      // Security: Validate authentication state
+      if (loading) {
+        throw new Error("Authentication still loading - please wait");
+      }
+
+      if (!isAuthenticated || !user?.id_token) {
+        throw new Error("User not authenticated - please sign in");
+      }
+
+      try {
+        return await SwapApi.denySwap(apiClient, swapId);
+      } catch (error) {
+        console.error("❌ Failed to deny swap:", {
+          error: error instanceof Error ? error.message : "Unknown error",
+          timestamp: new Date().toISOString(),
+        });
+        throw error;
+      }
+    },
+    [apiClient, isAuthenticated, loading, user],
+  );
+
+  return denySwap;
+}
+
+/**
+ * Hook for reverting a completed swap (leader only)
+ */
+export function useRevertSwap() {
+  const apiClient = useApiClient();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  const revertSwap = useCallback(
+    async (swapId: string): Promise<SwapRequestT> => {
+      if (env.isDevelopment) {
+        console.log("🔍 useRevertSwap called:", {
+          timestamp: new Date().toISOString(),
+          isAuthenticated,
+          hasUser: !!user,
+          swapId,
+        });
+      }
+
+      // Security: Validate authentication state
+      if (loading) {
+        throw new Error("Authentication still loading - please wait");
+      }
+
+      if (!isAuthenticated || !user?.id_token) {
+        throw new Error("User not authenticated - please sign in");
+      }
+
+      try {
+        return await SwapApi.revertSwap(apiClient, swapId);
+      } catch (error) {
+        console.error("❌ Failed to revert swap:", {
+          error: error instanceof Error ? error.message : "Unknown error",
+          timestamp: new Date().toISOString(),
+        });
+        throw error;
+      }
+    },
+    [apiClient, isAuthenticated, loading, user],
+  );
+
+  return revertSwap;
 }

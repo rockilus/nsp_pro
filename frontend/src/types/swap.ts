@@ -9,7 +9,8 @@ export enum SwapStatus {
   ACTIVE = "active",
   PENDING_APPROVAL = "pending_approval",
   COMPLETED = "completed",
-  CANCELLED = "cancelled",
+  DENIED = "denied",
+  REVERTED = "reverted",
 }
 
 export type SwapBidT = {
@@ -41,6 +42,8 @@ export type SwapRequestT = {
   createdAt: dayjs.Dayjs;
   completedAt: dayjs.Dayjs | null;
   completedByUserId: string | null;
+  revertedAt: dayjs.Dayjs | null;
+  revertedByUserId: string | null;
   auditData: SwapAuditDataT[];
 };
 
@@ -80,6 +83,8 @@ export function toSwapRequestT(data: any): SwapRequestT {
     createdAt: dayjs.unix(data.createdAt),
     completedAt: data.completedAt ? dayjs.unix(data.completedAt) : null,
     completedByUserId: data.completedByUserId,
+    revertedAt: data.revertedAt ? dayjs.unix(data.revertedAt) : null,
+    revertedByUserId: data.revertedByUserId,
     auditData: data.auditData || [],
   };
 }
@@ -99,6 +104,8 @@ export function fromSwapRequestT(swap: Partial<SwapRequestT>): any {
     createdAt: swap.createdAt?.unix(),
     completedAt: swap.completedAt?.unix(),
     completedByUserId: swap.completedByUserId,
+    revertedAt: swap.revertedAt?.unix(),
+    revertedByUserId: swap.revertedByUserId,
     auditData: swap.auditData || [],
   };
 }

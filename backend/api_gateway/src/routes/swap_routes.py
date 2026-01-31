@@ -28,9 +28,7 @@ async def create_swap_request(
     """Create a new swap request."""
     try:
         # Check permission
-        if not await authz_check(
-            user_context.user_id, "create-swap", "team", team_id
-        ):
+        if not await authz_check(user_context.user_id, "create-swap", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to create a swap request"
             )
@@ -66,12 +64,8 @@ async def get_swap_requests(
     """Get all swap requests for a team, optionally filtered by status."""
     try:
         # Check permission
-        if not await authz_check(
-            user_context.user_id, "read-swap", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to view swap requests"
-            )
+        if not await authz_check(user_context.user_id, "read-swap", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to view swap requests")
 
         # Parse status filter
         status_filter = SwapStatus(status) if status else None
@@ -79,11 +73,9 @@ async def get_swap_requests(
         # Get swaps
         swaps = swap_service.get_swaps_for_team(team_id, status_filter)
 
-        # Filter out cancelled swaps unless explicitly requested
+        # Filter out denied swaps unless explicitly requested
         if status_filter is None:
-            swaps = [
-                swap for swap in swaps if swap.status != SwapStatus.CANCELLED
-            ]
+            swaps = [swap for swap in swaps if swap.status != SwapStatus.DENIED]
 
         response = [swap.to_dto() for swap in swaps]
     except Exception as e:
@@ -138,9 +130,7 @@ async def add_bid_to_swap(
         if not await authz_check(
             user_context.user_id, "create-swap", "team", swap.team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to bid on swaps"
-            )
+            raise NotAuthorizedError("You do not have permission to bid on swaps")
 
         # Add the bid
         updated_swap = swap_service.add_bid_to_open_swap(
@@ -175,9 +165,7 @@ async def accept_bid(
         if not await authz_check(
             user_context.user_id, "create-swap", "team", swap.team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to accept bids"
-            )
+            raise NotAuthorizedError("You do not have permission to accept bids")
 
         # Accept the bid
         updated_swap = swap_service.accept_bid_on_open_swap(
@@ -208,9 +196,7 @@ async def accept_direct_swap(
         if not await authz_check(
             user_context.user_id, "create-swap", "team", swap.team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to accept swaps"
-            )
+            raise NotAuthorizedError("You do not have permission to accept swaps")
 
         # Accept the direct swap
         updated_swap = swap_service.accept_direct_swap(swap_id=swap_id)
@@ -239,9 +225,7 @@ async def approve_swap(
         if not await authz_check(
             user_context.user_id, "approve-swap", "team", swap.team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to approve swaps"
-            )
+            raise NotAuthorizedError("You do not have permission to approve swaps")
 
         # Approve the swap
         updated_swap = swap_service.approve_swap(
@@ -256,20 +240,20 @@ async def approve_swap(
     return response
 
 
-@router.delete("/swaps/{swap_id}")
-async def cancel_swap(
+@router.delete("/swaps/{swap_id}", status_code=204)
+async def delete_swap(
     swap_id: str,
     user_context: UserContext = Depends(get_user_context),
     swap_service: SwapService = Depends(get_swap_service),
-) -> SwapRequestDTO:
-    """Cancel a swap request."""
+) -> None:
+    """Delete a swap request."""
     try:
         # Get the swap to check team
         swap = swap_service.get_swap_by_id(swap_id)
         if not swap:
             raise ValueError(f"Swap request {swap_id} not found")
 
-        # Check permission - creator or leader can cancel
+        # Check permission - creator or leader can delete
         can_create = await authz_check(
             user_context.user_id, "create-swap", "team", swap.team_id
         )
@@ -278,15 +262,73 @@ async def cancel_swap(
         )
 
         if not (can_create or can_approve):
-            raise NotAuthorizedError(
-                "You do not have permission to cancel this swap"
-            )
+            raise NotAuthorizedError("You do not have permission to delete this swap")
 
-        # Cancel the swap
-        updated_swap = swap_service.cancel_swap(swap_id=swap_id)
+        # Delete the swap
+        swap_service.delete_swap(swap_id=swap_id)
+
+    except Exception as e:
+        log_info(f"Failed to delete swap: {e}")
+        handle_routes_errors(e)
+
+
+@router.post("/swaps/{swap_id}/deny")
+async def deny_swap(
+    swap_id: str,
+    user_context: UserContext = Depends(get_user_context),
+    swap_service: SwapService = Depends(get_swap_service),
+) -> SwapRequestDTO:
+    """Deny a swap request (leader only)."""
+    try:
+        # Get the swap to check team
+        swap = swap_service.get_swap_by_id(swap_id)
+        if not swap:
+            raise ValueError(f"Swap request {swap_id} not found")
+
+        # Check permission - only leader can deny
+        if not await authz_check(
+            user_context.user_id, "approve-swap", "team", swap.team_id
+        ):
+            raise NotAuthorizedError("You do not have permission to deny this swap")
+
+        # Deny the swap
+        updated_swap = swap_service.deny_swap(
+            swap_id=swap_id, denier_user_id=user_context.user_id
+        )
 
         response = updated_swap.to_dto()
     except Exception as e:
-        log_info(f"Failed to cancel swap: {e}")
+        log_info(f"Failed to deny swap: {e}")
+        handle_routes_errors(e)
+    return response
+
+
+@router.post("/swaps/{swap_id}/revert")
+async def revert_swap(
+    swap_id: str,
+    user_context: UserContext = Depends(get_user_context),
+    swap_service: SwapService = Depends(get_swap_service),
+) -> SwapRequestDTO:
+    """Revert a completed swap (leader only)."""
+    try:
+        # Get the swap to check team
+        swap = swap_service.get_swap_by_id(swap_id)
+        if not swap:
+            raise ValueError(f"Swap request {swap_id} not found")
+
+        # Check permission - only leader can revert
+        if not await authz_check(
+            user_context.user_id, "approve-swap", "team", swap.team_id
+        ):
+            raise NotAuthorizedError("You do not have permission to revert this swap")
+
+        # Revert the swap
+        updated_swap = swap_service.revert_swap(
+            swap_id=swap_id, reverter_user_id=user_context.user_id
+        )
+
+        response = updated_swap.to_dto()
+    except Exception as e:
+        log_info(f"Failed to revert swap: {e}")
         handle_routes_errors(e)
     return response

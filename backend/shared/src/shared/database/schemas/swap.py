@@ -28,6 +28,8 @@ class SwapRequestSchema(DocumentBaseSchema):
     created_at: datetime
     completed_at: Optional[datetime] = None
     completed_by_user: Optional[str] = None
+    reverted_at: Optional[datetime] = None
+    reverted_by_user: Optional[str] = None
     audit_data: List[Dict[str, Any]]  # List of audit data dictionaries
 
     def to_mongo(self) -> Dict[str, Any]:
@@ -47,19 +49,15 @@ class SwapRequestSchema(DocumentBaseSchema):
         doc_dict["swap_type"] = SwapType(doc_dict["swap_type"])
         doc_dict["status"] = SwapStatus(doc_dict["status"])
         doc_dict["target_worker_id"] = doc_dict.pop("target_worker", None)
-        doc_dict["completed_by_user_id"] = doc_dict.pop(
-            "completed_by_user", None
-        )
+        doc_dict["completed_by_user_id"] = doc_dict.pop("completed_by_user", None)
+        doc_dict["reverted_by_user_id"] = doc_dict.pop("reverted_by_user", None)
 
         # Convert bids from dicts to SwapBid objects
-        doc_dict["bids"] = [
-            SwapBid.from_dict(bid) for bid in doc_dict.get("bids", [])
-        ]
+        doc_dict["bids"] = [SwapBid.from_dict(bid) for bid in doc_dict.get("bids", [])]
 
         # Convert audit_data from dicts to SwapAuditData objects
         doc_dict["audit_data"] = [
-            SwapAuditData.from_dict(audit)
-            for audit in doc_dict.get("audit_data", [])
+            SwapAuditData.from_dict(audit) for audit in doc_dict.get("audit_data", [])
         ]
 
         return SwapRequest(**doc_dict)
@@ -80,5 +78,7 @@ class SwapRequestSchema(DocumentBaseSchema):
             created_at=swap_request.created_at,
             completed_at=swap_request.completed_at,
             completed_by_user=swap_request.completed_by_user_id,
+            reverted_at=swap_request.reverted_at,
+            reverted_by_user=swap_request.reverted_by_user_id,
             audit_data=[audit.to_dict() for audit in swap_request.audit_data],
         )
