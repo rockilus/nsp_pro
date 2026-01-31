@@ -54,7 +54,7 @@ variable "member_permissions" {
   default = [
     "read-workers", "update", "read-assignments-validated", "delete-request",
     "create-request", "update-request", "read-requests", "read", "read-shifts",
-    "read-shift-options", "create-swap", "read-swap"
+    "read-shift-options", "create-swap", "read-swap", "read-link-shifts"
   ]
 }
 

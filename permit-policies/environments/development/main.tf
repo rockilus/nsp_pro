@@ -36,7 +36,9 @@ module "permit_policies" {
     "read-assignments", "create-assignment", "update-assignment",
     "read-shift-options",
     # Swap permissions
-    "create-swap", "read-swap", "approve-swap"
+    "create-swap", "read-swap", "approve-swap",
+    # Link shifts permissions
+    "read-link-shifts"
   ]
 
   tags = {
