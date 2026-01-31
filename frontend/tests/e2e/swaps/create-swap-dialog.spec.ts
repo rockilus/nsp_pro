@@ -663,6 +663,64 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
         "✅ Validation prevents proceeding without assignment selection",
       );
     });
+
+    test("should proceed to swap type selection when worker and assignments are selected", async ({
+      page,
+    }) => {
+      // Select worker
+      const testWorkers = swapTestBase.getTestWorkers();
+      const testWorkerId = testWorkers[0].workerId;
+      await page.click('[data-testid="worker-select"]');
+      await page.click(`[data-testid="worker-option-${testWorkerId}"]`);
+
+      // Wait for assignments to load
+      await page.waitForTimeout(1000);
+
+      // Get a valid future assignment
+      const tomorrow = dayjs.utc().add(1, "day").startOf("day");
+      const testSchedules = swapTestBase.getTestSchedules();
+      const campaignScheduleIds = testSchedules
+        .filter((s) => s.status === ScheduleStatus.CAMPAIGN)
+        .map((s) => s.id);
+
+      const validAssignments = swapTestBase
+        .getTestAssignments()
+        .filter((a) => a.workerId === testWorkerId)
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
+        .filter(
+          (a) =>
+            a.scheduleId === null ||
+            (a.scheduleId !== null &&
+              !campaignScheduleIds.includes(a.scheduleId)),
+        );
+
+      expect(validAssignments.length).toBeGreaterThan(0);
+
+      // Select first valid assignment
+      const firstAssignment = validAssignments[0];
+      await page.click(`[data-testid="assignment-${firstAssignment.id}"]`);
+
+      // Click Next
+      await page.click('[data-testid="next-button"]');
+
+      // Should move to step 2: swap type selection
+      // Verify we're on the swap type step by checking for radio buttons
+      const directSwapRadio = page.locator(
+        'input[type="radio"][value="DIRECT"]',
+      );
+      const openSwapRadio = page.locator('input[type="radio"][value="OPEN"]');
+
+      await expect(directSwapRadio).toBeVisible();
+      await expect(openSwapRadio).toBeVisible();
+
+      // Verify step title/content
+      const swapTypeHeading = page.locator('text="Choose Swap Type"');
+      await expect(swapTypeHeading).toBeVisible();
+
+      console.log(
+        "✅ Successfully proceeded to swap type selection after valid input",
+      );
+    });
   });
 });
 
@@ -820,6 +878,60 @@ test.describe("CreateSwapDialog - Member Tests", () => {
       await expect(errorMessage).toBeVisible();
 
       console.log("✅ Member must also select assignments to proceed");
+    });
+
+    test("should proceed to swap type selection when assignments are selected", async ({
+      page,
+    }) => {
+      // Wait for assignments to load
+      await page.waitForTimeout(1000);
+
+      // Get a valid future assignment for the member
+      const memberWorker = swapTestBase.getMemberWorker();
+      expect(memberWorker).not.toBeNull();
+
+      const tomorrow = dayjs.utc().add(1, "day").startOf("day");
+      const testSchedules = swapTestBase.getTestSchedules();
+      const campaignScheduleIds = testSchedules
+        .filter((s) => s.status === ScheduleStatus.CAMPAIGN)
+        .map((s) => s.id);
+
+      const validAssignments = swapTestBase
+        .getTestAssignments()
+        .filter((a) => a.workerId === memberWorker!.workerId)
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
+        .filter(
+          (a) =>
+            a.scheduleId === null ||
+            (a.scheduleId !== null &&
+              !campaignScheduleIds.includes(a.scheduleId)),
+        );
+
+      expect(validAssignments.length).toBeGreaterThan(0);
+
+      // Select first valid assignment
+      const firstAssignment = validAssignments[0];
+      await page.click(`[data-testid="assignment-${firstAssignment.id}"]`);
+
+      // Click Next
+      await page.click('[data-testid="next-button"]');
+
+      // Should move to step 2: swap type selection
+      const directSwapRadio = page.locator(
+        'input[type="radio"][value="DIRECT"]',
+      );
+      const openSwapRadio = page.locator('input[type="radio"][value="OPEN"]');
+
+      await expect(directSwapRadio).toBeVisible();
+      await expect(openSwapRadio).toBeVisible();
+
+      // Verify step title/content
+      const swapTypeHeading = page.locator('text="Choose Swap Type"');
+      await expect(swapTypeHeading).toBeVisible();
+
+      console.log(
+        "✅ Member successfully proceeded to swap type selection after selecting assignments",
+      );
     });
   });
 });
