@@ -2244,7 +2244,7 @@ export class DatabaseTestUtils {
   async createSwap(swapData: {
     teamId: string;
     offeredAssignmentIds: string[];
-    requestedAssignmentIds: string[];
+    requestedAssignmentIds: string[] | null;
     swapType: "direct" | "open";
     targetWorkerId: string | null;
     comment: string;

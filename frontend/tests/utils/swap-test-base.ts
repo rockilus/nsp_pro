@@ -641,7 +641,7 @@ export class SwapTestBase {
             worker3Assignments[0].id,
             worker3Assignments[1].id,
           ],
-          requestedAssignmentIds: [],
+          requestedAssignmentIds: null,
           swapType: "open",
           targetWorkerId: null,
           comment: "Test open swap - accepting bids from all workers",
@@ -860,7 +860,7 @@ export class SwapTestBase {
     return await this.dbUtils.createSwap({
       teamId: this.testTeam.teamId,
       offeredAssignmentIds,
-      requestedAssignmentIds: [],
+      requestedAssignmentIds: null,
       swapType: "open",
       targetWorkerId: null,
       comment,
