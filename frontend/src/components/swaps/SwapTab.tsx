@@ -23,6 +23,7 @@ import { LinkShiftT } from "../../types/shift";
 import { AssignmentDataDictT } from "../../types/assignment";
 import CreateSwapDialog from "./CreateSwapDialog";
 import SwapDetailDialog from "./SwapDetailDialog";
+import SwapCard from "./SwapCard";
 import { TeamWithMembership } from "../../types/team";
 import { useGetWorkers } from "../../hooks/useWorker";
 import { useGetShifts } from "../../hooks/useShift";
@@ -364,93 +365,19 @@ export default function SwapTab({
       {!loading &&
         !error &&
         getFilteredSwaps().map((swap) => (
-          <Card key={swap.id} sx={{ mb: 2 }}>
-            <CardContent>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "start",
-                  mb: 2,
-                }}
-              >
-                <Box>
-                  <Typography variant="h6" component="div">
-                    {swap.swapType === SwapType.DIRECT ? "Direct" : "Open"} Swap
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Created {swap.createdAt.format("MMM D, YYYY")}
-                  </Typography>
-                </Box>
-                <Chip
-                  label={statusLabels[swap.status]}
-                  color={statusColors[swap.status]}
-                  size="small"
-                />
-              </Box>
-
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                <strong>Offering:</strong> {swap.offeredAssignmentIds.length}{" "}
-                assignment(s)
-              </Typography>
-
-              {swap.requestedAssignmentIds && (
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  <strong>Requesting:</strong>{" "}
-                  {swap.requestedAssignmentIds.length} assignment(s)
-                </Typography>
-              )}
-
-              {swap.swapType === SwapType.OPEN && (
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  <strong>Bids:</strong> {swap.bids.length}
-                </Typography>
-              )}
-
-              {swap.comment && (
-                <Typography variant="body2" sx={{ mt: 2, fontStyle: "italic" }}>
-                  {swap.comment}
-                </Typography>
-              )}
-            </CardContent>
-
-            <CardActions>
-              <Button
-                size="small"
-                onClick={() => openDetailDialog(swap)}
-                data-testid={`view-details-button-${swap.id}`}
-              >
-                View Details
-              </Button>
-
-              {swap.status === SwapStatus.ACTIVE &&
-                swap.swapType === SwapType.OPEN && (
-                  <Button
-                    size="small"
-                    color="primary"
-                    onClick={() => openDetailDialog(swap)}
-                  >
-                    Add Bid
-                  </Button>
-                )}
-
-              {swap.status === SwapStatus.PENDING_APPROVAL && isLeader && (
-                <Button
-                  size="small"
-                  color="success"
-                  onClick={async () => {
-                    try {
-                      await handleApproveSwap(swap.id);
-                    } catch (err: any) {
-                      setError(err.message || "Failed to approve swap");
-                    }
-                  }}
-                >
-                  Approve
-                </Button>
-              )}
-            </CardActions>
-          </Card>
+          <SwapCard
+            key={swap.id}
+            swap={swap}
+            isLeader={isLeader}
+            onViewDetails={openDetailDialog}
+            onApprove={async (swapId: string) => {
+              try {
+                await handleApproveSwap(swapId);
+              } catch (err: any) {
+                setError(err.message || "Failed to approve swap");
+              }
+            }}
+          />
         ))}
 
       {/* Create Swap Dialog */}
