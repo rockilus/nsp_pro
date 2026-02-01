@@ -367,7 +367,6 @@ export default function SwapTab({
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            mb: 3,
           }}
         >
           <Typography
@@ -396,27 +395,34 @@ export default function SwapTab({
           onChange={handleFilterChange}
           variant={isMobile ? "scrollable" : "standard"}
           scrollButtons={isMobile ? "auto" : false}
-          sx={{ mb: 3 }}
+          sx={{ marginBottom: "2px" }}
         >
           <Tab
             label={filterLabels[SwapFilter.ALL_ACTIVE_OPEN]}
             value={SwapFilter.ALL_ACTIVE_OPEN}
             data-testid="filter-all-active-open"
+            sx={{
+              textTransform: "none",
+              paddingX: isMobile ? "1px" : undefined,
+            }}
           />
           <Tab
             label={filterLabels[SwapFilter.DIRECT_PROPOSALS]}
             value={SwapFilter.DIRECT_PROPOSALS}
             data-testid="filter-direct-proposals"
+            sx={{ textTransform: "none" }}
           />
           <Tab
             label={filterLabels[SwapFilter.MY_BIDS]}
             value={SwapFilter.MY_BIDS}
             data-testid="filter-my-bids"
+            sx={{ textTransform: "none" }}
           />
           <Tab
             label={filterLabels[SwapFilter.MY_SWAPS]}
             value={SwapFilter.MY_SWAPS}
             data-testid="filter-my-swaps"
+            sx={{ textTransform: "none" }}
           />
           {isLeader && (
             <>
@@ -424,11 +430,13 @@ export default function SwapTab({
                 label={filterLabels[SwapFilter.PENDING_APPROVAL]}
                 value={SwapFilter.PENDING_APPROVAL}
                 data-testid="filter-pending-approval"
+                sx={{ textTransform: "none" }}
               />
               <Tab
                 label={filterLabels[SwapFilter.COMPLETED]}
                 value={SwapFilter.COMPLETED}
                 data-testid="filter-completed"
+                sx={{ textTransform: "none" }}
               />
             </>
           )}
