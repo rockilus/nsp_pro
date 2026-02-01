@@ -5,10 +5,6 @@ import dayjs from "dayjs";
 import {
   Box,
   Button,
-  Card,
-  CardContent,
-  CardActions,
-  Chip,
   Container,
   Fab,
   Tab,
@@ -16,14 +12,7 @@ import {
   Typography,
   CircularProgress,
 } from "@mui/material";
-import {
-  SwapHoriz as SwapIcon,
-  Add as AddIcon,
-  People as PeopleIcon,
-  PersonOutline as PersonIcon,
-  Gavel as GavelIcon,
-  CheckCircle as CheckCircleIcon,
-} from "@mui/icons-material";
+import { Add as AddIcon } from "@mui/icons-material";
 import { SwapRequestT, SwapStatus, SwapType } from "../../types/swap";
 import { WorkerT } from "../../types/worker";
 import { ShiftT } from "../../types/shift";
@@ -401,10 +390,7 @@ export default function SwapTab({
             label={filterLabels[SwapFilter.ALL_ACTIVE_OPEN]}
             value={SwapFilter.ALL_ACTIVE_OPEN}
             data-testid="filter-all-active-open"
-            sx={{
-              textTransform: "none",
-              paddingX: isMobile ? "1px" : undefined,
-            }}
+            sx={{ textTransform: "none" }}
           />
           <Tab
             label={filterLabels[SwapFilter.DIRECT_PROPOSALS]}
