@@ -156,10 +156,11 @@ test.describe("Open Swap Detail - Swap Creator Tests", () => {
       });
 
       // Verify swap is no longer visible in SwapTab
-      const currentSwapCard = await page.locator(
+      const currentSwapCard = page.locator(
         `[data-testid="view-details-button-${deleteSwap.id}"]`,
       );
-      expect(currentSwapCard.count()).toBe(0);
+      const currentCount = await currentSwapCard.count();
+      expect(currentCount).toBe(0);
 
       console.log("✅ Open swap deleted successfully");
     }
