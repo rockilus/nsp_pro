@@ -39,6 +39,7 @@ import {
   useRevertSwap,
 } from "../../hooks/useSwap";
 import { useIsMobile } from "../../hooks/useIsMobile";
+import MobileNavAppBar from "../app-bar/mobile-nav-app-bar";
 // Styles
 import "../../styles/text-styles.css";
 
@@ -77,20 +78,20 @@ const SWAP_TABS: SwapTabDefinition[] = [
     visibleFor: "all",
     sx: { textTransform: "none" },
   },
-  {
-    label: filterLabels[SwapFilter.DIRECT_PROPOSALS],
-    value: SwapFilter.DIRECT_PROPOSALS,
-    dataTestId: "filter-direct-proposals",
-    visibleFor: "all",
-    sx: { textTransform: "none" },
-  },
-  {
-    label: filterLabels[SwapFilter.MY_BIDS],
-    value: SwapFilter.MY_BIDS,
-    dataTestId: "filter-my-bids",
-    visibleFor: "all",
-    sx: { textTransform: "none" },
-  },
+  // {
+  //   label: filterLabels[SwapFilter.DIRECT_PROPOSALS],
+  //   value: SwapFilter.DIRECT_PROPOSALS,
+  //   dataTestId: "filter-direct-proposals",
+  //   visibleFor: "all",
+  //   sx: { textTransform: "none" },
+  // },
+  // {
+  //   label: filterLabels[SwapFilter.MY_BIDS],
+  //   value: SwapFilter.MY_BIDS,
+  //   dataTestId: "filter-my-bids",
+  //   visibleFor: "all",
+  //   sx: { textTransform: "none" },
+  // },
   {
     label: filterLabels[SwapFilter.MY_SWAPS],
     value: SwapFilter.MY_SWAPS,
@@ -117,11 +118,13 @@ const SWAP_TABS: SwapTabDefinition[] = [
 interface SwapTabProps {
   teamWithMembership: TeamWithMembership;
   currentUserId: string;
+  lng: string;
 }
 
 export default function SwapTab({
   teamWithMembership,
   currentUserId,
+  lng,
 }: SwapTabProps) {
   const teamId = teamWithMembership.team.id;
   const isMobile = useIsMobile();
@@ -415,7 +418,11 @@ export default function SwapTab({
 
   return (
     <Box sx={{ backgroundColor: "white", minHeight: "100vh" }}>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      {isMobile && <MobileNavAppBar lng={lng} />}
+      <Container
+        maxWidth="lg"
+        sx={{ py: isMobile ? 0 : 3, pt: isMobile ? 1 : undefined }}
+      >
         <Box
           sx={{
             display: "flex",
@@ -423,15 +430,17 @@ export default function SwapTab({
             alignItems: "center",
           }}
         >
-          <Typography
-            component="span"
-            className="title"
-            role="heading"
-            aria-level={1}
-            sx={{ fontSize: "1.25rem", fontWeight: 600, color: "#1976d2" }}
-          >
-            Swaps
-          </Typography>
+          {!isMobile && (
+            <Typography
+              component="span"
+              className="title"
+              role="heading"
+              aria-level={1}
+              sx={{ fontSize: "1.25rem", fontWeight: 600, color: "#1976d2" }}
+            >
+              Swaps
+            </Typography>
+          )}
           {!isMobile && (
             <Button
               variant="contained"
