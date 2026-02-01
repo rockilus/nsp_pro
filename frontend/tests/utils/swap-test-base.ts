@@ -744,6 +744,15 @@ export class SwapTestBase {
     }
 
     await page.goto(`${testConfig.frontendUrl}/en/plan/swaps/`);
+    await page.waitForLoadState("domcontentloaded");
+
+    // Set selected team in localStorage
+    await page.evaluate((teamId) => {
+      localStorage.setItem("selectedTeamId", teamId);
+    }, this.testTeam.teamId);
+
+    // Reload to apply localStorage changes
+    await page.reload();
     await page.waitForLoadState("networkidle");
 
     console.log("✅ Navigated to swap page");
