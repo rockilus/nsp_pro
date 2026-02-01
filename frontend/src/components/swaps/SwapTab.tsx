@@ -418,7 +418,7 @@ export default function SwapTab({
               <Button
                 size="small"
                 onClick={() => openDetailDialog(swap)}
-                data-testid="view-details-button"
+                data-testid={`view-details-button-${swap.id}`}
               >
                 View Details
               </Button>

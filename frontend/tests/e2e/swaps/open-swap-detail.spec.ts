@@ -61,9 +61,9 @@ test.describe("Open Swap Detail - Swap Creator Tests", () => {
     expect(openSwapId).toBeDefined();
 
     // Find and click the view details button for the open swap
-    const swapCard = page
-      .locator(`[data-testid="view-details-button"]`)
-      .first();
+    const swapCard = page.locator(
+      `[data-testid="view-details-button-${openSwapId}"]`,
+    );
     await swapCard.click();
 
     // Wait for dialog to open
@@ -88,7 +88,7 @@ test.describe("Open Swap Detail - Swap Creator Tests", () => {
 
   test("should show offered assignments section", async ({ page }) => {
     // Open first swap
-    await page.click('[data-testid="view-details-button"]');
+    await page.click(`[data-testid="view-details-button-${openSwapId}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Verify offered assignments section exists
@@ -110,7 +110,7 @@ test.describe("Open Swap Detail - Swap Creator Tests", () => {
 
   test("should show delete button for swap creator", async ({ page }) => {
     // Open first swap
-    await page.click('[data-testid="view-details-button"]');
+    await page.click(`[data-testid="view-details-button-${openSwapId}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Verify delete button exists
@@ -142,8 +142,8 @@ test.describe("Open Swap Detail - Swap Creator Tests", () => {
       await swapTestBase.navigateToSwapPage(page);
       await page.reload();
 
-      // Find the swap we just created (it should be the first one)
-      await page.click('[data-testid="view-details-button"]');
+      // Find the swap we just created by its ID
+      await page.click(`[data-testid="view-details-button-${deleteSwap.id}"]`);
       await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
       // Click delete
@@ -172,7 +172,7 @@ test.describe("Open Swap Detail - Swap Creator Tests", () => {
     page,
   }) => {
     // Open first swap
-    await page.click('[data-testid="view-details-button"]');
+    await page.click(`[data-testid="view-details-button-${openSwapId}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Verify approve button does NOT exist
@@ -195,7 +195,7 @@ test.describe("Open Swap Detail - Swap Creator Tests", () => {
     );
 
     if (worker1Assignments.length >= 2) {
-      await swapTestBase.createOpenSwap(
+      const freshSwap = await swapTestBase.createOpenSwap(
         [worker1Assignments[0].id, worker1Assignments[1].id],
         "Fresh open swap with no bids",
       );
@@ -203,7 +203,7 @@ test.describe("Open Swap Detail - Swap Creator Tests", () => {
       // Navigate and open the swap
       await swapTestBase.navigateToSwapPage(page);
       await page.reload();
-      await page.click('[data-testid="view-details-button"]');
+      await page.click(`[data-testid="view-details-button-${freshSwap.id}"]`);
       await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
       // Switch to bids tab
@@ -264,7 +264,7 @@ test.describe("Open Swap Detail - Bidder Tests", () => {
     expect(openSwapId).toBeDefined();
 
     // Open the swap
-    await page.click('[data-testid="view-details-button"]');
+    await page.click(`[data-testid="view-details-button-${openSwapId}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Switch to bids tab
@@ -336,7 +336,7 @@ test.describe("Open Swap Detail - Bidder Tests", () => {
 
       // Now verify in UI
       await page.reload();
-      await page.click('[data-testid="view-details-button"]');
+      await page.click(`[data-testid="view-details-button-${openSwapId}"]`);
       await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
       // Switch to bids tab
@@ -500,7 +500,7 @@ test.describe("Open Swap Detail - Multiple Bidders Tests", () => {
 
     // Verify in UI
     await page.reload();
-    await page.click('[data-testid="view-details-button"]');
+    await page.click(`[data-testid="view-details-button-${openSwapId}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Switch to bids tab
@@ -537,7 +537,7 @@ test.describe("Open Swap Detail - Multiple Bidders Tests", () => {
 
     // View as creator (owner)
     await page.reload();
-    await page.click('[data-testid="view-details-button"]');
+    await page.click(`[data-testid="view-details-button-${openSwapId}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Switch to bids tab
@@ -730,7 +730,7 @@ test.describe("Open Swap Detail - Bid Acceptance Tests", () => {
         // Navigate and verify in UI
         await swapTestBase.navigateToSwapPage(page);
         await page.reload();
-        await page.click('[data-testid="view-details-button"]');
+        await page.click(`[data-testid="view-details-button-${testSwap.id}"]`);
         await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
         // Switch to bids tab
@@ -786,7 +786,7 @@ test.describe("Open Swap Detail - Bid Acceptance Tests", () => {
         await swapTestBase.actAsMember(page);
         await swapTestBase.navigateToSwapPage(page);
         await page.reload();
-        await page.click('[data-testid="view-details-button"]');
+        await page.click(`[data-testid="view-details-button-${testSwap.id}"]`);
         await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
         // Switch to bids tab
@@ -867,7 +867,7 @@ test.describe("Open Swap Detail - Team Leader Approval Tests", () => {
 
     // Open the swap in UI
     await page.reload();
-    await page.click('[data-testid="view-details-button"]');
+    await page.click(`[data-testid="view-details-button-${openSwapId}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Verify approve button exists

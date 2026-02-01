@@ -48,9 +48,9 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
     const testSwap = swaps[0];
 
     // Find and click the view details button for the test swap
-    const swapCard = page
-      .locator(`[data-testid="view-details-button"]`)
-      .first();
+    const swapCard = page.locator(
+      `[data-testid="view-details-button-${testSwap.id}"]`,
+    );
     await swapCard.click();
 
     // Wait for dialog to open
@@ -74,8 +74,11 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
   });
 
   test("should show offered assignments section", async ({ page }) => {
+    const swaps = swapTestBase.getTestSwaps();
+    const testSwap = swaps[0];
+
     // Open first swap
-    await page.click('[data-testid="view-details-button"]');
+    await page.click(`[data-testid="view-details-button-${testSwap.id}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Verify offered assignments section exists
@@ -85,9 +88,6 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
     await expect(offeredSection).toBeVisible();
 
     // Verify offered assignments are displayed
-    const swaps = swapTestBase.getTestSwaps();
-    const testSwap = swaps[0];
-
     for (const assignmentId of testSwap.offeredAssignmentIds) {
       const assignmentCard = page.locator(
         `[data-testid="offered-assignment-${assignmentId}"]`,
@@ -103,8 +103,11 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
   test("should show requested assignments section for direct swap", async ({
     page,
   }) => {
+    const swaps = swapTestBase.getTestSwaps();
+    const testSwap = swaps[0];
+
     // Open first swap
-    await page.click('[data-testid="view-details-button"]');
+    await page.click(`[data-testid="view-details-button-${testSwap.id}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Verify requested assignments section exists
@@ -118,9 +121,6 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
     await expect(targetWorkerName).toBeVisible();
 
     // Verify requested assignments are displayed
-    const swaps = swapTestBase.getTestSwaps();
-    const testSwap = swaps[0];
-
     if (testSwap.requestedAssignmentIds) {
       for (const assignmentId of testSwap.requestedAssignmentIds) {
         const assignmentCard = page.locator(
@@ -136,8 +136,11 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
   });
 
   test("should show delete button for swap creator", async ({ page }) => {
+    const swaps = swapTestBase.getTestSwaps();
+    const testSwap = swaps[0];
+
     // Open first swap
-    await page.click('[data-testid="view-details-button"]');
+    await page.click(`[data-testid="view-details-button-${testSwap.id}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Verify delete button is visible
@@ -153,11 +156,11 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
 
     // Count initial swap cards
     const initialSwapCards = await page
-      .locator('[data-testid="view-details-button"]')
+      .locator('[data-testid^="view-details-button-"]')
       .count();
 
     // Open first swap
-    await page.click('[data-testid="view-details-button"]');
+    await page.click(`[data-testid="view-details-button-${testSwap.id}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Click delete button
@@ -177,7 +180,7 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
 
     // Verify swap is no longer visible in SwapTab
     const currentSwapCards = await page
-      .locator('[data-testid="view-details-button"]')
+      .locator('[data-testid^="view-details-button-"]')
       .count();
     expect(currentSwapCards).toBe(initialSwapCards - 1);
 
@@ -187,8 +190,11 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
   test("should show target worker acceptance status (before acceptance)", async ({
     page,
   }) => {
+    const swaps = swapTestBase.getTestSwaps();
+    const testSwap = swaps[0];
+
     // Open first swap
-    await page.click('[data-testid="view-details-button"]');
+    await page.click(`[data-testid="view-details-button-${testSwap.id}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Status should be ACTIVE (not yet accepted by target)
@@ -225,8 +231,11 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
   });
 
   test("should NOT show delete button for target worker", async ({ page }) => {
+    const swaps = swapTestBase.getTestSwaps();
+    const testSwap = swaps[0];
+
     // Open first swap
-    await page.click('[data-testid="view-details-button"]');
+    await page.click(`[data-testid="view-details-button-${testSwap.id}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Verify delete button is NOT visible for target worker
@@ -239,8 +248,11 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
   test("should show accept button for target worker when swap is active", async ({
     page,
   }) => {
+    const swaps = swapTestBase.getTestSwaps();
+    const testSwap = swaps[0];
+
     // Open first swap
-    await page.click('[data-testid="view-details-button"]');
+    await page.click(`[data-testid="view-details-button-${testSwap.id}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Verify accept button is visible
@@ -257,7 +269,7 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
     const testSwap = swaps[0];
 
     // Open first swap
-    await page.click('[data-testid="view-details-button"]');
+    await page.click(`[data-testid="view-details-button-${testSwap.id}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Click accept button
@@ -290,7 +302,7 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
     await page.waitForLoadState("networkidle");
 
     // Open swap
-    await page.click('[data-testid="view-details-button"]');
+    await page.click(`[data-testid="view-details-button-${testSwap.id}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Status should show PENDING_APPROVAL
@@ -320,7 +332,7 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
     await page.waitForLoadState("networkidle");
 
     // Open swap
-    await page.click('[data-testid="view-details-button"]');
+    await page.click(`[data-testid="view-details-button-${testSwap.id}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Verify status is PENDING_APPROVAL
@@ -385,8 +397,11 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
   test("should NOT show approve button when swap is still active", async ({
     page,
   }) => {
+    const swaps = swapTestBase.getTestSwaps();
+    const testSwap = swaps[0];
+
     // Open first swap (should be ACTIVE)
-    await page.click('[data-testid="view-details-button"]');
+    await page.click(`[data-testid="view-details-button-${testSwap.id}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Approve button should NOT be visible
@@ -410,7 +425,7 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     await page.waitForLoadState("networkidle");
 
     // Open swap
-    await page.click('[data-testid="view-details-button"]');
+    await page.click(`[data-testid="view-details-button-${testSwap.id}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Approve button should now be visible
@@ -436,7 +451,7 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     await page.waitForLoadState("networkidle");
 
     // Open swap
-    await page.click('[data-testid="view-details-button"]');
+    await page.click(`[data-testid="view-details-button-${testSwap.id}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Click approve button
@@ -658,7 +673,7 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     await page.waitForLoadState("networkidle");
 
     // Open swap
-    await page.click('[data-testid="view-details-button"]');
+    await page.click(`[data-testid="view-details-button-${testSwap.id}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Verify audit trail tab is visible
