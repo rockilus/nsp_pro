@@ -103,6 +103,13 @@ export class SwapTestBase {
       weeklyHours: 40,
     });
     this.testWorkers.push(worker2);
+
+    const worker3 = await this.createWorker({
+      name: "Swap Test Worker 3",
+      acronym: "STW3",
+      weeklyHours: 40,
+    });
+    this.testWorkers.push(worker3);
     console.log(`✅ Created ${this.testWorkers.length} test workers`);
 
     // 6. Link TEST_USER_2 to second worker (if requested)
@@ -616,8 +623,37 @@ export class SwapTestBase {
       }
     }
 
+    // SWAP 3: Create an open swap from Worker 3
+    // Worker 3 offers 2 assignments and opens it for bids
+    if (this.testWorkers.length >= 3) {
+      const worker3 = this.testWorkers[2];
+      const worker3Assignments = this.testAssignments.filter(
+        (a) =>
+          a.workerId === worker3.workerId &&
+          a.date.isSameOrAfter(tomorrow, "day") &&
+          a.scheduleId !== null, // Only from schedules
+      );
+
+      if (worker3Assignments.length >= 2) {
+        const openSwap = await this.dbUtils.createSwap({
+          teamId: this.testTeam.teamId,
+          offeredAssignmentIds: [
+            worker3Assignments[0].id,
+            worker3Assignments[1].id,
+          ],
+          requestedAssignmentIds: [],
+          swapType: "open",
+          targetWorkerId: null,
+          comment: "Test open swap - accepting bids from all workers",
+        });
+
+        this.testSwaps.push(openSwap);
+        console.log(`✅ Created open swap from Worker 3: ${openSwap.id}`);
+      }
+    }
+
     console.log(
-      `✅ Created ${this.testSwaps.length} test swaps (including duty swap scenario)`,
+      `✅ Created ${this.testSwaps.length} test swaps (including duty and open swap scenarios)`,
     );
   }
 
@@ -809,6 +845,48 @@ export class SwapTestBase {
    */
   async revertSwap(swapId: string): Promise<SwapRequestT> {
     return await this.dbUtils.revertSwap(swapId);
+  }
+
+  /**
+   * Create an open swap
+   */
+  async createOpenSwap(
+    offeredAssignmentIds: string[],
+    comment: string,
+  ): Promise<SwapRequestT> {
+    if (!this.testTeam) {
+      throw new Error("Test team not initialized");
+    }
+    return await this.dbUtils.createSwap({
+      teamId: this.testTeam.teamId,
+      offeredAssignmentIds,
+      requestedAssignmentIds: [],
+      swapType: "open",
+      targetWorkerId: null,
+      comment,
+    });
+  }
+
+  /**
+   * Add a bid to an open swap
+   */
+  async addBidToSwap(
+    swapId: string,
+    bidderWorkerId: string,
+    offeredAssignmentIds: string[],
+  ): Promise<SwapRequestT> {
+    return await this.dbUtils.addBidToOpenSwap(
+      swapId,
+      bidderWorkerId,
+      offeredAssignmentIds,
+    );
+  }
+
+  /**
+   * Accept a bid on an open swap
+   */
+  async acceptBid(swapId: string, bidId: string): Promise<SwapRequestT> {
+    return await this.dbUtils.acceptBidOnOpenSwap(swapId, bidId);
   }
 
   /**

@@ -518,9 +518,13 @@ export default function SwapDetailDialog({
                     {swap.bids.length === 0 ? (
                       <Alert severity="info">No bids yet</Alert>
                     ) : (
-                      <List>
+                      <List data-testid="bids-list">
                         {swap.bids.map((bid) => (
-                          <Paper key={bid.id} sx={{ mb: 1 }}>
+                          <Paper
+                            key={bid.id}
+                            sx={{ mb: 1 }}
+                            data-testid={`bid-item-${bid.id}`}
+                          >
                             <ListItem
                               secondaryAction={
                                 canAcceptBid &&
@@ -530,6 +534,7 @@ export default function SwapDetailDialog({
                                     onClick={() => handleAcceptBid(bid.id)}
                                     disabled={loading}
                                     color="primary"
+                                    data-testid={`accept-bid-button-${bid.id}`}
                                   >
                                     <CheckCircleIcon />
                                   </IconButton>
@@ -543,7 +548,10 @@ export default function SwapDetailDialog({
                                     alignItems="center"
                                     gap={1}
                                   >
-                                    <Typography variant="body1">
+                                    <Typography
+                                      variant="body1"
+                                      data-testid={`bid-worker-name-${bid.id}`}
+                                    >
                                       {getWorkerName(bid.workerId)}
                                     </Typography>
                                     {bid.accepted && (
@@ -551,6 +559,7 @@ export default function SwapDetailDialog({
                                         label="Accepted"
                                         size="small"
                                         color="success"
+                                        data-testid={`bid-accepted-chip-${bid.id}`}
                                       />
                                     )}
                                   </Box>

@@ -2303,6 +2303,116 @@ export class DatabaseTestUtils {
   }
 
   /**
+   * Add a bid to an open swap
+   */
+  async addBidToOpenSwap(
+    swapId: string,
+    bidderWorkerId: string,
+    offeredAssignmentIds: string[],
+  ): Promise<SwapRequestT> {
+    try {
+      const response = await this.testApiClient.post<any>(
+        `/swaps/${swapId}/bids`,
+        {
+          bidderWorkerId,
+          offeredAssignmentIds,
+        },
+      );
+
+      console.log(`✅ Added bid to swap: ${swapId}`);
+
+      return {
+        id: response.id,
+        teamId: response.teamId,
+        createdByUserId: response.createdByUserId,
+        swapType: response.swapType,
+        status: response.status,
+        offeredAssignmentIds: response.offeredAssignmentIds,
+        requestedAssignmentIds: response.requestedAssignmentIds,
+        targetWorkerId: response.targetWorkerId,
+        comment: response.comment,
+        bids: (response.bids || []).map((bid: any) => ({
+          id: bid.id,
+          workerId: bid.workerId,
+          offeredAssignmentIds: bid.offeredAssignmentIds,
+          createdAt: dayjs.unix(bid.createdAt),
+          accepted: bid.accepted,
+        })),
+        createdAt: dayjs.unix(response.createdAt),
+        completedAt: response.completedAt
+          ? dayjs.unix(response.completedAt)
+          : null,
+        completedByUserId: response.completedByUserId,
+        revertedAt: response.revertedAt
+          ? dayjs.unix(response.revertedAt)
+          : null,
+        revertedByUserId: response.revertedByUserId,
+        auditData: response.auditData || [],
+      };
+    } catch (error) {
+      console.error("Failed to add bid to swap:", error);
+      throw new Error(
+        `Failed to add bid to swap: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Accept a bid on an open swap
+   */
+  async acceptBidOnOpenSwap(
+    swapId: string,
+    bidId: string,
+  ): Promise<SwapRequestT> {
+    try {
+      const response = await this.testApiClient.post<any>(
+        `/swaps/${swapId}/accept-bid/${bidId}`,
+        {},
+      );
+
+      console.log(`✅ Accepted bid ${bidId} on swap: ${swapId}`);
+
+      return {
+        id: response.id,
+        teamId: response.teamId,
+        createdByUserId: response.createdByUserId,
+        swapType: response.swapType,
+        status: response.status,
+        offeredAssignmentIds: response.offeredAssignmentIds,
+        requestedAssignmentIds: response.requestedAssignmentIds,
+        targetWorkerId: response.targetWorkerId,
+        comment: response.comment,
+        bids: (response.bids || []).map((bid: any) => ({
+          id: bid.id,
+          workerId: bid.workerId,
+          offeredAssignmentIds: bid.offeredAssignmentIds,
+          createdAt: dayjs.unix(bid.createdAt),
+          accepted: bid.accepted,
+        })),
+        createdAt: dayjs.unix(response.createdAt),
+        completedAt: response.completedAt
+          ? dayjs.unix(response.completedAt)
+          : null,
+        completedByUserId: response.completedByUserId,
+        revertedAt: response.revertedAt
+          ? dayjs.unix(response.revertedAt)
+          : null,
+        revertedByUserId: response.revertedByUserId,
+        auditData: response.auditData || [],
+      };
+    } catch (error) {
+      console.error("Failed to accept bid on swap:", error);
+      throw new Error(
+        `Failed to accept bid on swap: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
    * Get all swaps for a team
    */
   async getSwaps(
