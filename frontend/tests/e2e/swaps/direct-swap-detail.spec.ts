@@ -10,6 +10,7 @@
 import { test, expect } from "@playwright/test";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { SwapTestBase } from "../../utils/swap-test-base";
 import { SwapStatus } from "../../../src/types/swap";
 import { TEST_USER, TEST_USER_2 } from "../../utils/database-utils";
@@ -18,6 +19,7 @@ import { ShiftType } from "../../../src/types/shift";
 import { ShiftRestType } from "../../../src/types/shift";
 
 dayjs.extend(utc);
+dayjs.extend(isSameOrBefore);
 
 test.describe("Direct Swap Detail - Swap Creator Tests", () => {
   const swapTestBase = new SwapTestBase();
