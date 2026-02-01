@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import dayjs from "dayjs";
 import {
   Box,
@@ -10,12 +10,20 @@ import {
   CardActions,
   Chip,
   Container,
+  Fab,
   Tab,
   Tabs,
   Typography,
   CircularProgress,
 } from "@mui/material";
-import { SwapHoriz as SwapIcon, Add as AddIcon } from "@mui/icons-material";
+import {
+  SwapHoriz as SwapIcon,
+  Add as AddIcon,
+  People as PeopleIcon,
+  PersonOutline as PersonIcon,
+  Gavel as GavelIcon,
+  CheckCircle as CheckCircleIcon,
+} from "@mui/icons-material";
 import { SwapRequestT, SwapStatus, SwapType } from "../../types/swap";
 import { WorkerT } from "../../types/worker";
 import { ShiftT } from "../../types/shift";
@@ -41,24 +49,24 @@ import {
   useDenySwap,
   useRevertSwap,
 } from "../../hooks/useSwap";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
-const statusColors: Record<
-  SwapStatus,
-  "default" | "warning" | "success" | "error"
-> = {
-  [SwapStatus.ACTIVE]: "warning",
-  [SwapStatus.PENDING_APPROVAL]: "default",
-  [SwapStatus.COMPLETED]: "success",
-  [SwapStatus.DENIED]: "error",
-  [SwapStatus.REVERTED]: "warning",
-};
+enum SwapFilter {
+  ALL_ACTIVE_OPEN = "all_active_open",
+  DIRECT_PROPOSALS = "direct_proposals",
+  MY_BIDS = "my_bids",
+  MY_SWAPS = "my_swaps",
+  PENDING_APPROVAL = "pending_approval",
+  COMPLETED = "completed",
+}
 
-const statusLabels: Record<SwapStatus, string> = {
-  [SwapStatus.ACTIVE]: "Active",
-  [SwapStatus.PENDING_APPROVAL]: "Pending Approval",
-  [SwapStatus.COMPLETED]: "Completed",
-  [SwapStatus.DENIED]: "Denied",
-  [SwapStatus.REVERTED]: "Reverted",
+const filterLabels: Record<SwapFilter, string> = {
+  [SwapFilter.ALL_ACTIVE_OPEN]: "Open swaps",
+  [SwapFilter.DIRECT_PROPOSALS]: "Swap proposals",
+  [SwapFilter.MY_BIDS]: "My bids",
+  [SwapFilter.MY_SWAPS]: "My swaps",
+  [SwapFilter.PENDING_APPROVAL]: "Pending approval",
+  [SwapFilter.COMPLETED]: "Completed",
 };
 
 interface SwapTabProps {
@@ -71,6 +79,7 @@ export default function SwapTab({
   currentUserId,
 }: SwapTabProps) {
   const teamId = teamWithMembership.team.id;
+  const isMobile = useIsMobile();
 
   // Hooks
   const getSwaps = useGetSwaps();
@@ -88,7 +97,9 @@ export default function SwapTab({
   const getLinkShifts = useGetLinkShifts();
   const getAssignments = useGetAssignments();
 
-  const [currentTab, setCurrentTab] = useState<SwapStatus | "all">("all");
+  const [currentFilter, setCurrentFilter] = useState<SwapFilter>(
+    SwapFilter.ALL_ACTIVE_OPEN,
+  );
   const [swaps, setSwaps] = useState<SwapRequestT[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -184,15 +195,15 @@ export default function SwapTab({
     try {
       setLoading(true);
       setError(null);
-      const status = currentTab === "all" ? undefined : currentTab;
-      const data = await getSwaps(teamId, status);
+      // Fetch all swaps, filtering will be done client-side
+      const data = await getSwaps(teamId);
       setSwaps(data);
     } catch (err: any) {
       setError(err.message || "Failed to load swaps");
     } finally {
       setLoading(false);
     }
-  }, [teamId, currentTab, getSwaps]);
+  }, [teamId, getSwaps]);
 
   const loadAssignments = useCallback(async () => {
     if (!teamId) return;
@@ -227,19 +238,56 @@ export default function SwapTab({
     loadSwaps();
   }, [loadSwaps]);
 
-  const handleTabChange = (
+  const handleFilterChange = (
     _event: React.SyntheticEvent,
-    newValue: SwapStatus | "all",
+    newFilter: SwapFilter,
   ) => {
-    setCurrentTab(newValue);
+    setCurrentFilter(newFilter);
   };
 
-  const getFilteredSwaps = () => {
-    if (currentTab === "all") {
-      return swaps;
-    }
-    return swaps.filter((swap) => swap.status === currentTab);
-  };
+  const filteredSwaps = useMemo(() => {
+    return swaps.filter((swap) => {
+      switch (currentFilter) {
+        case SwapFilter.ALL_ACTIVE_OPEN:
+          // Active open swaps, excluding my own, including those I bid on
+          return (
+            swap.swapType === SwapType.OPEN &&
+            swap.status === SwapStatus.ACTIVE &&
+            swap.createdByUserId !== currentUserId
+          );
+
+        case SwapFilter.DIRECT_PROPOSALS:
+          // Direct swaps where I am the target worker
+          return (
+            swap.swapType === SwapType.DIRECT &&
+            swap.targetWorkerId === currentUserId &&
+            swap.status === SwapStatus.ACTIVE
+          );
+
+        case SwapFilter.MY_BIDS:
+          // Open swaps where I have placed a bid
+          return (
+            swap.swapType === SwapType.OPEN &&
+            swap.bids.some((bid) => bid.workerId === currentUserId)
+          );
+
+        case SwapFilter.MY_SWAPS:
+          // Swaps I created
+          return swap.createdByUserId === currentUserId;
+
+        case SwapFilter.PENDING_APPROVAL:
+          // Swaps pending approval (leader only)
+          return swap.status === SwapStatus.PENDING_APPROVAL;
+
+        case SwapFilter.COMPLETED:
+          // Completed swaps (leader only)
+          return swap.status === SwapStatus.COMPLETED;
+
+        default:
+          return true;
+      }
+    });
+  }, [swaps, currentFilter, currentUserId]);
 
   const handleCreateSwap = async (swapData: {
     offeredAssignmentIds: string[];
@@ -310,129 +358,196 @@ export default function SwapTab({
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 3,
-        }}
-      >
-        <Typography variant="h4" component="h1">
-          <SwapIcon sx={{ mr: 1, verticalAlign: "middle" }} />
-          Assignment Swaps
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setCreateDialogOpen(true)}
-          data-testid="create-swap-button"
+    <Box sx={{ backgroundColor: "white", minHeight: "100vh" }}>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 3,
+          }}
         >
-          Create Swap
-        </Button>
-      </Box>
-
-      <Tabs value={currentTab} onChange={handleTabChange} sx={{ mb: 3 }}>
-        <Tab label="All" value="all" />
-        <Tab label="Active" value={SwapStatus.ACTIVE} />
-        <Tab label="Pending Approval" value={SwapStatus.PENDING_APPROVAL} />
-        <Tab label="Completed" value={SwapStatus.COMPLETED} />
-      </Tabs>
-
-      {loading && (
-        <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-          <CircularProgress />
+          <Typography variant="h4" component="h1">
+            <SwapIcon sx={{ mr: 1, verticalAlign: "middle" }} />
+            Swaps
+          </Typography>
+          {!isMobile && (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setCreateDialogOpen(true)}
+              data-testid="create-swap-button"
+            >
+              Create Swap
+            </Button>
+          )}
         </Box>
-      )}
 
-      {error && (
-        <Typography color="error" sx={{ py: 2 }}>
-          {error}
-        </Typography>
-      )}
-
-      {!loading && !error && getFilteredSwaps().length === 0 && (
-        <Typography
-          variant="body1"
-          color="text.secondary"
-          sx={{ py: 4, textAlign: "center" }}
+        <Tabs
+          value={currentFilter}
+          onChange={handleFilterChange}
+          variant={isMobile ? "scrollable" : "standard"}
+          scrollButtons={isMobile ? "auto" : false}
+          sx={{ mb: 3 }}
         >
-          No swaps found
-        </Typography>
-      )}
-
-      {!loading &&
-        !error &&
-        getFilteredSwaps().map((swap) => (
-          <SwapCard
-            key={swap.id}
-            swap={swap}
-            isLeader={isLeader}
-            onViewDetails={openDetailDialog}
-            onApprove={async (swapId: string) => {
-              try {
-                await handleApproveSwap(swapId);
-              } catch (err: any) {
-                setError(err.message || "Failed to approve swap");
-              }
-            }}
+          <Tab
+            label={filterLabels[SwapFilter.ALL_ACTIVE_OPEN]}
+            value={SwapFilter.ALL_ACTIVE_OPEN}
+            data-testid="filter-all-active-open"
           />
-        ))}
+          <Tab
+            label={filterLabels[SwapFilter.DIRECT_PROPOSALS]}
+            value={SwapFilter.DIRECT_PROPOSALS}
+            data-testid="filter-direct-proposals"
+          />
+          <Tab
+            label={filterLabels[SwapFilter.MY_BIDS]}
+            value={SwapFilter.MY_BIDS}
+            data-testid="filter-my-bids"
+          />
+          <Tab
+            label={filterLabels[SwapFilter.MY_SWAPS]}
+            value={SwapFilter.MY_SWAPS}
+            data-testid="filter-my-swaps"
+          />
+          {isLeader && (
+            <>
+              <Tab
+                label={filterLabels[SwapFilter.PENDING_APPROVAL]}
+                value={SwapFilter.PENDING_APPROVAL}
+                data-testid="filter-pending-approval"
+              />
+              <Tab
+                label={filterLabels[SwapFilter.COMPLETED]}
+                value={SwapFilter.COMPLETED}
+                data-testid="filter-completed"
+              />
+            </>
+          )}
+        </Tabs>
 
-      {/* Create Swap Dialog */}
-      <CreateSwapDialog
-        open={createDialogOpen}
-        onClose={() => setCreateDialogOpen(false)}
-        onSubmit={handleCreateSwap}
-        teamId={teamId}
-        currentUserId={currentUserId}
-        role={teamWithMembership.membership.role}
-        workers={workers}
-        assignments={assignments}
-        linkShifts={linkShifts}
-      />
+        {loading && (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+            <CircularProgress />
+          </Box>
+        )}
 
-      {/* Swap Detail Dialog */}
-      <SwapDetailDialog
-        open={detailDialogOpen}
-        onClose={() => setDetailDialogOpen(false)}
-        swap={selectedSwap}
-        teamId={teamId}
-        currentUserId={currentUserId}
-        isLeader={isLeader}
-        workers={workers}
-        assignments={assignments}
-        linkShifts={linkShifts}
-        onAddBid={
-          selectedSwap
-            ? (workerId, bidIds) =>
-                handleAddBid(selectedSwap.id, workerId, bidIds)
-            : undefined
-        }
-        onAcceptBid={
-          selectedSwap
-            ? (bidId) => handleAcceptBid(selectedSwap.id, bidId)
-            : undefined
-        }
-        onAcceptDirectSwap={
-          selectedSwap
-            ? () => handleAcceptDirectSwap(selectedSwap.id)
-            : undefined
-        }
-        onApprove={
-          selectedSwap ? () => handleApproveSwap(selectedSwap.id) : undefined
-        }
-        onDeny={
-          selectedSwap ? () => handleDenySwap(selectedSwap.id) : undefined
-        }
-        onRevert={
-          selectedSwap ? () => handleRevertSwap(selectedSwap.id) : undefined
-        }
-        onDelete={
-          selectedSwap ? () => handleDeleteSwap(selectedSwap.id) : undefined
-        }
-      />
-    </Container>
+        {error && (
+          <Typography color="error" sx={{ py: 2 }}>
+            {error}
+          </Typography>
+        )}
+
+        {!loading && !error && filteredSwaps.length === 0 && (
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ py: 4, textAlign: "center" }}
+          >
+            {currentFilter === SwapFilter.MY_SWAPS &&
+              "You haven't created any swaps yet"}
+            {currentFilter === SwapFilter.DIRECT_PROPOSALS &&
+              "No direct swap proposals for you"}
+            {currentFilter === SwapFilter.MY_BIDS &&
+              "You haven't placed any bids yet"}
+            {currentFilter === SwapFilter.ALL_ACTIVE_OPEN &&
+              "No active open swaps available"}
+            {currentFilter === SwapFilter.PENDING_APPROVAL &&
+              "No swaps pending approval"}
+            {currentFilter === SwapFilter.COMPLETED && "No completed swaps"}
+          </Typography>
+        )}
+
+        {!loading &&
+          !error &&
+          filteredSwaps.map((swap) => (
+            <SwapCard
+              key={swap.id}
+              swap={swap}
+              isLeader={isLeader}
+              onViewDetails={openDetailDialog}
+              onApprove={async (swapId: string) => {
+                try {
+                  await handleApproveSwap(swapId);
+                } catch (err: any) {
+                  setError(err.message || "Failed to approve swap");
+                }
+              }}
+            />
+          ))}
+
+        {/* Create Swap Dialog */}
+        <CreateSwapDialog
+          open={createDialogOpen}
+          onClose={() => setCreateDialogOpen(false)}
+          onSubmit={handleCreateSwap}
+          teamId={teamId}
+          currentUserId={currentUserId}
+          role={teamWithMembership.membership.role}
+          workers={workers}
+          assignments={assignments}
+          linkShifts={linkShifts}
+        />
+
+        {/* Swap Detail Dialog */}
+        <SwapDetailDialog
+          open={detailDialogOpen}
+          onClose={() => setDetailDialogOpen(false)}
+          swap={selectedSwap}
+          teamId={teamId}
+          currentUserId={currentUserId}
+          isLeader={isLeader}
+          workers={workers}
+          assignments={assignments}
+          linkShifts={linkShifts}
+          onAddBid={
+            selectedSwap
+              ? (workerId, bidIds) =>
+                  handleAddBid(selectedSwap.id, workerId, bidIds)
+              : undefined
+          }
+          onAcceptBid={
+            selectedSwap
+              ? (bidId) => handleAcceptBid(selectedSwap.id, bidId)
+              : undefined
+          }
+          onAcceptDirectSwap={
+            selectedSwap
+              ? () => handleAcceptDirectSwap(selectedSwap.id)
+              : undefined
+          }
+          onApprove={
+            selectedSwap ? () => handleApproveSwap(selectedSwap.id) : undefined
+          }
+          onDeny={
+            selectedSwap ? () => handleDenySwap(selectedSwap.id) : undefined
+          }
+          onRevert={
+            selectedSwap ? () => handleRevertSwap(selectedSwap.id) : undefined
+          }
+          onDelete={
+            selectedSwap ? () => handleDeleteSwap(selectedSwap.id) : undefined
+          }
+        />
+
+        {/* FAB for mobile */}
+        {isMobile && (
+          <Fab
+            color="primary"
+            aria-label="create swap"
+            onClick={() => setCreateDialogOpen(true)}
+            data-testid="create-swap-fab"
+            sx={{
+              position: "fixed",
+              bottom: 16,
+              right: 16,
+            }}
+          >
+            <AddIcon />
+          </Fab>
+        )}
+      </Container>
+    </Box>
   );
 }
