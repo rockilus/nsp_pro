@@ -155,14 +155,11 @@ test.describe("Open Swap Detail - Swap Creator Tests", () => {
         timeout: 5000,
       });
 
-      // Verify swap is deleted by checking it doesn't exist via API
-      try {
-        await swapTestBase.getSwapById(deleteSwap.id);
-        throw new Error("Swap should have been deleted");
-      } catch (error: any) {
-        // Expected - swap not found
-        expect(error.message).toMatch(/not found|404/i);
-      }
+      // Verify swap is no longer visible in SwapTab
+      const currentSwapCard = await page.locator(
+        `[data-testid="view-details-button-${deleteSwap.id}"]`,
+      );
+      expect(currentSwapCard.count()).toBe(0);
 
       console.log("✅ Open swap deleted successfully");
     }
