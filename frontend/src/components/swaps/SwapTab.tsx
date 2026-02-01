@@ -50,6 +50,8 @@ import {
   useRevertSwap,
 } from "../../hooks/useSwap";
 import { useIsMobile } from "../../hooks/useIsMobile";
+// Styles
+import "../../styles/text-styles.css";
 
 enum SwapFilter {
   ALL_ACTIVE_OPEN = "all_active_open",
@@ -368,8 +370,13 @@ export default function SwapTab({
             mb: 3,
           }}
         >
-          <Typography variant="h4" component="h1">
-            <SwapIcon sx={{ mr: 1, verticalAlign: "middle" }} />
+          <Typography
+            component="span"
+            className="title"
+            role="heading"
+            aria-level={1}
+            sx={{ fontSize: "1.25rem", fontWeight: 600, color: "#1976d2" }}
+          >
             Swaps
           </Typography>
           {!isMobile && (
