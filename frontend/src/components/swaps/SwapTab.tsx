@@ -60,6 +60,60 @@ const filterLabels: Record<SwapFilter, string> = {
   [SwapFilter.COMPLETED]: "Completed",
 };
 
+// Centralized tab definitions
+interface SwapTabDefinition {
+  label: string;
+  value: SwapFilter;
+  dataTestId: string;
+  visibleFor?: "all" | "leader" | "member";
+  sx?: Record<string, any>;
+}
+
+const SWAP_TABS: SwapTabDefinition[] = [
+  {
+    label: filterLabels[SwapFilter.ALL_ACTIVE_OPEN],
+    value: SwapFilter.ALL_ACTIVE_OPEN,
+    dataTestId: "filter-all-active-open",
+    visibleFor: "all",
+    sx: { textTransform: "none" },
+  },
+  {
+    label: filterLabels[SwapFilter.DIRECT_PROPOSALS],
+    value: SwapFilter.DIRECT_PROPOSALS,
+    dataTestId: "filter-direct-proposals",
+    visibleFor: "all",
+    sx: { textTransform: "none" },
+  },
+  {
+    label: filterLabels[SwapFilter.MY_BIDS],
+    value: SwapFilter.MY_BIDS,
+    dataTestId: "filter-my-bids",
+    visibleFor: "all",
+    sx: { textTransform: "none" },
+  },
+  {
+    label: filterLabels[SwapFilter.MY_SWAPS],
+    value: SwapFilter.MY_SWAPS,
+    dataTestId: "filter-my-swaps",
+    visibleFor: "all",
+    sx: { textTransform: "none" },
+  },
+  {
+    label: filterLabels[SwapFilter.PENDING_APPROVAL],
+    value: SwapFilter.PENDING_APPROVAL,
+    dataTestId: "filter-pending-approval",
+    visibleFor: "leader",
+    sx: { textTransform: "none" },
+  },
+  {
+    label: filterLabels[SwapFilter.COMPLETED],
+    value: SwapFilter.COMPLETED,
+    dataTestId: "filter-completed",
+    visibleFor: "leader",
+    sx: { textTransform: "none" },
+  },
+];
+
 interface SwapTabProps {
   teamWithMembership: TeamWithMembership;
   currentUserId: string;
@@ -348,6 +402,17 @@ export default function SwapTab({
     setDetailDialogOpen(true);
   };
 
+  const visibleTabs = useMemo(
+    () =>
+      SWAP_TABS.filter(
+        (tab) =>
+          tab.visibleFor === "all" ||
+          (tab.visibleFor === "leader" && isLeader) ||
+          (tab.visibleFor === "member" && !isLeader),
+      ),
+    [isLeader],
+  );
+
   return (
     <Box sx={{ backgroundColor: "white", minHeight: "100vh" }}>
       <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -386,46 +451,15 @@ export default function SwapTab({
           scrollButtons={isMobile ? "auto" : false}
           sx={{ marginBottom: "2px" }}
         >
-          <Tab
-            label={filterLabels[SwapFilter.ALL_ACTIVE_OPEN]}
-            value={SwapFilter.ALL_ACTIVE_OPEN}
-            data-testid="filter-all-active-open"
-            sx={{ textTransform: "none" }}
-          />
-          <Tab
-            label={filterLabels[SwapFilter.DIRECT_PROPOSALS]}
-            value={SwapFilter.DIRECT_PROPOSALS}
-            data-testid="filter-direct-proposals"
-            sx={{ textTransform: "none" }}
-          />
-          <Tab
-            label={filterLabels[SwapFilter.MY_BIDS]}
-            value={SwapFilter.MY_BIDS}
-            data-testid="filter-my-bids"
-            sx={{ textTransform: "none" }}
-          />
-          <Tab
-            label={filterLabels[SwapFilter.MY_SWAPS]}
-            value={SwapFilter.MY_SWAPS}
-            data-testid="filter-my-swaps"
-            sx={{ textTransform: "none" }}
-          />
-          {isLeader && (
-            <>
-              <Tab
-                label={filterLabels[SwapFilter.PENDING_APPROVAL]}
-                value={SwapFilter.PENDING_APPROVAL}
-                data-testid="filter-pending-approval"
-                sx={{ textTransform: "none" }}
-              />
-              <Tab
-                label={filterLabels[SwapFilter.COMPLETED]}
-                value={SwapFilter.COMPLETED}
-                data-testid="filter-completed"
-                sx={{ textTransform: "none" }}
-              />
-            </>
-          )}
+          {visibleTabs.map((tab) => (
+            <Tab
+              key={tab.value}
+              label={tab.label}
+              value={tab.value}
+              data-testid={tab.dataTestId}
+              sx={tab.sx}
+            />
+          ))}
         </Tabs>
 
         {loading && (
