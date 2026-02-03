@@ -334,7 +334,7 @@ export default function SwapDetailContent({
                           display: "flex",
                           justifyContent: "space-between",
                           alignItems: "flex-start",
-                          mb: 1,
+                          mb: "4px",
                         }}
                       >
                         <Box>
@@ -364,9 +364,9 @@ export default function SwapDetailContent({
                               />
                             )}
                           </Box>
-                          <Typography variant="caption" color="text.secondary">
+                          {/* <Typography variant="caption" color="text.secondary">
                             {bid.createdAt.format("MMM D, YYYY HH:mm")}
-                          </Typography>
+                          </Typography> */}
                         </Box>
 
                         <Box sx={{ display: "flex", gap: 1 }}>
@@ -395,14 +395,14 @@ export default function SwapDetailContent({
                         </Box>
                       </Box>
 
-                      <Typography
+                      {/* <Typography
                         variant="caption"
                         color="text.secondary"
                         display="block"
                         sx={{ mb: 1 }}
                       >
                         Bid Assignments:
-                      </Typography>
+                      </Typography> */}
                       <AssignmentList
                         assignments={bidAssignments}
                         maxDisplayed={5}
