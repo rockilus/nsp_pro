@@ -382,15 +382,16 @@ export default function SwapDetailContent({
                             </IconButton>
                           )}
                           {canAcceptBid && !bid.accepted && onAcceptBid && (
-                            <IconButton
+                            <Button
+                              variant="outlined"
                               size="small"
                               onClick={() => onAcceptBid(bid.id)}
                               disabled={loading}
                               color="primary"
                               data-testid={`accept-bid-button-${bid.id}`}
                             >
-                              <CheckCircleIcon fontSize="small" />
-                            </IconButton>
+                              Accept Bid
+                            </Button>
                           )}
                         </Box>
                       </Box>

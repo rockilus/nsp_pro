@@ -43,6 +43,7 @@ interface SwapDetailDialogProps {
   onRevert?: () => Promise<void>;
   onDelete?: () => Promise<void>;
   onDeleteBid?: (bidId: string) => Promise<void>;
+  onCancelBidAcceptance?: () => Promise<void>;
 }
 
 export default function SwapDetailDialog({
@@ -64,6 +65,7 @@ export default function SwapDetailDialog({
   onRevert,
   onDelete,
   onDeleteBid,
+  onCancelBidAcceptance,
 }: SwapDetailDialogProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -194,7 +196,22 @@ export default function SwapDetailDialog({
       setLoading(false);
     }
   };
+  const handleCancelBidAcceptance = async () => {
+    if (!onCancelBidAcceptance) return;
 
+    try {
+      setLoading(true);
+      setError(null);
+      await onCancelBidAcceptance();
+    } catch (err) {
+      console.error("Failed to cancel bid acceptance:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to cancel bid acceptance",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleRevert = async () => {
     if (!onRevert) return;
 
@@ -292,6 +309,12 @@ export default function SwapDetailDialog({
     !reviewMode &&
     (swap.status === SwapStatus.ACTIVE ||
       swap.status === SwapStatus.PENDING_APPROVAL) &&
+    (isLeader || swap.createdByUserId === currentUserId);
+
+  const canCancelBidAcceptance =
+    !reviewMode &&
+    swap.status === SwapStatus.PENDING_APPROVAL &&
+    swap.swapType === SwapType.OPEN &&
     (isLeader || swap.createdByUserId === currentUserId);
 
   return (
@@ -422,6 +445,17 @@ export default function SwapDetailDialog({
                   size={isMobile ? "small" : "medium"}
                 >
                   Revert Swap
+                </Button>
+              )}
+              {canCancelBidAcceptance && (
+                <Button
+                  onClick={handleCancelBidAcceptance}
+                  color="warning"
+                  disabled={loading}
+                  data-testid="cancel-bid-acceptance-button"
+                  size={isMobile ? "small" : "medium"}
+                >
+                  Revert to Open
                 </Button>
               )}
             </Box>

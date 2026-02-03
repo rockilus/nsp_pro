@@ -131,6 +131,25 @@ export class SwapApi extends BaseApi {
   }
 
   /**
+   * Cancel bid acceptance, returning swap to ACTIVE status
+   */
+  static async cancelBidAcceptance(
+    apiClient: AuthenticatedApiClient,
+    swapId: string,
+  ): Promise<SwapRequestT> {
+    if (!swapId) {
+      throw new Error("Swap ID is required");
+    }
+
+    const responseData = await this.makeRequest<any>(
+      apiClient,
+      "post",
+      `/swaps/${swapId}/cancel-bid-acceptance`,
+    );
+    return toSwapRequestT(responseData);
+  }
+
+  /**
    * Accept a direct swap invitation (moves to PENDING_APPROVAL)
    */
   static async acceptDirectSwap(

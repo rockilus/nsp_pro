@@ -199,6 +199,37 @@ async def accept_bid(
     return response
 
 
+@router.post("/swaps/{swap_id}/cancel-bid-acceptance")
+async def cancel_bid_acceptance(
+    swap_id: str,
+    user_context: UserContext = Depends(get_user_context),
+    swap_service: SwapService = Depends(get_swap_service),
+) -> SwapRequestDTO:
+    """Cancel bid acceptance, returning swap to ACTIVE status."""
+    try:
+        # Get the swap to check team
+        swap = swap_service.get_swap_by_id(swap_id)
+        if not swap:
+            raise ValueError(f"Swap request {swap_id} not found")
+
+        # Check permission (reuse create-swap for creator and leaders)
+        if not await authz_check(
+            user_context.user_id, "create-swap", "team", swap.team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to cancel bid acceptance"
+            )
+
+        # Cancel the bid acceptance
+        updated_swap = swap_service.cancel_bid_acceptance(swap_id=swap_id)
+
+        response = updated_swap.to_dto()
+    except Exception as e:
+        log_info(f"Failed to cancel bid acceptance: {e}")
+        handle_routes_errors(e)
+    return response
+
+
 @router.post("/swaps/{swap_id}/accept")
 async def accept_direct_swap(
     swap_id: str,

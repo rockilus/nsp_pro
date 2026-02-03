@@ -236,6 +236,48 @@ class SwapService(BaseService):
         updated_swap = self.collection.swap_db.update_swap_request(swap)
         return updated_swap
 
+    def cancel_bid_acceptance(self, swap_id: str) -> SwapRequest:
+        """
+        Cancel bid acceptance, returning swap to ACTIVE status.
+        Resets the accepted bid and allows creator to choose again.
+
+        Args:
+            swap_id: Swap request ID
+
+        Returns:
+            Updated SwapRequest
+
+        Raises:
+            ValueError: If validation fails
+        """
+        # Fetch swap request
+        swap = self.collection.swap_db.get_swap_by_id(swap_id)
+        if not swap:
+            raise ValueError(f"Swap request {swap_id} not found")
+
+        # Validate swap type and status
+        if swap.swap_type != SwapType.OPEN:
+            raise ValueError("Can only cancel bid acceptance on open swaps")
+        if swap.status != SwapStatus.PENDING_APPROVAL:
+            raise ValueError(
+                f"Can only cancel acceptance from PENDING_APPROVAL status "
+                f"(current: {swap.status.value})"
+            )
+
+        # Find and reset the accepted bid
+        for bid in swap.bids:
+            if bid.accepted:
+                bid.accepted = False
+
+        # Reset swap to active state
+        swap.status = SwapStatus.ACTIVE
+        swap.target_worker_id = None
+        swap.requested_assignment_ids = None
+
+        # Update in database
+        updated_swap = self.collection.swap_db.update_swap_request(swap)
+        return updated_swap
+
     def delete_bid(
         self, swap_id: str, bid_id: str, deleter_worker_id: str
     ) -> SwapRequest:
