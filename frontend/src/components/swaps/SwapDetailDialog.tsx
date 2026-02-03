@@ -14,17 +14,15 @@ import {
   Paper,
   Alert,
   CircularProgress,
-  Tab,
-  Tabs,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemButton,
   IconButton,
+  Collapse,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import {
-  CheckCircle as CheckCircleIcon,
   Close as CloseIcon,
+  Delete as DeleteIcon,
+  CheckCircle as CheckCircleIcon,
 } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { SwapRequestT, SwapBidT, SwapType, SwapStatus } from "../../types/swap";
@@ -32,17 +30,23 @@ import { AssignmentDataDictT } from "../../types/assignment";
 import { WorkerT } from "../../types/worker";
 import { LinkShiftT } from "../../types/shift";
 import AssignmentSelector from "./AssignmentSelector";
+import AssignmentList from "./AssignmentList";
+import SwapDetailContent from "./SwapDetailContent";
+import { getEarliestAssignment } from "../../utils/assignmentSort";
+import { getWorkerName, getWorkerByUserId } from "../../utils/workerHelpers";
+import { getAssignmentsForIds } from "../../utils/swapHelpers";
 
 interface SwapDetailDialogProps {
   open: boolean;
   onClose: () => void;
   swap: SwapRequestT | null;
-  teamId: string;
+  teamId?: string;
   currentUserId: string;
-  isLeader: boolean;
+  isLeader?: boolean;
   workers: WorkerT[];
   assignments: AssignmentDataDictT[];
   linkShifts: LinkShiftT[];
+  reviewMode?: boolean;
   onAddBid?: (workerId: string, bidAssignmentIds: string[]) => Promise<void>;
   onAcceptBid?: (bidId: string) => Promise<void>;
   onAcceptDirectSwap?: () => Promise<void>;
@@ -50,6 +54,7 @@ interface SwapDetailDialogProps {
   onDeny?: () => Promise<void>;
   onRevert?: () => Promise<void>;
   onDelete?: () => Promise<void>;
+  onDeleteBid?: (bidId: string) => Promise<void>;
 }
 
 export default function SwapDetailDialog({
@@ -58,10 +63,11 @@ export default function SwapDetailDialog({
   swap,
   teamId,
   currentUserId,
-  isLeader,
+  isLeader = false,
   workers,
   assignments,
   linkShifts,
+  reviewMode = false,
   onAddBid,
   onAcceptBid,
   onAcceptDirectSwap,
@@ -69,21 +75,22 @@ export default function SwapDetailDialog({
   onDeny,
   onRevert,
   onDelete,
+  onDeleteBid,
 }: SwapDetailDialogProps) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [tabValue, setTabValue] = useState(0);
 
   // State for add bid
   const [showAddBid, setShowAddBid] = useState(false);
   const [bidAssignmentIds, setBidAssignmentIds] = useState<string[]>([]);
 
-  // Filter assignments for current swap
+  // Filter assignments for current swap using helper
   const offeredAssignments = useMemo(() => {
     if (!swap) return [];
-    return assignments.filter((a) =>
-      swap.offeredAssignmentIds.includes(a.assignment.id),
-    );
+    return getAssignmentsForIds(swap.offeredAssignmentIds, assignments);
   }, [swap, assignments]);
 
   const requestedAssignments = useMemo(() => {
@@ -93,23 +100,42 @@ export default function SwapDetailDialog({
       !swap.requestedAssignmentIds
     )
       return [];
-    return assignments.filter((a) =>
-      swap.requestedAssignmentIds!.includes(a.assignment.id),
-    );
+    return getAssignmentsForIds(swap.requestedAssignmentIds, assignments);
   }, [swap, assignments]);
 
   const handleAddBid = async () => {
     if (!onAddBid || bidAssignmentIds.length === 0) return;
 
+    const currentWorker = getWorkerByUserId(currentUserId, workers);
+    if (!currentWorker) {
+      setError("Worker not found for current user");
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
-      await onAddBid(currentUserId, bidAssignmentIds);
+      await onAddBid(currentWorker.id, bidAssignmentIds);
       setShowAddBid(false);
       setBidAssignmentIds([]);
     } catch (err) {
       console.error("Failed to add bid:", err);
       setError(err instanceof Error ? err.message : "Failed to add bid");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteBid = async (bidId: string) => {
+    if (!onDeleteBid) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+      await onDeleteBid(bidId);
+    } catch (err) {
+      console.error("Failed to delete bid:", err);
+      setError(err instanceof Error ? err.message : "Failed to delete bid");
     } finally {
       setLoading(false);
     }
@@ -207,11 +233,6 @@ export default function SwapDetailDialog({
     }
   };
 
-  const getWorkerName = (workerId: string) => {
-    const worker = workers.find((w) => w.id === workerId);
-    return worker ? worker.name : "Unknown Worker";
-  };
-
   const getStatusColor = (
     status: SwapStatus,
   ): "default" | "info" | "warning" | "success" | "error" => {
@@ -235,36 +256,84 @@ export default function SwapDetailDialog({
     return null;
   }
 
+  // Get title data (same as SwapCard)
+  const earliestOffered = getEarliestAssignment(offeredAssignments);
+  const titleDate = earliestOffered
+    ? earliestOffered.assignment.date
+    : swap.createdAt || null;
+  const dayNumber =
+    titleDate && typeof (titleDate as any).format === "function"
+      ? titleDate.format("D")
+      : "";
+  const monthWeekday =
+    titleDate && typeof (titleDate as any).format === "function"
+      ? titleDate.format("MMM, ddd")
+      : "";
+  const titleShiftName = earliestOffered ? earliestOffered.shift.name : "";
+
+  // Creator worker
+  const creatorWorker =
+    offeredAssignments.length > 0
+      ? offeredAssignments[0].worker
+      : workers.find((w) => w.userId === swap.createdByUserId) || null;
+
+  // Current user's worker
+  const currentUserWorker = getWorkerByUserId(currentUserId, workers);
+
   // Determine available actions based on role and swap state
+  const userHasExistingBid =
+    currentUserWorker &&
+    swap.bids.some((bid) => bid.workerId === currentUserWorker.id);
+
   const canAddBid =
+    !reviewMode &&
     swap.swapType === SwapType.OPEN &&
     swap.status === SwapStatus.ACTIVE &&
-    !isLeader;
+    !isLeader &&
+    !userHasExistingBid &&
+    currentUserWorker &&
+    creatorWorker?.id !== currentUserWorker.id;
 
   const canAcceptBid =
+    !reviewMode &&
     swap.swapType === SwapType.OPEN &&
     swap.status === SwapStatus.ACTIVE &&
-    swap.bids.length > 0;
-
-  // Find the worker associated with the current user
-  const currentUserWorker = workers.find((w) => w.userId === currentUserId);
+    swap.bids.length > 0 &&
+    creatorWorker?.userId === currentUserId;
 
   const canAcceptDirectSwap =
+    !reviewMode &&
     swap.swapType === SwapType.DIRECT &&
     swap.status === SwapStatus.ACTIVE &&
     currentUserWorker !== undefined &&
     swap.targetWorkerId === currentUserWorker.id;
 
-  const canApprove = swap.status === SwapStatus.PENDING_APPROVAL && isLeader;
+  const canApprove =
+    !reviewMode && swap.status === SwapStatus.PENDING_APPROVAL && isLeader;
 
-  const canDeny = swap.status === SwapStatus.PENDING_APPROVAL && isLeader;
+  const canDeny =
+    !reviewMode && swap.status === SwapStatus.PENDING_APPROVAL && isLeader;
 
-  const canRevert = swap.status === SwapStatus.COMPLETED && isLeader;
+  const canRevert =
+    !reviewMode && swap.status === SwapStatus.COMPLETED && isLeader;
 
   const canDelete =
+    !reviewMode &&
     (swap.status === SwapStatus.ACTIVE ||
       swap.status === SwapStatus.PENDING_APPROVAL) &&
-    (isLeader || swap.createdByUserId === currentUserId); // Simplification - check if user owns offered assignments
+    (isLeader || swap.createdByUserId === currentUserId);
+
+  // Sort bids - current user's bid first
+  const sortedBids = useMemo(() => {
+    if (!currentUserWorker) return swap.bids;
+    const userBids = swap.bids.filter(
+      (bid) => bid.workerId === currentUserWorker.id,
+    );
+    const otherBids = swap.bids.filter(
+      (bid) => bid.workerId !== currentUserWorker.id,
+    );
+    return [...userBids, ...otherBids];
+  }, [swap.bids, currentUserWorker]);
 
   return (
     <Dialog
@@ -276,7 +345,36 @@ export default function SwapDetailDialog({
     >
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h6">Swap Request Details</Typography>
+          {/* Title matching SwapCard format */}
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: isMobile ? "column" : "row",
+                alignItems: isMobile ? "flex-start" : "baseline",
+                mr: 2,
+              }}
+            >
+              <Typography
+                variant="h5"
+                component="div"
+                sx={{ lineHeight: 1, mr: isMobile ? 0 : "5px" }}
+              >
+                {dayNumber}
+              </Typography>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ whiteSpace: "nowrap" }}
+              >
+                {monthWeekday}
+              </Typography>
+            </Box>
+            <Typography variant="h6" component="div" fontWeight={700}>
+              {titleShiftName}
+              {offeredAssignments.length > 1 ? "..." : ""}
+            </Typography>
+          </Box>
           <IconButton
             onClick={onClose}
             size="small"
@@ -297,397 +395,113 @@ export default function SwapDetailDialog({
             <CircularProgress />
           </Box>
         ) : (
-          <Box>
-            {error && (
-              <Alert severity="error" sx={{ mb: 2 }} data-testid="error-alert">
-                {error}
-              </Alert>
-            )}
-
-            {/* Swap Info Header */}
-            <Paper sx={{ p: 2, mb: 2, bgcolor: "grey.50" }}>
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={1}
-              >
-                <Chip
-                  label={
-                    swap.swapType === SwapType.DIRECT
-                      ? "Direct Swap"
-                      : "Open Swap"
-                  }
-                  color="primary"
-                  data-testid="swap-type-chip"
-                />
-                <Chip
-                  label={swap.status}
-                  color={getStatusColor(swap.status)}
-                  data-testid="swap-status-chip"
-                />
-              </Box>
-              <Typography variant="body2" color="text.secondary">
-                Created: {swap.createdAt.format("MMM D, YYYY HH:mm")}
-              </Typography>
-              {swap.completedAt && (
-                <Typography variant="body2" color="text.secondary">
-                  Completed: {swap.completedAt.format("MMM D, YYYY HH:mm")}
-                </Typography>
-              )}
-            </Paper>
-
-            {/* Tabs for different views */}
-            <Tabs
-              value={tabValue}
-              onChange={(_, newValue) => setTabValue(newValue)}
-              sx={{ mb: 2 }}
-            >
-              <Tab label="Details" data-testid="details-tab" />
-              {swap.swapType === SwapType.OPEN && (
-                <Tab
-                  label={`Bids (${swap.bids.length})`}
-                  data-testid="bids-tab"
-                />
-              )}
-              {swap.status === SwapStatus.COMPLETED &&
-                swap.auditData.length > 0 && (
-                  <Tab label="Audit Trail" data-testid="audit-trail-tab" />
-                )}
-            </Tabs>
-
-            {/* Tab Content */}
-            {tabValue === 0 && (
-              <Box>
-                {/* Worker */}
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="subtitle2" color="text.secondary">
-                    Worker
-                  </Typography>
-                  <Typography variant="body1">
-                    {getWorkerName(swap.offeredAssignmentIds[0] || "")}
-                  </Typography>
-                </Box>
-
-                <Divider sx={{ my: 2 }} />
-
-                {/* Offered Assignments */}
-                <Box sx={{ mb: 2 }} data-testid="offered-assignments-section">
-                  <Typography
-                    variant="subtitle2"
-                    color="text.secondary"
-                    gutterBottom
-                  >
-                    Offered Assignments ({offeredAssignments.length})
-                  </Typography>
-                  {offeredAssignments.map((data) => (
-                    <Paper
-                      key={data.assignment.id}
-                      sx={{ p: 1, mb: 1 }}
-                      data-testid={`offered-assignment-${data.assignment.id}`}
-                    >
-                      <Typography variant="body2">
-                        {data.assignment.date.format("MMM D, YYYY")} -{" "}
-                        {data.shift.name}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {data.shift.startTime.format("HH:mm")} -{" "}
-                        {data.shift.endTime.format("HH:mm")}
-                      </Typography>
-                    </Paper>
-                  ))}
-                </Box>
-
-                {/* Requested Assignments (Direct Swap) */}
-                {swap.swapType === SwapType.DIRECT && swap.targetWorkerId && (
-                  <>
-                    <Divider sx={{ my: 2 }} />
-                    <Box
-                      sx={{ mb: 2 }}
-                      data-testid="requested-assignments-section"
-                    >
-                      <Typography
-                        variant="subtitle2"
-                        color="text.secondary"
-                        gutterBottom
-                      >
-                        Requested Assignments ({requestedAssignments.length})
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{ mb: 1 }}
-                        data-testid="target-worker-name"
-                      >
-                        From: {getWorkerName(swap.targetWorkerId)}
-                      </Typography>
-                      {requestedAssignments.map((data) => (
-                        <Paper
-                          key={data.assignment.id}
-                          sx={{ p: 1, mb: 1 }}
-                          data-testid={`requested-assignment-${data.assignment.id}`}
-                        >
-                          <Typography variant="body2">
-                            {data.assignment.date.format("MMM D, YYYY")} -{" "}
-                            {data.shift.name}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {data.shift.startTime.format("HH:mm")} -{" "}
-                            {data.shift.endTime.format("HH:mm")}
-                          </Typography>
-                        </Paper>
-                      ))}
-                    </Box>
-                  </>
-                )}
-
-                {/* Comment */}
-                {swap.comment && (
-                  <>
-                    <Divider sx={{ my: 2 }} />
-                    <Box>
-                      <Typography
-                        variant="subtitle2"
-                        color="text.secondary"
-                        gutterBottom
-                      >
-                        Comment
-                      </Typography>
-                      <Typography variant="body2">{swap.comment}</Typography>
-                    </Box>
-                  </>
-                )}
-              </Box>
-            )}
-
-            {/* Bids Tab */}
-            {tabValue === 1 && swap.swapType === SwapType.OPEN && (
-              <Box>
-                {showAddBid ? (
-                  <>
-                    <Typography variant="subtitle2" gutterBottom>
-                      Select Your Assignments to Bid
-                    </Typography>
-                    <AssignmentSelector
-                      selectedAssignmentIds={bidAssignmentIds}
-                      onSelectionChange={setBidAssignmentIds}
-                      assignments={assignments.filter(
-                        (a) =>
-                          a.assignment.workerId === currentUserId &&
-                          !swap.offeredAssignmentIds.includes(
-                            a.assignment.id,
-                          ) &&
-                          a.assignment.date.isAfter(dayjs(), "day"),
-                      )}
-                      linkShifts={linkShifts}
-                      allowMultiple={true}
-                    />
-                    <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
-                      <Button
-                        onClick={handleAddBid}
-                        variant="contained"
-                        disabled={bidAssignmentIds.length === 0 || loading}
-                        data-testid="submit-bid-button"
-                      >
-                        Submit Bid
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setShowAddBid(false);
-                          setBidAssignmentIds([]);
-                        }}
-                        disabled={loading}
-                        data-testid="cancel-bid-button"
-                      >
-                        Cancel
-                      </Button>
-                    </Box>
-                  </>
-                ) : (
-                  <>
-                    {canAddBid && (
-                      <Button
-                        onClick={() => setShowAddBid(true)}
-                        variant="contained"
-                        sx={{ mb: 2 }}
-                        data-testid="add-bid-button"
-                      >
-                        Add Your Bid
-                      </Button>
-                    )}
-
-                    {swap.bids.length === 0 ? (
-                      <Alert severity="info">No bids yet</Alert>
-                    ) : (
-                      <List data-testid="bids-list">
-                        {swap.bids.map((bid) => (
-                          <Paper
-                            key={bid.id}
-                            sx={{ mb: 1 }}
-                            data-testid={`bid-item-${bid.id}`}
-                          >
-                            <ListItem
-                              secondaryAction={
-                                canAcceptBid &&
-                                !bid.accepted && (
-                                  <IconButton
-                                    edge="end"
-                                    onClick={() => handleAcceptBid(bid.id)}
-                                    disabled={loading}
-                                    color="primary"
-                                    data-testid={`accept-bid-button-${bid.id}`}
-                                  >
-                                    <CheckCircleIcon />
-                                  </IconButton>
-                                )
-                              }
-                            >
-                              <ListItemText
-                                primary={
-                                  <Box
-                                    display="flex"
-                                    alignItems="center"
-                                    gap={1}
-                                  >
-                                    <Typography
-                                      variant="body1"
-                                      data-testid={`bid-worker-name-${bid.id}`}
-                                    >
-                                      {getWorkerName(bid.workerId)}
-                                    </Typography>
-                                    {bid.accepted && (
-                                      <Chip
-                                        label="Accepted"
-                                        size="small"
-                                        color="success"
-                                        data-testid={`bid-accepted-chip-${bid.id}`}
-                                      />
-                                    )}
-                                  </Box>
-                                }
-                                secondary={
-                                  <>
-                                    <Typography
-                                      variant="body2"
-                                      color="text.secondary"
-                                    >
-                                      {bid.offeredAssignmentIds.length}{" "}
-                                      assignment(s)
-                                    </Typography>
-                                    <Typography
-                                      variant="caption"
-                                      color="text.secondary"
-                                    >
-                                      {bid.createdAt.format(
-                                        "MMM D, YYYY HH:mm",
-                                      )}
-                                    </Typography>
-                                  </>
-                                }
-                              />
-                            </ListItem>
-                          </Paper>
-                        ))}
-                      </List>
-                    )}
-                  </>
-                )}
-              </Box>
-            )}
-
-            {/* Audit Trail Tab */}
-            {tabValue === 2 && swap.status === SwapStatus.COMPLETED && (
-              <Box>
-                <Typography variant="subtitle2" gutterBottom>
-                  Original Assignment Data
-                </Typography>
-                {swap.auditData.map((audit, index) => (
-                  <Paper key={index} sx={{ p: 2, mb: 1 }}>
-                    <Typography variant="body2">
-                      Assignment ID: {audit.assignmentId}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Worker: {getWorkerName(audit.workerId)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Date: {audit.dateIso}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Shift ID: {audit.shiftId}
-                    </Typography>
-                  </Paper>
-                ))}
-              </Box>
-            )}
-          </Box>
+          <SwapDetailContent
+            swap={swap}
+            currentUserId={currentUserId}
+            isLeader={isLeader}
+            workers={workers}
+            assignments={assignments}
+            linkShifts={linkShifts}
+            reviewMode={reviewMode}
+            showTitle={false}
+            loading={loading}
+            error={error}
+            showAddBid={showAddBid}
+            bidAssignmentIds={bidAssignmentIds}
+            onToggleAddBid={() => setShowAddBid(!showAddBid)}
+            onBidAssignmentChange={setBidAssignmentIds}
+            onSubmitBid={handleAddBid}
+            onDeleteBid={onDeleteBid ? handleDeleteBid : undefined}
+            onAcceptBid={handleAcceptBid}
+            currentUserWorker={currentUserWorker}
+            canAddBid={canAddBid}
+            canAcceptBid={canAcceptBid}
+            sortedBids={sortedBids}
+          />
         )}
       </DialogContent>
-      <DialogActions>
-        <Box display="flex" justifyContent="space-between" width="100%" px={1}>
-          <Box display="flex" gap={1}>
-            {canDelete && (
+      {!reviewMode && (
+        <DialogActions>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            width="100%"
+            px={1}
+            flexDirection={isMobile ? "column" : "row"}
+            gap={1}
+          >
+            <Box display="flex" gap={1} flexWrap="wrap">
+              {canDelete && (
+                <Button
+                  onClick={handleDelete}
+                  color="error"
+                  disabled={loading}
+                  data-testid="delete-swap-button"
+                  size={isMobile ? "small" : "medium"}
+                >
+                  Delete Swap
+                </Button>
+              )}
+              {canDeny && (
+                <Button
+                  onClick={handleDeny}
+                  color="error"
+                  disabled={loading}
+                  data-testid="deny-swap-button"
+                  size={isMobile ? "small" : "medium"}
+                >
+                  Deny Swap
+                </Button>
+              )}
+              {canRevert && (
+                <Button
+                  onClick={handleRevert}
+                  color="warning"
+                  disabled={loading}
+                  data-testid="revert-swap-button"
+                  size={isMobile ? "small" : "medium"}
+                >
+                  Revert Swap
+                </Button>
+              )}
+            </Box>
+            <Box display="flex" gap={1} flexWrap="wrap">
               <Button
-                onClick={handleDelete}
-                color="error"
+                onClick={onClose}
                 disabled={loading}
-                data-testid="delete-swap-button"
+                data-testid="close-button"
+                size={isMobile ? "small" : "medium"}
               >
-                Delete Swap
+                Close
               </Button>
-            )}
-            {canDeny && (
-              <Button
-                onClick={handleDeny}
-                color="error"
-                disabled={loading}
-                data-testid="deny-swap-button"
-              >
-                Deny Swap
-              </Button>
-            )}
-            {canRevert && (
-              <Button
-                onClick={handleRevert}
-                color="warning"
-                disabled={loading}
-                data-testid="revert-swap-button"
-              >
-                Revert Swap
-              </Button>
-            )}
+              {canAcceptDirectSwap && (
+                <Button
+                  onClick={handleAcceptDirectSwap}
+                  variant="contained"
+                  color="primary"
+                  disabled={loading}
+                  data-testid="accept-direct-swap-button"
+                  size={isMobile ? "small" : "medium"}
+                >
+                  Accept Swap
+                </Button>
+              )}
+              {canApprove && (
+                <Button
+                  onClick={handleApprove}
+                  variant="contained"
+                  color="success"
+                  disabled={loading}
+                  data-testid="approve-swap-button"
+                  size={isMobile ? "small" : "medium"}
+                >
+                  Approve Swap
+                </Button>
+              )}
+            </Box>
           </Box>
-          <Box display="flex" gap={1}>
-            <Button
-              onClick={onClose}
-              disabled={loading}
-              data-testid="close-button"
-            >
-              Close
-            </Button>
-            {canAcceptDirectSwap && (
-              <Button
-                onClick={handleAcceptDirectSwap}
-                variant="contained"
-                color="primary"
-                disabled={loading}
-                data-testid="accept-direct-swap-button"
-              >
-                Accept Swap
-              </Button>
-            )}
-            {canApprove && (
-              <Button
-                onClick={handleApprove}
-                variant="contained"
-                color="success"
-                disabled={loading}
-                data-testid="approve-swap-button"
-              >
-                Approve Swap
-              </Button>
-            )}
-          </Box>
-        </Box>
-      </DialogActions>
+        </DialogActions>
+      )}
     </Dialog>
   );
 }

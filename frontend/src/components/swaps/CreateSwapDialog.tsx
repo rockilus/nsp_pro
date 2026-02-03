@@ -34,6 +34,7 @@ import { AssignmentDataDictT } from "../../types/assignment";
 import { LinkShiftT } from "../../types/shift";
 import { TeamMembershipRole } from "../../types/team";
 import AssignmentSelector from "./AssignmentSelector";
+import SwapDetailContent from "./SwapDetailContent";
 import { RoleBased } from "../access/role-based";
 import { useTheme } from "@mui/material/styles";
 
@@ -388,114 +389,38 @@ export default function CreateSwapDialog({
         );
 
       case 4:
-        // Step 5: Review
+        // Step 5: Review - using SwapDetailContent for preview
+        // Create a mock swap object for preview
+        const mockSwap = {
+          id: "preview",
+          teamId: teamId,
+          swapType: swapType,
+          offeredAssignmentIds: offeredAssignmentIds,
+          requestedAssignmentIds:
+            swapType === SwapType.DIRECT ? requestedAssignmentIds : null,
+          targetWorkerId: swapType === SwapType.DIRECT ? targetWorkerId : null,
+          createdByUserId: currentUserId,
+          comment: comment,
+          status: "ACTIVE" as any,
+          bids: [],
+          auditData: [],
+          createdAt: dayjs(),
+          completedAt: null,
+          completedByUserId: null,
+          revertedAt: null,
+          revertedByUserId: null,
+        };
+
         return (
-          <Box>
-            {!isMobile && (
-              <Typography variant="h6" gutterBottom>
-                Review Swap Details
-              </Typography>
-            )}
-
-            {/* Swap Type */}
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle2" color="text.secondary">
-                Swap Type
-              </Typography>
-              <Chip
-                label={
-                  swapType === SwapType.DIRECT ? "Direct Swap" : "Open Swap"
-                }
-                color="primary"
-                sx={{ mt: 0.5 }}
-              />
-            </Box>
-
-            <Divider sx={{ my: 2 }} />
-
-            {/* Worker */}
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle2" color="text.secondary">
-                Worker
-              </Typography>
-              <Typography variant="body1">
-                {workers.find((w) => w.id === selectedWorkerId)?.name}
-              </Typography>
-            </Box>
-
-            <Divider sx={{ my: 2 }} />
-
-            {/* Offered Assignments */}
-            <Box sx={{ mb: 2 }}>
-              <Typography
-                variant="subtitle2"
-                color="text.secondary"
-                gutterBottom
-              >
-                Offered Assignments ({offeredAssignments.length})
-              </Typography>
-              {offeredAssignments.map((data) => (
-                <Paper key={data.assignment.id} sx={{ p: 1, mb: 1 }}>
-                  <Typography variant="body2">
-                    {data.assignment.date.format("MMM D, YYYY")} -{" "}
-                    {data.shift.name}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {data.shift.startTime.format("HH:mm")} -{" "}
-                    {data.shift.endTime.format("HH:mm")}
-                  </Typography>
-                </Paper>
-              ))}
-            </Box>
-
-            {/* Requested Assignments (Direct Swap only) */}
-            {swapType === SwapType.DIRECT && (
-              <>
-                <Divider sx={{ my: 2 }} />
-                <Box sx={{ mb: 2 }}>
-                  <Typography
-                    variant="subtitle2"
-                    color="text.secondary"
-                    gutterBottom
-                  >
-                    Requested Assignments ({requestedAssignments.length})
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1 }}>
-                    From: {workers.find((w) => w.id === targetWorkerId)?.name}
-                  </Typography>
-                  {requestedAssignments.map((data) => (
-                    <Paper key={data.assignment.id} sx={{ p: 1, mb: 1 }}>
-                      <Typography variant="body2">
-                        {data.assignment.date.format("MMM D, YYYY")} -{" "}
-                        {data.shift.name}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {data.shift.startTime.format("HH:mm")} -{" "}
-                        {data.shift.endTime.format("HH:mm")}
-                      </Typography>
-                    </Paper>
-                  ))}
-                </Box>
-              </>
-            )}
-
-            {/* Comment */}
-            {comment && (
-              <>
-                <Divider sx={{ my: 2 }} />
-                <Box>
-                  <Typography
-                    variant="subtitle2"
-                    color="text.secondary"
-                    gutterBottom
-                  >
-                    Comment
-                  </Typography>
-                  <Typography variant="body2">{comment}</Typography>
-                </Box>
-              </>
-            )}
-          </Box>
+          <SwapDetailContent
+            swap={mockSwap}
+            currentUserId={currentUserId}
+            workers={workers}
+            assignments={assignments}
+            linkShifts={linkShifts}
+            reviewMode={true}
+            showTitle={false}
+          />
         );
 
       default:
@@ -532,6 +457,8 @@ export default function CreateSwapDialog({
                 position="static"
                 activeStep={activeStep}
                 sx={{ bgcolor: "transparent", width: "auto" }}
+                backButton={<></>}
+                nextButton={<></>}
               />
             </Box>
           ) : (
