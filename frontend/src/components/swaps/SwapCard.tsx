@@ -178,33 +178,15 @@ export default function SwapCard({
             </Box>
           </Box>
 
-          <Chip
-            label={statusLabels[swap.status]}
-            color={statusColors[swap.status]}
-            size="small"
-          />
-        </Box>
-
-        {/* Creator and metadata */}
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-            <strong>Created by:</strong> {creatorWorker?.name || "Unknown"}
-          </Typography>
-          <Typography variant="caption" color="text.secondary" display="block">
-            {createdAtLabel}
-          </Typography>
-          {swap.swapType === SwapType.OPEN && (
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              display="block"
-            >
-              <strong>{swap.bids.length}</strong>{" "}
-              {swap.bids.length === 1 ? "bid" : "bids"}
-            </Typography>
+          {/* On desktop keep chip at right; on mobile render it under the title */}
+          {!isMobile && (
+            <Chip
+              label={statusLabels[swap.status]}
+              color={statusColors[swap.status]}
+              size="small"
+            />
           )}
         </Box>
-
         {/* Offered Assignments */}
         <Box sx={{ mb: 2 }}>
           {displayedOffered.length > 0 ? (
@@ -243,17 +225,15 @@ export default function SwapCard({
             </Typography>
           )}
         </Box>
-
         {/* Requested Assignments (for direct swaps) */}
         {swap.swapType === SwapType.DIRECT &&
           requestedAssignments &&
           requestedAssignments.length > 0 && (
             <>
-              <Divider sx={{ my: 2 }} />
               <Box>
                 <Typography
                   variant="body2"
-                  fontWeight={600}
+                  //   fontWeight={600}
                   color="text.primary"
                   sx={{ mb: 1 }}
                 >
@@ -305,24 +285,31 @@ export default function SwapCard({
               </Box>
             </>
           )}
-
-        {/* Comment */}
-        {swap.comment && (
-          <Box
-            sx={{
-              mt: 2,
-              pt: 2,
-              borderTop: "1px solid",
-              borderColor: "divider",
-            }}
-          >
+        {/* Creator and metadata */}
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+            {creatorWorker?.name || "Unknown"}
+          </Typography>
+          {swap.swapType === SwapType.OPEN && (
             <Typography
               variant="caption"
               color="text.secondary"
-              sx={{ fontStyle: "italic" }}
+              display="block"
             >
-              &ldquo;{swap.comment}&rdquo;
+              <strong>{swap.bids.length}</strong>{" "}
+              {swap.bids.length === 1 ? "bid" : "bids"}
             </Typography>
+          )}
+        </Box>
+
+        {/* Mobile: status chip below title */}
+        {isMobile && (
+          <Box sx={{ mb: 1 }}>
+            <Chip
+              label={statusLabels[swap.status]}
+              color={statusColors[swap.status]}
+              size="small"
+            />
           </Box>
         )}
       </CardContent>
