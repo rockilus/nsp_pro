@@ -256,13 +256,13 @@ export default function CreateSwapDialog({
         // Step 2: Swap type selection
         return (
           <Box>
-            <Typography
+            {/* <Typography
               variant="subtitle1"
               gutterBottom
               data-testid="swap-type-heading"
             >
               Choose Swap Type
-            </Typography>
+            </Typography> */}
             <RadioGroup
               value={swapType}
               onChange={(e) => {
@@ -509,10 +509,10 @@ export default function CreateSwapDialog({
     >
       <DialogTitle>Create Swap Request</DialogTitle>
       <DialogContent>
-        <Box sx={{ mt: 2 }}>
+        <Box>
           {isMobile ? (
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+            <Box sx={{ mb: 2, textAlign: "center" }}>
+              <Typography variant="subtitle2">
                 {steps[Math.min(activeStep, steps.length - 1)]}
               </Typography>
               <MobileStepper
