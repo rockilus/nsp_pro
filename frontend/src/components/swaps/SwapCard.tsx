@@ -12,6 +12,7 @@ import {
 import { SwapRequestT, SwapStatus, SwapType } from "../../types/swap";
 import { AssignmentDataDictT } from "../../types/assignment";
 import { WorkerT } from "../../types/worker";
+import AssignmentOfferItem from "./AssignmentOfferItem";
 
 const statusColors: Record<
   SwapStatus,
@@ -191,27 +192,8 @@ export default function SwapCard({
         <Box sx={{ mb: 2 }}>
           {displayedOffered.length > 0 ? (
             displayedOffered.map((data) => (
-              <Box
-                key={data.assignment.id}
-                sx={{
-                  display: "flex",
-                  flexDirection: "row",
-                  mb: 1,
-                  pl: 1,
-                  borderLeft: "3px solid",
-                  borderColor: "primary.main",
-                }}
-              >
-                <Typography variant="body2">
-                  {data.assignment.date.format("MMM D, YYYY")}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {data.shift.name}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {data.shift.startTime.format("HH:mm")} -{" "}
-                  {data.shift.endTime.format("HH:mm")}
-                </Typography>
+              <Box key={data.assignment.id} sx={{ mb: 1 }}>
+                <AssignmentOfferItem data={data} showTimes={true} />
               </Box>
             ))
           ) : (
@@ -241,27 +223,8 @@ export default function SwapCard({
                 </Typography>
                 {displayedRequested.length > 0 ? (
                   displayedRequested.map((data) => (
-                    <Box
-                      key={data.assignment.id}
-                      sx={{
-                        display: "flex",
-                        flexDirection: "row",
-                        mb: 1,
-                        pl: 1,
-                        borderLeft: "3px solid",
-                        borderColor: "secondary.main",
-                      }}
-                    >
-                      <Typography variant="body2">
-                        {data.assignment.date.format("MMM D, YYYY")}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {data.shift.name}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {data.shift.startTime.format("HH:mm")} -{" "}
-                        {data.shift.endTime.format("HH:mm")}
-                      </Typography>
+                    <Box key={data.assignment.id} sx={{ mb: 1 }}>
+                      <AssignmentOfferItem data={data} showTimes={true} />
                     </Box>
                   ))
                 ) : (
