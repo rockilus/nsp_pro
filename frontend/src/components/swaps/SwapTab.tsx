@@ -40,6 +40,10 @@ import {
 } from "../../hooks/useSwap";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import MobileNavAppBar from "../app-bar/mobile-nav-app-bar";
+import {
+  sortAssignmentsByDateThenShiftStart,
+  sortItemsByEarliestAssignment,
+} from "../../utils/assignmentSort";
 // Styles
 import "../../styles/text-styles.css";
 
@@ -221,7 +225,10 @@ export default function SwapTab({
         shiftsData,
       );
 
-      setAssignments(assignmentsData);
+      const sortedAssignmentsData =
+        sortAssignmentsByDateThenShiftStart(assignmentsData);
+
+      setAssignments(sortedAssignmentsData);
     } catch (err: any) {
       console.error("Failed to load initial data:", err);
       setError(err.message || "Failed to load data");
@@ -340,13 +347,17 @@ export default function SwapTab({
   // Pre-compute enriched swap data with assignments and creator info
   const enrichedSwaps = useMemo(() => {
     return filteredSwaps.map((swap) => {
-      const offeredAssignments = assignments.filter((a) =>
-        swap.offeredAssignmentIds.includes(a.assignment.id),
+      const offeredAssignments = sortAssignmentsByDateThenShiftStart(
+        assignments.filter((a) =>
+          swap.offeredAssignmentIds.includes(a.assignment.id),
+        ),
       );
 
       const requestedAssignments = swap.requestedAssignmentIds
-        ? assignments.filter((a) =>
-            swap.requestedAssignmentIds!.includes(a.assignment.id),
+        ? sortAssignmentsByDateThenShiftStart(
+            assignments.filter((a) =>
+              swap.requestedAssignmentIds!.includes(a.assignment.id),
+            ),
           )
         : [];
 
@@ -364,6 +375,16 @@ export default function SwapTab({
       };
     });
   }, [filteredSwaps, assignments, workers]);
+
+  const sortedEnrichedSwaps = useMemo(
+    () =>
+      sortItemsByEarliestAssignment(
+        enrichedSwaps,
+        (e) => e.offeredAssignments,
+        (e) => e.swap.createdAt as any,
+      ),
+    [enrichedSwaps],
+  );
 
   const handleCreateSwap = async (swapData: {
     offeredAssignmentIds: string[];
@@ -541,7 +562,7 @@ export default function SwapTab({
         >
           {!loading &&
             !error &&
-            enrichedSwaps.map(
+            sortedEnrichedSwaps.map(
               ({
                 swap,
                 offeredAssignments,

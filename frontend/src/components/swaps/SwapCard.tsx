@@ -13,6 +13,7 @@ import { SwapRequestT, SwapStatus, SwapType } from "../../types/swap";
 import { AssignmentDataDictT } from "../../types/assignment";
 import { WorkerT } from "../../types/worker";
 import AssignmentOfferItem from "./AssignmentOfferItem";
+import { getEarliestAssignment } from "../../utils/assignmentSort";
 
 const statusColors: Record<
   SwapStatus,
@@ -61,14 +62,7 @@ export default function SwapCard({
       : String(swap.createdAt ?? "");
 
   // Determine earliest offered assignment for title
-  const earliestOffered =
-    offeredAssignments && offeredAssignments.length > 0
-      ? offeredAssignments.reduce(
-          (min, a) =>
-            a.assignment.date.isBefore(min.assignment.date) ? a : min,
-          offeredAssignments[0],
-        )
-      : null;
+  const earliestOffered = getEarliestAssignment(offeredAssignments);
 
   const titleDate = earliestOffered
     ? earliestOffered.assignment.date
