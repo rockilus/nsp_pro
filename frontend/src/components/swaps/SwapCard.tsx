@@ -137,10 +137,18 @@ export default function SwapCard({
                 mr: 2,
               }}
             >
-              <Typography variant="h5" component="div" sx={{ lineHeight: 1 }}>
+              <Typography
+                variant="h5"
+                component="div"
+                sx={{ lineHeight: 1, mr: isMobile ? 0 : "5px" }}
+              >
                 {dayNumber}
               </Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ whiteSpace: "nowrap" }}
+              >
                 {monthWeekday}
               </Typography>
             </Box>
@@ -159,9 +167,9 @@ export default function SwapCard({
                 {titleShiftName}
                 {offeredAssignments.length > 1 ? " ..." : ""}
               </Typography>
-              <Typography variant="caption" color="text.secondary">
+              {/* <Typography variant="caption" color="text.secondary">
                 {swapTypeLabels[swap.swapType]}
-              </Typography>
+              </Typography> */}
             </Box>
           </Box>
 
