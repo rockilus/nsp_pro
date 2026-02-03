@@ -337,6 +337,34 @@ export default function SwapTab({
     });
   }, [swaps, currentFilter, currentUserId]);
 
+  // Pre-compute enriched swap data with assignments and creator info
+  const enrichedSwaps = useMemo(() => {
+    return filteredSwaps.map((swap) => {
+      const offeredAssignments = assignments.filter((a) =>
+        swap.offeredAssignmentIds.includes(a.assignment.id),
+      );
+
+      const requestedAssignments = swap.requestedAssignmentIds
+        ? assignments.filter((a) =>
+            swap.requestedAssignmentIds!.includes(a.assignment.id),
+          )
+        : [];
+
+      // Find the creator worker from the first offered assignment
+      const creatorWorker =
+        offeredAssignments.length > 0
+          ? offeredAssignments[0].worker
+          : workers.find((w) => w.userId === swap.createdByUserId) || null;
+
+      return {
+        swap,
+        offeredAssignments,
+        requestedAssignments,
+        creatorWorker,
+      };
+    });
+  }, [filteredSwaps, assignments, workers]);
+
   const handleCreateSwap = async (swapData: {
     offeredAssignmentIds: string[];
     requestedAssignmentIds: string[] | null;
@@ -513,21 +541,23 @@ export default function SwapTab({
         >
           {!loading &&
             !error &&
-            filteredSwaps.map((swap) => (
-              <SwapCard
-                key={swap.id}
-                swap={swap}
-                isLeader={isLeader}
-                onViewDetails={openDetailDialog}
-                onApprove={async (swapId: string) => {
-                  try {
-                    await handleApproveSwap(swapId);
-                  } catch (err: any) {
-                    setError(err.message || "Failed to approve swap");
-                  }
-                }}
-              />
-            ))}
+            enrichedSwaps.map(
+              ({
+                swap,
+                offeredAssignments,
+                requestedAssignments,
+                creatorWorker,
+              }) => (
+                <SwapCard
+                  key={swap.id}
+                  swap={swap}
+                  offeredAssignments={offeredAssignments}
+                  requestedAssignments={requestedAssignments}
+                  creatorWorker={creatorWorker}
+                  onClick={openDetailDialog}
+                />
+              ),
+            )}
         </Box>
 
         {/* Create Swap Dialog */}

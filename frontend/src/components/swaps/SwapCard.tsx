@@ -3,14 +3,15 @@
 import React from "react";
 import {
   Box,
-  Button,
   Card,
-  CardActions,
   CardContent,
   Chip,
+  Divider,
   Typography,
 } from "@mui/material";
 import { SwapRequestT, SwapStatus, SwapType } from "../../types/swap";
+import { AssignmentDataDictT } from "../../types/assignment";
+import { WorkerT } from "../../types/worker";
 
 const statusColors: Record<
   SwapStatus,
@@ -31,43 +32,76 @@ const statusLabels: Record<SwapStatus, string> = {
   [SwapStatus.REVERTED]: "Reverted",
 };
 
+const swapTypeLabels: Record<SwapType, string> = {
+  [SwapType.DIRECT]: "Direct Swap",
+  [SwapType.OPEN]: "Open Swap",
+};
+
 interface SwapCardProps {
   swap: SwapRequestT;
-  isLeader: boolean;
-  onViewDetails: (swap: SwapRequestT) => void;
-  onApprove?: (swapId: string) => Promise<void> | void;
+  offeredAssignments: AssignmentDataDictT[];
+  requestedAssignments?: AssignmentDataDictT[];
+  creatorWorker: WorkerT | null;
+  onClick: (swap: SwapRequestT) => void;
 }
 
 export default function SwapCard({
   swap,
-  isLeader,
-  onViewDetails,
-  onApprove,
+  offeredAssignments,
+  requestedAssignments,
+  creatorWorker,
+  onClick,
 }: SwapCardProps) {
   const createdAtLabel =
     swap.createdAt && typeof (swap as any).createdAt?.format === "function"
       ? (swap as any).createdAt.format("MMM D, YYYY")
       : String(swap.createdAt ?? "");
 
+  const MAX_DISPLAYED_ASSIGNMENTS = 3;
+  const displayedOffered = offeredAssignments.slice(
+    0,
+    MAX_DISPLAYED_ASSIGNMENTS,
+  );
+  const remainingOfferedCount = Math.max(
+    0,
+    offeredAssignments.length - MAX_DISPLAYED_ASSIGNMENTS,
+  );
+
+  const displayedRequested =
+    requestedAssignments?.slice(0, MAX_DISPLAYED_ASSIGNMENTS) || [];
+  const remainingRequestedCount = Math.max(
+    0,
+    (requestedAssignments?.length || 0) - MAX_DISPLAYED_ASSIGNMENTS,
+  );
+
   return (
-    <Card key={swap.id} sx={{ mb: 2 }}>
+    <Card
+      key={swap.id}
+      onClick={() => onClick(swap)}
+      sx={{
+        mb: 2,
+        cursor: "pointer",
+        transition: "all 0.2s ease-in-out",
+        "&:hover": {
+          boxShadow: 4,
+          transform: "translateY(-2px)",
+        },
+      }}
+      data-testid={`swap-card-${swap.id}`}
+    >
       <CardContent>
+        {/* Header with type and status */}
         <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "start",
-            mb: 2,
+            alignItems: "center",
+            mb: 1.5,
           }}
         >
-          <Box>
-            <Typography variant="h6" component="div">
-              {swap.swapType === SwapType.DIRECT ? "Direct" : "Open"} Swap
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Created {createdAtLabel}
-            </Typography>
-          </Box>
+          <Typography variant="subtitle1" component="div" fontWeight={600}>
+            {swapTypeLabels[swap.swapType]}
+          </Typography>
           <Chip
             label={statusLabels[swap.status]}
             color={statusColors[swap.status]}
@@ -75,68 +109,155 @@ export default function SwapCard({
           />
         </Box>
 
-        <Typography variant="body2" sx={{ mb: 1 }}>
-          <strong>Offering:</strong> {swap.offeredAssignmentIds.length}{" "}
-          assignment(s)
-        </Typography>
-
-        {swap.requestedAssignmentIds && (
-          <Typography variant="body2" sx={{ mb: 1 }}>
-            <strong>Requesting:</strong> {swap.requestedAssignmentIds.length}{" "}
-            assignment(s)
+        {/* Creator and metadata */}
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+            <strong>Created by:</strong> {creatorWorker?.name || "Unknown"}
           </Typography>
-        )}
-
-        {swap.swapType === SwapType.OPEN && (
-          <Typography variant="body2" sx={{ mb: 1 }}>
-            <strong>Bids:</strong> {swap.bids.length}
+          <Typography variant="caption" color="text.secondary" display="block">
+            {createdAtLabel}
           </Typography>
-        )}
-
-        {swap.comment && (
-          <Typography variant="body2" sx={{ mt: 2, fontStyle: "italic" }}>
-            {swap.comment}
-          </Typography>
-        )}
-      </CardContent>
-
-      <CardActions>
-        <Button
-          size="small"
-          onClick={() => onViewDetails(swap)}
-          data-testid={`view-details-button-${swap.id}`}
-        >
-          View Details
-        </Button>
-
-        {swap.status === SwapStatus.ACTIVE &&
-          swap.swapType === SwapType.OPEN && (
-            <Button
-              size="small"
-              color="primary"
-              onClick={() => onViewDetails(swap)}
+          {swap.swapType === SwapType.OPEN && (
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              display="block"
             >
-              Add Bid
-            </Button>
+              <strong>{swap.bids.length}</strong>{" "}
+              {swap.bids.length === 1 ? "bid" : "bids"}
+            </Typography>
+          )}
+        </Box>
+
+        {/* Offered Assignments */}
+        <Box sx={{ mb: 2 }}>
+          <Typography
+            variant="body2"
+            fontWeight={600}
+            color="text.primary"
+            sx={{ mb: 1 }}
+          >
+            Offering:
+          </Typography>
+          {displayedOffered.length > 0 ? (
+            displayedOffered.map((data) => (
+              <Box
+                key={data.assignment.id}
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  mb: 1,
+                  pl: 1,
+                  borderLeft: "3px solid",
+                  borderColor: "primary.main",
+                }}
+              >
+                <Typography variant="body2">
+                  {data.assignment.date.format("MMM D, YYYY")}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {data.shift.name}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {data.shift.startTime.format("HH:mm")} -{" "}
+                  {data.shift.endTime.format("HH:mm")}
+                </Typography>
+              </Box>
+            ))
+          ) : (
+            <Typography variant="caption" color="text.secondary" sx={{ pl: 1 }}>
+              {offeredAssignments.length} assignment(s)
+            </Typography>
+          )}
+          {remainingOfferedCount > 0 && (
+            <Typography variant="caption" color="text.secondary" sx={{ pl: 1 }}>
+              + {remainingOfferedCount} more
+            </Typography>
+          )}
+        </Box>
+
+        {/* Requested Assignments (for direct swaps) */}
+        {swap.swapType === SwapType.DIRECT &&
+          requestedAssignments &&
+          requestedAssignments.length > 0 && (
+            <>
+              <Divider sx={{ my: 2 }} />
+              <Box>
+                <Typography
+                  variant="body2"
+                  fontWeight={600}
+                  color="text.primary"
+                  sx={{ mb: 1 }}
+                >
+                  Requesting:
+                </Typography>
+                {displayedRequested.length > 0 ? (
+                  displayedRequested.map((data) => (
+                    <Box
+                      key={data.assignment.id}
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        mb: 1,
+                        pl: 1,
+                        borderLeft: "3px solid",
+                        borderColor: "secondary.main",
+                      }}
+                    >
+                      <Typography variant="body2">
+                        {data.assignment.date.format("MMM D, YYYY")}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {data.shift.name}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {data.shift.startTime.format("HH:mm")} -{" "}
+                        {data.shift.endTime.format("HH:mm")}
+                      </Typography>
+                    </Box>
+                  ))
+                ) : (
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ pl: 1 }}
+                  >
+                    {requestedAssignments.length} assignment(s)
+                  </Typography>
+                )}
+                {remainingRequestedCount > 0 && (
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ pl: 1 }}
+                  >
+                    + {remainingRequestedCount} more
+                  </Typography>
+                )}
+              </Box>
+            </>
           )}
 
-        {swap.status === SwapStatus.PENDING_APPROVAL && isLeader && (
-          <Button
-            size="small"
-            color="success"
-            onClick={async () => {
-              if (!onApprove) return;
-              try {
-                await onApprove(swap.id);
-              } catch (err) {
-                // allow parent to handle errors
-              }
+        {/* Comment */}
+        {swap.comment && (
+          <Box
+            sx={{
+              mt: 2,
+              pt: 2,
+              borderTop: "1px solid",
+              borderColor: "divider",
             }}
           >
-            Approve
-          </Button>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontStyle: "italic" }}
+            >
+              &ldquo;{swap.comment}&rdquo;
+            </Typography>
+          </Box>
         )}
-      </CardActions>
+      </CardContent>
     </Card>
   );
 }
