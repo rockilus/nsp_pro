@@ -503,23 +503,32 @@ export default function SwapTab({
           </Typography>
         )}
 
-        {!loading &&
-          !error &&
-          filteredSwaps.map((swap) => (
-            <SwapCard
-              key={swap.id}
-              swap={swap}
-              isLeader={isLeader}
-              onViewDetails={openDetailDialog}
-              onApprove={async (swapId: string) => {
-                try {
-                  await handleApproveSwap(swapId);
-                } catch (err: any) {
-                  setError(err.message || "Failed to approve swap");
-                }
-              }}
-            />
-          ))}
+        <Box
+          sx={{
+            height: isMobile
+              ? "calc(100vh - 123px)" // 65px - 8px - 48px - 2px
+              : "calc(100vh - 200px)", // 65px - 24px-36.5px-48px-2px
+            overflowY: "auto",
+          }}
+        >
+          {!loading &&
+            !error &&
+            filteredSwaps.map((swap) => (
+              <SwapCard
+                key={swap.id}
+                swap={swap}
+                isLeader={isLeader}
+                onViewDetails={openDetailDialog}
+                onApprove={async (swapId: string) => {
+                  try {
+                    await handleApproveSwap(swapId);
+                  } catch (err: any) {
+                    setError(err.message || "Failed to approve swap");
+                  }
+                }}
+              />
+            ))}
+        </Box>
 
         {/* Create Swap Dialog */}
         <CreateSwapDialog
