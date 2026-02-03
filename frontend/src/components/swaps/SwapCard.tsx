@@ -107,6 +107,7 @@ export default function SwapCard({
         transition: "all 0.2s ease-in-out",
         // backgroundColor: "#1976d20a",
         boxShadow: "none",
+        border: "1px solid #e0e0e0",
         "&:hover": {
           //   backgroundColor: "#1976d214", //1976d214
         },
@@ -183,17 +184,26 @@ export default function SwapCard({
           )}
         </Box>
         {/* Offered Assignments */}
-        <Box sx={{ mb: 2 }}>
+        <Box>
           {displayedOffered.length > 0 ? (
-            displayedOffered.map((data) => (
-              <Box key={data.assignment.id} sx={{ mb: 1 }}>
-                <AssignmentOfferItem
-                  data={data}
-                  showTimes={true}
-                  isMobile={isMobile}
-                />
-              </Box>
-            ))
+            <Box
+              sx={{
+                display: isMobile ? "block" : "flex",
+                flexDirection: isMobile ? "column" : "row",
+                flexWrap: isMobile ? "nowrap" : "wrap",
+                gap: isMobile ? 0 : 1,
+              }}
+            >
+              {displayedOffered.map((data) => (
+                <Box key={data.assignment.id} sx={{ mb: isMobile ? 1 : 0 }}>
+                  <AssignmentOfferItem
+                    data={data}
+                    showTimes={true}
+                    isMobile={isMobile}
+                  />
+                </Box>
+              ))}
+            </Box>
           ) : (
             <Typography variant="caption" color="text.secondary" sx={{ pl: 1 }}>
               {offeredAssignments.length} assignment(s)
@@ -220,15 +230,27 @@ export default function SwapCard({
                   Requesting:
                 </Typography>
                 {displayedRequested.length > 0 ? (
-                  displayedRequested.map((data) => (
-                    <Box key={data.assignment.id} sx={{ mb: 1 }}>
-                      <AssignmentOfferItem
-                        data={data}
-                        showTimes={true}
-                        isMobile={isMobile}
-                      />
-                    </Box>
-                  ))
+                  <Box
+                    sx={{
+                      display: isMobile ? "block" : "flex",
+                      flexDirection: isMobile ? "column" : "row",
+                      flexWrap: isMobile ? "nowrap" : "wrap",
+                      gap: isMobile ? 0 : 1,
+                    }}
+                  >
+                    {displayedRequested.map((data) => (
+                      <Box
+                        key={data.assignment.id}
+                        sx={{ mb: isMobile ? 1 : 0 }}
+                      >
+                        <AssignmentOfferItem
+                          data={data}
+                          showTimes={true}
+                          isMobile={isMobile}
+                        />
+                      </Box>
+                    ))}
+                  </Box>
                 ) : (
                   <Typography
                     variant="caption"
@@ -251,10 +273,10 @@ export default function SwapCard({
             </>
           )}
         {/* Creator and metadata */}
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+        <Box>
+          {/* <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
             {creatorWorker?.name || "Unknown"}
-          </Typography>
+          </Typography> */}
           {swap.swapType === SwapType.OPEN && (
             <Typography
               variant="caption"
