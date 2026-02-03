@@ -153,7 +153,12 @@ export default function SwapCard({
               </Typography>
             </Box>
 
-            <Box sx={{ minWidth: 0 }}>
+            <Box
+              sx={{
+                minWidth: 0,
+                alignSelf: isMobile ? "flex-start" : "center",
+              }}
+            >
               <Typography
                 variant="h6"
                 component="div"
@@ -165,7 +170,7 @@ export default function SwapCard({
                 }}
               >
                 {titleShiftName}
-                {offeredAssignments.length > 1 ? " ..." : ""}
+                {offeredAssignments.length > 1 ? "..." : ""}
               </Typography>
               {/* <Typography variant="caption" color="text.secondary">
                 {swapTypeLabels[swap.swapType]}
