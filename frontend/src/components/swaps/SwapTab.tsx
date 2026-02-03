@@ -327,7 +327,7 @@ export default function SwapTab({
           return true;
       }
     });
-  }, [swaps, currentFilter, currentUserId]);
+  }, [swaps, currentFilter, currentUserId, currentUserWorker]);
 
   // Pre-compute enriched swap data with assignments and creator info
   const enrichedSwaps = useMemo(() => {
