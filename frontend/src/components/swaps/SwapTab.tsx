@@ -51,8 +51,6 @@ import "../../styles/text-styles.css";
 
 enum SwapFilter {
   ALL_ACTIVE_OPEN = "all_active_open",
-  DIRECT_PROPOSALS = "direct_proposals",
-  MY_BIDS = "my_bids",
   MY_SWAPS = "my_swaps",
   PENDING_APPROVAL = "pending_approval",
   COMPLETED = "completed",
@@ -60,8 +58,6 @@ enum SwapFilter {
 
 const filterLabels: Record<SwapFilter, string> = {
   [SwapFilter.ALL_ACTIVE_OPEN]: "Open swaps",
-  [SwapFilter.DIRECT_PROPOSALS]: "Swap proposals",
-  [SwapFilter.MY_BIDS]: "My bids",
   [SwapFilter.MY_SWAPS]: "My swaps",
   [SwapFilter.PENDING_APPROVAL]: "Pending approval",
   [SwapFilter.COMPLETED]: "Completed",
@@ -84,20 +80,6 @@ const SWAP_TABS: SwapTabDefinition[] = [
     visibleFor: "all",
     sx: { textTransform: "none" },
   },
-  // {
-  //   label: filterLabels[SwapFilter.DIRECT_PROPOSALS],
-  //   value: SwapFilter.DIRECT_PROPOSALS,
-  //   dataTestId: "filter-direct-proposals",
-  //   visibleFor: "all",
-  //   sx: { textTransform: "none" },
-  // },
-  // {
-  //   label: filterLabels[SwapFilter.MY_BIDS],
-  //   value: SwapFilter.MY_BIDS,
-  //   dataTestId: "filter-my-bids",
-  //   visibleFor: "all",
-  //   sx: { textTransform: "none" },
-  // },
   {
     label: filterLabels[SwapFilter.MY_SWAPS],
     value: SwapFilter.MY_SWAPS,
@@ -315,24 +297,17 @@ export default function SwapTab({
             swap.createdByUserId !== currentUserId
           );
 
-        case SwapFilter.DIRECT_PROPOSALS:
-          // Direct swaps where I am the target worker
-          return (
-            swap.swapType === SwapType.DIRECT &&
-            swap.targetWorkerId === currentUserId &&
-            swap.status === SwapStatus.ACTIVE
-          );
-
-        case SwapFilter.MY_BIDS:
-          // Open swaps where I have placed a bid
-          return (
-            swap.swapType === SwapType.OPEN &&
-            swap.bids.some((bid) => bid.workerId === currentUserId)
-          );
-
         case SwapFilter.MY_SWAPS:
-          // Swaps I created
-          return swap.createdByUserId === currentUserId;
+          // Swaps I created OR direct swaps targeting me OR open swaps where my bid was accepted
+          return (
+            swap.createdByUserId === currentUserId ||
+            (swap.swapType === SwapType.DIRECT &&
+              swap.targetWorkerId === currentUserId) ||
+            (swap.swapType === SwapType.OPEN &&
+              swap.bids.some(
+                (bid) => bid.workerId === currentUserId && bid.accepted,
+              ))
+          );
 
         case SwapFilter.PENDING_APPROVAL:
           // Swaps pending approval (leader only)
@@ -588,12 +563,7 @@ export default function SwapTab({
             color="text.secondary"
             sx={{ py: 4, textAlign: "center" }}
           >
-            {currentFilter === SwapFilter.MY_SWAPS &&
-              "You haven't created any swaps yet"}
-            {currentFilter === SwapFilter.DIRECT_PROPOSALS &&
-              "No direct swap proposals for you"}
-            {currentFilter === SwapFilter.MY_BIDS &&
-              "You haven't placed any bids yet"}
+            {currentFilter === SwapFilter.MY_SWAPS && "No swaps involving you"}
             {currentFilter === SwapFilter.ALL_ACTIVE_OPEN &&
               "No active open swaps available"}
             {currentFilter === SwapFilter.PENDING_APPROVAL &&
