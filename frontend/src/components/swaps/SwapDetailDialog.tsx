@@ -396,9 +396,13 @@ export default function SwapDetailDialog({
             onSubmitBid={handleAddBid}
             onDeleteBid={onDeleteBid ? handleDeleteBid : undefined}
             onAcceptBid={handleAcceptBid}
+            onCancelBidAcceptance={
+              onCancelBidAcceptance ? handleCancelBidAcceptance : undefined
+            }
             currentUserWorker={currentUserWorker}
             canAddBid={canAddBid}
             canAcceptBid={canAcceptBid}
+            canCancelBidAcceptance={canCancelBidAcceptance}
             sortedBids={sortedBids}
           />
         )}
@@ -445,17 +449,6 @@ export default function SwapDetailDialog({
                   size={isMobile ? "small" : "medium"}
                 >
                   Revert Swap
-                </Button>
-              )}
-              {canCancelBidAcceptance && (
-                <Button
-                  onClick={handleCancelBidAcceptance}
-                  color="warning"
-                  disabled={loading}
-                  data-testid="cancel-bid-acceptance-button"
-                  size={isMobile ? "small" : "medium"}
-                >
-                  Revert to Open
                 </Button>
               )}
             </Box>

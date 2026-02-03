@@ -47,9 +47,11 @@ interface SwapDetailContentProps {
   onSubmitBid?: () => void;
   onDeleteBid?: (bidId: string) => void;
   onAcceptBid?: (bidId: string) => void;
+  onCancelBidAcceptance?: () => void;
   currentUserWorker?: WorkerT | undefined;
   canAddBid?: boolean;
   canAcceptBid?: boolean;
+  canCancelBidAcceptance?: boolean;
   sortedBids?: any[];
 }
 
@@ -71,9 +73,11 @@ export default function SwapDetailContent({
   onSubmitBid,
   onDeleteBid,
   onAcceptBid,
+  onCancelBidAcceptance,
   currentUserWorker,
   canAddBid = false,
   canAcceptBid = false,
+  canCancelBidAcceptance = false,
   sortedBids = [],
 }: SwapDetailContentProps) {
   const theme = useTheme();
@@ -370,7 +374,7 @@ export default function SwapDetailContent({
                         </Box>
 
                         <Box sx={{ display: "flex", gap: 1 }}>
-                          {isUserBid && onDeleteBid && (
+                          {isUserBid && !bid.accepted && onDeleteBid && (
                             <IconButton
                               size="small"
                               onClick={() => onDeleteBid(bid.id)}
@@ -389,8 +393,9 @@ export default function SwapDetailContent({
                               disabled={loading}
                               color="primary"
                               data-testid={`accept-bid-button-${bid.id}`}
+                              sx={{ textTransform: "none" }}
                             >
-                              Accept Bid
+                              Accept bid
                             </Button>
                           )}
                         </Box>
@@ -410,6 +415,22 @@ export default function SwapDetailContent({
                         showTimes={true}
                         isMobile={isMobile}
                       />
+
+                      {bid.accepted &&
+                        canCancelBidAcceptance &&
+                        onCancelBidAcceptance && (
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={onCancelBidAcceptance}
+                            disabled={loading}
+                            color="warning"
+                            data-testid="cancel-bid-acceptance-button"
+                            sx={{ textTransform: "none" }}
+                          >
+                            Revert to open
+                          </Button>
+                        )}
                     </Paper>
                   );
                 })}
