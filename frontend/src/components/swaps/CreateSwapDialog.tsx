@@ -24,6 +24,8 @@ import {
   Divider,
   Chip,
   Paper,
+  MobileStepper,
+  useMediaQuery,
 } from "@mui/material";
 import dayjs from "dayjs";
 import { SwapType } from "../../types/swap";
@@ -33,6 +35,7 @@ import { LinkShiftT } from "../../types/shift";
 import { TeamMembershipRole } from "../../types/team";
 import AssignmentSelector from "./AssignmentSelector";
 import { RoleBased } from "../access/role-based";
+import { useTheme } from "@mui/material/styles";
 
 interface CreateSwapDialogProps {
   open: boolean;
@@ -86,6 +89,10 @@ export default function CreateSwapDialog({
     string[]
   >([]);
   const [comment, setComment] = useState<string>("");
+
+  // Responsive: show compact stepper on small screens
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   // Initialize selected worker
   useEffect(() => {
@@ -503,13 +510,28 @@ export default function CreateSwapDialog({
       <DialogTitle>Create Swap Request</DialogTitle>
       <DialogContent>
         <Box sx={{ mt: 2 }}>
-          <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
-            {steps.map((label) => (
-              <Step key={label}>
-                <StepLabel>{label}</StepLabel>
-              </Step>
-            ))}
-          </Stepper>
+          {isMobile ? (
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                {steps[Math.min(activeStep, steps.length - 1)]}
+              </Typography>
+              <MobileStepper
+                variant="dots"
+                steps={steps.length}
+                position="static"
+                activeStep={activeStep}
+                sx={{ bgcolor: "transparent" }}
+              />
+            </Box>
+          ) : (
+            <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+              {steps.map((label) => (
+                <Step key={label}>
+                  <StepLabel>{label}</StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+          )}
 
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
