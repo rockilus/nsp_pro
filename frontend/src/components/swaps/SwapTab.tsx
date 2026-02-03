@@ -554,6 +554,7 @@ export default function SwapTab({
                   offeredAssignments={offeredAssignments}
                   requestedAssignments={requestedAssignments}
                   creatorWorker={creatorWorker}
+                  isMobile={isMobile}
                   onClick={openDetailDialog}
                 />
               ),

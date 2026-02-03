@@ -42,6 +42,7 @@ interface SwapCardProps {
   offeredAssignments: AssignmentDataDictT[];
   requestedAssignments?: AssignmentDataDictT[];
   creatorWorker: WorkerT | null;
+  isMobile: boolean;
   onClick: (swap: SwapRequestT) => void;
 }
 
@@ -50,12 +51,39 @@ export default function SwapCard({
   offeredAssignments,
   requestedAssignments,
   creatorWorker,
+  isMobile,
   onClick,
 }: SwapCardProps) {
   const createdAtLabel =
     swap.createdAt && typeof (swap as any).createdAt?.format === "function"
       ? (swap as any).createdAt.format("MMM D, YYYY")
       : String(swap.createdAt ?? "");
+
+  // Determine earliest offered assignment for title
+  const earliestOffered =
+    offeredAssignments && offeredAssignments.length > 0
+      ? offeredAssignments.reduce(
+          (min, a) =>
+            a.assignment.date.isBefore(min.assignment.date) ? a : min,
+          offeredAssignments[0],
+        )
+      : null;
+
+  const titleDate = earliestOffered
+    ? earliestOffered.assignment.date
+    : swap.createdAt || null;
+
+  const dayNumber =
+    titleDate && typeof (titleDate as any).format === "function"
+      ? titleDate.format("D")
+      : "";
+
+  const monthWeekday =
+    titleDate && typeof (titleDate as any).format === "function"
+      ? titleDate.format("MMM, ddd")
+      : "";
+
+  const titleShiftName = earliestOffered ? earliestOffered.shift.name : "";
 
   const MAX_DISPLAYED_ASSIGNMENTS = 3;
   const displayedOffered = offeredAssignments.slice(
@@ -82,16 +110,16 @@ export default function SwapCard({
         mb: 2,
         cursor: "pointer",
         transition: "all 0.2s ease-in-out",
-        backgroundColor: "#1976d20a",
+        // backgroundColor: "#1976d20a",
         boxShadow: "none",
         "&:hover": {
-          backgroundColor: "#1976d214", //1976d214
+          //   backgroundColor: "#1976d214", //1976d214
         },
       }}
       data-testid={`swap-card-${swap.id}`}
     >
       <CardContent>
-        {/* Header with type and status */}
+        {/* Title: earliest offered date (big day) + shift name; status chip on right */}
         <Box
           sx={{
             display: "flex",
@@ -100,9 +128,43 @@ export default function SwapCard({
             mb: 1.5,
           }}
         >
-          <Typography variant="subtitle1" component="div" fontWeight={600}>
-            {swapTypeLabels[swap.swapType]}
-          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: isMobile ? "column" : "row",
+                alignItems: isMobile ? "flex-start" : "baseline",
+                mr: 2,
+              }}
+            >
+              <Typography variant="h5" component="div" sx={{ lineHeight: 1 }}>
+                {dayNumber}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {monthWeekday}
+              </Typography>
+            </Box>
+
+            <Box sx={{ minWidth: 0 }}>
+              <Typography
+                variant="h6"
+                component="div"
+                fontWeight={700}
+                sx={{
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {titleShiftName}
+                {offeredAssignments.length > 1 ? " ..." : ""}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {swapTypeLabels[swap.swapType]}
+              </Typography>
+            </Box>
+          </Box>
+
           <Chip
             label={statusLabels[swap.status]}
             color={statusColors[swap.status]}
