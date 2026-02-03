@@ -370,9 +370,11 @@ export default function CreateSwapDialog({
         // Step 4: Comment
         return (
           <Box>
-            <Typography variant="subtitle2" gutterBottom>
-              Add a Comment (Optional)
-            </Typography>
+            {!isMobile && (
+              <Typography variant="subtitle2" gutterBottom>
+                Add a comment (optional)
+              </Typography>
+            )}
             <TextField
               multiline
               rows={4}
@@ -389,9 +391,11 @@ export default function CreateSwapDialog({
         // Step 5: Review
         return (
           <Box>
-            <Typography variant="h6" gutterBottom>
-              Review Swap Details
-            </Typography>
+            {!isMobile && (
+              <Typography variant="h6" gutterBottom>
+                Review Swap Details
+              </Typography>
+            )}
 
             {/* Swap Type */}
             <Box sx={{ mb: 2 }}>
@@ -511,7 +515,14 @@ export default function CreateSwapDialog({
       <DialogContent>
         <Box>
           {isMobile ? (
-            <Box sx={{ mb: 2, textAlign: "center" }}>
+            <Box
+              sx={{
+                mb: "8px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
               <Typography variant="subtitle2">
                 {steps[Math.min(activeStep, steps.length - 1)]}
               </Typography>
@@ -520,7 +531,7 @@ export default function CreateSwapDialog({
                 steps={steps.length}
                 position="static"
                 activeStep={activeStep}
-                sx={{ bgcolor: "transparent" }}
+                sx={{ bgcolor: "transparent", width: "auto" }}
               />
             </Box>
           ) : (
