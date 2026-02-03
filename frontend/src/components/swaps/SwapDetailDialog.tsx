@@ -103,6 +103,21 @@ export default function SwapDetailDialog({
     return getAssignmentsForIds(swap.requestedAssignmentIds, assignments);
   }, [swap, assignments]);
 
+  // Current user's worker (non-hook)
+  const currentUserWorker = getWorkerByUserId(currentUserId, workers);
+
+  // Sort bids - current user's bid first (hook moved above any early returns)
+  const sortedBids = useMemo(() => {
+    if (!swap || !swap.bids || !currentUserWorker) return swap?.bids ?? [];
+    const userBids = swap.bids.filter(
+      (bid) => bid.workerId === currentUserWorker.id,
+    );
+    const otherBids = swap.bids.filter(
+      (bid) => bid.workerId !== currentUserWorker.id,
+    );
+    return [...userBids, ...otherBids];
+  }, [swap?.bids, currentUserWorker]);
+
   const handleAddBid = async () => {
     if (!onAddBid || bidAssignmentIds.length === 0) return;
 
@@ -277,9 +292,6 @@ export default function SwapDetailDialog({
       ? offeredAssignments[0].worker
       : workers.find((w) => w.userId === swap.createdByUserId) || null;
 
-  // Current user's worker
-  const currentUserWorker = getWorkerByUserId(currentUserId, workers);
-
   // Determine available actions based on role and swap state
   const userHasExistingBid =
     currentUserWorker &&
@@ -322,18 +334,6 @@ export default function SwapDetailDialog({
     (swap.status === SwapStatus.ACTIVE ||
       swap.status === SwapStatus.PENDING_APPROVAL) &&
     (isLeader || swap.createdByUserId === currentUserId);
-
-  // Sort bids - current user's bid first
-  const sortedBids = useMemo(() => {
-    if (!currentUserWorker) return swap.bids;
-    const userBids = swap.bids.filter(
-      (bid) => bid.workerId === currentUserWorker.id,
-    );
-    const otherBids = swap.bids.filter(
-      (bid) => bid.workerId !== currentUserWorker.id,
-    );
-    return [...userBids, ...otherBids];
-  }, [swap.bids, currentUserWorker]);
 
   return (
     <Dialog
