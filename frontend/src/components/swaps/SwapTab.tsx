@@ -421,9 +421,42 @@ export default function SwapTab({
   };
 
   const handleDeleteBid = async (swapId: string, bidId: string) => {
-    const updatedSwap = await deleteBid(swapId, bidId);
-    loadSwaps();
-    setSelectedSwap(updatedSwap);
+    // Optimistically update UI: remove the bid from local state
+    setSwaps((prev) =>
+      prev.map((s) =>
+        s.id === swapId
+          ? { ...s, bids: s.bids.filter((b) => b.id !== bidId) }
+          : s,
+      ),
+    );
+
+    setSelectedSwap((prev) =>
+      prev ? { ...prev, bids: prev.bids.filter((b) => b.id !== bidId) } : prev,
+    );
+
+    try {
+      const updatedSwap = await deleteBid(swapId, bidId);
+      // If API returns the updated swap, sync local state to it
+      if (updatedSwap) {
+        setSelectedSwap(updatedSwap);
+        setSwaps((prev) =>
+          prev.map((s) => (s.id === swapId ? updatedSwap : s)),
+        );
+      } else {
+        // If no payload returned, refresh swaps list in background
+        loadSwaps();
+      }
+    } catch (err) {
+      console.error("Failed to delete bid:", err);
+      // Re-sync with server on error
+      loadSwaps();
+      try {
+        const refreshed = await getSwapById(swapId);
+        if (refreshed) setSelectedSwap(refreshed);
+      } catch (e) {
+        /* ignore */
+      }
+    }
   };
 
   const handleAcceptDirectSwap = async (swapId: string) => {
