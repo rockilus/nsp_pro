@@ -8,9 +8,11 @@ import { AssignmentDataDictT } from "../../types/assignment";
 export default function AssignmentOfferItem({
   data,
   showTimes = true,
+  isMobile = false,
 }: {
   data: AssignmentDataDictT;
   showTimes?: boolean;
+  isMobile?: boolean;
 }) {
   const shift = data.shift;
   const assignment = data.assignment;
@@ -37,12 +39,13 @@ export default function AssignmentOfferItem({
   return (
     <Box
       sx={{
-        display: "flex",
+        display: isMobile ? "flex" : "inline-flex",
         alignItems: "center",
         gap: 1,
         borderRadius: 1,
         backgroundColor: mapping.background,
         color: mapping.text,
+        width: isMobile ? "100%" : "auto",
       }}
     >
       {/* Duty accent */}
@@ -65,6 +68,7 @@ export default function AssignmentOfferItem({
           alignItems: "center",
           gap: 1,
           flexWrap: "nowrap",
+          mr: "14px",
         }}
       >
         <Typography

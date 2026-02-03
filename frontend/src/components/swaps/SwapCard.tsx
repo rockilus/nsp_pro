@@ -193,7 +193,11 @@ export default function SwapCard({
           {displayedOffered.length > 0 ? (
             displayedOffered.map((data) => (
               <Box key={data.assignment.id} sx={{ mb: 1 }}>
-                <AssignmentOfferItem data={data} showTimes={true} />
+                <AssignmentOfferItem
+                  data={data}
+                  showTimes={true}
+                  isMobile={isMobile}
+                />
               </Box>
             ))
           ) : (
@@ -224,7 +228,11 @@ export default function SwapCard({
                 {displayedRequested.length > 0 ? (
                   displayedRequested.map((data) => (
                     <Box key={data.assignment.id} sx={{ mb: 1 }}>
-                      <AssignmentOfferItem data={data} showTimes={true} />
+                      <AssignmentOfferItem
+                        data={data}
+                        showTimes={true}
+                        isMobile={isMobile}
+                      />
                     </Box>
                   ))
                 ) : (
