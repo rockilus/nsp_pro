@@ -260,17 +260,17 @@ export default function SwapDetailDialog({
     !reviewMode &&
     swap.swapType === SwapType.OPEN &&
     swap.status === SwapStatus.ACTIVE &&
-    !isLeader &&
     !userHasExistingBid &&
     currentUserWorker &&
     creatorWorker?.id !== currentUserWorker.id;
 
   const canAcceptBid =
-    !reviewMode &&
-    swap.swapType === SwapType.OPEN &&
-    swap.status === SwapStatus.ACTIVE &&
-    swap.bids.length > 0 &&
-    creatorWorker?.userId === currentUserId;
+    (!reviewMode &&
+      swap.swapType === SwapType.OPEN &&
+      swap.status === SwapStatus.ACTIVE &&
+      swap.bids.length > 0 &&
+      creatorWorker?.userId === currentUserId) ||
+    isLeader;
 
   const canAcceptDirectSwap =
     !reviewMode &&
