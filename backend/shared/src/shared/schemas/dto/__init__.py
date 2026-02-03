@@ -64,6 +64,7 @@ from shared.schemas.dto.stats import (
     StatsValueDTO,
 )
 from shared.schemas.dto.swap import (
+    AddBidRequestDTO,
     CreateSwapRequestDTO,
     SwapBidDTO,
     SwapRequestDTO,
@@ -104,6 +105,7 @@ __all__ = [
     "NewDimensionDTO",
     "ExportOptionsDTO",
     "LinkShiftDTO",
+    "AddBidRequestDTO",
     "CreateSwapRequestDTO",
     "SwapBidDTO",
     "SwapRequestDTO",

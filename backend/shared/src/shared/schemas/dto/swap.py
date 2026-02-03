@@ -21,6 +21,13 @@ class CreateSwapRequestDTO(BaseModel):
     comment: str = ""
 
 
+class AddBidRequestDTO(BaseModel):
+    """Input DTO for adding a bid to an open swap."""
+
+    bidderWorkerId: str
+    offeredAssignmentIds: List[str] = Field(min_length=1)
+
+
 class SwapRequestDTO(BaseModel):
     id: str
     teamId: str
