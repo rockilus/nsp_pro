@@ -82,9 +82,10 @@ export default function SwapCard({
         mb: 2,
         cursor: "pointer",
         transition: "all 0.2s ease-in-out",
+        backgroundColor: "#1976d20a",
+        boxShadow: "none",
         "&:hover": {
-          boxShadow: 4,
-          transform: "translateY(-2px)",
+          backgroundColor: "#1976d214", //1976d214
         },
       }}
       data-testid={`swap-card-${swap.id}`}
@@ -131,21 +132,13 @@ export default function SwapCard({
 
         {/* Offered Assignments */}
         <Box sx={{ mb: 2 }}>
-          <Typography
-            variant="body2"
-            fontWeight={600}
-            color="text.primary"
-            sx={{ mb: 1 }}
-          >
-            Offering:
-          </Typography>
           {displayedOffered.length > 0 ? (
             displayedOffered.map((data) => (
               <Box
                 key={data.assignment.id}
                 sx={{
                   display: "flex",
-                  flexDirection: "column",
+                  flexDirection: "row",
                   mb: 1,
                   pl: 1,
                   borderLeft: "3px solid",
@@ -197,7 +190,7 @@ export default function SwapCard({
                       key={data.assignment.id}
                       sx={{
                         display: "flex",
-                        flexDirection: "column",
+                        flexDirection: "row",
                         mb: 1,
                         pl: 1,
                         borderLeft: "3px solid",
