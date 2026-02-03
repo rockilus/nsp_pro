@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -9,31 +9,19 @@ import {
   Button,
   Box,
   Typography,
-  Chip,
-  Divider,
-  Paper,
-  Alert,
   CircularProgress,
   IconButton,
-  Collapse,
   useTheme,
   useMediaQuery,
 } from "@mui/material";
-import {
-  Close as CloseIcon,
-  Delete as DeleteIcon,
-  CheckCircle as CheckCircleIcon,
-} from "@mui/icons-material";
-import dayjs from "dayjs";
-import { SwapRequestT, SwapBidT, SwapType, SwapStatus } from "../../types/swap";
+import { Close as CloseIcon } from "@mui/icons-material";
+import { SwapRequestT, SwapType, SwapStatus } from "../../types/swap";
 import { AssignmentDataDictT } from "../../types/assignment";
 import { WorkerT } from "../../types/worker";
 import { LinkShiftT } from "../../types/shift";
-import AssignmentSelector from "./AssignmentSelector";
-import AssignmentList from "./AssignmentList";
 import SwapDetailContent from "./SwapDetailContent";
 import { getEarliestAssignment } from "../../utils/assignmentSort";
-import { getWorkerName, getWorkerByUserId } from "../../utils/workerHelpers";
+import { getWorkerByUserId } from "../../utils/workerHelpers";
 import { getAssignmentsForIds } from "../../utils/swapHelpers";
 
 interface SwapDetailDialogProps {
@@ -93,16 +81,6 @@ export default function SwapDetailDialog({
     return getAssignmentsForIds(swap.offeredAssignmentIds, assignments);
   }, [swap, assignments]);
 
-  const requestedAssignments = useMemo(() => {
-    if (
-      !swap ||
-      swap.swapType !== SwapType.DIRECT ||
-      !swap.requestedAssignmentIds
-    )
-      return [];
-    return getAssignmentsForIds(swap.requestedAssignmentIds, assignments);
-  }, [swap, assignments]);
-
   // Current user's worker (non-hook)
   const currentUserWorker = getWorkerByUserId(currentUserId, workers);
 
@@ -116,7 +94,7 @@ export default function SwapDetailDialog({
       (bid) => bid.workerId !== currentUserWorker.id,
     );
     return [...userBids, ...otherBids];
-  }, [swap?.bids, currentUserWorker]);
+  }, [currentUserWorker, swap]);
 
   const handleAddBid = async () => {
     if (!onAddBid || bidAssignmentIds.length === 0) return;
@@ -245,25 +223,6 @@ export default function SwapDetailDialog({
       setError(err instanceof Error ? err.message : "Failed to delete swap");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const getStatusColor = (
-    status: SwapStatus,
-  ): "default" | "info" | "warning" | "success" | "error" => {
-    switch (status) {
-      case SwapStatus.ACTIVE:
-        return "info";
-      case SwapStatus.PENDING_APPROVAL:
-        return "warning";
-      case SwapStatus.COMPLETED:
-        return "success";
-      case SwapStatus.DENIED:
-        return "error";
-      case SwapStatus.REVERTED:
-        return "warning";
-      default:
-        return "default";
     }
   };
 

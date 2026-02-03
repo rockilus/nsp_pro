@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import {
   Box,
   Typography,
@@ -26,7 +25,7 @@ import { LinkShiftT } from "../../types/shift";
 import AssignmentSelector from "./AssignmentSelector";
 import AssignmentList from "./AssignmentList";
 import { getEarliestAssignment } from "../../utils/assignmentSort";
-import { getWorkerName, getWorkerByUserId } from "../../utils/workerHelpers";
+import { getWorkerName } from "../../utils/workerHelpers";
 import { getAssignmentsForIds } from "../../utils/swapHelpers";
 
 interface SwapDetailContentProps {
@@ -452,36 +451,6 @@ export default function SwapDetailContent({
           </Box>
         </>
       )}
-
-      {/* Audit Trail (if completed) */}
-      {!reviewMode &&
-        swap.status === SwapStatus.COMPLETED &&
-        swap.auditData.length > 0 && (
-          <>
-            <Divider sx={{ my: 2 }} />
-            <Box>
-              <Typography variant="subtitle2" gutterBottom>
-                Audit Trail
-              </Typography>
-              {swap.auditData.map((audit, index) => (
-                <Paper key={index} sx={{ p: 2, mb: 1 }}>
-                  <Typography variant="body2">
-                    Assignment ID: {audit.assignmentId}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Worker: {getWorkerName(audit.workerId, workers)}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Date: {audit.dateIso}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Shift ID: {audit.shiftId}
-                  </Typography>
-                </Paper>
-              ))}
-            </Box>
-          </>
-        )}
     </Box>
   );
 }
