@@ -461,3 +461,47 @@ export function useRevertSwap() {
 
   return revertSwap;
 }
+
+/**
+ * Hook for deleting a bid from an open swap
+ */
+export function useDeleteBid() {
+  const apiClient = useApiClient();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  const deleteBid = useCallback(
+    async (swapId: string, bidId: string): Promise<SwapRequestT> => {
+      if (env.isDevelopment) {
+        console.log("🔍 useDeleteBid called:", {
+          timestamp: new Date().toISOString(),
+          isAuthenticated,
+          hasUser: !!user,
+          swapId,
+          bidId,
+        });
+      }
+
+      // Security: Validate authentication state
+      if (loading) {
+        throw new Error("Authentication still loading - please wait");
+      }
+
+      if (!isAuthenticated || !user?.id_token) {
+        throw new Error("User not authenticated - please sign in");
+      }
+
+      try {
+        return await SwapApi.deleteBid(apiClient, swapId, bidId);
+      } catch (error) {
+        console.error("❌ Failed to delete bid:", {
+          error: error instanceof Error ? error.message : "Unknown error",
+          timestamp: new Date().toISOString(),
+        });
+        throw error;
+      }
+    },
+    [apiClient, isAuthenticated, loading, user],
+  );
+
+  return deleteBid;
+}

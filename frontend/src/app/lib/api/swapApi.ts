@@ -219,4 +219,24 @@ export class SwapApi extends BaseApi {
 
     await this.makeRequest<void>(apiClient, "delete", `/swaps/${swapId}`);
   }
+
+  /**
+   * Delete a bid from an open swap
+   */
+  static async deleteBid(
+    apiClient: AuthenticatedApiClient,
+    swapId: string,
+    bidId: string,
+  ): Promise<SwapRequestT> {
+    if (!swapId || !bidId) {
+      throw new Error("Swap ID and bid ID are required");
+    }
+
+    const responseData = await this.makeRequest<any>(
+      apiClient,
+      "delete",
+      `/swaps/${swapId}/bids/${bidId}`,
+    );
+    return toSwapRequestT(responseData);
+  }
 }

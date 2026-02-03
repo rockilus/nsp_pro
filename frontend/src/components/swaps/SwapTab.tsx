@@ -31,6 +31,7 @@ import {
   useGetSwapById,
   useCreateSwap,
   useAddBid,
+  useDeleteBid,
   useAcceptBid,
   useAcceptDirectSwap,
   useApproveSwap,
@@ -138,6 +139,7 @@ export default function SwapTab({
   const getSwapById = useGetSwapById();
   const createSwap = useCreateSwap();
   const addBid = useAddBid();
+  const deleteBid = useDeleteBid();
   const acceptBid = useAcceptBid();
   const acceptDirectSwap = useAcceptDirectSwap();
   const approveSwap = useApproveSwap();
@@ -418,6 +420,12 @@ export default function SwapTab({
     setSelectedSwap(updatedSwap);
   };
 
+  const handleDeleteBid = async (swapId: string, bidId: string) => {
+    const updatedSwap = await deleteBid(swapId, bidId);
+    loadSwaps();
+    setSelectedSwap(updatedSwap);
+  };
+
   const handleAcceptDirectSwap = async (swapId: string) => {
     await acceptDirectSwap(swapId);
     loadSwaps();
@@ -609,6 +617,11 @@ export default function SwapTab({
           onAcceptBid={
             selectedSwap
               ? (bidId) => handleAcceptBid(selectedSwap.id, bidId)
+              : undefined
+          }
+          onDeleteBid={
+            selectedSwap
+              ? (bidId) => handleDeleteBid(selectedSwap.id, bidId)
               : undefined
           }
           onAcceptDirectSwap={

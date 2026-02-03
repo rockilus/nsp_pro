@@ -236,6 +236,56 @@ class SwapService(BaseService):
         updated_swap = self.collection.swap_db.update_swap_request(swap)
         return updated_swap
 
+    def delete_bid(
+        self, swap_id: str, bid_id: str, deleter_worker_id: str
+    ) -> SwapRequest:
+        """
+        Delete a bid from an open swap request.
+
+        Args:
+            swap_id: Swap request ID
+            bid_id: Bid ID to delete
+            deleter_worker_id: Worker ID of the user deleting the bid
+
+        Returns:
+            Updated SwapRequest without the deleted bid
+
+        Raises:
+            ValueError: If validation fails
+        """
+        # Fetch swap request
+        swap = self.collection.swap_db.get_swap_by_id(swap_id)
+        if not swap:
+            raise ValueError(f"Swap request {swap_id} not found")
+
+        # Validate swap is open and active
+        if swap.swap_type != SwapType.OPEN:
+            raise ValueError("Can only delete bids from open swaps")
+        if swap.status != SwapStatus.ACTIVE:
+            raise ValueError(
+                f"Can only delete bids from active swaps (status: {swap.status.value})"
+            )
+
+        # Find the bid
+        bid = next((b for b in swap.bids if b.id == bid_id), None)
+        if not bid:
+            raise ValueError(f"Bid {bid_id} not found")
+
+        # Validate bid is not accepted
+        if bid.accepted:
+            raise ValueError("Cannot delete an accepted bid")
+
+        # Validate the deleter is the bid owner
+        if bid.worker_id != deleter_worker_id:
+            raise ValueError("You can only delete your own bids")
+
+        # Remove the bid
+        swap.bids = [b for b in swap.bids if b.id != bid_id]
+
+        # Update in database
+        updated_swap = self.collection.swap_db.update_swap_request(swap)
+        return updated_swap
+
     def accept_direct_swap(self, swap_id: str) -> SwapRequest:
         """
         Accept a direct swap invitation, moving it to PENDING_APPROVAL status.

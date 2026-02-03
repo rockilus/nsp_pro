@@ -3,6 +3,7 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends
+from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas.core import SwapStatus, SwapType
 from shared.schemas.dto import (
@@ -11,7 +12,11 @@ from shared.schemas.dto import (
     SwapRequestDTO,
 )
 
-from src.dependencies import get_swap_service, get_user_context
+from src.dependencies import (
+    get_db_collections,
+    get_swap_service,
+    get_user_context,
+)
 from src.errors import NotAuthorizedError, handle_routes_errors
 from src.integrations.authorization import authz_check
 from src.security.user_context import UserContext
@@ -355,5 +360,48 @@ async def revert_swap(
         response = updated_swap.to_dto()
     except Exception as e:
         log_info(f"Failed to revert swap: {e}")
+        handle_routes_errors(e)
+    return response
+
+
+@router.delete("/swaps/{swap_id}/bids/{bid_id}", status_code=200)
+async def delete_bid(
+    swap_id: str,
+    bid_id: str,
+    user_context: UserContext = Depends(get_user_context),
+    swap_service: SwapService = Depends(get_swap_service),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
+) -> SwapRequestDTO:
+    """Delete a bid from an open swap request."""
+    try:
+        # Get the swap to check team
+        swap = swap_service.get_swap_by_id(swap_id)
+        if not swap:
+            raise ValueError(f"Swap request {swap_id} not found")
+
+        # Check permission
+        if not await authz_check(
+            user_context.user_id, "create-swap", "team", swap.team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to delete bids"
+            )
+
+        # Get the worker ID for the current user
+        workers = db_collections.worker_db.get_workers_by_team_and_user(
+            team_id=swap.team_id, user_id=user_context.user_id
+        )
+        if not workers:
+            raise ValueError("Worker not found for current user")
+        worker = workers[0]
+
+        # Delete the bid
+        updated_swap = swap_service.delete_bid(
+            swap_id=swap_id, bid_id=bid_id, deleter_worker_id=worker.id
+        )
+
+        response = updated_swap.to_dto()
+    except Exception as e:
+        log_info(f"Failed to delete bid: {e}")
         handle_routes_errors(e)
     return response
