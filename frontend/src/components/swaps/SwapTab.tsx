@@ -563,18 +563,12 @@ export default function SwapTab({
           {!loading &&
             !error &&
             sortedEnrichedSwaps.map(
-              ({
-                swap,
-                offeredAssignments,
-                requestedAssignments,
-                creatorWorker,
-              }) => (
+              ({ swap, offeredAssignments, requestedAssignments }) => (
                 <SwapCard
                   key={swap.id}
                   swap={swap}
                   offeredAssignments={offeredAssignments}
                   requestedAssignments={requestedAssignments}
-                  creatorWorker={creatorWorker}
                   isMobile={isMobile}
                   onClick={openDetailDialog}
                 />

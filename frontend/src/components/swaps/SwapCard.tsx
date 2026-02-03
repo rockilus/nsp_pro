@@ -1,14 +1,6 @@
 "use client";
 
-import React from "react";
-import {
-  Box,
-  Card,
-  CardContent,
-  Chip,
-  Divider,
-  Typography,
-} from "@mui/material";
+import { Box, Card, CardContent, Chip, Typography } from "@mui/material";
 import { SwapRequestT, SwapStatus, SwapType } from "../../types/swap";
 import { AssignmentDataDictT } from "../../types/assignment";
 import { WorkerT } from "../../types/worker";
@@ -43,7 +35,6 @@ interface SwapCardProps {
   swap: SwapRequestT;
   offeredAssignments: AssignmentDataDictT[];
   requestedAssignments?: AssignmentDataDictT[];
-  creatorWorker: WorkerT | null;
   isMobile: boolean;
   onClick: (swap: SwapRequestT) => void;
 }
@@ -52,7 +43,6 @@ export default function SwapCard({
   swap,
   offeredAssignments,
   requestedAssignments,
-  creatorWorker,
   isMobile,
   onClick,
 }: SwapCardProps) {
