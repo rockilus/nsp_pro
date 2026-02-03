@@ -108,13 +108,14 @@ export default function SwapCard({
         // backgroundColor: "#1976d20a",
         boxShadow: "none",
         border: "1px solid #e0e0e0",
+        borderRadius: "8px",
         "&:hover": {
           //   backgroundColor: "#1976d214", //1976d214
         },
       }}
       data-testid={`swap-card-${swap.id}`}
     >
-      <CardContent>
+      <CardContent sx={{ "&:last-child": { pb: "16px" } }}>
         {/* Title: earliest offered date (big day) + shift name; status chip on right */}
         <Box
           sx={{
@@ -291,7 +292,7 @@ export default function SwapCard({
 
         {/* Mobile: status chip below title */}
         {isMobile && (
-          <Box sx={{ mb: 1 }}>
+          <Box>
             <Chip
               label={statusLabels[swap.status]}
               color={statusColors[swap.status]}
