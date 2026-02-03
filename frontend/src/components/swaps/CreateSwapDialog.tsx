@@ -50,6 +50,7 @@ interface CreateSwapDialogProps {
   }) => Promise<void>;
   teamId: string;
   currentUserId: string;
+  currentUserWorker: WorkerT | undefined;
   role: TeamMembershipRole | null;
   workers: WorkerT[];
   assignments: AssignmentDataDictT[];
@@ -70,6 +71,7 @@ export default function CreateSwapDialog({
   onSubmit,
   teamId,
   currentUserId,
+  currentUserWorker,
   role,
   workers,
   assignments,
@@ -97,14 +99,10 @@ export default function CreateSwapDialog({
 
   // Initialize selected worker
   useEffect(() => {
-    if (open && role === TeamMembershipRole.MEMBER) {
-      const currentWorker = workers.find((w) => w.userId === currentUserId);
-
-      if (currentWorker) {
-        setSelectedWorkerId(currentWorker.id);
-      }
+    if (open && role === TeamMembershipRole.MEMBER && currentUserWorker) {
+      setSelectedWorkerId(currentUserWorker.id);
     }
-  }, [open, role, currentUserId, workers]);
+  }, [open, role, currentUserWorker]);
 
   // Filter assignment details for review step
   const offeredAssignments = useMemo(() => {

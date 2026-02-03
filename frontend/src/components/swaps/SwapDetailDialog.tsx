@@ -21,7 +21,6 @@ import { WorkerT } from "../../types/worker";
 import { LinkShiftT } from "../../types/shift";
 import SwapDetailContent from "./SwapDetailContent";
 import { getEarliestAssignment } from "../../utils/assignmentSort";
-import { getWorkerByUserId } from "../../utils/workerHelpers";
 import { getAssignmentsForIds } from "../../utils/swapHelpers";
 
 interface SwapDetailDialogProps {
@@ -30,6 +29,7 @@ interface SwapDetailDialogProps {
   swap: SwapRequestT | null;
   teamId?: string;
   currentUserId: string;
+  currentUserWorker?: WorkerT;
   isLeader?: boolean;
   workers: WorkerT[];
   assignments: AssignmentDataDictT[];
@@ -52,6 +52,7 @@ export default function SwapDetailDialog({
   swap,
   teamId,
   currentUserId,
+  currentUserWorker,
   isLeader = false,
   workers,
   assignments,
@@ -83,9 +84,6 @@ export default function SwapDetailDialog({
     return getAssignmentsForIds(swap.offeredAssignmentIds, assignments);
   }, [swap, assignments]);
 
-  // Current user's worker (non-hook)
-  const currentUserWorker = getWorkerByUserId(currentUserId, workers);
-
   // Sort bids - current user's bid first (hook moved above any early returns)
   const sortedBids = useMemo(() => {
     if (!swap || !swap.bids || !currentUserWorker) return swap?.bids ?? [];
@@ -99,18 +97,17 @@ export default function SwapDetailDialog({
   }, [currentUserWorker, swap]);
 
   const handleAddBid = async () => {
-    if (!onAddBid || bidAssignmentIds.length === 0) return;
-
-    const currentWorker = getWorkerByUserId(currentUserId, workers);
-    if (!currentWorker) {
-      setError("Worker not found for current user");
+    if (!onAddBid || bidAssignmentIds.length === 0 || !currentUserWorker) {
+      if (!currentUserWorker) {
+        setError("Worker not found for current user");
+      }
       return;
     }
 
     try {
       setLoading(true);
       setError(null);
-      await onAddBid(currentWorker.id, bidAssignmentIds);
+      await onAddBid(currentUserWorker.id, bidAssignmentIds);
       setShowAddBid(false);
       setBidAssignmentIds([]);
     } catch (err) {

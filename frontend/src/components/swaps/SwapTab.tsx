@@ -46,6 +46,7 @@ import {
   sortAssignmentsByDateThenShiftStart,
   sortItemsByEarliestAssignment,
 } from "../../utils/assignmentSort";
+import { getWorkerByUserId } from "../../utils/workerHelpers";
 // Styles
 import "../../styles/text-styles.css";
 
@@ -155,6 +156,9 @@ export default function SwapTab({
 
   // Check if user is a leader
   const isLeader = teamWithMembership.membership.role === "owner";
+
+  // Get current user's worker
+  const currentUserWorker = getWorkerByUserId(currentUserId, workers);
 
   // Helper function to process assignments with worker and shift data
   const buildAssignmentDataDict = useCallback(
@@ -302,10 +306,12 @@ export default function SwapTab({
           return (
             swap.createdByUserId === currentUserId ||
             (swap.swapType === SwapType.DIRECT &&
-              swap.targetWorkerId === currentUserId) ||
+              currentUserWorker &&
+              swap.targetWorkerId === currentUserWorker.id) ||
             (swap.swapType === SwapType.OPEN &&
+              currentUserWorker &&
               swap.bids.some(
-                (bid) => bid.workerId === currentUserId && bid.accepted,
+                (bid) => bid.workerId === currentUserWorker.id && bid.accepted,
               ))
           );
 
@@ -603,6 +609,7 @@ export default function SwapTab({
           onSubmit={handleCreateSwap}
           teamId={teamId}
           currentUserId={currentUserId}
+          currentUserWorker={currentUserWorker}
           role={teamWithMembership.membership.role}
           workers={workers}
           assignments={assignments}
@@ -616,6 +623,7 @@ export default function SwapTab({
           swap={selectedSwap}
           teamId={teamId}
           currentUserId={currentUserId}
+          currentUserWorker={currentUserWorker}
           isLeader={isLeader}
           workers={workers}
           assignments={assignments}
