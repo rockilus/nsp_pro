@@ -37,6 +37,7 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
   test.beforeEach(async ({ page }) => {
     await swapTestBase.actAsOwner(page);
     await swapTestBase.navigateToSwapPage(page);
+    await swapTestBase.selectMySwapsTab(page);
   });
 
   test("should display swap details when clicking view details", async ({

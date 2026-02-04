@@ -759,6 +759,18 @@ export class SwapTestBase {
   }
 
   /**
+   * Select the "My Swaps" tab in the Swap UI
+   */
+  async selectMySwapsTab(page: Page): Promise<void> {
+    await page.waitForSelector('[data-testid="filter-my-swaps"]', {
+      timeout: 5000,
+    });
+    await page.click('[data-testid="filter-my-swaps"]');
+    // Give the UI a short moment to update
+    await page.waitForTimeout(500);
+  }
+
+  /**
    * Set authentication to act as the owner (TEST_USER)
    */
   async actAsOwner(page: Page): Promise<void> {
