@@ -55,6 +55,7 @@ test.describe("Open Swap Detail - Swap Creator Tests", () => {
   test.beforeEach(async ({ page }) => {
     await swapTestBase.actAsOwner(page);
     await swapTestBase.navigateToSwapPage(page);
+    await swapTestBase.selectMySwapsTab(page);
   });
 
   test("should display open swap with bids tab", async ({ page }) => {
