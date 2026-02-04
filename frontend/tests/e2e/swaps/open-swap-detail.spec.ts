@@ -58,7 +58,7 @@ test.describe("Open Swap Detail - Swap Creator Tests", () => {
     await swapTestBase.selectMySwapsTab(page);
   });
 
-  test("should display open swap with bids tab", async ({ page }) => {
+  test("should display open swap with bids section", async ({ page }) => {
     expect(openSwapId).toBeDefined();
 
     // Find and click the view details button for the open swap
@@ -79,8 +79,8 @@ test.describe("Open Swap Detail - Swap Creator Tests", () => {
     await expect(swapTypeChip).toHaveText("Open Swap");
 
     // Verify bids tab exists
-    const bidsTab = page.locator('[data-testid="bids-tab"]');
-    await expect(bidsTab).toBeVisible();
+    const bidsSection = page.locator('[data-testid="bids-section"]');
+    await expect(bidsSection).toBeVisible();
 
     console.log("✅ Open swap dialog displayed correctly with bids tab");
   });
@@ -98,7 +98,7 @@ test.describe("Open Swap Detail - Swap Creator Tests", () => {
 
     // Verify at least 2 offered assignments are displayed
     const assignments = await page
-      .locator('[data-testid^="assignment-offer-item-"]')
+      .locator(`[data-testid^="swap-detail-${openSwapId}-assignment-"]`)
       .count();
     expect(assignments).toBeGreaterThanOrEqual(2);
 
@@ -140,6 +140,7 @@ test.describe("Open Swap Detail - Swap Creator Tests", () => {
       // Navigate to swaps and open the swap
       await swapTestBase.navigateToSwapPage(page);
       await page.reload();
+      await swapTestBase.selectMySwapsTab(page);
 
       // Find the swap we just created by its ID
       await page.click(`[data-testid="swap-card-${deleteSwap.id}"]`);
@@ -200,11 +201,10 @@ test.describe("Open Swap Detail - Swap Creator Tests", () => {
       // Navigate and open the swap
       await swapTestBase.navigateToSwapPage(page);
       await page.reload();
+      await swapTestBase.selectMySwapsTab(page);
+
       await page.click(`[data-testid="swap-card-${freshSwap.id}"]`);
       await page.waitForSelector('[data-testid="swap-detail-dialog"]');
-
-      // Switch to bids tab
-      await page.click('[data-testid="bids-tab"]');
 
       // Verify "No bids yet" alert is visible
       const noBidsAlert = page.locator('text="No bids yet"');
@@ -263,9 +263,6 @@ test.describe("Open Swap Detail - Bidder Tests", () => {
     // Open the swap
     await page.click(`[data-testid="swap-card-${openSwapId}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
-
-    // Switch to bids tab
-    await page.click('[data-testid="bids-tab"]');
 
     // Verify add bid button is visible
     const addBidButton = page.locator('[data-testid="add-bid-button"]');

@@ -259,7 +259,7 @@ export default function SwapDetailContent({
       {!reviewMode && swap.swapType === SwapType.OPEN && (
         <>
           <Divider sx={{ my: 2 }} />
-          <Box sx={{ mb: 2 }}>
+          <Box sx={{ mb: 2 }} data-testid="bids-section">
             <Typography variant="subtitle2" color="text.secondary" gutterBottom>
               Bids ({swap.bids.length})
             </Typography>
@@ -271,13 +271,15 @@ export default function SwapDetailContent({
                   onClick={onToggleAddBid}
                   variant={showAddBid ? "outlined" : "contained"}
                   size="small"
-                  data-testid="toggle-bid-button"
+                  data-testid={
+                    showAddBid ? "cancel-add-bid-button" : "add-bid-button"
+                  }
                 >
                   {showAddBid ? "Cancel" : "Create Bid"}
                 </Button>
 
                 <Collapse in={showAddBid}>
-                  <Box sx={{ mt: 2 }}>
+                  <Box sx={{ mt: 2 }} data-testid="add-bid-section">
                     <Typography variant="body2" sx={{ mb: 1 }}>
                       Select your assignments to bid:
                     </Typography>
