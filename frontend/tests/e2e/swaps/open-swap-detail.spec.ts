@@ -658,9 +658,21 @@ test.describe("Open Swap Detail - Bid Acceptance Tests", () => {
   }) => {
     expect(openSwapId).toBeDefined();
     expect(bidId).toBeDefined();
+    // Open swap in UI as the creator and accept the bid via the accept button
+    await page.reload();
+    await swapTestBase.selectMySwapsTab(page);
+    await page.click(`[data-testid="swap-card-${openSwapId}"]`);
+    await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
-    // Accept the bid
-    const updatedSwap = await swapTestBase.acceptBid(openSwapId, bidId);
+    const acceptButton = page.locator(
+      `[data-testid="accept-bid-button-${bidId}"]`,
+    );
+    await expect(acceptButton).toBeVisible();
+    await acceptButton.click();
+
+    // Wait briefly for backend to process and then verify via API
+    await page.waitForTimeout(1000);
+    const updatedSwap = await swapTestBase.getSwapById(openSwapId);
 
     // Verify status changed to PENDING_APPROVAL
     expect(updatedSwap.status).toBe(SwapStatus.PENDING_APPROVAL);
@@ -670,7 +682,9 @@ test.describe("Open Swap Detail - Bid Acceptance Tests", () => {
     expect(acceptedBid).toBeDefined();
     expect(acceptedBid!.accepted).toBe(true);
 
-    console.log("✅ Bid accepted and status transitioned to PENDING_APPROVAL");
+    console.log(
+      "✅ Bid accepted via UI and status transitioned to PENDING_APPROVAL",
+    );
   });
 
   test("should set targetWorkerId and requestedAssignmentIds after bid acceptance", async ({
@@ -768,11 +782,10 @@ test.describe("Open Swap Detail - Bid Acceptance Tests", () => {
         // Navigate and verify in UI
         await swapTestBase.navigateToSwapPage(page);
         await page.reload();
+        await swapTestBase.selectMySwapsTab(page);
+
         await page.click(`[data-testid="swap-card-${testSwap.id}"]`);
         await page.waitForSelector('[data-testid="swap-detail-dialog"]');
-
-        // Switch to bids tab
-        await page.click('[data-testid="bids-tab"]');
 
         // Verify accepted chip is visible
         const acceptedChip = page.locator(
@@ -824,11 +837,10 @@ test.describe("Open Swap Detail - Bid Acceptance Tests", () => {
         await swapTestBase.actAsMember(page);
         await swapTestBase.navigateToSwapPage(page);
         await page.reload();
+        await swapTestBase.selectMySwapsTab(page);
+
         await page.click(`[data-testid="swap-card-${testSwap.id}"]`);
         await page.waitForSelector('[data-testid="swap-detail-dialog"]');
-
-        // Switch to bids tab
-        await page.click('[data-testid="bids-tab"]');
 
         // Verify add bid button is NOT visible
         const addBidButton = page.locator('[data-testid="add-bid-button"]');
@@ -905,6 +917,8 @@ test.describe("Open Swap Detail - Team Leader Approval Tests", () => {
 
     // Open the swap in UI
     await page.reload();
+    await swapTestBase.selectAllSwapsTab(page);
+
     await page.click(`[data-testid="swap-card-${openSwapId}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
