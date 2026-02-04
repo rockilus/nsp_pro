@@ -432,6 +432,7 @@ export default function CreateSwapDialog({
     <Dialog
       open={open}
       onClose={handleClose}
+      fullScreen={isMobile}
       maxWidth="md"
       fullWidth
       data-testid="create-swap-dialog"
