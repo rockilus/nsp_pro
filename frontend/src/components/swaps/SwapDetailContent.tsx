@@ -237,7 +237,11 @@ export default function SwapDetailContent({
               >
                 Requested Assignments ({requestedAssignments.length})
               </Typography>
-              <Typography variant="body2" sx={{ mb: 1 }}>
+              <Typography
+                variant="body2"
+                sx={{ mb: 1 }}
+                data-testid="target-worker-name"
+              >
                 From: {getWorkerName(swap.targetWorkerId, workers)}
               </Typography>
               <AssignmentList

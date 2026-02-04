@@ -123,7 +123,7 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
     if (testSwap.requestedAssignmentIds) {
       for (const assignmentId of testSwap.requestedAssignmentIds) {
         const assignmentCard = page.locator(
-          `[data-testid="requested-assignment-${assignmentId}"]`,
+          `[data-testid="swap-detail-${testSwap.id}-assignment-${assignmentId}"]`,
         );
         await expect(assignmentCard).toBeVisible();
       }
@@ -227,6 +227,7 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
     // Authenticate as the target worker (Worker 2 is linked to TEST_USER_2)
     await swapTestBase.actAsMember(page);
     await swapTestBase.navigateToSwapPage(page);
+    await swapTestBase.selectMySwapsTab(page);
   });
 
   test("should NOT show delete button for target worker", async ({ page }) => {
@@ -299,6 +300,7 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
     // Reload page to see updated status
     await page.reload();
     await page.waitForLoadState("networkidle");
+    await swapTestBase.selectMySwapsTab(page);
 
     // Open swap
     await page.click(`[data-testid="swap-card-${testSwap.id}"]`);
@@ -329,6 +331,7 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
     // Reload page to see updated status
     await page.reload();
     await page.waitForLoadState("networkidle");
+    await swapTestBase.selectMySwapsTab(page);
 
     // Open swap
     await page.click(`[data-testid="swap-card-${testSwap.id}"]`);
