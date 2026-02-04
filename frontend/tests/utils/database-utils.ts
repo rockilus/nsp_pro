@@ -2280,6 +2280,7 @@ export class DatabaseTestUtils {
           offeredAssignmentIds: bid.offeredAssignmentIds,
           createdAt: dayjs.unix(bid.createdAt),
           accepted: bid.accepted,
+          obsolete: bid.obsolete ?? false,
         })),
         createdAt: dayjs.unix(response.createdAt),
         completedAt: response.completedAt
@@ -2291,6 +2292,7 @@ export class DatabaseTestUtils {
           : null,
         revertedByUserId: response.revertedByUserId,
         auditData: response.auditData || [],
+        obsolete: response.obsolete ?? false,
       };
     } catch (error) {
       console.error("Failed to create swap:", error);
@@ -2337,6 +2339,7 @@ export class DatabaseTestUtils {
           offeredAssignmentIds: bid.offeredAssignmentIds,
           createdAt: dayjs.unix(bid.createdAt),
           accepted: bid.accepted,
+          obsolete: bid.obsolete ?? false,
         })),
         createdAt: dayjs.unix(response.createdAt),
         completedAt: response.completedAt
@@ -2348,6 +2351,7 @@ export class DatabaseTestUtils {
           : null,
         revertedByUserId: response.revertedByUserId,
         auditData: response.auditData || [],
+        obsolete: response.obsolete ?? false,
       };
     } catch (error) {
       console.error("Failed to add bid to swap:", error);
@@ -2390,6 +2394,7 @@ export class DatabaseTestUtils {
           offeredAssignmentIds: bid.offeredAssignmentIds,
           createdAt: dayjs.unix(bid.createdAt),
           accepted: bid.accepted,
+          obsolete: bid.obsolete ?? false,
         })),
         createdAt: dayjs.unix(response.createdAt),
         completedAt: response.completedAt
@@ -2401,6 +2406,7 @@ export class DatabaseTestUtils {
           : null,
         revertedByUserId: response.revertedByUserId,
         auditData: response.auditData || [],
+        obsolete: response.obsolete ?? false,
       };
     } catch (error) {
       console.error("Failed to accept bid on swap:", error);
@@ -2443,6 +2449,7 @@ export class DatabaseTestUtils {
           offeredAssignmentIds: bid.offeredAssignmentIds,
           createdAt: dayjs.unix(bid.createdAt),
           accepted: bid.accepted,
+          obsolete: bid.obsolete ?? false,
         })),
         createdAt: dayjs.unix(swap.createdAt),
         completedAt: swap.completedAt ? dayjs.unix(swap.completedAt) : null,
@@ -2450,6 +2457,7 @@ export class DatabaseTestUtils {
         revertedAt: swap.revertedAt ? dayjs.unix(swap.revertedAt) : null,
         revertedByUserId: swap.revertedByUserId,
         auditData: swap.auditData || [],
+        obsolete: swap.obsolete ?? false,
       }));
     } catch (error) {
       console.error("Failed to get swaps:", error);
@@ -2484,6 +2492,7 @@ export class DatabaseTestUtils {
           offeredAssignmentIds: bid.offeredAssignmentIds,
           createdAt: dayjs.unix(bid.createdAt),
           accepted: bid.accepted,
+          obsolete: bid.obsolete ?? false,
         })),
         createdAt: dayjs.unix(response.createdAt),
         completedAt: response.completedAt
@@ -2495,6 +2504,7 @@ export class DatabaseTestUtils {
           : null,
         revertedByUserId: response.revertedByUserId,
         auditData: response.auditData || [],
+        obsolete: response.obsolete ?? false,
       };
     } catch (error) {
       console.error("Failed to get swap by ID:", error);
@@ -2534,6 +2544,7 @@ export class DatabaseTestUtils {
           offeredAssignmentIds: bid.offeredAssignmentIds,
           createdAt: dayjs.unix(bid.createdAt),
           accepted: bid.accepted,
+          obsolete: bid.obsolete ?? false,
         })),
         createdAt: dayjs.unix(response.createdAt),
         completedAt: response.completedAt
@@ -2545,6 +2556,7 @@ export class DatabaseTestUtils {
           : null,
         revertedByUserId: response.revertedByUserId,
         auditData: response.auditData || [],
+        obsolete: response.obsolete ?? false,
       };
     } catch (error) {
       console.error("Failed to accept direct swap:", error);
@@ -2584,6 +2596,7 @@ export class DatabaseTestUtils {
           offeredAssignmentIds: bid.offeredAssignmentIds,
           createdAt: dayjs.unix(bid.createdAt),
           accepted: bid.accepted,
+          obsolete: bid.obsolete ?? false,
         })),
         createdAt: dayjs.unix(response.createdAt),
         completedAt: response.completedAt
@@ -2595,6 +2608,7 @@ export class DatabaseTestUtils {
           : null,
         revertedByUserId: response.revertedByUserId,
         auditData: response.auditData || [],
+        obsolete: response.obsolete ?? false,
       };
     } catch (error) {
       console.error("Failed to approve swap:", error);
@@ -2635,6 +2649,7 @@ export class DatabaseTestUtils {
           offeredAssignmentIds: bid.offeredAssignmentIds,
           createdAt: dayjs.unix(bid.createdAt),
           accepted: bid.accepted,
+          obsolete: bid.obsolete ?? false,
         })),
         createdAt: dayjs.unix(response.createdAt),
         completedAt: response.completedAt
@@ -2646,6 +2661,7 @@ export class DatabaseTestUtils {
           : null,
         revertedByUserId: response.revertedByUserId,
         auditData: response.auditData || [],
+        obsolete: response.obsolete ?? false,
       };
     } catch (error) {
       console.error("Failed to revert swap:", error);

@@ -951,6 +951,7 @@ export class SwapTestBase {
         offeredAssignmentIds: bid.offeredAssignmentIds,
         createdAt: dayjs.unix(bid.createdAt),
         accepted: bid.accepted,
+        obsolete: bid.obsolete ?? false,
       })),
       createdAt: dayjs.unix(response.createdAt),
       completedAt: response.completedAt
@@ -960,6 +961,7 @@ export class SwapTestBase {
       revertedAt: response.revertedAt ? dayjs.unix(response.revertedAt) : null,
       revertedByUserId: response.revertedByUserId,
       auditData: response.auditData || [],
+      obsolete: response.obsolete ?? false,
     };
   }
 

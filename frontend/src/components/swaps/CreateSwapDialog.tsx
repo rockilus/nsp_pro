@@ -407,6 +407,7 @@ export default function CreateSwapDialog({
           completedByUserId: null,
           revertedAt: null,
           revertedByUserId: null,
+          obsolete: false,
         };
 
         return (
