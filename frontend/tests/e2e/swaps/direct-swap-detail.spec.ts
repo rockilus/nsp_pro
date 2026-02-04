@@ -741,6 +741,7 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     // Authenticate as owner (leader)
     await swapTestBase.actAsOwner(page);
     await swapTestBase.navigateToSwapPage(page);
+    await swapTestBase.selectCompletedSwapsTab(page);
   });
 
   test("should allow leader to revert a completed swap", async ({ page }) => {

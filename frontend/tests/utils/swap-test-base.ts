@@ -783,6 +783,18 @@ export class SwapTestBase {
   }
 
   /**
+   * Select the "Completed" tab in the Swap UI (leader only)
+   */
+  async selectCompletedSwapsTab(page: Page): Promise<void> {
+    await page.waitForSelector('[data-testid="filter-completed"]', {
+      timeout: 5000,
+    });
+    await page.click('[data-testid="filter-completed"]');
+    // Give the UI a short moment to update
+    await page.waitForTimeout(500);
+  }
+
+  /**
    * Set authentication to act as the owner (TEST_USER)
    */
   async actAsOwner(page: Page): Promise<void> {
