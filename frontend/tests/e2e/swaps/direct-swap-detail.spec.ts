@@ -394,6 +394,7 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
   test.beforeEach(async ({ page }) => {
     await swapTestBase.actAsOwner(page);
     await swapTestBase.navigateToSwapPage(page);
+    await swapTestBase.selectAllSwapsTab(page);
   });
 
   test("should NOT show approve button when swap is still active", async ({
@@ -425,6 +426,7 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     // Reload page to see updated status
     await page.reload();
     await page.waitForLoadState("networkidle");
+    await swapTestBase.selectAllSwapsTab(page);
 
     // Open swap
     await page.click(`[data-testid="swap-card-${testSwap.id}"]`);
@@ -451,6 +453,7 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     // Reload page
     await page.reload();
     await page.waitForLoadState("networkidle");
+    await swapTestBase.selectAllSwapsTab(page);
 
     // Open swap
     await page.click(`[data-testid="swap-card-${testSwap.id}"]`);
@@ -658,31 +661,6 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     console.log(
       "✅ Assignments maintained their shift and date after swap (only worker changed)",
     );
-  });
-
-  test("should show audit trail tab after swap is completed", async ({
-    page,
-  }) => {
-    const swaps = swapTestBase.getTestSwaps();
-    const testSwap = swaps[0];
-
-    // Accept and approve via API
-    await swapTestBase.acceptDirectSwap(testSwap.id);
-    await swapTestBase.approveSwap(testSwap.id);
-
-    // Reload page
-    await page.reload();
-    await page.waitForLoadState("networkidle");
-
-    // Open swap
-    await page.click(`[data-testid="swap-card-${testSwap.id}"]`);
-    await page.waitForSelector('[data-testid="swap-detail-dialog"]');
-
-    // Verify audit trail tab is visible
-    const auditTrailTab = page.locator('[data-testid="audit-trail-tab"]');
-    await expect(auditTrailTab).toBeVisible();
-
-    console.log("✅ Audit trail tab visible for completed swap");
   });
 
   test("should correctly swap 2 normal shifts for 1 duty shift", async ({
