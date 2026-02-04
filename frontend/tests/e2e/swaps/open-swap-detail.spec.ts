@@ -1276,18 +1276,55 @@ test.describe("Open Swap Detail - Reversion Tests", () => {
   });
 
   test("should preserve audit data after reversion", async ({ page }) => {
-    const swap = await swapTestBase.getSwapById(completedSwapId);
-    const swapReverted = await swapTestBase.approveSwap(swap.id);
-
-    expect(swap.status).toBe(SwapStatus.COMPLETED);
-    expect(swapReverted.status).toBe(SwapStatus.REVERTED);
-    expect(swap.auditData).toBeDefined();
-    expect(swap.auditData.length).toBeGreaterThan(0);
-    expect(swapReverted.auditData).toBeDefined();
-    expect(swapReverted.auditData.length).toBeGreaterThan(0);
-
-    console.log(
-      `✅ Audit data preserved after reversion (${swap.auditData.length} entries)`,
+    // Create a fresh completed swap, then revert it and compare auditData
+    const workers = swapTestBase.getTestWorkers();
+    const assignments = await swapTestBase.getAssignments(
+      false,
+      dayjs.utc().add(1, "day").startOf("day"),
     );
+
+    const worker1Assignments = assignments.filter(
+      (a) => a.workerId === workers[0].workerId && a.scheduleId !== null,
+    );
+
+    if (worker1Assignments.length >= 2) {
+      const testSwap = await swapTestBase.createOpenSwap(
+        [worker1Assignments[0].id, worker1Assignments[1].id],
+        "Swap to test audit data preservation",
+      );
+
+      const worker2Assignments = assignments.filter(
+        (a) => a.workerId === workers[1].workerId && a.scheduleId !== null,
+      );
+
+      if (worker2Assignments.length >= 2) {
+        const swapWithBid = await swapTestBase.addBidToSwap(
+          testSwap.id,
+          workers[1].workerId,
+          [worker2Assignments[0].id, worker2Assignments[1].id],
+        );
+        const bidId = swapWithBid.bids[0].id;
+
+        await swapTestBase.acceptBid(testSwap.id, bidId);
+        const completedSwap = await swapTestBase.approveSwap(testSwap.id);
+
+        expect(completedSwap.status).toBe(SwapStatus.COMPLETED);
+        expect(completedSwap.auditData).toBeDefined();
+        expect(completedSwap.auditData.length).toBeGreaterThan(0);
+
+        const revertedSwap = await swapTestBase.revertSwap(testSwap.id);
+
+        expect(revertedSwap.status).toBe(SwapStatus.REVERTED);
+        expect(revertedSwap.auditData).toBeDefined();
+        expect(revertedSwap.auditData.length).toBeGreaterThan(0);
+
+        // Verify the audit data contents are identical
+        expect(revertedSwap.auditData).toEqual(completedSwap.auditData);
+
+        console.log(
+          `✅ Audit data preserved after reversion (${completedSwap.auditData.length} entries)`,
+        );
+      }
+    }
   });
 });
