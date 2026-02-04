@@ -543,21 +543,43 @@ test.describe("Open Swap Detail - Multiple Bidders Tests", () => {
   test("should show accept buttons for all bids when creator views them", async ({
     page,
   }) => {
-    // Ensure we have bids
+    // Ensure we have bids; add them via API if necessary
+    const initialSwap = await swapTestBase.getSwapById(openSwapId);
+
+    const workers = swapTestBase.getTestWorkers();
+    const assignments = await swapTestBase.getAssignments(
+      false,
+      dayjs.utc().add(1, "day").startOf("day"),
+    );
+
+    // Add bids from worker 2 and 3 (if available) using the same approach as other tests
+    for (let i = 1; i < Math.min(3, workers.length); i++) {
+      const workerAssignments = assignments.filter(
+        (a) => a.workerId === workers[i].workerId && a.scheduleId !== null,
+      );
+
+      if (workerAssignments.length >= 2) {
+        await swapTestBase.addBidToSwap(openSwapId, workers[i].workerId, [
+          workerAssignments[0].id,
+          workerAssignments[1].id,
+        ]);
+        console.log(`✅ Worker ${i + 1} bid added`);
+      }
+    }
+
+    // Re-fetch swap to pick up newly added bids
     const swap = await swapTestBase.getSwapById(openSwapId);
 
     if (swap.bids.length === 0) {
-      console.log("⏭️  Skipping - no bids to test");
-      return;
+      throw new Error("Expected at least one bid for this test, found none");
     }
 
     // View as creator (owner)
     await page.reload();
+    await swapTestBase.selectMySwapsTab(page);
+
     await page.click(`[data-testid="swap-card-${openSwapId}"]`);
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
-
-    // Switch to bids tab
-    await page.click('[data-testid="bids-tab"]');
 
     // Verify accept buttons exist for each bid
     for (const bid of swap.bids) {
