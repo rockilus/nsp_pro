@@ -9,10 +9,12 @@ export default function AssignmentOfferItem({
   data,
   showTimes = true,
   isMobile = false,
+  testId,
 }: {
   data: AssignmentDataDictT;
   showTimes?: boolean;
   isMobile?: boolean;
+  testId?: string;
 }) {
   const shift = data.shift;
   const assignment = data.assignment;
@@ -47,6 +49,7 @@ export default function AssignmentOfferItem({
         color: mapping.text,
         width: isMobile ? "100%" : "auto",
       }}
+      data-testid={testId ?? `assignment-offer-item-${data.assignment.id}`}
     >
       {/* Duty accent */}
       <Box

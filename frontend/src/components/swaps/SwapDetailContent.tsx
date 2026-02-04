@@ -219,6 +219,7 @@ export default function SwapDetailContent({
           maxDisplayed={reviewMode ? 999 : 5}
           showTimes={true}
           isMobile={isMobile}
+          testIdPrefix={`swap-detail-${swap.id}-assignment`}
         />
       </Box>
 
@@ -244,6 +245,7 @@ export default function SwapDetailContent({
                 maxDisplayed={reviewMode ? 999 : 5}
                 showTimes={true}
                 isMobile={isMobile}
+                testIdPrefix={`swap-detail-${swap.id}-assignment`}
               />
             </Box>
           </>
@@ -414,6 +416,7 @@ export default function SwapDetailContent({
                         maxDisplayed={5}
                         showTimes={true}
                         isMobile={isMobile}
+                        testIdPrefix={`swap-detail-${swap.id}-bid-${bid.id}-assignment`}
                       />
 
                       {bid.accepted &&

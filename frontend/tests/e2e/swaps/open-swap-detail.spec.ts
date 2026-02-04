@@ -97,7 +97,7 @@ test.describe("Open Swap Detail - Swap Creator Tests", () => {
 
     // Verify at least 2 offered assignments are displayed
     const assignments = await page
-      .locator('[data-testid^="offered-assignment-"]')
+      .locator('[data-testid^="assignment-offer-item-"]')
       .count();
     expect(assignments).toBeGreaterThanOrEqual(2);
 

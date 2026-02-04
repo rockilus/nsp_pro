@@ -89,7 +89,7 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
     // Verify offered assignments are displayed
     for (const assignmentId of testSwap.offeredAssignmentIds) {
       const assignmentCard = page.locator(
-        `[data-testid="offered-assignment-${assignmentId}"]`,
+        `[data-testid="swap-detail-${testSwap.id}-assignment-${assignmentId}"]`,
       );
       await expect(assignmentCard).toBeVisible();
     }

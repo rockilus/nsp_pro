@@ -191,6 +191,7 @@ export default function SwapCard({
                     data={data}
                     showTimes={true}
                     isMobile={isMobile}
+                    testId={`swap-card-${swap.id}-assignment-${data.assignment.id}`}
                   />
                 </Box>
               ))}
@@ -238,6 +239,7 @@ export default function SwapCard({
                           data={data}
                           showTimes={true}
                           isMobile={isMobile}
+                          testId={`swap-card-${swap.id}-assignment-${data.assignment.id}`}
                         />
                       </Box>
                     ))}

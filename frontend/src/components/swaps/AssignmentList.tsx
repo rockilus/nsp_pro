@@ -9,6 +9,7 @@ interface AssignmentListProps {
   maxDisplayed?: number;
   showTimes?: boolean;
   isMobile?: boolean;
+  testIdPrefix?: string;
   emptyMessage?: string;
 }
 
@@ -17,6 +18,7 @@ export default function AssignmentList({
   maxDisplayed = 3,
   showTimes = true,
   isMobile = false,
+  testIdPrefix,
   emptyMessage = "No assignments",
 }: AssignmentListProps) {
   if (assignments.length === 0) {
@@ -46,6 +48,7 @@ export default function AssignmentList({
               data={data}
               showTimes={showTimes}
               isMobile={isMobile}
+              testId={`${testIdPrefix ?? "assignment-offer-item"}-${data.assignment.id}`}
             />
           </Box>
         ))}
