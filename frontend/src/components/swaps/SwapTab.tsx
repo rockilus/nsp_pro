@@ -55,6 +55,7 @@ enum SwapFilter {
   MY_SWAPS = "my_swaps",
   PENDING_APPROVAL = "pending_approval",
   COMPLETED = "completed",
+  ALL_SWAPS = "all_swaps",
 }
 
 const filterLabels: Record<SwapFilter, string> = {
@@ -62,6 +63,7 @@ const filterLabels: Record<SwapFilter, string> = {
   [SwapFilter.MY_SWAPS]: "My swaps",
   [SwapFilter.PENDING_APPROVAL]: "Pending approval",
   [SwapFilter.COMPLETED]: "Completed",
+  [SwapFilter.ALL_SWAPS]: "All swaps",
 };
 
 // Centralized tab definitions
@@ -99,6 +101,13 @@ const SWAP_TABS: SwapTabDefinition[] = [
     label: filterLabels[SwapFilter.COMPLETED],
     value: SwapFilter.COMPLETED,
     dataTestId: "filter-completed",
+    visibleFor: "leader",
+    sx: { textTransform: "none" },
+  },
+  {
+    label: filterLabels[SwapFilter.ALL_SWAPS],
+    value: SwapFilter.ALL_SWAPS,
+    dataTestId: "filter-all-swaps",
     visibleFor: "leader",
     sx: { textTransform: "none" },
   },
@@ -322,6 +331,10 @@ export default function SwapTab({
         case SwapFilter.COMPLETED:
           // Completed swaps (leader only)
           return swap.status === SwapStatus.COMPLETED;
+
+        case SwapFilter.ALL_SWAPS:
+          // All swaps (leader only)
+          return true;
 
         default:
           return true;
@@ -575,6 +588,7 @@ export default function SwapTab({
             {currentFilter === SwapFilter.PENDING_APPROVAL &&
               "No swaps pending approval"}
             {currentFilter === SwapFilter.COMPLETED && "No completed swaps"}
+            {currentFilter === SwapFilter.ALL_SWAPS && "No swaps found"}
           </Typography>
         )}
 
