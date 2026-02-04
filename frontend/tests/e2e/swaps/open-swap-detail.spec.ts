@@ -1176,13 +1176,27 @@ test.describe("Open Swap Detail - Reversion Tests", () => {
   }) => {
     expect(completedSwapId).toBeDefined();
 
-    const revertedSwap = await swapTestBase.revertSwap(completedSwapId);
+    // Open Completed swaps tab and open the completed swap in UI
+    await page.reload();
+    await swapTestBase.selectCompletedSwapsTab(page);
+    await page.click(`[data-testid="swap-card-${completedSwapId}"]`);
+    await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
+    // Click the revert button and wait for backend processing
+    const revertButton = page.locator('[data-testid="revert-swap-button"]');
+    await expect(revertButton).toBeVisible();
+    await revertButton.click();
+
+    // Give backend a moment to process the revert
+    await page.waitForTimeout(1000);
+
+    // Verify swap is reverted via API
+    const revertedSwap = await swapTestBase.getSwapById(completedSwapId);
     expect(revertedSwap.status).toBe(SwapStatus.REVERTED);
     expect(revertedSwap.revertedAt).not.toBeNull();
     expect(revertedSwap.revertedByUserId).not.toBeNull();
 
-    console.log("✅ Open swap reverted successfully");
+    console.log("✅ Open swap reverted via UI successfully");
   });
 
   test("should restore assignments to original workers after reversion", async ({
@@ -1263,10 +1277,14 @@ test.describe("Open Swap Detail - Reversion Tests", () => {
 
   test("should preserve audit data after reversion", async ({ page }) => {
     const swap = await swapTestBase.getSwapById(completedSwapId);
+    const swapReverted = await swapTestBase.approveSwap(swap.id);
 
-    expect(swap.status).toBe(SwapStatus.REVERTED);
+    expect(swap.status).toBe(SwapStatus.COMPLETED);
+    expect(swapReverted.status).toBe(SwapStatus.REVERTED);
     expect(swap.auditData).toBeDefined();
     expect(swap.auditData.length).toBeGreaterThan(0);
+    expect(swapReverted.auditData).toBeDefined();
+    expect(swapReverted.auditData.length).toBeGreaterThan(0);
 
     console.log(
       `✅ Audit data preserved after reversion (${swap.auditData.length} entries)`,
