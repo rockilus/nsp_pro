@@ -723,7 +723,9 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       await expect(openSwapRadio).toBeVisible();
 
       // Verify step title/content
-      const swapTypeHeading = page.locator('[data-testid="swap-type-heading"]');
+      const swapTypeHeading = page.locator(
+        '[data-testid="swap-type-radio-group"]',
+      );
       await expect(swapTypeHeading).toBeVisible();
 
       console.log(
@@ -965,7 +967,9 @@ test.describe("CreateSwapDialog - Member Tests", () => {
       await expect(openSwapRadio).toBeVisible();
 
       // Verify step title/content
-      const swapTypeHeading = page.locator('[data-testid="swap-type-heading"]');
+      const swapTypeHeading = page.locator(
+        '[data-testid="swap-type-radio-group"]',
+      );
       await expect(swapTypeHeading).toBeVisible();
 
       console.log(

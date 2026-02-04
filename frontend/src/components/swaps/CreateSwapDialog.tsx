@@ -270,6 +270,7 @@ export default function CreateSwapDialog({
                 setTargetWorkerId("");
                 setRequestedAssignmentIds([]);
               }}
+              data-testid="swap-type-radio-group"
             >
               <Paper sx={{ p: 2, mb: 2 }}>
                 <FormControlLabel
