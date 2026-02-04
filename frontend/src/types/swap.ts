@@ -19,6 +19,7 @@ export type SwapBidT = {
   offeredAssignmentIds: string[];
   createdAt: dayjs.Dayjs;
   accepted: boolean;
+  obsolete: boolean;
 };
 
 export type SwapAuditDataT = {
@@ -45,6 +46,7 @@ export type SwapRequestT = {
   revertedAt: dayjs.Dayjs | null;
   revertedByUserId: string | null;
   auditData: SwapAuditDataT[];
+  obsolete: boolean;
 };
 
 // API conversion helpers
@@ -55,6 +57,7 @@ export function toSwapBidT(data: any): SwapBidT {
     offeredAssignmentIds: data.offeredAssignmentIds,
     createdAt: dayjs.unix(data.createdAt),
     accepted: data.accepted,
+    obsolete: data.obsolete ?? false,
   };
 }
 
@@ -65,6 +68,7 @@ export function fromSwapBidT(bid: SwapBidT): any {
     offeredAssignmentIds: bid.offeredAssignmentIds,
     createdAt: bid.createdAt.unix(),
     accepted: bid.accepted,
+    obsolete: bid.obsolete,
   };
 }
 
@@ -86,6 +90,7 @@ export function toSwapRequestT(data: any): SwapRequestT {
     revertedAt: data.revertedAt ? dayjs.unix(data.revertedAt) : null,
     revertedByUserId: data.revertedByUserId,
     auditData: data.auditData || [],
+    obsolete: data.obsolete ?? false,
   };
 }
 
@@ -107,5 +112,6 @@ export function fromSwapRequestT(swap: Partial<SwapRequestT>): any {
     revertedAt: swap.revertedAt?.unix(),
     revertedByUserId: swap.revertedByUserId,
     auditData: swap.auditData || [],
+    obsolete: swap.obsolete ?? false,
   };
 }

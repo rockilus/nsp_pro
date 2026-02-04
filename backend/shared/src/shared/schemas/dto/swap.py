@@ -9,6 +9,7 @@ class SwapBidDTO(BaseModel):
     offeredAssignmentIds: List[str]
     createdAt: float
     accepted: bool
+    obsolete: bool = False
 
 
 class CreateSwapRequestDTO(BaseModel):
@@ -45,3 +46,4 @@ class SwapRequestDTO(BaseModel):
     revertedAt: float | None
     revertedByUserId: str | None
     auditData: List[Dict]  # List of SwapAuditData dicts
+    obsolete: bool = False
