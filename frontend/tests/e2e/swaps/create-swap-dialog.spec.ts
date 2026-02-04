@@ -262,13 +262,24 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
         await expect(assignmentElement).not.toBeVisible();
       }
 
-      // Get future assignments (should be visible)
+      // Get future assignments (should be visible) - exclude non-validated (campaign) schedules
+      const testSchedules = swapTestBase.getTestSchedules();
+      const campaignScheduleIds = testSchedules
+        .filter((s) => s.status === ScheduleStatus.CAMPAIGN)
+        .map((s) => s.id);
+
       const futureAssignments = swapTestBase
         .getTestAssignments()
         .filter(
           (a) =>
             a.workerId === testWorkerId &&
             dayjs.utc(a.date).isAfter(dayjs.utc(), "day"),
+        )
+        .filter(
+          (a) =>
+            a.scheduleId === null ||
+            (a.scheduleId !== null &&
+              !campaignScheduleIds.includes(a.scheduleId)),
         );
       expect(futureAssignments.length).toBeGreaterThan(0);
 
