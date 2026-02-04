@@ -292,17 +292,45 @@ test.describe("Open Swap Detail - Bidder Tests", () => {
       return;
     }
 
-    // Add bid via API (simpler for now)
-    const updatedSwap = await swapTestBase.addBidToSwap(
-      openSwapId,
-      memberWorker!.workerId,
-      [worker2Assignments[0].id, worker2Assignments[1].id],
-    );
+    // Open the swap detail dialog
+    await page.click(`[data-testid="swap-card-${openSwapId}"]`);
+    await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
+    // Click create bid button
+    const addBidButton = page.locator('[data-testid="add-bid-button"]');
+    await expect(addBidButton).toBeVisible();
+    await addBidButton.click();
+
+    // Wait for add bid section to appear
+    await page.waitForSelector('[data-testid="add-bid-section"]');
+
+    // Select two assignments
+    await page.click(`[data-testid="assignment-${worker2Assignments[0].id}"]`);
+    await page.click(`[data-testid="assignment-${worker2Assignments[1].id}"]`);
+
+    // Click submit bid button
+    const submitBidButton = page.locator('[data-testid="submit-bid-button"]');
+    await expect(submitBidButton).toBeVisible();
+    await expect(submitBidButton).toBeEnabled();
+    await submitBidButton.click();
+
+    // Wait for the bid to be created
+    await page.waitForTimeout(1000);
+
+    // Fetch the swap to get the bid ID
+    const updatedSwap = await swapTestBase.getSwapById(openSwapId);
     expect(updatedSwap.bids.length).toBeGreaterThan(0);
-    expect(updatedSwap.bids[0].workerId).toBe(memberWorker!.workerId);
 
-    console.log("✅ Bid submitted successfully via API");
+    const newBid = updatedSwap.bids.find(
+      (b) => b.workerId === memberWorker!.workerId,
+    );
+    expect(newBid).toBeDefined();
+
+    // Verify the bid is visible in the page
+    const bidItem = page.locator(`[data-testid="bid-item-${newBid!.id}"]`);
+    await expect(bidItem).toBeVisible();
+
+    console.log("✅ Bid submitted successfully via UI");
   });
 
   test("should display bid in bids list after submission", async ({ page }) => {
@@ -333,19 +361,20 @@ test.describe("Open Swap Detail - Bidder Tests", () => {
       await page.click(`[data-testid="swap-card-${openSwapId}"]`);
       await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
-      // Switch to bids tab
-      await page.click('[data-testid="bids-tab"]');
+      // Fetch the swap to get the bid ID
+      const updatedSwap = await swapTestBase.getSwapById(openSwapId);
+      expect(updatedSwap.bids.length).toBeGreaterThan(0);
 
-      // Verify bids list exists and has items
-      const bidsList = page.locator('[data-testid="bids-list"]');
-      await expect(bidsList).toBeVisible();
+      const newBid = updatedSwap.bids.find(
+        (b) => b.workerId === memberWorker!.workerId,
+      );
+      expect(newBid).toBeDefined();
 
-      // Verify at least one bid item
-      const bidItems = page.locator('[data-testid^="bid-item-"]');
-      const bidCount = await bidItems.count();
-      expect(bidCount).toBeGreaterThan(0);
+      // Verify the bid is visible in the page
+      const bidItem = page.locator(`[data-testid="bid-item-${newBid!.id}"]`);
+      await expect(bidItem).toBeVisible();
 
-      console.log(`✅ Bid displayed in bids list (${bidCount} total bids)`);
+      console.log(`✅ Bid displayed in bids list successfully`);
     }
   });
 
