@@ -18,12 +18,14 @@ import {
 
 interface ReplacementCandidatesListProps {
   lng: string;
-  candidates: ReplacementCandidateT[];
+  candidates: ReplacementCandidateT[] | null;
   selectedCandidateId: string | null;
   onSelectCandidate: (candidateId: string) => void;
   onViewDetails: (candidate: ReplacementCandidateT) => void;
   onConfirmReplacement: () => void;
+  onCheckReplacement: () => void;
   isSubmitting: boolean;
+  isCheckingReplacement: boolean;
 }
 
 export function ReplacementCandidatesList({
@@ -33,7 +35,9 @@ export function ReplacementCandidatesList({
   onSelectCandidate,
   onViewDetails,
   onConfirmReplacement,
+  onCheckReplacement,
   isSubmitting,
+  isCheckingReplacement,
 }: ReplacementCandidatesListProps) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -85,173 +89,201 @@ export function ReplacementCandidatesList({
 
   return (
     <Box sx={{ mt: 2 }}>
-      <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: "bold" }}>
-        {t("replacement_candidates")} ({candidates.length})
-      </Typography>
-      <List sx={{ maxHeight: 400, overflow: "auto", p: 0 }}>
-        {candidates.map((candidate) => (
-          <ListItem
-            key={candidate.workerId}
-            disablePadding
-            sx={{
-              mb: 1,
-              border: 1,
-              borderColor:
-                selectedCandidateId === candidate.workerId
-                  ? "primary.main"
-                  : "divider",
-              borderRadius: 1,
-              backgroundColor:
-                selectedCandidateId === candidate.workerId
-                  ? "action.selected"
-                  : "background.paper",
-            }}
-          >
-            <ListItemButton
-              onClick={() => onSelectCandidate(candidate.workerId)}
-              data-testid={`candidate-${candidate.workerId}`}
-            >
-              <ListItemText
-                primary={
-                  <Box
-                    display="flex"
-                    alignItems="center"
-                    gap={1}
-                    flexWrap="wrap"
-                  >
-                    <Chip
-                      size="small"
-                      label="●"
-                      color={getCategoryColor(candidate.replacementCategory)}
-                      sx={{ minWidth: 24, "& .MuiChip-label": { px: 0.5 } }}
-                    />
-                    <Typography variant="body2" fontWeight="medium">
-                      {candidate.workerName}
-                    </Typography>
-                    {candidate.rank === 0 && (
-                      <Chip
-                        label={t("current")}
-                        size="small"
-                        variant="outlined"
-                      />
-                    )}
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ ml: "auto" }}
-                    >
-                      {t("rank")}: {candidate.rank}
-                    </Typography>
-                  </Box>
-                }
-                secondary={
-                  <Box sx={{ mt: 0.5 }}>
-                    <Typography variant="caption" display="block">
-                      {getReasonLabel(candidate.mostConstrainingReason)}
-                    </Typography>
-                    <Box display="flex" gap={2} mt={0.5} flexWrap="wrap">
-                      <Typography variant="caption" color="text.secondary">
-                        {t("weekly_hours")}:{" "}
-                        {Math.round(
-                          candidate.replacementImplications.newWeeklyTime
-                            .newWeeklyWorkedMinutes / 60,
+      <Button
+        variant="outlined"
+        color="info"
+        onClick={onCheckReplacement}
+        disabled={isCheckingReplacement}
+        fullWidth
+        data-testid="check-replacement-button"
+        sx={{ mb: 2 }}
+      >
+        {isCheckingReplacement ? (
+          <>
+            <CircularProgress size={16} sx={{ mr: 1 }} />
+            {t("checking")}
+          </>
+        ) : (
+          t("check_replacement")
+        )}
+      </Button>
+
+      {candidates && candidates.length > 0 && (
+        <>
+          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: "bold" }}>
+            {t("replacement_candidates")} ({candidates.length})
+          </Typography>
+          <List sx={{ maxHeight: 400, overflow: "auto", p: 0 }}>
+            {candidates.map((candidate) => (
+              <ListItem
+                key={candidate.workerId}
+                disablePadding
+                sx={{
+                  mb: 1,
+                  border: 1,
+                  borderColor:
+                    selectedCandidateId === candidate.workerId
+                      ? "primary.main"
+                      : "divider",
+                  borderRadius: 1,
+                  backgroundColor:
+                    selectedCandidateId === candidate.workerId
+                      ? "action.selected"
+                      : "background.paper",
+                }}
+              >
+                <ListItemButton
+                  onClick={() => onSelectCandidate(candidate.workerId)}
+                  data-testid={`candidate-${candidate.workerId}`}
+                >
+                  <ListItemText
+                    primary={
+                      <Box
+                        display="flex"
+                        alignItems="center"
+                        gap={1}
+                        flexWrap="wrap"
+                      >
+                        <Chip
+                          size="small"
+                          label="●"
+                          color={getCategoryColor(
+                            candidate.replacementCategory,
+                          )}
+                          sx={{ minWidth: 24, "& .MuiChip-label": { px: 0.5 } }}
+                        />
+                        <Typography variant="body2" fontWeight="medium">
+                          {candidate.workerName}
+                        </Typography>
+                        {candidate.rank === 0 && (
+                          <Chip
+                            label={t("current")}
+                            size="small"
+                            variant="outlined"
+                          />
                         )}
-                        h
-                        {candidate.replacementImplications.newWeeklyTime
-                          .newWeeklyTimeDeltaMinutes !== 0 && (
-                          <span
-                            style={{
-                              color:
-                                candidate.replacementImplications.newWeeklyTime
-                                  .newWeeklyTimeDeltaMinutes > 0
-                                  ? "green"
-                                  : "red",
-                            }}
-                          >
-                            {" "}
-                            (
-                            {candidate.replacementImplications.newWeeklyTime
-                              .newWeeklyTimeDeltaMinutes > 0
-                              ? "+"
-                              : ""}
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ ml: "auto" }}
+                        >
+                          {t("rank")}: {candidate.rank}
+                        </Typography>
+                      </Box>
+                    }
+                    secondary={
+                      <Box sx={{ mt: 0.5 }}>
+                        <Typography variant="caption" display="block">
+                          {getReasonLabel(candidate.mostConstrainingReason)}
+                        </Typography>
+                        <Box display="flex" gap={2} mt={0.5} flexWrap="wrap">
+                          <Typography variant="caption" color="text.secondary">
+                            {t("weekly_hours")}:{" "}
                             {Math.round(
                               candidate.replacementImplications.newWeeklyTime
-                                .newWeeklyTimeDeltaMinutes / 60,
+                                .newWeeklyWorkedMinutes / 60,
                             )}
-                            h)
-                          </span>
-                        )}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {t("monthly_duties")}:{" "}
-                        {
-                          candidate.replacementImplications.newMonthlyDuties
-                            .newNumberMonthlyDuties
-                        }
-                        {candidate.replacementImplications.newMonthlyDuties
-                          .newMonthlyDutiesDelta !== 0 && (
-                          <span
-                            style={{
-                              color:
-                                candidate.replacementImplications
-                                  .newMonthlyDuties.newMonthlyDutiesDelta > 0
-                                  ? "green"
-                                  : "red",
-                            }}
-                          >
-                            {" "}
-                            (
-                            {candidate.replacementImplications.newMonthlyDuties
-                              .newMonthlyDutiesDelta > 0
-                              ? "+"
-                              : ""}
+                            h
+                            {candidate.replacementImplications.newWeeklyTime
+                              .newWeeklyTimeDeltaMinutes !== 0 && (
+                              <span
+                                style={{
+                                  color:
+                                    candidate.replacementImplications
+                                      .newWeeklyTime.newWeeklyTimeDeltaMinutes >
+                                    0
+                                      ? "green"
+                                      : "red",
+                                }}
+                              >
+                                {" "}
+                                (
+                                {candidate.replacementImplications.newWeeklyTime
+                                  .newWeeklyTimeDeltaMinutes > 0
+                                  ? "+"
+                                  : ""}
+                                {Math.round(
+                                  candidate.replacementImplications
+                                    .newWeeklyTime.newWeeklyTimeDeltaMinutes /
+                                    60,
+                                )}
+                                h)
+                              </span>
+                            )}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {t("monthly_duties")}:{" "}
                             {
                               candidate.replacementImplications.newMonthlyDuties
-                                .newMonthlyDutiesDelta
+                                .newNumberMonthlyDuties
                             }
-                            )
-                          </span>
-                        )}
-                      </Typography>
-                    </Box>
-                    <Box display="flex" gap={1} mt={1}>
-                      <Button
-                        size="small"
-                        variant="text"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onViewDetails(candidate);
-                        }}
-                      >
-                        {t("see_details")}
-                      </Button>
-                    </Box>
-                  </Box>
-                }
-              />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-      {selectedCandidateId && (
-        <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={onConfirmReplacement}
-            disabled={isSubmitting}
-            data-testid="select-replacement-button"
-          >
-            {isSubmitting ? (
-              <>
-                <CircularProgress size={16} sx={{ mr: 1 }} />
-                {t("selecting")}
-              </>
-            ) : (
-              t("select_as_replacement")
-            )}
-          </Button>
-        </Box>
+                            {candidate.replacementImplications.newMonthlyDuties
+                              .newMonthlyDutiesDelta !== 0 && (
+                              <span
+                                style={{
+                                  color:
+                                    candidate.replacementImplications
+                                      .newMonthlyDuties.newMonthlyDutiesDelta >
+                                    0
+                                      ? "green"
+                                      : "red",
+                                }}
+                              >
+                                {" "}
+                                (
+                                {candidate.replacementImplications
+                                  .newMonthlyDuties.newMonthlyDutiesDelta > 0
+                                  ? "+"
+                                  : ""}
+                                {
+                                  candidate.replacementImplications
+                                    .newMonthlyDuties.newMonthlyDutiesDelta
+                                }
+                                )
+                              </span>
+                            )}
+                          </Typography>
+                        </Box>
+                        <Box display="flex" gap={1} mt={1}>
+                          <Button
+                            size="small"
+                            variant="text"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onViewDetails(candidate);
+                            }}
+                          >
+                            {t("see_details")}
+                          </Button>
+                        </Box>
+                      </Box>
+                    }
+                  />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+          {selectedCandidateId && (
+            <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={onConfirmReplacement}
+                disabled={isSubmitting}
+                data-testid="select-replacement-button"
+              >
+                {isSubmitting ? (
+                  <>
+                    <CircularProgress size={16} sx={{ mr: 1 }} />
+                    {t("selecting")}
+                  </>
+                ) : (
+                  t("select_as_replacement")
+                )}
+              </Button>
+            </Box>
+          )}
+        </>
       )}
     </Box>
   );

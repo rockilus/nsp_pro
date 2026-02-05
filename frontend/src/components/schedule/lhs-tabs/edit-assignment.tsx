@@ -467,6 +467,22 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           ))}
         </Select>
       </div>
+
+      {/* Replacement candidates list */}
+      {isEditing && (
+        <ReplacementCandidatesList
+          lng={lng}
+          candidates={replacementCandidates}
+          selectedCandidateId={selectedCandidateId}
+          onSelectCandidate={setSelectedCandidateId}
+          onViewDetails={handleCandidateDetailsClick}
+          onConfirmReplacement={handleSelectReplacement}
+          onCheckReplacement={handleCheckReplacement}
+          isSubmitting={isSubmitting}
+          isCheckingReplacement={loadingReplacements}
+        />
+      )}
+
       <div className="edit-assignment-actions">
         {!isEditing ? (
           <Button
@@ -490,23 +506,6 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
               {t("delete")}
             </Button>
             <Button
-              variant="outlined"
-              color="info"
-              onClick={handleCheckReplacement}
-              disabled={loadingReplacements}
-              className="check-replacement-button"
-              data-testid="check-replacement-button"
-            >
-              {loadingReplacements ? (
-                <>
-                  <CircularProgress size={16} sx={{ mr: 1 }} />
-                  {t("checking")}
-                </>
-              ) : (
-                t("check_replacement")
-              )}
-            </Button>
-            <Button
               variant="contained"
               color="primary"
               onClick={handleSaveClick}
@@ -518,21 +517,6 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           </>
         )}
       </div>
-
-      {/* Replacement candidates list */}
-      {isEditing &&
-        replacementCandidates &&
-        replacementCandidates.length > 0 && (
-          <ReplacementCandidatesList
-            lng={lng}
-            candidates={replacementCandidates}
-            selectedCandidateId={selectedCandidateId}
-            onSelectCandidate={setSelectedCandidateId}
-            onViewDetails={handleCandidateDetailsClick}
-            onConfirmReplacement={handleSelectReplacement}
-            isSubmitting={isSubmitting}
-          />
-        )}
 
       <RecurrenceDeleteDialog
         open={isDialogOpen}
