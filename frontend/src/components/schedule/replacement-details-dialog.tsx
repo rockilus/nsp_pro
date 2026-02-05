@@ -240,7 +240,7 @@ export function ReplacementDetailsDialog({
         </Box>
       </DialogTitle>
 
-      <DialogContent>
+      <DialogContent sx={{ paddingBottom: "24px" }}>
         {assignment &&
           shifts &&
           (() => {
@@ -588,10 +588,6 @@ export function ReplacementDetailsDialog({
           </Table>
         </TableContainer>
       </DialogContent>
-
-      <DialogActions>
-        <Button onClick={onClose}>Close</Button>
-      </DialogActions>
     </Dialog>
   );
 }

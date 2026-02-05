@@ -94,7 +94,7 @@ export function ReplacementCandidatesList({
   };
 
   return (
-    <Box sx={{ mt: 2 }}>
+    <Box>
       {!isOpen && (
         <Button
           variant="contained"
@@ -103,7 +103,7 @@ export function ReplacementCandidatesList({
           disabled={isCheckingReplacement}
           // fullWidth
           data-testid="check-replacement-button"
-          sx={{ mb: 2, textTransform: "none" }}
+          sx={{ mt: "16px", mb: "16px", textTransform: "none" }}
         >
           {isCheckingReplacement ? (
             <>
@@ -118,7 +118,7 @@ export function ReplacementCandidatesList({
 
       {isOpen && candidates && candidates.length > 0 && (
         <>
-          <Divider sx={{ mb: 2 }} />
+          <Divider sx={{ mb: "8px", mt: "16px" }} />
           <Typography variant="subtitle2" sx={{ fontWeight: "bold", mb: 1 }}>
             {t("replacement_candidates")}{" "}
           </Typography>
@@ -282,16 +282,18 @@ export function ReplacementCandidatesList({
                 </ListItem>
               ))}
           </List>
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={onCancel}
-            data-testid="cancel-replacement-button"
-            sx={{ textTransform: "none" }}
-          >
-            {t("cancel")}
-          </Button>
-          <Divider sx={{ mt: 2, mb: 2 }} />{" "}
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={onCancel}
+              data-testid="cancel-replacement-button"
+              sx={{ textTransform: "none" }}
+            >
+              {t("cancel")}
+            </Button>
+          </Box>
+          <Divider sx={{ mt: "8px", mb: "12px" }} />{" "}
         </>
       )}
     </Box>
