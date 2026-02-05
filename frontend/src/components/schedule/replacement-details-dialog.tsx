@@ -228,6 +228,7 @@ export function ReplacementDetailsDialog({
                     left: 0,
                     backgroundColor: "background.paper",
                     zIndex: 2,
+                    padding: 0,
                   }}
                 >
                   Rank
@@ -240,6 +241,7 @@ export function ReplacementDetailsDialog({
                     left: 60,
                     backgroundColor: "background.paper",
                     zIndex: 2,
+                    padding: 0,
                   }}
                 >
                   Candidate
@@ -252,50 +254,76 @@ export function ReplacementDetailsDialog({
                     left: 240,
                     backgroundColor: "background.paper",
                     zIndex: 2,
+                    padding: 0,
                   }}
                 >
                   {/* Category emoji - no title */}
                 </TableCell>
-                <TableCell sx={{ fontWeight: "bold", minWidth: 120 }}>
+                <TableCell
+                  sx={{ fontWeight: "bold", minWidth: 120, padding: 0 }}
+                >
                   Weekly Time
                 </TableCell>
-                <TableCell sx={{ fontWeight: "bold", minWidth: 130 }}>
+                <TableCell
+                  sx={{ fontWeight: "bold", minWidth: 130, padding: 0 }}
+                >
                   Monthly Duties
                 </TableCell>
-                <TableCell sx={{ fontWeight: "bold", minWidth: 110 }}>
+                <TableCell
+                  sx={{ fontWeight: "bold", minWidth: 110, padding: 0 }}
+                >
                   Shift LTM
                 </TableCell>
-                <TableCell sx={{ fontWeight: "bold", minWidth: 120 }}>
+                <TableCell
+                  sx={{ fontWeight: "bold", minWidth: 120, padding: 0 }}
+                >
                   Weekday LTM
                 </TableCell>
-                <TableCell sx={{ fontWeight: "bold", minWidth: 100 }}>
+                <TableCell
+                  sx={{ fontWeight: "bold", minWidth: 100, padding: 0 }}
+                >
                   Soft
                 </TableCell>
-                <TableCell sx={{ fontWeight: "bold", minWidth: 100 }}>
+                <TableCell
+                  sx={{ fontWeight: "bold", minWidth: 100, padding: 0 }}
+                >
                   Hard
                 </TableCell>
-                <TableCell sx={{ fontWeight: "bold", minWidth: 100 }}>
+                <TableCell
+                  sx={{ fontWeight: "bold", minWidth: 100, padding: 0 }}
+                >
                   Request
                 </TableCell>
-                <TableCell sx={{ fontWeight: "bold", minWidth: 100 }}>
+                <TableCell
+                  sx={{ fontWeight: "bold", minWidth: 100, padding: 0 }}
+                >
                   Overlap
                 </TableCell>
-                <TableCell sx={{ fontWeight: "bold", minWidth: 100 }}>
+                <TableCell
+                  sx={{ fontWeight: "bold", minWidth: 100, padding: 0 }}
+                >
                   Filter
                 </TableCell>
-                <TableCell sx={{ fontWeight: "bold", minWidth: 100 }}>
+                <TableCell
+                  sx={{ fontWeight: "bold", minWidth: 100, padding: 0 }}
+                >
                   Leave
                 </TableCell>
-                <TableCell sx={{ fontWeight: "bold", minWidth: 110 }}>
+                <TableCell
+                  sx={{ fontWeight: "bold", minWidth: 110, padding: 0 }}
+                >
                   Specialty
                 </TableCell>
-                <TableCell sx={{ fontWeight: "bold", minWidth: 110 }}>
+                <TableCell
+                  sx={{ fontWeight: "bold", minWidth: 110, padding: 0 }}
+                >
                   Employed
                 </TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
                     minWidth: 120,
+                    padding: 0,
                   }}
                 >
                   Actions
@@ -329,6 +357,7 @@ export function ReplacementDetailsDialog({
                           ? "action.hover"
                           : "background.paper",
                         zIndex: 1,
+                        padding: 0,
                       }}
                     >
                       {isCurrentWorker ? "" : candidate.rank}
@@ -341,6 +370,7 @@ export function ReplacementDetailsDialog({
                           ? "action.hover"
                           : "background.paper",
                         zIndex: 1,
+                        padding: 0,
                       }}
                     >
                       <Typography variant="body2" fontWeight="medium">
@@ -356,37 +386,54 @@ export function ReplacementDetailsDialog({
                           : "background.paper",
                         zIndex: 1,
                         textAlign: "center",
+                        padding: 0,
                       }}
                     >
                       <span style={{ fontSize: "1.1rem" }}>
                         {getCategoryEmoji(candidate.replacementCategory)}
                       </span>
                     </TableCell>
-                    <TableCell>{renderWeeklyTime(impl)}</TableCell>
-                    <TableCell>{renderMonthlyDuties(impl)}</TableCell>
-                    <TableCell>
+                    <TableCell sx={{ padding: 0 }}>
+                      {renderWeeklyTime(impl)}
+                    </TableCell>
+                    <TableCell sx={{ padding: 0 }}>
+                      {renderMonthlyDuties(impl)}
+                    </TableCell>
+                    <TableCell sx={{ padding: 0 }}>
                       <Typography variant="body2">
                         {impl.nbTimesDidShiftLtm.count}
                       </Typography>
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{ padding: 0 }}>
                       <Typography variant="body2">
                         {impl.nbTimesWorkedWeekdayLtm.count}
                       </Typography>
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{ padding: 0 }}>
                       {renderConstraintHit(impl.softConstraintHits, "soft")}
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{ padding: 0 }}>
                       {renderConstraintHit(impl.hardConstraintHits, "hard")}
                     </TableCell>
-                    <TableCell>{renderRequestHit(impl)}</TableCell>
-                    <TableCell>{renderOverlapHit(impl)}</TableCell>
-                    <TableCell>{renderFilterHit(impl)}</TableCell>
-                    <TableCell>{renderBoolean(impl.isntOnLeave)}</TableCell>
-                    <TableCell>{renderBoolean(impl.hasSpecialty)}</TableCell>
-                    <TableCell>{renderBoolean(impl.isEmployed)}</TableCell>
-                    <TableCell>
+                    <TableCell sx={{ padding: 0 }}>
+                      {renderRequestHit(impl)}
+                    </TableCell>
+                    <TableCell sx={{ padding: 0 }}>
+                      {renderOverlapHit(impl)}
+                    </TableCell>
+                    <TableCell sx={{ padding: 0 }}>
+                      {renderFilterHit(impl)}
+                    </TableCell>
+                    <TableCell sx={{ padding: 0 }}>
+                      {renderBoolean(impl.isntOnLeave)}
+                    </TableCell>
+                    <TableCell sx={{ padding: 0 }}>
+                      {renderBoolean(impl.hasSpecialty)}
+                    </TableCell>
+                    <TableCell sx={{ padding: 0 }}>
+                      {renderBoolean(impl.isEmployed)}
+                    </TableCell>
+                    <TableCell sx={{ padding: 0 }}>
                       {!isCurrentWorker && (
                         <Button
                           size="small"
