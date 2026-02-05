@@ -1,9 +1,7 @@
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta, timezone
 from typing import Dict, List, Set, Tuple
 
-import humps
-from pydantic import TypeAdapter
 from shared.augment.cb_to_cb_augmented import cb_to_cb_augmented
 from shared.augment.r_to_r_augmented import r_to_r_augmented
 from shared.constraint_parser import (
@@ -47,6 +45,8 @@ from shared.schemas.core import (
     Shift,
     ShiftType,
     Specialty,
+    SwapAssignmentInfo,
+    SwapValidationResult,
     SystemConstraintPenalty,
     UserConstraintPenalty,
     Variable,
@@ -54,10 +54,6 @@ from shared.schemas.core import (
     Worker,
 )
 from shared.schemas.core.breach import ObjectiveCategory
-from shared.schemas.dto.replacement import (
-    SwapAssignmentInfoDTO,
-    SwapValidationResultDTO,
-)
 from shared.utils import (
     BoolSharedPolicy,
     build_dates_list,
@@ -112,49 +108,6 @@ class ReplacementData:
     constraints: List[ConstraintBuild]
     assignments: List[Assignment]
     requests: List[Request]
-
-
-@dataclass
-class SwapAssignmentInfo:
-    """Information about one worker's assignments in a swap."""
-
-    worker_id: str
-    worker_name: str
-    assignment_ids: List[str]
-    current_implications: List[ReplacementImplications]  # One per assignment
-    swapped_implications: List[
-        ReplacementImplications
-    ]  # One per swapped assignment
-
-    def to_dto(self) -> SwapAssignmentInfoDTO:
-        data = asdict(self)
-        data["current_implications"] = [
-            impl.to_dto().model_dump() for impl in self.current_implications
-        ]
-        data["swapped_implications"] = [
-            impl.to_dto().model_dump() for impl in self.swapped_implications
-        ]
-        as_dict = humps.camelize(data)
-        validator = TypeAdapter(SwapAssignmentInfoDTO)
-        return validator.validate_python(as_dict)
-
-
-@dataclass
-class SwapValidationResult:
-    """Result of validating an assignment swap between two workers."""
-
-    is_valid: bool  # True if both workers can perform the swap
-    worker_a_info: SwapAssignmentInfo
-    worker_b_info: SwapAssignmentInfo
-    validation_message: str  # Human-readable message about the swap validity
-
-    def to_dto(self) -> SwapValidationResultDTO:
-        data = asdict(self)
-        data["worker_a_info"] = self.worker_a_info.to_dto().model_dump()
-        data["worker_b_info"] = self.worker_b_info.to_dto().model_dump()
-        as_dict = humps.camelize(data)
-        validator = TypeAdapter(SwapValidationResultDTO)
-        return validator.validate_python(as_dict)
 
 
 @dataclass
