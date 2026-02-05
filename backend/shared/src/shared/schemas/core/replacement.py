@@ -26,6 +26,18 @@ class ReplacementCategory(Enum):
     CAN_DO = "can_do"
 
 
+class MostConstrainingReason(Enum):
+    NOT_EMPLOYED = "not_employed"
+    MISSING_SPECIALTY = "missing_specialty"
+    ON_LEAVE = "on_leave"
+    FILTERED_OUT = "filtered_out"
+    HAS_OVERLAP = "has_overlap"
+    HARD_CONSTRAINT_VIOLATION = "hard_constraint_violation"
+    REQUEST_CONFLICT = "request_conflict"
+    SOFT_CONSTRAINT_VIOLATION = "soft_constraint_violation"
+    NO_CONSTRAINTS_VIOLATED = "no_constraints_violated"
+
+
 @dataclass
 class FilterHits:
     isnt_filtered_out: bool
@@ -356,49 +368,44 @@ class ReplacementCandidate:
     rank: int  # Lower is better, 0 for current assignment
     replacement_category: ReplacementCategory
     replacement_implications: ReplacementImplications
-    most_constraining_reason: str
+    most_constraining_reason: MostConstrainingReason
 
     @staticmethod
     def compute_most_constraining_reason(
         implications: ReplacementImplications,
-    ) -> str:
+    ) -> MostConstrainingReason:
         """
         Compute the most constraining reason by checking implications in priority order.
-        Returns a descriptive string for the first violation found.
+        Returns enum value for the first violation found.
         """
         # Check hard constraints in order of importance
         if not implications.is_employed:
-            return "Worker is not currently employed"
+            return MostConstrainingReason.NOT_EMPLOYED
 
         if not implications.has_specialty:
-            return "Worker does not have the required specialty"
+            return MostConstrainingReason.MISSING_SPECIALTY
 
         if not implications.isnt_on_leave:
-            return "Worker is on leave during this shift"
+            return MostConstrainingReason.ON_LEAVE
 
         if not implications.filter_hits.isnt_filtered_out:
-            filters = ", ".join(implications.filter_hits.filter_labels)
-            return f"Worker is filtered out by dimension filters: {filters}"
+            return MostConstrainingReason.FILTERED_OUT
 
         if not implications.overlap_hits.hasnt_overlap:
-            count = len(implications.overlap_hits.overlap_assignment_ids)
-            return f"Worker has {count} overlapping assignment(s)"
+            return MostConstrainingReason.HAS_OVERLAP
 
         if not implications.hard_constraint_hits.meets_constraints:
-            count = len(implications.hard_constraint_hits.breaches)
-            return f"Worker violates {count} hard constraint(s)"
+            return MostConstrainingReason.HARD_CONSTRAINT_VIOLATION
 
         if not implications.request_hits.has_no_request_conflict:
-            count = len(implications.request_hits.conflicting_request_ids)
-            return f"Worker has {count} conflicting request(s)"
+            return MostConstrainingReason.REQUEST_CONFLICT
 
         # Check soft constraints
         if not implications.soft_constraint_hits.meets_constraints:
-            count = len(implications.soft_constraint_hits.breaches)
-            return f"Worker violates {count} soft constraint(s)"
+            return MostConstrainingReason.SOFT_CONSTRAINT_VIOLATION
 
         # No constraints violated
-        return "No constraints violated"
+        return MostConstrainingReason.NO_CONSTRAINTS_VIOLATED
 
     def to_dict(self) -> Dict:
         out = {
@@ -407,7 +414,7 @@ class ReplacementCandidate:
             "rank": self.rank,
             "replacement_category": self.replacement_category.value,
             "replacement_implications": self.replacement_implications.to_dict(),
-            "most_constraining_reason": self.most_constraining_reason,
+            "most_constraining_reason": self.most_constraining_reason.value,
         }
         return out
 
@@ -423,7 +430,9 @@ class ReplacementCandidate:
             replacement_implications=ReplacementImplications.from_dict(
                 data["replacement_implications"]
             ),
-            most_constraining_reason=data["most_constraining_reason"],
+            most_constraining_reason=MostConstrainingReason(
+                data["most_constraining_reason"]
+            ),
         )
 
     def to_dto(self) -> ReplacementCandidateDTO:

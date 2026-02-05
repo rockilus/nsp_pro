@@ -9,10 +9,6 @@ import {
   Select,
   Chip,
   CircularProgress,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
   Box,
   Typography,
 } from "@mui/material";
@@ -21,6 +17,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import RecurrenceEdit from "./recurrence-edit/recurrence-edit";
 import RecurrenceDeleteDialog from "./recurrence-delete-dialog";
 import { ReplacementDetailsDialog } from "../replacement-details-dialog";
+import { ReplacementCandidatesList } from "../replacement-candidates-list";
 // Hooks
 import { useGetReplacementCandidates } from "../../../hooks/useReplacement";
 // Styles
@@ -285,19 +282,6 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
     setShowDetailsDialog(true);
   };
 
-  const getCategoryColor = (
-    category: "can_do" | "could_do" | "cant_do",
-  ): "success" | "warning" | "error" => {
-    switch (category) {
-      case "can_do":
-        return "success";
-      case "could_do":
-        return "warning";
-      case "cant_do":
-        return "error";
-    }
-  };
-
   const handleSaveClick = async () => {
     if (!workerId) setWorkerError(true);
     if (!shiftId) setShiftError(true);
@@ -539,190 +523,15 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
       {isEditing &&
         replacementCandidates &&
         replacementCandidates.length > 0 && (
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: "bold" }}>
-              {t("replacement_candidates")} ({replacementCandidates.length})
-            </Typography>
-            <List sx={{ maxHeight: 400, overflow: "auto", p: 0 }}>
-              {replacementCandidates.map((candidate) => (
-                <ListItem
-                  key={candidate.workerId}
-                  disablePadding
-                  sx={{
-                    mb: 1,
-                    border: 1,
-                    borderColor:
-                      selectedCandidateId === candidate.workerId
-                        ? "primary.main"
-                        : "divider",
-                    borderRadius: 1,
-                    backgroundColor:
-                      selectedCandidateId === candidate.workerId
-                        ? "action.selected"
-                        : "background.paper",
-                  }}
-                >
-                  <ListItemButton
-                    onClick={() => setSelectedCandidateId(candidate.workerId)}
-                    data-testid={`candidate-${candidate.workerId}`}
-                  >
-                    <ListItemText
-                      primary={
-                        <Box
-                          display="flex"
-                          alignItems="center"
-                          gap={1}
-                          flexWrap="wrap"
-                        >
-                          <Chip
-                            size="small"
-                            label={
-                              candidate.replacementCategory === "can_do"
-                                ? "●"
-                                : candidate.replacementCategory === "could_do"
-                                  ? "●"
-                                  : "●"
-                            }
-                            color={getCategoryColor(
-                              candidate.replacementCategory,
-                            )}
-                            sx={{
-                              minWidth: 24,
-                              "& .MuiChip-label": { px: 0.5 },
-                            }}
-                          />
-                          <Typography variant="body2" fontWeight="medium">
-                            {candidate.workerName}
-                          </Typography>
-                          {candidate.rank === 0 && (
-                            <Chip
-                              label={t("current")}
-                              size="small"
-                              variant="outlined"
-                            />
-                          )}
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{ ml: "auto" }}
-                          >
-                            {t("rank")}: {candidate.rank}
-                          </Typography>
-                        </Box>
-                      }
-                      secondary={
-                        <Box sx={{ mt: 0.5 }}>
-                          <Typography variant="caption" display="block">
-                            {candidate.mostConstrainingReason}
-                          </Typography>
-                          <Box display="flex" gap={2} mt={0.5} flexWrap="wrap">
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                            >
-                              {t("weekly_hours")}:{" "}
-                              {Math.round(
-                                candidate.replacementImplications.newWeeklyTime
-                                  .newWeeklyWorkedMinutes / 60,
-                              )}
-                              h
-                              {candidate.replacementImplications.newWeeklyTime
-                                .newWeeklyTimeDeltaMinutes !== 0 && (
-                                <span
-                                  style={{
-                                    color:
-                                      candidate.replacementImplications
-                                        .newWeeklyTime
-                                        .newWeeklyTimeDeltaMinutes > 0
-                                        ? "green"
-                                        : "red",
-                                  }}
-                                >
-                                  {" "}
-                                  (
-                                  {candidate.replacementImplications
-                                    .newWeeklyTime.newWeeklyTimeDeltaMinutes > 0
-                                    ? "+"
-                                    : ""}
-                                  {Math.round(
-                                    candidate.replacementImplications
-                                      .newWeeklyTime.newWeeklyTimeDeltaMinutes /
-                                      60,
-                                  )}
-                                  h)
-                                </span>
-                              )}
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                            >
-                              {t("monthly_duties")}:{" "}
-                              {
-                                candidate.replacementImplications
-                                  .newMonthlyDuties.newNumberMonthlyDuties
-                              }
-                              {candidate.replacementImplications
-                                .newMonthlyDuties.newMonthlyDutiesDelta !==
-                                0 && (
-                                <span
-                                  style={{
-                                    color:
-                                      candidate.replacementImplications
-                                        .newMonthlyDuties
-                                        .newMonthlyDutiesDelta > 0
-                                        ? "green"
-                                        : "red",
-                                  }}
-                                >
-                                  {" "}
-                                  (
-                                  {candidate.replacementImplications
-                                    .newMonthlyDuties.newMonthlyDutiesDelta > 0
-                                    ? "+"
-                                    : ""}
-                                  {
-                                    candidate.replacementImplications
-                                      .newMonthlyDuties.newMonthlyDutiesDelta
-                                  }
-                                  )
-                                </span>
-                              )}
-                            </Typography>
-                          </Box>
-                          <Box display="flex" gap={1} mt={1}>
-                            <Button
-                              size="small"
-                              variant="text"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleCandidateDetailsClick(candidate);
-                              }}
-                            >
-                              {t("see_details")}
-                            </Button>
-                          </Box>
-                        </Box>
-                      }
-                    />
-                  </ListItemButton>
-                </ListItem>
-              ))}
-            </List>
-            {selectedCandidateId && (
-              <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleSelectReplacement}
-                  disabled={isSubmitting}
-                  data-testid="select-replacement-button"
-                >
-                  {isSubmitting ? t("selecting") : t("select_as_replacement")}
-                </Button>
-              </Box>
-            )}
-          </Box>
+          <ReplacementCandidatesList
+            lng={lng}
+            candidates={replacementCandidates}
+            selectedCandidateId={selectedCandidateId}
+            onSelectCandidate={setSelectedCandidateId}
+            onViewDetails={handleCandidateDetailsClick}
+            onConfirmReplacement={handleSelectReplacement}
+            isSubmitting={isSubmitting}
+          />
         )}
 
       <RecurrenceDeleteDialog

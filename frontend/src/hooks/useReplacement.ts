@@ -2,7 +2,7 @@ import { useCallback } from "react";
 // Types
 import { ReplacementCandidateT } from "../types/replacement";
 // API Client
-import { ReplacementApi } from "../app/lib/api/replacementApi";
+import { AssignmentApi } from "../app/lib/api/assignmentApi";
 import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
@@ -45,7 +45,7 @@ export function useGetReplacementCandidates() {
       }
 
       try {
-        const result = await ReplacementApi.getReplacementCandidates(
+        const result = await AssignmentApi.getReplacementCandidates(
           apiClient,
           assignmentId,
           teamId,
