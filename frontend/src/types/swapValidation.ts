@@ -1,12 +1,16 @@
 import dayjs from "dayjs";
 import { ReplacementImplicationsT } from "./replacement";
 
+export type AssignmentImplicationT = {
+  assignmentId: string;
+  implications: ReplacementImplicationsT;
+};
+
 export type SwapAssignmentInfoT = {
   workerId: string;
   workerName: string;
-  assignmentIds: string[];
-  currentImplications: ReplacementImplicationsT[];
-  swappedImplications: ReplacementImplicationsT[];
+  preSwap: AssignmentImplicationT[];
+  postSwap: AssignmentImplicationT[];
 };
 
 export type SwapValidationResultT = {
@@ -35,13 +39,18 @@ export function toSwapAssignmentInfoT(data: any): SwapAssignmentInfoT {
   return {
     workerId: data.workerId,
     workerName: data.workerName,
-    assignmentIds: data.assignmentIds,
-    currentImplications: data.currentImplications.map(
-      toReplacementImplicationsT,
-    ),
-    swappedImplications: data.swappedImplications.map(
-      toReplacementImplicationsT,
-    ),
+    preSwap: data.preSwap.map(toAssignmentImplicationT),
+    postSwap: data.postSwap.map(toAssignmentImplicationT),
+  };
+}
+
+/**
+ * Convert raw API data to AssignmentImplicationT
+ */
+function toAssignmentImplicationT(data: any): AssignmentImplicationT {
+  return {
+    assignmentId: data.assignmentId,
+    implications: toReplacementImplicationsT(data.implications),
   };
 }
 

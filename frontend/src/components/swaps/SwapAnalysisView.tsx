@@ -76,9 +76,10 @@ export default function SwapAnalysisView({
 
   const renderWorkerAnalysis = (
     workerName: string,
-    assignmentIds: string[],
-    currentImplications: ReplacementImplicationsT[],
-    swappedImplications: ReplacementImplicationsT[],
+    postSwap: Array<{
+      assignmentId: string;
+      implications: ReplacementImplicationsT;
+    }>,
     label: string,
   ) => {
     return (
@@ -88,12 +89,11 @@ export default function SwapAnalysisView({
         </Typography>
 
         <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-          Will receive {swappedImplications.length} assignment(s)
+          Will receive {postSwap.length} assignment(s)
         </Typography>
 
         <List dense sx={{ mt: 2 }}>
-          {swappedImplications.map((implications, index) => {
-            const assignmentId = assignmentIds[index];
+          {postSwap.map(({ assignmentId, implications }) => {
             const assignmentData = getAssignmentData(assignmentId);
             const emoji = getCategoryEmoji(implications);
             const reason = getMostConstrainingReason(implications);
@@ -197,18 +197,14 @@ export default function SwapAnalysisView({
         <Box sx={{ flex: 1 }}>
           {renderWorkerAnalysis(
             workerAInfo.workerName,
-            workerAInfo.assignmentIds,
-            workerAInfo.currentImplications,
-            workerAInfo.swappedImplications,
+            workerAInfo.postSwap,
             "Worker A",
           )}
         </Box>
         <Box sx={{ flex: 1 }}>
           {renderWorkerAnalysis(
             workerBInfo.workerName,
-            workerBInfo.assignmentIds,
-            workerBInfo.currentImplications,
-            workerBInfo.swappedImplications,
+            workerBInfo.postSwap,
             "Worker B",
           )}
         </Box>

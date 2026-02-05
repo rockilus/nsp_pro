@@ -71,12 +71,16 @@ class ReplacementCandidateDTO(BaseModel):
     mostConstrainingReason: str
 
 
+class AssignmentImplicationDTO(BaseModel):
+    assignmentId: str
+    implications: ReplacementImplicationsDTO
+
+
 class SwapAssignmentInfoDTO(BaseModel):
     workerId: str
     workerName: str
-    assignmentIds: List[str]
-    currentImplications: List[ReplacementImplicationsDTO]
-    swappedImplications: List[ReplacementImplicationsDTO]
+    preSwap: List[AssignmentImplicationDTO]
+    postSwap: List[AssignmentImplicationDTO]
 
 
 class SwapValidationResultDTO(BaseModel):

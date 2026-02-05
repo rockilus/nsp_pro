@@ -216,19 +216,22 @@ export default function SwapAnalysisDialog({
             </TableRow>
           </TableHead>
           <TableBody>
-            {workerInfo.assignmentIds.map((assignmentId, index) => {
-              const assignmentData = getAssignmentData(assignmentId);
-              const currentImpl = workerInfo.currentImplications[index];
-              const swappedImpl = workerInfo.swappedImplications[index];
+            {workerInfo.postSwap.map((postSwapItem, index) => {
+              const preSwapItem = workerInfo.preSwap[index];
+              const assignmentData = getAssignmentData(
+                postSwapItem.assignmentId,
+              );
+              const currentImpl = preSwapItem.implications;
+              const swappedImpl = postSwapItem.implications;
 
               const assignmentLabel = assignmentData
                 ? `${assignmentData.shift.name} - ${dayjs(assignmentData.assignment.date).format("MMM D")}`
-                : assignmentId;
+                : postSwapItem.assignmentId;
 
               return (
-                <Fragment key={assignmentId}>
+                <Fragment key={postSwapItem.assignmentId}>
                   {/* Pre-swap row */}
-                  <TableRow key={`${assignmentId}-pre`}>
+                  <TableRow key={`${postSwapItem.assignmentId}-pre`}>
                     <TableCell rowSpan={2}>{assignmentLabel}</TableCell>
                     <TableCell>Pre-swap</TableCell>
                     <TableCell>{renderWeeklyTime(currentImpl)}</TableCell>
@@ -255,7 +258,7 @@ export default function SwapAnalysisDialog({
 
                   {/* Post-swap row */}
                   <TableRow
-                    key={`${assignmentId}-post`}
+                    key={`${postSwapItem.assignmentId}-post`}
                     sx={{ bgcolor: "action.hover" }}
                   >
                     <TableCell sx={{ fontWeight: "bold" }}>Post-swap</TableCell>
