@@ -114,5 +114,21 @@
     "thursday": "Thursday",
     "friday": "Friday",
     "saturday": "Saturday",
-    "sunday": "Sunday"
+    "sunday": "Sunday",
+    "check_replacement": "Check Replacement",
+    "checking": "Checking...",
+    "replacement_candidates": "Replacement Candidates",
+    "see_details": "See Details",
+    "view_all_candidates": "View All Candidates",
+    "selecting": "Selecting...",
+    "replace": "Replace",
+    "replacement_reason_not_employed": "Not Employed",
+    "replacement_reason_missing_specialty": "Missing Specialty",
+    "replacement_reason_on_leave": "On Leave",
+    "replacement_reason_filtered_out": "Filtered Out",
+    "replacement_reason_has_overlap": "Has Overlap",
+    "replacement_reason_hard_constraint_violation": "Hard Constraint Violation",
+    "replacement_reason_request_conflict": "Request Conflict",
+    "replacement_reason_soft_constraint_violation": "Soft Constraint Violation",
+    "replacement_reason_no_constraints_violated": "No Constraints Violated"
 }

@@ -124,14 +124,11 @@ export function ReplacementCandidatesList({
               size="small"
               variant="text"
               onClick={() => {
-                const selected = candidates.find(
-                  (c) => c.workerId === selectedCandidateId,
-                );
-                if (selected) onViewDetails(selected);
+                // Open dialog with all candidates for comparison
+                if (candidates.length > 0) onViewDetails(candidates[0]);
               }}
-              disabled={!selectedCandidateId}
             >
-              {t("see_details")}
+              {t("view_all_candidates")}
             </Button>
           </Box>
           <List sx={{ maxHeight: 400, overflow: "auto", p: 0 }}>

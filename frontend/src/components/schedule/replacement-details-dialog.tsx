@@ -8,40 +8,206 @@ import {
   IconButton,
   Box,
   Typography,
-  Divider,
+  Table,
+  TableContainer,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  CircularProgress,
+  Tooltip,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { ReplacementCandidateT } from "../../types/replacement";
+import {
+  ReplacementCandidateT,
+  ConstraintHitsT,
+  ReplacementImplicationsT,
+} from "../../types/replacement";
 
 interface ReplacementDetailsDialogProps {
   open: boolean;
   onClose: () => void;
-  candidate: ReplacementCandidateT | null;
+  candidates: ReplacementCandidateT[];
+  onReplace: (candidateId: string) => void;
+  isSubmitting: boolean;
   lng: string;
 }
 
 export function ReplacementDetailsDialog({
   open,
   onClose,
-  candidate,
+  candidates,
+  onReplace,
+  isSubmitting,
   lng,
 }: ReplacementDetailsDialogProps) {
-  if (!candidate) return null;
+  const getCategoryEmoji = (
+    category: "can_do" | "could_do" | "cant_do",
+  ): string => {
+    switch (category) {
+      case "can_do":
+        return "🟢";
+      case "could_do":
+        return "🟠";
+      case "cant_do":
+        return "🔴";
+      default:
+        return "⚪";
+    }
+  };
 
-  const implications = candidate.replacementImplications;
+  const renderBoolean = (value: boolean): React.JSX.Element => {
+    return (
+      <span style={{ color: value ? "green" : "red", fontWeight: "bold" }}>
+        {value ? "✓" : "✗"}
+      </span>
+    );
+  };
+
+  const renderWeeklyTime = (
+    implications: ReplacementImplicationsT,
+  ): React.JSX.Element => {
+    const hours = Math.round(
+      implications.newWeeklyTime.newWeeklyWorkedMinutes / 60,
+    );
+    const delta = Math.round(
+      implications.newWeeklyTime.newWeeklyTimeDeltaMinutes / 60,
+    );
+
+    return (
+      <Box>
+        <Typography variant="body2">{hours}h/week</Typography>
+        {delta !== 0 && (
+          <Typography
+            variant="caption"
+            sx={{
+              color: delta > 0 ? "success.main" : "error.main",
+            }}
+          >
+            ({delta > 0 ? "+" : ""}
+            {delta}h)
+          </Typography>
+        )}
+      </Box>
+    );
+  };
+
+  const renderMonthlyDuties = (
+    implications: ReplacementImplicationsT,
+  ): React.JSX.Element => {
+    const count = implications.newMonthlyDuties.newNumberMonthlyDuties;
+    const delta = implications.newMonthlyDuties.newMonthlyDutiesDelta;
+
+    return (
+      <Box>
+        <Typography variant="body2">{count}/month</Typography>
+        {delta !== 0 && (
+          <Typography
+            variant="caption"
+            sx={{
+              color: delta > 0 ? "success.main" : "error.main",
+            }}
+          >
+            ({delta > 0 ? "+" : ""}
+            {delta})
+          </Typography>
+        )}
+      </Box>
+    );
+  };
+
+  const renderConstraintHit = (
+    hit: ConstraintHitsT,
+    type: string,
+  ): React.JSX.Element => {
+    if (hit.meetsConstraints) {
+      return renderBoolean(true);
+    }
+
+    const tooltipText =
+      hit.breaches.length > 0
+        ? `${hit.breaches.length} violation(s): ${hit.breaches.map((b) => b.description).join(", ")}`
+        : "Constraint violated";
+
+    return (
+      <Tooltip title={tooltipText} arrow>
+        <span>{renderBoolean(false)}</span>
+      </Tooltip>
+    );
+  };
+
+  const renderOverlapHit = (
+    implications: ReplacementImplicationsT,
+  ): React.JSX.Element => {
+    const hasNoOverlap = implications.overlapHits.hasntOverlap;
+
+    if (hasNoOverlap) {
+      return renderBoolean(true);
+    }
+
+    const tooltipText = `${implications.overlapHits.overlapAssignmentIds.length} overlapping assignment(s)`;
+
+    return (
+      <Tooltip title={tooltipText} arrow>
+        <span>{renderBoolean(false)}</span>
+      </Tooltip>
+    );
+  };
+
+  const renderFilterHit = (
+    implications: ReplacementImplicationsT,
+  ): React.JSX.Element => {
+    const passesFilters = implications.filterHits.isntFilteredOut;
+
+    if (passesFilters) {
+      return renderBoolean(true);
+    }
+
+    const tooltipText =
+      implications.filterHits.filterLabels.length > 0
+        ? `Violated filters: ${implications.filterHits.filterLabels.join(", ")}`
+        : "Filtered out";
+
+    return (
+      <Tooltip title={tooltipText} arrow>
+        <span>{renderBoolean(false)}</span>
+      </Tooltip>
+    );
+  };
+
+  const renderRequestHit = (
+    implications: ReplacementImplicationsT,
+  ): React.JSX.Element => {
+    const noConflict = implications.requestHits.hasNoRequestConflict;
+
+    if (noConflict) {
+      return renderBoolean(true);
+    }
+
+    const tooltipText = `${implications.requestHits.conflictingRequestIds.length} conflicting request(s)`;
+
+    return (
+      <Tooltip title={tooltipText} arrow>
+        <span>{renderBoolean(false)}</span>
+      </Tooltip>
+    );
+  };
+
+  // Sort candidates by rank (current worker with rank=0 first)
+  const sortedCandidates = [...candidates].sort((a, b) => a.rank - b.rank);
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="md"
+      maxWidth="xl"
       fullWidth
       data-testid="replacement-details-dialog"
     >
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h6">
-            Replacement Details: {candidate.workerName}
+            Replacement Candidates Comparison ({candidates.length})
           </Typography>
           <IconButton onClick={onClose} size="small">
             <CloseIcon />
@@ -50,186 +216,187 @@ export function ReplacementDetailsDialog({
       </DialogTitle>
 
       <DialogContent>
-        <Box sx={{ py: 2 }}>
-          {/* Employment Status */}
-          <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-            Employment Status
-          </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
-            Employed: {implications.isEmployed ? "Yes" : "No"}
-          </Typography>
-          <Divider sx={{ my: 2 }} />
+        <TableContainer sx={{ maxHeight: 600, overflowX: "auto" }}>
+          <Table stickyHeader size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell
+                  sx={{
+                    fontWeight: "bold",
+                    minWidth: 60,
+                    position: "sticky",
+                    left: 0,
+                    backgroundColor: "background.paper",
+                    zIndex: 2,
+                  }}
+                >
+                  Rank
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: "bold",
+                    minWidth: 180,
+                    position: "sticky",
+                    left: 60,
+                    backgroundColor: "background.paper",
+                    zIndex: 2,
+                  }}
+                >
+                  Candidate
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", minWidth: 120 }}>
+                  Weekly Time
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", minWidth: 130 }}>
+                  Monthly Duties
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", minWidth: 110 }}>
+                  Shift LTM
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", minWidth: 120 }}>
+                  Weekday LTM
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", minWidth: 100 }}>
+                  Soft ✓
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", minWidth: 100 }}>
+                  Hard ✓
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", minWidth: 100 }}>
+                  Request ✓
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", minWidth: 100 }}>
+                  Overlap ✓
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", minWidth: 100 }}>
+                  Filter ✓
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", minWidth: 100 }}>
+                  Leave ✓
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", minWidth: 110 }}>
+                  Specialty ✓
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", minWidth: 110 }}>
+                  Employed ✓
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: "bold",
+                    minWidth: 120,
+                  }}
+                >
+                  Actions
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {sortedCandidates.map((candidate) => {
+                const isCurrentWorker = candidate.rank === 0;
+                const impl = candidate.replacementImplications;
 
-          {/* Specialty */}
-          <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-            Specialty Requirements
-          </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
-            Has Required Specialty: {implications.hasSpecialty ? "Yes" : "No"}
-          </Typography>
-          <Divider sx={{ my: 2 }} />
-
-          {/* Leave Status */}
-          <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-            Leave Status
-          </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
-            Not on Leave: {implications.isntOnLeave ? "Yes" : "No"}
-          </Typography>
-          <Divider sx={{ my: 2 }} />
-
-          {/* Filter Violations */}
-          <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-            Dimension Filters
-          </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
-            Passes Filters:{" "}
-            {implications.filterHits.isntFilteredOut ? "Yes" : "No"}
-            {!implications.filterHits.isntFilteredOut &&
-              implications.filterHits.filterLabels.length > 0 && (
-                <>
-                  <br />
-                  Violated Filters:{" "}
-                  {implications.filterHits.filterLabels.join(", ")}
-                </>
-              )}
-          </Typography>
-          <Divider sx={{ my: 2 }} />
-
-          {/* Overlaps */}
-          <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-            Assignment Overlaps
-          </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
-            No Overlaps: {implications.overlapHits.hasntOverlap ? "Yes" : "No"}
-            {!implications.overlapHits.hasntOverlap && (
-              <>
-                <br />
-                Overlapping Assignments:{" "}
-                {implications.overlapHits.overlapAssignmentIds.length}
-              </>
-            )}
-          </Typography>
-          <Divider sx={{ my: 2 }} />
-
-          {/* Hard Constraints */}
-          <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-            Hard Constraints
-          </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
-            Meets Hard Constraints:{" "}
-            {implications.hardConstraintHits.meetsConstraints ? "Yes" : "No"}
-            {!implications.hardConstraintHits.meetsConstraints && (
-              <>
-                <br />
-                Violations: {implications.hardConstraintHits.breaches.length}
-              </>
-            )}
-          </Typography>
-          <Divider sx={{ my: 2 }} />
-
-          {/* Request Conflicts */}
-          <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-            Request Conflicts
-          </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
-            No Request Conflicts:{" "}
-            {implications.requestHits.hasNoRequestConflict ? "Yes" : "No"}
-            {!implications.requestHits.hasNoRequestConflict && (
-              <>
-                <br />
-                Conflicting Requests:{" "}
-                {implications.requestHits.conflictingRequestIds.length}
-              </>
-            )}
-          </Typography>
-          <Divider sx={{ my: 2 }} />
-
-          {/* Soft Constraints */}
-          <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-            Soft Constraints
-          </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
-            Meets Soft Constraints:{" "}
-            {implications.softConstraintHits.meetsConstraints ? "Yes" : "No"}
-            {!implications.softConstraintHits.meetsConstraints && (
-              <>
-                <br />
-                Violations: {implications.softConstraintHits.breaches.length}
-              </>
-            )}
-          </Typography>
-          <Divider sx={{ my: 2 }} />
-
-          {/* Monthly Duties */}
-          <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-            Monthly Duties Impact
-          </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
-            New Monthly Duties:{" "}
-            {implications.newMonthlyDuties.newNumberMonthlyDuties}
-            <br />
-            Change:{" "}
-            {implications.newMonthlyDuties.newMonthlyDutiesDelta > 0 ? "+" : ""}
-            {implications.newMonthlyDuties.newMonthlyDutiesDelta}
-            <br />
-            Meets Target:{" "}
-            {implications.newMonthlyDuties.meetsTarget ? "Yes" : "No"}
-          </Typography>
-          <Divider sx={{ my: 2 }} />
-
-          {/* Weekly Work Time */}
-          <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-            Weekly Work Time Impact
-          </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
-            New Weekly Hours:{" "}
-            {Math.round(implications.newWeeklyTime.newWeeklyWorkedMinutes / 60)}
-            h
-            <br />
-            Change:{" "}
-            {Math.round(
-              implications.newWeeklyTime.newWeeklyTimeDeltaMinutes / 60,
-            ) > 0
-              ? "+"
-              : ""}
-            {Math.round(
-              implications.newWeeklyTime.newWeeklyTimeDeltaMinutes / 60,
-            )}
-            h
-            <br />
-            Meets Target:{" "}
-            {implications.newWeeklyTime.meetsTarget ? "Yes" : "No"}
-          </Typography>
-          <Divider sx={{ my: 2 }} />
-
-          {/* Historical Indicators */}
-          <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-            Historical Indicators (Last 12 Months)
-          </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
-            Times Worked This Shift: {implications.nbTimesDidShiftLtm.count}
-            {implications.nbTimesDidShiftLtm.lastDate && (
-              <>
-                <br />
-                Last Time:{" "}
-                {implications.nbTimesDidShiftLtm.lastDate.format("YYYY-MM-DD")}
-              </>
-            )}
-            <br />
-            Times Worked This Weekday:{" "}
-            {implications.nbTimesWorkedWeekdayLtm.count}
-            {implications.nbTimesWorkedWeekdayLtm.lastDate && (
-              <>
-                <br />
-                Last Time:{" "}
-                {implications.nbTimesWorkedWeekdayLtm.lastDate.format(
-                  "YYYY-MM-DD",
-                )}
-              </>
-            )}
-          </Typography>
-        </Box>
+                return (
+                  <TableRow
+                    key={candidate.workerId}
+                    sx={{
+                      borderBottom: isCurrentWorker ? "3px solid" : undefined,
+                      borderBottomColor: isCurrentWorker
+                        ? "primary.main"
+                        : undefined,
+                      backgroundColor: isCurrentWorker
+                        ? "action.hover"
+                        : undefined,
+                    }}
+                    data-testid={`candidate-row-${candidate.workerId}`}
+                  >
+                    <TableCell
+                      sx={{
+                        position: "sticky",
+                        left: 0,
+                        backgroundColor: isCurrentWorker
+                          ? "action.hover"
+                          : "background.paper",
+                        zIndex: 1,
+                      }}
+                    >
+                      {isCurrentWorker ? (
+                        <Typography variant="body2" fontWeight="bold">
+                          Current
+                        </Typography>
+                      ) : (
+                        candidate.rank
+                      )}
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        position: "sticky",
+                        left: 60,
+                        backgroundColor: isCurrentWorker
+                          ? "action.hover"
+                          : "background.paper",
+                        zIndex: 1,
+                      }}
+                    >
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <span style={{ fontSize: "1.1rem" }}>
+                          {getCategoryEmoji(candidate.replacementCategory)}
+                        </span>
+                        <Typography variant="body2" fontWeight="medium">
+                          {candidate.workerName}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>{renderWeeklyTime(impl)}</TableCell>
+                    <TableCell>{renderMonthlyDuties(impl)}</TableCell>
+                    <TableCell>
+                      <Typography variant="body2">
+                        {impl.nbTimesDidShiftLtm.count}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">
+                        {impl.nbTimesWorkedWeekdayLtm.count}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      {renderConstraintHit(impl.softConstraintHits, "soft")}
+                    </TableCell>
+                    <TableCell>
+                      {renderConstraintHit(impl.hardConstraintHits, "hard")}
+                    </TableCell>
+                    <TableCell>{renderRequestHit(impl)}</TableCell>
+                    <TableCell>{renderOverlapHit(impl)}</TableCell>
+                    <TableCell>{renderFilterHit(impl)}</TableCell>
+                    <TableCell>{renderBoolean(impl.isntOnLeave)}</TableCell>
+                    <TableCell>{renderBoolean(impl.hasSpecialty)}</TableCell>
+                    <TableCell>{renderBoolean(impl.isEmployed)}</TableCell>
+                    <TableCell>
+                      {!isCurrentWorker && (
+                        <Button
+                          size="small"
+                          variant="contained"
+                          color="primary"
+                          onClick={() => onReplace(candidate.workerId)}
+                          disabled={isSubmitting}
+                          data-testid={`replace-candidate-${candidate.workerId}`}
+                        >
+                          {isSubmitting ? (
+                            <>
+                              <CircularProgress size={12} sx={{ mr: 0.5 }} />
+                              Replacing...
+                            </>
+                          ) : (
+                            "Replace"
+                          )}
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </DialogContent>
 
       <DialogActions>

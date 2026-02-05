@@ -255,12 +255,13 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
     }
   };
 
-  const handleSelectReplacement = async () => {
-    if (!selectedCandidateId || !assignment || !handleUpdateAssignment) return;
+  const handleSelectReplacement = async (candidateId?: string) => {
+    const workerId = candidateId || selectedCandidateId;
+    if (!workerId || !assignment || !handleUpdateAssignment) return;
 
     const updatedAssignment: AssignmentT = {
       ...assignment,
-      workerId: selectedCandidateId,
+      workerId: workerId,
     };
 
     try {
@@ -269,6 +270,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
       // Reset replacement state after successful update
       setReplacementCandidates(null);
       setSelectedCandidateId(null);
+      setShowDetailsDialog(false);
     } catch (error) {
       console.error("Failed to select replacement:", error);
       alert("Failed to select replacement. Please try again.");
@@ -530,7 +532,9 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           setShowDetailsDialog(false);
           setSelectedCandidate(null);
         }}
-        candidate={selectedCandidate}
+        candidates={replacementCandidates || []}
+        onReplace={handleSelectReplacement}
+        isSubmitting={isSubmitting}
         lng={lng}
       />
     </div>
