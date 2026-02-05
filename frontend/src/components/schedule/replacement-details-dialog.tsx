@@ -76,7 +76,7 @@ export function ReplacementDetailsDialog({
 
     return (
       <Box>
-        <Typography variant="body2">{hours}h/week</Typography>
+        <Typography variant="body2">{hours}h</Typography>
         {delta !== 0 && (
           <Typography
             variant="caption"
@@ -100,7 +100,7 @@ export function ReplacementDetailsDialog({
 
     return (
       <Box>
-        <Typography variant="body2">{count}/month</Typography>
+        <Typography variant="body2">{count}</Typography>
         {delta !== 0 && (
           <Typography
             variant="caption"
