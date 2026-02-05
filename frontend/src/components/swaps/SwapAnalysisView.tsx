@@ -80,7 +80,6 @@ export default function SwapAnalysisView({
       assignmentId: string;
       implications: ReplacementImplicationsT;
     }>,
-    label: string,
   ) => {
     return (
       <Paper elevation={2} sx={{ p: 2 }}>
@@ -195,18 +194,10 @@ export default function SwapAnalysisView({
         }}
       >
         <Box sx={{ flex: 1 }}>
-          {renderWorkerAnalysis(
-            workerAInfo.workerName,
-            workerAInfo.postSwap,
-            "Worker A",
-          )}
+          {renderWorkerAnalysis(workerAInfo.workerName, workerAInfo.postSwap)}
         </Box>
         <Box sx={{ flex: 1 }}>
-          {renderWorkerAnalysis(
-            workerBInfo.workerName,
-            workerBInfo.postSwap,
-            "Worker B",
-          )}
+          {renderWorkerAnalysis(workerBInfo.workerName, workerBInfo.postSwap)}
         </Box>
       </Box>
     </Box>
