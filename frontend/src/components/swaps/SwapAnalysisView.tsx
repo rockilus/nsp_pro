@@ -116,6 +116,10 @@ export default function SwapAnalysisView({
                 }}
               >
                 <ListItemText
+                  slotProps={{
+                    primary: { component: "div" },
+                    secondary: { component: "div" },
+                  }}
                   primary={
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <Typography variant="body2">
