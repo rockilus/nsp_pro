@@ -21,7 +21,6 @@ import { AssignmentDataDictT } from "../../types/assignment";
 import { WorkerT } from "../../types/worker";
 import { LinkShiftT } from "../../types/shift";
 import SwapDetailContent from "./SwapDetailContent";
-import SwapAnalysisView from "./SwapAnalysisView";
 import SwapAnalysisDialog from "./SwapAnalysisDialog";
 import { getEarliestAssignment } from "../../utils/assignmentSort";
 import { getAssignmentsForIds } from "../../utils/swapHelpers";
@@ -419,15 +418,6 @@ export default function SwapDetailDialog({
             isAnalyzing={isAnalyzing}
             validationResult={validationResult}
             onViewAnalysisDetails={onViewAnalysisDetails}
-          />
-        )}
-
-        {/* Swap Analysis View */}
-        {validationResult && (
-          <SwapAnalysisView
-            validationResult={validationResult}
-            assignments={assignments}
-            onViewDetails={() => onViewAnalysisDetails?.()}
           />
         )}
       </DialogContent>

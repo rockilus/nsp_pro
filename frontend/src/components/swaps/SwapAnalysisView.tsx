@@ -4,7 +4,6 @@ import {
   Box,
   Typography,
   Button,
-  Divider,
   Paper,
   Chip,
   Alert,
@@ -156,7 +155,27 @@ export default function SwapAnalysisView({
 
   return (
     <Box>
-      <Divider sx={{ my: 2 }} />
+      {/* Title and Details Button */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
+        <Typography variant="subtitle2" color="text.secondary">
+          Swap Analysis
+        </Typography>
+        <Button
+          variant="contained"
+          onClick={onViewDetails}
+          sx={{ textTransform: "none" }}
+          data-testid="view-analysis-details-button"
+        >
+          See Details
+        </Button>
+      </Box>
 
       {/* Validation Status */}
       <Alert
@@ -194,20 +213,6 @@ export default function SwapAnalysisView({
           )}
         </Box>
       </Box>
-
-      {/* See Details Button */}
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-        <Button
-          variant="contained"
-          onClick={onViewDetails}
-          sx={{ textTransform: "none" }}
-          data-testid="view-analysis-details-button"
-        >
-          See Details
-        </Button>
-      </Box>
-
-      <Divider sx={{ my: 2 }} />
     </Box>
   );
 }

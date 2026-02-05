@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -17,7 +18,9 @@ import {
 import {
   Delete as DeleteIcon,
   CheckCircle as CheckCircleIcon,
+  ExpandLess as ExpandLessIcon,
 } from "@mui/icons-material";
+import SwapAnalysisView from "./SwapAnalysisView";
 import dayjs from "dayjs";
 import { SwapRequestT, SwapType, SwapStatus } from "../../types/swap";
 import { AssignmentDataDictT } from "../../types/assignment";
@@ -92,6 +95,10 @@ export default function SwapDetailContent({
 }: SwapDetailContentProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [showAnalysis, setShowAnalysis] = useState(false);
+
+  // Show analysis when validation result is available
+  const displayAnalysis = showAnalysis && validationResult;
 
   // Get assignments
   const offeredAssignments = getAssignmentsForIds(
@@ -480,24 +487,35 @@ export default function SwapDetailContent({
           <>
             <Divider sx={{ my: 2 }} />
             <Box sx={{ mb: 2 }}>
-              <Button
-                variant="contained"
-                color="info"
-                onClick={onAnalyzeSwap}
-                disabled={isAnalyzing}
-                fullWidth={isMobile}
-                data-testid="analyze-swap-button"
-                sx={{ textTransform: "none" }}
-              >
-                {isAnalyzing ? (
-                  <>
-                    <CircularProgress size={16} sx={{ mr: 1 }} />
-                    Analyzing...
-                  </>
-                ) : (
-                  "Analyze Swap"
-                )}
-              </Button>
+              {!displayAnalysis ? (
+                <Button
+                  variant="contained"
+                  color="info"
+                  onClick={() => {
+                    onAnalyzeSwap?.();
+                    setShowAnalysis(true);
+                  }}
+                  disabled={isAnalyzing}
+                  fullWidth={isMobile}
+                  data-testid="analyze-swap-button"
+                  sx={{ textTransform: "none" }}
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <CircularProgress size={16} sx={{ mr: 1 }} />
+                      Analyzing...
+                    </>
+                  ) : (
+                    "Analyze Swap"
+                  )}
+                </Button>
+              ) : (
+                <SwapAnalysisView
+                  validationResult={validationResult}
+                  assignments={assignments}
+                  onViewDetails={() => onViewAnalysisDetails?.()}
+                />
+              )}
             </Box>
           </>
         )}
