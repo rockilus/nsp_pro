@@ -41,6 +41,10 @@ export function ReplacementDetailsDialog({
   isSubmitting,
   lng,
 }: ReplacementDetailsDialogProps) {
+  // Rotated column dimensions
+  const ROTATED_COLUMN_WIDTH = 40;
+  const ROTATED_COLUMN_HEIGHT = 80;
+
   const getCategoryEmoji = (
     category: "can_do" | "could_do" | "cant_do",
   ): string => {
@@ -264,17 +268,19 @@ export function ReplacementDetailsDialog({
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 40,
-                    maxWidth: 40,
+                    minWidth: ROTATED_COLUMN_WIDTH,
+                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
                     textAlign: "center",
-                    height: 120,
+                    height: ROTATED_COLUMN_HEIGHT,
+                    verticalAlign: "bottom",
                   }}
                 >
                   <Box
                     sx={{
                       transform: "rotate(-90deg)",
                       whiteSpace: "nowrap",
+                      transformOrigin: "center bottom",
                     }}
                   >
                     Weekly Time
@@ -283,17 +289,19 @@ export function ReplacementDetailsDialog({
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 40,
-                    maxWidth: 40,
+                    minWidth: ROTATED_COLUMN_WIDTH,
+                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
                     textAlign: "center",
-                    height: 120,
+                    height: ROTATED_COLUMN_HEIGHT,
+                    verticalAlign: "bottom",
                   }}
                 >
                   <Box
                     sx={{
                       transform: "rotate(-90deg)",
                       whiteSpace: "nowrap",
+                      transformOrigin: "center bottom",
                     }}
                   >
                     Monthly Duties
@@ -302,17 +310,19 @@ export function ReplacementDetailsDialog({
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 40,
-                    maxWidth: 40,
+                    minWidth: ROTATED_COLUMN_WIDTH,
+                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
                     textAlign: "center",
-                    height: 120,
+                    height: ROTATED_COLUMN_HEIGHT,
+                    verticalAlign: "bottom",
                   }}
                 >
                   <Box
                     sx={{
                       transform: "rotate(-90deg)",
                       whiteSpace: "nowrap",
+                      transformOrigin: "center bottom",
                     }}
                   >
                     Shift LTM
@@ -321,17 +331,19 @@ export function ReplacementDetailsDialog({
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 40,
-                    maxWidth: 40,
+                    minWidth: ROTATED_COLUMN_WIDTH,
+                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
                     textAlign: "center",
-                    height: 120,
+                    height: ROTATED_COLUMN_HEIGHT,
+                    verticalAlign: "bottom",
                   }}
                 >
                   <Box
                     sx={{
                       transform: "rotate(-90deg)",
                       whiteSpace: "nowrap",
+                      transformOrigin: "center bottom",
                     }}
                   >
                     Weekday LTM
@@ -340,17 +352,21 @@ export function ReplacementDetailsDialog({
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 40,
-                    maxWidth: 40,
+                    minWidth: ROTATED_COLUMN_WIDTH,
+                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    textAlign: "center",
-                    height: 120,
+                    // textAlign: "center",
+                    height: ROTATED_COLUMN_HEIGHT,
+                    verticalAlign: "bottom",
+                    textAlign: "left",
                   }}
                 >
+                  {/* <span style={{ transform: "rotate(-90deg)" }}>Soft</span> */}
                   <Box
                     sx={{
                       transform: "rotate(-90deg)",
-                      whiteSpace: "nowrap",
+                      // whiteSpace: "nowrap",
+                      // transformOrigin: "center bottom",
                     }}
                   >
                     Soft
@@ -359,17 +375,19 @@ export function ReplacementDetailsDialog({
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 40,
-                    maxWidth: 40,
+                    minWidth: ROTATED_COLUMN_WIDTH,
+                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
                     textAlign: "center",
-                    height: 120,
+                    height: ROTATED_COLUMN_HEIGHT,
+                    verticalAlign: "bottom",
                   }}
                 >
                   <Box
                     sx={{
                       transform: "rotate(-90deg)",
                       whiteSpace: "nowrap",
+                      transformOrigin: "center bottom",
                     }}
                   >
                     Hard
@@ -378,17 +396,19 @@ export function ReplacementDetailsDialog({
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 40,
-                    maxWidth: 40,
+                    minWidth: ROTATED_COLUMN_WIDTH,
+                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
                     textAlign: "center",
-                    height: 120,
+                    height: ROTATED_COLUMN_HEIGHT,
+                    verticalAlign: "bottom",
                   }}
                 >
                   <Box
                     sx={{
                       transform: "rotate(-90deg)",
                       whiteSpace: "nowrap",
+                      transformOrigin: "center bottom",
                     }}
                   >
                     Request
@@ -397,17 +417,19 @@ export function ReplacementDetailsDialog({
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 40,
-                    maxWidth: 40,
+                    minWidth: ROTATED_COLUMN_WIDTH,
+                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
                     textAlign: "center",
-                    height: 120,
+                    height: ROTATED_COLUMN_HEIGHT,
+                    verticalAlign: "bottom",
                   }}
                 >
                   <Box
                     sx={{
                       transform: "rotate(-90deg)",
                       whiteSpace: "nowrap",
+                      transformOrigin: "center bottom",
                     }}
                   >
                     Overlap
@@ -416,17 +438,19 @@ export function ReplacementDetailsDialog({
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 40,
-                    maxWidth: 40,
+                    minWidth: ROTATED_COLUMN_WIDTH,
+                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
                     textAlign: "center",
-                    height: 120,
+                    height: ROTATED_COLUMN_HEIGHT,
+                    verticalAlign: "bottom",
                   }}
                 >
                   <Box
                     sx={{
                       transform: "rotate(-90deg)",
                       whiteSpace: "nowrap",
+                      transformOrigin: "center bottom",
                     }}
                   >
                     Filter
@@ -435,17 +459,19 @@ export function ReplacementDetailsDialog({
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 40,
-                    maxWidth: 40,
+                    minWidth: ROTATED_COLUMN_WIDTH,
+                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
                     textAlign: "center",
-                    height: 120,
+                    height: ROTATED_COLUMN_HEIGHT,
+                    verticalAlign: "bottom",
                   }}
                 >
                   <Box
                     sx={{
                       transform: "rotate(-90deg)",
                       whiteSpace: "nowrap",
+                      transformOrigin: "center bottom",
                     }}
                   >
                     Leave
@@ -454,17 +480,19 @@ export function ReplacementDetailsDialog({
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 40,
-                    maxWidth: 40,
+                    minWidth: ROTATED_COLUMN_WIDTH,
+                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
                     textAlign: "center",
-                    height: 120,
+                    height: ROTATED_COLUMN_HEIGHT,
+                    verticalAlign: "bottom",
                   }}
                 >
                   <Box
                     sx={{
                       transform: "rotate(-90deg)",
                       whiteSpace: "nowrap",
+                      transformOrigin: "center bottom",
                     }}
                   >
                     Specialty
@@ -473,17 +501,19 @@ export function ReplacementDetailsDialog({
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 40,
-                    maxWidth: 40,
+                    minWidth: ROTATED_COLUMN_WIDTH,
+                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
                     textAlign: "center",
-                    height: 120,
+                    height: ROTATED_COLUMN_HEIGHT,
+                    verticalAlign: "bottom",
                   }}
                 >
                   <Box
                     sx={{
                       transform: "rotate(-90deg)",
                       whiteSpace: "nowrap",
+                      transformOrigin: "center bottom",
                     }}
                   >
                     Employed
