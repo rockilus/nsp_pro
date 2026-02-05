@@ -111,7 +111,7 @@ export function ReplacementCandidatesList({
               {t("checking")}
             </>
           ) : (
-            t("check_replacement")
+            t("analyze_replacement")
           )}
         </Button>
       )}
