@@ -19,7 +19,7 @@ import RecurrenceDeleteDialog from "./recurrence-delete-dialog";
 import { ReplacementDetailsDialog } from "../replacement-details-dialog";
 import { ReplacementCandidatesList } from "../replacement-candidates-list";
 // Hooks
-import { useGetReplacementCandidates } from "../../../hooks/useReplacement";
+import { useGetReplacementCandidates } from "../../../hooks/useAssignment";
 // Styles
 import "./edit-assignment.css";
 // Types
