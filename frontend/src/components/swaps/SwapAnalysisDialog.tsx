@@ -17,6 +17,7 @@ import {
   TableRow,
   Paper,
 } from "@mui/material";
+import { Fragment } from "react";
 import { useState } from "react";
 import dayjs from "dayjs";
 import {
@@ -225,7 +226,7 @@ export default function SwapAnalysisDialog({
                 : assignmentId;
 
               return (
-                <>
+                <Fragment key={assignmentId}>
                   {/* Pre-swap row */}
                   <TableRow key={`${assignmentId}-pre`}>
                     <TableCell rowSpan={2}>{assignmentLabel}</TableCell>
@@ -279,7 +280,7 @@ export default function SwapAnalysisDialog({
                       {renderBoolean(swappedImpl.isEmployed)}
                     </TableCell>
                   </TableRow>
-                </>
+                </Fragment>
               );
             })}
           </TableBody>
@@ -297,7 +298,9 @@ export default function SwapAnalysisDialog({
       data-testid="swap-analysis-dialog"
     >
       <DialogTitle>
-        <Typography variant="h6">Swap Analysis Details</Typography>
+        <Box sx={{ fontWeight: 500, fontSize: "1.25rem" }}>
+          Swap Analysis Details
+        </Box>
         <Typography variant="body2" color="text.secondary">
           {validationResult.validationMessage}
         </Typography>
