@@ -118,8 +118,7 @@ export function ReplacementCandidatesList({
             sx={{ mb: 1 }}
           >
             <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
-              {t("replacement_candidates")} (
-              {candidates.filter((c) => c.rank !== 0).length})
+              {t("replacement_candidates")}{" "}
             </Typography>
             <Button
               size="small"
@@ -221,7 +220,7 @@ export function ReplacementCandidatesList({
                             candidate.replacementImplications.newWeeklyTime
                               .newWeeklyWorkedMinutes / 60,
                           )}
-                          h
+                          h/week
                           {candidate.replacementImplications.newWeeklyTime
                             .newWeeklyTimeDeltaMinutes !== 0 && (
                             <span
@@ -251,7 +250,7 @@ export function ReplacementCandidatesList({
                             candidate.replacementImplications.newMonthlyDuties
                               .newNumberMonthlyDuties
                           }{" "}
-                          {t("monthly_duties").toLowerCase()}
+                          duties/month
                           {candidate.replacementImplications.newMonthlyDuties
                             .newMonthlyDutiesDelta !== 0 && (
                             <span
