@@ -3,11 +3,23 @@ import dayjs, { Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
-import { Button, MenuItem, Select } from "@mui/material";
+import {
+  Button,
+  MenuItem,
+  Select,
+  Chip,
+  CircularProgress,
+  Box,
+  Typography,
+} from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Components
 import RecurrenceEdit from "./recurrence-edit/recurrence-edit";
 import RecurrenceDeleteDialog from "./recurrence-delete-dialog";
+import { ReplacementDetailsDialog } from "../replacement-details-dialog";
+import { ReplacementCandidatesList } from "../replacement-candidates-list";
+// Hooks
+import { useGetReplacementCandidates } from "../../../hooks/useAssignment";
 // Styles
 import "./edit-assignment.css";
 // Types
@@ -22,6 +34,7 @@ import {
   RecurrenceEndType,
   RecurrenceUpdateScope,
 } from "../../../types/recurrence";
+import { ReplacementCandidateT } from "../../../types/replacement";
 
 dayjs.extend(utc);
 
@@ -36,19 +49,19 @@ interface EditAssignmentProps {
   dateSelected: Dayjs | null;
   handleCreateAssignment?: (
     newAssignment: AssignmentT,
-    newRecurrence: RecurrenceRuleT | null
+    newRecurrence: RecurrenceRuleT | null,
   ) => void;
   isEditing?: boolean;
   assignment?: AssignmentT;
   handleUpdateAssignment?: (
     assignment: AssignmentT,
     recurrence: RecurrenceRuleT | null,
-    recurrenceUpdateScope: RecurrenceUpdateScope | null
+    recurrenceUpdateScope: RecurrenceUpdateScope | null,
   ) => void;
   handleDeleteAssignment?: (
     assignmentId: string,
     recurrenceId: string | null,
-    recurrenceUpdateScope: RecurrenceUpdateScope | null
+    recurrenceUpdateScope: RecurrenceUpdateScope | null,
   ) => void;
   recurrence?: RecurrenceRuleT | null;
 }
@@ -72,13 +85,13 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
   const { t } = useTranslation(lng, "schedule-page");
 
   const [workerId, setWorkerId] = useState<string | null>(
-    isEditing && assignment ? assignment.workerId : workerSelectedId
+    isEditing && assignment ? assignment.workerId : workerSelectedId,
   );
   const [shiftId, setShiftId] = useState<string | null>(
-    isEditing && assignment ? assignment.shiftId : shiftSelectedId
+    isEditing && assignment ? assignment.shiftId : shiftSelectedId,
   );
   const [date, setDate] = useState<Dayjs | null>(
-    isEditing && assignment ? assignment.date : dateSelected
+    isEditing && assignment ? assignment.date : dateSelected,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [workerError, setWorkerError] = useState(false);
@@ -92,11 +105,26 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteScope, setDeleteScope] = useState<RecurrenceUpdateScope | null>(
-    null
+    null,
   );
   const [dialogAction, setDialogAction] = useState<"delete" | "update" | null>(
-    null
+    null,
   );
+
+  // Replacement state
+  const [replacementCandidates, setReplacementCandidates] = useState<
+    ReplacementCandidateT[] | null
+  >(null);
+  const [loadingReplacements, setLoadingReplacements] = useState(false);
+  const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(
+    null,
+  );
+  const [isReplacementViewOpen, setIsReplacementViewOpen] = useState(false);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [selectedCandidate, setSelectedCandidate] =
+    useState<ReplacementCandidateT | null>(null);
+
+  const getReplacementCandidates = useGetReplacementCandidates();
 
   useEffect(() => {
     setWorkerId(workerSelectedId);
@@ -107,6 +135,13 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
     setDateError(false);
     setRecurrenceState(recurrence ?? null);
   }, [workerSelectedId, shiftSelectedId, dateSelected, recurrence]);
+
+  // Reset replacement state when assignment changes
+  useEffect(() => {
+    setIsReplacementViewOpen(false);
+    setSelectedCandidateId(null);
+    setReplacementCandidates(null);
+  }, [assignment?.id]);
 
   const describeRecurrenceRule = (rule: RecurrenceRuleT): string => {
     const weekdays = [
@@ -127,7 +162,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           rule.repeatEvery === 1
             ? t("rec_daily")
             : `${t("rec_every")} ${rule.repeatEvery} ${t(
-                "days"
+                "days",
               ).toLocaleLowerCase()}`;
         break;
       case FrequencyType.WEEK:
@@ -136,7 +171,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           rule.repeatEvery === 1
             ? `${t("rec_weekly_on")} ${days}`
             : `${t("rec_every")} ${rule.repeatEvery} ${t(
-                "rec_weeks_on"
+                "rec_weeks_on",
               ).toLocaleLowerCase()} ${days}`;
         break;
       case FrequencyType.MONTH:
@@ -145,7 +180,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
             rule.repeatEvery === 1
               ? `${t("rec_monthly_on_day")} ${rule.startDate.date()}`
               : `${t("rec_every")} ${rule.repeatEvery} ${t(
-                  "rec_months_on_day"
+                  "rec_months_on_day",
                 ).toLocaleLowerCase()} ${rule.startDate.date()}`;
         } else if (rule.monthRepeatType === MonthRepeatType.WEEKDAY) {
           const weekNumber = Math.ceil(rule.startDate.date() / 7);
@@ -155,7 +190,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
                   weekdays[rule.startDate.day()]
                 }`
               : `${t("rec_every")} ${rule.repeatEvery} ${t(
-                  "rec_months_on"
+                  "rec_months_on",
                 ).toLocaleLowerCase()} ${ordinal(weekNumber)} ${
                   weekdays[rule.startDate.day()]
                 }`;
@@ -166,21 +201,21 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           rule.repeatEvery === 1
             ? `${t("rec_annually_on")} ${rule.startDate.format("MMMM D")}`
             : `${t("rec_every")} ${rule.repeatEvery} ${t(
-                "rec_years_on"
+                "rec_years_on",
               ).toLocaleLowerCase()} ${rule.startDate.format("MMMM D")}`;
         break;
     }
 
     if (rule.recurrenceEndType === RecurrenceEndType.END_DATE && rule.endDate) {
       description += `, ${t(
-        "rec_until"
+        "rec_until",
       ).toLocaleLowerCase()} ${rule.endDate.format("D MMM YYYY")}`;
     } else if (
       rule.recurrenceEndType === RecurrenceEndType.NUMBER_OF_OCCURRENCES &&
       rule.numberOfOccurrences
     ) {
       description += `, ${rule.numberOfOccurrences} ${t(
-        "rec_times"
+        "rec_times",
       ).toLocaleLowerCase()}`;
     }
 
@@ -210,6 +245,59 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
     } else if (assignment && handleDeleteAssignment) {
       handleDeleteAssignment(assignment.id, null, null);
     }
+  };
+
+  const handleCheckReplacement = async () => {
+    if (!assignment || !teamId) return;
+
+    try {
+      setLoadingReplacements(true);
+      const candidates = await getReplacementCandidates(assignment.id, teamId);
+      setReplacementCandidates(candidates);
+      setSelectedCandidateId(null);
+      setIsReplacementViewOpen(true);
+    } catch (error) {
+      console.error("Failed to get replacement candidates:", error);
+      alert("Failed to get replacement candidates. Please try again.");
+    } finally {
+      setLoadingReplacements(false);
+    }
+  };
+
+  const handleCancelReplacement = () => {
+    setIsReplacementViewOpen(false);
+    setSelectedCandidateId(null);
+    setReplacementCandidates(null);
+  };
+
+  const handleSelectReplacement = async (candidateId?: string) => {
+    const workerId = candidateId || selectedCandidateId;
+    if (!workerId || !assignment || !handleUpdateAssignment) return;
+
+    const updatedAssignment: AssignmentT = {
+      ...assignment,
+      workerId: workerId,
+    };
+
+    try {
+      setIsSubmitting(true);
+      await handleUpdateAssignment(updatedAssignment, recurrenceState, null);
+      // Reset replacement state after successful update
+      setIsReplacementViewOpen(false);
+      setReplacementCandidates(null);
+      setSelectedCandidateId(null);
+      setShowDetailsDialog(false);
+    } catch (error) {
+      console.error("Failed to select replacement:", error);
+      alert("Failed to select replacement. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCandidateDetailsClick = (candidate: ReplacementCandidateT) => {
+    setSelectedCandidate(candidate);
+    setShowDetailsDialog(true);
   };
 
   const handleSaveClick = async () => {
@@ -397,6 +485,24 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           ))}
         </Select>
       </div>
+
+      {/* Replacement candidates list */}
+      {isEditing && (
+        <ReplacementCandidatesList
+          lng={lng}
+          candidates={replacementCandidates}
+          selectedCandidateId={selectedCandidateId}
+          onSelectCandidate={setSelectedCandidateId}
+          onViewDetails={handleCandidateDetailsClick}
+          onConfirmReplacement={handleSelectReplacement}
+          onCheckReplacement={handleCheckReplacement}
+          onCancel={handleCancelReplacement}
+          isOpen={isReplacementViewOpen}
+          isSubmitting={isSubmitting}
+          isCheckingReplacement={loadingReplacements}
+        />
+      )}
+
       <div className="edit-assignment-actions">
         {!isEditing ? (
           <Button
@@ -431,10 +537,26 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           </>
         )}
       </div>
+
       <RecurrenceDeleteDialog
         open={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         onConfirm={handleDialogConfirm}
+      />
+
+      <ReplacementDetailsDialog
+        open={showDetailsDialog}
+        onClose={() => {
+          setShowDetailsDialog(false);
+          setSelectedCandidate(null);
+        }}
+        candidates={replacementCandidates || []}
+        onReplace={handleSelectReplacement}
+        isSubmitting={isSubmitting}
+        lng={lng}
+        assignment={assignment}
+        workers={workers}
+        shifts={shifts}
       />
     </div>
   );

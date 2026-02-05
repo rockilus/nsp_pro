@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta, timezone
-from enum import Enum
 from typing import Dict, List, Set, Tuple
 
 from shared.augment.cb_to_cb_augmented import cb_to_cb_augmented
@@ -20,6 +19,7 @@ from shared.schemas.core import (
     ConfigurationConstraintPenalty,
     ConstraintBuild,
     ConstraintFil,
+    ConstraintHits,
     ConstraintOperator,
     ConstraintOrd,
     Constraints,
@@ -28,10 +28,18 @@ from shared.schemas.core import (
     CoveragePenalty,
     Dimension,
     DimEntry,
+    FilterHits,
+    LTMIndicator,
+    MonthlyDutiesImplications,
+    OverlapHits,
     Penalties,
     Penalty,
+    ReplacementCandidate,
+    ReplacementCategory,
+    ReplacementImplications,
     Request,
     RequestAugmented,
+    RequestHits,
     RequestStatus,
     RequestType,
     Shift,
@@ -40,6 +48,7 @@ from shared.schemas.core import (
     SystemConstraintPenalty,
     UserConstraintPenalty,
     Variable,
+    WeeklyWorkTimeImplications,
     Worker,
 )
 from shared.schemas.core.breach import ObjectiveCategory
@@ -55,86 +64,7 @@ from shared.utils import (
 
 from src.services.base_service import BaseService
 
-
-class ReplacementCategory(Enum):
-    CANT_DO = "cant_do"
-    COULD_DO = "could_do"
-    CAN_DO = "can_do"
-
-
-@dataclass
-class FilterHits:
-    isnt_filtered_out: bool
-    filter_labels: List[str]
-
-
-@dataclass
-class OverlapHits:
-    hasnt_overlap: bool
-    overlap_assignment_ids: List[str]
-
-
-@dataclass
-class ConstraintHits:
-    meets_constraints: bool
-    breaches: List[Breach]
-
-
-@dataclass
-class RequestHits:
-    has_no_request_conflict: bool
-    conflicting_request_ids: List[str]
-
-
-@dataclass
-class MonthlyDutiesImplications:
-    new_number_monthly_duties: int
-    new_monthly_duties_delta: int
-    meets_target: bool
-
-
-@dataclass
-class WeeklyWorkTimeImplications:
-    new_weekly_worked_minutes: int
-    new_weekly_time_delta_minutes: int
-    meets_target: bool
-
-
-@dataclass
-class LTMIndicator:
-    count: int
-    last_date: datetime | None
-
-
-# pylint: disable=too-many-instance-attributes
-@dataclass
-class ReplacementImplications:
-    # Can't do
-    is_employed: bool
-    has_specialty: bool
-    isnt_on_leave: bool
-    filter_hits: FilterHits
-    overlap_hits: OverlapHits
-    hard_constraint_hits: ConstraintHits
-    request_hits: RequestHits
-
-    # Could do
-    soft_constraint_hits: ConstraintHits
-    new_monthly_duties: MonthlyDutiesImplications
-    new_weekly_time: WeeklyWorkTimeImplications
-
-    # Indicators
-    nb_times_did_shift_ltm: LTMIndicator
-    nb_times_worked_weekday_ltm: LTMIndicator
-
-
-@dataclass
-class ReplacementCandidate:
-    worker_id: str
-    worker_name: str
-    rank: int  # Lower is better, 0 for current assignment
-    replacement_category: ReplacementCategory
-    replacement_implications: ReplacementImplications
+# pylint: disable=too-many-instance-attributes, too-many-locals
 
 
 @dataclass
@@ -273,12 +203,16 @@ class ReplacementService(BaseService):
                 context=context,
             )
             category = self._determine_replacement_category(implications)
+            most_constraining_reason = (
+                ReplacementCandidate.compute_most_constraining_reason(implications)
+            )
             candidate = ReplacementCandidate(
                 worker_id=worker.id,
                 worker_name=worker.name,
                 rank=0,  # Will be assigned by _rank_candidates
                 replacement_category=category,
                 replacement_implications=implications,
+                most_constraining_reason=most_constraining_reason,
             )
             candidates.append(candidate)
 

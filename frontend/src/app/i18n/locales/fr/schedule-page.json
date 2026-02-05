@@ -111,5 +111,20 @@
     "thursday": "Jeudi",
     "friday": "Vendredi",
     "saturday": "Samedi",
-    "sunday": "Dimanche"
+    "sunday": "Dimanche",
+    "analyze_replacement": "Analyser remplacement",
+    "checking": "Vérification...",
+    "replacement_candidates": "Candidats de remplacement",
+    "see_details": "Voir détails",
+    "selecting": "Sélection...",
+    "replace": "Remplacer",
+    "replacement_reason_not_employed": "Non employé",
+    "replacement_reason_missing_specialty": "Spécialité manquante",
+    "replacement_reason_on_leave": "En congé",
+    "replacement_reason_filtered_out": "Filtré",
+    "replacement_reason_has_overlap": "A un chevauchement",
+    "replacement_reason_hard_constraint_violation": "Violation de contrainte dure",
+    "replacement_reason_request_conflict": "Conflit de demande",
+    "replacement_reason_soft_constraint_violation": "Violation de contrainte douce",
+    "replacement_reason_no_constraints_violated": "Aucune contrainte violée"
 }
