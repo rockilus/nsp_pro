@@ -244,6 +244,18 @@ export function ReplacementDetailsDialog({
                 >
                   Candidate
                 </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: "bold",
+                    minWidth: 50,
+                    // position: "sticky",
+                    left: 240,
+                    backgroundColor: "background.paper",
+                    zIndex: 2,
+                  }}
+                >
+                  {/* Category emoji - no title */}
+                </TableCell>
                 <TableCell sx={{ fontWeight: "bold", minWidth: 120 }}>
                   Weekly Time
                 </TableCell>
@@ -257,28 +269,28 @@ export function ReplacementDetailsDialog({
                   Weekday LTM
                 </TableCell>
                 <TableCell sx={{ fontWeight: "bold", minWidth: 100 }}>
-                  Soft ✓
+                  Soft
                 </TableCell>
                 <TableCell sx={{ fontWeight: "bold", minWidth: 100 }}>
-                  Hard ✓
+                  Hard
                 </TableCell>
                 <TableCell sx={{ fontWeight: "bold", minWidth: 100 }}>
-                  Request ✓
+                  Request
                 </TableCell>
                 <TableCell sx={{ fontWeight: "bold", minWidth: 100 }}>
-                  Overlap ✓
+                  Overlap
                 </TableCell>
                 <TableCell sx={{ fontWeight: "bold", minWidth: 100 }}>
-                  Filter ✓
+                  Filter
                 </TableCell>
                 <TableCell sx={{ fontWeight: "bold", minWidth: 100 }}>
-                  Leave ✓
+                  Leave
                 </TableCell>
                 <TableCell sx={{ fontWeight: "bold", minWidth: 110 }}>
-                  Specialty ✓
+                  Specialty
                 </TableCell>
                 <TableCell sx={{ fontWeight: "bold", minWidth: 110 }}>
-                  Employed ✓
+                  Employed
                 </TableCell>
                 <TableCell
                   sx={{
@@ -319,13 +331,7 @@ export function ReplacementDetailsDialog({
                         zIndex: 1,
                       }}
                     >
-                      {isCurrentWorker ? (
-                        <Typography variant="body2" fontWeight="bold">
-                          Current
-                        </Typography>
-                      ) : (
-                        candidate.rank
-                      )}
+                      {isCurrentWorker ? "" : candidate.rank}
                     </TableCell>
                     <TableCell
                       sx={{
@@ -337,14 +343,24 @@ export function ReplacementDetailsDialog({
                         zIndex: 1,
                       }}
                     >
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <span style={{ fontSize: "1.1rem" }}>
-                          {getCategoryEmoji(candidate.replacementCategory)}
-                        </span>
-                        <Typography variant="body2" fontWeight="medium">
-                          {candidate.workerName}
-                        </Typography>
-                      </Box>
+                      <Typography variant="body2" fontWeight="medium">
+                        {candidate.workerName}
+                      </Typography>
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        // position: "sticky",
+                        left: 240,
+                        backgroundColor: isCurrentWorker
+                          ? "action.hover"
+                          : "background.paper",
+                        zIndex: 1,
+                        textAlign: "center",
+                      }}
+                    >
+                      <span style={{ fontSize: "1.1rem" }}>
+                        {getCategoryEmoji(candidate.replacementCategory)}
+                      </span>
                     </TableCell>
                     <TableCell>{renderWeeklyTime(impl)}</TableCell>
                     <TableCell>{renderMonthlyDuties(impl)}</TableCell>
