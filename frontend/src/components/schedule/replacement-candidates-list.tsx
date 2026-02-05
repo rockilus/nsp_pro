@@ -24,6 +24,8 @@ interface ReplacementCandidatesListProps {
   onViewDetails: (candidate: ReplacementCandidateT) => void;
   onConfirmReplacement: () => void;
   onCheckReplacement: () => void;
+  onCancel: () => void;
+  isOpen: boolean;
   isSubmitting: boolean;
   isCheckingReplacement: boolean;
 }
@@ -36,6 +38,8 @@ export function ReplacementCandidatesList({
   onViewDetails,
   onConfirmReplacement,
   onCheckReplacement,
+  onCancel,
+  isOpen,
   isSubmitting,
   isCheckingReplacement,
 }: ReplacementCandidatesListProps) {
@@ -91,26 +95,28 @@ export function ReplacementCandidatesList({
 
   return (
     <Box sx={{ mt: 2 }}>
-      <Button
-        variant="contained"
-        color="info"
-        onClick={onCheckReplacement}
-        disabled={isCheckingReplacement}
-        // fullWidth
-        data-testid="check-replacement-button"
-        sx={{ mb: 2, textTransform: "none" }}
-      >
-        {isCheckingReplacement ? (
-          <>
-            <CircularProgress size={16} sx={{ mr: 1 }} />
-            {t("checking")}
-          </>
-        ) : (
-          t("check_replacement")
-        )}
-      </Button>
+      {!isOpen && (
+        <Button
+          variant="contained"
+          color="info"
+          onClick={onCheckReplacement}
+          disabled={isCheckingReplacement}
+          // fullWidth
+          data-testid="check-replacement-button"
+          sx={{ mb: 2, textTransform: "none" }}
+        >
+          {isCheckingReplacement ? (
+            <>
+              <CircularProgress size={16} sx={{ mr: 1 }} />
+              {t("checking")}
+            </>
+          ) : (
+            t("check_replacement")
+          )}
+        </Button>
+      )}
 
-      {candidates && candidates.length > 0 && (
+      {isOpen && candidates && candidates.length > 0 && (
         <>
           <Divider sx={{ mb: 2 }} />
           <Typography variant="subtitle2" sx={{ fontWeight: "bold", mb: 1 }}>
@@ -276,7 +282,16 @@ export function ReplacementCandidatesList({
                 </ListItem>
               ))}
           </List>
-          <Divider sx={{ mt: 2, mb: 2 }} />
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={onCancel}
+            data-testid="cancel-replacement-button"
+            sx={{ textTransform: "none" }}
+          >
+            {t("cancel")}
+          </Button>
+          <Divider sx={{ mt: 2, mb: 2 }} />{" "}
         </>
       )}
     </Box>

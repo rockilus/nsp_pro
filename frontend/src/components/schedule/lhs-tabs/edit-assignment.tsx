@@ -119,6 +119,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(
     null,
   );
+  const [isReplacementViewOpen, setIsReplacementViewOpen] = useState(false);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [selectedCandidate, setSelectedCandidate] =
     useState<ReplacementCandidateT | null>(null);
@@ -134,6 +135,13 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
     setDateError(false);
     setRecurrenceState(recurrence ?? null);
   }, [workerSelectedId, shiftSelectedId, dateSelected, recurrence]);
+
+  // Reset replacement state when assignment changes
+  useEffect(() => {
+    setIsReplacementViewOpen(false);
+    setSelectedCandidateId(null);
+    setReplacementCandidates(null);
+  }, [assignment?.id]);
 
   const describeRecurrenceRule = (rule: RecurrenceRuleT): string => {
     const weekdays = [
@@ -247,12 +255,19 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
       const candidates = await getReplacementCandidates(assignment.id, teamId);
       setReplacementCandidates(candidates);
       setSelectedCandidateId(null);
+      setIsReplacementViewOpen(true);
     } catch (error) {
       console.error("Failed to get replacement candidates:", error);
       alert("Failed to get replacement candidates. Please try again.");
     } finally {
       setLoadingReplacements(false);
     }
+  };
+
+  const handleCancelReplacement = () => {
+    setIsReplacementViewOpen(false);
+    setSelectedCandidateId(null);
+    setReplacementCandidates(null);
   };
 
   const handleSelectReplacement = async (candidateId?: string) => {
@@ -268,6 +283,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
       setIsSubmitting(true);
       await handleUpdateAssignment(updatedAssignment, recurrenceState, null);
       // Reset replacement state after successful update
+      setIsReplacementViewOpen(false);
       setReplacementCandidates(null);
       setSelectedCandidateId(null);
       setShowDetailsDialog(false);
@@ -480,6 +496,8 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           onViewDetails={handleCandidateDetailsClick}
           onConfirmReplacement={handleSelectReplacement}
           onCheckReplacement={handleCheckReplacement}
+          onCancel={handleCancelReplacement}
+          isOpen={isReplacementViewOpen}
           isSubmitting={isSubmitting}
           isCheckingReplacement={loadingReplacements}
         />
