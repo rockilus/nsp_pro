@@ -43,7 +43,6 @@ export function ReplacementDetailsDialog({
 }: ReplacementDetailsDialogProps) {
   // Rotated column dimensions
   const ROTATED_COLUMN_WIDTH = 40;
-  const ROTATED_COLUMN_HEIGHT = 80;
 
   const getCategoryEmoji = (
     category: "can_do" | "could_do" | "cant_do",
@@ -235,9 +234,7 @@ export function ReplacementDetailsDialog({
                     padding: 0,
                     textAlign: "center",
                   }}
-                >
-                  Rank
-                </TableCell>
+                ></TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
@@ -247,6 +244,7 @@ export function ReplacementDetailsDialog({
                     backgroundColor: "background.paper",
                     zIndex: 2,
                     padding: 0,
+                    verticalAlign: "bottom",
                   }}
                 >
                   Candidate
@@ -269,254 +267,133 @@ export function ReplacementDetailsDialog({
                   sx={{
                     fontWeight: "bold",
                     minWidth: ROTATED_COLUMN_WIDTH,
-                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    textAlign: "center",
-                    height: ROTATED_COLUMN_HEIGHT,
-                    verticalAlign: "bottom",
+                    paddingBottom: "4px",
+                    writingMode: "sideways-lr",
                   }}
                 >
-                  <Box
-                    sx={{
-                      transform: "rotate(-90deg)",
-                      whiteSpace: "nowrap",
-                      transformOrigin: "center bottom",
-                    }}
-                  >
-                    Weekly Time
-                  </Box>
+                  H/week
                 </TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
                     minWidth: ROTATED_COLUMN_WIDTH,
-                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    textAlign: "center",
-                    height: ROTATED_COLUMN_HEIGHT,
-                    verticalAlign: "bottom",
+                    paddingBottom: "4px",
+                    writingMode: "sideways-lr",
                   }}
                 >
-                  <Box
-                    sx={{
-                      transform: "rotate(-90deg)",
-                      whiteSpace: "nowrap",
-                      transformOrigin: "center bottom",
-                    }}
-                  >
-                    Monthly Duties
-                  </Box>
+                  Duties/month
                 </TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
                     minWidth: ROTATED_COLUMN_WIDTH,
-                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    textAlign: "center",
-                    height: ROTATED_COLUMN_HEIGHT,
-                    verticalAlign: "bottom",
+                    paddingBottom: "4px",
+                    writingMode: "sideways-lr",
                   }}
                 >
-                  <Box
-                    sx={{
-                      transform: "rotate(-90deg)",
-                      whiteSpace: "nowrap",
-                      transformOrigin: "center bottom",
-                    }}
-                  >
-                    Shift LTM
-                  </Box>
+                  Shift LTM
                 </TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
                     minWidth: ROTATED_COLUMN_WIDTH,
-                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    textAlign: "center",
-                    height: ROTATED_COLUMN_HEIGHT,
-                    verticalAlign: "bottom",
+                    paddingBottom: "4px",
+                    writingMode: "sideways-lr",
                   }}
                 >
-                  <Box
-                    sx={{
-                      transform: "rotate(-90deg)",
-                      whiteSpace: "nowrap",
-                      transformOrigin: "center bottom",
-                    }}
-                  >
-                    Weekday LTM
-                  </Box>
+                  Day LTM
                 </TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
                     minWidth: ROTATED_COLUMN_WIDTH,
-                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    // textAlign: "center",
-                    height: ROTATED_COLUMN_HEIGHT,
-                    verticalAlign: "bottom",
-                    // textAlign: "left",
+                    paddingBottom: "4px",
+                    writingMode: "sideways-lr",
                   }}
                 >
-                  <Box
-                    sx={{
-                      transform: "rotate(-90deg)",
-                      whiteSpace: "nowrap",
-                      // transformOrigin: "bottom",
-                    }}
-                  >
-                    Soft
-                  </Box>
+                  Soft
                 </TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
                     minWidth: ROTATED_COLUMN_WIDTH,
-                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    textAlign: "center",
-                    height: ROTATED_COLUMN_HEIGHT,
-                    verticalAlign: "bottom",
+                    paddingBottom: "4px",
+                    writingMode: "sideways-lr",
                   }}
                 >
-                  <Box
-                    sx={{
-                      transform: "rotate(-90deg)",
-                      whiteSpace: "nowrap",
-                      transformOrigin: "center bottom",
-                    }}
-                  >
-                    Hard
-                  </Box>
+                  Hard
                 </TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
                     minWidth: ROTATED_COLUMN_WIDTH,
-                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    textAlign: "center",
-                    height: ROTATED_COLUMN_HEIGHT,
-                    verticalAlign: "bottom",
+                    paddingBottom: "4px",
+                    writingMode: "sideways-lr",
                   }}
                 >
-                  <Box
-                    sx={{
-                      transform: "rotate(-90deg)",
-                      whiteSpace: "nowrap",
-                      transformOrigin: "center bottom",
-                    }}
-                  >
-                    Request
-                  </Box>
+                  Request
                 </TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
                     minWidth: ROTATED_COLUMN_WIDTH,
-                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    textAlign: "center",
-                    height: ROTATED_COLUMN_HEIGHT,
-                    verticalAlign: "bottom",
+                    paddingBottom: "4px",
+                    writingMode: "sideways-lr",
                   }}
                 >
-                  <Box
-                    sx={{
-                      transform: "rotate(-90deg)",
-                      whiteSpace: "nowrap",
-                      transformOrigin: "center bottom",
-                    }}
-                  >
-                    Overlap
-                  </Box>
+                  Overlap
                 </TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
                     minWidth: ROTATED_COLUMN_WIDTH,
-                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    textAlign: "center",
-                    height: ROTATED_COLUMN_HEIGHT,
-                    verticalAlign: "bottom",
+                    paddingBottom: "4px",
+                    writingMode: "sideways-lr",
                   }}
                 >
-                  <Box
-                    sx={{
-                      transform: "rotate(-90deg)",
-                      whiteSpace: "nowrap",
-                      transformOrigin: "center bottom",
-                    }}
-                  >
-                    Filter
-                  </Box>
+                  Filter
                 </TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
                     minWidth: ROTATED_COLUMN_WIDTH,
-                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    textAlign: "center",
-                    height: ROTATED_COLUMN_HEIGHT,
-                    verticalAlign: "bottom",
+                    paddingBottom: "4px",
+                    writingMode: "sideways-lr",
                   }}
                 >
-                  <Box
-                    sx={{
-                      transform: "rotate(-90deg)",
-                      whiteSpace: "nowrap",
-                      transformOrigin: "center bottom",
-                    }}
-                  >
-                    Leave
-                  </Box>
+                  Leave
                 </TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
                     minWidth: ROTATED_COLUMN_WIDTH,
-                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    textAlign: "center",
-                    height: ROTATED_COLUMN_HEIGHT,
-                    verticalAlign: "bottom",
+                    paddingBottom: "4px",
+                    writingMode: "sideways-lr",
                   }}
                 >
-                  <Box
-                    sx={{
-                      transform: "rotate(-90deg)",
-                      whiteSpace: "nowrap",
-                      transformOrigin: "center bottom",
-                    }}
-                  >
-                    Specialty
-                  </Box>
+                  Specialty
                 </TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
                     minWidth: ROTATED_COLUMN_WIDTH,
-                    maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    height: ROTATED_COLUMN_HEIGHT,
-                    verticalAlign: "bottom",
+                    paddingBottom: "4px",
+                    writingMode: "sideways-lr",
                   }}
                 >
-                  <Box
-                    sx={{
-                      width: 0,
-                      transform: "rotate(-90deg)",
-                      whiteSpace: "nowrap",
-                      transformOrigin: "center bottom",
-                    }}
-                  >
-                    Employed
-                  </Box>
+                  Employed
                 </TableCell>
                 <TableCell
                   sx={{
@@ -524,6 +401,7 @@ export function ReplacementDetailsDialog({
                     minWidth: 120,
                     padding: 0,
                     textAlign: "center",
+                    verticalAlign: "bottom",
                   }}
                 >
                   Actions
