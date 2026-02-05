@@ -69,3 +69,18 @@ class ReplacementCandidateDTO(BaseModel):
     replacementCategory: str  # "can_do", "could_do", "cant_do"
     replacementImplications: ReplacementImplicationsDTO
     mostConstrainingReason: str
+
+
+class SwapAssignmentInfoDTO(BaseModel):
+    workerId: str
+    workerName: str
+    assignmentIds: List[str]
+    currentImplications: List[ReplacementImplicationsDTO]
+    swappedImplications: List[ReplacementImplicationsDTO]
+
+
+class SwapValidationResultDTO(BaseModel):
+    isValid: bool
+    workerAInfo: SwapAssignmentInfoDTO
+    workerBInfo: SwapAssignmentInfoDTO
+    validationMessage: str

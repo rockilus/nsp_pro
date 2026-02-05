@@ -12,6 +12,7 @@ import {
   Collapse,
   useTheme,
   useMediaQuery,
+  CircularProgress,
 } from "@mui/material";
 import {
   Delete as DeleteIcon,
@@ -53,6 +54,11 @@ interface SwapDetailContentProps {
   canAcceptBid?: boolean;
   canCancelBidAcceptance?: boolean;
   sortedBids?: any[];
+  // Swap analysis
+  onAnalyzeSwap?: () => void;
+  isAnalyzing?: boolean;
+  validationResult?: any;
+  onViewAnalysisDetails?: () => void;
 }
 
 export default function SwapDetailContent({
@@ -79,6 +85,10 @@ export default function SwapDetailContent({
   canAcceptBid = false,
   canCancelBidAcceptance = false,
   sortedBids = [],
+  onAnalyzeSwap,
+  isAnalyzing = false,
+  validationResult,
+  onViewAnalysisDetails,
 }: SwapDetailContentProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -461,6 +471,36 @@ export default function SwapDetailContent({
           </Box>
         </>
       )}
+
+      {/* Swap Analysis - only for leaders and PENDING_APPROVAL status */}
+      {!reviewMode &&
+        isLeader &&
+        swap.status === SwapStatus.PENDING_APPROVAL &&
+        onAnalyzeSwap && (
+          <>
+            <Divider sx={{ my: 2 }} />
+            <Box sx={{ mb: 2 }}>
+              <Button
+                variant="contained"
+                color="info"
+                onClick={onAnalyzeSwap}
+                disabled={isAnalyzing}
+                fullWidth={isMobile}
+                data-testid="analyze-swap-button"
+                sx={{ textTransform: "none" }}
+              >
+                {isAnalyzing ? (
+                  <>
+                    <CircularProgress size={16} sx={{ mr: 1 }} />
+                    Analyzing...
+                  </>
+                ) : (
+                  "Analyze Swap"
+                )}
+              </Button>
+            </Box>
+          </>
+        )}
 
       {/* Metadata */}
       {!reviewMode && (

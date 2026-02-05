@@ -8,6 +8,10 @@ import {
   toSwapRequestT,
   fromSwapRequestT,
 } from "../../../types/swap";
+import {
+  SwapValidationResultT,
+  toSwapValidationResultT,
+} from "../../../types/swapValidation";
 import { BaseApi, AuthenticatedApiClient } from "./baseApi";
 
 export class SwapApi extends BaseApi {
@@ -223,6 +227,25 @@ export class SwapApi extends BaseApi {
       `/swaps/${swapId}/revert`,
     );
     return toSwapRequestT(responseData);
+  }
+
+  /**
+   * Validate a swap in PENDING_APPROVAL status to analyze its impact (leader only)
+   */
+  static async validateSwap(
+    apiClient: AuthenticatedApiClient,
+    swapId: string,
+  ): Promise<SwapValidationResultT> {
+    if (!swapId) {
+      throw new Error("Swap ID is required");
+    }
+
+    const responseData = await this.makeRequest<any>(
+      apiClient,
+      "post",
+      `/swaps/${swapId}/validate`,
+    );
+    return toSwapValidationResultT(responseData);
   }
 
   /**
