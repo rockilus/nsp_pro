@@ -264,122 +264,230 @@ export function ReplacementDetailsDialog({
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 120,
+                    minWidth: 40,
+                    maxWidth: 40,
                     padding: 0,
                     textAlign: "center",
+                    height: 120,
                   }}
                 >
-                  Weekly Time
+                  <Box
+                    sx={{
+                      transform: "rotate(-90deg)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Weekly Time
+                  </Box>
                 </TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 130,
+                    minWidth: 40,
+                    maxWidth: 40,
                     padding: 0,
                     textAlign: "center",
+                    height: 120,
                   }}
                 >
-                  Monthly Duties
+                  <Box
+                    sx={{
+                      transform: "rotate(-90deg)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Monthly Duties
+                  </Box>
                 </TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 110,
+                    minWidth: 40,
+                    maxWidth: 40,
                     padding: 0,
                     textAlign: "center",
+                    height: 120,
                   }}
                 >
-                  Shift LTM
+                  <Box
+                    sx={{
+                      transform: "rotate(-90deg)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Shift LTM
+                  </Box>
                 </TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 120,
+                    minWidth: 40,
+                    maxWidth: 40,
                     padding: 0,
                     textAlign: "center",
+                    height: 120,
                   }}
                 >
-                  Weekday LTM
+                  <Box
+                    sx={{
+                      transform: "rotate(-90deg)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Weekday LTM
+                  </Box>
                 </TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 100,
+                    minWidth: 40,
+                    maxWidth: 40,
                     padding: 0,
                     textAlign: "center",
+                    height: 120,
                   }}
                 >
-                  Soft
+                  <Box
+                    sx={{
+                      transform: "rotate(-90deg)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Soft
+                  </Box>
                 </TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 100,
+                    minWidth: 40,
+                    maxWidth: 40,
                     padding: 0,
                     textAlign: "center",
+                    height: 120,
                   }}
                 >
-                  Hard
+                  <Box
+                    sx={{
+                      transform: "rotate(-90deg)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Hard
+                  </Box>
                 </TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 100,
+                    minWidth: 40,
+                    maxWidth: 40,
                     padding: 0,
                     textAlign: "center",
+                    height: 120,
                   }}
                 >
-                  Request
+                  <Box
+                    sx={{
+                      transform: "rotate(-90deg)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Request
+                  </Box>
                 </TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 100,
+                    minWidth: 40,
+                    maxWidth: 40,
                     padding: 0,
                     textAlign: "center",
+                    height: 120,
                   }}
                 >
-                  Overlap
+                  <Box
+                    sx={{
+                      transform: "rotate(-90deg)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Overlap
+                  </Box>
                 </TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 100,
+                    minWidth: 40,
+                    maxWidth: 40,
                     padding: 0,
                     textAlign: "center",
+                    height: 120,
                   }}
                 >
-                  Filter
+                  <Box
+                    sx={{
+                      transform: "rotate(-90deg)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Filter
+                  </Box>
                 </TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 100,
+                    minWidth: 40,
+                    maxWidth: 40,
                     padding: 0,
                     textAlign: "center",
+                    height: 120,
                   }}
                 >
-                  Leave
+                  <Box
+                    sx={{
+                      transform: "rotate(-90deg)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Leave
+                  </Box>
                 </TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 110,
+                    minWidth: 40,
+                    maxWidth: 40,
                     padding: 0,
                     textAlign: "center",
+                    height: 120,
                   }}
                 >
-                  Specialty
+                  <Box
+                    sx={{
+                      transform: "rotate(-90deg)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Specialty
+                  </Box>
                 </TableCell>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
-                    minWidth: 110,
+                    minWidth: 40,
+                    maxWidth: 40,
                     padding: 0,
                     textAlign: "center",
+                    height: 120,
                   }}
                 >
-                  Employed
+                  <Box
+                    sx={{
+                      transform: "rotate(-90deg)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Employed
+                  </Box>
                 </TableCell>
                 <TableCell
                   sx={{
