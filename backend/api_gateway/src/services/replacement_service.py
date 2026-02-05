@@ -163,8 +163,8 @@ class ReplacementService(BaseService):
             raise ValueError(f"Assignment {assignment_id} not found")
 
         # Process replacement data to build constraints and filters
-        constraints, a_filtered_out, shift_dim_dict = (
-            self._process_replacement_data(assignment, replacement_data)
+        constraints, a_filtered_out, shift_dim_dict = self._process_replacement_data(
+            assignment, replacement_data
         )
 
         # Build replacement context once
@@ -185,9 +185,7 @@ class ReplacementService(BaseService):
             )
             category = self._determine_replacement_category(implications)
             most_constraining_reason = (
-                ReplacementCandidate.compute_most_constraining_reason(
-                    implications
-                )
+                ReplacementCandidate.compute_most_constraining_reason(implications)
             )
             candidate = ReplacementCandidate(
                 worker_id=worker.id,
@@ -234,14 +232,10 @@ class ReplacementService(BaseService):
 
         # Get the actual assignments
         worker_a_assignments = [
-            a
-            for a in replacement_data.assignments
-            if a.id in worker_a_assignment_ids
+            a for a in replacement_data.assignments if a.id in worker_a_assignment_ids
         ]
         worker_b_assignments = [
-            a
-            for a in replacement_data.assignments
-            if a.id in worker_b_assignment_ids
+            a for a in replacement_data.assignments if a.id in worker_b_assignment_ids
         ]
 
         # Validate we found all assignments
@@ -261,13 +255,9 @@ class ReplacementService(BaseService):
         worker_b_id = worker_b_assignments[0].worker_id
 
         if any(a.worker_id != worker_a_id for a in worker_a_assignments):
-            raise ValueError(
-                "All worker A assignments must belong to the same worker"
-            )
+            raise ValueError("All worker A assignments must belong to the same worker")
         if any(a.worker_id != worker_b_id for a in worker_b_assignments):
-            raise ValueError(
-                "All worker B assignments must belong to the same worker"
-            )
+            raise ValueError("All worker B assignments must belong to the same worker")
         if worker_a_id == worker_b_id:
             raise ValueError("Cannot swap assignments of the same worker")
 
@@ -321,12 +311,10 @@ class ReplacementService(BaseService):
 
         # Determine if swap is valid (both workers pass all hard constraints)
         worker_a_can_do_swap = all(
-            self._can_do_assignment(impl)
-            for impl in worker_a_info.swapped_implications
+            self._can_do_assignment(impl) for impl in worker_a_info.swapped_implications
         )
         worker_b_can_do_swap = all(
-            self._can_do_assignment(impl)
-            for impl in worker_b_info.swapped_implications
+            self._can_do_assignment(impl) for impl in worker_b_info.swapped_implications
         )
 
         is_valid = worker_a_can_do_swap and worker_b_can_do_swap
@@ -366,18 +354,12 @@ class ReplacementService(BaseService):
         if not assignment_ids:
             raise ValueError("No assignment id provided")
 
-        assignments_target = (
-            self.collection.assignment_db.get_assignments_by_ids(
-                assignment_ids, raise_on_missing=True
-            )
+        assignments_target = self.collection.assignment_db.get_assignments_by_ids(
+            assignment_ids, raise_on_missing=True
         )
 
-        workers = self.collection.worker_db.get_workers_not_deleted(
-            team_id=team_id
-        )
-        shifts = self.collection.shift_db.get_shifts_not_deleted(
-            team_id=team_id
-        )
+        workers = self.collection.worker_db.get_workers_not_deleted(team_id=team_id)
+        shifts = self.collection.shift_db.get_shifts_not_deleted(team_id=team_id)
 
         # Verify that all workers and shifts referenced by the target
         # assignments were fetched
@@ -401,9 +383,7 @@ class ReplacementService(BaseService):
                 f"{', '.join(sorted(missing_shift_ids))}"
             )
 
-        dimensions = self.collection.dimension_db.get_dimensions(
-            team_id=team_id
-        )
+        dimensions = self.collection.dimension_db.get_dimensions(team_id=team_id)
         dim_entries = self.collection.dim_entry_db.get_dim_entries_by_dim_ids(
             [dim.id for dim in dimensions]
         )
@@ -413,10 +393,8 @@ class ReplacementService(BaseService):
         specialties = self.collection.specialty_db.get_specialties_by_team_id(
             team_id=team_id
         )
-        constraints = (
-            self.collection.constraint_build_db.get_constraint_builds(
-                team_id=team_id
-            )
+        constraints = self.collection.constraint_build_db.get_constraint_builds(
+            team_id=team_id
         )
 
         dates = [a.date for a in assignments_target]
@@ -835,11 +813,7 @@ class ReplacementService(BaseService):
         """
         # Find the target shift
         target_shift = next(
-            (
-                s
-                for s in replacement_data.shifts
-                if s.id == assignment.shift_id
-            ),
+            (s for s in replacement_data.shifts if s.id == assignment.shift_id),
             None,
         )
         if not target_shift:
@@ -851,8 +825,8 @@ class ReplacementService(BaseService):
         for assgn in replacement_data.assignments:
             shift = shift_by_id.get(assgn.shift_id)
             if shift:
-                assignment_times[assgn.id] = (
-                    self._compute_assignment_datetimes(assgn, shift)
+                assignment_times[assgn.id] = self._compute_assignment_datetimes(
+                    assgn, shift
                 )
 
         # Pre-compute augmented requests
@@ -898,9 +872,7 @@ class ReplacementService(BaseService):
             assignment_tuples=assignment_tuples,
         )
 
-    def _check_is_employed(
-        self, worker: Worker, context: ReplacementContext
-    ) -> bool:
+    def _check_is_employed(self, worker: Worker, context: ReplacementContext) -> bool:
         """Check if worker is employed on the assignment date.
 
         Args:
@@ -923,9 +895,7 @@ class ReplacementService(BaseService):
         return assignment_date <= worker.employment_end_date
 
     # pylint: disable=too-many-return-statements
-    def _check_has_specialty(
-        self, worker: Worker, context: ReplacementContext
-    ) -> bool:
+    def _check_has_specialty(self, worker: Worker, context: ReplacementContext) -> bool:
         """Check if worker has required specialty for the shift.
 
         When replacing an assignment in a multi-staffed shift, this checks
@@ -975,8 +945,7 @@ class ReplacementService(BaseService):
             # Check if shift allows workers without specialty (has staffing
             # with specialty_id=None)
             has_no_specialty_slot = any(
-                staffing.specialty_id is None
-                for staffing in target_shift.staffing
+                staffing.specialty_id is None for staffing in target_shift.staffing
             )
 
             if not required_specialty_ids:
@@ -1022,9 +991,7 @@ class ReplacementService(BaseService):
         uncovered_specialty_set = set(uncovered_specialties)
         return bool(worker_specialty_set & uncovered_specialty_set)
 
-    def _check_isnt_on_leave(
-        self, worker: Worker, context: ReplacementContext
-    ) -> bool:
+    def _check_isnt_on_leave(self, worker: Worker, context: ReplacementContext) -> bool:
         """Check if worker is NOT on leave on the assignment date.
 
         Only approved leave requests that overlap with the target shift
@@ -1084,9 +1051,7 @@ class ReplacementService(BaseService):
         overlap_assignment_ids = []
 
         # Get target assignment times
-        target_times = context.assignment_times.get(
-            context.target_assignment.id
-        )
+        target_times = context.assignment_times.get(context.target_assignment.id)
         if not target_times:
             # If target times not found, cannot check overlap
             return OverlapHits(hasnt_overlap=True, overlap_assignment_ids=[])
@@ -1147,11 +1112,7 @@ class ReplacementService(BaseService):
                 continue
 
             # Check if request covers the assignment date
-            if (
-                not request_aug.start_date
-                <= assignment_date
-                <= request_aug.end_date
-            ):
+            if not request_aug.start_date <= assignment_date <= request_aug.end_date:
                 continue
 
             # Get the list of shift IDs for this request
@@ -1175,16 +1136,11 @@ class ReplacementService(BaseService):
                 # Logic:
                 # - If only one requested shift: conflict if it overlaps with target
                 # - If multiple requested shifts: conflict if ALL overlap with target
-                requested_shifts = [
-                    s for s in context.shifts if s.id in shift_ids
-                ]
+                requested_shifts = [s for s in context.shifts if s.id in shift_ids]
 
                 # Multiple shifts: conflict if ALL overlap with target
                 is_conflict = (
-                    all(
-                        s.overlaps_with(context.target_shift)
-                        for s in requested_shifts
-                    )
+                    all(s.overlaps_with(context.target_shift) for s in requested_shifts)
                     and not target_shift_in_list
                 )
 
@@ -1273,15 +1229,11 @@ class ReplacementService(BaseService):
         )
 
         # Filter constraints by hardness
-        relevant_constraints = [
-            c for c in context.constraints.sum if c.hard == hard
-        ]
+        relevant_constraints = [c for c in context.constraints.sum if c.hard == hard]
 
         for constraint in relevant_constraints:
             # For each period in the constraint
-            for period_idx, period_vars in enumerate(
-                constraint.constraint_variables
-            ):
+            for period_idx, period_vars in enumerate(constraint.constraint_variables):
                 # Check if this period contains the target assignment
                 period_tuples = set(period_vars)
                 if candidate_tuple not in period_tuples:
@@ -1303,9 +1255,7 @@ class ReplacementService(BaseService):
                         breach_variables.append(
                             Variable(
                                 worker_id=var_tuple[0],
-                                date=datetime.fromisoformat(
-                                    var_tuple[1]
-                                ).date(),
+                                date=datetime.fromisoformat(var_tuple[1]).date(),
                                 shift_id=var_tuple[2],
                             )
                         )
@@ -1317,17 +1267,11 @@ class ReplacementService(BaseService):
                 deviation = 0
                 if constraint.operator is None:
                     deviation = abs(target_value - count)
-                elif (
-                    constraint.operator
-                    == ConstraintOperator.LESS_THAN_OR_EQUAL
-                ):
+                elif constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
                     deviation = max(count - target_value, 0)
                 elif constraint.operator == ConstraintOperator.EQUAL:
                     deviation = abs(target_value - count)
-                elif (
-                    constraint.operator
-                    == ConstraintOperator.GREATER_THAN_OR_EQUAL
-                ):
+                elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
                     deviation = max(target_value - count, 0)
                 elif constraint.operator == ConstraintOperator.LESS_THAN:
                     deviation = max(count - target_value + 1, 0)
@@ -1338,9 +1282,7 @@ class ReplacementService(BaseService):
                 if deviation > 0:
                     breach = Breach(
                         id="",
-                        schedule_id=(
-                            context.target_assignment.schedule_id or ""
-                        ),
+                        schedule_id=(context.target_assignment.schedule_id or ""),
                         objective_id=constraint.id,
                         objective_category=ObjectiveCategory.CONSTRAINT,
                         variables=breach_variables,
@@ -1382,9 +1324,7 @@ class ReplacementService(BaseService):
         )
 
         # Filter constraints by hardness
-        relevant_constraints = [
-            c for c in context.constraints.seq if c.hard == hard
-        ]
+        relevant_constraints = [c for c in context.constraints.seq if c.hard == hard]
 
         for constraint in relevant_constraints:
             # For each period in the constraint
@@ -1450,15 +1390,11 @@ class ReplacementService(BaseService):
                         if run_length < constraint.target_value:
                             # Check if run is bounded (has gaps before/after)
                             has_gap_before = (
-                                start_idx == 0
-                                or not assignments_exist[start_idx - 1]
+                                start_idx == 0 or not assignments_exist[start_idx - 1]
                             )
                             has_gap_after = (
-                                start_idx + run_length
-                                >= len(assignments_exist)
-                                or not assignments_exist[
-                                    start_idx + run_length
-                                ]
+                                start_idx + run_length >= len(assignments_exist)
+                                or not assignments_exist[start_idx + run_length]
                             )
 
                             if has_gap_before and has_gap_after:
@@ -1487,9 +1423,7 @@ class ReplacementService(BaseService):
                 if violation_found and breach_variables:
                     breach = Breach(
                         id="",
-                        schedule_id=(
-                            context.target_assignment.schedule_id or ""
-                        ),
+                        schedule_id=(context.target_assignment.schedule_id or ""),
                         objective_id=constraint.id,
                         objective_category=ObjectiveCategory.CONSTRAINT,
                         variables=breach_variables,
@@ -1529,9 +1463,7 @@ class ReplacementService(BaseService):
         )
 
         # Filter constraints by hardness
-        relevant_constraints = [
-            c for c in context.constraints.ord if c.hard == hard
-        ]
+        relevant_constraints = [c for c in context.constraints.ord if c.hard == hard]
 
         for constraint in relevant_constraints:
             # For each pair of (reference, relative) assignments
@@ -1570,9 +1502,7 @@ class ReplacementService(BaseService):
                         breach_variables.append(
                             Variable(
                                 worker_id=ref_tuple[0],
-                                date=datetime.fromisoformat(
-                                    ref_tuple[1]
-                                ).date(),
+                                date=datetime.fromisoformat(ref_tuple[1]).date(),
                                 shift_id=ref_tuple[2],
                             )
                         )
@@ -1580,18 +1510,14 @@ class ReplacementService(BaseService):
                         breach_variables.append(
                             Variable(
                                 worker_id=rel_tuple[0],
-                                date=datetime.fromisoformat(
-                                    rel_tuple[1]
-                                ).date(),
+                                date=datetime.fromisoformat(rel_tuple[1]).date(),
                                 shift_id=rel_tuple[2],
                             )
                         )
 
                     breach = Breach(
                         id="",
-                        schedule_id=(
-                            context.target_assignment.schedule_id or ""
-                        ),
+                        schedule_id=(context.target_assignment.schedule_id or ""),
                         objective_id=constraint.id,
                         objective_category=ObjectiveCategory.CONSTRAINT,
                         variables=breach_variables,
@@ -1626,9 +1552,7 @@ class ReplacementService(BaseService):
         breaches = []
 
         # Filter constraints by hardness
-        relevant_constraints = [
-            c for c in context.constraints.fil if c.hard == hard
-        ]
+        relevant_constraints = [c for c in context.constraints.fil if c.hard == hard]
 
         # Create the candidate tuple
         candidate_tuple = (
@@ -1922,18 +1846,10 @@ class ReplacementService(BaseService):
         filter_hits = self._check_filter_hits(worker, context)
 
         # Constraint checks - combine sum, seq, and ord constraints
-        hard_sum_hits = self._check_constraint_sum_hits(
-            worker, context, hard=True
-        )
-        hard_seq_hits = self._check_constraint_seq_hits(
-            worker, context, hard=True
-        )
-        hard_ord_hits = self._check_constraint_ord_hits(
-            worker, context, hard=True
-        )
-        hard_fil_hits = self._check_constraint_fil_hits(
-            worker, context, hard=True
-        )
+        hard_sum_hits = self._check_constraint_sum_hits(worker, context, hard=True)
+        hard_seq_hits = self._check_constraint_seq_hits(worker, context, hard=True)
+        hard_ord_hits = self._check_constraint_ord_hits(worker, context, hard=True)
+        hard_fil_hits = self._check_constraint_fil_hits(worker, context, hard=True)
         hard_constraint_hits = ConstraintHits(
             meets_constraints=(
                 hard_sum_hits.meets_constraints
@@ -1949,18 +1865,10 @@ class ReplacementService(BaseService):
             ),
         )
 
-        soft_sum_hits = self._check_constraint_sum_hits(
-            worker, context, hard=False
-        )
-        soft_seq_hits = self._check_constraint_seq_hits(
-            worker, context, hard=False
-        )
-        soft_ord_hits = self._check_constraint_ord_hits(
-            worker, context, hard=False
-        )
-        soft_fil_hits = self._check_constraint_fil_hits(
-            worker, context, hard=False
-        )
+        soft_sum_hits = self._check_constraint_sum_hits(worker, context, hard=False)
+        soft_seq_hits = self._check_constraint_seq_hits(worker, context, hard=False)
+        soft_ord_hits = self._check_constraint_ord_hits(worker, context, hard=False)
+        soft_fil_hits = self._check_constraint_fil_hits(worker, context, hard=False)
         soft_constraint_hits = ConstraintHits(
             meets_constraints=(
                 soft_sum_hits.meets_constraints
@@ -1977,17 +1885,13 @@ class ReplacementService(BaseService):
         )
 
         # Calculate monthly duties and weekly time implications
-        new_monthly_duties = self._calculate_new_monthly_duties(
-            worker, context
-        )
+        new_monthly_duties = self._calculate_new_monthly_duties(worker, context)
         new_weekly_time = self._calculate_new_weekly_time(worker, context)
 
         # Calculate LTM indicators
-        nb_times_did_shift_ltm = self._calculate_nb_times_did_shift_ltm(
+        nb_times_did_shift_ltm = self._calculate_nb_times_did_shift_ltm(worker, context)
+        nb_times_worked_weekday_ltm = self._calculate_nb_times_worked_weekday_ltm(
             worker, context
-        )
-        nb_times_worked_weekday_ltm = (
-            self._calculate_nb_times_worked_weekday_ltm(worker, context)
         )
 
         return ReplacementImplications(
@@ -2102,12 +2006,8 @@ class ReplacementService(BaseService):
             priority = 0
 
         # Tie-breakers: use actual delta values (negative = under target = better)
-        weekly_delta = (
-            implications.new_weekly_time.new_weekly_time_delta_minutes
-        )
-        monthly_delta = (
-            implications.new_monthly_duties.new_monthly_duties_delta
-        )
+        weekly_delta = implications.new_weekly_time.new_weekly_time_delta_minutes
+        monthly_delta = implications.new_monthly_duties.new_monthly_duties_delta
 
         return (priority, weekly_delta, monthly_delta)
 
@@ -2147,9 +2047,7 @@ class ReplacementService(BaseService):
 
         # Sort replacement candidates by ranking key
         replacement_candidates.sort(
-            key=lambda c: self._calculate_ranking_key(
-                c.replacement_implications
-            )
+            key=lambda c: self._calculate_ranking_key(c.replacement_implications)
         )
 
         # Assign ranks 1 to n-1
@@ -2222,9 +2120,7 @@ class ReplacementService(BaseService):
         )
 
         try:
-            a_date_minus_1_year = assignment.date.replace(
-                year=assignment.date.year - 1
-            )
+            a_date_minus_1_year = assignment.date.replace(year=assignment.date.year - 1)
         except ValueError:
             # Handles Feb 29 -> fallback to Feb 28 on non-leap year
             a_date_minus_1_year = assignment.date.replace(
@@ -2243,9 +2139,7 @@ class ReplacementService(BaseService):
             end_date=assignment.date - timedelta(days=1),
         )
 
-        dates_campaign = build_dates_list(
-            start_date=assignment.date, end_date=max_date
-        )
+        dates_campaign = build_dates_list(start_date=assignment.date, end_date=max_date)
 
         periods_weekly = build_periods_weekly(
             dates_hist=dates_hist, dates_campaign=dates_campaign
@@ -2321,8 +2215,7 @@ class ReplacementService(BaseService):
         a_filtered_out = [
             var
             for var in a_filtered_out
-            if var[1] == assignment.date.isoformat()
-            and var[2] == assignment.shift_id
+            if var[1] == assignment.date.isoformat() and var[2] == assignment.shift_id
         ]
 
         return constraints, a_filtered_out, dim_to_attr_value_to_shift
@@ -2468,9 +2361,7 @@ class ReplacementService(BaseService):
         # Filter constraints for all assignments involved
         # We'll keep constraints that are relevant to any of the assignment
         # date/shift pairs
-        date_shift_pairs = [
-            (a.date.isoformat(), a.shift_id) for a in assignments
-        ]
+        date_shift_pairs = [(a.date.isoformat(), a.shift_id) for a in assignments]
 
         filtered_sums: List[ConstraintSum] = []
         for constraint_sum in constraints.sum:
@@ -2689,10 +2580,7 @@ class ReplacementService(BaseService):
             a
             for a in replacement_data.assignments
             if a.id
-            not in {
-                assgn.id
-                for assgn in worker_a_assignments + worker_b_assignments
-            }
+            not in {assgn.id for assgn in worker_a_assignments + worker_b_assignments}
         ]
         all_swapped_assignments.extend(worker_a_swapped_assignments)
         all_swapped_assignments.extend(worker_b_swapped_assignments)
@@ -2833,9 +2721,7 @@ class ReplacementService(BaseService):
             assignment_tuples=assignment_tuples,
         )
 
-    def _can_do_assignment(
-        self, implications: ReplacementImplications
-    ) -> bool:
+    def _can_do_assignment(self, implications: ReplacementImplications) -> bool:
         """
         Check if implications indicate the assignment can be done (no hard
         constraint violations).
