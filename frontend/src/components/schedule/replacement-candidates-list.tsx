@@ -54,6 +54,21 @@ export function ReplacementCandidatesList({
     }
   };
 
+  const getCategoryEmoji = (
+    category: "can_do" | "could_do" | "cant_do",
+  ): string => {
+    switch (category) {
+      case "can_do":
+        return "🟢";
+      case "could_do":
+        return "🟠";
+      case "cant_do":
+        return "🔴";
+      default:
+        return "⚪";
+    }
+  };
+
   const getReasonLabel = (reason: MostConstrainingReasonT): string => {
     // Map enum values to translation keys
     const reasonMap: Record<MostConstrainingReasonT, string> = {
@@ -144,14 +159,16 @@ export function ReplacementCandidatesList({
                         gap={1}
                         flexWrap="wrap"
                       >
-                        <Chip
-                          size="small"
-                          label="●"
-                          color={getCategoryColor(
-                            candidate.replacementCategory,
-                          )}
-                          sx={{ minWidth: 24, "& .MuiChip-label": { px: 0.5 } }}
-                        />
+                        <Box
+                          component="span"
+                          sx={{
+                            minWidth: 24,
+                            display: "inline-block",
+                            textAlign: "center",
+                          }}
+                        >
+                          {getCategoryEmoji(candidate.replacementCategory)}
+                        </Box>
                         <Typography variant="body2" fontWeight="medium">
                           {candidate.workerName}
                         </Typography>
