@@ -536,6 +536,9 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
         onReplace={handleSelectReplacement}
         isSubmitting={isSubmitting}
         lng={lng}
+        assignment={assignment}
+        workers={workers}
+        shifts={shifts}
       />
     </div>
   );

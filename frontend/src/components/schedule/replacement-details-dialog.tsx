@@ -23,6 +23,10 @@ import {
   ConstraintHitsT,
   ReplacementImplicationsT,
 } from "../../types/replacement";
+import { WorkerT } from "../../types/worker";
+import { ShiftT } from "../../types/shift";
+import { AssignmentT } from "../../types/assignment";
+import dayjs from "dayjs";
 
 interface ReplacementDetailsDialogProps {
   open: boolean;
@@ -31,6 +35,9 @@ interface ReplacementDetailsDialogProps {
   onReplace: (candidateId: string) => void;
   isSubmitting: boolean;
   lng: string;
+  assignment?: AssignmentT | null;
+  workers?: WorkerT[];
+  shifts?: ShiftT[];
 }
 
 export function ReplacementDetailsDialog({
@@ -40,6 +47,9 @@ export function ReplacementDetailsDialog({
   onReplace,
   isSubmitting,
   lng,
+  assignment,
+  workers,
+  shifts,
 }: ReplacementDetailsDialogProps) {
   // Rotated column dimensions
   const ROTATED_COLUMN_WIDTH = 40;
@@ -209,9 +219,7 @@ export function ReplacementDetailsDialog({
     >
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h6">
-            Replacement Candidates Comparison ({candidates.length})
-          </Typography>
+          <Typography variant="h6">Replace assignment</Typography>
           <IconButton onClick={onClose} size="small">
             <CloseIcon />
           </IconButton>
@@ -219,6 +227,32 @@ export function ReplacementDetailsDialog({
       </DialogTitle>
 
       <DialogContent>
+        {assignment &&
+          shifts &&
+          (() => {
+            const shift = shifts.find((s) => s.id === assignment.shiftId);
+            const dateStr = assignment.date
+              ? assignment.date.format("dddd, D MMMM")
+              : "";
+            if (!shift) return null;
+            const startStr = shift.startTime.format("HH:mm");
+            const endStr = shift.endTime.format("HH:mm");
+            const endsNextDay =
+              shift.endTime.isBefore(shift.startTime) ||
+              shift.endTime.diff(shift.startTime, "day") > 0;
+
+            return (
+              <Box mb={1}>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  {shift.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {dateStr} {"\u00A0⋅\u00A0"} {startStr} – {endStr}
+                  {endsNextDay && <sup>+1</sup>}
+                </Typography>
+              </Box>
+            );
+          })()}
         <TableContainer sx={{ maxHeight: 600, overflowX: "auto" }}>
           <Table stickyHeader size="small">
             <TableHead>
