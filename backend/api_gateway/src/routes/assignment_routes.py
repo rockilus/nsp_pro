@@ -14,12 +14,18 @@ from shared.schemas.dto import (
     AssignmentsRecurrencesResultDTO,
     RecurrenceRuleDTO,
 )
+from shared.schemas.dto.replacement import ReplacementCandidateDTO
 
-from src.dependencies import get_assignment_service, get_user_context
+from src.dependencies import (
+    get_assignment_service,
+    get_replacement_service,
+    get_user_context,
+)
 from src.errors import NotAuthorizedError, handle_routes_errors
 from src.integrations.authorization import authz_check
 from src.security.user_context import UserContext
 from src.services.assignment_service import AssignmentService
+from src.services.replacement_service import ReplacementService
 
 # pylint: disable=too-many-arguments, too-many-positional-arguments
 
@@ -45,7 +51,9 @@ async def create_assignment(
         r_data: Optional[RecurrenceRule] = None
         if recurrence:
             r_data = RecurrenceRule.from_dto(recurrence)
-        ar_result = assignment_service.create_assignment_and_recurrence(a_data, r_data)
+        ar_result = assignment_service.create_assignment_and_recurrence(
+            a_data, r_data
+        )
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to create assignment")
@@ -130,7 +138,9 @@ async def update_assignment(
             if recurrence_update_scope
             else None
         )
-        recurrence_data = RecurrenceRule.from_dto(recurrence) if recurrence else None
+        recurrence_data = (
+            RecurrenceRule.from_dto(recurrence) if recurrence else None
+        )
         ar_result = assignment_service.update_assignment_and_recurrence(
             assignment_new=assignment_data,
             recurrence_update_scope=recurrence_update_scope_data,
@@ -174,5 +184,34 @@ async def delete_assignment(
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to delete assignment")
+        handle_routes_errors(e)
+    return response
+
+
+@router.get(
+    "/assignments/{assignment_id}/replacement-candidates/teams/{team_id}"
+)
+async def get_replacement_candidates(
+    assignment_id: str,
+    team_id: str,
+    user_context: UserContext = Depends(get_user_context),
+    replacement_service: ReplacementService = Depends(get_replacement_service),
+) -> list[ReplacementCandidateDTO]:
+    try:
+        if not await authz_check(
+            user_context.user_id, "check-replacements", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to check replacement candidates",
+            )
+        candidates = replacement_service.get_replacement_candidates(
+            assignment_id=assignment_id,
+            team_id=team_id,
+        )
+        response = [candidate.to_dto() for candidate in candidates]
+    except Exception as e:
+        log_info(
+            f"Failed to get replacement candidates for assignment {assignment_id}"
+        )
         handle_routes_errors(e)
     return response

@@ -3,11 +3,26 @@ import dayjs, { Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
-import { Button, MenuItem, Select } from "@mui/material";
+import {
+  Button,
+  MenuItem,
+  Select,
+  Chip,
+  CircularProgress,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Box,
+  Typography,
+} from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Components
 import RecurrenceEdit from "./recurrence-edit/recurrence-edit";
 import RecurrenceDeleteDialog from "./recurrence-delete-dialog";
+import { ReplacementDetailsDialog } from "../replacement-details-dialog";
+// Hooks
+import { useGetReplacementCandidates } from "../../../hooks/useReplacement";
 // Styles
 import "./edit-assignment.css";
 // Types
@@ -22,6 +37,7 @@ import {
   RecurrenceEndType,
   RecurrenceUpdateScope,
 } from "../../../types/recurrence";
+import { ReplacementCandidateT } from "../../../types/replacement";
 
 dayjs.extend(utc);
 
@@ -36,19 +52,19 @@ interface EditAssignmentProps {
   dateSelected: Dayjs | null;
   handleCreateAssignment?: (
     newAssignment: AssignmentT,
-    newRecurrence: RecurrenceRuleT | null
+    newRecurrence: RecurrenceRuleT | null,
   ) => void;
   isEditing?: boolean;
   assignment?: AssignmentT;
   handleUpdateAssignment?: (
     assignment: AssignmentT,
     recurrence: RecurrenceRuleT | null,
-    recurrenceUpdateScope: RecurrenceUpdateScope | null
+    recurrenceUpdateScope: RecurrenceUpdateScope | null,
   ) => void;
   handleDeleteAssignment?: (
     assignmentId: string,
     recurrenceId: string | null,
-    recurrenceUpdateScope: RecurrenceUpdateScope | null
+    recurrenceUpdateScope: RecurrenceUpdateScope | null,
   ) => void;
   recurrence?: RecurrenceRuleT | null;
 }
@@ -72,13 +88,13 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
   const { t } = useTranslation(lng, "schedule-page");
 
   const [workerId, setWorkerId] = useState<string | null>(
-    isEditing && assignment ? assignment.workerId : workerSelectedId
+    isEditing && assignment ? assignment.workerId : workerSelectedId,
   );
   const [shiftId, setShiftId] = useState<string | null>(
-    isEditing && assignment ? assignment.shiftId : shiftSelectedId
+    isEditing && assignment ? assignment.shiftId : shiftSelectedId,
   );
   const [date, setDate] = useState<Dayjs | null>(
-    isEditing && assignment ? assignment.date : dateSelected
+    isEditing && assignment ? assignment.date : dateSelected,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [workerError, setWorkerError] = useState(false);
@@ -92,11 +108,25 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteScope, setDeleteScope] = useState<RecurrenceUpdateScope | null>(
-    null
+    null,
   );
   const [dialogAction, setDialogAction] = useState<"delete" | "update" | null>(
-    null
+    null,
   );
+
+  // Replacement state
+  const [replacementCandidates, setReplacementCandidates] = useState<
+    ReplacementCandidateT[] | null
+  >(null);
+  const [loadingReplacements, setLoadingReplacements] = useState(false);
+  const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(
+    null,
+  );
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [selectedCandidate, setSelectedCandidate] =
+    useState<ReplacementCandidateT | null>(null);
+
+  const getReplacementCandidates = useGetReplacementCandidates();
 
   useEffect(() => {
     setWorkerId(workerSelectedId);
@@ -127,7 +157,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           rule.repeatEvery === 1
             ? t("rec_daily")
             : `${t("rec_every")} ${rule.repeatEvery} ${t(
-                "days"
+                "days",
               ).toLocaleLowerCase()}`;
         break;
       case FrequencyType.WEEK:
@@ -136,7 +166,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           rule.repeatEvery === 1
             ? `${t("rec_weekly_on")} ${days}`
             : `${t("rec_every")} ${rule.repeatEvery} ${t(
-                "rec_weeks_on"
+                "rec_weeks_on",
               ).toLocaleLowerCase()} ${days}`;
         break;
       case FrequencyType.MONTH:
@@ -145,7 +175,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
             rule.repeatEvery === 1
               ? `${t("rec_monthly_on_day")} ${rule.startDate.date()}`
               : `${t("rec_every")} ${rule.repeatEvery} ${t(
-                  "rec_months_on_day"
+                  "rec_months_on_day",
                 ).toLocaleLowerCase()} ${rule.startDate.date()}`;
         } else if (rule.monthRepeatType === MonthRepeatType.WEEKDAY) {
           const weekNumber = Math.ceil(rule.startDate.date() / 7);
@@ -155,7 +185,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
                   weekdays[rule.startDate.day()]
                 }`
               : `${t("rec_every")} ${rule.repeatEvery} ${t(
-                  "rec_months_on"
+                  "rec_months_on",
                 ).toLocaleLowerCase()} ${ordinal(weekNumber)} ${
                   weekdays[rule.startDate.day()]
                 }`;
@@ -166,21 +196,21 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           rule.repeatEvery === 1
             ? `${t("rec_annually_on")} ${rule.startDate.format("MMMM D")}`
             : `${t("rec_every")} ${rule.repeatEvery} ${t(
-                "rec_years_on"
+                "rec_years_on",
               ).toLocaleLowerCase()} ${rule.startDate.format("MMMM D")}`;
         break;
     }
 
     if (rule.recurrenceEndType === RecurrenceEndType.END_DATE && rule.endDate) {
       description += `, ${t(
-        "rec_until"
+        "rec_until",
       ).toLocaleLowerCase()} ${rule.endDate.format("D MMM YYYY")}`;
     } else if (
       rule.recurrenceEndType === RecurrenceEndType.NUMBER_OF_OCCURRENCES &&
       rule.numberOfOccurrences
     ) {
       description += `, ${rule.numberOfOccurrences} ${t(
-        "rec_times"
+        "rec_times",
       ).toLocaleLowerCase()}`;
     }
 
@@ -209,6 +239,62 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
       setIsDialogOpen(true);
     } else if (assignment && handleDeleteAssignment) {
       handleDeleteAssignment(assignment.id, null, null);
+    }
+  };
+
+  const handleCheckReplacement = async () => {
+    if (!assignment || !teamId) return;
+
+    try {
+      setLoadingReplacements(true);
+      const candidates = await getReplacementCandidates(assignment.id, teamId);
+      setReplacementCandidates(candidates);
+      setSelectedCandidateId(null);
+    } catch (error) {
+      console.error("Failed to get replacement candidates:", error);
+      alert("Failed to get replacement candidates. Please try again.");
+    } finally {
+      setLoadingReplacements(false);
+    }
+  };
+
+  const handleSelectReplacement = async () => {
+    if (!selectedCandidateId || !assignment || !handleUpdateAssignment) return;
+
+    const updatedAssignment: AssignmentT = {
+      ...assignment,
+      workerId: selectedCandidateId,
+    };
+
+    try {
+      setIsSubmitting(true);
+      await handleUpdateAssignment(updatedAssignment, recurrenceState, null);
+      // Reset replacement state after successful update
+      setReplacementCandidates(null);
+      setSelectedCandidateId(null);
+    } catch (error) {
+      console.error("Failed to select replacement:", error);
+      alert("Failed to select replacement. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCandidateDetailsClick = (candidate: ReplacementCandidateT) => {
+    setSelectedCandidate(candidate);
+    setShowDetailsDialog(true);
+  };
+
+  const getCategoryColor = (
+    category: "can_do" | "could_do" | "cant_do",
+  ): "success" | "warning" | "error" => {
+    switch (category) {
+      case "can_do":
+        return "success";
+      case "could_do":
+        return "warning";
+      case "cant_do":
+        return "error";
     }
   };
 
@@ -420,6 +506,23 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
               {t("delete")}
             </Button>
             <Button
+              variant="outlined"
+              color="info"
+              onClick={handleCheckReplacement}
+              disabled={loadingReplacements}
+              className="check-replacement-button"
+              data-testid="check-replacement-button"
+            >
+              {loadingReplacements ? (
+                <>
+                  <CircularProgress size={16} sx={{ mr: 1 }} />
+                  {t("checking")}
+                </>
+              ) : (
+                t("check_replacement")
+              )}
+            </Button>
+            <Button
               variant="contained"
               color="primary"
               onClick={handleSaveClick}
@@ -431,10 +534,211 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           </>
         )}
       </div>
+
+      {/* Replacement candidates list */}
+      {isEditing &&
+        replacementCandidates &&
+        replacementCandidates.length > 0 && (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: "bold" }}>
+              {t("replacement_candidates")} ({replacementCandidates.length})
+            </Typography>
+            <List sx={{ maxHeight: 400, overflow: "auto", p: 0 }}>
+              {replacementCandidates.map((candidate) => (
+                <ListItem
+                  key={candidate.workerId}
+                  disablePadding
+                  sx={{
+                    mb: 1,
+                    border: 1,
+                    borderColor:
+                      selectedCandidateId === candidate.workerId
+                        ? "primary.main"
+                        : "divider",
+                    borderRadius: 1,
+                    backgroundColor:
+                      selectedCandidateId === candidate.workerId
+                        ? "action.selected"
+                        : "background.paper",
+                  }}
+                >
+                  <ListItemButton
+                    onClick={() => setSelectedCandidateId(candidate.workerId)}
+                    data-testid={`candidate-${candidate.workerId}`}
+                  >
+                    <ListItemText
+                      primary={
+                        <Box
+                          display="flex"
+                          alignItems="center"
+                          gap={1}
+                          flexWrap="wrap"
+                        >
+                          <Chip
+                            size="small"
+                            label={
+                              candidate.replacementCategory === "can_do"
+                                ? "●"
+                                : candidate.replacementCategory === "could_do"
+                                  ? "●"
+                                  : "●"
+                            }
+                            color={getCategoryColor(
+                              candidate.replacementCategory,
+                            )}
+                            sx={{
+                              minWidth: 24,
+                              "& .MuiChip-label": { px: 0.5 },
+                            }}
+                          />
+                          <Typography variant="body2" fontWeight="medium">
+                            {candidate.workerName}
+                          </Typography>
+                          {candidate.rank === 0 && (
+                            <Chip
+                              label={t("current")}
+                              size="small"
+                              variant="outlined"
+                            />
+                          )}
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ ml: "auto" }}
+                          >
+                            {t("rank")}: {candidate.rank}
+                          </Typography>
+                        </Box>
+                      }
+                      secondary={
+                        <Box sx={{ mt: 0.5 }}>
+                          <Typography variant="caption" display="block">
+                            {candidate.mostConstrainingReason}
+                          </Typography>
+                          <Box display="flex" gap={2} mt={0.5} flexWrap="wrap">
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              {t("weekly_hours")}:{" "}
+                              {Math.round(
+                                candidate.replacementImplications.newWeeklyTime
+                                  .newWeeklyWorkedMinutes / 60,
+                              )}
+                              h
+                              {candidate.replacementImplications.newWeeklyTime
+                                .newWeeklyTimeDeltaMinutes !== 0 && (
+                                <span
+                                  style={{
+                                    color:
+                                      candidate.replacementImplications
+                                        .newWeeklyTime
+                                        .newWeeklyTimeDeltaMinutes > 0
+                                        ? "green"
+                                        : "red",
+                                  }}
+                                >
+                                  {" "}
+                                  (
+                                  {candidate.replacementImplications
+                                    .newWeeklyTime.newWeeklyTimeDeltaMinutes > 0
+                                    ? "+"
+                                    : ""}
+                                  {Math.round(
+                                    candidate.replacementImplications
+                                      .newWeeklyTime.newWeeklyTimeDeltaMinutes /
+                                      60,
+                                  )}
+                                  h)
+                                </span>
+                              )}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              {t("monthly_duties")}:{" "}
+                              {
+                                candidate.replacementImplications
+                                  .newMonthlyDuties.newNumberMonthlyDuties
+                              }
+                              {candidate.replacementImplications
+                                .newMonthlyDuties.newMonthlyDutiesDelta !==
+                                0 && (
+                                <span
+                                  style={{
+                                    color:
+                                      candidate.replacementImplications
+                                        .newMonthlyDuties
+                                        .newMonthlyDutiesDelta > 0
+                                        ? "green"
+                                        : "red",
+                                  }}
+                                >
+                                  {" "}
+                                  (
+                                  {candidate.replacementImplications
+                                    .newMonthlyDuties.newMonthlyDutiesDelta > 0
+                                    ? "+"
+                                    : ""}
+                                  {
+                                    candidate.replacementImplications
+                                      .newMonthlyDuties.newMonthlyDutiesDelta
+                                  }
+                                  )
+                                </span>
+                              )}
+                            </Typography>
+                          </Box>
+                          <Box display="flex" gap={1} mt={1}>
+                            <Button
+                              size="small"
+                              variant="text"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCandidateDetailsClick(candidate);
+                              }}
+                            >
+                              {t("see_details")}
+                            </Button>
+                          </Box>
+                        </Box>
+                      }
+                    />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+            {selectedCandidateId && (
+              <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleSelectReplacement}
+                  disabled={isSubmitting}
+                  data-testid="select-replacement-button"
+                >
+                  {isSubmitting ? t("selecting") : t("select_as_replacement")}
+                </Button>
+              </Box>
+            )}
+          </Box>
+        )}
+
       <RecurrenceDeleteDialog
         open={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         onConfirm={handleDialogConfirm}
+      />
+
+      <ReplacementDetailsDialog
+        open={showDetailsDialog}
+        onClose={() => {
+          setShowDetailsDialog(false);
+          setSelectedCandidate(null);
+        }}
+        candidate={selectedCandidate}
+        lng={lng}
       />
     </div>
   );
