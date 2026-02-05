@@ -45,6 +45,7 @@ variable "leader_permissions" {
     "deny-request",
     "rescind-request",
     "create-swap", "read-swap", "approve-swap",
+    "check-replacements"
   ]
 }
 

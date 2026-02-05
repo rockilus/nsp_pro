@@ -307,6 +307,9 @@ resource "permitio_resource" "team" {
     "read-link-shifts" = {
       name = "read-link-shifts"
     },
+    "check-replacements" = {
+      name = "check-replacements"
+    },
     "create-link-shift" = {
       name = "create-link-shift"
     },
