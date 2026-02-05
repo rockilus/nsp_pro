@@ -162,19 +162,52 @@ export function ReplacementCandidatesList({
                   >
                     <ListItemText
                       primary={
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <Box
-                            component="span"
-                            sx={{
-                              display: "inline-block",
-                              fontSize: "1.1rem",
-                            }}
-                          >
-                            {getCategoryEmoji(candidate.replacementCategory)}
+                        <Box
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="space-between"
+                          gap={1}
+                        >
+                          <Box display="flex" alignItems="center" gap={1}>
+                            <Box
+                              component="span"
+                              sx={{
+                                display: "inline-block",
+                                fontSize: "1.1rem",
+                              }}
+                            >
+                              {getCategoryEmoji(candidate.replacementCategory)}
+                            </Box>
+                            <Typography variant="body2" fontWeight="medium">
+                              {candidate.workerName}
+                            </Typography>
                           </Box>
-                          <Typography variant="body2" fontWeight="medium">
-                            {candidate.workerName}
-                          </Typography>
+                          {selectedCandidateId === candidate.workerId && (
+                            <Button
+                              size="small"
+                              variant="contained"
+                              color="primary"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onConfirmReplacement();
+                              }}
+                              disabled={isSubmitting}
+                              data-testid="select-replacement-button"
+                              sx={{ ml: "auto" }}
+                            >
+                              {isSubmitting ? (
+                                <>
+                                  <CircularProgress
+                                    size={12}
+                                    sx={{ mr: 0.5 }}
+                                  />
+                                  {t("selecting")}
+                                </>
+                              ) : (
+                                t("replace")
+                              )}
+                            </Button>
+                          )}
                         </Box>
                       }
                       secondary={
@@ -251,26 +284,6 @@ export function ReplacementCandidatesList({
                 </ListItem>
               ))}
           </List>
-          {selectedCandidateId && (
-            <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={onConfirmReplacement}
-                disabled={isSubmitting}
-                data-testid="select-replacement-button"
-              >
-                {isSubmitting ? (
-                  <>
-                    <CircularProgress size={16} sx={{ mr: 1 }} />
-                    {t("selecting")}
-                  </>
-                ) : (
-                  t("select_as_replacement")
-                )}
-              </Button>
-            </Box>
-          )}
         </>
       )}
     </Box>
