@@ -209,6 +209,11 @@ export function ReplacementDetailsDialog({
   // Sort candidates by rank (current worker with rank=0 first)
   const sortedCandidates = [...candidates].sort((a, b) => a.rank - b.rank);
 
+  const headerWorkerName =
+    assignment && workers
+      ? workers.find((w) => w.id === assignment.workerId)?.name || ""
+      : "";
+
   return (
     <Dialog
       open={open}
@@ -219,7 +224,16 @@ export function ReplacementDetailsDialog({
     >
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h6">Replace assignment</Typography>
+          <Typography variant="h6">
+            {"Replace "}
+            {headerWorkerName ? (
+              <Box component="span" sx={{ fontWeight: "bold" }}>
+                {headerWorkerName}
+              </Box>
+            ) : (
+              "assignment"
+            )}
+          </Typography>
           <IconButton onClick={onClose} size="small">
             <CloseIcon />
           </IconButton>
