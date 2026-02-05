@@ -358,15 +358,14 @@ export function ReplacementDetailsDialog({
                     // textAlign: "center",
                     height: ROTATED_COLUMN_HEIGHT,
                     verticalAlign: "bottom",
-                    textAlign: "left",
+                    // textAlign: "left",
                   }}
                 >
-                  {/* <span style={{ transform: "rotate(-90deg)" }}>Soft</span> */}
                   <Box
                     sx={{
                       transform: "rotate(-90deg)",
-                      // whiteSpace: "nowrap",
-                      // transformOrigin: "center bottom",
+                      whiteSpace: "nowrap",
+                      // transformOrigin: "bottom",
                     }}
                   >
                     Soft
@@ -504,13 +503,13 @@ export function ReplacementDetailsDialog({
                     minWidth: ROTATED_COLUMN_WIDTH,
                     maxWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    textAlign: "center",
                     height: ROTATED_COLUMN_HEIGHT,
                     verticalAlign: "bottom",
                   }}
                 >
                   <Box
                     sx={{
+                      width: 0,
                       transform: "rotate(-90deg)",
                       whiteSpace: "nowrap",
                       transformOrigin: "center bottom",
