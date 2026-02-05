@@ -64,6 +64,8 @@ from shared.utils import (
 
 from src.services.base_service import BaseService
 
+# pylint: disable=too-many-instance-attributes, too-many-locals
+
 
 @dataclass
 class ReplacedShift:
