@@ -84,7 +84,7 @@ export default function SwapAnalysisView({
     return (
       <Paper elevation={2} sx={{ p: 2 }}>
         <Typography variant="h6" gutterBottom>
-          {label}: {workerName}
+          {workerName}
         </Typography>
 
         <Typography variant="subtitle2" color="text.secondary" gutterBottom>
