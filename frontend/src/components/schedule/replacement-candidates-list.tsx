@@ -2,7 +2,6 @@ import React from "react";
 import {
   Box,
   Button,
-  Chip,
   CircularProgress,
   List,
   ListItem,
@@ -40,19 +39,6 @@ export function ReplacementCandidatesList({
   isCheckingReplacement,
 }: ReplacementCandidatesListProps) {
   const { t } = useTranslation(lng, "schedule-page");
-
-  const getCategoryColor = (
-    category: "can_do" | "could_do" | "cant_do",
-  ): "success" | "warning" | "error" => {
-    switch (category) {
-      case "can_do":
-        return "success";
-      case "could_do":
-        return "warning";
-      case "cant_do":
-        return "error";
-    }
-  };
 
   const getCategoryEmoji = (
     category: "can_do" | "could_do" | "cant_do",
@@ -125,160 +111,145 @@ export function ReplacementCandidatesList({
 
       {candidates && candidates.length > 0 && (
         <>
-          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: "bold" }}>
-            {t("replacement_candidates")} ({candidates.length})
-          </Typography>
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+            sx={{ mb: 1 }}
+          >
+            <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
+              {t("replacement_candidates")} (
+              {candidates.filter((c) => c.rank !== 0).length})
+            </Typography>
+            <Button
+              size="small"
+              variant="text"
+              onClick={() => {
+                const selected = candidates.find(
+                  (c) => c.workerId === selectedCandidateId,
+                );
+                if (selected) onViewDetails(selected);
+              }}
+              disabled={!selectedCandidateId}
+            >
+              {t("see_details")}
+            </Button>
+          </Box>
           <List sx={{ maxHeight: 400, overflow: "auto", p: 0 }}>
-            {candidates.map((candidate) => (
-              <ListItem
-                key={candidate.workerId}
-                disablePadding
-                sx={{
-                  mb: 1,
-                  border: 1,
-                  borderColor:
-                    selectedCandidateId === candidate.workerId
-                      ? "primary.main"
-                      : "divider",
-                  borderRadius: 1,
-                  backgroundColor:
-                    selectedCandidateId === candidate.workerId
-                      ? "action.selected"
-                      : "background.paper",
-                }}
-              >
-                <ListItemButton
-                  onClick={() => onSelectCandidate(candidate.workerId)}
-                  data-testid={`candidate-${candidate.workerId}`}
+            {candidates
+              .filter((candidate) => candidate.rank !== 0)
+              .map((candidate) => (
+                <ListItem
+                  key={candidate.workerId}
+                  disablePadding
+                  sx={{
+                    mb: 0.5,
+                    backgroundColor:
+                      selectedCandidateId === candidate.workerId
+                        ? "action.selected"
+                        : "transparent",
+                    borderLeft: 3,
+                    borderColor:
+                      selectedCandidateId === candidate.workerId
+                        ? "primary.main"
+                        : "transparent",
+                  }}
                 >
-                  <ListItemText
-                    primary={
-                      <Box
-                        display="flex"
-                        alignItems="center"
-                        gap={1}
-                        flexWrap="wrap"
-                      >
-                        <Box
-                          component="span"
-                          sx={{
-                            minWidth: 24,
-                            display: "inline-block",
-                            textAlign: "center",
-                          }}
-                        >
-                          {getCategoryEmoji(candidate.replacementCategory)}
+                  <ListItemButton
+                    onClick={() => onSelectCandidate(candidate.workerId)}
+                    data-testid={`candidate-${candidate.workerId}`}
+                    sx={{ py: 0.75 }}
+                  >
+                    <ListItemText
+                      primary={
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <Box
+                            component="span"
+                            sx={{
+                              display: "inline-block",
+                              fontSize: "1.1rem",
+                            }}
+                          >
+                            {getCategoryEmoji(candidate.replacementCategory)}
+                          </Box>
+                          <Typography variant="body2" fontWeight="medium">
+                            {candidate.workerName}
+                          </Typography>
                         </Box>
-                        <Typography variant="body2" fontWeight="medium">
-                          {candidate.workerName}
-                        </Typography>
-                        {candidate.rank === 0 && (
-                          <Chip
-                            label={t("current")}
-                            size="small"
-                            variant="outlined"
-                          />
-                        )}
+                      }
+                      secondary={
                         <Typography
                           variant="caption"
                           color="text.secondary"
-                          sx={{ ml: "auto" }}
+                          component="div"
+                          sx={{ mt: 0.25 }}
                         >
-                          {t("rank")}: {candidate.rank}
-                        </Typography>
-                      </Box>
-                    }
-                    secondary={
-                      <Box sx={{ mt: 0.5 }}>
-                        <Typography variant="caption" display="block">
-                          {getReasonLabel(candidate.mostConstrainingReason)}
-                        </Typography>
-                        <Box display="flex" gap={2} mt={0.5} flexWrap="wrap">
-                          <Typography variant="caption" color="text.secondary">
-                            {t("weekly_hours")}:{" "}
-                            {Math.round(
-                              candidate.replacementImplications.newWeeklyTime
-                                .newWeeklyWorkedMinutes / 60,
-                            )}
-                            h
-                            {candidate.replacementImplications.newWeeklyTime
-                              .newWeeklyTimeDeltaMinutes !== 0 && (
-                              <span
-                                style={{
-                                  color:
-                                    candidate.replacementImplications
-                                      .newWeeklyTime.newWeeklyTimeDeltaMinutes >
-                                    0
-                                      ? "green"
-                                      : "red",
-                                }}
-                              >
-                                {" "}
-                                (
-                                {candidate.replacementImplications.newWeeklyTime
-                                  .newWeeklyTimeDeltaMinutes > 0
-                                  ? "+"
-                                  : ""}
-                                {Math.round(
+                          {Math.round(
+                            candidate.replacementImplications.newWeeklyTime
+                              .newWeeklyWorkedMinutes / 60,
+                          )}
+                          h
+                          {candidate.replacementImplications.newWeeklyTime
+                            .newWeeklyTimeDeltaMinutes !== 0 && (
+                            <span
+                              style={{
+                                color:
                                   candidate.replacementImplications
-                                    .newWeeklyTime.newWeeklyTimeDeltaMinutes /
-                                    60,
-                                )}
-                                h)
-                              </span>
-                            )}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {t("monthly_duties")}:{" "}
-                            {
-                              candidate.replacementImplications.newMonthlyDuties
-                                .newNumberMonthlyDuties
-                            }
-                            {candidate.replacementImplications.newMonthlyDuties
-                              .newMonthlyDutiesDelta !== 0 && (
-                              <span
-                                style={{
-                                  color:
-                                    candidate.replacementImplications
-                                      .newMonthlyDuties.newMonthlyDutiesDelta >
-                                    0
-                                      ? "green"
-                                      : "red",
-                                }}
-                              >
-                                {" "}
-                                (
-                                {candidate.replacementImplications
-                                  .newMonthlyDuties.newMonthlyDutiesDelta > 0
-                                  ? "+"
-                                  : ""}
-                                {
+                                    .newWeeklyTime.newWeeklyTimeDeltaMinutes > 0
+                                    ? "green"
+                                    : "red",
+                              }}
+                            >
+                              {" "}
+                              (
+                              {candidate.replacementImplications.newWeeklyTime
+                                .newWeeklyTimeDeltaMinutes > 0
+                                ? "+"
+                                : ""}
+                              {Math.round(
+                                candidate.replacementImplications.newWeeklyTime
+                                  .newWeeklyTimeDeltaMinutes / 60,
+                              )}
+                              h)
+                            </span>
+                          )}{" "}
+                          |{" "}
+                          {
+                            candidate.replacementImplications.newMonthlyDuties
+                              .newNumberMonthlyDuties
+                          }{" "}
+                          {t("monthly_duties").toLowerCase()}
+                          {candidate.replacementImplications.newMonthlyDuties
+                            .newMonthlyDutiesDelta !== 0 && (
+                            <span
+                              style={{
+                                color:
                                   candidate.replacementImplications
-                                    .newMonthlyDuties.newMonthlyDutiesDelta
-                                }
-                                )
-                              </span>
-                            )}
-                          </Typography>
-                        </Box>
-                        <Box display="flex" gap={1} mt={1}>
-                          <Button
-                            size="small"
-                            variant="text"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onViewDetails(candidate);
-                            }}
-                          >
-                            {t("see_details")}
-                          </Button>
-                        </Box>
-                      </Box>
-                    }
-                  />
-                </ListItemButton>
-              </ListItem>
-            ))}
+                                    .newMonthlyDuties.newMonthlyDutiesDelta > 0
+                                    ? "green"
+                                    : "red",
+                              }}
+                            >
+                              {" "}
+                              (
+                              {candidate.replacementImplications
+                                .newMonthlyDuties.newMonthlyDutiesDelta > 0
+                                ? "+"
+                                : ""}
+                              {
+                                candidate.replacementImplications
+                                  .newMonthlyDuties.newMonthlyDutiesDelta
+                              }
+                              )
+                            </span>
+                          )}{" "}
+                          | {getReasonLabel(candidate.mostConstrainingReason)}
+                        </Typography>
+                      }
+                    />
+                  </ListItemButton>
+                </ListItem>
+              ))}
           </List>
           {selectedCandidateId && (
             <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
