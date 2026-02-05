@@ -63,6 +63,12 @@ from shared.schemas.dto.stats import (
     StatsOptionsDTO,
     StatsValueDTO,
 )
+from shared.schemas.dto.swap import (
+    AddBidRequestDTO,
+    CreateSwapRequestDTO,
+    SwapBidDTO,
+    SwapRequestDTO,
+)
 from shared.schemas.dto.team import (
     MembershipForTeamWithMembershipDTO,
     TeamDTO,
@@ -99,6 +105,10 @@ __all__ = [
     "NewDimensionDTO",
     "ExportOptionsDTO",
     "LinkShiftDTO",
+    "AddBidRequestDTO",
+    "CreateSwapRequestDTO",
+    "SwapBidDTO",
+    "SwapRequestDTO",
     "CreateMultitaskingGroupRequest",
     "ShiftDemandConcurrencyDTO",
     "ShiftDemandConcurrencyRequestDTO",

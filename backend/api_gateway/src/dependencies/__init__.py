@@ -12,6 +12,7 @@ from src.dependencies.data_fetching_service import get_data_fetching_service
 from src.dependencies.database import get_db_collections
 from src.dependencies.dim_entry_service import get_dim_entry_service
 from src.dependencies.dimension_service import get_dimension_service
+from src.dependencies.email_queue_service import get_email_queue_service
 from src.dependencies.link_shift_service import get_link_shift_service
 from src.dependencies.multitasking_service import get_multitasking_service
 from src.dependencies.request_service import get_request_service
@@ -26,6 +27,7 @@ from src.dependencies.shift_demand_template_service import (
 from src.dependencies.shift_service import get_shift_service
 from src.dependencies.specialty_service import get_specialty_service
 from src.dependencies.stats_service import get_stats_service
+from src.dependencies.swap_service import get_swap_service
 from src.dependencies.team_invitation import get_team_invitation_service
 from src.dependencies.team_membership import get_team_membership_service
 from src.dependencies.team_service import get_team_service
@@ -44,6 +46,7 @@ __all__ = [
     "get_db_collections",
     "get_dim_entry_service",
     "get_dimension_service",
+    "get_email_queue_service",
     "get_link_shift_service",
     "get_multitasking_service",
     "get_request_service",
@@ -54,6 +57,7 @@ __all__ = [
     "get_shift_service",
     "get_specialty_service",
     "get_stats_service",
+    "get_swap_service",
     "get_team_invitation_service",
     "get_team_membership_service",
     "get_team_service",

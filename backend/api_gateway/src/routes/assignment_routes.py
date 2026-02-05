@@ -59,6 +59,7 @@ async def get_assignments(
     start_date: Optional[date] = Query(None, alias="start_date"),
     end_date: Optional[date] = Query(None, alias="end_date"),
     include_campaign: bool = Query(False, alias="include_campaign"),
+    worker_id: Optional[str] = Query(None, alias="worker_id"),
     user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(
         get_assignment_service,
@@ -92,6 +93,7 @@ async def get_assignments(
             start_date,
             end_date,
             include_campaign,
+            worker_id,
         )
         response = ar_result.to_dto()
         end_time = time_module.time()

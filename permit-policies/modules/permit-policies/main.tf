@@ -250,6 +250,15 @@ resource "permitio_resource" "team" {
     "create-assignment" = {
       name = "create-assignment"
     },
+    "create-swap" = {
+      name = "create-swap"
+    },
+    "read-swap" = {
+      name = "read-swap"
+    },
+    "approve-swap" = {
+      name = "approve-swap"
+    },
     "create-worker" = {
       name = "create-worker"
     },

@@ -366,6 +366,7 @@ class AssignmentService(BaseService):
         start_date: Optional[date] = None,
         end_date: Optional[date] = None,
         include_campaign: bool = False,
+        worker_id: Optional[str] = None,
     ) -> AssignmentsRecurrencesResult:
         # Fetch all assignments first
         if start_date is None or end_date is None:
@@ -385,6 +386,10 @@ class AssignmentService(BaseService):
             assignments = [
                 a for a in assignments if a.schedule_id not in campaign_schedule_ids
             ]
+
+        # Filter by worker_id if provided
+        if worker_id is not None:
+            assignments = [a for a in assignments if a.worker_id == worker_id]
 
         recurrences = self.collection.recurrence_db.get_recurrences_by_team_id(
             team_id=team_id

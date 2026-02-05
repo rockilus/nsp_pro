@@ -146,6 +146,13 @@ from shared.schemas.core.stats import (
     StatsUnitOptions,
     StatsValue,
 )
+from shared.schemas.core.swap import (
+    SwapAuditData,
+    SwapBid,
+    SwapRequest,
+    SwapStatus,
+    SwapType,
+)
 from shared.schemas.core.task import TaskServices
 from shared.schemas.core.team import (
     MembershipForTeamWithMembership,
@@ -271,6 +278,11 @@ __all__ = [
     "Variable",
     "WorkTimeTable",
     "WorkTimeTableData",
+    "SwapAuditData",
+    "SwapBid",
+    "SwapRequest",
+    "SwapStatus",
+    "SwapType",
     "LinkShift",
     "LSChange",
     "MultitaskingGroup",

@@ -426,3 +426,11 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
                 "date": {"$in": date_filters},
             }
         )
+
+    def get_assignment_by_reference(
+        self, reference_assignment_id: str
+    ) -> Optional[Assignment]:
+        """Get an assignment by its reference_assignment_id (e.g., recuperation
+        assignments)."""
+        assignment = self.find_all({"reference_assignment_id": reference_assignment_id})
+        return assignment[0].to_core() if assignment else None

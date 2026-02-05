@@ -16,6 +16,9 @@ class EmailType(str, Enum):
     SCHEDULE_PUBLISHED = "schedule_published"
     EMAIL_VERIFICATION = "email_verification"
     PASSWORD_RESET = "password_reset"
+    SWAP_INVITATION = "swap_invitation"
+    SWAP_BID = "swap_bid"
+    SWAP_APPROVED = "swap_approved"
 
 
 class EmailPriority(str, Enum):

@@ -55,23 +55,27 @@ export class AssignmentApi extends BaseApi {
     includeCampaign: boolean = false,
     startDate?: dayjs.Dayjs,
     endDate?: dayjs.Dayjs,
+    workerId?: string,
   ): Promise<AssignmentsRecurrencesResultT> {
     // Security: Input validation
     if (!teamId) {
       throw new Error("Team ID is required");
     }
 
-    const startDateStr = startDate ? startDate.unix() : null;
-    const endDateStr = endDate ? endDate.unix() : null;
+    const startDateStr = startDate ? startDate.format("YYYY-MM-DD") : null;
+    const endDateStr = endDate ? endDate.format("YYYY-MM-DD") : null;
 
     let endpoint = `/assignments/teams/${teamId}`;
     const params = new URLSearchParams();
     if (startDateStr && endDateStr) {
-      params.append("start_date", startDateStr.toString());
-      params.append("end_date", endDateStr.toString());
+      params.append("start_date", startDateStr);
+      params.append("end_date", endDateStr);
     }
     if (includeCampaign) {
       params.append("include_campaign", "true");
+    }
+    if (workerId) {
+      params.append("worker_id", workerId);
     }
 
     if (params.toString()) {

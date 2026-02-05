@@ -38,6 +38,7 @@ from shared.database.repositories.solve_task_status import (
 )
 from shared.database.repositories.specialty import SpecialtyRepository
 from shared.database.repositories.stats_header import StatsHeaderRepository
+from shared.database.repositories.swap import SwapRepository
 from shared.database.repositories.team import TeamRepository
 from shared.database.repositories.team_invitation import (
     TeamInvitationRepository,
@@ -75,6 +76,7 @@ class DatabaseCollections:
     solve_task_status_db: SolveTaskStatusRepository
     specialty_db: SpecialtyRepository
     stats_header_db: StatsHeaderRepository
+    swap_db: SwapRepository
     team_db: TeamRepository
     team_invitation_db: TeamInvitationRepository
     team_membership_db: TeamMembershipRepository
@@ -119,6 +121,7 @@ class DatabaseCollections:
         self.solve_task_status_db = SolveTaskStatusRepository(database_interface)
         self.specialty_db = SpecialtyRepository(database_interface)
         self.stats_header_db = StatsHeaderRepository(database_interface)
+        self.swap_db = SwapRepository(database_interface)
         self.team_db = TeamRepository(database_interface)
         self.team_invitation_db = TeamInvitationRepository(database_interface)
         self.team_membership_db = TeamMembershipRepository(database_interface)

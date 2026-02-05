@@ -34,7 +34,11 @@ module "permit_policies" {
     "create-worker", "update-worker", "delete-worker",
     "read-schedules", "create-schedule", "update-schedule",
     "read-assignments", "create-assignment", "update-assignment",
-    "read-shift-options"
+    "read-shift-options",
+    # Swap permissions
+    "create-swap", "read-swap",
+    # Link shifts permissions
+    "read-link-shifts"
   ]
 
   tags = {

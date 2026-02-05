@@ -18,6 +18,77 @@ import { env } from "@/config/env";
 //////////////////////////
 
 /**
+ * Hook for getting assignments by date range with optional filters
+ */
+export function useGetAssignments() {
+  const apiClient = useApiClient();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  const getAssignments = useCallback(
+    async (
+      teamId: string,
+      includeCampaign: boolean = false,
+      startDate?: dayjs.Dayjs,
+      endDate?: dayjs.Dayjs,
+      workerId?: string,
+    ): Promise<AssignmentsRecurrencesResultT> => {
+      if (env.isDevelopment) {
+        console.log("🔍 useGetAssignments called:", {
+          timestamp: new Date().toISOString(),
+          isAuthenticated,
+          hasUser: !!user,
+          teamId,
+          includeCampaign,
+          startDate: startDate?.format("YYYY-MM-DD"),
+          endDate: endDate?.format("YYYY-MM-DD"),
+          workerId,
+        });
+      }
+
+      // Security: Validate authentication state
+      if (loading) {
+        throw new Error("Authentication still loading - please wait");
+      }
+
+      if (!isAuthenticated || !user?.id_token) {
+        throw new Error("User not authenticated - please sign in");
+      }
+
+      // Input validation
+      if (!teamId) {
+        throw new Error("Team ID is required");
+      }
+
+      try {
+        const result = await AssignmentApi.getAssignments(
+          apiClient,
+          teamId,
+          includeCampaign,
+          startDate,
+          endDate,
+          workerId,
+        );
+
+        if (env.isDevelopment) {
+          console.log("✅ Assignments retrieved successfully");
+        }
+
+        return result;
+      } catch (error) {
+        console.error("❌ Failed to get assignments:", {
+          error: error instanceof Error ? error.message : "Unknown error",
+          timestamp: new Date().toISOString(),
+        });
+        throw error;
+      }
+    },
+    [apiClient, isAuthenticated, loading, user],
+  );
+
+  return getAssignments;
+}
+
+/**
  * Hook for adding assignment with optional recurrence
  */
 export function useAddAssignmentAndRecurrence() {
