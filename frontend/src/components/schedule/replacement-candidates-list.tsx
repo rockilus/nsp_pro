@@ -8,6 +8,7 @@ import {
   ListItemButton,
   ListItemText,
   Typography,
+  Divider,
 } from "@mui/material";
 import { useTranslation } from "../../app/i18n/client";
 import {
@@ -91,13 +92,13 @@ export function ReplacementCandidatesList({
   return (
     <Box sx={{ mt: 2 }}>
       <Button
-        variant="outlined"
+        variant="contained"
         color="info"
         onClick={onCheckReplacement}
         disabled={isCheckingReplacement}
-        fullWidth
+        // fullWidth
         data-testid="check-replacement-button"
-        sx={{ mb: 2 }}
+        sx={{ mb: 2, textTransform: "none" }}
       >
         {isCheckingReplacement ? (
           <>
@@ -111,26 +112,21 @@ export function ReplacementCandidatesList({
 
       {candidates && candidates.length > 0 && (
         <>
-          <Box
-            display="flex"
-            alignItems="center"
-            justifyContent="space-between"
-            sx={{ mb: 1 }}
+          <Divider sx={{ mb: 2 }} />
+          <Typography variant="subtitle2" sx={{ fontWeight: "bold", mb: 1 }}>
+            {t("replacement_candidates")}{" "}
+          </Typography>
+          <Button
+            size="small"
+            variant="contained"
+            onClick={() => {
+              // Open dialog with all candidates for comparison
+              if (candidates.length > 0) onViewDetails(candidates[0]);
+            }}
+            sx={{ textTransform: "none", mb: 1, ml: "auto" }}
           >
-            <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
-              {t("replacement_candidates")}{" "}
-            </Typography>
-            <Button
-              size="small"
-              variant="text"
-              onClick={() => {
-                // Open dialog with all candidates for comparison
-                if (candidates.length > 0) onViewDetails(candidates[0]);
-              }}
-            >
-              {t("view_all_candidates")}
-            </Button>
-          </Box>
+            {t("see_details")}
+          </Button>
           <List sx={{ maxHeight: 400, overflow: "auto", p: 0 }}>
             {candidates
               .filter((candidate) => candidate.rank !== 0)
@@ -189,7 +185,7 @@ export function ReplacementCandidatesList({
                               }}
                               disabled={isSubmitting}
                               data-testid="select-replacement-button"
-                              sx={{ ml: "auto" }}
+                              sx={{ ml: "auto", textTransform: "none" }}
                             >
                               {isSubmitting ? (
                                 <>
@@ -280,6 +276,7 @@ export function ReplacementCandidatesList({
                 </ListItem>
               ))}
           </List>
+          <Divider sx={{ mt: 2, mb: 2 }} />
         </>
       )}
     </Box>
