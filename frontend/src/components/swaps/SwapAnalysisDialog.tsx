@@ -32,6 +32,7 @@ import {
   renderFilterHit,
   renderRequestHit,
 } from "../common/implications-renderers";
+import { getCategoryEmoji } from "../../utils/replacementHelpers";
 
 interface SwapAnalysisDialogProps {
   open: boolean;
@@ -53,7 +54,7 @@ export default function SwapAnalysisDialog({
   // Rotated column dimensions
   const ROTATED_COLUMN_WIDTH = 40;
   const ASSIGNMENT_COLUMN_WIDTH = 220;
-  const totalColumns = 13; // 1 Assignment + 12 implication columns
+  const totalColumns = 14; // 1 Assignment + 1 Category + 12 implication columns
 
   const workerAInfo = validationResult.workerAInfo;
   const workerBInfo = validationResult.workerBInfo;
@@ -110,6 +111,16 @@ export default function SwapAnalysisDialog({
           <Typography variant="body2" fontWeight="medium">
             {formatAssignmentLabel(assignmentData)}
           </Typography>
+        </TableCell>
+        <TableCell
+          sx={{
+            textAlign: "center",
+            padding: 0,
+          }}
+        >
+          <span style={{ fontSize: "1.1rem" }}>
+            {getCategoryEmoji(item.replacementCategory)}
+          </span>
         </TableCell>
         <TableCell
           sx={{
@@ -265,6 +276,16 @@ export default function SwapAnalysisDialog({
                   }}
                 >
                   Assignment
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: "bold",
+                    minWidth: 50,
+                    padding: 0,
+                    textAlign: "center",
+                  }}
+                >
+                  {/* Category emoji - no title */}
                 </TableCell>
                 <TableCell
                   sx={{
