@@ -5,7 +5,6 @@ import {
   Typography,
   Button,
   Paper,
-  Chip,
   Alert,
   List,
   ListItem,
@@ -16,10 +15,6 @@ import {
   AssignmentImplicationT,
 } from "../../types/swapValidation";
 import { AssignmentDataDictT } from "../../types/assignment";
-import {
-  MostConstrainingReasonT,
-  ReplacementCategoryT,
-} from "../../types/replacement";
 import {
   getCategoryEmoji,
   getReasonLabel,
