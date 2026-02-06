@@ -6,6 +6,7 @@ import {
   DialogTitle,
   DialogContent,
   Typography,
+  IconButton,
   Table,
   TableBody,
   TableCell,
@@ -14,10 +15,10 @@ import {
   TableRow,
   Paper,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import dayjs from "dayjs";
 import {
   SwapValidationResultT,
-  SwapAssignmentInfoT,
   AssignmentImplicationT,
 } from "../../types/swapValidation";
 import { AssignmentDataDictT } from "../../types/assignment";
@@ -246,13 +247,21 @@ export default function SwapAnalysisDialog({
       fullScreen
       data-testid="swap-analysis-dialog"
     >
-      <DialogTitle>
+      <DialogTitle sx={{ position: "relative" }}>
         <Box sx={{ fontWeight: 500, fontSize: "1.25rem" }}>
           Swap Analysis: {workerAInfo.workerName} ↔ {workerBInfo.workerName}
         </Box>
         <Typography variant="body2" color="text.secondary">
           {validationMessage}
         </Typography>
+        <IconButton
+          aria-label={t("close")}
+          onClick={onClose}
+          sx={{ position: "absolute", right: 8, top: 8 }}
+          size="large"
+        >
+          <CloseIcon />
+        </IconButton>
       </DialogTitle>
 
       <DialogContent sx={{ paddingBottom: "24px" }}>
