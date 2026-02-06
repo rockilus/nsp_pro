@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 // Types
 import { SwapRequestT, SwapStatus, SwapType } from "../types/swap";
+import { SwapValidationResultT } from "../types/swapValidation";
 // API Client
 import { SwapApi } from "../app/lib/api/swapApi";
 import { useApiClient } from "../app/lib/api-client";
@@ -503,6 +504,49 @@ export function useRevertSwap() {
   );
 
   return revertSwap;
+}
+
+/**
+ * Hook for validating a swap in PENDING_APPROVAL status (leader only)
+ */
+export function useValidateSwap() {
+  const apiClient = useApiClient();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  const validateSwap = useCallback(
+    async (swapId: string): Promise<SwapValidationResultT> => {
+      if (env.isDevelopment) {
+        console.log("🔍 useValidateSwap called:", {
+          timestamp: new Date().toISOString(),
+          isAuthenticated,
+          hasUser: !!user,
+          swapId,
+        });
+      }
+
+      // Security: Validate authentication state
+      if (loading) {
+        throw new Error("Authentication still loading - please wait");
+      }
+
+      if (!isAuthenticated || !user?.id_token) {
+        throw new Error("User not authenticated - please sign in");
+      }
+
+      try {
+        return await SwapApi.validateSwap(apiClient, swapId);
+      } catch (error) {
+        console.error("❌ Failed to validate swap:", {
+          error: error instanceof Error ? error.message : "Unknown error",
+          timestamp: new Date().toISOString(),
+        });
+        throw error;
+      }
+    },
+    [apiClient, isAuthenticated, loading, user],
+  );
+
+  return validateSwap;
 }
 
 /**

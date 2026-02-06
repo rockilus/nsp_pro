@@ -8,6 +8,7 @@ from pydantic import TypeAdapter
 
 from shared.schemas.core.breach import Breach
 from shared.schemas.dto.replacement import (
+    AssignmentImplicationDTO,
     ConstraintHitsDTO,
     FilterHitsDTO,
     LTMIndicatorDTO,
@@ -16,6 +17,8 @@ from shared.schemas.dto.replacement import (
     ReplacementCandidateDTO,
     ReplacementImplicationsDTO,
     RequestHitsDTO,
+    SwapAssignmentInfoDTO,
+    SwapValidationResultDTO,
     WeeklyWorkTimeImplicationsDTO,
 )
 
@@ -438,4 +441,154 @@ class ReplacementCandidate:
             most_constraining_reason=MostConstrainingReason(
                 data.mostConstrainingReason
             ),
+        )
+
+
+@dataclass
+class AssignmentImplication:
+    """Pairs an assignment ID with its replacement implications."""
+
+    assignment_id: str
+    implications: ReplacementImplications
+    replacement_category: ReplacementCategory
+    most_constraining_reason: MostConstrainingReason
+
+    def to_dict(self) -> Dict:
+        return {
+            "assignment_id": self.assignment_id,
+            "implications": self.implications.to_dict(),
+            "replacement_category": self.replacement_category.value,
+            "most_constraining_reason": self.most_constraining_reason.value,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "AssignmentImplication":
+        return cls(
+            assignment_id=data["assignment_id"],
+            implications=ReplacementImplications.from_dict(data["implications"]),
+            replacement_category=ReplacementCategory(data["replacement_category"]),
+            most_constraining_reason=MostConstrainingReason(
+                data["most_constraining_reason"]
+            ),
+        )
+
+    def to_dto(self) -> "AssignmentImplicationDTO":
+
+        data = {
+            "assignment_id": self.assignment_id,
+            "implications": self.implications.to_dto(),
+            "replacement_category": self.replacement_category.value,
+            "most_constraining_reason": self.most_constraining_reason.value,
+        }
+        as_dict = humps.camelize(data)
+        validator = TypeAdapter(AssignmentImplicationDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, data: "AssignmentImplicationDTO") -> "AssignmentImplication":
+        return cls(
+            assignment_id=data.assignmentId,
+            implications=ReplacementImplications.from_dto(data.implications),
+            replacement_category=ReplacementCategory(data.replacementCategory),
+            most_constraining_reason=MostConstrainingReason(
+                data.mostConstrainingReason
+            ),
+        )
+
+
+@dataclass
+class SwapAssignmentInfo:
+    """Information about one worker's assignments in a swap."""
+
+    worker_id: str
+    worker_name: str
+    pre_swap: List[AssignmentImplication]  # Assignments before swap
+    post_swap: List[AssignmentImplication]  # Assignments after swap
+
+    def to_dict(self) -> Dict:
+        return {
+            "worker_id": self.worker_id,
+            "worker_name": self.worker_name,
+            "pre_swap": [impl.to_dict() for impl in self.pre_swap],
+            "post_swap": [impl.to_dict() for impl in self.post_swap],
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "SwapAssignmentInfo":
+        return cls(
+            worker_id=data["worker_id"],
+            worker_name=data["worker_name"],
+            pre_swap=[
+                AssignmentImplication.from_dict(impl) for impl in data["pre_swap"]
+            ],
+            post_swap=[
+                AssignmentImplication.from_dict(impl) for impl in data["post_swap"]
+            ],
+        )
+
+    def to_dto(self) -> SwapAssignmentInfoDTO:
+        data = {
+            "worker_id": self.worker_id,
+            "worker_name": self.worker_name,
+            "pre_swap": [impl.to_dto().model_dump() for impl in self.pre_swap],
+            "post_swap": [impl.to_dto().model_dump() for impl in self.post_swap],
+        }
+        as_dict = humps.camelize(data)
+        validator = TypeAdapter(SwapAssignmentInfoDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, data: SwapAssignmentInfoDTO) -> "SwapAssignmentInfo":
+        return cls(
+            worker_id=data.workerId,
+            worker_name=data.workerName,
+            pre_swap=[AssignmentImplication.from_dto(impl) for impl in data.preSwap],
+            post_swap=[AssignmentImplication.from_dto(impl) for impl in data.postSwap],
+        )
+
+
+@dataclass
+class SwapValidationResult:
+    """Result of validating an assignment swap between two workers."""
+
+    is_valid: bool  # True if both workers can perform the swap
+    worker_a_info: SwapAssignmentInfo
+    worker_b_info: SwapAssignmentInfo
+    validation_key: str  # Key for i18n message lookup
+
+    def to_dict(self) -> Dict:
+        return {
+            "is_valid": self.is_valid,
+            "worker_a_info": self.worker_a_info.to_dict(),
+            "worker_b_info": self.worker_b_info.to_dict(),
+            "validation_key": self.validation_key,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "SwapValidationResult":
+        return cls(
+            is_valid=data["is_valid"],
+            worker_a_info=SwapAssignmentInfo.from_dict(data["worker_a_info"]),
+            worker_b_info=SwapAssignmentInfo.from_dict(data["worker_b_info"]),
+            validation_key=data["validation_key"],
+        )
+
+    def to_dto(self) -> SwapValidationResultDTO:
+        data = {
+            "is_valid": self.is_valid,
+            "worker_a_info": self.worker_a_info.to_dto().model_dump(),
+            "worker_b_info": self.worker_b_info.to_dto().model_dump(),
+            "validation_key": self.validation_key,
+        }
+        as_dict = humps.camelize(data)
+        validator = TypeAdapter(SwapValidationResultDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, data: SwapValidationResultDTO) -> "SwapValidationResult":
+        return cls(
+            is_valid=data.isValid,
+            worker_a_info=SwapAssignmentInfo.from_dto(data.workerAInfo),
+            worker_b_info=SwapAssignmentInfo.from_dto(data.workerBInfo),
+            validation_key=data.validationKey,
         )

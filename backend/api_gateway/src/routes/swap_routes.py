@@ -11,15 +11,18 @@ from shared.schemas.dto import (
     CreateSwapRequestDTO,
     SwapRequestDTO,
 )
+from shared.schemas.dto.replacement import SwapValidationResultDTO
 
 from src.dependencies import (
     get_db_collections,
+    get_replacement_service,
     get_swap_service,
     get_user_context,
 )
 from src.errors import NotAuthorizedError, handle_routes_errors
 from src.integrations.authorization import authz_check
 from src.security.user_context import UserContext
+from src.services.replacement_service import ReplacementService
 from src.services.swap_service import SwapService
 
 router = APIRouter()
@@ -116,6 +119,69 @@ async def get_swap_request(
         response = swap.to_dto()
     except Exception as e:
         log_info(f"Failed to get swap request: {e}")
+        handle_routes_errors(e)
+    return response
+
+
+@router.post("/swaps/{swap_id}/validate")
+async def validate_swap(
+    swap_id: str,
+    user_context: UserContext = Depends(get_user_context),
+    swap_service: SwapService = Depends(get_swap_service),
+    replacement_service: ReplacementService = Depends(get_replacement_service),
+) -> SwapValidationResultDTO:
+    """Validate a swap in PENDING_APPROVAL status to analyze its impact."""
+    try:
+        # Get the swap request
+        swap = swap_service.get_swap_by_id(swap_id)
+        if not swap:
+            raise ValueError(f"Swap request {swap_id} not found")
+
+        # Check permission - leader only
+        if not await authz_check(
+            user_context.user_id, "validate-swap", "team", swap.team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to validate this swap request"
+            )
+
+        # Validate swap is in PENDING_APPROVAL status
+        if swap.status != SwapStatus.PENDING_APPROVAL:
+            raise ValueError(
+                f"Can only validate swaps in PENDING_APPROVAL status. "
+                f"Current status: {swap.status.value}"
+            )
+
+        # Determine assignment IDs based on swap type
+        worker_a_assignment_ids = swap.offered_assignment_ids
+        worker_b_assignment_ids = None
+
+        if swap.swap_type == SwapType.DIRECT:
+            # For direct swaps, use requested_assignment_ids
+            if not swap.requested_assignment_ids:
+                raise ValueError("Direct swap missing requested assignment IDs")
+            worker_b_assignment_ids = swap.requested_assignment_ids
+        elif swap.swap_type == SwapType.OPEN:
+            # For open swaps, find the accepted bid
+            accepted_bid = next((bid for bid in swap.bids if bid.accepted), None)
+            if not accepted_bid:
+                raise ValueError(
+                    "Open swap in PENDING_APPROVAL must have an accepted bid"
+                )
+            worker_b_assignment_ids = accepted_bid.offered_assignment_ids
+        else:
+            raise ValueError(f"Unknown swap type: {swap.swap_type}")
+
+        # Validate the swap
+        validation_result = replacement_service.validate_assignment_swap(
+            worker_a_assignment_ids=worker_a_assignment_ids,
+            worker_b_assignment_ids=worker_b_assignment_ids,
+            team_id=swap.team_id,
+        )
+
+        response = validation_result.to_dto()
+    except Exception as e:
+        log_info(f"Failed to validate swap {swap_id}: {e}")
         handle_routes_errors(e)
     return response
 

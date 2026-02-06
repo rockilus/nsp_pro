@@ -74,21 +74,7 @@ export default function AssignmentOfferItem({
           mr: "14px",
         }}
       >
-        <Typography
-          variant="body2"
-          sx={{
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
-        >
-          {dateLabel}
-        </Typography>
-
-        <Typography variant="body2" sx={{ whiteSpace: "nowrap" }}>
-          ⋅
-        </Typography>
-
+        {" "}
         <Typography
           variant="body2"
           sx={{
@@ -99,8 +85,20 @@ export default function AssignmentOfferItem({
           }}
         >
           {shift?.name || "—"}
+        </Typography>{" "}
+        <Typography variant="body2" sx={{ whiteSpace: "nowrap" }}>
+          ⋅
         </Typography>
-
+        <Typography
+          variant="body2"
+          sx={{
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {dateLabel}
+        </Typography>
         {showTimes && (
           <>
             <Typography variant="body2" sx={{ whiteSpace: "nowrap" }}>

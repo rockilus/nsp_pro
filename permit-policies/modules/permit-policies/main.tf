@@ -310,6 +310,9 @@ resource "permitio_resource" "team" {
     "check-replacements" = {
       name = "check-replacements"
     },
+    "validate-swap" = {
+      name = "validate-swap"
+    },
     "create-link-shift" = {
       name = "create-link-shift"
     },

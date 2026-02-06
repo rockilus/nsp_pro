@@ -10,13 +10,14 @@ from typing import Dict, List, Set, Tuple
 from unittest.mock import MagicMock
 
 import pytest
-from shared.schemas.core import Assignment, AssignmentSource
-
-from src.services.replacement_service import (
-    ReplacementService,
+from shared.schemas.core import (
+    Assignment,
+    AssignmentSource,
     SwapAssignmentInfo,
     SwapValidationResult,
 )
+
+from src.services.replacement_service import ReplacementService
 
 # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 
@@ -27,77 +28,77 @@ from src.services.replacement_service import (
 
 def assert_swap_valid(
     result: SwapValidationResult,
-    expected_message: str = "Swap is valid for both workers",
+    expected_key: str = "swap_valid_both",
 ) -> None:
     """Assert that a swap validation result is valid.
 
     Args:
         result: The swap validation result to check
-        expected_message: Expected validation message
+        expected_key: Expected validation key
     """
     assert (
         result.is_valid is True
-    ), f"Expected swap to be valid, but got: {result.validation_message}"
-    assert result.validation_message == expected_message
+    ), f"Expected swap to be valid, but got key: {result.validation_key}"
+    assert result.validation_key == expected_key
     assert result.worker_a_info is not None
     assert result.worker_b_info is not None
 
 
 def assert_swap_invalid(
     result: SwapValidationResult,
-    expected_invalid_for: str | None = None,
+    expected_key: str | None = None,
 ) -> None:
     """Assert that a swap validation result is invalid.
 
     Args:
         result: The swap validation result to check
-        expected_invalid_for: Expected string in validation message
-            (e.g., "both", "Worker 1", or None for any invalid)
+        expected_key: Expected validation key (e.g., "swap_invalid_both",
+            "swap_invalid_worker_a", "swap_invalid_worker_b", or None for any invalid)
     """
     assert result.is_valid is False, "Expected swap to be invalid, but it was valid"
-    if expected_invalid_for:
-        assert expected_invalid_for in result.validation_message, (
-            f"Expected '{expected_invalid_for}' in message, "
-            f"got: {result.validation_message}"
+    if expected_key:
+        assert result.validation_key == expected_key, (
+            f"Expected key '{expected_key}', " f"got: {result.validation_key}"
         )
 
 
 def assert_worker_can_do_swap(info: SwapAssignmentInfo) -> None:
-    """Assert all swapped implications pass hard constraints.
+    """Assert all post-swap implications pass hard constraints.
 
     Args:
         info: SwapAssignmentInfo for the worker
     """
-    for i, impl in enumerate(info.swapped_implications):
+    for i, ai in enumerate(info.post_swap):
+        impl = ai.implications
         assert (
             impl.is_employed
-        ), f"Worker {info.worker_name} swapped assignment {i}: not employed"
+        ), f"Worker {info.worker_name} post-swap assignment {i}: not employed"
         assert (
             impl.has_specialty
-        ), f"Worker {info.worker_name} swapped assignment {i}: lacks specialty"
+        ), f"Worker {info.worker_name} post-swap assignment {i}: lacks specialty"
         assert (
             impl.isnt_on_leave
-        ), f"Worker {info.worker_name} swapped assignment {i}: on leave"
+        ), f"Worker {info.worker_name} post-swap assignment {i}: on leave"
         assert (
             impl.filter_hits.isnt_filtered_out
-        ), f"Worker {info.worker_name} swapped assignment {i}: filtered out"
+        ), f"Worker {info.worker_name} post-swap assignment {i}: filtered out"
         assert (
             impl.overlap_hits.hasnt_overlap
-        ), f"Worker {info.worker_name} swapped assignment {i}: has overlap"
+        ), f"Worker {info.worker_name} post-swap assignment {i}: has overlap"
         assert impl.hard_constraint_hits.meets_constraints, (
-            f"Worker {info.worker_name} swapped assignment {i}: "
+            f"Worker {info.worker_name} post-swap assignment {i}: "
             f"hard constraint violation"
         )
         assert (
             impl.request_hits.has_no_request_conflict
-        ), f"Worker {info.worker_name} swapped assignment {i}: request conflict"
+        ), f"Worker {info.worker_name} post-swap assignment {i}: request conflict"
 
 
 def assert_worker_cannot_do_swap(
     info: SwapAssignmentInfo,
     expected_failure: str | None = None,
 ) -> None:
-    """Assert at least one swapped implication fails hard constraints.
+    """Assert at least one post-swap implication fails hard constraints.
 
     Args:
         info: SwapAssignmentInfo for the worker
@@ -106,7 +107,8 @@ def assert_worker_cannot_do_swap(
     has_failure = False
     failure_types = []
 
-    for impl in info.swapped_implications:
+    for ai in info.post_swap:
+        impl = ai.implications
         if not impl.is_employed:
             has_failure = True
             failure_types.append("employment")
@@ -147,13 +149,19 @@ def assert_swap_implications_structure(info: SwapAssignmentInfo) -> None:
     """
     assert isinstance(info.worker_id, str)
     assert isinstance(info.worker_name, str)
-    assert isinstance(info.assignment_ids, list)
-    assert isinstance(info.current_implications, list)
-    assert isinstance(info.swapped_implications, list)
-    assert len(info.current_implications) == len(
-        info.assignment_ids
-    ), "Current implications count should match assignment count"
-    assert len(info.swapped_implications) > 0, "Should have swapped implications"
+    assert isinstance(info.pre_swap, list)
+    assert isinstance(info.post_swap, list)
+    assert len(info.pre_swap) > 0, "Should have pre-swap assignments"
+    assert len(info.post_swap) > 0, "Should have post-swap assignments"
+
+    # Verify structure of AssignmentImplication objects
+    for ai in info.pre_swap:
+        assert isinstance(ai.assignment_id, str)
+        assert hasattr(ai, "implications")
+
+    for ai in info.post_swap:
+        assert isinstance(ai.assignment_id, str)
+        assert hasattr(ai, "implications")
 
 
 # ============================================================================
@@ -234,8 +242,12 @@ def test_validate_swap_simple_valid_swap(
     assert result.worker_b_info.worker_id == worker_b_assignment.worker_id
 
     # Verify assignment IDs
-    assert result.worker_a_info.assignment_ids == [worker_a_assignment.id]
-    assert result.worker_b_info.assignment_ids == [worker_b_assignment.id]
+    assert [ai.assignment_id for ai in result.worker_a_info.pre_swap] == [
+        worker_a_assignment.id
+    ]
+    assert [ai.assignment_id for ai in result.worker_b_info.pre_swap] == [
+        worker_b_assignment.id
+    ]
 
 
 def test_validate_swap_multi_assignment_valid(
@@ -390,10 +402,10 @@ def test_validate_swap_multi_assignment_valid(
     assert_worker_can_do_swap(result.worker_b_info)
 
     # Verify assignment counts
-    assert len(result.worker_a_info.current_implications) == 2
-    assert len(result.worker_a_info.swapped_implications) == 2
-    assert len(result.worker_b_info.current_implications) == 2
-    assert len(result.worker_b_info.swapped_implications) == 2
+    assert len(result.worker_a_info.pre_swap) == 2
+    assert len(result.worker_a_info.post_swap) == 2
+    assert len(result.worker_b_info.pre_swap) == 2
+    assert len(result.worker_b_info.post_swap) == 2
 
 
 def test_validate_swap_same_day_different_shifts(

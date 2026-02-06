@@ -13,6 +13,7 @@ from shared.constraint_parser.parse_selected_shifts import (
 )
 from shared.schemas.core import (
     Assignment,
+    AssignmentImplication,
     AssignmentSource,
     Attribute,
     Breach,
@@ -45,6 +46,8 @@ from shared.schemas.core import (
     Shift,
     ShiftType,
     Specialty,
+    SwapAssignmentInfo,
+    SwapValidationResult,
     SystemConstraintPenalty,
     UserConstraintPenalty,
     Variable,
@@ -106,27 +109,6 @@ class ReplacementData:
     constraints: List[ConstraintBuild]
     assignments: List[Assignment]
     requests: List[Request]
-
-
-@dataclass
-class SwapAssignmentInfo:
-    """Information about one worker's assignments in a swap."""
-
-    worker_id: str
-    worker_name: str
-    assignment_ids: List[str]
-    current_implications: List[ReplacementImplications]  # One per assignment
-    swapped_implications: List[ReplacementImplications]  # One per swapped assignment
-
-
-@dataclass
-class SwapValidationResult:
-    """Result of validating an assignment swap between two workers."""
-
-    is_valid: bool  # True if both workers can perform the swap
-    worker_a_info: SwapAssignmentInfo
-    worker_b_info: SwapAssignmentInfo
-    validation_message: str  # Human-readable message about the swap validity
 
 
 @dataclass
@@ -330,29 +312,29 @@ class ReplacementService(BaseService):
 
         # Determine if swap is valid (both workers pass all hard constraints)
         worker_a_can_do_swap = all(
-            self._can_do_assignment(impl) for impl in worker_a_info.swapped_implications
+            self._can_do_assignment(ai.implications) for ai in worker_a_info.post_swap
         )
         worker_b_can_do_swap = all(
-            self._can_do_assignment(impl) for impl in worker_b_info.swapped_implications
+            self._can_do_assignment(ai.implications) for ai in worker_b_info.post_swap
         )
 
         is_valid = worker_a_can_do_swap and worker_b_can_do_swap
 
-        # Build validation message
+        # Build validation key for i18n
         if is_valid:
-            validation_message = "Swap is valid for both workers"
+            validation_key = "swap_valid_both"
         elif not worker_a_can_do_swap and not worker_b_can_do_swap:
-            validation_message = "Swap is invalid for both workers"
+            validation_key = "swap_invalid_both"
         elif not worker_a_can_do_swap:
-            validation_message = f"Swap is invalid for {worker_a.name}"
+            validation_key = "swap_invalid_worker_a"
         else:
-            validation_message = f"Swap is invalid for {worker_b.name}"
+            validation_key = "swap_invalid_worker_b"
 
         return SwapValidationResult(
             is_valid=is_valid,
             worker_a_info=worker_a_info,
             worker_b_info=worker_b_info,
-            validation_message=validation_message,
+            validation_key=validation_key,
         )
 
     # def get_assignment_swap_info(
@@ -2645,10 +2627,10 @@ class ReplacementService(BaseService):
             swap_context: Pre-computed swap context
 
         Returns:
-            SwapAssignmentInfo with current and swapped implications
+            SwapAssignmentInfo with pre_swap and post_swap implications
         """
-        # Evaluate current assignments
-        current_implications = []
+        # Evaluate current assignments (pre-swap state)
+        pre_swap = []
         for assignment in worker_assignments:
             # Build a ReplacementContext for this specific assignment
             context = self._build_replacement_context_from_swap_context(
@@ -2659,11 +2641,20 @@ class ReplacementService(BaseService):
             implications = self._build_replacement_implications(
                 worker=worker, context=context
             )
-            current_implications.append(implications)
+            category = self._determine_replacement_category(implications)
+            reason = ReplacementCandidate.compute_most_constraining_reason(implications)
+            pre_swap.append(
+                AssignmentImplication(
+                    assignment_id=assignment.id,
+                    implications=implications,
+                    replacement_category=category,
+                    most_constraining_reason=reason,
+                )
+            )
 
-        # Evaluate swapped assignments (worker would do the other worker's assignments)
+        # Evaluate swapped assignments (post-swap state)
         # Use the pre-created swapped assignments from SwapContext
-        swapped_implications = []
+        post_swap = []
         for swapped_assignment in swapped_assignments:
             # Build a ReplacementContext for this swapped assignment
             context = self._build_replacement_context_from_swap_context(
@@ -2674,14 +2665,27 @@ class ReplacementService(BaseService):
             implications = self._build_replacement_implications(
                 worker=worker, context=context
             )
-            swapped_implications.append(implications)
+            category = self._determine_replacement_category(implications)
+            reason = ReplacementCandidate.compute_most_constraining_reason(implications)
+            if not swapped_assignment.reference_assignment_id:
+                raise ValueError(
+                    f"Swapped assignment {swapped_assignment.id} is missing "
+                    "reference_assignment_id"
+                )
+            post_swap.append(
+                AssignmentImplication(
+                    assignment_id=swapped_assignment.reference_assignment_id,
+                    implications=implications,
+                    replacement_category=category,
+                    most_constraining_reason=reason,
+                )
+            )
 
         return SwapAssignmentInfo(
             worker_id=worker.id,
             worker_name=worker.name,
-            assignment_ids=[a.id for a in worker_assignments],
-            current_implications=current_implications,
-            swapped_implications=swapped_implications,
+            pre_swap=pre_swap,
+            post_swap=post_swap,
         )
 
     def _build_replacement_context_from_swap_context(

@@ -16,10 +16,12 @@ import {
 } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
 import { SwapRequestT, SwapType, SwapStatus } from "../../types/swap";
+import { SwapValidationResultT } from "../../types/swapValidation";
 import { AssignmentDataDictT } from "../../types/assignment";
 import { WorkerT } from "../../types/worker";
 import { LinkShiftT } from "../../types/shift";
 import SwapDetailContent from "./SwapDetailContent";
+import SwapAnalysisDialog from "./SwapAnalysisDialog";
 import { getEarliestAssignment } from "../../utils/assignmentSort";
 import { getAssignmentsForIds } from "../../utils/swapHelpers";
 
@@ -44,6 +46,12 @@ interface SwapDetailDialogProps {
   onDelete?: () => Promise<void>;
   onDeleteBid?: (bidId: string) => Promise<void>;
   onCancelBidAcceptance?: () => Promise<void>;
+  // Swap analysis
+  onAnalyzeSwap?: (swapId: string) => Promise<void>;
+  validationResult?: SwapValidationResultT | null;
+  isAnalyzing?: boolean;
+  onViewAnalysisDetails?: () => void;
+  lng: string;
 }
 
 export default function SwapDetailDialog({
@@ -67,6 +75,11 @@ export default function SwapDetailDialog({
   onDelete,
   onDeleteBid,
   onCancelBidAcceptance,
+  onAnalyzeSwap,
+  validationResult,
+  isAnalyzing = false,
+  onViewAnalysisDetails,
+  lng,
 }: SwapDetailDialogProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -401,6 +414,13 @@ export default function SwapDetailDialog({
             canAcceptBid={canAcceptBid}
             canCancelBidAcceptance={canCancelBidAcceptance}
             sortedBids={sortedBids}
+            onAnalyzeSwap={
+              onAnalyzeSwap && swap ? () => onAnalyzeSwap(swap.id) : undefined
+            }
+            isAnalyzing={isAnalyzing}
+            validationResult={validationResult}
+            onViewAnalysisDetails={onViewAnalysisDetails}
+            lng={lng}
           />
         )}
       </DialogContent>

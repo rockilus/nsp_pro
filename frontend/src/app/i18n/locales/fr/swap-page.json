@@ -1,0 +1,15 @@
+{
+    "swap_valid_both": "L'échange est valide pour les deux travailleurs",
+    "swap_invalid_both": "L'échange n'est pas valide pour les deux travailleurs",
+    "swap_invalid_worker": "L'échange n'est pas valide pour {{workerName}}",
+    "swap_validation_unknown": "Résultat de validation inconnu",
+    "replacement_reason_not_employed": "Non employé",
+    "replacement_reason_missing_specialty": "Spécialité manquante",
+    "replacement_reason_on_leave": "En congé",
+    "replacement_reason_filtered_out": "Filtré",
+    "replacement_reason_has_overlap": "A un chevauchement",
+    "replacement_reason_hard_constraint_violation": "Violation de contrainte dure",
+    "replacement_reason_request_conflict": "Conflit de demande",
+    "replacement_reason_soft_constraint_violation": "Violation de contrainte douce",
+    "replacement_reason_no_constraints_violated": "Aucune contrainte violée"
+}

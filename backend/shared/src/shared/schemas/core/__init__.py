@@ -88,6 +88,7 @@ from shared.schemas.core.recurrence import (
     RecurrenceUpdateScope,
 )
 from shared.schemas.core.replacement import (
+    AssignmentImplication,
     ConstraintHits,
     FilterHits,
     LTMIndicator,
@@ -98,6 +99,8 @@ from shared.schemas.core.replacement import (
     ReplacementCategory,
     ReplacementImplications,
     RequestHits,
+    SwapAssignmentInfo,
+    SwapValidationResult,
     WeeklyWorkTimeImplications,
 )
 from shared.schemas.core.request import (
@@ -291,6 +294,9 @@ __all__ = [
     "ReplacementCategory",
     "ReplacementImplications",
     "RequestHits",
+    "AssignmentImplication",
+    "SwapAssignmentInfo",
+    "SwapValidationResult",
     "WeeklyWorkTimeImplications",
     "DuplicateOptions",
     "DuplicateRequest",

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -12,11 +13,14 @@ import {
   Collapse,
   useTheme,
   useMediaQuery,
+  CircularProgress,
 } from "@mui/material";
 import {
   Delete as DeleteIcon,
   CheckCircle as CheckCircleIcon,
+  ExpandLess as ExpandLessIcon,
 } from "@mui/icons-material";
+import SwapAnalysisView from "./SwapAnalysisView";
 import dayjs from "dayjs";
 import { SwapRequestT, SwapType, SwapStatus } from "../../types/swap";
 import { AssignmentDataDictT } from "../../types/assignment";
@@ -53,6 +57,12 @@ interface SwapDetailContentProps {
   canAcceptBid?: boolean;
   canCancelBidAcceptance?: boolean;
   sortedBids?: any[];
+  // Swap analysis
+  onAnalyzeSwap?: () => void;
+  isAnalyzing?: boolean;
+  validationResult?: any;
+  onViewAnalysisDetails?: () => void;
+  lng: string;
 }
 
 export default function SwapDetailContent({
@@ -79,9 +89,18 @@ export default function SwapDetailContent({
   canAcceptBid = false,
   canCancelBidAcceptance = false,
   sortedBids = [],
+  onAnalyzeSwap,
+  isAnalyzing = false,
+  validationResult,
+  onViewAnalysisDetails,
+  lng,
 }: SwapDetailContentProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [showAnalysis, setShowAnalysis] = useState(false);
+
+  // Show analysis when validation result is available
+  const displayAnalysis = showAnalysis && validationResult;
 
   // Get assignments
   const offeredAssignments = getAssignmentsForIds(
@@ -461,6 +480,48 @@ export default function SwapDetailContent({
           </Box>
         </>
       )}
+
+      {/* Swap Analysis - only for leaders and PENDING_APPROVAL status */}
+      {!reviewMode &&
+        isLeader &&
+        swap.status === SwapStatus.PENDING_APPROVAL &&
+        onAnalyzeSwap && (
+          <>
+            <Divider sx={{ my: 2 }} />
+            <Box sx={{ mb: 2 }}>
+              {!displayAnalysis ? (
+                <Button
+                  variant="contained"
+                  color="info"
+                  onClick={() => {
+                    onAnalyzeSwap?.();
+                    setShowAnalysis(true);
+                  }}
+                  disabled={isAnalyzing}
+                  fullWidth={isMobile}
+                  data-testid="analyze-swap-button"
+                  sx={{ textTransform: "none" }}
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <CircularProgress size={16} sx={{ mr: 1 }} />
+                      Analyzing...
+                    </>
+                  ) : (
+                    "Analyze Swap"
+                  )}
+                </Button>
+              ) : (
+                <SwapAnalysisView
+                  validationResult={validationResult}
+                  assignments={assignments}
+                  onViewDetails={() => onViewAnalysisDetails?.()}
+                  lng={lng}
+                />
+              )}
+            </Box>
+          </>
+        )}
 
       {/* Metadata */}
       {!reviewMode && (

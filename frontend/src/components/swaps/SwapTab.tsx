@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import { Add as AddIcon } from "@mui/icons-material";
 import { SwapRequestT, SwapStatus, SwapType } from "../../types/swap";
+import { SwapValidationResultT } from "../../types/swapValidation";
 import { WorkerT } from "../../types/worker";
 import { ShiftT } from "../../types/shift";
 import { LinkShiftT } from "../../types/shift";
@@ -21,6 +22,8 @@ import { AssignmentDataDictT } from "../../types/assignment";
 import CreateSwapDialog from "./CreateSwapDialog";
 import SwapDetailDialog from "./SwapDetailDialog";
 import SwapCard from "./SwapCard";
+import SwapAnalysisView from "./SwapAnalysisView";
+import SwapAnalysisDialog from "./SwapAnalysisDialog";
 import { TeamWithMembership } from "../../types/team";
 import { useGetWorkers } from "../../hooks/useWorker";
 import { useGetShifts } from "../../hooks/useShift";
@@ -39,6 +42,7 @@ import {
   useDeleteSwap,
   useDenySwap,
   useRevertSwap,
+  useValidateSwap,
 } from "../../hooks/useSwap";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import MobileNavAppBar from "../app-bar/mobile-nav-app-bar";
@@ -140,6 +144,7 @@ export default function SwapTab({
   const deleteSwap = useDeleteSwap();
   const denySwap = useDenySwap();
   const revertSwap = useRevertSwap();
+  const validateSwap = useValidateSwap();
   const getWorkers = useGetWorkers();
   const getShifts = useGetShifts();
   const getLinkShifts = useGetLinkShifts();
@@ -162,6 +167,12 @@ export default function SwapTab({
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedSwap, setSelectedSwap] = useState<SwapRequestT | null>(null);
+
+  // Swap analysis states
+  const [validationResult, setValidationResult] =
+    useState<SwapValidationResultT | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisDialogOpen, setAnalysisDialogOpen] = useState(false);
 
   // Check if user is a leader
   const isLeader = teamWithMembership.membership.role === "owner";
@@ -493,6 +504,28 @@ export default function SwapTab({
     loadSwaps();
   };
 
+  const handleAnalyzeSwap = async (swapId: string) => {
+    setIsAnalyzing(true);
+    setValidationResult(null);
+    try {
+      const result = await validateSwap(swapId);
+      setValidationResult(result);
+    } catch (error) {
+      console.error("Failed to analyze swap:", error);
+      // Error will be shown in the UI via validationResult being null
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleViewAnalysisDetails = () => {
+    setAnalysisDialogOpen(true);
+  };
+
+  const handleCloseAnalysisDialog = () => {
+    setAnalysisDialogOpen(false);
+  };
+
   const openDetailDialog = (swap: SwapRequestT) => {
     setSelectedSwap(swap);
     setDetailDialogOpen(true);
@@ -628,6 +661,7 @@ export default function SwapTab({
           workers={workers}
           assignments={assignments}
           linkShifts={linkShifts}
+          lng={lng}
         />
 
         {/* Swap Detail Dialog */}
@@ -680,7 +714,23 @@ export default function SwapTab({
           onDelete={
             selectedSwap ? () => handleDeleteSwap(selectedSwap.id) : undefined
           }
+          onAnalyzeSwap={handleAnalyzeSwap}
+          validationResult={validationResult}
+          isAnalyzing={isAnalyzing}
+          onViewAnalysisDetails={handleViewAnalysisDetails}
+          lng={lng}
         />
+
+        {/* Swap Analysis Dialog */}
+        {validationResult && (
+          <SwapAnalysisDialog
+            open={analysisDialogOpen}
+            onClose={handleCloseAnalysisDialog}
+            validationResult={validationResult}
+            assignments={assignments}
+            lng={lng}
+          />
+        )}
 
         {/* FAB for mobile */}
         {isMobile && (
