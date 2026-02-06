@@ -100,7 +100,7 @@ export default function SwapAnalysisDialog({
       >
         <TableCell
           sx={{
-            position: "sticky",
+            // position: "sticky",
             left: 0,
             backgroundColor: "background.paper",
             zIndex: 1,
@@ -243,7 +243,7 @@ export default function SwapAnalysisDialog({
       open={open}
       onClose={onClose}
       maxWidth="xl"
-      fullWidth
+      fullScreen
       data-testid="swap-analysis-dialog"
     >
       <DialogTitle>
@@ -258,21 +258,25 @@ export default function SwapAnalysisDialog({
       <DialogContent sx={{ paddingBottom: "24px" }}>
         <TableContainer
           component={Paper}
-          sx={{ maxHeight: 700, overflowX: "auto" }}
+          // sx={{ maxHeight: 700, overflowX: "auto" }}
         >
-          <Table stickyHeader size="small">
+          <Table
+            // stickyHeader
+            size="small"
+          >
             <TableHead>
               <TableRow>
                 <TableCell
                   sx={{
                     fontWeight: "bold",
                     minWidth: ASSIGNMENT_COLUMN_WIDTH,
-                    position: "sticky",
+                    // position: "sticky",
                     left: 0,
                     backgroundColor: "background.paper",
                     zIndex: 2,
                     padding: 0,
                     verticalAlign: "bottom",
+                    paddingLeft: "16px",
                   }}
                 >
                   Assignment
@@ -432,7 +436,7 @@ export default function SwapAnalysisDialog({
                     fontWeight: "bold",
                     fontSize: "1rem",
                     padding: "12px 16px",
-                    position: "sticky",
+                    // position: "sticky",
                     left: 0,
                     zIndex: 2,
                   }}
@@ -451,13 +455,13 @@ export default function SwapAnalysisDialog({
                     fontWeight: "bold",
                     fontSize: "0.875rem",
                     padding: "8px 16px",
-                    position: "sticky",
+                    // position: "sticky",
                     left: 0,
                     zIndex: 2,
                   }}
                   data-testid="subsection-worker-a-postswap"
                 >
-                  Worker A: {workerAInfo.workerName}
+                  {workerAInfo.workerName}
                 </TableCell>
               </TableRow>
               {workerAInfo.postSwap.length > 0 ? (
@@ -482,13 +486,13 @@ export default function SwapAnalysisDialog({
                     fontWeight: "bold",
                     fontSize: "0.875rem",
                     padding: "8px 16px",
-                    position: "sticky",
+                    // position: "sticky",
                     left: 0,
                     zIndex: 2,
                   }}
                   data-testid="subsection-worker-b-postswap"
                 >
-                  Worker B: {workerBInfo.workerName}
+                  {workerBInfo.workerName}
                 </TableCell>
               </TableRow>
               {workerBInfo.postSwap.length > 0 ? (
@@ -526,7 +530,7 @@ export default function SwapAnalysisDialog({
                     fontWeight: "bold",
                     fontSize: "1rem",
                     padding: "12px 16px",
-                    position: "sticky",
+                    // position: "sticky",
                     left: 0,
                     zIndex: 2,
                   }}
@@ -545,13 +549,13 @@ export default function SwapAnalysisDialog({
                     fontWeight: "bold",
                     fontSize: "0.875rem",
                     padding: "8px 16px",
-                    position: "sticky",
+                    // position: "sticky",
                     left: 0,
                     zIndex: 2,
                   }}
                   data-testid="subsection-worker-a-preswap"
                 >
-                  Worker A: {workerAInfo.workerName}
+                  {workerAInfo.workerName}
                 </TableCell>
               </TableRow>
               {workerAInfo.preSwap.length > 0 ? (
@@ -576,13 +580,13 @@ export default function SwapAnalysisDialog({
                     fontWeight: "bold",
                     fontSize: "0.875rem",
                     padding: "8px 16px",
-                    position: "sticky",
+                    // position: "sticky",
                     left: 0,
                     zIndex: 2,
                   }}
                   data-testid="subsection-worker-b-preswap"
                 >
-                  Worker B: {workerBInfo.workerName}
+                  {workerBInfo.workerName}
                 </TableCell>
               </TableRow>
               {workerBInfo.preSwap.length > 0 ? (
