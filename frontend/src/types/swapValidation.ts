@@ -1,9 +1,15 @@
 import dayjs from "dayjs";
-import { ReplacementImplicationsT } from "./replacement";
+import {
+  ReplacementImplicationsT,
+  ReplacementCategoryT,
+  MostConstrainingReasonT,
+} from "./replacement";
 
 export type AssignmentImplicationT = {
   assignmentId: string;
   implications: ReplacementImplicationsT;
+  replacementCategory: ReplacementCategoryT;
+  mostConstrainingReason: MostConstrainingReasonT;
 };
 
 export type SwapAssignmentInfoT = {
@@ -51,6 +57,8 @@ function toAssignmentImplicationT(data: any): AssignmentImplicationT {
   return {
     assignmentId: data.assignmentId,
     implications: toReplacementImplicationsT(data.implications),
+    replacementCategory: data.replacementCategory,
+    mostConstrainingReason: data.mostConstrainingReason,
   };
 }
 

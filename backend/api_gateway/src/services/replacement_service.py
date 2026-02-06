@@ -2753,9 +2753,16 @@ class ReplacementService(BaseService):
             implications = self._build_replacement_implications(
                 worker=worker, context=context
             )
+            category = self._determine_replacement_category(implications)
+            reason = ReplacementCandidate.compute_most_constraining_reason(
+                implications
+            )
             pre_swap.append(
                 AssignmentImplication(
-                    assignment_id=assignment.id, implications=implications
+                    assignment_id=assignment.id,
+                    implications=implications,
+                    replacement_category=category,
+                    most_constraining_reason=reason,
                 )
             )
 
@@ -2772,6 +2779,10 @@ class ReplacementService(BaseService):
             implications = self._build_replacement_implications(
                 worker=worker, context=context
             )
+            category = self._determine_replacement_category(implications)
+            reason = ReplacementCandidate.compute_most_constraining_reason(
+                implications
+            )
             if not swapped_assignment.reference_assignment_id:
                 raise ValueError(
                     f"Swapped assignment {swapped_assignment.id} is missing "
@@ -2781,6 +2792,8 @@ class ReplacementService(BaseService):
                 AssignmentImplication(
                     assignment_id=swapped_assignment.reference_assignment_id,
                     implications=implications,
+                    replacement_category=category,
+                    most_constraining_reason=reason,
                 )
             )
 

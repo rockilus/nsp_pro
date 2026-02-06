@@ -11,11 +11,14 @@ import {
   ListItem,
   ListItemText,
 } from "@mui/material";
-import { SwapValidationResultT } from "../../types/swapValidation";
+import {
+  SwapValidationResultT,
+  AssignmentImplicationT,
+} from "../../types/swapValidation";
 import { AssignmentDataDictT } from "../../types/assignment";
 import {
   MostConstrainingReasonT,
-  ReplacementImplicationsT,
+  ReplacementCategoryT,
 } from "../../types/replacement";
 import dayjs from "dayjs";
 import { useTranslation } from "../../app/i18n/client";
@@ -28,41 +31,35 @@ interface SwapAnalysisViewProps {
   lng: string;
 }
 
-const getCategoryEmoji = (implications: ReplacementImplicationsT): string => {
-  // Determine category based on implications
-  if (
-    !implications.isEmployed ||
-    !implications.hasSpecialty ||
-    !implications.isntOnLeave ||
-    !implications.filterHits.isntFilteredOut ||
-    !implications.overlapHits.hasntOverlap ||
-    !implications.hardConstraintHits.meetsConstraints ||
-    !implications.requestHits.hasNoRequestConflict
-  ) {
-    return "🔴"; // cant_do
+const getCategoryEmoji = (category: ReplacementCategoryT): string => {
+  switch (category) {
+    case "can_do":
+      return "🟢";
+    case "could_do":
+      return "🟠";
+    case "cant_do":
+      return "🔴";
+    default:
+      return "⚪";
   }
-
-  if (!implications.softConstraintHits.meetsConstraints) {
-    return "🟠"; // could_do
-  }
-
-  return "🟢"; // can_do
 };
 
-const getMostConstrainingReason = (
-  implications: ReplacementImplicationsT,
-): string => {
-  if (!implications.isEmployed) return "Not employed";
-  if (!implications.hasSpecialty) return "Missing specialty";
-  if (!implications.isntOnLeave) return "On leave";
-  if (!implications.filterHits.isntFilteredOut) return "Filtered out";
-  if (!implications.overlapHits.hasntOverlap) return "Has overlap";
-  if (!implications.hardConstraintHits.meetsConstraints)
-    return "Hard constraint violation";
-  if (!implications.requestHits.hasNoRequestConflict) return "Request conflict";
-  if (!implications.softConstraintHits.meetsConstraints)
-    return "Soft constraint violation";
-  return "No constraints violated";
+const getReasonLabel = (reason: MostConstrainingReasonT): string => {
+  const reasonMap: Record<MostConstrainingReasonT, string> = {
+    [MostConstrainingReasonT.NOT_EMPLOYED]: "Not employed",
+    [MostConstrainingReasonT.MISSING_SPECIALTY]: "Missing specialty",
+    [MostConstrainingReasonT.ON_LEAVE]: "On leave",
+    [MostConstrainingReasonT.FILTERED_OUT]: "Filtered out",
+    [MostConstrainingReasonT.HAS_OVERLAP]: "Has overlap",
+    [MostConstrainingReasonT.HARD_CONSTRAINT_VIOLATION]:
+      "Hard constraint violation",
+    [MostConstrainingReasonT.REQUEST_CONFLICT]: "Request conflict",
+    [MostConstrainingReasonT.SOFT_CONSTRAINT_VIOLATION]:
+      "Soft constraint violation",
+    [MostConstrainingReasonT.NO_CONSTRAINTS_VIOLATED]:
+      "No constraints violated",
+  };
+  return reasonMap[reason] || reason;
 };
 
 export default function SwapAnalysisView({
@@ -88,10 +85,7 @@ export default function SwapAnalysisView({
 
   const renderWorkerAnalysis = (
     workerName: string,
-    postSwap: Array<{
-      assignmentId: string;
-      implications: ReplacementImplicationsT;
-    }>,
+    postSwap: AssignmentImplicationT[],
   ) => {
     return (
       <Paper elevation={2} sx={{ p: 2 }}>
@@ -104,20 +98,28 @@ export default function SwapAnalysisView({
         </Typography>
 
         <List dense sx={{ mt: 2 }}>
-          {postSwap.map(({ assignmentId, implications }) => {
-            const assignmentData = getAssignmentData(assignmentId);
-            const emoji = getCategoryEmoji(implications);
-            const reason = getMostConstrainingReason(implications);
+          {postSwap.map((assignmentImplication) => {
+            const assignmentData = getAssignmentData(
+              assignmentImplication.assignmentId,
+            );
+            const emoji = getCategoryEmoji(
+              assignmentImplication.replacementCategory,
+            );
+            const reason = getReasonLabel(
+              assignmentImplication.mostConstrainingReason,
+            );
 
             const weeklyDelta = Math.round(
-              implications.newWeeklyTime.newWeeklyTimeDeltaMinutes / 60,
+              assignmentImplication.implications.newWeeklyTime
+                .newWeeklyTimeDeltaMinutes / 60,
             );
             const dutiesDelta =
-              implications.newMonthlyDuties.newMonthlyDutiesDelta;
+              assignmentImplication.implications.newMonthlyDuties
+                .newMonthlyDutiesDelta;
 
             return (
               <ListItem
-                key={assignmentId}
+                key={assignmentImplication.assignmentId}
                 sx={{
                   border: "1px solid #ddd",
                   borderRadius: 1,

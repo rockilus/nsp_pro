@@ -474,11 +474,15 @@ class AssignmentImplication:
 
     assignment_id: str
     implications: ReplacementImplications
+    replacement_category: ReplacementCategory
+    most_constraining_reason: MostConstrainingReason
 
     def to_dict(self) -> Dict:
         return {
             "assignment_id": self.assignment_id,
             "implications": self.implications.to_dict(),
+            "replacement_category": self.replacement_category.value,
+            "most_constraining_reason": self.most_constraining_reason.value,
         }
 
     @classmethod
@@ -488,6 +492,12 @@ class AssignmentImplication:
             implications=ReplacementImplications.from_dict(
                 data["implications"]
             ),
+            replacement_category=ReplacementCategory(
+                data["replacement_category"]
+            ),
+            most_constraining_reason=MostConstrainingReason(
+                data["most_constraining_reason"]
+            ),
         )
 
     def to_dto(self) -> "AssignmentImplicationDTO":
@@ -495,6 +505,8 @@ class AssignmentImplication:
         data = {
             "assignment_id": self.assignment_id,
             "implications": self.implications.to_dto(),
+            "replacement_category": self.replacement_category.value,
+            "most_constraining_reason": self.most_constraining_reason.value,
         }
         as_dict = humps.camelize(data)
         validator = TypeAdapter(AssignmentImplicationDTO)
@@ -507,6 +519,10 @@ class AssignmentImplication:
         return cls(
             assignment_id=data.assignmentId,
             implications=ReplacementImplications.from_dto(data.implications),
+            replacement_category=ReplacementCategory(data.replacementCategory),
+            most_constraining_reason=MostConstrainingReason(
+                data.mostConstrainingReason
+            ),
         )
 
 

@@ -74,6 +74,8 @@ class ReplacementCandidateDTO(BaseModel):
 class AssignmentImplicationDTO(BaseModel):
     assignmentId: str
     implications: ReplacementImplicationsDTO
+    replacementCategory: str
+    mostConstrainingReason: str
 
 
 class SwapAssignmentInfoDTO(BaseModel):
