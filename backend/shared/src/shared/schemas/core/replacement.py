@@ -210,9 +210,7 @@ class LTMIndicator:
 
     def to_dict(self) -> Dict:
         out = asdict(self)
-        out["last_date"] = (
-            self.last_date.timestamp() if self.last_date else None
-        )
+        out["last_date"] = self.last_date.timestamp() if self.last_date else None
         return out
 
     @classmethod
@@ -220,18 +218,14 @@ class LTMIndicator:
         return cls(
             count=data["count"],
             last_date=(
-                datetime.fromtimestamp(data["last_date"])
-                if data["last_date"]
-                else None
+                datetime.fromtimestamp(data["last_date"]) if data["last_date"] else None
             ),
         )
 
     def to_dto(self) -> LTMIndicatorDTO:
         data = {
             "count": self.count,
-            "last_date": (
-                self.last_date.timestamp() if self.last_date else None
-            ),
+            "last_date": (self.last_date.timestamp() if self.last_date else None),
         }
         as_dict = humps.camelize(data)
         validator = TypeAdapter(LTMIndicatorDTO)
@@ -242,9 +236,7 @@ class LTMIndicator:
         return cls(
             count=data.count,
             last_date=(
-                datetime.fromtimestamp(data.lastDate)
-                if data.lastDate
-                else None
+                datetime.fromtimestamp(data.lastDate) if data.lastDate else None
             ),
         )
 
@@ -293,13 +285,9 @@ class ReplacementImplications:
             isnt_on_leave=data["isnt_on_leave"],
             filter_hits=FilterHits.from_dict(data["filter_hits"]),
             overlap_hits=OverlapHits.from_dict(data["overlap_hits"]),
-            hard_constraint_hits=ConstraintHits.from_dict(
-                data["hard_constraint_hits"]
-            ),
+            hard_constraint_hits=ConstraintHits.from_dict(data["hard_constraint_hits"]),
             request_hits=RequestHits.from_dict(data["request_hits"]),
-            soft_constraint_hits=ConstraintHits.from_dict(
-                data["soft_constraint_hits"]
-            ),
+            soft_constraint_hits=ConstraintHits.from_dict(data["soft_constraint_hits"]),
             new_monthly_duties=MonthlyDutiesImplications.from_dict(
                 data["new_monthly_duties"]
             ),
@@ -334,31 +322,21 @@ class ReplacementImplications:
         return validator.validate_python(as_dict)
 
     @classmethod
-    def from_dto(
-        cls, data: ReplacementImplicationsDTO
-    ) -> "ReplacementImplications":
+    def from_dto(cls, data: ReplacementImplicationsDTO) -> "ReplacementImplications":
         return cls(
             is_employed=data.isEmployed,
             has_specialty=data.hasSpecialty,
             isnt_on_leave=data.isntOnLeave,
             filter_hits=FilterHits.from_dto(data.filterHits),
             overlap_hits=OverlapHits.from_dto(data.overlapHits),
-            hard_constraint_hits=ConstraintHits.from_dto(
-                data.hardConstraintHits
-            ),
+            hard_constraint_hits=ConstraintHits.from_dto(data.hardConstraintHits),
             request_hits=RequestHits.from_dto(data.requestHits),
-            soft_constraint_hits=ConstraintHits.from_dto(
-                data.softConstraintHits
-            ),
+            soft_constraint_hits=ConstraintHits.from_dto(data.softConstraintHits),
             new_monthly_duties=MonthlyDutiesImplications.from_dto(
                 data.newMonthlyDuties
             ),
-            new_weekly_time=WeeklyWorkTimeImplications.from_dto(
-                data.newWeeklyTime
-            ),
-            nb_times_did_shift_ltm=LTMIndicator.from_dto(
-                data.nbTimesDidShiftLtm
-            ),
+            new_weekly_time=WeeklyWorkTimeImplications.from_dto(data.newWeeklyTime),
+            nb_times_did_shift_ltm=LTMIndicator.from_dto(data.nbTimesDidShiftLtm),
             nb_times_worked_weekday_ltm=LTMIndicator.from_dto(
                 data.nbTimesWorkedWeekdayLtm
             ),
@@ -428,9 +406,7 @@ class ReplacementCandidate:
             worker_id=data["worker_id"],
             worker_name=data["worker_name"],
             rank=data["rank"],
-            replacement_category=ReplacementCategory(
-                data["replacement_category"]
-            ),
+            replacement_category=ReplacementCategory(data["replacement_category"]),
             replacement_implications=ReplacementImplications.from_dict(
                 data["replacement_implications"]
             ),
@@ -489,12 +465,8 @@ class AssignmentImplication:
     def from_dict(cls, data: Dict) -> "AssignmentImplication":
         return cls(
             assignment_id=data["assignment_id"],
-            implications=ReplacementImplications.from_dict(
-                data["implications"]
-            ),
-            replacement_category=ReplacementCategory(
-                data["replacement_category"]
-            ),
+            implications=ReplacementImplications.from_dict(data["implications"]),
+            replacement_category=ReplacementCategory(data["replacement_category"]),
             most_constraining_reason=MostConstrainingReason(
                 data["most_constraining_reason"]
             ),
@@ -513,9 +485,7 @@ class AssignmentImplication:
         return validator.validate_python(as_dict)
 
     @classmethod
-    def from_dto(
-        cls, data: "AssignmentImplicationDTO"
-    ) -> "AssignmentImplication":
+    def from_dto(cls, data: "AssignmentImplicationDTO") -> "AssignmentImplication":
         return cls(
             assignment_id=data.assignmentId,
             implications=ReplacementImplications.from_dto(data.implications),
@@ -549,12 +519,10 @@ class SwapAssignmentInfo:
             worker_id=data["worker_id"],
             worker_name=data["worker_name"],
             pre_swap=[
-                AssignmentImplication.from_dict(impl)
-                for impl in data["pre_swap"]
+                AssignmentImplication.from_dict(impl) for impl in data["pre_swap"]
             ],
             post_swap=[
-                AssignmentImplication.from_dict(impl)
-                for impl in data["post_swap"]
+                AssignmentImplication.from_dict(impl) for impl in data["post_swap"]
             ],
         )
 
@@ -563,9 +531,7 @@ class SwapAssignmentInfo:
             "worker_id": self.worker_id,
             "worker_name": self.worker_name,
             "pre_swap": [impl.to_dto().model_dump() for impl in self.pre_swap],
-            "post_swap": [
-                impl.to_dto().model_dump() for impl in self.post_swap
-            ],
+            "post_swap": [impl.to_dto().model_dump() for impl in self.post_swap],
         }
         as_dict = humps.camelize(data)
         validator = TypeAdapter(SwapAssignmentInfoDTO)
@@ -576,12 +542,8 @@ class SwapAssignmentInfo:
         return cls(
             worker_id=data.workerId,
             worker_name=data.workerName,
-            pre_swap=[
-                AssignmentImplication.from_dto(impl) for impl in data.preSwap
-            ],
-            post_swap=[
-                AssignmentImplication.from_dto(impl) for impl in data.postSwap
-            ],
+            pre_swap=[AssignmentImplication.from_dto(impl) for impl in data.preSwap],
+            post_swap=[AssignmentImplication.from_dto(impl) for impl in data.postSwap],
         )
 
 
