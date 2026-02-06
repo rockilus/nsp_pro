@@ -26,12 +26,15 @@ import {
 } from "../../types/swapValidation";
 import { ReplacementImplicationsT } from "../../types/replacement";
 import { AssignmentDataDictT } from "../../types/assignment";
+import { useTranslation } from "../../app/i18n/client";
+import { buildSwapValidationMessage } from "./swapValidationMessages";
 
 interface SwapAnalysisDialogProps {
   open: boolean;
   onClose: () => void;
   validationResult: SwapValidationResultT;
   assignments: AssignmentDataDictT[];
+  lng: string;
 }
 
 export default function SwapAnalysisDialog({
@@ -39,11 +42,20 @@ export default function SwapAnalysisDialog({
   onClose,
   validationResult,
   assignments,
+  lng,
 }: SwapAnalysisDialogProps) {
   const [activeTab, setActiveTab] = useState(0);
+  const { t } = useTranslation(lng, "swap-page");
 
   const workerAInfo = validationResult.workerAInfo;
   const workerBInfo = validationResult.workerBInfo;
+
+  const validationMessage = buildSwapValidationMessage(
+    validationResult.validationKey,
+    workerAInfo,
+    workerBInfo,
+    t,
+  );
 
   const getAssignmentData = (assignmentId: string) => {
     return assignments.find((a) => a.assignment.id === assignmentId);
@@ -305,7 +317,7 @@ export default function SwapAnalysisDialog({
           Swap Analysis Details
         </Box>
         <Typography variant="body2" color="text.secondary">
-          {validationResult.validationMessage}
+          {validationMessage}
         </Typography>
       </DialogTitle>
 

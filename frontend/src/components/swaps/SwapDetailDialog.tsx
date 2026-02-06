@@ -51,6 +51,7 @@ interface SwapDetailDialogProps {
   validationResult?: SwapValidationResultT | null;
   isAnalyzing?: boolean;
   onViewAnalysisDetails?: () => void;
+  lng: string;
 }
 
 export default function SwapDetailDialog({
@@ -78,6 +79,7 @@ export default function SwapDetailDialog({
   validationResult,
   isAnalyzing = false,
   onViewAnalysisDetails,
+  lng,
 }: SwapDetailDialogProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -418,6 +420,7 @@ export default function SwapDetailDialog({
             isAnalyzing={isAnalyzing}
             validationResult={validationResult}
             onViewAnalysisDetails={onViewAnalysisDetails}
+            lng={lng}
           />
         )}
       </DialogContent>

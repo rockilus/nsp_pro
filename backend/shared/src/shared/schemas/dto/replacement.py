@@ -87,4 +87,4 @@ class SwapValidationResultDTO(BaseModel):
     isValid: bool
     workerAInfo: SwapAssignmentInfoDTO
     workerBInfo: SwapAssignmentInfoDTO
-    validationMessage: str
+    validationKey: str

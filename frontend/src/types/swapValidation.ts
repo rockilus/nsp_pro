@@ -17,7 +17,7 @@ export type SwapValidationResultT = {
   isValid: boolean;
   workerAInfo: SwapAssignmentInfoT;
   workerBInfo: SwapAssignmentInfoT;
-  validationMessage: string;
+  validationKey: string;
 };
 
 /**
@@ -28,7 +28,7 @@ export function toSwapValidationResultT(data: any): SwapValidationResultT {
     isValid: data.isValid,
     workerAInfo: toSwapAssignmentInfoT(data.workerAInfo),
     workerBInfo: toSwapAssignmentInfoT(data.workerBInfo),
-    validationMessage: data.validationMessage,
+    validationKey: data.validationKey,
   };
 }
 

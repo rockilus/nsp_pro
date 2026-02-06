@@ -62,6 +62,7 @@ interface SwapDetailContentProps {
   isAnalyzing?: boolean;
   validationResult?: any;
   onViewAnalysisDetails?: () => void;
+  lng: string;
 }
 
 export default function SwapDetailContent({
@@ -92,6 +93,7 @@ export default function SwapDetailContent({
   isAnalyzing = false,
   validationResult,
   onViewAnalysisDetails,
+  lng,
 }: SwapDetailContentProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -514,6 +516,7 @@ export default function SwapDetailContent({
                   validationResult={validationResult}
                   assignments={assignments}
                   onViewDetails={() => onViewAnalysisDetails?.()}
+                  lng={lng}
                 />
               )}
             </Box>

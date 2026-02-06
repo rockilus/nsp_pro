@@ -1,0 +1,6 @@
+{
+    "swap_valid_both": "El intercambio es válido para ambos trabajadores",
+    "swap_invalid_both": "El intercambio no es válido para ambos trabajadores",
+    "swap_invalid_worker": "El intercambio no es válido para {{workerName}}",
+    "swap_validation_unknown": "Resultado de validación desconocido"
+}

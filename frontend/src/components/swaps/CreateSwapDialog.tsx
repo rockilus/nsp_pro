@@ -55,6 +55,7 @@ interface CreateSwapDialogProps {
   workers: WorkerT[];
   assignments: AssignmentDataDictT[];
   linkShifts: LinkShiftT[];
+  lng: string;
 }
 
 const steps = [
@@ -76,6 +77,7 @@ export default function CreateSwapDialog({
   workers,
   assignments,
   linkShifts,
+  lng,
 }: CreateSwapDialogProps) {
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -420,6 +422,7 @@ export default function CreateSwapDialog({
             linkShifts={linkShifts}
             reviewMode={true}
             showTitle={false}
+            lng={lng}
           />
         );
 

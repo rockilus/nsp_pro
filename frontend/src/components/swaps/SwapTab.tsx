@@ -661,6 +661,7 @@ export default function SwapTab({
           workers={workers}
           assignments={assignments}
           linkShifts={linkShifts}
+          lng={lng}
         />
 
         {/* Swap Detail Dialog */}
@@ -717,6 +718,7 @@ export default function SwapTab({
           validationResult={validationResult}
           isAnalyzing={isAnalyzing}
           onViewAnalysisDetails={handleViewAnalysisDetails}
+          lng={lng}
         />
 
         {/* Swap Analysis Dialog */}
@@ -726,6 +728,7 @@ export default function SwapTab({
             onClose={handleCloseAnalysisDialog}
             validationResult={validationResult}
             assignments={assignments}
+            lng={lng}
           />
         )}
 

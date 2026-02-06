@@ -18,11 +18,14 @@ import {
   ReplacementImplicationsT,
 } from "../../types/replacement";
 import dayjs from "dayjs";
+import { useTranslation } from "../../app/i18n/client";
+import { buildSwapValidationMessage } from "./swapValidationMessages";
 
 interface SwapAnalysisViewProps {
   validationResult: SwapValidationResultT;
   assignments: AssignmentDataDictT[];
   onViewDetails: () => void;
+  lng: string;
 }
 
 const getCategoryEmoji = (implications: ReplacementImplicationsT): string => {
@@ -66,9 +69,18 @@ export default function SwapAnalysisView({
   validationResult,
   assignments,
   onViewDetails,
+  lng,
 }: SwapAnalysisViewProps) {
+  const { t } = useTranslation(lng, "swap-page");
   const workerAInfo = validationResult.workerAInfo;
   const workerBInfo = validationResult.workerBInfo;
+
+  const validationMessage = buildSwapValidationMessage(
+    validationResult.validationKey,
+    workerAInfo,
+    workerBInfo,
+    t,
+  );
 
   const getAssignmentData = (assignmentId: string) => {
     return assignments.find((a) => a.assignment.id === assignmentId);
@@ -182,7 +194,7 @@ export default function SwapAnalysisView({
         sx={{ mb: 2 }}
         data-testid="validation-status-alert"
       >
-        {validationResult.validationMessage}
+        {validationMessage}
       </Alert>
 
       {/* Worker Analyses */}

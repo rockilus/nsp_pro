@@ -332,21 +332,21 @@ class ReplacementService(BaseService):
 
         is_valid = worker_a_can_do_swap and worker_b_can_do_swap
 
-        # Build validation message
+        # Build validation key for i18n
         if is_valid:
-            validation_message = "Swap is valid for both workers"
+            validation_key = "swap_valid_both"
         elif not worker_a_can_do_swap and not worker_b_can_do_swap:
-            validation_message = "Swap is invalid for both workers"
+            validation_key = "swap_invalid_both"
         elif not worker_a_can_do_swap:
-            validation_message = f"Swap is invalid for {worker_a.name}"
+            validation_key = "swap_invalid_worker_a"
         else:
-            validation_message = f"Swap is invalid for {worker_b.name}"
+            validation_key = "swap_invalid_worker_b"
 
         return SwapValidationResult(
             is_valid=is_valid,
             worker_a_info=worker_a_info,
             worker_b_info=worker_b_info,
-            validation_message=validation_message,
+            validation_key=validation_key,
         )
 
     # def get_assignment_swap_info(
@@ -2774,7 +2774,8 @@ class ReplacementService(BaseService):
             )
             if not swapped_assignment.reference_assignment_id:
                 raise ValueError(
-                    f"Swapped assignment {swapped_assignment.id} is missing reference_assignment_id"
+                    f"Swapped assignment {swapped_assignment.id} is missing "
+                    "reference_assignment_id"
                 )
             post_swap.append(
                 AssignmentImplication(
