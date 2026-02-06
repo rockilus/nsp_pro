@@ -20,6 +20,10 @@ import {
   MostConstrainingReasonT,
   ReplacementCategoryT,
 } from "../../types/replacement";
+import {
+  getCategoryEmoji,
+  getReasonLabel,
+} from "../../utils/replacementHelpers";
 import dayjs from "dayjs";
 import { useTranslation } from "../../app/i18n/client";
 import { buildSwapValidationMessage } from "./swapValidationMessages";
@@ -30,37 +34,6 @@ interface SwapAnalysisViewProps {
   onViewDetails: () => void;
   lng: string;
 }
-
-const getCategoryEmoji = (category: ReplacementCategoryT): string => {
-  switch (category) {
-    case "can_do":
-      return "🟢";
-    case "could_do":
-      return "🟠";
-    case "cant_do":
-      return "🔴";
-    default:
-      return "⚪";
-  }
-};
-
-const getReasonLabel = (reason: MostConstrainingReasonT): string => {
-  const reasonMap: Record<MostConstrainingReasonT, string> = {
-    [MostConstrainingReasonT.NOT_EMPLOYED]: "Not employed",
-    [MostConstrainingReasonT.MISSING_SPECIALTY]: "Missing specialty",
-    [MostConstrainingReasonT.ON_LEAVE]: "On leave",
-    [MostConstrainingReasonT.FILTERED_OUT]: "Filtered out",
-    [MostConstrainingReasonT.HAS_OVERLAP]: "Has overlap",
-    [MostConstrainingReasonT.HARD_CONSTRAINT_VIOLATION]:
-      "Hard constraint violation",
-    [MostConstrainingReasonT.REQUEST_CONFLICT]: "Request conflict",
-    [MostConstrainingReasonT.SOFT_CONSTRAINT_VIOLATION]:
-      "Soft constraint violation",
-    [MostConstrainingReasonT.NO_CONSTRAINTS_VIOLATED]:
-      "No constraints violated",
-  };
-  return reasonMap[reason] || reason;
-};
 
 export default function SwapAnalysisView({
   validationResult,
@@ -107,6 +80,7 @@ export default function SwapAnalysisView({
             );
             const reason = getReasonLabel(
               assignmentImplication.mostConstrainingReason,
+              t,
             );
 
             const weeklyDelta = Math.round(

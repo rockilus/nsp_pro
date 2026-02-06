@@ -2,5 +2,14 @@
     "swap_valid_both": "Swap is valid for both workers",
     "swap_invalid_both": "Swap is invalid for both workers",
     "swap_invalid_worker": "Swap is invalid for {{workerName}}",
-    "swap_validation_unknown": "Unknown validation result"
+    "swap_validation_unknown": "Unknown validation result",
+    "replacement_reason_not_employed": "Not employed",
+    "replacement_reason_missing_specialty": "Missing specialty",
+    "replacement_reason_on_leave": "On leave",
+    "replacement_reason_filtered_out": "Filtered out",
+    "replacement_reason_has_overlap": "Has overlap",
+    "replacement_reason_hard_constraint_violation": "Hard constraint violation",
+    "replacement_reason_request_conflict": "Request conflict",
+    "replacement_reason_soft_constraint_violation": "Soft constraint violation",
+    "replacement_reason_no_constraints_violated": "No constraints violated"
 }

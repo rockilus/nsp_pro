@@ -23,6 +23,7 @@ import {
   ConstraintHitsT,
   ReplacementImplicationsT,
 } from "../../types/replacement";
+import { getCategoryEmoji } from "../../utils/replacementHelpers";
 import { WorkerT } from "../../types/worker";
 import { ShiftT } from "../../types/shift";
 import { AssignmentT } from "../../types/assignment";
@@ -53,21 +54,6 @@ export function ReplacementDetailsDialog({
 }: ReplacementDetailsDialogProps) {
   // Rotated column dimensions
   const ROTATED_COLUMN_WIDTH = 40;
-
-  const getCategoryEmoji = (
-    category: "can_do" | "could_do" | "cant_do",
-  ): string => {
-    switch (category) {
-      case "can_do":
-        return "🟢";
-      case "could_do":
-        return "🟠";
-      case "cant_do":
-        return "🔴";
-      default:
-        return "⚪";
-    }
-  };
 
   const renderBoolean = (value: boolean): React.JSX.Element => {
     return (

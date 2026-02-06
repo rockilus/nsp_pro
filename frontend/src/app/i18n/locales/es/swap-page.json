@@ -2,5 +2,14 @@
     "swap_valid_both": "El intercambio es válido para ambos trabajadores",
     "swap_invalid_both": "El intercambio no es válido para ambos trabajadores",
     "swap_invalid_worker": "El intercambio no es válido para {{workerName}}",
-    "swap_validation_unknown": "Resultado de validación desconocido"
+    "swap_validation_unknown": "Resultado de validación desconocido",
+    "replacement_reason_not_employed": "No empleado",
+    "replacement_reason_missing_specialty": "Especialidad faltante",
+    "replacement_reason_on_leave": "De permiso",
+    "replacement_reason_filtered_out": "Filtrado",
+    "replacement_reason_has_overlap": "Tiene superposición",
+    "replacement_reason_hard_constraint_violation": "Violación de restricción dura",
+    "replacement_reason_request_conflict": "Conflicto de solicitud",
+    "replacement_reason_soft_constraint_violation": "Violación de restricción suave",
+    "replacement_reason_no_constraints_violated": "Sin restricciones violadas"
 }

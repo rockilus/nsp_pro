@@ -15,6 +15,10 @@ import {
   ReplacementCandidateT,
   MostConstrainingReasonT,
 } from "../../types/replacement";
+import {
+  getCategoryEmoji,
+  getReasonLabel,
+} from "../../utils/replacementHelpers";
 
 interface ReplacementCandidatesListProps {
   lng: string;
@@ -44,54 +48,6 @@ export function ReplacementCandidatesList({
   isCheckingReplacement,
 }: ReplacementCandidatesListProps) {
   const { t } = useTranslation(lng, "schedule-page");
-
-  const getCategoryEmoji = (
-    category: "can_do" | "could_do" | "cant_do",
-  ): string => {
-    switch (category) {
-      case "can_do":
-        return "🟢";
-      case "could_do":
-        return "🟠";
-      case "cant_do":
-        return "🔴";
-      default:
-        return "⚪";
-    }
-  };
-
-  const getReasonLabel = (reason: MostConstrainingReasonT): string => {
-    // Map enum values to translation keys
-    const reasonMap: Record<MostConstrainingReasonT, string> = {
-      [MostConstrainingReasonT.NOT_EMPLOYED]: t(
-        "replacement_reason_not_employed",
-      ),
-      [MostConstrainingReasonT.MISSING_SPECIALTY]: t(
-        "replacement_reason_missing_specialty",
-      ),
-      [MostConstrainingReasonT.ON_LEAVE]: t("replacement_reason_on_leave"),
-      [MostConstrainingReasonT.FILTERED_OUT]: t(
-        "replacement_reason_filtered_out",
-      ),
-      [MostConstrainingReasonT.HAS_OVERLAP]: t(
-        "replacement_reason_has_overlap",
-      ),
-      [MostConstrainingReasonT.HARD_CONSTRAINT_VIOLATION]: t(
-        "replacement_reason_hard_constraint_violation",
-      ),
-      [MostConstrainingReasonT.REQUEST_CONFLICT]: t(
-        "replacement_reason_request_conflict",
-      ),
-      [MostConstrainingReasonT.SOFT_CONSTRAINT_VIOLATION]: t(
-        "replacement_reason_soft_constraint_violation",
-      ),
-      [MostConstrainingReasonT.NO_CONSTRAINTS_VIOLATED]: t(
-        "replacement_reason_no_constraints_violated",
-      ),
-    };
-
-    return reasonMap[reason] || reason;
-  };
 
   return (
     <Box>
@@ -274,7 +230,8 @@ export function ReplacementCandidatesList({
                               )
                             </span>
                           )}{" "}
-                          | {getReasonLabel(candidate.mostConstrainingReason)}
+                          |{" "}
+                          {getReasonLabel(candidate.mostConstrainingReason, t)}
                         </Typography>
                       }
                     />
