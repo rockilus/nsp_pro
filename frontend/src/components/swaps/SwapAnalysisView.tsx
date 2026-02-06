@@ -18,6 +18,9 @@ import { AssignmentDataDictT } from "../../types/assignment";
 import {
   getCategoryEmoji,
   getReasonLabel,
+  formatShiftTimeRange,
+  formatWeeklyTime,
+  formatMonthlyDuties,
 } from "../../utils/replacementHelpers";
 import dayjs from "dayjs";
 import { useTranslation } from "../../app/i18n/client";
@@ -78,10 +81,25 @@ export default function SwapAnalysisView({
               t,
             );
 
-            const weeklyDelta = Math.round(
-              assignmentImplication.implications.newWeeklyTime
-                .newWeeklyTimeDeltaMinutes / 60,
+            const shift = assignmentData?.shift;
+            const assignment = assignmentData?.assignment;
+            const dateLabel = assignment?.date
+              ? dayjs(assignment.date).format("D MMM, ddd")
+              : "";
+            const timeRange = formatShiftTimeRange(
+              shift?.startTime,
+              shift?.endTime,
             );
+
+            const weeklyMinutes =
+              assignmentImplication.implications.newWeeklyTime
+                .newWeeklyWorkedMinutes;
+            const weeklyDelta =
+              assignmentImplication.implications.newWeeklyTime
+                .newWeeklyTimeDeltaMinutes;
+            const totalDuties =
+              assignmentImplication.implications.newMonthlyDuties
+                .newNumberMonthlyDuties;
             const dutiesDelta =
               assignmentImplication.implications.newMonthlyDuties
                 .newMonthlyDutiesDelta;
@@ -103,28 +121,30 @@ export default function SwapAnalysisView({
                   }}
                   primary={
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Typography variant="body2">
-                        {emoji} {assignmentData?.shift.name || "Unknown"} -{" "}
-                        {assignmentData
-                          ? dayjs(assignmentData.assignment.date).format(
-                              "MMM D, ddd",
-                            )
-                          : ""}
+                      <Typography variant="body2">{emoji}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {shift?.name || "—"}
                       </Typography>
+                      <Typography variant="body2">⋅</Typography>
+                      <Typography variant="body2">{dateLabel}</Typography>
+                      {timeRange && (
+                        <>
+                          <Typography variant="body2">⋅</Typography>
+                          <Typography variant="caption">{timeRange}</Typography>
+                        </>
+                      )}
                     </Box>
                   }
                   secondary={
-                    <Box sx={{ mt: 0.5 }}>
-                      <Typography variant="caption" display="block">
-                        {reason}
-                      </Typography>
-                      <Typography variant="caption" display="block">
-                        Weekly hours: {weeklyDelta > 0 ? "+" : ""}
-                        {weeklyDelta}h | Monthly duties:{" "}
-                        {dutiesDelta > 0 ? "+" : ""}
-                        {dutiesDelta}
-                      </Typography>
-                    </Box>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      component="div"
+                      sx={{ mt: 0.25 }}
+                    >
+                      {formatWeeklyTime(weeklyMinutes, weeklyDelta)} |{" "}
+                      {formatMonthlyDuties(totalDuties, dutiesDelta)} | {reason}
+                    </Typography>
                   }
                 />
               </ListItem>

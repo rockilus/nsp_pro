@@ -18,6 +18,8 @@ import {
 import {
   getCategoryEmoji,
   getReasonLabel,
+  formatWeeklyTime,
+  formatMonthlyDuties,
 } from "../../utils/replacementHelpers";
 
 interface ReplacementCandidatesListProps {
@@ -171,64 +173,18 @@ export function ReplacementCandidatesList({
                           component="div"
                           sx={{ mt: 0.25 }}
                         >
-                          {Math.round(
+                          {formatWeeklyTime(
                             candidate.replacementImplications.newWeeklyTime
-                              .newWeeklyWorkedMinutes / 60,
-                          )}
-                          h/week
-                          {candidate.replacementImplications.newWeeklyTime
-                            .newWeeklyTimeDeltaMinutes !== 0 && (
-                            <span
-                              style={{
-                                color:
-                                  candidate.replacementImplications
-                                    .newWeeklyTime.newWeeklyTimeDeltaMinutes > 0
-                                    ? "green"
-                                    : "red",
-                              }}
-                            >
-                              {" "}
-                              (
-                              {candidate.replacementImplications.newWeeklyTime
-                                .newWeeklyTimeDeltaMinutes > 0
-                                ? "+"
-                                : ""}
-                              {Math.round(
-                                candidate.replacementImplications.newWeeklyTime
-                                  .newWeeklyTimeDeltaMinutes / 60,
-                              )}
-                              h)
-                            </span>
+                              .newWeeklyWorkedMinutes,
+                            candidate.replacementImplications.newWeeklyTime
+                              .newWeeklyTimeDeltaMinutes,
                           )}{" "}
                           |{" "}
-                          {
+                          {formatMonthlyDuties(
                             candidate.replacementImplications.newMonthlyDuties
-                              .newNumberMonthlyDuties
-                          }{" "}
-                          duties/month
-                          {candidate.replacementImplications.newMonthlyDuties
-                            .newMonthlyDutiesDelta !== 0 && (
-                            <span
-                              style={{
-                                color:
-                                  candidate.replacementImplications
-                                    .newMonthlyDuties.newMonthlyDutiesDelta > 0
-                                    ? "green"
-                                    : "red",
-                              }}
-                            >
-                              {" "}
-                              (
-                              {candidate.replacementImplications
-                                .newMonthlyDuties.newMonthlyDutiesDelta > 0
-                                ? "+"
-                                : ""}
-                              {
-                                candidate.replacementImplications
-                                  .newMonthlyDuties.newMonthlyDutiesDelta
-                              }
-                              )
-                            </span>
+                              .newNumberMonthlyDuties,
+                            candidate.replacementImplications.newMonthlyDuties
+                              .newMonthlyDutiesDelta,
                           )}{" "}
                           |{" "}
                           {getReasonLabel(candidate.mostConstrainingReason, t)}
