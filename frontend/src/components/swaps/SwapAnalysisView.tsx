@@ -68,8 +68,9 @@ export default function SwapAnalysisView({
           Will receive {postSwap.length} assignment(s)
         </Typography>
 
-        <List dense sx={{ mt: 2 }}>
-          {postSwap.map((assignmentImplication) => {
+        <List dense>
+          {postSwap.map((assignmentImplication, idx) => {
+            const isLast = idx === postSwap.length - 1;
             const assignmentData = getAssignmentData(
               assignmentImplication.assignmentId,
             );
@@ -110,7 +111,7 @@ export default function SwapAnalysisView({
                 sx={{
                   border: "1px solid #ddd",
                   borderRadius: 1,
-                  mb: 1,
+                  mb: isLast ? 0 : 1,
                   bgcolor: "background.paper",
                 }}
               >
