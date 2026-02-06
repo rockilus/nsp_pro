@@ -9,6 +9,8 @@ import {
   List,
   ListItem,
   ListItemText,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import {
   SwapValidationResultT,
@@ -42,6 +44,9 @@ export default function SwapAnalysisView({
   const { t } = useTranslation(lng, "swap-page");
   const workerAInfo = validationResult.workerAInfo;
   const workerBInfo = validationResult.workerBInfo;
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const validationMessage = buildSwapValidationMessage(
     validationResult.validationKey,
@@ -121,20 +126,55 @@ export default function SwapAnalysisView({
                     secondary: { component: "div" },
                   }}
                   primary={
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Typography variant="body2">{emoji}</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {shift?.name || "—"}
-                      </Typography>
-                      <Typography variant="body2">⋅</Typography>
-                      <Typography variant="body2">{dateLabel}</Typography>
-                      {timeRange && (
-                        <>
-                          <Typography variant="body2">⋅</Typography>
-                          <Typography variant="caption">{timeRange}</Typography>
-                        </>
-                      )}
-                    </Box>
+                    isMobile ? (
+                      <Box>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <Typography variant="body2">{emoji}</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            {shift?.name || "—"}
+                          </Typography>
+                        </Box>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            mt: 0.5,
+                          }}
+                        >
+                          <Typography variant="body2">{dateLabel}</Typography>
+                          {timeRange && (
+                            <>
+                              <Typography variant="body2">⋅</Typography>
+                              <Typography variant="caption">
+                                {timeRange}
+                              </Typography>
+                            </>
+                          )}
+                        </Box>
+                      </Box>
+                    ) : (
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <Typography variant="body2">{emoji}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {shift?.name || "—"}
+                        </Typography>
+                        <Typography variant="body2">⋅</Typography>
+                        <Typography variant="body2">{dateLabel}</Typography>
+                        {timeRange && (
+                          <>
+                            <Typography variant="body2">⋅</Typography>
+                            <Typography variant="caption">
+                              {timeRange}
+                            </Typography>
+                          </>
+                        )}
+                      </Box>
+                    )
                   }
                   secondary={
                     <Typography
