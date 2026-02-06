@@ -1,9 +1,7 @@
-import React from "react";
 import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
   Button,
   IconButton,
   Box,
@@ -15,14 +13,9 @@ import {
   TableRow,
   TableCell,
   CircularProgress,
-  Tooltip,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import {
-  ReplacementCandidateT,
-  ConstraintHitsT,
-  ReplacementImplicationsT,
-} from "../../types/replacement";
+import { ReplacementCandidateT } from "../../types/replacement";
 import {
   renderBoolean,
   renderWeeklyTime,
@@ -31,12 +24,11 @@ import {
   renderOverlapHit,
   renderFilterHit,
   renderRequestHit,
-} from "../shared/implications-renderers";
+} from "../common/implications-renderers";
 import { getCategoryEmoji } from "../../utils/replacementHelpers";
 import { WorkerT } from "../../types/worker";
 import { ShiftT } from "../../types/shift";
 import { AssignmentT } from "../../types/assignment";
-import dayjs from "dayjs";
 
 interface ReplacementDetailsDialogProps {
   open: boolean;

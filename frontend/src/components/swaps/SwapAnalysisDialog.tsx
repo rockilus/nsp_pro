@@ -31,7 +31,7 @@ import {
   renderOverlapHit,
   renderFilterHit,
   renderRequestHit,
-} from "../shared/implications-renderers";
+} from "../common/implications-renderers";
 
 interface SwapAnalysisDialogProps {
   open: boolean;
