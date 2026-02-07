@@ -10,14 +10,21 @@ import MobileScheduleTab from "./mobile/mobile-schedule-tab";
 // Hooks
 import { useIsMobile } from "@/hooks/useIsMobile";
 // Components
-import CurrentSelectionLHSTab from "./lhs-tabs/current-selection-lhs-tab";
 import BreachList from "./lhs-tabs/breach-list";
 import QuickStaffingTable from "./lhs-tabs/quick-staffing";
 import QuickStatsTable from "./lhs-tabs/quick-stats";
 import ScheduleDisplay from "./table/schedule-display";
 import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
 import LHSTab from "./lhs-tabs/lhs-tab";
-import CreateAssignment from "./lhs-tabs/create-assignment";
+import ScheduleItemDialog from "./dialogs/schedule-item-dialog";
+import {
+  ScheduleItemType,
+  DialogMode,
+  ScheduleItemDialogData,
+  CreateAssignmentData,
+  CreateDemandData,
+  CreateRequestData,
+} from "./dialogs/schedule-item-types";
 import NoAssignmentsDisplay from "./no-assignments-display";
 import { buildAssignmentsDataByOwnerAndDate } from "./table/shared/assignment-utils";
 import { getPeriodStartEndDates } from "./schedule-utils";
@@ -196,11 +203,6 @@ export default function ScheduleTab({
 
   // resetScheduleViewSettings can be called to reset all settings to defaults
   // Example: resetScheduleViewSettings() - useful for settings reset UI
-  const [selectedAssignment, setSelectedAssignment] =
-    useState<AssignmentDataT | null>(null);
-  const [selectedDemand, setSelectedDemand] =
-    useState<ScheduleCellDataT | null>(null);
-  const [selectedRequest, setSelectedRequest] = useState<RequestT | null>(null);
 
   // React Query hooks for shift demands - use dates from settings
   const {
@@ -292,11 +294,17 @@ export default function ScheduleTab({
   );
 
   const [selectedTab, setSelectedTab] = useState<string | null>(null);
-  const [createAssignmentData, setCreateAssignmentData] =
-    useState<CreateAssignmentT | null>(null);
 
   const [selectedQuickStatsTimeFrame, setSelectedQuickStatsTimeFrame] =
     useState<StatsTimeFrameOptions>(StatsTimeFrameOptions.CAMPAING);
+
+  // Unified dialog state
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<DialogMode>(DialogMode.CREATE);
+  const [dialogType, setDialogType] = useState<ScheduleItemType>(
+    ScheduleItemType.ASSIGNMENT,
+  );
+  const [dialogData, setDialogData] = useState<ScheduleItemDialogData>(null);
 
   const isMobile = useIsMobile();
 
@@ -309,26 +317,26 @@ export default function ScheduleTab({
   };
 
   const handleAssignmentSelection = (selectedAssignment: AssignmentDataT) => {
-    setSelectedAssignment(selectedAssignment);
-    setSelectedDemand(null);
-    setSelectedRequest(null);
-    setSelectedTab("selection");
+    setDialogOpen(true);
+    setDialogMode(DialogMode.EDIT);
+    setDialogType(ScheduleItemType.ASSIGNMENT);
+    setDialogData({ assignmentData: selectedAssignment });
   };
 
   const handleDemandSelection = (
     selectedScheduleCellData: ScheduleCellDataT,
   ) => {
-    setSelectedDemand(selectedScheduleCellData);
-    setSelectedAssignment(null);
-    setSelectedRequest(null);
-    setSelectedTab("selection");
+    setDialogOpen(true);
+    setDialogMode(DialogMode.EDIT);
+    setDialogType(ScheduleItemType.DEMAND);
+    setDialogData({ cellData: selectedScheduleCellData });
   };
 
   const handleRequestSelection = (request: RequestT) => {
-    setSelectedRequest(request);
-    setSelectedAssignment(null);
-    setSelectedDemand(null);
-    setSelectedTab("selection");
+    setDialogOpen(true);
+    setDialogMode(DialogMode.EDIT);
+    setDialogType(ScheduleItemType.REQUEST);
+    setDialogData({ request });
   };
 
   // updateScheduleViewSettings is now provided by the useScheduleViewSettings hook
@@ -434,21 +442,6 @@ export default function ScheduleTab({
         demandId,
         demand: updates,
       });
-
-      // Update selectedDemand with fresh data if it was the updated demand
-      if (selectedDemand?.shiftDemandsData?.shiftDemand?.id === demandId) {
-        if (updatedShiftDemand) {
-          // Create updated ScheduleCellDataT with new shift demand data
-          const updatedSelectedDemand: ScheduleCellDataT = {
-            ...selectedDemand,
-            shiftDemandsData: {
-              ...selectedDemand.shiftDemandsData,
-              shiftDemand: updatedShiftDemand,
-            },
-          };
-          setSelectedDemand(updatedSelectedDemand);
-        }
-      }
     } catch (error) {
       console.error("Failed to update shift demand:", error);
     }
@@ -457,11 +450,6 @@ export default function ScheduleTab({
   const handleDeleteShiftDemand = async (demandId: string) => {
     try {
       await shiftDemandMutations.delete.mutateAsync(demandId);
-
-      // Clear selection if deleted demand was selected
-      if (selectedDemand) {
-        setSelectedDemand(null);
-      }
     } catch (error) {
       console.error("Failed to delete shift demand:", error);
     }
@@ -475,7 +463,6 @@ export default function ScheduleTab({
     try {
       const newRequest = await addRequest(request, teamWithMembership.team.id);
       setRequests([...requests, newRequest]);
-      setSelectedRequest(newRequest);
     } catch (error) {
       console.error("Failed to add request:", error);
     }
@@ -490,7 +477,6 @@ export default function ScheduleTab({
       setRequests(
         requests.map((r) => (r.id === updatedRequest.id ? updatedRequest : r)),
       );
-      setSelectedRequest(updatedRequest);
     } catch (error) {
       console.error("Failed to update request:", error);
     }
@@ -500,8 +486,6 @@ export default function ScheduleTab({
     try {
       await deleteRequest(requestId, teamWithMembership.team.id);
       setRequests(requests.filter((r) => r.id !== requestId));
-      setSelectedRequest(null);
-      setSelectedTab(null);
     } catch (error) {
       console.error("Failed to delete request:", error);
     }
@@ -519,7 +503,6 @@ export default function ScheduleTab({
       setRequests((prev) =>
         prev.map((r) => (r.id === rescindedRequest.id ? rescindedRequest : r)),
       );
-      setSelectedRequest(rescindedRequest);
 
       if (assignmentsDeletedIds.length > 0) {
         setAssignments((prev) =>
@@ -537,11 +520,10 @@ export default function ScheduleTab({
       const acceptedRequest = result.request;
       const newAssignments = result.assignments || [];
 
-      // Update requests list and selected request
+      // Update requests list
       setRequests((prev) =>
         prev.map((r) => (r.id === acceptedRequest.id ? acceptedRequest : r)),
       );
-      setSelectedRequest(acceptedRequest);
 
       // Merge new assignments into the assignments state
       if (newAssignments.length > 0) {
@@ -566,7 +548,6 @@ export default function ScheduleTab({
       setRequests(
         requests.map((r) => (r.id === deniedRequest.id ? deniedRequest : r)),
       );
-      setSelectedRequest(deniedRequest);
     } catch (error) {
       console.error("Failed to deny request:", error);
     }
@@ -636,15 +617,27 @@ export default function ScheduleTab({
   const handleOpenCreateAssignment = (
     createAssignmentData: CreateAssignmentT,
   ) => {
-    setCreateAssignmentData(createAssignmentData);
-    setSelectedTab("create_assignment");
+    setDialogOpen(true);
+    setDialogMode(DialogMode.CREATE);
+    setDialogType(ScheduleItemType.ASSIGNMENT);
+    setDialogData({
+      scheduleId: createAssignmentData.scheduleId,
+      workerId: createAssignmentData.workerId,
+      shiftId: createAssignmentData.shiftId,
+      date: createAssignmentData.date,
+      addDemandActive:
+        !createAssignmentData.haveDemand &&
+        scheduleViewSettings.groupBy === "shift",
+    } as CreateAssignmentData);
   };
 
   const handleCloseLHS = () => {
-    setCreateAssignmentData(null);
     setSelectedTab(null);
-    setSelectedAssignment(null);
-    setSelectedRequest(null);
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setDialogData(null);
   };
 
   const handleCreateAssignment = async (
@@ -656,19 +649,6 @@ export default function ScheduleTab({
     if (ARResult.recurrenceCreated) {
       setRecurrences([...recurrences, ARResult.recurrenceCreated]);
     }
-    setSelectedTab("selection");
-    const assignDict = buildAssignmentsDataByOwnerAndDate(
-      AttributeOwnerType.WORKER,
-      [ARResult.assignmentsCreated[0]], // Feed only the first assignment
-      recurrences,
-      workers,
-      shifts,
-      breaches,
-      requests,
-    );
-    const newSelectedCell = Object.values(assignDict)[0][0];
-    setSelectedAssignment(newSelectedCell);
-    setCreateAssignmentData(null);
   };
 
   const handleUpdateAssignment = async (
@@ -684,20 +664,6 @@ export default function ScheduleTab({
     );
 
     updateAssignmentsAndRecurrencesStates(ARResult);
-
-    const assignDict = buildAssignmentsDataByOwnerAndDate(
-      AttributeOwnerType.WORKER,
-      [ARResult.assignmentsUpdated[0]], // Feed only the first updated assignment
-      recurrences,
-      workers,
-      shifts,
-      breaches,
-      requests,
-    );
-    const newSelectedCell = Object.values(assignDict)[0][0];
-    setSelectedAssignment(newSelectedCell);
-    setSelectedTab("selection");
-    setCreateAssignmentData(null);
   };
 
   const handleDeleteAssignment = async (
@@ -712,7 +678,6 @@ export default function ScheduleTab({
       recurrenceUpdateScope,
     );
     updateAssignmentsAndRecurrencesStates(ARResult);
-    setSelectedAssignment(null);
   };
 
   const updateSelectedPeriod = (
@@ -1047,63 +1012,6 @@ export default function ScheduleTab({
       ) : null,
       ownerOnly: true,
     },
-    {
-      name: "selection",
-      label: t("selection"),
-      content: (
-        <CurrentSelectionLHSTab
-          lng={lng}
-          workers={workers.filter((w) => !w.deleted)}
-          shifts={shifts.filter((s) => !s.deleted)}
-          schedules={[
-            ...(scheduleCampaign ? [scheduleCampaign] : []),
-            ...schedulesValidated,
-          ]}
-          selectedAssignment={selectedAssignment}
-          selectedDemand={selectedDemand}
-          selectedRequest={selectedRequest}
-          specialties={specialties}
-          shiftOptions={[]}
-          userWorkerId={null}
-          userTeamRole={teamWithMembership.membership.role}
-          onClose={handleCloseLHS}
-          handleUpdateAssignment={handleUpdateAssignment}
-          handleDeleteAssignment={handleDeleteAssignment}
-          handleUpdateShiftDemand={handleUpdateShiftDemand}
-          handleDeleteShiftDemand={handleDeleteShiftDemand}
-          handleAddRequest={handleAddRequest}
-          handleUpdateRequest={handleUpdateRequest}
-          handleDeleteRequest={handleDeleteRequest}
-          handleRescindRequest={handleRescindRequest}
-          handleAcceptRequest={handleAcceptRequest}
-          handleDenyRequest={handleDenyRequest}
-        />
-      ),
-    },
-    {
-      name: "create_assignment",
-      label: "",
-      content: createAssignmentData ? (
-        <CreateAssignment
-          lng={lng}
-          teamWithMembership={teamWithMembership}
-          scheduleId={createAssignmentData.scheduleId}
-          workerSelectedId={createAssignmentData.workerId}
-          shiftSelectedId={createAssignmentData.shiftId}
-          dateSelected={createAssignmentData.date}
-          workers={workers}
-          shifts={shifts}
-          addDemandActive={
-            !createAssignmentData.haveDemand &&
-            scheduleViewSettings.groupBy === "shift"
-          }
-          onClose={handleCloseLHS}
-          handleCreateAssignment={handleCreateAssignment}
-          handleCreateShiftDemand={handleCreateShiftDemand}
-        />
-      ) : null,
-      ownerOnly: false,
-    },
   ];
 
   // Filter tabs based on role
@@ -1221,6 +1129,40 @@ export default function ScheduleTab({
             />
           )}
         </div>
+
+        <ScheduleItemDialog
+          lng={lng}
+          open={dialogOpen}
+          onClose={handleCloseDialog}
+          mode={dialogMode}
+          selectedType={dialogType}
+          dialogData={dialogData}
+          teamId={teamWithMembership.team.id}
+          scheduleId={scheduleCampaign?.id ?? null}
+          workers={workers.filter((w) => !w.deleted)}
+          shifts={shifts.filter((s) => !s.deleted)}
+          schedules={[
+            ...(scheduleCampaign ? [scheduleCampaign] : []),
+            ...schedulesValidated,
+          ]}
+          specialties={specialties}
+          shiftOptions={[]}
+          userWorkerId={null}
+          userTeamRole={teamWithMembership.membership.role}
+          useSolver={teamWithMembership.team.useSolver}
+          handleCreateAssignment={handleCreateAssignment}
+          handleUpdateAssignment={handleUpdateAssignment}
+          handleDeleteAssignment={handleDeleteAssignment}
+          handleCreateShiftDemand={handleCreateShiftDemand}
+          handleUpdateShiftDemand={handleUpdateShiftDemand}
+          handleDeleteShiftDemand={handleDeleteShiftDemand}
+          handleAddRequest={handleAddRequest}
+          handleUpdateRequest={handleUpdateRequest}
+          handleDeleteRequest={handleDeleteRequest}
+          handleRescindRequest={handleRescindRequest}
+          handleAcceptRequest={handleAcceptRequest}
+          handleDenyRequest={handleDenyRequest}
+        />
       </div>
     </div>
   );

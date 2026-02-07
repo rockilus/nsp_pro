@@ -23,7 +23,8 @@ import { computePeriodEndDate } from "../../../app/lib/utils/scheduleViewSetting
 import { TeamWithMembership, TeamMembershipRole } from "@/types/team";
 import { ShiftRestType } from "@/types/shift";
 // Local components
-import AssignmentDialog from "../assignment-dialog";
+import ScheduleItemDialog from "../dialogs/schedule-item-dialog";
+import { ScheduleItemType, DialogMode } from "../dialogs/schedule-item-types";
 import MobileNavAppBar from "../../app-bar/mobile-nav-app-bar";
 import MobileScheduleNav from "./mobile-schedule-nav";
 import MobileScheduleSettings from "./mobile-schedule-settings";
@@ -375,20 +376,45 @@ export default function MobileScheduleTab({
           </Fab>
         </RoleBased>
 
-        <AssignmentDialog
+        <ScheduleItemDialog
+          lng={lng}
           open={sheetOpen}
           onClose={() => setSheetOpen(false)}
-          assignment={activeAssignment}
-          shift={
+          mode={activeAssignment ? DialogMode.EDIT : DialogMode.CREATE}
+          selectedType={ScheduleItemType.ASSIGNMENT}
+          dialogData={
             activeAssignment
-              ? shifts.find((s) => s.id === activeAssignment.shiftId)
-              : null
+              ? {
+                  assignmentData: {
+                    assignment: activeAssignment,
+                    worker:
+                      workers.find((w) => w.id === activeAssignment.workerId) ||
+                      null,
+                    shift:
+                      shifts.find((s) => s.id === activeAssignment.shiftId) ||
+                      null,
+                    breaches: [],
+                    requests: [],
+                    recurrence: null,
+                  },
+                }
+              : {
+                  scheduleId: null,
+                  workerId: null,
+                  shiftId: null,
+                  date: null,
+                }
           }
-          worker={
-            activeAssignment
-              ? workers.find((w) => w.id === activeAssignment.workerId)
-              : null
-          }
+          teamId={teamWithMembership.team.id}
+          scheduleId={null}
+          workers={workers}
+          shifts={shifts}
+          schedules={[]}
+          specialties={[]}
+          shiftOptions={[]}
+          userWorkerId={null}
+          userTeamRole={teamWithMembership.membership.role}
+          useSolver={teamWithMembership.team.useSolver}
         />
       </Box>
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { useTranslation } from "../../../../app/i18n/client";
+import { useTranslation } from "../../../../../app/i18n/client";
 // MUI
 import { Select, MenuItem, TextField, Button } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
@@ -15,7 +15,7 @@ import {
   RecurrenceEndType,
   RecurrenceRuleT,
   OccurrenceInfoT,
-} from "../../../../types/recurrence";
+} from "../../../../../types/recurrence";
 
 dayjs.extend(utc);
 

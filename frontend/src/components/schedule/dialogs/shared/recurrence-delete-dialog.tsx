@@ -10,7 +10,7 @@ import {
   RadioGroup,
   Button,
 } from "@mui/material";
-import { RecurrenceUpdateScope } from "../../../types/recurrence";
+import { RecurrenceUpdateScope } from "../../../../types/recurrence";
 
 interface RecurrenceDeleteDialogProps {
   open: boolean;
@@ -24,7 +24,7 @@ const RecurrenceDeleteDialog: React.FC<RecurrenceDeleteDialogProps> = ({
   onConfirm,
 }) => {
   const [selectedScope, setSelectedScope] = useState<RecurrenceUpdateScope>(
-    RecurrenceUpdateScope.SINGLE
+    RecurrenceUpdateScope.SINGLE,
   );
 
   const handleConfirm = () => {

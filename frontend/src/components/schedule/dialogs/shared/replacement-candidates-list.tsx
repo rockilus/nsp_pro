@@ -10,17 +10,17 @@ import {
   Typography,
   Divider,
 } from "@mui/material";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../../app/i18n/client";
 import {
   ReplacementCandidateT,
   MostConstrainingReasonT,
-} from "../../types/replacement";
+} from "../../../../types/replacement";
 import {
   getCategoryEmoji,
   getReasonLabel,
   formatWeeklyTime,
   formatMonthlyDuties,
-} from "../../utils/replacementHelpers";
+} from "../../../../utils/replacementHelpers";
 
 interface ReplacementCandidatesListProps {
   lng: string;
