@@ -132,6 +132,7 @@ const DemandForm: React.FC<DemandFormProps> = ({
         1,
         "Direct requirement",
       );
+      onCancel(); // Close dialog after successful creation
     } catch (error) {
       console.error("Failed to create demand:", error);
       alert("Failed to create demand. Please try again.");
@@ -182,6 +183,7 @@ const DemandForm: React.FC<DemandFormProps> = ({
     if (!shiftDemand || !onDeleteDemand) return;
 
     await onDeleteDemand(shiftDemand.id);
+    onCancel(); // Close dialog after successful deletion
   };
 
   if (isEditing && shift && shiftDemand && selectedDate) {
