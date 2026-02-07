@@ -104,12 +104,16 @@ const DemandForm: React.FC<DemandFormProps> = ({
   );
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(date);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [demandCount, setDemandCount] = useState<number>(
+    shiftDemand?.count ?? 1,
+  );
 
   useEffect(() => {
     if (isEditing && cellData) {
       setSelectedShiftId(cellData.shiftDemandsData?.shift?.id ?? null);
       if (cellData.shiftDemandsData?.shiftDemand) {
         setSelectedDate(dayjs.unix(cellData.shiftDemandsData.shiftDemand.date));
+        setDemandCount(cellData.shiftDemandsData.shiftDemand.count);
       }
     } else if (initialData) {
       setSelectedShiftId(initialData.shiftId);
@@ -137,21 +141,41 @@ const DemandForm: React.FC<DemandFormProps> = ({
   };
 
   const handleDecreaseDSD = async () => {
-    if (!shiftDemand || !onUpdateDemand || shiftDemand.count <= 1) {
+    if (!shiftDemand || !onUpdateDemand || demandCount <= 1) {
       return;
     }
 
-    await onUpdateDemand(shiftDemand.id, {
-      count: shiftDemand.count - 1,
-    });
+    const newCount = demandCount - 1;
+    const previousCount = demandCount;
+    setDemandCount(newCount); // Optimistic update
+
+    try {
+      await onUpdateDemand(shiftDemand.id, {
+        count: newCount,
+      });
+    } catch (error) {
+      // Revert on error
+      setDemandCount(previousCount);
+      console.error("Failed to decrease demand:", error);
+    }
   };
 
   const handleIncreaseDSD = async () => {
     if (!shiftDemand || !onUpdateDemand) return;
 
-    await onUpdateDemand(shiftDemand.id, {
-      count: shiftDemand.count + 1,
-    });
+    const newCount = demandCount + 1;
+    const previousCount = demandCount;
+    setDemandCount(newCount); // Optimistic update
+
+    try {
+      await onUpdateDemand(shiftDemand.id, {
+        count: newCount,
+      });
+    } catch (error) {
+      // Revert on error
+      setDemandCount(previousCount);
+      console.error("Failed to increase demand:", error);
+    }
   };
 
   const handleDeleteDemands = async () => {
@@ -179,7 +203,7 @@ const DemandForm: React.FC<DemandFormProps> = ({
           <div className="demand-selection-first-row">
             <span className="demand-selection-shift-name">{shift.name}</span>
             <div className="demand-selection-shift-status">
-              <span className="dsd-stats dsd-stats-actual">{`${countActual} / ${shiftDemand.count}`}</span>
+              <span className="dsd-stats dsd-stats-actual">{`${countActual} / ${demandCount}`}</span>
             </div>
           </div>
           <span className="demand-selection-date-time">
@@ -192,9 +216,7 @@ const DemandForm: React.FC<DemandFormProps> = ({
           </span>
           <div className="demand-selection-daily-shift-demand">
             <span className="demand-selection-dsd-label">{t("demand")}</span>
-            <span className="demand-selection-dsd-target">
-              {shiftDemand.count}
-            </span>
+            <span className="demand-selection-dsd-target">{demandCount}</span>
             <AdjustStaffingButtons
               onDecrease={handleDecreaseDSD}
               onIncrease={handleIncreaseDSD}
@@ -219,7 +241,7 @@ const DemandForm: React.FC<DemandFormProps> = ({
                   {`(${staffing.staffing})`}
                 </span>
                 <span className="demand-selection-staffing-required-count">
-                  {staffing.staffing * shiftDemand.count}
+                  {staffing.staffing * demandCount}
                 </span>
               </div>
             ))}
@@ -233,7 +255,7 @@ const DemandForm: React.FC<DemandFormProps> = ({
                 {shift.staffing.reduce(
                   (sum: number, staffing) => sum + staffing.staffing,
                   0,
-                ) * shiftDemand.count}
+                ) * demandCount}
               </span>
             </div>
           </div>
