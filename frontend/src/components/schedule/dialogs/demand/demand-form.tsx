@@ -292,24 +292,6 @@ const DemandForm: React.FC<DemandFormProps> = ({
         />
       </div>
 
-      {selectedShift && selectedDate && (
-        <div style={{ marginTop: "16px", marginBottom: "16px" }}>
-          <span className="demand-selection-shift-name">
-            {selectedShift.name}
-          </span>
-          <span className="demand-selection-date-time">
-            {selectedDate.format("D MMMM YYYY")}
-            {" ⋅ "}
-            {selectedShift.startTime.format("HH:mm")}
-            {" - "}
-            {selectedShift.endTime.format("HH:mm")}
-            {!selectedShift.endTime.isSame(selectedShift.startTime, "day") && (
-              <sup>+1</sup>
-            )}
-          </span>
-        </div>
-      )}
-
       <div className="create-demand-actions">
         <Button
           variant="outlined"

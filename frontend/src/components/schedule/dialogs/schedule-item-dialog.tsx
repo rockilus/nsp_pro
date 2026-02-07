@@ -5,8 +5,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  Tabs,
-  Tab,
+  Button,
   Box,
   IconButton,
 } from "@mui/material";
@@ -27,28 +26,6 @@ import {
 import AssignmentForm from "./assignment/assignment-form";
 import DemandForm from "./demand/demand-form";
 import RequestForm from "./request/request-form";
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: ScheduleItemType;
-  value: ScheduleItemType;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`schedule-item-tabpanel-${index}`}
-      aria-labelledby={`schedule-item-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box>{children}</Box>}
-    </div>
-  );
-}
 
 export default function ScheduleItemDialog({
   lng,
@@ -91,11 +68,8 @@ export default function ScheduleItemDialog({
     }
   }, [open, selectedType]);
 
-  const handleTabChange = (
-    event: React.SyntheticEvent,
-    newValue: ScheduleItemType,
-  ) => {
-    setActiveType(newValue);
+  const handleTypeChange = (newType: ScheduleItemType) => {
+    setActiveType(newType);
   };
 
   const getDialogTitle = () => {
@@ -130,32 +104,50 @@ export default function ScheduleItemDialog({
       </DialogTitle>
       <DialogContent>
         {mode === DialogMode.CREATE && (
-          <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
-            <Tabs
-              value={activeType}
-              onChange={handleTabChange}
-              aria-label="schedule item type tabs"
+          <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+            <Button
+              variant={
+                activeType === ScheduleItemType.ASSIGNMENT
+                  ? "contained"
+                  : "outlined"
+              }
+              size="small"
+              onClick={() => handleTypeChange(ScheduleItemType.ASSIGNMENT)}
+              data-testid="assignment-button"
+              sx={{ textTransform: "none" }}
             >
-              <Tab
-                label={t("assignment")}
-                value={ScheduleItemType.ASSIGNMENT}
-                id="schedule-item-tab-assignment"
-              />
-              <Tab
-                label={t("demand")}
-                value={ScheduleItemType.DEMAND}
-                id="schedule-item-tab-demand"
-              />
-              <Tab
-                label={t("request")}
-                value={ScheduleItemType.REQUEST}
-                id="schedule-item-tab-request"
-              />
-            </Tabs>
+              {t("assignment")}
+            </Button>
+            <Button
+              variant={
+                activeType === ScheduleItemType.DEMAND
+                  ? "contained"
+                  : "outlined"
+              }
+              size="small"
+              onClick={() => handleTypeChange(ScheduleItemType.DEMAND)}
+              data-testid="demand-button"
+              sx={{ textTransform: "none" }}
+            >
+              {t("demand")}
+            </Button>
+            <Button
+              variant={
+                activeType === ScheduleItemType.REQUEST
+                  ? "contained"
+                  : "outlined"
+              }
+              size="small"
+              onClick={() => handleTypeChange(ScheduleItemType.REQUEST)}
+              data-testid="request-button"
+              sx={{ textTransform: "none" }}
+            >
+              {t("request")}
+            </Button>
           </Box>
         )}
 
-        <TabPanel value={activeType} index={ScheduleItemType.ASSIGNMENT}>
+        {activeType === ScheduleItemType.ASSIGNMENT && (
           <AssignmentForm
             lng={lng}
             mode={mode}
@@ -195,9 +187,9 @@ export default function ScheduleItemDialog({
             }}
             onCancel={onClose}
           />
-        </TabPanel>
+        )}
 
-        <TabPanel value={activeType} index={ScheduleItemType.DEMAND}>
+        {activeType === ScheduleItemType.DEMAND && (
           <DemandForm
             lng={lng}
             mode={mode}
@@ -220,9 +212,9 @@ export default function ScheduleItemDialog({
             onDeleteDemand={handleDeleteShiftDemand}
             onCancel={onClose}
           />
-        </TabPanel>
+        )}
 
-        <TabPanel value={activeType} index={ScheduleItemType.REQUEST}>
+        {activeType === ScheduleItemType.REQUEST && (
           <RequestForm
             lng={lng}
             teamId={teamId}
@@ -245,7 +237,7 @@ export default function ScheduleItemDialog({
             handleDenyRequest={handleDenyRequest}
             onClose={onClose}
           />
-        </TabPanel>
+        )}
       </DialogContent>
     </Dialog>
   );
