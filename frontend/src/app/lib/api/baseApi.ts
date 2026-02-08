@@ -15,7 +15,7 @@ export interface AuthenticatedApiClient {
   postRaw?: (
     endpoint: string,
     data?: any,
-    options?: RequestInit
+    options?: RequestInit,
   ) => Promise<Response>;
 }
 
@@ -75,16 +75,9 @@ export abstract class BaseApi {
     method: "get" | "post" | "put" | "delete",
     endpoint: string,
     data?: any,
-    options?: RequestInit
+    options?: RequestInit,
   ): Promise<T> {
     try {
-      // For delete operations, we handle them differently since they often return 204 No Content
-      if (method === "delete") {
-        await apiClient.delete(endpoint, options);
-        // Return null for delete operations as they typically don't return content
-        return null as unknown as T;
-      }
-
       switch (method) {
         case "get":
           return await apiClient.get<T>(endpoint, options);
@@ -92,6 +85,8 @@ export abstract class BaseApi {
           return await apiClient.post<T>(endpoint, data, options);
         case "put":
           return await apiClient.put<T>(endpoint, data, options);
+        case "delete":
+          return await apiClient.delete<T>(endpoint, options);
         default:
           throw new Error(`Unsupported method: ${method}`);
       }
@@ -113,7 +108,7 @@ export abstract class BaseApi {
    */
   protected static async makeFetchRequest<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<T> {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       ...options,
@@ -139,7 +134,7 @@ export abstract class BaseApi {
     apiClientOrToken: AuthenticatedApiClient | string,
     method: "post" | "get",
     endpoint: string,
-    data?: any
+    data?: any,
   ): Promise<Blob> {
     try {
       let response: Response;
@@ -182,7 +177,7 @@ export abstract class BaseApi {
       if (!response.ok) {
         const responseData = await response.json().catch(() => ({}));
         throw new Error(
-          `Request failed: ${responseData.detail || response.statusText}`
+          `Request failed: ${responseData.detail || response.statusText}`,
         );
       }
 
