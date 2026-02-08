@@ -25,7 +25,7 @@ import {
 // Forms
 import AssignmentForm from "./assignment/assignment-form";
 import DemandForm from "./demand/demand-form";
-import RequestForm from "./request/request-form";
+import { RequestForm } from "@/components/common/RequestForm";
 
 export default function ScheduleItemDialog({
   lng,

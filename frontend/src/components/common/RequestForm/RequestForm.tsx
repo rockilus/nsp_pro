@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import dayjs from "dayjs";
-import { useTranslation } from "../../../../app/i18n/client";
+import { useTranslation } from "@/app/i18n/client";
 // MUI
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import Box from "@mui/material/Box";
@@ -23,27 +23,27 @@ import ClearIcon from "@mui/icons-material/Clear";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import Chip from "@mui/material/Chip";
 // Components
-import ShiftOptionsDisplay from "../../../stats/nav-bar/shift-options-display";
+import ShiftOptionsDisplay from "@/components/stats/nav-bar/shift-options-display";
 // Styles
-import "../../../request/request-panel.css";
+import "@/components/request/request-panel.css";
 // Utils
 import {
   getRequestStatusColor,
   getRequestStatusLabel,
-} from "../../../../utils/shift-worker-option-display";
+} from "@/utils/shift-worker-option-display";
 // Types
 import {
   RequestT,
   RequestStatus,
   RequestType,
   FulfillmentStatus,
-} from "../../../../types/request";
-import { ShiftT, ShiftType, ShiftRestType } from "../../../../types/shift";
-import { WorkerT } from "../../../../types/worker";
+} from "@/types/request";
+import { ShiftT, ShiftType, ShiftRestType } from "@/types/shift";
+import { WorkerT } from "@/types/worker";
 import { TeamMembershipRole } from "@/types/team";
 import { ShiftWorkerOptionT, SWOIdTypes } from "@/types/constraint";
 
-export default function RequestPanelContent({
+export default function RequestForm({
   lng,
   teamId,
   isEdit,

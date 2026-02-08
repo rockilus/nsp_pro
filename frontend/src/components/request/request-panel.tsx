@@ -10,7 +10,7 @@ import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
 import CloseIcon from "@mui/icons-material/Close";
 // Components
-import RequestPanelContent from "./request-panel-content";
+import { RequestForm } from "@/components/common/RequestForm";
 // Types
 import { RequestT } from "../../types/request";
 import { ShiftT } from "../../types/shift";
@@ -160,7 +160,7 @@ export default function RequestPanel({
           </DialogTitle>
         )}
         <DialogContent sx={isMobile ? { p: 0 } : undefined}>
-          <RequestPanelContent
+          <RequestForm
             lng={lng}
             teamId={teamId}
             isEdit={isEdit}
