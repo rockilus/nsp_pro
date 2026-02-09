@@ -60,16 +60,8 @@ test.describe("Assignment Creation - Team Leader", () => {
     const testShifts = scheduleTestBase.getTestShifts();
 
     // Open dialog (implementation may vary - adjust selector as needed)
-    const addButton = page
-      .locator('[data-testid="add-schedule-item-button"]')
-      .first();
-
-    // If add button not found, try alternative method
-    if (!(await addButton.isVisible().catch(() => false))) {
-      console.log("⚠️ Add button not found, skipping test");
-      test.skip();
-      return;
-    }
+    const addButton = page.locator('[data-testid="create-assignment-button"]');
+    await expect(addButton).toBeVisible({ timeout: 5000 });
 
     await addButton.click();
 
