@@ -619,4 +619,103 @@ export class ScheduleTestBase {
 
     return worker;
   }
+
+  /**
+   * Set the schedule view settings in localStorage for the test team
+   * Only updates the provided settings, leaving others unchanged.
+   * If targetDate and timeFrame are provided, calculates the appropriate periodStartDate.
+   *
+   * @param page - Playwright page object
+   * @param options - Optional settings to update
+   */
+  async setScheduleViewSettings(
+    page: Page,
+    options?: {
+      targetDate?: dayjs.Dayjs;
+      timeFrame?: "week" | "month";
+      groupBy?: "shift" | "worker";
+      showBreaches?: boolean;
+      showAssignments?: boolean;
+      showDailyShiftDemands?: boolean;
+      showRequests?: boolean;
+      periodStartDate?: dayjs.Dayjs;
+      mobileSelectedView?: "worker" | "team";
+      mobileSelectedWorkerId?: string | null;
+      mobileWeekStart?: string | null;
+    },
+  ): Promise<void> {
+    if (!this.testTeam) {
+      throw new Error("Test team must be created first");
+    }
+
+    const storageKey = `scheduleViewSettings_${this.testTeam.teamId}`;
+
+    // Get existing settings from localStorage
+    const existingSettings = await page.evaluate((key) => {
+      const stored = localStorage.getItem(key);
+      return stored ? JSON.parse(stored) : null;
+    }, storageKey);
+
+    // Build updates object with only provided values
+    const updates: any = {};
+
+    // Handle periodStartDate calculation or direct setting
+    if (options?.periodStartDate) {
+      updates.periodStartDate = options.periodStartDate.utc().toISOString();
+    } else if (options?.targetDate && options?.timeFrame) {
+      let calculatedDate: dayjs.Dayjs;
+      if (options.timeFrame === "week") {
+        // Start of the week (Monday = 1)
+        calculatedDate = options.targetDate.startOf("week").add(1, "day");
+      } else {
+        // Start of the month
+        calculatedDate = options.targetDate.startOf("month");
+      }
+      updates.periodStartDate = calculatedDate.utc().toISOString();
+    }
+
+    // Add other optional fields
+    if (options?.timeFrame !== undefined) updates.timeFrame = options.timeFrame;
+    if (options?.groupBy !== undefined) updates.groupBy = options.groupBy;
+    if (options?.showBreaches !== undefined)
+      updates.showBreaches = options.showBreaches;
+    if (options?.showAssignments !== undefined)
+      updates.showAssignments = options.showAssignments;
+    if (options?.showDailyShiftDemands !== undefined)
+      updates.showDailyShiftDemands = options.showDailyShiftDemands;
+    if (options?.showRequests !== undefined)
+      updates.showRequests = options.showRequests;
+    if (options?.mobileSelectedView !== undefined)
+      updates.mobileSelectedView = options.mobileSelectedView;
+    if (options?.mobileSelectedWorkerId !== undefined)
+      updates.mobileSelectedWorkerId = options.mobileSelectedWorkerId;
+    if (options?.mobileWeekStart !== undefined)
+      updates.mobileWeekStart = options.mobileWeekStart;
+
+    // Merge with existing settings
+    const settings = {
+      ...existingSettings,
+      ...updates,
+    };
+
+    // Set in localStorage
+    await page.evaluate(
+      ({ key, value }) => {
+        localStorage.setItem(key, JSON.stringify(value));
+      },
+      { key: storageKey, value: settings },
+    );
+
+    const logParts = ["✅ Set schedule view settings:"];
+    if (updates.timeFrame) logParts.push(`${updates.timeFrame} view`);
+    if (updates.periodStartDate) {
+      logParts.push(
+        `starting ${dayjs(updates.periodStartDate).format("YYYY-MM-DD")}`,
+      );
+    }
+    if (Object.keys(updates).length === 0) {
+      logParts.push("(no changes)");
+    }
+    console.log(logParts.join(" "));
+  }
 }

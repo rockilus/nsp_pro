@@ -229,6 +229,12 @@ test.describe("ScheduleItemDialog Navigation", () => {
       comment: "Test assignment",
     });
 
+    // Set schedule view settings to show the week containing tomorrow
+    await scheduleTestBase.setScheduleViewSettings(page, {
+      targetDate: tomorrow,
+      timeFrame: "week",
+    });
+
     // Refresh page to load the assignment
     await page.reload();
     await page.waitForLoadState("networkidle");
