@@ -476,11 +476,12 @@ export class ScheduleTestBase {
   /**
    * Get assignments for the test team
    */
-  async getAssignments(): Promise<any> {
+  async getAssignments(): Promise<AssignmentT[]> {
     if (!this.testTeam) {
       throw new Error("Test team not created. Call setupScheduleTests first.");
     }
-    return await this.dbUtils.getAssignments(this.testTeam.teamId);
+    return (await this.dbUtils.getAssignments(this.testTeam.teamId))
+      .assignments;
   }
 
   /**

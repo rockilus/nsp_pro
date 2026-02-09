@@ -88,12 +88,20 @@ test.describe("Assignment Creation - Team Leader", () => {
       .click();
 
     // Select date (tomorrow)
+    const today = dayjs.utc();
     const tomorrow = dayjs.utc().add(1, "day");
+    console.log("today: ", today.format("DD/MM/YYYY"));
+    console.log("tomorrow: ", tomorrow.format("DD/MM/YYYY"));
+
     const datePicker = page.locator(
       '[data-testid="edit-assignment-date-picker"]',
     );
-    await datePicker.click();
-    await datePicker.fill(tomorrow.format("MM/DD/YYYY"));
+    await datePicker.waitFor({ state: "visible" });
+    await datePicker.fill("", { force: true }); // Clear first
+    await page.waitForTimeout(100);
+    await datePicker.fill(tomorrow.format("DD/MM/YYYY"), { force: true });
+    await datePicker.press("Enter");
+    await page.waitForTimeout(300);
 
     // Click create button
     const createButton = page.locator(
@@ -108,12 +116,12 @@ test.describe("Assignment Creation - Team Leader", () => {
     // Verify assignment was created in database
     const assignments = await scheduleTestBase.getAssignments();
 
-    expect(assignments.assignments.length).toBeGreaterThan(0);
-    const createdAssignment = assignments.assignments.find(
-      (a: any) =>
+    expect(assignments.length).toBeGreaterThan(0);
+    const createdAssignment = assignments.find(
+      (a) =>
         a.workerId === testWorkers[0].workerId &&
         a.shiftId === testShifts[0].id &&
-        dayjs.utc(a.date).isSame(tomorrow, "day"),
+        a.date.isSame(tomorrow, "day"),
     );
     expect(createdAssignment).toBeDefined();
 
@@ -156,8 +164,12 @@ test.describe("Assignment Creation - Team Leader", () => {
     const datePicker = page.locator(
       '[data-testid="edit-assignment-date-picker"]',
     );
-    await datePicker.click();
-    await datePicker.fill(tomorrow.format("MM/DD/YYYY"));
+    await datePicker.waitFor({ state: "visible" });
+    await datePicker.fill("", { force: true }); // Clear first
+    await page.waitForTimeout(100);
+    await datePicker.fill(tomorrow.format("DD/MM/YYYY"), { force: true });
+    await datePicker.press("Enter");
+    await page.waitForTimeout(300);
 
     // Try to create without worker
     const createButton = page.locator(
@@ -212,8 +224,12 @@ test.describe("Assignment Creation - Team Leader", () => {
     const datePicker = page.locator(
       '[data-testid="edit-assignment-date-picker"]',
     );
-    await datePicker.click();
-    await datePicker.fill(tomorrow.format("MM/DD/YYYY"));
+    await datePicker.waitFor({ state: "visible" });
+    await datePicker.fill("", { force: true }); // Clear first
+    await page.waitForTimeout(100);
+    await datePicker.fill(tomorrow.format("DD/MM/YYYY"), { force: true });
+    await datePicker.press("Enter");
+    await page.waitForTimeout(300);
 
     // Try to create without shift
     const createButton = page.locator(
@@ -309,8 +325,12 @@ test.describe("Assignment Creation - Team Leader", () => {
     const datePicker = page.locator(
       '[data-testid="edit-assignment-date-picker"]',
     );
-    await datePicker.click();
-    await datePicker.fill(tomorrow.format("MM/DD/YYYY"));
+    await datePicker.waitFor({ state: "visible" });
+    await datePicker.fill("", { force: true }); // Clear first
+    await page.waitForTimeout(100);
+    await datePicker.fill(tomorrow.format("DD/MM/YYYY"), { force: true });
+    await datePicker.press("Enter");
+    await page.waitForTimeout(300);
 
     // Check fixed checkbox if it exists
     const fixedCheckbox = page.locator('input[type="checkbox"][name="fixed"]');
