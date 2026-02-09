@@ -71,21 +71,18 @@ test.describe("ScheduleItemDialog Navigation", () => {
     // Try to find and click a schedule cell or add button
     // This is a placeholder - adjust based on actual schedule page structure
     const addButton = page
-      .locator('[data-testid="add-schedule-item-button"]')
+      .locator('[data-testid="create-assignment-button"]')
       .first();
 
-    if (await addButton.isVisible()) {
-      await addButton.click();
+    // Assert button is visible - test will fail if not found
+    await expect(addButton).toBeVisible();
+    await addButton.click();
 
-      // Verify dialog opens
-      const dialog = page.locator('[data-testid="schedule-item-dialog"]');
-      await expect(dialog).toBeVisible();
+    // Verify dialog opens
+    const dialog = page.locator('[data-testid="schedule-item-dialog"]');
+    await expect(dialog).toBeVisible();
 
-      console.log("✅ Dialog opened successfully");
-    } else {
-      console.log("⚠️ Add button not found - skipping test");
-      test.skip();
-    }
+    console.log("✅ Dialog opened successfully");
   });
 
   test("should show type toggle buttons in CREATE mode", async ({
@@ -95,27 +92,23 @@ test.describe("ScheduleItemDialog Navigation", () => {
 
     // Open dialog in CREATE mode (implementation-specific)
     const addButton = page
-      .locator('[data-testid="add-schedule-item-button"]')
+      .locator('[data-testid="create-assignment-button"]')
       .first();
 
-    if (await addButton.isVisible()) {
-      await addButton.click();
+    // Assert button is visible - test will fail if not found
+    await expect(addButton).toBeVisible();
+    await addButton.click();
 
-      // Verify type toggle buttons are visible
-      const assignmentButton = page.locator(
-        '[data-testid="assignment-button"]',
-      );
-      const demandButton = page.locator('[data-testid="demand-button"]');
-      const requestButton = page.locator('[data-testid="request-button"]');
+    // Verify type toggle buttons are visible
+    const assignmentButton = page.locator('[data-testid="assignment-button"]');
+    const demandButton = page.locator('[data-testid="demand-button"]');
+    const requestButton = page.locator('[data-testid="request-button"]');
 
-      await expect(assignmentButton).toBeVisible();
-      await expect(demandButton).toBeVisible();
-      await expect(requestButton).toBeVisible();
+    await expect(assignmentButton).toBeVisible();
+    await expect(demandButton).toBeVisible();
+    await expect(requestButton).toBeVisible();
 
-      console.log("✅ Type toggle buttons visible in CREATE mode");
-    } else {
-      test.skip();
-    }
+    console.log("✅ Type toggle buttons visible in CREATE mode");
   });
 
   test("should switch between Assignment/Demand/Request types", async ({
@@ -124,46 +117,42 @@ test.describe("ScheduleItemDialog Navigation", () => {
     const testRunId = (testInfo as any).testRunId as string;
 
     const addButton = page
-      .locator('[data-testid="add-schedule-item-button"]')
+      .locator('[data-testid="create-assignment-button"]')
       .first();
 
-    if (await addButton.isVisible()) {
-      await addButton.click();
+    // Assert button is visible - test will fail if not found
+    await expect(addButton).toBeVisible();
+    await addButton.click();
 
-      // Click Demand button
-      const demandButton = page.locator('[data-testid="demand-button"]');
-      await demandButton.click();
+    // Click Demand button
+    const demandButton = page.locator('[data-testid="demand-button"]');
+    await demandButton.click();
 
-      // Verify Demand form content appears (check for demand-specific elements)
-      const demandShiftSelect = page.locator(
-        '[data-testid="demand-shift-select"]',
-      );
-      await expect(demandShiftSelect).toBeVisible();
+    // Verify Demand form content appears (check for demand-specific elements)
+    const demandShiftSelect = page.locator(
+      '[data-testid="demand-shift-select"]',
+    );
+    await expect(demandShiftSelect).toBeVisible();
 
-      // Click Assignment button
-      const assignmentButton = page.locator(
-        '[data-testid="assignment-button"]',
-      );
-      await assignmentButton.click();
+    // Click Assignment button
+    const assignmentButton = page.locator('[data-testid="assignment-button"]');
+    await assignmentButton.click();
 
-      // Verify Assignment form content appears
-      const workerSelect = page.locator(
-        '[data-testid="edit-assignment-worker-select"]',
-      );
-      await expect(workerSelect).toBeVisible();
+    // Verify Assignment form content appears
+    const workerSelect = page.locator(
+      '[data-testid="edit-assignment-worker-select"]',
+    );
+    await expect(workerSelect).toBeVisible();
 
-      // Click Request button
-      const requestButton = page.locator('[data-testid="request-button"]');
-      await requestButton.click();
+    // Click Request button
+    const requestButton = page.locator('[data-testid="request-button"]');
+    await requestButton.click();
 
-      // Verify Request form content appears
-      const requestWorkerSelect = page.locator('[data-testid="worker-select"]');
-      await expect(requestWorkerSelect).toBeVisible();
+    // Verify Request form content appears
+    const requestWorkerSelect = page.locator('[data-testid="worker-select"]');
+    await expect(requestWorkerSelect).toBeVisible();
 
-      console.log("✅ Successfully switched between all three types");
-    } else {
-      test.skip();
-    }
+    console.log("✅ Successfully switched between all three types");
   });
 
   test("should close dialog when clicking close button", async ({
@@ -172,27 +161,25 @@ test.describe("ScheduleItemDialog Navigation", () => {
     const testRunId = (testInfo as any).testRunId as string;
 
     const addButton = page
-      .locator('[data-testid="add-schedule-item-button"]')
+      .locator('[data-testid="create-assignment-button"]')
       .first();
 
-    if (await addButton.isVisible()) {
-      await addButton.click();
+    // Assert button is visible - test will fail if not found
+    await expect(addButton).toBeVisible();
+    await addButton.click();
 
-      // Verify dialog is open
-      const dialog = page.locator('[data-testid="schedule-item-dialog"]');
-      await expect(dialog).toBeVisible();
+    // Verify dialog is open
+    const dialog = page.locator('[data-testid="schedule-item-dialog"]');
+    await expect(dialog).toBeVisible();
 
-      // Click close button
-      const closeButton = page.locator('[data-testid="close-dialog-button"]');
-      await closeButton.click();
+    // Click close button
+    const closeButton = page.locator('[data-testid="close-dialog-button"]');
+    await closeButton.click();
 
-      // Verify dialog is closed
-      await expect(dialog).not.toBeVisible();
+    // Verify dialog is closed
+    await expect(dialog).not.toBeVisible();
 
-      console.log("✅ Dialog closed successfully");
-    } else {
-      test.skip();
-    }
+    console.log("✅ Dialog closed successfully");
   });
 
   test("should close dialog when pressing ESC key", async ({
@@ -201,26 +188,24 @@ test.describe("ScheduleItemDialog Navigation", () => {
     const testRunId = (testInfo as any).testRunId as string;
 
     const addButton = page
-      .locator('[data-testid="add-schedule-item-button"]')
+      .locator('[data-testid="create-assignment-button"]')
       .first();
 
-    if (await addButton.isVisible()) {
-      await addButton.click();
+    // Assert button is visible - test will fail if not found
+    await expect(addButton).toBeVisible();
+    await addButton.click();
 
-      // Verify dialog is open
-      const dialog = page.locator('[data-testid="schedule-item-dialog"]');
-      await expect(dialog).toBeVisible();
+    // Verify dialog is open
+    const dialog = page.locator('[data-testid="schedule-item-dialog"]');
+    await expect(dialog).toBeVisible();
 
-      // Press ESC key
-      await page.keyboard.press("Escape");
+    // Press ESC key
+    await page.keyboard.press("Escape");
 
-      // Verify dialog is closed
-      await expect(dialog).not.toBeVisible();
+    // Verify dialog is closed
+    await expect(dialog).not.toBeVisible();
 
-      console.log("✅ Dialog closed with ESC key");
-    } else {
-      test.skip();
-    }
+    console.log("✅ Dialog closed with ESC key");
   });
 
   test("should show edit title when opening existing assignment", async ({
@@ -236,11 +221,10 @@ test.describe("ScheduleItemDialog Navigation", () => {
     const tomorrow = dayjs.utc().add(1, "day");
     const dbUtils = (scheduleTestBase as any).dbUtils;
 
-    await dbUtils.createAssignment({
-      teamId: testTeam.teamId,
+    await scheduleTestBase.createAssignmentWithRecurrence({
       workerId: testWorkers[0].workerId,
       shiftId: testShifts[0].id,
-      date: tomorrow.toDate(),
+      date: tomorrow,
       fixed: false,
       comment: "Test assignment",
     });
@@ -255,23 +239,18 @@ test.describe("ScheduleItemDialog Navigation", () => {
       .locator(`[data-date="${tomorrow.format("YYYY-MM-DD")}"]`)
       .first();
 
-    if (await assignmentCell.isVisible()) {
-      await assignmentCell.click();
+    // Assert cell is visible - test will fail if not found
+    await expect(assignmentCell).toBeVisible();
+    await assignmentCell.click();
 
-      // Verify dialog opens with edit title
-      const dialog = page.locator('[data-testid="schedule-item-dialog"]');
-      await expect(dialog).toBeVisible();
+    // Verify dialog opens with edit title
+    const dialog = page.locator('[data-testid="schedule-item-dialog"]');
+    await expect(dialog).toBeVisible();
 
-      // In EDIT mode, type toggle buttons should NOT be visible
-      const assignmentButton = page.locator(
-        '[data-testid="assignment-button"]',
-      );
-      await expect(assignmentButton).not.toBeVisible();
+    // In EDIT mode, type toggle buttons should NOT be visible
+    const assignmentButton = page.locator('[data-testid="assignment-button"]');
+    await expect(assignmentButton).not.toBeVisible();
 
-      console.log("✅ Dialog opened in EDIT mode without type toggles");
-    } else {
-      console.log("⚠️ Assignment cell not found - skipping test");
-      test.skip();
-    }
+    console.log("✅ Dialog opened in EDIT mode without type toggles");
   });
 });

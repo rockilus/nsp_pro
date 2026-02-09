@@ -495,7 +495,7 @@ export class ScheduleTestBase {
       teamId: this.testTeam.teamId,
       workerId: data.workerId,
       shiftId: data.shiftId,
-      date: data.date.toDate(),
+      date: data.date,
       fixed: data.fixed ?? false,
       comment: data.comment,
       scheduleId: data.scheduleId,
