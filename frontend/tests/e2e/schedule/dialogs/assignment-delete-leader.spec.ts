@@ -53,19 +53,17 @@ test.describe("Assignment Deletion - Team Leader", () => {
   test("should delete a single assignment", async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
-    const testTeam = scheduleTestBase.getTestTeam()!;
-    const dbUtils = (scheduleTestBase as any).dbUtils;
 
     // Get the created assignment
-    const assignments = await dbUtils.getAssignments(testTeam.teamId);
+    const assignments = await scheduleTestBase.getAssignments();
 
-    if (assignments.assignments.length === 0) {
+    if (assignments.length === 0) {
       console.log("⚠️ No assignments found, skipping test");
       test.skip();
       return;
     }
 
-    const assignment = assignments.assignments[0];
+    const assignment = assignments[0];
     const assignmentId = assignment.id;
     const assignmentDate = dayjs(assignment.date);
 
@@ -99,7 +97,7 @@ test.describe("Assignment Deletion - Team Leader", () => {
     ).not.toBeVisible({ timeout: 5000 });
 
     // Verify assignment was deleted from database
-    const updatedAssignments = await dbUtils.getAssignments(testTeam.teamId);
+    const updatedAssignments = await scheduleTestBase.getAssignments();
     const deletedAssignment = updatedAssignments.assignments.find(
       (a: any) => a.id === assignmentId,
     );
@@ -258,8 +256,8 @@ test.describe("Assignment Deletion - Team Leader", () => {
     ).not.toBeVisible({ timeout: 5000 });
 
     // Verify only one assignment was deleted
-    const updatedAssignments = await dbUtils.getAssignments(testTeam.teamId);
-    const remainingCount = updatedAssignments.assignments.filter((a: any) =>
+    const updatedAssignments = await scheduleTestBase.getAssignments();
+    const remainingCount = updatedAssignments.filter((a: any) =>
       assignmentIds.includes(a.id),
     ).length;
 
@@ -278,17 +276,15 @@ test.describe("Assignment Deletion - Team Leader", () => {
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
-    const testTeam = scheduleTestBase.getTestTeam()!;
-    const dbUtils = (scheduleTestBase as any).dbUtils;
 
-    const assignments = await dbUtils.getAssignments(testTeam.teamId);
+    const assignments = await scheduleTestBase.getAssignments();
 
-    if (assignments.assignments.length === 0) {
+    if (assignments.length === 0) {
       test.skip();
       return;
     }
 
-    const assignment = assignments.assignments[0];
+    const assignment = assignments[0];
     const assignmentId = assignment.id;
     const assignmentDate = dayjs(assignment.date);
 
@@ -333,7 +329,7 @@ test.describe("Assignment Deletion - Team Leader", () => {
     }
 
     // Verify assignment still exists
-    const unchangedAssignments = await dbUtils.getAssignments(testTeam.teamId);
+    const unchangedAssignments = await scheduleTestBase.getAssignments();
     const stillExists = unchangedAssignments.assignments.find(
       (a: any) => a.id === assignmentId,
     );
