@@ -106,14 +106,14 @@ test.describe("Assignment Creation - Team Leader", () => {
     await expect(dialog).not.toBeVisible({ timeout: 5000 });
 
     // Verify assignment was created in database
-    const dbUtils = (scheduleTestBase as any).dbUtils;
-    const assignments = await dbUtils.getAssignments(testTeam.teamId);
+    const assignments = await scheduleTestBase.getAssignments();
 
     expect(assignments.assignments.length).toBeGreaterThan(0);
     const createdAssignment = assignments.assignments.find(
       (a: any) =>
         a.workerId === testWorkers[0].workerId &&
-        a.shiftId === testShifts[0].id,
+        a.shiftId === testShifts[0].id &&
+        dayjs.utc(a.date).isSame(tomorrow, "day"),
     );
     expect(createdAssignment).toBeDefined();
 
@@ -259,8 +259,7 @@ test.describe("Assignment Creation - Team Leader", () => {
     await expect(dialog).not.toBeVisible();
 
     // Verify no assignment was created
-    const dbUtils = (scheduleTestBase as any).dbUtils;
-    const assignments = await dbUtils.getAssignments(testTeam.teamId);
+    const assignments = await scheduleTestBase.getAssignments();
     expect(assignments.assignments.length).toBe(0);
 
     console.log("✅ Assignment creation cancelled successfully");
@@ -330,8 +329,7 @@ test.describe("Assignment Creation - Team Leader", () => {
     ).not.toBeVisible({ timeout: 5000 });
 
     // Verify assignment was created as fixed
-    const dbUtils = (scheduleTestBase as any).dbUtils;
-    const assignments = await dbUtils.getAssignments(testTeam.teamId);
+    const assignments = await scheduleTestBase.getAssignments();
 
     const createdAssignment = assignments.assignments.find(
       (a: any) =>

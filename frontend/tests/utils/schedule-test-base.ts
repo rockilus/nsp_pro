@@ -474,6 +474,16 @@ export class ScheduleTestBase {
   }
 
   /**
+   * Get assignments for the test team
+   */
+  async getAssignments(): Promise<any> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupScheduleTests first.");
+    }
+    return await this.dbUtils.getAssignments(this.testTeam.teamId);
+  }
+
+  /**
    * Create an assignment with optional recurrence
    */
   async createAssignmentWithRecurrence(
