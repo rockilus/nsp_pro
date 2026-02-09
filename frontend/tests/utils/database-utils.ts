@@ -41,7 +41,10 @@ import {
   ShiftDemandTemplateCreateDTO,
   ShiftDemandTemplateUpdateDTO,
 } from "../../src/types/shift-demand-template";
-import { ShiftDemandDTO } from "../../src/types/shiftDemand";
+import {
+  ShiftDemandDTO,
+  ShiftDemandUpdateDTO,
+} from "../../src/types/shiftDemand";
 import {
   RequestT,
   RequestType,
@@ -55,6 +58,11 @@ import dayjs from "dayjs";
 import { AssignmentT, AssignmentSource } from "@/types/assignment";
 import { LinkShiftApi } from "@/app/lib/api/linkShiftApi";
 import { SwapRequestT } from "@/types/swap";
+import {
+  RecurrenceRuleT,
+  RecurrenceUpdateScope,
+} from "../../src/types/recurrence";
+import { ReplacementCandidateT } from "../../src/types/replacement";
 
 export interface DatabaseResetOptions {
   collections?: string[];
@@ -2726,6 +2734,185 @@ export class DatabaseTestUtils {
       console.error("Failed to get assignments:", error);
       throw new Error(
         `Failed to get assignments: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Update an assignment with optional recurrence using the existing AssignmentApi
+   */
+  async updateAssignment(
+    assignmentId: string,
+    teamId: string,
+    updates: Partial<AssignmentT>,
+    recurrenceRule?: RecurrenceRuleT | null,
+    updateScope?: RecurrenceUpdateScope | null,
+  ): Promise<{ assignments: AssignmentT[] }> {
+    try {
+      // First get the current assignment to merge with updates
+      const result = await AssignmentApi.getAssignments(
+        this.testApiClient,
+        teamId,
+      );
+      const existingAssignment = result.assignmentsRead.find(
+        (a) => a.id === assignmentId,
+      );
+
+      if (!existingAssignment) {
+        throw new Error(`Assignment ${assignmentId} not found`);
+      }
+
+      const updatedAssignment: AssignmentT = {
+        ...existingAssignment,
+        ...updates,
+        id: assignmentId,
+        teamId,
+      };
+
+      const updateResult = await AssignmentApi.updateAssignmentAndRecurrence(
+        this.testApiClient,
+        updatedAssignment,
+        teamId,
+        recurrenceRule ?? null,
+        updateScope ?? null,
+      );
+
+      console.log(
+        `✅ Updated assignment ${assignmentId} (${updateResult.assignmentsWritten.length} assignments affected)`,
+      );
+
+      return {
+        assignments: updateResult.assignmentsWritten,
+      };
+    } catch (error) {
+      console.error("Failed to update assignment:", error);
+      throw new Error(
+        `Failed to update assignment: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Update a shift demand using the existing ShiftDemandApi
+   */
+  async updateShiftDemand(
+    demandId: string,
+    teamId: string,
+    updates: Partial<ShiftDemandUpdateDTO>,
+  ): Promise<ShiftDemandDTO> {
+    try {
+      const updatedDemand = await ShiftDemandApi.updateShiftDemand(
+        this.testApiClient,
+        teamId,
+        demandId,
+        updates,
+      );
+
+      console.log(`✅ Updated shift demand ${demandId}`);
+
+      return updatedDemand;
+    } catch (error) {
+      console.error("Failed to update shift demand:", error);
+      throw new Error(
+        `Failed to update shift demand: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Delete a shift demand using the existing ShiftDemandApi
+   */
+  async deleteShiftDemand(demandId: string, teamId: string): Promise<void> {
+    try {
+      await ShiftDemandApi.deleteShiftDemand(
+        this.testApiClient,
+        teamId,
+        demandId,
+      );
+
+      console.log(`✅ Deleted shift demand ${demandId}`);
+    } catch (error) {
+      console.error("Failed to delete shift demand:", error);
+      throw new Error(
+        `Failed to delete shift demand: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Update a request using the existing RequestApi
+   */
+  async updateRequest(
+    requestId: string,
+    teamId: string,
+    updates: Partial<RequestT>,
+  ): Promise<RequestT> {
+    try {
+      // First get the current request to merge with updates
+      const requests = await RequestApi.getRequests(this.testApiClient, teamId);
+      const existingRequest = requests.find((r) => r.id === requestId);
+
+      if (!existingRequest) {
+        throw new Error(`Request ${requestId} not found`);
+      }
+
+      const updatedRequest: RequestT = {
+        ...existingRequest,
+        ...updates,
+        id: requestId,
+        teamId,
+      };
+
+      const result = await RequestApi.updateRequest(
+        this.testApiClient,
+        updatedRequest,
+        teamId,
+      );
+
+      console.log(`✅ Updated request ${requestId}`);
+
+      return result;
+    } catch (error) {
+      console.error("Failed to update request:", error);
+      throw new Error(
+        `Failed to update request: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Get replacement candidates for an assignment using the existing AssignmentApi
+   */
+  async getReplacementCandidates(
+    assignmentId: string,
+    teamId: string,
+  ): Promise<ReplacementCandidateT[]> {
+    try {
+      const candidates = await AssignmentApi.getReplacementCandidates(
+        this.testApiClient,
+        assignmentId,
+        teamId,
+      );
+
+      console.log(
+        `✅ Retrieved ${candidates.length} replacement candidates for assignment ${assignmentId}`,
+      );
+
+      return candidates;
+    } catch (error) {
+      console.error("Failed to get replacement candidates:", error);
+      throw new Error(
+        `Failed to get replacement candidates: ${
           error instanceof Error ? error.message : "Unknown error"
         }`,
       );

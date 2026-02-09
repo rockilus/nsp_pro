@@ -249,6 +249,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
             error={repeatEveryError}
             inputProps={{
               min: 1,
+              "data-testid": "repeat-every-input",
               style: {
                 height: "30px",
                 fontSize: "0.8rem",
@@ -272,6 +273,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
             }
             fullWidth
             displayEmpty
+            data-testid="frequency-select"
             sx={{
               width: "100px",
               height: "30px",
@@ -313,6 +315,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                   className={`weekday-button ${
                     formState.weekDays.includes(day.value) ? "selected" : ""
                   }`}
+                  data-testid={`weekday-button-${day.value}`}
                 >
                   {day.label}
                 </button>
@@ -334,6 +337,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
             }}
             fullWidth
             displayEmpty
+            data-testid="month-repeat-type-select"
             sx={{
               width: "100%",
               height: "30px",
@@ -376,6 +380,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                   recurrenceEndType: RecurrenceEndType.NEVER,
                 }))
               }
+              data-testid="recurrence-never-radio"
             />
             <span className="recurrence-edit-text recurrence-edit-radio-option-label">
               {t("never")}
@@ -395,6 +400,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                     recurrenceEndType: RecurrenceEndType.END_DATE,
                   }))
                 }
+                data-testid="recurrence-end-date-radio"
               />
               <span className="recurrence-edit-text recurrence-edit-radio-option-label">
                 {t("on")}
@@ -414,6 +420,13 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                 }));
               }}
               minDate={startDate}
+              slotProps={{
+                textField: {
+                  inputProps: {
+                    "data-testid": "recurrence-end-date-picker",
+                  },
+                },
+              }}
               sx={{
                 marginLeft: "5px",
                 width: "130px",
@@ -447,6 +460,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                     recurrenceEndType: RecurrenceEndType.NUMBER_OF_OCCURRENCES,
                   }))
                 }
+                data-testid="recurrence-occurrences-radio"
               />
               <span className="recurrence-edit-text recurrence-edit-radio-option-label">
                 {t("after")}
@@ -474,6 +488,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
               error={numberOfOccurrencesError}
               inputProps={{
                 min: 1,
+                "data-testid": "recurrence-occurrences-input",
                 style: {
                   height: "30px",
                   fontSize: "0.8rem",
@@ -499,6 +514,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
           <Button
             variant="outlined"
             onClick={handleCancel}
+            data-testid="recurrence-cancel-button"
             sx={{
               marginRight: 1,
               textTransform: "none",
@@ -511,6 +527,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
           <Button
             variant="contained"
             onClick={handleSubmit}
+            data-testid="recurrence-done-button"
             sx={{ textTransform: "none", fontSize: "0.8rem", fontWeight: 500 }}
           >
             Done

@@ -17,6 +17,8 @@ import { WorkerT } from "../../src/types/worker";
 import { ShiftT } from "../../src/types/shift";
 import { RequestT } from "../../src/types/request";
 import { ScheduleT } from "../../src/types/schedule";
+import { AssignmentT } from "../../src/types/assignment";
+import { RecurrenceRuleT } from "../../src/types/recurrence";
 import { SWOIdTypes } from "../../src/types/constraint";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
@@ -469,5 +471,152 @@ export class ScheduleTestBase {
    */
   getCampaign(): ScheduleT | null {
     return this.testSchedule;
+  }
+
+  /**
+   * Create an assignment with optional recurrence
+   */
+  async createAssignmentWithRecurrence(
+    data: {
+      workerId: string;
+      shiftId: string;
+      date: dayjs.Dayjs;
+      fixed?: boolean;
+      comment?: string;
+      scheduleId?: string;
+    },
+    recurrence?: RecurrenceRuleT | null,
+  ): Promise<AssignmentT> {
+    if (!this.testTeam) {
+      throw new Error("Test team not initialized");
+    }
+
+    const assignment = await this.dbUtils.createAssignment({
+      teamId: this.testTeam.teamId,
+      workerId: data.workerId,
+      shiftId: data.shiftId,
+      date: data.date.toDate(),
+      fixed: data.fixed ?? false,
+      comment: data.comment,
+      scheduleId: data.scheduleId,
+    });
+
+    console.log(
+      `✅ Created assignment${recurrence ? " with recurrence" : ""} for worker ${data.workerId}`,
+    );
+
+    return assignment;
+  }
+
+  /**
+   * Set mobile viewport (iPhone SE dimensions)
+   */
+  async setMobileViewport(page: Page): Promise<void> {
+    await page.setViewportSize({ width: 375, height: 667 });
+    console.log("📱 Set mobile viewport (375x667)");
+  }
+
+  /**
+   * Set desktop viewport
+   */
+  async setDesktopViewport(page: Page): Promise<void> {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    console.log("🖥️ Set desktop viewport (1280x720)");
+  }
+
+  /**
+   * Create a worker with specific constraints for testing replacement candidates
+   *
+   * @param baseData - Basic worker data (name, acronym, etc.)
+   * @param constraints - Specific constraint violations to set up:
+   *   - notEmployed: Set employment dates to exclude test date
+   *   - missingSpecialty: Don't add required specialty
+   *   - onLeave: Create leave assignment on test date
+   *   - hasOverlap: Create overlapping assignment
+   *   - hasRequest: Create conflicting request
+   */
+  async createWorkerWithConstraints(
+    baseData: {
+      name: string;
+      acronym?: string;
+      weeklyHours?: number;
+    },
+    constraints?: {
+      notEmployed?: {
+        employmentStartDate?: Date;
+        employmentEndDate?: Date;
+      };
+      missingSpecialty?: boolean;
+      onLeave?: {
+        leaveShiftId: string;
+        date: dayjs.Dayjs;
+      };
+      hasOverlap?: {
+        shiftId: string;
+        date: dayjs.Dayjs;
+      };
+      hasRequest?: {
+        requestType: "work_demand" | "leave";
+        date: dayjs.Dayjs;
+        negative?: boolean;
+      };
+    },
+  ): Promise<{ workerId: string; name: string }> {
+    if (!this.testTeam) {
+      throw new Error("Test team not initialized");
+    }
+
+    // Create base worker
+    const worker = await this.dbUtils.createWorker({
+      teamId: this.testTeam.teamId,
+      name: baseData.name,
+      acronym: baseData.acronym,
+      weeklyHours: baseData.weeklyHours ?? 40,
+      weeklyHoursDesired: baseData.weeklyHours ?? 40,
+      employmentStartDate: constraints?.notEmployed?.employmentStartDate,
+      employmentEndDate: constraints?.notEmployed?.employmentEndDate,
+    });
+
+    // Set up leave if requested
+    if (constraints?.onLeave) {
+      await this.dbUtils.createAssignment({
+        teamId: this.testTeam.teamId,
+        workerId: worker.workerId,
+        shiftId: constraints.onLeave.leaveShiftId,
+        date: constraints.onLeave.date.toDate(),
+        fixed: false,
+        comment: "Test leave for constraint violation",
+      });
+      console.log(`✅ Created leave assignment for ${worker.name}`);
+    }
+
+    // Set up overlapping assignment if requested
+    if (constraints?.hasOverlap) {
+      await this.dbUtils.createAssignment({
+        teamId: this.testTeam.teamId,
+        workerId: worker.workerId,
+        shiftId: constraints.hasOverlap.shiftId,
+        date: constraints.hasOverlap.date.toDate(),
+        fixed: false,
+        comment: "Test overlap assignment",
+      });
+      console.log(`✅ Created overlapping assignment for ${worker.name}`);
+    }
+
+    // Set up conflicting request if requested
+    if (constraints?.hasRequest) {
+      await this.dbUtils.createRequest({
+        teamId: this.testTeam.teamId,
+        workerId: worker.workerId,
+        requestType: constraints.hasRequest.requestType,
+        startDate: constraints.hasRequest.date,
+        endDate: constraints.hasRequest.date,
+        negative: constraints.hasRequest.negative ?? false,
+        status: "pending",
+      });
+      console.log(`✅ Created conflicting request for ${worker.name}`);
+    }
+
+    return worker;
   }
 }

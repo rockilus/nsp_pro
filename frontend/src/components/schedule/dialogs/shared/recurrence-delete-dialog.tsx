@@ -44,27 +44,35 @@ const RecurrenceDeleteDialog: React.FC<RecurrenceDeleteDialogProps> = ({
           >
             <FormControlLabel
               value={RecurrenceUpdateScope.SINGLE}
-              control={<Radio />}
+              control={<Radio data-testid="delete-this-only-radio" />}
               label="This occurrence"
             />
             <FormControlLabel
               value={RecurrenceUpdateScope.FUTURE}
-              control={<Radio />}
+              control={<Radio data-testid="delete-this-and-future-radio" />}
               label="This and following occurrences"
             />
             <FormControlLabel
               value={RecurrenceUpdateScope.ALL}
-              control={<Radio />}
+              control={<Radio data-testid="delete-all-radio" />}
               label="All occurrences"
             />
           </RadioGroup>
         </FormControl>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="secondary">
+        <Button
+          onClick={onClose}
+          color="secondary"
+          data-testid="recurrence-delete-cancel-button"
+        >
           Cancel
         </Button>
-        <Button onClick={handleConfirm} color="primary">
+        <Button
+          onClick={handleConfirm}
+          color="primary"
+          data-testid="recurrence-delete-confirm-button"
+        >
           OK
         </Button>
       </DialogActions>

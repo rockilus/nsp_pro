@@ -441,6 +441,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
           <button
             className="recurrence-button"
             onClick={() => setShowRecurrenceEdit(!showRecurrenceEdit)}
+            data-testid="recurrence-button"
           >
             {recurrenceState
               ? describeRecurrenceRule(recurrenceState)
@@ -524,6 +525,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
               color="error"
               onClick={handleDeleteClick}
               className="delete-button"
+              data-testid="delete-assignment-button"
             >
               {t("delete")}
             </Button>
@@ -533,6 +535,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
               onClick={handleSaveClick}
               disabled={isSubmitting}
               className="save-button"
+              data-testid="save-assignment-button"
             >
               {isSubmitting ? t("saving") : t("save")}
             </Button>

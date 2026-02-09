@@ -56,12 +56,14 @@ const AdjustStaffingButtons = ({
       <button
         className="demand-selection-adjust-button adjust-button-left"
         onClick={onDecrease}
+        data-testid="decrease-demand-button"
       >
         –
       </button>
       <button
         className="demand-selection-adjust-button adjust-button-right"
         onClick={onIncrease}
+        data-testid="increase-demand-button"
       >
         +
       </button>
@@ -203,9 +205,17 @@ const DemandForm: React.FC<DemandFormProps> = ({
       <div className="demand-selection-container">
         <div className="demand-selection-content">
           <div className="demand-selection-first-row">
-            <span className="demand-selection-shift-name">{shift.name}</span>
+            <span
+              className="demand-selection-shift-name"
+              data-testid="demand-shift-name"
+            >
+              {shift.name}
+            </span>
             <div className="demand-selection-shift-status">
-              <span className="dsd-stats dsd-stats-actual">{`${countActual} / ${demandCount}`}</span>
+              <span
+                className="dsd-stats dsd-stats-actual"
+                data-testid="demand-count-display"
+              >{`${countActual} / ${demandCount}`}</span>
             </div>
           </div>
           <span className="demand-selection-date-time">
@@ -218,7 +228,12 @@ const DemandForm: React.FC<DemandFormProps> = ({
           </span>
           <div className="demand-selection-daily-shift-demand">
             <span className="demand-selection-dsd-label">{t("demand")}</span>
-            <span className="demand-selection-dsd-target">{demandCount}</span>
+            <span
+              className="demand-selection-dsd-target"
+              data-testid="demand-target-count"
+            >
+              {demandCount}
+            </span>
             <AdjustStaffingButtons
               onDecrease={handleDecreaseDSD}
               onIncrease={handleIncreaseDSD}
@@ -268,6 +283,7 @@ const DemandForm: React.FC<DemandFormProps> = ({
             color="error"
             onClick={handleDeleteDemands}
             className="delete-button"
+            data-testid="delete-demand-button"
             sx={{
               textTransform: "none",
             }}
@@ -291,6 +307,7 @@ const DemandForm: React.FC<DemandFormProps> = ({
           onChange={(e) => setSelectedShiftId(e.target.value)}
           fullWidth
           displayEmpty
+          data-testid="demand-shift-select"
         >
           <MenuItem value="" disabled>
             <span style={{ color: "#999" }}>{t("select_a_shift")}</span>
@@ -311,6 +328,9 @@ const DemandForm: React.FC<DemandFormProps> = ({
           slotProps={{
             textField: {
               fullWidth: true,
+              inputProps: {
+                "data-testid": "demand-date-picker",
+              },
             },
           }}
         />
@@ -322,6 +342,7 @@ const DemandForm: React.FC<DemandFormProps> = ({
           color="error"
           onClick={onCancel}
           className="delete-button"
+          data-testid="cancel-demand-button"
           sx={{
             textTransform: "none",
             marginRight: "8px",
@@ -335,6 +356,7 @@ const DemandForm: React.FC<DemandFormProps> = ({
           onClick={handleCreateClick}
           disabled={isSubmitting || !selectedShiftId || !selectedDate}
           className="create-button"
+          data-testid="create-demand-button"
           sx={{
             textTransform: "none",
           }}

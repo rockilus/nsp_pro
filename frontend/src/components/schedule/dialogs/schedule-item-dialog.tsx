@@ -97,7 +97,12 @@ export default function ScheduleItemDialog({
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <span>{getDialogTitle()}</span>
-          <IconButton onClick={onClose} size="small" edge="end">
+          <IconButton
+            onClick={onClose}
+            size="small"
+            edge="end"
+            data-testid="close-dialog-button"
+          >
             <CloseIcon />
           </IconButton>
         </Box>
