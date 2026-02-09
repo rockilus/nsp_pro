@@ -88,10 +88,7 @@ test.describe("Assignment Creation - Team Leader", () => {
       .click();
 
     // Select date (tomorrow)
-    const today = dayjs.utc();
     const tomorrow = dayjs.utc().add(1, "day");
-    console.log("today: ", today.format("DD/MM/YYYY"));
-    console.log("tomorrow: ", tomorrow.format("DD/MM/YYYY"));
 
     const datePicker = page.locator(
       '[data-testid="edit-assignment-date-picker"]',

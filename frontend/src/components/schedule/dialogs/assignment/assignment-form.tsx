@@ -407,9 +407,10 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
         <DatePicker
           className="edit-assignment-datepicker"
           value={date}
+          timezone="UTC"
           onChange={(newDate) => {
             setDateError(false);
-            setDate(newDate ? dayjs(newDate).utc() : null);
+            setDate(newDate ? newDate.startOf("day") : null);
           }}
           slotProps={{
             textField: {
