@@ -132,14 +132,8 @@ test.describe("Assignment Creation - Team Leader", () => {
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testShifts = scheduleTestBase.getTestShifts();
 
-    const addButton = page
-      .locator('[data-testid="add-schedule-item-button"]')
-      .first();
-
-    if (!(await addButton.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
+    const addButton = page.locator('[data-testid="create-assignment-button"]');
+    await expect(addButton).toBeVisible({ timeout: 5000 });
 
     await addButton.click();
 
