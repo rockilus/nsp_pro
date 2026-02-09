@@ -221,13 +221,14 @@ test.describe("ScheduleItemDialog Navigation", () => {
     const tomorrow = dayjs.utc().add(1, "day");
     const dbUtils = (scheduleTestBase as any).dbUtils;
 
-    await scheduleTestBase.createAssignmentWithRecurrence({
-      workerId: testWorkers[0].workerId,
-      shiftId: testShifts[0].id,
-      date: tomorrow,
-      fixed: false,
-      comment: "Test assignment",
-    });
+    const testAssignment =
+      await scheduleTestBase.createAssignmentWithRecurrence({
+        workerId: testWorkers[0].workerId,
+        shiftId: testShifts[0].id,
+        date: tomorrow,
+        fixed: false,
+        comment: "Test assignment",
+      });
 
     // Set schedule view settings to show the week containing tomorrow
     await scheduleTestBase.setScheduleViewSettings(page, {
@@ -235,15 +236,11 @@ test.describe("ScheduleItemDialog Navigation", () => {
       timeFrame: "week",
     });
 
-    // Refresh page to load the assignment
-    await page.reload();
-    await page.waitForLoadState("networkidle");
-
     // Click on the assignment cell (implementation-specific selector)
     // This is a placeholder - actual implementation depends on schedule UI
-    const assignmentCell = page
-      .locator(`[data-date="${tomorrow.format("YYYY-MM-DD")}"]`)
-      .first();
+    const assignmentCell = page.locator(
+      `[data-testid="assignment-cell-${testAssignment.id}"]`,
+    );
 
     // Assert cell is visible - test will fail if not found
     await expect(assignmentCell).toBeVisible();

@@ -627,6 +627,7 @@ export class ScheduleTestBase {
    *
    * @param page - Playwright page object
    * @param options - Optional settings to update
+   * @param reload - Whether to reload the page after setting (default: true)
    */
   async setScheduleViewSettings(
     page: Page,
@@ -643,6 +644,7 @@ export class ScheduleTestBase {
       mobileSelectedWorkerId?: string | null;
       mobileWeekStart?: string | null;
     },
+    reload: boolean = true,
   ): Promise<void> {
     if (!this.testTeam) {
       throw new Error("Test team must be created first");
@@ -717,5 +719,12 @@ export class ScheduleTestBase {
       logParts.push("(no changes)");
     }
     console.log(logParts.join(" "));
+
+    // Reload page to apply localStorage changes
+    if (reload) {
+      await page.reload();
+      await page.waitForLoadState("networkidle");
+      console.log("  ↻ Reloaded page to apply settings");
+    }
   }
 }
