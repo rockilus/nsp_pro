@@ -172,11 +172,11 @@ test.describe("Assignment Creation - Team Leader", () => {
     const dialog = page.locator('[data-testid="schedule-item-dialog"]');
     await expect(dialog).toBeVisible();
 
-    // Worker select should show error state
+    // Worker select should show error state (MUI applies Mui-error class)
     const workerSelect = page.locator(
       '[data-testid="edit-assignment-worker-select"]',
     );
-    await expect(workerSelect).toHaveAttribute("aria-invalid", "true");
+    await expect(workerSelect).toHaveClass(/Mui-error/);
 
     console.log("✅ Validation error shown for missing worker");
   });
@@ -188,14 +188,8 @@ test.describe("Assignment Creation - Team Leader", () => {
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testWorkers = scheduleTestBase.getTestWorkers();
 
-    const addButton = page
-      .locator('[data-testid="add-schedule-item-button"]')
-      .first();
-
-    if (!(await addButton.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
+    const addButton = page.locator('[data-testid="create-assignment-button"]');
+    await expect(addButton).toBeVisible({ timeout: 5000 });
 
     await addButton.click();
 
@@ -232,11 +226,11 @@ test.describe("Assignment Creation - Team Leader", () => {
     const dialog = page.locator('[data-testid="schedule-item-dialog"]');
     await expect(dialog).toBeVisible();
 
-    // Shift select should show error state
+    // Shift select should show error state (MUI applies Mui-error class)
     const shiftSelect = page.locator(
       '[data-testid="edit-assignment-shift-select"]',
     );
-    await expect(shiftSelect).toHaveAttribute("aria-invalid", "true");
+    await expect(shiftSelect).toHaveClass(/Mui-error/);
 
     console.log("✅ Validation error shown for missing shift");
   });
@@ -246,14 +240,8 @@ test.describe("Assignment Creation - Team Leader", () => {
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testTeam = scheduleTestBase.getTestTeam()!;
 
-    const addButton = page
-      .locator('[data-testid="add-schedule-item-button"]')
-      .first();
-
-    if (!(await addButton.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
+    const addButton = page.locator('[data-testid="create-assignment-button"]');
+    await expect(addButton).toBeVisible({ timeout: 5000 });
 
     await addButton.click();
 
@@ -267,28 +255,20 @@ test.describe("Assignment Creation - Team Leader", () => {
 
     // Verify no assignment was created
     const assignments = await scheduleTestBase.getAssignments();
-    expect(assignments.assignments.length).toBe(0);
+    expect(assignments.length).toBe(0);
 
     console.log("✅ Assignment creation cancelled successfully");
   });
 
-  test("should create fixed assignment when fixed checkbox is checked", async ({
-    page,
-  }, testInfo) => {
+  test("should create fixed assignment", async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testTeam = scheduleTestBase.getTestTeam()!;
     const testWorkers = scheduleTestBase.getTestWorkers();
     const testShifts = scheduleTestBase.getTestShifts();
 
-    const addButton = page
-      .locator('[data-testid="add-schedule-item-button"]')
-      .first();
-
-    if (!(await addButton.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
+    const addButton = page.locator('[data-testid="create-assignment-button"]');
+    await expect(addButton).toBeVisible({ timeout: 5000 });
 
     await addButton.click();
 
@@ -342,10 +322,11 @@ test.describe("Assignment Creation - Team Leader", () => {
     // Verify assignment was created as fixed
     const assignments = await scheduleTestBase.getAssignments();
 
-    const createdAssignment = assignments.assignments.find(
+    const createdAssignment = assignments.find(
       (a: any) =>
         a.workerId === testWorkers[0].workerId &&
-        a.shiftId === testShifts[0].id,
+        a.shiftId === testShifts[0].id &&
+        a.date.isSame(tomorrow, "day"),
     );
 
     if (createdAssignment) {
