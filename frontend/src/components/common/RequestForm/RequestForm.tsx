@@ -43,7 +43,7 @@ import { WorkerT } from "@/types/worker";
 import { TeamMembershipRole } from "@/types/team";
 import { ShiftWorkerOptionT, SWOIdTypes } from "@/types/constraint";
 
-export default function RequestForm({
+const RequestForm = ({
   lng,
   teamId,
   isEdit,
@@ -83,7 +83,7 @@ export default function RequestForm({
   fullWidth?: boolean;
   isMobile?: boolean;
   title?: string;
-}) {
+}) => {
   const { t } = useTranslation(lng, "request-page");
 
   // Helper to create a default request object
@@ -741,4 +741,8 @@ export default function RequestForm({
       </div>
     </div>
   );
-}
+};
+
+RequestForm.displayName = "RequestForm";
+
+export default React.memo(RequestForm);

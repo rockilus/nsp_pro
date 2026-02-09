@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import dayjs from "dayjs";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
@@ -72,102 +72,122 @@ export default function StatsNavBar({
     { name: HeaderUnitOptions.ALL, label: t("frequency_all") },
   ];
 
-  const handleChangeStatsTimeFrame = (
-    event: React.MouseEvent<HTMLElement, MouseEvent>,
-    value: StatsTimeFrameOptions | null
-  ) => {
-    if (value !== null && value !== statsOptions.timeFrame) {
-      const newStartDate =
-        value === StatsTimeFrameOptions.CAMPAING
-          ? scheduleCampaign
-            ? scheduleCampaign.startDate
-            : startDateLTM
-          : value === StatsTimeFrameOptions.LTM
-          ? startDateLTM
-          : statsOptions.startDate;
-      const newEndDate =
-        value === StatsTimeFrameOptions.CAMPAING
-          ? scheduleCampaign
-            ? scheduleCampaign.endDate
-            : endDateLTM
-          : value === StatsTimeFrameOptions.LTM
-          ? endDateLTM
-          : statsOptions.endDate;
+  const handleChangeStatsTimeFrame = useCallback(
+    (
+      event: React.MouseEvent<HTMLElement, MouseEvent>,
+      value: StatsTimeFrameOptions | null,
+    ) => {
+      if (value !== null && value !== statsOptions.timeFrame) {
+        const newStartDate =
+          value === StatsTimeFrameOptions.CAMPAING
+            ? scheduleCampaign
+              ? scheduleCampaign.startDate
+              : startDateLTM
+            : value === StatsTimeFrameOptions.LTM
+              ? startDateLTM
+              : statsOptions.startDate;
+        const newEndDate =
+          value === StatsTimeFrameOptions.CAMPAING
+            ? scheduleCampaign
+              ? scheduleCampaign.endDate
+              : endDateLTM
+            : value === StatsTimeFrameOptions.LTM
+              ? endDateLTM
+              : statsOptions.endDate;
+        const newStatsOptions = {
+          ...statsOptions,
+          timeFrame: value,
+          startDate: newStartDate,
+          endDate: newEndDate,
+        };
+        handleUpdateStatsOptions(newStatsOptions);
+      }
+    },
+    [
+      statsOptions,
+      scheduleCampaign,
+      startDateLTM,
+      endDateLTM,
+      handleUpdateStatsOptions,
+    ],
+  );
+
+  const handleChangeStartDate = useCallback(
+    (date: dayjs.Dayjs | null) => {
+      if (date) {
+        const newStatsOptions = {
+          ...statsOptions,
+          startDate: date,
+        };
+        handleUpdateStatsOptions(newStatsOptions);
+      }
+    },
+    [statsOptions, handleUpdateStatsOptions],
+  );
+
+  const handleChangeEndDate = useCallback(
+    (date: dayjs.Dayjs | null) => {
+      if (date) {
+        const newStatsOptions = {
+          ...statsOptions,
+          endDate: date,
+        };
+        handleUpdateStatsOptions(newStatsOptions);
+      }
+    },
+    [statsOptions, handleUpdateStatsOptions],
+  );
+
+  const handleChangeStatsUnit = useCallback(
+    (event: SelectChangeEvent<StatsUnitOptions>) => {
+      const value = event.target.value as StatsUnitOptions;
       const newStatsOptions = {
         ...statsOptions,
-        timeFrame: value,
-        startDate: newStartDate,
-        endDate: newEndDate,
+        statsUnit: value,
       };
       handleUpdateStatsOptions(newStatsOptions);
-    }
-  };
+    },
+    [statsOptions, handleUpdateStatsOptions],
+  );
 
-  const handleChangeStartDate = (date: dayjs.Dayjs | null) => {
-    if (date) {
+  const handleChangeHeaderUnit = useCallback(
+    (event: SelectChangeEvent<HeaderUnitOptions>) => {
+      const value = event.target.value as HeaderUnitOptions;
       const newStatsOptions = {
         ...statsOptions,
-        startDate: date,
+        headerUnit: value,
       };
       handleUpdateStatsOptions(newStatsOptions);
-    }
-  };
+    },
+    [statsOptions, handleUpdateStatsOptions],
+  );
 
-  const handleChangeEndDate = (date: dayjs.Dayjs | null) => {
-    if (date) {
+  const handleEditSelectedShifts = useCallback(
+    (selectedShifts: ShiftWorkerOptionT[]) => {
       const newStatsOptions = {
         ...statsOptions,
-        endDate: date,
+        selectedShifts,
       };
       handleUpdateStatsOptions(newStatsOptions);
-    }
-  };
+    },
+    [statsOptions, handleUpdateStatsOptions],
+  );
 
-  const handleChangeStatsUnit = (
-    event: SelectChangeEvent<StatsUnitOptions>
-  ) => {
-    const value = event.target.value as StatsUnitOptions;
-    const newStatsOptions = {
-      ...statsOptions,
-      statsUnit: value,
-    };
-    handleUpdateStatsOptions(newStatsOptions);
-  };
-
-  const handleChangeHeaderUnit = (
-    event: SelectChangeEvent<HeaderUnitOptions>
-  ) => {
-    const value = event.target.value as HeaderUnitOptions;
-    const newStatsOptions = {
-      ...statsOptions,
-      headerUnit: value,
-    };
-    handleUpdateStatsOptions(newStatsOptions);
-  };
-
-  const handleEditSelectedShifts = (selectedShifts: ShiftWorkerOptionT[]) => {
-    const newStatsOptions = {
-      ...statsOptions,
-      selectedShifts,
-    };
-    handleUpdateStatsOptions(newStatsOptions);
-  };
-
-  const handleSwitchShowFavorites = () => {
+  const handleSwitchShowFavorites = useCallback(() => {
     const newStatsOptions = {
       ...statsOptions,
       showFavorites: !statsOptions.showFavorites,
     };
     handleUpdateStatsOptions(newStatsOptions);
-  };
+  }, [statsOptions, handleUpdateStatsOptions]);
 
-  const handleToggleHeatmap = () => {
+  const handleToggleHeatmap = useCallback(() => {
     const newStatsOptions = {
       ...statsOptions,
       enableHeatmap: !statsOptions.enableHeatmap,
     };
     handleUpdateStatsOptions(newStatsOptions);
-  };
+  }, [statsOptions, handleUpdateStatsOptions]);
 
   return (
     <div className="stats-nav-bar-container">

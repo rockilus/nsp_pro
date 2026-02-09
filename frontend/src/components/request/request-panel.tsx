@@ -18,7 +18,7 @@ import { WorkerT } from "../../types/worker";
 import { TeamMembershipRole } from "@/types/team";
 import { ShiftWorkerOptionT } from "@/types/constraint";
 
-export default function RequestPanel({
+const RequestPanel = ({
   lng,
   teamId,
   isEdit,
@@ -56,7 +56,7 @@ export default function RequestPanel({
   hideButton?: boolean;
   onClose?: () => void;
   open?: boolean;
-}) {
+}) => {
   const { t } = useTranslation(lng, "request-page");
   const isMobile = useIsMobile();
 
@@ -185,4 +185,8 @@ export default function RequestPanel({
       </Dialog>
     </div>
   );
-}
+};
+
+RequestPanel.displayName = "RequestPanel";
+
+export default React.memo(RequestPanel);

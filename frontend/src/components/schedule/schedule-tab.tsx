@@ -403,282 +403,337 @@ export default function ScheduleTab({
   // Shift Demand Actions (New Implementation)
   //////////////////////////
 
-  const handleCreateShiftDemand = async (
-    shiftId: string,
-    date: dayjs.Dayjs,
-    count: number,
-    notes?: string,
-  ) => {
-    try {
-      const demandData: Omit<ShiftDemandCreateDTO, "teamId"> = {
-        shiftId,
-        date: date.unix(),
-        count,
-        notes: notes || null,
-        source: "manual",
-        sourceId: null,
-      };
+  const handleCreateShiftDemand = useCallback(
+    async (
+      shiftId: string,
+      date: dayjs.Dayjs,
+      count: number,
+      notes?: string,
+    ) => {
+      try {
+        const demandData: Omit<ShiftDemandCreateDTO, "teamId"> = {
+          shiftId,
+          date: date.unix(),
+          count,
+          notes: notes || null,
+          source: "manual",
+          sourceId: null,
+        };
 
-      await shiftDemandMutations.create.mutateAsync({ demand: demandData });
+        await shiftDemandMutations.create.mutateAsync({ demand: demandData });
 
-      // Update selected demand if applicable
-      setSelectedTab("selection");
+        // Update selected demand if applicable
+        setSelectedTab("selection");
 
-      // Note: React Query will handle state updates automatically
-      // No need to manually update local state
-    } catch (error) {
-      console.error("Failed to create shift demand:", error);
-      // Error handling will be managed by React Query
-    }
-  };
+        // Note: React Query will handle state updates automatically
+        // No need to manually update local state
+      } catch (error) {
+        console.error("Failed to create shift demand:", error);
+        // Error handling will be managed by React Query
+      }
+    },
+    [shiftDemandMutations],
+  );
 
-  const handleUpdateShiftDemand = async (
-    demandId: string,
-    updates: Partial<ShiftDemandUpdateDTO>,
-  ) => {
-    try {
-      // Get the updated shift demand from the mutation response
-      const updatedShiftDemand = await shiftDemandMutations.update.mutateAsync({
-        demandId,
-        demand: updates,
-      });
-    } catch (error) {
-      console.error("Failed to update shift demand:", error);
-    }
-  };
+  const handleUpdateShiftDemand = useCallback(
+    async (demandId: string, updates: Partial<ShiftDemandUpdateDTO>) => {
+      try {
+        // Get the updated shift demand from the mutation response
+        const updatedShiftDemand =
+          await shiftDemandMutations.update.mutateAsync({
+            demandId,
+            demand: updates,
+          });
+      } catch (error) {
+        console.error("Failed to update shift demand:", error);
+      }
+    },
+    [shiftDemandMutations],
+  );
 
-  const handleDeleteShiftDemand = async (demandId: string) => {
-    try {
-      await shiftDemandMutations.delete.mutateAsync(demandId);
-    } catch (error) {
-      console.error("Failed to delete shift demand:", error);
-    }
-  };
+  const handleDeleteShiftDemand = useCallback(
+    async (demandId: string) => {
+      try {
+        await shiftDemandMutations.delete.mutateAsync(demandId);
+      } catch (error) {
+        console.error("Failed to delete shift demand:", error);
+      }
+    },
+    [shiftDemandMutations],
+  );
 
   //////////////////////////
   // Request Actions
   //////////////////////////
 
-  const handleAddRequest = async (request: RequestT) => {
-    try {
-      const newRequest = await addRequest(request, teamWithMembership.team.id);
-      setRequests([...requests, newRequest]);
-    } catch (error) {
-      console.error("Failed to add request:", error);
-    }
-  };
-
-  const handleUpdateRequest = async (request: RequestT) => {
-    try {
-      const updatedRequest = await updateRequest(
-        request,
-        teamWithMembership.team.id,
-      );
-      setRequests(
-        requests.map((r) => (r.id === updatedRequest.id ? updatedRequest : r)),
-      );
-    } catch (error) {
-      console.error("Failed to update request:", error);
-    }
-  };
-
-  const handleDeleteRequest = async (requestId: string) => {
-    try {
-      await deleteRequest(requestId, teamWithMembership.team.id);
-      setRequests(requests.filter((r) => r.id !== requestId));
-    } catch (error) {
-      console.error("Failed to delete request:", error);
-    }
-  };
-
-  const handleRescindRequest = async (requestId: string) => {
-    try {
-      const result = await rescindRequest(
-        requestId,
-        teamWithMembership.team.id,
-      );
-      const rescindedRequest = result.request;
-      const assignmentsDeletedIds = result.assignmentsDeletedIds || [];
-
-      setRequests((prev) =>
-        prev.map((r) => (r.id === rescindedRequest.id ? rescindedRequest : r)),
-      );
-
-      if (assignmentsDeletedIds.length > 0) {
-        setAssignments((prev) =>
-          prev.filter((a) => !assignmentsDeletedIds.includes(a.id)),
+  const handleAddRequest = useCallback(
+    async (request: RequestT) => {
+      try {
+        const newRequest = await addRequest(
+          request,
+          teamWithMembership.team.id,
         );
+        setRequests([...requests, newRequest]);
+      } catch (error) {
+        console.error("Failed to add request:", error);
       }
-    } catch (error) {
-      console.error("Failed to rescind request:", error);
-    }
-  };
+    },
+    [addRequest, teamWithMembership.team.id, requests],
+  );
 
-  const handleAcceptRequest = async (requestId: string) => {
-    try {
-      const result = await acceptRequest(requestId, teamWithMembership.team.id);
-      const acceptedRequest = result.request;
-      const newAssignments = result.assignments || [];
-
-      // Update requests list
-      setRequests((prev) =>
-        prev.map((r) => (r.id === acceptedRequest.id ? acceptedRequest : r)),
-      );
-
-      // Merge new assignments into the assignments state
-      if (newAssignments.length > 0) {
-        setAssignments((prev) => {
-          // Avoid duplicates by id
-          const existingIds = new Set(prev.map((a) => a.id));
-          const toAdd = newAssignments.filter((a) => !existingIds.has(a.id));
-          return [...prev, ...toAdd];
-        });
+  const handleUpdateRequest = useCallback(
+    async (request: RequestT) => {
+      try {
+        const updatedRequest = await updateRequest(
+          request,
+          teamWithMembership.team.id,
+        );
+        setRequests(
+          requests.map((r) =>
+            r.id === updatedRequest.id ? updatedRequest : r,
+          ),
+        );
+      } catch (error) {
+        console.error("Failed to update request:", error);
       }
-    } catch (error) {
-      console.error("Failed to accept request:", error);
-    }
-  };
+    },
+    [updateRequest, teamWithMembership.team.id, requests],
+  );
 
-  const handleDenyRequest = async (requestId: string) => {
-    try {
-      const deniedRequest = await denyRequest(
-        requestId,
-        teamWithMembership.team.id,
-      );
-      setRequests(
-        requests.map((r) => (r.id === deniedRequest.id ? deniedRequest : r)),
-      );
-    } catch (error) {
-      console.error("Failed to deny request:", error);
-    }
-  };
+  const handleDeleteRequest = useCallback(
+    async (requestId: string) => {
+      try {
+        await deleteRequest(requestId, teamWithMembership.team.id);
+        setRequests(requests.filter((r) => r.id !== requestId));
+      } catch (error) {
+        console.error("Failed to delete request:", error);
+      }
+    },
+    [deleteRequest, teamWithMembership.team.id, requests],
+  );
+
+  const handleRescindRequest = useCallback(
+    async (requestId: string) => {
+      try {
+        const result = await rescindRequest(
+          requestId,
+          teamWithMembership.team.id,
+        );
+        const rescindedRequest = result.request;
+        const assignmentsDeletedIds = result.assignmentsDeletedIds || [];
+
+        setRequests((prev) =>
+          prev.map((r) =>
+            r.id === rescindedRequest.id ? rescindedRequest : r,
+          ),
+        );
+
+        if (assignmentsDeletedIds.length > 0) {
+          setAssignments((prev) =>
+            prev.filter((a) => !assignmentsDeletedIds.includes(a.id)),
+          );
+        }
+      } catch (error) {
+        console.error("Failed to rescind request:", error);
+      }
+    },
+    [rescindRequest, teamWithMembership.team.id],
+  );
+
+  const handleAcceptRequest = useCallback(
+    async (requestId: string) => {
+      try {
+        const result = await acceptRequest(
+          requestId,
+          teamWithMembership.team.id,
+        );
+        const acceptedRequest = result.request;
+        const newAssignments = result.assignments || [];
+
+        // Update requests list
+        setRequests((prev) =>
+          prev.map((r) => (r.id === acceptedRequest.id ? acceptedRequest : r)),
+        );
+
+        // Merge new assignments into the assignments state
+        if (newAssignments.length > 0) {
+          setAssignments((prev) => {
+            // Avoid duplicates by id
+            const existingIds = new Set(prev.map((a) => a.id));
+            const toAdd = newAssignments.filter((a) => !existingIds.has(a.id));
+            return [...prev, ...toAdd];
+          });
+        }
+      } catch (error) {
+        console.error("Failed to accept request:", error);
+      }
+    },
+    [acceptRequest, teamWithMembership.team.id],
+  );
+
+  const handleDenyRequest = useCallback(
+    async (requestId: string) => {
+      try {
+        const deniedRequest = await denyRequest(
+          requestId,
+          teamWithMembership.team.id,
+        );
+        setRequests(
+          requests.map((r) => (r.id === deniedRequest.id ? deniedRequest : r)),
+        );
+      } catch (error) {
+        console.error("Failed to deny request:", error);
+      }
+    },
+    [denyRequest, teamWithMembership.team.id, requests],
+  );
 
   //////////////////////////
   // Assignment Actions
   //////////////////////////
 
-  const updateAssignmentsAndRecurrencesStates = (
-    ARResult: AssignmentsRecurrencesResultT,
-  ) => {
-    setAssignments((prev) => {
-      let updatedAssignments = prev.map(
-        (a) =>
-          ARResult.assignmentsUpdated.find((updated) => updated.id === a.id) ||
-          a,
-      );
-
-      if (ARResult.assignmentsCreated.length > 0) {
-        updatedAssignments = [
-          ...updatedAssignments,
-          ...ARResult.assignmentsCreated,
-        ];
-      }
-
-      if (ARResult.assignmentsDeletedIds.length > 0) {
-        updatedAssignments = updatedAssignments.filter(
-          (a) => !ARResult.assignmentsDeletedIds.includes(a.id),
+  const updateAssignmentsAndRecurrencesStates = useCallback(
+    (ARResult: AssignmentsRecurrencesResultT) => {
+      setAssignments((prev) => {
+        let updatedAssignments = prev.map(
+          (a) =>
+            ARResult.assignmentsUpdated.find(
+              (updated) => updated.id === a.id,
+            ) || a,
         );
-      }
 
-      return updatedAssignments;
-    });
+        if (ARResult.assignmentsCreated.length > 0) {
+          updatedAssignments = [
+            ...updatedAssignments,
+            ...ARResult.assignmentsCreated,
+          ];
+        }
 
-    setRecurrences((prev) => {
-      let updatedRecurrences = [...prev];
+        if (ARResult.assignmentsDeletedIds.length > 0) {
+          updatedAssignments = updatedAssignments.filter(
+            (a) => !ARResult.assignmentsDeletedIds.includes(a.id),
+          );
+        }
 
-      if (ARResult.recurrenceCreated) {
-        updatedRecurrences = [
-          ...updatedRecurrences,
-          ARResult.recurrenceCreated,
-        ];
-      }
+        return updatedAssignments;
+      });
 
-      if (ARResult.recurrenceUpdated) {
-        updatedRecurrences = updatedRecurrences.map((recurrence) =>
-          ARResult.recurrenceUpdated
-            ? recurrence.id === ARResult.recurrenceUpdated.id
-              ? ARResult.recurrenceUpdated
-              : recurrence
-            : recurrence,
-        );
-      }
+      setRecurrences((prev) => {
+        let updatedRecurrences = [...prev];
 
-      if (ARResult.recurrencesDeletedIds.length > 0) {
-        updatedRecurrences = updatedRecurrences.filter(
-          (recurrence) =>
-            !ARResult.recurrencesDeletedIds.includes(recurrence.id),
-        );
-      }
+        if (ARResult.recurrenceCreated) {
+          updatedRecurrences = [
+            ...updatedRecurrences,
+            ARResult.recurrenceCreated,
+          ];
+        }
 
-      return updatedRecurrences;
-    });
-  };
+        if (ARResult.recurrenceUpdated) {
+          updatedRecurrences = updatedRecurrences.map((recurrence) =>
+            ARResult.recurrenceUpdated
+              ? recurrence.id === ARResult.recurrenceUpdated.id
+                ? ARResult.recurrenceUpdated
+                : recurrence
+              : recurrence,
+          );
+        }
 
-  const handleOpenCreateAssignment = (
-    createAssignmentData: CreateAssignmentT,
-  ) => {
-    setDialogOpen(true);
-    setDialogMode(DialogMode.CREATE);
-    setDialogType(ScheduleItemType.ASSIGNMENT);
-    setDialogData({
-      scheduleId: createAssignmentData.scheduleId,
-      workerId: createAssignmentData.workerId,
-      shiftId: createAssignmentData.shiftId,
-      date: createAssignmentData.date,
-      addDemandActive:
-        !createAssignmentData.haveDemand &&
-        scheduleViewSettings.groupBy === "shift",
-    } as CreateAssignmentData);
-  };
+        if (ARResult.recurrencesDeletedIds.length > 0) {
+          updatedRecurrences = updatedRecurrences.filter(
+            (recurrence) =>
+              !ARResult.recurrencesDeletedIds.includes(recurrence.id),
+          );
+        }
 
-  const handleCloseLHS = () => {
+        return updatedRecurrences;
+      });
+    },
+    [],
+  );
+
+  const handleOpenCreateAssignment = useCallback(
+    (createAssignmentData: CreateAssignmentT) => {
+      setDialogOpen(true);
+      setDialogMode(DialogMode.CREATE);
+      setDialogType(ScheduleItemType.ASSIGNMENT);
+      setDialogData({
+        scheduleId: createAssignmentData.scheduleId,
+        workerId: createAssignmentData.workerId,
+        shiftId: createAssignmentData.shiftId,
+        date: createAssignmentData.date,
+        addDemandActive:
+          !createAssignmentData.haveDemand &&
+          scheduleViewSettings.groupBy === "shift",
+      } as CreateAssignmentData);
+    },
+    [scheduleViewSettings.groupBy],
+  );
+
+  const handleCloseLHS = useCallback(() => {
     setSelectedTab(null);
-  };
+  }, []);
 
-  const handleCloseDialog = () => {
+  const handleCloseDialog = useCallback(() => {
     setDialogOpen(false);
     setDialogData(null);
-  };
+  }, []);
 
-  const handleCreateAssignment = async (
-    assignment: AssignmentT,
-    recurrence: RecurrenceRuleT | null = null,
-  ) => {
-    const ARResult = await addAssignmentAndRecurrence(assignment, recurrence);
-    setAssignments([...assignments, ...ARResult.assignmentsCreated]);
-    if (ARResult.recurrenceCreated) {
-      setRecurrences([...recurrences, ARResult.recurrenceCreated]);
-    }
-  };
+  const handleCreateAssignment = useCallback(
+    async (
+      assignment: AssignmentT,
+      recurrence: RecurrenceRuleT | null = null,
+    ) => {
+      const ARResult = await addAssignmentAndRecurrence(assignment, recurrence);
+      setAssignments([...assignments, ...ARResult.assignmentsCreated]);
+      if (ARResult.recurrenceCreated) {
+        setRecurrences([...recurrences, ARResult.recurrenceCreated]);
+      }
+    },
+    [addAssignmentAndRecurrence, assignments, recurrences],
+  );
 
-  const handleUpdateAssignment = async (
-    assignment: AssignmentT,
-    recurrence: RecurrenceRuleT | null = null,
-    recurrenceUpdateScope: RecurrenceUpdateScope | null = null,
-  ) => {
-    const ARResult = await updateAssignmentAndRecurrence(
-      assignment,
+  const handleUpdateAssignment = useCallback(
+    async (
+      assignment: AssignmentT,
+      recurrence: RecurrenceRuleT | null = null,
+      recurrenceUpdateScope: RecurrenceUpdateScope | null = null,
+    ) => {
+      const ARResult = await updateAssignmentAndRecurrence(
+        assignment,
+        teamWithMembership.team.id,
+        recurrence,
+        recurrenceUpdateScope,
+      );
+
+      updateAssignmentsAndRecurrencesStates(ARResult);
+    },
+    [
+      updateAssignmentAndRecurrence,
       teamWithMembership.team.id,
-      recurrence,
-      recurrenceUpdateScope,
-    );
+      updateAssignmentsAndRecurrencesStates,
+    ],
+  );
 
-    updateAssignmentsAndRecurrencesStates(ARResult);
-  };
-
-  const handleDeleteAssignment = async (
-    assignmentId: string,
-    recurrenceId: string | null = null,
-    recurrenceUpdateScope: RecurrenceUpdateScope | null = null,
-  ) => {
-    const ARResult = await deleteAssignment(
-      assignmentId,
+  const handleDeleteAssignment = useCallback(
+    async (
+      assignmentId: string,
+      recurrenceId: string | null = null,
+      recurrenceUpdateScope: RecurrenceUpdateScope | null = null,
+    ) => {
+      const ARResult = await deleteAssignment(
+        assignmentId,
+        teamWithMembership.team.id,
+        recurrenceId,
+        recurrenceUpdateScope,
+      );
+      updateAssignmentsAndRecurrencesStates(ARResult);
+    },
+    [
+      deleteAssignment,
       teamWithMembership.team.id,
-      recurrenceId,
-      recurrenceUpdateScope,
-    );
-    updateAssignmentsAndRecurrencesStates(ARResult);
-  };
+      updateAssignmentsAndRecurrencesStates,
+    ],
+  );
 
   const updateSelectedPeriod = (
     newPeriodStart: dayjs.Dayjs,
