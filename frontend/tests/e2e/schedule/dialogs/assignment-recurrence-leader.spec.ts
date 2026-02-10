@@ -372,16 +372,47 @@ test.describe("Assignment Recurrence - Team Leader", () => {
       ).not.toHaveClass(/selected/);
     }
 
-    // Select Monday (0) and Wednesday (2)
-    const mondayButton = page.locator('[data-testid="weekday-button-0"]');
-    const wednesdayButton = page.locator('[data-testid="weekday-button-2"]');
+    // Choose two weekday buttons that are NOT the default selected weekday
+    const candidatePairs = [
+      [0, 2],
+      [1, 3],
+      [2, 4],
+      [3, 5],
+      [4, 6],
+    ];
+    let chosenDays: number[] = [];
+    for (const pair of candidatePairs) {
+      if (!pair.includes(expectedDefaultWeekDay)) {
+        chosenDays = pair;
+        break;
+      }
+    }
 
-    await mondayButton.click();
-    await wednesdayButton.click();
+    if (chosenDays.length === 0) {
+      // fallback: pick any two days that are not the default
+      for (let d = 0; d <= 6 && chosenDays.length < 2; d++) {
+        if (d === expectedDefaultWeekDay) continue;
+        chosenDays.push(d);
+      }
+    }
+
+    const firstButton = page.locator(
+      `[data-testid="weekday-button-${chosenDays[0]}"]`,
+    );
+    const secondButton = page.locator(
+      `[data-testid="weekday-button-${chosenDays[1]}"]`,
+    );
+
+    // Ensure they are not the default (not selected) before clicking
+    await expect(firstButton).not.toHaveClass(/selected/);
+    await expect(secondButton).not.toHaveClass(/selected/);
+
+    await firstButton.click();
+    await secondButton.click();
 
     // Verify selected state
-    await expect(mondayButton).toHaveClass(/selected/);
-    await expect(wednesdayButton).toHaveClass(/selected/);
+    await expect(firstButton).toHaveClass(/selected/);
+    await expect(secondButton).toHaveClass(/selected/);
 
     const doneButton = page.locator('[data-testid="recurrence-done-button"]');
     await doneButton.click();
@@ -403,10 +434,24 @@ test.describe("Assignment Recurrence - Team Leader", () => {
 
     const createdRecurrence = AR2.recurrencesRead[0];
     expect(createdRecurrence).toBeDefined();
+    expect(createdRecurrence.teamId).toBe(testTeam.teamId);
+    expect(createdRecurrence.occurrenceType).toBe(OccurrenceType.ASSIGNMENT);
+    expect(createdRecurrence.occurrenceInfo.workerId).toBe(
+      testWorkers[0].workerId,
+    );
+    expect(createdRecurrence.occurrenceInfo.shiftId).toBe(testShifts[0].id);
+    expect(createdRecurrence.repeatEvery).toBe(1);
     expect(createdRecurrence.frequencyType).toBe(FrequencyType.WEEK);
-    // Ensure both Monday(0) and Wednesday(2) are included in stored weekDays
-    expect(createdRecurrence.weekDays).toContain(0);
-    expect(createdRecurrence.weekDays).toContain(2);
+    expect(createdRecurrence.weekDays).toEqual([
+      ...chosenDays,
+      expectedDefaultWeekDay,
+    ]);
+    expect(createdRecurrence.recurrenceEndType).toBe(
+      RecurrenceEndType.END_DATE,
+    );
+    expect(createdRecurrence.startDate.isSame(tomorrow, "day")).toBeTruthy();
+    expect(createdRecurrence.endDate).toBeNull();
+    // expect(createdRecurrence.endDate!.isSame(endDate, "day")).toBeTruthy();
 
     console.log(
       "✅ Weekly recurring assignment with specific weekdays created",
