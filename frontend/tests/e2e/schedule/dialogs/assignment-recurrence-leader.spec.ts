@@ -142,7 +142,8 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     expect(createdRecurrence.occurrenceInfo.count).toBeNull();
     expect(createdRecurrence.repeatEvery).toBe(1);
     expect(createdRecurrence.frequencyType).toBe(FrequencyType.DAY);
-    expect(createdRecurrence.weekDays).toEqual([]);
+    const expectedWeekDay = (tomorrow.day() + 6) % 7;
+    expect(createdRecurrence.weekDays).toEqual([expectedWeekDay]);
     expect(createdRecurrence.monthRepeatType).toBeNull();
     expect(createdRecurrence.recurrenceEndType).toBe(RecurrenceEndType.NEVER);
     expect(createdRecurrence.startDate.isSame(tomorrow, "day")).toBeTruthy();
