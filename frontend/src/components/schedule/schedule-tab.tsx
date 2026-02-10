@@ -30,7 +30,6 @@ import NoAssignmentsDisplay from "./no-assignments-display";
 import { buildAssignmentsDataByOwnerAndDate } from "./table/shared/assignment-utils";
 import { getPeriodStartEndDates } from "./schedule-utils";
 import { computePeriodEndDate } from "../../app/lib/utils/scheduleViewSettingsUtils";
-import { calculateBufferMonths } from "../../app/lib/utils/assignmentBufferUtils";
 // Skeletons
 import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
 import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
@@ -44,7 +43,14 @@ import {
   useUpdateAssignmentAndRecurrence,
   useDeleteAssignment,
 } from "../../hooks/useAssignment";
-import { useAssignmentsByPeriod } from "../../app/lib/hooks/useAssignments";
+import {
+  useAssignmentsByPeriod,
+  assignmentsQueryKeys,
+} from "../../app/lib/hooks/useAssignments";
+import {
+  calculateBufferMonths,
+  shouldFetchMore,
+} from "../../app/lib/utils/assignmentBufferUtils";
 // Request Hooks
 import {
   useGetRequests,
@@ -561,11 +567,7 @@ export default function ScheduleTab({
           ),
         );
 
-        if (assignmentsDeletedIds.length > 0) {
-          setAssignments((prev) =>
-            prev.filter((a) => !assignmentsDeletedIds.includes(a.id)),
-          );
-        }
+        // React Query cache invalidation in the mutation hook handles assignment updates
       } catch (error) {
         console.error("Failed to rescind request:", error);
       }
@@ -588,15 +590,7 @@ export default function ScheduleTab({
           prev.map((r) => (r.id === acceptedRequest.id ? acceptedRequest : r)),
         );
 
-        // Merge new assignments into the assignments state
-        if (newAssignments.length > 0) {
-          setAssignments((prev) => {
-            // Avoid duplicates by id
-            const existingIds = new Set(prev.map((a) => a.id));
-            const toAdd = newAssignments.filter((a) => !existingIds.has(a.id));
-            return [...prev, ...toAdd];
-          });
-        }
+        // React Query cache invalidation in the mutation hook handles assignment updates
       } catch (error) {
         console.error("Failed to accept request:", error);
       }
@@ -627,59 +621,8 @@ export default function ScheduleTab({
 
   const updateAssignmentsAndRecurrencesStates = useCallback(
     (ARResult: AssignmentsRecurrencesResultT) => {
-      setAssignments((prev) => {
-        let updatedAssignments = prev.map(
-          (a) =>
-            ARResult.assignmentsUpdated.find(
-              (updated) => updated.id === a.id,
-            ) || a,
-        );
-
-        if (ARResult.assignmentsCreated.length > 0) {
-          updatedAssignments = [
-            ...updatedAssignments,
-            ...ARResult.assignmentsCreated,
-          ];
-        }
-
-        if (ARResult.assignmentsDeletedIds.length > 0) {
-          updatedAssignments = updatedAssignments.filter(
-            (a) => !ARResult.assignmentsDeletedIds.includes(a.id),
-          );
-        }
-
-        return updatedAssignments;
-      });
-
-      setRecurrences((prev) => {
-        let updatedRecurrences = [...prev];
-
-        if (ARResult.recurrenceCreated) {
-          updatedRecurrences = [
-            ...updatedRecurrences,
-            ARResult.recurrenceCreated,
-          ];
-        }
-
-        if (ARResult.recurrenceUpdated) {
-          updatedRecurrences = updatedRecurrences.map((recurrence) =>
-            ARResult.recurrenceUpdated
-              ? recurrence.id === ARResult.recurrenceUpdated.id
-                ? ARResult.recurrenceUpdated
-                : recurrence
-              : recurrence,
-          );
-        }
-
-        if (ARResult.recurrencesDeletedIds.length > 0) {
-          updatedRecurrences = updatedRecurrences.filter(
-            (recurrence) =>
-              !ARResult.recurrencesDeletedIds.includes(recurrence.id),
-          );
-        }
-
-        return updatedRecurrences;
-      });
+      // React Query cache invalidation in the mutation hooks handles updates automatically
+      // This function is kept for backward compatibility but no longer updates local state
     },
     [],
   );
@@ -716,13 +659,10 @@ export default function ScheduleTab({
       assignment: AssignmentT,
       recurrence: RecurrenceRuleT | null = null,
     ) => {
-      const ARResult = await addAssignmentAndRecurrence(assignment, recurrence);
-      setAssignments([...assignments, ...ARResult.assignmentsCreated]);
-      if (ARResult.recurrenceCreated) {
-        setRecurrences([...recurrences, ARResult.recurrenceCreated]);
-      }
+      await addAssignmentAndRecurrence(assignment, recurrence);
+      // React Query cache invalidation in the mutation hook handles updates automatically
     },
-    [addAssignmentAndRecurrence, assignments, recurrences],
+    [addAssignmentAndRecurrence],
   );
 
   const handleUpdateAssignment = useCallback(
@@ -933,21 +873,13 @@ export default function ScheduleTab({
           setScheduleCampaign(updatedSchedule);
         }
 
-        // Update assignments for the scheduleCampaign period (replace
-        // any existing assignments that fall within the campaign date range)
+        // Update assignments for the scheduleCampaign period
+        // React Query cache invalidation handles assignment updates automatically
+        // Manually invalidate to refresh the assignments view
         if (newAssignments && scheduleCampaign) {
-          setAssignments((prev) => [
-            // ...prev.filter((a) => a.scheduleId !== scheduleCampaign.id),
-            ...prev.filter((a) => {
-              // Keep assignments that are NOT within the campaign period.
-              // `a.date` is a dayjs.Dayjs; compare using day precision.
-              const inCampaignPeriod =
-                a.date.isSameOrAfter(scheduleCampaign.startDate, "day") &&
-                a.date.isSameOrBefore(scheduleCampaign.endDate, "day");
-              return !inCampaignPeriod;
-            }),
-            ...newAssignments,
-          ]);
+          queryClient.invalidateQueries({
+            queryKey: assignmentsQueryKeys.teams(teamWithMembership.team.id),
+          });
         }
 
         // Update breaches

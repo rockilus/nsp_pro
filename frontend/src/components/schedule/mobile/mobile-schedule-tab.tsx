@@ -53,6 +53,22 @@ export default function MobileScheduleTab({
 
   const getScheduleEntities = useGetScheduleEntities();
 
+  // Fetch user's worker for role-based checks (only for members)
+  const {
+    data: userWorker,
+    isLoading: isLoadingUserWorker,
+    error: userWorkerError,
+  } = useUserWorker(
+    teamWithMembership.team.id,
+    teamWithMembership.membership.role === TeamMembershipRole.MEMBER,
+  );
+
+  // Check if member has no worker association
+  const memberHasNoWorker =
+    teamWithMembership.membership.role === TeamMembershipRole.MEMBER &&
+    !isLoadingUserWorker &&
+    userWorker === null;
+
   // Calculate buffer range for mobile (extended to cover ±8 weeks visible range)
   const bufferRange = useMemo(() => {
     return calculateMobileBufferMonths(
@@ -82,22 +98,6 @@ export default function MobileScheduleTab({
       enabled: !memberHasNoWorker, // Don't fetch if member has no worker
     },
   );
-
-  // Fetch user's worker for role-based checks (only for members)
-  const {
-    data: userWorker,
-    isLoading: isLoadingUserWorker,
-    error: userWorkerError,
-  } = useUserWorker(
-    teamWithMembership.team.id,
-    teamWithMembership.membership.role === TeamMembershipRole.MEMBER,
-  );
-
-  // Check if member has no worker association
-  const memberHasNoWorker =
-    teamWithMembership.membership.role === TeamMembershipRole.MEMBER &&
-    !isLoadingUserWorker &&
-    userWorker === null;
 
   const [isLoading, setIsLoading] = useState(true);
   const [workers, setWorkers] = useState<any[]>([]);
