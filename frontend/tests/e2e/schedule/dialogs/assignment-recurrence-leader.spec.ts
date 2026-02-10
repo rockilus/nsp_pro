@@ -540,7 +540,8 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     const occurrencesInput = page.locator(
       '[data-testid="recurrence-occurrences-input"]',
     );
-    await occurrencesInput.fill("5");
+    const numberOfOccurrences = 5;
+    await occurrencesInput.fill(numberOfOccurrences.toString());
 
     const doneButton = page.locator('[data-testid="recurrence-done-button"]');
     await doneButton.click();
@@ -577,17 +578,16 @@ test.describe("Assignment Recurrence - Team Leader", () => {
       RecurrenceEndType.NUMBER_OF_OCCURRENCES,
     );
     expect(createdRecurrence.startDate.isSame(tomorrow, "day")).toBeTruthy();
-    expect(createdRecurrence.numberOfOccurrences).toBe(6);
+    expect(createdRecurrence.numberOfOccurrences).toBe(numberOfOccurrences);
 
     const recurringAssignments = AR3.assignmentsRead.filter(
       (a) => a.sourceId === createdRecurrence.id,
     );
 
     expect(recurringAssignments).toBeDefined();
-    const expectedOccurrences = 6;
-    expect(recurringAssignments.length).toBe(expectedOccurrences);
+    expect(recurringAssignments.length).toBe(numberOfOccurrences);
 
-    for (let i = 0; i < expectedOccurrences; i++) {
+    for (let i = 0; i < numberOfOccurrences; i++) {
       const expectedDate = tomorrow.add(i, "month");
       const occurrence = recurringAssignments.find(
         (a) =>

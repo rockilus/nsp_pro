@@ -116,7 +116,7 @@ class RecurrenceRule:
             week_days=data["week_days"],
             month_repeat_type=(
                 MonthRepeatType(data["month_repeat_type"])
-                if data["month_repeat_type"]
+                if data.get("month_repeat_type") is not None
                 else None
             ),
             recurrence_end_type=RecurrenceEndType(data["recurrence_end_type"]),
@@ -172,7 +172,7 @@ class RecurrenceRule:
         data_snake["frequency_type"] = FrequencyType(data_snake["frequency_type"])
         data_snake["month_repeat_type"] = (
             MonthRepeatType(data_snake["month_repeat_type"])
-            if data_snake["month_repeat_type"]
+            if data_snake.get("month_repeat_type") is not None
             else None
         )
         data_snake["recurrence_end_type"] = RecurrenceEndType(
