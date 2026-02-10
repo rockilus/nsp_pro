@@ -188,30 +188,40 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     const testShifts = scheduleTestBase.getTestShifts();
     const testTeam = scheduleTestBase.getTestTeam()!;
 
-    const addButton = page
-      .locator('[data-testid="add-schedule-item-button"]')
-      .first();
-
-    if (!(await addButton.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
+    const addButton = page.locator('[data-testid="create-assignment-button"]');
+    await expect(addButton).toBeVisible();
 
     await addButton.click();
 
-    const workerSelect = page.locator('[data-testid="worker-select"]');
+    const workerSelect = page.locator(
+      '[data-testid="edit-assignment-worker-select"]',
+    );
     await workerSelect.click();
-    await page.locator(`text="${testWorkers[0].name}"`).first().click();
+    await page
+      .locator(`[data-testid="worker-option-${testWorkers[0].workerId}"]`)
+      .click();
 
-    const shiftSelect = page.locator('[data-testid="shift-select"]');
+    const shiftSelect = page.locator(
+      '[data-testid="edit-assignment-shift-select"]',
+    );
     await shiftSelect.click();
-    await page.locator(`text="${testShifts[0].name}"`).first().click();
+    await page
+      .locator(`[data-testid="shift-option-${testShifts[0].id}"]`)
+      .click();
 
     const tomorrow = dayjs.utc().add(1, "day");
-    const datePicker = page.locator('[data-testid="date-picker"]');
-    await datePicker.click();
-    await datePicker.fill(tomorrow.format("MM/DD/YYYY"));
 
+    const datePicker = page.locator(
+      '[data-testid="edit-assignment-date-picker"]',
+    );
+    await datePicker.waitFor({ state: "visible" });
+    await datePicker.fill("", { force: true });
+    await page.waitForTimeout(100);
+    await datePicker.fill(tomorrow.format("DD/MM/YYYY"), { force: true });
+    await datePicker.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Open recurrence dialog
     const recurrenceButton = page.locator('[data-testid="recurrence-button"]');
     await recurrenceButton.click();
 
@@ -231,13 +241,13 @@ test.describe("Assignment Recurrence - Team Leader", () => {
       '[data-testid="recurrence-end-date-picker"]',
     );
     await endDatePicker.click();
-    await endDatePicker.fill(endDate.format("MM/DD/YYYY"));
+    await endDatePicker.fill(endDate.format("DD/MM/YYYY"));
 
     const doneButton = page.locator('[data-testid="recurrence-done-button"]');
     await doneButton.click();
 
     const createButton = page.locator(
-      '[data-testid="create-assignment-button"]',
+      '[data-testid="edit-assignment-create-button"]',
     );
     await createButton.click();
 
@@ -245,24 +255,31 @@ test.describe("Assignment Recurrence - Team Leader", () => {
       page.locator('[data-testid="schedule-item-dialog"]'),
     ).not.toBeVisible({ timeout: 5000 });
 
-    const dbUtils = (scheduleTestBase as any).dbUtils;
-    const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
+    // Verify recurring assignment was created
+    const ARResult = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf("day"),
       dayjs.utc().add(2, "month").endOf("day"),
     );
-    const assignments = AR.assignmentsRead;
 
-    const recurringAssignment = assignments.find(
-      (a: any) => a.workerId === testWorkers[0].workerId && a.recurrenceRule,
+    const createdRecurrence = ARResult.recurrencesRead[0];
+    expect(createdRecurrence).toBeDefined();
+    expect(createdRecurrence.teamId).toBe(testTeam.teamId);
+    expect(createdRecurrence.occurrenceType).toBe(OccurrenceType.ASSIGNMENT);
+    expect(createdRecurrence.occurrenceInfo.workerId).toBe(
+      testWorkers[0].workerId,
     );
-
-    expect(recurringAssignment).toBeDefined();
-    expect(recurringAssignment.recurrenceRule.frequency).toBe("weekly");
-    expect(recurringAssignment.recurrenceRule.endType).toBe("endDate");
-    expect(recurringAssignment.recurrenceRule.endDate).toBe(
-      endDate.format("YYYY-MM-DD"),
+    expect(createdRecurrence.occurrenceInfo.shiftId).toBe(testShifts[0].id);
+    expect(createdRecurrence.repeatEvery).toBe(1);
+    expect(createdRecurrence.frequencyType).toBe(FrequencyType.WEEK);
+    const expectedWeekDay = (tomorrow.day() + 6) % 7;
+    expect(createdRecurrence.weekDays).toEqual([expectedWeekDay]);
+    expect(createdRecurrence.recurrenceEndType).toBe(
+      RecurrenceEndType.END_DATE,
     );
+    expect(createdRecurrence.startDate.isSame(tomorrow, "day")).toBeTruthy();
+    expect(createdRecurrence.endDate).not.toBeNull();
+    expect(createdRecurrence.endDate!.isSame(endDate, "day")).toBeTruthy();
 
     console.log("✅ Weekly recurring assignment with end date created");
   });
