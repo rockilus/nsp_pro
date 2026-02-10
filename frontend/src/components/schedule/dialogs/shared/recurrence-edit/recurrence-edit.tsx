@@ -4,7 +4,7 @@ import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../../../../app/i18n/client";
 // MUI
 import { Select, MenuItem, TextField, Button } from "@mui/material";
-import { DatePicker } from "@mui/x-date-pickers";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Styles
 import "./recurrence-edit.css";
 // Types

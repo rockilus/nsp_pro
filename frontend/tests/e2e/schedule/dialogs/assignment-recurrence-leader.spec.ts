@@ -235,13 +235,19 @@ test.describe("Assignment Recurrence - Team Leader", () => {
       '[data-testid="recurrence-end-date-radio"]',
     );
     await endDateRadio.click();
+    await page.waitForTimeout(100);
 
     const endDate = tomorrow.add(10, "week");
+
     const endDatePicker = page.locator(
       '[data-testid="recurrence-end-date-picker"]',
     );
-    await endDatePicker.click();
-    await endDatePicker.fill(endDate.format("DD/MM/YYYY"));
+    await endDatePicker.waitFor({ state: "visible" });
+    await endDatePicker.fill("", { force: true }); // Clear first
+    await page.waitForTimeout(100);
+    await endDatePicker.fill(endDate.format("DD/MM/YYYY"), { force: true });
+    await endDatePicker.press("Enter");
+    await page.waitForTimeout(300);
 
     const doneButton = page.locator('[data-testid="recurrence-done-button"]');
     await doneButton.click();
@@ -259,7 +265,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     const ARResult = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf("day"),
-      dayjs.utc().add(2, "month").endOf("day"),
+      dayjs.utc().add(5, "month").endOf("day"),
     );
 
     const createdRecurrence = ARResult.recurrencesRead[0];
