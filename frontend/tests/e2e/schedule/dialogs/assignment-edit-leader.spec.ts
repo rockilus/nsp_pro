@@ -63,30 +63,17 @@ test.describe("Assignment Editing - Team Leader", () => {
       dayjs.utc().add(2, "month").endOf("day"),
     );
     const assignments = AR.assignmentsRead;
-
-    if (assignments.length === 0) {
-      console.log("⚠️ No assignments found, skipping test");
-      test.skip();
-      return;
-    }
+    await expect(assignments.length).toBeGreaterThan(0);
 
     const assignment = assignments[0];
 
     // Click on assignment cell to open edit dialog
     // Note: Selector depends on schedule UI implementation
     const assignmentDate = dayjs(assignment.date);
-    const assignmentCell = page
-      .locator(
-        `[data-date="${assignmentDate.format("YYYY-MM-DD")}"][data-worker-id="${assignment.workerId}"]`,
-      )
-      .first();
-
-    // If specific cell not found, try alternative method
-    if (!(await assignmentCell.isVisible().catch(() => false))) {
-      console.log("⚠️ Assignment cell not found, skipping test");
-      test.skip();
-      return;
-    }
+    const assignmentCell = page.locator(
+      `[data-testid="assignment-cell-${assignment.id}"]`,
+    );
+    await expect(assignmentCell).toBeVisible();
 
     await assignmentCell.click();
 
@@ -123,24 +110,16 @@ test.describe("Assignment Editing - Team Leader", () => {
       dayjs.utc().add(2, "month").endOf("day"),
     );
     const assignments = AR2.assignmentsRead;
-
-    if (assignments.length === 0) {
-      test.skip();
-      return;
-    }
+    await expect(assignments.length).toBeGreaterThan(0);
 
     const assignment = assignments[0];
     const assignmentDate = dayjs(assignment.date);
 
     // Open assignment for editing
-    const assignmentCell = page
-      .locator(`[data-date="${assignmentDate.format("YYYY-MM-DD")}"]`)
-      .first();
-
-    if (!(await assignmentCell.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
+    const assignmentCell = page.locator(
+      `[data-testid="assignment-cell-${assignment.id}"]`,
+    );
+    await expect(assignmentCell).toBeVisible();
 
     await assignmentCell.click();
 
@@ -153,17 +132,15 @@ test.describe("Assignment Editing - Team Leader", () => {
     const newWorker = testWorkers.find(
       (w) => w.workerId !== assignment.workerId,
     );
-    if (!newWorker) {
-      console.log("⚠️ No alternative worker found, skipping test");
-      test.skip();
-      return;
-    }
+    expect(newWorker).toBeDefined();
 
     const workerSelect = page.locator(
       '[data-testid="edit-assignment-worker-select"]',
     );
     await workerSelect.click();
-    await page.locator(`text="${newWorker.name}"`).first().click();
+    await page
+      .locator(`[data-testid="worker-option-${newWorker!.workerId}"]`)
+      .click();
 
     // Save changes
     const saveButton = page.locator('[data-testid="save-assignment-button"]');
@@ -182,15 +159,12 @@ test.describe("Assignment Editing - Team Leader", () => {
     );
     const updatedAssignments = AR3.assignmentsRead;
     const updatedAssignment = updatedAssignments.find(
-      (a: any) => a.id === assignment.id,
+      (a) => a.id === assignment.id,
     );
+    expect(updatedAssignment).toBeDefined();
 
-    if (updatedAssignment) {
-      expect(updatedAssignment.workerId).toBe(newWorker.workerId);
-      console.log("✅ Assignment worker updated successfully");
-    } else {
-      console.log("⚠️ Assignment not found after update");
-    }
+    expect(updatedAssignment!.workerId).toBe(newWorker!.workerId);
+    console.log("✅ Assignment worker updated successfully");
   });
 
   test("should update assignment shift", async ({ page }, testInfo) => {
@@ -206,23 +180,15 @@ test.describe("Assignment Editing - Team Leader", () => {
       dayjs.utc().add(2, "month").endOf("day"),
     );
     const assignments = AR4.assignmentsRead;
-
-    if (assignments.length === 0) {
-      test.skip();
-      return;
-    }
+    await expect(assignments.length).toBeGreaterThan(0);
 
     const assignment = assignments[0];
     const assignmentDate = dayjs(assignment.date);
 
-    const assignmentCell = page
-      .locator(`[data-date="${assignmentDate.format("YYYY-MM-DD")}"]`)
-      .first();
-
-    if (!(await assignmentCell.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
+    const assignmentCell = page.locator(
+      `[data-testid="assignment-cell-${assignment.id}"]`,
+    );
+    await expect(assignmentCell).toBeVisible();
 
     await assignmentCell.click();
     await expect(
@@ -231,17 +197,13 @@ test.describe("Assignment Editing - Team Leader", () => {
 
     // Change shift to a different one
     const newShift = testShifts.find((s) => s.id !== assignment.shiftId);
-    if (!newShift) {
-      console.log("⚠️ No alternative shift found, skipping test");
-      test.skip();
-      return;
-    }
+    expect(newShift).toBeDefined();
 
     const shiftSelect = page.locator(
       '[data-testid="edit-assignment-shift-select"]',
     );
     await shiftSelect.click();
-    await page.locator(`[data-testid="shift-option-${newShift.id}"]`).click();
+    await page.locator(`[data-testid="shift-option-${newShift!.id}"]`).click();
 
     // Save changes
     const saveButton = page.locator('[data-testid="save-assignment-button"]');
@@ -259,13 +221,12 @@ test.describe("Assignment Editing - Team Leader", () => {
     );
     const updatedAssignments = AR5.assignmentsRead;
     const updatedAssignment = updatedAssignments.find(
-      (a: any) => a.id === assignment.id,
+      (a) => a.id === assignment.id,
     );
+    expect(updatedAssignment).toBeDefined();
 
-    if (updatedAssignment) {
-      expect(updatedAssignment.shiftId).toBe(newShift.id);
-      console.log("✅ Assignment shift updated successfully");
-    }
+    expect(updatedAssignment!.shiftId).toBe(newShift!.id);
+    console.log("✅ Assignment shift updated successfully");
   });
 
   test("should update assignment date", async ({ page }, testInfo) => {
@@ -280,23 +241,15 @@ test.describe("Assignment Editing - Team Leader", () => {
       dayjs.utc().add(2, "month").endOf("day"),
     );
     const assignments = AR6.assignmentsRead;
+    await expect(assignments.length).toBeGreaterThan(0);
 
-    if (assignments.length === 0) {
-      test.skip();
-      return;
-    }
-
-    const assignment = assignments.assignments[0];
+    const assignment = assignments[0];
     const assignmentDate = dayjs(assignment.date);
 
-    const assignmentCell = page
-      .locator(`[data-date="${assignmentDate.format("YYYY-MM-DD")}"]`)
-      .first();
-
-    if (!(await assignmentCell.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
+    const assignmentCell = page.locator(
+      `[data-testid="assignment-cell-${assignment.id}"]`,
+    );
+    await expect(assignmentCell).toBeVisible();
 
     await assignmentCell.click();
     await expect(
@@ -308,8 +261,12 @@ test.describe("Assignment Editing - Team Leader", () => {
     const datePicker = page.locator(
       '[data-testid="edit-assignment-date-picker"]',
     );
-    await datePicker.click();
-    await datePicker.fill(newDate.format("MM/DD/YYYY"));
+    await datePicker.waitFor({ state: "visible" });
+    await datePicker.fill("", { force: true }); // Clear first
+    await page.waitForTimeout(100);
+    await datePicker.fill(newDate.format("DD/MM/YYYY"), { force: true });
+    await datePicker.press("Enter");
+    await page.waitForTimeout(300);
 
     // Save changes
     const saveButton = page.locator('[data-testid="save-assignment-button"]');
@@ -327,16 +284,13 @@ test.describe("Assignment Editing - Team Leader", () => {
     );
     const updatedAssignments = AR5.assignmentsRead;
     const updatedAssignment = updatedAssignments.find(
-      (a: any) => a.id === assignment.id,
+      (a) => a.id === assignment.id,
     );
+    expect(updatedAssignment).toBeDefined();
 
-    if (updatedAssignment) {
-      const updatedDate = dayjs(updatedAssignment.date);
-      expect(updatedDate.format("YYYY-MM-DD")).toBe(
-        newDate.format("YYYY-MM-DD"),
-      );
-      console.log("✅ Assignment date updated successfully");
-    }
+    const updatedDate = dayjs(updatedAssignment!.date);
+    expect(updatedDate.format("YYYY-MM-DD")).toBe(newDate.format("YYYY-MM-DD"));
+    console.log("✅ Assignment date updated successfully");
   });
 
   test("should cancel assignment editing without saving changes", async ({
@@ -354,23 +308,16 @@ test.describe("Assignment Editing - Team Leader", () => {
       dayjs.utc().add(2, "month").endOf("day"),
     );
     const assignments = AR6.assignmentsRead;
+    await expect(assignments.length).toBeGreaterThan(0);
 
-    if (assignments.length === 0) {
-      test.skip();
-      return;
-    }
     const assignment = assignments[0];
     const originalWorkerId = assignment.workerId;
     const assignmentDate = dayjs(assignment.date);
 
-    const assignmentCell = page
-      .locator(`[data-date="${assignmentDate.format("YYYY-MM-DD")}"]`)
-      .first();
-
-    if (!(await assignmentCell.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
+    const assignmentCell = page.locator(
+      `[data-testid="assignment-cell-${assignment.id}"]`,
+    );
+    await expect(assignmentCell).toBeVisible();
 
     await assignmentCell.click();
     await expect(
@@ -381,13 +328,12 @@ test.describe("Assignment Editing - Team Leader", () => {
     const newWorker = testWorkers.find(
       (w) => w.workerId !== assignment.workerId,
     );
-    if (newWorker) {
-      const workerSelect = page.locator(
-        '[data-testid="edit-assignment-worker-select"]',
-      );
-      await workerSelect.click();
-      await page.locator(`text="${newWorker.name}"`).first().click();
-    }
+    expect(newWorker).toBeDefined();
+    const workerSelect = page.locator(
+      '[data-testid="edit-assignment-worker-select"]',
+    );
+    await workerSelect.click();
+    await page.locator(`text="${newWorker!.name}"`).first().click();
 
     // Close dialog without saving
     const closeButton = page.locator('[data-testid="close-dialog-button"]');
@@ -405,12 +351,11 @@ test.describe("Assignment Editing - Team Leader", () => {
     );
     const unchangedAssignments = AR7.assignmentsRead;
     const unchangedAssignment = unchangedAssignments.find(
-      (a: any) => a.id === assignment.id,
+      (a) => a.id === assignment.id,
     );
+    expect(unchangedAssignment).toBeDefined();
 
-    if (unchangedAssignment) {
-      expect(unchangedAssignment.workerId).toBe(originalWorkerId);
-      console.log("✅ Assignment changes cancelled successfully");
-    }
+    expect(unchangedAssignment!.workerId).toBe(originalWorkerId);
+    console.log("✅ Assignment changes cancelled successfully");
   });
 });
