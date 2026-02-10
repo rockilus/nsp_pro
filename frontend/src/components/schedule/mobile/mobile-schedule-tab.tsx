@@ -224,7 +224,7 @@ export default function MobileScheduleTab({
       if (a.workerId !== scheduleViewSettings.mobileSelectedWorkerId) continue;
 
       const shift = shifts.find((s: any) => s.id === a.shiftId);
-      if (shift.restType === ShiftRestType.RECUPERATION) continue; // skip recuperation shifts
+      if (!shift || shift.restType === ShiftRestType.RECUPERATION) continue; // skip if shift not found or recuperation
 
       const key = dayjs(a.date).utc().format("YYYY-MM-DD");
       const arr = map.get(key) || [];
