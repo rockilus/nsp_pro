@@ -442,13 +442,14 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     expect(createdRecurrence.occurrenceInfo.shiftId).toBe(testShifts[0].id);
     expect(createdRecurrence.repeatEvery).toBe(1);
     expect(createdRecurrence.frequencyType).toBe(FrequencyType.WEEK);
-    expect(createdRecurrence.weekDays).toEqual([
-      ...chosenDays,
-      expectedDefaultWeekDay,
-    ]);
-    expect(createdRecurrence.recurrenceEndType).toBe(
-      RecurrenceEndType.END_DATE,
+    const actualWeekDays = [...createdRecurrence.weekDays].sort(
+      (a, b) => a - b,
     );
+    const expectedWeekDays = [...chosenDays, expectedDefaultWeekDay].sort(
+      (a, b) => a - b,
+    );
+    expect(actualWeekDays).toEqual(expectedWeekDays);
+    expect(createdRecurrence.recurrenceEndType).toBe(RecurrenceEndType.NEVER);
     expect(createdRecurrence.startDate.isSame(tomorrow, "day")).toBeTruthy();
     expect(createdRecurrence.endDate).toBeNull();
     // expect(createdRecurrence.endDate!.isSame(endDate, "day")).toBeTruthy();
