@@ -11,6 +11,18 @@ import { randomUUID } from "crypto";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { ScheduleTestBase } from "../../../utils/schedule-test-base";
+import {
+  FrequencyType,
+  RecurrenceEndType,
+  OccurrenceType,
+  OccurrenceInfoT,
+  RecurrenceRuleT,
+  RecurrenceExclusionT,
+  RecurrenceUpdateScope,
+  toRecurrenceRuleT,
+  fromRecurrenceRuleT,
+  MonthRepeatType,
+} from "../../../../src/types/recurrence";
 
 dayjs.extend(utc);
 
@@ -97,7 +109,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     // Set daily frequency
     const frequencySelect = page.locator('[data-testid="frequency-select"]');
     await frequencySelect.click();
-    await page.locator('text="Daily"').first().click();
+    await page.locator('[data-testid="frequency-option-day"]').click();
 
     // Keep "Never" end type (should be default)
     const neverRadio = page.locator('[data-testid="recurrence-never-radio"]');
@@ -108,7 +120,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
 
     // Create assignment
     const createButton = page.locator(
-      '[data-testid="create-assignment-button"]',
+      '[data-testid="edit-assignment-create-button"]',
     );
     await createButton.click();
 
@@ -117,16 +129,47 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     ).not.toBeVisible({ timeout: 5000 });
 
     // Verify recurring assignment was created
-    const dbUtils = (scheduleTestBase as any).dbUtils;
-    const assignments = await dbUtils.getAssignments(testTeam.teamId);
+    const ARResult = await scheduleTestBase.getAssignmentsAndRecurrences();
 
-    const recurringAssignment = assignments.find(
-      (a: any) => a.workerId === testWorkers[0].id && a.recurrenceRule,
+    const createdRecurrence = ARResult.recurrencesRead[0];
+    expect(createdRecurrence).toBeDefined();
+    expect(createdRecurrence.teamId).toBe(testTeam.teamId);
+    expect(createdRecurrence.occurrenceType).toBe(OccurrenceType.ASSIGNMENT);
+    expect(createdRecurrence.occurrenceInfo.workerId).toBe(
+      testWorkers[0].workerId,
+    );
+    expect(createdRecurrence.occurrenceInfo.shiftId).toBe(testShifts[0].id);
+    expect(createdRecurrence.occurrenceInfo.count).toBeNull();
+    expect(createdRecurrence.repeatEvery).toBe(1);
+    expect(createdRecurrence.frequencyType).toBe(FrequencyType.DAY);
+    expect(createdRecurrence.weekDays).toEqual([]);
+    expect(createdRecurrence.monthRepeatType).toBeNull();
+    expect(createdRecurrence.recurrenceEndType).toBe(RecurrenceEndType.NEVER);
+    expect(createdRecurrence.startDate.isSame(tomorrow, "day")).toBeTruthy();
+    expect(createdRecurrence.endDate).toBeNull();
+    expect(createdRecurrence.numberOfOccurrences).toBeNull();
+
+    const recurringAssignments = ARResult.assignmentsRead.filter(
+      (a) => a.sourceId === createdRecurrence.id,
     );
 
-    expect(recurringAssignment).toBeDefined();
-    expect(recurringAssignment.recurrenceRule.frequency).toBe("daily");
-    expect(recurringAssignment.recurrenceRule.endType).toBe("never");
+    expect(recurringAssignments).toBeDefined();
+
+    // Verify recurring assignments were created for the next 30 days (since no end date)
+    const expectedOccurrences = 30;
+    for (
+      let i = tomorrow;
+      i.isBefore(tomorrow.add(expectedOccurrences, "day"));
+      i = i.add(1, "day")
+    ) {
+      const occurrence = recurringAssignments.find(
+        (a) =>
+          a.workerId === testWorkers[0].workerId &&
+          a.shiftId === testShifts[0].id &&
+          a.date.isSame(i, "day"),
+      );
+      expect(occurrence).toBeDefined();
+    }
 
     console.log("✅ Daily recurring assignment created");
   });
@@ -170,7 +213,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     // Set weekly frequency
     const frequencySelect = page.locator('[data-testid="frequency-select"]');
     await frequencySelect.click();
-    await page.locator('text="Weekly"').first().click();
+    await page.locator('[data-testid="frequency-option-week"]').click();
 
     // Set end date
     const endDateRadio = page.locator(
@@ -252,7 +295,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
 
     const frequencySelect = page.locator('[data-testid="frequency-select"]');
     await frequencySelect.click();
-    await page.locator('text="Weekly"').first().click();
+    await page.locator('[data-testid="frequency-option-week"]').click();
 
     // Select Monday (1) and Wednesday (3)
     const mondayButton = page.locator('[data-testid="weekday-button-1"]');
@@ -328,7 +371,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
 
     const frequencySelect = page.locator('[data-testid="frequency-select"]');
     await frequencySelect.click();
-    await page.locator('text="Monthly"').first().click();
+    await page.locator('[data-testid="frequency-option-month"]').click();
 
     // Set occurrences end type
     const occurrencesRadio = page.locator(

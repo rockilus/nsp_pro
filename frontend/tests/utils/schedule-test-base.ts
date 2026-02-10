@@ -17,7 +17,10 @@ import { WorkerT } from "../../src/types/worker";
 import { ShiftT } from "../../src/types/shift";
 import { RequestT } from "../../src/types/request";
 import { ScheduleT } from "../../src/types/schedule";
-import { AssignmentT } from "../../src/types/assignment";
+import {
+  AssignmentT,
+  AssignmentsRecurrencesResultT,
+} from "../../src/types/assignment";
 import { RecurrenceRuleT } from "../../src/types/recurrence";
 import { SWOIdTypes } from "../../src/types/constraint";
 import dayjs from "dayjs";
@@ -508,6 +511,17 @@ export class ScheduleTestBase {
     }
     return (await this.dbUtils.getAssignments(this.testTeam.teamId))
       .assignments;
+  }
+  /**
+   * Get assignments for the test team
+   */
+  async getAssignmentsAndRecurrences(): Promise<AssignmentsRecurrencesResultT> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupScheduleTests first.");
+    }
+    return await this.dbUtils.getAssignmentsAndRecurrences(
+      this.testTeam.teamId,
+    );
   }
 
   /**

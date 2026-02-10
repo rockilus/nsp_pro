@@ -55,7 +55,11 @@ import {
 import { ScheduleT, toScheduleT } from "../../src/types/schedule";
 import { testConfig } from "./test-config";
 import dayjs from "dayjs";
-import { AssignmentT, AssignmentSource } from "@/types/assignment";
+import {
+  AssignmentT,
+  AssignmentSource,
+  AssignmentsRecurrencesResultT,
+} from "@/types/assignment";
 import { LinkShiftApi } from "@/app/lib/api/linkShiftApi";
 import { SwapRequestT } from "@/types/swap";
 import {
@@ -2730,6 +2734,40 @@ export class DatabaseTestUtils {
       return {
         assignments: result.assignmentsRead,
       };
+    } catch (error) {
+      console.error("Failed to get assignments:", error);
+      throw new Error(
+        `Failed to get assignments: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+  /**
+   * Get assignments for a team using the existing AssignmentApi for consistent behavior
+   */
+  async getAssignmentsAndRecurrences(
+    teamId: string,
+    includeCampaign: boolean = false,
+    startDate?: dayjs.Dayjs,
+    endDate?: dayjs.Dayjs,
+    workerId?: string,
+  ): Promise<AssignmentsRecurrencesResultT> {
+    try {
+      const result = await AssignmentApi.getAssignments(
+        this.testApiClient,
+        teamId,
+        includeCampaign,
+        startDate,
+        endDate,
+        workerId,
+      );
+
+      console.log(
+        `✅ Retrieved ${result.assignmentsRead.length} assignments for team ${teamId}`,
+      );
+
+      return result;
     } catch (error) {
       console.error("Failed to get assignments:", error);
       throw new Error(

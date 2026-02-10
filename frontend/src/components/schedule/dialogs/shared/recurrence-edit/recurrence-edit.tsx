@@ -158,10 +158,22 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
   };
 
   const frequencyOptions = [
-    { value: FrequencyType.DAY, label: t("day").toLowerCase() },
-    { value: FrequencyType.WEEK, label: t("week").toLowerCase() },
-    { value: FrequencyType.MONTH, label: t("month").toLowerCase() },
-    { value: FrequencyType.YEAR, label: t("year").toLowerCase() },
+    { value: FrequencyType.DAY, label: t("day").toLowerCase(), testId: "day" },
+    {
+      value: FrequencyType.WEEK,
+      label: t("week").toLowerCase(),
+      testId: "week",
+    },
+    {
+      value: FrequencyType.MONTH,
+      label: t("month").toLowerCase(),
+      testId: "month",
+    },
+    {
+      value: FrequencyType.YEAR,
+      label: t("year").toLowerCase(),
+      testId: "year",
+    },
   ];
 
   const weekDayOptions = [
@@ -289,6 +301,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
               <MenuItem
                 key={option.value}
                 value={option.value}
+                data-testid={`frequency-option-${option.testId}`}
                 sx={{
                   fontSize: "0.8rem",
                   fontWeight: 400,
