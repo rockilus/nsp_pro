@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import isoWeek from "dayjs/plugin/isoWeek";
@@ -29,6 +30,7 @@ import NoAssignmentsDisplay from "./no-assignments-display";
 import { buildAssignmentsDataByOwnerAndDate } from "./table/shared/assignment-utils";
 import { getPeriodStartEndDates } from "./schedule-utils";
 import { computePeriodEndDate } from "../../app/lib/utils/scheduleViewSettingsUtils";
+import { calculateBufferMonths } from "../../app/lib/utils/assignmentBufferUtils";
 // Skeletons
 import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
 import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
@@ -42,6 +44,7 @@ import {
   useUpdateAssignmentAndRecurrence,
   useDeleteAssignment,
 } from "../../hooks/useAssignment";
+import { useAssignmentsByPeriod } from "../../app/lib/hooks/useAssignments";
 // Request Hooks
 import {
   useGetRequests,
@@ -57,8 +60,7 @@ import {
   useValidateSchedule,
   useUpdateSchedule,
   useGetSchedules,
-  useGetScheduleAssignmentsData,
-  useGetScheduleAssignmentsDataNoSolver,
+  useGetScheduleEntities,
   useGetScheduleLHSData,
   useDuplicatePeriod,
 } from "../../hooks/useSchedule";
@@ -125,6 +127,9 @@ export default function ScheduleTab({
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
+  // Query client for manual cache operations (prefetching)
+  const queryClient = useQueryClient();
+
   // Stats hook
   const getStats = useGetStats();
 
@@ -137,9 +142,7 @@ export default function ScheduleTab({
   const validateSchedule = useValidateSchedule();
   const updateSchedule = useUpdateSchedule();
   const getSchedules = useGetSchedules();
-  const getScheduleAssignmentsData = useGetScheduleAssignmentsData();
-  const getScheduleAssignmentsDataNoSolver =
-    useGetScheduleAssignmentsDataNoSolver();
+  const getScheduleEntities = useGetScheduleEntities();
   const getScheduleLHSData = useGetScheduleLHSData();
   const duplicatePeriod = useDuplicatePeriod();
   const exportSchedule = useExportSchedule();
@@ -174,8 +177,6 @@ export default function ScheduleTab({
     userWorker === null;
 
   const [isLoadingSchedule, setIsLoadingSchedule] = useState<boolean>(true);
-  const [isLoadingAssignments, setIsLoadingAssignments] =
-    useState<boolean>(true);
 
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
@@ -184,8 +185,6 @@ export default function ScheduleTab({
   const [scheduleCampaign, setScheduleCampaign] = useState<ScheduleT | null>(
     null,
   );
-  const [assignments, setAssignments] = useState<AssignmentT[]>([]);
-  const [recurrences, setRecurrences] = useState<RecurrenceRuleT[]>([]);
   const [breaches, setBreaches] = useState<BreachT[]>([]);
   const [stats, setStats] = useState<StatsT | null>(null);
   const [specialties, setSpecialties] = useState<SpecialtyT[]>([]);
@@ -203,6 +202,40 @@ export default function ScheduleTab({
 
   // resetScheduleViewSettings can be called to reset all settings to defaults
   // Example: resetScheduleViewSettings() - useful for settings reset UI
+
+  // Calculate buffer range for smart assignment loading
+  const bufferRange = useMemo(() => {
+    const periodEnd = computePeriodEndDate(
+      scheduleViewSettings.periodStartDate,
+      scheduleViewSettings.timeFrame,
+    );
+    return calculateBufferMonths(
+      scheduleViewSettings.periodStartDate,
+      periodEnd,
+    );
+  }, [scheduleViewSettings.periodStartDate, scheduleViewSettings.timeFrame]);
+
+  // Determine if user should see campaign assignments (owners/leaders only)
+  const includeCampaign =
+    teamWithMembership.membership.role !== TeamMembershipRole.MEMBER;
+
+  // React Query hook for assignments with smart buffering
+  const {
+    assignments,
+    recurrences,
+    isLoading: isLoadingAssignments,
+    isFetching: isFetchingAssignments,
+    error: assignmentsError,
+  } = useAssignmentsByPeriod(
+    teamWithMembership.team.id,
+    bufferRange.start,
+    bufferRange.end,
+    includeCampaign,
+    undefined, // No worker filter for desktop view
+    {
+      enabled: !memberHasNoWorker, // Don't fetch if member has no worker
+    },
+  );
 
   // React Query hooks for shift demands - use dates from settings
   const {
@@ -772,6 +805,21 @@ export default function ScheduleTab({
       scheduleViewSettings.timeFrame,
     );
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
+
+    // Prefetch data for extended buffer if approaching edge
+    const newBufferRange = calculateBufferMonths(newPeriodStart, newPeriodEnd);
+    if (shouldFetchMore(bufferRange, newPeriodStart, newPeriodEnd)) {
+      // Prefetch extended buffer in background
+      queryClient.prefetchQuery({
+        queryKey: assignmentsQueryKeys.byPeriod(
+          teamWithMembership.team.id,
+          newBufferRange.start,
+          newBufferRange.end,
+          includeCampaign,
+          undefined,
+        ),
+      });
+    }
   };
 
   const handleNextPeriod = async () => {
@@ -785,6 +833,21 @@ export default function ScheduleTab({
       scheduleViewSettings.timeFrame,
     );
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
+
+    // Prefetch data for extended buffer if approaching edge
+    const newBufferRange = calculateBufferMonths(newPeriodStart, newPeriodEnd);
+    if (shouldFetchMore(bufferRange, newPeriodStart, newPeriodEnd)) {
+      // Prefetch extended buffer in background
+      queryClient.prefetchQuery({
+        queryKey: assignmentsQueryKeys.byPeriod(
+          teamWithMembership.team.id,
+          newBufferRange.start,
+          newBufferRange.end,
+          includeCampaign,
+          undefined,
+        ),
+      });
+    }
   };
 
   const handleChangeTimeFrame = async (newTimeFrame: "week" | "month") => {
@@ -908,10 +971,6 @@ export default function ScheduleTab({
   useEffect(() => {
     const fetchData = async () => {
       setIsLoadingSchedule(true);
-      setIsLoadingAssignments(true);
-
-      // console.log("fetchData useEffect started");
-      // const startTime = dayjs();
 
       try {
         // Fetch schedules
@@ -928,43 +987,11 @@ export default function ScheduleTab({
         );
         setIsLoadingSchedule(false);
 
-        // Determine if user should see campaign assignments (owners/leaders only)
-        const includeCampaign =
-          teamWithMembership.membership.role !== TeamMembershipRole.MEMBER;
-
-        // Fetch assignment data
-        if (teamWithMembership.team.useSolver) {
-          const {
-            assignments: fetchedAssignments,
-            recurrences: fetchedRecurrences,
-            workers: fetchedWorkers,
-            shifts: fetchedShifts,
-          } = await getScheduleAssignmentsData(
-            teamWithMembership.team.id,
-            includeCampaign,
-          );
-          setAssignments(fetchedAssignments);
-          setRecurrences(fetchedRecurrences);
-          setWorkers(fetchedWorkers);
-          setShifts(fetchedShifts);
-          // Note: Shift demands are now loaded via React Query hook
-        } else {
-          const {
-            assignments: fetchedAssignments,
-            recurrences: fetchedRecurrences,
-            workers: fetchedWorkers,
-            shifts: fetchedShifts,
-          } = await getScheduleAssignmentsDataNoSolver(
-            teamWithMembership.team.id,
-            includeCampaign,
-          );
-          setAssignments(fetchedAssignments);
-          setRecurrences(fetchedRecurrences);
-          setWorkers(fetchedWorkers);
-          setShifts(fetchedShifts);
-        }
-
-        setIsLoadingAssignments(false);
+        // Fetch entities (shifts and workers) - assignments now loaded via React Query
+        const { workers: fetchedWorkers, shifts: fetchedShifts } =
+          await getScheduleEntities(teamWithMembership.team.id);
+        setWorkers(fetchedWorkers);
+        setShifts(fetchedShifts);
 
         // Fetch requests (needed for both members and owners)
         const fetchedRequests = await getRequests(teamWithMembership.team.id);
@@ -993,20 +1020,10 @@ export default function ScheduleTab({
           setStats(fetchedStats);
           setSpecialties(fetchedSpecialties);
         }
-
-        // const endTime = dayjs();
-        // console.log("fetchData useEffect ended");
-        // console.log(
-        //   `fetchData useEffect took ${endTime.diff(
-        //     startTime,
-        //     "millisecond"
-        //   )} ms`
-        // );
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
         setIsLoadingSchedule(false);
-        setIsLoadingAssignments(false);
       }
     };
 
@@ -1014,8 +1031,7 @@ export default function ScheduleTab({
   }, [
     teamWithMembership,
     getSchedules,
-    getScheduleAssignmentsData,
-    getScheduleAssignmentsDataNoSolver,
+    getScheduleEntities,
     getRequests,
     getBreaches,
     getStats,

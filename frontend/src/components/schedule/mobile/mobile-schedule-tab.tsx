@@ -12,13 +12,12 @@ import Alert from "@mui/material/Alert";
 import Typography from "@mui/material/Typography";
 // Hooks
 import { useIsLandscape } from "@/hooks/useIsMobile";
-import {
-  useGetScheduleAssignmentsData,
-  useGetScheduleAssignmentsDataNoSolver,
-} from "../../../hooks/useSchedule";
+import { useGetScheduleEntities } from "../../../hooks/useSchedule";
+import { useAssignmentsByPeriod } from "../../../app/lib/hooks/useAssignments";
 import { useScheduleViewSettings } from "../../../app/lib/hooks/useScheduleViewSettings";
 import { getDefaultScheduleViewSettings } from "../../../app/lib/utils/scheduleViewSettingsUtils";
 import { computePeriodEndDate } from "../../../app/lib/utils/scheduleViewSettingsUtils";
+import { calculateMobileBufferMonths } from "../../../app/lib/utils/assignmentBufferUtils";
 // Types
 import { TeamWithMembership, TeamMembershipRole } from "@/types/team";
 import { ShiftRestType } from "@/types/shift";
@@ -52,9 +51,37 @@ export default function MobileScheduleTab({
   const [scheduleViewSettings, updateScheduleViewSettings] =
     useScheduleViewSettings(teamWithMembership.team.id, defaultSettings);
 
-  const getScheduleAssignmentsData = useGetScheduleAssignmentsData();
-  const getScheduleAssignmentsDataNoSolver =
-    useGetScheduleAssignmentsDataNoSolver();
+  const getScheduleEntities = useGetScheduleEntities();
+
+  // Calculate buffer range for mobile (extended to cover ±8 weeks visible range)
+  const bufferRange = useMemo(() => {
+    return calculateMobileBufferMonths(
+      scheduleViewSettings.periodStartDate,
+      8, // ±8 weeks radius
+    );
+  }, [scheduleViewSettings.periodStartDate]);
+
+  // Determine if user should see campaign assignments (owners/leaders only)
+  const includeCampaign =
+    teamWithMembership.membership.role !== TeamMembershipRole.MEMBER;
+
+  // React Query hook for assignments with smart buffering
+  const {
+    assignments,
+    recurrences,
+    isLoading: isLoadingAssignments,
+    isFetching: isFetchingAssignments,
+    error: assignmentsError,
+  } = useAssignmentsByPeriod(
+    teamWithMembership.team.id,
+    bufferRange.start,
+    bufferRange.end,
+    includeCampaign,
+    scheduleViewSettings.mobileSelectedWorkerId || undefined, // Filter by selected worker
+    {
+      enabled: !memberHasNoWorker, // Don't fetch if member has no worker
+    },
+  );
 
   // Fetch user's worker for role-based checks (only for members)
   const {
@@ -73,7 +100,6 @@ export default function MobileScheduleTab({
     userWorker === null;
 
   const [isLoading, setIsLoading] = useState(true);
-  const [assignments, setAssignments] = useState<any[]>([]);
   const [workers, setWorkers] = useState<any[]>([]);
   const [shifts, setShifts] = useState<any[]>([]);
 
@@ -102,66 +128,32 @@ export default function MobileScheduleTab({
           return;
         }
 
-        // Determine if user should see campaign assignments (owners/leaders only)
-        const includeCampaign =
-          teamWithMembership.membership.role !== TeamMembershipRole.MEMBER;
+        // Fetch entities (shifts and workers) - assignments now loaded via React Query
+        const { workers, shifts } = await getScheduleEntities(
+          teamWithMembership.team.id,
+        );
+        if (!mounted) return;
+        setWorkers(workers);
+        setShifts(shifts);
 
-        if (teamWithMembership.team.useSolver) {
-          const { assignments, workers, shifts } =
-            await getScheduleAssignmentsData(
-              teamWithMembership.team.id,
-              includeCampaign,
-            );
-          if (!mounted) return;
-          setAssignments(assignments);
-          setWorkers(workers);
-          setShifts(shifts);
-
-          // Set default worker if none selected or selected worker doesn't exist
-          if (
-            workers.length > 0 &&
-            (!scheduleViewSettings.mobileSelectedWorkerId ||
-              !workers.find(
-                (w: any) =>
-                  w.id === scheduleViewSettings.mobileSelectedWorkerId,
-              ))
-          ) {
-            // If member, try to preselect user's worker
-            const userId =
-              (teamWithMembership as any).membership?.userId || null;
-            const memberWorker = userId
-              ? workers.find((w: any) => w.userId === userId)
-              : null;
-            const defaultWorkerId =
-              (memberWorker && memberWorker.id) || workers[0].id;
-            updateScheduleViewSettings({
-              mobileSelectedWorkerId: defaultWorkerId,
-            });
-          }
-        } else {
-          const { assignments, workers, shifts } =
-            await getScheduleAssignmentsDataNoSolver(
-              teamWithMembership.team.id,
-              includeCampaign,
-            );
-          if (!mounted) return;
-          setAssignments(assignments);
-          setWorkers(workers);
-          setShifts(shifts);
-
-          // Set default worker if none selected or selected worker doesn't exist
-          if (
-            workers.length > 0 &&
-            (!scheduleViewSettings.mobileSelectedWorkerId ||
-              !workers.find(
-                (w: any) =>
-                  w.id === scheduleViewSettings.mobileSelectedWorkerId,
-              ))
-          ) {
-            updateScheduleViewSettings({
-              mobileSelectedWorkerId: workers[0].id,
-            });
-          }
+        // Set default worker if none selected or selected worker doesn't exist
+        if (
+          workers.length > 0 &&
+          (!scheduleViewSettings.mobileSelectedWorkerId ||
+            !workers.find(
+              (w: any) => w.id === scheduleViewSettings.mobileSelectedWorkerId,
+            ))
+        ) {
+          // If member, try to preselect user's worker
+          const userId = (teamWithMembership as any).membership?.userId || null;
+          const memberWorker = userId
+            ? workers.find((w: any) => w.userId === userId)
+            : null;
+          const defaultWorkerId =
+            (memberWorker && memberWorker.id) || workers[0].id;
+          updateScheduleViewSettings({
+            mobileSelectedWorkerId: defaultWorkerId,
+          });
         }
       } catch (err) {
         console.error(err);
@@ -179,7 +171,6 @@ export default function MobileScheduleTab({
     scheduleViewSettings.mobileSelectedWorkerId,
     isLoadingUserWorker,
     userWorker,
-    t,
   ]);
 
   const periodStart = scheduleViewSettings.periodStartDate;
