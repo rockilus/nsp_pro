@@ -505,23 +505,23 @@ export class ScheduleTestBase {
   /**
    * Get assignments for the test team
    */
-  async getAssignments(): Promise<AssignmentT[]> {
+  async getAssignmentsAndRecurrences(
+    includeCampaign: boolean = false,
+    startDate: dayjs.Dayjs,
+    endDate: dayjs.Dayjs,
+    workerId?: string,
+  ): Promise<AssignmentsRecurrencesResultT> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupScheduleTests first.");
+      throw new Error("Test team not initialized");
     }
-    return (await this.dbUtils.getAssignments(this.testTeam.teamId))
-      .assignments;
-  }
-  /**
-   * Get assignments for the test team
-   */
-  async getAssignmentsAndRecurrences(): Promise<AssignmentsRecurrencesResultT> {
-    if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupScheduleTests first.");
-    }
-    return await this.dbUtils.getAssignmentsAndRecurrences(
+    const result = await this.dbUtils.getAssignmentsAndRecurrences(
       this.testTeam.teamId,
+      includeCampaign,
+      startDate,
+      endDate,
+      workerId,
     );
+    return result;
   }
 
   /**
