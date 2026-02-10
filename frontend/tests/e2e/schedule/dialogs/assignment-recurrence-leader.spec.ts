@@ -452,7 +452,31 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     expect(createdRecurrence.recurrenceEndType).toBe(RecurrenceEndType.NEVER);
     expect(createdRecurrence.startDate.isSame(tomorrow, "day")).toBeTruthy();
     expect(createdRecurrence.endDate).toBeNull();
-    // expect(createdRecurrence.endDate!.isSame(endDate, "day")).toBeTruthy();
+
+    // Verify recurring assignments were created for matching weekdays in the next 30 days
+    const recurringAssignments = AR2.assignmentsRead.filter(
+      (a) => a.sourceId === createdRecurrence.id,
+    );
+
+    expect(recurringAssignments).toBeDefined();
+
+    const checkDays = 30;
+    for (
+      let d = tomorrow;
+      d.isBefore(tomorrow.add(checkDays, "day"));
+      d = d.add(1, "day")
+    ) {
+      const mappedWeekDay = (d.day() + 6) % 7;
+      if (createdRecurrence.weekDays.includes(mappedWeekDay)) {
+        const occurrence = recurringAssignments.find(
+          (a) =>
+            a.workerId === testWorkers[0].workerId &&
+            a.shiftId === testShifts[0].id &&
+            a.date.isSame(d, "day"),
+        );
+        expect(occurrence).toBeDefined();
+      }
+    }
 
     console.log(
       "✅ Weekly recurring assignment with specific weekdays created",
