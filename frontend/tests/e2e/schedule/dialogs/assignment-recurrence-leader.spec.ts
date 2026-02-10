@@ -236,7 +236,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     );
     await endDateRadio.click();
 
-    const endDate = tomorrow.add(4, "week");
+    const endDate = tomorrow.add(10, "week");
     const endDatePicker = page.locator(
       '[data-testid="recurrence-end-date-picker"]',
     );
@@ -280,6 +280,24 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     expect(createdRecurrence.startDate.isSame(tomorrow, "day")).toBeTruthy();
     expect(createdRecurrence.endDate).not.toBeNull();
     expect(createdRecurrence.endDate!.isSame(endDate, "day")).toBeTruthy();
+
+    // Verify recurring assignments were created up to the end date
+    const recurringAssignments = ARResult.assignmentsRead.filter(
+      (a) => a.sourceId === createdRecurrence.id,
+    );
+
+    expect(recurringAssignments).toBeDefined();
+
+    const endDatePlusOne = endDate.add(1, "day");
+    for (let i = tomorrow; i.isBefore(endDatePlusOne); i = i.add(1, "week")) {
+      const occurrence = recurringAssignments.find(
+        (a) =>
+          a.workerId === testWorkers[0].workerId &&
+          a.shiftId === testShifts[0].id &&
+          a.date.isSame(i, "day"),
+      );
+      expect(occurrence).toBeDefined();
+    }
 
     console.log("✅ Weekly recurring assignment with end date created");
   });
