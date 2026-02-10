@@ -316,31 +316,40 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     const testWorkers = scheduleTestBase.getTestWorkers();
     const testShifts = scheduleTestBase.getTestShifts();
     const testTeam = scheduleTestBase.getTestTeam()!;
-
-    const addButton = page
-      .locator('[data-testid="add-schedule-item-button"]')
-      .first();
-
-    if (!(await addButton.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
+    const addButton = page.locator('[data-testid="create-assignment-button"]');
+    await expect(addButton).toBeVisible();
 
     await addButton.click();
 
-    const workerSelect = page.locator('[data-testid="worker-select"]');
+    const workerSelect = page.locator(
+      '[data-testid="edit-assignment-worker-select"]',
+    );
     await workerSelect.click();
-    await page.locator(`text="${testWorkers[0].name}"`).first().click();
+    await page
+      .locator(`[data-testid="worker-option-${testWorkers[0].workerId}"]`)
+      .click();
 
-    const shiftSelect = page.locator('[data-testid="shift-select"]');
+    const shiftSelect = page.locator(
+      '[data-testid="edit-assignment-shift-select"]',
+    );
     await shiftSelect.click();
-    await page.locator(`text="${testShifts[0].name}"`).first().click();
+    await page
+      .locator(`[data-testid="shift-option-${testShifts[0].id}"]`)
+      .click();
 
     const tomorrow = dayjs.utc().add(1, "day");
-    const datePicker = page.locator('[data-testid="date-picker"]');
-    await datePicker.click();
-    await datePicker.fill(tomorrow.format("MM/DD/YYYY"));
 
+    const datePicker = page.locator(
+      '[data-testid="edit-assignment-date-picker"]',
+    );
+    await datePicker.waitFor({ state: "visible" });
+    await datePicker.fill("", { force: true });
+    await page.waitForTimeout(100);
+    await datePicker.fill(tomorrow.format("DD/MM/YYYY"), { force: true });
+    await datePicker.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Open recurrence dialog and choose weekly
     const recurrenceButton = page.locator('[data-testid="recurrence-button"]');
     await recurrenceButton.click();
 
@@ -348,18 +357,37 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     await frequencySelect.click();
     await page.locator('[data-testid="frequency-option-week"]').click();
 
-    // Select Monday (1) and Wednesday (3)
-    const mondayButton = page.locator('[data-testid="weekday-button-1"]');
-    const wednesdayButton = page.locator('[data-testid="weekday-button-3"]');
+    // By default the assignment weekday should be selected; verify that
+    const expectedDefaultWeekDay = (tomorrow.day() + 6) % 7;
+    const defaultButton = page.locator(
+      `[data-testid="weekday-button-${expectedDefaultWeekDay}"]`,
+    );
+    await expect(defaultButton).toHaveClass(/selected/);
+
+    // Ensure other weekday buttons are not selected
+    for (let d = 0; d <= 6; d++) {
+      if (d === expectedDefaultWeekDay) continue;
+      await expect(
+        page.locator(`[data-testid="weekday-button-${d}"]`),
+      ).not.toHaveClass(/selected/);
+    }
+
+    // Select Monday (0) and Wednesday (2)
+    const mondayButton = page.locator('[data-testid="weekday-button-0"]');
+    const wednesdayButton = page.locator('[data-testid="weekday-button-2"]');
 
     await mondayButton.click();
     await wednesdayButton.click();
+
+    // Verify selected state
+    await expect(mondayButton).toHaveClass(/selected/);
+    await expect(wednesdayButton).toHaveClass(/selected/);
 
     const doneButton = page.locator('[data-testid="recurrence-done-button"]');
     await doneButton.click();
 
     const createButton = page.locator(
-      '[data-testid="create-assignment-button"]',
+      '[data-testid="edit-assignment-create-button"]',
     );
     await createButton.click();
 
@@ -367,22 +395,18 @@ test.describe("Assignment Recurrence - Team Leader", () => {
       page.locator('[data-testid="schedule-item-dialog"]'),
     ).not.toBeVisible({ timeout: 5000 });
 
-    const dbUtils = (scheduleTestBase as any).dbUtils;
     const AR2 = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf("day"),
       dayjs.utc().add(2, "month").endOf("day"),
     );
-    const assignments = AR2.assignmentsRead;
 
-    const recurringAssignment = assignments.find(
-      (a: any) => a.workerId === testWorkers[0].workerId && a.recurrenceRule,
-    );
-
-    expect(recurringAssignment).toBeDefined();
-    expect(recurringAssignment.recurrenceRule.frequency).toBe("weekly");
-    expect(recurringAssignment.recurrenceRule.byWeekday).toContain(1);
-    expect(recurringAssignment.recurrenceRule.byWeekday).toContain(3);
+    const createdRecurrence = AR2.recurrencesRead[0];
+    expect(createdRecurrence).toBeDefined();
+    expect(createdRecurrence.frequencyType).toBe(FrequencyType.WEEK);
+    // Ensure both Monday(0) and Wednesday(2) are included in stored weekDays
+    expect(createdRecurrence.weekDays).toContain(0);
+    expect(createdRecurrence.weekDays).toContain(2);
 
     console.log(
       "✅ Weekly recurring assignment with specific weekdays created",
