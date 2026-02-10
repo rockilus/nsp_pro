@@ -76,6 +76,7 @@ class RecurrenceRule:
     start_date: date
     end_date: date | None
     number_of_occurrences: int | None
+    last_materialized_until: date | None = None
 
     def to_dict(self) -> Dict:
         out = asdict(self)
@@ -92,6 +93,13 @@ class RecurrenceRule:
         out["end_date"] = (
             datetime.combine(self.end_date, time.min, tzinfo=timezone.utc).timestamp()
             if self.end_date
+            else None
+        )
+        out["last_materialized_until"] = (
+            datetime.combine(
+                self.last_materialized_until, time.min, tzinfo=timezone.utc
+            ).timestamp()
+            if self.last_materialized_until
             else None
         )
         return out
@@ -119,6 +127,13 @@ class RecurrenceRule:
                 else None
             ),
             number_of_occurrences=data["number_of_occurrences"],
+            last_materialized_until=(
+                datetime.fromtimestamp(
+                    data["last_materialized_until"], timezone.utc
+                ).date()
+                if data.get("last_materialized_until")
+                else None
+            ),
         )
 
     def to_dto(self) -> RecurrenceRuleDTO:
@@ -136,6 +151,13 @@ class RecurrenceRule:
         data["end_date"] = (
             datetime.combine(self.end_date, time.min, tzinfo=timezone.utc).timestamp()
             if self.end_date
+            else None
+        )
+        data["last_materialized_until"] = (
+            datetime.combine(
+                self.last_materialized_until, time.min, tzinfo=timezone.utc
+            ).timestamp()
+            if self.last_materialized_until
             else None
         )
         as_dict = humps.camelize(data)
@@ -162,6 +184,13 @@ class RecurrenceRule:
         data_snake["end_date"] = (
             datetime.fromtimestamp(data_snake["end_date"], timezone.utc).date()
             if data_snake["end_date"]
+            else None
+        )
+        data_snake["last_materialized_until"] = (
+            datetime.fromtimestamp(
+                data_snake["last_materialized_until"], timezone.utc
+            ).date()
+            if data_snake.get("last_materialized_until")
             else None
         )
         return cls(**data_snake)

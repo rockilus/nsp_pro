@@ -20,3 +20,4 @@ class RecurrenceRuleDTO(BaseModel):
     startDate: float
     endDate: float | None
     numberOfOccurrences: int | None
+    lastMaterializedUntil: float | None = None

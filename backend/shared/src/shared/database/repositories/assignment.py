@@ -208,6 +208,39 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         assignments = self.find_all({"reference_assignment_id": reference_id})
         return [assignment.to_core() for assignment in assignments]
 
+    def get_assignments_by_source_id(self, source_id: str) -> List[Assignment]:
+        """Get all assignments created from a specific recurrence rule."""
+        assignments = self.find_all({"source_id": source_id})
+        return [assignment.to_core() for assignment in assignments]
+
+    def get_assignments_by_source_id_and_dates(
+        self, source_id: str, start_date: date, end_date: date
+    ) -> List[Assignment]:
+        """Get assignments for a recurrence within a specific date range."""
+        if not source_id or not start_date or not end_date:
+            return []
+
+        start_datetime = datetime(
+            start_date.year,
+            start_date.month,
+            start_date.day,
+            tzinfo=timezone.utc,
+        )
+        end_datetime = datetime(
+            end_date.year,
+            end_date.month,
+            end_date.day,
+            tzinfo=timezone.utc,
+        )
+
+        assignments = self.find_all(
+            {
+                "source_id": source_id,
+                "date": {"$gte": start_datetime, "$lte": end_datetime},
+            }
+        )
+        return [assignment.to_core() for assignment in assignments]
+
     def update_assignment(self, assignment: Assignment) -> Assignment:
         """Update an assignment."""
         assignment_schema = AssignmentSchema.from_core(assignment)

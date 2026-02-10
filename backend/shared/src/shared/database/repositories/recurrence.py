@@ -58,6 +58,18 @@ class RecurrenceRepository(BaseRepository[RecurrenceRuleSchema]):
             raise Exception(f"Failed to update recurrence with id {recurrence.id}")
         return updated_recurrence.to_core()
 
+    def update_recurrence_watermark(
+        self, recurrence_id: str, last_materialized_until: date
+    ) -> None:
+        """Update only the last_materialized_until field of a recurrence rule."""
+        timestamp = datetime.combine(
+            last_materialized_until, time.min, timezone.utc
+        ).timestamp()
+        self.collection.update_one(
+            {"_id": recurrence_id},
+            {"$set": {"last_materialized_until": timestamp}},
+        )
+
     def delete_recurrence(self, recurrence_id: str) -> None:
         """Delete a recurrence rule by its ID."""
         result = self.delete(recurrence_id)
