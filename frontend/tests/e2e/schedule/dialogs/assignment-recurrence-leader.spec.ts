@@ -423,15 +423,29 @@ test.describe("Assignment Recurrence - Team Leader", () => {
 
     // Create recurring assignment
     const tomorrow = dayjs.utc().add(1, "day");
-    await scheduleTestBase.createAssignmentWithRecurrence(data:{
-      workerId: testWorkers[0].workerId,
-      shiftId: testShifts[0].id,
-      date: tomorrow},
-      recurrence: {
-        frequency: FrequencyType.DAY,
-        interval: 1,
-        endType: RecurrenceEndType.NUMBER_OF_OCCURRENCES,
-        occurrences: 5,
+    await scheduleTestBase.createAssignmentWithRecurrence(
+      {
+        workerId: testWorkers[0].workerId,
+        shiftId: testShifts[0].id,
+        date: tomorrow,
+      },
+      {
+        id: "",
+        teamId: testTeam.teamId,
+        occurrenceType: OccurrenceType.ASSIGNMENT,
+        occurrenceInfo: {
+          workerId: testWorkers[0].workerId,
+          shiftId: testShifts[0].id,
+          count: null,
+        },
+        repeatEvery: 1,
+        frequencyType: FrequencyType.DAY,
+        weekDays: [(tomorrow.day() + 6) % 7],
+        monthRepeatType: null,
+        recurrenceEndType: RecurrenceEndType.NUMBER_OF_OCCURRENCES,
+        startDate: tomorrow,
+        endDate: null,
+        numberOfOccurrences: 5,
       },
     );
 
@@ -477,7 +491,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     const assignments = await dbUtils.getAssignments(testTeam.teamId);
 
     const recurringAssignment = assignments.find(
-      (a: any) => a.workerId === testWorkers[0].id && a.recurrenceRule,
+      (a: any) => a.workerId === testWorkers[0].workerId && a.recurrenceRule,
     );
 
     expect(recurringAssignment).toBeDefined();
@@ -498,18 +512,31 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     const testTeam = scheduleTestBase.getTestTeam()!;
 
     const tomorrow = dayjs.utc().add(1, "day");
-    await scheduleTestBase.createAssignmentWithRecurrence({
-      teamId: testTeam.teamId,
-      workerId: testWorkers[0].id,
-      shiftId: testShifts[0].id,
-      date: tomorrow.format("YYYY-MM-DD"),
-      recurrenceRule: {
-        frequency: "daily",
-        interval: 1,
-        endType: "occurrences",
-        occurrences: 5,
+    await scheduleTestBase.createAssignmentWithRecurrence(
+      {
+        workerId: testWorkers[0].workerId,
+        shiftId: testShifts[0].id,
+        date: tomorrow,
       },
-    });
+      {
+        id: "",
+        teamId: testTeam.teamId,
+        occurrenceType: OccurrenceType.ASSIGNMENT,
+        occurrenceInfo: {
+          workerId: testWorkers[0].workerId,
+          shiftId: testShifts[0].id,
+          count: null,
+        },
+        repeatEvery: 1,
+        frequencyType: FrequencyType.DAY,
+        weekDays: [(tomorrow.day() + 6) % 7],
+        monthRepeatType: null,
+        recurrenceEndType: RecurrenceEndType.NUMBER_OF_OCCURRENCES,
+        startDate: tomorrow,
+        endDate: null,
+        numberOfOccurrences: 5,
+      },
+    );
 
     await page.reload();
     await page.waitForTimeout(1000);
@@ -549,7 +576,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     const assignments = await dbUtils.getAssignments(testTeam.teamId);
 
     const deletedAssignment = assignments.find(
-      (a: any) => a.workerId === testWorkers[0].id,
+      (a: any) => a.workerId === testWorkers[0].workerId,
     );
 
     expect(deletedAssignment).toBeUndefined();
