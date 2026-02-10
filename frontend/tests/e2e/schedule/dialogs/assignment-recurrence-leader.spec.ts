@@ -638,20 +638,42 @@ test.describe("Assignment Recurrence - Team Leader", () => {
       },
     );
 
-    await page.reload();
-    await page.waitForTimeout(1000);
+    // Fetch assignments and recurrences to verify they exist
+    const beforeDelete = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
 
-    // Click on assignment
-    const assignmentCell = page
-      .locator('[role="gridcell"]')
-      .filter({ hasText: testWorkers[0].name })
-      .first();
+    // Verify recurrence exists
+    const createdRecurrence = beforeDelete.recurrencesRead[0];
+    expect(createdRecurrence).toBeDefined();
 
-    if (!(await assignmentCell.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
+    // Get all assignment occurrences for this recurrence
+    const occurrencesBefore = beforeDelete.assignmentsRead.filter(
+      (a) => a.sourceId === createdRecurrence!.id,
+    );
+    expect(occurrencesBefore.length).toBe(5);
 
+    // Select the second occurrence to delete (more interesting than the first)
+    const occurrenceToDelete = occurrencesBefore[1];
+    const deleteDate = occurrenceToDelete.date;
+
+    // Set the schedule view to include the date of the occurrence to delete
+    await scheduleTestBase.setScheduleViewSettings(
+      page,
+      {
+        targetDate: deleteDate,
+        timeFrame: "week",
+      },
+      true, // reload page
+    );
+
+    // Click on assignment occurrence
+    const assignmentCell = page.locator(
+      `[data-testid="assignment-cell-${occurrenceToDelete.id}"]`,
+    );
+    await expect(assignmentCell).toBeVisible({ timeout: 5000 });
     await assignmentCell.click();
 
     // Click delete
@@ -675,23 +697,36 @@ test.describe("Assignment Recurrence - Team Leader", () => {
       page.locator('[data-testid="schedule-item-dialog"]'),
     ).not.toBeVisible({ timeout: 5000 });
 
-    // Verify: original assignment should remain but with one exception
-    const dbUtils = (scheduleTestBase as any).dbUtils;
-    const AR4 = await scheduleTestBase.getAssignmentsAndRecurrences(
+    // Fetch assignments again and verify all occurrences exist except the deleted one
+    const afterDelete = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf("day"),
       dayjs.utc().add(2, "month").endOf("day"),
     );
-    const assignments = AR4.assignmentsRead;
 
-    const recurringAssignment = assignments.find(
-      (a: any) => a.workerId === testWorkers[0].workerId && a.recurrenceRule,
+    const occurrencesAfter = afterDelete.assignmentsRead.filter(
+      (a) => a.sourceId === createdRecurrence!.id,
     );
 
-    expect(recurringAssignment).toBeDefined();
-    expect(recurringAssignment.recurrenceRule.exceptionDates).toContain(
-      tomorrow.format("YYYY-MM-DD"),
+    // Should have 4 occurrences remaining (5 - 1)
+    expect(occurrencesAfter.length).toBe(4);
+
+    // Verify the deleted occurrence is not in the list
+    const deletedOccurrence = occurrencesAfter.find((a) =>
+      a.date.isSame(deleteDate, "day"),
     );
+    expect(deletedOccurrence).toBeUndefined();
+
+    // Verify all other occurrences still exist
+    for (const occurrence of occurrencesBefore) {
+      if (occurrence.date.isSame(deleteDate, "day")) {
+        continue; // This is the deleted one, skip
+      }
+      const foundOccurrence = occurrencesAfter.find((a) =>
+        a.date.isSame(occurrence.date, "day"),
+      );
+      expect(foundOccurrence).toBeDefined();
+    }
 
     console.log("✅ Single instance deleted from recurring assignment");
   });

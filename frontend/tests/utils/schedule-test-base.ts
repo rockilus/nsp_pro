@@ -255,7 +255,7 @@ export class ScheduleTestBase {
     // Create assignments via API
     for (const assignmentData of assignments) {
       try {
-        await this.dbUtils.createAssignment({
+        await this.dbUtils.createAssignmentAndRecurrence({
           teamId: this.testTeam.teamId,
           workerId: assignmentData.workerId,
           shiftId: assignmentData.shiftId,
@@ -362,7 +362,7 @@ export class ScheduleTestBase {
       throw new Error("Test team not created. Call setupScheduleTests first.");
     }
 
-    return await this.dbUtils.createAssignment({
+    return await this.dbUtils.createAssignmentAndRecurrence({
       teamId: this.testTeam.teamId,
       workerId: assignmentData.workerId,
       shiftId: assignmentData.shiftId,
@@ -542,7 +542,7 @@ export class ScheduleTestBase {
       throw new Error("Test team not initialized");
     }
 
-    const assignment = await this.dbUtils.createAssignment({
+    const assignment = await this.dbUtils.createAssignmentAndRecurrence({
       teamId: this.testTeam.teamId,
       workerId: data.workerId,
       shiftId: data.shiftId,
@@ -630,7 +630,7 @@ export class ScheduleTestBase {
 
     // Set up leave if requested
     if (constraints?.onLeave) {
-      await this.dbUtils.createAssignment({
+      await this.dbUtils.createAssignmentAndRecurrence({
         teamId: this.testTeam.teamId,
         workerId: worker.workerId,
         shiftId: constraints.onLeave.leaveShiftId,
@@ -643,7 +643,7 @@ export class ScheduleTestBase {
 
     // Set up overlapping assignment if requested
     if (constraints?.hasOverlap) {
-      await this.dbUtils.createAssignment({
+      await this.dbUtils.createAssignmentAndRecurrence({
         teamId: this.testTeam.teamId,
         workerId: worker.workerId,
         shiftId: constraints.hasOverlap.shiftId,

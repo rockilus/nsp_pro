@@ -2080,7 +2080,7 @@ export class DatabaseTestUtils {
   /**
    * Create an assignment using AssignmentApi for consistent behavior
    */
-  async createAssignment(assignmentData: {
+  async createAssignmentAndRecurrence(assignmentData: {
     teamId: string;
     workerId: string;
     shiftId: string;
