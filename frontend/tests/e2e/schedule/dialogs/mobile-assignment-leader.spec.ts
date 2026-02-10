@@ -126,14 +126,18 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     ).not.toBeVisible({ timeout: 5000 });
 
     // Verify assignment created
-    const dbUtils = (scheduleTestBase as any).dbUtils;
-    const assignments = await dbUtils.getAssignments(testTeam.teamId);
+    const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR.assignmentsRead;
 
     const createdAssignment = assignments.find(
       (a: any) =>
         a.workerId === testWorkers[0].workerId &&
         a.shiftId === testShifts[0].id &&
-        a.date === tomorrow.format("YYYY-MM-DD"),
+        dayjs(a.date).isSame(tomorrow, "day"),
     );
 
     expect(createdAssignment).toBeDefined();
@@ -193,7 +197,12 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     ).not.toBeVisible({ timeout: 5000 });
 
     // Verify update
-    const assignments = await dbUtils.getAssignments(testTeam.teamId);
+    const AR2 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR2.assignmentsRead;
     const updatedAssignment = assignments.find(
       (a: any) => a.id === assignment.id,
     );
@@ -246,7 +255,12 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     ).not.toBeVisible({ timeout: 5000 });
 
     // Verify deletion
-    const assignments = await dbUtils.getAssignments(testTeam.teamId);
+    const AR3 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR3.assignmentsRead;
     const deletedAssignment = assignments.find(
       (a: any) => a.id === assignment.id,
     );

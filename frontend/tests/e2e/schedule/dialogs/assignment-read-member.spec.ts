@@ -57,15 +57,19 @@ test.describe("Assignment Read-Only - Team Member", () => {
     const dbUtils = (scheduleTestBase as any).dbUtils;
 
     // Get the created assignment
-    const assignments = await dbUtils.getAssignments(testTeam.teamId);
+    const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR.assignmentsRead;
 
-    if (assignments.assignments.length === 0) {
+    if (assignments.length === 0) {
       console.log("⚠️ No assignments found, skipping test");
       test.skip();
       return;
     }
-
-    const assignment = assignments.assignments[0];
+    const assignment = assignments[0];
     const assignmentDate = dayjs(assignment.date);
 
     // Click on assignment cell to open dialog
@@ -117,14 +121,18 @@ test.describe("Assignment Read-Only - Team Member", () => {
     const testTeam = scheduleTestBase.getTestTeam()!;
     const dbUtils = (scheduleTestBase as any).dbUtils;
 
-    const assignments = await dbUtils.getAssignments(testTeam.teamId);
+    const AR2 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR2.assignmentsRead;
 
-    if (assignments.assignments.length === 0) {
+    if (assignments.length === 0) {
       test.skip();
       return;
     }
-
-    const assignment = assignments.assignments[0];
+    const assignment = assignments[0];
     const assignmentDate = dayjs(assignment.date);
 
     const assignmentCell = page
@@ -202,14 +210,18 @@ test.describe("Assignment Read-Only - Team Member", () => {
     const testTeam = scheduleTestBase.getTestTeam()!;
     const dbUtils = (scheduleTestBase as any).dbUtils;
 
-    const assignments = await dbUtils.getAssignments(testTeam.teamId);
+    const AR3 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR3.assignmentsRead;
 
-    if (assignments.assignments.length === 0) {
+    if (assignments.length === 0) {
       test.skip();
       return;
     }
-
-    const assignment = assignments.assignments[0];
+    const assignment = assignments[0];
     const assignmentDate = dayjs(assignment.date);
 
     const assignmentCell = page
@@ -247,14 +259,18 @@ test.describe("Assignment Read-Only - Team Member", () => {
     const testTeam = scheduleTestBase.getTestTeam()!;
     const dbUtils = (scheduleTestBase as any).dbUtils;
 
-    const assignments = await dbUtils.getAssignments(testTeam.teamId);
+    const AR4 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR4.assignmentsRead;
 
-    if (assignments.assignments.length === 0) {
+    if (assignments.length === 0) {
       test.skip();
       return;
     }
-
-    const assignment = assignments.assignments[0];
+    const assignment = assignments[0];
     const assignmentDate = dayjs(assignment.date);
 
     const assignmentCell = page

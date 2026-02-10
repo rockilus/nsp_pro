@@ -57,15 +57,20 @@ test.describe("Assignment Editing - Team Leader", () => {
     const dbUtils = (scheduleTestBase as any).dbUtils;
 
     // Get the created assignment
-    const assignments = await dbUtils.getAssignments(testTeam.teamId);
+    const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR.assignmentsRead;
 
-    if (assignments.assignments.length === 0) {
+    if (assignments.length === 0) {
       console.log("⚠️ No assignments found, skipping test");
       test.skip();
       return;
     }
 
-    const assignment = assignments.assignments[0];
+    const assignment = assignments[0];
 
     // Click on assignment cell to open edit dialog
     // Note: Selector depends on schedule UI implementation
@@ -112,14 +117,19 @@ test.describe("Assignment Editing - Team Leader", () => {
     const dbUtils = (scheduleTestBase as any).dbUtils;
 
     // Get the created assignment
-    const assignments = await dbUtils.getAssignments(testTeam.teamId);
+    const AR2 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR2.assignmentsRead;
 
-    if (assignments.assignments.length === 0) {
+    if (assignments.length === 0) {
       test.skip();
       return;
     }
 
-    const assignment = assignments.assignments[0];
+    const assignment = assignments[0];
     const assignmentDate = dayjs(assignment.date);
 
     // Open assignment for editing
@@ -165,8 +175,13 @@ test.describe("Assignment Editing - Team Leader", () => {
     ).not.toBeVisible({ timeout: 5000 });
 
     // Verify assignment was updated in database
-    const updatedAssignments = await dbUtils.getAssignments(testTeam.teamId);
-    const updatedAssignment = updatedAssignments.assignments.find(
+    const AR3 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const updatedAssignments = AR3.assignmentsRead;
+    const updatedAssignment = updatedAssignments.find(
       (a: any) => a.id === assignment.id,
     );
 
@@ -185,14 +200,19 @@ test.describe("Assignment Editing - Team Leader", () => {
     const testShifts = scheduleTestBase.getTestShifts();
     const dbUtils = (scheduleTestBase as any).dbUtils;
 
-    const assignments = await dbUtils.getAssignments(testTeam.teamId);
+    const AR4 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR4.assignmentsRead;
 
-    if (assignments.assignments.length === 0) {
+    if (assignments.length === 0) {
       test.skip();
       return;
     }
 
-    const assignment = assignments.assignments[0];
+    const assignment = assignments[0];
     const assignmentDate = dayjs(assignment.date);
 
     const assignmentCell = page
@@ -232,8 +252,13 @@ test.describe("Assignment Editing - Team Leader", () => {
     ).not.toBeVisible({ timeout: 5000 });
 
     // Verify assignment was updated
-    const updatedAssignments = await dbUtils.getAssignments(testTeam.teamId);
-    const updatedAssignment = updatedAssignments.assignments.find(
+    const AR5 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const updatedAssignments = AR5.assignmentsRead;
+    const updatedAssignment = updatedAssignments.find(
       (a: any) => a.id === assignment.id,
     );
 
@@ -249,9 +274,14 @@ test.describe("Assignment Editing - Team Leader", () => {
     const testTeam = scheduleTestBase.getTestTeam()!;
     const dbUtils = (scheduleTestBase as any).dbUtils;
 
-    const assignments = await dbUtils.getAssignments(testTeam.teamId);
+    const AR6 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR6.assignmentsRead;
 
-    if (assignments.assignments.length === 0) {
+    if (assignments.length === 0) {
       test.skip();
       return;
     }
@@ -290,8 +320,13 @@ test.describe("Assignment Editing - Team Leader", () => {
     ).not.toBeVisible({ timeout: 5000 });
 
     // Verify assignment was updated
-    const updatedAssignments = await dbUtils.getAssignments(testTeam.teamId);
-    const updatedAssignment = updatedAssignments.assignments.find(
+    const AR5 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const updatedAssignments = AR5.assignmentsRead;
+    const updatedAssignment = updatedAssignments.find(
       (a: any) => a.id === assignment.id,
     );
 
@@ -313,14 +348,18 @@ test.describe("Assignment Editing - Team Leader", () => {
     const testWorkers = scheduleTestBase.getTestWorkers();
     const dbUtils = (scheduleTestBase as any).dbUtils;
 
-    const assignments = await dbUtils.getAssignments(testTeam.teamId);
+    const AR6 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR6.assignmentsRead;
 
-    if (assignments.assignments.length === 0) {
+    if (assignments.length === 0) {
       test.skip();
       return;
     }
-
-    const assignment = assignments.assignments[0];
+    const assignment = assignments[0];
     const originalWorkerId = assignment.workerId;
     const assignmentDate = dayjs(assignment.date);
 
@@ -359,8 +398,13 @@ test.describe("Assignment Editing - Team Leader", () => {
     ).not.toBeVisible();
 
     // Verify assignment was NOT updated
-    const unchangedAssignments = await dbUtils.getAssignments(testTeam.teamId);
-    const unchangedAssignment = unchangedAssignments.assignments.find(
+    const AR7 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const unchangedAssignments = AR7.assignmentsRead;
+    const unchangedAssignment = unchangedAssignments.find(
       (a: any) => a.id === assignment.id,
     );
 

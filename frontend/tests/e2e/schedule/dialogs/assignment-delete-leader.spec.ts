@@ -55,7 +55,12 @@ test.describe("Assignment Deletion - Team Leader", () => {
     const scheduleTestBase = testBasesMap.get(testRunId)!;
 
     // Get the created assignment
-    const assignments = await scheduleTestBase.getAssignments();
+    const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR.assignmentsRead;
     await expect(assignments.length).toBeGreaterThan(0);
 
     const assignment = assignments[0];
@@ -86,7 +91,12 @@ test.describe("Assignment Deletion - Team Leader", () => {
     ).not.toBeVisible({ timeout: 5000 });
 
     // Verify assignment was deleted from database
-    const updatedAssignments = await scheduleTestBase.getAssignments();
+    const AR2 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const updatedAssignments = AR2.assignmentsRead;
     const deletedAssignment = updatedAssignments.find(
       (a: any) => a.id === assignmentId,
     );
@@ -239,7 +249,12 @@ test.describe("Assignment Deletion - Team Leader", () => {
     ).not.toBeVisible({ timeout: 5000 });
 
     // Verify only one assignment was deleted
-    const updatedAssignments = await scheduleTestBase.getAssignments();
+    const AR3 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const updatedAssignments = AR3.assignmentsRead;
     const remainingCount = updatedAssignments.filter((a: any) =>
       assignmentIds.includes(a.id),
     ).length;
@@ -260,7 +275,12 @@ test.describe("Assignment Deletion - Team Leader", () => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
 
-    const assignments = await scheduleTestBase.getAssignments();
+    const AR4 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR4.assignmentsRead;
 
     if (assignments.length === 0) {
       test.skip();
@@ -312,7 +332,12 @@ test.describe("Assignment Deletion - Team Leader", () => {
     }
 
     // Verify assignment still exists
-    const unchangedAssignments = await scheduleTestBase.getAssignments();
+    const AR5 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const unchangedAssignments = AR5.assignmentsRead;
     const stillExists = unchangedAssignments.find((a) => a.id === assignmentId);
 
     if (stillExists) {

@@ -113,7 +113,12 @@ test.describe("Assignment Creation - Team Leader", () => {
     await expect(dialog).not.toBeVisible({ timeout: 5000 });
 
     // Verify assignment was created in database
-    const assignments = await scheduleTestBase.getAssignments();
+    const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR.assignmentsRead;
 
     expect(assignments.length).toBeGreaterThan(0);
     const createdAssignment = assignments.find(
@@ -258,7 +263,12 @@ test.describe("Assignment Creation - Team Leader", () => {
     await expect(dialog).not.toBeVisible();
 
     // Verify no assignment was created
-    const assignments = await scheduleTestBase.getAssignments();
+    const AR2 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR2.assignmentsRead;
     expect(assignments.length).toBe(0);
 
     console.log("✅ Assignment creation cancelled successfully");
@@ -326,7 +336,12 @@ test.describe("Assignment Creation - Team Leader", () => {
     ).not.toBeVisible({ timeout: 5000 });
 
     // Verify assignment was created as fixed
-    const assignments = await scheduleTestBase.getAssignments();
+    const AR3 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR3.assignmentsRead;
 
     const createdAssignment = assignments.find(
       (a: any) =>

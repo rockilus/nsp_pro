@@ -497,7 +497,12 @@ test.describe("Assignment Replacement - Team Leader", () => {
       ).not.toBeVisible({ timeout: 5000 });
 
       // Verify in database
-      const assignments = await dbUtils.getAssignments(testTeam.teamId);
+      const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
+        false,
+        dayjs.utc().startOf("day"),
+        dayjs.utc().add(2, "month").endOf("day"),
+      );
+      const assignments = AR.assignmentsRead;
       const updatedAssignment = assignments.find(
         (a: any) => a.id === assignment.id,
       );

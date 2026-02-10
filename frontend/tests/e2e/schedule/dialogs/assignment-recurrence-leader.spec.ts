@@ -242,7 +242,12 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     ).not.toBeVisible({ timeout: 5000 });
 
     const dbUtils = (scheduleTestBase as any).dbUtils;
-    const assignments = await dbUtils.getAssignments(testTeam.teamId);
+    const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR.assignmentsRead;
 
     const recurringAssignment = assignments.find(
       (a: any) => a.workerId === testWorkers[0].workerId && a.recurrenceRule,
@@ -318,7 +323,12 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     ).not.toBeVisible({ timeout: 5000 });
 
     const dbUtils = (scheduleTestBase as any).dbUtils;
-    const assignments = await dbUtils.getAssignments(testTeam.teamId);
+    const AR2 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR2.assignmentsRead;
 
     const recurringAssignment = assignments.find(
       (a: any) => a.workerId === testWorkers[0].workerId && a.recurrenceRule,
@@ -398,7 +408,12 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     ).not.toBeVisible({ timeout: 5000 });
 
     const dbUtils = (scheduleTestBase as any).dbUtils;
-    const assignments = await dbUtils.getAssignments(testTeam.teamId);
+    const AR3 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR3.assignmentsRead;
 
     const recurringAssignment = assignments.find(
       (a: any) => a.workerId === testWorkers[0].workerId && a.recurrenceRule,
@@ -488,7 +503,12 @@ test.describe("Assignment Recurrence - Team Leader", () => {
 
     // Verify: original assignment should remain but with one exception
     const dbUtils = (scheduleTestBase as any).dbUtils;
-    const assignments = await dbUtils.getAssignments(testTeam.teamId);
+    const AR4 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR4.assignmentsRead;
 
     const recurringAssignment = assignments.find(
       (a: any) => a.workerId === testWorkers[0].workerId && a.recurrenceRule,
@@ -573,7 +593,12 @@ test.describe("Assignment Recurrence - Team Leader", () => {
 
     // Verify all assignments deleted
     const dbUtils = (scheduleTestBase as any).dbUtils;
-    const assignments = await dbUtils.getAssignments(testTeam.teamId);
+    const AR5 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR5.assignmentsRead;
 
     const deletedAssignment = assignments.find(
       (a: any) => a.workerId === testWorkers[0].workerId,
