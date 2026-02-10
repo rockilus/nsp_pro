@@ -846,4 +846,146 @@ test.describe("Assignment Recurrence - Team Leader", () => {
 
     console.log("✅ All instances of recurring assignment deleted");
   });
+
+  test("should delete this and following instances of recurring assignment", async ({
+    page,
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const scheduleTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = scheduleTestBase.getTestWorkers();
+    const testShifts = scheduleTestBase.getTestShifts();
+    const testTeam = scheduleTestBase.getTestTeam()!;
+
+    // Create recurring assignment
+    const tomorrow = dayjs.utc().add(1, "day");
+    await scheduleTestBase.createAssignmentWithRecurrence(
+      {
+        workerId: testWorkers[0].workerId,
+        shiftId: testShifts[0].id,
+        date: tomorrow,
+      },
+      {
+        id: "",
+        teamId: testTeam.teamId,
+        occurrenceType: OccurrenceType.ASSIGNMENT,
+        occurrenceInfo: {
+          workerId: testWorkers[0].workerId,
+          shiftId: testShifts[0].id,
+          count: null,
+        },
+        repeatEvery: 1,
+        frequencyType: FrequencyType.DAY,
+        weekDays: [(tomorrow.day() + 6) % 7],
+        monthRepeatType: null,
+        recurrenceEndType: RecurrenceEndType.NUMBER_OF_OCCURRENCES,
+        startDate: tomorrow,
+        endDate: null,
+        numberOfOccurrences: 5,
+      },
+    );
+
+    // Fetch assignments and recurrences to verify they exist
+    const beforeDelete = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+
+    // Verify recurrence exists
+    const createdRecurrence = beforeDelete.recurrencesRead[0];
+    expect(createdRecurrence).toBeDefined();
+
+    // Get all assignment occurrences for this recurrence
+    const occurrencesBefore = beforeDelete.assignmentsRead.filter(
+      (a) => a.sourceId === createdRecurrence!.id,
+    );
+    expect(occurrencesBefore.length).toBe(5);
+
+    // Select the third occurrence to delete (so we have 2 before and 2 after)
+    const occurrenceToDelete = occurrencesBefore[2];
+    const deleteDate = occurrenceToDelete.date;
+
+    // Set the schedule view to include the date of the occurrence to delete
+    await scheduleTestBase.setScheduleViewSettings(
+      page,
+      {
+        targetDate: deleteDate,
+        timeFrame: "week",
+      },
+      true, // reload page
+    );
+
+    // Click on assignment occurrence
+    const assignmentCell = page.locator(
+      `[data-testid="assignment-cell-${occurrenceToDelete.id}"]`,
+    );
+    await expect(assignmentCell).toBeVisible({ timeout: 5000 });
+    await assignmentCell.click();
+
+    // Click delete
+    const deleteButton = page.locator(
+      '[data-testid="delete-assignment-button"]',
+    );
+    await deleteButton.click();
+
+    // Select "This and following assignments"
+    const thisAndFutureRadio = page.locator(
+      '[data-testid="delete-this-and-future-radio"]',
+    );
+    await thisAndFutureRadio.click();
+
+    const confirmButton = page.locator(
+      '[data-testid="recurrence-delete-confirm-button"]',
+    );
+    await confirmButton.click();
+
+    await expect(
+      page.locator('[data-testid="schedule-item-dialog"]'),
+    ).not.toBeVisible({ timeout: 5000 });
+
+    // Fetch assignments again and verify the right ones are deleted
+    const afterDelete = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+
+    // Verify recurrence still exists
+    const remainingRecurrence = afterDelete.recurrencesRead.find(
+      (r) => r.id === createdRecurrence!.id,
+    );
+    expect(remainingRecurrence).toBeDefined();
+
+    // Get remaining occurrences
+    const occurrencesAfter = afterDelete.assignmentsRead.filter(
+      (a) => a.sourceId === createdRecurrence!.id,
+    );
+
+    // Should have 2 occurrences remaining (the ones before the deletion date)
+    expect(occurrencesAfter.length).toBe(2);
+
+    // Verify occurrences before deletion date still exist
+    for (const occurrence of occurrencesBefore) {
+      if (occurrence.date.isBefore(deleteDate, "day")) {
+        const foundOccurrence = occurrencesAfter.find((a) =>
+          a.date.isSame(occurrence.date, "day"),
+        );
+        expect(foundOccurrence).toBeDefined();
+      }
+    }
+
+    // Verify occurrences on and after deletion date are deleted
+    for (const occurrence of occurrencesBefore) {
+      if (occurrence.date.isSameOrAfter(deleteDate, "day")) {
+        const foundOccurrence = occurrencesAfter.find((a) =>
+          a.date.isSame(occurrence.date, "day"),
+        );
+        expect(foundOccurrence).toBeUndefined();
+      }
+    }
+
+    console.log(
+      "✅ This and following instances of recurring assignment deleted",
+    );
+  });
 });
