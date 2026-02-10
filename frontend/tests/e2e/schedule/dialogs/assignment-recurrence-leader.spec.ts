@@ -10,21 +10,17 @@ import { test, expect } from "@playwright/test";
 import { randomUUID } from "crypto";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import { ScheduleTestBase } from "../../../utils/schedule-test-base";
 import {
   FrequencyType,
   RecurrenceEndType,
   OccurrenceType,
-  OccurrenceInfoT,
-  RecurrenceRuleT,
-  RecurrenceExclusionT,
-  RecurrenceUpdateScope,
-  toRecurrenceRuleT,
-  fromRecurrenceRuleT,
   MonthRepeatType,
 } from "../../../../src/types/recurrence";
 
 dayjs.extend(utc);
+dayjs.extend(isSameOrAfter);
 
 test.describe("Assignment Recurrence - Team Leader", () => {
   const testBasesMap = new Map<string, ScheduleTestBase>();
@@ -896,9 +892,9 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     expect(createdRecurrence).toBeDefined();
 
     // Get all assignment occurrences for this recurrence
-    const occurrencesBefore = beforeDelete.assignmentsRead.filter(
-      (a) => a.sourceId === createdRecurrence!.id,
-    );
+    const occurrencesBefore = beforeDelete.assignmentsRead
+      .filter((a) => a.sourceId === createdRecurrence!.id)
+      .sort((a, b) => a.date.valueOf() - b.date.valueOf());
     expect(occurrencesBefore.length).toBe(5);
 
     // Select the third occurrence to delete (so we have 2 before and 2 after)
