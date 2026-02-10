@@ -593,7 +593,11 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     await swapTestBase.approveSwap(testSwap.id);
 
     // Fetch all assignments after swap using AssignmentApi
-    const allAssignments = await swapTestBase.getAssignments();
+    const allAssignments = await swapTestBase.getAssignmentsAndRecurrences(
+      includeCampaign: false,
+      startDate: dayjs.utc().subtract(2, "month"),
+      endDate: dayjs.utc().add(2, "month"),
+    );
 
     // Verify offered assignments now belong to worker2
     for (const offeredAssignmentId of originalOfferedAssignments) {
@@ -624,7 +628,7 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     const teamId = swapTestBase.getTestTeam()!.teamId;
 
     // Get original assignment details using AssignmentApi
-    const assignmentsBefore = await swapTestBase.getAssignments();
+    const assignmentsBefore = await swapTestBase.getAssignmentsAndRecurrences();
 
     // Store original shift and date for each assignment
     const originalData = new Map();
@@ -646,7 +650,7 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     await swapTestBase.approveSwap(testSwap.id);
 
     // Fetch assignments after swap using AssignmentApi
-    const assignmentsAfter = await swapTestBase.getAssignments();
+    const assignmentsAfter = await swapTestBase.getAssignmentsAndRecurrences();
 
     // Verify each assignment kept its original shift and date
     for (const [assignmentId, original] of originalData.entries()) {
@@ -693,7 +697,7 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     await swapTestBase.approveSwap(dutySwap.id);
 
     // Fetch all assignments after swap using AssignmentApi
-    const allAssignments = await swapTestBase.getAssignments();
+    const allAssignments = await swapTestBase.getAssignmentsAndRecurrences();
 
     // Verify the 2 normal shifts (morning + afternoon) now belong to worker2
     for (const offeredAssignmentId of dutySwap.offeredAssignmentIds) {
@@ -851,11 +855,12 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     const creatorWorker = workers[0];
 
     // Get original assignments before swap
-    const assignmentsBeforeSwap = await swapTestBase.getAssignments(
-      true,
-      undefined,
-      undefined,
-    );
+    const assignmentsBeforeSwap =
+      await swapTestBase.getAssignmentsAndRecurrences(
+        true,
+        undefined,
+        undefined,
+      );
 
     // Find offered assignments and verify they belong to creator worker
     const offeredAssignmentsBefore = assignmentsBeforeSwap.filter((a) =>
@@ -873,11 +878,12 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     await swapTestBase.revertSwap(testSwap.id);
 
     // Get assignments after reversion
-    const assignmentsAfterRevert = await swapTestBase.getAssignments(
-      true,
-      undefined,
-      undefined,
-    );
+    const assignmentsAfterRevert =
+      await swapTestBase.getAssignmentsAndRecurrences(
+        true,
+        undefined,
+        undefined,
+      );
 
     // Verify offered assignments are back to original worker
     const offeredAssignmentsAfter = assignmentsAfterRevert.filter((a) =>
@@ -902,11 +908,12 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     const targetWorker = workers[1];
 
     // Get original assignments before swap
-    const assignmentsBeforeSwap = await swapTestBase.getAssignments(
-      true,
-      undefined,
-      undefined,
-    );
+    const assignmentsBeforeSwap =
+      await swapTestBase.getAssignmentsAndRecurrences(
+        true,
+        undefined,
+        undefined,
+      );
 
     // Find requested assignments and verify they belong to target worker
     const requestedAssignmentsBefore = assignmentsBeforeSwap.filter(
@@ -926,11 +933,12 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     await swapTestBase.revertSwap(testSwap.id);
 
     // Get assignments after reversion
-    const assignmentsAfterRevert = await swapTestBase.getAssignments(
-      true,
-      undefined,
-      undefined,
-    );
+    const assignmentsAfterRevert =
+      await swapTestBase.getAssignmentsAndRecurrences(
+        true,
+        undefined,
+        undefined,
+      );
 
     // Verify requested assignments are back to original worker
     const requestedAssignmentsAfter = assignmentsAfterRevert.filter(
@@ -955,11 +963,12 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     const testSwap = swaps[0];
 
     // Get assignments before swap
-    const assignmentsBeforeSwap = await swapTestBase.getAssignments(
-      true,
-      undefined,
-      undefined,
-    );
+    const assignmentsBeforeSwap =
+      await swapTestBase.getAssignmentsAndRecurrences(
+        true,
+        undefined,
+        undefined,
+      );
 
     // Map assignment IDs to their shift/date info
     const assignmentDetails = new Map<
@@ -987,11 +996,12 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     await swapTestBase.revertSwap(testSwap.id);
 
     // Get assignments after reversion
-    const assignmentsAfterRevert = await swapTestBase.getAssignments(
-      true,
-      undefined,
-      undefined,
-    );
+    const assignmentsAfterRevert =
+      await swapTestBase.getAssignmentsAndRecurrences(
+        true,
+        undefined,
+        undefined,
+      );
 
     // Verify shift and date remain unchanged
     for (const [assignmentId, originalDetails] of assignmentDetails) {
@@ -1038,7 +1048,7 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     // Find a swap with duty shift assignments
     let dutySwap = null;
     for (const swap of swaps) {
-      const assignments = await swapTestBase.getAssignments(
+      const assignments = await swapTestBase.getAssignmentsAndRecurrences(
         true,
         undefined,
         undefined,
@@ -1068,11 +1078,12 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     }
 
     // Get all assignments before swap (including recuperation)
-    const assignmentsBeforeSwap = await swapTestBase.getAssignments(
-      true,
-      undefined,
-      undefined,
-    );
+    const assignmentsBeforeSwap =
+      await swapTestBase.getAssignmentsAndRecurrences(
+        true,
+        undefined,
+        undefined,
+      );
 
     // Find duty assignments and their linked recuperation assignments
     const dutyAssignments = assignmentsBeforeSwap.filter(
@@ -1101,11 +1112,12 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     await swapTestBase.revertSwap(dutySwap.id);
 
     // Get assignments after reversion
-    const assignmentsAfterRevert = await swapTestBase.getAssignments(
-      true,
-      undefined,
-      undefined,
-    );
+    const assignmentsAfterRevert =
+      await swapTestBase.getAssignmentsAndRecurrences(
+        true,
+        undefined,
+        undefined,
+      );
 
     // Verify duty assignments and their recuperation assignments are restored
     for (const [dutyAssignmentId, originalRecupAssignment] of dutyToRecupMap) {

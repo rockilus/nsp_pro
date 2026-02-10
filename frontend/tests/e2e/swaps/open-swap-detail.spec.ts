@@ -32,7 +32,7 @@ test.describe("Open Swap Detail - Swap Creator Tests", () => {
 
     // Create an open swap for testing
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const assignments = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
     );
@@ -122,7 +122,7 @@ test.describe("Open Swap Detail - Swap Creator Tests", () => {
   test("should be able to delete open swap when active", async ({ page }) => {
     // Create a fresh open swap for deletion test
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const assignments = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
     );
@@ -183,7 +183,7 @@ test.describe("Open Swap Detail - Swap Creator Tests", () => {
   test("should display no bids initially", async ({ page }) => {
     // Create a fresh open swap with no bids
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const assignments = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
     );
@@ -230,7 +230,7 @@ test.describe("Open Swap Detail - Bidder Tests", () => {
 
     // Create an open swap from worker 1
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const assignments = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
     );
@@ -276,7 +276,7 @@ test.describe("Open Swap Detail - Bidder Tests", () => {
     const memberWorker = swapTestBase.getMemberWorker();
     expect(memberWorker).not.toBeNull();
 
-    const assignments = await swapTestBase.getAssignments(
+    const assignments = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
       undefined,
@@ -338,7 +338,7 @@ test.describe("Open Swap Detail - Bidder Tests", () => {
     const memberWorker = swapTestBase.getMemberWorker();
     expect(memberWorker).not.toBeNull();
 
-    const assignments = await swapTestBase.getAssignments(
+    const assignments = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
       undefined,
@@ -384,7 +384,7 @@ test.describe("Open Swap Detail - Bidder Tests", () => {
     await swapTestBase.actAsOwner(page);
 
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const assignments = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
       undefined,
@@ -429,7 +429,7 @@ test.describe("Open Swap Detail - Multiple Bidders Tests", () => {
 
     // Create an open swap from worker 1
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const assignments = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
     );
@@ -459,7 +459,7 @@ test.describe("Open Swap Detail - Multiple Bidders Tests", () => {
     expect(openSwapId).toBeDefined();
 
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const assignments = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
     );
@@ -502,7 +502,7 @@ test.describe("Open Swap Detail - Multiple Bidders Tests", () => {
   test("should display all bids with worker names", async ({ page }) => {
     // Ensure we have multiple bids
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const assignments = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
     );
@@ -547,7 +547,7 @@ test.describe("Open Swap Detail - Multiple Bidders Tests", () => {
     const initialSwap = await swapTestBase.getSwapById(openSwapId);
 
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const assignments = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
     );
@@ -613,7 +613,7 @@ test.describe("Open Swap Detail - Bid Acceptance Tests", () => {
 
     // Create an open swap from worker 1
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const assignments = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
     );
@@ -692,7 +692,7 @@ test.describe("Open Swap Detail - Bid Acceptance Tests", () => {
   }) => {
     // Create a fresh swap for this test
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const assignments = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
     );
@@ -750,7 +750,7 @@ test.describe("Open Swap Detail - Bid Acceptance Tests", () => {
   test("should display accepted chip on accepted bid", async ({ page }) => {
     // Accept a bid first
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const assignments = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
     );
@@ -804,7 +804,7 @@ test.describe("Open Swap Detail - Bid Acceptance Tests", () => {
   }) => {
     // Create swap and accept a bid
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const assignments = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
     );
@@ -867,7 +867,7 @@ test.describe("Open Swap Detail - Team Leader Approval Tests", () => {
 
     // Create an open swap with accepted bid
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const assignments = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
     );
@@ -934,7 +934,7 @@ test.describe("Open Swap Detail - Team Leader Approval Tests", () => {
   }) => {
     // Create a fresh swap for this test
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const assignments = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
     );
@@ -980,7 +980,7 @@ test.describe("Open Swap Detail - Team Leader Approval Tests", () => {
   }) => {
     // Create a fresh swap for this test
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const assignments = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
     );
@@ -1022,10 +1022,11 @@ test.describe("Open Swap Detail - Team Leader Approval Tests", () => {
         await swapTestBase.approveSwap(testSwap.id);
 
         // Verify assignments are swapped
-        const updatedAssignments = await swapTestBase.getAssignments(
-          false,
-          dayjs.utc().add(1, "day").startOf("day"),
-        );
+        const updatedAssignments =
+          await swapTestBase.getAssignmentsAndRecurrences(
+            false,
+            dayjs.utc().add(1, "day").startOf("day"),
+          );
 
         // Worker1's original assignments should now belong to Worker2
         for (const assignmentId of worker1Offered) {
@@ -1055,7 +1056,7 @@ test.describe("Open Swap Detail - Team Leader Approval Tests", () => {
   }) => {
     // Create a fresh swap for this test
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const assignments = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
     );
@@ -1130,7 +1131,7 @@ test.describe("Open Swap Detail - Reversion Tests", () => {
     });
 
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const assignments = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
     );
@@ -1204,7 +1205,7 @@ test.describe("Open Swap Detail - Reversion Tests", () => {
   }) => {
     // Create a fresh completed swap
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const assignments = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
     );
@@ -1247,10 +1248,11 @@ test.describe("Open Swap Detail - Reversion Tests", () => {
         await swapTestBase.revertSwap(testSwap.id);
 
         // Verify assignments are restored
-        const restoredAssignments = await swapTestBase.getAssignments(
-          false,
-          dayjs.utc().add(1, "day").startOf("day"),
-        );
+        const restoredAssignments =
+          await swapTestBase.getAssignmentsAndRecurrences(
+            false,
+            dayjs.utc().add(1, "day").startOf("day"),
+          );
 
         // Worker1's assignments should be back to Worker1
         for (const assignmentId of worker1Offered) {
@@ -1278,7 +1280,7 @@ test.describe("Open Swap Detail - Reversion Tests", () => {
   test("should preserve audit data after reversion", async ({ page }) => {
     // Create a fresh completed swap, then revert it and compare auditData
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const assignments = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
     );

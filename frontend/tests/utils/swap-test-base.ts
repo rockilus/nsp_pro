@@ -22,7 +22,10 @@ import {
   LinkShiftT,
 } from "../../src/types/shift";
 import { ScheduleT, ScheduleStatus } from "../../src/types/schedule";
-import { AssignmentT } from "../../src/types/assignment";
+import {
+  AssignmentT,
+  AssignmentsRecurrencesResultT,
+} from "../../src/types/assignment";
 import { SwapRequestT } from "../../src/types/swap";
 import { testConfig } from "./test-config";
 
@@ -937,23 +940,23 @@ export class SwapTestBase {
   /**
    * Get assignments for the test team
    */
-  async getAssignments(
+  async getAssignmentsAndRecurrences(
     includeCampaign: boolean = false,
-    startDate?: dayjs.Dayjs,
-    endDate?: dayjs.Dayjs,
+    startDate: dayjs.Dayjs,
+    endDate: dayjs.Dayjs,
     workerId?: string,
-  ): Promise<AssignmentT[]> {
+  ): Promise<AssignmentsRecurrencesResultT> {
     if (!this.testTeam) {
       throw new Error("Test team not initialized");
     }
-    const result = await this.dbUtils.getAssignments(
+    const result = await this.dbUtils.getAssignmentsAndRecurrences(
       this.testTeam.teamId,
       includeCampaign,
       startDate,
       endDate,
       workerId,
     );
-    return result.assignments;
+    return result;
   }
 
   /**
