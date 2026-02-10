@@ -129,7 +129,11 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     ).not.toBeVisible({ timeout: 5000 });
 
     // Verify recurring assignment was created
-    const ARResult = await scheduleTestBase.getAssignmentsAndRecurrences();
+    const ARResult = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(5, "month").endOf("day"),
+    );
 
     const createdRecurrence = ARResult.recurrencesRead[0];
     expect(createdRecurrence).toBeDefined();
