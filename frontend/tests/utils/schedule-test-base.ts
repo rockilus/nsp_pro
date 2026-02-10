@@ -345,6 +345,32 @@ export class ScheduleTestBase {
   }
 
   /**
+   * Create an assignment for testing
+   */
+  async createAssignment(assignmentData: {
+    workerId: string;
+    shiftId: string;
+    date: dayjs.Dayjs;
+    fixed?: boolean;
+    comment?: string;
+    scheduleId?: string;
+  }): Promise<AssignmentT> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupScheduleTests first.");
+    }
+
+    return await this.dbUtils.createAssignment({
+      teamId: this.testTeam.teamId,
+      workerId: assignmentData.workerId,
+      shiftId: assignmentData.shiftId,
+      date: assignmentData.date,
+      fixed: assignmentData.fixed ?? false,
+      comment: assignmentData.comment,
+      scheduleId: assignmentData.scheduleId,
+    });
+  }
+
+  /**
    * Create a campaign schedule for testing
    */
   async createCampaignSchedule(

@@ -56,27 +56,16 @@ test.describe("Assignment Deletion - Team Leader", () => {
 
     // Get the created assignment
     const assignments = await scheduleTestBase.getAssignments();
-
-    if (assignments.length === 0) {
-      console.log("⚠️ No assignments found, skipping test");
-      test.skip();
-      return;
-    }
+    await expect(assignments.length).toBeGreaterThan(0);
 
     const assignment = assignments[0];
     const assignmentId = assignment.id;
-    const assignmentDate = dayjs(assignment.date);
 
     // Open assignment for editing
-    const assignmentCell = page
-      .locator(`[data-date="${assignmentDate.format("YYYY-MM-DD")}"]`)
-      .first();
-
-    if (!(await assignmentCell.isVisible().catch(() => false))) {
-      console.log("⚠️ Assignment cell not found, skipping test");
-      test.skip();
-      return;
-    }
+    const assignmentCell = page.locator(
+      `[data-testid="assignment-cell-${assignment.id}"]`,
+    );
+    await expect(assignmentCell).toBeVisible();
 
     await assignmentCell.click();
 
@@ -98,7 +87,7 @@ test.describe("Assignment Deletion - Team Leader", () => {
 
     // Verify assignment was deleted from database
     const updatedAssignments = await scheduleTestBase.getAssignments();
-    const deletedAssignment = updatedAssignments.assignments.find(
+    const deletedAssignment = updatedAssignments.find(
       (a: any) => a.id === assignmentId,
     );
 
@@ -111,10 +100,8 @@ test.describe("Assignment Deletion - Team Leader", () => {
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
-    const testTeam = scheduleTestBase.getTestTeam()!;
     const testWorkers = scheduleTestBase.getTestWorkers();
     const testShifts = scheduleTestBase.getTestShifts();
-    const dbUtils = (scheduleTestBase as any).dbUtils;
 
     // Create a recurring assignment
     const startDate = dayjs.utc().add(3, "days");
@@ -122,11 +109,10 @@ test.describe("Assignment Deletion - Team Leader", () => {
     // Create multiple assignments manually to simulate recurrence
     const recurrenceId = `recurrence-${Date.now()}`;
     for (let i = 0; i < 3; i++) {
-      await dbUtils.createAssignment({
-        teamId: testTeam.teamId,
+      await scheduleTestBase.createAssignment({
         workerId: testWorkers[0].workerId,
         shiftId: testShifts[0].id,
-        date: startDate.add(i * 7, "days").toDate(), // Weekly recurrence
+        date: startDate.add(i * 7, "days"), // Weekly recurrence
         fixed: false,
         comment: "Recurring assignment",
       });
@@ -189,21 +175,18 @@ test.describe("Assignment Deletion - Team Leader", () => {
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
-    const testTeam = scheduleTestBase.getTestTeam()!;
     const testWorkers = scheduleTestBase.getTestWorkers();
     const testShifts = scheduleTestBase.getTestShifts();
-    const dbUtils = (scheduleTestBase as any).dbUtils;
 
     // Create recurring assignments
     const startDate = dayjs.utc().add(3, "days");
     const assignmentIds: string[] = [];
 
     for (let i = 0; i < 3; i++) {
-      const result = await dbUtils.createAssignment({
-        teamId: testTeam.teamId,
+      const result = await scheduleTestBase.createAssignment({
         workerId: testWorkers[0].workerId,
         shiftId: testShifts[0].id,
-        date: startDate.add(i * 7, "days").toDate(),
+        date: startDate.add(i * 7, "days"),
         fixed: false,
         comment: "Recurring assignment",
       });

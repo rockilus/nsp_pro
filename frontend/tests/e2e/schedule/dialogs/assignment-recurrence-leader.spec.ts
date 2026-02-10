@@ -56,31 +56,37 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     const testShifts = scheduleTestBase.getTestShifts();
     const testTeam = scheduleTestBase.getTestTeam()!;
 
-    const addButton = page
-      .locator('[data-testid="add-schedule-item-button"]')
-      .first();
-
-    if (!(await addButton.isVisible().catch(() => false))) {
-      console.log("⚠️ Add button not found, skipping test");
-      test.skip();
-      return;
-    }
+    const addButton = page.locator('[data-testid="create-assignment-button"]');
+    await expect(addButton).toBeVisible();
 
     await addButton.click();
 
     // Fill assignment form
-    const workerSelect = page.locator('[data-testid="worker-select"]');
+    const workerSelect = page.locator(
+      '[data-testid="edit-assignment-worker-select"]',
+    );
     await workerSelect.click();
     await page.locator(`text="${testWorkers[0].name}"`).first().click();
 
-    const shiftSelect = page.locator('[data-testid="shift-select"]');
+    const shiftSelect = page.locator(
+      '[data-testid="edit-assignment-shift-select"]',
+    );
     await shiftSelect.click();
-    await page.locator(`text="${testShifts[0].name}"`).first().click();
+    await page
+      .locator(`[data-testid="shift-option-${testShifts[0].id}"]`)
+      .click();
 
     const tomorrow = dayjs.utc().add(1, "day");
-    const datePicker = page.locator('[data-testid="date-picker"]');
-    await datePicker.click();
-    await datePicker.fill(tomorrow.format("MM/DD/YYYY"));
+
+    const datePicker = page.locator(
+      '[data-testid="edit-assignment-date-picker"]',
+    );
+    await datePicker.waitFor({ state: "visible" });
+    await datePicker.fill("", { force: true }); // Clear first
+    await page.waitForTimeout(100);
+    await datePicker.fill(tomorrow.format("DD/MM/YYYY"), { force: true });
+    await datePicker.press("Enter");
+    await page.waitForTimeout(300);
 
     // Open recurrence dialog
     const recurrenceButton = page.locator('[data-testid="recurrence-button"]');
