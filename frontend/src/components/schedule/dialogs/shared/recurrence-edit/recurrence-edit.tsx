@@ -423,6 +423,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                 formState.recurrenceEndType !== RecurrenceEndType.END_DATE
               }
               value={formState.endDate}
+              timezone="UTC"
               onChange={(newDate) => {
                 setFormState((prev) => ({
                   ...prev,
