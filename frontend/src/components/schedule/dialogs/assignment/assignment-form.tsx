@@ -398,7 +398,12 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
           {workers
             .filter((w) => !w.deleted)
             .map((w) => (
-              <MenuItem key={w.id} value={w.id} sx={{ fontSize: "0.9rem" }}>
+              <MenuItem
+                key={w.id}
+                value={w.id}
+                sx={{ fontSize: "0.9rem" }}
+                data-testid={`worker-option-${w.id}`}
+              >
                 {w.name}
               </MenuItem>
             ))}

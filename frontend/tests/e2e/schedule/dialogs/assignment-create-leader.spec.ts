@@ -76,7 +76,9 @@ test.describe("Assignment Creation - Team Leader", () => {
       '[data-testid="edit-assignment-worker-select"]',
     );
     await workerSelect.click();
-    await page.locator(`text="${testWorkers[0].name}"`).first().click();
+    await page
+      .locator(`[data-testid="worker-option-${testWorkers[0].workerId}"]`)
+      .click();
 
     // Select shift
     const shiftSelect = page.locator(
@@ -203,7 +205,9 @@ test.describe("Assignment Creation - Team Leader", () => {
       '[data-testid="edit-assignment-worker-select"]',
     );
     await workerSelect.click();
-    await page.locator(`text="${testWorkers[0].name}"`).first().click();
+    await page
+      .locator(`[data-testid="worker-option-${testWorkers[0].workerId}"]`)
+      .click();
 
     const tomorrow = dayjs.utc().add(1, "day");
     const datePicker = page.locator(
@@ -282,7 +286,9 @@ test.describe("Assignment Creation - Team Leader", () => {
       '[data-testid="edit-assignment-worker-select"]',
     );
     await workerSelect.click();
-    await page.locator(`text="${testWorkers[0].name}"`).first().click();
+    await page
+      .locator(`[data-testid="worker-option-${testWorkers[0].workerId}"]`)
+      .click();
 
     const shiftSelect = page.locator(
       '[data-testid="edit-assignment-shift-select"]',

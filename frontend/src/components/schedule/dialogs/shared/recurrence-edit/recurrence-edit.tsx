@@ -41,7 +41,6 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
   onRecurrenceChange,
 }) => {
   const { t } = useTranslation(lng, "schedule-page");
-  const { t: t_weekdays } = useTranslation(lng, "week_days");
 
   interface FormState {
     repeatEvery: number;
@@ -168,38 +167,38 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
   const weekDayOptions = [
     {
       value: 0,
-      label: t_weekdays("monday_short"),
-      fullDayName: t_weekdays("monday"),
+      label: t("monday_short"),
+      fullDayName: t("monday"),
     },
     {
       value: 1,
-      label: t_weekdays("tuesday_short"),
-      fullDayName: t_weekdays("tuesday"),
+      label: t("tuesday_short"),
+      fullDayName: t("tuesday"),
     },
     {
       value: 2,
-      label: t_weekdays("wednesday_short"),
-      fullDayName: t_weekdays("wednesday"),
+      label: t("wednesday_short"),
+      fullDayName: t("wednesday"),
     },
     {
       value: 3,
-      label: t_weekdays("thursday_short"),
-      fullDayName: t_weekdays("thursday"),
+      label: t("thursday_short"),
+      fullDayName: t("thursday"),
     },
     {
       value: 4,
-      label: t_weekdays("friday_short"),
-      fullDayName: t_weekdays("friday"),
+      label: t("friday_short"),
+      fullDayName: t("friday"),
     },
     {
       value: 5,
-      label: t_weekdays("saturday_short"),
-      fullDayName: t_weekdays("saturday"),
+      label: t("saturday_short"),
+      fullDayName: t("saturday"),
     },
     {
       value: 6,
-      label: t_weekdays("sunday_short"),
-      fullDayName: t_weekdays("sunday"),
+      label: t("sunday_short"),
+      fullDayName: t("sunday"),
     },
   ];
 
