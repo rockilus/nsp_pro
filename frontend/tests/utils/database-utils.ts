@@ -2080,15 +2080,18 @@ export class DatabaseTestUtils {
   /**
    * Create an assignment using AssignmentApi for consistent behavior
    */
-  async createAssignmentAndRecurrence(assignmentData: {
-    teamId: string;
-    workerId: string;
-    shiftId: string;
-    date: dayjs.Dayjs;
-    fixed?: boolean;
-    comment?: string;
-    scheduleId?: string | null;
-  }): Promise<AssignmentT> {
+  async createAssignmentAndRecurrence(
+    assignmentData: {
+      teamId: string;
+      workerId: string;
+      shiftId: string;
+      date: dayjs.Dayjs;
+      fixed?: boolean;
+      comment?: string;
+      scheduleId?: string | null;
+    },
+    recurrence?: RecurrenceRuleT | null,
+  ): Promise<AssignmentT> {
     try {
       // Construct AssignmentT object
       const assignment: AssignmentT = {
@@ -2107,7 +2110,7 @@ export class DatabaseTestUtils {
       const result = await AssignmentApi.addAssignmentAndRecurrence(
         this.testApiClient,
         assignment,
-        null, // No recurrence
+        recurrence ?? null,
       );
 
       // Return the first created assignment

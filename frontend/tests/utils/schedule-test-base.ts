@@ -542,15 +542,18 @@ export class ScheduleTestBase {
       throw new Error("Test team not initialized");
     }
 
-    const assignment = await this.dbUtils.createAssignmentAndRecurrence({
-      teamId: this.testTeam.teamId,
-      workerId: data.workerId,
-      shiftId: data.shiftId,
-      date: data.date,
-      fixed: data.fixed ?? false,
-      comment: data.comment,
-      scheduleId: data.scheduleId,
-    });
+    const assignment = await this.dbUtils.createAssignmentAndRecurrence(
+      {
+        teamId: this.testTeam.teamId,
+        workerId: data.workerId,
+        shiftId: data.shiftId,
+        date: data.date,
+        fixed: data.fixed ?? false,
+        comment: data.comment,
+        scheduleId: data.scheduleId,
+      },
+      recurrence,
+    );
 
     console.log(
       `✅ Created assignment${recurrence ? " with recurrence" : ""} for worker ${data.workerId}`,
