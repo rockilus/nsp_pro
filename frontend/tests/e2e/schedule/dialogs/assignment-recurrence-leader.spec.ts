@@ -597,6 +597,171 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     console.log("✅ Monthly recurring assignment with occurrences created");
   });
 
+  test("should create monthly recurring assignment with weekday repeat type", async ({
+    page,
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const scheduleTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = scheduleTestBase.getTestWorkers();
+    const testShifts = scheduleTestBase.getTestShifts();
+    const testTeam = scheduleTestBase.getTestTeam()!;
+
+    const addButton = page.locator('[data-testid="create-assignment-button"]');
+    await expect(addButton).toBeVisible();
+
+    await addButton.click();
+
+    const workerSelect = page.locator(
+      '[data-testid="edit-assignment-worker-select"]',
+    );
+    await workerSelect.click();
+    await page
+      .locator(`[data-testid="worker-option-${testWorkers[0].workerId}"]`)
+      .click();
+
+    const shiftSelect = page.locator(
+      '[data-testid="edit-assignment-shift-select"]',
+    );
+    await shiftSelect.click();
+    await page
+      .locator(`[data-testid="shift-option-${testShifts[0].id}"]`)
+      .click();
+
+    // Choose a date that's in the second week to ensure we're testing "second [weekday]"
+    const tomorrow = dayjs.utc().add(1, "day");
+    // Calculate a date that's in the second week of a month (between 8th and 14th)
+    let startDate = tomorrow;
+    const dayOfMonth = tomorrow.date();
+    if (dayOfMonth < 8) {
+      startDate = tomorrow.date(8);
+    } else if (dayOfMonth > 14) {
+      startDate = tomorrow.add(1, "month").date(8);
+    }
+
+    const datePicker = page.locator(
+      '[data-testid="edit-assignment-date-picker"]',
+    );
+    await datePicker.waitFor({ state: "visible" });
+    await datePicker.fill("", { force: true });
+    await page.waitForTimeout(100);
+    await datePicker.fill(startDate.format("DD/MM/YYYY"), { force: true });
+    await datePicker.press("Enter");
+    await page.waitForTimeout(300);
+
+    const recurrenceButton = page.locator('[data-testid="recurrence-button"]');
+    await recurrenceButton.click();
+
+    const frequencySelect = page.locator('[data-testid="frequency-select"]');
+    await frequencySelect.click();
+    await page.locator('[data-testid="frequency-option-month"]').click();
+
+    // Select WEEKDAY repeat type (e.g., "second Tuesday of each month")
+    const monthRepeatTypeSelect = page.locator(
+      '[data-testid="month-repeat-type-select"]',
+    );
+    await monthRepeatTypeSelect.click();
+    await page
+      .locator(`[data-value="${MonthRepeatType.WEEKDAY}"]`)
+      .first()
+      .click();
+
+    const occurrencesRadio = page.locator(
+      '[data-testid="recurrence-occurrences-radio"]',
+    );
+    await occurrencesRadio.click();
+
+    const occurrencesInput = page.locator(
+      '[data-testid="recurrence-occurrences-input"]',
+    );
+    const numberOfOccurrences = 5;
+    await occurrencesInput.fill(numberOfOccurrences.toString());
+
+    const doneButton = page.locator('[data-testid="recurrence-done-button"]');
+    await doneButton.click();
+
+    const createButton = page.locator(
+      '[data-testid="edit-assignment-create-button"]',
+    );
+    await createButton.click();
+
+    await expect(
+      page.locator('[data-testid="schedule-item-dialog"]'),
+    ).not.toBeVisible({ timeout: 5000 });
+
+    const ARResult = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(5, "month").endOf("day"),
+    );
+
+    const createdRecurrence = ARResult.recurrencesRead[0];
+    expect(createdRecurrence).toBeDefined();
+    expect(createdRecurrence.teamId).toBe(testTeam.teamId);
+    expect(createdRecurrence.occurrenceType).toBe(OccurrenceType.ASSIGNMENT);
+    expect(createdRecurrence.occurrenceInfo.workerId).toBe(
+      testWorkers[0].workerId,
+    );
+    expect(createdRecurrence.occurrenceInfo.shiftId).toBe(testShifts[0].id);
+    expect(createdRecurrence.repeatEvery).toBe(1);
+    expect(createdRecurrence.frequencyType).toBe(FrequencyType.MONTH);
+    expect(createdRecurrence.monthRepeatType).toBe(MonthRepeatType.WEEKDAY);
+    expect(createdRecurrence.recurrenceEndType).toBe(
+      RecurrenceEndType.NUMBER_OF_OCCURRENCES,
+    );
+    expect(createdRecurrence.startDate.isSame(startDate, "day")).toBeTruthy();
+    expect(createdRecurrence.numberOfOccurrences).toBe(numberOfOccurrences);
+
+    const recurringAssignments = ARResult.assignmentsRead.filter(
+      (a) => a.sourceId === createdRecurrence.id,
+    );
+
+    expect(recurringAssignments).toBeDefined();
+    expect(recurringAssignments.length).toBe(numberOfOccurrences);
+
+    // Calculate the weekday and week position of the start date
+    const startWeekday = startDate.day(); // 0 = Sunday, 1 = Monday, etc.
+    const startWeekOfMonth = Math.ceil(startDate.date() / 7); // Which week of the month (1-5)
+
+    // Verify each occurrence is on the same weekday and same week position
+    for (let i = 0; i < numberOfOccurrences; i++) {
+      const expectedMonth = startDate.add(i, "month");
+
+      // Find the correct date for "Nth [weekday] of the month"
+      // Start from the first day of the month and find the Nth occurrence of the weekday
+      let expectedDate = expectedMonth.startOf("month");
+      let weekdayCount = 0;
+
+      while (weekdayCount < startWeekOfMonth) {
+        if (expectedDate.day() === startWeekday) {
+          weekdayCount++;
+          if (weekdayCount === startWeekOfMonth) {
+            break;
+          }
+        }
+        expectedDate = expectedDate.add(1, "day");
+      }
+
+      const occurrence = recurringAssignments.find(
+        (a) =>
+          a.workerId === testWorkers[0].workerId &&
+          a.shiftId === testShifts[0].id &&
+          a.date.isSame(expectedDate, "day"),
+      );
+      expect(occurrence).toBeDefined();
+
+      // Verify the weekday matches
+      expect(occurrence!.date.day()).toBe(startWeekday);
+
+      // Verify the week position matches
+      const occurrenceWeekOfMonth = Math.ceil(occurrence!.date.date() / 7);
+      expect(occurrenceWeekOfMonth).toBe(startWeekOfMonth);
+    }
+
+    console.log(
+      "✅ Monthly recurring assignment with weekday repeat type created",
+    );
+  });
+
   test("should delete single instance of recurring assignment (this only)", async ({
     page,
   }, testInfo) => {
