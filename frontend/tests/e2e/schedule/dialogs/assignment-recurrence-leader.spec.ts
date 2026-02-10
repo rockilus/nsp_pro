@@ -492,29 +492,38 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     const testShifts = scheduleTestBase.getTestShifts();
     const testTeam = scheduleTestBase.getTestTeam()!;
 
-    const addButton = page
-      .locator('[data-testid="add-schedule-item-button"]')
-      .first();
-
-    if (!(await addButton.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
+    const addButton = page.locator('[data-testid="create-assignment-button"]');
+    await expect(addButton).toBeVisible();
 
     await addButton.click();
 
-    const workerSelect = page.locator('[data-testid="worker-select"]');
+    const workerSelect = page.locator(
+      '[data-testid="edit-assignment-worker-select"]',
+    );
     await workerSelect.click();
-    await page.locator(`text="${testWorkers[0].name}"`).first().click();
+    await page
+      .locator(`[data-testid="worker-option-${testWorkers[0].workerId}"]`)
+      .click();
 
-    const shiftSelect = page.locator('[data-testid="shift-select"]');
+    const shiftSelect = page.locator(
+      '[data-testid="edit-assignment-shift-select"]',
+    );
     await shiftSelect.click();
-    await page.locator(`text="${testShifts[0].name}"`).first().click();
+    await page
+      .locator(`[data-testid="shift-option-${testShifts[0].id}"]`)
+      .click();
 
     const tomorrow = dayjs.utc().add(1, "day");
-    const datePicker = page.locator('[data-testid="date-picker"]');
-    await datePicker.click();
-    await datePicker.fill(tomorrow.format("MM/DD/YYYY"));
+
+    const datePicker = page.locator(
+      '[data-testid="edit-assignment-date-picker"]',
+    );
+    await datePicker.waitFor({ state: "visible" });
+    await datePicker.fill("", { force: true });
+    await page.waitForTimeout(100);
+    await datePicker.fill(tomorrow.format("DD/MM/YYYY"), { force: true });
+    await datePicker.press("Enter");
+    await page.waitForTimeout(300);
 
     const recurrenceButton = page.locator('[data-testid="recurrence-button"]');
     await recurrenceButton.click();
@@ -523,7 +532,6 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     await frequencySelect.click();
     await page.locator('[data-testid="frequency-option-month"]').click();
 
-    // Set occurrences end type
     const occurrencesRadio = page.locator(
       '[data-testid="recurrence-occurrences-radio"]',
     );
@@ -532,13 +540,13 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     const occurrencesInput = page.locator(
       '[data-testid="recurrence-occurrences-input"]',
     );
-    await occurrencesInput.fill("6");
+    await occurrencesInput.fill("5");
 
     const doneButton = page.locator('[data-testid="recurrence-done-button"]');
     await doneButton.click();
 
     const createButton = page.locator(
-      '[data-testid="create-assignment-button"]',
+      '[data-testid="edit-assignment-create-button"]',
     );
     await createButton.click();
 
@@ -546,22 +554,49 @@ test.describe("Assignment Recurrence - Team Leader", () => {
       page.locator('[data-testid="schedule-item-dialog"]'),
     ).not.toBeVisible({ timeout: 5000 });
 
-    const dbUtils = (scheduleTestBase as any).dbUtils;
     const AR3 = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf("day"),
-      dayjs.utc().add(2, "month").endOf("day"),
-    );
-    const assignments = AR3.assignmentsRead;
-
-    const recurringAssignment = assignments.find(
-      (a: any) => a.workerId === testWorkers[0].workerId && a.recurrenceRule,
+      dayjs.utc().add(5, "month").endOf("day"),
     );
 
-    expect(recurringAssignment).toBeDefined();
-    expect(recurringAssignment.recurrenceRule.frequency).toBe("monthly");
-    expect(recurringAssignment.recurrenceRule.endType).toBe("occurrences");
-    expect(recurringAssignment.recurrenceRule.occurrences).toBe(6);
+    const createdRecurrence = AR3.recurrencesRead[0];
+    expect(createdRecurrence).toBeDefined();
+    expect(createdRecurrence.teamId).toBe(testTeam.teamId);
+    expect(createdRecurrence.occurrenceType).toBe(OccurrenceType.ASSIGNMENT);
+    expect(createdRecurrence.occurrenceInfo.workerId).toBe(
+      testWorkers[0].workerId,
+    );
+    expect(createdRecurrence.occurrenceInfo.shiftId).toBe(testShifts[0].id);
+    expect(createdRecurrence.repeatEvery).toBe(1);
+    expect(createdRecurrence.frequencyType).toBe(FrequencyType.MONTH);
+    expect(createdRecurrence.monthRepeatType).toBe(
+      MonthRepeatType.DAY_IN_MONTH,
+    );
+    expect(createdRecurrence.recurrenceEndType).toBe(
+      RecurrenceEndType.NUMBER_OF_OCCURRENCES,
+    );
+    expect(createdRecurrence.startDate.isSame(tomorrow, "day")).toBeTruthy();
+    expect(createdRecurrence.numberOfOccurrences).toBe(6);
+
+    const recurringAssignments = AR3.assignmentsRead.filter(
+      (a) => a.sourceId === createdRecurrence.id,
+    );
+
+    expect(recurringAssignments).toBeDefined();
+    const expectedOccurrences = 6;
+    expect(recurringAssignments.length).toBe(expectedOccurrences);
+
+    for (let i = 0; i < expectedOccurrences; i++) {
+      const expectedDate = tomorrow.add(i, "month");
+      const occurrence = recurringAssignments.find(
+        (a) =>
+          a.workerId === testWorkers[0].workerId &&
+          a.shiftId === testShifts[0].id &&
+          a.date.isSame(expectedDate, "day"),
+      );
+      expect(occurrence).toBeDefined();
+    }
 
     console.log("✅ Monthly recurring assignment with occurrences created");
   });
