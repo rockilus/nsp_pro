@@ -634,7 +634,7 @@ export class ScheduleTestBase {
         teamId: this.testTeam.teamId,
         workerId: worker.workerId,
         shiftId: constraints.onLeave.leaveShiftId,
-        date: constraints.onLeave.date.toDate(),
+        date: constraints.onLeave.date,
         fixed: false,
         comment: "Test leave for constraint violation",
       });

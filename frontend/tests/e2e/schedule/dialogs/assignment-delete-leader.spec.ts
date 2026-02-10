@@ -313,9 +313,7 @@ test.describe("Assignment Deletion - Team Leader", () => {
 
     // Verify assignment still exists
     const unchangedAssignments = await scheduleTestBase.getAssignments();
-    const stillExists = unchangedAssignments.assignments.find(
-      (a: any) => a.id === assignmentId,
-    );
+    const stillExists = unchangedAssignments.find((a) => a.id === assignmentId);
 
     if (stillExists) {
       console.log("✅ Assignment not deleted after cancellation");

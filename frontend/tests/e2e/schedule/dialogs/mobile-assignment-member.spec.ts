@@ -101,7 +101,7 @@ test.describe("Mobile Assignment Dialogs - Team Member", () => {
     const dbUtils = (scheduleTestBase as any).dbUtils;
     await dbUtils.createAssignment({
       teamId: testTeam.teamId,
-      workerId: memberWorker.id,
+      workerId: memberWorker.workerId,
       shiftId: testShifts[0].id,
       date: tomorrow.format("YYYY-MM-DD"),
     });

@@ -245,7 +245,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     const assignments = await dbUtils.getAssignments(testTeam.teamId);
 
     const recurringAssignment = assignments.find(
-      (a: any) => a.workerId === testWorkers[0].id && a.recurrenceRule,
+      (a: any) => a.workerId === testWorkers[0].workerId && a.recurrenceRule,
     );
 
     expect(recurringAssignment).toBeDefined();
@@ -321,7 +321,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     const assignments = await dbUtils.getAssignments(testTeam.teamId);
 
     const recurringAssignment = assignments.find(
-      (a: any) => a.workerId === testWorkers[0].id && a.recurrenceRule,
+      (a: any) => a.workerId === testWorkers[0].workerId && a.recurrenceRule,
     );
 
     expect(recurringAssignment).toBeDefined();
@@ -401,7 +401,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     const assignments = await dbUtils.getAssignments(testTeam.teamId);
 
     const recurringAssignment = assignments.find(
-      (a: any) => a.workerId === testWorkers[0].id && a.recurrenceRule,
+      (a: any) => a.workerId === testWorkers[0].workerId && a.recurrenceRule,
     );
 
     expect(recurringAssignment).toBeDefined();
@@ -423,18 +423,17 @@ test.describe("Assignment Recurrence - Team Leader", () => {
 
     // Create recurring assignment
     const tomorrow = dayjs.utc().add(1, "day");
-    await scheduleTestBase.createAssignmentWithRecurrence({
-      teamId: testTeam.teamId,
-      workerId: testWorkers[0].id,
+    await scheduleTestBase.createAssignmentWithRecurrence(data:{
+      workerId: testWorkers[0].workerId,
       shiftId: testShifts[0].id,
-      date: tomorrow.format("YYYY-MM-DD"),
-      recurrenceRule: {
-        frequency: "daily",
+      date: tomorrow},
+      recurrence: {
+        frequency: FrequencyType.DAY,
         interval: 1,
-        endType: "occurrences",
+        endType: RecurrenceEndType.NUMBER_OF_OCCURRENCES,
         occurrences: 5,
       },
-    });
+    );
 
     await page.reload();
     await page.waitForTimeout(1000);

@@ -2818,11 +2818,11 @@ export class DatabaseTestUtils {
       );
 
       console.log(
-        `✅ Updated assignment ${assignmentId} (${updateResult.assignmentsWritten.length} assignments affected)`,
+        `✅ Updated assignment ${assignmentId} (${updateResult.assignmentsUpdated.length} assignments affected)`,
       );
 
       return {
-        assignments: updateResult.assignmentsWritten,
+        assignments: updateResult.assignmentsUpdated,
       };
     } catch (error) {
       console.error("Failed to update assignment:", error);

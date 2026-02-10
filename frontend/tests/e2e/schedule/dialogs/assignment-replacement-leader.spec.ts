@@ -62,7 +62,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
     const dbUtils = (scheduleTestBase as any).dbUtils;
     await dbUtils.createAssignment({
       teamId: testTeam.teamId,
-      workerId: testWorkers[0].id,
+      workerId: testWorkers[0].workerId,
       shiftId: testShifts[0].id,
       date: tomorrow.format("YYYY-MM-DD"),
     });
