@@ -54,6 +54,8 @@
     "ordinal_st": "st",
     "ordinal_th": "th",
     "period": "Period",
+    "please_select_a_date": "Please select a date",
+    "please_select_a_shift": "Please select a shift",
     "quick_staffing": "Quick staffing",
     "quick_stats": "Quick stats",
     "rec_annually_on": "Annually on",

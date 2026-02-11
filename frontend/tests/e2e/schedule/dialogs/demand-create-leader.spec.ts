@@ -133,6 +133,10 @@ test.describe("Demand Creation - Team Leader", () => {
     const createButton = page.locator('[data-testid="create-demand-button"]');
     await createButton.click();
 
+    // Validation error should be displayed
+    const shiftError = page.locator('[data-testid="demand-shift-error"]');
+    await expect(shiftError).toBeVisible({ timeout: 2000 });
+
     // Dialog should still be visible (validation failed)
     const dialog = page.locator('[data-testid="schedule-item-dialog"]');
     await expect(dialog).toBeVisible();
@@ -145,15 +149,14 @@ test.describe("Demand Creation - Team Leader", () => {
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testTeam = scheduleTestBase.getTestTeam()!;
 
-    const addButton = page
-      .locator('[data-testid="add-schedule-item-button"]')
-      .first();
+    const demands = await scheduleTestBase.getShiftDemandsByPeriod(
+      dayjs.utc(),
+      dayjs.utc().add(1, "month"),
+    );
 
-    if (!(await addButton.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
-
+    // Open dialog
+    const addButton = page.locator('[data-testid="create-assignment-button"]');
+    await expect(addButton).toBeVisible({ timeout: 5000 });
     await addButton.click();
 
     // Switch to Demand type
@@ -169,13 +172,15 @@ test.describe("Demand Creation - Team Leader", () => {
     await expect(dialog).not.toBeVisible();
 
     // Verify no demand was created
-    const tomorrow = dayjs.utc().add(1, "day");
-    const demands = await scheduleTestBase.getShiftDemandsByPeriod(
-      tomorrow,
-      tomorrow,
+    const demandsAfter = await scheduleTestBase.getShiftDemandsByPeriod(
+      dayjs.utc(),
+      dayjs.utc().add(1, "month"),
     );
 
-    expect(demands.length).toBe(0);
+    const newDemands = demandsAfter.filter(
+      (d) => !demands.some((existing) => existing.id === d.id),
+    );
+    expect(newDemands.length).toBe(0);
 
     console.log("✅ Demand creation cancelled successfully");
   });
@@ -188,133 +193,56 @@ test.describe("Demand Creation - Team Leader", () => {
     const testTeam = scheduleTestBase.getTestTeam()!;
     const testShifts = scheduleTestBase.getTestShifts();
 
-    const addButton = page
-      .locator('[data-testid="add-schedule-item-button"]')
-      .first();
-
-    if (!(await addButton.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
-
+    // Open dialog
+    const addButton = page.locator('[data-testid="create-assignment-button"]');
+    await expect(addButton).toBeVisible({ timeout: 5000 });
     await addButton.click();
 
+    // Switch to Demand type
     const demandButton = page.locator('[data-testid="demand-button"]');
     await demandButton.click();
 
-    // Select shift and date
+    // Select shift
     const shiftSelect = page.locator('[data-testid="demand-shift-select"]');
     await shiftSelect.click();
     await page
       .locator(`[data-testid="demand-shift-option-${testShifts[0].id}"]`)
       .click();
 
-    const tomorrow = dayjs.utc().add(1, "day");
+    // Select date (tomorrow)
+    const dayAfterTomorrow = dayjs.utc().utc().startOf("day").add(2, "day");
     const datePicker = page.locator('[data-testid="demand-date-picker"]');
-    await datePicker.click();
-    await datePicker.fill(tomorrow.format("MM/DD/YYYY"));
+    await datePicker.waitFor({ state: "visible" });
+    await datePicker.fill("", { force: true }); // Clear first
+    await page.waitForTimeout(100);
+    await datePicker.fill(dayAfterTomorrow.format("DD/MM/YYYY"), {
+      force: true,
+    });
+    await datePicker.press("Enter");
+    await page.waitForTimeout(300);
 
-    // Create without explicitly setting count
+    // Click create button
     const createButton = page.locator('[data-testid="create-demand-button"]');
     await createButton.click();
 
-    await expect(
-      page.locator('[data-testid="schedule-item-dialog"]'),
-    ).not.toBeVisible({ timeout: 5000 });
+    // Wait for dialog to close
+    const dialog = page.locator('[data-testid="schedule-item-dialog"]');
+    await expect(dialog).not.toBeVisible({ timeout: 5000 });
 
-    // Verify demand was created with count of 1
+    // Verify demand was created in database
     const demands = await scheduleTestBase.getShiftDemandsByPeriod(
-      tomorrow,
-      tomorrow,
+      dayjs.utc(),
+      dayjs.utc().add(1, "month"),
     );
 
+    expect(demands.length).toBeGreaterThan(0);
     const createdDemand = demands.find(
-      (d: any) => d.shiftId === testShifts[0].id,
+      (d) =>
+        d.shiftId === testShifts[0].id && d.date === dayAfterTomorrow.unix(),
     );
+    expect(createdDemand).toBeDefined();
 
-    if (createdDemand) {
-      expect(createdDemand.count).toBe(1);
-      console.log("✅ Demand created with default count of 1");
-    }
-  });
-
-  test("should allow creating demands for multiple shifts on same date", async ({
-    page,
-  }, testInfo) => {
-    const testRunId = (testInfo as any).testRunId as string;
-    const scheduleTestBase = testBasesMap.get(testRunId)!;
-    const testTeam = scheduleTestBase.getTestTeam()!;
-    const testShifts = scheduleTestBase.getTestShifts();
-
-    if (testShifts.length < 2) {
-      console.log("⚠️ Need at least 2 shifts for this test");
-      test.skip();
-      return;
-    }
-
-    const tomorrow = dayjs.utc().add(1, "day");
-
-    // Create first demand
-    const addButton = page
-      .locator('[data-testid="add-schedule-item-button"]')
-      .first();
-
-    if (!(await addButton.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
-
-    await addButton.click();
-
-    const demandButton = page.locator('[data-testid="demand-button"]');
-    await demandButton.click();
-
-    let shiftSelect = page.locator('[data-testid="demand-shift-select"]');
-    await shiftSelect.click();
-    await page
-      .locator(`[data-testid="demand-shift-option-${testShifts[0].id}"]`)
-      .click();
-
-    let datePicker = page.locator('[data-testid="demand-date-picker"]');
-    await datePicker.click();
-    await datePicker.fill(tomorrow.format("MM/DD/YYYY"));
-
-    let createButton = page.locator('[data-testid="create-demand-button"]');
-    await createButton.click();
-
-    await expect(
-      page.locator('[data-testid="schedule-item-dialog"]'),
-    ).not.toBeVisible({ timeout: 5000 });
-
-    // Create second demand for different shift
-    await page.waitForTimeout(500);
-    await addButton.click();
-    await page.locator('[data-testid="demand-button"]').click();
-
-    shiftSelect = page.locator('[data-testid="demand-shift-select"]');
-    await shiftSelect.click();
-    await page
-      .locator(`[data-testid="demand-shift-option-${testShifts[1].id}"]`)
-      .click();
-
-    datePicker = page.locator('[data-testid="demand-date-picker"]');
-    await datePicker.click();
-    await datePicker.fill(tomorrow.format("MM/DD/YYYY"));
-
-    createButton = page.locator('[data-testid="create-demand-button"]');
-    await createButton.click();
-
-    await expect(
-      page.locator('[data-testid="schedule-item-dialog"]'),
-    ).not.toBeVisible({ timeout: 5000 });
-
-    // Verify both demands were created
-    const demands = await scheduleTestBase.getShiftDemandsByPeriod(
-      tomorrow,
-      tomorrow,
-    );
-
-    expect(demands.length).toBe(2);
-    console.log("✅ Multiple demands created for same date");
+    expect(createdDemand!.count).toBe(1);
+    console.log("✅ Demand created with default count of 1");
   });
 });

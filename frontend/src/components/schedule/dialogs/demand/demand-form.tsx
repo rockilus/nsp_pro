@@ -109,6 +109,8 @@ const DemandForm: React.FC<DemandFormProps> = ({
   const [demandCount, setDemandCount] = useState<number>(
     shiftDemand?.count ?? 1,
   );
+  const [shiftError, setShiftError] = useState<string>("");
+  const [dateError, setDateError] = useState<string>("");
 
   useEffect(() => {
     if (isEditing && cellData) {
@@ -124,13 +126,30 @@ const DemandForm: React.FC<DemandFormProps> = ({
   }, [isEditing, cellData, initialData]);
 
   const handleCreateClick = async () => {
-    if (!selectedShiftId || !selectedDate || !onCreateDemand) return;
+    // Clear previous errors
+    setShiftError("");
+    setDateError("");
+
+    // Validate inputs
+    let hasError = false;
+
+    if (!selectedShiftId) {
+      setShiftError(t("please_select_a_shift"));
+      hasError = true;
+    }
+
+    if (!selectedDate) {
+      setDateError(t("please_select_a_date"));
+      hasError = true;
+    }
+
+    if (hasError || !onCreateDemand) return;
 
     setIsSubmitting(true);
     try {
       await onCreateDemand(
-        selectedShiftId,
-        selectedDate,
+        selectedShiftId!,
+        selectedDate!,
         1,
         "Direct requirement",
       );
@@ -304,10 +323,14 @@ const DemandForm: React.FC<DemandFormProps> = ({
         <span className="form-title">{t("shift")}</span>
         <Select
           value={selectedShiftId || ""}
-          onChange={(e) => setSelectedShiftId(e.target.value)}
+          onChange={(e) => {
+            setSelectedShiftId(e.target.value);
+            setShiftError(""); // Clear error on change
+          }}
           fullWidth
           displayEmpty
           data-testid="demand-shift-select"
+          error={!!shiftError}
         >
           <MenuItem value="" disabled>
             <span style={{ color: "#999" }}>{t("select_a_shift")}</span>
@@ -323,22 +346,51 @@ const DemandForm: React.FC<DemandFormProps> = ({
           ))}
           )
         </Select>
+        {shiftError && (
+          <span
+            style={{
+              color: "#d32f2f",
+              fontSize: "0.75rem",
+              marginTop: "4px",
+              display: "block",
+            }}
+            data-testid="demand-shift-error"
+          >
+            {shiftError}
+          </span>
+        )}
 
         <span className="form-title">{t("date")}</span>
         <DatePicker
           value={selectedDate}
-          onChange={(newDate) =>
-            setSelectedDate(newDate ? dayjs(newDate).utc() : null)
-          }
+          timezone="UTC"
+          onChange={(newDate) => {
+            setSelectedDate(newDate ? dayjs(newDate).utc() : null);
+            setDateError(""); // Clear error on change
+          }}
           slotProps={{
             textField: {
               fullWidth: true,
+              error: !!dateError,
               inputProps: {
                 "data-testid": "demand-date-picker",
               },
             },
           }}
         />
+        {dateError && (
+          <span
+            style={{
+              color: "#d32f2f",
+              fontSize: "0.75rem",
+              marginTop: "4px",
+              display: "block",
+            }}
+            data-testid="demand-date-error"
+          >
+            {dateError}
+          </span>
+        )}
       </div>
 
       <div className="create-demand-actions">
@@ -359,7 +411,7 @@ const DemandForm: React.FC<DemandFormProps> = ({
           variant="contained"
           color="primary"
           onClick={handleCreateClick}
-          disabled={isSubmitting || !selectedShiftId || !selectedDate}
+          disabled={isSubmitting}
           className="create-button"
           data-testid="create-demand-button"
           sx={{
