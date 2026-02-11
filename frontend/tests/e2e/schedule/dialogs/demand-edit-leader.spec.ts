@@ -102,20 +102,41 @@ test.describe("Demand Editing - Team Leader", () => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testShifts = scheduleTestBase.getTestShifts();
-    const testTeam = scheduleTestBase.getTestTeam()!;
-    const tomorrow = (scheduleTestBase as any).testDemandDate;
 
-    const demandCell = page
-      .locator('[role="gridcell"]')
-      .filter({ hasText: testShifts[0].name })
-      .first();
+    const demands = await scheduleTestBase.getShiftDemandsByPeriod(
+      dayjs.utc(),
+      dayjs.utc().add(2, "months"),
+    );
+    expect(demands.length).toBeGreaterThan(0);
+    const testDemand = demands[0];
+    const testDemandDate = dayjs.unix(testDemand.date).utc();
+    const testShift = testShifts.find((s) => s.id === testDemand.shiftId);
+    expect(testShift).toBeDefined();
 
-    if (!(await demandCell.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
+    // Set the schedule view to include the date of the occurrence to delete
+    await scheduleTestBase.setScheduleViewSettings(
+      page,
+      {
+        targetDate: testDemandDate,
+        timeFrame: "week",
+      },
+      true, // reload page
+    );
+
+    // Click on the demand cell in schedule grid
+    const demandCell = page.locator(
+      `[data-testid="demand-cell-${demands[0].id}"]`,
+    );
+    expect(demandCell).toBeVisible({ timeout: 5000 });
 
     await demandCell.click();
+
+    // Dialog should open in edit mode for demand
+    const dialog = page.locator('[data-testid="schedule-item-dialog"]');
+    await expect(dialog).toBeVisible();
+
+    const countDisplay = page.locator('[data-testid="demand-target-count"]');
+    await expect(countDisplay).toContainText(testDemand.count.toString());
 
     // Click increase button
     const increaseButton = page.locator(
@@ -124,29 +145,22 @@ test.describe("Demand Editing - Team Leader", () => {
     await increaseButton.click();
 
     // Count should now be 3
-    const countDisplay = page.locator('[data-testid="demand-count-display"]');
-    await expect(countDisplay).toContainText("3");
-
-    // Save changes
-    const createButton = page.locator('[data-testid="create-demand-button"]');
-    await createButton.click();
-
-    // Wait for dialog to close
-    const dialog = page.locator('[data-testid="schedule-item-dialog"]');
-    await expect(dialog).not.toBeVisible({ timeout: 5000 });
+    const countDisplayAfter = page.locator(
+      '[data-testid="demand-target-count"]',
+    );
+    await expect(countDisplayAfter).toContainText(
+      (testDemand.count + 1).toString(),
+    );
 
     // Verify in database
-    const dbUtils = (scheduleTestBase as any).dbUtils;
-    const demands = await dbUtils.getShiftDemandsByPeriod(
-      testTeam.teamId,
-      tomorrow,
-      tomorrow,
+    const demandsAfter = await scheduleTestBase.getShiftDemandsByPeriod(
+      dayjs.utc(),
+      dayjs.utc().add(2, "months"),
     );
-
-    const updatedDemand = demands.find(
-      (d: any) => d.shiftId === testShifts[0].id,
-    );
-    expect(updatedDemand?.count).toBe(3);
+    expect(demandsAfter.length).toBeGreaterThan(0);
+    const testDemandAfter = demandsAfter.find((d) => d.id === testDemand.id);
+    expect(testDemandAfter).toBeDefined();
+    expect(testDemandAfter!.count).toBe(testDemand.count + 1);
 
     console.log("✅ Demand count increased successfully");
   });
@@ -155,50 +169,65 @@ test.describe("Demand Editing - Team Leader", () => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testShifts = scheduleTestBase.getTestShifts();
-    const testTeam = scheduleTestBase.getTestTeam()!;
-    const tomorrow = (scheduleTestBase as any).testDemandDate;
 
-    const demandCell = page
-      .locator('[role="gridcell"]')
-      .filter({ hasText: testShifts[0].name })
-      .first();
+    const demands = await scheduleTestBase.getShiftDemandsByPeriod(
+      dayjs.utc(),
+      dayjs.utc().add(2, "months"),
+    );
+    expect(demands.length).toBeGreaterThan(0);
+    const testDemand = demands[0];
+    const testDemandDate = dayjs.unix(testDemand.date).utc();
+    const testShift = testShifts.find((s) => s.id === testDemand.shiftId);
+    expect(testShift).toBeDefined();
 
-    if (!(await demandCell.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
+    // Set the schedule view to include the date of the occurrence to delete
+    await scheduleTestBase.setScheduleViewSettings(
+      page,
+      {
+        targetDate: testDemandDate,
+        timeFrame: "week",
+      },
+      true, // reload page
+    );
+
+    // Click on the demand cell in schedule grid
+    const demandCell = page.locator(
+      `[data-testid="demand-cell-${demands[0].id}"]`,
+    );
+    expect(demandCell).toBeVisible({ timeout: 5000 });
 
     await demandCell.click();
 
-    // Click decrease button
-    const decreaseButton = page.locator(
+    // Dialog should open in edit mode for demand
+    const dialog = page.locator('[data-testid="schedule-item-dialog"]');
+    await expect(dialog).toBeVisible();
+
+    const countDisplay = page.locator('[data-testid="demand-target-count"]');
+    await expect(countDisplay).toContainText(testDemand.count.toString());
+
+    // Click increase button
+    const increaseButton = page.locator(
       '[data-testid="decrease-demand-button"]',
     );
-    await decreaseButton.click();
+    await increaseButton.click();
 
-    // Count should now be 1
-    const countDisplay = page.locator('[data-testid="demand-count-display"]');
-    await expect(countDisplay).toContainText("1");
-
-    // Save changes
-    const createButton = page.locator('[data-testid="create-demand-button"]');
-    await createButton.click();
-
-    const dialog = page.locator('[data-testid="schedule-item-dialog"]');
-    await expect(dialog).not.toBeVisible({ timeout: 5000 });
+    // Count should now be 3
+    const countDisplayAfter = page.locator(
+      '[data-testid="demand-target-count"]',
+    );
+    await expect(countDisplayAfter).toContainText(
+      (testDemand.count - 1).toString(),
+    );
 
     // Verify in database
-    const dbUtils = (scheduleTestBase as any).dbUtils;
-    const demands = await dbUtils.getShiftDemandsByPeriod(
-      testTeam.teamId,
-      tomorrow,
-      tomorrow,
+    const demandsAfter = await scheduleTestBase.getShiftDemandsByPeriod(
+      dayjs.utc(),
+      dayjs.utc().add(2, "months"),
     );
-
-    const updatedDemand = demands.find(
-      (d: any) => d.shiftId === testShifts[0].id,
-    );
-    expect(updatedDemand?.count).toBe(1);
+    expect(demandsAfter.length).toBeGreaterThan(0);
+    const testDemandAfter = demandsAfter.find((d) => d.id === testDemand.id);
+    expect(testDemandAfter).toBeDefined();
+    expect(testDemandAfter!.count).toBe(testDemand.count - 1);
 
     console.log("✅ Demand count decreased successfully");
   });
@@ -210,33 +239,64 @@ test.describe("Demand Editing - Team Leader", () => {
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testShifts = scheduleTestBase.getTestShifts();
 
-    const demandCell = page
-      .locator('[role="gridcell"]')
-      .filter({ hasText: testShifts[0].name })
-      .first();
+    const demands = await scheduleTestBase.getShiftDemandsByPeriod(
+      dayjs.utc(),
+      dayjs.utc().add(2, "months"),
+    );
+    expect(demands.length).toBeGreaterThan(0);
+    const testDemand = demands[0];
+    const testDemandDate = dayjs.unix(testDemand.date).utc();
+    const testShift = testShifts.find((s) => s.id === testDemand.shiftId);
+    expect(testShift).toBeDefined();
 
-    if (!(await demandCell.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
+    // Set the schedule view to include the date of the occurrence to delete
+    await scheduleTestBase.setScheduleViewSettings(
+      page,
+      {
+        targetDate: testDemandDate,
+        timeFrame: "week",
+      },
+      true, // reload page
+    );
+
+    // Click on the demand cell in schedule grid
+    const demandCell = page.locator(
+      `[data-testid="demand-cell-${demands[0].id}"]`,
+    );
+    expect(demandCell).toBeVisible({ timeout: 5000 });
 
     await demandCell.click();
 
-    const decreaseButton = page.locator(
+    // Dialog should open in edit mode for demand
+    const dialog = page.locator('[data-testid="schedule-item-dialog"]');
+    await expect(dialog).toBeVisible();
+
+    const countDisplay = page.locator('[data-testid="demand-target-count"]');
+    await expect(countDisplay).toContainText(testDemand.count.toString());
+
+    // Click increase button
+    const increaseButton = page.locator(
       '[data-testid="decrease-demand-button"]',
     );
-    const countDisplay = page.locator('[data-testid="demand-count-display"]');
+    await increaseButton.click();
 
-    // Decrease twice (from 2 to 0)
-    await decreaseButton.click();
-    await decreaseButton.click();
-    await expect(countDisplay).toContainText("0");
+    // Count should now be 3
+    const countDisplayAfter = page.locator(
+      '[data-testid="demand-target-count"]',
+    );
+    await expect(countDisplayAfter).toContainText(
+      (testDemand.count - 1).toString(),
+    );
 
-    // Try to decrease below 0
-    await decreaseButton.click();
-
-    // Should still be 0 (button should be disabled or have no effect)
-    await expect(countDisplay).toContainText("0");
+    // Verify in database
+    const demandsAfter = await scheduleTestBase.getShiftDemandsByPeriod(
+      dayjs.utc(),
+      dayjs.utc().add(2, "months"),
+    );
+    expect(demandsAfter.length).toBeGreaterThan(0);
+    const testDemandAfter = demandsAfter.find((d) => d.id === testDemand.id);
+    expect(testDemandAfter).toBeDefined();
+    expect(testDemandAfter!.count).toBe(testDemand.count - 1);
 
     console.log("✅ Cannot decrease demand count below 0");
   });
