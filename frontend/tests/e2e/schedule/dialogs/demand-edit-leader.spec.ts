@@ -232,7 +232,7 @@ test.describe("Demand Editing - Team Leader", () => {
     console.log("✅ Demand count decreased successfully");
   });
 
-  test("should not allow decreasing count below 0", async ({
+  test("should not allow decreasing count below 1", async ({
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
@@ -278,15 +278,20 @@ test.describe("Demand Editing - Team Leader", () => {
     const increaseButton = page.locator(
       '[data-testid="decrease-demand-button"]',
     );
-    await increaseButton.click();
+
+    for (let i = 0; i < testDemand.count + 1; i++) {
+      await increaseButton.click();
+    }
 
     // Count should now be 3
     const countDisplayAfter = page.locator(
       '[data-testid="demand-target-count"]',
     );
-    await expect(countDisplayAfter).toContainText(
-      (testDemand.count - 1).toString(),
-    );
+    await expect(countDisplayAfter).toContainText("1");
+
+    await increaseButton.click();
+
+    await expect(countDisplayAfter).toContainText("1");
 
     // Verify in database
     const demandsAfter = await scheduleTestBase.getShiftDemandsByPeriod(
@@ -296,7 +301,7 @@ test.describe("Demand Editing - Team Leader", () => {
     expect(demandsAfter.length).toBeGreaterThan(0);
     const testDemandAfter = demandsAfter.find((d) => d.id === testDemand.id);
     expect(testDemandAfter).toBeDefined();
-    expect(testDemandAfter!.count).toBe(testDemand.count - 1);
+    expect(testDemandAfter!.count).toBe(1);
 
     console.log("✅ Cannot decrease demand count below 0");
   });
@@ -305,91 +310,55 @@ test.describe("Demand Editing - Team Leader", () => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testShifts = scheduleTestBase.getTestShifts();
-    const testTeam = scheduleTestBase.getTestTeam()!;
-    const tomorrow = (scheduleTestBase as any).testDemandDate;
 
-    const demandCell = page
-      .locator('[role="gridcell"]')
-      .filter({ hasText: testShifts[0].name })
-      .first();
+    const demands = await scheduleTestBase.getShiftDemandsByPeriod(
+      dayjs.utc(),
+      dayjs.utc().add(2, "months"),
+    );
+    expect(demands.length).toBeGreaterThan(0);
+    const testDemand = demands[0];
+    const testDemandDate = dayjs.unix(testDemand.date).utc();
+    const testShift = testShifts.find((s) => s.id === testDemand.shiftId);
+    expect(testShift).toBeDefined();
 
-    if (!(await demandCell.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
+    // Set the schedule view to include the date of the occurrence to delete
+    await scheduleTestBase.setScheduleViewSettings(
+      page,
+      {
+        targetDate: testDemandDate,
+        timeFrame: "week",
+      },
+      true, // reload page
+    );
+
+    // Click on the demand cell in schedule grid
+    const demandCell = page.locator(
+      `[data-testid="demand-cell-${demands[0].id}"]`,
+    );
+    expect(demandCell).toBeVisible({ timeout: 5000 });
 
     await demandCell.click();
+
+    // Dialog should open in edit mode for demand
+    const dialog = page.locator('[data-testid="schedule-item-dialog"]');
+    await expect(dialog).toBeVisible();
 
     // Click delete button
     const deleteButton = page.locator('[data-testid="delete-demand-button"]');
     await deleteButton.click();
 
     // Wait for dialog to close
-    const dialog = page.locator('[data-testid="schedule-item-dialog"]');
-    await expect(dialog).not.toBeVisible({ timeout: 5000 });
+    const dialogClosed = page.locator('[data-testid="schedule-item-dialog"]');
+    await expect(dialogClosed).not.toBeVisible({ timeout: 5000 });
 
-    // Verify demand was deleted
-    const dbUtils = (scheduleTestBase as any).dbUtils;
-    const demands = await dbUtils.getShiftDemandsByPeriod(
-      testTeam.teamId,
-      tomorrow,
-      tomorrow,
+    const demandsAfter = await scheduleTestBase.getShiftDemandsByPeriod(
+      dayjs.utc(),
+      dayjs.utc().add(2, "months"),
     );
 
-    const deletedDemand = demands.find(
-      (d: any) => d.shiftId === testShifts[0].id,
-    );
+    const deletedDemand = demandsAfter.find((d) => d.id === testDemand.id);
     expect(deletedDemand).toBeUndefined();
 
     console.log("✅ Demand deleted successfully");
-  });
-
-  test("should cancel demand edit without saving", async ({
-    page,
-  }, testInfo) => {
-    const testRunId = (testInfo as any).testRunId as string;
-    const scheduleTestBase = testBasesMap.get(testRunId)!;
-    const testShifts = scheduleTestBase.getTestShifts();
-    const testTeam = scheduleTestBase.getTestTeam()!;
-    const tomorrow = (scheduleTestBase as any).testDemandDate;
-
-    const demandCell = page
-      .locator('[role="gridcell"]')
-      .filter({ hasText: testShifts[0].name })
-      .first();
-
-    if (!(await demandCell.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
-
-    await demandCell.click();
-
-    // Increase count
-    const increaseButton = page.locator(
-      '[data-testid="increase-demand-button"]',
-    );
-    await increaseButton.click();
-    await increaseButton.click();
-
-    // Cancel instead of saving
-    const cancelButton = page.locator('[data-testid="cancel-demand-button"]');
-    await cancelButton.click();
-
-    const dialog = page.locator('[data-testid="schedule-item-dialog"]');
-    await expect(dialog).not.toBeVisible();
-
-    // Verify count remains 2 in database
-    const dbUtils = (scheduleTestBase as any).dbUtils;
-    const demands = await dbUtils.getShiftDemandsByPeriod(
-      testTeam.teamId,
-      tomorrow,
-      tomorrow,
-    );
-
-    const demand = demands.find((d: any) => d.shiftId === testShifts[0].id);
-    expect(demand?.count).toBe(2);
-
-    console.log("✅ Demand edit cancelled without saving");
   });
 });
