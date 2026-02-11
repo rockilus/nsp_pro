@@ -57,16 +57,8 @@ test.describe("Demand Creation - Team Leader", () => {
     const testShifts = scheduleTestBase.getTestShifts();
 
     // Open dialog
-    const addButton = page
-      .locator('[data-testid="add-schedule-item-button"]')
-      .first();
-
-    if (!(await addButton.isVisible().catch(() => false))) {
-      console.log("⚠️ Add button not found, skipping test");
-      test.skip();
-      return;
-    }
-
+    const addButton = page.locator('[data-testid="add-schedule-item-button"]');
+    await expect(addButton).toBeVisible({ timeout: 5000 });
     await addButton.click();
 
     // Switch to Demand type
@@ -76,7 +68,9 @@ test.describe("Demand Creation - Team Leader", () => {
     // Select shift
     const shiftSelect = page.locator('[data-testid="demand-shift-select"]');
     await shiftSelect.click();
-    await page.locator(`text="${testShifts[0].name}"`).first().click();
+    await page
+      .locator(`[data-testid="demand-shift-option-${testShifts[0].id}"]`)
+      .click();
 
     // Select date (tomorrow)
     const tomorrow = dayjs.utc().add(1, "day");
@@ -213,7 +207,9 @@ test.describe("Demand Creation - Team Leader", () => {
     // Select shift and date
     const shiftSelect = page.locator('[data-testid="demand-shift-select"]');
     await shiftSelect.click();
-    await page.locator(`text="${testShifts[0].name}"`).first().click();
+    await page
+      .locator(`[data-testid="demand-shift-option-${testShifts[0].id}"]`)
+      .click();
 
     const tomorrow = dayjs.utc().add(1, "day");
     const datePicker = page.locator('[data-testid="demand-date-picker"]');
@@ -279,7 +275,9 @@ test.describe("Demand Creation - Team Leader", () => {
 
     let shiftSelect = page.locator('[data-testid="demand-shift-select"]');
     await shiftSelect.click();
-    await page.locator(`text="${testShifts[0].name}"`).first().click();
+    await page
+      .locator(`[data-testid="demand-shift-option-${testShifts[0].id}"]`)
+      .click();
 
     let datePicker = page.locator('[data-testid="demand-date-picker"]');
     await datePicker.click();
@@ -299,7 +297,9 @@ test.describe("Demand Creation - Team Leader", () => {
 
     shiftSelect = page.locator('[data-testid="demand-shift-select"]');
     await shiftSelect.click();
-    await page.locator(`text="${testShifts[1].name}"`).first().click();
+    await page
+      .locator(`[data-testid="demand-shift-option-${testShifts[1].id}"]`)
+      .click();
 
     datePicker = page.locator('[data-testid="demand-date-picker"]');
     await datePicker.click();

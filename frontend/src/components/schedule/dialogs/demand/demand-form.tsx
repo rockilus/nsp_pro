@@ -313,10 +313,15 @@ const DemandForm: React.FC<DemandFormProps> = ({
             <span style={{ color: "#999" }}>{t("select_a_shift")}</span>
           </MenuItem>
           {shifts.map((s) => (
-            <MenuItem key={s.id} value={s.id}>
+            <MenuItem
+              key={s.id}
+              value={s.id}
+              data-testid={`demand-shift-option-${s.id}`}
+            >
               {s.name}
             </MenuItem>
           ))}
+          )
         </Select>
 
         <span className="form-title">{t("date")}</span>
