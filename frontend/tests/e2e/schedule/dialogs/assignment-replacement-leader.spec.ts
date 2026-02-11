@@ -32,7 +32,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
 
     await scheduleTestBase.setupScheduleTests(workerIndex, {
       referenceDate: dayjs.utc().add(1, "day"),
-      createAssignments: false,
+      createAssignments: true,
       linkMemberToWorker: false,
     });
 
@@ -53,34 +53,33 @@ test.describe("Assignment Replacement - Team Leader", () => {
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
-    const testWorkers = scheduleTestBase.getTestWorkers();
-    const testShifts = scheduleTestBase.getTestShifts();
-    const testTeam = scheduleTestBase.getTestTeam()!;
 
-    // Create assignment
-    const tomorrow = dayjs.utc().add(1, "day");
-    const dbUtils = (scheduleTestBase as any).dbUtils;
-    await dbUtils.createAssignment({
-      teamId: testTeam.teamId,
-      workerId: testWorkers[0].workerId,
-      shiftId: testShifts[0].id,
-      date: tomorrow.format("YYYY-MM-DD"),
-    });
+    // Get the created assignment
+    const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR.assignmentsRead;
+    await expect(assignments.length).toBeGreaterThan(0);
 
-    await page.reload();
-    await page.waitForTimeout(1000);
+    const assignment = assignments[0];
+
+    // Set the schedule view to include the date of the assignment
+    await scheduleTestBase.setScheduleViewSettings(
+      page,
+      {
+        targetDate: assignment.date,
+        timeFrame: "week",
+      },
+      true, // reload page
+    );
 
     // Click on assignment
-    const assignmentCell = page
-      .locator('[role="gridcell"]')
-      .filter({ hasText: testWorkers[0].name })
-      .first();
-
-    if (!(await assignmentCell.isVisible().catch(() => false))) {
-      console.log("⚠️ Assignment cell not found, skipping test");
-      test.skip();
-      return;
-    }
+    const assignmentCell = page.locator(
+      `[data-testid="assignment-cell-${assignment.id}"]`,
+    );
+    await expect(assignmentCell).toBeVisible();
 
     await assignmentCell.click();
 
@@ -93,7 +92,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
     console.log("✅ Check replacement button visible");
   });
 
-  test("should display replacement candidates with can_do workers", async ({
+  test("should return expected analysis and ranking for each worker", async ({
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;

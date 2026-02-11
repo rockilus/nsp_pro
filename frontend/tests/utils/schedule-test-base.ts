@@ -35,6 +35,7 @@ export interface ScheduleSetupOptions {
   linkMemberToWorker?: boolean; // Default true - whether to link TEST_USER_2 to a worker
   createShiftDemands?: boolean; // Default false - whether to create shift demands
   createRequests?: boolean; // Default false - whether to create test requests
+  numberOfWorkers?: number; // Optional: number of workers to create (minimum 2). Defaults to 2.
   campaignDates?: {
     start: string;
     end: string;
@@ -69,7 +70,7 @@ export class ScheduleTestBase {
    * Creates a test team with owner, member, workers, shifts, demands, and optionally assignments
    *
    * @param workerIndex - For unique naming (from test.info().workerIndex)
-   * @param options - Configuration for test scenario
+   * @param options - Configuration for test scenario. Use `options.numberOfWorkers` to set how many workers to create (minimum 2).
    */
   async setupScheduleTests(
     workerIndex: number,
@@ -93,32 +94,29 @@ export class ScheduleTestBase {
     await this.dbUtils.addSecondUserToTeam(this.testTeam.teamId, "member");
     console.log(`✅ Added TEST_USER_2 as member to team`);
 
-    // 5. Create test workers (at least 2)
-    const worker1 = await this.createWorker({
-      name: "Test Worker 1",
-      acronym: "TW1",
-      weeklyHours: 40,
-    });
-    this.testWorkers.push(worker1);
-
-    const worker2 = await this.createWorker({
-      name: "Test Worker 2",
-      acronym: "TW2",
-      weeklyHours: 40,
-    });
-    this.testWorkers.push(worker2);
+    // 5. Create test workers (minimum 2; create additional workers if requested)
+    const numWorkers = Math.max(2, options.numberOfWorkers ?? 2);
+    for (let i = 0; i < numWorkers; i++) {
+      const worker = await this.createWorker({
+        name: `Test Worker ${i + 1}`,
+        acronym: `TW${i + 1}`,
+        weeklyHours: 40,
+      });
+      this.testWorkers.push(worker);
+    }
     console.log(`✅ Created ${this.testWorkers.length} test workers`);
 
     // 6. Link TEST_USER_2 to first worker (if requested)
     const shouldLinkMember = options.linkMemberToWorker !== false; // Default to true
     if (shouldLinkMember) {
+      const firstWorker = this.testWorkers[0];
       await this.dbUtils.attachWorkerToUser(
-        worker1.workerId,
+        firstWorker.workerId,
         TEST_USER_2.user_id,
         this.testTeam.teamId,
       );
-      this.memberWorker = worker1;
-      console.log(`✅ Linked TEST_USER_2 to ${worker1.name}`);
+      this.memberWorker = firstWorker;
+      console.log(`✅ Linked TEST_USER_2 to ${firstWorker.name}`);
     } else {
       console.log(`⏭️  Skipped linking TEST_USER_2 to worker`);
     }
@@ -171,9 +169,10 @@ export class ScheduleTestBase {
 
     // 9. Create a request for a worker on reference date (if requested)
     if (options.createRequests) {
+      const secondWorker = this.testWorkers[1];
       const testRequest = await this.dbUtils.createRequest({
         teamId: this.testTeam.teamId,
-        workerId: worker2.workerId,
+        workerId: secondWorker.workerId,
         requestType: "work_demand",
         startDate: options.referenceDate,
         endDate: options.referenceDate,
@@ -192,7 +191,7 @@ export class ScheduleTestBase {
         ],
       });
       this.testRequests.push(testRequest);
-      console.log(`✅ Created test request for ${worker2.name}`);
+      console.log(`✅ Created test request for ${secondWorker.name}`);
     } else {
       console.log(`⏭️  Skipped creating test requests`);
     }
@@ -661,7 +660,7 @@ export class ScheduleTestBase {
         teamId: this.testTeam.teamId,
         workerId: worker.workerId,
         shiftId: constraints.hasOverlap.shiftId,
-        date: constraints.hasOverlap.date.toDate(),
+        date: constraints.hasOverlap.date,
         fixed: false,
         comment: "Test overlap assignment",
       });
