@@ -1100,7 +1100,9 @@ export default function ScheduleTab({
           {isLoadingAssignments ||
           (teamWithMembership.team.useSolver && isLoadingShiftDemands) ? (
             <ScheduleTableSkeleton />
-          ) : assignments.length === 0 && !scheduleCampaign ? (
+          ) : assignments.length === 0 &&
+            requests.length === 0 &&
+            shiftDemands.length === 0 ? (
             <NoAssignmentsDisplay
               lng={lng}
               teamWithMembership={teamWithMembership}

@@ -33,23 +33,8 @@ test.describe("Demand Editing - Team Leader", () => {
       referenceDate: dayjs.utc().add(1, "day"),
       createAssignments: false,
       linkMemberToWorker: false,
+      createShiftDemands: true,
     });
-
-    // Create initial demand for editing tests
-    const testTeam = scheduleTestBase.getTestTeam()!;
-    const testShifts = scheduleTestBase.getTestShifts();
-    const tomorrow = dayjs.utc().add(1, "day");
-
-    const dbUtils = (scheduleTestBase as any).dbUtils;
-    await dbUtils.createShiftDemand({
-      teamId: testTeam.teamId,
-      shiftId: testShifts[0].id,
-      date: tomorrow.format("YYYY-MM-DD"),
-      count: 2,
-    });
-
-    // Store demand info for tests
-    (scheduleTestBase as any).testDemandDate = tomorrow;
 
     await scheduleTestBase.actAsOwner(page);
     await scheduleTestBase.navigateToSchedulePage(page);
@@ -70,17 +55,31 @@ test.describe("Demand Editing - Team Leader", () => {
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testShifts = scheduleTestBase.getTestShifts();
 
-    // Click on the demand cell in schedule grid
-    const demandCell = page
-      .locator('[role="gridcell"]')
-      .filter({ hasText: testShifts[0].name })
-      .first();
+    const demands = await scheduleTestBase.getShiftDemandsByPeriod(
+      dayjs.utc(),
+      dayjs.utc().add(2, "months"),
+    );
+    expect(demands.length).toBeGreaterThan(0);
+    const testDemand = demands[0];
+    const testDemandDate = dayjs.unix(testDemand.date).utc();
+    const testShift = testShifts.find((s) => s.id === testDemand.shiftId);
+    expect(testShift).toBeDefined();
 
-    if (!(await demandCell.isVisible().catch(() => false))) {
-      console.log("⚠️ Demand cell not found, skipping test");
-      test.skip();
-      return;
-    }
+    // Set the schedule view to include the date of the occurrence to delete
+    await scheduleTestBase.setScheduleViewSettings(
+      page,
+      {
+        targetDate: testDemandDate,
+        timeFrame: "week",
+      },
+      true, // reload page
+    );
+
+    // Click on the demand cell in schedule grid
+    const demandCell = page.locator(
+      `[data-testid="demand-cell-${demands[0].id}"]`,
+    );
+    expect(demandCell).toBeVisible({ timeout: 5000 });
 
     await demandCell.click();
 
@@ -90,11 +89,11 @@ test.describe("Demand Editing - Team Leader", () => {
 
     // Verify shift name is displayed
     const shiftName = page.locator('[data-testid="demand-shift-name"]');
-    await expect(shiftName).toContainText(testShifts[0].name);
+    await expect(shiftName).toContainText(testShift!.name);
 
-    // Verify count is 2
+    // Verify count
     const countDisplay = page.locator('[data-testid="demand-count-display"]');
-    await expect(countDisplay).toContainText("2");
+    await expect(countDisplay).toContainText(testDemand.count.toString());
 
     console.log("✅ Edit dialog opened for existing demand");
   });

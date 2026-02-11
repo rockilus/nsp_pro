@@ -1477,7 +1477,7 @@ export class DatabaseTestUtils {
   async createShiftDemand(options: {
     teamId: string;
     shiftId: string;
-    date: Date;
+    date: dayjs.Dayjs;
     count: number;
     notes?: string;
     source?: "manual" | "template" | "solver" | "import";
@@ -1485,7 +1485,7 @@ export class DatabaseTestUtils {
     try {
       const shiftDemandData = {
         shiftId: options.shiftId,
-        date: Math.floor(options.date.getTime() / 1000), // Convert to Unix timestamp
+        date: options.date.unix(),
         count: options.count,
         notes: options.notes || null,
         source: options.source || "manual",
@@ -1512,8 +1512,8 @@ export class DatabaseTestUtils {
    */
   async getShiftDemandsByPeriod(
     teamId: string,
-    startDate: Date,
-    endDate: Date,
+    startDate: dayjs.Dayjs,
+    endDate: dayjs.Dayjs,
   ): Promise<ShiftDemandDTO[]> {
     try {
       const result = await ShiftDemandApi.getShiftDemandsByPeriod(

@@ -33,6 +33,8 @@ export interface ScheduleSetupOptions {
   referenceDate: dayjs.Dayjs;
   createAssignments: boolean;
   linkMemberToWorker?: boolean; // Default true - whether to link TEST_USER_2 to a worker
+  createShiftDemands?: boolean; // Default false - whether to create shift demands
+  createRequests?: boolean; // Default false - whether to create test requests
   campaignDates?: {
     start: string;
     end: string;
@@ -143,49 +145,57 @@ export class ScheduleTestBase {
     this.testShifts.push(afternoonShift);
     console.log(`✅ Created ${this.testShifts.length} test shifts`);
 
-    // 8. Create shift demands for reference date
-    await this.dbUtils.createShiftDemand({
-      teamId: this.testTeam.teamId,
-      shiftId: morningShift.id,
-      date: options.referenceDate.toDate(),
-      count: 2,
-      notes: "Test demand for morning shift",
-      source: "manual",
-    });
+    // 8. Create shift demands for reference date (if requested)
+    if (options.createShiftDemands) {
+      await this.dbUtils.createShiftDemand({
+        teamId: this.testTeam.teamId,
+        shiftId: morningShift.id,
+        date: options.referenceDate,
+        count: 2,
+        notes: "Test demand for morning shift",
+        source: "manual",
+      });
 
-    await this.dbUtils.createShiftDemand({
-      teamId: this.testTeam.teamId,
-      shiftId: afternoonShift.id,
-      date: options.referenceDate.toDate(),
-      count: 1,
-      notes: "Test demand for afternoon shift",
-      source: "manual",
-    });
-    console.log(`✅ Created shift demands for reference date`);
+      await this.dbUtils.createShiftDemand({
+        teamId: this.testTeam.teamId,
+        shiftId: afternoonShift.id,
+        date: options.referenceDate,
+        count: 1,
+        notes: "Test demand for afternoon shift",
+        source: "manual",
+      });
+      console.log(`✅ Created shift demands for reference date`);
+    } else {
+      console.log(`⏭️  Skipped creating shift demands`);
+    }
 
-    // 9. Create a request for a worker on reference date
-    const testRequest = await this.dbUtils.createRequest({
-      teamId: this.testTeam.teamId,
-      workerId: worker2.workerId,
-      requestType: "work_demand",
-      startDate: options.referenceDate,
-      endDate: options.referenceDate,
-      status: "pending",
-      negative: false,
-      comment: "Test work demand request",
-      shiftId: null,
-      shiftOptions: [
-        {
-          name: morningShift.name,
-          id: morningShift.id,
-          idType: SWOIdTypes.SHIFT,
-          isBoolDim: false,
-          categoryName: "Shifts",
-        },
-      ],
-    });
-    this.testRequests.push(testRequest);
-    console.log(`✅ Created test request for ${worker2.name}`);
+    // 9. Create a request for a worker on reference date (if requested)
+    if (options.createRequests) {
+      const testRequest = await this.dbUtils.createRequest({
+        teamId: this.testTeam.teamId,
+        workerId: worker2.workerId,
+        requestType: "work_demand",
+        startDate: options.referenceDate,
+        endDate: options.referenceDate,
+        status: "pending",
+        negative: false,
+        comment: "Test work demand request",
+        shiftId: null,
+        shiftOptions: [
+          {
+            name: morningShift.name,
+            id: morningShift.id,
+            idType: SWOIdTypes.SHIFT,
+            isBoolDim: false,
+            categoryName: "Shifts",
+          },
+        ],
+      });
+      this.testRequests.push(testRequest);
+      console.log(`✅ Created test request for ${worker2.name}`);
+    } else {
+      console.log(`⏭️  Skipped creating test requests`);
+    }
 
     // 10. Create campaign schedule if dates provided (before creating assignments)
     if (options.campaignDates) {
@@ -341,7 +351,7 @@ export class ScheduleTestBase {
     return await this.dbUtils.createShiftDemand({
       teamId: this.testTeam.teamId,
       shiftId: options.shiftId,
-      date: options.date.toDate(),
+      date: options.date,
       count: options.count,
       notes: options.notes,
       source: "manual",
@@ -687,8 +697,8 @@ export class ScheduleTestBase {
     }
     return await this.dbUtils.getShiftDemandsByPeriod(
       this.testTeam.teamId,
-      startDate.toDate(),
-      endDate.toDate(),
+      startDate,
+      endDate,
     );
   }
 

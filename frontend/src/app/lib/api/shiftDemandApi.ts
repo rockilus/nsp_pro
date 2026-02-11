@@ -4,6 +4,7 @@
  * error handling and validation aligned with backend DTOs
  */
 
+import dayjs from "dayjs";
 import {
   ShiftDemandDTO,
   ShiftDemandCreateDTO,
@@ -36,7 +37,7 @@ const validateCreateRequest = (demand: ShiftDemandCreateDTO): void => {
 
   if (demand.count < 0 || demand.count > SHIFT_DEMAND_CONSTRAINTS.MAX_COUNT) {
     throw new Error(
-      `Count must be between 0 and ${SHIFT_DEMAND_CONSTRAINTS.MAX_COUNT}`
+      `Count must be between 0 and ${SHIFT_DEMAND_CONSTRAINTS.MAX_COUNT}`,
     );
   }
 
@@ -52,7 +53,7 @@ const validateCreateRequest = (demand: ShiftDemandCreateDTO): void => {
     demand.notes.length > SHIFT_DEMAND_CONSTRAINTS.MAX_NOTES_LENGTH
   ) {
     throw new Error(
-      `Notes cannot exceed ${SHIFT_DEMAND_CONSTRAINTS.MAX_NOTES_LENGTH} characters`
+      `Notes cannot exceed ${SHIFT_DEMAND_CONSTRAINTS.MAX_NOTES_LENGTH} characters`,
     );
   }
 };
@@ -80,7 +81,7 @@ const validateUpdateRequest = (demand: ShiftDemandUpdateDTO): void => {
     (demand.count < 0 || demand.count > SHIFT_DEMAND_CONSTRAINTS.MAX_COUNT)
   ) {
     throw new Error(
-      `Count must be between 0 and ${SHIFT_DEMAND_CONSTRAINTS.MAX_COUNT}`
+      `Count must be between 0 and ${SHIFT_DEMAND_CONSTRAINTS.MAX_COUNT}`,
     );
   }
 
@@ -97,7 +98,7 @@ const validateUpdateRequest = (demand: ShiftDemandUpdateDTO): void => {
     demand.notes.length > SHIFT_DEMAND_CONSTRAINTS.MAX_NOTES_LENGTH
   ) {
     throw new Error(
-      `Notes cannot exceed ${SHIFT_DEMAND_CONSTRAINTS.MAX_NOTES_LENGTH} characters`
+      `Notes cannot exceed ${SHIFT_DEMAND_CONSTRAINTS.MAX_NOTES_LENGTH} characters`,
     );
   }
 };
@@ -112,9 +113,9 @@ export class ShiftDemandApi extends BaseApi {
   static async getShiftDemandsByPeriod(
     apiClient: AuthenticatedApiClient,
     teamId: string,
-    startDate: Date,
-    endDate: Date,
-    bufferDays: number = 7
+    startDate: dayjs.Dayjs,
+    endDate: dayjs.Dayjs,
+    bufferDays: number = 7,
   ): Promise<ShiftDemandDTO[]> {
     // Security: Input validation
     if (!teamId) {
@@ -139,7 +140,7 @@ export class ShiftDemandApi extends BaseApi {
     apiClient: AuthenticatedApiClient,
     teamId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<ShiftDemandMatrix> {
     // Security: Input validation
     if (!teamId) {
@@ -162,7 +163,7 @@ export class ShiftDemandApi extends BaseApi {
   static async createShiftDemand(
     apiClient: AuthenticatedApiClient,
     teamId: string,
-    demand: Omit<ShiftDemandCreateDTO, "teamId">
+    demand: Omit<ShiftDemandCreateDTO, "teamId">,
   ): Promise<ShiftDemandDTO> {
     // Security: Input validation
     if (!teamId) {
@@ -183,7 +184,7 @@ export class ShiftDemandApi extends BaseApi {
       apiClient,
       "post",
       endpoint,
-      demandWithTeam
+      demandWithTeam,
     );
   }
 
@@ -194,7 +195,7 @@ export class ShiftDemandApi extends BaseApi {
     apiClient: AuthenticatedApiClient,
     teamId: string,
     demandId: string,
-    demand: ShiftDemandUpdateDTO
+    demand: ShiftDemandUpdateDTO,
   ): Promise<ShiftDemandDTO | null> {
     // Security: Input validation
     if (!teamId) {
@@ -223,7 +224,7 @@ export class ShiftDemandApi extends BaseApi {
       apiClient,
       "put",
       endpoint,
-      updateBody
+      updateBody,
     );
   }
 
@@ -233,7 +234,7 @@ export class ShiftDemandApi extends BaseApi {
   static async deleteShiftDemand(
     apiClient: AuthenticatedApiClient,
     teamId: string,
-    demandId: string
+    demandId: string,
   ): Promise<void> {
     // Security: Input validation
     if (!teamId) {
@@ -254,7 +255,7 @@ export class ShiftDemandApi extends BaseApi {
   static async bulkUpsertShiftDemands(
     apiClient: AuthenticatedApiClient,
     teamId: string,
-    demands: Omit<ShiftDemandCreateDTO, "teamId">[]
+    demands: Omit<ShiftDemandCreateDTO, "teamId">[],
   ): Promise<BulkUpsertResponse> {
     // Security: Input validation
     if (!teamId) {
@@ -277,7 +278,7 @@ export class ShiftDemandApi extends BaseApi {
         const errorMessage =
           error instanceof Error ? error.message : "Unknown validation error";
         throw new Error(
-          `Validation failed for demand at index ${index}: ${errorMessage}`
+          `Validation failed for demand at index ${index}: ${errorMessage}`,
         );
       }
     });
@@ -288,7 +289,7 @@ export class ShiftDemandApi extends BaseApi {
       apiClient,
       "post",
       endpoint,
-      demandsWithTeam
+      demandsWithTeam,
     );
 
     // Transform backend response to match frontend interface
