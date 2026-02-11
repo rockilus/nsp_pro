@@ -25,6 +25,7 @@ import { RecurrenceRuleT } from "../../src/types/recurrence";
 import { SWOIdTypes } from "../../src/types/constraint";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { ShiftDemandDTO } from "@/types/shiftDemand";
 
 dayjs.extend(utc);
 
@@ -672,6 +673,23 @@ export class ScheduleTestBase {
     }
 
     return worker;
+  }
+
+  /**
+   * Get shift demands by period for the test team
+   */
+  async getShiftDemandsByPeriod(
+    startDate: dayjs.Dayjs,
+    endDate: dayjs.Dayjs,
+  ): Promise<ShiftDemandDTO[]> {
+    if (!this.testTeam) {
+      throw new Error("Test team not initialized");
+    }
+    return await this.dbUtils.getShiftDemandsByPeriod(
+      this.testTeam.teamId,
+      startDate.toDate(),
+      endDate.toDate(),
+    );
   }
 
   /**

@@ -57,7 +57,7 @@ test.describe("Demand Creation - Team Leader", () => {
     const testShifts = scheduleTestBase.getTestShifts();
 
     // Open dialog
-    const addButton = page.locator('[data-testid="add-schedule-item-button"]');
+    const addButton = page.locator('[data-testid="create-assignment-button"]');
     await expect(addButton).toBeVisible({ timeout: 5000 });
     await addButton.click();
 
@@ -73,10 +73,14 @@ test.describe("Demand Creation - Team Leader", () => {
       .click();
 
     // Select date (tomorrow)
-    const tomorrow = dayjs.utc().add(1, "day");
+    const tomorrow = dayjs.utc().utc().startOf("day").add(1, "day");
     const datePicker = page.locator('[data-testid="demand-date-picker"]');
-    await datePicker.click();
-    await datePicker.fill(tomorrow.format("MM/DD/YYYY"));
+    await datePicker.waitFor({ state: "visible" });
+    await datePicker.fill("", { force: true }); // Clear first
+    await page.waitForTimeout(100);
+    await datePicker.fill(tomorrow.format("DD/MM/YYYY"), { force: true });
+    await datePicker.press("Enter");
+    await page.waitForTimeout(300);
 
     // Click create button
     const createButton = page.locator('[data-testid="create-demand-button"]');
@@ -87,16 +91,14 @@ test.describe("Demand Creation - Team Leader", () => {
     await expect(dialog).not.toBeVisible({ timeout: 5000 });
 
     // Verify demand was created in database
-    const dbUtils = (scheduleTestBase as any).dbUtils;
-    const demands = await dbUtils.getShiftDemandsByPeriod(
-      testTeam.teamId,
+    const demands = await scheduleTestBase.getShiftDemandsByPeriod(
       tomorrow,
       tomorrow,
     );
 
     expect(demands.length).toBeGreaterThan(0);
     const createdDemand = demands.find(
-      (d: any) => d.shiftId === testShifts[0].id,
+      (d) => d.shiftId === testShifts[0].id && d.date === tomorrow.unix(),
     );
     expect(createdDemand).toBeDefined();
 
@@ -108,15 +110,9 @@ test.describe("Demand Creation - Team Leader", () => {
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
 
-    const addButton = page
-      .locator('[data-testid="add-schedule-item-button"]')
-      .first();
-
-    if (!(await addButton.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
-
+    // Open dialog
+    const addButton = page.locator('[data-testid="create-assignment-button"]');
+    await expect(addButton).toBeVisible({ timeout: 5000 });
     await addButton.click();
 
     // Switch to Demand type
@@ -124,10 +120,14 @@ test.describe("Demand Creation - Team Leader", () => {
     await demandButton.click();
 
     // Select only date, not shift
-    const tomorrow = dayjs.utc().add(1, "day");
+    const tomorrow = dayjs.utc().utc().startOf("day").add(1, "day");
     const datePicker = page.locator('[data-testid="demand-date-picker"]');
-    await datePicker.click();
-    await datePicker.fill(tomorrow.format("MM/DD/YYYY"));
+    await datePicker.waitFor({ state: "visible" });
+    await datePicker.fill("", { force: true }); // Clear first
+    await page.waitForTimeout(100);
+    await datePicker.fill(tomorrow.format("DD/MM/YYYY"), { force: true });
+    await datePicker.press("Enter");
+    await page.waitForTimeout(300);
 
     // Try to create without shift
     const createButton = page.locator('[data-testid="create-demand-button"]');
@@ -170,9 +170,7 @@ test.describe("Demand Creation - Team Leader", () => {
 
     // Verify no demand was created
     const tomorrow = dayjs.utc().add(1, "day");
-    const dbUtils = (scheduleTestBase as any).dbUtils;
-    const demands = await dbUtils.getShiftDemandsByPeriod(
-      testTeam.teamId,
+    const demands = await scheduleTestBase.getShiftDemandsByPeriod(
       tomorrow,
       tomorrow,
     );
@@ -225,9 +223,7 @@ test.describe("Demand Creation - Team Leader", () => {
     ).not.toBeVisible({ timeout: 5000 });
 
     // Verify demand was created with count of 1
-    const dbUtils = (scheduleTestBase as any).dbUtils;
-    const demands = await dbUtils.getShiftDemandsByPeriod(
-      testTeam.teamId,
+    const demands = await scheduleTestBase.getShiftDemandsByPeriod(
       tomorrow,
       tomorrow,
     );
@@ -313,9 +309,7 @@ test.describe("Demand Creation - Team Leader", () => {
     ).not.toBeVisible({ timeout: 5000 });
 
     // Verify both demands were created
-    const dbUtils = (scheduleTestBase as any).dbUtils;
-    const demands = await dbUtils.getShiftDemandsByPeriod(
-      testTeam.teamId,
+    const demands = await scheduleTestBase.getShiftDemandsByPeriod(
       tomorrow,
       tomorrow,
     );

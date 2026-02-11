@@ -1514,7 +1514,7 @@ export class DatabaseTestUtils {
     teamId: string,
     startDate: Date,
     endDate: Date,
-  ): Promise<any[]> {
+  ): Promise<ShiftDemandDTO[]> {
     try {
       const result = await ShiftDemandApi.getShiftDemandsByPeriod(
         this.testApiClient,
