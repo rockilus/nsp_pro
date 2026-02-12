@@ -57,6 +57,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       createAssignments: true,
       linkMemberToWorker: false,
       createDutyAndRecuperation: true,
+      createShiftLeave: true,
     });
 
     await scheduleTestBase.actAsOwner(page);
@@ -149,6 +150,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       (s) => s.name === "Afternoon Shift",
     )!;
     const dutyShift = testShifts.find((s) => s.name === "Duty Shift")!;
+    const leaveShift = testShifts.find((s) => s.name === "Leave Shift")!;
 
     const pool = testWorkers;
     const used = new Set<number>();
@@ -653,9 +655,35 @@ test.describe("Assignment Replacement - Team Leader", () => {
 
     // Setup worker to test leave implications
     const w8 = pickUnused();
+    const leaveRequest = await scheduleTestBase.createRequest({
+      workerId: w8.workerId,
+      requestType: RequestType.LEAVE,
+      startDate: testDate,
+      endDate: testDate,
+      status: RequestStatus.PENDING,
+      negative: false,
+      comment: "Test work demand request",
+      shiftId: leaveShift.id,
+      shiftOptions: [],
+    });
+    // Approve the request so it becomes an approved work demand
+    await scheduleTestBase.approveRequest(leaveRequest.id);
 
-    // Setup worker to test on leave implications
+    expectedCandidates[w8.workerId] = {
+      ...defaultCandidate,
+      workerId: w8.workerId,
+      workerName: w8.name,
+      rank: 8,
+      replacementCategory: "cant_do",
+      replacementImplications: {
+        ...defaultCandidate.replacementImplications,
+        isntOnLeave: false,
+      },
+    };
+
     // Setup worker to test specialty implications
+    const w9 = pickUnused();
+
     // Setup worker to test no employed implications
   });
 

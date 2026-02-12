@@ -14,7 +14,7 @@ import { DatabaseTestUtils, TEST_USER, TEST_USER_2 } from "./database-utils";
 import { testConfig } from "./test-config";
 import { ShiftType } from "../../src/types/shift";
 import { WorkerT } from "../../src/types/worker";
-import { ShiftT, ShiftRestType } from "../../src/types/shift";
+import { ShiftT, ShiftRestType, ShiftLeaveType } from "../../src/types/shift";
 import { RequestT } from "../../src/types/request";
 import { ScheduleT } from "../../src/types/schedule";
 import {
@@ -53,6 +53,8 @@ export interface ScheduleSetupOptions {
     start: string;
     end: string;
   };
+  // Whether to create a leave-type shift. Default: false (do not create)
+  createShiftLeave?: boolean;
   // Whether to create duty and recuperation shifts. Default: false (do not create)
   createDutyAndRecuperation?: boolean;
 }
@@ -157,6 +159,25 @@ export class ScheduleTestBase {
     });
     this.testShifts.push(afternoonShift);
     console.log(`✅ Created ${this.testShifts.length} test shifts`);
+    // Optionally create a leave-type shift (default: skipped)
+    const createLeave = options.createShiftLeave === true;
+    if (createLeave) {
+      const leaveShift = await this.createShift({
+        name: "Leave Shift",
+        startTime: dayjs.utc().hour(0).minute(0).second(0),
+        endTime: dayjs.utc().hour(23).minute(59).second(0),
+        shiftType: ShiftType.LEAVE,
+        acronym: "LV",
+        color: "#FFC107",
+        // leaveType is forwarded by createShift when present
+        // @ts-ignore - forwarded dynamically to API
+        leaveType: ShiftLeaveType.VACATION,
+      } as any);
+      this.testShifts.push(leaveShift);
+      console.log(`✅ Created leave shift: ${leaveShift.name}`);
+    } else {
+      console.log(`⏭️  Skipped creating leave shift`);
+    }
     // Optionally create duty and recuperation shifts (default: skipped)
     const createDuty = options.createDutyAndRecuperation === true;
     if (createDuty) {
@@ -367,6 +388,7 @@ export class ScheduleTestBase {
     recuperationTime?: number;
     restType?: ShiftRestType;
     recuperationDutyId?: string | null;
+    leaveType?: ShiftLeaveType;
   }): Promise<ShiftT> {
     if (!this.testTeam) {
       throw new Error("Test team not created");
@@ -386,6 +408,9 @@ export class ScheduleTestBase {
       ...(shiftData.restType !== undefined && { restType: shiftData.restType }),
       ...(shiftData.recuperationDutyId !== undefined && {
         recuperationDutyId: shiftData.recuperationDutyId,
+      }),
+      ...(shiftData.leaveType !== undefined && {
+        leaveType: shiftData.leaveType,
       }),
     });
   }
