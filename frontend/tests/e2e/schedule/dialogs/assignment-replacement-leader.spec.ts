@@ -17,6 +17,13 @@ import {
   AssignmentSource,
 } from "../../../../src/types/assignment";
 import { ReplacementImplicationsT } from "../../../../src/types/replacement";
+import {
+  ConstraintType,
+  BlockNameOptions,
+  BlockTypeOptions,
+  SWOIdTypes,
+} from "@/types/constraint";
+import { ObjectiveCategory } from "../../../../src/types/breach";
 
 dayjs.extend(utc);
 
@@ -359,6 +366,76 @@ test.describe("Assignment Replacement - Team Leader", () => {
         newWeeklyWorkedMinutes: (8 * 2 + 6) * 60,
         newWeeklyTimeDeltaMinutes: (8 * 2 + 6 - 40) * 60,
         meetsTarget: false,
+      },
+    };
+
+    // Setup worker to test soft constaint breache
+    const w3 = pickUnused();
+    const softConstraint = await scheduleTestBase.createConstraint({
+      constraintType: ConstraintType.FIL,
+      templateId: "",
+      language: "en",
+      blocks: [
+        {
+          name: BlockNameOptions.WORKER,
+          type: BlockTypeOptions.SHIFT_WORKER_OPTION,
+          value: [
+            {
+              name: w3.name,
+              id: w3.workerId,
+              idType: SWOIdTypes.WORKER,
+              isBoolDim: false,
+              categoryName: "Workers",
+            },
+          ],
+        },
+        {
+          name: BlockNameOptions.OPERATOR,
+          type: BlockTypeOptions.STRING,
+          value: "should not",
+        },
+        {
+          name: BlockNameOptions.TEXT,
+          type: BlockTypeOptions.STRING,
+          value: "faire des",
+        },
+        {
+          name: BlockNameOptions.SHIFT,
+          type: BlockTypeOptions.SHIFT_WORKER_OPTION,
+          value: [
+            {
+              name: testShift.name,
+              id: testShift.id,
+              idType: SWOIdTypes.SHIFT,
+              isBoolDim: false,
+              categoryName: "Shifts",
+            },
+          ],
+        },
+      ],
+      text: "",
+      hard: false,
+      priority: "medium",
+      active: true,
+    });
+
+    expectedImplications[w3.workerId] = {
+      ...defaultImplications,
+      softConstraintHits: {
+        meetsConstraints: false,
+        breaches: [
+          {
+            id: "",
+            scheduleId: "",
+            objectiveId: softConstraint.id,
+            objectiveCategory: ObjectiveCategory.CONSTRAINT,
+            variables: [
+              { workerId: w3.workerId, date: testDate, shiftId: testShift.id },
+            ],
+            description: "",
+            hardToSoft: null,
+          },
+        ],
       },
     };
   });

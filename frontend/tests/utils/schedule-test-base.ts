@@ -26,6 +26,11 @@ import { SWOIdTypes } from "../../src/types/constraint";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { ShiftDemandDTO } from "@/types/shiftDemand";
+import {
+  ConstraintT,
+  ConstraintType,
+  BlockT,
+} from "../../src/types/constraint";
 
 dayjs.extend(utc);
 
@@ -867,13 +872,11 @@ export class ScheduleTestBase {
       console.log("  ↻ Reloaded page to apply settings");
     }
   }
-}
 
   /**
    * Create constraint
    */
-  async createConstraint(  constraintData: {
-    teamId: string;
+  async createConstraint(constraintData: {
     constraintType: ConstraintType;
     templateId: string;
     language: string;
@@ -883,4 +886,12 @@ export class ScheduleTestBase {
     priority: string;
     active: boolean;
   }): Promise<ConstraintT> {
-return await this.dbUtils.createConstraint({teamId: constraintData.teamId, constraintType: constraintData.constraintType, templateId: constraintData.templateId, language: constraintData.language, blocks: constraintData.blocks, text: constraintData.text, hard: constraintData.hard, priority: constraintData.priority, active: constraintData.active, }); }
+    if (!this.testTeam) {
+      throw new Error("Test team not initialized");
+    }
+    return await this.dbUtils.createConstraint({
+      ...constraintData,
+      teamId: this.testTeam.teamId,
+    });
+  }
+}
