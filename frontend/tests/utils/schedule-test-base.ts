@@ -31,6 +31,14 @@ import {
   ConstraintType,
   BlockT,
 } from "../../src/types/constraint";
+import {
+  DimensionEntryType,
+  DimensionType,
+  DimensionT,
+} from "../../src/types/dimension";
+import { DimEntryT } from "../../src/types/dim-entry";
+import { AttributeOwnerType, AttributeT } from "../../src/types/attribute";
+import { AddDimensionResponse } from "../../src/app/lib/api/dimensionApi";
 
 dayjs.extend(utc);
 
@@ -936,6 +944,52 @@ export class ScheduleTestBase {
     return await this.dbUtils.createConstraint({
       ...constraintData,
       teamId: this.testTeam.teamId,
+    });
+  }
+
+  /**
+   * Create a dimension for the test team using DatabaseTestUtils
+   */
+  async createDimension(dimensionData: {
+    name: string;
+    entryType: DimensionEntryType;
+    dimensionType: DimensionType[];
+    dimEntries?: DimEntryT[];
+  }): Promise<AddDimensionResponse> {
+    if (!this.testTeam) {
+      throw new Error("Test team not initialized");
+    }
+
+    return await this.dbUtils.createDimension({
+      teamId: this.testTeam.teamId,
+      name: dimensionData.name,
+      entryType: dimensionData.entryType,
+      dimensionType: dimensionData.dimensionType,
+      dimEntries: dimensionData.dimEntries ?? [],
+    });
+  }
+
+  /**
+   * Create an attribute for the test team using DatabaseTestUtils
+   */
+  async createAttribute(attributeData: {
+    value: string | number | boolean;
+    ownerType: AttributeOwnerType;
+    ownerId: string;
+    dimensionId: string;
+    dimEntryIds?: string[];
+  }): Promise<AttributeT> {
+    if (!this.testTeam) {
+      throw new Error("Test team not initialized");
+    }
+
+    return await this.dbUtils.createAttribute({
+      teamId: this.testTeam.teamId,
+      value: attributeData.value,
+      ownerType: attributeData.ownerType,
+      ownerId: attributeData.ownerId,
+      dimensionId: attributeData.dimensionId,
+      dimEntryIds: attributeData.dimEntryIds,
     });
   }
 }

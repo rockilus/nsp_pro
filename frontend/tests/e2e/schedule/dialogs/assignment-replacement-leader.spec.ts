@@ -29,6 +29,11 @@ import {
 } from "@/types/constraint";
 import { ObjectiveCategory } from "../../../../src/types/breach";
 import { RequestType, RequestStatus } from "@/types/request";
+import {
+  DimensionEntryType,
+  DimensionType,
+} from "../../../../src/types/dimension";
+import { AttributeOwnerType } from "@/types/attribute";
 
 dayjs.extend(utc);
 
@@ -597,6 +602,37 @@ test.describe("Assignment Replacement - Team Leader", () => {
 
     // Setup worker to test fitler implications
     const w7 = pickUnused();
+    const dimensionFilter = await scheduleTestBase.createDimension({
+      name: `Filter Dimension ${testRunId}`,
+      entryType: DimensionEntryType.DIM_ENTRIES,
+      dimensionType: [DimensionType.WORKER, DimensionType.SHIFT],
+      dimEntries: [
+        {
+          id: "",
+          dimensionId: "",
+          name: `${w7.name} - ${testShift.name}`,
+          deleted: false,
+        },
+      ],
+    });
+
+    const shiftAttribute = await scheduleTestBase.createAttribute({
+      value: "",
+      ownerType: AttributeOwnerType.SHIFT,
+      ownerId: testShift.id,
+      dimensionId: dimensionFilter.newDimension.id,
+      dimEntryIds: [dimensionFilter.newDimEntries![0].id],
+    });
+
+    for (let worker of testWorkers if worker.workerId !== w7.workerId) {
+await scheduleTestBase.createAttribute({
+value: "",
+ownerType: AttributeOwnerType.WORKER,
+ownerId: worker.workerId,
+dimensionId: dimensionFilter.newDimension.id,
+dimEntryIds: [dimensionFilter.newDimEntries![0].id],
+});
+}
 
     // Setup worker to test leave implications
     // Setup worker to test on leave implications

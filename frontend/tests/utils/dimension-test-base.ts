@@ -34,7 +34,7 @@ export class DimensionTestBase extends WorkerTestBase {
     const health = await this.dbUtils.checkHealth();
     if (!health.test_utilities_available) {
       throw new Error(
-        "Test utilities are not available - check environment configuration"
+        "Test utilities are not available - check environment configuration",
       );
     }
 
@@ -42,7 +42,7 @@ export class DimensionTestBase extends WorkerTestBase {
     const uniqueTeamName = `Dimension Test Team ${workerIndex}-${Date.now()}`;
     this.testTeam = await this.dbUtils.createTeam({ name: uniqueTeamName });
     console.log(
-      `Created test team: ${this.testTeam.name} (${this.testTeam.teamId})`
+      `Created test team: ${this.testTeam.name} (${this.testTeam.teamId})`,
     );
   }
 
@@ -54,20 +54,21 @@ export class DimensionTestBase extends WorkerTestBase {
     entryType: DimensionEntryType;
     dimensionType: DimensionType;
     dimEntries?: DimEntryT[];
-  }): Promise<{ dimensionId: string; name: string; teamId: string }> {
+  }): Promise<DimensionT> {
     if (!this.testTeam) {
       throw new Error(
-        "Test team not created. Call setupDimensionTests() first."
+        "Test team not created. Call setupDimensionTests() first.",
       );
     }
 
-    return this.dbUtils.createDimension({
+    const result = await this.dbUtils.createDimension({
       teamId: this.testTeam.teamId,
       name: dimensionData.name,
       entryType: dimensionData.entryType,
-      dimensionType: dimensionData.dimensionType,
+      dimensionType: [dimensionData.dimensionType],
       dimEntries: dimensionData.dimEntries || [],
     });
+    return result.newDimension;
   }
 
   /**
@@ -78,11 +79,11 @@ export class DimensionTestBase extends WorkerTestBase {
     updates: {
       name?: string;
       entryType?: DimensionEntryType;
-    }
+    },
   ): Promise<{ dimensionId: string; name: string; teamId: string }> {
     if (!this.testTeam) {
       throw new Error(
-        "Test team not created. Call setupDimensionTests() first."
+        "Test team not created. Call setupDimensionTests() first.",
       );
     }
 
@@ -98,7 +99,7 @@ export class DimensionTestBase extends WorkerTestBase {
   async deleteTestDimension(dimensionId: string): Promise<void> {
     if (!this.testTeam) {
       throw new Error(
-        "Test team not created. Call setupDimensionTests() first."
+        "Test team not created. Call setupDimensionTests() first.",
       );
     }
 
@@ -109,11 +110,11 @@ export class DimensionTestBase extends WorkerTestBase {
    * Gets all dimensions for the test team using the API
    */
   async getTestDimensions(
-    dimensionType?: DimensionType
+    dimensionType?: DimensionType,
   ): Promise<DimensionT[]> {
     if (!this.testTeam) {
       throw new Error(
-        "Test team not created. Call setupDimensionTests() first."
+        "Test team not created. Call setupDimensionTests() first.",
       );
     }
 
@@ -127,7 +128,7 @@ export class DimensionTestBase extends WorkerTestBase {
   async navigateToShiftsPage(page: Page): Promise<void> {
     if (!this.testTeam) {
       throw new Error(
-        "Test team not created. Call setupDimensionTests() first."
+        "Test team not created. Call setupDimensionTests() first.",
       );
     }
 
@@ -154,7 +155,7 @@ export class DimensionTestBase extends WorkerTestBase {
     const currentUrl = page.url();
     if (currentUrl.includes("/plan/settings/teams")) {
       throw new Error(
-        "Navigation failed: redirected to teams page. Team context may not have initialized properly."
+        "Navigation failed: redirected to teams page. Team context may not have initialized properly.",
       );
     }
   }
@@ -210,7 +211,7 @@ export class DimensionTestBase extends WorkerTestBase {
    */
   getTypeSelectDropdown(page: Page) {
     return page.locator(
-      '[data-testid="new-dimension-type-select"] .MuiSelect-select'
+      '[data-testid="new-dimension-type-select"] .MuiSelect-select',
     );
   }
 
@@ -219,7 +220,7 @@ export class DimensionTestBase extends WorkerTestBase {
    */
   getTypeOption(page: Page, entryType: DimensionEntryType) {
     return page.locator(
-      `[data-testid="new-dimension-type-option-${entryType}"]`
+      `[data-testid="new-dimension-type-option-${entryType}"]`,
     );
   }
 
@@ -382,7 +383,7 @@ export class DimensionTestBase extends WorkerTestBase {
    */
   getLinkDimensionItem(page: Page, dimensionName: string) {
     return page.locator(
-      `.link-dimension-list-item:has(.link-dimension-item-name:text("${dimensionName}"))`
+      `.link-dimension-list-item:has(.link-dimension-item-name:text("${dimensionName}"))`,
     );
   }
 
@@ -398,7 +399,7 @@ export class DimensionTestBase extends WorkerTestBase {
    */
   async isDimensionInLinkList(
     page: Page,
-    dimensionName: string
+    dimensionName: string,
   ): Promise<boolean> {
     const dimensionItem = this.getLinkDimensionItem(page, dimensionName);
     try {
@@ -430,7 +431,7 @@ export class DimensionTestBase extends WorkerTestBase {
    */
   getDimensionChips(page: Page, dimensionName: string) {
     return this.getLinkDimensionItem(page, dimensionName).locator(
-      ".link-dimension-list-dim-entries .MuiChip-root"
+      ".link-dimension-list-dim-entries .MuiChip-root",
     );
   }
 
@@ -439,7 +440,7 @@ export class DimensionTestBase extends WorkerTestBase {
    */
   async isDimensionSelected(
     page: Page,
-    dimensionName: string
+    dimensionName: string,
   ): Promise<boolean> {
     const addButton = this.getLinkDimensionAddButton(page, dimensionName);
     try {
@@ -459,7 +460,7 @@ export class DimensionTestBase extends WorkerTestBase {
    */
   getDimensionCell(page: Page, dimensionId: string) {
     return page.locator(
-      `[data-testid="worker-dimension-${dimensionId}-header-cell"]`
+      `[data-testid="worker-dimension-${dimensionId}-header-cell"]`,
     );
   }
 
@@ -468,7 +469,7 @@ export class DimensionTestBase extends WorkerTestBase {
    */
   getDimensionCellByName(page: Page, dimensionName: string) {
     return page.locator(
-      `[data-testid*="worker-dimension-"][data-testid*="header-cell"]:has([data-testid*="dimension-name-"]:text("${dimensionName}"))`
+      `[data-testid*="worker-dimension-"][data-testid*="header-cell"]:has([data-testid*="dimension-name-"]:text("${dimensionName}"))`,
     );
   }
 
@@ -485,7 +486,7 @@ export class DimensionTestBase extends WorkerTestBase {
    */
   async clickDimensionCellByName(
     page: Page,
-    dimensionName: string
+    dimensionName: string,
   ): Promise<void> {
     const dimensionCell = this.getDimensionCellByName(page, dimensionName);
     await dimensionCell.click();
@@ -496,7 +497,7 @@ export class DimensionTestBase extends WorkerTestBase {
    */
   getDimensionPopup(page: Page, dimensionId: string) {
     return page.locator(
-      `[data-testid="dimension-popup-${dimensionId}-popover"]`
+      `[data-testid="dimension-popup-${dimensionId}-popover"]`,
     );
   }
 
@@ -526,7 +527,7 @@ export class DimensionTestBase extends WorkerTestBase {
    */
   getDimensionDeleteButton(page: Page, dimensionId: string) {
     return page.locator(
-      `[data-testid="dimension-delete-button-${dimensionId}"]`
+      `[data-testid="dimension-delete-button-${dimensionId}"]`,
     );
   }
 
@@ -535,7 +536,7 @@ export class DimensionTestBase extends WorkerTestBase {
    */
   getDimensionEntriesSection(page: Page, dimensionId: string) {
     return page.locator(
-      `[data-testid="dimension-entries-section-${dimensionId}"]`
+      `[data-testid="dimension-entries-section-${dimensionId}"]`,
     );
   }
 
@@ -544,7 +545,7 @@ export class DimensionTestBase extends WorkerTestBase {
    */
   getDimensionEntryItems(page: Page, dimensionId: string) {
     return page.locator(
-      `[data-testid="dim-entries-list-${dimensionId}"] [data-testid*="dim-entry-item-"]`
+      `[data-testid="dim-entries-list-${dimensionId}"] [data-testid*="dim-entry-item-"]`,
     );
   }
 
@@ -595,7 +596,7 @@ export class DimensionTestBase extends WorkerTestBase {
    */
   async waitForDimensionPopupVisible(
     page: Page,
-    dimensionId: string
+    dimensionId: string,
   ): Promise<void> {
     const popup = this.getDimensionPopup(page, dimensionId);
     await popup.waitFor({ state: "visible" });
@@ -606,7 +607,7 @@ export class DimensionTestBase extends WorkerTestBase {
    */
   async waitForDimensionPopupHidden(
     page: Page,
-    dimensionId: string
+    dimensionId: string,
   ): Promise<void> {
     const popup = this.getDimensionPopup(page, dimensionId);
     await popup.waitFor({ state: "hidden" });
@@ -618,7 +619,7 @@ export class DimensionTestBase extends WorkerTestBase {
   async fillDimensionNameField(
     page: Page,
     dimensionId: string,
-    name: string
+    name: string,
   ): Promise<void> {
     const nameField = this.getDimensionNameField(page, dimensionId);
     const nameInput = nameField.locator("input");
@@ -631,7 +632,7 @@ export class DimensionTestBase extends WorkerTestBase {
    */
   async clickDimensionSaveButton(
     page: Page,
-    dimensionId: string
+    dimensionId: string,
   ): Promise<void> {
     const saveButton = this.getDimensionSaveButton(page, dimensionId);
     await saveButton.click();
@@ -642,7 +643,7 @@ export class DimensionTestBase extends WorkerTestBase {
    */
   async clickDimensionDeleteButton(
     page: Page,
-    dimensionId: string
+    dimensionId: string,
   ): Promise<void> {
     const deleteButton = this.getDimensionDeleteButton(page, dimensionId);
     await deleteButton.click();
@@ -669,7 +670,7 @@ export class DimensionTestBase extends WorkerTestBase {
   async editDimensionEntryName(
     page: Page,
     entryId: string,
-    newName: string
+    newName: string,
   ): Promise<void> {
     const editButton = this.getDimensionEntryEditButton(page, entryId);
     await editButton.click();
@@ -681,7 +682,7 @@ export class DimensionTestBase extends WorkerTestBase {
 
     const confirmButton = this.getDimensionEntryConfirmEditButton(
       page,
-      entryId
+      entryId,
     );
     await confirmButton.click();
   }
@@ -710,10 +711,10 @@ export class DimensionTestBase extends WorkerTestBase {
    */
   async getDimensionNameInCell(
     page: Page,
-    dimensionId: string
+    dimensionId: string,
   ): Promise<string> {
     const nameElement = page.locator(
-      `[data-testid="dimension-name-${dimensionId}"]`
+      `[data-testid="dimension-name-${dimensionId}"]`,
     );
     return (await nameElement.textContent()) || "";
   }

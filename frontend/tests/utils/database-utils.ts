@@ -34,6 +34,7 @@ import {
   DimensionT,
   DimensionType,
   DimensionEntryType,
+  AddDimensionResponse,
 } from "../../src/types/dimension";
 import { DimEntryT } from "../../src/types/dim-entry";
 import { AttributeT, toAttributeT } from "../../src/types/attribute";
@@ -1179,15 +1180,15 @@ export class DatabaseTestUtils {
     teamId: string;
     name: string;
     entryType: DimensionEntryType;
-    dimensionType: DimensionType;
+    dimensionType: DimensionType[];
     dimEntries?: DimEntryT[];
-  }): Promise<{ dimensionId: string; name: string; teamId: string }> {
+  }): Promise<AddDimensionResponse> {
     try {
       // Create the dimension object
       const newDimension: DimensionT = {
         id: "",
         teamId: dimensionData.teamId,
-        dimTypes: [dimensionData.dimensionType],
+        dimTypes: dimensionData.dimensionType,
         name: dimensionData.name,
         entryType: dimensionData.entryType,
         deleted: false,
@@ -1200,11 +1201,7 @@ export class DatabaseTestUtils {
         dimensionData.dimEntries || [],
       );
 
-      return {
-        dimensionId: result.newDimension.id,
-        name: result.newDimension.name,
-        teamId: result.newDimension.teamId,
-      };
+      return result;
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
@@ -1335,11 +1332,7 @@ export class DatabaseTestUtils {
     ownerId: string;
     dimensionId: string;
     dimEntryIds?: string[];
-  }): Promise<{
-    attributeId: string;
-    value: string | number | boolean;
-    teamId: string;
-  }> {
+  }): Promise<AttributeT> {
     try {
       // Create the attribute object
       const newAttribute = {
@@ -1358,11 +1351,7 @@ export class DatabaseTestUtils {
         attributeData.teamId,
       );
 
-      return {
-        attributeId: result.id,
-        value: result.value,
-        teamId: attributeData.teamId,
-      };
+      return result;
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
@@ -1382,11 +1371,7 @@ export class DatabaseTestUtils {
       value?: string | number | boolean;
       dimEntryIds?: string[];
     },
-  ): Promise<{
-    attributeId: string;
-    value: string | number | boolean;
-    teamId: string;
-  }> {
+  ): Promise<AttributeT> {
     try {
       // First get the current attribute data by getting all attributes for the owner
       // Since we don't have a direct "get attribute by id" method, we'll need to get by owner
@@ -1410,11 +1395,7 @@ export class DatabaseTestUtils {
         teamId,
       );
 
-      return {
-        attributeId: result.id,
-        value: result.value,
-        teamId: teamId,
-      };
+      return result;
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
