@@ -1024,7 +1024,7 @@ export class DatabaseTestUtils {
   async createSpecialty(specialtyData: {
     teamId: string;
     name: string;
-  }): Promise<{ specialtyId: string; name: string; teamId: string }> {
+  }): Promise<SpecialtyT> {
     try {
       // Create the specialty object
       const newSpecialty: SpecialtyT = {
@@ -1035,17 +1035,11 @@ export class DatabaseTestUtils {
       };
 
       // Use the existing SpecialtyApi with our test client
-      const result: SpecialtyT = await SpecialtyApi.addSpecialty(
+      return await SpecialtyApi.addSpecialty(
         this.testApiClient,
         newSpecialty,
         specialtyData.teamId,
       );
-
-      return {
-        specialtyId: result.id,
-        name: result.name,
-        teamId: result.teamId,
-      };
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
@@ -1068,7 +1062,7 @@ export class DatabaseTestUtils {
     updates: {
       name?: string;
     },
-  ): Promise<{ specialtyId: string; name: string; teamId: string }> {
+  ): Promise<SpecialtyT> {
     try {
       // First get the current specialty to merge with updates
       const specialties = await SpecialtyApi.getSpecialties(
@@ -1096,11 +1090,7 @@ export class DatabaseTestUtils {
         teamId,
       );
 
-      return {
-        specialtyId: result.id,
-        name: result.name,
-        teamId: result.teamId,
-      };
+      return result;
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
