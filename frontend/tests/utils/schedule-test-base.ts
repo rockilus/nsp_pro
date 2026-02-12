@@ -40,6 +40,7 @@ import { DimEntryT } from "../../src/types/dim-entry";
 import { AttributeOwnerType, AttributeT } from "../../src/types/attribute";
 import { AddDimensionResponse } from "../../src/app/lib/api/dimensionApi";
 import { SpecialtyT } from "../../src/types/specialty";
+import { ReplacementCandidateT } from "@/types/replacement";
 
 dayjs.extend(utc);
 
@@ -1058,6 +1059,21 @@ export class ScheduleTestBase {
       workerId,
       this.testTeam.teamId,
       updates,
+    );
+  }
+
+  /**
+   * Get replacement candidates for an assignment using DatabaseTestUtils
+   */
+  async getReplacementCandidates(
+    assignmentId: string,
+  ): Promise<ReplacementCandidateT[]> {
+    if (!this.testTeam) {
+      throw new Error("Test team not initialized");
+    }
+    return await this.dbUtils.getReplacementCandidates(
+      assignmentId,
+      this.testTeam.teamId,
     );
   }
 }

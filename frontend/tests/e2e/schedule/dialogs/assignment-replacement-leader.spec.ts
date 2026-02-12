@@ -724,6 +724,11 @@ test.describe("Assignment Replacement - Team Leader", () => {
         isEmployed: false,
       },
     };
+
+    // Get replacement candidates via the api
+    const candidates = await scheduleTestBase.getReplacementCandidates(
+      testAssignment.id,
+    );
   });
 
   test("should display could_do workers with soft constraint violations", async ({
