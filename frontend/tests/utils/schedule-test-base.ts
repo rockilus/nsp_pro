@@ -868,3 +868,19 @@ export class ScheduleTestBase {
     }
   }
 }
+
+  /**
+   * Create constraint
+   */
+  async createConstraint(  constraintData: {
+    teamId: string;
+    constraintType: ConstraintType;
+    templateId: string;
+    language: string;
+    blocks: BlockT[];
+    text: string;
+    hard: boolean;
+    priority: string;
+    active: boolean;
+  }): Promise<ConstraintT> {
+return await this.dbUtils.createConstraint({teamId: constraintData.teamId, constraintType: constraintData.constraintType, templateId: constraintData.templateId, language: constraintData.language, blocks: constraintData.blocks, text: constraintData.text, hard: constraintData.hard, priority: constraintData.priority, active: constraintData.active, }); }

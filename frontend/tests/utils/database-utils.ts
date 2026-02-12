@@ -16,6 +16,7 @@ import { ShiftDemandTemplateApi } from "../../src/app/lib/api/shiftDemandTemplat
 import { RequestApi } from "../../src/app/lib/api/requestApi";
 import { ScheduleApi } from "../../src/app/lib/api/scheduleApi";
 import { AssignmentApi } from "../../src/app/lib/api/assignmentApi";
+import { ConstraintApi } from "../../src/app/lib/api/constraintApi";
 import { AuthenticatedApiClient } from "../../src/app/lib/api/baseApi";
 import { TeamWithMembership } from "../../src/types/team";
 import { WorkerT, toWorkerT } from "../../src/types/worker";
@@ -67,6 +68,12 @@ import {
   RecurrenceUpdateScope,
 } from "../../src/types/recurrence";
 import { ReplacementCandidateT } from "../../src/types/replacement";
+import {
+  ConstraintT,
+  ConstraintType,
+  BlockT,
+  TemplateT,
+} from "../../src/types/constraint";
 
 export interface DatabaseResetOptions {
   collections?: string[];
@@ -1630,22 +1637,21 @@ export class DatabaseTestUtils {
   //////////////////////////
 
   /**
-   * Create a constraint using direct API call
+   * Create a constraint using the existing ConstraintApi for consistent behavior
    */
   async createConstraint(constraintData: {
     teamId: string;
-    constraintType: number;
+    constraintType: ConstraintType;
     templateId: string;
     language: string;
-    blocks: any[];
+    blocks: BlockT[];
     text: string;
     hard: boolean;
     priority: string;
     active: boolean;
-  }): Promise<{ constraintId: string; teamId: string }> {
+  }): Promise<ConstraintT> {
     try {
-      // Make direct API call instead of using dynamic import
-      const constraintToCreate = {
+      const constraintToCreate: ConstraintT = {
         id: "", // Will be set by the API
         teamId: constraintData.teamId,
         constraintType: constraintData.constraintType,
@@ -1659,18 +1665,10 @@ export class DatabaseTestUtils {
         missingAttributes: [],
       };
 
-      const createdConstraint = await this.testApiClient.post<any>(
-        `/constraints/teams/${constraintData.teamId}`,
+      return await ConstraintApi.addConstraint(
+        this.testApiClient,
         constraintToCreate,
       );
-
-      console.log(
-        `Created constraint: ${createdConstraint.text} (${createdConstraint.id})`,
-      );
-      return {
-        constraintId: createdConstraint.id,
-        teamId: createdConstraint.teamId,
-      };
     } catch (error) {
       console.error("Failed to create constraint:", error);
       if (error instanceof Error) {
@@ -1687,22 +1685,21 @@ export class DatabaseTestUtils {
     constraintId: string,
     teamId: string,
     updates: {
-      constraintType?: number;
+      constraintType?: ConstraintType;
       templateId?: string;
       language?: string;
-      blocks?: any[];
+      blocks?: BlockT[];
       text?: string;
       hard?: boolean;
       priority?: string;
       active?: boolean;
     },
-  ): Promise<{ constraintId: string; teamId: string }> {
+  ): Promise<ConstraintT> {
     try {
-      // Make direct API calls instead of using dynamic import
-
       // First get the current constraint
-      const constraints = await this.testApiClient.get<any[]>(
-        `/constraints/teams/${teamId}`,
+      const constraints = await ConstraintApi.getConstraints(
+        this.testApiClient,
+        teamId,
       );
       const currentConstraint = constraints.find((c) => c.id === constraintId);
 
@@ -1715,16 +1712,10 @@ export class DatabaseTestUtils {
         ...updates,
       };
 
-      const result = await this.testApiClient.put<any>(
-        `/constraints/${constraintId}/teams/${teamId}`,
+      return await ConstraintApi.updateConstraint(
+        this.testApiClient,
         updatedConstraint,
       );
-
-      console.log(`Updated constraint: ${result.text} (${result.id})`);
-      return {
-        constraintId: result.id,
-        teamId: result.teamId,
-      };
     } catch (error) {
       console.error("Failed to update constraint:", error);
       if (error instanceof Error) {
@@ -1735,12 +1726,14 @@ export class DatabaseTestUtils {
   }
 
   /**
-   * Delete a constraint using direct API call
+   * Delete a constraint using the existing ConstraintApi for consistent behavior
    */
   async deleteConstraint(constraintId: string, teamId: string): Promise<void> {
     try {
-      await this.testApiClient.delete<void>(
-        `/constraints/${constraintId}/teams/${teamId}`,
+      await ConstraintApi.deleteConstraint(
+        this.testApiClient,
+        constraintId,
+        teamId,
       );
       console.log(`Deleted constraint: ${constraintId}`);
     } catch (error) {
@@ -1753,12 +1746,13 @@ export class DatabaseTestUtils {
   }
 
   /**
-   * Get all constraints for a team using direct API call
+   * Get all constraints for a team using the existing ConstraintApi for consistent behavior
    */
-  async getConstraints(teamId: string): Promise<any[]> {
+  async getConstraints(teamId: string): Promise<ConstraintT[]> {
     try {
-      const constraints = await this.testApiClient.get<any[]>(
-        `/constraints/teams/${teamId}`,
+      const constraints = await ConstraintApi.getConstraints(
+        this.testApiClient,
+        teamId,
       );
       console.log(
         `Retrieved ${constraints.length} constraints for team ${teamId}`,
@@ -1774,13 +1768,13 @@ export class DatabaseTestUtils {
   }
 
   /**
-   * Get constraint templates for a team using direct API call
+   * Get constraint templates for a team using the existing ConstraintApi for consistent behavior
    */
-  async getConstraintTemplates(teamId: string): Promise<any[]> {
+  async getConstraintTemplates(teamId: string): Promise<TemplateT[]> {
     try {
-      // Make direct API call instead of using dynamic import
-      const templates = await this.testApiClient.get<any[]>(
-        `/constraint-templates/teams/${teamId}`,
+      const templates = await ConstraintApi.getTemplates(
+        this.testApiClient,
+        teamId,
       );
       console.log(
         `Retrieved ${templates.length} constraint templates for team ${teamId}`,
