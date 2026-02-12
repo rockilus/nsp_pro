@@ -209,8 +209,7 @@ export class ScheduleTestBase {
     // 9. Create a request for a worker on reference date (if requested)
     if (options.createRequests) {
       const secondWorker = this.testWorkers[1];
-      const testRequest = await this.dbUtils.createRequest({
-        teamId: this.testTeam.teamId,
+      const testRequest = await this.createRequest({
         workerId: secondWorker.workerId,
         requestType: "work_demand",
         startDate: options.referenceDate,
@@ -403,6 +402,38 @@ export class ScheduleTestBase {
       count: options.count,
       notes: options.notes,
       source: "manual",
+    });
+  }
+
+  /**
+   * Create a request for testing
+   */
+  async createRequest(requestData: {
+    workerId: string;
+    requestType: "work_demand" | "leave";
+    startDate: dayjs.Dayjs;
+    endDate: dayjs.Dayjs;
+    status?: "pending" | "approved" | "denied" | "deferred";
+    negative?: boolean;
+    comment?: string;
+    shiftId?: string | null;
+    shiftOptions?: any[];
+  }): Promise<RequestT> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupScheduleTests first.");
+    }
+
+    return await this.dbUtils.createRequest({
+      teamId: this.testTeam.teamId,
+      workerId: requestData.workerId,
+      requestType: requestData.requestType,
+      startDate: requestData.startDate,
+      endDate: requestData.endDate,
+      status: requestData.status ?? "pending",
+      negative: requestData.negative ?? false,
+      comment: requestData.comment,
+      shiftId: requestData.shiftId ?? null,
+      shiftOptions: requestData.shiftOptions,
     });
   }
 

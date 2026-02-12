@@ -28,6 +28,7 @@ import {
   SWOIdTypes,
 } from "@/types/constraint";
 import { ObjectiveCategory } from "../../../../src/types/breach";
+import { RequestType, RequestStatus } from "@/types/request";
 
 dayjs.extend(utc);
 
@@ -475,6 +476,42 @@ test.describe("Assignment Replacement - Team Leader", () => {
         },
       },
     };
+
+    // Setup worker to test request conflict
+    const w4 = pickUnused();
+    const request = await scheduleTestBase.createRequest({
+      workerId: w4.workerId,
+      requestType: RequestType.WORK_DEMAND,
+      startDate: testDate,
+      endDate: testDate,
+      status: RequestStatus.PENDING,
+      negative: false,
+      comment: "Test work demand request",
+      shiftId: null,
+      shiftOptions: [
+        {
+          name: dutyShift.name,
+          id: dutyShift.id,
+          idType: SWOIdTypes.SHIFT,
+          isBoolDim: false,
+          categoryName: "Shifts",
+        },
+      ],
+    });
+    expectedCandidates[w4.workerId] = {
+      ...defaultCandidate,
+      workerId: w4.workerId,
+      workerName: w4.name,
+      rank: 4,
+      replacementCategory: "could_do",
+      replacementImplications: {
+        ...defaultCandidate.replacementImplications,
+        requestHits: {
+          hasNoRequestConflict: false,
+          conflictingRequestIds: [request.id],
+        },
+      },
+    }; // Create all the assignments in the database for (const assignment of assignmentsToCreate) { await scheduleTestBase.createAssignment(assignment); } // Reload page and click check replacement await page.reload(); await page.waitForTimeout(1000); const assignmentCell = page.locator( `[
   });
 
   test("should display could_do workers with soft constraint violations", async ({
