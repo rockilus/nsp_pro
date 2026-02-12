@@ -683,8 +683,47 @@ test.describe("Assignment Replacement - Team Leader", () => {
 
     // Setup worker to test specialty implications
     const w9 = pickUnused();
+    const specialty = await scheduleTestBase.createSpecialty({
+      name: `Specialty ${testRunId}`,
+    });
+
+    for (const worker of testWorkers) {
+      if (worker.workerId !== w9.workerId) {
+        await scheduleTestBase.updateWorker(worker.workerId, {
+          specialtyIds: [specialty.id],
+        });
+      }
+    }
+
+    expectedCandidates[w9.workerId] = {
+      ...defaultCandidate,
+      workerId: w9.workerId,
+      workerName: w9.name,
+      rank: 9,
+      replacementCategory: "cant_do",
+      replacementImplications: {
+        ...defaultCandidate.replacementImplications,
+        hasSpecialty: false,
+      },
+    };
 
     // Setup worker to test no employed implications
+    const w10 = pickUnused();
+    await scheduleTestBase.updateWorker(w10.workerId, {
+      employmentEndDate: dayjs(testDate).subtract(1, "day"),
+    });
+
+    expectedCandidates[w10.workerId] = {
+      ...defaultCandidate,
+      workerId: w10.workerId,
+      workerName: w10.name,
+      rank: 10,
+      replacementCategory: "cant_do",
+      replacementImplications: {
+        ...defaultCandidate.replacementImplications,
+        isEmployed: false,
+      },
+    };
   });
 
   test("should display could_do workers with soft constraint violations", async ({

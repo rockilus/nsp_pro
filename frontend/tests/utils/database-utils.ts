@@ -762,8 +762,8 @@ export class DatabaseTestUtils {
     updates: {
       name?: string;
       acronym?: string;
-      employmentStartDate?: Date;
-      employmentEndDate?: Date | null;
+      employmentStartDate?: dayjs.Dayjs;
+      employmentEndDate?: dayjs.Dayjs | null;
       weeklyHours?: number;
       weeklyHoursDesired?: number;
       dutiesPerMonth?: number;
@@ -788,12 +788,12 @@ export class DatabaseTestUtils {
         name: updates.name ?? currentWorker.name,
         acronym: updates.acronym ?? currentWorker.acronym,
         employmentStartDate: updates.employmentStartDate
-          ? dayjs(updates.employmentStartDate).utc()
+          ? updates.employmentStartDate
           : currentWorker.employmentStartDate,
         employmentEndDate:
           updates.employmentEndDate !== undefined
             ? updates.employmentEndDate
-              ? dayjs(updates.employmentEndDate).utc()
+              ? updates.employmentEndDate
               : null
             : currentWorker.employmentEndDate,
         weeklyHours: updates.weeklyHours ?? currentWorker.weeklyHours,

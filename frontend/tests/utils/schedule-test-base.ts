@@ -39,6 +39,7 @@ import {
 import { DimEntryT } from "../../src/types/dim-entry";
 import { AttributeOwnerType, AttributeT } from "../../src/types/attribute";
 import { AddDimensionResponse } from "../../src/app/lib/api/dimensionApi";
+import { SpecialtyT } from "../../src/types/specialty";
 
 dayjs.extend(utc);
 
@@ -1016,5 +1017,47 @@ export class ScheduleTestBase {
       dimensionId: attributeData.dimensionId,
       dimEntryIds: attributeData.dimEntryIds,
     });
+  }
+
+  /**
+   * Create a specialty for the test team using DatabaseTestUtils
+   */
+  async createSpecialty(specialtyData: { name: string }): Promise<SpecialtyT> {
+    if (!this.testTeam) {
+      throw new Error("Test team not initialized");
+    }
+
+    return await this.dbUtils.createSpecialty({
+      teamId: this.testTeam.teamId,
+      name: specialtyData.name,
+    });
+  }
+
+  /**
+   * Update a worker for the test team using DatabaseTestUtils
+   */
+  async updateWorker(
+    workerId: string,
+    updates: {
+      name?: string;
+      acronym?: string;
+      employmentStartDate?: dayjs.Dayjs;
+      employmentEndDate?: dayjs.Dayjs | null;
+      weeklyHours?: number;
+      weeklyHoursDesired?: number;
+      dutiesPerMonth?: number;
+      annualLeave?: number;
+      specialtyIds?: string[];
+    },
+  ): Promise<{ workerId: string; name: string; teamId: string }> {
+    if (!this.testTeam) {
+      throw new Error("Test team not initialized");
+    }
+
+    return await this.dbUtils.updateWorker(
+      workerId,
+      this.testTeam.teamId,
+      updates,
+    );
   }
 }
