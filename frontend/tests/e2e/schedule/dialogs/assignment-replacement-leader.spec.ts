@@ -624,17 +624,36 @@ test.describe("Assignment Replacement - Team Leader", () => {
       dimEntryIds: [dimensionFilter.newDimEntries![0].id],
     });
 
-    for (let worker of testWorkers if worker.workerId !== w7.workerId) {
-await scheduleTestBase.createAttribute({
-value: "",
-ownerType: AttributeOwnerType.WORKER,
-ownerId: worker.workerId,
-dimensionId: dimensionFilter.newDimension.id,
-dimEntryIds: [dimensionFilter.newDimEntries![0].id],
-});
-}
+    for (const worker of testWorkers) {
+      if (worker.workerId !== w7.workerId) {
+        await scheduleTestBase.createAttribute({
+          value: "",
+          ownerType: AttributeOwnerType.WORKER,
+          ownerId: worker.workerId,
+          dimensionId: dimensionFilter.newDimension.id,
+          dimEntryIds: [dimensionFilter.newDimEntries![0].id],
+        });
+      }
+    }
+
+    expectedCandidates[w7.workerId] = {
+      ...defaultCandidate,
+      workerId: w7.workerId,
+      workerName: w7.name,
+      rank: 7,
+      replacementCategory: "cant_do",
+      replacementImplications: {
+        ...defaultCandidate.replacementImplications,
+        filterHits: {
+          isntFilteredOut: false,
+          filterLabels: [`${w7.name} - ${testShift.name}`],
+        },
+      },
+    };
 
     // Setup worker to test leave implications
+    const w8 = pickUnused();
+
     // Setup worker to test on leave implications
     // Setup worker to test specialty implications
     // Setup worker to test no employed implications
