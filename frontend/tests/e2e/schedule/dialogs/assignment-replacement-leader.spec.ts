@@ -39,6 +39,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       referenceDate: dayjs.utc().add(1, "day"),
       createAssignments: true,
       linkMemberToWorker: false,
+      createDutyAndRecuperation: true,
     });
 
     await scheduleTestBase.actAsOwner(page);
@@ -126,6 +127,9 @@ test.describe("Assignment Replacement - Team Leader", () => {
     const testShifts = scheduleTestBase.getTestShifts();
     const testTeam = scheduleTestBase.getTestTeam()!;
 
+    const morningShift = testShifts.find((s) => s.name === "Morning Shift")!;
+    const dutyShift = testShifts.find((s) => s.name === "Duty Shift")!;
+
     const pool = testWorkers;
     const used = new Set<number>();
 
@@ -148,7 +152,11 @@ test.describe("Assignment Replacement - Team Leader", () => {
     const assignments = AR.assignmentsRead;
     await expect(assignments.length).toBeGreaterThan(0);
 
-    const testAssignment = assignments[0];
+    const testAssignment = assignments.find(
+      (a) => a.shiftId === morningShift.id,
+    )!;
+    expect(testAssignment).toBeDefined();
+
     const testWorker = testWorkers.find(
       (w) => w.workerId === testAssignment.workerId,
     )!;

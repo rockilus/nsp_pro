@@ -40,6 +40,8 @@ export interface ScheduleSetupOptions {
     start: string;
     end: string;
   };
+  // Whether to create duty and recuperation shifts. Default: false (do not create)
+  createDutyAndRecuperation?: boolean;
 }
 
 export class ScheduleTestBase {
@@ -142,34 +144,38 @@ export class ScheduleTestBase {
     });
     this.testShifts.push(afternoonShift);
     console.log(`✅ Created ${this.testShifts.length} test shifts`);
+    // Optionally create duty and recuperation shifts (default: skipped)
+    const createDuty = options.createDutyAndRecuperation === true;
+    if (createDuty) {
+      const dutyShift = await this.createShift({
+        name: "Duty Shift",
+        startTime: dayjs.utc().hour(8).minute(0).second(0),
+        endTime: dayjs.utc().add(1, "day").hour(8).minute(0).second(0),
+        shiftType: ShiftType.DUTY,
+        acronym: "DS",
+        color: "#FF5722",
+        recuperationTime: 24,
+      });
+      this.testShifts.push(dutyShift);
 
-    // Create duty shift (24-hour shift)
-    const dutyShift = await this.createShift({
-      name: "Duty Shift",
-      startTime: dayjs.utc().hour(8).minute(0).second(0),
-      endTime: dayjs.utc().add(1, "day").hour(8).minute(0).second(0),
-      shiftType: ShiftType.DUTY,
-      acronym: "DS",
-      color: "#FF5722",
-      recuperationTime: 24,
-    });
-    this.testShifts.push(dutyShift);
-
-    // Create recuperation shift (linked to duty shift)
-    const recuperationShift = await this.createShift({
-      name: "Recuperation Shift",
-      startTime: dutyShift.endTime,
-      endTime: dutyShift.endTime.add(1, "day"),
-      shiftType: ShiftType.REST,
-      restType: ShiftRestType.RECUPERATION,
-      recuperationDutyId: dutyShift.id,
-      acronym: "RS",
-      color: "#9E9E9E",
-    });
-    this.testShifts.push(recuperationShift);
-    console.log(
-      `✅ Created ${this.testShifts.length} test shifts (including duty and recuperation)`,
-    );
+      // Create recuperation shift (linked to duty shift)
+      const recuperationShift = await this.createShift({
+        name: "Recuperation Shift",
+        startTime: dutyShift.endTime,
+        endTime: dutyShift.endTime.add(1, "day"),
+        shiftType: ShiftType.REST,
+        restType: ShiftRestType.RECUPERATION,
+        recuperationDutyId: dutyShift.id,
+        acronym: "RS",
+        color: "#9E9E9E",
+      });
+      this.testShifts.push(recuperationShift);
+      console.log(
+        `✅ Created ${this.testShifts.length} test shifts (including duty and recuperation)`,
+      );
+    } else {
+      console.log(`⏭️  Skipped creating duty and recuperation shifts`);
+    }
 
     // 8. Create shift demands for reference date (if requested)
     if (options.createShiftDemands) {
