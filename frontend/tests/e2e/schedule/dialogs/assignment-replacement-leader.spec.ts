@@ -12,6 +12,11 @@ import { randomUUID } from "crypto";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { ScheduleTestBase } from "../../../utils/schedule-test-base";
+import {
+  AssignmentT,
+  AssignmentSource,
+} from "../../../../src/types/assignment";
+import { ReplacementImplicationsT } from "../../../../src/types/replacement";
 
 dayjs.extend(utc);
 
@@ -95,63 +100,210 @@ test.describe("Assignment Replacement - Team Leader", () => {
   test("should return expected analysis and ranking for each worker", async ({
     page,
   }, testInfo) => {
+    // export type ReplacementImplicationsT = {
+    //   // Can't do (hard constraints)
+    //   isEmployed: boolean;
+    //   hasSpecialty: boolean;
+    //   isntOnLeave: boolean;
+    //   filterHits: FilterHitsT;
+    //   overlapHits: OverlapHitsT;
+    //   hardConstraintHits: ConstraintHitsT;
+    //   requestHits: RequestHitsT;
+
+    //   // Could do (soft constraints)
+    //   softConstraintHits: ConstraintHitsT;
+    //   newMonthlyDuties: MonthlyDutiesImplicationsT;
+    //   newWeeklyTime: WeeklyWorkTimeImplicationsT;
+
+    //   // Indicators (informational)
+    //   nbTimesDidShiftLtm: LTMIndicatorT;
+    //   nbTimesWorkedWeekdayLtm: LTMIndicatorT;
+    // };
+
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testWorkers = scheduleTestBase.getTestWorkers();
     const testShifts = scheduleTestBase.getTestShifts();
     const testTeam = scheduleTestBase.getTestTeam()!;
 
-    // Create additional workers with no constraints (can_do)
-    await scheduleTestBase.createWorkerWithConstraints({
-      teamId: testTeam.teamId,
-      name: `Can Do Worker ${testRunId}`,
-      shiftTypeIds: [testShifts[0].shiftTypeId],
-      constraints: [],
-    });
+    const pool = testWorkers;
+    const used = new Set<number>();
 
-    // Create original assignment
-    const tomorrow = dayjs.utc().add(1, "day");
-    const dbUtils = (scheduleTestBase as any).dbUtils;
-    await dbUtils.createAssignment({
-      teamId: testTeam.teamId,
-      workerId: testWorkers[0].id,
-      shiftId: testShifts[0].id,
-      date: tomorrow.format("YYYY-MM-DD"),
-    });
-
-    await page.reload();
-    await page.waitForTimeout(1000);
-
-    const assignmentCell = page
-      .locator('[role="gridcell"]')
-      .filter({ hasText: testWorkers[0].name })
-      .first();
-
-    if (!(await assignmentCell.isVisible().catch(() => false))) {
-      test.skip();
-      return;
+    function pickUnused() {
+      for (let i = 0; i < pool.length; i++) {
+        if (!used.has(i)) {
+          used.add(i);
+          return pool[i];
+        }
+      }
+      throw new Error("no unused workers left");
     }
 
-    await assignmentCell.click();
-
-    const checkReplacementButton = page.locator(
-      '[data-testid="check-replacement-button"]',
+    // Get the test assignment, and delete all the others
+    const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
     );
-    await checkReplacementButton.click();
+    const assignments = AR.assignmentsRead;
+    await expect(assignments.length).toBeGreaterThan(0);
 
-    // Wait for replacement candidates to load
-    await page.waitForTimeout(1000);
+    const testAssignment = assignments[0];
+    const testWorker = testWorkers.find(
+      (w) => w.workerId === testAssignment.workerId,
+    )!;
+    expect(testWorker).toBeDefined();
 
-    // Verify can_do section exists and has workers
-    const canDoSection = page.locator('[data-testid="can-do-workers"]');
-    if (await canDoSection.isVisible().catch(() => false)) {
-      await expect(canDoSection).toBeVisible();
-      console.log("✅ Can-do workers section displayed");
-    } else {
-      console.log(
-        "⚠️ Replacement UI structure may differ, test needs adjustment",
-      );
+    // Mark test worker as used
+    const testWorkerIndex = testWorkers.findIndex(
+      (w) => w.workerId === testAssignment.workerId,
+    );
+    expect(testWorkerIndex).toBeGreaterThanOrEqual(0);
+    used.add(testWorkerIndex);
+
+    const testShift = testShifts.find((s) => s.id === testAssignment.shiftId)!;
+    expect(testShift).toBeDefined();
+    const testDate = testAssignment.date;
+
+    for (const assignment of assignments) {
+      if (assignment.id !== testAssignment.id) {
+        await scheduleTestBase.deleteAssignment(assignment.id);
+      }
     }
+
+    const assignmentsToCreate: AssignmentT[] = [];
+    const expectedImplications: Record<string, ReplacementImplicationsT> = {};
+
+    const defaultImplications: ReplacementImplicationsT = {
+      // Can't do (hard constraints)
+      isEmployed: true,
+      hasSpecialty: true,
+      isntOnLeave: true,
+      filterHits: {
+        isntFilteredOut: true,
+        filterLabels: [],
+      },
+      overlapHits: {
+        hasntOverlap: true,
+        overlapAssignmentIds: [],
+      },
+      hardConstraintHits: {
+        meetsConstraints: true,
+        breaches: [],
+      },
+      requestHits: {
+        hasNoRequestConflict: true,
+        conflictingRequestIds: [],
+      },
+
+      // Could do (soft constraints)
+      softConstraintHits: {
+        meetsConstraints: true,
+        breaches: [],
+      },
+      newMonthlyDuties: {
+        newNumberMonthlyDuties: 0,
+        newMonthlyDutiesDelta: 0,
+        meetsTarget: true,
+      },
+      newWeeklyTime: {
+        newWeeklyWorkedMinutes: 0,
+        newWeeklyTimeDeltaMinutes: 0,
+        meetsTarget: true,
+      },
+
+      // Indicators (informational)
+      nbTimesDidShiftLtm: {
+        count: 0,
+        lastDate: null,
+      },
+      nbTimesWorkedWeekdayLtm: {
+        count: 0,
+        lastDate: null,
+      },
+    };
+
+    // Setup worker to test LTM indicators
+    // Create 5 assignments for the same shift on the same weekday in the last
+    // 12 months
+    const w1 = pickUnused();
+
+    for (let i = 0; i < 5; i++) {
+      const pastDate = dayjs(testDate)
+        .subtract(i, "week")
+        .startOf("day")
+        .add(12, "hours"); // Add 12 hours to avoid timezone issues
+
+      // export type AssignmentT = {
+      //   id: string;
+      //   teamId: string;
+      //   scheduleId: string | null;
+      //   workerId: string;
+      //   date: dayjs.Dayjs;
+      //   shiftId: string;
+      //   fixed: boolean;
+      //   source: AssignmentSource;
+      //   referenceAssignmentId: string | null;
+      //   sourceId: string | null;
+      // };
+
+      assignmentsToCreate.push({
+        id: randomUUID(),
+        teamId: testTeam.teamId,
+        scheduleId: null,
+        workerId: w1.workerId,
+        date: pastDate,
+        shiftId: testShift.id,
+        fixed: false,
+        source: AssignmentSource.MANUAL,
+        referenceAssignmentId: null,
+        sourceId: null,
+      });
+    }
+
+    // Create 2 more assignments for the same shift in the last 12 months, but
+    // not on the same weekday
+    for (let i = 0; i < 2; i++) {
+      const pastDate = dayjs(testDate)
+        .subtract(i, "week")
+        .add(1, "day") // Add 1 day to be a different weekday
+        .startOf("day")
+        .add(12, "hours"); // Add 12 hours to avoid timezone issues
+
+      assignmentsToCreate.push({
+        id: randomUUID(),
+        teamId: testTeam.teamId,
+        scheduleId: null,
+        workerId: w1.workerId,
+        date: pastDate,
+        shiftId: testShift.id,
+        fixed: false,
+        source: AssignmentSource.MANUAL,
+        referenceAssignmentId: null,
+        sourceId: null,
+      });
+    }
+
+    expectedImplications[w1.workerId] = {
+      ...defaultImplications,
+      nbTimesDidShiftLtm: {
+        count: 7,
+        lastDate: dayjs(testDate)
+          .subtract(0, "week")
+          .startOf("day")
+          .add(12, "hours"),
+      },
+      nbTimesWorkedWeekdayLtm: {
+        count: 5,
+        lastDate: dayjs(testDate)
+          .subtract(0, "week")
+          .startOf("day")
+          .add(12, "hours"),
+      },
+    };
+
+    // Setup worker to test weekly work time and monthly duties implications
+    const w2 = pickUnused();
   });
 
   test("should display could_do workers with soft constraint violations", async ({

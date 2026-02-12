@@ -14,7 +14,7 @@ import { DatabaseTestUtils, TEST_USER, TEST_USER_2 } from "./database-utils";
 import { testConfig } from "./test-config";
 import { ShiftType } from "../../src/types/shift";
 import { WorkerT } from "../../src/types/worker";
-import { ShiftT } from "../../src/types/shift";
+import { ShiftT, ShiftRestType } from "../../src/types/shift";
 import { RequestT } from "../../src/types/request";
 import { ScheduleT } from "../../src/types/schedule";
 import {
@@ -142,6 +142,34 @@ export class ScheduleTestBase {
     });
     this.testShifts.push(afternoonShift);
     console.log(`✅ Created ${this.testShifts.length} test shifts`);
+
+    // Create duty shift (24-hour shift)
+    const dutyShift = await this.createShift({
+      name: "Duty Shift",
+      startTime: dayjs.utc().hour(8).minute(0).second(0),
+      endTime: dayjs.utc().add(1, "day").hour(8).minute(0).second(0),
+      shiftType: ShiftType.DUTY,
+      acronym: "DS",
+      color: "#FF5722",
+      recuperationTime: 24,
+    });
+    this.testShifts.push(dutyShift);
+
+    // Create recuperation shift (linked to duty shift)
+    const recuperationShift = await this.createShift({
+      name: "Recuperation Shift",
+      startTime: dutyShift.endTime,
+      endTime: dutyShift.endTime.add(1, "day"),
+      shiftType: ShiftType.REST,
+      restType: ShiftRestType.RECUPERATION,
+      recuperationDutyId: dutyShift.id,
+      acronym: "RS",
+      color: "#9E9E9E",
+    });
+    this.testShifts.push(recuperationShift);
+    console.log(
+      `✅ Created ${this.testShifts.length} test shifts (including duty and recuperation)`,
+    );
 
     // 8. Create shift demands for reference date (if requested)
     if (options.createShiftDemands) {
@@ -318,9 +346,12 @@ export class ScheduleTestBase {
     shiftType: ShiftType;
     acronym?: string;
     color?: string;
+    recuperationTime?: number;
+    restType?: ShiftRestType;
+    recuperationDutyId?: string | null;
   }): Promise<ShiftT> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupScheduleTests first.");
+      throw new Error("Test team not created");
     }
 
     return await this.dbUtils.createShift({
@@ -331,6 +362,13 @@ export class ScheduleTestBase {
       shiftType: shiftData.shiftType,
       acronym: shiftData.acronym,
       color: shiftData.color,
+      ...(shiftData.recuperationTime !== undefined && {
+        recuperationTime: shiftData.recuperationTime,
+      }),
+      ...(shiftData.restType !== undefined && { restType: shiftData.restType }),
+      ...(shiftData.recuperationDutyId !== undefined && {
+        recuperationDutyId: shiftData.recuperationDutyId,
+      }),
     });
   }
 
@@ -570,6 +608,21 @@ export class ScheduleTestBase {
     );
 
     return assignment;
+  }
+
+  /**
+   * Delete an assignment by ID
+   */
+  async deleteAssignment(
+    assignmentId: string,
+  ): Promise<AssignmentsRecurrencesResultT> {
+    if (!this.testTeam) {
+      throw new Error("Test team not initialized");
+    }
+    return await this.dbUtils.deleteAssignment(
+      assignmentId,
+      this.testTeam.teamId,
+    );
   }
 
   /**

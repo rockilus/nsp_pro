@@ -2129,7 +2129,10 @@ export class DatabaseTestUtils {
   /**
    * Delete an assignment using AssignmentApi for consistent behavior
    */
-  async deleteAssignment(assignmentId: string, teamId: string): Promise<any> {
+  async deleteAssignment(
+    assignmentId: string,
+    teamId: string,
+  ): Promise<AssignmentsRecurrencesResultT> {
     try {
       return await AssignmentApi.deleteAssignment(
         this.testApiClient,
