@@ -16,7 +16,11 @@ import {
   AssignmentT,
   AssignmentSource,
 } from "../../../../src/types/assignment";
-import { ReplacementImplicationsT } from "../../../../src/types/replacement";
+import {
+  ReplacementImplicationsT,
+  ReplacementCandidateT,
+  MostConstrainingReasonT,
+} from "../../../../src/types/replacement";
 import {
   ConstraintType,
   BlockNameOptions,
@@ -187,7 +191,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
     }
 
     const assignmentsToCreate: AssignmentT[] = [];
-    const expectedImplications: Record<string, ReplacementImplicationsT> = {};
+    const expectedCandidates: Record<string, ReplacementCandidateT> = {};
 
     const defaultImplications: ReplacementImplicationsT = {
       // Can't do (hard constraints)
@@ -236,6 +240,15 @@ test.describe("Assignment Replacement - Team Leader", () => {
         count: 0,
         lastDate: null,
       },
+    };
+
+    const defaultCandidate: ReplacementCandidateT = {
+      workerId: "",
+      workerName: "",
+      rank: 0,
+      replacementCategory: "can_do",
+      replacementImplications: defaultImplications,
+      mostConstrainingReason: MostConstrainingReasonT.NO_CONSTRAINTS_VIOLATED,
     };
 
     // Setup worker to test LTM indicators
@@ -299,21 +312,27 @@ test.describe("Assignment Replacement - Team Leader", () => {
       });
     }
 
-    expectedImplications[w1.workerId] = {
-      ...defaultImplications,
-      nbTimesDidShiftLtm: {
-        count: 7,
-        lastDate: dayjs(testDate)
-          .subtract(0, "week")
-          .startOf("day")
-          .add(12, "hours"),
-      },
-      nbTimesWorkedWeekdayLtm: {
-        count: 5,
-        lastDate: dayjs(testDate)
-          .subtract(0, "week")
-          .startOf("day")
-          .add(12, "hours"),
+    expectedCandidates[w1.workerId] = {
+      ...defaultCandidate,
+      workerId: w1.workerId,
+      workerName: w1.name,
+      rank: 1,
+      replacementImplications: {
+        ...defaultCandidate.replacementImplications,
+        nbTimesDidShiftLtm: {
+          count: 7,
+          lastDate: dayjs(testDate)
+            .subtract(0, "week")
+            .startOf("day")
+            .add(12, "hours"),
+        },
+        nbTimesWorkedWeekdayLtm: {
+          count: 5,
+          lastDate: dayjs(testDate)
+            .subtract(0, "week")
+            .startOf("day")
+            .add(12, "hours"),
+        },
       },
     };
 
@@ -355,17 +374,24 @@ test.describe("Assignment Replacement - Team Leader", () => {
       sourceId: null,
     });
 
-    expectedImplications[w2.workerId] = {
-      ...defaultImplications,
-      newMonthlyDuties: {
-        newNumberMonthlyDuties: 2,
-        newMonthlyDutiesDelta: 2,
-        meetsTarget: false,
-      },
-      newWeeklyTime: {
-        newWeeklyWorkedMinutes: (8 * 2 + 6) * 60,
-        newWeeklyTimeDeltaMinutes: (8 * 2 + 6 - 40) * 60,
-        meetsTarget: false,
+    expectedCandidates[w2.workerId] = {
+      ...defaultCandidate,
+      workerId: w2.workerId,
+      workerName: w2.name,
+      rank: 2,
+      replacementCategory: "could_do",
+      replacementImplications: {
+        ...defaultCandidate.replacementImplications,
+        newMonthlyDuties: {
+          newNumberMonthlyDuties: 2,
+          newMonthlyDutiesDelta: 2,
+          meetsTarget: false,
+        },
+        newWeeklyTime: {
+          newWeeklyWorkedMinutes: (8 * 2 + 6) * 60,
+          newWeeklyTimeDeltaMinutes: (8 * 2 + 6 - 40) * 60,
+          meetsTarget: false,
+        },
       },
     };
 
@@ -419,23 +445,34 @@ test.describe("Assignment Replacement - Team Leader", () => {
       active: true,
     });
 
-    expectedImplications[w3.workerId] = {
-      ...defaultImplications,
-      softConstraintHits: {
-        meetsConstraints: false,
-        breaches: [
-          {
-            id: "",
-            scheduleId: "",
-            objectiveId: softConstraint.id,
-            objectiveCategory: ObjectiveCategory.CONSTRAINT,
-            variables: [
-              { workerId: w3.workerId, date: testDate, shiftId: testShift.id },
-            ],
-            description: "",
-            hardToSoft: null,
-          },
-        ],
+    expectedCandidates[w3.workerId] = {
+      ...defaultCandidate,
+      workerId: w3.workerId,
+      workerName: w3.name,
+      rank: 3,
+      replacementCategory: "could_do",
+      replacementImplications: {
+        ...defaultCandidate.replacementImplications,
+        softConstraintHits: {
+          meetsConstraints: false,
+          breaches: [
+            {
+              id: "",
+              scheduleId: "",
+              objectiveId: softConstraint.id,
+              objectiveCategory: ObjectiveCategory.CONSTRAINT,
+              variables: [
+                {
+                  workerId: w3.workerId,
+                  date: testDate,
+                  shiftId: testShift.id,
+                },
+              ],
+              description: "",
+              hardToSoft: null,
+            },
+          ],
+        },
       },
     };
   });
