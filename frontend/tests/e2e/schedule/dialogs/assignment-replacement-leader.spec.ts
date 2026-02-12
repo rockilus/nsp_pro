@@ -312,6 +312,55 @@ test.describe("Assignment Replacement - Team Leader", () => {
 
     // Setup worker to test weekly work time and monthly duties implications
     const w2 = pickUnused();
+    // Create two duty-shift assignments for w2: 2 days and 5 days before test date
+    const dutyDate1 = dayjs(testDate)
+      .subtract(2, "day")
+      .startOf("day")
+      .add(12, "hours");
+    const dutyDate2 = dayjs(testDate)
+      .subtract(5, "day")
+      .startOf("day")
+      .add(12, "hours");
+
+    assignmentsToCreate.push({
+      id: randomUUID(),
+      teamId: testTeam.teamId,
+      scheduleId: null,
+      workerId: w2.workerId,
+      date: dutyDate1,
+      shiftId: dutyShift.id,
+      fixed: false,
+      source: AssignmentSource.MANUAL,
+      referenceAssignmentId: null,
+      sourceId: null,
+    });
+
+    assignmentsToCreate.push({
+      id: randomUUID(),
+      teamId: testTeam.teamId,
+      scheduleId: null,
+      workerId: w2.workerId,
+      date: dutyDate2,
+      shiftId: dutyShift.id,
+      fixed: false,
+      source: AssignmentSource.MANUAL,
+      referenceAssignmentId: null,
+      sourceId: null,
+    });
+
+    expectedImplications[w2.workerId] = {
+      ...defaultImplications,
+      newMonthlyDuties: {
+        newNumberMonthlyDuties: 2,
+        newMonthlyDutiesDelta: 2,
+        meetsTarget: false,
+      },
+      newWeeklyTime: {
+        newWeeklyWorkedMinutes: (8 * 2 + 6) * 60,
+        newWeeklyTimeDeltaMinutes: (8 * 2 + 6 - 40) * 60,
+        meetsTarget: false,
+      },
+    };
   });
 
   test("should display could_do workers with soft constraint violations", async ({

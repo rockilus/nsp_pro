@@ -127,7 +127,7 @@ export class ScheduleTestBase {
     const morningShift = await this.createShift({
       name: "Morning Shift",
       startTime: dayjs.utc().hour(8).minute(0).second(0),
-      endTime: dayjs.utc().hour(16).minute(0).second(0),
+      endTime: dayjs.utc().hour(14).minute(0).second(0),
       shiftType: ShiftType.NORMAL,
       acronym: "MS",
       color: "#4CAF50",
