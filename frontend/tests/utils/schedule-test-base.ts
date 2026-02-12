@@ -438,6 +438,19 @@ export class ScheduleTestBase {
   }
 
   /**
+   * Approve a request using DatabaseTestUtils
+   */
+  async approveRequest(
+    requestId: string,
+  ): Promise<{ request: RequestT; assignments: AssignmentT[] }> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupScheduleTests first.");
+    }
+
+    return await this.dbUtils.approveRequest(requestId, this.testTeam.teamId);
+  }
+
+  /**
    * Create an assignment for testing
    */
   async createAssignment(assignmentData: {

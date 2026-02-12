@@ -140,6 +140,9 @@ test.describe("Assignment Replacement - Team Leader", () => {
     const testTeam = scheduleTestBase.getTestTeam()!;
 
     const morningShift = testShifts.find((s) => s.name === "Morning Shift")!;
+    const afternoonShift = testShifts.find(
+      (s) => s.name === "Afternoon Shift",
+    )!;
     const dutyShift = testShifts.find((s) => s.name === "Duty Shift")!;
 
     const pool = testWorkers;
@@ -191,7 +194,6 @@ test.describe("Assignment Replacement - Team Leader", () => {
       }
     }
 
-    const assignmentsToCreate: AssignmentT[] = [];
     const expectedCandidates: Record<string, ReplacementCandidateT> = {};
 
     const defaultImplications: ReplacementImplicationsT = {
@@ -276,17 +278,10 @@ test.describe("Assignment Replacement - Team Leader", () => {
       //   sourceId: string | null;
       // };
 
-      assignmentsToCreate.push({
-        id: randomUUID(),
-        teamId: testTeam.teamId,
-        scheduleId: null,
+      await scheduleTestBase.createAssignmentWithRecurrence({
         workerId: w1.workerId,
-        date: pastDate,
         shiftId: testShift.id,
-        fixed: false,
-        source: AssignmentSource.MANUAL,
-        referenceAssignmentId: null,
-        sourceId: null,
+        date: pastDate,
       });
     }
 
@@ -299,17 +294,10 @@ test.describe("Assignment Replacement - Team Leader", () => {
         .startOf("day")
         .add(12, "hours"); // Add 12 hours to avoid timezone issues
 
-      assignmentsToCreate.push({
-        id: randomUUID(),
-        teamId: testTeam.teamId,
-        scheduleId: null,
+      await scheduleTestBase.createAssignmentWithRecurrence({
         workerId: w1.workerId,
-        date: pastDate,
         shiftId: testShift.id,
-        fixed: false,
-        source: AssignmentSource.MANUAL,
-        referenceAssignmentId: null,
-        sourceId: null,
+        date: pastDate,
       });
     }
 
@@ -349,30 +337,15 @@ test.describe("Assignment Replacement - Team Leader", () => {
       .startOf("day")
       .add(12, "hours");
 
-    assignmentsToCreate.push({
-      id: randomUUID(),
-      teamId: testTeam.teamId,
-      scheduleId: null,
+    await scheduleTestBase.createAssignmentWithRecurrence({
       workerId: w2.workerId,
+      shiftId: dutyShift.id,
       date: dutyDate1,
-      shiftId: dutyShift.id,
-      fixed: false,
-      source: AssignmentSource.MANUAL,
-      referenceAssignmentId: null,
-      sourceId: null,
     });
-
-    assignmentsToCreate.push({
-      id: randomUUID(),
-      teamId: testTeam.teamId,
-      scheduleId: null,
+    await scheduleTestBase.createAssignmentWithRecurrence({
       workerId: w2.workerId,
-      date: dutyDate2,
       shiftId: dutyShift.id,
-      fixed: false,
-      source: AssignmentSource.MANUAL,
-      referenceAssignmentId: null,
-      sourceId: null,
+      date: dutyDate2,
     });
 
     expectedCandidates[w2.workerId] = {
@@ -396,7 +369,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       },
     };
 
-    // Setup worker to test soft constaint breache
+    // Setup worker to test soft constaint breach
     const w3 = pickUnused();
     const softConstraint = await scheduleTestBase.createConstraint({
       constraintType: ConstraintType.FIL,
@@ -498,12 +471,15 @@ test.describe("Assignment Replacement - Team Leader", () => {
         },
       ],
     });
+    // Approve the request so it becomes an approved work demand
+    await scheduleTestBase.approveRequest(request.id);
+
     expectedCandidates[w4.workerId] = {
       ...defaultCandidate,
       workerId: w4.workerId,
       workerName: w4.name,
       rank: 4,
-      replacementCategory: "could_do",
+      replacementCategory: "cant_do",
       replacementImplications: {
         ...defaultCandidate.replacementImplications,
         requestHits: {
@@ -511,7 +487,121 @@ test.describe("Assignment Replacement - Team Leader", () => {
           conflictingRequestIds: [request.id],
         },
       },
-    }; // Create all the assignments in the database for (const assignment of assignmentsToCreate) { await scheduleTestBase.createAssignment(assignment); } // Reload page and click check replacement await page.reload(); await page.waitForTimeout(1000); const assignmentCell = page.locator( `[
+    };
+
+    // Setup worker to test hard constaint breach
+    const w5 = pickUnused();
+    const hardConstraint = await scheduleTestBase.createConstraint({
+      constraintType: ConstraintType.FIL,
+      templateId: "",
+      language: "en",
+      blocks: [
+        {
+          name: BlockNameOptions.WORKER,
+          type: BlockTypeOptions.SHIFT_WORKER_OPTION,
+          value: [
+            {
+              name: w5.name,
+              id: w5.workerId,
+              idType: SWOIdTypes.WORKER,
+              isBoolDim: false,
+              categoryName: "Workers",
+            },
+          ],
+        },
+        {
+          name: BlockNameOptions.OPERATOR,
+          type: BlockTypeOptions.STRING,
+          value: "should not",
+        },
+        {
+          name: BlockNameOptions.TEXT,
+          type: BlockTypeOptions.STRING,
+          value: "faire des",
+        },
+        {
+          name: BlockNameOptions.SHIFT,
+          type: BlockTypeOptions.SHIFT_WORKER_OPTION,
+          value: [
+            {
+              name: testShift.name,
+              id: testShift.id,
+              idType: SWOIdTypes.SHIFT,
+              isBoolDim: false,
+              categoryName: "Shifts",
+            },
+          ],
+        },
+      ],
+      text: "",
+      hard: true,
+      priority: "medium",
+      active: true,
+    });
+
+    expectedCandidates[w5.workerId] = {
+      ...defaultCandidate,
+      workerId: w5.workerId,
+      workerName: w5.name,
+      rank: 5,
+      replacementCategory: "cant_do",
+      replacementImplications: {
+        ...defaultCandidate.replacementImplications,
+        hardConstraintHits: {
+          meetsConstraints: false,
+          breaches: [
+            {
+              id: "",
+              scheduleId: "",
+              objectiveId: hardConstraint.id,
+              objectiveCategory: ObjectiveCategory.CONSTRAINT,
+              variables: [
+                {
+                  workerId: w5.workerId,
+                  date: testDate,
+                  shiftId: testShift.id,
+                },
+              ],
+              description: "",
+              hardToSoft: null,
+            },
+          ],
+        },
+      },
+    };
+
+    // Setup worker to test overlap implications
+    const w6 = pickUnused();
+
+    const assignmentOverlap =
+      await scheduleTestBase.createAssignmentWithRecurrence({
+        workerId: w6.workerId,
+        shiftId: testShift.id,
+        date: testDate,
+      });
+
+    expectedCandidates[w6.workerId] = {
+      ...defaultCandidate,
+      workerId: w6.workerId,
+      workerName: w6.name,
+      rank: 6,
+      replacementCategory: "cant_do",
+      replacementImplications: {
+        ...defaultCandidate.replacementImplications,
+        overlapHits: {
+          hasntOverlap: false,
+          overlapAssignmentIds: [assignmentOverlap.id],
+        },
+      },
+    };
+
+    // Setup worker to test fitler implications
+    const w7 = pickUnused();
+
+    // Setup worker to test leave implications
+    // Setup worker to test on leave implications
+    // Setup worker to test specialty implications
+    // Setup worker to test no employed implications
   });
 
   test("should display could_do workers with soft constraint violations", async ({
