@@ -726,7 +726,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
     };
 
     // Get replacement candidates via the api
-    const candidates = await scheduleTestBase.getReplacementCandidates(
+    const actualCandidates = await scheduleTestBase.getReplacementCandidates(
       testAssignment.id,
     );
   });
