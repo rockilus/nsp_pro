@@ -20,6 +20,7 @@ import {
   ReplacementImplicationsT,
   ReplacementCandidateT,
   MostConstrainingReasonT,
+  ConstraintHitsT,
 } from "../../../../src/types/replacement";
 import {
   ConstraintType,
@@ -27,7 +28,7 @@ import {
   BlockTypeOptions,
   SWOIdTypes,
 } from "@/types/constraint";
-import { ObjectiveCategory } from "../../../../src/types/breach";
+import { BreachT, ObjectiveCategory } from "../../../../src/types/breach";
 import { RequestType, RequestStatus } from "@/types/request";
 import {
   DimensionEntryType,
@@ -94,9 +95,8 @@ test.describe("Assignment Replacement - Team Leader", () => {
    * Helper to compare constraint hits (hard or soft)
    */
   function compareConstraintHits(
-    expected: { meetsConstraints: boolean; breaches: any[] },
-    actual: { meetsConstraints: boolean; breaches: any[] },
-    context: string,
+    expected: ConstraintHitsT,
+    actual: ConstraintHitsT,
   ): void {
     expect(actual.meetsConstraints).toBe(expected.meetsConstraints);
     expect(actual.breaches.length).toBe(expected.breaches.length);
@@ -407,8 +407,8 @@ test.describe("Assignment Replacement - Team Leader", () => {
         meetsTarget: true,
       },
       newWeeklyTime: {
-        newWeeklyWorkedMinutes: 0,
-        newWeeklyTimeDeltaMinutes: 0,
+        newWeeklyWorkedMinutes: 6 * 60,
+        newWeeklyTimeDeltaMinutes: (6 - testWorker.weeklyHours) * 60,
         meetsTarget: true,
       },
 
@@ -446,11 +446,6 @@ test.describe("Assignment Replacement - Team Leader", () => {
         nbTimesWorkedWeekdayLtm: {
           count: 1,
           lastDate: testDate,
-        },
-        newWeeklyTime: {
-          newWeeklyWorkedMinutes: 6 * 60,
-          newWeeklyTimeDeltaMinutes: (6 - testWorker.weeklyHours) * 60,
-          meetsTarget: true,
         },
       },
     };
@@ -510,11 +505,6 @@ test.describe("Assignment Replacement - Team Leader", () => {
             .subtract(1, "week")
             .startOf("day")
             .add(12, "hours"),
-        },
-        newWeeklyTime: {
-          newWeeklyWorkedMinutes: 6 * 60,
-          newWeeklyTimeDeltaMinutes: (6 - w1.weeklyHours) * 60,
-          meetsTarget: true,
         },
       },
     };
@@ -809,7 +799,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       ],
     });
 
-    const shiftAttribute = await scheduleTestBase.createAttribute({
+    await scheduleTestBase.createAttribute({
       value: "",
       ownerType: AttributeOwnerType.SHIFT,
       ownerId: testShift.id,
@@ -840,7 +830,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
         ...defaultCandidate.replacementImplications,
         filterHits: {
           isntFilteredOut: false,
-          filterLabels: [`${w7.name} - ${testShift.name}`],
+          filterLabels: ["worker_shift_filter"],
         },
       },
     };
@@ -859,7 +849,10 @@ test.describe("Assignment Replacement - Team Leader", () => {
       shiftOptions: [],
     });
     // Approve the request so it becomes an approved work demand
-    await scheduleTestBase.approveRequest(leaveRequest.id);
+    const requestApproval = await scheduleTestBase.approveRequest(
+      leaveRequest.id,
+    );
+    expect(requestApproval.assignments.length).toBe(1);
 
     expectedCandidates[w8.id] = {
       ...defaultCandidate,
@@ -871,6 +864,10 @@ test.describe("Assignment Replacement - Team Leader", () => {
       replacementImplications: {
         ...defaultCandidate.replacementImplications,
         isntOnLeave: false,
+        overlapHits: {
+          hasntOverlap: false,
+          overlapAssignmentIds: [requestApproval.assignments[0].id],
+        },
       },
     };
 

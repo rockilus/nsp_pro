@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { BreachT } from "./breach";
+import { BreachT, toBreachT } from "./breach";
 
 export type ReplacementCategoryT = "can_do" | "could_do" | "cant_do";
 
@@ -102,6 +102,18 @@ export function toReplacementCandidateT(data: any): ReplacementCandidateT {
               data.replacementImplications.nbTimesWorkedWeekdayLtm.lastDate,
             )
           : null,
+      },
+      softConstraintHits: {
+        ...data.replacementImplications.softConstraintHits,
+        breaches: data.replacementImplications.softConstraintHits.breaches.map(
+          (breach: any) => toBreachT(breach),
+        ),
+      },
+      hardConstraintHits: {
+        ...data.replacementImplications.hardConstraintHits,
+        breaches: data.replacementImplications.hardConstraintHits.breaches.map(
+          (breach: any) => toBreachT(breach),
+        ),
       },
     },
   };
