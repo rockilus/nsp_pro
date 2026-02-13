@@ -657,11 +657,11 @@ test.describe("Assignment Replacement - Team Leader", () => {
       shiftId: null,
       shiftOptions: [
         {
-          name: dutyShift.name,
-          id: dutyShift.id,
-          idType: SWOIdTypes.SHIFT,
-          isBoolDim: false,
-          categoryName: "Shifts",
+          name: true,
+          id: "",
+          idType: SWOIdTypes.DUTY,
+          isBoolDim: true,
+          categoryName: "Duties",
         },
       ],
     });
