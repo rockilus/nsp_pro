@@ -703,7 +703,7 @@ export class DatabaseTestUtils {
     dutiesPerMonth?: number;
     annualLeave?: number;
     specialtyIds?: string[];
-  }): Promise<{ workerId: string; name: string; teamId: string }> {
+  }): Promise<WorkerT> {
     try {
       // Create a WorkerT object with defaults
       const worker: WorkerT = {
@@ -735,11 +735,7 @@ export class DatabaseTestUtils {
         worker,
       );
 
-      return {
-        workerId: result.id,
-        name: result.name,
-        teamId: result.teamId,
-      };
+      return result;
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
@@ -1335,7 +1331,7 @@ export class DatabaseTestUtils {
       };
 
       // Use the existing AttributeApi with our test client
-      const result = await AttributeApi.createAttribute(
+      const result = await AttributeApi.updateAttribute(
         this.testApiClient,
         newAttribute,
         attributeData.teamId,

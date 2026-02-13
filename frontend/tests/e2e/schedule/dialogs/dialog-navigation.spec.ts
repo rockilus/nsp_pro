@@ -223,7 +223,7 @@ test.describe("ScheduleItemDialog Navigation", () => {
 
     const testAssignment =
       await scheduleTestBase.createAssignmentWithRecurrence({
-        workerId: testWorkers[0].workerId,
+        workerId: testWorkers[0].id,
         shiftId: testShifts[0].id,
         date: tomorrow,
         fixed: false,

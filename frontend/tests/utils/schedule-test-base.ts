@@ -55,8 +55,6 @@ export interface ScheduleSetupOptions {
     start: string;
     end: string;
   };
-  // Whether to create a leave-type shift. Default: false (do not create)
-  createShiftLeave?: boolean;
   // Whether to create duty and recuperation shifts. Default: false (do not create)
   createDutyAndRecuperation?: boolean;
 }
@@ -74,11 +72,11 @@ export class ScheduleTestBase {
   };
 
   // Storage for created test entities
-  protected testWorkers: Array<{ workerId: string; name: string }> = [];
+  protected testWorkers: Array<WorkerT> = [];
   protected testShifts: ShiftT[] = [];
   protected testSchedule: ScheduleT | null = null;
   protected testRequests: RequestT[] = [];
-  protected memberWorker: { workerId: string; name: string } | null = null;
+  protected memberWorker: WorkerT | null = null;
 
   constructor() {
     this.dbUtils = new DatabaseTestUtils();
@@ -130,7 +128,7 @@ export class ScheduleTestBase {
     if (shouldLinkMember) {
       const firstWorker = this.testWorkers[0];
       await this.dbUtils.attachWorkerToUser(
-        firstWorker.workerId,
+        firstWorker.id,
         TEST_USER_2.user_id,
         this.testTeam.teamId,
       );
@@ -161,25 +159,6 @@ export class ScheduleTestBase {
     });
     this.testShifts.push(afternoonShift);
     console.log(`✅ Created ${this.testShifts.length} test shifts`);
-    // Optionally create a leave-type shift (default: skipped)
-    const createLeave = options.createShiftLeave === true;
-    if (createLeave) {
-      const leaveShift = await this.createShift({
-        name: "Leave Shift",
-        startTime: dayjs.utc().hour(0).minute(0).second(0),
-        endTime: dayjs.utc().hour(23).minute(59).second(0),
-        shiftType: ShiftType.LEAVE,
-        acronym: "LV",
-        color: "#FFC107",
-        // leaveType is forwarded by createShift when present
-        // @ts-ignore - forwarded dynamically to API
-        leaveType: ShiftLeaveType.VACATION,
-      } as any);
-      this.testShifts.push(leaveShift);
-      console.log(`✅ Created leave shift: ${leaveShift.name}`);
-    } else {
-      console.log(`⏭️  Skipped creating leave shift`);
-    }
     // Optionally create duty and recuperation shifts (default: skipped)
     const createDuty = options.createDutyAndRecuperation === true;
     if (createDuty) {
@@ -241,7 +220,7 @@ export class ScheduleTestBase {
     if (options.createRequests) {
       const secondWorker = this.testWorkers[1];
       const testRequest = await this.createRequest({
-        workerId: secondWorker.workerId,
+        workerId: secondWorker.id,
         requestType: "work_demand",
         startDate: options.referenceDate,
         endDate: options.referenceDate,
@@ -300,7 +279,7 @@ export class ScheduleTestBase {
 
     // Create assignment for reference date
     assignments.push({
-      workerId: this.testWorkers[0].workerId,
+      workerId: this.testWorkers[0].id,
       shiftId: this.testShifts[0].id,
       date: referenceDate,
       fixed: false,
@@ -323,7 +302,7 @@ export class ScheduleTestBase {
         this.testShifts[Math.floor(Math.random() * this.testShifts.length)];
 
       assignments.push({
-        workerId: randomWorker.workerId,
+        workerId: randomWorker.id,
         shiftId: randomShift.id,
         date: date,
         fixed: false,
@@ -361,7 +340,7 @@ export class ScheduleTestBase {
     weeklyHoursDesired?: number;
     employmentStartDate?: Date;
     employmentEndDate?: Date | null;
-  }): Promise<{ workerId: string; name: string }> {
+  }): Promise<WorkerT> {
     if (!this.testTeam) {
       throw new Error("Test team not created. Call setupScheduleTests first.");
     }
@@ -608,7 +587,7 @@ export class ScheduleTestBase {
   /**
    * Get the created test workers
    */
-  getTestWorkers(): Array<{ workerId: string; name: string }> {
+  getTestWorkers(): Array<WorkerT> {
     return this.testWorkers;
   }
 
@@ -617,6 +596,17 @@ export class ScheduleTestBase {
    */
   getTestShifts(): ShiftT[] {
     return this.testShifts;
+  }
+
+  /**
+   * Fetch all shifts for the test team using DatabaseTestUtils
+   */
+  async getAllShifts(): Promise<ShiftT[]> {
+    if (!this.testTeam) {
+      throw new Error("Test team not initialized");
+    }
+
+    return await this.dbUtils.getAllShifts(this.testTeam.teamId);
   }
 
   /**
@@ -788,7 +778,7 @@ export class ScheduleTestBase {
     if (constraints?.onLeave) {
       await this.dbUtils.createAssignmentAndRecurrence({
         teamId: this.testTeam.teamId,
-        workerId: worker.workerId,
+        workerId: worker.id,
         shiftId: constraints.onLeave.leaveShiftId,
         date: constraints.onLeave.date,
         fixed: false,
@@ -801,7 +791,7 @@ export class ScheduleTestBase {
     if (constraints?.hasOverlap) {
       await this.dbUtils.createAssignmentAndRecurrence({
         teamId: this.testTeam.teamId,
-        workerId: worker.workerId,
+        workerId: worker.id,
         shiftId: constraints.hasOverlap.shiftId,
         date: constraints.hasOverlap.date,
         fixed: false,
@@ -814,7 +804,7 @@ export class ScheduleTestBase {
     if (constraints?.hasRequest) {
       await this.dbUtils.createRequest({
         teamId: this.testTeam.teamId,
-        workerId: worker.workerId,
+        workerId: worker.id,
         requestType: constraints.hasRequest.requestType,
         startDate: constraints.hasRequest.date,
         endDate: constraints.hasRequest.date,

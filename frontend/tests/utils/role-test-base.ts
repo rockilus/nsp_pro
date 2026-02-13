@@ -46,7 +46,7 @@ export class RoleTestBase {
     const health = await this.dbUtils.checkHealth();
     if (!health.test_utilities_available) {
       throw new Error(
-        "Test utilities are not available - check environment configuration"
+        "Test utilities are not available - check environment configuration",
       );
     }
 
@@ -60,7 +60,7 @@ export class RoleTestBase {
     const uniqueTeamName = `Role Test Team ${workerIndex}-${Date.now()}`;
     this.testTeam = await this.dbUtils.createTeam({ name: uniqueTeamName });
     console.log(
-      `Created test team: ${this.testTeam.name} (${this.testTeam.teamId})`
+      `Created test team: ${this.testTeam.name} (${this.testTeam.teamId})`,
     );
     console.log(`✅ TEST_USER (${TEST_USER.user_id}) is now team owner`);
 
@@ -77,7 +77,7 @@ export class RoleTestBase {
     const membershipResult = await this.dbUtils.addTeamMember(
       TEST_USER_2.user_id,
       this.testTeam.teamId,
-      "member"
+      "member",
     );
     console.log(`✅ Added TEST_USER_2 (${TEST_USER_2.user_id}) as team member`);
 
@@ -224,7 +224,7 @@ export class RoleTestBase {
   async navigateToPersonalInfoPage(page: Page): Promise<void> {
     await this.navigateToPageWithTeamContext(
       page,
-      "/en/plan/settings/personal-info/"
+      "/en/plan/settings/personal-info/",
     );
   }
 
@@ -234,7 +234,7 @@ export class RoleTestBase {
   async navigateToSecurityPage(page: Page): Promise<void> {
     await this.navigateToPageWithTeamContext(
       page,
-      "/en/plan/settings/security/"
+      "/en/plan/settings/security/",
     );
   }
 
@@ -244,7 +244,7 @@ export class RoleTestBase {
   async navigateToTeamGeneralPage(page: Page): Promise<void> {
     await this.navigateToPageWithTeamContext(
       page,
-      `/en/plan/teams/general?teamId=${this.testTeam?.teamId}`
+      `/en/plan/teams/general?teamId=${this.testTeam?.teamId}`,
     );
   }
 
@@ -254,7 +254,7 @@ export class RoleTestBase {
   async navigateToTeamMembersPage(page: Page): Promise<void> {
     await this.navigateToPageWithTeamContext(
       page,
-      `/en/plan/teams/members?teamId=${this.testTeam?.teamId}`
+      `/en/plan/teams/members?teamId=${this.testTeam?.teamId}`,
     );
   }
 
@@ -277,7 +277,7 @@ export class RoleTestBase {
    */
   async verifyPageNotAccessible(
     page: Page,
-    forbiddenUrl: string
+    forbiddenUrl: string,
   ): Promise<void> {
     const currentUrl = page.url();
     expect(currentUrl).not.toContain(forbiddenUrl);
@@ -332,7 +332,7 @@ export class RoleTestBase {
    */
   async createWorkerForUser(
     userId: string,
-    workerName: string
+    workerName: string,
   ): Promise<{ workerId: string; name: string; teamId: string }> {
     if (!this.testTeam) {
       throw new Error("Test team not created. Call setupRoleTests() first.");
@@ -351,13 +351,13 @@ export class RoleTestBase {
 
     // Attach the user to the worker using DatabaseTestUtils
     await this.dbUtils.attachWorkerToUser(
-      worker.workerId,
+      worker.id,
       userId,
-      this.testTeam.teamId
+      this.testTeam.teamId,
     );
 
     console.log(
-      `✅ Created worker ${workerName} (${worker.workerId}) and linked to user ${userId}`
+      `✅ Created worker ${workerName} (${worker.id}) and linked to user ${userId}`,
     );
 
     return worker;
@@ -370,7 +370,7 @@ export class RoleTestBase {
    * @returns The created and linked worker
    */
   async createWorkerForMember(
-    workerName?: string
+    workerName?: string,
   ): Promise<{ workerId: string; name: string; teamId: string }> {
     if (!this.memberUser) {
       throw new Error("Member user not created. Call setupRoleTests() first.");
@@ -379,7 +379,7 @@ export class RoleTestBase {
     const name = workerName || `Member Worker ${Date.now()}`;
     this.memberWorker = await this.createWorkerForUser(
       this.memberUser.userId,
-      name
+      name,
     );
 
     return this.memberWorker;

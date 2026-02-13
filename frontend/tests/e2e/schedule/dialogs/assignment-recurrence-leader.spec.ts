@@ -75,7 +75,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     );
     await workerSelect.click();
     await page
-      .locator(`[data-testid="worker-option-${testWorkers[0].workerId}"]`)
+      .locator(`[data-testid="worker-option-${testWorkers[0].id}"]`)
       .click();
 
     const shiftSelect = page.locator(
@@ -135,9 +135,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     expect(createdRecurrence).toBeDefined();
     expect(createdRecurrence.teamId).toBe(testTeam.teamId);
     expect(createdRecurrence.occurrenceType).toBe(OccurrenceType.ASSIGNMENT);
-    expect(createdRecurrence.occurrenceInfo.workerId).toBe(
-      testWorkers[0].workerId,
-    );
+    expect(createdRecurrence.occurrenceInfo.workerId).toBe(testWorkers[0].id);
     expect(createdRecurrence.occurrenceInfo.shiftId).toBe(testShifts[0].id);
     expect(createdRecurrence.occurrenceInfo.count).toBeNull();
     expect(createdRecurrence.repeatEvery).toBe(1);
@@ -165,7 +163,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     ) {
       const occurrence = recurringAssignments.find(
         (a) =>
-          a.workerId === testWorkers[0].workerId &&
+          a.workerId === testWorkers[0].id &&
           a.shiftId === testShifts[0].id &&
           a.date.isSame(i, "day"),
       );
@@ -194,7 +192,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     );
     await workerSelect.click();
     await page
-      .locator(`[data-testid="worker-option-${testWorkers[0].workerId}"]`)
+      .locator(`[data-testid="worker-option-${testWorkers[0].id}"]`)
       .click();
 
     const shiftSelect = page.locator(
@@ -268,9 +266,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     expect(createdRecurrence).toBeDefined();
     expect(createdRecurrence.teamId).toBe(testTeam.teamId);
     expect(createdRecurrence.occurrenceType).toBe(OccurrenceType.ASSIGNMENT);
-    expect(createdRecurrence.occurrenceInfo.workerId).toBe(
-      testWorkers[0].workerId,
-    );
+    expect(createdRecurrence.occurrenceInfo.workerId).toBe(testWorkers[0].id);
     expect(createdRecurrence.occurrenceInfo.shiftId).toBe(testShifts[0].id);
     expect(createdRecurrence.repeatEvery).toBe(1);
     expect(createdRecurrence.frequencyType).toBe(FrequencyType.WEEK);
@@ -294,7 +290,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     for (let i = tomorrow; i.isBefore(endDatePlusOne); i = i.add(1, "week")) {
       const occurrence = recurringAssignments.find(
         (a) =>
-          a.workerId === testWorkers[0].workerId &&
+          a.workerId === testWorkers[0].id &&
           a.shiftId === testShifts[0].id &&
           a.date.isSame(i, "day"),
       );
@@ -322,7 +318,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     );
     await workerSelect.click();
     await page
-      .locator(`[data-testid="worker-option-${testWorkers[0].workerId}"]`)
+      .locator(`[data-testid="worker-option-${testWorkers[0].id}"]`)
       .click();
 
     const shiftSelect = page.locator(
@@ -432,9 +428,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     expect(createdRecurrence).toBeDefined();
     expect(createdRecurrence.teamId).toBe(testTeam.teamId);
     expect(createdRecurrence.occurrenceType).toBe(OccurrenceType.ASSIGNMENT);
-    expect(createdRecurrence.occurrenceInfo.workerId).toBe(
-      testWorkers[0].workerId,
-    );
+    expect(createdRecurrence.occurrenceInfo.workerId).toBe(testWorkers[0].id);
     expect(createdRecurrence.occurrenceInfo.shiftId).toBe(testShifts[0].id);
     expect(createdRecurrence.repeatEvery).toBe(1);
     expect(createdRecurrence.frequencyType).toBe(FrequencyType.WEEK);
@@ -466,7 +460,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
       if (createdRecurrence.weekDays.includes(mappedWeekDay)) {
         const occurrence = recurringAssignments.find(
           (a) =>
-            a.workerId === testWorkers[0].workerId &&
+            a.workerId === testWorkers[0].id &&
             a.shiftId === testShifts[0].id &&
             a.date.isSame(d, "day"),
         );
@@ -498,7 +492,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     );
     await workerSelect.click();
     await page
-      .locator(`[data-testid="worker-option-${testWorkers[0].workerId}"]`)
+      .locator(`[data-testid="worker-option-${testWorkers[0].id}"]`)
       .click();
 
     const shiftSelect = page.locator(
@@ -561,9 +555,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     expect(createdRecurrence).toBeDefined();
     expect(createdRecurrence.teamId).toBe(testTeam.teamId);
     expect(createdRecurrence.occurrenceType).toBe(OccurrenceType.ASSIGNMENT);
-    expect(createdRecurrence.occurrenceInfo.workerId).toBe(
-      testWorkers[0].workerId,
-    );
+    expect(createdRecurrence.occurrenceInfo.workerId).toBe(testWorkers[0].id);
     expect(createdRecurrence.occurrenceInfo.shiftId).toBe(testShifts[0].id);
     expect(createdRecurrence.repeatEvery).toBe(1);
     expect(createdRecurrence.frequencyType).toBe(FrequencyType.MONTH);
@@ -587,7 +579,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
       const expectedDate = tomorrow.add(i, "month");
       const occurrence = recurringAssignments.find(
         (a) =>
-          a.workerId === testWorkers[0].workerId &&
+          a.workerId === testWorkers[0].id &&
           a.shiftId === testShifts[0].id &&
           a.date.isSame(expectedDate, "day"),
       );
@@ -616,7 +608,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     );
     await workerSelect.click();
     await page
-      .locator(`[data-testid="worker-option-${testWorkers[0].workerId}"]`)
+      .locator(`[data-testid="worker-option-${testWorkers[0].id}"]`)
       .click();
 
     const shiftSelect = page.locator(
@@ -698,9 +690,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     expect(createdRecurrence).toBeDefined();
     expect(createdRecurrence.teamId).toBe(testTeam.teamId);
     expect(createdRecurrence.occurrenceType).toBe(OccurrenceType.ASSIGNMENT);
-    expect(createdRecurrence.occurrenceInfo.workerId).toBe(
-      testWorkers[0].workerId,
-    );
+    expect(createdRecurrence.occurrenceInfo.workerId).toBe(testWorkers[0].id);
     expect(createdRecurrence.occurrenceInfo.shiftId).toBe(testShifts[0].id);
     expect(createdRecurrence.repeatEvery).toBe(1);
     expect(createdRecurrence.frequencyType).toBe(FrequencyType.MONTH);
@@ -743,7 +733,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
 
       const occurrence = recurringAssignments.find(
         (a) =>
-          a.workerId === testWorkers[0].workerId &&
+          a.workerId === testWorkers[0].id &&
           a.shiftId === testShifts[0].id &&
           a.date.isSame(expectedDate, "day"),
       );
@@ -775,7 +765,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     const tomorrow = dayjs.utc().add(1, "day");
     await scheduleTestBase.createAssignmentWithRecurrence(
       {
-        workerId: testWorkers[0].workerId,
+        workerId: testWorkers[0].id,
         shiftId: testShifts[0].id,
         date: tomorrow,
       },
@@ -784,7 +774,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
         teamId: testTeam.teamId,
         occurrenceType: OccurrenceType.ASSIGNMENT,
         occurrenceInfo: {
-          workerId: testWorkers[0].workerId,
+          workerId: testWorkers[0].id,
           shiftId: testShifts[0].id,
           count: null,
         },
@@ -905,7 +895,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     const tomorrow = dayjs.utc().add(1, "day");
     await scheduleTestBase.createAssignmentWithRecurrence(
       {
-        workerId: testWorkers[0].workerId,
+        workerId: testWorkers[0].id,
         shiftId: testShifts[0].id,
         date: tomorrow,
       },
@@ -914,7 +904,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
         teamId: testTeam.teamId,
         occurrenceType: OccurrenceType.ASSIGNMENT,
         occurrenceInfo: {
-          workerId: testWorkers[0].workerId,
+          workerId: testWorkers[0].id,
           shiftId: testShifts[0].id,
           count: null,
         },
@@ -1021,7 +1011,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
     const tomorrow = dayjs.utc().add(1, "day");
     await scheduleTestBase.createAssignmentWithRecurrence(
       {
-        workerId: testWorkers[0].workerId,
+        workerId: testWorkers[0].id,
         shiftId: testShifts[0].id,
         date: tomorrow,
       },
@@ -1030,7 +1020,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
         teamId: testTeam.teamId,
         occurrenceType: OccurrenceType.ASSIGNMENT,
         occurrenceInfo: {
-          workerId: testWorkers[0].workerId,
+          workerId: testWorkers[0].id,
           shiftId: testShifts[0].id,
           count: null,
         },

@@ -135,7 +135,7 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
 
     const createdAssignment = assignments.find(
       (a: any) =>
-        a.workerId === testWorkers[0].workerId &&
+        a.workerId === testWorkers[0].id &&
         a.shiftId === testShifts[0].id &&
         dayjs(a.date).isSame(tomorrow, "day"),
     );

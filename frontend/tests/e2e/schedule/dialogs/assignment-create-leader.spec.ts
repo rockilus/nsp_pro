@@ -77,7 +77,7 @@ test.describe("Assignment Creation - Team Leader", () => {
     );
     await workerSelect.click();
     await page
-      .locator(`[data-testid="worker-option-${testWorkers[0].workerId}"]`)
+      .locator(`[data-testid="worker-option-${testWorkers[0].id}"]`)
       .click();
 
     // Select shift
@@ -123,7 +123,7 @@ test.describe("Assignment Creation - Team Leader", () => {
     expect(assignments.length).toBeGreaterThan(0);
     const createdAssignment = assignments.find(
       (a) =>
-        a.workerId === testWorkers[0].workerId &&
+        a.workerId === testWorkers[0].id &&
         a.shiftId === testShifts[0].id &&
         a.date.isSame(tomorrow, "day"),
     );
@@ -211,7 +211,7 @@ test.describe("Assignment Creation - Team Leader", () => {
     );
     await workerSelect.click();
     await page
-      .locator(`[data-testid="worker-option-${testWorkers[0].workerId}"]`)
+      .locator(`[data-testid="worker-option-${testWorkers[0].id}"]`)
       .click();
 
     const tomorrow = dayjs.utc().add(1, "day");
@@ -297,7 +297,7 @@ test.describe("Assignment Creation - Team Leader", () => {
     );
     await workerSelect.click();
     await page
-      .locator(`[data-testid="worker-option-${testWorkers[0].workerId}"]`)
+      .locator(`[data-testid="worker-option-${testWorkers[0].id}"]`)
       .click();
 
     const shiftSelect = page.locator(
@@ -345,7 +345,7 @@ test.describe("Assignment Creation - Team Leader", () => {
 
     const createdAssignment = assignments.find(
       (a: any) =>
-        a.workerId === testWorkers[0].workerId &&
+        a.workerId === testWorkers[0].id &&
         a.shiftId === testShifts[0].id &&
         a.date.isSame(tomorrow, "day"),
     );

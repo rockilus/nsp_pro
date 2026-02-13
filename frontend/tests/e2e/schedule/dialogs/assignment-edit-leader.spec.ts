@@ -129,9 +129,7 @@ test.describe("Assignment Editing - Team Leader", () => {
     ).toBeVisible();
 
     // Change worker to a different one
-    const newWorker = testWorkers.find(
-      (w) => w.workerId !== assignment.workerId,
-    );
+    const newWorker = testWorkers.find((w) => w.id !== assignment.workerId);
     expect(newWorker).toBeDefined();
 
     const workerSelect = page.locator(
@@ -139,7 +137,7 @@ test.describe("Assignment Editing - Team Leader", () => {
     );
     await workerSelect.click();
     await page
-      .locator(`[data-testid="worker-option-${newWorker!.workerId}"]`)
+      .locator(`[data-testid="worker-option-${newWorker!.id}"]`)
       .click();
 
     // Save changes
@@ -163,7 +161,7 @@ test.describe("Assignment Editing - Team Leader", () => {
     );
     expect(updatedAssignment).toBeDefined();
 
-    expect(updatedAssignment!.workerId).toBe(newWorker!.workerId);
+    expect(updatedAssignment!.workerId).toBe(newWorker!.id);
     console.log("✅ Assignment worker updated successfully");
   });
 
@@ -325,9 +323,7 @@ test.describe("Assignment Editing - Team Leader", () => {
     ).toBeVisible();
 
     // Make a change
-    const newWorker = testWorkers.find(
-      (w) => w.workerId !== assignment.workerId,
-    );
+    const newWorker = testWorkers.find((w) => w.id !== assignment.workerId);
     expect(newWorker).toBeDefined();
     const workerSelect = page.locator(
       '[data-testid="edit-assignment-worker-select"]',
