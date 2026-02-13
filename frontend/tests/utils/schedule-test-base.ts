@@ -397,6 +397,26 @@ export class ScheduleTestBase {
   }
 
   /**
+   * Update an existing shift for the test team
+   */
+  async updateShift(updatedShift: ShiftT): Promise<any> {
+    if (!this.testTeam) {
+      throw new Error("Test team not initialized");
+    }
+
+    // Ensure the shift belongs to the current test team for safety
+    if (updatedShift.teamId !== this.testTeam.teamId) {
+      throw new Error("Shift teamId does not match the current test team");
+    }
+
+    const result = await this.dbUtils.updateShift(updatedShift);
+    console.log(
+      `✅ Updated shift ${updatedShift.id} for team ${this.testTeam.name}`,
+    );
+    return result;
+  }
+
+  /**
    * Create a shift demand for testing
    */
   async createShiftDemand(options: {

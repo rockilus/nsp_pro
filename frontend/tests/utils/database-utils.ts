@@ -980,6 +980,19 @@ export class DatabaseTestUtils {
   }
 
   /**
+   * Update a shift using the existing ShiftApi for consistent behavior
+   */
+  async updateShift(updatedShift: ShiftT): Promise<any> {
+    if (!updatedShift || !updatedShift.id || !updatedShift.teamId) {
+      throw new Error("Invalid shift data provided");
+    }
+
+    const apiClient = this.createTestApiClient();
+    const result = await ShiftApi.updateShift(apiClient, updatedShift);
+    return result;
+  }
+
+  /**
    * Create a link shift using the existing LinkShiftApi for consistent behavior
    */
   async createLinkShift(linkShiftData: {

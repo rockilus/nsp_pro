@@ -414,11 +414,11 @@ test.describe("Assignment Replacement - Team Leader", () => {
 
       // Indicators (informational)
       nbTimesDidShiftLtm: {
-        count: 0,
+        count: 1,
         lastDate: null,
       },
       nbTimesWorkedWeekdayLtm: {
-        count: 0,
+        count: 1,
         lastDate: null,
       },
     };
@@ -619,6 +619,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       workerName: w3.name,
       rank: 3,
       replacementCategory: "could_do",
+      mostConstrainingReason: MostConstrainingReasonT.SOFT_CONSTRAINT_VIOLATION,
       replacementImplications: {
         ...defaultCandidate.replacementImplications,
         softConstraintHits: {
@@ -674,6 +675,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       workerName: w4.name,
       rank: 4,
       replacementCategory: "cant_do",
+      mostConstrainingReason: MostConstrainingReasonT.REQUEST_CONFLICT,
       replacementImplications: {
         ...defaultCandidate.replacementImplications,
         requestHits: {
@@ -739,6 +741,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       workerName: w5.name,
       rank: 5,
       replacementCategory: "cant_do",
+      mostConstrainingReason: MostConstrainingReasonT.HARD_CONSTRAINT_VIOLATION,
       replacementImplications: {
         ...defaultCandidate.replacementImplications,
         hardConstraintHits: {
@@ -780,6 +783,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       workerName: w6.name,
       rank: 6,
       replacementCategory: "cant_do",
+      mostConstrainingReason: MostConstrainingReasonT.HAS_OVERLAP,
       replacementImplications: {
         ...defaultCandidate.replacementImplications,
         overlapHits: {
@@ -831,6 +835,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       workerName: w7.name,
       rank: 7,
       replacementCategory: "cant_do",
+      mostConstrainingReason: MostConstrainingReasonT.FILTERED_OUT,
       replacementImplications: {
         ...defaultCandidate.replacementImplications,
         filterHits: {
@@ -862,6 +867,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       workerName: w8.name,
       rank: 8,
       replacementCategory: "cant_do",
+      mostConstrainingReason: MostConstrainingReasonT.ON_LEAVE,
       replacementImplications: {
         ...defaultCandidate.replacementImplications,
         isntOnLeave: false,
@@ -882,12 +888,23 @@ test.describe("Assignment Replacement - Team Leader", () => {
       }
     }
 
+    await scheduleTestBase.updateShift({
+      ...testShift,
+      staffing: [
+        {
+          specialtyId: specialty.id,
+          staffing: 1,
+        },
+      ],
+    });
+
     expectedCandidates[w9.id] = {
       ...defaultCandidate,
       workerId: w9.id,
       workerName: w9.name,
       rank: 9,
       replacementCategory: "cant_do",
+      mostConstrainingReason: MostConstrainingReasonT.MISSING_SPECIALTY,
       replacementImplications: {
         ...defaultCandidate.replacementImplications,
         hasSpecialty: false,
@@ -906,6 +923,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       workerName: w10.name,
       rank: 10,
       replacementCategory: "cant_do",
+      mostConstrainingReason: MostConstrainingReasonT.NOT_EMPLOYED,
       replacementImplications: {
         ...defaultCandidate.replacementImplications,
         isEmployed: false,
