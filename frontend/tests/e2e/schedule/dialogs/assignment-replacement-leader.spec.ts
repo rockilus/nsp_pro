@@ -296,6 +296,10 @@ test.describe("Assignment Replacement - Team Leader", () => {
 
     await assignmentCell.click();
 
+    // Verify dialog opens
+    const dialog = page.locator('[data-testid="schedule-item-dialog"]');
+    await expect(dialog).toBeVisible();
+
     // Verify check replacement button exists
     const checkReplacementButton = page.locator(
       '[data-testid="check-replacement-button"]',
@@ -351,6 +355,14 @@ test.describe("Assignment Replacement - Team Leader", () => {
 
     // Wait for the replacement to complete
     await page.waitForTimeout(1500); // Wait for API call and UI update
+
+    // Verify the assignment dialog has closed
+    const assignmentDialog = page.locator(
+      '[data-testid="schedule-item-dialog"]',
+    );
+    await expect(assignmentDialog).not.toBeVisible();
+
+    console.log("✅ Assignment dialog closed after replacement");
 
     // Fetch assignments again
     const updatedAR = await scheduleTestBase.getAssignmentsAndRecurrences(

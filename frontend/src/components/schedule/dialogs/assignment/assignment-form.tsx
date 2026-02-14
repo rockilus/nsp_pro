@@ -297,6 +297,8 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
       setReplacementCandidates(null);
       setSelectedCandidateId(null);
       setShowDetailsDialog(false);
+      // Close the assignment form dialog
+      onCancel();
     } catch (error) {
       console.error("Failed to select replacement:", error);
       alert("Failed to select replacement. Please try again.");

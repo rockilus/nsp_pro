@@ -28,7 +28,7 @@ interface ReplacementCandidatesListProps {
   selectedCandidateId: string | null;
   onSelectCandidate: (candidateId: string) => void;
   onViewDetails: (candidate: ReplacementCandidateT) => void;
-  onConfirmReplacement: () => void;
+  onConfirmReplacement: (candidateId?: string) => void;
   onCheckReplacement: () => void;
   onCancel: () => void;
   isOpen: boolean;
@@ -97,101 +97,82 @@ export function ReplacementCandidatesList({
               .map((candidate) => (
                 <ListItem
                   key={candidate.workerId}
-                  disablePadding
                   sx={{
                     mb: 0.5,
-                    backgroundColor:
-                      selectedCandidateId === candidate.workerId
-                        ? "action.selected"
-                        : "transparent",
-                    borderLeft: 3,
-                    borderColor:
-                      selectedCandidateId === candidate.workerId
-                        ? "primary.main"
-                        : "transparent",
+                    py: 0.75,
+                    px: 2,
                   }}
+                  data-testid={`candidate-${candidate.workerId}`}
                 >
-                  <ListItemButton
-                    onClick={() => onSelectCandidate(candidate.workerId)}
-                    data-testid={`candidate-${candidate.workerId}`}
-                    sx={{ py: 0.75 }}
-                  >
-                    <ListItemText
-                      primary={
-                        <Box
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="space-between"
-                          gap={1}
-                        >
-                          <Box display="flex" alignItems="center" gap={1}>
-                            <Box
-                              component="span"
-                              sx={{
-                                display: "inline-block",
-                                fontSize: "1.1rem",
-                              }}
-                            >
-                              {getCategoryEmoji(candidate.replacementCategory)}
-                            </Box>
-                            <Typography variant="body2" fontWeight="medium">
-                              {candidate.workerName}
-                            </Typography>
-                          </Box>
-                          <Button
-                            size="small"
-                            variant="contained"
-                            color="primary"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              // Select the candidate and confirm in one action
-                              onSelectCandidate(candidate.workerId);
-                              setTimeout(() => {
-                                onConfirmReplacement();
-                              }, 0);
+                  <ListItemText
+                    primary={
+                      <Box
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="space-between"
+                        gap={1}
+                      >
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <Box
+                            component="span"
+                            sx={{
+                              display: "inline-block",
+                              fontSize: "1.1rem",
                             }}
-                            disabled={isSubmitting}
-                            data-testid={`replace-button-${candidate.workerId}`}
-                            sx={{ ml: "auto", textTransform: "none" }}
                           >
-                            {isSubmitting &&
-                            selectedCandidateId === candidate.workerId ? (
-                              <>
-                                <CircularProgress size={12} sx={{ mr: 0.5 }} />
-                                {t("selecting")}
-                              </>
-                            ) : (
-                              t("replace")
-                            )}
-                          </Button>
+                            {getCategoryEmoji(candidate.replacementCategory)}
+                          </Box>
+                          <Typography variant="body2" fontWeight="medium">
+                            {candidate.workerName}
+                          </Typography>
                         </Box>
-                      }
-                      secondary={
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          component="div"
-                          sx={{ mt: 0.25 }}
+                        <Button
+                          size="small"
+                          variant="contained"
+                          color="primary"
+                          onClick={() => {
+                            onConfirmReplacement(candidate.workerId);
+                          }}
+                          disabled={isSubmitting}
+                          data-testid={`replace-button-${candidate.workerId}`}
+                          sx={{ ml: "auto", textTransform: "none" }}
                         >
-                          {formatWeeklyTime(
-                            candidate.replacementImplications.newWeeklyTime
-                              .newWeeklyWorkedMinutes,
-                            candidate.replacementImplications.newWeeklyTime
-                              .newWeeklyTimeDeltaMinutes,
-                          )}{" "}
-                          |{" "}
-                          {formatMonthlyDuties(
-                            candidate.replacementImplications.newMonthlyDuties
-                              .newNumberMonthlyDuties,
-                            candidate.replacementImplications.newMonthlyDuties
-                              .newMonthlyDutiesDelta,
-                          )}{" "}
-                          |{" "}
-                          {getReasonLabel(candidate.mostConstrainingReason, t)}
-                        </Typography>
-                      }
-                    />
-                  </ListItemButton>
+                          {isSubmitting &&
+                          selectedCandidateId === candidate.workerId ? (
+                            <>
+                              <CircularProgress size={12} sx={{ mr: 0.5 }} />
+                              {t("selecting")}
+                            </>
+                          ) : (
+                            t("replace")
+                          )}
+                        </Button>
+                      </Box>
+                    }
+                    secondary={
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        component="div"
+                        sx={{ mt: 0.25 }}
+                      >
+                        {formatWeeklyTime(
+                          candidate.replacementImplications.newWeeklyTime
+                            .newWeeklyWorkedMinutes,
+                          candidate.replacementImplications.newWeeklyTime
+                            .newWeeklyTimeDeltaMinutes,
+                        )}{" "}
+                        |{" "}
+                        {formatMonthlyDuties(
+                          candidate.replacementImplications.newMonthlyDuties
+                            .newNumberMonthlyDuties,
+                          candidate.replacementImplications.newMonthlyDuties
+                            .newMonthlyDutiesDelta,
+                        )}{" "}
+                        | {getReasonLabel(candidate.mostConstrainingReason, t)}
+                      </Typography>
+                    }
+                  />
                 </ListItem>
               ))}
           </List>

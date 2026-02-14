@@ -901,8 +901,13 @@ export class ScheduleTestBase {
     } else if (options?.targetDate && options?.timeFrame) {
       let calculatedDate: dayjs.Dayjs;
       if (options.timeFrame === "week") {
-        // Start of the week (Monday = 1)
-        calculatedDate = options.targetDate.startOf("week").add(1, "day");
+        // Start of the week (Monday). day(): Sunday=0, Monday=1, ...
+        const dow = options.targetDate.day();
+        const daysToSubtract = (dow + 6) % 7; // 0 for Monday, 6 for Sunday
+        calculatedDate = options.targetDate.startOf("day").subtract(
+          daysToSubtract,
+          "day",
+        );
       } else {
         // Start of the month
         calculatedDate = options.targetDate.startOf("month");
