@@ -742,102 +742,6 @@ export class ScheduleTestBase {
   }
 
   /**
-   * Create a worker with specific constraints for testing replacement candidates
-   *
-   * @param baseData - Basic worker data (name, acronym, etc.)
-   * @param constraints - Specific constraint violations to set up:
-   *   - notEmployed: Set employment dates to exclude test date
-   *   - missingSpecialty: Don't add required specialty
-   *   - onLeave: Create leave assignment on test date
-   *   - hasOverlap: Create overlapping assignment
-   *   - hasRequest: Create conflicting request
-   */
-  async createWorkerWithConstraints(
-    baseData: {
-      name: string;
-      acronym?: string;
-      weeklyHours?: number;
-    },
-    constraints?: {
-      notEmployed?: {
-        employmentStartDate?: Date;
-        employmentEndDate?: Date;
-      };
-      missingSpecialty?: boolean;
-      onLeave?: {
-        leaveShiftId: string;
-        date: dayjs.Dayjs;
-      };
-      hasOverlap?: {
-        shiftId: string;
-        date: dayjs.Dayjs;
-      };
-      hasRequest?: {
-        requestType: "work_demand" | "leave";
-        date: dayjs.Dayjs;
-        negative?: boolean;
-      };
-    },
-  ): Promise<{ workerId: string; name: string }> {
-    if (!this.testTeam) {
-      throw new Error("Test team not initialized");
-    }
-
-    // Create base worker
-    const worker = await this.dbUtils.createWorker({
-      teamId: this.testTeam.teamId,
-      name: baseData.name,
-      acronym: baseData.acronym,
-      weeklyHours: baseData.weeklyHours ?? 40,
-      weeklyHoursDesired: baseData.weeklyHours ?? 40,
-      employmentStartDate: constraints?.notEmployed?.employmentStartDate,
-      employmentEndDate: constraints?.notEmployed?.employmentEndDate,
-    });
-
-    // Set up leave if requested
-    if (constraints?.onLeave) {
-      await this.dbUtils.createAssignmentAndRecurrence({
-        teamId: this.testTeam.teamId,
-        workerId: worker.id,
-        shiftId: constraints.onLeave.leaveShiftId,
-        date: constraints.onLeave.date,
-        fixed: false,
-        comment: "Test leave for constraint violation",
-      });
-      console.log(`✅ Created leave assignment for ${worker.name}`);
-    }
-
-    // Set up overlapping assignment if requested
-    if (constraints?.hasOverlap) {
-      await this.dbUtils.createAssignmentAndRecurrence({
-        teamId: this.testTeam.teamId,
-        workerId: worker.id,
-        shiftId: constraints.hasOverlap.shiftId,
-        date: constraints.hasOverlap.date,
-        fixed: false,
-        comment: "Test overlap assignment",
-      });
-      console.log(`✅ Created overlapping assignment for ${worker.name}`);
-    }
-
-    // Set up conflicting request if requested
-    if (constraints?.hasRequest) {
-      await this.dbUtils.createRequest({
-        teamId: this.testTeam.teamId,
-        workerId: worker.id,
-        requestType: constraints.hasRequest.requestType,
-        startDate: constraints.hasRequest.date,
-        endDate: constraints.hasRequest.date,
-        negative: constraints.hasRequest.negative ?? false,
-        status: "pending",
-      });
-      console.log(`✅ Created conflicting request for ${worker.name}`);
-    }
-
-    return worker;
-  }
-
-  /**
    * Get shift demands by period for the test team
    */
   async getShiftDemandsByPeriod(
@@ -904,10 +808,9 @@ export class ScheduleTestBase {
         // Start of the week (Monday). day(): Sunday=0, Monday=1, ...
         const dow = options.targetDate.day();
         const daysToSubtract = (dow + 6) % 7; // 0 for Monday, 6 for Sunday
-        calculatedDate = options.targetDate.startOf("day").subtract(
-          daysToSubtract,
-          "day",
-        );
+        calculatedDate = options.targetDate
+          .startOf("day")
+          .subtract(daysToSubtract, "day");
       } else {
         // Start of the month
         calculatedDate = options.targetDate.startOf("month");
