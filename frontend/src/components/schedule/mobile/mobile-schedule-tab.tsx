@@ -314,6 +314,21 @@ export default function MobileScheduleTab({
     [deleteAssignment, teamWithMembership.team.id],
   );
 
+  // Wrapped handler that checks role before opening dialog
+  const handleAssignmentClick = useCallback(
+    (assignment: any) => {
+      // Only allow owners to edit assignments
+      if (teamWithMembership.membership.role === TeamMembershipRole.OWNER) {
+        setActiveAssignment(assignment);
+        setSheetOpen(true);
+      }
+    },
+    [teamWithMembership.membership.role],
+  );
+
+  const canEdit =
+    teamWithMembership.membership.role === TeamMembershipRole.OWNER;
+
   // Build mobile navigation content that fills space between hamburger and avatar
   const scheduleMobileNav = (
     <MobileScheduleNav
@@ -382,8 +397,8 @@ export default function MobileScheduleTab({
             }
             today={today}
             isLandscape={isLandscape}
-            setActiveAssignment={setActiveAssignment}
-            setSheetOpen={setSheetOpen}
+            onAssignmentClick={handleAssignmentClick}
+            canEdit={canEdit}
             periodStart={periodStart}
             scheduleViewSettings={scheduleViewSettings}
             updateScheduleViewSettings={updateScheduleViewSettings}
@@ -401,8 +416,8 @@ export default function MobileScheduleTab({
             assignments={assignments}
             workers={workers}
             shifts={shifts}
-            setActiveAssignment={setActiveAssignment}
-            setSheetOpen={setSheetOpen}
+            onAssignmentClick={handleAssignmentClick}
+            canEdit={canEdit}
             onVisibleMonthChange={setVisibleMonth}
             onScrollToTodayReady={(handler) => {
               scrollToTodayRef.current = handler;

@@ -14,8 +14,8 @@ interface LandscapeWeeklyCalendarProps {
   shifts: any[];
   selectedWorkerId: string | null;
   today: dayjs.Dayjs;
-  setActiveAssignment: (assignment: any) => void;
-  setSheetOpen: (open: boolean) => void;
+  onAssignmentClick: (assignment: any) => void;
+  canEdit: boolean;
   onWeekChange: (direction: number) => void;
 }
 
@@ -44,7 +44,7 @@ const getMinutesFromMidnight = (time: dayjs.Dayjs): number => {
 // Utility: Calculate assignment grid position
 const calculateAssignmentGridPosition = (
   shift: any,
-  assignmentDate: dayjs.Dayjs
+  assignmentDate: dayjs.Dayjs,
 ): AssignmentPosition => {
   const startTime = dayjs.utc(shift.startTime);
   const endTime = dayjs.utc(shift.endTime);
@@ -120,7 +120,7 @@ const calculateAssignmentPositions = (
   assignments: any[],
   shifts: any[],
   date: dayjs.Dayjs,
-  includeOvernightSecondPart: boolean = false
+  includeOvernightSecondPart: boolean = false,
 ): PositionedAssignment[] => {
   // Get shift data for each assignment
   const assignmentsWithShifts = assignments
@@ -142,7 +142,7 @@ const calculateAssignmentPositions = (
     let trackIndex = 0;
     while (trackIndex < tracks.length) {
       const overlaps = tracks[trackIndex].some((existingItem) =>
-        doAssignmentsOverlap(item, existingItem)
+        doAssignmentsOverlap(item, existingItem),
       );
       if (!overlaps) break;
       trackIndex++;
@@ -202,8 +202,8 @@ export default function LandscapeWeeklyCalendar({
   shifts,
   selectedWorkerId,
   today,
-  setActiveAssignment,
-  setSheetOpen,
+  onAssignmentClick,
+  canEdit,
   onWeekChange,
 }: LandscapeWeeklyCalendarProps) {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -244,7 +244,7 @@ export default function LandscapeWeeklyCalendar({
   // Generate hour labels (00:00 - 23:00)
   const hours = useMemo(() => {
     return Array.from({ length: 24 }, (_, i) =>
-      dayjs.utc().hour(i).minute(0).format("HH:mm")
+      dayjs.utc().hour(i).minute(0).format("HH:mm"),
     );
   }, []);
 
@@ -277,11 +277,11 @@ export default function LandscapeWeeklyCalendar({
     const finalX =
       endX !== null && endX !== undefined
         ? endX
-        : e.changedTouches?.[0]?.clientX ?? null;
+        : (e.changedTouches?.[0]?.clientX ?? null);
     const finalY =
       endY !== null && endY !== undefined
         ? endY
-        : e.changedTouches?.[0]?.clientY ?? null;
+        : (e.changedTouches?.[0]?.clientY ?? null);
 
     if (
       startX === null ||
@@ -336,7 +336,7 @@ export default function LandscapeWeeklyCalendar({
         dayAssignments,
         shifts,
         day,
-        false // Don't add second parts here
+        false, // Don't add second parts here
       );
       result.set(dateKey, positioned);
 
@@ -349,7 +349,7 @@ export default function LandscapeWeeklyCalendar({
         prevAssignments,
         shifts,
         prevDay,
-        true // Add second parts for overnight shifts
+        true, // Add second parts for overnight shifts
       );
 
       // Add second parts of overnight shifts to current day
@@ -366,7 +366,7 @@ export default function LandscapeWeeklyCalendar({
   // Render assignment block
   const renderAssignment = (
     positioned: PositionedAssignment,
-    dateKey: string
+    dateKey: string,
   ) => {
     const { assignment, shift, top, height, width, left } = positioned;
     const colors = ShiftColorMappings[shift.color] || {
@@ -389,10 +389,13 @@ export default function LandscapeWeeklyCalendar({
     return (
       <Box
         key={`${assignment.id}-${positioned.isSecondPart ? "part2" : "part1"}`}
-        onClick={() => {
-          setActiveAssignment(assignment);
-          setSheetOpen(true);
-        }}
+        onClick={
+          canEdit
+            ? () => {
+                onAssignmentClick(assignment);
+              }
+            : undefined
+        }
         sx={{
           position: "absolute",
           top: `${top}%`,
@@ -405,10 +408,10 @@ export default function LandscapeWeeklyCalendar({
           borderRadius: positioned.isOvernight
             ? "4px 4px 0 0" // First part: round top only
             : positioned.isSecondPart
-            ? "0 0 4px 4px" // Second part: round bottom only
-            : 1, // Normal shift: round all corners
+              ? "0 0 4px 4px" // Second part: round bottom only
+              : 1, // Normal shift: round all corners
           padding: 0.5,
-          cursor: "pointer",
+          cursor: canEdit ? "pointer" : "default",
           overflow: "hidden",
           minHeight: "30px",
           fontSize: "0.75rem",
@@ -575,10 +578,10 @@ export default function LandscapeWeeklyCalendar({
                   >
                     {(
                       positionedAssignmentsByDay.get(
-                        day.format("YYYY-MM-DD")
+                        day.format("YYYY-MM-DD"),
                       ) || []
                     ).map((positioned) =>
-                      renderAssignment(positioned, day.format("YYYY-MM-DD"))
+                      renderAssignment(positioned, day.format("YYYY-MM-DD")),
                     )}
                   </Box>
                 )}
