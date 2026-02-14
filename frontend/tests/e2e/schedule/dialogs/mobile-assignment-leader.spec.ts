@@ -74,50 +74,113 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     console.log("✅ Assignment dialog opened with assignment form");
   });
 
+  test("should not show type selection buttons on mobile viewport", async ({
+    page,
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+
+    const fabButton = page
+      .locator('[data-testid="mobile-create-assignment-fab"]')
+      .first();
+
+    await expect(fabButton).toBeVisible();
+    await fabButton.click();
+
+    // Schedule item dialog should be visible
+    const dialog = page.locator('[data-testid="schedule-item-dialog"]');
+    await expect(dialog).toBeVisible();
+
+    // Type selection buttons should NOT be visible on mobile
+    const typeButtons = page.locator(
+      '[data-testid="schedule-item-type-buttons"]',
+    );
+    await expect(typeButtons).not.toBeVisible();
+
+    // Assignment button should NOT be visible
+    const assignmentButton = page.locator('[data-testid="assignment-button"]');
+    await expect(assignmentButton).not.toBeVisible();
+
+    // Demand button should NOT be visible
+    const demandButton = page.locator('[data-testid="demand-button"]');
+    await expect(demandButton).not.toBeVisible();
+
+    // Request button should NOT be visible
+    const requestButton = page.locator('[data-testid="request-button"]');
+    await expect(requestButton).not.toBeVisible();
+
+    // Assignment form should be visible (only assignment functionality on mobile)
+    const assignmentForm = page.locator('[data-testid="assignment-form"]');
+    await expect(assignmentForm).toBeVisible();
+
+    console.log(
+      "✅ Type selection buttons hidden on mobile, only assignment form visible",
+    );
+  });
+
   test("should create assignment on mobile viewport", async ({
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
+    const testTeam = scheduleTestBase.getTestTeam()!;
     const testWorkers = scheduleTestBase.getTestWorkers();
     const testShifts = scheduleTestBase.getTestShifts();
-    const testTeam = scheduleTestBase.getTestTeam()!;
 
-    const addButton = page
-      .locator('[data-testid="add-schedule-item-button"]')
+    // Open dialog (implementation may vary - adjust selector as needed)
+    const fabButton = page
+      .locator('[data-testid="mobile-create-assignment-fab"]')
       .first();
 
-    if (!(await addButton.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
+    expect(fabButton).toBeVisible();
 
-    await addButton.click();
+    await fabButton.click();
 
-    // Fill assignment form
-    const workerSelect = page.locator('[data-testid="worker-select"]');
+    // Verify Assignment type is selected by default or select it
+    const assignmentForm = page.locator('[data-testid="assignment-form"]');
+    await expect(assignmentForm).toBeVisible();
+
+    // Select worker
+    const workerSelect = page.locator(
+      '[data-testid="edit-assignment-worker-select"]',
+    );
     await workerSelect.click();
-    await page.locator(`text="${testWorkers[0].name}"`).first().click();
+    await page
+      .locator(`[data-testid="worker-option-${testWorkers[0].id}"]`)
+      .click();
 
-    const shiftSelect = page.locator('[data-testid="shift-select"]');
+    // Select shift
+    const shiftSelect = page.locator(
+      '[data-testid="edit-assignment-shift-select"]',
+    );
     await shiftSelect.click();
-    await page.locator(`text="${testShifts[0].name}"`).first().click();
+    await page
+      .locator(`[data-testid="shift-option-${testShifts[0].id}"]`)
+      .click();
 
+    // Select date (tomorrow)
     const tomorrow = dayjs.utc().add(1, "day");
-    const datePicker = page.locator('[data-testid="date-picker"]');
-    await datePicker.click();
-    await datePicker.fill(tomorrow.format("MM/DD/YYYY"));
 
+    const datePicker = page.locator(
+      '[data-testid="edit-assignment-date-picker"]',
+    );
+    await datePicker.waitFor({ state: "visible" });
+    await datePicker.fill("", { force: true }); // Clear first
+    await page.waitForTimeout(100);
+    await datePicker.fill(tomorrow.format("DD/MM/YYYY"), { force: true });
+    await datePicker.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Click create button
     const createButton = page.locator(
-      '[data-testid="create-assignment-button"]',
+      '[data-testid="edit-assignment-create-button"]',
     );
     await createButton.click();
 
-    await expect(
-      page.locator('[data-testid="schedule-item-dialog"]'),
-    ).not.toBeVisible({ timeout: 5000 });
+    // Wait for dialog to close
+    const dialog = page.locator('[data-testid="schedule-item-dialog"]');
+    await expect(dialog).not.toBeVisible({ timeout: 5000 });
 
-    // Verify assignment created
+    // Verify assignment was created in database
     const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf("day"),
@@ -125,15 +188,16 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     );
     const assignments = AR.assignmentsRead;
 
+    expect(assignments.length).toBeGreaterThan(0);
     const createdAssignment = assignments.find(
-      (a: any) =>
+      (a) =>
         a.workerId === testWorkers[0].id &&
         a.shiftId === testShifts[0].id &&
-        dayjs(a.date).isSame(tomorrow, "day"),
+        a.date.isSame(tomorrow, "day"),
     );
-
     expect(createdAssignment).toBeDefined();
-    console.log("✅ Assignment created on mobile viewport");
+
+    console.log("✅ Assignment created successfully");
   });
 
   test("should edit assignment on mobile viewport", async ({

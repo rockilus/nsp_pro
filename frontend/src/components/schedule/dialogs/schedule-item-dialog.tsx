@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "../../../app/i18n/client";
+import { useIsMobile } from "@/hooks/useIsMobile";
 // MUI
 import {
   Dialog,
@@ -58,6 +59,7 @@ export default function ScheduleItemDialog({
   handleDenyRequest,
 }: ScheduleItemDialogProps) {
   const { t } = useTranslation(lng, "schedule-page");
+  const isMobile = useIsMobile();
 
   const [activeType, setActiveType] = useState<ScheduleItemType>(selectedType);
 
@@ -108,8 +110,11 @@ export default function ScheduleItemDialog({
         </Box>
       </DialogTitle>
       <DialogContent>
-        {mode === DialogMode.CREATE && (
-          <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+        {mode === DialogMode.CREATE && !isMobile && (
+          <Box
+            sx={{ display: "flex", gap: 1, mb: 2 }}
+            data-testid="schedule-item-type-buttons"
+          >
             <Button
               variant={
                 activeType === ScheduleItemType.ASSIGNMENT
