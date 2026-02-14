@@ -241,7 +241,10 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
   ];
 
   return (
-    <div className="recurrence-edit-container">
+    <div
+      className="recurrence-edit-container"
+      data-testid="recurrence-edit-container"
+    >
       <h2 className="recurrence-edit-title">{t("recurrence")}</h2>
 
       <div className="recurrence-edit-section">

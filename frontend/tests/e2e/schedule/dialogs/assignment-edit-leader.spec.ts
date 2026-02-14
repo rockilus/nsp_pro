@@ -53,6 +53,8 @@ test.describe("Assignment Editing - Team Leader", () => {
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = scheduleTestBase.getTestWorkers();
+    const testShifts = scheduleTestBase.getTestShifts();
 
     // Get the created assignment
     const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
@@ -67,7 +69,6 @@ test.describe("Assignment Editing - Team Leader", () => {
 
     // Click on assignment cell to open edit dialog
     // Note: Selector depends on schedule UI implementation
-    const assignmentDate = dayjs(assignment.date);
     const assignmentCell = page.locator(
       `[data-testid="assignment-cell-${assignment.id}"]`,
     );
@@ -83,36 +84,33 @@ test.describe("Assignment Editing - Team Leader", () => {
     const assignmentButton = page.locator('[data-testid="assignment-button"]');
     await expect(assignmentButton).not.toBeVisible();
 
-    // Select worker
+    // Verify worker field is populated with the assignment's worker
     const workerSelect = page.locator(
       '[data-testid="edit-assignment-worker-select"]',
     );
-    await workerSelect.click();
-    await page
-      .locator(`[data-testid="worker-option-${testWorkers[0].id}"]`)
-      .click();
+    await expect(workerSelect).toBeVisible();
+    const expectedWorker = testWorkers.find(
+      (w) => w.id === assignment.workerId,
+    );
+    expect(expectedWorker).toBeDefined();
+    await expect(workerSelect).toContainText(expectedWorker!.name);
 
-    // Select shift
+    // Verify shift field is populated with the assignment's shift
     const shiftSelect = page.locator(
       '[data-testid="edit-assignment-shift-select"]',
     );
-    await shiftSelect.click();
-    await page
-      .locator(`[data-testid="shift-option-${testShifts[0].id}"]`)
-      .click();
+    await expect(shiftSelect).toBeVisible();
+    const expectedShift = testShifts.find((s) => s.id === assignment.shiftId);
+    expect(expectedShift).toBeDefined();
+    await expect(shiftSelect).toContainText(expectedShift!.name);
 
-    // Select date (tomorrow)
-    const tomorrow = dayjs.utc().add(1, "day");
-
+    // Verify date field is populated with the assignment's date
     const datePicker = page.locator(
       '[data-testid="edit-assignment-date-picker"]',
     );
-    await datePicker.waitFor({ state: "visible" });
-    await datePicker.fill("", { force: true }); // Clear first
-    await page.waitForTimeout(100);
-    await datePicker.fill(tomorrow.format("DD/MM/YYYY"), { force: true });
-    await datePicker.press("Enter");
-    await page.waitForTimeout(300);
+    await expect(datePicker).toBeVisible();
+    const expectedDate = dayjs(assignment.date).format("DD/MM/YYYY");
+    await expect(datePicker).toHaveValue(expectedDate);
 
     // Save and Delete buttons should be visible
     const saveButton = page.locator('[data-testid="save-assignment-button"]');

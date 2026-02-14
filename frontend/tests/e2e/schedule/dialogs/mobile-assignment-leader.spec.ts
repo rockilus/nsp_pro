@@ -31,7 +31,7 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
 
     await scheduleTestBase.setupScheduleTests(workerIndex, {
       referenceDate: dayjs.utc().add(1, "day"),
-      createAssignments: false,
+      createAssignments: true,
       linkMemberToWorker: false,
     });
 
@@ -205,6 +205,8 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = scheduleTestBase.getTestWorkers();
+    const testShifts = scheduleTestBase.getTestShifts();
 
     // Get the created assignment
     const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
@@ -234,6 +236,34 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     // Type toggle buttons should NOT be visible in edit mode
     const assignmentButton = page.locator('[data-testid="assignment-button"]');
     await expect(assignmentButton).not.toBeVisible();
+
+    // Verify worker field is populated with the assignment's worker
+    const workerSelect = page.locator(
+      '[data-testid="edit-assignment-worker-select"]',
+    );
+    await expect(workerSelect).toBeVisible();
+    const expectedWorker = testWorkers.find(
+      (w) => w.id === assignment.workerId,
+    );
+    expect(expectedWorker).toBeDefined();
+    await expect(workerSelect).toContainText(expectedWorker!.name);
+
+    // Verify shift field is populated with the assignment's shift
+    const shiftSelect = page.locator(
+      '[data-testid="edit-assignment-shift-select"]',
+    );
+    await expect(shiftSelect).toBeVisible();
+    const expectedShift = testShifts.find((s) => s.id === assignment.shiftId);
+    expect(expectedShift).toBeDefined();
+    await expect(shiftSelect).toContainText(expectedShift!.name);
+
+    // Verify date field is populated with the assignment's date
+    const datePicker = page.locator(
+      '[data-testid="edit-assignment-date-picker"]',
+    );
+    await expect(datePicker).toBeVisible();
+    const expectedDate = dayjs(assignment.date).format("DD/MM/YYYY");
+    await expect(datePicker).toHaveValue(expectedDate);
 
     // Save and Delete buttons should be visible
     const saveButton = page.locator('[data-testid="save-assignment-button"]');
@@ -267,7 +297,7 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
 
     // Open assignment for editing
     const assignmentCell = page.locator(
-      `[data-testid="assignment-cell-${assignment.id}"]`,
+      `[data-testid="assignment-list-item-${assignment.id}"]`,
     );
     await expect(assignmentCell).toBeVisible();
 
@@ -315,129 +345,61 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     console.log("✅ Assignment worker updated successfully");
   });
 
-  test("should edit assignment on mobile viewport", async ({
-    page,
-  }, testInfo) => {
-    const testRunId = (testInfo as any).testRunId as string;
-    const scheduleTestBase = testBasesMap.get(testRunId)!;
-    const testWorkers = scheduleTestBase.getTestWorkers();
-    const testShifts = scheduleTestBase.getTestShifts();
-    const testTeam = scheduleTestBase.getTestTeam()!;
-
-    if (testShifts.length < 2) {
-      test.skip();
-      return;
-    }
-
-    // Create assignment
-    const tomorrow = dayjs.utc().add(1, "day");
-    const dbUtils = (scheduleTestBase as any).dbUtils;
-    const assignment = await dbUtils.createAssignment({
-      teamId: testTeam.teamId,
-      workerId: testWorkers[0].id,
-      shiftId: testShifts[0].id,
-      date: tomorrow.format("YYYY-MM-DD"),
-    });
-
-    await page.reload();
-    await page.waitForTimeout(1000);
-
-    // Click on assignment
-    const assignmentCell = page
-      .locator('[role="gridcell"]')
-      .filter({ hasText: testWorkers[0].name })
-      .first();
-
-    if (!(await assignmentCell.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
-
-    await assignmentCell.click();
-
-    // Change shift
-    const shiftSelect = page.locator('[data-testid="shift-select"]');
-    await shiftSelect.click();
-    await page.locator(`text="${testShifts[1].name}"`).first().click();
-
-    const saveButton = page.locator('[data-testid="save-assignment-button"]');
-    await saveButton.click();
-
-    await expect(
-      page.locator('[data-testid="schedule-item-dialog"]'),
-    ).not.toBeVisible({ timeout: 5000 });
-
-    // Verify update
-    const AR2 = await scheduleTestBase.getAssignmentsAndRecurrences(
-      false,
-      dayjs.utc().startOf("day"),
-      dayjs.utc().add(2, "month").endOf("day"),
-    );
-    const assignments = AR2.assignmentsRead;
-    const updatedAssignment = assignments.find(
-      (a: any) => a.id === assignment.id,
-    );
-
-    expect(updatedAssignment?.shiftId).toBe(testShifts[1].id);
-    console.log("✅ Assignment edited on mobile viewport");
-  });
-
   test("should delete assignment on mobile viewport", async ({
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
-    const testWorkers = scheduleTestBase.getTestWorkers();
-    const testShifts = scheduleTestBase.getTestShifts();
-    const testTeam = scheduleTestBase.getTestTeam()!;
 
-    // Create assignment
-    const tomorrow = dayjs.utc().add(1, "day");
-    const dbUtils = (scheduleTestBase as any).dbUtils;
-    const assignment = await dbUtils.createAssignment({
-      teamId: testTeam.teamId,
-      workerId: testWorkers[0].id,
-      shiftId: testShifts[0].id,
-      date: tomorrow.format("YYYY-MM-DD"),
-    });
+    // Get the created assignment
+    const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR.assignmentsRead;
+    await expect(assignments.length).toBeGreaterThan(0);
 
-    await page.reload();
-    await page.waitForTimeout(1000);
+    const assignment = assignments[0];
+    const assignmentId = assignment.id;
 
-    const assignmentCell = page
-      .locator('[role="gridcell"]')
-      .filter({ hasText: testWorkers[0].name })
-      .first();
-
-    if (!(await assignmentCell.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
+    // Open assignment for editing
+    const assignmentCell = page.locator(
+      `[data-testid="assignment-list-item-${assignment.id}"]`,
+    );
+    await expect(assignmentCell).toBeVisible();
 
     await assignmentCell.click();
 
+    // Wait for dialog
+    await expect(
+      page.locator('[data-testid="schedule-item-dialog"]'),
+    ).toBeVisible();
+
+    // Click delete button
     const deleteButton = page.locator(
       '[data-testid="delete-assignment-button"]',
     );
     await deleteButton.click();
 
+    // Wait for dialog to close
     await expect(
       page.locator('[data-testid="schedule-item-dialog"]'),
     ).not.toBeVisible({ timeout: 5000 });
 
-    // Verify deletion
-    const AR3 = await scheduleTestBase.getAssignmentsAndRecurrences(
+    // Verify assignment was deleted from database
+    const AR2 = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf("day"),
       dayjs.utc().add(2, "month").endOf("day"),
     );
-    const assignments = AR3.assignmentsRead;
-    const deletedAssignment = assignments.find(
-      (a: any) => a.id === assignment.id,
+    const updatedAssignments = AR2.assignmentsRead;
+    const deletedAssignment = updatedAssignments.find(
+      (a: any) => a.id === assignmentId,
     );
 
     expect(deletedAssignment).toBeUndefined();
-    console.log("✅ Assignment deleted on mobile viewport");
+    console.log("✅ Assignment deleted successfully");
   });
 
   test("should access recurrence on mobile viewport", async ({
@@ -447,39 +409,30 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testWorkers = scheduleTestBase.getTestWorkers();
     const testShifts = scheduleTestBase.getTestShifts();
+    const testTeam = scheduleTestBase.getTestTeam()!;
 
-    const addButton = page
-      .locator('[data-testid="add-schedule-item-button"]')
+    // Open dialog (implementation may vary - adjust selector as needed)
+    const fabButton = page
+      .locator('[data-testid="mobile-create-assignment-fab"]')
       .first();
 
-    if (!(await addButton.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
+    expect(fabButton).toBeVisible();
 
-    await addButton.click();
+    await fabButton.click();
 
-    // Fill basic fields
-    const workerSelect = page.locator('[data-testid="worker-select"]');
-    await workerSelect.click();
-    await page.locator(`text="${testWorkers[0].name}"`).first().click();
-
-    const shiftSelect = page.locator('[data-testid="shift-select"]');
-    await shiftSelect.click();
-    await page.locator(`text="${testShifts[0].name}"`).first().click();
-
-    const tomorrow = dayjs.utc().add(1, "day");
-    const datePicker = page.locator('[data-testid="date-picker"]');
-    await datePicker.click();
-    await datePicker.fill(tomorrow.format("MM/DD/YYYY"));
+    // Verify Assignment type is selected by default or select it
+    const assignmentForm = page.locator('[data-testid="assignment-form"]');
+    await expect(assignmentForm).toBeVisible();
 
     // Open recurrence dialog
     const recurrenceButton = page.locator('[data-testid="recurrence-button"]');
     await recurrenceButton.click();
 
-    // Verify recurrence dialog opened
-    const frequencySelect = page.locator('[data-testid="frequency-select"]');
-    await expect(frequencySelect).toBeVisible();
+    // Set daily frequency
+    const recurrenceContainer = page.locator(
+      '[data-testid="recurrence-edit-container"]',
+    );
+    await expect(recurrenceContainer).toBeVisible();
 
     console.log("✅ Recurrence accessible on mobile viewport");
   });

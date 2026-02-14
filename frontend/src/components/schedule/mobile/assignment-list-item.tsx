@@ -40,8 +40,8 @@ export default function AssignmentListItem({
         cursor: onClick ? "pointer" : "default",
         backgroundColor: mapping.background,
         color: mapping.text,
-        "data-testid": `assignment-list-item-${assignment.id}`,
       }}
+      data-testid={`assignment-list-item-${assignment.id}`}
     >
       {/* Duty marker */}
       <Box
