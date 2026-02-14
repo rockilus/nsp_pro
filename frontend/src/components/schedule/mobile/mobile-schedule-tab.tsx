@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import isoWeek from "dayjs/plugin/isoWeek";
@@ -18,9 +18,16 @@ import { useScheduleViewSettings } from "../../../app/lib/hooks/useScheduleViewS
 import { getDefaultScheduleViewSettings } from "../../../app/lib/utils/scheduleViewSettingsUtils";
 import { computePeriodEndDate } from "../../../app/lib/utils/scheduleViewSettingsUtils";
 import { calculateMobileBufferMonths } from "../../../app/lib/utils/assignmentBufferUtils";
+import {
+  useAddAssignmentAndRecurrence,
+  useUpdateAssignmentAndRecurrence,
+  useDeleteAssignment,
+} from "../../../hooks/useAssignment";
 // Types
 import { TeamWithMembership, TeamMembershipRole } from "@/types/team";
 import { ShiftRestType } from "@/types/shift";
+import { AssignmentT, AssignmentsRecurrencesResultT } from "@/types/assignment";
+import { RecurrenceRuleT, RecurrenceUpdateScope } from "@/types/recurrence";
 // Local components
 import ScheduleItemDialog from "../dialogs/schedule-item-dialog";
 import { ScheduleItemType, DialogMode } from "../dialogs/schedule-item-types";
@@ -52,6 +59,11 @@ export default function MobileScheduleTab({
     useScheduleViewSettings(teamWithMembership.team.id, defaultSettings);
 
   const getScheduleEntities = useGetScheduleEntities();
+
+  // Assignment mutation hooks
+  const addAssignmentAndRecurrence = useAddAssignmentAndRecurrence();
+  const updateAssignmentAndRecurrence = useUpdateAssignmentAndRecurrence();
+  const deleteAssignment = useDeleteAssignment();
 
   // Fetch user's worker for role-based checks (only for members)
   const {
@@ -253,6 +265,55 @@ export default function MobileScheduleTab({
     }
   };
 
+  //////////////////////////
+  // Assignment Actions
+  //////////////////////////
+
+  const handleCreateAssignment = useCallback(
+    async (
+      assignment: AssignmentT,
+      recurrence: RecurrenceRuleT | null = null,
+    ) => {
+      await addAssignmentAndRecurrence(assignment, recurrence);
+      // React Query cache invalidation in the mutation hook handles updates automatically
+    },
+    [addAssignmentAndRecurrence],
+  );
+
+  const handleUpdateAssignment = useCallback(
+    async (
+      assignment: AssignmentT,
+      recurrence: RecurrenceRuleT | null = null,
+      recurrenceUpdateScope: RecurrenceUpdateScope | null = null,
+    ) => {
+      await updateAssignmentAndRecurrence(
+        assignment,
+        teamWithMembership.team.id,
+        recurrence,
+        recurrenceUpdateScope,
+      );
+      // React Query cache invalidation in the mutation hook handles updates automatically
+    },
+    [updateAssignmentAndRecurrence, teamWithMembership.team.id],
+  );
+
+  const handleDeleteAssignment = useCallback(
+    async (
+      assignmentId: string,
+      recurrenceId: string | null = null,
+      recurrenceUpdateScope: RecurrenceUpdateScope | null = null,
+    ) => {
+      await deleteAssignment(
+        assignmentId,
+        teamWithMembership.team.id,
+        recurrenceId,
+        recurrenceUpdateScope,
+      );
+      // React Query cache invalidation in the mutation hook handles updates automatically
+    },
+    [deleteAssignment, teamWithMembership.team.id],
+  );
+
   // Build mobile navigation content that fills space between hamburger and avatar
   const scheduleMobileNav = (
     <MobileScheduleNav
@@ -406,6 +467,9 @@ export default function MobileScheduleTab({
           userWorkerId={null}
           userTeamRole={teamWithMembership.membership.role}
           useSolver={teamWithMembership.team.useSolver}
+          handleCreateAssignment={handleCreateAssignment}
+          handleUpdateAssignment={handleUpdateAssignment}
+          handleDeleteAssignment={handleDeleteAssignment}
         />
       </Box>
 

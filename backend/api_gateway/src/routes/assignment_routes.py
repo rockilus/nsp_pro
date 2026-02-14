@@ -81,7 +81,7 @@ async def get_assignments(
             )
 
         # Prevent abuse: reject ranges > 6 months
-        max_range_days = 180
+        max_range_days = 365
         if (end_date - start_date).days > max_range_days:
             raise ValueError(f"Date range cannot exceed {max_range_days} days")
 
