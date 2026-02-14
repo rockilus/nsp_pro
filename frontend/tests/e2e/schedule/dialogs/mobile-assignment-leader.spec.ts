@@ -200,6 +200,121 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     console.log("✅ Assignment created successfully");
   });
 
+  test("should open assignment in edit mode with populated fields on mobile viewport", async ({
+    page,
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const scheduleTestBase = testBasesMap.get(testRunId)!;
+
+    // Get the created assignment
+    const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR.assignmentsRead;
+    await expect(assignments.length).toBeGreaterThan(0);
+
+    const assignment = assignments[0];
+
+    // Click on assignment cell to open edit dialog
+    // Note: Selector depends on schedule UI implementation
+    const assignmentDate = dayjs(assignment.date);
+    const assignmentCell = page.locator(
+      `[data-testid="assignment-list-item-${assignment.id}"]`,
+    );
+    await expect(assignmentCell).toBeVisible();
+
+    await assignmentCell.click();
+
+    // Verify dialog opens in edit mode
+    const dialog = page.locator('[data-testid="schedule-item-dialog"]');
+    await expect(dialog).toBeVisible();
+
+    // Type toggle buttons should NOT be visible in edit mode
+    const assignmentButton = page.locator('[data-testid="assignment-button"]');
+    await expect(assignmentButton).not.toBeVisible();
+
+    // Save and Delete buttons should be visible
+    const saveButton = page.locator('[data-testid="save-assignment-button"]');
+    const deleteButton = page.locator(
+      '[data-testid="delete-assignment-button"]',
+    );
+    await expect(saveButton).toBeVisible();
+    await expect(deleteButton).toBeVisible();
+
+    console.log("✅ Assignment opened in edit mode successfully");
+  });
+
+  test("should update assignment worker", async ({ page }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const scheduleTestBase = testBasesMap.get(testRunId)!;
+    const testTeam = scheduleTestBase.getTestTeam()!;
+    const testWorkers = scheduleTestBase.getTestWorkers();
+    const dbUtils = (scheduleTestBase as any).dbUtils;
+
+    // Get the created assignment
+    const AR2 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR2.assignmentsRead;
+    await expect(assignments.length).toBeGreaterThan(0);
+
+    const assignment = assignments[0];
+    const assignmentDate = dayjs(assignment.date);
+
+    // Open assignment for editing
+    const assignmentCell = page.locator(
+      `[data-testid="assignment-cell-${assignment.id}"]`,
+    );
+    await expect(assignmentCell).toBeVisible();
+
+    await assignmentCell.click();
+
+    // Wait for dialog
+    await expect(
+      page.locator('[data-testid="schedule-item-dialog"]'),
+    ).toBeVisible();
+
+    // Change worker to a different one
+    const newWorker = testWorkers.find((w) => w.id !== assignment.workerId);
+    expect(newWorker).toBeDefined();
+
+    const workerSelect = page.locator(
+      '[data-testid="edit-assignment-worker-select"]',
+    );
+    await workerSelect.click();
+    await page
+      .locator(`[data-testid="worker-option-${newWorker!.id}"]`)
+      .click();
+
+    // Save changes
+    const saveButton = page.locator('[data-testid="save-assignment-button"]');
+    await saveButton.click();
+
+    // Wait for dialog to close
+    await expect(
+      page.locator('[data-testid="schedule-item-dialog"]'),
+    ).not.toBeVisible({ timeout: 5000 });
+
+    // Verify assignment was updated in database
+    const AR3 = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const updatedAssignments = AR3.assignmentsRead;
+    const updatedAssignment = updatedAssignments.find(
+      (a) => a.id === assignment.id,
+    );
+    expect(updatedAssignment).toBeDefined();
+
+    expect(updatedAssignment!.workerId).toBe(newWorker!.id);
+    console.log("✅ Assignment worker updated successfully");
+  });
+
   test("should edit assignment on mobile viewport", async ({
     page,
   }, testInfo) => {

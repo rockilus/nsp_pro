@@ -53,8 +53,6 @@ test.describe("Assignment Editing - Team Leader", () => {
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
-    const testTeam = scheduleTestBase.getTestTeam()!;
-    const dbUtils = (scheduleTestBase as any).dbUtils;
 
     // Get the created assignment
     const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
@@ -85,6 +83,37 @@ test.describe("Assignment Editing - Team Leader", () => {
     const assignmentButton = page.locator('[data-testid="assignment-button"]');
     await expect(assignmentButton).not.toBeVisible();
 
+    // Select worker
+    const workerSelect = page.locator(
+      '[data-testid="edit-assignment-worker-select"]',
+    );
+    await workerSelect.click();
+    await page
+      .locator(`[data-testid="worker-option-${testWorkers[0].id}"]`)
+      .click();
+
+    // Select shift
+    const shiftSelect = page.locator(
+      '[data-testid="edit-assignment-shift-select"]',
+    );
+    await shiftSelect.click();
+    await page
+      .locator(`[data-testid="shift-option-${testShifts[0].id}"]`)
+      .click();
+
+    // Select date (tomorrow)
+    const tomorrow = dayjs.utc().add(1, "day");
+
+    const datePicker = page.locator(
+      '[data-testid="edit-assignment-date-picker"]',
+    );
+    await datePicker.waitFor({ state: "visible" });
+    await datePicker.fill("", { force: true }); // Clear first
+    await page.waitForTimeout(100);
+    await datePicker.fill(tomorrow.format("DD/MM/YYYY"), { force: true });
+    await datePicker.press("Enter");
+    await page.waitForTimeout(300);
+
     // Save and Delete buttons should be visible
     const saveButton = page.locator('[data-testid="save-assignment-button"]');
     const deleteButton = page.locator(
@@ -99,9 +128,7 @@ test.describe("Assignment Editing - Team Leader", () => {
   test("should update assignment worker", async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
-    const testTeam = scheduleTestBase.getTestTeam()!;
     const testWorkers = scheduleTestBase.getTestWorkers();
-    const dbUtils = (scheduleTestBase as any).dbUtils;
 
     // Get the created assignment
     const AR2 = await scheduleTestBase.getAssignmentsAndRecurrences(
@@ -168,9 +195,7 @@ test.describe("Assignment Editing - Team Leader", () => {
   test("should update assignment shift", async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
-    const testTeam = scheduleTestBase.getTestTeam()!;
     const testShifts = scheduleTestBase.getTestShifts();
-    const dbUtils = (scheduleTestBase as any).dbUtils;
 
     const AR4 = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
@@ -230,8 +255,6 @@ test.describe("Assignment Editing - Team Leader", () => {
   test("should update assignment date", async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
-    const testTeam = scheduleTestBase.getTestTeam()!;
-    const dbUtils = (scheduleTestBase as any).dbUtils;
 
     const AR6 = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
@@ -296,9 +319,7 @@ test.describe("Assignment Editing - Team Leader", () => {
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
-    const testTeam = scheduleTestBase.getTestTeam()!;
     const testWorkers = scheduleTestBase.getTestWorkers();
-    const dbUtils = (scheduleTestBase as any).dbUtils;
 
     const AR6 = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
