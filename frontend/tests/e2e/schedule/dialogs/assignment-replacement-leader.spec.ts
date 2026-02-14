@@ -259,6 +259,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = scheduleTestBase.getTestWorkers();
 
     // Get the created assignment
     const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
@@ -270,6 +271,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
     await expect(assignments.length).toBeGreaterThan(0);
 
     const assignment = assignments[0];
+    const originalWorkerId = assignment.workerId;
 
     // Set the schedule view to include the date of the assignment
     await scheduleTestBase.setScheduleViewSettings(
@@ -296,6 +298,75 @@ test.describe("Assignment Replacement - Team Leader", () => {
     await expect(checkReplacementButton).toBeVisible();
 
     console.log("✅ Check replacement button visible");
+
+    // Click the check replacement button
+    await checkReplacementButton.click();
+
+    // Wait for the replacement candidates list to appear
+    await page.waitForTimeout(1000); // Wait for API response
+
+    // Verify all workers except the original worker appear in the list
+    const expectedCandidateWorkers = testWorkers.filter(
+      (w) => w.id !== originalWorkerId,
+    );
+
+    for (const worker of expectedCandidateWorkers) {
+      const candidateItem = page.locator(
+        `[data-testid="candidate-${worker.id}"]`,
+      );
+      await expect(candidateItem).toBeVisible();
+
+      // Verify the worker has a replace button
+      const replaceButton = page.locator(
+        `[data-testid="replace-button-${worker.id}"]`,
+      );
+      await expect(replaceButton).toBeVisible();
+    }
+
+    console.log(
+      "✅ All workers except original worker appear with replace buttons",
+    );
+
+    // Verify the original worker does NOT appear in the list
+    const originalWorkerCandidate = page.locator(
+      `[data-testid="candidate-${originalWorkerId}"]`,
+    );
+    await expect(originalWorkerCandidate).not.toBeVisible();
+
+    // Select a replacement worker (pick the first candidate)
+    const replacementWorker = expectedCandidateWorkers[0];
+    const replaceButton = page.locator(
+      `[data-testid="replace-button-${replacementWorker.id}"]`,
+    );
+    await replaceButton.click();
+
+    console.log(
+      `✅ Clicked replace button for worker: ${replacementWorker.name}`,
+    );
+
+    // Wait for the replacement to complete
+    await page.waitForTimeout(1500); // Wait for API call and UI update
+
+    // Fetch assignments again
+    const updatedAR = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const updatedAssignments = updatedAR.assignmentsRead;
+
+    // Find the updated assignment
+    const updatedAssignment = updatedAssignments.find(
+      (a) => a.id === assignment.id,
+    );
+
+    // Verify the assignment is now assigned to the replacement worker
+    expect(updatedAssignment).toBeDefined();
+    expect(updatedAssignment!.workerId).toBe(replacementWorker.id);
+
+    console.log(
+      `✅ Assignment successfully replaced to worker: ${replacementWorker.name}`,
+    );
   });
 
   test("should return expected analysis and ranking for each worker", async ({

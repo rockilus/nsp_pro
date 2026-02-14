@@ -138,32 +138,32 @@ export function ReplacementCandidatesList({
                               {candidate.workerName}
                             </Typography>
                           </Box>
-                          {selectedCandidateId === candidate.workerId && (
-                            <Button
-                              size="small"
-                              variant="contained"
-                              color="primary"
-                              onClick={(e) => {
-                                e.stopPropagation();
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color="primary"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // Select the candidate and confirm in one action
+                              onSelectCandidate(candidate.workerId);
+                              setTimeout(() => {
                                 onConfirmReplacement();
-                              }}
-                              disabled={isSubmitting}
-                              data-testid="select-replacement-button"
-                              sx={{ ml: "auto", textTransform: "none" }}
-                            >
-                              {isSubmitting ? (
-                                <>
-                                  <CircularProgress
-                                    size={12}
-                                    sx={{ mr: 0.5 }}
-                                  />
-                                  {t("selecting")}
-                                </>
-                              ) : (
-                                t("replace")
-                              )}
-                            </Button>
-                          )}
+                              }, 0);
+                            }}
+                            disabled={isSubmitting}
+                            data-testid={`replace-button-${candidate.workerId}`}
+                            sx={{ ml: "auto", textTransform: "none" }}
+                          >
+                            {isSubmitting &&
+                            selectedCandidateId === candidate.workerId ? (
+                              <>
+                                <CircularProgress size={12} sx={{ mr: 0.5 }} />
+                                {t("selecting")}
+                              </>
+                            ) : (
+                              t("replace")
+                            )}
+                          </Button>
                         </Box>
                       }
                       secondary={
