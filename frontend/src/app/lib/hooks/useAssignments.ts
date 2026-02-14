@@ -148,6 +148,8 @@ export const useAssignmentsByPeriod = (
  */
 export const useAssignmentsQueryClient = () => {
   const queryClient = useQueryClient();
+  const apiClient = useApiClient();
+  const { isAuthenticated, user } = useAuth();
 
   return {
     /**
@@ -161,9 +163,6 @@ export const useAssignmentsQueryClient = () => {
       includeCampaign: boolean = false,
       workerId?: string,
     ) => {
-      const apiClient = useApiClient();
-      const { isAuthenticated, user } = useAuth();
-
       if (!isAuthenticated || !user?.id_token) {
         return;
       }
