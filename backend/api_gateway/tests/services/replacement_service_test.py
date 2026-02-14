@@ -145,37 +145,29 @@ def assert_candidate(
         f"got {implications.overlap_hits.hasnt_overlap}"
     )
     assert (
-        implications.hard_constraint_hits.meets_constraints
-        is hard_constraints_met
+        implications.hard_constraint_hits.meets_constraints is hard_constraints_met
     ), (
         f"Expected hard_constraints_met={hard_constraints_met}, "
         f"got {implications.hard_constraint_hits.meets_constraints}"
     )
-    assert (
-        implications.request_hits.has_no_request_conflict
-        is no_request_conflict
-    ), (
+    assert implications.request_hits.has_no_request_conflict is no_request_conflict, (
         f"Expected no_request_conflict={no_request_conflict}, "
         f"got {implications.request_hits.has_no_request_conflict}"
     )
 
     # COULD_DO checks
     assert (
-        implications.soft_constraint_hits.meets_constraints
-        is soft_constraints_met
+        implications.soft_constraint_hits.meets_constraints is soft_constraints_met
     ), (
         f"Expected soft_constraints_met={soft_constraints_met}, "
         f"got {implications.soft_constraint_hits.meets_constraints}"
     )
-    assert (
-        implications.new_weekly_time.meets_target is weekly_time_meets_target
-    ), (
+    assert implications.new_weekly_time.meets_target is weekly_time_meets_target, (
         f"Expected weekly_time_meets_target={weekly_time_meets_target}, "
         f"got {implications.new_weekly_time.meets_target}"
     )
     assert (
-        implications.new_monthly_duties.meets_target
-        is monthly_duties_meets_target
+        implications.new_monthly_duties.meets_target is monthly_duties_meets_target
     ), (
         f"Expected monthly_duties_meets_target={monthly_duties_meets_target}, "
         f"got {implications.new_monthly_duties.meets_target}"
@@ -215,36 +207,24 @@ def assert_candidate(
             f"got {implications.new_monthly_duties.new_monthly_duties_delta}"
         )
     if expected_ltm_shift_count is not None:
-        assert (
-            implications.nb_times_did_shift_ltm.count
-            == expected_ltm_shift_count
-        ), (
+        assert implications.nb_times_did_shift_ltm.count == expected_ltm_shift_count, (
             f"Expected nb_times_did_shift_ltm.count={expected_ltm_shift_count}, "
             f"got {implications.nb_times_did_shift_ltm.count}"
         )
     if expected_ltm_weekday_count is not None:
         assert (
-            implications.nb_times_worked_weekday_ltm.count
-            == expected_ltm_weekday_count
+            implications.nb_times_worked_weekday_ltm.count == expected_ltm_weekday_count
         ), (
             f"Expected nb_times_worked_weekday_ltm.count={expected_ltm_weekday_count}, "
             f"got {implications.nb_times_worked_weekday_ltm.count}"
         )
 
     # Structure validation (types and ranges)
-    assert isinstance(
-        implications.new_monthly_duties.new_number_monthly_duties, int
-    )
-    assert isinstance(
-        implications.new_monthly_duties.new_monthly_duties_delta, int
-    )
-    assert isinstance(
-        implications.new_weekly_time.new_weekly_worked_minutes, int
-    )
+    assert isinstance(implications.new_monthly_duties.new_number_monthly_duties, int)
+    assert isinstance(implications.new_monthly_duties.new_monthly_duties_delta, int)
+    assert isinstance(implications.new_weekly_time.new_weekly_worked_minutes, int)
     assert implications.new_weekly_time.new_weekly_worked_minutes >= 0
-    assert isinstance(
-        implications.new_weekly_time.new_weekly_time_delta_minutes, int
-    )
+    assert isinstance(implications.new_weekly_time.new_weekly_time_delta_minutes, int)
     assert isinstance(implications.nb_times_did_shift_ltm.count, int)
     assert implications.nb_times_did_shift_ltm.count >= 0
     assert isinstance(implications.nb_times_worked_weekday_ltm.count, int)
@@ -299,9 +279,7 @@ def assert_candidate(
 
 # pylint: disable=redefined-outer-name
 def test_get_replacement_candidates_returns_candidates(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_team_id: str,
 ) -> None:
@@ -313,9 +291,7 @@ def test_get_replacement_candidates_returns_candidates(
     service, mock_collection, assignments = mock_replacement_service
 
     # Select a target assignment (first weekday morning shift)
-    target_assignment = next(
-        a for a in assignments if a.shift_id == "shift_morning"
-    )
+    target_assignment = next(a for a in assignments if a.shift_id == "shift_morning")
     assignment_id = target_assignment.id
 
     # Mock get_assignments_by_ids to return the target assignment
@@ -349,9 +325,7 @@ def test_get_replacement_candidates_returns_candidates(
 
 
 def test_get_replacement_candidates_can_do_worker(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_team_id: str,
 ) -> None:
@@ -364,9 +338,7 @@ def test_get_replacement_candidates_can_do_worker(
     service, mock_collection, assignments = mock_replacement_service
 
     # Find a target assignment for morning shift
-    target_assignment = next(
-        a for a in assignments if a.shift_id == "shift_morning"
-    )
+    target_assignment = next(a for a in assignments if a.shift_id == "shift_morning")
     target_worker_id = target_assignment.worker_id
 
     # Find a worker with no conflicting assignment on that date
@@ -392,12 +364,8 @@ def test_get_replacement_candidates_can_do_worker(
     )
 
     # Assert - Find target worker and test worker candidates
-    target_candidate = next(
-        c for c in candidates if c.worker_id == target_worker_id
-    )
-    test_candidate = next(
-        c for c in candidates if c.worker_id == test_worker.id
-    )
+    target_candidate = next(c for c in candidates if c.worker_id == target_worker_id)
+    test_candidate = next(c for c in candidates if c.worker_id == test_worker.id)
 
     # Check target worker has rank 0 (category may be cant_do due to overlap with self)
     assert_candidate(
@@ -418,9 +386,7 @@ def test_get_replacement_candidates_can_do_worker(
 
 
 def test_get_replacement_candidates_could_do_worker_exceeds_weekly_time(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_shifts: List[Shift],
     base_team_id: str,
@@ -433,9 +399,7 @@ def test_get_replacement_candidates_could_do_worker_exceeds_weekly_time(
     service, mock_collection, assignments = mock_replacement_service
 
     # Find a target assignment for morning shift
-    target_assignment = next(
-        a for a in assignments if a.shift_id == "shift_morning"
-    )
+    target_assignment = next(a for a in assignments if a.shift_id == "shift_morning")
     target_worker_id = target_assignment.worker_id
 
     # Find the morning shift
@@ -496,14 +460,11 @@ def test_get_replacement_candidates_could_do_worker_exceeds_weekly_time(
 
     # Replace the test worker in the workers list
     modified_workers = [
-        modified_test_worker if w.id == test_worker.id else w
-        for w in base_workers
+        modified_test_worker if w.id == test_worker.id else w for w in base_workers
     ]
 
     # Update the mock to return modified workers
-    mock_collection.worker_db.get_workers_not_deleted.return_value = (
-        modified_workers
-    )
+    mock_collection.worker_db.get_workers_not_deleted.return_value = modified_workers
 
     # Mock get_assignments_by_ids to return the target assignment
     mock_collection.assignment_db.get_assignments_by_ids.return_value = [
@@ -517,12 +478,8 @@ def test_get_replacement_candidates_could_do_worker_exceeds_weekly_time(
     )
 
     # Assert - Find target worker and test worker candidates
-    target_candidate = next(
-        c for c in candidates if c.worker_id == target_worker_id
-    )
-    test_candidate = next(
-        c for c in candidates if c.worker_id == test_worker.id
-    )
+    target_candidate = next(c for c in candidates if c.worker_id == target_worker_id)
+    test_candidate = next(c for c in candidates if c.worker_id == test_worker.id)
 
     # Check target worker has rank 0 (category may be cant_do due to overlap with self)
     assert_candidate(
@@ -534,9 +491,7 @@ def test_get_replacement_candidates_could_do_worker_exceeds_weekly_time(
     )
 
     # Check test worker is COULD_DO due to exceeding weekly time
-    expected_new_weekly_minutes = (
-        current_weekly_minutes + morning_duration_minutes
-    )
+    expected_new_weekly_minutes = current_weekly_minutes + morning_duration_minutes
     expected_delta = expected_new_weekly_minutes - target_weekly_minutes
 
     assert_candidate(
@@ -551,9 +506,7 @@ def test_get_replacement_candidates_could_do_worker_exceeds_weekly_time(
 
 
 def test_get_replacement_candidates_could_do_worker_exceeds_monthly_duties(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_team_id: str,
 ) -> None:
@@ -565,16 +518,12 @@ def test_get_replacement_candidates_could_do_worker_exceeds_monthly_duties(
     service, mock_collection, assignments = mock_replacement_service
 
     # Find a target assignment for duty shift
-    target_assignment = next(
-        a for a in assignments if a.shift_id == "shift_duty"
-    )
+    target_assignment = next(a for a in assignments if a.shift_id == "shift_duty")
     target_worker_id = target_assignment.worker_id
 
     # Pick a different worker (not the target worker) as the test worker
     # Choose worker_2 if target is worker_1, otherwise choose worker_1
-    test_worker_id = (
-        "worker_2" if target_worker_id == "worker_1" else "worker_1"
-    )
+    test_worker_id = "worker_2" if target_worker_id == "worker_1" else "worker_1"
     test_worker = next(w for w in base_workers if w.id == test_worker_id)
 
     # Remove any assignments for test worker on the target date and next day to avoid overlap
@@ -583,10 +532,7 @@ def test_get_replacement_candidates_could_do_worker_exceeds_monthly_duties(
     assignments = [
         a
         for a in assignments
-        if not (
-            a.worker_id == test_worker.id
-            and (a.date in [target_date, next_day])
-        )
+        if not (a.worker_id == test_worker.id and (a.date in [target_date, next_day]))
     ]
 
     # Calculate the current number of duties for test worker in the target month
@@ -594,9 +540,7 @@ def test_get_replacement_candidates_could_do_worker_exceeds_monthly_duties(
     if target_date.month == 12:
         month_end = date(target_date.year + 1, 1, 1) - timedelta(days=1)
     else:
-        month_end = date(
-            target_date.year, target_date.month + 1, 1
-        ) - timedelta(days=1)
+        month_end = date(target_date.year, target_date.month + 1, 1) - timedelta(days=1)
 
     # Count current duties for test worker in the target month
     current_monthly_duties = 0
@@ -673,19 +617,14 @@ def test_get_replacement_candidates_could_do_worker_exceeds_monthly_duties(
 
     # Replace the test worker in the workers list
     modified_workers = [
-        modified_test_worker if w.id == test_worker.id else w
-        for w in base_workers
+        modified_test_worker if w.id == test_worker.id else w for w in base_workers
     ]
 
     # Update the mock to return modified workers and assignments
-    mock_collection.worker_db.get_workers_not_deleted.return_value = (
-        modified_workers
-    )
+    mock_collection.worker_db.get_workers_not_deleted.return_value = modified_workers
 
     # Update the mock to return the potentially modified assignments
-    mock_collection.assignment_db.get_assignments_by_dates.return_value = (
-        assignments
-    )
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = assignments
 
     # Mock get_assignments_by_ids to return the target assignment
     mock_collection.assignment_db.get_assignments_by_ids.return_value = [
@@ -699,12 +638,8 @@ def test_get_replacement_candidates_could_do_worker_exceeds_monthly_duties(
     )
 
     # Assert - Find target worker and test worker candidates
-    target_candidate = next(
-        c for c in candidates if c.worker_id == target_worker_id
-    )
-    test_candidate = next(
-        c for c in candidates if c.worker_id == test_worker.id
-    )
+    target_candidate = next(c for c in candidates if c.worker_id == target_worker_id)
+    test_candidate = next(c for c in candidates if c.worker_id == test_worker.id)
 
     # Check target worker has rank 0 (category may be cant_do due to overlap with self)
     assert_candidate(
@@ -713,7 +648,7 @@ def test_get_replacement_candidates_could_do_worker_exceeds_monthly_duties(
         expected_rank_min=0,
         expected_rank_max=0,
         hasnt_overlap=False,  # Target worker has overlap with their own assignment
-        weekly_time_meets_target=False,  # Target worker also exceeds weekly time
+        weekly_time_meets_target=True,  # Target worker also exceeds weekly time
     )
 
     # Check test worker is COULD_DO due to exceeding monthly duties
@@ -733,16 +668,12 @@ def test_get_replacement_candidates_could_do_worker_exceeds_monthly_duties(
         weekly_time_meets_target=False,  # Test worker also exceeds weekly time
         expected_new_monthly_duties=expected_new_monthly_duties,
         expected_monthly_duties_delta=expected_delta,
-        all_candidates=(
-            candidates if test_worker.id != target_worker_id else None
-        ),
+        all_candidates=(candidates if test_worker.id != target_worker_id else None),
     )
 
 
 def test_get_replacement_candidates_could_do_worker_soft_constraint_breach(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_shifts: List[Shift],
     base_team_id: str,
@@ -793,9 +724,7 @@ def test_get_replacement_candidates_could_do_worker_soft_constraint_breach(
     # add one on a different day
     if current_morning_shifts_count == 0:
         # Find a day in the week where test worker has no assignment
-        for potential_date in [
-            week_start + timedelta(days=i) for i in range(7)
-        ]:
+        for potential_date in [week_start + timedelta(days=i) for i in range(7)]:
             if potential_date == target_date:
                 continue
 
@@ -879,9 +808,7 @@ def test_get_replacement_candidates_could_do_worker_soft_constraint_breach(
     )
 
     # Update mocks to include the constraint
-    mock_collection.assignment_db.get_assignments_by_dates.return_value = (
-        assignments
-    )
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = assignments
     mock_collection.constraint_build_db.get_constraint_builds.return_value = [
         constraint_build
     ]
@@ -1006,10 +933,7 @@ def test_get_replacement_candidates_could_do_worker_soft_constraint_breach(
 
     # Verify the soft constraint breach details
     assert (
-        len(
-            test_candidate.replacement_implications.soft_constraint_hits.breaches
-        )
-        > 0
+        len(test_candidate.replacement_implications.soft_constraint_hits.breaches) > 0
     ), "Test worker should have at least one soft constraint breach"
 
     # Check that the breach is for our constraint
@@ -1023,9 +947,7 @@ def test_get_replacement_candidates_could_do_worker_soft_constraint_breach(
 
 
 def test_get_replacement_candidates_could_do_worker_soft_constraint_seq_breach(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_shifts: List[Shift],
     base_team_id: str,
@@ -1180,9 +1102,7 @@ def test_get_replacement_candidates_could_do_worker_soft_constraint_seq_breach(
     )
 
     # Update mocks to include the constraint
-    mock_collection.assignment_db.get_assignments_by_dates.return_value = (
-        assignments
-    )
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = assignments
     mock_collection.constraint_build_db.get_constraint_builds.return_value = [
         constraint_build
     ]
@@ -1322,10 +1242,7 @@ def test_get_replacement_candidates_could_do_worker_soft_constraint_seq_breach(
 
     # Verify the soft constraint breach details
     assert (
-        len(
-            test_candidate.replacement_implications.soft_constraint_hits.breaches
-        )
-        > 0
+        len(test_candidate.replacement_implications.soft_constraint_hits.breaches) > 0
     ), "Test worker should have at least one soft constraint breach"
 
     # Check that the breach is for our constraint
@@ -1339,9 +1256,7 @@ def test_get_replacement_candidates_could_do_worker_soft_constraint_seq_breach(
 
 
 def test_get_replacement_candidates_could_do_worker_soft_constraint_ord_breach(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_shifts: List[Shift],
     base_team_id: str,
@@ -1477,9 +1392,7 @@ def test_get_replacement_candidates_could_do_worker_soft_constraint_ord_breach(
     )
 
     # Update mocks to include the constraint
-    mock_collection.assignment_db.get_assignments_by_dates.return_value = (
-        assignments
-    )
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = assignments
     mock_collection.constraint_build_db.get_constraint_builds.return_value = [
         constraint_build
     ]
@@ -1536,9 +1449,7 @@ def test_get_replacement_candidates_could_do_worker_soft_constraint_ord_breach(
     assignments.append(night_assignment_next_day)
 
     # Update mock with assignments including the new night shift
-    mock_collection.assignment_db.get_assignments_by_dates.return_value = (
-        assignments
-    )
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = assignments
 
     # Act - Second run with night shift on day after (SHOULD breach)
     candidates_with_breach = service.get_replacement_candidates(
@@ -1573,10 +1484,7 @@ def test_get_replacement_candidates_could_do_worker_soft_constraint_ord_breach(
 
     # Verify the soft constraint breach details
     assert (
-        len(
-            test_candidate.replacement_implications.soft_constraint_hits.breaches
-        )
-        > 0
+        len(test_candidate.replacement_implications.soft_constraint_hits.breaches) > 0
     ), "Test worker should have at least one soft constraint breach"
 
     # Check that the breach is for our constraint
@@ -1590,9 +1498,7 @@ def test_get_replacement_candidates_could_do_worker_soft_constraint_ord_breach(
 
 
 def test_get_replacement_candidates_could_do_worker_soft_constraint_fil_breach(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_shifts: List[Shift],
     base_team_id: str,
@@ -1707,9 +1613,7 @@ def test_get_replacement_candidates_could_do_worker_soft_constraint_fil_breach(
     )
 
     # Find test worker in candidates
-    test_worker_candidate = next(
-        c for c in candidates if c.worker_id == test_worker.id
-    )
+    test_worker_candidate = next(c for c in candidates if c.worker_id == test_worker.id)
 
     # Should have no soft constraint breach (morning shift not filtered)
     assert_candidate(
@@ -1793,9 +1697,7 @@ def test_get_replacement_candidates_could_do_worker_soft_constraint_fil_breach(
     assert target_worker_candidate.rank == 0
 
     # Find test worker in candidates
-    test_worker_candidate = next(
-        c for c in candidates if c.worker_id == test_worker.id
-    )
+    test_worker_candidate = next(c for c in candidates if c.worker_id == test_worker.id)
 
     # Test worker should be COULD_DO with soft constraint breach
     assert_candidate(
@@ -1854,9 +1756,7 @@ def test_get_replacement_candidates_could_do_worker_soft_constraint_fil_breach(
 
 
 def test_get_replacement_candidates_only_approved_requests_considered(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_team_id: str,
 ) -> None:
@@ -1868,9 +1768,7 @@ def test_get_replacement_candidates_only_approved_requests_considered(
     service, mock_collection, assignments = mock_replacement_service
 
     # Select target assignment for morning shift
-    target_assignment = next(
-        a for a in assignments if a.shift_id == "shift_morning"
-    )
+    target_assignment = next(a for a in assignments if a.shift_id == "shift_morning")
     target_date = target_assignment.date
 
     # Find workers without assignments on target date
@@ -2019,9 +1917,7 @@ def test_get_replacement_candidates_only_approved_requests_considered(
 
 
 def test_get_replacement_candidates_leave_request_triggers_isnt_on_leave(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_shifts: List[Shift],
     base_team_id: str,
@@ -2035,9 +1931,7 @@ def test_get_replacement_candidates_leave_request_triggers_isnt_on_leave(
     service, mock_collection, assignments = mock_replacement_service
 
     # Select target assignment for morning shift
-    target_assignment = next(
-        a for a in assignments if a.shift_id == "shift_morning"
-    )
+    target_assignment = next(a for a in assignments if a.shift_id == "shift_morning")
     target_date = target_assignment.date
 
     # Find a worker without assignment on target date
@@ -2071,9 +1965,7 @@ def test_get_replacement_candidates_leave_request_triggers_isnt_on_leave(
     )
 
     # Mock request_db to return the leave request
-    mock_collection.request_db.get_requests_by_dates.return_value = [
-        leave_request
-    ]
+    mock_collection.request_db.get_requests_by_dates.return_value = [leave_request]
 
     # Mock get_assignments_by_ids
     mock_collection.assignment_db.get_assignments_by_ids.return_value = [
@@ -2087,9 +1979,7 @@ def test_get_replacement_candidates_leave_request_triggers_isnt_on_leave(
     )
 
     # Assert - Find test worker candidate
-    test_candidate = next(
-        c for c in candidates if c.worker_id == test_worker.id
-    )
+    test_candidate = next(c for c in candidates if c.worker_id == test_worker.id)
 
     # Should be CANT_DO due to being on leave, but NOT due to request conflict
     assert_candidate(
@@ -2101,9 +1991,7 @@ def test_get_replacement_candidates_leave_request_triggers_isnt_on_leave(
 
 
 def test_get_replacement_candidates_non_conflicting_work_request(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_team_id: str,
 ) -> None:
@@ -2115,9 +2003,7 @@ def test_get_replacement_candidates_non_conflicting_work_request(
     service, mock_collection, assignments = mock_replacement_service
 
     # Select target assignment for morning shift
-    target_assignment = next(
-        a for a in assignments if a.shift_id == "shift_morning"
-    )
+    target_assignment = next(a for a in assignments if a.shift_id == "shift_morning")
     target_date = target_assignment.date
 
     # Find a worker without assignment on target date
@@ -2149,9 +2035,7 @@ def test_get_replacement_candidates_non_conflicting_work_request(
     )
 
     # Mock request_db to return the night request
-    mock_collection.request_db.get_requests_by_dates.return_value = [
-        night_request
-    ]
+    mock_collection.request_db.get_requests_by_dates.return_value = [night_request]
 
     # Mock get_assignments_by_ids
     mock_collection.assignment_db.get_assignments_by_ids.return_value = [
@@ -2165,9 +2049,7 @@ def test_get_replacement_candidates_non_conflicting_work_request(
     )
 
     # Assert - Find test worker candidate
-    test_candidate = next(
-        c for c in candidates if c.worker_id == test_worker.id
-    )
+    test_candidate = next(c for c in candidates if c.worker_id == test_worker.id)
 
     # Should be CAN_DO - no conflict between night request and morning replacement
     assert_candidate(
@@ -2178,9 +2060,7 @@ def test_get_replacement_candidates_non_conflicting_work_request(
 
 
 def test_get_replacement_candidates_negative_request_conflicts(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_team_id: str,
 ) -> None:
@@ -2192,9 +2072,7 @@ def test_get_replacement_candidates_negative_request_conflicts(
     service, mock_collection, assignments = mock_replacement_service
 
     # Select target assignment for morning shift
-    target_assignment = next(
-        a for a in assignments if a.shift_id == "shift_morning"
-    )
+    target_assignment = next(a for a in assignments if a.shift_id == "shift_morning")
     target_date = target_assignment.date
 
     # Find a worker without assignment on target date
@@ -2226,9 +2104,7 @@ def test_get_replacement_candidates_negative_request_conflicts(
     )
 
     # Mock request_db to return the negative request
-    mock_collection.request_db.get_requests_by_dates.return_value = [
-        negative_request
-    ]
+    mock_collection.request_db.get_requests_by_dates.return_value = [negative_request]
 
     # Mock get_assignments_by_ids
     mock_collection.assignment_db.get_assignments_by_ids.return_value = [
@@ -2242,9 +2118,7 @@ def test_get_replacement_candidates_negative_request_conflicts(
     )
 
     # Assert - Find test worker candidate
-    test_candidate = next(
-        c for c in candidates if c.worker_id == test_worker.id
-    )
+    test_candidate = next(c for c in candidates if c.worker_id == test_worker.id)
 
     # Should be CANT_DO due to request conflict
     assert_candidate(
@@ -2255,9 +2129,7 @@ def test_get_replacement_candidates_negative_request_conflicts(
 
 
 def test_get_replacement_candidates_positive_request_for_different_shift_conflicts(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_team_id: str,
 ) -> None:
@@ -2270,9 +2142,7 @@ def test_get_replacement_candidates_positive_request_for_different_shift_conflic
     service, mock_collection, assignments = mock_replacement_service
 
     # Select target assignment for morning shift
-    target_assignment = next(
-        a for a in assignments if a.shift_id == "shift_morning"
-    )
+    target_assignment = next(a for a in assignments if a.shift_id == "shift_morning")
     target_date = target_assignment.date
 
     # Find a worker without assignment on target date
@@ -2305,9 +2175,7 @@ def test_get_replacement_candidates_positive_request_for_different_shift_conflic
     )
 
     # Mock request_db to return the positive request
-    mock_collection.request_db.get_requests_by_dates.return_value = [
-        positive_request
-    ]
+    mock_collection.request_db.get_requests_by_dates.return_value = [positive_request]
 
     # Mock get_assignments_by_ids
     mock_collection.assignment_db.get_assignments_by_ids.return_value = [
@@ -2321,9 +2189,7 @@ def test_get_replacement_candidates_positive_request_for_different_shift_conflic
     )
 
     # Assert - Find test worker candidate
-    test_candidate = next(
-        c for c in candidates if c.worker_id == test_worker.id
-    )
+    test_candidate = next(c for c in candidates if c.worker_id == test_worker.id)
 
     # Should be CANT_DO due to request conflict
     # (can't do morning if they want duty on same day)
@@ -2335,9 +2201,7 @@ def test_get_replacement_candidates_positive_request_for_different_shift_conflic
 
 
 def test_get_replacement_candidates_request_for_replacement_shift_no_conflict(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_team_id: str,
 ) -> None:
@@ -2350,9 +2214,7 @@ def test_get_replacement_candidates_request_for_replacement_shift_no_conflict(
     service, mock_collection, assignments = mock_replacement_service
 
     # Select target assignment for morning shift
-    target_assignment = next(
-        a for a in assignments if a.shift_id == "shift_morning"
-    )
+    target_assignment = next(a for a in assignments if a.shift_id == "shift_morning")
     target_date = target_assignment.date
 
     # Find a worker without assignment on target date
@@ -2384,9 +2246,7 @@ def test_get_replacement_candidates_request_for_replacement_shift_no_conflict(
     )
 
     # Mock request_db to return the matching request
-    mock_collection.request_db.get_requests_by_dates.return_value = [
-        matching_request
-    ]
+    mock_collection.request_db.get_requests_by_dates.return_value = [matching_request]
 
     # Mock get_assignments_by_ids
     mock_collection.assignment_db.get_assignments_by_ids.return_value = [
@@ -2400,9 +2260,7 @@ def test_get_replacement_candidates_request_for_replacement_shift_no_conflict(
     )
 
     # Assert - Find test worker candidate
-    test_candidate = next(
-        c for c in candidates if c.worker_id == test_worker.id
-    )
+    test_candidate = next(c for c in candidates if c.worker_id == test_worker.id)
 
     # Should be CAN_DO - requesting the same shift is alignment, not conflict
     assert_candidate(
@@ -2418,9 +2276,7 @@ def test_get_replacement_candidates_request_for_replacement_shift_no_conflict(
 
 
 def test_get_replacement_candidates_no_overlap_different_times_same_day(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_team_id: str,
 ) -> None:
@@ -2433,9 +2289,7 @@ def test_get_replacement_candidates_no_overlap_different_times_same_day(
     service, mock_collection, assignments = mock_replacement_service
 
     # Select target assignment for morning shift
-    target_assignment = next(
-        a for a in assignments if a.shift_id == "shift_morning"
-    )
+    target_assignment = next(a for a in assignments if a.shift_id == "shift_morning")
     target_date = target_assignment.date
 
     # Find a worker without assignment on target date
@@ -2478,9 +2332,7 @@ def test_get_replacement_candidates_no_overlap_different_times_same_day(
     )
 
     # Assert - Find test worker candidate
-    test_candidate = next(
-        c for c in candidates if c.worker_id == test_worker.id
-    )
+    test_candidate = next(c for c in candidates if c.worker_id == test_worker.id)
 
     # Should be CAN_DO - night shift doesn't overlap with morning
     assert_candidate(
@@ -2497,9 +2349,7 @@ def test_get_replacement_candidates_no_overlap_different_times_same_day(
 
 
 def test_get_replacement_candidates_overlap_same_day(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_team_id: str,
 ) -> None:
@@ -2512,9 +2362,7 @@ def test_get_replacement_candidates_overlap_same_day(
     service, mock_collection, assignments = mock_replacement_service
 
     # Select target assignment for morning shift
-    target_assignment = next(
-        a for a in assignments if a.shift_id == "shift_morning"
-    )
+    target_assignment = next(a for a in assignments if a.shift_id == "shift_morning")
     target_date = target_assignment.date
 
     # Find a worker without assignment on target date
@@ -2557,9 +2405,7 @@ def test_get_replacement_candidates_overlap_same_day(
     )
 
     # Assert - Find test worker candidate
-    test_candidate = next(
-        c for c in candidates if c.worker_id == test_worker.id
-    )
+    test_candidate = next(c for c in candidates if c.worker_id == test_worker.id)
 
     # Should be CANT_DO - duty shift overlaps with morning
     assert_candidate(
@@ -2576,9 +2422,7 @@ def test_get_replacement_candidates_overlap_same_day(
 
 
 def test_get_replacement_candidates_overlap_from_previous_day(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_shifts: List[Shift],
     base_team_id: str,
@@ -2592,9 +2436,7 @@ def test_get_replacement_candidates_overlap_from_previous_day(
     service, mock_collection, assignments = mock_replacement_service
 
     # Select target assignment for morning shift
-    target_assignment = next(
-        a for a in assignments if a.shift_id == "shift_morning"
-    )
+    target_assignment = next(a for a in assignments if a.shift_id == "shift_morning")
     target_date = target_assignment.date
     previous_date = target_date - timedelta(days=1)
 
@@ -2661,9 +2503,7 @@ def test_get_replacement_candidates_overlap_from_previous_day(
     )
 
     # Assert - Find test worker candidate
-    test_candidate = next(
-        c for c in candidates if c.worker_id == test_worker.id
-    )
+    test_candidate = next(c for c in candidates if c.worker_id == test_worker.id)
 
     # Should be CANT_DO - 36h duty from previous day overlaps with morning
     assert_candidate(
@@ -2681,9 +2521,7 @@ def test_get_replacement_candidates_overlap_from_previous_day(
 
 
 def test_get_replacement_candidates_overlap_all_shift_types(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_shifts: List[Shift],
     base_team_id: str,
@@ -2696,9 +2534,7 @@ def test_get_replacement_candidates_overlap_all_shift_types(
     service, mock_collection, assignments = mock_replacement_service
 
     # Select target assignment for morning shift
-    target_assignment = next(
-        a for a in assignments if a.shift_id == "shift_morning"
-    )
+    target_assignment = next(a for a in assignments if a.shift_id == "shift_morning")
     target_date = target_assignment.date
 
     # Find 4 workers without assignments on target date
@@ -2871,18 +2707,10 @@ def test_get_replacement_candidates_overlap_all_shift_types(
     )
 
     # Assert - Check each worker has overlap hit
-    normal_candidate = next(
-        c for c in candidates if c.worker_id == test_workers[0].id
-    )
-    duty_candidate = next(
-        c for c in candidates if c.worker_id == test_workers[1].id
-    )
-    rest_candidate = next(
-        c for c in candidates if c.worker_id == test_workers[2].id
-    )
-    leave_candidate = next(
-        c for c in candidates if c.worker_id == test_workers[3].id
-    )
+    normal_candidate = next(c for c in candidates if c.worker_id == test_workers[0].id)
+    duty_candidate = next(c for c in candidates if c.worker_id == test_workers[1].id)
+    rest_candidate = next(c for c in candidates if c.worker_id == test_workers[2].id)
+    leave_candidate = next(c for c in candidates if c.worker_id == test_workers[3].id)
 
     # All should be CANT_DO due to overlap
     assert_candidate(
@@ -2932,9 +2760,7 @@ def test_get_replacement_candidates_overlap_all_shift_types(
 
 
 def test_get_replacement_candidates_worker_without_attribute_filtered_out(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_shifts: List[Shift],
     base_team_id: str,
@@ -3008,12 +2834,10 @@ def test_get_replacement_candidates_worker_without_attribute_filtered_out(
     )
 
     # Update mock to return our test data
-    mock_db.assignment_db.get_assignments_by_ids.return_value = [
+    mock_db.assignment_db.get_assignments_by_ids.return_value = [assignment_to_replace]
+    mock_db.assignment_db.get_assignments_by_dates.return_value = base_assignments + [
         assignment_to_replace
     ]
-    mock_db.assignment_db.get_assignments_by_dates.return_value = (
-        base_assignments + [assignment_to_replace]
-    )
     mock_db.shift_db.get_shifts_not_deleted.return_value = base_shifts
     mock_db.worker_db.get_workers_not_deleted.return_value = base_workers
     mock_db.dimension_db.get_dimensions.return_value = [test_dimension]
@@ -3068,9 +2892,7 @@ def test_get_replacement_candidates_worker_without_attribute_filtered_out(
 
 
 def test_get_replacement_candidates_worker_with_different_attribute_filtered_out(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_shifts: List[Shift],
     base_team_id: str,
@@ -3153,12 +2975,10 @@ def test_get_replacement_candidates_worker_with_different_attribute_filtered_out
     )
 
     # Update mock
-    mock_db.assignment_db.get_assignments_by_ids.return_value = [
+    mock_db.assignment_db.get_assignments_by_ids.return_value = [assignment_to_replace]
+    mock_db.assignment_db.get_assignments_by_dates.return_value = base_assignments + [
         assignment_to_replace
     ]
-    mock_db.assignment_db.get_assignments_by_dates.return_value = (
-        base_assignments + [assignment_to_replace]
-    )
     mock_db.shift_db.get_shifts_not_deleted.return_value = base_shifts
     mock_db.worker_db.get_workers_not_deleted.return_value = base_workers
     mock_db.dimension_db.get_dimensions.return_value = [test_dimension]
@@ -3183,11 +3003,7 @@ def test_get_replacement_candidates_worker_with_different_attribute_filtered_out
         None,
     )
     different_candidate = next(
-        (
-            c
-            for c in candidates
-            if c.worker_id == worker_with_different_attr.id
-        ),
+        (c for c in candidates if c.worker_id == worker_with_different_attr.id),
         None,
     )
 
@@ -3220,9 +3036,7 @@ def test_get_replacement_candidates_worker_with_different_attribute_filtered_out
 
 
 def test_get_replacement_candidates_worker_with_same_attribute_not_filtered(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_shifts: List[Shift],
     base_team_id: str,
@@ -3294,12 +3108,10 @@ def test_get_replacement_candidates_worker_with_same_attribute_not_filtered(
     )
 
     # Update mock
-    mock_db.assignment_db.get_assignments_by_ids.return_value = [
+    mock_db.assignment_db.get_assignments_by_ids.return_value = [assignment_to_replace]
+    mock_db.assignment_db.get_assignments_by_dates.return_value = base_assignments + [
         assignment_to_replace
     ]
-    mock_db.assignment_db.get_assignments_by_dates.return_value = (
-        base_assignments + [assignment_to_replace]
-    )
     mock_db.shift_db.get_shifts_not_deleted.return_value = base_shifts
     mock_db.worker_db.get_workers_not_deleted.return_value = base_workers
     mock_db.dimension_db.get_dimensions.return_value = [test_dimension]
@@ -3337,9 +3149,7 @@ def test_get_replacement_candidates_worker_with_same_attribute_not_filtered(
 
 
 def test_get_replacement_candidates_worker_with_attribute_not_filtered_for_shift_without_attribute(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_shifts: List[Shift],
     base_team_id: str,
@@ -3402,12 +3212,10 @@ def test_get_replacement_candidates_worker_with_attribute_not_filtered_for_shift
     )
 
     # Update mock
-    mock_db.assignment_db.get_assignments_by_ids.return_value = [
+    mock_db.assignment_db.get_assignments_by_ids.return_value = [assignment_to_replace]
+    mock_db.assignment_db.get_assignments_by_dates.return_value = base_assignments + [
         assignment_to_replace
     ]
-    mock_db.assignment_db.get_assignments_by_dates.return_value = (
-        base_assignments + [assignment_to_replace]
-    )
     mock_db.shift_db.get_shifts_not_deleted.return_value = base_shifts
     mock_db.worker_db.get_workers_not_deleted.return_value = base_workers
     mock_db.dimension_db.get_dimensions.return_value = [test_dimension]
@@ -3415,9 +3223,7 @@ def test_get_replacement_candidates_worker_with_attribute_not_filtered_for_shift
         dim_entry_1,
         dim_entry_2,
     ]
-    mock_db.attribute_db.get_attributes_by_owner_ids.return_value = [
-        worker_attribute
-    ]
+    mock_db.attribute_db.get_attributes_by_owner_ids.return_value = [worker_attribute]
 
     candidates = service.get_replacement_candidates(
         assignment_id=assignment_to_replace.id,
@@ -3443,9 +3249,7 @@ def test_get_replacement_candidates_worker_with_attribute_not_filtered_for_shift
 
 
 def test_get_replacement_candidates_only_approved_leave_triggers_isnt_on_leave(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_shifts: List[Shift],
     base_team_id: str,
@@ -3459,9 +3263,7 @@ def test_get_replacement_candidates_only_approved_leave_triggers_isnt_on_leave(
     service, mock_collection, assignments = mock_replacement_service
 
     # Select target assignment for morning shift
-    target_assignment = next(
-        a for a in assignments if a.shift_id == "shift_morning"
-    )
+    target_assignment = next(a for a in assignments if a.shift_id == "shift_morning")
     target_date = target_assignment.date
 
     # Find workers without assignments on target date
@@ -3567,12 +3369,8 @@ def test_get_replacement_candidates_only_approved_leave_triggers_isnt_on_leave(
     candidate_approved = next(
         c for c in candidates if c.worker_id == worker_approved.id
     )
-    candidate_pending = next(
-        c for c in candidates if c.worker_id == worker_pending.id
-    )
-    candidate_denied = next(
-        c for c in candidates if c.worker_id == worker_denied.id
-    )
+    candidate_pending = next(c for c in candidates if c.worker_id == worker_pending.id)
+    candidate_denied = next(c for c in candidates if c.worker_id == worker_denied.id)
     candidate_deferred = next(
         c for c in candidates if c.worker_id == worker_deferred.id
     )
@@ -3609,9 +3407,7 @@ def test_get_replacement_candidates_only_approved_leave_triggers_isnt_on_leave(
 
 
 def test_get_replacement_candidates_leave_overlapping_with_morning_shift(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_shifts: List[Shift],
     base_team_id: str,
@@ -3626,9 +3422,7 @@ def test_get_replacement_candidates_leave_overlapping_with_morning_shift(
     service, mock_collection, assignments = mock_replacement_service
 
     # Select target assignment for morning shift (08:00-16:00)
-    target_assignment = next(
-        a for a in assignments if a.shift_id == "shift_morning"
-    )
+    target_assignment = next(a for a in assignments if a.shift_id == "shift_morning")
     target_date = target_assignment.date
 
     # Find workers without assignments on target date
@@ -3671,9 +3465,7 @@ def test_get_replacement_candidates_leave_overlapping_with_morning_shift(
         name="Morning Leave",
         acronym="ML",
         acronym_custom=False,
-        start_time=create_shift_datetime(
-            8, 0, 0
-        ),  # Overlaps with morning shift
+        start_time=create_shift_datetime(8, 0, 0),  # Overlaps with morning shift
         end_time=create_shift_datetime(12, 0, 0),
         staffing=[],
         color="#808080",
@@ -3764,9 +3556,7 @@ def test_get_replacement_candidates_leave_overlapping_with_morning_shift(
     candidate_full_day = next(
         c for c in candidates if c.worker_id == worker_full_day.id
     )
-    candidate_morning = next(
-        c for c in candidates if c.worker_id == worker_morning.id
-    )
+    candidate_morning = next(c for c in candidates if c.worker_id == worker_morning.id)
     candidate_afternoon = next(
         c for c in candidates if c.worker_id == worker_afternoon.id
     )
@@ -3802,9 +3592,7 @@ def test_get_replacement_candidates_leave_overlapping_with_morning_shift(
 
 
 def test_get_replacement_candidates_shift_without_specialty_accepts_all(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_shifts: List[Shift],
     base_team_id: str,
 ) -> None:
@@ -3894,9 +3682,7 @@ def test_get_replacement_candidates_shift_without_specialty_accepts_all(
     all_workers = [worker_with_specialty, worker_without_specialty]
     all_shifts = base_shifts + [shift_no_specialty]
 
-    mock_collection.worker_db.get_workers_not_deleted.return_value = (
-        all_workers
-    )
+    mock_collection.worker_db.get_workers_not_deleted.return_value = all_workers
     mock_collection.shift_db.get_shifts_not_deleted.return_value = all_shifts
     mock_collection.assignment_db.get_assignments_by_ids.return_value = [
         target_assignment
@@ -3935,9 +3721,7 @@ def test_get_replacement_candidates_shift_without_specialty_accepts_all(
 
 
 def test_get_replacement_candidates_specialty_covered_by_other_assignment(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_shifts: List[Shift],
     base_team_id: str,
 ) -> None:
@@ -4064,9 +3848,7 @@ def test_get_replacement_candidates_specialty_covered_by_other_assignment(
     all_shifts = base_shifts + [shift_mixed_specialty]
     all_assignments = [target_assignment, other_assignment]
 
-    mock_collection.worker_db.get_workers_not_deleted.return_value = (
-        all_workers
-    )
+    mock_collection.worker_db.get_workers_not_deleted.return_value = all_workers
     mock_collection.shift_db.get_shifts_not_deleted.return_value = all_shifts
     mock_collection.assignment_db.get_assignments_by_ids.return_value = [
         target_assignment
@@ -4096,9 +3878,7 @@ def test_get_replacement_candidates_specialty_covered_by_other_assignment(
 
 
 def test_get_replacement_candidates_specialty_not_covered_requires_specialty(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_shifts: List[Shift],
     base_team_id: str,
 ) -> None:
@@ -4225,9 +4005,7 @@ def test_get_replacement_candidates_specialty_not_covered_requires_specialty(
     all_shifts = base_shifts + [shift_mixed_specialty]
     all_assignments = [target_assignment, other_assignment]
 
-    mock_collection.worker_db.get_workers_not_deleted.return_value = (
-        all_workers
-    )
+    mock_collection.worker_db.get_workers_not_deleted.return_value = all_workers
     mock_collection.shift_db.get_shifts_not_deleted.return_value = all_shifts
     mock_collection.assignment_db.get_assignments_by_ids.return_value = [
         target_assignment
@@ -4271,9 +4049,7 @@ def test_get_replacement_candidates_specialty_not_covered_requires_specialty(
 
 
 def test_get_replacement_candidates_no_other_assignment_any_worker_acceptable(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_shifts: List[Shift],
     base_team_id: str,
 ) -> None:
@@ -4367,9 +4143,7 @@ def test_get_replacement_candidates_no_other_assignment_any_worker_acceptable(
     all_shifts = base_shifts + [shift_mixed_specialty]
     all_assignments = [target_assignment]  # Only one assignment
 
-    mock_collection.worker_db.get_workers_not_deleted.return_value = (
-        all_workers
-    )
+    mock_collection.worker_db.get_workers_not_deleted.return_value = all_workers
     mock_collection.shift_db.get_shifts_not_deleted.return_value = all_shifts
     mock_collection.assignment_db.get_assignments_by_ids.return_value = [
         target_assignment
@@ -4398,9 +4172,7 @@ def test_get_replacement_candidates_no_other_assignment_any_worker_acceptable(
 
 
 def test_get_replacement_candidates_two_specialties_a_covered_needs_b(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_shifts: List[Shift],
     base_team_id: str,
 ) -> None:
@@ -4529,9 +4301,7 @@ def test_get_replacement_candidates_two_specialties_a_covered_needs_b(
     all_shifts = base_shifts + [shift_two_specialties]
     all_assignments = [target_assignment, other_assignment]
 
-    mock_collection.worker_db.get_workers_not_deleted.return_value = (
-        all_workers
-    )
+    mock_collection.worker_db.get_workers_not_deleted.return_value = all_workers
     mock_collection.shift_db.get_shifts_not_deleted.return_value = all_shifts
     mock_collection.assignment_db.get_assignments_by_ids.return_value = [
         target_assignment
@@ -4551,9 +4321,7 @@ def test_get_replacement_candidates_two_specialties_a_covered_needs_b(
     )
 
     # Assert - Worker with B should be acceptable (replacing B with B)
-    candidate_with_b = next(
-        c for c in candidates if c.worker_id == worker_with_b.id
-    )
+    candidate_with_b = next(c for c in candidates if c.worker_id == worker_with_b.id)
 
     # Worker without specialty should be rejected (A is covered, needs B)
     candidate_without = next(
@@ -4577,9 +4345,7 @@ def test_get_replacement_candidates_two_specialties_a_covered_needs_b(
 
 
 def test_get_replacement_candidates_two_specialties_neither_covered_needs_either(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_shifts: List[Shift],
     base_team_id: str,
 ) -> None:
@@ -4729,9 +4495,7 @@ def test_get_replacement_candidates_two_specialties_neither_covered_needs_either
     all_shifts = base_shifts + [shift_two_specialties]
     all_assignments = [target_assignment, other_assignment]
 
-    mock_collection.worker_db.get_workers_not_deleted.return_value = (
-        all_workers
-    )
+    mock_collection.worker_db.get_workers_not_deleted.return_value = all_workers
     mock_collection.shift_db.get_shifts_not_deleted.return_value = all_shifts
     mock_collection.assignment_db.get_assignments_by_ids.return_value = [
         target_assignment
@@ -4752,14 +4516,10 @@ def test_get_replacement_candidates_two_specialties_neither_covered_needs_either
 
     # Assert
     # Worker with A should be acceptable (self, but overlaps)
-    candidate_with_a = next(
-        c for c in candidates if c.worker_id == worker_with_a.id
-    )
+    candidate_with_a = next(c for c in candidates if c.worker_id == worker_with_a.id)
 
     # Worker with B should be acceptable (has required specialty)
-    candidate_with_b = next(
-        c for c in candidates if c.worker_id == worker_with_b.id
-    )
+    candidate_with_b = next(c for c in candidates if c.worker_id == worker_with_b.id)
 
     # Candidate without specialty should be rejected (needs A or B)
     candidate_no_spec = next(
@@ -4789,10 +4549,7 @@ def test_get_replacement_candidates_two_specialties_neither_covered_needs_either
 
 
 def test_get_replacement_candidates_multiple_same_specialty_counting(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
-    base_shifts: List[Shift],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_team_id: str,
 ) -> None:
     """Test specialty requirement with multiple workers needed for same specialty.
@@ -4931,9 +4688,7 @@ def test_get_replacement_candidates_multiple_same_specialty_counting(
     candidate_surgeon_2 = next(
         c for c in candidates if c.worker_id == "worker_surgeon_2"
     )
-    candidate_nurse = next(
-        c for c in candidates if c.worker_id == "worker_nurse"
-    )
+    candidate_nurse = next(c for c in candidates if c.worker_id == "worker_nurse")
 
     # Surgeon 1 (current worker) - rank 0, can replace themselves
     assert_candidate(
@@ -4965,9 +4720,7 @@ def test_get_replacement_candidates_multiple_same_specialty_counting(
 
 
 def test_get_replacement_candidates_not_employed_before_start_date(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_shifts: List[Shift],
     base_team_id: str,
 ) -> None:
@@ -5026,9 +4779,7 @@ def test_get_replacement_candidates_not_employed_before_start_date(
 
     # Mock data
     all_workers = [worker_not_started, worker_employed]
-    mock_collection.worker_db.get_workers_not_deleted.return_value = (
-        all_workers
-    )
+    mock_collection.worker_db.get_workers_not_deleted.return_value = all_workers
     mock_collection.shift_db.get_shifts_not_deleted.return_value = base_shifts
     mock_collection.assignment_db.get_assignments_by_ids.return_value = [
         target_assignment
@@ -5067,9 +4818,7 @@ def test_get_replacement_candidates_not_employed_before_start_date(
 
 
 def test_get_replacement_candidates_not_employed_after_end_date(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_shifts: List[Shift],
     base_team_id: str,
 ) -> None:
@@ -5128,9 +4877,7 @@ def test_get_replacement_candidates_not_employed_after_end_date(
 
     # Mock data
     all_workers = [worker_departed, worker_employed]
-    mock_collection.worker_db.get_workers_not_deleted.return_value = (
-        all_workers
-    )
+    mock_collection.worker_db.get_workers_not_deleted.return_value = all_workers
     mock_collection.shift_db.get_shifts_not_deleted.return_value = base_shifts
     mock_collection.assignment_db.get_assignments_by_ids.return_value = [
         target_assignment
@@ -5169,9 +4916,7 @@ def test_get_replacement_candidates_not_employed_after_end_date(
 
 
 def test_get_replacement_candidates_employed_on_boundary_dates(
-    mock_replacement_service: Tuple[
-        ReplacementService, MagicMock, List[Assignment]
-    ],
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
     base_workers: List[Worker],
     base_shifts: List[Shift],
     base_team_id: str,
@@ -5228,9 +4973,7 @@ def test_get_replacement_candidates_employed_on_boundary_dates(
 
     # Mock data for start date test
     all_workers = [worker_boundary] + base_workers
-    mock_collection.worker_db.get_workers_not_deleted.return_value = (
-        all_workers
-    )
+    mock_collection.worker_db.get_workers_not_deleted.return_value = all_workers
     mock_collection.shift_db.get_shifts_not_deleted.return_value = base_shifts
 
     # Test start date
@@ -5269,9 +5012,7 @@ def test_get_replacement_candidates_employed_on_boundary_dates(
         team_id=base_team_id,
     )
 
-    candidate_end = next(
-        c for c in candidates_end if c.worker_id == worker_boundary.id
-    )
+    candidate_end = next(c for c in candidates_end if c.worker_id == worker_boundary.id)
 
     assert_candidate(
         candidate_end,

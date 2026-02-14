@@ -74,7 +74,7 @@ export class ShiftDemandTestBase {
   async navigateToShiftDemandsPage(page: Page): Promise<void> {
     if (!this.testTeam) {
       throw new Error(
-        "Test team not created. Call setupShiftDemandTests first."
+        "Test team not created. Call setupShiftDemandTests first.",
       );
     }
 
@@ -97,7 +97,7 @@ export class ShiftDemandTestBase {
 
     // Wait for the main content to be visible using the data-testid attribute
     await expect(
-      page.locator('[data-testid="shift-demand-tab"]')
+      page.locator('[data-testid="shift-demand-tab"]'),
     ).toBeVisible();
     console.log("✅ Navigated to shift demands page");
   }
@@ -147,7 +147,7 @@ export class ShiftDemandTestBase {
           const el = document.querySelector(selector);
           return !!(el && el.textContent && el.textContent !== prev);
         },
-        { selector: '[data-testid="time-nav-label"]', prev: previousText }
+        { selector: '[data-testid="time-nav-label"]', prev: previousText },
       );
       currentMonthText = await currentMonthLabel.textContent();
       // Use strict parsing (third parameter = true) to avoid parsing issues
@@ -185,16 +185,16 @@ export class ShiftDemandTestBase {
     return {
       input: page.locator('[data-testid="bulk-selection-input"] input'),
       deleteButton: page.locator(
-        '[data-testid="bulk-selection-delete-button"]'
+        '[data-testid="bulk-selection-delete-button"]',
       ),
       confirmButton: page.locator(
-        '[data-testid="bulk-selection-confirm-button"]'
+        '[data-testid="bulk-selection-confirm-button"]',
       ),
       cancelButton: page.locator(
-        '[data-testid="bulk-selection-cancel-button"]'
+        '[data-testid="bulk-selection-cancel-button"]',
       ),
       deleteConfirmButton: page.locator(
-        '[data-testid="bulk-selection-delete-confirm-button"]'
+        '[data-testid="bulk-selection-delete-confirm-button"]',
       ),
     };
   }
@@ -211,7 +211,7 @@ export class ShiftDemandTestBase {
         page.locator(`[data-testid="column-select-checkbox-${date}"] input`),
       cellSelect: (shiftId: string, date: string) =>
         page.locator(
-          `[data-testid="cell-select-checkbox-${shiftId}-${date}"] input`
+          `[data-testid="cell-select-checkbox-${shiftId}-${date}"] input`,
         ),
     };
   }
@@ -222,18 +222,18 @@ export class ShiftDemandTestBase {
   async createShiftDemandViaAPI(
     shiftId: string,
     date: string,
-    count: number
+    count: number,
   ): Promise<void> {
     if (!this.testTeam) {
       throw new Error(
-        "Test team not created. Call setupShiftDemandTests first."
+        "Test team not created. Call setupShiftDemandTests first.",
       );
     }
 
     await this.dbUtils.createShiftDemand({
       teamId: this.testTeam.teamId,
       shiftId,
-      date: new Date(date),
+      date: dayjs.utc(date, "YYYY-MM-DD"),
       count,
     });
   }
@@ -244,7 +244,7 @@ export class ShiftDemandTestBase {
   async getTestShiftIds(): Promise<string[]> {
     if (!this.testTeam) {
       throw new Error(
-        "Test team not created. Call setupShiftDemandTests first."
+        "Test team not created. Call setupShiftDemandTests first.",
       );
     }
 

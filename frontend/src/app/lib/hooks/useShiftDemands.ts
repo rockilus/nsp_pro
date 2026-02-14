@@ -25,28 +25,33 @@ import dayjs from "dayjs";
 export const shiftDemandKeys = {
   all: ["shift-demands"] as const,
   teams: (teamId: string) => [...shiftDemandKeys.all, "team", teamId] as const,
-  period: (teamId: string, startDate: Date, endDate: Date) =>
+  period: (teamId: string, startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) =>
     [
       ...shiftDemandKeys.teams(teamId),
       "period",
       startDate.toISOString(),
       endDate.toISOString(),
     ] as const,
-  matrix: (teamId: string, startDate: Date, endDate: Date) =>
+  matrix: (teamId: string, startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) =>
     [
       ...shiftDemandKeys.teams(teamId),
       "matrix",
       startDate.toISOString(),
       endDate.toISOString(),
     ] as const,
-  summary: (teamId: string, startDate: Date, endDate: Date) =>
+  summary: (teamId: string, startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) =>
     [
       ...shiftDemandKeys.teams(teamId),
       "summary",
       startDate.toISOString(),
       endDate.toISOString(),
     ] as const,
-  shift: (teamId: string, shiftId: string, startDate: Date, endDate: Date) =>
+  shift: (
+    teamId: string,
+    shiftId: string,
+    startDate: dayjs.Dayjs,
+    endDate: dayjs.Dayjs,
+  ) =>
     [
       ...shiftDemandKeys.teams(teamId),
       "shift",

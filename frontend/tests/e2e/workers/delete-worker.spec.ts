@@ -38,14 +38,14 @@ test.describe("Worker Deletion", () => {
     // Check that the delete button is visible in the actions column
     const deleteButton = workerTestBase.getWorkerDeleteButton(
       page,
-      testWorker.workerId
+      testWorker.id,
     );
     await expect(deleteButton).toBeVisible();
 
     // Verify the button has the correct data-testid
     await expect(deleteButton).toHaveAttribute(
       "data-testid",
-      `worker-delete-button-${testWorker.workerId}`
+      `worker-delete-button-${testWorker.id}`,
     );
 
     // Verify the button contains a delete icon
@@ -55,7 +55,7 @@ test.describe("Worker Deletion", () => {
     console.log("✅ Delete button is displayed correctly for worker");
 
     // Clean up
-    await workerTestBase.deleteTestWorker(testWorker.workerId);
+    await workerTestBase.deleteTestWorker(testWorker.id);
   });
 
   test("should delete worker when delete button is clicked", async ({
@@ -84,7 +84,7 @@ test.describe("Worker Deletion", () => {
     await expect(nameCell).toContainText("Worker to Delete");
 
     // Click the delete button and wait for deletion to complete
-    await workerTestBase.deleteWorkerViaUIAndWait(page, testWorker.workerId);
+    await workerTestBase.deleteWorkerViaUIAndWait(page, testWorker.id);
 
     // Verify the worker is no longer in the table
     // The table should now show the empty state
@@ -138,7 +138,7 @@ test.describe("Worker Deletion", () => {
     await expect(workerRows).toHaveCount(3);
 
     // Delete the second worker specifically and wait for completion
-    await workerTestBase.deleteWorkerViaUIAndWait(page, worker2.workerId);
+    await workerTestBase.deleteWorkerViaUIAndWait(page, worker2.id);
 
     // Verify we now have only 2 workers
     workerRows = workerTestBase.getWorkerRows(page);
@@ -153,8 +153,8 @@ test.describe("Worker Deletion", () => {
     console.log("✅ Correct worker deleted when multiple workers exist");
 
     // Clean up remaining workers
-    await workerTestBase.deleteTestWorker(worker1.workerId);
-    await workerTestBase.deleteTestWorker(worker3.workerId);
+    await workerTestBase.deleteTestWorker(worker1.id);
+    await workerTestBase.deleteTestWorker(worker3.id);
   });
 
   test("should handle deletion gracefully if worker is already deleted", async ({
@@ -179,12 +179,12 @@ test.describe("Worker Deletion", () => {
     await expect(workerRows).toHaveCount(1);
 
     // Delete the worker via API (simulating deletion from another session)
-    await workerTestBase.deleteTestWorker(testWorker.workerId);
+    await workerTestBase.deleteTestWorker(testWorker.id);
 
     // Try to delete via UI (button should still be there initially)
     const deleteButton = workerTestBase.getWorkerDeleteButton(
       page,
-      testWorker.workerId
+      testWorker.id,
     );
 
     // Click the delete button (this might result in an error or graceful handling)
@@ -251,12 +251,12 @@ test.describe("Worker Deletion", () => {
     for (const worker of workers) {
       const deleteButton = workerTestBase.getWorkerDeleteButton(
         page,
-        worker.workerId
+        worker.id,
       );
       await expect(deleteButton).toBeVisible();
       await expect(deleteButton).toHaveAttribute(
         "data-testid",
-        `worker-delete-button-${worker.workerId}`
+        `worker-delete-button-${worker.id}`,
       );
     }
 
@@ -264,7 +264,7 @@ test.describe("Worker Deletion", () => {
 
     // Clean up all workers
     for (const worker of workers) {
-      await workerTestBase.deleteTestWorker(worker.workerId);
+      await workerTestBase.deleteTestWorker(worker.id);
     }
   });
 
@@ -293,7 +293,7 @@ test.describe("Worker Deletion", () => {
     await expect(headerRow).toContainText("actions"); // Note: lowercase in actual implementation
 
     // Delete the worker
-    await workerTestBase.deleteWorkerViaUIAndWait(page, testWorker.workerId);
+    await workerTestBase.deleteWorkerViaUIAndWait(page, testWorker.id);
 
     // Verify table headers are still present after deletion
     await expect(headerRow).toContainText("Name");

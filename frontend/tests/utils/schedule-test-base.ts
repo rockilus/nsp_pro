@@ -632,7 +632,7 @@ export class ScheduleTestBase {
   /**
    * Get the member worker (worker linked to TEST_USER_2)
    */
-  getMemberWorker(): { workerId: string; name: string } | null {
+  getMemberWorker(): WorkerT | null {
     return this.memberWorker;
   }
 

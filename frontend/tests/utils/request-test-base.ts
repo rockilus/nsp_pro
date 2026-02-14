@@ -17,6 +17,7 @@ import {
   ShiftRestType,
   ShiftLeaveType,
 } from "../../src/types/shift";
+import { WorkerT } from "@/types/worker";
 import { SWOIdTypes } from "../../src/types/constraint";
 import {
   RequestT,
@@ -34,16 +35,12 @@ export class RequestTestBase {
   protected testTeam: { teamId: string; name: string } | null = null;
 
   // Maps to store workers and shifts by test ID for test isolation
-  protected testWorkersMap = new Map<
-    string,
-    { workerId: string; name: string; teamId: string }[]
-  >();
+  protected testWorkersMap = new Map<string, WorkerT[]>();
   protected testShiftsMap = new Map<string, ShiftT[]>();
   protected testRequestsMap = new Map<string, RequestT[]>();
 
   // Keep legacy arrays for backwards compatibility with tests that don't use test IDs
-  protected testWorkers: { workerId: string; name: string; teamId: string }[] =
-    [];
+  protected testWorkers: WorkerT[] = [];
   protected testShifts: ShiftT[] = [];
   protected testRequests: RequestT[] = [];
 
@@ -65,10 +62,10 @@ export class RequestTestBase {
   async setupRequestTests(
     workerIndex: number,
     testId?: string,
-    createRequests: boolean = false
+    createRequests: boolean = false,
   ): Promise<void> {
     console.log(
-      `[${testId || "legacy"}] Setting up request test environment...`
+      `[${testId || "legacy"}] Setting up request test environment...`,
     );
 
     // Ensure API is ready
@@ -88,7 +85,7 @@ export class RequestTestBase {
     console.log(
       `[${testId || "legacy"}] Created test team: ${this.testTeam.name} (${
         this.testTeam.teamId
-      })`
+      })`,
     );
 
     if (!this.testTeam) {
@@ -169,7 +166,7 @@ export class RequestTestBase {
     console.log(
       `[${testId || "legacy"}] Created ${testWorkers.length} test workers and ${
         testShifts.length
-      } test shifts`
+      } test shifts`,
     );
 
     // Create test requests if requested
@@ -185,7 +182,7 @@ export class RequestTestBase {
         (s) =>
           s.shiftType === ShiftType.NORMAL ||
           s.shiftType === ShiftType.DUTY ||
-          s.shiftType === ShiftType.REST
+          s.shiftType === ShiftType.REST,
       );
 
       // Fall back to any created shift
@@ -203,19 +200,19 @@ export class RequestTestBase {
         throw new Error(
           `Failed to find or fetch a shift for request test setup (${
             testId || "legacy"
-          })`
+          })`,
         );
       }
 
       // Fetch leave shifts for leave request
       const leaveShifts = await this.fetchLeaveShiftsForTeam();
       let selectedLeaveShift: ShiftT | undefined = leaveShifts.find(
-        (s) => s.shiftType === ShiftType.LEAVE
+        (s) => s.shiftType === ShiftType.LEAVE,
       );
 
       if (!selectedLeaveShift) {
         console.warn(
-          `[${testId || "legacy"}] No leave shift found for leave request`
+          `[${testId || "legacy"}] No leave shift found for leave request`,
         );
       }
 
@@ -224,7 +221,7 @@ export class RequestTestBase {
       const testRequestsData: Array<any> = [
         // Future work request - worker 2, pending, prefer selectedShift
         {
-          workerId: testWorkers[1].workerId,
+          workerId: testWorkers[1].id,
           requestType: RequestType.WORK_DEMAND,
           startDate: dayjs.utc().add(3, "days"),
           endDate: dayjs.utc().add(3, "days"),
@@ -242,7 +239,7 @@ export class RequestTestBase {
         },
         // Past work request - worker 1, pending (tests should approve if needed)
         {
-          workerId: testWorkers[0].workerId,
+          workerId: testWorkers[0].id,
           requestType: RequestType.WORK_DEMAND,
           startDate: dayjs.utc().subtract(2, "days"),
           endDate: dayjs.utc().subtract(2, "days"),
@@ -260,7 +257,7 @@ export class RequestTestBase {
         },
         // Past work request - worker 1, pending (will be approved for rescind test)
         {
-          workerId: testWorkers[0].workerId,
+          workerId: testWorkers[0].id,
           requestType: RequestType.WORK_DEMAND,
           startDate: dayjs.utc().add(1, "day"),
           endDate: dayjs.utc().add(1, "day"),
@@ -281,7 +278,7 @@ export class RequestTestBase {
       // Add leave request if a leave shift is available
       if (selectedLeaveShift) {
         testRequestsData.push({
-          workerId: testWorkers[0].workerId,
+          workerId: testWorkers[0].id,
           requestType: RequestType.LEAVE,
           startDate: dayjs.utc().add(5, "days"),
           endDate: dayjs.utc().add(5, "days"),
@@ -293,13 +290,13 @@ export class RequestTestBase {
         console.log(
           `[${testId || "legacy"}] Will create leave request with shift: ${
             selectedLeaveShift.name
-          }`
+          }`,
         );
       }
 
       // Add another work request (worker 1) that will be denied for status filter tests
       testRequestsData.push({
-        workerId: testWorkers[0].workerId,
+        workerId: testWorkers[0].id,
         requestType: RequestType.WORK_DEMAND,
         startDate: dayjs.utc().add(7, "days"),
         endDate: dayjs.utc().add(7, "days"),
@@ -325,12 +322,12 @@ export class RequestTestBase {
       // Approve the third request (index 2) for the rescind test
       if (testRequests.length >= 3) {
         console.log(
-          `[${testId || "legacy"}] Approving third request for rescind test`
+          `[${testId || "legacy"}] Approving third request for rescind test`,
         );
         // approveTestRequest returns { request: RequestT, assignments: AssignmentT[] }
         // we only want to keep the RequestT in our testRequests array
         const approvedResponse = await this.approveTestRequest(
-          testRequests[2].id
+          testRequests[2].id,
         );
         testRequests[2] = approvedResponse.request;
       }
@@ -339,10 +336,10 @@ export class RequestTestBase {
       const lastIndex = testRequests.length - 1;
       if (lastIndex >= 0) {
         console.log(
-          `[${testId || "legacy"}] Denying last request for status filter test`
+          `[${testId || "legacy"}] Denying last request for status filter test`,
         );
         const deniedRequest = await this.denyTestRequest(
-          testRequests[lastIndex].id
+          testRequests[lastIndex].id,
         );
         testRequests[lastIndex] = deniedRequest;
       }
@@ -355,7 +352,7 @@ export class RequestTestBase {
       }
 
       console.log(
-        `[${testId || "legacy"}] Created ${testRequests.length} test requests`
+        `[${testId || "legacy"}] Created ${testRequests.length} test requests`,
       );
     }
   }
@@ -405,7 +402,7 @@ export class RequestTestBase {
     });
 
     console.log(
-      `Navigated to requests page for team: ${this.testTeam.name} (${this.testTeam.teamId})`
+      `Navigated to requests page for team: ${this.testTeam.name} (${this.testTeam.teamId})`,
     );
   }
 
@@ -432,8 +429,8 @@ export class RequestTestBase {
       dutiesPerMonth?: number;
       annualLeave?: number;
     },
-    testId?: string
-  ): Promise<{ workerId: string; name: string; teamId: string }> {
+    testId?: string,
+  ): Promise<WorkerT> {
     if (!this.testTeam) {
       throw new Error("Test team not created. Call setupRequestTests first.");
     }
@@ -460,7 +457,7 @@ export class RequestTestBase {
       color?: string;
       acronym?: string;
     },
-    testId?: string
+    testId?: string,
   ): Promise<ShiftT> {
     if (!this.testTeam) {
       throw new Error("Test team not created. Call setupRequestTests first.");
@@ -487,9 +484,7 @@ export class RequestTestBase {
    * Gets the test workers created during setup
    * @param testId - Optional test ID to get workers for a specific test
    */
-  getTestWorkers(
-    testId?: string
-  ): { workerId: string; name: string; teamId: string }[] {
+  getTestWorkers(testId?: string): WorkerT[] {
     if (testId) {
       return this.testWorkersMap.get(testId) || [];
     }
@@ -541,7 +536,7 @@ export class RequestTestBase {
       throw new Error(
         `Failed to fetch all shifts for team: ${
           error instanceof Error ? error.message : "Unknown error"
-        }`
+        }`,
       );
     }
   }
@@ -569,9 +564,9 @@ export class RequestTestBase {
     // Delete legacy workers
     for (const worker of this.testWorkers) {
       try {
-        await this.deleteTestWorker(worker.workerId);
+        await this.deleteTestWorker(worker.id);
       } catch (error) {
-        console.warn(`Failed to delete worker ${worker.workerId}:`, error);
+        console.warn(`Failed to delete worker ${worker.id}:`, error);
       }
     }
   }
@@ -586,9 +581,9 @@ export class RequestTestBase {
 
     for (const worker of workers) {
       try {
-        await this.deleteTestWorker(worker.workerId);
+        await this.deleteTestWorker(worker.id);
       } catch (error) {
-        console.warn(`Failed to delete worker ${worker.workerId}:`, error);
+        console.warn(`Failed to delete worker ${worker.id}:`, error);
       }
     }
   }
@@ -622,11 +617,11 @@ export class RequestTestBase {
       shiftId?: string | null;
       shiftOptions?: any[];
     },
-    testId?: string
+    testId?: string,
   ): Promise<RequestT> {
     if (!this.testTeam) {
       throw new Error(
-        "Test team not initialized. Call setupRequestTests first."
+        "Test team not initialized. Call setupRequestTests first.",
       );
     }
 
@@ -700,7 +695,7 @@ export class RequestTestBase {
    * @returns The updated request with APPROVED status
    */
   async approveTestRequest(
-    requestId: string
+    requestId: string,
   ): Promise<{ request: RequestT; assignments: AssignmentT[] }> {
     if (!this.testTeam) {
       throw new Error("Test team not created. Call setupRequestTests first.");
@@ -988,7 +983,7 @@ export class RequestTestBase {
    */
   getCalendarCell(page: Page, workerId: string, date: dayjs.Dayjs) {
     return page.getByTestId(
-      `calendar-cell-${workerId}-${date.format("YYYY-MM-DD")}`
+      `calendar-cell-${workerId}-${date.format("YYYY-MM-DD")}`,
     );
   }
 
@@ -999,12 +994,12 @@ export class RequestTestBase {
     page: Page,
     workerId: string,
     date: dayjs.Dayjs,
-    requestId: string
+    requestId: string,
   ) {
     return page.getByTestId(
       `calendar-cell-${workerId}-${date.format(
-        "YYYY-MM-DD"
-      )}-request-${requestId}`
+        "YYYY-MM-DD",
+      )}-request-${requestId}`,
     );
   }
 
@@ -1149,7 +1144,7 @@ export class RequestTestBase {
    */
   async enableDateRangeAndSetEndDate(
     page: Page,
-    endDate: dayjs.Dayjs
+    endDate: dayjs.Dayjs,
   ): Promise<void> {
     // Enable date range
     const dateRangeCheckbox = this.getDateRangeCheckbox(page);
@@ -1175,7 +1170,7 @@ export class RequestTestBase {
    */
   async setRequestPreference(
     page: Page,
-    preference: "positive" | "negative"
+    preference: "positive" | "negative",
   ): Promise<void> {
     if (preference === "positive") {
       await this.getPositiveRequestButton(page).click();
@@ -1215,7 +1210,7 @@ export class RequestTestBase {
     // The popover should close automatically after selection
     // Or we can force-click the invisible backdrop to close it
     const invisibleBackdrop = page.locator(
-      "#simple-popover .MuiBackdrop-invisible"
+      "#simple-popover .MuiBackdrop-invisible",
     );
     if (await invisibleBackdrop.isVisible()) {
       await invisibleBackdrop.click({ force: true });
@@ -1227,7 +1222,7 @@ export class RequestTestBase {
       .catch(() => {
         // If it doesn't close, try clicking outside one more time
         console.log(
-          "Popover didn't close automatically, attempting to close manually"
+          "Popover didn't close automatically, attempting to close manually",
         );
       });
   }
@@ -1256,7 +1251,7 @@ export class RequestTestBase {
       dateRange?: string;
       preference?: "positive" | "negative";
       shiftName?: string;
-    }
+    },
   ): Promise<void> {
     const requestTable = this.getRequestTable(page);
     await requestTable.waitFor({ state: "visible" });
@@ -1267,7 +1262,7 @@ export class RequestTestBase {
     // Look for a row containing both the worker name and date (if provided)
     if (expectedRequest.date) {
       console.log(
-        `Looking for request with worker: ${expectedRequest.workerName} and date: ${expectedRequest.date}`
+        `Looking for request with worker: ${expectedRequest.workerName} and date: ${expectedRequest.date}`,
       );
 
       // Find rows with the worker name
@@ -1315,7 +1310,7 @@ export class RequestTestBase {
       if (!found) {
         // If no specific date match, just verify the worker name exists
         console.log(
-          `⚠️ Could not find specific date format, verifying worker exists`
+          `⚠️ Could not find specific date format, verifying worker exists`,
         );
         await workerRows.first().waitFor({ state: "visible" });
       }
@@ -1329,7 +1324,7 @@ export class RequestTestBase {
 
     // Additional verifications can be added here based on the specific request details
     console.log(
-      `✅ Verified request for ${expectedRequest.workerName} appears in table`
+      `✅ Verified request for ${expectedRequest.workerName} appears in table`,
     );
   }
 
@@ -1343,7 +1338,7 @@ export class RequestTestBase {
   async clickEmptyCalendarCell(
     page: Page,
     workerId: string,
-    date: dayjs.Dayjs
+    date: dayjs.Dayjs,
   ): Promise<void> {
     // Navigate to the correct month first
     await this.navigateToMonth(page, date);
@@ -1360,7 +1355,7 @@ export class RequestTestBase {
     page: Page,
     workerId: string,
     date: dayjs.Dayjs,
-    requestId: string
+    requestId: string,
   ): Promise<void> {
     // Navigate to the correct month first
     await this.navigateToMonth(page, date);
@@ -1369,7 +1364,7 @@ export class RequestTestBase {
       page,
       workerId,
       date,
-      requestId
+      requestId,
     );
     await expect(cell).toBeVisible();
     await cell.click();
@@ -1412,7 +1407,7 @@ export class RequestTestBase {
           const el = document.querySelector(selector);
           return !!(el && el.textContent && el.textContent !== prev);
         },
-        { selector: '[data-testid="time-nav-label"]', prev: previousText }
+        { selector: '[data-testid="time-nav-label"]', prev: previousText },
       );
       currentMonthText = await currentMonthLabel.textContent();
       // Use strict parsing (third parameter = true) to avoid parsing issues
@@ -1428,13 +1423,13 @@ export class RequestTestBase {
     workerId: string,
     date: dayjs.Dayjs,
     requestId: string,
-    timeout: number = 5000
+    timeout: number = 5000,
   ): Promise<void> {
     const cell = this.getCalendarCellWithRequest(
       page,
       workerId,
       date,
-      requestId
+      requestId,
     );
     await expect(cell).toBeVisible({ timeout });
   }
@@ -1447,13 +1442,13 @@ export class RequestTestBase {
     workerId: string,
     date: dayjs.Dayjs,
     requestId: string,
-    timeout: number = 5000
+    timeout: number = 5000,
   ): Promise<void> {
     const cell = this.getCalendarCellWithRequest(
       page,
       workerId,
       date,
-      requestId
+      requestId,
     );
     await expect(cell).not.toBeVisible({ timeout });
   }
@@ -1464,7 +1459,7 @@ export class RequestTestBase {
   async verifyCalendarCellIsEmpty(
     page: Page,
     workerId: string,
-    date: dayjs.Dayjs
+    date: dayjs.Dayjs,
   ): Promise<void> {
     // Navigate to the correct month first
     await this.navigateToMonth(page, date);
@@ -1474,7 +1469,7 @@ export class RequestTestBase {
 
     // Check that it doesn't have the request class
     const hasRequestClass = await cell.evaluate((el: Element) =>
-      el.classList.contains("calendar-cell--leave")
+      el.classList.contains("calendar-cell--leave"),
     );
     expect(hasRequestClass).toBe(false);
   }
@@ -1490,7 +1485,7 @@ export class RequestTestBase {
     expectedProperties?: {
       status?: RequestStatus;
       backgroundColor?: string;
-    }
+    },
   ): Promise<void> {
     // Navigate to the correct month first
     await this.navigateToMonth(page, date);
@@ -1499,13 +1494,13 @@ export class RequestTestBase {
       page,
       workerId,
       date,
-      requestId
+      requestId,
     );
     await expect(cell).toBeVisible();
 
     // Check that it has the request class
     const hasRequestClass = await cell.evaluate((el: Element) =>
-      el.classList.contains("calendar-cell--leave")
+      el.classList.contains("calendar-cell--leave"),
     );
     expect(hasRequestClass).toBe(true);
 
@@ -1513,7 +1508,7 @@ export class RequestTestBase {
       const backgroundColor = await cell.evaluate(
         (el: Element) =>
           getComputedStyle(el as HTMLElement).backgroundColor ||
-          (el as HTMLElement).style.background
+          (el as HTMLElement).style.background,
       );
       expect(backgroundColor).toContain(expectedProperties.backgroundColor);
     }
@@ -1525,7 +1520,7 @@ export class RequestTestBase {
   async verifyPastDateClick(
     page: Page,
     workerId: string,
-    pastDate: dayjs.Dayjs
+    pastDate: dayjs.Dayjs,
   ): Promise<void> {
     // Navigate to the correct month first
     await this.navigateToMonth(page, pastDate);
@@ -1535,7 +1530,7 @@ export class RequestTestBase {
 
     // Verify the cell has the past class
     const hasPastClass = await cell.evaluate((el: Element) =>
-      el.classList.contains("calendar-cell--past")
+      el.classList.contains("calendar-cell--past"),
     );
     expect(hasPastClass).toBe(true);
 
@@ -1552,7 +1547,7 @@ export class RequestTestBase {
    */
   async toggleStatusFilter(
     page: Page,
-    status: "pending" | "accepted-not-fulfilled" | "fulfilled"
+    status: "pending" | "accepted-not-fulfilled" | "fulfilled",
   ): Promise<void> {
     let button;
     switch (status) {
@@ -1578,7 +1573,7 @@ export class RequestTestBase {
     page: Page,
     workerId: string,
     date: dayjs.Dayjs,
-    requestType: RequestType = RequestType.WORK_DEMAND
+    requestType: RequestType = RequestType.WORK_DEMAND,
   ): Promise<string> {
     // Click on empty cell to open create dialog
     await this.clickEmptyCalendarCell(page, workerId, date);
@@ -1658,7 +1653,7 @@ export class RequestTestBase {
    */
   async verifyWorkRequestsVisible(
     page: Page,
-    expectedCount?: number
+    expectedCount?: number,
   ): Promise<void> {
     const workRequestCells = this.getVisibleWorkRequestCells(page);
     const count = await workRequestCells.count();
@@ -1675,7 +1670,7 @@ export class RequestTestBase {
    */
   async verifyLeaveRequestsVisible(
     page: Page,
-    expectedCount?: number
+    expectedCount?: number,
   ): Promise<void> {
     const leaveRequestCells = this.getVisibleLeaveRequestCells(page);
     const count = await leaveRequestCells.count();
@@ -1783,7 +1778,7 @@ export class RequestTestBase {
    */
   async verifyPendingRequestsVisible(
     page: Page,
-    expectedCount?: number
+    expectedCount?: number,
   ): Promise<void> {
     const pendingRequestCells = this.getVisiblePendingRequestCells(page);
     const count = await pendingRequestCells.count();
@@ -1800,7 +1795,7 @@ export class RequestTestBase {
    */
   async verifyApprovedRequestsVisible(
     page: Page,
-    expectedCount?: number
+    expectedCount?: number,
   ): Promise<void> {
     const approvedRequestCells = this.getVisibleApprovedRequestCells(page);
     const count = await approvedRequestCells.count();
@@ -1817,7 +1812,7 @@ export class RequestTestBase {
    */
   async verifyDeniedRequestsVisible(
     page: Page,
-    expectedCount?: number
+    expectedCount?: number,
   ): Promise<void> {
     const deniedRequestCells = this.getVisibleDeniedRequestCells(page);
     const count = await deniedRequestCells.count();
@@ -1889,7 +1884,7 @@ export class RequestTestBase {
   async applySelectFilter(
     page: Page,
     columnId: string,
-    values: string[]
+    values: string[],
   ): Promise<void> {
     // Open filter menu if not already open
     const filterList = page.getByTestId("filter-column-list");
@@ -1933,7 +1928,7 @@ export class RequestTestBase {
     page: Page,
     columnId: string,
     startDate: string,
-    endDate: string
+    endDate: string,
   ): Promise<void> {
     // Open filter menu if not already open
     const filterList = page.getByTestId("filter-column-list");
@@ -2077,7 +2072,7 @@ export class RequestTestBase {
    */
   async verifyRequestsVisibleByIds(
     page: Page,
-    requestIds: string[]
+    requestIds: string[],
   ): Promise<void> {
     for (const requestId of requestIds) {
       const requestCell = page.locator(`[data-request-id="${requestId}"]`);
@@ -2092,7 +2087,7 @@ export class RequestTestBase {
    */
   async verifyRequestsNotVisibleByIds(
     page: Page,
-    requestIds: string[]
+    requestIds: string[],
   ): Promise<void> {
     for (const requestId of requestIds) {
       const requestCell = page.locator(`[data-request-id="${requestId}"]`);

@@ -252,11 +252,11 @@ export default function ScheduleTab({
     error: shiftDemandError,
   } = useShiftDemands(
     teamWithMembership.team.id,
-    scheduleViewSettings.periodStartDate.toDate(),
+    scheduleViewSettings.periodStartDate,
     computePeriodEndDate(
       scheduleViewSettings.periodStartDate,
       scheduleViewSettings.timeFrame,
-    ).toDate(),
+    ),
     {
       enabled:
         teamWithMembership.team.useSolver &&
@@ -897,7 +897,7 @@ export default function ScheduleTab({
         }
       }
     },
-    [scheduleCampaign],
+    [scheduleCampaign, teamWithMembership.team.id, queryClient],
   );
 
   useEffect(() => {

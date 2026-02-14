@@ -123,8 +123,8 @@ export class ShiftDemandApi extends BaseApi {
     }
 
     const params = new URLSearchParams({
-      start_date: formatDateForAPI(startDate),
-      end_date: formatDateForAPI(endDate),
+      start_date: startDate.format("YYYY-MM-DD"),
+      end_date: endDate.format("YYYY-MM-DD"),
       buffer_days: bufferDays.toString(),
     });
 
@@ -139,8 +139,8 @@ export class ShiftDemandApi extends BaseApi {
   static async getShiftDemandsMatrix(
     apiClient: AuthenticatedApiClient,
     teamId: string,
-    startDate: Date,
-    endDate: Date,
+    startDate: dayjs.Dayjs,
+    endDate: dayjs.Dayjs,
   ): Promise<ShiftDemandMatrix> {
     // Security: Input validation
     if (!teamId) {
@@ -148,8 +148,8 @@ export class ShiftDemandApi extends BaseApi {
     }
 
     const params = new URLSearchParams({
-      start_date: formatDateForAPI(startDate),
-      end_date: formatDateForAPI(endDate),
+      start_date: startDate.format("YYYY-MM-DD"),
+      end_date: endDate.format("YYYY-MM-DD"),
     });
 
     const endpoint = `/shift-demands-new/teams/${teamId}/matrix?${params}`;

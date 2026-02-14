@@ -34,8 +34,8 @@ import {
   DimensionT,
   DimensionType,
   DimensionEntryType,
-  AddDimensionResponse,
 } from "../../src/types/dimension";
+import { AddDimensionResponse } from "../../src/app/lib/api/dimensionApi";
 import { DimEntryT } from "../../src/types/dim-entry";
 import { AttributeT, toAttributeT } from "../../src/types/attribute";
 import {
@@ -2785,7 +2785,7 @@ export class DatabaseTestUtils {
     demandId: string,
     teamId: string,
     updates: Partial<ShiftDemandUpdateDTO>,
-  ): Promise<ShiftDemandDTO> {
+  ): Promise<ShiftDemandDTO | null> {
     try {
       const updatedDemand = await ShiftDemandApi.updateShiftDemand(
         this.testApiClient,

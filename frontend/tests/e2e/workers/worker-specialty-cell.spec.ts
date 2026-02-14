@@ -4,8 +4,8 @@ import { WorkerTestBase } from "../../utils/worker-test-base";
 const workerTestBase = new WorkerTestBase();
 
 test.describe("Worker Specialty Cell", () => {
-  let testWorker: { workerId: string; name: string; teamId: string };
-  let testSpecialties: { specialtyId: string; name: string; teamId: string }[];
+  let testWorker: { id: string; name: string; teamId: string };
+  let testSpecialties: { id: string; name: string; teamId: string }[];
 
   test.beforeEach(async ({ page }) => {
     // Setup the common worker test environment
@@ -34,13 +34,11 @@ test.describe("Worker Specialty Cell", () => {
     });
     testSpecialties.push(specialty1, specialty2, specialty3);
 
-    console.log(
-      `Created test worker: ${testWorker.name} (${testWorker.workerId})`
-    );
+    console.log(`Created test worker: ${testWorker.name} (${testWorker.id})`);
     console.log(
       `Created test specialties: ${testSpecialties
         .map((s) => s.name)
-        .join(", ")}`
+        .join(", ")}`,
     );
 
     // Navigate to the workers page
@@ -52,28 +50,22 @@ test.describe("Worker Specialty Cell", () => {
 
   test.afterEach(async () => {
     // Clean up: delete the worker and specialties created for this test
-    if (testWorker?.workerId) {
+    if (testWorker?.id) {
       try {
-        await workerTestBase.deleteTestWorker(testWorker.workerId);
-        console.log(`Deleted test worker: ${testWorker.workerId}`);
+        await workerTestBase.deleteTestWorker(testWorker.id);
+        console.log(`Deleted test worker: ${testWorker.id}`);
       } catch (error) {
-        console.warn(
-          `Failed to delete test worker ${testWorker.workerId}:`,
-          error
-        );
+        console.warn(`Failed to delete test worker ${testWorker.id}:`, error);
       }
     }
 
     // Clean up specialties
     for (const specialty of testSpecialties) {
       try {
-        await workerTestBase.deleteTestSpecialty(specialty.specialtyId);
-        console.log(`Deleted test specialty: ${specialty.specialtyId}`);
+        await workerTestBase.deleteTestSpecialty(specialty.id);
+        console.log(`Deleted test specialty: ${specialty.id}`);
       } catch (error) {
-        console.warn(
-          `Failed to delete test specialty ${specialty.specialtyId}:`,
-          error
-        );
+        console.warn(`Failed to delete test specialty ${specialty.id}:`, error);
       }
     }
   });
@@ -110,7 +102,7 @@ test.describe("Worker Specialty Cell", () => {
 
     for (const specialty of testSpecialties) {
       const option = page.locator(
-        `[data-testid="specialty-option-${specialty.specialtyId}"]`
+        `[data-testid="specialty-option-${specialty.id}"]`,
       );
       await expect(option).toBeVisible();
       await expect(option).toContainText(specialty.name);
@@ -133,13 +125,13 @@ test.describe("Worker Specialty Cell", () => {
     // Click on a specialty to select it
     const specialty = testSpecialties[0];
     const option = page.locator(
-      `[data-testid="specialty-option-${specialty.specialtyId}"]`
+      `[data-testid="specialty-option-${specialty.id}"]`,
     );
     await option.click();
 
     // Verify the specialty appears as a selected chip
     const selectedChip = page.locator(
-      `[data-testid="selected-specialty-chip-${specialty.specialtyId}"]`
+      `[data-testid="selected-specialty-chip-${specialty.id}"]`,
     );
     await expect(selectedChip).toBeVisible();
     await expect(selectedChip).toContainText(specialty.name);
@@ -151,18 +143,15 @@ test.describe("Worker Specialty Cell", () => {
     page,
   }) => {
     // First, add a specialty to the worker
-    await workerTestBase.updateTestWorker(testWorker.workerId, {
+    await workerTestBase.updateTestWorker(testWorker.id, {
       name: testWorker.name,
     });
 
     // Update worker with a specialty
     const specialty = testSpecialties[0];
-    const updatedWorker = await workerTestBase.updateTestWorker(
-      testWorker.workerId,
-      {
-        specialtyIds: [specialty.specialtyId],
-      }
-    );
+    const updatedWorker = await workerTestBase.updateTestWorker(testWorker.id, {
+      specialtyIds: [specialty.id],
+    });
 
     // Refresh the page to see the updated worker
     await page.reload();
@@ -178,13 +167,13 @@ test.describe("Worker Specialty Cell", () => {
 
     // Verify the specialty is selected
     const selectedChip = page.locator(
-      `[data-testid="selected-specialty-chip-${specialty.specialtyId}"]`
+      `[data-testid="selected-specialty-chip-${specialty.id}"]`,
     );
     await expect(selectedChip).toBeVisible();
 
     // Click the delete cross
     const deleteButton = page.locator(
-      `[data-testid="remove-specialty-${specialty.specialtyId}"]`
+      `[data-testid="remove-specialty-${specialty.id}"]`,
     );
     await deleteButton.click();
 
@@ -211,13 +200,13 @@ test.describe("Worker Specialty Cell", () => {
 
     // Verify only Cardiology appears in the filtered list
     const cardiologyOption = page.locator(
-      `[data-testid="specialty-option-${testSpecialties[0].specialtyId}"]`
+      `[data-testid="specialty-option-${testSpecialties[0].id}"]`,
     );
     await expect(cardiologyOption).toBeVisible();
 
     // Verify other specialties are not visible
     const neurologyOption = page.locator(
-      `[data-testid="specialty-option-${testSpecialties[1].specialtyId}"]`
+      `[data-testid="specialty-option-${testSpecialties[1].id}"]`,
     );
     await expect(neurologyOption).not.toBeVisible();
 
@@ -238,13 +227,13 @@ test.describe("Worker Specialty Cell", () => {
     // Select a specialty
     const specialty = testSpecialties[0];
     const option = page.locator(
-      `[data-testid="specialty-option-${specialty.specialtyId}"]`
+      `[data-testid="specialty-option-${specialty.id}"]`,
     );
     await option.click();
 
     // Verify the specialty appears as selected
     const selectedChip = page.locator(
-      `[data-testid="selected-specialty-chip-${specialty.specialtyId}"]`
+      `[data-testid="selected-specialty-chip-${specialty.id}"]`,
     );
     await expect(selectedChip).toBeVisible();
 
@@ -252,7 +241,7 @@ test.describe("Worker Specialty Cell", () => {
     await expect(option).not.toBeVisible();
 
     console.log(
-      `✅ Selected specialty "${specialty.name}" no longer appears in options`
+      `✅ Selected specialty "${specialty.name}" no longer appears in options`,
     );
   });
 
@@ -272,10 +261,10 @@ test.describe("Worker Specialty Cell", () => {
     const specialty2 = testSpecialties[1];
 
     const option1 = page.locator(
-      `[data-testid="specialty-option-${specialty1.specialtyId}"]`
+      `[data-testid="specialty-option-${specialty1.id}"]`,
     );
     const option2 = page.locator(
-      `[data-testid="specialty-option-${specialty2.specialtyId}"]`
+      `[data-testid="specialty-option-${specialty2.id}"]`,
     );
 
     await option1.click();
@@ -283,10 +272,10 @@ test.describe("Worker Specialty Cell", () => {
 
     // Verify both are selected
     const selectedChip1 = page.locator(
-      `[data-testid="selected-specialty-chip-${specialty1.specialtyId}"]`
+      `[data-testid="selected-specialty-chip-${specialty1.id}"]`,
     );
     const selectedChip2 = page.locator(
-      `[data-testid="selected-specialty-chip-${specialty2.specialtyId}"]`
+      `[data-testid="selected-specialty-chip-${specialty2.id}"]`,
     );
     await expect(selectedChip1).toBeVisible();
     await expect(selectedChip2).toBeVisible();
@@ -346,8 +335,8 @@ test.describe("Worker Specialty Cell", () => {
     // Update worker with specialties
     const specialty1 = testSpecialties[0];
     const specialty2 = testSpecialties[1];
-    await workerTestBase.updateTestWorker(testWorker.workerId, {
-      specialtyIds: [specialty1.specialtyId, specialty2.specialtyId],
+    await workerTestBase.updateTestWorker(testWorker.id, {
+      specialtyIds: [specialty1.id, specialty2.id],
     });
 
     // Refresh the page to see the updated worker
@@ -356,10 +345,10 @@ test.describe("Worker Specialty Cell", () => {
 
     // Verify the specialties appear as chips in the cell
     const chip1 = page.locator(
-      `[data-testid="specialty-chip-${specialty1.specialtyId}"]`
+      `[data-testid="specialty-chip-${specialty1.id}"]`,
     );
     const chip2 = page.locator(
-      `[data-testid="specialty-chip-${specialty2.specialtyId}"]`
+      `[data-testid="specialty-chip-${specialty2.id}"]`,
     );
 
     await expect(chip1).toBeVisible();
@@ -384,7 +373,7 @@ test.describe("Worker Specialty Cell", () => {
     // Add a specialty
     const specialty = testSpecialties[0];
     const option = page.locator(
-      `[data-testid="specialty-option-${specialty.specialtyId}"]`
+      `[data-testid="specialty-option-${specialty.id}"]`,
     );
     await option.click();
 
@@ -395,9 +384,7 @@ test.describe("Worker Specialty Cell", () => {
     await expect(popup).not.toBeVisible();
 
     // Wait for the specialty chip to appear in the cell (indicating update is complete)
-    const chip = page.locator(
-      `[data-testid="specialty-chip-${specialty.specialtyId}"]`
-    );
+    const chip = page.locator(`[data-testid="specialty-chip-${specialty.id}"]`);
     await expect(chip).toBeVisible();
     await expect(chip).toContainText(specialty.name);
 
@@ -409,8 +396,8 @@ test.describe("Worker Specialty Cell", () => {
   }) => {
     // First, add a specialty to the worker
     const specialty = testSpecialties[0];
-    await workerTestBase.updateTestWorker(testWorker.workerId, {
-      specialtyIds: [specialty.specialtyId],
+    await workerTestBase.updateTestWorker(testWorker.id, {
+      specialtyIds: [specialty.id],
     });
 
     // Refresh the page to see the updated worker
@@ -418,9 +405,7 @@ test.describe("Worker Specialty Cell", () => {
     await page.waitForSelector('[aria-label="worker table"]');
 
     // Verify the specialty chip is initially visible
-    const chip = page.locator(
-      `[data-testid="specialty-chip-${specialty.specialtyId}"]`
-    );
+    const chip = page.locator(`[data-testid="specialty-chip-${specialty.id}"]`);
     await expect(chip).toBeVisible();
 
     // Click on the specialty cell to open popup
@@ -433,7 +418,7 @@ test.describe("Worker Specialty Cell", () => {
 
     // Remove the specialty by clicking its delete button
     const deleteButton = page.locator(
-      `[data-testid="remove-specialty-${specialty.specialtyId}"]`
+      `[data-testid="remove-specialty-${specialty.id}"]`,
     );
     await deleteButton.click();
 
@@ -447,7 +432,7 @@ test.describe("Worker Specialty Cell", () => {
     await expect(chip).not.toBeVisible();
 
     console.log(
-      "✅ Removed specialty no longer appears in cell after closing popup"
+      "✅ Removed specialty no longer appears in cell after closing popup",
     );
   });
 
@@ -470,7 +455,7 @@ test.describe("Worker Specialty Cell", () => {
     // Verify the specialty is selected
     const specialty = testSpecialties[0]; // Cardiology should be the first
     const selectedChip = page.locator(
-      `[data-testid="selected-specialty-chip-${specialty.specialtyId}"]`
+      `[data-testid="selected-specialty-chip-${specialty.id}"]`,
     );
     await expect(selectedChip).toBeVisible();
 
@@ -509,7 +494,7 @@ test.describe("Worker Specialty Cell", () => {
 
     // Verify first option is highlighted (selected state)
     const firstOption = page.locator(
-      `[data-testid="specialty-option-${testSpecialties[0].specialtyId}"]`
+      `[data-testid="specialty-option-${testSpecialties[0].id}"]`,
     );
     await expect(firstOption).toHaveClass(/Mui-selected/);
 
@@ -518,7 +503,7 @@ test.describe("Worker Specialty Cell", () => {
 
     // Verify second option is highlighted
     const secondOption = page.locator(
-      `[data-testid="specialty-option-${testSpecialties[1].specialtyId}"]`
+      `[data-testid="specialty-option-${testSpecialties[1].id}"]`,
     );
     await expect(secondOption).toHaveClass(/Mui-selected/);
 

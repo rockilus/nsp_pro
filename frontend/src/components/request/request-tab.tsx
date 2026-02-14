@@ -115,8 +115,8 @@ export default function RequestTab({
     error: shiftDemandError,
   } = useShiftDemands(
     teamId,
-    dayjs().utc().startOf("year").toDate(), // Start of current year
-    dayjs().utc().add(1, "year").endOf("year").toDate(), // End of next year
+    dayjs().utc().startOf("year"), // Start of current year
+    dayjs().utc().add(1, "year").endOf("year"), // End of next year
     {
       enabled: userTeamRole !== TeamMembershipRole.MEMBER,
       bufferDays: 0, // No buffer needed for requests view

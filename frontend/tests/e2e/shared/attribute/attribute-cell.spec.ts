@@ -9,12 +9,12 @@ import { AttributeOwnerType } from "../../../../src/types/attribute";
 const attributeTestBase = new AttributeTestBase();
 
 test.describe("AttributeCell Component", () => {
-  let testWorker: { workerId: string; name: string; teamId: string };
+  let testWorker: { id: string; name: string; teamId: string };
   let testDimensions: {
-    text: { dimensionId: string; name: string; teamId: string };
-    number: { dimensionId: string; name: string; teamId: string };
-    bool: { dimensionId: string; name: string; teamId: string };
-    dimEntries: { dimensionId: string; name: string; teamId: string };
+    text: { id: string; name: string; teamId: string };
+    number: { id: string; name: string; teamId: string };
+    bool: { id: string; name: string; teamId: string };
+    dimEntries: { id: string; name: string; teamId: string };
   };
 
   test.beforeAll(async () => {
@@ -70,13 +70,11 @@ test.describe("AttributeCell Component", () => {
       dimEntries: dimEntriesDimension,
     };
 
-    console.log(
-      `Created test worker: ${testWorker.name} (${testWorker.workerId})`
-    );
+    console.log(`Created test worker: ${testWorker.name} (${testWorker.id})`);
     console.log(
       `Created test dimensions: ${Object.values(testDimensions)
         .map((d) => d.name)
-        .join(", ")}`
+        .join(", ")}`,
     );
 
     // Navigate to the workers page
@@ -93,10 +91,10 @@ test.describe("AttributeCell Component", () => {
 
   test.afterEach(async () => {
     // Clean up: delete the worker and dimensions created for this test
-    if (testWorker?.workerId) {
+    if (testWorker?.id) {
       try {
-        await attributeTestBase.deleteTestWorker(testWorker.workerId);
-        console.log(`✅ Deleted test worker: ${testWorker.workerId}`);
+        await attributeTestBase.deleteTestWorker(testWorker.id);
+        console.log(`✅ Deleted test worker: ${testWorker.id}`);
       } catch (error) {
         console.log(`⚠️ Failed to delete test worker: ${error}`);
       }
@@ -104,10 +102,10 @@ test.describe("AttributeCell Component", () => {
 
     // Clean up dimensions
     for (const dimension of Object.values(testDimensions)) {
-      if (dimension?.dimensionId) {
+      if (dimension?.id) {
         try {
-          await attributeTestBase.deleteTestDimension(dimension.dimensionId);
-          console.log(`✅ Deleted test dimension: ${dimension.dimensionId}`);
+          await attributeTestBase.deleteTestDimension(dimension.id);
+          console.log(`✅ Deleted test dimension: ${dimension.id}`);
         } catch (error) {
           console.log(`⚠️ Failed to delete test dimension: ${error}`);
         }
@@ -121,7 +119,7 @@ test.describe("AttributeCell Component", () => {
     }) => {
       // Click on the text attribute cell
       const attributeCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.text.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.text.id}"]`,
       );
       await attributeCell.click();
 
@@ -140,7 +138,7 @@ test.describe("AttributeCell Component", () => {
 
       // Click on the text attribute cell
       const attributeCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.text.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.text.id}"]`,
       );
       await attributeCell.click();
 
@@ -162,7 +160,7 @@ test.describe("AttributeCell Component", () => {
 
       // Click on the text attribute cell
       const attributeCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.text.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.text.id}"]`,
       );
       await attributeCell.click();
 
@@ -187,7 +185,7 @@ test.describe("AttributeCell Component", () => {
 
       // First, set an original value
       const attributeCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.text.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.text.id}"]`,
       );
       await attributeCell.click();
       const textField = attributeCell.locator('input[type="text"]');
@@ -215,7 +213,7 @@ test.describe("AttributeCell Component", () => {
     }) => {
       // Click on the number attribute cell
       const attributeCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.number.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.number.id}"]`,
       );
       await attributeCell.click();
 
@@ -225,7 +223,7 @@ test.describe("AttributeCell Component", () => {
       await expect(numberField).toBeFocused();
 
       console.log(
-        "✅ Number field opens when clicking on number attribute cell"
+        "✅ Number field opens when clicking on number attribute cell",
       );
     });
 
@@ -236,7 +234,7 @@ test.describe("AttributeCell Component", () => {
 
       // Click on the number attribute cell
       const attributeCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.number.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.number.id}"]`,
       );
       await attributeCell.click();
 
@@ -260,7 +258,7 @@ test.describe("AttributeCell Component", () => {
 
       // Click on the number attribute cell
       const attributeCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.number.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.number.id}"]`,
       );
       await attributeCell.click();
 
@@ -285,7 +283,7 @@ test.describe("AttributeCell Component", () => {
 
       // First, set an original value
       const attributeCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.number.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.number.id}"]`,
       );
       await attributeCell.click();
       const numberField = attributeCell.locator('input[type="number"]');
@@ -311,7 +309,7 @@ test.describe("AttributeCell Component", () => {
 
       // Click on the number attribute cell
       const attributeCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.number.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.number.id}"]`,
       );
       await attributeCell.click();
 
@@ -355,7 +353,7 @@ test.describe("AttributeCell Component", () => {
     }) => {
       // Click on the boolean attribute cell (should contain a checkbox)
       const attributeCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.bool.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.bool.id}"]`,
       );
 
       // Find the checkbox
@@ -379,7 +377,7 @@ test.describe("AttributeCell Component", () => {
     }) => {
       // Click on the boolean attribute cell
       const attributeCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.bool.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.bool.id}"]`,
       );
 
       const checkbox = attributeCell.locator('input[type="checkbox"]');
@@ -404,7 +402,7 @@ test.describe("AttributeCell Component", () => {
     }) => {
       // Click on the boolean attribute cell
       const attributeCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.bool.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.bool.id}"]`,
       );
 
       const checkbox = attributeCell.locator('input[type="checkbox"]');
@@ -424,7 +422,7 @@ test.describe("AttributeCell Component", () => {
 
       // Find the checkbox again after reload
       const checkboxAfterReload = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.bool.dimensionId}"] input[type="checkbox"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.bool.id}"] input[type="checkbox"]`,
       );
 
       // Verify the state is still changed
@@ -442,49 +440,49 @@ test.describe("AttributeCell Component", () => {
     }) => {
       // Click on the dim entries attribute cell
       const attributeCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.dimEntries.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.dimEntries.id}"]`,
       );
       await attributeCell.click();
 
       // Wait for the popup to appear
       const popup = page.locator(
-        '[data-testid="dim-entry-type-cell-edit-popup"]'
+        '[data-testid="dim-entry-type-cell-edit-popup"]',
       );
       await expect(popup).toBeVisible();
 
       console.log(
-        "✅ Popup appears when clicking on dim entries attribute cell"
+        "✅ Popup appears when clicking on dim entries attribute cell",
       );
     });
 
     test("should list all dim entries in the popup", async ({ page }) => {
       // Click on the dim entries attribute cell
       const attributeCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.dimEntries.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.dimEntries.id}"]`,
       );
       await attributeCell.click();
 
       // Wait for the popup to appear
       const popup = page.locator(
-        '[data-testid="dim-entry-type-cell-edit-popup"]'
+        '[data-testid="dim-entry-type-cell-edit-popup"]',
       );
       await expect(popup).toBeVisible();
 
       // Verify all dim entries are listed
       const optionsList = page.locator(
-        '[data-testid="dim-entry-options-list"]'
+        '[data-testid="dim-entry-options-list"]',
       );
       await expect(optionsList).toBeVisible();
 
       // Check for the three entries we created
       const entry1Option = page.locator(
-        '[data-testid*="dim-entry-option-"]:has-text("Entry 1")'
+        '[data-testid*="dim-entry-option-"]:has-text("Entry 1")',
       );
       const entry2Option = page.locator(
-        '[data-testid*="dim-entry-option-"]:has-text("Entry 2")'
+        '[data-testid*="dim-entry-option-"]:has-text("Entry 2")',
       );
       const entry3Option = page.locator(
-        '[data-testid*="dim-entry-option-"]:has-text("Entry 3")'
+        '[data-testid*="dim-entry-option-"]:has-text("Entry 3")',
       );
 
       await expect(entry1Option).toBeVisible();
@@ -499,25 +497,25 @@ test.describe("AttributeCell Component", () => {
     }) => {
       // Click on the dim entries attribute cell
       const attributeCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.dimEntries.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.dimEntries.id}"]`,
       );
       await attributeCell.click();
 
       // Wait for the popup to appear
       const popup = page.locator(
-        '[data-testid="dim-entry-type-cell-edit-popup"]'
+        '[data-testid="dim-entry-type-cell-edit-popup"]',
       );
       await expect(popup).toBeVisible();
 
       // Click on the first entry to select it
       const entry1Option = page.locator(
-        '[data-testid*="dim-entry-option-"]:has-text("Entry 1")'
+        '[data-testid*="dim-entry-option-"]:has-text("Entry 1")',
       );
       await entry1Option.click();
 
       // Verify the entry appears as a selected chip
       const selectedChip = page.locator(
-        '[data-testid*="selected-dim-entry-chip-"]:has-text("Entry 1")'
+        '[data-testid*="selected-dim-entry-chip-"]:has-text("Entry 1")',
       );
       await expect(selectedChip).toBeVisible();
 
@@ -529,31 +527,31 @@ test.describe("AttributeCell Component", () => {
     }) => {
       // Click on the dim entries attribute cell
       const attributeCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.dimEntries.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.dimEntries.id}"]`,
       );
       await attributeCell.click();
 
       // Wait for the popup to appear
       const popup = page.locator(
-        '[data-testid="dim-entry-type-cell-edit-popup"]'
+        '[data-testid="dim-entry-type-cell-edit-popup"]',
       );
       await expect(popup).toBeVisible();
 
       // Select an entry first
       const entry1Option = page.locator(
-        '[data-testid*="dim-entry-option-"]:has-text("Entry 1")'
+        '[data-testid*="dim-entry-option-"]:has-text("Entry 1")',
       );
       await entry1Option.click();
 
       // Verify the chip is there
       const selectedChip = page.locator(
-        '[data-testid*="selected-dim-entry-chip-"]:has-text("Entry 1")'
+        '[data-testid*="selected-dim-entry-chip-"]:has-text("Entry 1")',
       );
       await expect(selectedChip).toBeVisible();
 
       // Click the delete button on the chip
       const deleteButton = selectedChip.locator(
-        '[data-testid*="remove-dim-entry-"]'
+        '[data-testid*="remove-dim-entry-"]',
       );
       await deleteButton.click();
 
@@ -568,34 +566,34 @@ test.describe("AttributeCell Component", () => {
     }) => {
       // Click on the dim entries attribute cell
       const attributeCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.dimEntries.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.dimEntries.id}"]`,
       );
       await attributeCell.click();
 
       // Wait for the popup to appear
       const popup = page.locator(
-        '[data-testid="dim-entry-type-cell-edit-popup"]'
+        '[data-testid="dim-entry-type-cell-edit-popup"]',
       );
       await expect(popup).toBeVisible();
 
       // Type in the search input to filter
       const searchInput = page.locator(
-        '[data-testid="dim-entry-search-input"]'
+        '[data-testid="dim-entry-search-input"]',
       );
       await searchInput.fill("Entry 1");
 
       // Verify only Entry 1 appears in the filtered list
       const entry1Option = page.locator(
-        '[data-testid*="dim-entry-option-"]:has-text("Entry 1")'
+        '[data-testid*="dim-entry-option-"]:has-text("Entry 1")',
       );
       await expect(entry1Option).toBeVisible();
 
       // Verify other entries are not visible
       const entry2Option = page.locator(
-        '[data-testid*="dim-entry-option-"]:has-text("Entry 2")'
+        '[data-testid*="dim-entry-option-"]:has-text("Entry 2")',
       );
       const entry3Option = page.locator(
-        '[data-testid*="dim-entry-option-"]:has-text("Entry 3")'
+        '[data-testid*="dim-entry-option-"]:has-text("Entry 3")',
       );
       await expect(entry2Option).not.toBeVisible();
       await expect(entry3Option).not.toBeVisible();
@@ -608,25 +606,25 @@ test.describe("AttributeCell Component", () => {
     }) => {
       // Click on the dim entries attribute cell
       const attributeCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.dimEntries.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.dimEntries.id}"]`,
       );
       await attributeCell.click();
 
       // Wait for the popup to appear
       const popup = page.locator(
-        '[data-testid="dim-entry-type-cell-edit-popup"]'
+        '[data-testid="dim-entry-type-cell-edit-popup"]',
       );
       await expect(popup).toBeVisible();
 
       // Select an entry
       const entry1Option = page.locator(
-        '[data-testid*="dim-entry-option-"]:has-text("Entry 1")'
+        '[data-testid*="dim-entry-option-"]:has-text("Entry 1")',
       );
       await entry1Option.click();
 
       // Verify the entry appears as selected
       const selectedChip = page.locator(
-        '[data-testid*="selected-dim-entry-chip-"]:has-text("Entry 1")'
+        '[data-testid*="selected-dim-entry-chip-"]:has-text("Entry 1")',
       );
       await expect(selectedChip).toBeVisible();
 
@@ -639,13 +637,13 @@ test.describe("AttributeCell Component", () => {
     test("should close popup when clicking away", async ({ page }) => {
       // Click on the dim entries attribute cell
       const attributeCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.dimEntries.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.dimEntries.id}"]`,
       );
       await attributeCell.click();
 
       // Wait for the popup to appear
       const popup = page.locator(
-        '[data-testid="dim-entry-type-cell-edit-popup"]'
+        '[data-testid="dim-entry-type-cell-edit-popup"]',
       );
       await expect(popup).toBeVisible();
 
@@ -659,19 +657,19 @@ test.describe("AttributeCell Component", () => {
     test("should close popup when pressing escape", async ({ page }) => {
       // Click on the dim entries attribute cell
       const attributeCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.dimEntries.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.dimEntries.id}"]`,
       );
       await attributeCell.click();
 
       // Wait for the popup to appear
       const popup = page.locator(
-        '[data-testid="dim-entry-type-cell-edit-popup"]'
+        '[data-testid="dim-entry-type-cell-edit-popup"]',
       );
       await expect(popup).toBeVisible();
 
       // Press escape in the search input
       const searchInput = page.locator(
-        '[data-testid="dim-entry-search-input"]'
+        '[data-testid="dim-entry-search-input"]',
       );
       await searchInput.focus();
       await searchInput.press("Escape");
@@ -687,22 +685,22 @@ test.describe("AttributeCell Component", () => {
     }) => {
       // Click on the dim entries attribute cell
       const attributeCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.dimEntries.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.dimEntries.id}"]`,
       );
       await attributeCell.click();
 
       // Wait for the popup to appear
       const popup = page.locator(
-        '[data-testid="dim-entry-type-cell-edit-popup"]'
+        '[data-testid="dim-entry-type-cell-edit-popup"]',
       );
       await expect(popup).toBeVisible();
 
       // Select multiple entries
       const entry1Option = page.locator(
-        '[data-testid*="dim-entry-option-"]:has-text("Entry 1")'
+        '[data-testid*="dim-entry-option-"]:has-text("Entry 1")',
       );
       const entry2Option = page.locator(
-        '[data-testid*="dim-entry-option-"]:has-text("Entry 2")'
+        '[data-testid*="dim-entry-option-"]:has-text("Entry 2")',
       );
 
       await entry1Option.click();
@@ -726,13 +724,13 @@ test.describe("AttributeCell Component", () => {
     }) => {
       // Test that we can interact with different attribute types for the same worker
       const textCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.text.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.text.id}"]`,
       );
       const numberCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.number.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.number.id}"]`,
       );
       const boolCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.bool.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.bool.id}"]`,
       );
 
       // Set values for each type
@@ -766,7 +764,7 @@ test.describe("AttributeCell Component", () => {
 
       // Set text attribute
       const textCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.text.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.text.id}"]`,
       );
       await textCell.click();
       await textCell.locator('input[type="text"]').fill(testTextValue);
@@ -774,7 +772,7 @@ test.describe("AttributeCell Component", () => {
 
       // Set number attribute
       const numberCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.number.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.number.id}"]`,
       );
       await numberCell.click();
       await numberCell.locator('input[type="number"]').fill(testNumberValue);
@@ -782,7 +780,7 @@ test.describe("AttributeCell Component", () => {
 
       // Set boolean attribute
       const boolCell = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.bool.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.bool.id}"]`,
       );
       const checkbox = boolCell.locator('input[type="checkbox"]');
       await checkbox.click();
@@ -793,13 +791,13 @@ test.describe("AttributeCell Component", () => {
 
       // Verify values are still there
       const textCellAfterReload = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.text.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.text.id}"]`,
       );
       const numberCellAfterReload = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.number.dimensionId}"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.number.id}"]`,
       );
       const checkboxAfterReload = page.locator(
-        `[data-testid="attribute-cell-${testWorker.workerId}-${testDimensions.bool.dimensionId}"] input[type="checkbox"]`
+        `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.bool.id}"] input[type="checkbox"]`,
       );
 
       await expect(textCellAfterReload).toContainText(testTextValue);

@@ -41,7 +41,7 @@ test.describe("Request Calendar", () => {
       testInfo.title.includes("should open edit request panel") ||
       testInfo.title.includes("should delete request when clicking delete") ||
       testInfo.title.includes(
-        "should approve request when clicking checkmark"
+        "should approve request when clicking checkmark",
       ) ||
       testInfo.title.includes("should rescind approved request") ||
       testInfo.title.includes("should reject request when clicking close");
@@ -51,7 +51,7 @@ test.describe("Request Calendar", () => {
     await requestTestBase.setupRequestTests(
       workerIndex,
       testRunId,
-      needsPreCreatedRequests
+      needsPreCreatedRequests,
     );
 
     // Navigate to the requests page
@@ -71,7 +71,7 @@ test.describe("Request Calendar", () => {
 
     if (!requestTestBase) {
       console.warn(
-        `No requestTestBase found for testRunId: ${testRunId}, skipping cleanup`
+        `No requestTestBase found for testRunId: ${testRunId}, skipping cleanup`,
       );
       return;
     }
@@ -84,7 +84,7 @@ test.describe("Request Calendar", () => {
     } catch (error) {
       console.warn(
         `[Test Run ${testRunId}] Cleanup failed, but continuing:`,
-        error
+        error,
       );
     }
 
@@ -122,7 +122,7 @@ test.describe("Request Calendar", () => {
     await expect(nextButton).toBeVisible();
 
     console.log(
-      "✅ Request calendar shows correctly when clicking calendar tab"
+      "✅ Request calendar shows correctly when clicking calendar tab",
     );
   });
 
@@ -142,8 +142,8 @@ test.describe("Request Calendar", () => {
     // Verify that clicking on a past date does nothing
     await requestTestBase.verifyPastDateClick(
       page,
-      testWorkers[0].workerId,
-      pastDate
+      testWorkers[0].id,
+      pastDate,
     );
 
     console.log("✅ Clicking on past date does nothing");
@@ -166,8 +166,8 @@ test.describe("Request Calendar", () => {
     // Click on empty cell for future date
     await requestTestBase.clickEmptyCalendarCell(
       page,
-      testWorkers[0].workerId,
-      futureDate1
+      testWorkers[0].id,
+      futureDate1,
     );
 
     // Verify request panel opens
@@ -180,7 +180,7 @@ test.describe("Request Calendar", () => {
     await expect(requestPanel).not.toBeVisible();
 
     console.log(
-      "✅ Create request panel opens when clicking on near future date"
+      "✅ Create request panel opens when clicking on near future date",
     );
 
     // Test with another future date
@@ -189,8 +189,8 @@ test.describe("Request Calendar", () => {
     // Click on empty cell for future date
     await requestTestBase.clickEmptyCalendarCell(
       page,
-      testWorkers[0].workerId,
-      futureDate2
+      testWorkers[0].id,
+      futureDate2,
     );
 
     // Verify request panel opens again
@@ -215,8 +215,8 @@ test.describe("Request Calendar", () => {
     // Click on empty cell to create request
     await requestTestBase.clickEmptyCalendarCell(
       page,
-      testWorkers[0].workerId,
-      tomorrow
+      testWorkers[0].id,
+      tomorrow,
     );
 
     // Verify request panel opens
@@ -228,7 +228,7 @@ test.describe("Request Calendar", () => {
 
     // Verify worker is pre-filled (should be pre-populated from calendar cell click)
     const workerSelect = requestTestBase.getWorkerSelect(page);
-    await expect(workerSelect).toHaveValue(testWorkers[0].workerId);
+    await expect(workerSelect).toHaveValue(testWorkers[0].id);
 
     // Verify date is pre-filled (should be pre-populated from calendar cell click)
     // Note: We don't need to set the date as it's already set by the calendar cell click
@@ -245,7 +245,7 @@ test.describe("Request Calendar", () => {
     // Verify the request appears in the calendar
     // Wait for a cell with a request ID suffix to appear (pattern: calendar-cell-{workerId}-{date}-request-{requestId})
     const cellPattern = `calendar-cell-${
-      testWorkers[0].workerId
+      testWorkers[0].id
     }-${tomorrow.format("YYYY-MM-DD")}-request-`;
     const calendarCell = page.locator(`[data-testid^="${cellPattern}"]`);
 
@@ -258,7 +258,7 @@ test.describe("Request Calendar", () => {
     });
 
     console.log(
-      "✅ Work request for single date created successfully and appears in calendar"
+      "✅ Work request for single date created successfully and appears in calendar",
     );
   });
 
@@ -272,13 +272,13 @@ test.describe("Request Calendar", () => {
 
     // First request should be a future pending work request for worker 2
     const futureRequest = testRequests[0];
-    expect(futureRequest.workerId).toBe(testWorkers[1].workerId);
+    expect(futureRequest.workerId).toBe(testWorkers[1].id);
     expect(futureRequest.requestType).toBe(RequestType.WORK_DEMAND);
     expect(futureRequest.status).toBe(RequestStatus.PENDING);
 
     // Second request should be a past pending work request for worker 1
     const pastRequest = testRequests[1];
-    expect(pastRequest.workerId).toBe(testWorkers[0].workerId);
+    expect(pastRequest.workerId).toBe(testWorkers[0].id);
     expect(pastRequest.requestType).toBe(RequestType.WORK_DEMAND);
     expect(pastRequest.status).toBe(RequestStatus.PENDING);
 
@@ -288,17 +288,17 @@ test.describe("Request Calendar", () => {
     // Verify past request is shown
     await requestTestBase.verifyCalendarCellHasRequest(
       page,
-      testWorkers[0].workerId,
+      testWorkers[0].id,
       pastRequest.startDate,
-      pastRequest.id
+      pastRequest.id,
     );
 
     // Verify future request is shown
     await requestTestBase.verifyCalendarCellHasRequest(
       page,
-      testWorkers[1].workerId,
+      testWorkers[1].id,
       futureRequest.startDate,
-      futureRequest.id
+      futureRequest.id,
     );
 
     console.log("✅ Existing requests (past and future) are shown in calendar");
@@ -314,7 +314,7 @@ test.describe("Request Calendar", () => {
 
     // Use the future pending request (first in the array)
     const futureRequest = testRequests[0];
-    expect(futureRequest.workerId).toBe(testWorkers[1].workerId);
+    expect(futureRequest.workerId).toBe(testWorkers[1].id);
     expect(futureRequest.requestType).toBe(RequestType.WORK_DEMAND);
     expect(futureRequest.status).toBe(RequestStatus.PENDING);
 
@@ -324,9 +324,9 @@ test.describe("Request Calendar", () => {
     // Click on the existing request
     await requestTestBase.clickRequestCalendarCell(
       page,
-      testWorkers[1].workerId,
+      testWorkers[1].id,
       futureRequest.startDate,
-      futureRequest.id
+      futureRequest.id,
     );
 
     // Verify request panel opens in edit mode
@@ -337,12 +337,12 @@ test.describe("Request Calendar", () => {
     // Check that we're in edit mode by looking for action buttons
     const deleteButton = requestTestBase.getDeleteRequestButton(
       page,
-      futureRequest.id
+      futureRequest.id,
     );
     await expect(deleteButton).toBeVisible();
 
     console.log(
-      "✅ Edit request panel opens when clicking on existing request"
+      "✅ Edit request panel opens when clicking on existing request",
     );
   });
 
@@ -356,7 +356,7 @@ test.describe("Request Calendar", () => {
 
     // Use the future pending request (first in the array)
     const futureRequest = testRequests[0];
-    expect(futureRequest.workerId).toBe(testWorkers[1].workerId);
+    expect(futureRequest.workerId).toBe(testWorkers[1].id);
     expect(futureRequest.requestType).toBe(RequestType.WORK_DEMAND);
     expect(futureRequest.status).toBe(RequestStatus.PENDING);
 
@@ -366,9 +366,9 @@ test.describe("Request Calendar", () => {
     // Click on the existing request to edit
     await requestTestBase.clickRequestCalendarCell(
       page,
-      testWorkers[1].workerId,
+      testWorkers[1].id,
       futureRequest.startDate,
-      futureRequest.id
+      futureRequest.id,
     );
 
     // Verify request panel opens
@@ -378,7 +378,7 @@ test.describe("Request Calendar", () => {
     // Click delete button
     const deleteButton = requestTestBase.getDeleteRequestButton(
       page,
-      futureRequest.id
+      futureRequest.id,
     );
     await expect(deleteButton).toBeVisible();
     await deleteButton.click();
@@ -389,8 +389,8 @@ test.describe("Request Calendar", () => {
     // Verify request is removed from calendar
     await requestTestBase.verifyCalendarCellIsEmpty(
       page,
-      testWorkers[1].workerId,
-      futureRequest.startDate
+      testWorkers[1].id,
+      futureRequest.startDate,
     );
 
     console.log("✅ Request deleted successfully from calendar");
@@ -406,7 +406,7 @@ test.describe("Request Calendar", () => {
 
     // Use the future pending request (first in the array)
     const pendingRequest = testRequests[0];
-    expect(pendingRequest.workerId).toBe(testWorkers[1].workerId);
+    expect(pendingRequest.workerId).toBe(testWorkers[1].id);
     expect(pendingRequest.requestType).toBe(RequestType.WORK_DEMAND);
     expect(pendingRequest.status).toBe(RequestStatus.PENDING);
 
@@ -416,9 +416,9 @@ test.describe("Request Calendar", () => {
     // Click on the pending request to edit
     await requestTestBase.clickRequestCalendarCell(
       page,
-      testWorkers[1].workerId,
+      testWorkers[1].id,
       pendingRequest.startDate,
-      pendingRequest.id
+      pendingRequest.id,
     );
 
     // Verify request panel opens
@@ -428,7 +428,7 @@ test.describe("Request Calendar", () => {
     // Click approve button (checkmark)
     const approveButton = requestTestBase.getApproveRequestButton(
       page,
-      pendingRequest.id
+      pendingRequest.id,
     );
     await expect(approveButton).toBeVisible();
     await approveButton.click();
@@ -446,14 +446,14 @@ test.describe("Request Calendar", () => {
     // Verify the request status changed in the calendar (color should change)
     await requestTestBase.verifyCalendarCellHasRequest(
       page,
-      testWorkers[1].workerId,
+      testWorkers[1].id,
       pendingRequest.startDate,
       pendingRequest.id,
-      { status: RequestStatus.APPROVED }
+      { status: RequestStatus.APPROVED },
     );
 
     console.log(
-      "✅ Request approved successfully and status updated in calendar"
+      "✅ Request approved successfully and status updated in calendar",
     );
   });
 
@@ -467,7 +467,7 @@ test.describe("Request Calendar", () => {
 
     // Use the pre-approved past request (third in the array)
     const approvedRequest = testRequests[2];
-    expect(approvedRequest.workerId).toBe(testWorkers[0].workerId);
+    expect(approvedRequest.workerId).toBe(testWorkers[0].id);
     expect(approvedRequest.requestType).toBe(RequestType.WORK_DEMAND);
     expect(approvedRequest.status).toBe(RequestStatus.APPROVED);
 
@@ -477,9 +477,9 @@ test.describe("Request Calendar", () => {
     // Click on the approved request to edit
     await requestTestBase.clickRequestCalendarCell(
       page,
-      testWorkers[0].workerId,
+      testWorkers[0].id,
       approvedRequest.startDate,
-      approvedRequest.id
+      approvedRequest.id,
     );
 
     // Verify request panel opens
@@ -489,7 +489,7 @@ test.describe("Request Calendar", () => {
     // Click rescind button
     const rescindButton = requestTestBase.getRescindRequestButton(
       page,
-      approvedRequest.id
+      approvedRequest.id,
     );
     await expect(rescindButton).toBeVisible();
     await rescindButton.click();
@@ -507,14 +507,14 @@ test.describe("Request Calendar", () => {
     // Verify the request status changed back to pending in the calendar
     await requestTestBase.verifyCalendarCellHasRequest(
       page,
-      testWorkers[0].workerId,
+      testWorkers[0].id,
       approvedRequest.startDate,
       approvedRequest.id,
-      { status: RequestStatus.PENDING }
+      { status: RequestStatus.PENDING },
     );
 
     console.log(
-      "✅ Request rescinded successfully and status reverted to pending"
+      "✅ Request rescinded successfully and status reverted to pending",
     );
   });
 
@@ -528,7 +528,7 @@ test.describe("Request Calendar", () => {
 
     // Use the future pending request (first in the array)
     const pendingRequest = testRequests[0];
-    expect(pendingRequest.workerId).toBe(testWorkers[1].workerId);
+    expect(pendingRequest.workerId).toBe(testWorkers[1].id);
     expect(pendingRequest.requestType).toBe(RequestType.WORK_DEMAND);
     expect(pendingRequest.status).toBe(RequestStatus.PENDING);
 
@@ -538,9 +538,9 @@ test.describe("Request Calendar", () => {
     // Click on the pending request to edit
     await requestTestBase.clickRequestCalendarCell(
       page,
-      testWorkers[1].workerId,
+      testWorkers[1].id,
       pendingRequest.startDate,
-      pendingRequest.id
+      pendingRequest.id,
     );
 
     // Verify request panel opens
@@ -550,7 +550,7 @@ test.describe("Request Calendar", () => {
     // Click reject button (close icon)
     const rejectButton = requestTestBase.getRejectRequestButton(
       page,
-      pendingRequest.id
+      pendingRequest.id,
     );
     await expect(rejectButton).toBeVisible();
     await rejectButton.click();
@@ -568,14 +568,14 @@ test.describe("Request Calendar", () => {
     // Verify the request status changed to denied/rejected
     await requestTestBase.verifyCalendarCellHasRequest(
       page,
-      testWorkers[1].workerId,
+      testWorkers[1].id,
       pendingRequest.startDate,
       pendingRequest.id,
-      { status: RequestStatus.DENIED }
+      { status: RequestStatus.DENIED },
     );
 
     console.log(
-      "✅ Request rejected successfully and status updated in calendar"
+      "✅ Request rejected successfully and status updated in calendar",
     );
   });
 });

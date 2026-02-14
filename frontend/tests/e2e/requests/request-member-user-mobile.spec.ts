@@ -42,7 +42,7 @@ test.describe("Mobile Request Page - Member User", () => {
 
     // Create a worker for the member user
     await roleTestBase.createWorkerForMember(
-      `Mobile Member Worker ${testRunId}`
+      `Mobile Member Worker ${testRunId}`,
     );
 
     // Create test shifts that the member can use
@@ -58,7 +58,7 @@ test.describe("Mobile Request Page - Member User", () => {
     });
 
     console.log(
-      `[${testRunId}] Created day shift: ${dayShift.name} (${dayShift.shiftId})`
+      `[${testRunId}] Created day shift: ${dayShift.name} (${dayShift.shiftId})`,
     );
 
     // Create another worker (not linked to member) as owner for testing isolation
@@ -74,7 +74,7 @@ test.describe("Mobile Request Page - Member User", () => {
     });
 
     console.log(
-      `[${testRunId}] Created other worker: ${otherWorker.name} (${otherWorker.workerId})`
+      `[${testRunId}] Created other worker: ${otherWorker.name} (${otherWorker.workerId})`,
     );
 
     // Create a request for the other worker using the same dayShift
@@ -105,7 +105,7 @@ test.describe("Mobile Request Page - Member User", () => {
     if (memberWorker) {
       await roleTestBase.dbUtils.createRequest({
         teamId: testTeam.teamId,
-        workerId: memberWorker.workerId,
+        workerId: memberWorker.id,
         requestType: "work_demand",
         startDate: tomorrow,
         endDate: tomorrow,
@@ -135,7 +135,7 @@ test.describe("Mobile Request Page - Member User", () => {
 
     // Wait for mobile page to load
     await expect(
-      page.locator('[data-testid="mobile-request-tab"]')
+      page.locator('[data-testid="mobile-request-tab"]'),
     ).toBeVisible();
   });
 
@@ -156,7 +156,7 @@ test.describe("Mobile Request Page - Member User", () => {
 
     // Wait for the request panel to open
     await expect(
-      page.locator('[data-testid="request-panel-dialog"]')
+      page.locator('[data-testid="request-panel-dialog"]'),
     ).toBeVisible();
 
     // Select work request type
@@ -165,7 +165,7 @@ test.describe("Mobile Request Page - Member User", () => {
     // Verify the worker select is disabled and shows the member's worker
     const workerSelect = requestTestBase.getWorkerSelect(page);
     await expect(workerSelect).toBeDisabled();
-    await expect(workerSelect).toHaveValue(memberWorker.workerId);
+    await expect(workerSelect).toHaveValue(memberWorker.id);
 
     // Set the request date (2 days from now to avoid conflicts with existing request)
     const futureDate = dayjs.utc().add(2, "day");
@@ -182,7 +182,7 @@ test.describe("Mobile Request Page - Member User", () => {
 
     // Wait for the panel to close
     await expect(
-      page.locator('[data-testid="request-panel"]')
+      page.locator('[data-testid="request-panel"]'),
     ).not.toBeVisible();
 
     // Verify the request appears in the mobile list
@@ -191,7 +191,7 @@ test.describe("Mobile Request Page - Member User", () => {
     await expect(requestItems).toHaveCount(2); // Original + new request
 
     console.log(
-      "✅ Member successfully created request for their worker (mobile)"
+      "✅ Member successfully created request for their worker (mobile)",
     );
   });
 
@@ -235,7 +235,7 @@ test.describe("Mobile Request Page - Member User", () => {
     }
 
     console.log(
-      "✅ Member cannot see other workers' requests (verified absence in mobile list)"
+      "✅ Member cannot see other workers' requests (verified absence in mobile list)",
     );
   });
 

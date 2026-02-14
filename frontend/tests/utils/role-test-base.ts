@@ -13,17 +13,14 @@ import {
   TEST_USER_2,
 } from "./database-utils";
 import { testConfig } from "./test-config";
+import { WorkerT } from "../../src/types/worker";
 
 export class RoleTestBase {
   public dbUtils: DatabaseTestUtils;
   protected testTeam: { teamId: string; name: string } | null = null;
   protected ownerUser: TestUserWithRole | null = null;
   protected memberUser: TestUserWithRole | null = null;
-  protected memberWorker: {
-    workerId: string;
-    name: string;
-    teamId: string;
-  } | null = null;
+  protected memberWorker: WorkerT | null = null;
 
   constructor() {
     this.dbUtils = new DatabaseTestUtils();
@@ -333,7 +330,7 @@ export class RoleTestBase {
   async createWorkerForUser(
     userId: string,
     workerName: string,
-  ): Promise<{ workerId: string; name: string; teamId: string }> {
+  ): Promise<WorkerT> {
     if (!this.testTeam) {
       throw new Error("Test team not created. Call setupRoleTests() first.");
     }
@@ -369,9 +366,7 @@ export class RoleTestBase {
    * @param workerName - Name for the worker (optional, defaults to "Member Worker")
    * @returns The created and linked worker
    */
-  async createWorkerForMember(
-    workerName?: string,
-  ): Promise<{ workerId: string; name: string; teamId: string }> {
+  async createWorkerForMember(workerName?: string): Promise<WorkerT> {
     if (!this.memberUser) {
       throw new Error("Member user not created. Call setupRoleTests() first.");
     }
@@ -389,7 +384,7 @@ export class RoleTestBase {
    * Get the member's worker (if created via createWorkerForMember)
    * @returns The member's worker or null if not created
    */
-  getMemberWorker(): { workerId: string; name: string; teamId: string } | null {
+  getMemberWorker(): WorkerT | null {
     return this.memberWorker;
   }
 }

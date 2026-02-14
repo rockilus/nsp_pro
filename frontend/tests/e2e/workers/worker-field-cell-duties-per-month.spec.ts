@@ -4,7 +4,7 @@ import { WorkerTestBase } from "../../utils/worker-test-base";
 const workerTestBase = new WorkerTestBase();
 
 test.describe("Worker Duties Per Month Field Cell", () => {
-  let testWorker: { workerId: string; name: string; teamId: string };
+  let testWorker: { id: string; name: string; teamId: string };
   let initialWorkerName: string;
   let initialDutiesPerMonth: number;
 
@@ -26,7 +26,7 @@ test.describe("Worker Duties Per Month Field Cell", () => {
     });
 
     console.log(
-      `Created test worker: ${testWorker.name} (${testWorker.workerId}) with duties per month: ${initialDutiesPerMonth}`
+      `Created test worker: ${testWorker.name} (${testWorker.id}) with duties per month: ${initialDutiesPerMonth}`,
     );
 
     // Navigate to the workers page
@@ -46,10 +46,10 @@ test.describe("Worker Duties Per Month Field Cell", () => {
 
   test.afterEach(async () => {
     // Clean up: delete the worker created for this test
-    if (testWorker?.workerId) {
+    if (testWorker?.id) {
       try {
-        await workerTestBase.deleteTestWorker(testWorker.workerId);
-        console.log(`Cleaned up test worker: ${testWorker.workerId}`);
+        await workerTestBase.deleteTestWorker(testWorker.id);
+        console.log(`Cleaned up test worker: ${testWorker.id}`);
       } catch (error) {
         console.error(`Failed to clean up test worker: ${error}`);
       }
@@ -67,11 +67,11 @@ test.describe("Worker Duties Per Month Field Cell", () => {
     // Verify the cell is visible and displays the initial duties per month
     await expect(dutiesPerMonthCell).toBeVisible();
     await expect(dutiesPerMonthDisplay).toContainText(
-      initialDutiesPerMonth.toString()
+      initialDutiesPerMonth.toString(),
     );
 
     console.log(
-      `✅ Duties per month cell displays initial value: ${initialDutiesPerMonth}`
+      `✅ Duties per month cell displays initial value: ${initialDutiesPerMonth}`,
     );
   });
 
@@ -93,7 +93,7 @@ test.describe("Worker Duties Per Month Field Cell", () => {
     // After clicking, the input should appear and display should be hidden
     await expect(dutiesPerMonthInput).toBeVisible();
     await expect(dutiesPerMonthInput).toHaveValue(
-      initialDutiesPerMonth.toString()
+      initialDutiesPerMonth.toString(),
     );
     await expect(dutiesPerMonthDisplay).not.toBeVisible();
 
@@ -169,11 +169,11 @@ test.describe("Worker Duties Per Month Field Cell", () => {
     // The display should show the updated value
     await expect(dutiesPerMonthDisplay).toBeVisible();
     await expect(dutiesPerMonthDisplay).toContainText(
-      newDutiesPerMonth.toString()
+      newDutiesPerMonth.toString(),
     );
 
     console.log(
-      `✅ Duties per month updated to ${newDutiesPerMonth} via blur event`
+      `✅ Duties per month updated to ${newDutiesPerMonth} via blur event`,
     );
   });
 
@@ -207,11 +207,11 @@ test.describe("Worker Duties Per Month Field Cell", () => {
     // The display should show the updated value
     await expect(dutiesPerMonthDisplay).toBeVisible();
     await expect(dutiesPerMonthDisplay).toContainText(
-      newDutiesPerMonth.toString()
+      newDutiesPerMonth.toString(),
     );
 
     console.log(
-      `✅ Duties per month updated to ${newDutiesPerMonth} via Enter key`
+      `✅ Duties per month updated to ${newDutiesPerMonth} via Enter key`,
     );
   });
 
@@ -227,14 +227,14 @@ test.describe("Worker Duties Per Month Field Cell", () => {
 
     // Verify initial value
     await expect(dutiesPerMonthDisplay).toContainText(
-      initialDutiesPerMonth.toString()
+      initialDutiesPerMonth.toString(),
     );
 
     // Click on the cell to edit
     await dutiesPerMonthCell.click();
     await expect(dutiesPerMonthInput).toBeVisible();
     await expect(dutiesPerMonthInput).toHaveValue(
-      initialDutiesPerMonth.toString()
+      initialDutiesPerMonth.toString(),
     );
 
     // Change the value to something different
@@ -242,7 +242,7 @@ test.describe("Worker Duties Per Month Field Cell", () => {
     await dutiesPerMonthInput.clear();
     await dutiesPerMonthInput.type(tempDutiesPerMonth.toString());
     await expect(dutiesPerMonthInput).toHaveValue(
-      tempDutiesPerMonth.toString()
+      tempDutiesPerMonth.toString(),
     );
 
     // Press Escape to cancel editing
@@ -257,14 +257,14 @@ test.describe("Worker Duties Per Month Field Cell", () => {
     // The display should show the original value (not the temporary one)
     await expect(dutiesPerMonthDisplay).toBeVisible();
     await expect(dutiesPerMonthDisplay).toContainText(
-      initialDutiesPerMonth.toString()
+      initialDutiesPerMonth.toString(),
     );
     await expect(dutiesPerMonthDisplay).not.toContainText(
-      tempDutiesPerMonth.toString()
+      tempDutiesPerMonth.toString(),
     );
 
     console.log(
-      `✅ Duties per month edit canceled, reverted to original: ${initialDutiesPerMonth}`
+      `✅ Duties per month edit canceled, reverted to original: ${initialDutiesPerMonth}`,
     );
   });
 
@@ -298,11 +298,11 @@ test.describe("Worker Duties Per Month Field Cell", () => {
     // The display should show the original value (component should revert empty to original)
     await expect(dutiesPerMonthDisplay).toBeVisible();
     await expect(dutiesPerMonthDisplay).toContainText(
-      initialDutiesPerMonth.toString()
+      initialDutiesPerMonth.toString(),
     );
 
     console.log(
-      `✅ Empty input reverted to original value: ${initialDutiesPerMonth}`
+      `✅ Empty input reverted to original value: ${initialDutiesPerMonth}`,
     );
   });
 
@@ -320,7 +320,7 @@ test.describe("Worker Duties Per Month Field Cell", () => {
 
     // Don't change the value, just press Enter
     await expect(dutiesPerMonthInput).toHaveValue(
-      initialDutiesPerMonth.toString()
+      initialDutiesPerMonth.toString(),
     );
     await dutiesPerMonthInput.press("Enter");
 
@@ -333,7 +333,7 @@ test.describe("Worker Duties Per Month Field Cell", () => {
     // The display should show the same value as before
     await expect(dutiesPerMonthDisplay).toBeVisible();
     await expect(dutiesPerMonthDisplay).toContainText(
-      initialDutiesPerMonth.toString()
+      initialDutiesPerMonth.toString(),
     );
 
     console.log(`✅ No change made - value remains: ${initialDutiesPerMonth}`);
@@ -356,7 +356,7 @@ test.describe("Worker Duties Per Month Field Cell", () => {
     await dutiesPerMonthInput.clear();
     await dutiesPerMonthInput.type(largeDutiesPerMonth.toString());
     await expect(dutiesPerMonthInput).toHaveValue(
-      largeDutiesPerMonth.toString()
+      largeDutiesPerMonth.toString(),
     );
 
     // Press Enter to save
@@ -371,11 +371,11 @@ test.describe("Worker Duties Per Month Field Cell", () => {
     // The display should show the large value
     await expect(dutiesPerMonthDisplay).toBeVisible();
     await expect(dutiesPerMonthDisplay).toContainText(
-      largeDutiesPerMonth.toString()
+      largeDutiesPerMonth.toString(),
     );
 
     console.log(
-      `✅ Large duties per month ${largeDutiesPerMonth} handled correctly`
+      `✅ Large duties per month ${largeDutiesPerMonth} handled correctly`,
     );
   });
 });

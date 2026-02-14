@@ -4,7 +4,7 @@ import { WorkerTestBase } from "../../utils/worker-test-base";
 const workerTestBase = new WorkerTestBase();
 
 test.describe("Worker Name Updates", () => {
-  let testWorker: { workerId: string; name: string; teamId: string };
+  let testWorker: { id: string; name: string; teamId: string };
   let initialWorkerName: string;
 
   test.beforeEach(async ({ page }) => {
@@ -24,9 +24,7 @@ test.describe("Worker Name Updates", () => {
       annualLeave: 25,
     });
 
-    console.log(
-      `Created test worker: ${testWorker.name} (${testWorker.workerId})`
-    );
+    console.log(`Created test worker: ${testWorker.name} (${testWorker.id})`);
 
     // Navigate to the workers page
     await workerTestBase.navigateToWorkersPage(page);
@@ -45,15 +43,12 @@ test.describe("Worker Name Updates", () => {
 
   test.afterEach(async () => {
     // Clean up: delete the worker created for this test
-    if (testWorker?.workerId) {
+    if (testWorker?.id) {
       try {
-        await workerTestBase.deleteTestWorker(testWorker.workerId);
-        console.log(`Deleted test worker: ${testWorker.workerId}`);
+        await workerTestBase.deleteTestWorker(testWorker.id);
+        console.log(`Deleted test worker: ${testWorker.id}`);
       } catch (error) {
-        console.warn(
-          `Failed to delete test worker ${testWorker.workerId}:`,
-          error
-        );
+        console.warn(`Failed to delete test worker ${testWorker.id}:`, error);
       }
     }
   });
@@ -93,7 +88,7 @@ test.describe("Worker Name Updates", () => {
     await expect(nameCell).toContainText(newName);
 
     console.log(
-      `✅ Worker name updated from "${initialWorkerName}" to "${newName}"`
+      `✅ Worker name updated from "${initialWorkerName}" to "${newName}"`,
     );
   });
 
@@ -159,7 +154,7 @@ test.describe("Worker Name Updates", () => {
     await expect(nameCell).not.toContainText(tempName);
 
     console.log(
-      `✅ Name edit canceled, reverted to original: "${originalName}"`
+      `✅ Name edit canceled, reverted to original: "${originalName}"`,
     );
   });
 
@@ -217,7 +212,7 @@ test.describe("Worker Name Updates", () => {
     await expect(nameCell).toContainText(specialName);
 
     console.log(
-      `✅ Special characters in name handled correctly: "${specialName}"`
+      `✅ Special characters in name handled correctly: "${specialName}"`,
     );
   });
 });

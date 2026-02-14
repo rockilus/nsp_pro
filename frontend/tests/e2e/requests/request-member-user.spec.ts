@@ -55,7 +55,7 @@ test.describe("Request Page - Member User", () => {
     });
 
     console.log(
-      `[${testRunId}] Created day shift: ${dayShift.name} (${dayShift.id})`
+      `[${testRunId}] Created day shift: ${dayShift.name} (${dayShift.id})`,
     );
 
     // Create another worker (not linked to member) as owner for testing isolation
@@ -71,7 +71,7 @@ test.describe("Request Page - Member User", () => {
     });
 
     console.log(
-      `[${testRunId}] Created other worker: ${otherWorker.name} (${otherWorker.workerId})`
+      `[${testRunId}] Created other worker: ${otherWorker.name} (${otherWorker.workerId})`,
     );
 
     // Create a request for the other worker using the same dayShift
@@ -102,7 +102,7 @@ test.describe("Request Page - Member User", () => {
     if (memberWorker) {
       await roleTestBase.dbUtils.createRequest({
         teamId: testTeam.teamId,
-        workerId: memberWorker.workerId,
+        workerId: memberWorker.id,
         requestType: "work_demand",
         startDate: tomorrow,
         endDate: tomorrow,
@@ -152,7 +152,7 @@ test.describe("Request Page - Member User", () => {
     // Verify the worker select is disabled and shows the member's worker
     const workerSelect = requestTestBase.getWorkerSelect(page);
     await expect(workerSelect).toBeDisabled();
-    await expect(workerSelect).toHaveValue(memberWorker.workerId);
+    await expect(workerSelect).toHaveValue(memberWorker.id);
 
     // Set the request date (the day after tomorrow)
     const tomorrow = dayjs.utc().add(2, "day");
@@ -205,7 +205,7 @@ test.describe("Request Page - Member User", () => {
     await expect(otherWorkerCell).not.toBeVisible();
 
     console.log(
-      "✅ Member cannot see other workers' requests (verified absence)"
+      "✅ Member cannot see other workers' requests (verified absence)",
     );
   });
 

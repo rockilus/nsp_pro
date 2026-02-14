@@ -585,8 +585,8 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     const originalRequestedAssignments = testSwap.requestedAssignmentIds || [];
 
     // Store original worker IDs for each assignment
-    const worker1Id = workers[0].workerId;
-    const worker2Id = workers[1].workerId;
+    const worker1Id = workers[0].id;
+    const worker2Id = workers[1].id;
 
     // Accept and approve swap
     await swapTestBase.acceptDirectSwap(testSwap.id);
@@ -700,8 +700,8 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     // Worker2 offered 1 duty shift
     expect(dutySwap.requestedAssignmentIds?.length).toBe(1);
 
-    const worker1Id = workers[0].workerId;
-    const worker2Id = workers[1].workerId;
+    const worker1Id = workers[0].id;
+    const worker2Id = workers[1].id;
 
     // Accept and approve the duty swap
     await swapTestBase.acceptDirectSwap(dutySwap.id);
@@ -883,9 +883,7 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
       testSwap.offeredAssignmentIds.includes(a.id),
     );
     expect(
-      offeredAssignmentsBefore.every(
-        (a) => a.workerId === creatorWorker.workerId,
-      ),
+      offeredAssignmentsBefore.every((a) => a.workerId === creatorWorker.id),
     ).toBe(true);
 
     // Accept, approve, and revert swap
@@ -907,7 +905,7 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     );
 
     for (const assignment of offeredAssignmentsAfter) {
-      expect(assignment.workerId).toBe(creatorWorker.workerId);
+      expect(assignment.workerId).toBe(creatorWorker.id);
     }
 
     console.log(
@@ -938,9 +936,7 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
         testSwap.requestedAssignmentIds.includes(a.id),
     );
     expect(
-      requestedAssignmentsBefore.every(
-        (a) => a.workerId === targetWorker.workerId,
-      ),
+      requestedAssignmentsBefore.every((a) => a.workerId === targetWorker.id),
     ).toBe(true);
 
     // Accept, approve, and revert swap
@@ -964,7 +960,7 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     );
 
     for (const assignment of requestedAssignmentsAfter) {
-      expect(assignment.workerId).toBe(targetWorker.workerId);
+      expect(assignment.workerId).toBe(targetWorker.id);
     }
 
     console.log(
