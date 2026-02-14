@@ -50,36 +50,28 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     console.log(`[Test Run ${testRunId}] Cleanup completed`);
   });
 
-  test("should only show assignment button on mobile in create dialog", async ({
+  test("should open assignment dialog when clicking on fab button", async ({
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
 
-    const addButton = page
-      .locator('[data-testid="add-schedule-item-button"]')
+    const fabButton = page
+      .locator('[data-testid="mobile-create-assignment-fab"]')
       .first();
 
-    if (!(await addButton.isVisible().catch(() => false))) {
-      console.log("⚠️ Add button not found, skipping test");
-      test.skip();
-      return;
-    }
+    expect(fabButton).toBeVisible();
 
-    await addButton.click();
+    await fabButton.click();
 
-    // Assignment button should be visible
-    const assignmentButton = page.locator('[data-testid="assignment-button"]');
-    await expect(assignmentButton).toBeVisible();
+    // Schedule item dialog should be visible
+    const dialog = page.locator('[data-testid="schedule-item-dialog"]');
+    await expect(dialog).toBeVisible();
 
-    // Demand button should NOT be visible on mobile
-    const demandButton = page.locator('[data-testid="demand-button"]');
-    await expect(demandButton).not.toBeVisible();
+    // Assignment form should be visible
+    const assignmentForm = page.locator('[data-testid="assignment-form"]');
+    await expect(assignmentForm).toBeVisible();
 
-    // Request button should NOT be visible on mobile
-    const requestButton = page.locator('[data-testid="request-button"]');
-    await expect(requestButton).not.toBeVisible();
-
-    console.log("✅ Only assignment button visible on mobile");
+    console.log("✅ Assignment dialog opened with assignment form");
   });
 
   test("should create assignment on mobile viewport", async ({

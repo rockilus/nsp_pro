@@ -367,7 +367,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   };
 
   return (
-    <Box>
+    <Box data-testid="assignment-form">
       <div className="form">
         <span className="form-title">{t("worker")}</span>
         <Select
