@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 // Types
 import {
@@ -13,6 +14,7 @@ import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
 import { env } from "@/config/env";
+import { assignmentsQueryKeys } from "../app/lib/hooks/useAssignments";
 
 //////////////////////////
 // Authenticated Assignment Hooks //
@@ -95,6 +97,7 @@ export function useGetAssignments() {
 export function useAddAssignmentAndRecurrence() {
   const apiClient = useApiClient();
   const { user, isAuthenticated, loading } = useAuth();
+  const queryClient = useQueryClient();
 
   const addAssignmentAndRecurrence = useCallback(
     async (
@@ -133,6 +136,11 @@ export function useAddAssignmentAndRecurrence() {
           recurrence,
         );
 
+        // Invalidate assignment queries to refetch updated data
+        queryClient.invalidateQueries({
+          queryKey: assignmentsQueryKeys.teams(assignment.teamId),
+        });
+
         if (env.isDevelopment) {
           console.log("✅ Assignment added successfully");
         }
@@ -146,7 +154,7 @@ export function useAddAssignmentAndRecurrence() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading, user, queryClient],
   );
 
   return addAssignmentAndRecurrence;
@@ -158,6 +166,7 @@ export function useAddAssignmentAndRecurrence() {
 export function useUpdateAssignmentAndRecurrence() {
   const apiClient = useApiClient();
   const { user, isAuthenticated, loading } = useAuth();
+  const queryClient = useQueryClient();
 
   const updateAssignmentAndRecurrence = useCallback(
     async (
@@ -176,13 +185,20 @@ export function useUpdateAssignmentAndRecurrence() {
       }
 
       try {
-        return await AssignmentApi.updateAssignmentAndRecurrence(
+        const result = await AssignmentApi.updateAssignmentAndRecurrence(
           apiClient,
           assignment,
           teamId,
           recurrenceRule,
           recurrenceUpdateScope,
         );
+
+        // Invalidate assignment queries to refetch updated data
+        queryClient.invalidateQueries({
+          queryKey: assignmentsQueryKeys.teams(teamId),
+        });
+
+        return result;
       } catch (error) {
         console.error("❌ Failed to update assignment:", {
           error: error instanceof Error ? error.message : "Unknown error",
@@ -191,7 +207,7 @@ export function useUpdateAssignmentAndRecurrence() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading, user, queryClient],
   );
 
   return updateAssignmentAndRecurrence;
@@ -203,6 +219,7 @@ export function useUpdateAssignmentAndRecurrence() {
 export function useDeleteAssignment() {
   const apiClient = useApiClient();
   const { user, isAuthenticated, loading } = useAuth();
+  const queryClient = useQueryClient();
 
   const deleteAssignment = useCallback(
     async (
@@ -221,13 +238,20 @@ export function useDeleteAssignment() {
       }
 
       try {
-        return await AssignmentApi.deleteAssignment(
+        const result = await AssignmentApi.deleteAssignment(
           apiClient,
           assignmentId,
           teamId,
           recurrenceId,
           recurrenceUpdateScope,
         );
+
+        // Invalidate assignment queries to refetch updated data
+        queryClient.invalidateQueries({
+          queryKey: assignmentsQueryKeys.teams(teamId),
+        });
+
+        return result;
       } catch (error) {
         console.error("❌ Failed to delete assignment:", {
           error: error instanceof Error ? error.message : "Unknown error",
@@ -236,7 +260,7 @@ export function useDeleteAssignment() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading, user, queryClient],
   );
 
   return deleteAssignment;

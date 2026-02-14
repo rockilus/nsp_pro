@@ -1,31 +1,25 @@
 import React, { useState, useEffect } from "react";
 import dayjs, { Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { useTranslation } from "../../../app/i18n/client";
+import { useTranslation } from "../../../../app/i18n/client";
 // MUI
-import {
-  Button,
-  MenuItem,
-  Select,
-  Chip,
-  CircularProgress,
-  Box,
-  Typography,
-} from "@mui/material";
+import { Button, MenuItem, Select, Box } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Components
-import RecurrenceEdit from "./recurrence-edit/recurrence-edit";
-import RecurrenceDeleteDialog from "./recurrence-delete-dialog";
-import { ReplacementDetailsDialog } from "../replacement-details-dialog";
-import { ReplacementCandidatesList } from "../replacement-candidates-list";
+import RecurrenceEdit from "../shared/recurrence-edit/recurrence-edit";
+import RecurrenceDeleteDialog from "../shared/recurrence-delete-dialog";
+import { ReplacementDetailsDialog } from "../shared/replacement-details-dialog";
+import { ReplacementCandidatesList } from "../shared/replacement-candidates-list";
 // Hooks
-import { useGetReplacementCandidates } from "../../../hooks/useAssignment";
+import { useGetReplacementCandidates } from "../../../../hooks/useAssignment";
 // Styles
-import "./edit-assignment.css";
+import "../../lhs-tabs/edit-assignment.css";
 // Types
-import { WorkerT } from "../../../types/worker";
-import { ShiftT } from "../../../types/shift";
+import { WorkerT } from "../../../../types/worker";
+import { ShiftT } from "../../../../types/shift";
+import { ScheduleT } from "../../../../types/schedule";
 import { AssignmentT, AssignmentSource } from "@/types/assignment";
+import { AssignmentDataT } from "../../../../types/schedule";
 import {
   RecurrenceRuleT,
   OccurrenceType,
@@ -33,65 +27,75 @@ import {
   MonthRepeatType,
   RecurrenceEndType,
   RecurrenceUpdateScope,
-} from "../../../types/recurrence";
-import { ReplacementCandidateT } from "../../../types/replacement";
+} from "../../../../types/recurrence";
+import { ReplacementCandidateT } from "../../../../types/replacement";
+import { DialogMode } from "../schedule-item-types";
 
 dayjs.extend(utc);
 
-interface EditAssignmentProps {
+interface AssignmentFormProps {
   lng: string;
+  mode: DialogMode;
   teamId: string;
   scheduleId: string | null;
-  workerSelectedId: string | null;
-  shiftSelectedId: string | null;
   workers: WorkerT[];
   shifts: ShiftT[];
-  dateSelected: Dayjs | null;
-  handleCreateAssignment?: (
-    newAssignment: AssignmentT,
-    newRecurrence: RecurrenceRuleT | null,
-  ) => void;
-  isEditing?: boolean;
-  assignment?: AssignmentT;
-  handleUpdateAssignment?: (
+  schedules: ScheduleT[];
+  assignmentData: AssignmentDataT | null;
+  initialData: {
+    workerId: string | null;
+    shiftId: string | null;
+    date: Dayjs | null;
+    scheduleId: string | null;
+    addDemandActive?: boolean;
+  } | null;
+  useSolver: boolean;
+  onSave: (
     assignment: AssignmentT,
     recurrence: RecurrenceRuleT | null,
-    recurrenceUpdateScope: RecurrenceUpdateScope | null,
+    updateScope: RecurrenceUpdateScope | null,
   ) => void;
-  handleDeleteAssignment?: (
+  onDelete: (
     assignmentId: string,
     recurrenceId: string | null,
-    recurrenceUpdateScope: RecurrenceUpdateScope | null,
+    updateScope: RecurrenceUpdateScope | null,
   ) => void;
-  recurrence?: RecurrenceRuleT | null;
+  onCancel: () => void;
 }
 
-const EditAssignment: React.FC<EditAssignmentProps> = ({
+const AssignmentForm: React.FC<AssignmentFormProps> = ({
   lng,
+  mode,
   teamId,
   scheduleId,
-  workerSelectedId,
-  shiftSelectedId,
   workers,
   shifts,
-  dateSelected,
-  handleCreateAssignment,
-  isEditing = false,
-  assignment,
-  handleUpdateAssignment,
-  handleDeleteAssignment,
-  recurrence,
+  schedules,
+  assignmentData,
+  initialData,
+  useSolver,
+  onSave,
+  onDelete,
+  onCancel,
 }) => {
   const { t } = useTranslation(lng, "schedule-page");
 
+  const isEditing = mode === DialogMode.EDIT;
+  const assignment = assignmentData?.assignment;
+  const recurrence = assignmentData?.recurrence ?? null;
+
   const [workerId, setWorkerId] = useState<string | null>(
-    isEditing && assignment ? assignment.workerId : workerSelectedId,
+    isEditing && assignment
+      ? assignment.workerId
+      : (initialData?.workerId ?? null),
   );
   const [shiftId, setShiftId] = useState<string | null>(
-    isEditing && assignment ? assignment.shiftId : shiftSelectedId,
+    isEditing && assignment
+      ? assignment.shiftId
+      : (initialData?.shiftId ?? null),
   );
   const [date, setDate] = useState<Dayjs | null>(
-    isEditing && assignment ? assignment.date : dateSelected,
+    isEditing && assignment ? assignment.date : (initialData?.date ?? null),
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [workerError, setWorkerError] = useState(false);
@@ -99,7 +103,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
   const [dateError, setDateError] = useState(false);
 
   const [recurrenceState, setRecurrenceState] =
-    useState<RecurrenceRuleT | null>(recurrence ?? null);
+    useState<RecurrenceRuleT | null>(recurrence);
 
   const [showRecurrenceEdit, setShowRecurrenceEdit] = useState(false);
 
@@ -127,14 +131,20 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
   const getReplacementCandidates = useGetReplacementCandidates();
 
   useEffect(() => {
-    setWorkerId(workerSelectedId);
-    setShiftId(shiftSelectedId);
-    setDate(dateSelected);
+    if (isEditing && assignment) {
+      setWorkerId(assignment.workerId);
+      setShiftId(assignment.shiftId);
+      setDate(assignment.date);
+      setRecurrenceState(recurrence);
+    } else if (initialData) {
+      setWorkerId(initialData.workerId);
+      setShiftId(initialData.shiftId);
+      setDate(initialData.date);
+    }
     setWorkerError(false);
     setShiftError(false);
     setDateError(false);
-    setRecurrenceState(recurrence ?? null);
-  }, [workerSelectedId, shiftSelectedId, dateSelected, recurrence]);
+  }, [isEditing, assignment, initialData, recurrence]);
 
   // Reset replacement state when assignment changes
   useEffect(() => {
@@ -242,8 +252,8 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
     if (assignment && assignment.sourceId) {
       setDialogAction("delete");
       setIsDialogOpen(true);
-    } else if (assignment && handleDeleteAssignment) {
-      handleDeleteAssignment(assignment.id, null, null);
+    } else if (assignment) {
+      onDelete(assignment.id, null, null);
     }
   };
 
@@ -271,22 +281,24 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
   };
 
   const handleSelectReplacement = async (candidateId?: string) => {
-    const workerId = candidateId || selectedCandidateId;
-    if (!workerId || !assignment || !handleUpdateAssignment) return;
+    const selectedWorkerId = candidateId || selectedCandidateId;
+    if (!selectedWorkerId || !assignment) return;
 
     const updatedAssignment: AssignmentT = {
       ...assignment,
-      workerId: workerId,
+      workerId: selectedWorkerId,
     };
 
     try {
       setIsSubmitting(true);
-      await handleUpdateAssignment(updatedAssignment, recurrenceState, null);
+      onSave(updatedAssignment, recurrenceState, null);
       // Reset replacement state after successful update
       setIsReplacementViewOpen(false);
       setReplacementCandidates(null);
       setSelectedCandidateId(null);
       setShowDetailsDialog(false);
+      // Close the assignment form dialog
+      onCancel();
     } catch (error) {
       console.error("Failed to select replacement:", error);
       alert("Failed to select replacement. Please try again.");
@@ -328,11 +340,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
     } else {
       try {
         setIsSubmitting(true);
-        if (isEditing && assignment && handleUpdateAssignment) {
-          await handleUpdateAssignment(newAssignment, recurrenceState, null);
-        } else if (handleCreateAssignment) {
-          await handleCreateAssignment(newAssignment, recurrenceState);
-        }
+        onSave(newAssignment, recurrenceState, null);
       } catch (error) {
         console.error("Failed to save assignment:", error);
         alert("Failed to save assignment. Please try again.");
@@ -343,27 +351,23 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
   };
 
   const handleDialogConfirm = (scope: RecurrenceUpdateScope) => {
-    if (dialogAction === "delete" && assignment && handleDeleteAssignment) {
-      handleDeleteAssignment(assignment.id, assignment.sourceId, scope);
-    } else if (
-      dialogAction === "update" &&
-      assignment &&
-      handleUpdateAssignment
-    ) {
+    if (dialogAction === "delete" && assignment) {
+      onDelete(assignment.id, assignment.sourceId, scope);
+    } else if (dialogAction === "update" && assignment) {
       const updatedAssignment: AssignmentT = {
         ...assignment,
         workerId: workerId || assignment.workerId,
         shiftId: shiftId || assignment.shiftId,
         date: date || assignment.date,
       };
-      handleUpdateAssignment(updatedAssignment, recurrenceState, scope);
+      onSave(updatedAssignment, recurrenceState, scope);
     }
     setIsDialogOpen(false);
     setDialogAction(null);
   };
 
   return (
-    <div className="edit-assignment-container">
+    <Box data-testid="assignment-form">
       <div className="form">
         <span className="form-title">{t("worker")}</span>
         <Select
@@ -396,7 +400,12 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           {workers
             .filter((w) => !w.deleted)
             .map((w) => (
-              <MenuItem key={w.id} value={w.id} sx={{ fontSize: "0.9rem" }}>
+              <MenuItem
+                key={w.id}
+                value={w.id}
+                sx={{ fontSize: "0.9rem" }}
+                data-testid={`worker-option-${w.id}`}
+              >
                 {w.name}
               </MenuItem>
             ))}
@@ -405,9 +414,10 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
         <DatePicker
           className="edit-assignment-datepicker"
           value={date}
+          timezone="UTC"
           onChange={(newDate) => {
             setDateError(false);
-            setDate(newDate ? dayjs(newDate).utc() : null);
+            setDate(newDate ? newDate.startOf("day") : null);
           }}
           slotProps={{
             textField: {
@@ -439,6 +449,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           <button
             className="recurrence-button"
             onClick={() => setShowRecurrenceEdit(!showRecurrenceEdit)}
+            data-testid="recurrence-button"
           >
             {recurrenceState
               ? describeRecurrenceRule(recurrenceState)
@@ -522,6 +533,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
               color="error"
               onClick={handleDeleteClick}
               className="delete-button"
+              data-testid="delete-assignment-button"
             >
               {t("delete")}
             </Button>
@@ -531,6 +543,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
               onClick={handleSaveClick}
               disabled={isSubmitting}
               className="save-button"
+              data-testid="save-assignment-button"
             >
               {isSubmitting ? t("saving") : t("save")}
             </Button>
@@ -558,8 +571,8 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
         workers={workers}
         shifts={shifts}
       />
-    </div>
+    </Box>
   );
 };
 
-export default EditAssignment;
+export default AssignmentForm;

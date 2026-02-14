@@ -16,6 +16,7 @@ import { ShiftDemandTemplateApi } from "../../src/app/lib/api/shiftDemandTemplat
 import { RequestApi } from "../../src/app/lib/api/requestApi";
 import { ScheduleApi } from "../../src/app/lib/api/scheduleApi";
 import { AssignmentApi } from "../../src/app/lib/api/assignmentApi";
+import { ConstraintApi } from "../../src/app/lib/api/constraintApi";
 import { AuthenticatedApiClient } from "../../src/app/lib/api/baseApi";
 import { TeamWithMembership } from "../../src/types/team";
 import { WorkerT, toWorkerT } from "../../src/types/worker";
@@ -34,6 +35,7 @@ import {
   DimensionType,
   DimensionEntryType,
 } from "../../src/types/dimension";
+import { AddDimensionResponse } from "../../src/app/lib/api/dimensionApi";
 import { DimEntryT } from "../../src/types/dim-entry";
 import { AttributeT, toAttributeT } from "../../src/types/attribute";
 import {
@@ -41,7 +43,10 @@ import {
   ShiftDemandTemplateCreateDTO,
   ShiftDemandTemplateUpdateDTO,
 } from "../../src/types/shift-demand-template";
-import { ShiftDemandDTO } from "../../src/types/shiftDemand";
+import {
+  ShiftDemandDTO,
+  ShiftDemandUpdateDTO,
+} from "../../src/types/shiftDemand";
 import {
   RequestT,
   RequestType,
@@ -52,9 +57,24 @@ import {
 import { ScheduleT, toScheduleT } from "../../src/types/schedule";
 import { testConfig } from "./test-config";
 import dayjs from "dayjs";
-import { AssignmentT, AssignmentSource } from "@/types/assignment";
+import {
+  AssignmentT,
+  AssignmentSource,
+  AssignmentsRecurrencesResultT,
+} from "@/types/assignment";
 import { LinkShiftApi } from "@/app/lib/api/linkShiftApi";
 import { SwapRequestT } from "@/types/swap";
+import {
+  RecurrenceRuleT,
+  RecurrenceUpdateScope,
+} from "../../src/types/recurrence";
+import { ReplacementCandidateT } from "../../src/types/replacement";
+import {
+  ConstraintT,
+  ConstraintType,
+  BlockT,
+  TemplateT,
+} from "../../src/types/constraint";
 
 export interface DatabaseResetOptions {
   collections?: string[];
@@ -683,7 +703,7 @@ export class DatabaseTestUtils {
     dutiesPerMonth?: number;
     annualLeave?: number;
     specialtyIds?: string[];
-  }): Promise<{ workerId: string; name: string; teamId: string }> {
+  }): Promise<WorkerT> {
     try {
       // Create a WorkerT object with defaults
       const worker: WorkerT = {
@@ -715,11 +735,7 @@ export class DatabaseTestUtils {
         worker,
       );
 
-      return {
-        workerId: result.id,
-        name: result.name,
-        teamId: result.teamId,
-      };
+      return result;
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
@@ -742,8 +758,8 @@ export class DatabaseTestUtils {
     updates: {
       name?: string;
       acronym?: string;
-      employmentStartDate?: Date;
-      employmentEndDate?: Date | null;
+      employmentStartDate?: dayjs.Dayjs;
+      employmentEndDate?: dayjs.Dayjs | null;
       weeklyHours?: number;
       weeklyHoursDesired?: number;
       dutiesPerMonth?: number;
@@ -768,12 +784,12 @@ export class DatabaseTestUtils {
         name: updates.name ?? currentWorker.name,
         acronym: updates.acronym ?? currentWorker.acronym,
         employmentStartDate: updates.employmentStartDate
-          ? dayjs(updates.employmentStartDate).utc()
+          ? updates.employmentStartDate
           : currentWorker.employmentStartDate,
         employmentEndDate:
           updates.employmentEndDate !== undefined
             ? updates.employmentEndDate
-              ? dayjs(updates.employmentEndDate).utc()
+              ? updates.employmentEndDate
               : null
             : currentWorker.employmentEndDate,
         weeklyHours: updates.weeklyHours ?? currentWorker.weeklyHours,
@@ -964,6 +980,19 @@ export class DatabaseTestUtils {
   }
 
   /**
+   * Update a shift using the existing ShiftApi for consistent behavior
+   */
+  async updateShift(updatedShift: ShiftT): Promise<any> {
+    if (!updatedShift || !updatedShift.id || !updatedShift.teamId) {
+      throw new Error("Invalid shift data provided");
+    }
+
+    const apiClient = this.createTestApiClient();
+    const result = await ShiftApi.updateShift(apiClient, updatedShift);
+    return result;
+  }
+
+  /**
    * Create a link shift using the existing LinkShiftApi for consistent behavior
    */
   async createLinkShift(linkShiftData: {
@@ -1004,7 +1033,7 @@ export class DatabaseTestUtils {
   async createSpecialty(specialtyData: {
     teamId: string;
     name: string;
-  }): Promise<{ specialtyId: string; name: string; teamId: string }> {
+  }): Promise<SpecialtyT> {
     try {
       // Create the specialty object
       const newSpecialty: SpecialtyT = {
@@ -1015,17 +1044,11 @@ export class DatabaseTestUtils {
       };
 
       // Use the existing SpecialtyApi with our test client
-      const result: SpecialtyT = await SpecialtyApi.addSpecialty(
+      return await SpecialtyApi.addSpecialty(
         this.testApiClient,
         newSpecialty,
         specialtyData.teamId,
       );
-
-      return {
-        specialtyId: result.id,
-        name: result.name,
-        teamId: result.teamId,
-      };
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
@@ -1048,7 +1071,7 @@ export class DatabaseTestUtils {
     updates: {
       name?: string;
     },
-  ): Promise<{ specialtyId: string; name: string; teamId: string }> {
+  ): Promise<SpecialtyT> {
     try {
       // First get the current specialty to merge with updates
       const specialties = await SpecialtyApi.getSpecialties(
@@ -1076,11 +1099,7 @@ export class DatabaseTestUtils {
         teamId,
       );
 
-      return {
-        specialtyId: result.id,
-        name: result.name,
-        teamId: result.teamId,
-      };
+      return result;
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
@@ -1160,15 +1179,15 @@ export class DatabaseTestUtils {
     teamId: string;
     name: string;
     entryType: DimensionEntryType;
-    dimensionType: DimensionType;
+    dimensionType: DimensionType[];
     dimEntries?: DimEntryT[];
-  }): Promise<{ dimensionId: string; name: string; teamId: string }> {
+  }): Promise<AddDimensionResponse> {
     try {
       // Create the dimension object
       const newDimension: DimensionT = {
         id: "",
         teamId: dimensionData.teamId,
-        dimTypes: [dimensionData.dimensionType],
+        dimTypes: dimensionData.dimensionType,
         name: dimensionData.name,
         entryType: dimensionData.entryType,
         deleted: false,
@@ -1181,11 +1200,7 @@ export class DatabaseTestUtils {
         dimensionData.dimEntries || [],
       );
 
-      return {
-        dimensionId: result.newDimension.id,
-        name: result.newDimension.name,
-        teamId: result.newDimension.teamId,
-      };
+      return result;
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
@@ -1316,11 +1331,7 @@ export class DatabaseTestUtils {
     ownerId: string;
     dimensionId: string;
     dimEntryIds?: string[];
-  }): Promise<{
-    attributeId: string;
-    value: string | number | boolean;
-    teamId: string;
-  }> {
+  }): Promise<AttributeT> {
     try {
       // Create the attribute object
       const newAttribute = {
@@ -1333,17 +1344,13 @@ export class DatabaseTestUtils {
       };
 
       // Use the existing AttributeApi with our test client
-      const result = await AttributeApi.createAttribute(
+      const result = await AttributeApi.updateAttribute(
         this.testApiClient,
         newAttribute,
         attributeData.teamId,
       );
 
-      return {
-        attributeId: result.id,
-        value: result.value,
-        teamId: attributeData.teamId,
-      };
+      return result;
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
@@ -1363,11 +1370,7 @@ export class DatabaseTestUtils {
       value?: string | number | boolean;
       dimEntryIds?: string[];
     },
-  ): Promise<{
-    attributeId: string;
-    value: string | number | boolean;
-    teamId: string;
-  }> {
+  ): Promise<AttributeT> {
     try {
       // First get the current attribute data by getting all attributes for the owner
       // Since we don't have a direct "get attribute by id" method, we'll need to get by owner
@@ -1391,11 +1394,7 @@ export class DatabaseTestUtils {
         teamId,
       );
 
-      return {
-        attributeId: result.id,
-        value: result.value,
-        teamId: teamId,
-      };
+      return result;
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
@@ -1465,7 +1464,7 @@ export class DatabaseTestUtils {
   async createShiftDemand(options: {
     teamId: string;
     shiftId: string;
-    date: Date;
+    date: dayjs.Dayjs;
     count: number;
     notes?: string;
     source?: "manual" | "template" | "solver" | "import";
@@ -1473,7 +1472,7 @@ export class DatabaseTestUtils {
     try {
       const shiftDemandData = {
         shiftId: options.shiftId,
-        date: Math.floor(options.date.getTime() / 1000), // Convert to Unix timestamp
+        date: options.date.unix(),
         count: options.count,
         notes: options.notes || null,
         source: options.source || "manual",
@@ -1500,9 +1499,9 @@ export class DatabaseTestUtils {
    */
   async getShiftDemandsByPeriod(
     teamId: string,
-    startDate: Date,
-    endDate: Date,
-  ): Promise<any[]> {
+    startDate: dayjs.Dayjs,
+    endDate: dayjs.Dayjs,
+  ): Promise<ShiftDemandDTO[]> {
     try {
       const result = await ShiftDemandApi.getShiftDemandsByPeriod(
         this.testApiClient,
@@ -1618,22 +1617,21 @@ export class DatabaseTestUtils {
   //////////////////////////
 
   /**
-   * Create a constraint using direct API call
+   * Create a constraint using the existing ConstraintApi for consistent behavior
    */
   async createConstraint(constraintData: {
     teamId: string;
-    constraintType: number;
+    constraintType: ConstraintType;
     templateId: string;
     language: string;
-    blocks: any[];
+    blocks: BlockT[];
     text: string;
     hard: boolean;
     priority: string;
     active: boolean;
-  }): Promise<{ constraintId: string; teamId: string }> {
+  }): Promise<ConstraintT> {
     try {
-      // Make direct API call instead of using dynamic import
-      const constraintToCreate = {
+      const constraintToCreate: ConstraintT = {
         id: "", // Will be set by the API
         teamId: constraintData.teamId,
         constraintType: constraintData.constraintType,
@@ -1647,18 +1645,10 @@ export class DatabaseTestUtils {
         missingAttributes: [],
       };
 
-      const createdConstraint = await this.testApiClient.post<any>(
-        `/constraints/teams/${constraintData.teamId}`,
+      return await ConstraintApi.addConstraint(
+        this.testApiClient,
         constraintToCreate,
       );
-
-      console.log(
-        `Created constraint: ${createdConstraint.text} (${createdConstraint.id})`,
-      );
-      return {
-        constraintId: createdConstraint.id,
-        teamId: createdConstraint.teamId,
-      };
     } catch (error) {
       console.error("Failed to create constraint:", error);
       if (error instanceof Error) {
@@ -1675,22 +1665,21 @@ export class DatabaseTestUtils {
     constraintId: string,
     teamId: string,
     updates: {
-      constraintType?: number;
+      constraintType?: ConstraintType;
       templateId?: string;
       language?: string;
-      blocks?: any[];
+      blocks?: BlockT[];
       text?: string;
       hard?: boolean;
       priority?: string;
       active?: boolean;
     },
-  ): Promise<{ constraintId: string; teamId: string }> {
+  ): Promise<ConstraintT> {
     try {
-      // Make direct API calls instead of using dynamic import
-
       // First get the current constraint
-      const constraints = await this.testApiClient.get<any[]>(
-        `/constraints/teams/${teamId}`,
+      const constraints = await ConstraintApi.getConstraints(
+        this.testApiClient,
+        teamId,
       );
       const currentConstraint = constraints.find((c) => c.id === constraintId);
 
@@ -1703,16 +1692,10 @@ export class DatabaseTestUtils {
         ...updates,
       };
 
-      const result = await this.testApiClient.put<any>(
-        `/constraints/${constraintId}/teams/${teamId}`,
+      return await ConstraintApi.updateConstraint(
+        this.testApiClient,
         updatedConstraint,
       );
-
-      console.log(`Updated constraint: ${result.text} (${result.id})`);
-      return {
-        constraintId: result.id,
-        teamId: result.teamId,
-      };
     } catch (error) {
       console.error("Failed to update constraint:", error);
       if (error instanceof Error) {
@@ -1723,12 +1706,14 @@ export class DatabaseTestUtils {
   }
 
   /**
-   * Delete a constraint using direct API call
+   * Delete a constraint using the existing ConstraintApi for consistent behavior
    */
   async deleteConstraint(constraintId: string, teamId: string): Promise<void> {
     try {
-      await this.testApiClient.delete<void>(
-        `/constraints/${constraintId}/teams/${teamId}`,
+      await ConstraintApi.deleteConstraint(
+        this.testApiClient,
+        constraintId,
+        teamId,
       );
       console.log(`Deleted constraint: ${constraintId}`);
     } catch (error) {
@@ -1741,12 +1726,13 @@ export class DatabaseTestUtils {
   }
 
   /**
-   * Get all constraints for a team using direct API call
+   * Get all constraints for a team using the existing ConstraintApi for consistent behavior
    */
-  async getConstraints(teamId: string): Promise<any[]> {
+  async getConstraints(teamId: string): Promise<ConstraintT[]> {
     try {
-      const constraints = await this.testApiClient.get<any[]>(
-        `/constraints/teams/${teamId}`,
+      const constraints = await ConstraintApi.getConstraints(
+        this.testApiClient,
+        teamId,
       );
       console.log(
         `Retrieved ${constraints.length} constraints for team ${teamId}`,
@@ -1762,13 +1748,13 @@ export class DatabaseTestUtils {
   }
 
   /**
-   * Get constraint templates for a team using direct API call
+   * Get constraint templates for a team using the existing ConstraintApi for consistent behavior
    */
-  async getConstraintTemplates(teamId: string): Promise<any[]> {
+  async getConstraintTemplates(teamId: string): Promise<TemplateT[]> {
     try {
-      // Make direct API call instead of using dynamic import
-      const templates = await this.testApiClient.get<any[]>(
-        `/constraint-templates/teams/${teamId}`,
+      const templates = await ConstraintApi.getTemplates(
+        this.testApiClient,
+        teamId,
       );
       console.log(
         `Retrieved ${templates.length} constraint templates for team ${teamId}`,
@@ -2068,15 +2054,18 @@ export class DatabaseTestUtils {
   /**
    * Create an assignment using AssignmentApi for consistent behavior
    */
-  async createAssignment(assignmentData: {
-    teamId: string;
-    workerId: string;
-    shiftId: string;
-    date: dayjs.Dayjs;
-    fixed?: boolean;
-    comment?: string;
-    scheduleId?: string | null;
-  }): Promise<AssignmentT> {
+  async createAssignmentAndRecurrence(
+    assignmentData: {
+      teamId: string;
+      workerId: string;
+      shiftId: string;
+      date: dayjs.Dayjs;
+      fixed?: boolean;
+      comment?: string;
+      scheduleId?: string | null;
+    },
+    recurrence?: RecurrenceRuleT | null,
+  ): Promise<AssignmentT> {
     try {
       // Construct AssignmentT object
       const assignment: AssignmentT = {
@@ -2095,7 +2084,7 @@ export class DatabaseTestUtils {
       const result = await AssignmentApi.addAssignmentAndRecurrence(
         this.testApiClient,
         assignment,
-        null, // No recurrence
+        recurrence ?? null,
       );
 
       // Return the first created assignment
@@ -2114,7 +2103,10 @@ export class DatabaseTestUtils {
   /**
    * Delete an assignment using AssignmentApi for consistent behavior
    */
-  async deleteAssignment(assignmentId: string, teamId: string): Promise<any> {
+  async deleteAssignment(
+    assignmentId: string,
+    teamId: string,
+  ): Promise<AssignmentsRecurrencesResultT> {
     try {
       return await AssignmentApi.deleteAssignment(
         this.testApiClient,
@@ -2698,13 +2690,13 @@ export class DatabaseTestUtils {
   /**
    * Get assignments for a team using the existing AssignmentApi for consistent behavior
    */
-  async getAssignments(
+  async getAssignmentsAndRecurrences(
     teamId: string,
     includeCampaign: boolean = false,
     startDate?: dayjs.Dayjs,
     endDate?: dayjs.Dayjs,
     workerId?: string,
-  ): Promise<{ assignments: AssignmentT[] }> {
+  ): Promise<AssignmentsRecurrencesResultT> {
     try {
       const result = await AssignmentApi.getAssignments(
         this.testApiClient,
@@ -2719,13 +2711,190 @@ export class DatabaseTestUtils {
         `✅ Retrieved ${result.assignmentsRead.length} assignments for team ${teamId}`,
       );
 
-      return {
-        assignments: result.assignmentsRead,
-      };
+      return result;
     } catch (error) {
       console.error("Failed to get assignments:", error);
       throw new Error(
         `Failed to get assignments: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Update an assignment with optional recurrence using the existing AssignmentApi
+   */
+  async updateAssignment(
+    assignmentId: string,
+    teamId: string,
+    updates: Partial<AssignmentT>,
+    recurrenceRule?: RecurrenceRuleT | null,
+    updateScope?: RecurrenceUpdateScope | null,
+  ): Promise<{ assignments: AssignmentT[] }> {
+    try {
+      // First get the current assignment to merge with updates
+      const result = await AssignmentApi.getAssignments(
+        this.testApiClient,
+        teamId,
+      );
+      const existingAssignment = result.assignmentsRead.find(
+        (a) => a.id === assignmentId,
+      );
+
+      if (!existingAssignment) {
+        throw new Error(`Assignment ${assignmentId} not found`);
+      }
+
+      const updatedAssignment: AssignmentT = {
+        ...existingAssignment,
+        ...updates,
+        id: assignmentId,
+        teamId,
+      };
+
+      const updateResult = await AssignmentApi.updateAssignmentAndRecurrence(
+        this.testApiClient,
+        updatedAssignment,
+        teamId,
+        recurrenceRule ?? null,
+        updateScope ?? null,
+      );
+
+      console.log(
+        `✅ Updated assignment ${assignmentId} (${updateResult.assignmentsUpdated.length} assignments affected)`,
+      );
+
+      return {
+        assignments: updateResult.assignmentsUpdated,
+      };
+    } catch (error) {
+      console.error("Failed to update assignment:", error);
+      throw new Error(
+        `Failed to update assignment: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Update a shift demand using the existing ShiftDemandApi
+   */
+  async updateShiftDemand(
+    demandId: string,
+    teamId: string,
+    updates: Partial<ShiftDemandUpdateDTO>,
+  ): Promise<ShiftDemandDTO | null> {
+    try {
+      const updatedDemand = await ShiftDemandApi.updateShiftDemand(
+        this.testApiClient,
+        teamId,
+        demandId,
+        updates,
+      );
+
+      console.log(`✅ Updated shift demand ${demandId}`);
+
+      return updatedDemand;
+    } catch (error) {
+      console.error("Failed to update shift demand:", error);
+      throw new Error(
+        `Failed to update shift demand: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Delete a shift demand using the existing ShiftDemandApi
+   */
+  async deleteShiftDemand(demandId: string, teamId: string): Promise<void> {
+    try {
+      await ShiftDemandApi.deleteShiftDemand(
+        this.testApiClient,
+        teamId,
+        demandId,
+      );
+
+      console.log(`✅ Deleted shift demand ${demandId}`);
+    } catch (error) {
+      console.error("Failed to delete shift demand:", error);
+      throw new Error(
+        `Failed to delete shift demand: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Update a request using the existing RequestApi
+   */
+  async updateRequest(
+    requestId: string,
+    teamId: string,
+    updates: Partial<RequestT>,
+  ): Promise<RequestT> {
+    try {
+      // First get the current request to merge with updates
+      const requests = await RequestApi.getRequests(this.testApiClient, teamId);
+      const existingRequest = requests.find((r) => r.id === requestId);
+
+      if (!existingRequest) {
+        throw new Error(`Request ${requestId} not found`);
+      }
+
+      const updatedRequest: RequestT = {
+        ...existingRequest,
+        ...updates,
+        id: requestId,
+        teamId,
+      };
+
+      const result = await RequestApi.updateRequest(
+        this.testApiClient,
+        updatedRequest,
+        teamId,
+      );
+
+      console.log(`✅ Updated request ${requestId}`);
+
+      return result;
+    } catch (error) {
+      console.error("Failed to update request:", error);
+      throw new Error(
+        `Failed to update request: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Get replacement candidates for an assignment using the existing AssignmentApi
+   */
+  async getReplacementCandidates(
+    assignmentId: string,
+    teamId: string,
+  ): Promise<ReplacementCandidateT[]> {
+    try {
+      const candidates = await AssignmentApi.getReplacementCandidates(
+        this.testApiClient,
+        assignmentId,
+        teamId,
+      );
+
+      console.log(
+        `✅ Retrieved ${candidates.length} replacement candidates for assignment ${assignmentId}`,
+      );
+
+      return candidates;
+    } catch (error) {
+      console.error("Failed to get replacement candidates:", error);
+      throw new Error(
+        `Failed to get replacement candidates: ${
           error instanceof Error ? error.message : "Unknown error"
         }`,
       );

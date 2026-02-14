@@ -24,8 +24,8 @@ i18next
   .use(
     resourcesToBackend(
       (language: string, namespace: string) =>
-        import(`./locales/${language}/${namespace}.json`)
-    )
+        import(`./locales/${language}/${namespace}.json`),
+    ),
   )
   // .use(LocizeBackend) // locize backend could be used on client side, but prefer to keep it in sync with server side
   .init({
@@ -35,33 +35,29 @@ i18next
       order: ["path", "htmlTag", "cookie", "navigator"],
     },
     preload: runsOnServerSide ? languages : [],
+    // Preload critical namespaces to prevent re-render cascades from lazy loading
+    ns: [
+      "translation",
+      "request-page",
+      "stats-page",
+      "schedule-page",
+      "common",
+    ],
   });
 
 export function useTranslation<
   Ns extends FlatNamespace,
-  KPrefix extends KeyPrefix<FallbackNs<Ns>> = undefined
+  KPrefix extends KeyPrefix<FallbackNs<Ns>> = undefined,
 >(
   lng: string,
   ns?: Ns,
-  options?: UseTranslationOptions<KPrefix>
+  options?: UseTranslationOptions<KPrefix>,
 ): UseTranslationResponse<FallbackNs<Ns>, KPrefix> {
   const [cookies, setCookie] = useCookies([cookieName]);
   const ret = useTranslationOrg(ns, options);
   const { i18n } = ret;
-  // No local `activeLng` state here — `react-i18next`'s internal state
-  // (`i18n.resolvedLanguage`) will trigger re-renders via the hook return
-  // value. Previously we kept a separate `activeLng` state and updated it
-  // inside an effect which caused the `react-hooks/set-state-in-effect`
-  // ESLint error; that state was unused elsewhere so it was removed.
 
-  useEffect(() => {
-    if (!runsOnServerSide && lng && i18n.resolvedLanguage !== lng) {
-      i18n.changeLanguage(lng);
-    }
-  }, [lng, i18n]);
-
-  // No state sync effect required — let `react-i18next` handle updates.
-
+  // Single effect to handle language changes - consolidated from duplicate effects
   useEffect(() => {
     if (!lng || i18n.resolvedLanguage === lng) return;
     i18n.changeLanguage(lng);
@@ -74,46 +70,3 @@ export function useTranslation<
 
   return ret;
 }
-
-// export function useTranslation<
-//   Ns extends FlatNamespace,
-//   KPrefix extends KeyPrefix<FallbackNs<Ns>> = undefined
-// >(
-//   lng: string,
-//   ns?: Ns,
-//   options?: UseTranslationOptions<KPrefix>
-// ): UseTranslationResponse<FallbackNs<Ns>, KPrefix> {
-//   const [cookies, setCookie] = useCookies([cookieName]);
-//   const ret = useTranslationOrg(ns, options);
-//   const { i18n } = ret;
-//   // console.log("lng", lng);
-//   // console.log("runsOnServerSide", runsOnServerSide);
-//   // console.log("i18n.resolvedLanguage", i18n.resolvedLanguage);
-
-//   if (runsOnServerSide && lng && i18n.resolvedLanguage !== lng) {
-//     i18n.changeLanguage(lng);
-//   } else {
-
-//     // eslint-disable-next-line react-hooks/rules-of-hooks
-//     useEffect(() => {
-//       if (activeLng === i18n.resolvedLanguage) return;
-//       console.log("setActiveLng");
-//       setActiveLng(i18n.resolvedLanguage);
-//     }, [activeLng, i18n.resolvedLanguage]);
-//     // eslint-disable-next-line react-hooks/rules-of-hooks
-//     useEffect(() => {
-//       if (!lng || i18n.resolvedLanguage === lng) return;
-//       console.log("changeLanguage");
-//       i18n.changeLanguage(lng);
-//     }, [lng, i18n]);
-//     // eslint-disable-next-line react-hooks/rules-of-hooks
-//     useEffect(() => {
-//       if (cookies.i18next === lng) return;
-//       console.log("setCookie");
-//       setCookie(cookieName, lng, { path: "/" });
-//       // eslint-disable-next-line react-hooks/exhaustive-deps
-//     }, [lng, cookies.i18next]);
-
-//   }
-//   return ret;
-// }

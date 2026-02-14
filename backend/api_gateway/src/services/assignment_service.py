@@ -25,8 +25,10 @@ from src.utils.duplicate_utils import (
 )
 from src.utils.recurrence_utils import generate_recurring_dates
 
+# pylint: disable=too-many-lines, too-many-branches, too-many-arguments
+# pylint: disable=too-many-locals
 
-# pylint: disable=too-many-lines
+
 class AssignmentService(BaseService):
     def create_assignment_and_recurrence(
         self,
@@ -113,7 +115,6 @@ class AssignmentService(BaseService):
 
         return duty_to_recup_map
 
-    # pylint: disable=too-many-arguments, too-many-locals
     def _handle_recurrence_and_assignments_creation(
         self,
         recurrence: RecurrenceRule,
@@ -132,51 +133,86 @@ class AssignmentService(BaseService):
             recurrence_updated=None,
             recurrences_deleted_ids=[],
         )
+
         if create_recurrence:
             recurrence.occurrence_info.worker_id = assignment.worker_id
             recurrence.occurrence_info.shift_id = assignment.shift_id
             recurrence = self.collection.recurrence_db.create_recurrence(recurrence)
             out.recurrence_created = recurrence
-        schedule_wip = self.collection.schedule_db.get_schedule_campaign(
-            team_id=recurrence.team_id
-        )
+
+        # Determine materialization strategy based on recurrence end type
         assignments_recurrence = []
-        if schedule_wip:
-            period_dates = build_dates_list(
-                start_date=schedule_wip.start_date,
-                end_date=schedule_wip.end_date,
-            )
-            assignments_recurrence = self._handle_recurrence_assignments_creation(
+
+        if recurrence.recurrence_end_type == RecurrenceEndType.NEVER:
+            # Never-ending recurrence: materialize only 90 days ahead
+            horizon_end = recurrence.start_date + timedelta(days=90)
+            assignments_recurrence = self._materialize_recurrence_assignments(
                 recurrence=recurrence,
-                period_dates=period_dates,
-                schedule_id=schedule_wip.id,
-                create_first_assignment=create_first_assignment,
+                start_date=recurrence.start_date,
+                end_date=horizon_end,
+                schedule_id=None,  # Schedule-independent
+                check_existing=False,
             )
-            if assignments_recurrence:
-                assignments_recurrence_saved = (
-                    self.collection.assignment_db.create_assignments(
-                        assignments_recurrence
+            # Update watermark
+            if assignments_recurrence or create_first_assignment:
+                self.collection.recurrence_db.update_recurrence_watermark(
+                    recurrence_id=recurrence.id,
+                    last_materialized_until=horizon_end,
+                )
+        else:
+            # Ended recurrence (END_DATE or NUMBER_OF_OCCURRENCES):
+            # create all assignments immediately
+            end_date = recurrence.end_date
+
+            # For NUMBER_OF_OCCURRENCES, calculate the actual end date
+            if (
+                recurrence.recurrence_end_type
+                == RecurrenceEndType.NUMBER_OF_OCCURRENCES
+            ):
+                # Use a large date range to find all occurrences
+                # This will be limited by generate_recurring_dates logic
+                # 10 years max
+                max_date = recurrence.start_date + timedelta(days=365 * 10)
+                period_dates = build_dates_list(
+                    start_date=recurrence.start_date,
+                    end_date=max_date,
+                )
+                # fmt: off
+                exclusions = (
+                    self.collection.recurrence_exclusion_db
+                    .get_recurrence_exclusions_by_rule_id(
+                        rule_id=recurrence.id
                     )
                 )
-                out.assignments_created.extend(assignments_recurrence_saved)
-
-        if create_first_assignment:
-            existing_assignment = next(
-                (
-                    a
-                    for a in out.assignments_created
-                    if a.date == assignment.date
-                    and a.worker_id == assignment.worker_id
-                    and a.shift_id == assignment.shift_id
-                ),
-                None,
-            )
-            if not existing_assignment:
-                assignment_saved = self.collection.assignment_db.create_assignment(
-                    assignment
+                # fmt: on
+                dates_recurring = generate_recurring_dates(
+                    period_dates=period_dates,
+                    recurrence_rule=recurrence,
+                    exclusions=exclusions,
                 )
-                out.assignments_created.append(assignment_saved)
+                if dates_recurring:
+                    end_date = max(dates_recurring)
+                else:
+                    end_date = recurrence.start_date
 
+            if end_date:
+                assignments_recurrence = self._materialize_recurrence_assignments(
+                    recurrence=recurrence,
+                    start_date=recurrence.start_date,
+                    end_date=end_date,
+                    schedule_id=None,  # Schedule-independent
+                    check_existing=False,
+                )
+                # Update watermark to end date (fully materialized)
+                if assignments_recurrence or create_first_assignment:
+                    self.collection.recurrence_db.update_recurrence_watermark(
+                        recurrence_id=recurrence.id,
+                        last_materialized_until=end_date,
+                    )
+
+        out.assignments_created.extend(assignments_recurrence)
+
+        # Create recuperation assignments for DUTY shifts
         if shift.shift_type == ShiftType.DUTY:
             shifts_recup = self._get_recup_shifts(
                 shift_ids=[a.shift_id for a in out.assignments_created]
@@ -190,6 +226,7 @@ class AssignmentService(BaseService):
                     self.collection.assignment_db.create_assignments(assignments_recup)
                 )
                 out.assignments_created.extend(assignments_recup_saved)
+
         return out
 
     @staticmethod
@@ -230,6 +267,95 @@ class AssignmentService(BaseService):
             for date in dates_recurring
         ]
         return assignments_rec_campaign
+
+    def _materialize_recurrence_assignments(
+        self,
+        recurrence: RecurrenceRule,
+        start_date: date,
+        end_date: date,
+        schedule_id: Optional[str] = None,
+        check_existing: bool = False,
+    ) -> List[Assignment]:
+        """
+        Materialize assignments for a recurrence within a date range.
+
+        Args:
+            recurrence: The recurrence rule to materialize
+            start_date: Start date of the range
+            end_date: End date of the range
+            schedule_id: Optional schedule ID to associate with assignments
+            check_existing: If True, skip dates that already have assignments
+
+        Returns:
+            List of created Assignment objects
+        """
+        if (
+            recurrence.occurrence_info.worker_id is None
+            or recurrence.occurrence_info.shift_id is None
+        ):
+            raise ValueError(
+                "Recurrence must have a worker ID and a shift ID to create "
+                + "assignments."
+            )
+
+        # Build period dates
+        period_dates = build_dates_list(start_date=start_date, end_date=end_date)
+
+        # Get exclusions for this recurrence
+        # fmt: off
+        exclusions = (
+            self.collection.recurrence_exclusion_db
+            .get_recurrence_exclusions_by_rule_id(
+                rule_id=recurrence.id
+            )
+        )
+        # fmt: on
+
+        # Generate recurring dates
+        dates_recurring = generate_recurring_dates(
+            period_dates=period_dates,
+            recurrence_rule=recurrence,
+            exclusions=exclusions,
+        )
+
+        # Filter out dates that already have assignments
+        if check_existing and dates_recurring:
+            # fmt: off
+            existing_assignments = (
+                self.collection.assignment_db
+                .get_assignments_by_source_id_and_dates(
+                    source_id=recurrence.id,
+                    start_date=min(dates_recurring),
+                    end_date=max(dates_recurring),
+                )
+            )
+            # fmt: on
+            existing_dates = {a.date for a in existing_assignments}
+            dates_recurring = [d for d in dates_recurring if d not in existing_dates]
+
+        # Create Assignment objects
+        assignments_to_create = [
+            Assignment(
+                id="",  # ID will be generated by the database
+                team_id=recurrence.team_id,
+                schedule_id=schedule_id,
+                worker_id=recurrence.occurrence_info.worker_id,
+                date=date_rec,
+                shift_id=recurrence.occurrence_info.shift_id,
+                fixed=True,
+                source=AssignmentSource.RECURRENCE,
+                reference_assignment_id=None,
+                source_id=recurrence.id,
+            )
+            for date_rec in dates_recurring
+        ]
+
+        # Save to DB
+        if assignments_to_create:
+            return self.collection.assignment_db.create_assignments(
+                assignments_to_create
+            )
+        return []
 
     def create_recuperation_assignments_upon_shift_duty_creation(
         self, shift_duty_id: str, shift_recup_id: str, team_id: str
@@ -275,7 +401,6 @@ class AssignmentService(BaseService):
         if new_assignments:
             self.collection.assignment_db.create_assignments(new_assignments)
 
-    # pylint: disable=too-many-locals
     def update_assignments_for_schedule_dates_change(
         self, schedule_new: Schedule, schedule_old: Optional[Schedule] = None
     ) -> None:
@@ -363,18 +488,15 @@ class AssignmentService(BaseService):
     def get_assignments_and_recurrences(
         self,
         team_id: str,
-        start_date: Optional[date] = None,
-        end_date: Optional[date] = None,
+        start_date: date,
+        end_date: date,
         include_campaign: bool = False,
         worker_id: Optional[str] = None,
     ) -> AssignmentsRecurrencesResult:
-        # Fetch all assignments first
-        if start_date is None or end_date is None:
-            assignments = self.collection.assignment_db.get_assignments(team_id)
-        else:
-            assignments = self.collection.assignment_db.get_assignments_by_dates(
-                team_id, start_date, end_date
-            )
+        # Fetch assignments by date range
+        assignments = self.collection.assignment_db.get_assignments_by_dates(
+            team_id, start_date, end_date
+        )
 
         # If include_campaign is False, filter out campaign assignments
         if not include_campaign:
@@ -391,9 +513,18 @@ class AssignmentService(BaseService):
         if worker_id is not None:
             assignments = [a for a in assignments if a.worker_id == worker_id]
 
+        # Lazy materialization: extend recurrence assignments if needed
+        newly_materialized_assignments = self._lazy_materialize_recurrences(
+            team_id=team_id,
+            start_date=start_date,
+            end_date=end_date,
+        )
+        assignments.extend(newly_materialized_assignments)
+
         recurrences = self.collection.recurrence_db.get_recurrences_by_team_id(
             team_id=team_id
         )
+
         return AssignmentsRecurrencesResult(
             assignments_created=[],
             assignments_read=assignments,
@@ -404,6 +535,144 @@ class AssignmentService(BaseService):
             recurrence_updated=None,
             recurrences_deleted_ids=[],
         )
+
+    def _lazy_materialize_recurrences(
+        self,
+        team_id: str,
+        start_date: date,
+        end_date: date,
+    ) -> List[Assignment]:
+        """
+        Lazily materialize recurring assignments for the given date range.
+
+        This method:
+        1. Fetches recurrences that intersect with the date range
+        2. For each recurrence, checks if materialization is needed
+        3. Backfills watermark for old recurrences (backward compatibility)
+        4. Materializes missing assignments and updates watermark
+
+        Returns:
+            List of newly created Assignment objects
+        """
+        newly_created = []
+
+        # Fetch recurrences that intersect with this date range
+        # fmt: off
+        recurrences = (
+            self.collection.recurrence_db
+            .get_recurrences_by_team_and_date_range(
+                team_id=team_id,
+                start_date=start_date,
+                end_date=end_date,
+            )
+        )
+        # fmt: on
+
+        for recurrence in recurrences:
+            # Handle missing watermark (backward compatibility)
+            watermark = recurrence.last_materialized_until
+
+            if watermark is None:
+                # Backfill watermark based on existing assignments
+                # fmt: off
+                existing_assignments = (
+                    self.collection.assignment_db
+                    .get_assignments_by_source_id(
+                        source_id=recurrence.id
+                    )
+                )
+                # fmt: on
+
+                if existing_assignments:
+                    # Set watermark to max existing assignment date
+                    watermark = max(a.date for a in existing_assignments)
+                else:
+                    # No assignments exist, start from recurrence start date
+                    watermark = recurrence.start_date - timedelta(days=1)
+
+                # Save the backfilled watermark
+                self.collection.recurrence_db.update_recurrence_watermark(
+                    recurrence_id=recurrence.id,
+                    last_materialized_until=watermark,
+                )
+
+            # Check if this recurrence is fully materialized
+            recurrence_end = recurrence.end_date
+            if recurrence.recurrence_end_type == RecurrenceEndType.NEVER:
+                recurrence_end = None  # Never ends
+
+            is_fully_materialized = (
+                recurrence_end is not None and watermark >= recurrence_end
+            )
+
+            if is_fully_materialized:
+                # Recurrence is fully materialized, skip
+                continue
+
+            # Check if materialization is needed for this query range
+            if watermark >= end_date:
+                # Already materialized up to or beyond query end date
+                continue
+
+            # Calculate materialization range
+            materialization_start = max(watermark + timedelta(days=1), start_date)
+            materialization_end = end_date
+
+            # Don't materialize beyond recurrence end date
+            if recurrence_end and materialization_end > recurrence_end:
+                materialization_end = recurrence_end
+
+            if materialization_start > materialization_end:
+                # No gap to fill
+                continue
+
+            # Materialize assignments for this range
+            new_assignments = self._materialize_recurrence_assignments(
+                recurrence=recurrence,
+                start_date=materialization_start,
+                end_date=materialization_end,
+                schedule_id=None,  # Schedule-independent
+                check_existing=True,  # Safety check to avoid duplicates
+            )
+
+            if new_assignments:
+                newly_created.extend(new_assignments)
+
+                # Create recuperation assignments if needed
+                if not recurrence.occurrence_info.shift_id:
+                    raise ValueError(
+                        "Recurrence occurrence info must have a shift ID to "
+                        + "create recuperation assignments."
+                    )
+                shift = self.collection.shift_db.get_shift_by_id(
+                    shift_id=recurrence.occurrence_info.shift_id
+                )
+                if shift and shift.shift_type == ShiftType.DUTY:
+                    shifts_recup = self._get_recup_shifts(
+                        shift_ids=[a.shift_id for a in new_assignments]
+                    )
+                    assignments_recup = self._create_recuperation_assignments(
+                        assignments_duty=new_assignments,
+                        shifts_recup=shifts_recup,
+                    )
+                    if assignments_recup:
+                        # fmt: off
+                        assignments_recup_saved = (
+                            self.collection.assignment_db
+                            .create_assignments(
+                                assignments_recup
+                            )
+                        )
+                        # fmt: on
+                        newly_created.extend(assignments_recup_saved)
+
+            # Update watermark to the materialization end
+            self.collection.recurrence_db.update_recurrence_watermark(
+                recurrence_id=recurrence.id,
+                last_materialized_until=materialization_end,
+            )
+
+        return newly_created
 
     def update_assignment_and_recurrence(
         self,
@@ -632,6 +901,12 @@ class AssignmentService(BaseService):
             # Update recurrence to end at date of assignment
             recurrence_old.recurrence_end_type = RecurrenceEndType.END_DATE
             recurrence_old.end_date = assignment.date + timedelta(days=-1)
+            # Update watermark to match new end date
+            if (
+                recurrence_old.last_materialized_until is None
+                or recurrence_old.last_materialized_until > recurrence_old.end_date
+            ):
+                recurrence_old.last_materialized_until = recurrence_old.end_date
             recurrence_updated = self.collection.recurrence_db.update_recurrence(
                 recurrence_old
             )
@@ -762,6 +1037,12 @@ class AssignmentService(BaseService):
                 )
             recurrence.recurrence_end_type = RecurrenceEndType.END_DATE
             recurrence.end_date = assignment.date + timedelta(days=-1)
+            # Update watermark to match new end date
+            if (
+                recurrence.last_materialized_until is None
+                or recurrence.last_materialized_until > recurrence.end_date
+            ):
+                recurrence.last_materialized_until = recurrence.end_date
             recurrence_updated = self.collection.recurrence_db.update_recurrence(
                 recurrence
             )

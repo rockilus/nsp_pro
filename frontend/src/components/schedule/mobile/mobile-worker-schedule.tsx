@@ -13,8 +13,8 @@ interface MobileWorkerScheduleProps {
   selectedWorkerId: string | null;
   today: dayjs.Dayjs;
   isLandscape: boolean;
-  setActiveAssignment: (assignment: any) => void;
-  setSheetOpen: (open: boolean) => void;
+  onAssignmentClick: (assignment: any) => void;
+  canEdit: boolean;
   periodStart: dayjs.Dayjs;
   scheduleViewSettings: any;
   updateScheduleViewSettings: (settings: any) => void;
@@ -32,8 +32,8 @@ export default function MobileWorkerSchedule({
   selectedWorkerId,
   today,
   isLandscape,
-  setActiveAssignment,
-  setSheetOpen,
+  onAssignmentClick,
+  canEdit,
   periodStart,
   scheduleViewSettings,
   updateScheduleViewSettings,
@@ -75,7 +75,7 @@ export default function MobileWorkerSchedule({
         const week = weeksRef.current[i];
         if (week) {
           const newMonth = week.start.format(
-            week.start.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY"
+            week.start.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY",
           );
           onVisibleMonthChange(newMonth);
         }
@@ -96,7 +96,7 @@ export default function MobileWorkerSchedule({
       });
       // Update visible month label
       const monthLabel = todayWeekStart.format(
-        todayWeekStart.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY"
+        todayWeekStart.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY",
       );
       onVisibleMonthChange(monthLabel);
     } else {
@@ -104,7 +104,7 @@ export default function MobileWorkerSchedule({
       const idx = weeks.findIndex(
         (w) =>
           today.isSameOrAfter(w.start, "day") &&
-          today.isSameOrBefore(w.end, "day")
+          today.isSameOrBefore(w.end, "day"),
       );
       const target = weekRefs.current[idx >= 0 ? idx : 0];
       if (target && containerRef.current) {
@@ -134,7 +134,7 @@ export default function MobileWorkerSchedule({
     const idx = weeks.findIndex(
       (w) =>
         today.isSameOrAfter(w.start, "day") &&
-        today.isSameOrBefore(w.end, "day")
+        today.isSameOrBefore(w.end, "day"),
     );
     const target = weekRefs.current[idx >= 0 ? idx : 0];
     if (target && containerRef.current) {
@@ -177,7 +177,7 @@ export default function MobileWorkerSchedule({
 
       // Update visible month label based on the new week start
       const monthLabel = aligned.format(
-        aligned.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY"
+        aligned.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY",
       );
       onVisibleMonthChange(monthLabel);
     },
@@ -186,7 +186,7 @@ export default function MobileWorkerSchedule({
       updateScheduleViewSettings,
       scheduleViewSettings,
       onVisibleMonthChange,
-    ]
+    ],
   );
 
   if (!isLandscape) {
@@ -200,8 +200,8 @@ export default function MobileWorkerSchedule({
           periodDates={periodDates}
           shifts={shifts}
           today={today}
-          setActiveAssignment={setActiveAssignment}
-          setSheetOpen={setSheetOpen}
+          onAssignmentClick={onAssignmentClick}
+          canEdit={canEdit}
           onScroll={handleScroll}
           lng={lng}
         />
@@ -217,8 +217,8 @@ export default function MobileWorkerSchedule({
         shifts={shifts}
         selectedWorkerId={selectedWorkerId}
         today={today}
-        setActiveAssignment={setActiveAssignment}
-        setSheetOpen={setSheetOpen}
+        onAssignmentClick={onAssignmentClick}
+        canEdit={canEdit}
         onWeekChange={handleWeekChange}
       />
     </div>

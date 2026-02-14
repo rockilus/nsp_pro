@@ -4,7 +4,7 @@ import { WorkerTestBase } from "../../utils/worker-test-base";
 const workerTestBase = new WorkerTestBase();
 
 test.describe("Worker Employment End Date Updates", () => {
-  let testWorker: { workerId: string; name: string; teamId: string };
+  let testWorker: { id: string; name: string; teamId: string };
   let initialWorkerName: string;
 
   test.beforeEach(async ({ page }) => {
@@ -23,9 +23,7 @@ test.describe("Worker Employment End Date Updates", () => {
       annualLeave: 25,
     });
 
-    console.log(
-      `Created test worker: ${testWorker.name} (${testWorker.workerId})`
-    );
+    console.log(`Created test worker: ${testWorker.name} (${testWorker.id})`);
 
     // Navigate to the workers page
     await workerTestBase.navigateToWorkersPage(page);
@@ -44,15 +42,12 @@ test.describe("Worker Employment End Date Updates", () => {
 
   test.afterEach(async () => {
     // Clean up: delete the worker created for this test
-    if (testWorker?.workerId) {
+    if (testWorker?.id) {
       try {
-        await workerTestBase.deleteTestWorker(testWorker.workerId);
-        console.log(`Deleted test worker: ${testWorker.workerId}`);
+        await workerTestBase.deleteTestWorker(testWorker.id);
+        console.log(`Deleted test worker: ${testWorker.id}`);
       } catch (error) {
-        console.warn(
-          `Failed to delete test worker ${testWorker.workerId}:`,
-          error
-        );
+        console.warn(`Failed to delete test worker ${testWorker.id}:`, error);
       }
     }
   });
@@ -103,7 +98,7 @@ test.describe("Worker Employment End Date Updates", () => {
     await expect(employmentEndDisplay).not.toBeVisible();
 
     console.log(
-      `✅ Employment end date cell shows date picker and checkbox when clicked`
+      `✅ Employment end date cell shows date picker and checkbox when clicked`,
     );
   });
 
@@ -156,7 +151,7 @@ test.describe("Worker Employment End Date Updates", () => {
     await expect(employmentEndDatePickerInput).toBeEnabled();
 
     console.log(
-      `✅ Date picker becomes enabled when permanent checkbox is unchecked`
+      `✅ Date picker becomes enabled when permanent checkbox is unchecked`,
     );
   });
 
@@ -191,7 +186,7 @@ test.describe("Worker Employment End Date Updates", () => {
 
     // Wait for the editor to disappear and display to show the updated date
     await expect(
-      workerTestBase.getWorkerEmploymentEndEditor(page)
+      workerTestBase.getWorkerEmploymentEndEditor(page),
     ).not.toBeVisible();
     await expect(employmentEndDisplay).toBeVisible();
     await expect(employmentEndDisplay).toContainText(newDate);
@@ -229,7 +224,7 @@ test.describe("Worker Employment End Date Updates", () => {
 
     // Wait for the editor to disappear and display to show the updated date
     await expect(
-      workerTestBase.getWorkerEmploymentEndEditor(page)
+      workerTestBase.getWorkerEmploymentEndEditor(page),
     ).not.toBeVisible();
     await expect(employmentEndDisplay).toBeVisible();
     await expect(employmentEndDisplay).toContainText(newDate);
@@ -271,14 +266,14 @@ test.describe("Worker Employment End Date Updates", () => {
 
     // Wait for the editor to disappear and display to show the original text
     await expect(
-      workerTestBase.getWorkerEmploymentEndEditor(page)
+      workerTestBase.getWorkerEmploymentEndEditor(page),
     ).not.toBeVisible();
     await expect(employmentEndDisplay).toBeVisible();
     await expect(employmentEndDisplay).toContainText(initialDisplayText);
     await expect(employmentEndDisplay).not.toContainText(tempDate);
 
     console.log(
-      `✅ Employment end date edit canceled, reverted to original: "${initialDisplayText}"`
+      `✅ Employment end date edit canceled, reverted to original: "${initialDisplayText}"`,
     );
   });
 
@@ -312,7 +307,7 @@ test.describe("Worker Employment End Date Updates", () => {
 
     // Wait for the editor to disappear and display to show the updated date
     await expect(
-      workerTestBase.getWorkerEmploymentEndEditor(page)
+      workerTestBase.getWorkerEmploymentEndEditor(page),
     ).not.toBeVisible();
     await expect(employmentEndDisplay).toBeVisible();
     await expect(employmentEndDisplay).toContainText(specificDate);
@@ -336,14 +331,14 @@ test.describe("Worker Employment End Date Updates", () => {
 
     // Wait for the editor to disappear and display to show "Permanent"
     await expect(
-      workerTestBase.getWorkerEmploymentEndEditor(page)
+      workerTestBase.getWorkerEmploymentEndEditor(page),
     ).not.toBeVisible();
     await expect(employmentEndDisplay).toBeVisible();
     await expect(employmentEndDisplay).toContainText("Permanent");
     await expect(employmentEndDisplay).not.toContainText(specificDate);
 
     console.log(
-      `✅ Employment end date changed from specific date to 'Permanent' when checkbox selected`
+      `✅ Employment end date changed from specific date to 'Permanent' when checkbox selected`,
     );
   });
 });

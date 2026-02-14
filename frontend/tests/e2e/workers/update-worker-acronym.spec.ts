@@ -4,7 +4,7 @@ import { WorkerTestBase } from "../../utils/worker-test-base";
 const workerTestBase = new WorkerTestBase();
 
 test.describe("Worker Acronym Updates", () => {
-  let testWorker: { workerId: string; name: string; teamId: string };
+  let testWorker: { id: string; name: string; teamId: string };
   let initialWorkerName: string;
 
   test.beforeEach(async ({ page }) => {
@@ -24,9 +24,7 @@ test.describe("Worker Acronym Updates", () => {
       annualLeave: 25,
     });
 
-    console.log(
-      `Created test worker: ${testWorker.name} (${testWorker.workerId})`
-    );
+    console.log(`Created test worker: ${testWorker.name} (${testWorker.id})`);
 
     // Navigate to the workers page
     await workerTestBase.navigateToWorkersPage(page);
@@ -45,15 +43,12 @@ test.describe("Worker Acronym Updates", () => {
 
   test.afterEach(async () => {
     // Clean up: delete the worker created for this test
-    if (testWorker?.workerId) {
+    if (testWorker?.id) {
       try {
-        await workerTestBase.deleteTestWorker(testWorker.workerId);
-        console.log(`Deleted test worker: ${testWorker.workerId}`);
+        await workerTestBase.deleteTestWorker(testWorker.id);
+        console.log(`Deleted test worker: ${testWorker.id}`);
       } catch (error) {
-        console.warn(
-          `Failed to delete test worker ${testWorker.workerId}:`,
-          error
-        );
+        console.warn(`Failed to delete test worker ${testWorker.id}:`, error);
       }
     }
   });
@@ -71,7 +66,7 @@ test.describe("Worker Acronym Updates", () => {
     const trimmedCurrentAcronym = currentAcronym?.trim() || "";
 
     console.log(
-      `Current acronym for "${initialWorkerName}": "${trimmedCurrentAcronym}"`
+      `Current acronym for "${initialWorkerName}": "${trimmedCurrentAcronym}"`,
     );
 
     // Click on the name to edit it
@@ -103,7 +98,7 @@ test.describe("Worker Acronym Updates", () => {
     expect(["AS", "ALI"]).toContain(trimmedNewAcronym);
 
     console.log(
-      `✅ Acronym automatically updated from "${trimmedCurrentAcronym}" to "${trimmedNewAcronym}" when name changed to "${newName}"`
+      `✅ Acronym automatically updated from "${trimmedCurrentAcronym}" to "${trimmedNewAcronym}" when name changed to "${newName}"`,
     );
   });
 
@@ -134,11 +129,11 @@ test.describe("Worker Acronym Updates", () => {
       // Check the acronyms in both rows
       const firstRowAcronymDisplay = workerTestBase.getWorkerAcronymDisplay(
         page,
-        0
+        0,
       );
       const secondRowAcronymDisplay = workerTestBase.getWorkerAcronymDisplay(
         page,
-        1
+        1,
       );
 
       // Get the actual acronym values
@@ -156,11 +151,11 @@ test.describe("Worker Acronym Updates", () => {
       expect(acronyms[1]).toBeTruthy();
 
       console.log(
-        `✅ Created unique acronyms: "${firstAcronym}" and "${secondAcronym}"`
+        `✅ Created unique acronyms: "${firstAcronym}" and "${secondAcronym}"`,
       );
     } finally {
       // Clean up the second worker
-      await workerTestBase.deleteTestWorker(secondWorker.workerId);
+      await workerTestBase.deleteTestWorker(secondWorker.id);
     }
   });
 
@@ -237,7 +232,7 @@ test.describe("Worker Acronym Updates", () => {
     await expect(acronymDisplay).toContainText(newAcronym);
 
     console.log(
-      `✅ Acronym updated from "${trimmedCurrentAcronym}" to "${newAcronym}"`
+      `✅ Acronym updated from "${trimmedCurrentAcronym}" to "${newAcronym}"`,
     );
   });
 
@@ -336,7 +331,7 @@ test.describe("Worker Acronym Updates", () => {
     await expect(acronymDisplay).not.toContainText(tempAcronym);
 
     console.log(
-      `✅ Acronym edit canceled, reverted to original: "${originalAcronym}"`
+      `✅ Acronym edit canceled, reverted to original: "${originalAcronym}"`,
     );
   });
 
@@ -383,7 +378,7 @@ test.describe("Worker Acronym Updates", () => {
     await expect(acronymDisplay).not.toContainText("BW");
 
     console.log(
-      `✅ Acronym remained "${customAcronym}" after name change to "${newName}" (custom acronym preserved)`
+      `✅ Acronym remained "${customAcronym}" after name change to "${newName}" (custom acronym preserved)`,
     );
   });
 });

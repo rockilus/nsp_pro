@@ -18,8 +18,8 @@ interface MobileTeamScheduleProps {
   assignments: any[];
   workers: any[];
   shifts: any[];
-  setActiveAssignment: (assignment: any) => void;
-  setSheetOpen: (open: boolean) => void;
+  onAssignmentClick: (assignment: any) => void;
+  canEdit: boolean;
   onVisibleMonthChange: (month: string) => void;
   onScrollToTodayReady: (handler: () => void) => void;
 }
@@ -31,8 +31,8 @@ export default function MobileTeamSchedule({
   assignments,
   workers,
   shifts,
-  setActiveAssignment,
-  setSheetOpen,
+  onAssignmentClick,
+  canEdit,
   onVisibleMonthChange,
   onScrollToTodayReady,
 }: MobileTeamScheduleProps) {
@@ -84,11 +84,6 @@ export default function MobileTeamSchedule({
       return 0;
     });
   }, [selectedDate, assignments, shifts]);
-
-  const handleAssignmentClick = (assignment: any) => {
-    setActiveAssignment(assignment);
-    setSheetOpen(true);
-  };
 
   return (
     <Box
@@ -150,7 +145,9 @@ export default function MobileTeamSchedule({
                   assignment={assignment}
                   worker={worker}
                   shift={shift}
-                  onClick={() => handleAssignmentClick(assignment)}
+                  onClick={
+                    canEdit ? () => onAssignmentClick(assignment) : undefined
+                  }
                 />
               );
             })}

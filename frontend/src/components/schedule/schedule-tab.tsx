@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import isoWeek from "dayjs/plugin/isoWeek";
@@ -10,14 +11,21 @@ import MobileScheduleTab from "./mobile/mobile-schedule-tab";
 // Hooks
 import { useIsMobile } from "@/hooks/useIsMobile";
 // Components
-import CurrentSelectionLHSTab from "./lhs-tabs/current-selection-lhs-tab";
 import BreachList from "./lhs-tabs/breach-list";
 import QuickStaffingTable from "./lhs-tabs/quick-staffing";
 import QuickStatsTable from "./lhs-tabs/quick-stats";
 import ScheduleDisplay from "./table/schedule-display";
 import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
 import LHSTab from "./lhs-tabs/lhs-tab";
-import CreateAssignment from "./lhs-tabs/create-assignment";
+import ScheduleItemDialog from "./dialogs/schedule-item-dialog";
+import {
+  ScheduleItemType,
+  DialogMode,
+  ScheduleItemDialogData,
+  CreateAssignmentData,
+  CreateDemandData,
+  CreateRequestData,
+} from "./dialogs/schedule-item-types";
 import NoAssignmentsDisplay from "./no-assignments-display";
 import { buildAssignmentsDataByOwnerAndDate } from "./table/shared/assignment-utils";
 import { getPeriodStartEndDates } from "./schedule-utils";
@@ -35,6 +43,14 @@ import {
   useUpdateAssignmentAndRecurrence,
   useDeleteAssignment,
 } from "../../hooks/useAssignment";
+import {
+  useAssignmentsByPeriod,
+  assignmentsQueryKeys,
+} from "../../app/lib/hooks/useAssignments";
+import {
+  calculateBufferMonths,
+  shouldFetchMore,
+} from "../../app/lib/utils/assignmentBufferUtils";
 // Request Hooks
 import {
   useGetRequests,
@@ -50,8 +66,7 @@ import {
   useValidateSchedule,
   useUpdateSchedule,
   useGetSchedules,
-  useGetScheduleAssignmentsData,
-  useGetScheduleAssignmentsDataNoSolver,
+  useGetScheduleEntities,
   useGetScheduleLHSData,
   useDuplicatePeriod,
 } from "../../hooks/useSchedule";
@@ -118,6 +133,9 @@ export default function ScheduleTab({
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
+  // Query client for manual cache operations (prefetching)
+  const queryClient = useQueryClient();
+
   // Stats hook
   const getStats = useGetStats();
 
@@ -130,9 +148,7 @@ export default function ScheduleTab({
   const validateSchedule = useValidateSchedule();
   const updateSchedule = useUpdateSchedule();
   const getSchedules = useGetSchedules();
-  const getScheduleAssignmentsData = useGetScheduleAssignmentsData();
-  const getScheduleAssignmentsDataNoSolver =
-    useGetScheduleAssignmentsDataNoSolver();
+  const getScheduleEntities = useGetScheduleEntities();
   const getScheduleLHSData = useGetScheduleLHSData();
   const duplicatePeriod = useDuplicatePeriod();
   const exportSchedule = useExportSchedule();
@@ -167,8 +183,6 @@ export default function ScheduleTab({
     userWorker === null;
 
   const [isLoadingSchedule, setIsLoadingSchedule] = useState<boolean>(true);
-  const [isLoadingAssignments, setIsLoadingAssignments] =
-    useState<boolean>(true);
 
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
@@ -177,8 +191,6 @@ export default function ScheduleTab({
   const [scheduleCampaign, setScheduleCampaign] = useState<ScheduleT | null>(
     null,
   );
-  const [assignments, setAssignments] = useState<AssignmentT[]>([]);
-  const [recurrences, setRecurrences] = useState<RecurrenceRuleT[]>([]);
   const [breaches, setBreaches] = useState<BreachT[]>([]);
   const [stats, setStats] = useState<StatsT | null>(null);
   const [specialties, setSpecialties] = useState<SpecialtyT[]>([]);
@@ -196,11 +208,40 @@ export default function ScheduleTab({
 
   // resetScheduleViewSettings can be called to reset all settings to defaults
   // Example: resetScheduleViewSettings() - useful for settings reset UI
-  const [selectedAssignment, setSelectedAssignment] =
-    useState<AssignmentDataT | null>(null);
-  const [selectedDemand, setSelectedDemand] =
-    useState<ScheduleCellDataT | null>(null);
-  const [selectedRequest, setSelectedRequest] = useState<RequestT | null>(null);
+
+  // Calculate buffer range for smart assignment loading
+  const bufferRange = useMemo(() => {
+    const periodEnd = computePeriodEndDate(
+      scheduleViewSettings.periodStartDate,
+      scheduleViewSettings.timeFrame,
+    );
+    return calculateBufferMonths(
+      scheduleViewSettings.periodStartDate,
+      periodEnd,
+    );
+  }, [scheduleViewSettings.periodStartDate, scheduleViewSettings.timeFrame]);
+
+  // Determine if user should see campaign assignments (owners/leaders only)
+  const includeCampaign =
+    teamWithMembership.membership.role !== TeamMembershipRole.MEMBER;
+
+  // React Query hook for assignments with smart buffering
+  const {
+    assignments,
+    recurrences,
+    isLoading: isLoadingAssignments,
+    isFetching: isFetchingAssignments,
+    error: assignmentsError,
+  } = useAssignmentsByPeriod(
+    teamWithMembership.team.id,
+    bufferRange.start,
+    bufferRange.end,
+    includeCampaign,
+    undefined, // No worker filter for desktop view
+    {
+      enabled: !memberHasNoWorker, // Don't fetch if member has no worker
+    },
+  );
 
   // React Query hooks for shift demands - use dates from settings
   const {
@@ -211,11 +252,11 @@ export default function ScheduleTab({
     error: shiftDemandError,
   } = useShiftDemands(
     teamWithMembership.team.id,
-    scheduleViewSettings.periodStartDate.toDate(),
+    scheduleViewSettings.periodStartDate,
     computePeriodEndDate(
       scheduleViewSettings.periodStartDate,
       scheduleViewSettings.timeFrame,
-    ).toDate(),
+    ),
     {
       enabled:
         teamWithMembership.team.useSolver &&
@@ -292,11 +333,17 @@ export default function ScheduleTab({
   );
 
   const [selectedTab, setSelectedTab] = useState<string | null>(null);
-  const [createAssignmentData, setCreateAssignmentData] =
-    useState<CreateAssignmentT | null>(null);
 
   const [selectedQuickStatsTimeFrame, setSelectedQuickStatsTimeFrame] =
     useState<StatsTimeFrameOptions>(StatsTimeFrameOptions.CAMPAING);
+
+  // Unified dialog state
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<DialogMode>(DialogMode.CREATE);
+  const [dialogType, setDialogType] = useState<ScheduleItemType>(
+    ScheduleItemType.ASSIGNMENT,
+  );
+  const [dialogData, setDialogData] = useState<ScheduleItemDialogData>(null);
 
   const isMobile = useIsMobile();
 
@@ -309,26 +356,26 @@ export default function ScheduleTab({
   };
 
   const handleAssignmentSelection = (selectedAssignment: AssignmentDataT) => {
-    setSelectedAssignment(selectedAssignment);
-    setSelectedDemand(null);
-    setSelectedRequest(null);
-    setSelectedTab("selection");
+    setDialogOpen(true);
+    setDialogMode(DialogMode.EDIT);
+    setDialogType(ScheduleItemType.ASSIGNMENT);
+    setDialogData({ assignmentData: selectedAssignment });
   };
 
   const handleDemandSelection = (
     selectedScheduleCellData: ScheduleCellDataT,
   ) => {
-    setSelectedDemand(selectedScheduleCellData);
-    setSelectedAssignment(null);
-    setSelectedRequest(null);
-    setSelectedTab("selection");
+    setDialogOpen(true);
+    setDialogMode(DialogMode.EDIT);
+    setDialogType(ScheduleItemType.DEMAND);
+    setDialogData({ cellData: selectedScheduleCellData });
   };
 
   const handleRequestSelection = (request: RequestT) => {
-    setSelectedRequest(request);
-    setSelectedAssignment(null);
-    setSelectedDemand(null);
-    setSelectedTab("selection");
+    setDialogOpen(true);
+    setDialogMode(DialogMode.EDIT);
+    setDialogType(ScheduleItemType.REQUEST);
+    setDialogData({ request });
   };
 
   // updateScheduleViewSettings is now provided by the useScheduleViewSettings hook
@@ -395,325 +442,271 @@ export default function ScheduleTab({
   // Shift Demand Actions (New Implementation)
   //////////////////////////
 
-  const handleCreateShiftDemand = async (
-    shiftId: string,
-    date: dayjs.Dayjs,
-    count: number,
-    notes?: string,
-  ) => {
-    try {
-      const demandData: Omit<ShiftDemandCreateDTO, "teamId"> = {
-        shiftId,
-        date: date.unix(),
-        count,
-        notes: notes || null,
-        source: "manual",
-        sourceId: null,
-      };
+  const handleCreateShiftDemand = useCallback(
+    async (
+      shiftId: string,
+      date: dayjs.Dayjs,
+      count: number,
+      notes?: string,
+    ) => {
+      try {
+        const demandData: Omit<ShiftDemandCreateDTO, "teamId"> = {
+          shiftId,
+          date: date.unix(),
+          count,
+          notes: notes || null,
+          source: "manual",
+          sourceId: null,
+        };
 
-      await shiftDemandMutations.create.mutateAsync({ demand: demandData });
+        await shiftDemandMutations.create.mutateAsync({ demand: demandData });
 
-      // Update selected demand if applicable
-      setSelectedTab("selection");
+        // Update selected demand if applicable
+        setSelectedTab("selection");
 
-      // Note: React Query will handle state updates automatically
-      // No need to manually update local state
-    } catch (error) {
-      console.error("Failed to create shift demand:", error);
-      // Error handling will be managed by React Query
-    }
-  };
-
-  const handleUpdateShiftDemand = async (
-    demandId: string,
-    updates: Partial<ShiftDemandUpdateDTO>,
-  ) => {
-    try {
-      // Get the updated shift demand from the mutation response
-      const updatedShiftDemand = await shiftDemandMutations.update.mutateAsync({
-        demandId,
-        demand: updates,
-      });
-
-      // Update selectedDemand with fresh data if it was the updated demand
-      if (selectedDemand?.shiftDemandsData?.shiftDemand?.id === demandId) {
-        if (updatedShiftDemand) {
-          // Create updated ScheduleCellDataT with new shift demand data
-          const updatedSelectedDemand: ScheduleCellDataT = {
-            ...selectedDemand,
-            shiftDemandsData: {
-              ...selectedDemand.shiftDemandsData,
-              shiftDemand: updatedShiftDemand,
-            },
-          };
-          setSelectedDemand(updatedSelectedDemand);
-        }
+        // Note: React Query will handle state updates automatically
+        // No need to manually update local state
+      } catch (error) {
+        console.error("Failed to create shift demand:", error);
+        // Error handling will be managed by React Query
       }
-    } catch (error) {
-      console.error("Failed to update shift demand:", error);
-    }
-  };
+    },
+    [shiftDemandMutations],
+  );
 
-  const handleDeleteShiftDemand = async (demandId: string) => {
-    try {
-      await shiftDemandMutations.delete.mutateAsync(demandId);
-
-      // Clear selection if deleted demand was selected
-      if (selectedDemand) {
-        setSelectedDemand(null);
+  const handleUpdateShiftDemand = useCallback(
+    async (demandId: string, updates: Partial<ShiftDemandUpdateDTO>) => {
+      try {
+        // Get the updated shift demand from the mutation response
+        const updatedShiftDemand =
+          await shiftDemandMutations.update.mutateAsync({
+            demandId,
+            demand: updates,
+          });
+      } catch (error) {
+        console.error("Failed to update shift demand:", error);
       }
-    } catch (error) {
-      console.error("Failed to delete shift demand:", error);
-    }
-  };
+    },
+    [shiftDemandMutations],
+  );
+
+  const handleDeleteShiftDemand = useCallback(
+    async (demandId: string) => {
+      try {
+        await shiftDemandMutations.delete.mutateAsync(demandId);
+      } catch (error) {
+        console.error("Failed to delete shift demand:", error);
+      }
+    },
+    [shiftDemandMutations],
+  );
 
   //////////////////////////
   // Request Actions
   //////////////////////////
 
-  const handleAddRequest = async (request: RequestT) => {
-    try {
-      const newRequest = await addRequest(request, teamWithMembership.team.id);
-      setRequests([...requests, newRequest]);
-      setSelectedRequest(newRequest);
-    } catch (error) {
-      console.error("Failed to add request:", error);
-    }
-  };
-
-  const handleUpdateRequest = async (request: RequestT) => {
-    try {
-      const updatedRequest = await updateRequest(
-        request,
-        teamWithMembership.team.id,
-      );
-      setRequests(
-        requests.map((r) => (r.id === updatedRequest.id ? updatedRequest : r)),
-      );
-      setSelectedRequest(updatedRequest);
-    } catch (error) {
-      console.error("Failed to update request:", error);
-    }
-  };
-
-  const handleDeleteRequest = async (requestId: string) => {
-    try {
-      await deleteRequest(requestId, teamWithMembership.team.id);
-      setRequests(requests.filter((r) => r.id !== requestId));
-      setSelectedRequest(null);
-      setSelectedTab(null);
-    } catch (error) {
-      console.error("Failed to delete request:", error);
-    }
-  };
-
-  const handleRescindRequest = async (requestId: string) => {
-    try {
-      const result = await rescindRequest(
-        requestId,
-        teamWithMembership.team.id,
-      );
-      const rescindedRequest = result.request;
-      const assignmentsDeletedIds = result.assignmentsDeletedIds || [];
-
-      setRequests((prev) =>
-        prev.map((r) => (r.id === rescindedRequest.id ? rescindedRequest : r)),
-      );
-      setSelectedRequest(rescindedRequest);
-
-      if (assignmentsDeletedIds.length > 0) {
-        setAssignments((prev) =>
-          prev.filter((a) => !assignmentsDeletedIds.includes(a.id)),
+  const handleAddRequest = useCallback(
+    async (request: RequestT) => {
+      try {
+        const newRequest = await addRequest(
+          request,
+          teamWithMembership.team.id,
         );
+        setRequests([...requests, newRequest]);
+      } catch (error) {
+        console.error("Failed to add request:", error);
       }
-    } catch (error) {
-      console.error("Failed to rescind request:", error);
-    }
-  };
+    },
+    [addRequest, teamWithMembership.team.id, requests],
+  );
 
-  const handleAcceptRequest = async (requestId: string) => {
-    try {
-      const result = await acceptRequest(requestId, teamWithMembership.team.id);
-      const acceptedRequest = result.request;
-      const newAssignments = result.assignments || [];
-
-      // Update requests list and selected request
-      setRequests((prev) =>
-        prev.map((r) => (r.id === acceptedRequest.id ? acceptedRequest : r)),
-      );
-      setSelectedRequest(acceptedRequest);
-
-      // Merge new assignments into the assignments state
-      if (newAssignments.length > 0) {
-        setAssignments((prev) => {
-          // Avoid duplicates by id
-          const existingIds = new Set(prev.map((a) => a.id));
-          const toAdd = newAssignments.filter((a) => !existingIds.has(a.id));
-          return [...prev, ...toAdd];
-        });
+  const handleUpdateRequest = useCallback(
+    async (request: RequestT) => {
+      try {
+        const updatedRequest = await updateRequest(
+          request,
+          teamWithMembership.team.id,
+        );
+        setRequests(
+          requests.map((r) =>
+            r.id === updatedRequest.id ? updatedRequest : r,
+          ),
+        );
+      } catch (error) {
+        console.error("Failed to update request:", error);
       }
-    } catch (error) {
-      console.error("Failed to accept request:", error);
-    }
-  };
+    },
+    [updateRequest, teamWithMembership.team.id, requests],
+  );
 
-  const handleDenyRequest = async (requestId: string) => {
-    try {
-      const deniedRequest = await denyRequest(
-        requestId,
-        teamWithMembership.team.id,
-      );
-      setRequests(
-        requests.map((r) => (r.id === deniedRequest.id ? deniedRequest : r)),
-      );
-      setSelectedRequest(deniedRequest);
-    } catch (error) {
-      console.error("Failed to deny request:", error);
-    }
-  };
+  const handleDeleteRequest = useCallback(
+    async (requestId: string) => {
+      try {
+        await deleteRequest(requestId, teamWithMembership.team.id);
+        setRequests(requests.filter((r) => r.id !== requestId));
+      } catch (error) {
+        console.error("Failed to delete request:", error);
+      }
+    },
+    [deleteRequest, teamWithMembership.team.id, requests],
+  );
+
+  const handleRescindRequest = useCallback(
+    async (requestId: string) => {
+      try {
+        const result = await rescindRequest(
+          requestId,
+          teamWithMembership.team.id,
+        );
+        const rescindedRequest = result.request;
+        const assignmentsDeletedIds = result.assignmentsDeletedIds || [];
+
+        setRequests((prev) =>
+          prev.map((r) =>
+            r.id === rescindedRequest.id ? rescindedRequest : r,
+          ),
+        );
+
+        // React Query cache invalidation in the mutation hook handles assignment updates
+      } catch (error) {
+        console.error("Failed to rescind request:", error);
+      }
+    },
+    [rescindRequest, teamWithMembership.team.id],
+  );
+
+  const handleAcceptRequest = useCallback(
+    async (requestId: string) => {
+      try {
+        const result = await acceptRequest(
+          requestId,
+          teamWithMembership.team.id,
+        );
+        const acceptedRequest = result.request;
+        const newAssignments = result.assignments || [];
+
+        // Update requests list
+        setRequests((prev) =>
+          prev.map((r) => (r.id === acceptedRequest.id ? acceptedRequest : r)),
+        );
+
+        // React Query cache invalidation in the mutation hook handles assignment updates
+      } catch (error) {
+        console.error("Failed to accept request:", error);
+      }
+    },
+    [acceptRequest, teamWithMembership.team.id],
+  );
+
+  const handleDenyRequest = useCallback(
+    async (requestId: string) => {
+      try {
+        const deniedRequest = await denyRequest(
+          requestId,
+          teamWithMembership.team.id,
+        );
+        setRequests(
+          requests.map((r) => (r.id === deniedRequest.id ? deniedRequest : r)),
+        );
+      } catch (error) {
+        console.error("Failed to deny request:", error);
+      }
+    },
+    [denyRequest, teamWithMembership.team.id, requests],
+  );
 
   //////////////////////////
   // Assignment Actions
   //////////////////////////
 
-  const updateAssignmentsAndRecurrencesStates = (
-    ARResult: AssignmentsRecurrencesResultT,
-  ) => {
-    setAssignments((prev) => {
-      let updatedAssignments = prev.map(
-        (a) =>
-          ARResult.assignmentsUpdated.find((updated) => updated.id === a.id) ||
-          a,
+  const updateAssignmentsAndRecurrencesStates = useCallback(
+    (ARResult: AssignmentsRecurrencesResultT) => {
+      // React Query cache invalidation in the mutation hooks handles updates automatically
+      // This function is kept for backward compatibility but no longer updates local state
+    },
+    [],
+  );
+
+  const handleOpenCreateAssignment = useCallback(
+    (createAssignmentData: CreateAssignmentT) => {
+      setDialogOpen(true);
+      setDialogMode(DialogMode.CREATE);
+      setDialogType(ScheduleItemType.ASSIGNMENT);
+      setDialogData({
+        scheduleId: createAssignmentData.scheduleId,
+        workerId: createAssignmentData.workerId,
+        shiftId: createAssignmentData.shiftId,
+        date: createAssignmentData.date,
+        addDemandActive:
+          !createAssignmentData.haveDemand &&
+          scheduleViewSettings.groupBy === "shift",
+      } as CreateAssignmentData);
+    },
+    [scheduleViewSettings.groupBy],
+  );
+
+  const handleCloseLHS = useCallback(() => {
+    setSelectedTab(null);
+  }, []);
+
+  const handleCloseDialog = useCallback(() => {
+    setDialogOpen(false);
+    setDialogData(null);
+  }, []);
+
+  const handleCreateAssignment = useCallback(
+    async (
+      assignment: AssignmentT,
+      recurrence: RecurrenceRuleT | null = null,
+    ) => {
+      await addAssignmentAndRecurrence(assignment, recurrence);
+      // React Query cache invalidation in the mutation hook handles updates automatically
+    },
+    [addAssignmentAndRecurrence],
+  );
+
+  const handleUpdateAssignment = useCallback(
+    async (
+      assignment: AssignmentT,
+      recurrence: RecurrenceRuleT | null = null,
+      recurrenceUpdateScope: RecurrenceUpdateScope | null = null,
+    ) => {
+      const ARResult = await updateAssignmentAndRecurrence(
+        assignment,
+        teamWithMembership.team.id,
+        recurrence,
+        recurrenceUpdateScope,
       );
 
-      if (ARResult.assignmentsCreated.length > 0) {
-        updatedAssignments = [
-          ...updatedAssignments,
-          ...ARResult.assignmentsCreated,
-        ];
-      }
-
-      if (ARResult.assignmentsDeletedIds.length > 0) {
-        updatedAssignments = updatedAssignments.filter(
-          (a) => !ARResult.assignmentsDeletedIds.includes(a.id),
-        );
-      }
-
-      return updatedAssignments;
-    });
-
-    setRecurrences((prev) => {
-      let updatedRecurrences = [...prev];
-
-      if (ARResult.recurrenceCreated) {
-        updatedRecurrences = [
-          ...updatedRecurrences,
-          ARResult.recurrenceCreated,
-        ];
-      }
-
-      if (ARResult.recurrenceUpdated) {
-        updatedRecurrences = updatedRecurrences.map((recurrence) =>
-          ARResult.recurrenceUpdated
-            ? recurrence.id === ARResult.recurrenceUpdated.id
-              ? ARResult.recurrenceUpdated
-              : recurrence
-            : recurrence,
-        );
-      }
-
-      if (ARResult.recurrencesDeletedIds.length > 0) {
-        updatedRecurrences = updatedRecurrences.filter(
-          (recurrence) =>
-            !ARResult.recurrencesDeletedIds.includes(recurrence.id),
-        );
-      }
-
-      return updatedRecurrences;
-    });
-  };
-
-  const handleOpenCreateAssignment = (
-    createAssignmentData: CreateAssignmentT,
-  ) => {
-    setCreateAssignmentData(createAssignmentData);
-    setSelectedTab("create_assignment");
-  };
-
-  const handleCloseLHS = () => {
-    setCreateAssignmentData(null);
-    setSelectedTab(null);
-    setSelectedAssignment(null);
-    setSelectedRequest(null);
-  };
-
-  const handleCreateAssignment = async (
-    assignment: AssignmentT,
-    recurrence: RecurrenceRuleT | null = null,
-  ) => {
-    const ARResult = await addAssignmentAndRecurrence(assignment, recurrence);
-    setAssignments([...assignments, ...ARResult.assignmentsCreated]);
-    if (ARResult.recurrenceCreated) {
-      setRecurrences([...recurrences, ARResult.recurrenceCreated]);
-    }
-    setSelectedTab("selection");
-    const assignDict = buildAssignmentsDataByOwnerAndDate(
-      AttributeOwnerType.WORKER,
-      [ARResult.assignmentsCreated[0]], // Feed only the first assignment
-      recurrences,
-      workers,
-      shifts,
-      breaches,
-      requests,
-    );
-    const newSelectedCell = Object.values(assignDict)[0][0];
-    setSelectedAssignment(newSelectedCell);
-    setCreateAssignmentData(null);
-  };
-
-  const handleUpdateAssignment = async (
-    assignment: AssignmentT,
-    recurrence: RecurrenceRuleT | null = null,
-    recurrenceUpdateScope: RecurrenceUpdateScope | null = null,
-  ) => {
-    const ARResult = await updateAssignmentAndRecurrence(
-      assignment,
+      updateAssignmentsAndRecurrencesStates(ARResult);
+    },
+    [
+      updateAssignmentAndRecurrence,
       teamWithMembership.team.id,
-      recurrence,
-      recurrenceUpdateScope,
-    );
+      updateAssignmentsAndRecurrencesStates,
+    ],
+  );
 
-    updateAssignmentsAndRecurrencesStates(ARResult);
-
-    const assignDict = buildAssignmentsDataByOwnerAndDate(
-      AttributeOwnerType.WORKER,
-      [ARResult.assignmentsUpdated[0]], // Feed only the first updated assignment
-      recurrences,
-      workers,
-      shifts,
-      breaches,
-      requests,
-    );
-    const newSelectedCell = Object.values(assignDict)[0][0];
-    setSelectedAssignment(newSelectedCell);
-    setSelectedTab("selection");
-    setCreateAssignmentData(null);
-  };
-
-  const handleDeleteAssignment = async (
-    assignmentId: string,
-    recurrenceId: string | null = null,
-    recurrenceUpdateScope: RecurrenceUpdateScope | null = null,
-  ) => {
-    const ARResult = await deleteAssignment(
-      assignmentId,
+  const handleDeleteAssignment = useCallback(
+    async (
+      assignmentId: string,
+      recurrenceId: string | null = null,
+      recurrenceUpdateScope: RecurrenceUpdateScope | null = null,
+    ) => {
+      const ARResult = await deleteAssignment(
+        assignmentId,
+        teamWithMembership.team.id,
+        recurrenceId,
+        recurrenceUpdateScope,
+      );
+      updateAssignmentsAndRecurrencesStates(ARResult);
+    },
+    [
+      deleteAssignment,
       teamWithMembership.team.id,
-      recurrenceId,
-      recurrenceUpdateScope,
-    );
-    updateAssignmentsAndRecurrencesStates(ARResult);
-    setSelectedAssignment(null);
-  };
+      updateAssignmentsAndRecurrencesStates,
+    ],
+  );
 
   const updateSelectedPeriod = (
     newPeriodStart: dayjs.Dayjs,
@@ -752,6 +745,21 @@ export default function ScheduleTab({
       scheduleViewSettings.timeFrame,
     );
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
+
+    // Prefetch data for extended buffer if approaching edge
+    const newBufferRange = calculateBufferMonths(newPeriodStart, newPeriodEnd);
+    if (shouldFetchMore(bufferRange, newPeriodStart, newPeriodEnd)) {
+      // Prefetch extended buffer in background
+      queryClient.prefetchQuery({
+        queryKey: assignmentsQueryKeys.byPeriod(
+          teamWithMembership.team.id,
+          newBufferRange.start,
+          newBufferRange.end,
+          includeCampaign,
+          undefined,
+        ),
+      });
+    }
   };
 
   const handleNextPeriod = async () => {
@@ -765,6 +773,21 @@ export default function ScheduleTab({
       scheduleViewSettings.timeFrame,
     );
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
+
+    // Prefetch data for extended buffer if approaching edge
+    const newBufferRange = calculateBufferMonths(newPeriodStart, newPeriodEnd);
+    if (shouldFetchMore(bufferRange, newPeriodStart, newPeriodEnd)) {
+      // Prefetch extended buffer in background
+      queryClient.prefetchQuery({
+        queryKey: assignmentsQueryKeys.byPeriod(
+          teamWithMembership.team.id,
+          newBufferRange.start,
+          newBufferRange.end,
+          includeCampaign,
+          undefined,
+        ),
+      });
+    }
   };
 
   const handleChangeTimeFrame = async (newTimeFrame: "week" | "month") => {
@@ -850,21 +873,13 @@ export default function ScheduleTab({
           setScheduleCampaign(updatedSchedule);
         }
 
-        // Update assignments for the scheduleCampaign period (replace
-        // any existing assignments that fall within the campaign date range)
+        // Update assignments for the scheduleCampaign period
+        // React Query cache invalidation handles assignment updates automatically
+        // Manually invalidate to refresh the assignments view
         if (newAssignments && scheduleCampaign) {
-          setAssignments((prev) => [
-            // ...prev.filter((a) => a.scheduleId !== scheduleCampaign.id),
-            ...prev.filter((a) => {
-              // Keep assignments that are NOT within the campaign period.
-              // `a.date` is a dayjs.Dayjs; compare using day precision.
-              const inCampaignPeriod =
-                a.date.isSameOrAfter(scheduleCampaign.startDate, "day") &&
-                a.date.isSameOrBefore(scheduleCampaign.endDate, "day");
-              return !inCampaignPeriod;
-            }),
-            ...newAssignments,
-          ]);
+          queryClient.invalidateQueries({
+            queryKey: assignmentsQueryKeys.teams(teamWithMembership.team.id),
+          });
         }
 
         // Update breaches
@@ -882,16 +897,12 @@ export default function ScheduleTab({
         }
       }
     },
-    [scheduleCampaign],
+    [scheduleCampaign, teamWithMembership.team.id, queryClient],
   );
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoadingSchedule(true);
-      setIsLoadingAssignments(true);
-
-      // console.log("fetchData useEffect started");
-      // const startTime = dayjs();
 
       try {
         // Fetch schedules
@@ -908,43 +919,11 @@ export default function ScheduleTab({
         );
         setIsLoadingSchedule(false);
 
-        // Determine if user should see campaign assignments (owners/leaders only)
-        const includeCampaign =
-          teamWithMembership.membership.role !== TeamMembershipRole.MEMBER;
-
-        // Fetch assignment data
-        if (teamWithMembership.team.useSolver) {
-          const {
-            assignments: fetchedAssignments,
-            recurrences: fetchedRecurrences,
-            workers: fetchedWorkers,
-            shifts: fetchedShifts,
-          } = await getScheduleAssignmentsData(
-            teamWithMembership.team.id,
-            includeCampaign,
-          );
-          setAssignments(fetchedAssignments);
-          setRecurrences(fetchedRecurrences);
-          setWorkers(fetchedWorkers);
-          setShifts(fetchedShifts);
-          // Note: Shift demands are now loaded via React Query hook
-        } else {
-          const {
-            assignments: fetchedAssignments,
-            recurrences: fetchedRecurrences,
-            workers: fetchedWorkers,
-            shifts: fetchedShifts,
-          } = await getScheduleAssignmentsDataNoSolver(
-            teamWithMembership.team.id,
-            includeCampaign,
-          );
-          setAssignments(fetchedAssignments);
-          setRecurrences(fetchedRecurrences);
-          setWorkers(fetchedWorkers);
-          setShifts(fetchedShifts);
-        }
-
-        setIsLoadingAssignments(false);
+        // Fetch entities (shifts and workers) - assignments now loaded via React Query
+        const { workers: fetchedWorkers, shifts: fetchedShifts } =
+          await getScheduleEntities(teamWithMembership.team.id);
+        setWorkers(fetchedWorkers);
+        setShifts(fetchedShifts);
 
         // Fetch requests (needed for both members and owners)
         const fetchedRequests = await getRequests(teamWithMembership.team.id);
@@ -973,20 +952,10 @@ export default function ScheduleTab({
           setStats(fetchedStats);
           setSpecialties(fetchedSpecialties);
         }
-
-        // const endTime = dayjs();
-        // console.log("fetchData useEffect ended");
-        // console.log(
-        //   `fetchData useEffect took ${endTime.diff(
-        //     startTime,
-        //     "millisecond"
-        //   )} ms`
-        // );
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
         setIsLoadingSchedule(false);
-        setIsLoadingAssignments(false);
       }
     };
 
@@ -994,8 +963,7 @@ export default function ScheduleTab({
   }, [
     teamWithMembership,
     getSchedules,
-    getScheduleAssignmentsData,
-    getScheduleAssignmentsDataNoSolver,
+    getScheduleEntities,
     getRequests,
     getBreaches,
     getStats,
@@ -1046,63 +1014,6 @@ export default function ScheduleTab({
         />
       ) : null,
       ownerOnly: true,
-    },
-    {
-      name: "selection",
-      label: t("selection"),
-      content: (
-        <CurrentSelectionLHSTab
-          lng={lng}
-          workers={workers.filter((w) => !w.deleted)}
-          shifts={shifts.filter((s) => !s.deleted)}
-          schedules={[
-            ...(scheduleCampaign ? [scheduleCampaign] : []),
-            ...schedulesValidated,
-          ]}
-          selectedAssignment={selectedAssignment}
-          selectedDemand={selectedDemand}
-          selectedRequest={selectedRequest}
-          specialties={specialties}
-          shiftOptions={[]}
-          userWorkerId={null}
-          userTeamRole={teamWithMembership.membership.role}
-          onClose={handleCloseLHS}
-          handleUpdateAssignment={handleUpdateAssignment}
-          handleDeleteAssignment={handleDeleteAssignment}
-          handleUpdateShiftDemand={handleUpdateShiftDemand}
-          handleDeleteShiftDemand={handleDeleteShiftDemand}
-          handleAddRequest={handleAddRequest}
-          handleUpdateRequest={handleUpdateRequest}
-          handleDeleteRequest={handleDeleteRequest}
-          handleRescindRequest={handleRescindRequest}
-          handleAcceptRequest={handleAcceptRequest}
-          handleDenyRequest={handleDenyRequest}
-        />
-      ),
-    },
-    {
-      name: "create_assignment",
-      label: "",
-      content: createAssignmentData ? (
-        <CreateAssignment
-          lng={lng}
-          teamWithMembership={teamWithMembership}
-          scheduleId={createAssignmentData.scheduleId}
-          workerSelectedId={createAssignmentData.workerId}
-          shiftSelectedId={createAssignmentData.shiftId}
-          dateSelected={createAssignmentData.date}
-          workers={workers}
-          shifts={shifts}
-          addDemandActive={
-            !createAssignmentData.haveDemand &&
-            scheduleViewSettings.groupBy === "shift"
-          }
-          onClose={handleCloseLHS}
-          handleCreateAssignment={handleCreateAssignment}
-          handleCreateShiftDemand={handleCreateShiftDemand}
-        />
-      ) : null,
-      ownerOnly: false,
     },
   ];
 
@@ -1189,7 +1100,9 @@ export default function ScheduleTab({
           {isLoadingAssignments ||
           (teamWithMembership.team.useSolver && isLoadingShiftDemands) ? (
             <ScheduleTableSkeleton />
-          ) : assignments.length === 0 && !scheduleCampaign ? (
+          ) : assignments.length === 0 &&
+            requests.length === 0 &&
+            shiftDemands.length === 0 ? (
             <NoAssignmentsDisplay
               lng={lng}
               teamWithMembership={teamWithMembership}
@@ -1221,6 +1134,40 @@ export default function ScheduleTab({
             />
           )}
         </div>
+
+        <ScheduleItemDialog
+          lng={lng}
+          open={dialogOpen}
+          onClose={handleCloseDialog}
+          mode={dialogMode}
+          selectedType={dialogType}
+          dialogData={dialogData}
+          teamId={teamWithMembership.team.id}
+          scheduleId={scheduleCampaign?.id ?? null}
+          workers={workers.filter((w) => !w.deleted)}
+          shifts={shifts.filter((s) => !s.deleted)}
+          schedules={[
+            ...(scheduleCampaign ? [scheduleCampaign] : []),
+            ...schedulesValidated,
+          ]}
+          specialties={specialties}
+          shiftOptions={[]}
+          userWorkerId={null}
+          userTeamRole={teamWithMembership.membership.role}
+          useSolver={teamWithMembership.team.useSolver}
+          handleCreateAssignment={handleCreateAssignment}
+          handleUpdateAssignment={handleUpdateAssignment}
+          handleDeleteAssignment={handleDeleteAssignment}
+          handleCreateShiftDemand={handleCreateShiftDemand}
+          handleUpdateShiftDemand={handleUpdateShiftDemand}
+          handleDeleteShiftDemand={handleDeleteShiftDemand}
+          handleAddRequest={handleAddRequest}
+          handleUpdateRequest={handleUpdateRequest}
+          handleDeleteRequest={handleDeleteRequest}
+          handleRescindRequest={handleRescindRequest}
+          handleAcceptRequest={handleAcceptRequest}
+          handleDenyRequest={handleDenyRequest}
+        />
       </div>
     </div>
   );

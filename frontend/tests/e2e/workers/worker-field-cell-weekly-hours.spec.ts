@@ -4,7 +4,7 @@ import { WorkerTestBase } from "../../utils/worker-test-base";
 const workerTestBase = new WorkerTestBase();
 
 test.describe("Worker Weekly Hours Field Cell", () => {
-  let testWorker: { workerId: string; name: string; teamId: string };
+  let testWorker: { id: string; name: string; teamId: string };
   let initialWorkerName: string;
   let initialWeeklyHours: number;
 
@@ -26,7 +26,7 @@ test.describe("Worker Weekly Hours Field Cell", () => {
     });
 
     console.log(
-      `Created test worker: ${testWorker.name} (${testWorker.workerId}) with weekly hours: ${initialWeeklyHours}`
+      `Created test worker: ${testWorker.name} (${testWorker.id}) with weekly hours: ${initialWeeklyHours}`,
     );
 
     // Navigate to the workers page
@@ -46,15 +46,12 @@ test.describe("Worker Weekly Hours Field Cell", () => {
 
   test.afterEach(async () => {
     // Clean up: delete the worker created for this test
-    if (testWorker?.workerId) {
+    if (testWorker?.id) {
       try {
-        await workerTestBase.deleteTestWorker(testWorker.workerId);
-        console.log(`Deleted test worker: ${testWorker.workerId}`);
+        await workerTestBase.deleteTestWorker(testWorker.id);
+        console.log(`Deleted test worker: ${testWorker.id}`);
       } catch (error) {
-        console.warn(
-          `Failed to delete test worker ${testWorker.workerId}:`,
-          error
-        );
+        console.warn(`Failed to delete test worker ${testWorker.id}:`, error);
       }
     }
   });
@@ -67,11 +64,11 @@ test.describe("Worker Weekly Hours Field Cell", () => {
     // Verify the cell is visible and displays the initial weekly hours
     await expect(weeklyHoursCell).toBeVisible();
     await expect(weeklyHoursDisplay).toContainText(
-      initialWeeklyHours.toString()
+      initialWeeklyHours.toString(),
     );
 
     console.log(
-      `✅ Weekly hours cell displays initial value: ${initialWeeklyHours}`
+      `✅ Weekly hours cell displays initial value: ${initialWeeklyHours}`,
     );
   });
 
@@ -194,7 +191,7 @@ test.describe("Worker Weekly Hours Field Cell", () => {
 
     // Verify initial value
     await expect(weeklyHoursDisplay).toContainText(
-      initialWeeklyHours.toString()
+      initialWeeklyHours.toString(),
     );
 
     // Click on the cell to edit
@@ -216,11 +213,11 @@ test.describe("Worker Weekly Hours Field Cell", () => {
 
     // Verify the display does not contain the temporary value
     await expect(weeklyHoursDisplay).not.toContainText(
-      tempWeeklyHours.toString()
+      tempWeeklyHours.toString(),
     );
 
     console.log(
-      `✅ Weekly hours edit canceled, reverted to original: ${initialWeeklyHours}`
+      `✅ Weekly hours edit canceled, reverted to original: ${initialWeeklyHours}`,
     );
   });
 
@@ -247,7 +244,7 @@ test.describe("Worker Weekly Hours Field Cell", () => {
     await workerTestBase.waitForWeeklyHoursUpdate(page, initialWeeklyHours);
 
     console.log(
-      `✅ Empty input reverted to original value: ${initialWeeklyHours}`
+      `✅ Empty input reverted to original value: ${initialWeeklyHours}`,
     );
   });
 
@@ -293,7 +290,7 @@ test.describe("Worker Weekly Hours Field Cell", () => {
 
     // Verify initial value
     await expect(weeklyHoursDisplay).toContainText(
-      initialWeeklyHours.toString()
+      initialWeeklyHours.toString(),
     );
 
     // Click on the cell to edit

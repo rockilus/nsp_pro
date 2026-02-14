@@ -14,7 +14,7 @@ test.describe("DimensionCell Component", () => {
   });
 
   test.describe("Basic Popup Functionality", () => {
-    let testDimension: { dimensionId: string; name: string; teamId: string };
+    let testDimension: { id: string; name: string; teamId: string };
 
     test.beforeEach(async ({ page }) => {
       // Create a test dimension before each test
@@ -28,7 +28,7 @@ test.describe("DimensionCell Component", () => {
       });
 
       console.log(
-        `Created test dimension: ${testDimension.name} (${testDimension.dimensionId})`
+        `Created test dimension: ${testDimension.name} (${testDimension.id})`,
       );
 
       // Navigate to the workers page for the correct team
@@ -40,16 +40,14 @@ test.describe("DimensionCell Component", () => {
 
     test.afterEach(async () => {
       // Clean up: delete the dimension created for this test
-      if (testDimension?.dimensionId) {
+      if (testDimension?.id) {
         try {
-          await dimensionTestBase.deleteTestDimension(
-            testDimension.dimensionId
-          );
-          console.log(`Deleted test dimension: ${testDimension.dimensionId}`);
+          await dimensionTestBase.deleteTestDimension(testDimension.id);
+          console.log(`Deleted test dimension: ${testDimension.id}`);
         } catch (error) {
           console.warn(
-            `Failed to delete test dimension ${testDimension.dimensionId}:`,
-            error
+            `Failed to delete test dimension ${testDimension.id}:`,
+            error,
           );
         }
       }
@@ -59,28 +57,22 @@ test.describe("DimensionCell Component", () => {
       page,
     }) => {
       // Click on the dimension cell
-      await dimensionTestBase.clickDimensionCell(
-        page,
-        testDimension.dimensionId
-      );
+      await dimensionTestBase.clickDimensionCell(page, testDimension.id);
 
       // Wait for popup to appear
       await dimensionTestBase.waitForDimensionPopupVisible(
         page,
-        testDimension.dimensionId
+        testDimension.id,
       );
 
       // Verify popup is visible
-      const popup = dimensionTestBase.getDimensionPopup(
-        page,
-        testDimension.dimensionId
-      );
+      const popup = dimensionTestBase.getDimensionPopup(page, testDimension.id);
       await expect(popup).toBeVisible();
 
       // Verify the update form is visible
       const updateForm = dimensionTestBase.getDimensionUpdateForm(
         page,
-        testDimension.dimensionId
+        testDimension.id,
       );
       await expect(updateForm).toBeVisible();
 
@@ -89,20 +81,14 @@ test.describe("DimensionCell Component", () => {
 
     test("should close popup when clicking away", async ({ page }) => {
       // Open the popup
-      await dimensionTestBase.clickDimensionCell(
-        page,
-        testDimension.dimensionId
-      );
+      await dimensionTestBase.clickDimensionCell(page, testDimension.id);
       await dimensionTestBase.waitForDimensionPopupVisible(
         page,
-        testDimension.dimensionId
+        testDimension.id,
       );
 
       // Verify popup is visible
-      const popup = dimensionTestBase.getDimensionPopup(
-        page,
-        testDimension.dimensionId
-      );
+      const popup = dimensionTestBase.getDimensionPopup(page, testDimension.id);
       await expect(popup).toBeVisible();
 
       // Click away from the popup
@@ -111,7 +97,7 @@ test.describe("DimensionCell Component", () => {
       // Wait for popup to close
       await dimensionTestBase.waitForDimensionPopupHidden(
         page,
-        testDimension.dimensionId
+        testDimension.id,
       );
 
       // Verify popup is no longer visible
@@ -122,20 +108,14 @@ test.describe("DimensionCell Component", () => {
 
     test("should close popup when pressing escape", async ({ page }) => {
       // Open the popup
-      await dimensionTestBase.clickDimensionCell(
-        page,
-        testDimension.dimensionId
-      );
+      await dimensionTestBase.clickDimensionCell(page, testDimension.id);
       await dimensionTestBase.waitForDimensionPopupVisible(
         page,
-        testDimension.dimensionId
+        testDimension.id,
       );
 
       // Verify popup is visible
-      const popup = dimensionTestBase.getDimensionPopup(
-        page,
-        testDimension.dimensionId
-      );
+      const popup = dimensionTestBase.getDimensionPopup(page, testDimension.id);
       await expect(popup).toBeVisible();
 
       // Press Escape key
@@ -144,7 +124,7 @@ test.describe("DimensionCell Component", () => {
       // Wait for popup to close
       await dimensionTestBase.waitForDimensionPopupHidden(
         page,
-        testDimension.dimensionId
+        testDimension.id,
       );
 
       // Verify popup is no longer visible
@@ -164,7 +144,7 @@ test.describe("DimensionCell Component", () => {
     for (const dimensionTypeConfig of dimensionTypes) {
       test.describe(`${dimensionTypeConfig.name}`, () => {
         let testDimension: {
-          dimensionId: string;
+          id: string;
           name: string;
           teamId: string;
         };
@@ -181,7 +161,7 @@ test.describe("DimensionCell Component", () => {
           });
 
           console.log(
-            `Created test dimension: ${testDimension.name} (${testDimension.dimensionId})`
+            `Created test dimension: ${testDimension.name} (${testDimension.id})`,
           );
 
           // Navigate to the workers page for the correct team
@@ -193,18 +173,14 @@ test.describe("DimensionCell Component", () => {
 
         test.afterEach(async () => {
           // Clean up: delete the dimension created for this test
-          if (testDimension?.dimensionId) {
+          if (testDimension?.id) {
             try {
-              await dimensionTestBase.deleteTestDimension(
-                testDimension.dimensionId
-              );
-              console.log(
-                `Deleted test dimension: ${testDimension.dimensionId}`
-              );
+              await dimensionTestBase.deleteTestDimension(testDimension.id);
+              console.log(`Deleted test dimension: ${testDimension.id}`);
             } catch (error) {
               console.warn(
-                `Failed to delete test dimension ${testDimension.dimensionId}:`,
-                error
+                `Failed to delete test dimension ${testDimension.id}:`,
+                error,
               );
             }
           }
@@ -214,19 +190,16 @@ test.describe("DimensionCell Component", () => {
           page,
         }) => {
           // Open the popup
-          await dimensionTestBase.clickDimensionCell(
-            page,
-            testDimension.dimensionId
-          );
+          await dimensionTestBase.clickDimensionCell(page, testDimension.id);
           await dimensionTestBase.waitForDimensionPopupVisible(
             page,
-            testDimension.dimensionId
+            testDimension.id,
           );
 
           // Verify name text field exists and is visible
           const nameField = dimensionTestBase.getDimensionNameField(
             page,
-            testDimension.dimensionId
+            testDimension.id,
           );
           await expect(nameField).toBeVisible();
 
@@ -235,7 +208,7 @@ test.describe("DimensionCell Component", () => {
           await expect(nameInput).toHaveValue(testDimension.name);
 
           console.log(
-            `✅ Name text field is present for ${dimensionTypeConfig.name}`
+            `✅ Name text field is present for ${dimensionTypeConfig.name}`,
           );
         });
 
@@ -245,43 +218,40 @@ test.describe("DimensionCell Component", () => {
           const newName = `Updated ${dimensionTypeConfig.name} ${Date.now()}`;
 
           // Open the popup
-          await dimensionTestBase.clickDimensionCell(
-            page,
-            testDimension.dimensionId
-          );
+          await dimensionTestBase.clickDimensionCell(page, testDimension.id);
           await dimensionTestBase.waitForDimensionPopupVisible(
             page,
-            testDimension.dimensionId
+            testDimension.id,
           );
 
           // Fill the new name
           await dimensionTestBase.fillDimensionNameField(
             page,
-            testDimension.dimensionId,
-            newName
+            testDimension.id,
+            newName,
           );
 
           // Click save
           await dimensionTestBase.clickDimensionSaveButton(
             page,
-            testDimension.dimensionId
+            testDimension.id,
           );
 
           // Wait for the update to complete - check if the name in the cell changes
           const nameElement = page.locator(
-            `[data-testid="dimension-name-${testDimension.dimensionId}"]`
+            `[data-testid="dimension-name-${testDimension.id}"]`,
           );
           await expect(nameElement).toHaveText(newName, { timeout: 10000 });
 
           // The popup should close automatically after the update
           const popup = dimensionTestBase.getDimensionPopup(
             page,
-            testDimension.dimensionId
+            testDimension.id,
           );
           await expect(popup).not.toBeVisible({ timeout: 10000 });
 
           console.log(
-            `✅ Dimension name updated successfully for ${dimensionTypeConfig.name}`
+            `✅ Dimension name updated successfully for ${dimensionTypeConfig.name}`,
           );
         });
 
@@ -289,32 +259,29 @@ test.describe("DimensionCell Component", () => {
           page,
         }) => {
           // Open the popup
-          await dimensionTestBase.clickDimensionCell(
-            page,
-            testDimension.dimensionId
-          );
+          await dimensionTestBase.clickDimensionCell(page, testDimension.id);
           await dimensionTestBase.waitForDimensionPopupVisible(
             page,
-            testDimension.dimensionId
+            testDimension.id,
           );
 
           // Clear the name field
           await dimensionTestBase.fillDimensionNameField(
             page,
-            testDimension.dimensionId,
-            ""
+            testDimension.id,
+            "",
           );
 
           // Click save
           await dimensionTestBase.clickDimensionSaveButton(
             page,
-            testDimension.dimensionId
+            testDimension.id,
           );
 
           // Verify error appears for name field
           const nameField = dimensionTestBase.getDimensionNameField(
             page,
-            testDimension.dimensionId
+            testDimension.id,
           );
           const nameInput = nameField.locator("input");
           await expect(nameInput).toHaveAttribute("aria-invalid", "true");
@@ -322,12 +289,12 @@ test.describe("DimensionCell Component", () => {
           // Verify popup is still open (didn't close due to error)
           const popup = dimensionTestBase.getDimensionPopup(
             page,
-            testDimension.dimensionId
+            testDimension.id,
           );
           await expect(popup).toBeVisible();
 
           console.log(
-            `✅ Error message appears when name is empty for ${dimensionTypeConfig.name}`
+            `✅ Error message appears when name is empty for ${dimensionTypeConfig.name}`,
           );
         });
 
@@ -338,20 +305,17 @@ test.describe("DimensionCell Component", () => {
           const newName = `Changed ${dimensionTypeConfig.name} ${Date.now()}`;
 
           // Open the popup
-          await dimensionTestBase.clickDimensionCell(
-            page,
-            testDimension.dimensionId
-          );
+          await dimensionTestBase.clickDimensionCell(page, testDimension.id);
           await dimensionTestBase.waitForDimensionPopupVisible(
             page,
-            testDimension.dimensionId
+            testDimension.id,
           );
 
           // Change the name but don't save
           await dimensionTestBase.fillDimensionNameField(
             page,
-            testDimension.dimensionId,
-            newName
+            testDimension.id,
+            newName,
           );
 
           // Click away to close popup without saving
@@ -360,18 +324,18 @@ test.describe("DimensionCell Component", () => {
           // Wait for popup to close
           await dimensionTestBase.waitForDimensionPopupHidden(
             page,
-            testDimension.dimensionId
+            testDimension.id,
           );
 
           // Verify the dimension name remains unchanged in the table
           const displayedName = await dimensionTestBase.getDimensionNameInCell(
             page,
-            testDimension.dimensionId
+            testDimension.id,
           );
           expect(displayedName).toBe(originalName);
 
           console.log(
-            `✅ Dimension name unchanged when clicking away for ${dimensionTypeConfig.name}`
+            `✅ Dimension name unchanged when clicking away for ${dimensionTypeConfig.name}`,
           );
         });
 
@@ -379,25 +343,22 @@ test.describe("DimensionCell Component", () => {
           page,
         }) => {
           // Open the popup
-          await dimensionTestBase.clickDimensionCell(
-            page,
-            testDimension.dimensionId
-          );
+          await dimensionTestBase.clickDimensionCell(page, testDimension.id);
           await dimensionTestBase.waitForDimensionPopupVisible(
             page,
-            testDimension.dimensionId
+            testDimension.id,
           );
 
           // Click delete button
           await dimensionTestBase.clickDimensionDeleteButton(
             page,
-            testDimension.dimensionId
+            testDimension.id,
           );
 
           // If it's a confirmation dialog, confirm the deletion
           try {
             const confirmButton = page.locator(
-              `[data-testid="dimension-delete-confirm-${testDimension.dimensionId}"]`
+              `[data-testid="dimension-delete-confirm-${testDimension.id}"]`,
             );
             await confirmButton.waitFor({ state: "visible", timeout: 2000 });
             await confirmButton.click();
@@ -408,21 +369,21 @@ test.describe("DimensionCell Component", () => {
           // Wait for popup to close
           await dimensionTestBase.waitForDimensionPopupHidden(
             page,
-            testDimension.dimensionId
+            testDimension.id,
           );
 
           // Verify the dimension column is removed from the table
           const columnExists = await dimensionTestBase.columnExists(
             page,
-            testDimension.name
+            testDimension.name,
           );
           expect(columnExists).toBe(false);
 
           // Mark dimension as deleted to avoid cleanup issues
-          testDimension.dimensionId = "";
+          testDimension.id = "";
 
           console.log(
-            `✅ Dimension deleted successfully for ${dimensionTypeConfig.name}`
+            `✅ Dimension deleted successfully for ${dimensionTypeConfig.name}`,
           );
         });
       });
@@ -430,7 +391,7 @@ test.describe("DimensionCell Component", () => {
   });
 
   test.describe("Dim Entries Type Dimensions", () => {
-    let testDimension: { dimensionId: string; name: string; teamId: string };
+    let testDimension: { id: string; name: string; teamId: string };
 
     test.beforeEach(async ({ page }) => {
       // Create a test dimension of DIM_ENTRIES type with some entries
@@ -449,7 +410,7 @@ test.describe("DimensionCell Component", () => {
       });
 
       console.log(
-        `Created test dimension: ${testDimension.name} (${testDimension.dimensionId})`
+        `Created test dimension: ${testDimension.name} (${testDimension.id})`,
       );
 
       // Navigate to the workers page for the correct team
@@ -461,16 +422,14 @@ test.describe("DimensionCell Component", () => {
 
     test.afterEach(async () => {
       // Clean up: delete the dimension created for this test
-      if (testDimension?.dimensionId) {
+      if (testDimension?.id) {
         try {
-          await dimensionTestBase.deleteTestDimension(
-            testDimension.dimensionId
-          );
-          console.log(`Deleted test dimension: ${testDimension.dimensionId}`);
+          await dimensionTestBase.deleteTestDimension(testDimension.id);
+          console.log(`Deleted test dimension: ${testDimension.id}`);
         } catch (error) {
           console.warn(
-            `Failed to delete test dimension ${testDimension.dimensionId}:`,
-            error
+            `Failed to delete test dimension ${testDimension.id}:`,
+            error,
           );
         }
       }
@@ -480,38 +439,35 @@ test.describe("DimensionCell Component", () => {
       page,
     }) => {
       // Open the popup
-      await dimensionTestBase.clickDimensionCell(
-        page,
-        testDimension.dimensionId
-      );
+      await dimensionTestBase.clickDimensionCell(page, testDimension.id);
       await dimensionTestBase.waitForDimensionPopupVisible(
         page,
-        testDimension.dimensionId
+        testDimension.id,
       );
 
       // Verify name text field exists
       const nameField = dimensionTestBase.getDimensionNameField(
         page,
-        testDimension.dimensionId
+        testDimension.id,
       );
       await expect(nameField).toBeVisible();
 
       // Verify dimension entries section exists
       const entriesSection = dimensionTestBase.getDimensionEntriesSection(
         page,
-        testDimension.dimensionId
+        testDimension.id,
       );
       await expect(entriesSection).toBeVisible();
 
       // Verify dimension entry items are present
       const entryItems = dimensionTestBase.getDimensionEntryItems(
         page,
-        testDimension.dimensionId
+        testDimension.id,
       );
       await expect(entryItems).toHaveCount(3); // We created 3 entries
 
       console.log(
-        "✅ Name field and dim entries list are present for DIM_ENTRIES type"
+        "✅ Name field and dim entries list are present for DIM_ENTRIES type",
       );
     });
 
@@ -519,19 +475,16 @@ test.describe("DimensionCell Component", () => {
       page,
     }) => {
       // Open the popup
-      await dimensionTestBase.clickDimensionCell(
-        page,
-        testDimension.dimensionId
-      );
+      await dimensionTestBase.clickDimensionCell(page, testDimension.id);
       await dimensionTestBase.waitForDimensionPopupVisible(
         page,
-        testDimension.dimensionId
+        testDimension.id,
       );
 
       // Get the first entry item
       const entryItems = dimensionTestBase.getDimensionEntryItems(
         page,
-        testDimension.dimensionId
+        testDimension.id,
       );
       const firstItem = entryItems.first();
 
@@ -542,14 +495,14 @@ test.describe("DimensionCell Component", () => {
       // Click the edit button for the first entry
       const editButton = dimensionTestBase.getDimensionEntryEditButton(
         page,
-        extractedId
+        extractedId,
       );
       await editButton.click();
 
       // Verify edit field appears
       const editField = dimensionTestBase.getDimensionEntryEditField(
         page,
-        extractedId
+        extractedId,
       );
       await expect(editField).toBeVisible();
 
@@ -558,7 +511,7 @@ test.describe("DimensionCell Component", () => {
         dimensionTestBase.getDimensionEntryConfirmEditButton(page, extractedId);
       const cancelButton = dimensionTestBase.getDimensionEntryCancelEditButton(
         page,
-        extractedId
+        extractedId,
       );
       await expect(confirmButton).toBeVisible();
       await expect(cancelButton).toBeVisible();
@@ -570,19 +523,16 @@ test.describe("DimensionCell Component", () => {
       page,
     }) => {
       // Open the popup
-      await dimensionTestBase.clickDimensionCell(
-        page,
-        testDimension.dimensionId
-      );
+      await dimensionTestBase.clickDimensionCell(page, testDimension.id);
       await dimensionTestBase.waitForDimensionPopupVisible(
         page,
-        testDimension.dimensionId
+        testDimension.id,
       );
 
       // Get the first entry item
       const entryItems = dimensionTestBase.getDimensionEntryItems(
         page,
-        testDimension.dimensionId
+        testDimension.id,
       );
       const firstItem = entryItems.first();
 
@@ -595,14 +545,14 @@ test.describe("DimensionCell Component", () => {
       // Click edit button
       const editButton = dimensionTestBase.getDimensionEntryEditButton(
         page,
-        extractedId
+        extractedId,
       );
       await editButton.click();
 
       // Change the entry name
       const editField = dimensionTestBase.getDimensionEntryEditField(
         page,
-        extractedId
+        extractedId,
       );
       const input = editField.locator("input");
       await input.fill(newEntryName);
@@ -614,7 +564,7 @@ test.describe("DimensionCell Component", () => {
 
       // Verify the entry name is updated
       const entryNameElement = page.locator(
-        `[data-testid="dim-entry-name-${extractedId}"]`
+        `[data-testid="dim-entry-name-${extractedId}"]`,
       );
       await expect(entryNameElement).toHaveText(newEntryName);
 
@@ -623,19 +573,16 @@ test.describe("DimensionCell Component", () => {
 
     test("should cancel edit when clicking cancel button", async ({ page }) => {
       // Open the popup
-      await dimensionTestBase.clickDimensionCell(
-        page,
-        testDimension.dimensionId
-      );
+      await dimensionTestBase.clickDimensionCell(page, testDimension.id);
       await dimensionTestBase.waitForDimensionPopupVisible(
         page,
-        testDimension.dimensionId
+        testDimension.id,
       );
 
       // Get the first entry item and its original name
       const entryItems = dimensionTestBase.getDimensionEntryItems(
         page,
-        testDimension.dimensionId
+        testDimension.id,
       );
       const firstItem = entryItems.first();
 
@@ -645,21 +592,21 @@ test.describe("DimensionCell Component", () => {
 
       // Get original name
       const originalNameElement = page.locator(
-        `[data-testid="dim-entry-name-${extractedId}"]`
+        `[data-testid="dim-entry-name-${extractedId}"]`,
       );
       const originalName = (await originalNameElement.textContent()) || "";
 
       // Click edit button
       const editButton = dimensionTestBase.getDimensionEntryEditButton(
         page,
-        extractedId
+        extractedId,
       );
       await editButton.click();
 
       // Change the entry name
       const editField = dimensionTestBase.getDimensionEntryEditField(
         page,
-        extractedId
+        extractedId,
       );
       const input = editField.locator("input");
       await input.fill("Changed Name");
@@ -667,13 +614,13 @@ test.describe("DimensionCell Component", () => {
       // Click cancel
       const cancelButton = dimensionTestBase.getDimensionEntryCancelEditButton(
         page,
-        extractedId
+        extractedId,
       );
       await cancelButton.click();
 
       // Verify the entry name remains unchanged
       const entryNameElement = page.locator(
-        `[data-testid="dim-entry-name-${extractedId}"]`
+        `[data-testid="dim-entry-name-${extractedId}"]`,
       );
       await expect(entryNameElement).toHaveText(originalName);
 
@@ -684,19 +631,16 @@ test.describe("DimensionCell Component", () => {
       page,
     }) => {
       // Open the popup
-      await dimensionTestBase.clickDimensionCell(
-        page,
-        testDimension.dimensionId
-      );
+      await dimensionTestBase.clickDimensionCell(page, testDimension.id);
       await dimensionTestBase.waitForDimensionPopupVisible(
         page,
-        testDimension.dimensionId
+        testDimension.id,
       );
 
       // Get initial count of entries
       const entryItems = dimensionTestBase.getDimensionEntryItems(
         page,
-        testDimension.dimensionId
+        testDimension.id,
       );
       const initialCount = await entryItems.count();
 
@@ -710,21 +654,21 @@ test.describe("DimensionCell Component", () => {
       // Click delete button
       const deleteButton = dimensionTestBase.getDimensionEntryDeleteButton(
         page,
-        extractedId
+        extractedId,
       );
       await deleteButton.click();
 
       // Verify the entry is removed from the list
       const updatedEntryItems = dimensionTestBase.getDimensionEntryItems(
         page,
-        testDimension.dimensionId
+        testDimension.id,
       );
       await expect(updatedEntryItems).toHaveCount(initialCount - 1);
 
       // Verify the specific entry is no longer present
       const deletedEntry = dimensionTestBase.getDimensionEntryItem(
         page,
-        extractedId
+        extractedId,
       );
       await expect(deletedEntry).not.toBeVisible();
 

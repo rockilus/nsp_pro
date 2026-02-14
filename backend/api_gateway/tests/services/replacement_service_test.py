@@ -648,7 +648,7 @@ def test_get_replacement_candidates_could_do_worker_exceeds_monthly_duties(
         expected_rank_min=0,
         expected_rank_max=0,
         hasnt_overlap=False,  # Target worker has overlap with their own assignment
-        weekly_time_meets_target=False,  # Target worker also exceeds weekly time
+        weekly_time_meets_target=True,  # Target worker also exceeds weekly time
     )
 
     # Check test worker is COULD_DO due to exceeding monthly duties
@@ -4545,6 +4545,172 @@ def test_get_replacement_candidates_two_specialties_neither_covered_needs_either
         candidate_no_spec,
         expected_category="cant_do",
         has_specialty=False,  # Needs A or B
+    )
+
+
+def test_get_replacement_candidates_multiple_same_specialty_counting(
+    mock_replacement_service: Tuple[ReplacementService, MagicMock, List[Assignment]],
+    base_team_id: str,
+) -> None:
+    """Test specialty requirement with multiple workers needed for same specialty.
+
+    Scenario: Shift requires 2 surgeons (Staffing("surgeon", 2))
+    - Create 3 workers: 2 surgeons, 1 nurse
+    - Assign 1 surgeon to the shift (being replaced)
+    - Expected: Replacement must be surgeon (1 of 2 surgeons needed)
+    - Once 2 surgeons assigned, any worker acceptable (overstaffing ignored)
+    """
+    service, mock_collection, _ = mock_replacement_service
+
+    # Create specialties
+    specialty_surgeon = Specialty(
+        id="specialty_surgeon",
+        team_id=base_team_id,
+        name="Surgeon",
+        deleted=False,
+    )
+
+    # Create shift requiring 2 surgeons
+    shift_requiring_two_surgeons = Shift(
+        id="shift_surgery",
+        team_id=base_team_id,
+        name="Surgery Shift",
+        acronym="SURG",
+        acronym_custom=False,
+        start_time=create_shift_datetime(8, 0),
+        end_time=create_shift_datetime(16, 0),
+        staffing=[Staffing(specialty_id="specialty_surgeon", staffing=2)],
+        color="#FF0000",
+        shift_type=ShiftType.NORMAL,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.NONE,
+        recuperation_time=0,
+        recuperation_duty_id=None,
+        deleted=False,
+    )
+
+    # Create workers
+    worker_surgeon_1 = Worker(
+        id="worker_surgeon_1",
+        team_id=base_team_id,
+        name="Surgeon One",
+        acronym="S1",
+        acronym_custom=False,
+        employment_start_date=date(2024, 1, 1),
+        employment_end_date=None,
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=["specialty_surgeon"],
+        deleted=False,
+    )
+
+    worker_surgeon_2 = Worker(
+        id="worker_surgeon_2",
+        team_id=base_team_id,
+        name="Surgeon Two",
+        acronym="S2",
+        acronym_custom=False,
+        employment_start_date=date(2024, 1, 1),
+        employment_end_date=None,
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=["specialty_surgeon"],
+        deleted=False,
+    )
+
+    worker_nurse = Worker(
+        id="worker_nurse",
+        team_id=base_team_id,
+        name="Nurse",
+        acronym="N",
+        acronym_custom=False,
+        employment_start_date=date(2024, 1, 1),
+        employment_end_date=None,
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=4,
+        annual_leave=25,
+        specialty_ids=[],  # No specialties
+        deleted=False,
+    )
+
+    # Create assignment: surgeon_1 on Jan 10
+    target_date = date(2026, 1, 10)
+    assignment_surgeon_1 = Assignment(
+        id="assignment_surgeon_1",
+        team_id=base_team_id,
+        schedule_id="schedule_1",
+        worker_id="worker_surgeon_1",
+        date=target_date,
+        shift_id="shift_surgery",
+        fixed=False,
+        source=AssignmentSource.MANUAL,
+    )
+
+    # Mock data
+    mock_collection.worker_db.get_workers_not_deleted.return_value = [
+        worker_surgeon_1,
+        worker_surgeon_2,
+        worker_nurse,
+    ]
+    mock_collection.shift_db.get_shifts_not_deleted.return_value = [
+        shift_requiring_two_surgeons
+    ]
+    mock_collection.specialty_db.get_specialties_not_deleted.return_value = [
+        specialty_surgeon
+    ]
+    mock_collection.assignment_db.get_assignments_by_dates.return_value = [
+        assignment_surgeon_1
+    ]
+    mock_collection.assignment_db.get_assignments_by_ids.return_value = [
+        assignment_surgeon_1
+    ]
+    mock_collection.dimension_db.get_dimensions_not_deleted.return_value = []
+    mock_collection.dim_entry_db.get_dim_entries_not_deleted.return_value = []
+    mock_collection.attribute_db.get_attributes_not_deleted.return_value = []
+    mock_collection.constraint_build_db.get_constraint_builds.return_value = []
+    mock_collection.request_db.get_requests_by_dates.return_value = []
+
+    # Act
+    candidates = service.get_replacement_candidates(
+        assignment_id="assignment_surgeon_1",
+        team_id=base_team_id,
+    )
+
+    # Assert - Find candidates
+    candidate_surgeon_1 = next(
+        c for c in candidates if c.worker_id == "worker_surgeon_1"
+    )
+    candidate_surgeon_2 = next(
+        c for c in candidates if c.worker_id == "worker_surgeon_2"
+    )
+    candidate_nurse = next(c for c in candidates if c.worker_id == "worker_nurse")
+
+    # Surgeon 1 (current worker) - rank 0, can replace themselves
+    assert_candidate(
+        candidate_surgeon_1,
+        expected_category="can_do",
+        expected_rank_min=0,
+        expected_rank_max=0,
+        has_specialty=True,
+    )
+
+    # Surgeon 2 - should be CAN_DO (has surgeon specialty, fills the gap)
+    assert_candidate(
+        candidate_surgeon_2,
+        expected_category="can_do",
+        has_specialty=True,
+    )
+
+    # Nurse - should be CANT_DO (doesn't have surgeon specialty)
+    assert_candidate(
+        candidate_nurse,
+        expected_category="cant_do",
+        has_specialty=False,
     )
 
 

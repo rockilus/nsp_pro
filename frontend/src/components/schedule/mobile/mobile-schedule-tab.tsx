@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import isoWeek from "dayjs/plugin/isoWeek";
@@ -12,18 +12,25 @@ import Alert from "@mui/material/Alert";
 import Typography from "@mui/material/Typography";
 // Hooks
 import { useIsLandscape } from "@/hooks/useIsMobile";
-import {
-  useGetScheduleAssignmentsData,
-  useGetScheduleAssignmentsDataNoSolver,
-} from "../../../hooks/useSchedule";
+import { useGetScheduleEntities } from "../../../hooks/useSchedule";
+import { useAssignmentsByPeriod } from "../../../app/lib/hooks/useAssignments";
 import { useScheduleViewSettings } from "../../../app/lib/hooks/useScheduleViewSettings";
 import { getDefaultScheduleViewSettings } from "../../../app/lib/utils/scheduleViewSettingsUtils";
 import { computePeriodEndDate } from "../../../app/lib/utils/scheduleViewSettingsUtils";
+import { calculateMobileBufferMonths } from "../../../app/lib/utils/assignmentBufferUtils";
+import {
+  useAddAssignmentAndRecurrence,
+  useUpdateAssignmentAndRecurrence,
+  useDeleteAssignment,
+} from "../../../hooks/useAssignment";
 // Types
 import { TeamWithMembership, TeamMembershipRole } from "@/types/team";
 import { ShiftRestType } from "@/types/shift";
+import { AssignmentT, AssignmentsRecurrencesResultT } from "@/types/assignment";
+import { RecurrenceRuleT, RecurrenceUpdateScope } from "@/types/recurrence";
 // Local components
-import AssignmentDialog from "../assignment-dialog";
+import ScheduleItemDialog from "../dialogs/schedule-item-dialog";
+import { ScheduleItemType, DialogMode } from "../dialogs/schedule-item-types";
 import MobileNavAppBar from "../../app-bar/mobile-nav-app-bar";
 import MobileScheduleNav from "./mobile-schedule-nav";
 import MobileScheduleSettings from "./mobile-schedule-settings";
@@ -51,9 +58,12 @@ export default function MobileScheduleTab({
   const [scheduleViewSettings, updateScheduleViewSettings] =
     useScheduleViewSettings(teamWithMembership.team.id, defaultSettings);
 
-  const getScheduleAssignmentsData = useGetScheduleAssignmentsData();
-  const getScheduleAssignmentsDataNoSolver =
-    useGetScheduleAssignmentsDataNoSolver();
+  const getScheduleEntities = useGetScheduleEntities();
+
+  // Assignment mutation hooks
+  const addAssignmentAndRecurrence = useAddAssignmentAndRecurrence();
+  const updateAssignmentAndRecurrence = useUpdateAssignmentAndRecurrence();
+  const deleteAssignment = useDeleteAssignment();
 
   // Fetch user's worker for role-based checks (only for members)
   const {
@@ -71,8 +81,39 @@ export default function MobileScheduleTab({
     !isLoadingUserWorker &&
     userWorker === null;
 
+  // Calculate buffer range for mobile (extended to cover ±8 weeks visible range)
+  const bufferRange = useMemo(() => {
+    return calculateMobileBufferMonths(
+      scheduleViewSettings.periodStartDate,
+      8, // ±8 weeks radius
+    );
+  }, [scheduleViewSettings.periodStartDate]);
+
+  // Determine if user should see campaign assignments (owners/leaders only)
+  const includeCampaign =
+    teamWithMembership.membership.role !== TeamMembershipRole.MEMBER;
+
+  // React Query hook for assignments with smart buffering
+  const {
+    assignments,
+    recurrences,
+    isLoading: isLoadingAssignments,
+    isFetching: isFetchingAssignments,
+    error: assignmentsError,
+  } = useAssignmentsByPeriod(
+    teamWithMembership.team.id,
+    bufferRange.start,
+    bufferRange.end,
+    includeCampaign,
+    scheduleViewSettings.mobileSelectedView === "worker"
+      ? scheduleViewSettings.mobileSelectedWorkerId || undefined
+      : undefined, // Only filter by worker in worker view; team view shows all
+    {
+      enabled: !memberHasNoWorker, // Don't fetch if member has no worker
+    },
+  );
+
   const [isLoading, setIsLoading] = useState(true);
-  const [assignments, setAssignments] = useState<any[]>([]);
   const [workers, setWorkers] = useState<any[]>([]);
   const [shifts, setShifts] = useState<any[]>([]);
 
@@ -101,66 +142,32 @@ export default function MobileScheduleTab({
           return;
         }
 
-        // Determine if user should see campaign assignments (owners/leaders only)
-        const includeCampaign =
-          teamWithMembership.membership.role !== TeamMembershipRole.MEMBER;
+        // Fetch entities (shifts and workers) - assignments now loaded via React Query
+        const { workers, shifts } = await getScheduleEntities(
+          teamWithMembership.team.id,
+        );
+        if (!mounted) return;
+        setWorkers(workers);
+        setShifts(shifts);
 
-        if (teamWithMembership.team.useSolver) {
-          const { assignments, workers, shifts } =
-            await getScheduleAssignmentsData(
-              teamWithMembership.team.id,
-              includeCampaign,
-            );
-          if (!mounted) return;
-          setAssignments(assignments);
-          setWorkers(workers);
-          setShifts(shifts);
-
-          // Set default worker if none selected or selected worker doesn't exist
-          if (
-            workers.length > 0 &&
-            (!scheduleViewSettings.mobileSelectedWorkerId ||
-              !workers.find(
-                (w: any) =>
-                  w.id === scheduleViewSettings.mobileSelectedWorkerId,
-              ))
-          ) {
-            // If member, try to preselect user's worker
-            const userId =
-              (teamWithMembership as any).membership?.userId || null;
-            const memberWorker = userId
-              ? workers.find((w: any) => w.userId === userId)
-              : null;
-            const defaultWorkerId =
-              (memberWorker && memberWorker.id) || workers[0].id;
-            updateScheduleViewSettings({
-              mobileSelectedWorkerId: defaultWorkerId,
-            });
-          }
-        } else {
-          const { assignments, workers, shifts } =
-            await getScheduleAssignmentsDataNoSolver(
-              teamWithMembership.team.id,
-              includeCampaign,
-            );
-          if (!mounted) return;
-          setAssignments(assignments);
-          setWorkers(workers);
-          setShifts(shifts);
-
-          // Set default worker if none selected or selected worker doesn't exist
-          if (
-            workers.length > 0 &&
-            (!scheduleViewSettings.mobileSelectedWorkerId ||
-              !workers.find(
-                (w: any) =>
-                  w.id === scheduleViewSettings.mobileSelectedWorkerId,
-              ))
-          ) {
-            updateScheduleViewSettings({
-              mobileSelectedWorkerId: workers[0].id,
-            });
-          }
+        // Set default worker if none selected or selected worker doesn't exist
+        if (
+          workers.length > 0 &&
+          (!scheduleViewSettings.mobileSelectedWorkerId ||
+            !workers.find(
+              (w: any) => w.id === scheduleViewSettings.mobileSelectedWorkerId,
+            ))
+        ) {
+          // If member, try to preselect user's worker
+          const userId = (teamWithMembership as any).membership?.userId || null;
+          const memberWorker = userId
+            ? workers.find((w: any) => w.userId === userId)
+            : null;
+          const defaultWorkerId =
+            (memberWorker && memberWorker.id) || workers[0].id;
+          updateScheduleViewSettings({
+            mobileSelectedWorkerId: defaultWorkerId,
+          });
         }
       } catch (err) {
         console.error(err);
@@ -178,7 +185,6 @@ export default function MobileScheduleTab({
     scheduleViewSettings.mobileSelectedWorkerId,
     isLoadingUserWorker,
     userWorker,
-    t,
   ]);
 
   const periodStart = scheduleViewSettings.periodStartDate;
@@ -232,7 +238,7 @@ export default function MobileScheduleTab({
       if (a.workerId !== scheduleViewSettings.mobileSelectedWorkerId) continue;
 
       const shift = shifts.find((s: any) => s.id === a.shiftId);
-      if (shift.restType === ShiftRestType.RECUPERATION) continue; // skip recuperation shifts
+      if (!shift || shift.restType === ShiftRestType.RECUPERATION) continue; // skip if shift not found or recuperation
 
       const key = dayjs(a.date).utc().format("YYYY-MM-DD");
       const arr = map.get(key) || [];
@@ -260,6 +266,70 @@ export default function MobileScheduleTab({
       scrollToTodayRef.current();
     }
   };
+
+  //////////////////////////
+  // Assignment Actions
+  //////////////////////////
+
+  const handleCreateAssignment = useCallback(
+    async (
+      assignment: AssignmentT,
+      recurrence: RecurrenceRuleT | null = null,
+    ) => {
+      await addAssignmentAndRecurrence(assignment, recurrence);
+      // React Query cache invalidation in the mutation hook handles updates automatically
+    },
+    [addAssignmentAndRecurrence],
+  );
+
+  const handleUpdateAssignment = useCallback(
+    async (
+      assignment: AssignmentT,
+      recurrence: RecurrenceRuleT | null = null,
+      recurrenceUpdateScope: RecurrenceUpdateScope | null = null,
+    ) => {
+      await updateAssignmentAndRecurrence(
+        assignment,
+        teamWithMembership.team.id,
+        recurrence,
+        recurrenceUpdateScope,
+      );
+      // React Query cache invalidation in the mutation hook handles updates automatically
+    },
+    [updateAssignmentAndRecurrence, teamWithMembership.team.id],
+  );
+
+  const handleDeleteAssignment = useCallback(
+    async (
+      assignmentId: string,
+      recurrenceId: string | null = null,
+      recurrenceUpdateScope: RecurrenceUpdateScope | null = null,
+    ) => {
+      await deleteAssignment(
+        assignmentId,
+        teamWithMembership.team.id,
+        recurrenceId,
+        recurrenceUpdateScope,
+      );
+      // React Query cache invalidation in the mutation hook handles updates automatically
+    },
+    [deleteAssignment, teamWithMembership.team.id],
+  );
+
+  // Wrapped handler that checks role before opening dialog
+  const handleAssignmentClick = useCallback(
+    (assignment: any) => {
+      // Only allow owners to edit assignments
+      if (teamWithMembership.membership.role === TeamMembershipRole.OWNER) {
+        setActiveAssignment(assignment);
+        setSheetOpen(true);
+      }
+    },
+    [teamWithMembership.membership.role],
+  );
+
+  const canEdit =
+    teamWithMembership.membership.role === TeamMembershipRole.OWNER;
 
   // Build mobile navigation content that fills space between hamburger and avatar
   const scheduleMobileNav = (
@@ -329,8 +399,8 @@ export default function MobileScheduleTab({
             }
             today={today}
             isLandscape={isLandscape}
-            setActiveAssignment={setActiveAssignment}
-            setSheetOpen={setSheetOpen}
+            onAssignmentClick={handleAssignmentClick}
+            canEdit={canEdit}
             periodStart={periodStart}
             scheduleViewSettings={scheduleViewSettings}
             updateScheduleViewSettings={updateScheduleViewSettings}
@@ -348,8 +418,8 @@ export default function MobileScheduleTab({
             assignments={assignments}
             workers={workers}
             shifts={shifts}
-            setActiveAssignment={setActiveAssignment}
-            setSheetOpen={setSheetOpen}
+            onAssignmentClick={handleAssignmentClick}
+            canEdit={canEdit}
             onVisibleMonthChange={setVisibleMonth}
             onScrollToTodayReady={(handler) => {
               scrollToTodayRef.current = handler;
@@ -375,20 +445,48 @@ export default function MobileScheduleTab({
           </Fab>
         </RoleBased>
 
-        <AssignmentDialog
+        <ScheduleItemDialog
+          lng={lng}
           open={sheetOpen}
           onClose={() => setSheetOpen(false)}
-          assignment={activeAssignment}
-          shift={
+          mode={activeAssignment ? DialogMode.EDIT : DialogMode.CREATE}
+          selectedType={ScheduleItemType.ASSIGNMENT}
+          dialogData={
             activeAssignment
-              ? shifts.find((s) => s.id === activeAssignment.shiftId)
-              : null
+              ? {
+                  assignmentData: {
+                    assignment: activeAssignment,
+                    worker:
+                      workers.find((w) => w.id === activeAssignment.workerId) ||
+                      null,
+                    shift:
+                      shifts.find((s) => s.id === activeAssignment.shiftId) ||
+                      null,
+                    breaches: [],
+                    requests: [],
+                    recurrence: null,
+                  },
+                }
+              : {
+                  scheduleId: null,
+                  workerId: null,
+                  shiftId: null,
+                  date: null,
+                }
           }
-          worker={
-            activeAssignment
-              ? workers.find((w) => w.id === activeAssignment.workerId)
-              : null
-          }
+          teamId={teamWithMembership.team.id}
+          scheduleId={null}
+          workers={workers}
+          shifts={shifts}
+          schedules={[]}
+          specialties={[]}
+          shiftOptions={[]}
+          userWorkerId={null}
+          userTeamRole={teamWithMembership.membership.role}
+          useSolver={teamWithMembership.team.useSolver}
+          handleCreateAssignment={handleCreateAssignment}
+          handleUpdateAssignment={handleUpdateAssignment}
+          handleDeleteAssignment={handleDeleteAssignment}
         />
       </Box>
 

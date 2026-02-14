@@ -8,7 +8,7 @@ import {
 const dimensionTestBase = new DimensionTestBase();
 
 test.describe("Workers Page - Dimension Integration", () => {
-  let testWorker: { workerId: string; name: string; teamId: string };
+  let testWorker: { id: string; name: string; teamId: string };
 
   test.beforeAll(async () => {
     // Setup the test environment
@@ -27,9 +27,7 @@ test.describe("Workers Page - Dimension Integration", () => {
       annualLeave: 25,
     });
 
-    console.log(
-      `Created test worker: ${testWorker.name} (${testWorker.workerId})`
-    );
+    console.log(`Created test worker: ${testWorker.name} (${testWorker.id})`);
 
     // Navigate to the workers page
     await dimensionTestBase.navigateToWorkersPage(page);
@@ -44,15 +42,12 @@ test.describe("Workers Page - Dimension Integration", () => {
 
   test.afterEach(async () => {
     // Clean up: delete the worker created for this test
-    if (testWorker?.workerId) {
+    if (testWorker?.id) {
       try {
-        await dimensionTestBase.deleteTestWorker(testWorker.workerId);
-        console.log(`Deleted test worker: ${testWorker.workerId}`);
+        await dimensionTestBase.deleteTestWorker(testWorker.id);
+        console.log(`Deleted test worker: ${testWorker.id}`);
       } catch (error) {
-        console.warn(
-          `Failed to delete test worker ${testWorker.workerId}:`,
-          error
-        );
+        console.warn(`Failed to delete test worker ${testWorker.id}:`, error);
       }
     }
   });
@@ -78,18 +73,18 @@ test.describe("Workers Page - Dimension Integration", () => {
     // Verify the new column header exists in the workers table
     const columnExists = await dimensionTestBase.columnExists(
       page,
-      propertyName
+      propertyName,
     );
     expect(columnExists).toBe(true);
 
     // Verify it has the correct data-testid for worker dimension
     const headerCell = page.locator(
-      `[data-testid*="worker-dimension-"][data-testid*="header-cell"]`
+      `[data-testid*="worker-dimension-"][data-testid*="header-cell"]`,
     );
     await expect(headerCell).toBeVisible();
 
     console.log(
-      `✅ Worker dimension '${propertyName}' added successfully to workers table`
+      `✅ Worker dimension '${propertyName}' added successfully to workers table`,
     );
   });
 
@@ -114,12 +109,12 @@ test.describe("Workers Page - Dimension Integration", () => {
     await dimensionTestBase.waitForNewColumn(page, propertyName);
     const columnExists = await dimensionTestBase.columnExists(
       page,
-      propertyName
+      propertyName,
     );
     expect(columnExists).toBe(true);
 
     console.log(
-      `✅ Worker-specific bool dimension '${propertyName}' created successfully`
+      `✅ Worker-specific bool dimension '${propertyName}' created successfully`,
     );
   });
 
@@ -146,16 +141,16 @@ test.describe("Workers Page - Dimension Integration", () => {
       // Check if the shift dimension appears in the link dimension list
       const isInLinkList = await dimensionTestBase.isDimensionInLinkList(
         page,
-        shiftDimension.name
+        shiftDimension.name,
       );
       expect(isInLinkList).toBe(true);
 
       console.log(
-        "✅ Shift dimension of type bool appears in link dimension list"
+        "✅ Shift dimension of type bool appears in link dimension list",
       );
 
       // Clean up
-      await dimensionTestBase.deleteTestDimension(shiftDimension.dimensionId);
+      await dimensionTestBase.deleteTestDimension(shiftDimension.id);
     });
 
     test("should show shift dimension of type dim entries in link dimension list", async ({
@@ -183,16 +178,16 @@ test.describe("Workers Page - Dimension Integration", () => {
       // Check if the shift dimension appears in the link dimension list
       const isInLinkList = await dimensionTestBase.isDimensionInLinkList(
         page,
-        shiftDimension.name
+        shiftDimension.name,
       );
       expect(isInLinkList).toBe(true);
 
       console.log(
-        "✅ Shift dimension of type dim entries appears in link dimension list"
+        "✅ Shift dimension of type dim entries appears in link dimension list",
       );
 
       // Clean up
-      await dimensionTestBase.deleteTestDimension(shiftDimension.dimensionId);
+      await dimensionTestBase.deleteTestDimension(shiftDimension.id);
     });
 
     test("should not show shift dimensions of type text and int in link dimension list", async ({
@@ -222,24 +217,24 @@ test.describe("Workers Page - Dimension Integration", () => {
       // Check that text dimension does not appear in link list
       const textIsInLinkList = await dimensionTestBase.isDimensionInLinkList(
         page,
-        textDimension.name
+        textDimension.name,
       );
       expect(textIsInLinkList).toBe(false);
 
       // Check that int dimension does not appear in link list
       const intIsInLinkList = await dimensionTestBase.isDimensionInLinkList(
         page,
-        intDimension.name
+        intDimension.name,
       );
       expect(intIsInLinkList).toBe(false);
 
       console.log(
-        "✅ Shift dimensions of type text and int do not appear in link dimension list"
+        "✅ Shift dimensions of type text and int do not appear in link dimension list",
       );
 
       // Clean up
-      await dimensionTestBase.deleteTestDimension(textDimension.dimensionId);
-      await dimensionTestBase.deleteTestDimension(intDimension.dimensionId);
+      await dimensionTestBase.deleteTestDimension(textDimension.id);
+      await dimensionTestBase.deleteTestDimension(intDimension.id);
     });
 
     test("should create same dimension for worker tab when clicking on shift dimension in link list", async ({
@@ -263,7 +258,7 @@ test.describe("Workers Page - Dimension Integration", () => {
       // Verify the dimension appears in link list
       const isInLinkList = await dimensionTestBase.isDimensionInLinkList(
         page,
-        shiftDimension.name
+        shiftDimension.name,
       );
       expect(isInLinkList).toBe(true);
 
@@ -273,7 +268,7 @@ test.describe("Workers Page - Dimension Integration", () => {
       // Verify it becomes selected (add button appears)
       const isSelected = await dimensionTestBase.isDimensionSelected(
         page,
-        shiftDimension.name
+        shiftDimension.name,
       );
       expect(isSelected).toBe(true);
 
@@ -287,16 +282,16 @@ test.describe("Workers Page - Dimension Integration", () => {
       await dimensionTestBase.waitForNewColumn(page, shiftDimension.name);
       const columnExists = await dimensionTestBase.columnExists(
         page,
-        shiftDimension.name
+        shiftDimension.name,
       );
       expect(columnExists).toBe(true);
 
       console.log(
-        "✅ Clicking on shift dimension in link list creates same dimension for worker tab"
+        "✅ Clicking on shift dimension in link list creates same dimension for worker tab",
       );
 
       // Clean up
-      await dimensionTestBase.deleteTestDimension(shiftDimension.dimensionId);
+      await dimensionTestBase.deleteTestDimension(shiftDimension.id);
     });
   });
 });

@@ -12,8 +12,8 @@ type Props = {
   periodDates: any[];
   shifts: any[];
   today: any;
-  setActiveAssignment: (a: any) => void;
-  setSheetOpen: (v: boolean) => void;
+  onAssignmentClick: (a: any) => void;
+  canEdit: boolean;
   onScroll?: () => void;
   lng: string;
 };
@@ -26,8 +26,8 @@ export default function PortraitScheduleList({
   periodDates,
   shifts,
   today,
-  setActiveAssignment,
-  setSheetOpen,
+  onAssignmentClick,
+  canEdit,
   onScroll,
   lng,
 }: Props) {
@@ -52,7 +52,7 @@ export default function PortraitScheduleList({
         }
 
         const weekItems = weekDates.flatMap(
-          (d) => assignmentsByDate.get(d.utc().format("YYYY-MM-DD")) || []
+          (d) => assignmentsByDate.get(d.utc().format("YYYY-MM-DD")) || [],
         );
         // Show week if it has items OR if it contains today's date
         const weekContainsToday = weekDates.some((d) => d.isSame(today, "day"));
@@ -72,7 +72,7 @@ export default function PortraitScheduleList({
                 week.start.year() === week.end.year()
                   ? `${week.start.format("MMMM D")} - ${week.end.format("D")}`
                   : `${week.start.format("MMMM D")} - ${week.end.format(
-                      "MMMM D"
+                      "MMMM D",
                     )}`}
               </Typography>
             </Box>
@@ -193,10 +193,13 @@ export default function PortraitScheduleList({
                         <AssignmentListItem
                           assignment={a}
                           shift={shifts.find((s: any) => s.id === a.shiftId)}
-                          onClick={() => {
-                            setActiveAssignment(a);
-                            setSheetOpen(true);
-                          }}
+                          onClick={
+                            canEdit
+                              ? () => {
+                                  onAssignmentClick(a);
+                                }
+                              : undefined
+                          }
                         />
                       </Box>
                     </Box>

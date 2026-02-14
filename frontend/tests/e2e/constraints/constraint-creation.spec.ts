@@ -20,7 +20,7 @@ test.describe("Constraint Creation", () => {
       testInfo.title
     }-${randomUUID()}`;
     console.log(
-      `[Test Run ${testRunId}] Starting constraint creation test setup`
+      `[Test Run ${testRunId}] Starting constraint creation test setup`,
     );
 
     // Create a new ConstraintTestBase instance for this test run
@@ -33,7 +33,7 @@ test.describe("Constraint Creation", () => {
     // Setup the common constraint test environment (includes workers and shifts)
     await constraintTestBase.setupConstraintTests(
       testInfo.workerIndex,
-      testRunId
+      testRunId,
     );
 
     // Navigate to the constraints page
@@ -70,7 +70,7 @@ test.describe("Constraint Creation", () => {
 
     if (!constraintTestBase) {
       console.warn(
-        `[Test Run ${testRunId}] No test base found - skipping cleanup`
+        `[Test Run ${testRunId}] No test base found - skipping cleanup`,
       );
       return;
     }
@@ -84,7 +84,7 @@ test.describe("Constraint Creation", () => {
     } catch (error) {
       console.warn(
         `[Test Run ${testRunId}] Failed to cleanup test data:`,
-        error
+        error,
       );
     }
 
@@ -183,7 +183,7 @@ test.describe("Constraint Creation", () => {
 
     // Look for placeholders (clickable constraint blocks)
     const placeholders = page.locator(
-      '[data-testid^="constraint-block-placeholder-"]'
+      '[data-testid^="constraint-block-placeholder-"]',
     );
     const placeholderCount = await placeholders.count();
 
@@ -212,7 +212,7 @@ test.describe("Constraint Creation", () => {
         if (await dialog.isVisible({ timeout: 1000 })) {
           dialogFound = true;
           console.log(
-            `✅ Selection dialog opened for placeholder: "${placeholderText}" using selector: ${selector}`
+            `✅ Selection dialog opened for placeholder: "${placeholderText}" using selector: ${selector}`,
           );
           break;
         }
@@ -220,7 +220,7 @@ test.describe("Constraint Creation", () => {
 
       if (!dialogFound) {
         console.log(
-          `ℹ️ No selection dialog found for placeholder: "${placeholderText}"`
+          `ℹ️ No selection dialog found for placeholder: "${placeholderText}"`,
         );
         // This might be expected for some placeholder types
       }
@@ -252,7 +252,7 @@ test.describe("Constraint Creation", () => {
 
     if (hasErrors) {
       const errorElements = page.locator(
-        '[data-testid*="constraint-block-error"], .Mui-error'
+        '[data-testid*="constraint-block-error"], .Mui-error',
       );
       const errorCount = await errorElements.count();
 
@@ -267,19 +267,19 @@ test.describe("Constraint Creation", () => {
             el.classList.contains("error") ||
             el.closest(".error") !== null ||
             window.getComputedStyle(el).color.includes("red") ||
-            window.getComputedStyle(el).borderColor.includes("red")
+            window.getComputedStyle(el).borderColor.includes("red"),
         );
 
         expect(hasErrorClass).toBeTruthy();
       }
 
       console.log(
-        `✅ Validation errors displayed for ${errorCount} incomplete fields`
+        `✅ Validation errors displayed for ${errorCount} incomplete fields`,
       );
     } else {
       // Check for placeholder errors (red styling on placeholders)
       const placeholders = page.locator(
-        '[data-testid^="constraint-block-placeholder-"]'
+        '[data-testid^="constraint-block-placeholder-"]',
       );
       const placeholderCount = await placeholders.count();
 
@@ -292,7 +292,7 @@ test.describe("Constraint Creation", () => {
             (el) =>
               el.classList.contains("error") ||
               window.getComputedStyle(el).color.includes("red") ||
-              window.getComputedStyle(el).borderColor.includes("red")
+              window.getComputedStyle(el).borderColor.includes("red"),
           );
 
           if (hasErrorStyling) {
@@ -303,7 +303,7 @@ test.describe("Constraint Creation", () => {
 
         expect(foundErrorStyling).toBeTruthy();
         console.log(
-          "✅ Validation error styling applied to incomplete placeholders"
+          "✅ Validation error styling applied to incomplete placeholders",
         );
       }
     }
@@ -329,7 +329,7 @@ test.describe("Constraint Creation", () => {
 
     // Get the template text for verification later
     const selectedTemplate = page.locator(
-      '[data-testid^="template-item-"].Mui-selected'
+      '[data-testid^="template-item-"].Mui-selected',
     );
     const templateText = await selectedTemplate.textContent();
     console.log(`[Test ${testRunId}] Selected template: "${templateText}"`);
@@ -349,7 +349,7 @@ test.describe("Constraint Creation", () => {
 
     console.log(`[Test ${testRunId}] Step 1: Fill WORKER block (index 0)`);
     const workerBlock = page.locator(
-      '[data-testid^="shift-worker-option-block-4-"]'
+      '[data-testid^="shift-worker-option-block-4-"]',
     );
     await expect(workerBlock.first()).toBeVisible();
     await workerBlock.first().click();
@@ -357,13 +357,13 @@ test.describe("Constraint Creation", () => {
     // Wait for the shift-worker option dialog/popover to open
     // Look for any shift-worker option to confirm the list is visible
     const anyWorkerOption = page.locator(
-      '[data-testid^="swo-option-Workers-"]'
+      '[data-testid^="swo-option-Workers-"]',
     );
     await expect(anyWorkerOption.first()).toBeVisible({ timeout: 10000 });
 
     // Now look for our specific worker
     const workerOption = page.locator(
-      `[data-testid="swo-option-Workers-${testWorker.workerId}-false"]`
+      `[data-testid="swo-option-Workers-${testWorker.id}-false"]`,
     );
     await expect(workerOption).toBeVisible({ timeout: 5000 });
     await workerOption.click();
@@ -379,7 +379,7 @@ test.describe("Constraint Creation", () => {
     await operatorBlock.first().click();
 
     const atLeastOption = page.locator(
-      '[data-testid="string-option-at-least"]'
+      '[data-testid="string-option-at-least"]',
     );
     await expect(atLeastOption).toBeVisible();
     await atLeastOption.click();
@@ -403,13 +403,13 @@ test.describe("Constraint Creation", () => {
 
     console.log("Step 4: Fill SHIFT block (index 4)");
     const shiftBlock = page.locator(
-      '[data-testid^="shift-worker-option-block-3-"]'
+      '[data-testid^="shift-worker-option-block-3-"]',
     );
     await expect(shiftBlock.first()).toBeVisible();
     await shiftBlock.first().click();
 
     const shiftOption = page.locator(
-      `[data-testid="swo-option-Shifts-${testShift.id}-false"]`
+      `[data-testid="swo-option-Shifts-${testShift.id}-false"]`,
     );
     await expect(shiftOption).toBeVisible({ timeout: 5000 });
     await shiftOption.click();
@@ -445,7 +445,7 @@ test.describe("Constraint Creation", () => {
 
     console.log("Step 6: Verify no validation errors");
     const validationErrors = page.locator(
-      '[data-testid*="constraint-block-error"], .Mui-error'
+      '[data-testid*="constraint-block-error"], .Mui-error',
     );
     const errorCount = await validationErrors.count();
     console.log(`Validation errors: ${errorCount}`);
@@ -501,7 +501,7 @@ test.describe("Constraint Creation", () => {
     }
 
     console.log(
-      `[Test ${testRunId}] ✅ Constraint creation test completed successfully!`
+      `[Test ${testRunId}] ✅ Constraint creation test completed successfully!`,
     );
   });
 
@@ -521,7 +521,7 @@ test.describe("Constraint Creation", () => {
 
     // Look for shift-worker option placeholders specifically
     const placeholders = page.locator(
-      '[data-testid^="constraint-block-placeholder-"]'
+      '[data-testid^="constraint-block-placeholder-"]',
     );
     const placeholderCount = await placeholders.count();
 
@@ -582,7 +582,7 @@ test.describe("Constraint Creation", () => {
             // Try alternative confirm buttons
             const altConfirmButton = page
               .locator(
-                'button:has-text("OK"), button:has-text("Apply"), button:has-text("Save")'
+                'button:has-text("OK"), button:has-text("Apply"), button:has-text("Save")',
               )
               .first();
             if (await altConfirmButton.isVisible({ timeout: 1000 })) {
@@ -596,7 +596,7 @@ test.describe("Constraint Creation", () => {
       } catch (error) {
         console.log(
           `Could not interact with placeholder ${i}:`,
-          (error as Error).message
+          (error as Error).message,
         );
       }
     }
@@ -624,7 +624,7 @@ test.describe("Constraint Creation", () => {
 
     // Look for shift-worker option placeholders
     const placeholders = page.locator(
-      '[data-testid^="constraint-block-placeholder-"]'
+      '[data-testid^="constraint-block-placeholder-"]',
     );
     const placeholderCount = await placeholders.count();
 
@@ -674,13 +674,13 @@ test.describe("Constraint Creation", () => {
             // Try alternative confirm buttons
             const altConfirmButton = page
               .locator(
-                'button:has-text("OK"), button:has-text("Apply"), button:has-text("Save")'
+                'button:has-text("OK"), button:has-text("Apply"), button:has-text("Save")',
               )
               .first();
             if (await altConfirmButton.isVisible({ timeout: 1000 })) {
               await altConfirmButton.click();
               console.log(
-                "✅ Confirmed multiple selections with alternative button"
+                "✅ Confirmed multiple selections with alternative button",
               );
             }
           }
@@ -690,7 +690,7 @@ test.describe("Constraint Creation", () => {
       } catch (error) {
         console.log(
           `Could not test multiple selection on placeholder ${i}:`,
-          (error as Error).message
+          (error as Error).message,
         );
       }
     }
@@ -715,7 +715,7 @@ test.describe("Constraint Creation", () => {
     // Find shift blocks (blocks with BlockNameOptions.SHIFT = 3)
     // The data-testid follows pattern: shift-worker-option-block-{blockName}-{index}
     const shiftBlocks = page.locator(
-      '[data-testid^="shift-worker-option-block-3-"]'
+      '[data-testid^="shift-worker-option-block-3-"]',
     );
     const shiftBlockCount = await shiftBlocks.count();
 
@@ -733,7 +733,7 @@ test.describe("Constraint Creation", () => {
     // Step 1: Check that the placeholder is displayed in the shift block
     console.log("Step 1: Checking placeholder display...");
     const placeholder = shiftBlock.locator(
-      '[data-testid^="constraint-block-placeholder-"]'
+      '[data-testid^="constraint-block-placeholder-"]',
     );
     await expect(placeholder).toBeVisible();
     const placeholderText = await placeholder.textContent();
@@ -752,14 +752,14 @@ test.describe("Constraint Creation", () => {
     const testShift2 = testShifts[1];
 
     console.log(
-      `Looking for test shift: ${testShift1.name} (ID: ${testShift1.id})`
+      `Looking for test shift: ${testShift1.name} (ID: ${testShift1.id})`,
     );
 
     // Look for shift options using the data-testid pattern we added
     // Pattern: swo-option-{categoryName}-{id}-{isBoolDim}
     // For shifts, categoryName should be "Shifts" and isBoolDim should be false
     const testShiftOption = page.locator(
-      `[data-testid="swo-option-Shifts-${testShift1.id}-false"]`
+      `[data-testid="swo-option-Shifts-${testShift1.id}-false"]`,
     );
 
     await expect(testShiftOption).toBeVisible({ timeout: 5000 });
@@ -779,7 +779,7 @@ test.describe("Constraint Creation", () => {
 
     // Step 6: Verify the shift block now displays the name of our test shift
     console.log(
-      "Step 6: Verifying shift block displays selected shift name..."
+      "Step 6: Verifying shift block displays selected shift name...",
     );
     const shiftBlockValue = shiftBlock.locator("text=" + testShift1.name);
     await expect(shiftBlockValue).toBeVisible({ timeout: 5000 });
@@ -792,7 +792,7 @@ test.describe("Constraint Creation", () => {
 
     // Check if there are validation errors
     const validationErrors = page.locator(
-      '[data-testid*="constraint-block-error"], .Mui-error'
+      '[data-testid*="constraint-block-error"], .Mui-error',
     );
     // Wait for validation to complete by checking if any validation errors appear or ensuring save button is still enabled
     await Promise.race([
@@ -816,18 +816,18 @@ test.describe("Constraint Creation", () => {
 
       // Also check the block's placeholder/name elements for error state
       const shiftBlockPlaceholderError = shiftBlock.locator(
-        '[data-testid^="constraint-block-placeholder-"].Mui-error, [data-testid^="constraint-block-name-"].Mui-error'
+        '[data-testid^="constraint-block-placeholder-"].Mui-error, [data-testid^="constraint-block-name-"].Mui-error',
       );
       const placeholderHasError = await shiftBlockPlaceholderError.count();
 
       console.log(`Shift block error indicators: ${shiftBlockHasError}`);
       console.log(
-        `Shift block placeholder/name error indicators: ${placeholderHasError}`
+        `Shift block placeholder/name error indicators: ${placeholderHasError}`,
       );
 
       if (shiftBlockHasError === 0 && placeholderHasError === 0) {
         console.log(
-          "✅ Shift block does NOT have validation errors (as expected)"
+          "✅ Shift block does NOT have validation errors (as expected)",
         );
       } else {
         console.log("⚠️ Shift block unexpectedly has validation errors");
@@ -835,7 +835,7 @@ test.describe("Constraint Creation", () => {
     } else {
       // No validation errors means all required fields were filled
       console.log(
-        "ℹ️ No validation errors - either only shift block was required or other blocks have defaults"
+        "ℹ️ No validation errors - either only shift block was required or other blocks have defaults",
       );
     }
 
@@ -866,7 +866,7 @@ test.describe("Constraint Creation", () => {
     // Find worker blocks (blocks with BlockNameOptions.WORKER = 4)
     // The data-testid follows pattern: shift-worker-option-block-{blockName}-{index}
     const workerBlocks = page.locator(
-      '[data-testid^="shift-worker-option-block-4-"]'
+      '[data-testid^="shift-worker-option-block-4-"]',
     );
     const workerBlockCount = await workerBlocks.count();
 
@@ -884,7 +884,7 @@ test.describe("Constraint Creation", () => {
     // Step 1: Check that the placeholder is displayed in the worker block
     console.log("Step 1: Checking placeholder display...");
     const placeholder = workerBlock.locator(
-      '[data-testid^="constraint-block-placeholder-"]'
+      '[data-testid^="constraint-block-placeholder-"]',
     );
     await expect(placeholder).toBeVisible();
     const placeholderText = await placeholder.textContent();
@@ -903,14 +903,14 @@ test.describe("Constraint Creation", () => {
     const testWorker2 = testWorkers[1];
 
     console.log(
-      `Looking for test worker: ${testWorker1.name} (ID: ${testWorker1.workerId})`
+      `Looking for test worker: ${testWorker1.name} (ID: ${testWorker1.id})`,
     );
 
     // Look for worker options using the data-testid pattern we added
     // Pattern: swo-option-{categoryName}-{id}-{isBoolDim}
     // For workers, categoryName should be "Workers" and isBoolDim should be false
     const testWorkerOption = page.locator(
-      `[data-testid="swo-option-Workers-${testWorker1.workerId}-false"]`
+      `[data-testid="swo-option-Workers-${testWorker1.id}-false"]`,
     );
 
     await expect(testWorkerOption).toBeVisible({ timeout: 5000 });
@@ -930,12 +930,12 @@ test.describe("Constraint Creation", () => {
 
     // Step 6: Verify the worker block now displays the name of our test worker
     console.log(
-      "Step 6: Verifying worker block displays selected worker name..."
+      "Step 6: Verifying worker block displays selected worker name...",
     );
     const workerBlockValue = workerBlock.locator("text=" + testWorker1.name);
     await expect(workerBlockValue).toBeVisible({ timeout: 5000 });
     console.log(
-      `✅ Worker block displays selected worker: ${testWorker1.name}`
+      `✅ Worker block displays selected worker: ${testWorker1.name}`,
     );
 
     // Step 7: Click on add button - validation errors should be raised for other blocks but NOT the worker block
@@ -945,7 +945,7 @@ test.describe("Constraint Creation", () => {
 
     // Check if there are validation errors
     const validationErrors = page.locator(
-      '[data-testid*="constraint-block-error"], .Mui-error'
+      '[data-testid*="constraint-block-error"], .Mui-error',
     );
     // Wait for validation to complete by checking if any validation errors appear or ensuring save button is still enabled
     await Promise.race([
@@ -969,18 +969,18 @@ test.describe("Constraint Creation", () => {
 
       // Also check the block's placeholder/name elements for error state
       const workerBlockPlaceholderError = workerBlock.locator(
-        '[data-testid^="constraint-block-placeholder-"].Mui-error, [data-testid^="constraint-block-name-"].Mui-error'
+        '[data-testid^="constraint-block-placeholder-"].Mui-error, [data-testid^="constraint-block-name-"].Mui-error',
       );
       const placeholderHasError = await workerBlockPlaceholderError.count();
 
       console.log(`Worker block error indicators: ${workerBlockHasError}`);
       console.log(
-        `Worker block placeholder/name error indicators: ${placeholderHasError}`
+        `Worker block placeholder/name error indicators: ${placeholderHasError}`,
       );
 
       if (workerBlockHasError === 0 && placeholderHasError === 0) {
         console.log(
-          "✅ Worker block does NOT have validation errors (as expected)"
+          "✅ Worker block does NOT have validation errors (as expected)",
         );
       } else {
         console.log("⚠️ Worker block unexpectedly has validation errors");
@@ -988,7 +988,7 @@ test.describe("Constraint Creation", () => {
     } else {
       // No validation errors means all required fields were filled
       console.log(
-        "ℹ️ No validation errors - either only worker block was required or other blocks have defaults"
+        "ℹ️ No validation errors - either only worker block was required or other blocks have defaults",
       );
     }
 
@@ -1020,7 +1020,7 @@ test.describe("Constraint Creation", () => {
     await expect(editForm).toBeVisible();
 
     console.log(
-      "Step 1: Check that the OPERATOR string block displays its value"
+      "Step 1: Check that the OPERATOR string block displays its value",
     );
     // BlockNameOptions.OPERATOR = 0
     // Template structure: [0: WORKER, 1: TEXT (display only), 2: OPERATOR, 3: NUMBER, 4: SHIFT, 5: TIMING]
@@ -1030,13 +1030,13 @@ test.describe("Constraint Creation", () => {
     // Check that "au plus" is displayed (it's a value, not a placeholder in this case)
     // The OPERATOR block is at index 2 (after WORKER and TEXT blocks)
     const blockDisplay = page.locator(
-      '[data-testid="constraint-block-display-2"]'
+      '[data-testid="constraint-block-display-2"]',
     );
     await expect(blockDisplay).toBeVisible();
     await expect(blockDisplay).toContainText("au plus");
 
     console.log(
-      "Step 2: Click on the OPERATOR string block to open the options list"
+      "Step 2: Click on the OPERATOR string block to open the options list",
     );
     await operatorBlock.first().click();
 
@@ -1045,7 +1045,7 @@ test.describe("Constraint Creation", () => {
     // The options should have data-testid like "string-option-at-most", "string-option-at-least", "string-option-exactly"
     const atMostOption = page.locator('[data-testid="string-option-at-most"]');
     const atLeastOption = page.locator(
-      '[data-testid="string-option-at-least"]'
+      '[data-testid="string-option-at-least"]',
     );
     const exactlyOption = page.locator('[data-testid="string-option-exactly"]');
 
@@ -1058,7 +1058,7 @@ test.describe("Constraint Creation", () => {
     await atLeastOption.click();
 
     console.log(
-      "Step 5: The string block should now display the newly selected option"
+      "Step 5: The string block should now display the newly selected option",
     );
     // Click away to close the popover
     await page.mouse.click(100, 100);
@@ -1070,14 +1070,14 @@ test.describe("Constraint Creation", () => {
     await expect(blockDisplay).toContainText(/at least|au moins/i);
 
     console.log(
-      "Step 6: Click Add button to validate - no error should be raised for the OPERATOR block"
+      "Step 6: Click Add button to validate - no error should be raised for the OPERATOR block",
     );
     const saveButton = constraintTestBase.getSaveConstraintButton(page);
     await saveButton.click();
 
     // Check if there are validation errors
     const validationErrors = page.locator(
-      '[data-testid*="constraint-block-error"], .Mui-error'
+      '[data-testid*="constraint-block-error"], .Mui-error',
     );
     // Wait for validation to complete by checking if any validation errors appear or ensuring save button is still enabled
     await Promise.race([
@@ -1105,18 +1105,18 @@ test.describe("Constraint Creation", () => {
       const operatorBlockPlaceholderError = operatorBlock
         .first()
         .locator(
-          '[data-testid^="constraint-block-placeholder-"].Mui-error, [data-testid^="constraint-block-name-"].Mui-error'
+          '[data-testid^="constraint-block-placeholder-"].Mui-error, [data-testid^="constraint-block-name-"].Mui-error',
         );
       const placeholderHasError = await operatorBlockPlaceholderError.count();
 
       console.log(`Operator block error indicators: ${operatorBlockHasError}`);
       console.log(
-        `Operator block placeholder/name error indicators: ${placeholderHasError}`
+        `Operator block placeholder/name error indicators: ${placeholderHasError}`,
       );
 
       if (operatorBlockHasError === 0 && placeholderHasError === 0) {
         console.log(
-          "✅ Operator block does NOT have validation errors (as expected)"
+          "✅ Operator block does NOT have validation errors (as expected)",
         );
       } else {
         console.log("⚠️ Operator block unexpectedly has validation errors");
@@ -1124,7 +1124,7 @@ test.describe("Constraint Creation", () => {
     } else {
       // No validation errors means all required fields were filled
       console.log(
-        "ℹ️ No validation errors - either only operator block was required or other blocks have defaults"
+        "ℹ️ No validation errors - either only operator block was required or other blocks have defaults",
       );
     }
 
@@ -1134,7 +1134,7 @@ test.describe("Constraint Creation", () => {
     console.log("✅ Dialog remains open due to validation errors");
 
     console.log(
-      "✅ String block with dropdown options test completed successfully!"
+      "✅ String block with dropdown options test completed successfully!",
     );
   });
 
@@ -1164,14 +1164,14 @@ test.describe("Constraint Creation", () => {
 
     // Check that the placeholder "2" is displayed
     const placeholder = page.locator(
-      '[data-testid="constraint-block-placeholder-3"]'
+      '[data-testid="constraint-block-placeholder-3"]',
     );
     await expect(placeholder).toBeVisible();
     const placeholderText = await placeholder.textContent();
     console.log(`✅ Placeholder displayed: "${placeholderText}"`);
 
     console.log(
-      "Step 2: Click on the NUMBER block to open the text field input"
+      "Step 2: Click on the NUMBER block to open the text field input",
     );
     await numberBlock.first().click();
 
@@ -1190,21 +1190,21 @@ test.describe("Constraint Creation", () => {
 
     console.log("Step 5: Verify the number block now displays our number");
     const blockDisplay = page.locator(
-      '[data-testid="constraint-block-display-3"]'
+      '[data-testid="constraint-block-display-3"]',
     );
     await expect(blockDisplay).toBeVisible();
     await expect(blockDisplay).toContainText(testNumber);
     console.log(`✅ Number block displays entered number: ${testNumber}`);
 
     console.log(
-      "Step 6: Click Add button to validate - no error should be raised for the NUMBER block"
+      "Step 6: Click Add button to validate - no error should be raised for the NUMBER block",
     );
     const saveButton = constraintTestBase.getSaveConstraintButton(page);
     await saveButton.click();
 
     // Check if there are validation errors
     const validationErrors = page.locator(
-      '[data-testid*="constraint-block-error"], .Mui-error'
+      '[data-testid*="constraint-block-error"], .Mui-error',
     );
     // Wait for validation to complete by checking if any validation errors appear or ensuring save button is still enabled
     await Promise.race([
@@ -1231,18 +1231,18 @@ test.describe("Constraint Creation", () => {
       const numberBlockPlaceholderError = numberBlock
         .first()
         .locator(
-          '[data-testid^="constraint-block-placeholder-"].Mui-error, [data-testid^="constraint-block-name-"].Mui-error'
+          '[data-testid^="constraint-block-placeholder-"].Mui-error, [data-testid^="constraint-block-name-"].Mui-error',
         );
       const placeholderHasError = await numberBlockPlaceholderError.count();
 
       console.log(`Number block error indicators: ${numberBlockHasError}`);
       console.log(
-        `Number block placeholder/name error indicators: ${placeholderHasError}`
+        `Number block placeholder/name error indicators: ${placeholderHasError}`,
       );
 
       if (numberBlockHasError === 0 && placeholderHasError === 0) {
         console.log(
-          "✅ Number block does NOT have validation errors (as expected)"
+          "✅ Number block does NOT have validation errors (as expected)",
         );
       } else {
         console.log("⚠️ Number block unexpectedly has validation errors");
@@ -1250,7 +1250,7 @@ test.describe("Constraint Creation", () => {
     } else {
       // No validation errors means all required fields were filled
       console.log(
-        "ℹ️ No validation errors - either only number block was required or other blocks have defaults"
+        "ℹ️ No validation errors - either only number block was required or other blocks have defaults",
       );
     }
 

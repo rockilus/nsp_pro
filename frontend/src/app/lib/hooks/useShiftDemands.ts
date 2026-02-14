@@ -18,34 +18,40 @@ import {
 import { ShiftDemandApi } from "../api/shiftDemandApi";
 import { useApiClient } from "../api-client";
 import { useAuth } from "../../../contexts/auth-context";
+import dayjs from "dayjs";
 /**
  * Query key factory for shift demands
  */
 export const shiftDemandKeys = {
   all: ["shift-demands"] as const,
   teams: (teamId: string) => [...shiftDemandKeys.all, "team", teamId] as const,
-  period: (teamId: string, startDate: Date, endDate: Date) =>
+  period: (teamId: string, startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) =>
     [
       ...shiftDemandKeys.teams(teamId),
       "period",
       startDate.toISOString(),
       endDate.toISOString(),
     ] as const,
-  matrix: (teamId: string, startDate: Date, endDate: Date) =>
+  matrix: (teamId: string, startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) =>
     [
       ...shiftDemandKeys.teams(teamId),
       "matrix",
       startDate.toISOString(),
       endDate.toISOString(),
     ] as const,
-  summary: (teamId: string, startDate: Date, endDate: Date) =>
+  summary: (teamId: string, startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) =>
     [
       ...shiftDemandKeys.teams(teamId),
       "summary",
       startDate.toISOString(),
       endDate.toISOString(),
     ] as const,
-  shift: (teamId: string, shiftId: string, startDate: Date, endDate: Date) =>
+  shift: (
+    teamId: string,
+    shiftId: string,
+    startDate: dayjs.Dayjs,
+    endDate: dayjs.Dayjs,
+  ) =>
     [
       ...shiftDemandKeys.teams(teamId),
       "shift",
@@ -62,13 +68,13 @@ export const shiftDemandKeys = {
  */
 export const useShiftDemandsByPeriod = (
   teamId: string,
-  startDate: Date,
-  endDate: Date,
+  startDate: dayjs.Dayjs,
+  endDate: dayjs.Dayjs,
   options?: {
     bufferDays?: number;
     refetchInterval?: number;
     enabled?: boolean;
-  }
+  },
 ) => {
   const apiClient = useApiClient();
   const { isAuthenticated, user } = useAuth();
@@ -81,7 +87,7 @@ export const useShiftDemandsByPeriod = (
         teamId,
         startDate,
         endDate,
-        options?.bufferDays
+        options?.bufferDays,
       ),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
@@ -96,11 +102,11 @@ export const useShiftDemandsByPeriod = (
  */
 export const useShiftDemandsMatrix = (
   teamId: string,
-  startDate: Date,
-  endDate: Date,
+  startDate: dayjs.Dayjs,
+  endDate: dayjs.Dayjs,
   options?: {
     enabled?: boolean;
-  }
+  },
 ) => {
   const apiClient = useApiClient();
   const { isAuthenticated, user } = useAuth();
@@ -112,7 +118,7 @@ export const useShiftDemandsMatrix = (
         apiClient,
         teamId,
         startDate,
-        endDate
+        endDate,
       ),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -126,25 +132,25 @@ export const useShiftDemandsMatrix = (
  */
 export const useShiftDemands = (
   teamId: string,
-  startDate: Date,
-  endDate: Date,
+  startDate: dayjs.Dayjs,
+  endDate: dayjs.Dayjs,
   options?: {
     bufferDays?: number;
     refetchInterval?: number;
     enabled?: boolean;
-  }
+  },
 ): UseShiftDemandsResult => {
   const demandsQuery = useShiftDemandsByPeriod(
     teamId,
     startDate,
     endDate,
-    options
+    options,
   );
   const matrixQuery = useShiftDemandsMatrix(
     teamId,
     startDate,
     endDate,
-    options
+    options,
   );
 
   const demands = useMemo(() => demandsQuery.data || [], [demandsQuery.data]);
@@ -178,7 +184,7 @@ export const useShiftDemands = (
  * Enhanced hook for shift demand mutations with proper error handling and optimistic updates
  */
 export const useShiftDemandMutations = (
-  teamId: string
+  teamId: string,
 ): UseShiftDemandMutationsResult => {
   const queryClient = useQueryClient();
   const apiClient = useApiClient();
@@ -206,7 +212,7 @@ export const useShiftDemandMutations = (
 
       // Snapshot the previous value
       const previousData = queryClient.getQueryData(
-        shiftDemandKeys.teams(teamId)
+        shiftDemandKeys.teams(teamId),
       );
 
       // Optimistically update the cache
@@ -234,7 +240,7 @@ export const useShiftDemandMutations = (
       if (context?.previousData) {
         queryClient.setQueryData(
           shiftDemandKeys.teams(teamId),
-          context.previousData
+          context.previousData,
         );
       }
       console.error("Failed to create shift demand:", err);
@@ -259,7 +265,7 @@ export const useShiftDemandMutations = (
         apiClient,
         teamId,
         params.demandId,
-        params.demand
+        params.demand,
       );
     },
     onMutate: async (variables) => {
@@ -268,7 +274,7 @@ export const useShiftDemandMutations = (
       });
 
       const previousData = queryClient.getQueryData(
-        shiftDemandKeys.teams(teamId)
+        shiftDemandKeys.teams(teamId),
       );
 
       // Handle zero count differently in optimistic updates
@@ -280,7 +286,7 @@ export const useShiftDemandMutations = (
           return {
             ...old,
             demands: old.demands?.filter(
-              (demand: ShiftDemandDTO) => demand.id !== variables.demandId
+              (demand: ShiftDemandDTO) => demand.id !== variables.demandId,
             ),
           };
         });
@@ -292,7 +298,7 @@ export const useShiftDemandMutations = (
           const updatedDemands = old.demands?.map((demand: ShiftDemandDTO) =>
             demand.id === variables.demandId
               ? { ...demand, ...variables.demand, updatedAt: Date.now() / 1000 }
-              : demand
+              : demand,
           );
 
           return {
@@ -308,7 +314,7 @@ export const useShiftDemandMutations = (
       if (context?.previousData) {
         queryClient.setQueryData(
           shiftDemandKeys.teams(teamId),
-          context.previousData
+          context.previousData,
         );
       }
       console.error("Failed to update shift demand:", err);
@@ -332,7 +338,7 @@ export const useShiftDemandMutations = (
         if (!old) return old;
 
         const filteredDemands = old.demands?.filter(
-          (demand: ShiftDemandDTO) => demand.id !== deletedId
+          (demand: ShiftDemandDTO) => demand.id !== deletedId,
         );
 
         return {

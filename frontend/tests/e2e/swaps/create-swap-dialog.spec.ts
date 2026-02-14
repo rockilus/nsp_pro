@@ -72,7 +72,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       // Verify each worker appears in the dropdown
       for (const worker of testWorkers) {
         const workerOption = page.locator(
-          `[data-testid="worker-option-${worker.workerId}"]`,
+          `[data-testid="worker-option-${worker.id}"]`,
         );
         await expect(workerOption).toBeVisible();
       }
@@ -96,9 +96,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       await page.waitForSelector('[role="listbox"]', { state: "visible" });
 
       const testWorkers = swapTestBase.getTestWorkers();
-      await page.click(
-        `[data-testid="worker-option-${testWorkers[0].workerId}"]`,
-      );
+      await page.click(`[data-testid="worker-option-${testWorkers[0].id}"]`);
 
       // Now assignment selector should be visible
       const assignmentSelectorAfter = page.locator(
@@ -116,7 +114,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
     }) => {
       // Select first worker
       const testWorkers = swapTestBase.getTestWorkers();
-      const testWorkerId = testWorkers[0].workerId;
+      const testWorkerId = testWorkers[0].id;
       await page.click('[data-testid="worker-select"]');
       await page.click(`[data-testid="worker-option-${testWorkerId}"]`);
 
@@ -150,7 +148,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
     }) => {
       // Select first worker
       const testWorkers = swapTestBase.getTestWorkers();
-      const testWorkerId = testWorkers[0].workerId;
+      const testWorkerId = testWorkers[0].id;
       await page.click('[data-testid="worker-select"]');
       await page.click(`[data-testid="worker-option-${testWorkerId}"]`);
 
@@ -194,7 +192,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
     }) => {
       // Select first worker
       const testWorkers = swapTestBase.getTestWorkers();
-      const testWorkerId = testWorkers[0].workerId;
+      const testWorkerId = testWorkers[0].id;
       await page.click('[data-testid="worker-select"]');
       await page.click(`[data-testid="worker-option-${testWorkerId}"]`);
 
@@ -237,7 +235,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
     }) => {
       // Select first worker
       const testWorkers = swapTestBase.getTestWorkers();
-      const testWorkerId = testWorkers[0].workerId;
+      const testWorkerId = testWorkers[0].id;
       await page.click('[data-testid="worker-select"]');
       await page.click(`[data-testid="worker-option-${testWorkerId}"]`);
 
@@ -303,8 +301,8 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       if (testWorkers.length < 2) {
         test.skip(true, "Need at least 2 workers for this test");
       }
-      const testWorkerId1 = testWorkers[0].workerId;
-      const testWorkerId2 = testWorkers[1].workerId;
+      const testWorkerId1 = testWorkers[0].id;
+      const testWorkerId2 = testWorkers[1].id;
 
       // Select first worker
       await page.click('[data-testid="worker-select"]');
@@ -428,7 +426,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       page,
     }) => {
       const testWorkers = swapTestBase.getTestWorkers();
-      const testWorkerId = testWorkers[0].workerId;
+      const testWorkerId = testWorkers[0].id;
       const testShifts = swapTestBase.getTestShifts();
       const testLinkShifts = swapTestBase.getTestLinkShifts();
 
@@ -490,7 +488,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       page,
     }) => {
       const testWorkers = swapTestBase.getTestWorkers();
-      const testWorkerId = testWorkers[0].workerId;
+      const testWorkerId = testWorkers[0].id;
       const testLinkShifts = swapTestBase.getTestLinkShifts();
 
       expect(testLinkShifts.length).toBeGreaterThan(0);
@@ -576,7 +574,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       page,
     }) => {
       const testWorkers = swapTestBase.getTestWorkers();
-      const testWorkerId = testWorkers[0].workerId;
+      const testWorkerId = testWorkers[0].id;
       const testLinkShifts = swapTestBase.getTestLinkShifts();
 
       expect(testLinkShifts.length).toBeGreaterThan(0);
@@ -657,9 +655,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       // Select worker but no assignments
       const testWorkers = swapTestBase.getTestWorkers();
       await page.click('[data-testid="worker-select"]');
-      await page.click(
-        `[data-testid="worker-option-${testWorkers[0].workerId}"]`,
-      );
+      await page.click(`[data-testid="worker-option-${testWorkers[0].id}"]`);
 
       // Try to click Next
       await page.click('[data-testid="next-button"]');
@@ -680,7 +676,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
     }) => {
       // Select worker
       const testWorkers = swapTestBase.getTestWorkers();
-      const testWorkerId = testWorkers[0].workerId;
+      const testWorkerId = testWorkers[0].id;
       await page.click('[data-testid="worker-select"]');
       await page.click(`[data-testid="worker-option-${testWorkerId}"]`);
 
@@ -804,7 +800,7 @@ test.describe("CreateSwapDialog - Member Tests", () => {
 
       const memberAssignments = swapTestBase
         .getTestAssignments()
-        .filter((a) => a.workerId === memberWorker!.workerId)
+        .filter((a) => a.workerId === memberWorker!.id)
         .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
         .filter(
           (a) =>
@@ -846,7 +842,7 @@ test.describe("CreateSwapDialog - Member Tests", () => {
       const tomorrow = dayjs.utc().add(1, "day").startOf("day");
       const campaignAssignments = swapTestBase
         .getTestAssignments()
-        .filter((a) => a.workerId === memberWorker!.workerId)
+        .filter((a) => a.workerId === memberWorker!.id)
         .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
         .filter(
           (a) =>
@@ -866,7 +862,7 @@ test.describe("CreateSwapDialog - Member Tests", () => {
         .getTestAssignments()
         .filter(
           (a) =>
-            a.workerId === memberWorker!.workerId &&
+            a.workerId === memberWorker!.id &&
             dayjs.utc(a.date).isSameOrBefore(dayjs.utc(), "day"),
         );
       expect(todayAssignments.length).toBeGreaterThan(0);
@@ -883,7 +879,7 @@ test.describe("CreateSwapDialog - Member Tests", () => {
         .getTestAssignments()
         .filter(
           (a) =>
-            a.workerId === memberWorker!.workerId &&
+            a.workerId === memberWorker!.id &&
             dayjs.utc(a.date).isAfter(dayjs.utc(), "day"),
         )
         .filter(
@@ -941,7 +937,7 @@ test.describe("CreateSwapDialog - Member Tests", () => {
 
       const validAssignments = swapTestBase
         .getTestAssignments()
-        .filter((a) => a.workerId === memberWorker!.workerId)
+        .filter((a) => a.workerId === memberWorker!.id)
         .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
         .filter(
           (a) =>

@@ -4,7 +4,7 @@ import { WorkerTestBase } from "../../utils/worker-test-base";
 const workerTestBase = new WorkerTestBase();
 
 test.describe("Worker Employment Start Date Updates", () => {
-  let testWorker: { workerId: string; name: string; teamId: string };
+  let testWorker: { id: string; name: string; teamId: string };
   let initialWorkerName: string;
 
   test.beforeEach(async ({ page }) => {
@@ -23,9 +23,7 @@ test.describe("Worker Employment Start Date Updates", () => {
       annualLeave: 25,
     });
 
-    console.log(
-      `Created test worker: ${testWorker.name} (${testWorker.workerId})`
-    );
+    console.log(`Created test worker: ${testWorker.name} (${testWorker.id})`);
 
     // Navigate to the workers page
     await workerTestBase.navigateToWorkersPage(page);
@@ -44,15 +42,12 @@ test.describe("Worker Employment Start Date Updates", () => {
 
   test.afterEach(async () => {
     // Clean up: delete the worker created for this test
-    if (testWorker?.workerId) {
+    if (testWorker?.id) {
       try {
-        await workerTestBase.deleteTestWorker(testWorker.workerId);
-        console.log(`Deleted test worker: ${testWorker.workerId}`);
+        await workerTestBase.deleteTestWorker(testWorker.id);
+        console.log(`Deleted test worker: ${testWorker.id}`);
       } catch (error) {
-        console.warn(
-          `Failed to delete test worker ${testWorker.workerId}:`,
-          error
-        );
+        console.warn(`Failed to delete test worker ${testWorker.id}:`, error);
       }
     }
   });
@@ -78,7 +73,7 @@ test.describe("Worker Employment Start Date Updates", () => {
     await expect(employmentStartDisplay).toContainText(expectedDateString);
 
     console.log(
-      `✅ New worker has today's date (${expectedDateString}) as employment start date`
+      `✅ New worker has today's date (${expectedDateString}) as employment start date`,
     );
   });
 
@@ -144,7 +139,7 @@ test.describe("Worker Employment Start Date Updates", () => {
     await expect(employmentStartDisplay).toContainText(newDate);
 
     console.log(
-      `✅ Employment start date updated via blur event to "${newDate}"`
+      `✅ Employment start date updated via blur event to "${newDate}"`,
     );
   });
 
@@ -178,7 +173,7 @@ test.describe("Worker Employment Start Date Updates", () => {
     await expect(employmentStartDisplay).toContainText(newDate);
 
     console.log(
-      `✅ Employment start date updated via Enter key to "${newDate}"`
+      `✅ Employment start date updated via Enter key to "${newDate}"`,
     );
   });
 
@@ -217,7 +212,7 @@ test.describe("Worker Employment Start Date Updates", () => {
     await expect(employmentStartDisplay).not.toContainText(tempDate);
 
     console.log(
-      `✅ Employment start date edit canceled, reverted to original: "${originalDate}"`
+      `✅ Employment start date edit canceled, reverted to original: "${originalDate}"`,
     );
   });
 
@@ -261,12 +256,12 @@ test.describe("Worker Employment Start Date Updates", () => {
         console.log(`✅ Employment start date updated via calendar picker`);
       } else {
         console.log(
-          "⚠️ Calendar day buttons not found, skipping calendar interaction"
+          "⚠️ Calendar day buttons not found, skipping calendar interaction",
         );
       }
     } else {
       console.log(
-        "⚠️ Calendar button not found, skipping calendar interaction test"
+        "⚠️ Calendar button not found, skipping calendar interaction test",
       );
     }
   });
@@ -319,7 +314,7 @@ test.describe("Worker Employment Start Date Updates", () => {
       await expect(employmentStartDisplay).toBeVisible();
       await expect(employmentStartDisplay).toContainText(originalDate);
       console.log(
-        `✅ Invalid date format reverted to original: "${originalDate}"`
+        `✅ Invalid date format reverted to original: "${originalDate}"`,
       );
     }
   });

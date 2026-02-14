@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import dayjs from "dayjs";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "@/app/i18n/client";
 // MUI
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import Box from "@mui/material/Box";
@@ -23,27 +23,27 @@ import ClearIcon from "@mui/icons-material/Clear";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import Chip from "@mui/material/Chip";
 // Components
-import ShiftOptionsDisplay from "../stats/nav-bar/shift-options-display";
+import ShiftOptionsDisplay from "@/components/stats/nav-bar/shift-options-display";
 // Styles
-import "./request-panel.css";
+import "@/components/request/request-panel.css";
 // Utils
 import {
   getRequestStatusColor,
   getRequestStatusLabel,
-} from "../../utils/shift-worker-option-display";
+} from "@/utils/shift-worker-option-display";
 // Types
 import {
   RequestT,
   RequestStatus,
   RequestType,
   FulfillmentStatus,
-} from "../../types/request";
-import { ShiftT, ShiftType, ShiftRestType } from "../../types/shift";
-import { WorkerT } from "../../types/worker";
+} from "@/types/request";
+import { ShiftT, ShiftType, ShiftRestType } from "@/types/shift";
+import { WorkerT } from "@/types/worker";
 import { TeamMembershipRole } from "@/types/team";
 import { ShiftWorkerOptionT, SWOIdTypes } from "@/types/constraint";
 
-export default function RequestPanelContent({
+const RequestForm = ({
   lng,
   teamId,
   isEdit,
@@ -73,8 +73,8 @@ export default function RequestPanelContent({
   shiftOptions: ShiftWorkerOptionT[];
   userWorkerId: string | null;
   userTeamRole: TeamMembershipRole;
-  handleAddRequest: (request: RequestT) => void;
-  handleUpdateRequest: (request: RequestT) => void;
+  handleAddRequest?: (request: RequestT) => void;
+  handleUpdateRequest?: (request: RequestT) => void;
   handleDeleteRequest?: (requestId: string) => void;
   handleRescindRequest?: (requestId: string) => void;
   handleAcceptRequest?: (requestId: string) => void;
@@ -83,7 +83,7 @@ export default function RequestPanelContent({
   fullWidth?: boolean;
   isMobile?: boolean;
   title?: string;
-}) {
+}) => {
   const { t } = useTranslation(lng, "request-page");
 
   // Helper to create a default request object
@@ -109,15 +109,15 @@ export default function RequestPanelContent({
 
   // If editing, always expect a real request object. If creating, use default.
   const [requestState, setRequestState] = useState<RequestT>(
-    isEdit && request ? request : createDefaultRequest()
+    isEdit && request ? request : createDefaultRequest(),
   );
   const [dateRange, setDateRange] = useState<boolean>(
     isEdit && request
       ? !request.startDate.isSame(request.endDate, "day")
-      : false
+      : false,
   );
   const [requestType, setRequestType] = useState<RequestType>(
-    isEdit && request ? request.requestType : RequestType.WORK_DEMAND
+    isEdit && request ? request.requestType : RequestType.WORK_DEMAND,
   );
 
   // Validation error state
@@ -144,7 +144,7 @@ export default function RequestPanelContent({
   // Helper to filter shifts by request type
   function filterShiftsByRequestType(
     shifts: ShiftT[],
-    requestType: RequestType
+    requestType: RequestType,
   ): ShiftT[] {
     return shifts.filter((s) => {
       if (requestType === RequestType.WORK_DEMAND) {
@@ -166,13 +166,13 @@ export default function RequestPanelContent({
   // Filters shiftOptions for ShiftOptionsDisplay (readability)
   function filterShiftOptions(
     shiftOptions: ShiftWorkerOptionT[],
-    shifts: ShiftT[]
+    shifts: ShiftT[],
   ): ShiftWorkerOptionT[] {
     const normalDutyShiftIds = shifts
       .filter(
         (s) =>
           !s.deleted &&
-          (s.shiftType === ShiftType.NORMAL || s.shiftType === ShiftType.DUTY)
+          (s.shiftType === ShiftType.NORMAL || s.shiftType === ShiftType.DUTY),
       )
       .map((s) => s.id);
 
@@ -266,6 +266,7 @@ export default function RequestPanelContent({
     if (hasError) return;
 
     if (!isEdit) {
+      if (!handleAddRequest) return;
       await handleAddRequest(requestState);
       // Close after successful creation
       if (onClose) {
@@ -275,7 +276,7 @@ export default function RequestPanelContent({
       // Helper function to compare shiftOptions arrays
       const areShiftOptionsEqual = (
         options1: ShiftWorkerOptionT[],
-        options2: ShiftWorkerOptionT[]
+        options2: ShiftWorkerOptionT[],
       ) => {
         if (options1.length !== options2.length) return false;
         return options1.every((opt1, index) => {
@@ -303,7 +304,9 @@ export default function RequestPanelContent({
         ...requestState,
         status: RequestStatus.PENDING,
       };
-      handleUpdateRequest(updatedRequest);
+      if (handleUpdateRequest) {
+        handleUpdateRequest(updatedRequest);
+      }
     }
     if (onClose) {
       onClose();
@@ -738,4 +741,8 @@ export default function RequestPanelContent({
       </div>
     </div>
   );
-}
+};
+
+RequestForm.displayName = "RequestForm";
+
+export default React.memo(RequestForm);

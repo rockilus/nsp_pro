@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Box, Typography, Button, Dialog, DialogContent } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
 import { useTranslation } from "../../app/i18n/client";
 // Components
-import CreateAssignment from "./lhs-tabs/create-assignment";
+import ScheduleItemDialog from "./dialogs/schedule-item-dialog";
+import { ScheduleItemType, DialogMode } from "./dialogs/schedule-item-types";
 // Types
 import { TeamMembershipRole, TeamWithMembership } from "../../types/team";
 import { WorkerT } from "../../types/worker";
@@ -20,13 +21,13 @@ interface NoAssignmentsDisplayProps {
   shifts: ShiftT[];
   handleCreateAssignment?: (
     newAssignment: AssignmentT,
-    newRecurrence: RecurrenceRuleT | null
+    newRecurrence: RecurrenceRuleT | null,
   ) => void;
   handleCreateShiftDemand: (
     shiftId: string,
     date: dayjs.Dayjs,
     count: number,
-    notes?: string
+    notes?: string,
   ) => Promise<void>;
 }
 
@@ -161,30 +162,32 @@ export default function NoAssignmentsDisplay({
       </Box>
 
       {/* Create Assignment Dialog */}
-      <Dialog
+      <ScheduleItemDialog
+        lng={lng}
         open={isCreateAssignmentDialogOpen}
         onClose={handleCloseCreateAssignmentDialog}
-        maxWidth="sm"
-        fullWidth
-        data-testid="create-assignment-dialog"
-      >
-        <DialogContent sx={{ padding: 0 }}>
-          <CreateAssignment
-            lng={lng}
-            teamWithMembership={teamWithMembership}
-            scheduleId={scheduleId}
-            workerSelectedId={null}
-            shiftSelectedId={null}
-            dateSelected={null}
-            workers={workers}
-            shifts={shifts}
-            addDemandActive={false}
-            onClose={handleCloseCreateAssignmentDialog}
-            handleCreateAssignment={handleCreateAssignment}
-            handleCreateShiftDemand={handleCreateShiftDemand}
-          />
-        </DialogContent>
-      </Dialog>
+        mode={DialogMode.CREATE}
+        selectedType={ScheduleItemType.ASSIGNMENT}
+        dialogData={{
+          scheduleId: scheduleId,
+          workerId: null,
+          shiftId: null,
+          date: null,
+          addDemandActive: false,
+        }}
+        teamId={teamWithMembership.team.id}
+        scheduleId={scheduleId}
+        workers={workers}
+        shifts={shifts}
+        schedules={[]}
+        specialties={[]}
+        shiftOptions={[]}
+        userWorkerId={null}
+        userTeamRole={teamWithMembership.membership.role}
+        useSolver={teamWithMembership.team.useSolver}
+        handleCreateAssignment={handleCreateAssignment}
+        handleCreateShiftDemand={handleCreateShiftDemand}
+      />
     </>
   );
 }

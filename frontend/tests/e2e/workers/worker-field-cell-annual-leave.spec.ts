@@ -4,7 +4,7 @@ import { WorkerTestBase } from "../../utils/worker-test-base";
 const workerTestBase = new WorkerTestBase();
 
 test.describe("Worker Annual Leave Field Cell", () => {
-  let testWorker: { workerId: string; name: string; teamId: string };
+  let testWorker: { id: string; name: string; teamId: string };
   let initialWorkerName: string;
   let initialAnnualLeave: number;
 
@@ -26,7 +26,7 @@ test.describe("Worker Annual Leave Field Cell", () => {
     });
 
     console.log(
-      `Created test worker: ${testWorker.name} (${testWorker.workerId}) with annual leave: ${initialAnnualLeave}`
+      `Created test worker: ${testWorker.name} (${testWorker.id}) with annual leave: ${initialAnnualLeave}`,
     );
 
     // Navigate to the workers page
@@ -46,10 +46,10 @@ test.describe("Worker Annual Leave Field Cell", () => {
 
   test.afterEach(async () => {
     // Clean up: delete the worker created for this test
-    if (testWorker?.workerId) {
+    if (testWorker?.id) {
       try {
-        await workerTestBase.deleteTestWorker(testWorker.workerId);
-        console.log(`Deleted test worker: ${testWorker.workerId}`);
+        await workerTestBase.deleteTestWorker(testWorker.id);
+        console.log(`Deleted test worker: ${testWorker.id}`);
       } catch (error) {
         console.warn(`Failed to delete test worker: ${error}`);
       }
@@ -64,11 +64,11 @@ test.describe("Worker Annual Leave Field Cell", () => {
     // Verify the cell is visible and displays the initial annual leave
     await expect(annualLeaveCell).toBeVisible();
     await expect(annualLeaveDisplay).toContainText(
-      initialAnnualLeave.toString()
+      initialAnnualLeave.toString(),
     );
 
     console.log(
-      `✅ Annual leave cell displays initial value: ${initialAnnualLeave}`
+      `✅ Annual leave cell displays initial value: ${initialAnnualLeave}`,
     );
   });
 
@@ -152,7 +152,7 @@ test.describe("Worker Annual Leave Field Cell", () => {
     // Wait for the update to complete using smart waiting
     await workerTestBase.waitForAnnualLeaveUpdateComplete(
       page,
-      newAnnualLeave.toString()
+      newAnnualLeave.toString(),
     );
 
     console.log(`✅ Annual leave updated to ${newAnnualLeave} via blur event`);
@@ -179,7 +179,7 @@ test.describe("Worker Annual Leave Field Cell", () => {
     // Wait for the update to complete using smart waiting
     await workerTestBase.waitForAnnualLeaveUpdateComplete(
       page,
-      newAnnualLeave.toString()
+      newAnnualLeave.toString(),
     );
 
     console.log(`✅ Annual leave updated to ${newAnnualLeave} via Enter key`);
@@ -195,7 +195,7 @@ test.describe("Worker Annual Leave Field Cell", () => {
 
     // Verify initial value
     await expect(annualLeaveDisplay).toContainText(
-      initialAnnualLeave.toString()
+      initialAnnualLeave.toString(),
     );
 
     // Click on the cell to edit
@@ -217,14 +217,14 @@ test.describe("Worker Annual Leave Field Cell", () => {
 
     // The display should show the original value (not the temporary one)
     await expect(annualLeaveDisplay).toContainText(
-      initialAnnualLeave.toString()
+      initialAnnualLeave.toString(),
     );
     await expect(annualLeaveDisplay).not.toContainText(
-      tempAnnualLeave.toString()
+      tempAnnualLeave.toString(),
     );
 
     console.log(
-      `✅ Annual leave edit canceled, reverted to original: ${initialAnnualLeave}`
+      `✅ Annual leave edit canceled, reverted to original: ${initialAnnualLeave}`,
     );
   });
 
@@ -252,11 +252,11 @@ test.describe("Worker Annual Leave Field Cell", () => {
     // The display should show the original value (component should revert empty to original)
     const annualLeaveDisplay = workerTestBase.getWorkerAnnualLeaveDisplay(page);
     await expect(annualLeaveDisplay).toContainText(
-      initialAnnualLeave.toString()
+      initialAnnualLeave.toString(),
     );
 
     console.log(
-      `✅ Empty input reverted to original value: ${initialAnnualLeave}`
+      `✅ Empty input reverted to original value: ${initialAnnualLeave}`,
     );
   });
 
@@ -278,7 +278,7 @@ test.describe("Worker Annual Leave Field Cell", () => {
     // The display should show the same original value
     const annualLeaveDisplay = workerTestBase.getWorkerAnnualLeaveDisplay(page);
     await expect(annualLeaveDisplay).toContainText(
-      initialAnnualLeave.toString()
+      initialAnnualLeave.toString(),
     );
 
     console.log(`✅ No change made, value remains: ${initialAnnualLeave}`);
@@ -305,7 +305,7 @@ test.describe("Worker Annual Leave Field Cell", () => {
     // Wait for the update to complete using smart waiting
     await workerTestBase.waitForAnnualLeaveUpdateComplete(
       page,
-      largeAnnualLeave.toString()
+      largeAnnualLeave.toString(),
     );
 
     console.log(`✅ Large number ${largeAnnualLeave} handled correctly`);

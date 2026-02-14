@@ -9,6 +9,7 @@ import { Page, expect } from "@playwright/test";
 import { DatabaseTestUtils } from "./database-utils";
 import { testConfig } from "./test-config";
 import { SpecialtyT } from "../../src/types/specialty";
+import { WorkerT } from "../../src/types/worker";
 
 export class WorkerTestBase {
   protected dbUtils: DatabaseTestUtils;
@@ -33,7 +34,7 @@ export class WorkerTestBase {
     const health = await this.dbUtils.checkHealth();
     if (!health.test_utilities_available) {
       throw new Error(
-        "Test utilities are not available - check environment configuration"
+        "Test utilities are not available - check environment configuration",
       );
     }
 
@@ -41,7 +42,7 @@ export class WorkerTestBase {
     const uniqueTeamName = `Worker Test Team ${workerIndex}-${Date.now()}`;
     this.testTeam = await this.dbUtils.createTeam({ name: uniqueTeamName });
     console.log(
-      `Created test team: ${this.testTeam.name} (${this.testTeam.teamId})`
+      `Created test team: ${this.testTeam.name} (${this.testTeam.teamId})`,
     );
   }
 
@@ -77,7 +78,7 @@ export class WorkerTestBase {
 
     // Verify we're on the workers page and the correct team is selected
     await expect(
-      page.locator('[data-testid="workers-page-heading"]')
+      page.locator('[data-testid="workers-page-heading"]'),
     ).toBeVisible();
 
     // Brief wait to ensure team context has fully initialized
@@ -87,7 +88,7 @@ export class WorkerTestBase {
     const currentUrl = page.url();
     if (currentUrl.includes("/plan/settings/teams")) {
       throw new Error(
-        "Navigation failed: redirected to teams page. Team context may not have initialized properly."
+        "Navigation failed: redirected to teams page. Team context may not have initialized properly.",
       );
     }
   }
@@ -104,14 +105,14 @@ export class WorkerTestBase {
     // Step 1: Navigate to teams page
     await page.goto(`${testConfig.frontendUrl}/en/plan/settings/teams/`);
     await expect(
-      page.locator('[data-testid="teams-page-heading"]')
+      page.locator('[data-testid="teams-page-heading"]'),
     ).toBeVisible();
 
     await page.waitForLoadState("networkidle");
 
     // Step 2: Wait for our test team to appear in the UI using team ID
     const teamElement = page.locator(
-      `[data-testid="team-name-${this.testTeam.teamId}"]`
+      `[data-testid="team-name-${this.testTeam.teamId}"]`,
     );
     await expect(teamElement).toBeVisible();
 
@@ -140,7 +141,7 @@ export class WorkerTestBase {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(
-      page.locator('[data-testid="workers-page-heading"]')
+      page.locator('[data-testid="workers-page-heading"]'),
     ).toBeVisible();
   }
 
@@ -164,7 +165,7 @@ export class WorkerTestBase {
     weeklyHoursDesired?: number;
     dutiesPerMonth?: number;
     annualLeave?: number;
-  }): Promise<{ workerId: string; name: string; teamId: string }> {
+  }): Promise<WorkerT> {
     if (!this.testTeam) {
       throw new Error("Test team not created. Call setupWorkerTests() first.");
     }
@@ -193,7 +194,7 @@ export class WorkerTestBase {
       dutiesPerMonth?: number;
       annualLeave?: number;
       specialtyIds?: string[];
-    }
+    },
   ): Promise<{ workerId: string; name: string; teamId: string }> {
     if (!this.testTeam) {
       throw new Error("Test team not created. Call setupWorkerTests() first.");
@@ -207,7 +208,7 @@ export class WorkerTestBase {
    */
   async updateTestWorkerName(
     workerId: string,
-    newName: string
+    newName: string,
   ): Promise<{ workerId: string; name: string; teamId: string }> {
     if (!this.testTeam) {
       throw new Error("Test team not created. Call setupWorkerTests() first.");
@@ -216,7 +217,7 @@ export class WorkerTestBase {
     return this.dbUtils.updateWorkerName(
       workerId,
       this.testTeam.teamId,
-      newName
+      newName,
     );
   }
 
@@ -317,7 +318,7 @@ export class WorkerTestBase {
 
     // Prioritize the table cell itself for interaction
     const byCellTestId = row.locator(
-      '[data-testid="worker-employment-start-cell"]'
+      '[data-testid="worker-employment-start-cell"]',
     );
     // Fallback to finding by column position if data-testid is not available
     const byColumnPosition = row.locator("td, th").nth(2); // Assuming employment start is 3rd column
@@ -349,7 +350,7 @@ export class WorkerTestBase {
 
     // Prioritize the table cell itself for interaction
     const byCellTestId = row.locator(
-      '[data-testid="worker-employment-end-cell"]'
+      '[data-testid="worker-employment-end-cell"]',
     );
     // Fallback to finding by column position if data-testid is not available
     const byColumnPosition = row.locator("td, th").nth(3); // Assuming employment end is 4th column
@@ -387,7 +388,7 @@ export class WorkerTestBase {
   getWorkerEmploymentEndDatePickerInput(page: Page, rowIndex: number = 0) {
     const row = this.getWorkerRow(page, rowIndex);
     return row.locator(
-      '[data-testid^="worker-employment-end-datepicker-input-"]'
+      '[data-testid^="worker-employment-end-datepicker-input-"]',
     );
   }
 
@@ -397,7 +398,7 @@ export class WorkerTestBase {
   getWorkerEmploymentEndPermanentCheckbox(page: Page, rowIndex: number = 0) {
     const row = this.getWorkerRow(page, rowIndex);
     return row.locator(
-      '[data-testid^="worker-employment-end-permanent-checkbox-input-"]'
+      '[data-testid^="worker-employment-end-permanent-checkbox-input-"]',
     );
   }
 
@@ -406,12 +407,12 @@ export class WorkerTestBase {
    */
   getWorkerEmploymentEndPermanentCheckboxLabel(
     page: Page,
-    rowIndex: number = 0
+    rowIndex: number = 0,
   ) {
     const row = this.getWorkerRow(page, rowIndex);
     // Look for the label specifically, excluding the input
     return row.locator(
-      '[data-testid^="worker-employment-end-permanent-checkbox-"]:not([data-testid*="-input-"])'
+      '[data-testid^="worker-employment-end-permanent-checkbox-"]:not([data-testid*="-input-"])',
     );
   }
 
@@ -423,7 +424,7 @@ export class WorkerTestBase {
 
     // Prioritize the table cell itself for interaction
     const byCellTestId = row.locator(
-      '[data-testid="worker-weekly-hours-cell"]'
+      '[data-testid="worker-weekly-hours-cell"]',
     );
     // Fallback to finding by column position - weeklyHours is the 6th column (index 5)
     // Column order: name(0), acronym(1), employmentStart(2), employmentEnd(3), specialties(4), weeklyHours(5)
@@ -456,7 +457,7 @@ export class WorkerTestBase {
 
     // Prioritize the table cell itself for interaction
     const byCellTestId = row.locator(
-      '[data-testid="worker-weekly-hours-desired-cell"]'
+      '[data-testid="worker-weekly-hours-desired-cell"]',
     );
     // Fallback to finding by column position - weeklyHoursDesired is the 7th column (index 6)
     // Column order: name(0), acronym(1), employmentStart(2), employmentEnd(3), specialties(4), weeklyHours(5), weeklyHoursDesired(6)
@@ -490,7 +491,7 @@ export class WorkerTestBase {
   async waitForWeeklyHoursDesiredUpdate(
     page: Page,
     expectedValue: string | number,
-    rowIndex: number = 0
+    rowIndex: number = 0,
   ) {
     const cell = this.getWorkerWeeklyHoursDesiredCell(page, rowIndex);
     const display = this.getWorkerWeeklyHoursDesiredDisplay(page, rowIndex);
@@ -507,7 +508,7 @@ export class WorkerTestBase {
     } catch (error) {
       // If data-state is not available, just continue - the component might not have it yet
       console.log(
-        "data-state attribute not found, continuing with other checks"
+        "data-state attribute not found, continuing with other checks",
       );
     }
 
@@ -527,7 +528,7 @@ export class WorkerTestBase {
   async waitForWeeklyHoursUpdate(
     page: Page,
     expectedValue: string | number,
-    rowIndex: number = 0
+    rowIndex: number = 0,
   ) {
     const cell = this.getWorkerWeeklyHoursCell(page, rowIndex);
     const display = this.getWorkerWeeklyHoursDisplay(page, rowIndex);
@@ -544,7 +545,7 @@ export class WorkerTestBase {
     } catch (error) {
       // If data-state is not available, just continue - the component might not have it yet
       console.log(
-        "data-state attribute not found, continuing with other checks"
+        "data-state attribute not found, continuing with other checks",
       );
     }
 
@@ -563,7 +564,7 @@ export class WorkerTestBase {
 
     // Prioritize the table cell itself for interaction
     const byCellTestId = row.locator(
-      '[data-testid="worker-duties-per-month-cell"]'
+      '[data-testid="worker-duties-per-month-cell"]',
     );
     // Fallback to finding by column position if data-testid is not available
     const byColumnPosition = row.locator("td, th").nth(7); // Assuming duties per month is 8th column
@@ -593,7 +594,7 @@ export class WorkerTestBase {
   async waitForDutiesPerMonthSave(
     page: Page,
     expectedValue: string | number,
-    rowIndex: number = 0
+    rowIndex: number = 0,
   ) {
     const display = this.getWorkerDutiesPerMonthDisplay(page, rowIndex);
     const input = this.getWorkerDutiesPerMonthInput(page, rowIndex);
@@ -611,7 +612,7 @@ export class WorkerTestBase {
         return actualValue === expectedValue.toString();
       },
       { expectedValue, testId: "worker-duties-per-month-display-" },
-      { timeout: 5000 }
+      { timeout: 5000 },
     );
   }
 
@@ -623,7 +624,7 @@ export class WorkerTestBase {
 
     // Prioritize the table cell itself for interaction
     const byCellTestId = row.locator(
-      '[data-testid="worker-annual-leave-cell"]'
+      '[data-testid="worker-annual-leave-cell"]',
     );
     // Fallback to finding by column position if data-testid is not available
     const byColumnPosition = row.locator("td, th").nth(8); // Assuming annual leave is 9th column
@@ -653,7 +654,7 @@ export class WorkerTestBase {
   async waitForAnnualLeaveUpdateComplete(
     page: Page,
     expectedValue: string,
-    rowIndex: number = 0
+    rowIndex: number = 0,
   ) {
     const display = this.getWorkerAnnualLeaveDisplay(page, rowIndex);
     const input = this.getWorkerAnnualLeaveInput(page, rowIndex);
@@ -745,7 +746,7 @@ export class WorkerTestBase {
 
     // Wait for the specific worker row to be removed from DOM
     await expect(
-      page.locator(`[data-testid="worker-row-${workerId}"]`)
+      page.locator(`[data-testid="worker-row-${workerId}"]`),
     ).not.toBeVisible({ timeout: 1000 });
 
     // Wait for the table to reflect the correct state
@@ -767,7 +768,7 @@ export class WorkerTestBase {
    */
   async deleteWorkerViaUIByIndex(
     page: Page,
-    rowIndex: number = 0
+    rowIndex: number = 0,
   ): Promise<void> {
     const deleteButton = this.getWorkerDeleteButtonByIndex(page, rowIndex);
     await expect(deleteButton).toBeVisible();
@@ -798,7 +799,7 @@ export class WorkerTestBase {
    */
   async createTestSpecialty(specialtyData: {
     name: string;
-  }): Promise<{ specialtyId: string; name: string; teamId: string }> {
+  }): Promise<SpecialtyT> {
     if (!this.testTeam) {
       throw new Error("Test team not created. Call setupWorkerTests() first.");
     }
@@ -816,8 +817,8 @@ export class WorkerTestBase {
     specialtyId: string,
     updates: {
       name?: string;
-    }
-  ): Promise<{ specialtyId: string; name: string; teamId: string }> {
+    },
+  ): Promise<SpecialtyT> {
     if (!this.testTeam) {
       throw new Error("Test team not created. Call setupWorkerTests() first.");
     }
@@ -825,7 +826,7 @@ export class WorkerTestBase {
     return this.dbUtils.updateSpecialty(
       specialtyId,
       this.testTeam.teamId,
-      updates
+      updates,
     );
   }
 
@@ -861,7 +862,7 @@ export class WorkerTestBase {
   async setEmploymentEndDate(
     page: Page,
     date: string,
-    rowIndex: number = 0
+    rowIndex: number = 0,
   ): Promise<void> {
     const input = this.getWorkerEmploymentEndDatePickerInput(page, rowIndex);
 
@@ -874,7 +875,7 @@ export class WorkerTestBase {
     const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
     if (!dateRegex.test(date)) {
       throw new Error(
-        `Invalid date format passed to setEmploymentEndDate: ${date}. Expected DD/MM/YYYY format.`
+        `Invalid date format passed to setEmploymentEndDate: ${date}. Expected DD/MM/YYYY format.`,
       );
     }
 
@@ -883,7 +884,7 @@ export class WorkerTestBase {
       // Get the native setter to bypass React's value property
       const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
         window.HTMLInputElement.prototype,
-        "value"
+        "value",
       )?.set;
 
       if (nativeInputValueSetter) {
@@ -914,7 +915,7 @@ export class WorkerTestBase {
   async setEmploymentStartDate(
     page: Page,
     date: string,
-    rowIndex: number = 0
+    rowIndex: number = 0,
   ): Promise<void> {
     const input = this.getWorkerEmploymentStartInput(page, rowIndex);
 
@@ -927,7 +928,7 @@ export class WorkerTestBase {
     const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
     if (!dateRegex.test(date)) {
       throw new Error(
-        `Invalid date format passed to setEmploymentStartDate: ${date}. Expected DD/MM/YYYY format.`
+        `Invalid date format passed to setEmploymentStartDate: ${date}. Expected DD/MM/YYYY format.`,
       );
     }
 
@@ -936,7 +937,7 @@ export class WorkerTestBase {
       // Get the native setter to bypass React's value property
       const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
         window.HTMLInputElement.prototype,
-        "value"
+        "value",
       )?.set;
 
       if (nativeInputValueSetter) {

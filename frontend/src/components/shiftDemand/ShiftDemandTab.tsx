@@ -81,7 +81,7 @@ const useTableHeight = (isFilterToolbarActive: boolean) => {
         paddingAndMargins;
       const maxHeight = Math.max(
         300,
-        Math.min(availableHeight, viewportHeight)
+        Math.min(availableHeight, viewportHeight),
       );
 
       setTableHeight(`${maxHeight}px`);
@@ -159,7 +159,7 @@ function ShiftDemandTabInternal({
   // Shift column definitions for filtering/sorting
   const shiftColumns = useMemo(
     () => createShiftColumns(t, shifts),
-    [t, shifts]
+    [t, shifts],
   );
 
   // Table state for shift filtering and sorting
@@ -195,7 +195,7 @@ function ShiftDemandTabInternal({
   const isCellSelected = (shiftId: string, date: Dayjs): boolean => {
     const dateStr = date.format("YYYY-MM-DD");
     return bulkChangeState.selectedCells.some(
-      (cell) => cell.shiftId === shiftId && cell.date === dateStr
+      (cell) => cell.shiftId === shiftId && cell.date === dateStr,
     );
   };
 
@@ -203,13 +203,13 @@ function ShiftDemandTabInternal({
     const dateStr = date.format("YYYY-MM-DD");
     setBulkChangeState((prev) => {
       const isSelected = prev.selectedCells.some(
-        (cell) => cell.shiftId === shiftId && cell.date === dateStr
+        (cell) => cell.shiftId === shiftId && cell.date === dateStr,
       );
       if (isSelected) {
         return {
           ...prev,
           selectedCells: prev.selectedCells.filter(
-            (cell) => !(cell.shiftId === shiftId && cell.date === dateStr)
+            (cell) => !(cell.shiftId === shiftId && cell.date === dateStr),
           ),
         };
       } else {
@@ -230,8 +230,8 @@ function ShiftDemandTabInternal({
       const allSelected = rowCells.every((cell) =>
         prev.selectedCells.some(
           (selected) =>
-            selected.shiftId === cell.shiftId && selected.date === cell.date
-        )
+            selected.shiftId === cell.shiftId && selected.date === cell.date,
+        ),
       );
       if (allSelected) {
         return {
@@ -241,8 +241,8 @@ function ShiftDemandTabInternal({
               !rowCells.some(
                 (cell) =>
                   selected.shiftId === cell.shiftId &&
-                  selected.date === cell.date
-              )
+                  selected.date === cell.date,
+              ),
           ),
         };
       } else {
@@ -250,8 +250,9 @@ function ShiftDemandTabInternal({
           (cell) =>
             !prev.selectedCells.some(
               (selected) =>
-                selected.shiftId === cell.shiftId && selected.date === cell.date
-            )
+                selected.shiftId === cell.shiftId &&
+                selected.date === cell.date,
+            ),
         );
         return {
           ...prev,
@@ -271,8 +272,8 @@ function ShiftDemandTabInternal({
       const allSelected = columnCells.every((cell) =>
         prev.selectedCells.some(
           (selected) =>
-            selected.shiftId === cell.shiftId && selected.date === cell.date
-        )
+            selected.shiftId === cell.shiftId && selected.date === cell.date,
+        ),
       );
       if (allSelected) {
         return {
@@ -282,8 +283,8 @@ function ShiftDemandTabInternal({
               !columnCells.some(
                 (cell) =>
                   selected.shiftId === cell.shiftId &&
-                  selected.date === cell.date
-              )
+                  selected.date === cell.date,
+              ),
           ),
         };
       } else {
@@ -291,8 +292,9 @@ function ShiftDemandTabInternal({
           (cell) =>
             !prev.selectedCells.some(
               (selected) =>
-                selected.shiftId === cell.shiftId && selected.date === cell.date
-            )
+                selected.shiftId === cell.shiftId &&
+                selected.date === cell.date,
+            ),
         );
         return {
           ...prev,
@@ -307,7 +309,7 @@ function ShiftDemandTabInternal({
       dates.map((date) => ({
         shiftId: shift.id,
         date: date.format("YYYY-MM-DD"),
-      }))
+      })),
     );
     setBulkChangeState((prev) => {
       const allSelected =
@@ -404,8 +406,8 @@ function ShiftDemandTabInternal({
     return rowCells.every((cell) =>
       bulkChangeState.selectedCells.some(
         (selected) =>
-          selected.shiftId === cell.shiftId && selected.date === cell.date
-      )
+          selected.shiftId === cell.shiftId && selected.date === cell.date,
+      ),
     );
   };
 
@@ -418,8 +420,8 @@ function ShiftDemandTabInternal({
     return columnCells.every((cell) =>
       bulkChangeState.selectedCells.some(
         (selected) =>
-          selected.shiftId === cell.shiftId && selected.date === cell.date
-      )
+          selected.shiftId === cell.shiftId && selected.date === cell.date,
+      ),
     );
   };
 
@@ -455,7 +457,7 @@ function ShiftDemandTabInternal({
 
         // Update available shift demands based on concurrency
         const availableIds = Object.keys(concurrencyMap).filter(
-          (id) => concurrencyMap[id].length > 0
+          (id) => concurrencyMap[id].length > 0,
         );
 
         setMultitaskingState({
@@ -492,13 +494,13 @@ function ShiftDemandTabInternal({
       if (isSelected) {
         // Deselecting - remove from selection
         newSelectedIds = prev.selectedShiftDemandIds.filter(
-          (id) => id !== shiftDemandId
+          (id) => id !== shiftDemandId,
         );
 
         // If no selections left, reset available to all concurrent shift demands
         if (newSelectedIds.length === 0) {
           newAvailableIds = Object.keys(concurrencyData).filter(
-            (id) => concurrencyData[id].length > 0
+            (id) => concurrencyData[id].length > 0,
           );
         }
       } else {
@@ -517,8 +519,8 @@ function ShiftDemandTabInternal({
           newAvailableIds = newAvailableIds.filter((id) =>
             newSelectedIds.every(
               (selectedId: string) =>
-                id === selectedId || concurrencyData[selectedId]?.includes(id)
-            )
+                id === selectedId || concurrencyData[selectedId]?.includes(id),
+            ),
           );
         }
       }
@@ -550,7 +552,7 @@ function ShiftDemandTabInternal({
         ...prev,
         selectedShiftDemandIds: [],
         availableShiftDemandIds: Object.keys(concurrencyData).filter(
-          (id) => concurrencyData[id].length > 0
+          (id) => concurrencyData[id].length > 0,
         ),
       }));
     } catch (error) {
@@ -571,7 +573,7 @@ function ShiftDemandTabInternal({
       await deleteMultitaskingGroup(selectedTeamId, groupId);
       // Remove the deleted group from the local state
       setMultitaskingGroups((prev) =>
-        prev.filter((group) => group.id !== groupId)
+        prev.filter((group) => group.id !== groupId),
       );
     } catch (error) {
       console.error("Failed to delete multitasking group:", error);
@@ -635,14 +637,9 @@ function ShiftDemandTabInternal({
     matrix,
     isLoading: isLoadingDemands,
     error: demandsError,
-  } = useShiftDemands(
-    selectedTeamId || "",
-    startDate.toDate(),
-    endDate.toDate(),
-    {
-      enabled: !!selectedTeamId,
-    }
-  );
+  } = useShiftDemands(selectedTeamId || "", startDate, endDate, {
+    enabled: !!selectedTeamId,
+  });
 
   // Shift demand mutations
   const {
@@ -687,7 +684,7 @@ function ShiftDemandTabInternal({
         const workShifts = fetchedShifts.filter(
           (shift: ShiftT) =>
             shift.shiftType === ShiftType.NORMAL ||
-            shift.shiftType === ShiftType.DUTY
+            shift.shiftType === ShiftType.DUTY,
         );
         setShifts(workShifts);
       } catch (error) {
@@ -705,7 +702,7 @@ function ShiftDemandTabInternal({
   const handlePeriodChange = (start: Dayjs, end: Dayjs) => {
     // Calculate the center date of the new period
     const centerDate = dayjs(
-      start.valueOf() + (end.valueOf() - start.valueOf()) / 2
+      start.valueOf() + (end.valueOf() - start.valueOf()) / 2,
     );
     setCurrentDate(centerDate);
   };
@@ -725,7 +722,7 @@ function ShiftDemandTabInternal({
   const handleCellChange = async (
     shiftId: string,
     date: Dayjs,
-    value: string
+    value: string,
   ) => {
     const dateStr = date.format("YYYY-MM-DD");
     const numValue = Math.max(0, parseInt(value) || 0);

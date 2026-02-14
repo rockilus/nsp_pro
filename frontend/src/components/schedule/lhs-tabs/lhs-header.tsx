@@ -1,27 +1,19 @@
 import React from "react";
-// MUI
-import { IconButton } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
 // Styles
 import "./lhs-header.css";
 
-interface CreateAssignmentProps {
+interface LHSHeaderProps {
   lhsHeaderTitle: string;
   onClose: () => void;
 }
 
-const LHSHEader: React.FC<CreateAssignmentProps> = ({
-  lhsHeaderTitle,
-  onClose,
-}) => {
+export default function LHSHEader({ lhsHeaderTitle, onClose }: LHSHeaderProps) {
   return (
     <div className="lhs-header-container">
       <span className="lhs-header-title">{lhsHeaderTitle}</span>
-      <IconButton onClick={onClose}>
-        <CloseIcon fontSize="small" />
-      </IconButton>
+      <button className="lhs-header-close-button" onClick={onClose}>
+        ✕
+      </button>
     </div>
   );
-};
-
-export default LHSHEader;
+}

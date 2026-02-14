@@ -370,6 +370,49 @@ export function useDuplicatePeriod() {
 }
 
 /**
+ * Hook for getting schedule entities (shifts and workers only)
+ *
+ * Use this hook to fetch entity data that changes rarely.
+ * For assignments, use useAssignmentsByPeriod hook with smart buffering instead.
+ */
+export function useGetScheduleEntities() {
+  const apiClient = useApiClient();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  const getScheduleEntities = useCallback(
+    async (
+      teamId: string,
+    ): Promise<{
+      shifts: ShiftT[];
+      workers: WorkerT[];
+    }> => {
+      // Security: Validate authentication state
+      if (loading) {
+        throw new Error("Authentication still loading - please wait");
+      }
+
+      if (!isAuthenticated || !user?.id_token) {
+        throw new Error("User not authenticated - please sign in");
+      }
+
+      try {
+        return await ScheduleApi.getScheduleEntities(apiClient, teamId);
+      } catch (error) {
+        console.error("❌ Failed to get schedule entities:", {
+          error: error instanceof Error ? error.message : "Unknown error",
+          timestamp: new Date().toISOString(),
+        });
+        throw error;
+      }
+    },
+    [apiClient, isAuthenticated, loading, user],
+  );
+
+  return getScheduleEntities;
+}
+
+/**
+ * @deprecated Use useGetScheduleEntities + useAssignmentsByPeriod hook instead
  * Hook for getting schedule assignments data
  */
 export function useGetScheduleAssignmentsData() {
@@ -416,6 +459,7 @@ export function useGetScheduleAssignmentsData() {
 }
 
 /**
+ * @deprecated Use useGetScheduleEntities + useAssignmentsByPeriod hook instead
  * Hook for getting schedule assignments data (no solver)
  */
 export function useGetScheduleAssignmentsDataNoSolver() {

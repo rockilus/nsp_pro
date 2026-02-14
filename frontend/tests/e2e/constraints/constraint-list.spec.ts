@@ -11,13 +11,11 @@
 import { test, expect } from "@playwright/test";
 import { ConstraintTestBase } from "../../utils/constraint-test-base";
 import { randomUUID } from "crypto";
+import { ConstraintT } from "../../../src/types/constraint";
 
 test.describe("Constraint List", () => {
   // Map to store constraints by unique test run ID
-  const testConstraintsMap = new Map<
-    string,
-    { constraintId: string; teamId: string }[]
-  >();
+  const testConstraintsMap = new Map<string, ConstraintT[]>();
 
   // Store the constraint test base per test run
   const testBasesMap = new Map<string, ConstraintTestBase>();
@@ -49,12 +47,12 @@ test.describe("Constraint List", () => {
     // Get available constraint templates
     const templates = await constraintTestBase.getTestConstraintTemplates();
     console.log(
-      `[Test Run ${testRunId}] Available templates: ${templates.length}`
+      `[Test Run ${testRunId}] Available templates: ${templates.length}`,
     );
 
     if (templates.length === 0) {
       console.warn(
-        `[Test Run ${testRunId}] No constraint templates available - some tests may fail`
+        `[Test Run ${testRunId}] No constraint templates available - some tests may fail`,
       );
       return;
     }
@@ -67,7 +65,7 @@ test.describe("Constraint List", () => {
     // Create a hard constraint using template-based block generation
     const hardConstraint =
       await constraintTestBase.createTestConstraintFromTemplate(template, {
-        workerId: testWorkers[0].workerId,
+        workerId: testWorkers[0].id,
         shiftId: testShifts[0].id,
         numberValue: 2,
         hard: true,
@@ -78,7 +76,7 @@ test.describe("Constraint List", () => {
     // Create a soft constraint using template-based block generation
     const softConstraint =
       await constraintTestBase.createTestConstraintFromTemplate(template, {
-        workerId: testWorkers[1].workerId,
+        workerId: testWorkers[1].id,
         shiftId: testShifts[0].id,
         numberValue: 3,
         hard: false,
@@ -88,7 +86,7 @@ test.describe("Constraint List", () => {
 
     const constraintCount = testConstraintsMap.get(testRunId)!.length;
     console.log(
-      `[Test Run ${testRunId}] Created ${constraintCount} test constraints`
+      `[Test Run ${testRunId}] Created ${constraintCount} test constraints`,
     );
 
     // Clear localStorage and set the correct team to ensure we're viewing the right constraints
@@ -118,12 +116,12 @@ test.describe("Constraint List", () => {
           timeout: 15000,
         });
         console.log(
-          `[Test Run ${testRunId}] Constraint items loaded in the DOM`
+          `[Test Run ${testRunId}] Constraint items loaded in the DOM`,
         );
       } catch (error) {
         console.error(
           `[Test Run ${testRunId}] Failed to load constraint items:`,
-          error
+          error,
         );
         // Take a screenshot for debugging
         await page.screenshot({
@@ -147,26 +145,26 @@ test.describe("Constraint List", () => {
 
     if (!constraintTestBase) {
       console.warn(
-        `[Test Run ${testRunId}] No test base found - skipping cleanup`
+        `[Test Run ${testRunId}] No test base found - skipping cleanup`,
       );
       return;
     }
 
     console.log(
-      `[Test Run ${testRunId}] Cleaning up ${testConstraints.length} constraints`
+      `[Test Run ${testRunId}] Cleaning up ${testConstraints.length} constraints`,
     );
 
     // Clean up: delete the constraints created for THIS specific test run
     for (const constraint of testConstraints) {
       try {
-        await constraintTestBase.deleteTestConstraint(constraint.constraintId);
+        await constraintTestBase.deleteTestConstraint(constraint.id);
         console.log(
-          `[Test Run ${testRunId}] Deleted constraint ${constraint.constraintId}`
+          `[Test Run ${testRunId}] Deleted constraint ${constraint.id}`,
         );
       } catch (error) {
         console.warn(
-          `[Test Run ${testRunId}] Failed to delete constraint ${constraint.constraintId}:`,
-          error
+          `[Test Run ${testRunId}] Failed to delete constraint ${constraint.id}:`,
+          error,
         );
       }
     }
@@ -186,7 +184,7 @@ test.describe("Constraint List", () => {
     const constraintTestBase = testBasesMap.get(testRunId)!;
 
     console.log(
-      `[Test Run ${testRunId}] Running display test with ${testConstraints.length} constraints`
+      `[Test Run ${testRunId}] Running display test with ${testConstraints.length} constraints`,
     );
 
     // Check if constraints are displayed when we have test constraints
@@ -197,7 +195,7 @@ test.describe("Constraint List", () => {
       // Check that each test constraint is displayed using its specific constraint item identifier
       for (const testConstraint of testConstraints) {
         const constraintItem = page.locator(
-          `[data-testid="constraint-item-${testConstraint.constraintId}"]`
+          `[data-testid="constraint-item-${testConstraint.id}"]`,
         );
         await expect(constraintItem).toBeVisible({ timeout: 10000 });
       }
@@ -206,7 +204,7 @@ test.describe("Constraint List", () => {
       // verify the "no constraints" message
       await expect(constraintList).toContainText("no_constraints");
       console.log(
-        `[Test Run ${testRunId}] ✅ No constraints message displayed when list is empty`
+        `[Test Run ${testRunId}] ✅ No constraints message displayed when list is empty`,
       );
     }
   });
@@ -222,7 +220,7 @@ test.describe("Constraint List", () => {
     if (testConstraints.length === 0) {
       test.skip(
         true,
-        "No test constraints available - skipping hard/soft toggle test"
+        "No test constraints available - skipping hard/soft toggle test",
       );
       return;
     }
@@ -232,7 +230,7 @@ test.describe("Constraint List", () => {
     // Find the hard/soft button for the hard constraint
     const hardSoftButton = constraintTestBase.getConstraintHardSoftButton(
       page,
-      hardConstraint.constraintId
+      hardConstraint.id,
     );
 
     // Initially should show "Hard" (or localized equivalent)
@@ -265,7 +263,7 @@ test.describe("Constraint List", () => {
     if (testConstraints.length < 2) {
       test.skip(
         true,
-        "Not enough test constraints available - skipping soft to hard toggle test"
+        "Not enough test constraints available - skipping soft to hard toggle test",
       );
       return;
     }
@@ -275,7 +273,7 @@ test.describe("Constraint List", () => {
     // Find the hard/soft button for the soft constraint
     const hardSoftButton = constraintTestBase.getConstraintHardSoftButton(
       page,
-      softConstraint.constraintId
+      softConstraint.id,
     );
 
     // Initially should show "Soft" (or localized equivalent)
@@ -308,7 +306,7 @@ test.describe("Constraint List", () => {
     if (testConstraints.length === 0) {
       test.skip(
         true,
-        "No test constraints available - skipping edit popup test"
+        "No test constraints available - skipping edit popup test",
       );
       return;
     }
@@ -318,7 +316,7 @@ test.describe("Constraint List", () => {
     // Find and click the edit button for the constraint
     const editButton = constraintTestBase.getConstraintEditButton(
       page,
-      testConstraint.constraintId
+      testConstraint.id,
     );
 
     await expect(editButton).toBeVisible();
@@ -337,7 +335,7 @@ test.describe("Constraint List", () => {
     await expect(saveButton).toBeVisible();
 
     console.log(
-      `[Test Run ${testRunId}] ✅ Edit constraint popup opens correctly with edit form`
+      `[Test Run ${testRunId}] ✅ Edit constraint popup opens correctly with edit form`,
     );
   });
 
@@ -352,7 +350,7 @@ test.describe("Constraint List", () => {
     if (testConstraints.length === 0) {
       test.skip(
         true,
-        "No test constraints available - skipping template content test"
+        "No test constraints available - skipping template content test",
       );
       return;
     }
@@ -362,7 +360,7 @@ test.describe("Constraint List", () => {
     // Click the edit button to open the popup
     const editButton = constraintTestBase.getConstraintEditButton(
       page,
-      testConstraint.constraintId
+      testConstraint.id,
     );
     await editButton.click();
 
@@ -388,7 +386,7 @@ test.describe("Constraint List", () => {
     expect(buttonText?.toLowerCase()).toMatch(/(save|update)/);
 
     console.log(
-      `[Test Run ${testRunId}] ✅ Edit form contains ${blockCount} constraint blocks and shows save button`
+      `[Test Run ${testRunId}] ✅ Edit form contains ${blockCount} constraint blocks and shows save button`,
     );
   });
 
@@ -414,7 +412,7 @@ test.describe("Constraint List", () => {
     // Verify the constraint is initially visible by checking the delete button exists
     const deleteButton = constraintTestBase.getConstraintDeleteButton(
       page,
-      constraintToDelete.constraintId
+      constraintToDelete.id,
     );
     await expect(deleteButton).toBeVisible();
 
@@ -424,7 +422,7 @@ test.describe("Constraint List", () => {
     // Wait for the specific constraint item to be removed from the DOM
     const deletedConstraintItem = constraintTestBase.getConstraintItemById(
       page,
-      constraintToDelete.constraintId
+      constraintToDelete.id,
     );
     await expect(deletedConstraintItem).not.toBeVisible({ timeout: 10000 });
 
@@ -434,12 +432,12 @@ test.describe("Constraint List", () => {
 
     // Remove from our test constraints map since it's been deleted
     const updatedConstraints = testConstraints.filter(
-      (c) => c.constraintId !== constraintToDelete.constraintId
+      (c) => c.id !== constraintToDelete.id,
     );
     testConstraintsMap.set(testRunId, updatedConstraints);
 
     console.log(
-      `[Test Run ${testRunId}] ✅ Constraint successfully deleted from the list`
+      `[Test Run ${testRunId}] ✅ Constraint successfully deleted from the list`,
     );
   });
 
@@ -453,11 +451,11 @@ test.describe("Constraint List", () => {
     // Delete all constraints if any exist
     for (const constraint of testConstraints) {
       try {
-        await constraintTestBase.deleteTestConstraint(constraint.constraintId);
+        await constraintTestBase.deleteTestConstraint(constraint.id);
       } catch (error) {
         console.warn(
-          `[Test Run ${testRunId}] Failed to delete constraint ${constraint.constraintId}:`,
-          error
+          `[Test Run ${testRunId}] Failed to delete constraint ${constraint.id}:`,
+          error,
         );
       }
     }
@@ -475,7 +473,7 @@ test.describe("Constraint List", () => {
     await expect(constraintList).toContainText("no_constraints");
 
     console.log(
-      `[Test Run ${testRunId}] ✅ Empty constraint list displays appropriate message`
+      `[Test Run ${testRunId}] ✅ Empty constraint list displays appropriate message`,
     );
   });
 
@@ -490,7 +488,7 @@ test.describe("Constraint List", () => {
     if (testConstraints.length < 2) {
       test.skip(
         true,
-        "Not enough test constraints available - skipping list state test"
+        "Not enough test constraints available - skipping list state test",
       );
       return;
     }
@@ -503,7 +501,7 @@ test.describe("Constraint List", () => {
     // 1. Toggle first constraint hard/soft
     const hardSoftButton1 = constraintTestBase.getConstraintHardSoftButton(
       page,
-      constraint1.constraintId
+      constraint1.id,
     );
     const initialText1 = await hardSoftButton1.textContent();
     await hardSoftButton1.click();
@@ -516,7 +514,7 @@ test.describe("Constraint List", () => {
     // 2. Open and close edit popup for second constraint
     const editButton2 = constraintTestBase.getConstraintEditButton(
       page,
-      constraint2.constraintId
+      constraint2.id,
     );
     await editButton2.click();
 
@@ -536,21 +534,15 @@ test.describe("Constraint List", () => {
 
     // Verify the constraint items still exist by checking their delete buttons
     const constraint1DeleteButton =
-      constraintTestBase.getConstraintDeleteButton(
-        page,
-        constraint1.constraintId
-      );
+      constraintTestBase.getConstraintDeleteButton(page, constraint1.id);
     const constraint2DeleteButton =
-      constraintTestBase.getConstraintDeleteButton(
-        page,
-        constraint2.constraintId
-      );
+      constraintTestBase.getConstraintDeleteButton(page, constraint2.id);
 
     await expect(constraint1DeleteButton).toBeVisible();
     await expect(constraint2DeleteButton).toBeVisible();
 
     console.log(
-      `[Test Run ${testRunId}] ✅ Constraint list maintains state correctly after operations`
+      `[Test Run ${testRunId}] ✅ Constraint list maintains state correctly after operations`,
     );
   });
 });

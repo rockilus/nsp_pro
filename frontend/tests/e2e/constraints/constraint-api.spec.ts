@@ -23,14 +23,14 @@ test.describe("Constraint API Tests", () => {
     if (templates.length === 0) {
       test.skip(
         true,
-        "No constraint templates available - cannot test constraint creation"
+        "No constraint templates available - cannot test constraint creation",
       );
       return;
     }
 
     const template = templates[0];
     console.log(
-      `Using template: ${template.id} (type: ${template.constraintType})`
+      `Using template: ${template.id} (type: ${template.constraintType})`,
     );
 
     // Create a test constraint using template-based block generation
@@ -39,7 +39,7 @@ test.describe("Constraint API Tests", () => {
 
     const createdConstraint =
       await constraintTestBase.createTestConstraintFromTemplate(template, {
-        workerId: testWorkers[0].workerId, // Use first worker ID
+        workerId: testWorkers[0].id, // Use first worker ID
         shiftId: testShifts[0].id, // Use first shift ID
         numberValue: 2,
         hard: true,
@@ -47,15 +47,15 @@ test.describe("Constraint API Tests", () => {
         active: true,
       });
 
-    expect(createdConstraint.constraintId).toBeTruthy();
+    expect(createdConstraint.id).toBeTruthy();
     expect(createdConstraint.teamId).toBeTruthy();
 
-    console.log(`✅ Created constraint: ${createdConstraint.constraintId}`);
+    console.log(`✅ Created constraint: ${createdConstraint.id}`);
 
     // Verify constraint can be retrieved
     const constraints = await constraintTestBase.getTestConstraints();
     const foundConstraint = constraints.find(
-      (c) => c.id === createdConstraint.constraintId
+      (c) => c.id === createdConstraint.id,
     );
 
     expect(foundConstraint).toBeTruthy();
@@ -66,13 +66,11 @@ test.describe("Constraint API Tests", () => {
     expect(typeof foundConstraint.text).toBe("string");
 
     console.log(
-      `✅ Constraint verified in database with generated text: ${foundConstraint.text}`
+      `✅ Constraint verified in database with generated text: ${foundConstraint.text}`,
     );
 
     // Clean up
-    await constraintTestBase.deleteTestConstraint(
-      createdConstraint.constraintId
-    );
+    await constraintTestBase.deleteTestConstraint(createdConstraint.id);
     console.log(`✅ Constraint cleanup completed`);
   });
 
@@ -83,7 +81,7 @@ test.describe("Constraint API Tests", () => {
     if (templates.length === 0) {
       test.skip(
         true,
-        "No constraint templates available - cannot test constraint update"
+        "No constraint templates available - cannot test constraint update",
       );
       return;
     }
@@ -96,7 +94,7 @@ test.describe("Constraint API Tests", () => {
 
     const createdConstraint =
       await constraintTestBase.createTestConstraintFromTemplate(template, {
-        workerId: testWorkers[0].workerId, // Use first worker ID
+        workerId: testWorkers[0].id, // Use first worker ID
         shiftId: testShifts[0].id, // Use first shift ID
         numberValue: 2,
         hard: true,
@@ -112,28 +110,26 @@ test.describe("Constraint API Tests", () => {
     };
 
     const updatedConstraint = await constraintTestBase.updateTestConstraint(
-      createdConstraint.constraintId,
-      updates
+      createdConstraint.id,
+      updates,
     );
 
-    expect(updatedConstraint.constraintId).toBe(createdConstraint.constraintId);
+    expect(updatedConstraint.id).toBe(createdConstraint.id);
 
     // Verify the updates were applied
     const constraints = await constraintTestBase.getTestConstraints();
     const foundConstraint = constraints.find(
-      (c) => c.id === createdConstraint.constraintId
+      (c) => c.id === createdConstraint.id,
     );
 
     expect(foundConstraint.hard).toBe(false);
 
     console.log(
-      `✅ Constraint updated successfully: hard: ${foundConstraint.hard}`
+      `✅ Constraint updated successfully: hard: ${foundConstraint.hard}`,
     );
 
     // Clean up
-    await constraintTestBase.deleteTestConstraint(
-      createdConstraint.constraintId
-    );
+    await constraintTestBase.deleteTestConstraint(createdConstraint.id);
   });
 
   test("should delete constraint via API successfully", async () => {
@@ -143,7 +139,7 @@ test.describe("Constraint API Tests", () => {
     if (templates.length === 0) {
       test.skip(
         true,
-        "No constraint templates available - cannot test constraint deletion"
+        "No constraint templates available - cannot test constraint deletion",
       );
       return;
     }
@@ -156,7 +152,7 @@ test.describe("Constraint API Tests", () => {
 
     const createdConstraint =
       await constraintTestBase.createTestConstraintFromTemplate(template, {
-        workerId: testWorkers[0].workerId, // Use first worker ID
+        workerId: testWorkers[0].id, // Use first worker ID
         shiftId: testShifts[0].id, // Use first shift ID
         numberValue: 1,
         hard: true,
@@ -167,20 +163,16 @@ test.describe("Constraint API Tests", () => {
     // Verify it exists
     let constraints = await constraintTestBase.getTestConstraints();
     let foundConstraint = constraints.find(
-      (c) => c.id === createdConstraint.constraintId
+      (c) => c.id === createdConstraint.id,
     );
     expect(foundConstraint).toBeTruthy();
 
     // Delete the constraint
-    await constraintTestBase.deleteTestConstraint(
-      createdConstraint.constraintId
-    );
+    await constraintTestBase.deleteTestConstraint(createdConstraint.id);
 
     // Verify it's deleted
     constraints = await constraintTestBase.getTestConstraints();
-    foundConstraint = constraints.find(
-      (c) => c.id === createdConstraint.constraintId
-    );
+    foundConstraint = constraints.find((c) => c.id === createdConstraint.id);
     expect(foundConstraint).toBeFalsy();
 
     console.log(`✅ Constraint deleted successfully`);
@@ -199,7 +191,7 @@ test.describe("Constraint API Tests", () => {
       expect(template.text).toBeTruthy();
 
       console.log(
-        `✅ Template validation passed: ${template.id} - ${template.text}`
+        `✅ Template validation passed: ${template.id} - ${template.text}`,
       );
     }
   });
@@ -218,23 +210,23 @@ test.describe("Constraint API Tests", () => {
     // Test with first worker
     const constraint1 =
       await constraintTestBase.createTestConstraintFromTemplate(template, {
-        workerId: testWorkers[0].workerId,
+        workerId: testWorkers[0].id,
         shiftId: testShifts[0].id,
         numberValue: 1,
       });
-    expect(constraint1.constraintId).toBeTruthy();
+    expect(constraint1.id).toBeTruthy();
 
     // Test with second worker
     const constraint2 =
       await constraintTestBase.createTestConstraintFromTemplate(template, {
-        workerId: testWorkers[1].workerId,
+        workerId: testWorkers[1].id,
         shiftId: testShifts[0].id,
         numberValue: 2,
       });
-    expect(constraint2.constraintId).toBeTruthy();
+    expect(constraint2.id).toBeTruthy();
 
     console.log(
-      `✅ Created constraints for specific workers: ${constraint1.constraintId}, ${constraint2.constraintId}`
+      `✅ Created constraints for specific workers: ${constraint1.id}, ${constraint2.id}`,
     );
   });
 
@@ -255,10 +247,8 @@ test.describe("Constraint API Tests", () => {
         numberValue: 3,
       });
 
-    expect(constraint.constraintId).toBeTruthy();
-    console.log(
-      `✅ Created constraint for all workers: ${constraint.constraintId}`
-    );
+    expect(constraint.id).toBeTruthy();
+    console.log(`✅ Created constraint for all workers: ${constraint.id}`);
   });
 
   test("should create constraints with all shifts option", async () => {
@@ -273,15 +263,13 @@ test.describe("Constraint API Tests", () => {
 
     const constraint =
       await constraintTestBase.createTestConstraintFromTemplate(template, {
-        workerId: testWorkers[0].workerId,
+        workerId: testWorkers[0].id,
         shiftId: "all",
         numberValue: 2,
       });
 
-    expect(constraint.constraintId).toBeTruthy();
-    console.log(
-      `✅ Created constraint for all shifts: ${constraint.constraintId}`
-    );
+    expect(constraint.id).toBeTruthy();
+    console.log(`✅ Created constraint for all shifts: ${constraint.id}`);
   });
 
   test("should create constraints with duty option", async () => {
@@ -296,15 +284,13 @@ test.describe("Constraint API Tests", () => {
 
     const constraint =
       await constraintTestBase.createTestConstraintFromTemplate(template, {
-        workerId: testWorkers[0].workerId,
+        workerId: testWorkers[0].id,
         shiftId: "duty",
         numberValue: 1,
       });
 
-    expect(constraint.constraintId).toBeTruthy();
-    console.log(
-      `✅ Created constraint with duty option: ${constraint.constraintId}`
-    );
+    expect(constraint.id).toBeTruthy();
+    console.log(`✅ Created constraint with duty option: ${constraint.id}`);
   });
 
   test("should create constraints with no-duty option", async () => {
@@ -319,15 +305,13 @@ test.describe("Constraint API Tests", () => {
 
     const constraint =
       await constraintTestBase.createTestConstraintFromTemplate(template, {
-        workerId: testWorkers[0].workerId,
+        workerId: testWorkers[0].id,
         shiftId: "no-duty",
         numberValue: 0,
       });
 
-    expect(constraint.constraintId).toBeTruthy();
-    console.log(
-      `✅ Created constraint with no-duty option: ${constraint.constraintId}`
-    );
+    expect(constraint.id).toBeTruthy();
+    console.log(`✅ Created constraint with no-duty option: ${constraint.id}`);
   });
 
   test("should create constraints with default parameters", async () => {
@@ -343,9 +327,9 @@ test.describe("Constraint API Tests", () => {
     const constraint =
       await constraintTestBase.createTestConstraintFromTemplate(template);
 
-    expect(constraint.constraintId).toBeTruthy();
+    expect(constraint.id).toBeTruthy();
     console.log(
-      `✅ Created constraint with default parameters: ${constraint.constraintId}`
+      `✅ Created constraint with default parameters: ${constraint.id}`,
     );
   });
 
@@ -383,12 +367,12 @@ test.describe("Constraint API Tests", () => {
         numberValue: 1,
       });
 
-    expect(constraint1.constraintId).toBeTruthy();
-    expect(constraint2.constraintId).toBeTruthy();
-    expect(constraint3.constraintId).toBeTruthy();
+    expect(constraint1.id).toBeTruthy();
+    expect(constraint2.id).toBeTruthy();
+    expect(constraint3.id).toBeTruthy();
 
     console.log(
-      `✅ Created constraints with all combinations: ${constraint1.constraintId}, ${constraint2.constraintId}, ${constraint3.constraintId}`
+      `✅ Created constraints with all combinations: ${constraint1.id}, ${constraint2.id}, ${constraint3.id}`,
     );
   });
 });

@@ -76,6 +76,7 @@ class RecurrenceRule:
     start_date: date
     end_date: date | None
     number_of_occurrences: int | None
+    last_materialized_until: date | None = None
 
     def to_dict(self) -> Dict:
         out = asdict(self)
@@ -94,6 +95,13 @@ class RecurrenceRule:
             if self.end_date
             else None
         )
+        out["last_materialized_until"] = (
+            datetime.combine(
+                self.last_materialized_until, time.min, tzinfo=timezone.utc
+            ).timestamp()
+            if self.last_materialized_until
+            else None
+        )
         return out
 
     @classmethod
@@ -108,7 +116,7 @@ class RecurrenceRule:
             week_days=data["week_days"],
             month_repeat_type=(
                 MonthRepeatType(data["month_repeat_type"])
-                if data["month_repeat_type"]
+                if data.get("month_repeat_type") is not None
                 else None
             ),
             recurrence_end_type=RecurrenceEndType(data["recurrence_end_type"]),
@@ -119,6 +127,13 @@ class RecurrenceRule:
                 else None
             ),
             number_of_occurrences=data["number_of_occurrences"],
+            last_materialized_until=(
+                datetime.fromtimestamp(
+                    data["last_materialized_until"], timezone.utc
+                ).date()
+                if data.get("last_materialized_until")
+                else None
+            ),
         )
 
     def to_dto(self) -> RecurrenceRuleDTO:
@@ -138,6 +153,13 @@ class RecurrenceRule:
             if self.end_date
             else None
         )
+        data["last_materialized_until"] = (
+            datetime.combine(
+                self.last_materialized_until, time.min, tzinfo=timezone.utc
+            ).timestamp()
+            if self.last_materialized_until
+            else None
+        )
         as_dict = humps.camelize(data)
         validator = TypeAdapter(RecurrenceRuleDTO)
         return validator.validate_python(as_dict)
@@ -150,7 +172,7 @@ class RecurrenceRule:
         data_snake["frequency_type"] = FrequencyType(data_snake["frequency_type"])
         data_snake["month_repeat_type"] = (
             MonthRepeatType(data_snake["month_repeat_type"])
-            if data_snake["month_repeat_type"]
+            if data_snake.get("month_repeat_type") is not None
             else None
         )
         data_snake["recurrence_end_type"] = RecurrenceEndType(
@@ -162,6 +184,13 @@ class RecurrenceRule:
         data_snake["end_date"] = (
             datetime.fromtimestamp(data_snake["end_date"], timezone.utc).date()
             if data_snake["end_date"]
+            else None
+        )
+        data_snake["last_materialized_until"] = (
+            datetime.fromtimestamp(
+                data_snake["last_materialized_until"], timezone.utc
+            ).date()
+            if data_snake.get("last_materialized_until")
             else None
         )
         return cls(**data_snake)

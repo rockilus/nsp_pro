@@ -67,7 +67,7 @@ from shared.utils import (
 
 from src.services.base_service import BaseService
 
-# pylint: disable=too-many-instance-attributes, too-many-locals
+# pylint: disable=too-many-instance-attributes, too-many-locals, too-many-branches
 
 
 @dataclass
@@ -895,13 +895,127 @@ class ReplacementService(BaseService):
 
         return assignment_date <= worker.employment_end_date
 
+    def _get_staffing_requirements(
+        self, shift: Shift
+    ) -> tuple[bool, set[str], dict[str | None, int]]:
+        """Extract and organize staffing requirements from a shift.
+
+        Args:
+            shift: The shift to analyze
+
+        Returns:
+            Tuple containing:
+            - has_none_staffing: Whether shift has any None specialty slots
+            - required_specialty_ids: Set of non-None specialty IDs required
+            - staffing_dict: Dict mapping specialty_id -> required count
+        """
+        has_none_staffing = False
+        required_specialty_ids = set()
+        staffing_dict: dict[str | None, int] = {}
+
+        for staffing in shift.staffing:
+            specialty_id = staffing.specialty_id
+            count = staffing.staffing
+
+            # Accumulate counts for same specialty
+            staffing_dict[specialty_id] = staffing_dict.get(specialty_id, 0) + count
+
+            if specialty_id is None:
+                has_none_staffing = True
+            else:
+                required_specialty_ids.add(specialty_id)
+
+        return has_none_staffing, required_specialty_ids, staffing_dict
+
+    def _count_specialty_coverage(
+        self,
+        shift: Shift,
+        other_assignments: list[Assignment],
+        worker_by_id: dict[str, Worker],
+        required_specialty_ids: set[str],
+    ) -> dict[str | None, int]:
+        """Count how many assignments cover each specialty requirement.
+
+        Uses greedy matching: each worker's specialties are matched to the first
+        unfilled specialty requirement they possess. Multi-specialty workers can
+        fill any one of their matching requirements.
+
+        Args:
+            shift: The shift with staffing requirements
+            other_assignments: Existing assignments (excluding target being replaced)
+            worker_by_id: Lookup dict for worker objects
+            required_specialty_ids: Set of non-None specialty IDs required
+
+        Returns:
+            Dict mapping specialty_id (or None) -> count of assignments covering it
+        """
+        # Initialize coverage counts
+        coverage: dict[str | None, int] = {}
+        for staffing in shift.staffing:
+            coverage[staffing.specialty_id] = 0
+
+        # Track which assignments we've already counted
+        counted_assignment_ids = set()
+
+        # First pass: count specialty assignments (greedy matching)
+        for specialty_id in required_specialty_ids:
+            required_count = sum(
+                s.staffing for s in shift.staffing if s.specialty_id == specialty_id
+            )
+
+            for assignment in other_assignments:
+                if assignment.id in counted_assignment_ids:
+                    continue
+                if coverage[specialty_id] >= required_count:
+                    break
+
+                worker = worker_by_id.get(assignment.worker_id)
+                if worker and specialty_id in worker.specialty_ids:
+                    coverage[specialty_id] += 1
+                    counted_assignment_ids.add(assignment.id)
+
+        # Second pass: count None specialty assignments (workers with no
+        # required specialties)
+        if None in coverage:
+            required_none_count = sum(
+                s.staffing for s in shift.staffing if s.specialty_id is None
+            )
+
+            for assignment in other_assignments:
+                if assignment.id in counted_assignment_ids:
+                    continue
+                if coverage[None] >= required_none_count:
+                    break
+
+                worker = worker_by_id.get(assignment.worker_id)
+                if worker:
+                    # Worker qualifies for None slot if they have no required
+                    # specialties
+                    worker_has_required_specialty = any(
+                        spec_id in worker.specialty_ids
+                        for spec_id in required_specialty_ids
+                    )
+                    if not worker_has_required_specialty:
+                        coverage[None] += 1
+                        counted_assignment_ids.add(assignment.id)
+
+        return coverage
+
     # pylint: disable=too-many-return-statements
     def _check_has_specialty(self, worker: Worker, context: ReplacementContext) -> bool:
         """Check if worker has required specialty for the shift.
 
-        When replacing an assignment in a multi-staffed shift, this checks
-        if the worker can fill the specialty gap left by removing the target
-        assignment, considering other existing assignments for the same shift.
+        Handles multi-specialty staffing with proper counting. For shifts requiring
+        multiple workers per specialty (e.g., 2 surgeons + 1 nurse), this method
+        counts existing assignments per specialty and determines if the worker can
+        fill an unmet requirement.
+
+        Examples:
+        - Shift needs 2 surgeons, 1 assigned -> candidate must be surgeon
+        - Shift needs 1 surgeon + 1 nurse, 1 surgeon assigned -> candidate must be nurse
+        - Shift needs 2 None + 1 surgeon, 2 non-surgeons assigned -> candidate
+        must be surgeon
+        - Multi-specialty worker (surgeon+nurse) can fill any unmet requirement
 
         Args:
             worker: The worker to check
@@ -913,16 +1027,26 @@ class ReplacementService(BaseService):
         target_shift = context.target_shift
         assignment_date = context.assignment_date
 
-        # Get all specialty requirements from the shift's staffing
-        required_specialty_ids = [
-            staffing.specialty_id
-            for staffing in target_shift.staffing
-            if staffing.specialty_id is not None
-        ]
-
-        # If no specialties required, any worker can do the shift
-        if not required_specialty_ids:
+        if not target_shift.staffing:
+            # No staffing requirements means any worker qualifies
             return True
+
+        # Extract staffing requirements
+        has_none_staffing, required_specialty_ids, staffing_dict = (
+            self._get_staffing_requirements(target_shift)
+        )
+
+        # Case A: No specialty requirements at all (all None) - any worker qualifies
+        if not required_specialty_ids and has_none_staffing:
+            return True
+
+        # Case B: No staffing with none specialties, and worker has no
+        # specialties of the ones required
+        if (
+            not has_none_staffing
+            and not set(worker.specialty_ids) & required_specialty_ids
+        ):
+            return False
 
         # Find other assignments for the same shift on the same date
         # (excluding the target assignment being replaced)
@@ -936,61 +1060,70 @@ class ReplacementService(BaseService):
             )
         ]
 
-        # If no other assignments exist, any worker with any required specialty
-        # is acceptable
-        # (shift is understaffed, so we're just doing a 1-for-1 swap)
-        # If shift has specialty requirements, worker needs at least one of them
-        # If shift has no-specialty staffing (None), any worker without those
-        # specialties is OK too
+        # Case C: No other assignments exist - accept worker if they have any required
+        # specialty OR qualify for None slot
         if not other_assignments:
-            # Check if shift allows workers without specialty (has staffing
-            # with specialty_id=None)
-            has_no_specialty_slot = any(
-                staffing.specialty_id is None for staffing in target_shift.staffing
-            )
-
-            if not required_specialty_ids:
-                # No specialties required at all - any worker is OK
-                return True
-
             worker_specialty_set = set(worker.specialty_ids)
             required_specialty_set = set(required_specialty_ids)
 
-            # Worker is OK if they have one of the required specialties
+            # Worker qualifies if they have any required specialty
             if worker_specialty_set & required_specialty_set:
                 return True
 
-            # OR if shift has no-specialty slot and worker has no required specialties
-            if has_no_specialty_slot:
-                return True
+            # OR if shift has None slots and worker has no required specialties
+            if has_none_staffing:
+                worker_has_required_specialty = bool(
+                    worker_specialty_set & required_specialty_set
+                )
+                if not worker_has_required_specialty:
+                    return True
 
-            return False
+            # If shift only has specialty requirements (no None) and worker
+            # doesn't have any
+            if not has_none_staffing:
+                return False
 
-        # Build worker lookup
-        worker_by_id = {w.id: w for w in context.workers}
-
-        # Determine which specialties are covered by other assignments
-        covered_specialties = set()
-        for assignment in other_assignments:
-            other_worker = worker_by_id.get(assignment.worker_id)
-            if other_worker:
-                covered_specialties.update(other_worker.specialty_ids)
-
-        # Determine which required specialties are NOT yet covered
-        uncovered_specialties = [
-            spec_id
-            for spec_id in required_specialty_ids
-            if spec_id not in covered_specialties
-        ]
-
-        # If all required specialties are already covered, any worker is acceptable
-        if not uncovered_specialties:
             return True
 
-        # Worker must have at least one of the uncovered specialties
+        # Case D: Other assignments exist - count coverage and check if worker fills gap
+        worker_by_id = {w.id: w for w in context.workers}
+
+        # Count current specialty coverage
+        coverage = self._count_specialty_coverage(
+            target_shift,
+            other_assignments,
+            worker_by_id,
+            required_specialty_ids,
+        )
+
+        # Determine which requirements are not yet met
+        unmet_requirements: list[str | None] = []
+        for specialty_id, required_count in staffing_dict.items():
+            if coverage.get(specialty_id, 0) < required_count:
+                unmet_requirements.append(specialty_id)
+
+        # If all requirements met (possibly overstaffed), any worker is acceptable
+        if not unmet_requirements:
+            return True
+
+        # Check if worker can fill any unmet requirement
         worker_specialty_set = set(worker.specialty_ids)
-        uncovered_specialty_set = set(uncovered_specialties)
-        return bool(worker_specialty_set & uncovered_specialty_set)
+
+        for unmet_specialty_id in unmet_requirements:
+            if unmet_specialty_id is None:
+                # None slot: worker qualifies if they have no required specialties
+                worker_has_required_specialty = bool(
+                    worker_specialty_set & required_specialty_ids
+                )
+                if not worker_has_required_specialty:
+                    return True
+            else:
+                # Specialty slot: worker qualifies if they have this specialty
+                if unmet_specialty_id in worker.specialty_ids:
+                    return True
+
+        # Worker doesn't fill any unmet requirement
+        return False
 
     def _check_isnt_on_leave(self, worker: Worker, context: ReplacementContext) -> bool:
         """Check if worker is NOT on leave on the assignment date.
@@ -1699,7 +1832,10 @@ class ReplacementService(BaseService):
                 and assignment.date != context.assignment_date
             ):
                 shift = shift_lookup.get(assignment.shift_id)
-                if shift:
+                if shift and shift.shift_type in [
+                    ShiftType.NORMAL,
+                    ShiftType.DUTY,
+                ]:
                     duration = shift.end_time - shift.start_time
                     total_minutes += int(duration.total_seconds() / 60)
 

@@ -231,6 +231,54 @@ export class ScheduleApi extends BaseApi {
   /**
    * Get schedule assignments data
    */
+  /**
+   * Get schedule entities (shifts and workers only)
+   *
+   * This replaces getScheduleAssignmentsData for fetching entity data.
+   * Assignments should now be fetched separately using useAssignmentsByPeriod hook.
+   *
+   * @param apiClient - Authenticated API client
+   * @param teamId - Team identifier
+   * @returns Shifts and workers only (entities that change rarely)
+   */
+  static async getScheduleEntities(
+    apiClient: AuthenticatedApiClient,
+    teamId: string,
+  ): Promise<{
+    shifts: ShiftT[];
+    workers: WorkerT[];
+  }> {
+    // Security: Input validation
+    if (!teamId) {
+      throw new Error("Team ID is required");
+    }
+
+    try {
+      const [shifts, workers] = await Promise.all([
+        ShiftApi.getAllShifts(apiClient, teamId),
+        WorkerApi.getWorkers(apiClient, teamId, undefined, true),
+      ]);
+
+      return {
+        shifts,
+        workers,
+      };
+    } catch (error) {
+      console.error("Failed to fetch schedule entities:", error);
+      throw new Error(
+        "Failed to fetch schedule entities, please try again later",
+      );
+    }
+  }
+
+  /**
+   * @deprecated Use getScheduleEntities + useAssignmentsByPeriod hook instead
+   *
+   * This method fetches everything at once without date filtering.
+   * New code should use:
+   * - getScheduleEntities() for shifts/workers
+   * - useAssignmentsByPeriod() hook for assignments with smart buffering
+   */
   static async getScheduleAssignmentsData(
     apiClient: AuthenticatedApiClient,
     teamId: string,
@@ -268,6 +316,7 @@ export class ScheduleApi extends BaseApi {
   }
 
   /**
+   * @deprecated Use getScheduleEntities + useAssignmentsByPeriod hook instead
    * Get schedule assignments data (no solver version)
    */
   static async getScheduleAssignmentsDataNoSolver(

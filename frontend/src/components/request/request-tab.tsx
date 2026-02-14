@@ -11,7 +11,7 @@
  * - Integrated with shift demands data
  */
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
@@ -90,7 +90,7 @@ export default function RequestTab({
     error: userWorkerError,
   } = useUserWorker(
     teamId,
-    userTeamRole === TeamMembershipRole.MEMBER // Only fetch for members
+    userTeamRole === TeamMembershipRole.MEMBER, // Only fetch for members
   );
 
   const [requests, setRequests] = useState<RequestT[]>([]);
@@ -115,12 +115,12 @@ export default function RequestTab({
     error: shiftDemandError,
   } = useShiftDemands(
     teamId,
-    dayjs().utc().startOf("year").toDate(), // Start of current year
-    dayjs().utc().add(1, "year").endOf("year").toDate(), // End of next year
+    dayjs().utc().startOf("year"), // Start of current year
+    dayjs().utc().add(1, "year").endOf("year"), // End of next year
     {
       enabled: userTeamRole !== TeamMembershipRole.MEMBER,
       bufferDays: 0, // No buffer needed for requests view
-    }
+    },
   );
 
   // Filter requests based on past/future
@@ -148,78 +148,100 @@ export default function RequestTab({
   // Request Actions
   //////////////////////////
 
-  const handleAddRequest = async (request: RequestT) => {
-    try {
-      const newRequest = await addRequest(request, teamId);
-      setRequests([...requests, newRequest]);
-    } catch (error) {
-      console.error("Failed to add request:", error);
-      // Handle error appropriately (could show a toast notification)
-    }
-  };
+  const handleAddRequest = useCallback(
+    async (request: RequestT) => {
+      try {
+        const newRequest = await addRequest(request, teamId);
+        setRequests([...requests, newRequest]);
+      } catch (error) {
+        console.error("Failed to add request:", error);
+        // Handle error appropriately (could show a toast notification)
+      }
+    },
+    [addRequest, teamId, requests],
+  );
 
-  const handleUpdateRequest = async (request: RequestT) => {
-    try {
-      const updatedRequest = await updateRequest(request, teamId);
-      setRequests(
-        requests.map((r) => (r.id === updatedRequest.id ? updatedRequest : r))
-      );
-    } catch (error) {
-      console.error("Failed to update request:", error);
-      // Handle error appropriately
-    }
-  };
+  const handleUpdateRequest = useCallback(
+    async (request: RequestT) => {
+      try {
+        const updatedRequest = await updateRequest(request, teamId);
+        setRequests(
+          requests.map((r) =>
+            r.id === updatedRequest.id ? updatedRequest : r,
+          ),
+        );
+      } catch (error) {
+        console.error("Failed to update request:", error);
+        // Handle error appropriately
+      }
+    },
+    [updateRequest, teamId, requests],
+  );
 
-  const handleDeleteRequest = async (requestId: string) => {
-    try {
-      await deleteRequest(requestId, teamId);
-      setRequests(requests.filter((r) => r.id !== requestId));
-    } catch (error) {
-      console.error("Failed to delete request:", error);
-      // Handle error appropriately
-    }
-  };
+  const handleDeleteRequest = useCallback(
+    async (requestId: string) => {
+      try {
+        await deleteRequest(requestId, teamId);
+        setRequests(requests.filter((r) => r.id !== requestId));
+      } catch (error) {
+        console.error("Failed to delete request:", error);
+        // Handle error appropriately
+      }
+    },
+    [deleteRequest, teamId, requests],
+  );
 
-  const handleRescindRequest = async (requestId: string) => {
-    try {
-      const result = await rescindRequest(requestId, teamId);
-      const rescindedRequest = result.request;
-      setRequests(
-        requests.map((r) =>
-          r.id === rescindedRequest.id ? rescindedRequest : r
-        )
-      );
-    } catch (error) {
-      console.error("Failed to rescind request:", error);
-      // Handle error appropriately
-    }
-  };
+  const handleRescindRequest = useCallback(
+    async (requestId: string) => {
+      try {
+        const result = await rescindRequest(requestId, teamId);
+        const rescindedRequest = result.request;
+        setRequests(
+          requests.map((r) =>
+            r.id === rescindedRequest.id ? rescindedRequest : r,
+          ),
+        );
+      } catch (error) {
+        console.error("Failed to rescind request:", error);
+        // Handle error appropriately
+      }
+    },
+    [rescindRequest, teamId, requests],
+  );
 
-  const handleAcceptRequest = async (requestId: string) => {
-    try {
-      const result = await acceptRequest(requestId, teamId);
-      // result contains { request, assignments }
-      const acceptedRequest = result.request;
-      setRequests(
-        requests.map((r) => (r.id === acceptedRequest.id ? acceptedRequest : r))
-      );
-    } catch (error) {
-      console.error("Failed to accept request:", error);
-      // Handle error appropriately
-    }
-  };
+  const handleAcceptRequest = useCallback(
+    async (requestId: string) => {
+      try {
+        const result = await acceptRequest(requestId, teamId);
+        // result contains { request, assignments }
+        const acceptedRequest = result.request;
+        setRequests(
+          requests.map((r) =>
+            r.id === acceptedRequest.id ? acceptedRequest : r,
+          ),
+        );
+      } catch (error) {
+        console.error("Failed to accept request:", error);
+        // Handle error appropriately
+      }
+    },
+    [acceptRequest, teamId, requests],
+  );
 
-  const handleDenyRequest = async (requestId: string) => {
-    try {
-      const deniedRequest = await denyRequest(requestId, teamId);
-      setRequests(
-        requests.map((r) => (r.id === deniedRequest.id ? deniedRequest : r))
-      );
-    } catch (error) {
-      console.error("Failed to deny request:", error);
-      // Handle error appropriately
-    }
-  };
+  const handleDenyRequest = useCallback(
+    async (requestId: string) => {
+      try {
+        const deniedRequest = await denyRequest(requestId, teamId);
+        setRequests(
+          requests.map((r) => (r.id === deniedRequest.id ? deniedRequest : r)),
+        );
+      } catch (error) {
+        console.error("Failed to deny request:", error);
+        // Handle error appropriately
+      }
+    },
+    [denyRequest, teamId, requests],
+  );
 
   useEffect(() => {
     const fetchRequestsTabData = async () => {
@@ -317,7 +339,7 @@ export default function RequestTab({
         current.timestamp = Date.now();
         localStorage.setItem(
           "nsp-pro-request-tab-state",
-          JSON.stringify(current)
+          JSON.stringify(current),
         );
       } catch (error) {
         console.error("Error saving selected tab:", error);

@@ -15,7 +15,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { ReplacementCandidateT } from "../../types/replacement";
+import { ReplacementCandidateT } from "../../../../types/replacement";
 import {
   renderBoolean,
   renderWeeklyTime,
@@ -24,11 +24,11 @@ import {
   renderOverlapHit,
   renderFilterHit,
   renderRequestHit,
-} from "../common/implications-renderers";
-import { getCategoryEmoji } from "../../utils/replacementHelpers";
-import { WorkerT } from "../../types/worker";
-import { ShiftT } from "../../types/shift";
-import { AssignmentT } from "../../types/assignment";
+} from "../../../common/implications-renderers";
+import { getCategoryEmoji } from "../../../../utils/replacementHelpers";
+import { WorkerT } from "../../../../types/worker";
+import { ShiftT } from "../../../../types/shift";
+import { AssignmentT } from "../../../../types/assignment";
 
 interface ReplacementDetailsDialogProps {
   open: boolean;

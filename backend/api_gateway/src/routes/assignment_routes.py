@@ -62,8 +62,8 @@ async def create_assignment(
 @router.get("/assignments/teams/{team_id}")
 async def get_assignments(
     team_id: str,
-    start_date: Optional[date] = Query(None, alias="start_date"),
-    end_date: Optional[date] = Query(None, alias="end_date"),
+    start_date: date = Query(..., alias="start_date"),
+    end_date: date = Query(..., alias="end_date"),
     include_campaign: bool = Query(False, alias="include_campaign"),
     worker_id: Optional[str] = Query(None, alias="worker_id"),
     user_context: UserContext = Depends(get_user_context),
@@ -72,6 +72,15 @@ async def get_assignments(
     ),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
+        # Validate date range
+        if end_date < start_date:
+            raise ValueError("end_date must be greater than or equal to start_date")
+
+        # Prevent abuse: reject ranges > 6 months
+        max_range_days = 365
+        if (end_date - start_date).days > max_range_days:
+            raise ValueError(f"Date range cannot exceed {max_range_days} days")
+
         # Check if user has permission to read assignments
         if not await authz_check(
             user_context.user_id, "read-assignments", "team", team_id

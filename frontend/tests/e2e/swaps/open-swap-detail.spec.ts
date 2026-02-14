@@ -32,14 +32,16 @@ test.describe("Open Swap Detail - Swap Creator Tests", () => {
 
     // Create an open swap for testing
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
-      dayjs.utc().add(1, "day").startOf("day"),
+      dayjs.utc().subtract(2, "month"),
+      dayjs.utc().add(2, "month"),
     );
+    const assignments = ARResult.assignmentsRead;
 
     // Get 2 assignments from worker 1 for the open swap
     const worker1Assignments = assignments.filter(
-      (a) => a.workerId === workers[0].workerId && a.scheduleId !== null,
+      (a) => a.workerId === workers[0].id && a.scheduleId !== null,
     );
 
     if (worker1Assignments.length >= 2) {
@@ -122,13 +124,15 @@ test.describe("Open Swap Detail - Swap Creator Tests", () => {
   test("should be able to delete open swap when active", async ({ page }) => {
     // Create a fresh open swap for deletion test
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
     );
+    const assignments = ARResult.assignmentsRead;
 
     const worker1Assignments = assignments.filter(
-      (a) => a.workerId === workers[0].workerId && a.scheduleId !== null,
+      (a) => a.workerId === workers[0].id && a.scheduleId !== null,
     );
 
     if (worker1Assignments.length >= 2) {
@@ -183,13 +187,15 @@ test.describe("Open Swap Detail - Swap Creator Tests", () => {
   test("should display no bids initially", async ({ page }) => {
     // Create a fresh open swap with no bids
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
     );
+    const assignments = ARResult.assignmentsRead;
 
     const worker1Assignments = assignments.filter(
-      (a) => a.workerId === workers[0].workerId && a.scheduleId !== null,
+      (a) => a.workerId === workers[0].id && a.scheduleId !== null,
     );
 
     if (worker1Assignments.length >= 2) {
@@ -230,13 +236,15 @@ test.describe("Open Swap Detail - Bidder Tests", () => {
 
     // Create an open swap from worker 1
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
     );
+    const assignments = ARResult.assignmentsRead;
 
     const worker1Assignments = assignments.filter(
-      (a) => a.workerId === workers[0].workerId && a.scheduleId !== null,
+      (a) => a.workerId === workers[0].id && a.scheduleId !== null,
     );
 
     if (worker1Assignments.length >= 2) {
@@ -276,15 +284,16 @@ test.describe("Open Swap Detail - Bidder Tests", () => {
     const memberWorker = swapTestBase.getMemberWorker();
     expect(memberWorker).not.toBeNull();
 
-    const assignments = await swapTestBase.getAssignments(
+    const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
-      undefined,
-      memberWorker!.workerId,
+      dayjs.utc().add(2, "month").endOf("day"),
+      memberWorker!.id,
     );
+    const assignments = ARResult.assignmentsRead;
 
     const worker2Assignments = assignments.filter(
-      (a) => a.workerId === memberWorker!.workerId && a.scheduleId !== null,
+      (a) => a.workerId === memberWorker!.id && a.scheduleId !== null,
     );
 
     if (worker2Assignments.length < 2) {
@@ -322,7 +331,7 @@ test.describe("Open Swap Detail - Bidder Tests", () => {
     expect(updatedSwap.bids.length).toBeGreaterThan(0);
 
     const newBid = updatedSwap.bids.find(
-      (b) => b.workerId === memberWorker!.workerId,
+      (b) => b.workerId === memberWorker!.id,
     );
     expect(newBid).toBeDefined();
 
@@ -338,20 +347,21 @@ test.describe("Open Swap Detail - Bidder Tests", () => {
     const memberWorker = swapTestBase.getMemberWorker();
     expect(memberWorker).not.toBeNull();
 
-    const assignments = await swapTestBase.getAssignments(
+    const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
-      undefined,
-      memberWorker!.workerId,
+      dayjs.utc().add(2, "month").endOf("day"),
+      memberWorker!.id,
     );
+    const assignments = ARResult.assignmentsRead;
 
     const worker2Assignments = assignments.filter(
-      (a) => a.workerId === memberWorker!.workerId && a.scheduleId !== null,
+      (a) => a.workerId === memberWorker!.id && a.scheduleId !== null,
     );
 
     if (worker2Assignments.length >= 2) {
       // Add bid via API
-      await swapTestBase.addBidToSwap(openSwapId, memberWorker!.workerId, [
+      await swapTestBase.addBidToSwap(openSwapId, memberWorker!.id, [
         worker2Assignments[0].id,
         worker2Assignments[1].id,
       ]);
@@ -366,7 +376,7 @@ test.describe("Open Swap Detail - Bidder Tests", () => {
       expect(updatedSwap.bids.length).toBeGreaterThan(0);
 
       const newBid = updatedSwap.bids.find(
-        (b) => b.workerId === memberWorker!.workerId,
+        (b) => b.workerId === memberWorker!.id,
       );
       expect(newBid).toBeDefined();
 
@@ -384,22 +394,23 @@ test.describe("Open Swap Detail - Bidder Tests", () => {
     await swapTestBase.actAsOwner(page);
 
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
-      undefined,
-      workers[0].workerId,
+      dayjs.utc().add(2, "month").endOf("day"),
+      workers[0].id,
     );
+    const assignments = ARResult.assignmentsRead;
 
     const worker1Assignments = assignments.filter(
-      (a) => a.workerId === workers[0].workerId && a.scheduleId !== null,
+      (a) => a.workerId === workers[0].id && a.scheduleId !== null,
     );
 
     if (worker1Assignments.length >= 2) {
       // Try to add bid as creator (should fail)
       let bidFailed = false;
       try {
-        await swapTestBase.addBidToSwap(openSwapId, workers[0].workerId, [
+        await swapTestBase.addBidToSwap(openSwapId, workers[0].id, [
           worker1Assignments[0].id,
           worker1Assignments[1].id,
         ]);
@@ -429,13 +440,15 @@ test.describe("Open Swap Detail - Multiple Bidders Tests", () => {
 
     // Create an open swap from worker 1
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
     );
+    const assignments = ARResult.assignmentsRead;
 
     const worker1Assignments = assignments.filter(
-      (a) => a.workerId === workers[0].workerId && a.scheduleId !== null,
+      (a) => a.workerId === workers[0].id && a.scheduleId !== null,
     );
 
     if (worker1Assignments.length >= 2) {
@@ -459,18 +472,20 @@ test.describe("Open Swap Detail - Multiple Bidders Tests", () => {
     expect(openSwapId).toBeDefined();
 
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
     );
+    const assignments = ARResult.assignmentsRead;
 
     // Worker 2 bids
     const worker2Assignments = assignments.filter(
-      (a) => a.workerId === workers[1].workerId && a.scheduleId !== null,
+      (a) => a.workerId === workers[1].id && a.scheduleId !== null,
     );
 
     if (worker2Assignments.length >= 2) {
-      await swapTestBase.addBidToSwap(openSwapId, workers[1].workerId, [
+      await swapTestBase.addBidToSwap(openSwapId, workers[1].id, [
         worker2Assignments[0].id,
         worker2Assignments[1].id,
       ]);
@@ -479,11 +494,11 @@ test.describe("Open Swap Detail - Multiple Bidders Tests", () => {
 
     // Worker 3 bids
     const worker3Assignments = assignments.filter(
-      (a) => a.workerId === workers[2].workerId && a.scheduleId !== null,
+      (a) => a.workerId === workers[2].id && a.scheduleId !== null,
     );
 
     if (worker3Assignments.length >= 2) {
-      await swapTestBase.addBidToSwap(openSwapId, workers[2].workerId, [
+      await swapTestBase.addBidToSwap(openSwapId, workers[2].id, [
         worker3Assignments[0].id,
         worker3Assignments[1].id,
       ]);
@@ -502,19 +517,21 @@ test.describe("Open Swap Detail - Multiple Bidders Tests", () => {
   test("should display all bids with worker names", async ({ page }) => {
     // Ensure we have multiple bids
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
     );
+    const assignments = ARResult.assignmentsRead;
 
     // Add bids from workers 2 and 3
     for (let i = 1; i < Math.min(3, workers.length); i++) {
       const workerAssignments = assignments.filter(
-        (a) => a.workerId === workers[i].workerId && a.scheduleId !== null,
+        (a) => a.workerId === workers[i].id && a.scheduleId !== null,
       );
 
       if (workerAssignments.length >= 2) {
-        await swapTestBase.addBidToSwap(openSwapId, workers[i].workerId, [
+        await swapTestBase.addBidToSwap(openSwapId, workers[i].id, [
           workerAssignments[0].id,
           workerAssignments[1].id,
         ]);
@@ -547,19 +564,21 @@ test.describe("Open Swap Detail - Multiple Bidders Tests", () => {
     const initialSwap = await swapTestBase.getSwapById(openSwapId);
 
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
     );
+    const assignments = ARResult.assignmentsRead;
 
     // Add bids from worker 2 and 3 (if available) using the same approach as other tests
     for (let i = 1; i < Math.min(3, workers.length); i++) {
       const workerAssignments = assignments.filter(
-        (a) => a.workerId === workers[i].workerId && a.scheduleId !== null,
+        (a) => a.workerId === workers[i].id && a.scheduleId !== null,
       );
 
       if (workerAssignments.length >= 2) {
-        await swapTestBase.addBidToSwap(openSwapId, workers[i].workerId, [
+        await swapTestBase.addBidToSwap(openSwapId, workers[i].id, [
           workerAssignments[0].id,
           workerAssignments[1].id,
         ]);
@@ -613,13 +632,15 @@ test.describe("Open Swap Detail - Bid Acceptance Tests", () => {
 
     // Create an open swap from worker 1
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
     );
+    const assignments = ARResult.assignmentsRead;
 
     const worker1Assignments = assignments.filter(
-      (a) => a.workerId === workers[0].workerId && a.scheduleId !== null,
+      (a) => a.workerId === workers[0].id && a.scheduleId !== null,
     );
 
     if (worker1Assignments.length >= 2) {
@@ -631,13 +652,13 @@ test.describe("Open Swap Detail - Bid Acceptance Tests", () => {
 
       // Add a bid from worker 2
       const worker2Assignments = assignments.filter(
-        (a) => a.workerId === workers[1].workerId && a.scheduleId !== null,
+        (a) => a.workerId === workers[1].id && a.scheduleId !== null,
       );
 
       if (worker2Assignments.length >= 2) {
         const swapWithBid = await swapTestBase.addBidToSwap(
           openSwapId,
-          workers[1].workerId,
+          workers[1].id,
           [worker2Assignments[0].id, worker2Assignments[1].id],
         );
         bidId = swapWithBid.bids[0].id;
@@ -692,13 +713,15 @@ test.describe("Open Swap Detail - Bid Acceptance Tests", () => {
   }) => {
     // Create a fresh swap for this test
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
     );
+    const assignments = ARResult.assignmentsRead;
 
     const worker1Assignments = assignments.filter(
-      (a) => a.workerId === workers[0].workerId && a.scheduleId !== null,
+      (a) => a.workerId === workers[0].id && a.scheduleId !== null,
     );
 
     if (worker1Assignments.length >= 2) {
@@ -709,13 +732,13 @@ test.describe("Open Swap Detail - Bid Acceptance Tests", () => {
 
       // Add a bid
       const worker2Assignments = assignments.filter(
-        (a) => a.workerId === workers[1].workerId && a.scheduleId !== null,
+        (a) => a.workerId === workers[1].id && a.scheduleId !== null,
       );
 
       if (worker2Assignments.length >= 2) {
         const swapWithBid = await swapTestBase.addBidToSwap(
           freshSwap.id,
-          workers[1].workerId,
+          workers[1].id,
           [worker2Assignments[0].id, worker2Assignments[1].id],
         );
 
@@ -728,7 +751,7 @@ test.describe("Open Swap Detail - Bid Acceptance Tests", () => {
         );
 
         // Verify targetWorkerId is set
-        expect(acceptedSwap.targetWorkerId).toBe(workers[1].workerId);
+        expect(acceptedSwap.targetWorkerId).toBe(workers[1].id);
 
         // Verify requestedAssignmentIds is set
         expect(acceptedSwap.requestedAssignmentIds).not.toBeNull();
@@ -750,13 +773,15 @@ test.describe("Open Swap Detail - Bid Acceptance Tests", () => {
   test("should display accepted chip on accepted bid", async ({ page }) => {
     // Accept a bid first
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
     );
+    const assignments = ARResult.assignmentsRead;
 
     const worker1Assignments = assignments.filter(
-      (a) => a.workerId === workers[0].workerId && a.scheduleId !== null,
+      (a) => a.workerId === workers[0].id && a.scheduleId !== null,
     );
 
     if (worker1Assignments.length >= 2) {
@@ -766,13 +791,13 @@ test.describe("Open Swap Detail - Bid Acceptance Tests", () => {
       );
 
       const worker2Assignments = assignments.filter(
-        (a) => a.workerId === workers[1].workerId && a.scheduleId !== null,
+        (a) => a.workerId === workers[1].id && a.scheduleId !== null,
       );
 
       if (worker2Assignments.length >= 2) {
         const swapWithBid = await swapTestBase.addBidToSwap(
           testSwap.id,
-          workers[1].workerId,
+          workers[1].id,
           [worker2Assignments[0].id, worker2Assignments[1].id],
         );
 
@@ -804,13 +829,15 @@ test.describe("Open Swap Detail - Bid Acceptance Tests", () => {
   }) => {
     // Create swap and accept a bid
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
     );
+    const assignments = ARResult.assignmentsRead;
 
     const worker1Assignments = assignments.filter(
-      (a) => a.workerId === workers[0].workerId && a.scheduleId !== null,
+      (a) => a.workerId === workers[0].id && a.scheduleId !== null,
     );
 
     if (worker1Assignments.length >= 2) {
@@ -820,13 +847,13 @@ test.describe("Open Swap Detail - Bid Acceptance Tests", () => {
       );
 
       const worker2Assignments = assignments.filter(
-        (a) => a.workerId === workers[1].workerId && a.scheduleId !== null,
+        (a) => a.workerId === workers[1].id && a.scheduleId !== null,
       );
 
       if (worker2Assignments.length >= 2) {
         const swapWithBid = await swapTestBase.addBidToSwap(
           testSwap.id,
-          workers[1].workerId,
+          workers[1].id,
           [worker2Assignments[0].id, worker2Assignments[1].id],
         );
 
@@ -867,13 +894,15 @@ test.describe("Open Swap Detail - Team Leader Approval Tests", () => {
 
     // Create an open swap with accepted bid
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
     );
+    const assignments = ARResult.assignmentsRead;
 
     const worker1Assignments = assignments.filter(
-      (a) => a.workerId === workers[0].workerId && a.scheduleId !== null,
+      (a) => a.workerId === workers[0].id && a.scheduleId !== null,
     );
 
     if (worker1Assignments.length >= 2) {
@@ -885,13 +914,13 @@ test.describe("Open Swap Detail - Team Leader Approval Tests", () => {
 
       // Add and accept a bid
       const worker2Assignments = assignments.filter(
-        (a) => a.workerId === workers[1].workerId && a.scheduleId !== null,
+        (a) => a.workerId === workers[1].id && a.scheduleId !== null,
       );
 
       if (worker2Assignments.length >= 2) {
         const swapWithBid = await swapTestBase.addBidToSwap(
           openSwapId,
-          workers[1].workerId,
+          workers[1].id,
           [worker2Assignments[0].id, worker2Assignments[1].id],
         );
         const bidId = swapWithBid.bids[0].id;
@@ -934,13 +963,15 @@ test.describe("Open Swap Detail - Team Leader Approval Tests", () => {
   }) => {
     // Create a fresh swap for this test
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
     );
+    const assignments = ARResult.assignmentsRead;
 
     const worker1Assignments = assignments.filter(
-      (a) => a.workerId === workers[0].workerId && a.scheduleId !== null,
+      (a) => a.workerId === workers[0].id && a.scheduleId !== null,
     );
 
     if (worker1Assignments.length >= 2) {
@@ -950,13 +981,13 @@ test.describe("Open Swap Detail - Team Leader Approval Tests", () => {
       );
 
       const worker2Assignments = assignments.filter(
-        (a) => a.workerId === workers[1].workerId && a.scheduleId !== null,
+        (a) => a.workerId === workers[1].id && a.scheduleId !== null,
       );
 
       if (worker2Assignments.length >= 2) {
         const swapWithBid = await swapTestBase.addBidToSwap(
           testSwap.id,
-          workers[1].workerId,
+          workers[1].id,
           [worker2Assignments[0].id, worker2Assignments[1].id],
         );
         const bidId = swapWithBid.bids[0].id;
@@ -980,13 +1011,15 @@ test.describe("Open Swap Detail - Team Leader Approval Tests", () => {
   }) => {
     // Create a fresh swap for this test
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
     );
+    const assignments = ARResult.assignmentsRead;
 
     const worker1Assignments = assignments.filter(
-      (a) => a.workerId === workers[0].workerId && a.scheduleId !== null,
+      (a) => a.workerId === workers[0].id && a.scheduleId !== null,
     );
 
     if (worker1Assignments.length >= 2) {
@@ -1001,7 +1034,7 @@ test.describe("Open Swap Detail - Team Leader Approval Tests", () => {
       );
 
       const worker2Assignments = assignments.filter(
-        (a) => a.workerId === workers[1].workerId && a.scheduleId !== null,
+        (a) => a.workerId === workers[1].id && a.scheduleId !== null,
       );
 
       if (worker2Assignments.length >= 2) {
@@ -1012,7 +1045,7 @@ test.describe("Open Swap Detail - Team Leader Approval Tests", () => {
 
         const swapWithBid = await swapTestBase.addBidToSwap(
           testSwap.id,
-          workers[1].workerId,
+          workers[1].id,
           worker2Offered,
         );
         const bidId = swapWithBid.bids[0].id;
@@ -1022,10 +1055,12 @@ test.describe("Open Swap Detail - Team Leader Approval Tests", () => {
         await swapTestBase.approveSwap(testSwap.id);
 
         // Verify assignments are swapped
-        const updatedAssignments = await swapTestBase.getAssignments(
+        const ARRes = await swapTestBase.getAssignmentsAndRecurrences(
           false,
           dayjs.utc().add(1, "day").startOf("day"),
+          dayjs.utc().add(2, "month").endOf("day"),
         );
+        const updatedAssignments = ARRes.assignmentsRead;
 
         // Worker1's original assignments should now belong to Worker2
         for (const assignmentId of worker1Offered) {
@@ -1033,7 +1068,7 @@ test.describe("Open Swap Detail - Team Leader Approval Tests", () => {
             (a) => a.id === assignmentId,
           );
           expect(assignment).toBeDefined();
-          expect(assignment!.workerId).toBe(workers[1].workerId);
+          expect(assignment!.workerId).toBe(workers[1].id);
         }
 
         // Worker2's original assignments should now belong to Worker1
@@ -1042,7 +1077,7 @@ test.describe("Open Swap Detail - Team Leader Approval Tests", () => {
             (a) => a.id === assignmentId,
           );
           expect(assignment).toBeDefined();
-          expect(assignment!.workerId).toBe(workers[0].workerId);
+          expect(assignment!.workerId).toBe(workers[0].id);
         }
 
         console.log("✅ Assignments swapped correctly between workers");
@@ -1055,13 +1090,15 @@ test.describe("Open Swap Detail - Team Leader Approval Tests", () => {
   }) => {
     // Create a fresh swap for this test
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
     );
+    const assignments = ARResult.assignmentsRead;
 
     const worker1Assignments = assignments.filter(
-      (a) => a.workerId === workers[0].workerId && a.scheduleId !== null,
+      (a) => a.workerId === workers[0].id && a.scheduleId !== null,
     );
 
     if (worker1Assignments.length >= 2) {
@@ -1076,7 +1113,7 @@ test.describe("Open Swap Detail - Team Leader Approval Tests", () => {
       );
 
       const worker2Assignments = assignments.filter(
-        (a) => a.workerId === workers[1].workerId && a.scheduleId !== null,
+        (a) => a.workerId === workers[1].id && a.scheduleId !== null,
       );
 
       if (worker2Assignments.length >= 2) {
@@ -1087,7 +1124,7 @@ test.describe("Open Swap Detail - Team Leader Approval Tests", () => {
 
         const swapWithBid = await swapTestBase.addBidToSwap(
           testSwap.id,
-          workers[1].workerId,
+          workers[1].id,
           worker2Offered,
         );
         const bidId = swapWithBid.bids[0].id;
@@ -1130,13 +1167,15 @@ test.describe("Open Swap Detail - Reversion Tests", () => {
     });
 
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
     );
+    const assignments = ARResult.assignmentsRead;
 
     const worker1Assignments = assignments.filter(
-      (a) => a.workerId === workers[0].workerId && a.scheduleId !== null,
+      (a) => a.workerId === workers[0].id && a.scheduleId !== null,
     );
 
     if (worker1Assignments.length >= 2) {
@@ -1146,13 +1185,13 @@ test.describe("Open Swap Detail - Reversion Tests", () => {
       );
 
       const worker2Assignments = assignments.filter(
-        (a) => a.workerId === workers[1].workerId && a.scheduleId !== null,
+        (a) => a.workerId === workers[1].id && a.scheduleId !== null,
       );
 
       if (worker2Assignments.length >= 2) {
         const swapWithBid = await swapTestBase.addBidToSwap(
           openSwap.id,
-          workers[1].workerId,
+          workers[1].id,
           [worker2Assignments[0].id, worker2Assignments[1].id],
         );
         const bidId = swapWithBid.bids[0].id;
@@ -1204,13 +1243,15 @@ test.describe("Open Swap Detail - Reversion Tests", () => {
   }) => {
     // Create a fresh completed swap
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
     );
+    const assignments = ARResult.assignmentsRead;
 
     const worker1Assignments = assignments.filter(
-      (a) => a.workerId === workers[0].workerId && a.scheduleId !== null,
+      (a) => a.workerId === workers[0].id && a.scheduleId !== null,
     );
 
     if (worker1Assignments.length >= 2) {
@@ -1225,7 +1266,7 @@ test.describe("Open Swap Detail - Reversion Tests", () => {
       );
 
       const worker2Assignments = assignments.filter(
-        (a) => a.workerId === workers[1].workerId && a.scheduleId !== null,
+        (a) => a.workerId === workers[1].id && a.scheduleId !== null,
       );
 
       if (worker2Assignments.length >= 2) {
@@ -1236,7 +1277,7 @@ test.describe("Open Swap Detail - Reversion Tests", () => {
 
         const swapWithBid = await swapTestBase.addBidToSwap(
           testSwap.id,
-          workers[1].workerId,
+          workers[1].id,
           worker2Offered,
         );
         const bidId = swapWithBid.bids[0].id;
@@ -1247,10 +1288,13 @@ test.describe("Open Swap Detail - Reversion Tests", () => {
         await swapTestBase.revertSwap(testSwap.id);
 
         // Verify assignments are restored
-        const restoredAssignments = await swapTestBase.getAssignments(
-          false,
-          dayjs.utc().add(1, "day").startOf("day"),
-        );
+        const ARResultRestored =
+          await swapTestBase.getAssignmentsAndRecurrences(
+            false,
+            dayjs.utc().add(1, "day").startOf("day"),
+            dayjs.utc().add(2, "month").endOf("day"),
+          );
+        const restoredAssignments = ARResultRestored.assignmentsRead;
 
         // Worker1's assignments should be back to Worker1
         for (const assignmentId of worker1Offered) {
@@ -1258,7 +1302,7 @@ test.describe("Open Swap Detail - Reversion Tests", () => {
             (a) => a.id === assignmentId,
           );
           expect(assignment).toBeDefined();
-          expect(assignment!.workerId).toBe(workers[0].workerId);
+          expect(assignment!.workerId).toBe(workers[0].id);
         }
 
         // Worker2's assignments should be back to Worker2
@@ -1267,7 +1311,7 @@ test.describe("Open Swap Detail - Reversion Tests", () => {
             (a) => a.id === assignmentId,
           );
           expect(assignment).toBeDefined();
-          expect(assignment!.workerId).toBe(workers[1].workerId);
+          expect(assignment!.workerId).toBe(workers[1].id);
         }
 
         console.log("✅ Assignments restored correctly after reversion");
@@ -1278,13 +1322,15 @@ test.describe("Open Swap Detail - Reversion Tests", () => {
   test("should preserve audit data after reversion", async ({ page }) => {
     // Create a fresh completed swap, then revert it and compare auditData
     const workers = swapTestBase.getTestWorkers();
-    const assignments = await swapTestBase.getAssignments(
+    const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().add(1, "day").startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
     );
+    const assignments = ARResult.assignmentsRead;
 
     const worker1Assignments = assignments.filter(
-      (a) => a.workerId === workers[0].workerId && a.scheduleId !== null,
+      (a) => a.workerId === workers[0].id && a.scheduleId !== null,
     );
 
     if (worker1Assignments.length >= 2) {
@@ -1294,13 +1340,13 @@ test.describe("Open Swap Detail - Reversion Tests", () => {
       );
 
       const worker2Assignments = assignments.filter(
-        (a) => a.workerId === workers[1].workerId && a.scheduleId !== null,
+        (a) => a.workerId === workers[1].id && a.scheduleId !== null,
       );
 
       if (worker2Assignments.length >= 2) {
         const swapWithBid = await swapTestBase.addBidToSwap(
           testSwap.id,
-          workers[1].workerId,
+          workers[1].id,
           [worker2Assignments[0].id, worker2Assignments[1].id],
         );
         const bidId = swapWithBid.bids[0].id;

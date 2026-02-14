@@ -33,7 +33,7 @@ export class AttributeTestBase extends DimensionTestBase {
     const health = await this.dbUtils.checkHealth();
     if (!health.test_utilities_available) {
       throw new Error(
-        "Test utilities are not available - check environment configuration"
+        "Test utilities are not available - check environment configuration",
       );
     }
 
@@ -41,7 +41,7 @@ export class AttributeTestBase extends DimensionTestBase {
     const uniqueTeamName = `Attribute Test Team ${workerIndex}-${Date.now()}`;
     this.testTeam = await this.dbUtils.createTeam({ name: uniqueTeamName });
     console.log(
-      `Created test team: ${this.testTeam.name} (${this.testTeam.teamId})`
+      `Created test team: ${this.testTeam.name} (${this.testTeam.teamId})`,
     );
   }
 
@@ -54,14 +54,10 @@ export class AttributeTestBase extends DimensionTestBase {
     ownerId: string;
     dimensionId: string;
     dimEntryIds?: string[];
-  }): Promise<{
-    attributeId: string;
-    value: string | number | boolean;
-    teamId: string;
-  }> {
+  }): Promise<AttributeT> {
     if (!this.testTeam) {
       throw new Error(
-        "Test team not created. Call setupAttributeTests() first."
+        "Test team not created. Call setupAttributeTests() first.",
       );
     }
 
@@ -83,22 +79,18 @@ export class AttributeTestBase extends DimensionTestBase {
     updates: {
       value?: string | number | boolean;
       dimEntryIds?: string[];
-    }
-  ): Promise<{
-    attributeId: string;
-    value: string | number | boolean;
-    teamId: string;
-  }> {
+    },
+  ): Promise<AttributeT> {
     if (!this.testTeam) {
       throw new Error(
-        "Test team not created. Call setupAttributeTests() first."
+        "Test team not created. Call setupAttributeTests() first.",
       );
     }
 
     return this.dbUtils.updateAttribute(
       attributeId,
       this.testTeam.teamId,
-      updates
+      updates,
     );
   }
 
@@ -108,7 +100,7 @@ export class AttributeTestBase extends DimensionTestBase {
   async deleteTestAttribute(attributeId: string): Promise<void> {
     if (!this.testTeam) {
       throw new Error(
-        "Test team not created. Call setupAttributeTests() first."
+        "Test team not created. Call setupAttributeTests() first.",
       );
     }
 
@@ -121,7 +113,7 @@ export class AttributeTestBase extends DimensionTestBase {
   async getTestAttributesByOwner(ownerId: string): Promise<AttributeT[]> {
     if (!this.testTeam) {
       throw new Error(
-        "Test team not created. Call setupAttributeTests() first."
+        "Test team not created. Call setupAttributeTests() first.",
       );
     }
 
@@ -137,7 +129,7 @@ export class AttributeTestBase extends DimensionTestBase {
    */
   getAttributeCell(page: Page, dimensionId: string, ownerId: string) {
     return page.locator(
-      `[data-testid="attribute-cell-${ownerId}-${dimensionId}"]`
+      `[data-testid="attribute-cell-${ownerId}-${dimensionId}"]`,
     );
   }
 
@@ -146,7 +138,7 @@ export class AttributeTestBase extends DimensionTestBase {
    */
   getAttributeTextField(page: Page, dimensionId: string, ownerId: string) {
     return page.locator(
-      `[data-testid="attribute-text-field-${ownerId}-${dimensionId}"]`
+      `[data-testid="attribute-text-field-${ownerId}-${dimensionId}"]`,
     );
   }
 
@@ -155,7 +147,7 @@ export class AttributeTestBase extends DimensionTestBase {
    */
   getAttributeNumberField(page: Page, dimensionId: string, ownerId: string) {
     return page.locator(
-      `[data-testid="attribute-number-field-${ownerId}-${dimensionId}"]`
+      `[data-testid="attribute-number-field-${ownerId}-${dimensionId}"]`,
     );
   }
 
@@ -164,7 +156,7 @@ export class AttributeTestBase extends DimensionTestBase {
    */
   getAttributeCheckbox(page: Page, dimensionId: string, ownerId: string) {
     return page.locator(
-      `[data-testid="attribute-checkbox-${ownerId}-${dimensionId}"]`
+      `[data-testid="attribute-checkbox-${ownerId}-${dimensionId}"]`,
     );
   }
 
@@ -174,10 +166,10 @@ export class AttributeTestBase extends DimensionTestBase {
   getAttributeDimEntriesPopup(
     page: Page,
     dimensionId: string,
-    ownerId: string
+    ownerId: string,
   ) {
     return page.locator(
-      `[data-testid="attribute-dim-entries-popup-${ownerId}-${dimensionId}"]`
+      `[data-testid="attribute-dim-entries-popup-${ownerId}-${dimensionId}"]`,
     );
   }
 
@@ -187,10 +179,10 @@ export class AttributeTestBase extends DimensionTestBase {
   getAttributeDimEntriesSearchInput(
     page: Page,
     dimensionId: string,
-    ownerId: string
+    ownerId: string,
   ) {
     return page.locator(
-      `[data-testid="attribute-dim-entries-search-${ownerId}-${dimensionId}"]`
+      `[data-testid="attribute-dim-entries-search-${ownerId}-${dimensionId}"]`,
     );
   }
 
@@ -201,10 +193,10 @@ export class AttributeTestBase extends DimensionTestBase {
     page: Page,
     dimensionId: string,
     ownerId: string,
-    dimEntryId: string
+    dimEntryId: string,
   ) {
     return page.locator(
-      `[data-testid="attribute-dim-entry-option-${ownerId}-${dimensionId}-${dimEntryId}"]`
+      `[data-testid="attribute-dim-entry-option-${ownerId}-${dimensionId}-${dimEntryId}"]`,
     );
   }
 
@@ -215,10 +207,10 @@ export class AttributeTestBase extends DimensionTestBase {
     page: Page,
     dimensionId: string,
     ownerId: string,
-    dimEntryId: string
+    dimEntryId: string,
   ) {
     return page.locator(
-      `[data-testid="attribute-selected-dim-entry-chip-${ownerId}-${dimensionId}-${dimEntryId}"]`
+      `[data-testid="attribute-selected-dim-entry-chip-${ownerId}-${dimensionId}-${dimEntryId}"]`,
     );
   }
 
@@ -229,10 +221,10 @@ export class AttributeTestBase extends DimensionTestBase {
     page: Page,
     dimensionId: string,
     ownerId: string,
-    dimEntryId: string
+    dimEntryId: string,
   ) {
     return page.locator(
-      `[data-testid="attribute-remove-dim-entry-${ownerId}-${dimensionId}-${dimEntryId}"]`
+      `[data-testid="attribute-remove-dim-entry-${ownerId}-${dimensionId}-${dimEntryId}"]`,
     );
   }
 
@@ -246,7 +238,7 @@ export class AttributeTestBase extends DimensionTestBase {
   async clickAttributeCell(
     page: Page,
     dimensionId: string,
-    ownerId: string
+    ownerId: string,
   ): Promise<void> {
     const cell = this.getAttributeCell(page, dimensionId, ownerId);
     await cell.click();
@@ -259,7 +251,7 @@ export class AttributeTestBase extends DimensionTestBase {
     page: Page,
     dimensionId: string,
     ownerId: string,
-    value: string
+    value: string,
   ): Promise<void> {
     const textField = this.getAttributeTextField(page, dimensionId, ownerId);
     await textField.fill(value);
@@ -272,12 +264,12 @@ export class AttributeTestBase extends DimensionTestBase {
     page: Page,
     dimensionId: string,
     ownerId: string,
-    value: string
+    value: string,
   ): Promise<void> {
     const numberField = this.getAttributeNumberField(
       page,
       dimensionId,
-      ownerId
+      ownerId,
     );
     await numberField.fill(value);
   }
@@ -288,7 +280,7 @@ export class AttributeTestBase extends DimensionTestBase {
   async toggleAttributeCheckbox(
     page: Page,
     dimensionId: string,
-    ownerId: string
+    ownerId: string,
   ): Promise<void> {
     const checkbox = this.getAttributeCheckbox(page, dimensionId, ownerId);
     await checkbox.click();
@@ -300,7 +292,7 @@ export class AttributeTestBase extends DimensionTestBase {
   async confirmAttributeEditWithEnter(
     page: Page,
     dimensionId: string,
-    ownerId: string
+    ownerId: string,
   ): Promise<void> {
     const cell = this.getAttributeCell(page, dimensionId, ownerId);
     await cell.press("Enter");
@@ -312,7 +304,7 @@ export class AttributeTestBase extends DimensionTestBase {
   async cancelAttributeEditWithEscape(
     page: Page,
     dimensionId: string,
-    ownerId: string
+    ownerId: string,
   ): Promise<void> {
     const cell = this.getAttributeCell(page, dimensionId, ownerId);
     await cell.press("Escape");
@@ -333,19 +325,19 @@ export class AttributeTestBase extends DimensionTestBase {
     page: Page,
     dimensionId: string,
     ownerId: string,
-    expectedValue: string
+    expectedValue: string,
   ): Promise<void> {
     const cell = this.getAttributeCell(page, dimensionId, ownerId);
     await page.waitForFunction(
       (args) => {
         const cell = document.querySelector(
-          `[data-testid="attribute-cell-${args.ownerId}-${args.dimensionId}"]`
+          `[data-testid="attribute-cell-${args.ownerId}-${args.dimensionId}"]`,
         );
         const textContent = cell?.textContent;
         return textContent ? textContent.trim() === args.expectedValue : false;
       },
       { ownerId, dimensionId, expectedValue },
-      { timeout: 5000 }
+      { timeout: 5000 },
     );
   }
 
@@ -355,7 +347,7 @@ export class AttributeTestBase extends DimensionTestBase {
   async openAttributeDimEntriesPopup(
     page: Page,
     dimensionId: string,
-    ownerId: string
+    ownerId: string,
   ): Promise<void> {
     const cell = this.getAttributeCell(page, dimensionId, ownerId);
     await cell.click();
@@ -380,13 +372,13 @@ export class AttributeTestBase extends DimensionTestBase {
     page: Page,
     dimensionId: string,
     ownerId: string,
-    dimEntryId: string
+    dimEntryId: string,
   ): Promise<void> {
     const option = this.getAttributeDimEntryOption(
       page,
       dimensionId,
       ownerId,
-      dimEntryId
+      dimEntryId,
     );
     await option.click();
   }
@@ -398,13 +390,13 @@ export class AttributeTestBase extends DimensionTestBase {
     page: Page,
     dimensionId: string,
     ownerId: string,
-    dimEntryId: string
+    dimEntryId: string,
   ): Promise<void> {
     const removeButton = this.getAttributeRemoveDimEntryButton(
       page,
       dimensionId,
       ownerId,
-      dimEntryId
+      dimEntryId,
     );
     await removeButton.click();
   }
@@ -416,12 +408,12 @@ export class AttributeTestBase extends DimensionTestBase {
     page: Page,
     dimensionId: string,
     ownerId: string,
-    searchTerm: string
+    searchTerm: string,
   ): Promise<void> {
     const searchInput = this.getAttributeDimEntriesSearchInput(
       page,
       dimensionId,
-      ownerId
+      ownerId,
     );
     await searchInput.fill(searchTerm);
   }

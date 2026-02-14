@@ -40,7 +40,7 @@ export const toBreachT = (data: any): BreachT => {
     variables: data.variables.map((variable: any) => {
       const variableT: VariableT = {
         ...variable,
-        date: dayjs.utc(variable.date),
+        date: dayjs.unix(variable.date).utc(),
       };
       return variableT;
     }),

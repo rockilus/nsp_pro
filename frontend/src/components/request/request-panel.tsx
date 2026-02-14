@@ -10,7 +10,7 @@ import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
 import CloseIcon from "@mui/icons-material/Close";
 // Components
-import RequestPanelContent from "./request-panel-content";
+import { RequestForm } from "@/components/common/RequestForm";
 // Types
 import { RequestT } from "../../types/request";
 import { ShiftT } from "../../types/shift";
@@ -18,7 +18,7 @@ import { WorkerT } from "../../types/worker";
 import { TeamMembershipRole } from "@/types/team";
 import { ShiftWorkerOptionT } from "@/types/constraint";
 
-export default function RequestPanel({
+const RequestPanel = ({
   lng,
   teamId,
   isEdit,
@@ -56,7 +56,7 @@ export default function RequestPanel({
   hideButton?: boolean;
   onClose?: () => void;
   open?: boolean;
-}) {
+}) => {
   const { t } = useTranslation(lng, "request-page");
   const isMobile = useIsMobile();
 
@@ -160,7 +160,7 @@ export default function RequestPanel({
           </DialogTitle>
         )}
         <DialogContent sx={isMobile ? { p: 0 } : undefined}>
-          <RequestPanelContent
+          <RequestForm
             lng={lng}
             teamId={teamId}
             isEdit={isEdit}
@@ -185,4 +185,8 @@ export default function RequestPanel({
       </Dialog>
     </div>
   );
-}
+};
+
+RequestPanel.displayName = "RequestPanel";
+
+export default React.memo(RequestPanel);

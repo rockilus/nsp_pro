@@ -41,6 +41,7 @@ export default function AssignmentListItem({
         backgroundColor: mapping.background,
         color: mapping.text,
       }}
+      data-testid={`assignment-list-item-${assignment.id}`}
     >
       {/* Duty marker */}
       <Box

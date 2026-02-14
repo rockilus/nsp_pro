@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { useTranslation } from "../../../../app/i18n/client";
+import { useTranslation } from "../../../../../app/i18n/client";
 // MUI
 import { Select, MenuItem, TextField, Button } from "@mui/material";
-import { DatePicker } from "@mui/x-date-pickers";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Styles
 import "./recurrence-edit.css";
 // Types
@@ -15,7 +15,7 @@ import {
   RecurrenceEndType,
   RecurrenceRuleT,
   OccurrenceInfoT,
-} from "../../../../types/recurrence";
+} from "../../../../../types/recurrence";
 
 dayjs.extend(utc);
 
@@ -41,7 +41,6 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
   onRecurrenceChange,
 }) => {
   const { t } = useTranslation(lng, "schedule-page");
-  const { t: t_weekdays } = useTranslation(lng, "week_days");
 
   interface FormState {
     repeatEvery: number;
@@ -159,47 +158,59 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
   };
 
   const frequencyOptions = [
-    { value: FrequencyType.DAY, label: t("day").toLowerCase() },
-    { value: FrequencyType.WEEK, label: t("week").toLowerCase() },
-    { value: FrequencyType.MONTH, label: t("month").toLowerCase() },
-    { value: FrequencyType.YEAR, label: t("year").toLowerCase() },
+    { value: FrequencyType.DAY, label: t("day").toLowerCase(), testId: "day" },
+    {
+      value: FrequencyType.WEEK,
+      label: t("week").toLowerCase(),
+      testId: "week",
+    },
+    {
+      value: FrequencyType.MONTH,
+      label: t("month").toLowerCase(),
+      testId: "month",
+    },
+    {
+      value: FrequencyType.YEAR,
+      label: t("year").toLowerCase(),
+      testId: "year",
+    },
   ];
 
   const weekDayOptions = [
     {
       value: 0,
-      label: t_weekdays("monday_short"),
-      fullDayName: t_weekdays("monday"),
+      label: t("monday_short"),
+      fullDayName: t("monday"),
     },
     {
       value: 1,
-      label: t_weekdays("tuesday_short"),
-      fullDayName: t_weekdays("tuesday"),
+      label: t("tuesday_short"),
+      fullDayName: t("tuesday"),
     },
     {
       value: 2,
-      label: t_weekdays("wednesday_short"),
-      fullDayName: t_weekdays("wednesday"),
+      label: t("wednesday_short"),
+      fullDayName: t("wednesday"),
     },
     {
       value: 3,
-      label: t_weekdays("thursday_short"),
-      fullDayName: t_weekdays("thursday"),
+      label: t("thursday_short"),
+      fullDayName: t("thursday"),
     },
     {
       value: 4,
-      label: t_weekdays("friday_short"),
-      fullDayName: t_weekdays("friday"),
+      label: t("friday_short"),
+      fullDayName: t("friday"),
     },
     {
       value: 5,
-      label: t_weekdays("saturday_short"),
-      fullDayName: t_weekdays("saturday"),
+      label: t("saturday_short"),
+      fullDayName: t("saturday"),
     },
     {
       value: 6,
-      label: t_weekdays("sunday_short"),
-      fullDayName: t_weekdays("sunday"),
+      label: t("sunday_short"),
+      fullDayName: t("sunday"),
     },
   ];
 
@@ -230,7 +241,10 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
   ];
 
   return (
-    <div className="recurrence-edit-container">
+    <div
+      className="recurrence-edit-container"
+      data-testid="recurrence-edit-container"
+    >
       <h2 className="recurrence-edit-title">{t("recurrence")}</h2>
 
       <div className="recurrence-edit-section">
@@ -249,6 +263,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
             error={repeatEveryError}
             inputProps={{
               min: 1,
+              "data-testid": "repeat-every-input",
               style: {
                 height: "30px",
                 fontSize: "0.8rem",
@@ -272,6 +287,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
             }
             fullWidth
             displayEmpty
+            data-testid="frequency-select"
             sx={{
               width: "100px",
               height: "30px",
@@ -288,6 +304,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
               <MenuItem
                 key={option.value}
                 value={option.value}
+                data-testid={`frequency-option-${option.testId}`}
                 sx={{
                   fontSize: "0.8rem",
                   fontWeight: 400,
@@ -313,6 +330,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                   className={`weekday-button ${
                     formState.weekDays.includes(day.value) ? "selected" : ""
                   }`}
+                  data-testid={`weekday-button-${day.value}`}
                 >
                   {day.label}
                 </button>
@@ -334,6 +352,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
             }}
             fullWidth
             displayEmpty
+            data-testid="month-repeat-type-select"
             sx={{
               width: "100%",
               height: "30px",
@@ -376,6 +395,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                   recurrenceEndType: RecurrenceEndType.NEVER,
                 }))
               }
+              data-testid="recurrence-never-radio"
             />
             <span className="recurrence-edit-text recurrence-edit-radio-option-label">
               {t("never")}
@@ -395,6 +415,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                     recurrenceEndType: RecurrenceEndType.END_DATE,
                   }))
                 }
+                data-testid="recurrence-end-date-radio"
               />
               <span className="recurrence-edit-text recurrence-edit-radio-option-label">
                 {t("on")}
@@ -405,6 +426,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                 formState.recurrenceEndType !== RecurrenceEndType.END_DATE
               }
               value={formState.endDate}
+              timezone="UTC"
               onChange={(newDate) => {
                 setFormState((prev) => ({
                   ...prev,
@@ -414,6 +436,13 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                 }));
               }}
               minDate={startDate}
+              slotProps={{
+                textField: {
+                  inputProps: {
+                    "data-testid": "recurrence-end-date-picker",
+                  },
+                },
+              }}
               sx={{
                 marginLeft: "5px",
                 width: "130px",
@@ -447,6 +476,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                     recurrenceEndType: RecurrenceEndType.NUMBER_OF_OCCURRENCES,
                   }))
                 }
+                data-testid="recurrence-occurrences-radio"
               />
               <span className="recurrence-edit-text recurrence-edit-radio-option-label">
                 {t("after")}
@@ -474,6 +504,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
               error={numberOfOccurrencesError}
               inputProps={{
                 min: 1,
+                "data-testid": "recurrence-occurrences-input",
                 style: {
                   height: "30px",
                   fontSize: "0.8rem",
@@ -499,6 +530,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
           <Button
             variant="outlined"
             onClick={handleCancel}
+            data-testid="recurrence-cancel-button"
             sx={{
               marginRight: 1,
               textTransform: "none",
@@ -511,6 +543,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
           <Button
             variant="contained"
             onClick={handleSubmit}
+            data-testid="recurrence-done-button"
             sx={{ textTransform: "none", fontSize: "0.8rem", fontWeight: 500 }}
           >
             Done
