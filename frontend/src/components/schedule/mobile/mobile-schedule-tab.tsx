@@ -105,7 +105,9 @@ export default function MobileScheduleTab({
     bufferRange.start,
     bufferRange.end,
     includeCampaign,
-    scheduleViewSettings.mobileSelectedWorkerId || undefined, // Filter by selected worker
+    scheduleViewSettings.mobileSelectedView === "worker"
+      ? scheduleViewSettings.mobileSelectedWorkerId || undefined
+      : undefined, // Only filter by worker in worker view; team view shows all
     {
       enabled: !memberHasNoWorker, // Don't fetch if member has no worker
     },
