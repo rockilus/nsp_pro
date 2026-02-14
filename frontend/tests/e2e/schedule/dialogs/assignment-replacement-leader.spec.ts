@@ -259,7 +259,10 @@ test.describe("Assignment Replacement - Team Leader", () => {
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
+    const testShifts = scheduleTestBase.getTestShifts();
     const testWorkers = scheduleTestBase.getTestWorkers();
+
+    const morningShift = testShifts.find((s) => s.name === "Morning Shift")!;
 
     // Get the created assignment
     const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
@@ -270,7 +273,9 @@ test.describe("Assignment Replacement - Team Leader", () => {
     const assignments = AR.assignmentsRead;
     await expect(assignments.length).toBeGreaterThan(0);
 
-    const assignment = assignments[0];
+    const assignment = assignments.find((a) => a.shiftId === morningShift.id)!;
+    expect(assignment).toBeDefined();
+
     const originalWorkerId = assignment.workerId;
 
     // Set the schedule view to include the date of the assignment
@@ -363,6 +368,8 @@ test.describe("Assignment Replacement - Team Leader", () => {
     // Verify the assignment is now assigned to the replacement worker
     expect(updatedAssignment).toBeDefined();
     expect(updatedAssignment!.workerId).toBe(replacementWorker.id);
+    expect(updatedAssignment!.shiftId).toBe(assignment.shiftId);
+    expect(updatedAssignment!.date.isSame(assignment.date, "day")).toBe(true);
 
     console.log(
       `✅ Assignment successfully replaced to worker: ${replacementWorker.name}`,
