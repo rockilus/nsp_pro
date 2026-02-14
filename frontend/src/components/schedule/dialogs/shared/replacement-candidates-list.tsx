@@ -88,6 +88,7 @@ export function ReplacementCandidatesList({
               if (candidates.length > 0) onViewDetails(candidates[0]);
             }}
             sx={{ textTransform: "none", mb: 1, ml: "auto" }}
+            data-testid="see-details-button"
           >
             {t("see_details")}
           </Button>

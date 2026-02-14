@@ -254,7 +254,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
     }
   }
 
-  test("should show check replacement button for existing assignment", async ({
+  test("should complete replacement when replace button is clicked in candidate list", async ({
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
@@ -1114,5 +1114,147 @@ test.describe("Assignment Replacement - Team Leader", () => {
     } else {
       console.log("⚠️ Replacement selection UI structure needs adjustment");
     }
+  });
+
+  test("should complete replacement when replace button is clicked in details dialog", async ({
+    page,
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const scheduleTestBase = testBasesMap.get(testRunId)!;
+    const testShifts = scheduleTestBase.getTestShifts();
+    const testWorkers = scheduleTestBase.getTestWorkers();
+
+    const morningShift = testShifts.find((s) => s.name === "Morning Shift")!;
+
+    // Get the created assignment
+    const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const assignments = AR.assignmentsRead;
+    await expect(assignments.length).toBeGreaterThan(0);
+
+    const assignment = assignments.find((a) => a.shiftId === morningShift.id)!;
+    expect(assignment).toBeDefined();
+
+    const originalWorkerId = assignment.workerId;
+
+    // Set the schedule view to include the date of the assignment
+    await scheduleTestBase.setScheduleViewSettings(
+      page,
+      {
+        targetDate: assignment.date,
+        timeFrame: "week",
+      },
+      true,
+    );
+
+    // Click on assignment
+    const assignmentCell = page.locator(
+      `[data-testid="assignment-cell-${assignment.id}"]`,
+    );
+    await expect(assignmentCell).toBeVisible();
+
+    await assignmentCell.click();
+
+    // Verify dialog opens
+    const dialog = page.locator('[data-testid="schedule-item-dialog"]');
+    await expect(dialog).toBeVisible();
+
+    // Verify check replacement button exists
+    const checkReplacementButton = page.locator(
+      '[data-testid="check-replacement-button"]',
+    );
+    await expect(checkReplacementButton).toBeVisible();
+
+    console.log("✅ Check replacement button visible");
+
+    // Click the check replacement button
+    await checkReplacementButton.click();
+
+    // Wait for the replacement candidates list to appear
+    await page.waitForTimeout(1000); // Wait for API response
+
+    // Verify all workers except the original worker appear in the list
+    const expectedCandidateWorkers = testWorkers.filter(
+      (w) => w.id !== originalWorkerId,
+    );
+
+    for (const worker of expectedCandidateWorkers) {
+      const candidateItem = page.locator(
+        `[data-testid="candidate-${worker.id}"]`,
+      );
+      await expect(candidateItem).toBeVisible();
+    }
+
+    console.log(
+      "✅ All workers except original worker appear in candidates list",
+    );
+
+    // Click the "see details" button to open the ReplacementDetailsDialog
+    const seeDetailsButton = page.locator('[data-testid="see-details-button"]');
+    await expect(seeDetailsButton).toBeVisible();
+    await seeDetailsButton.click();
+
+    console.log("✅ Clicked see details button");
+
+    // Wait for the details dialog to open
+    await page.waitForTimeout(500);
+
+    // Verify the details dialog is visible
+    const detailsDialog = page.locator(
+      '[data-testid="replacement-details-dialog"]',
+    );
+    await expect(detailsDialog).toBeVisible();
+
+    console.log("✅ Replacement details dialog opened");
+
+    // Select a replacement worker (pick the first candidate)
+    const replacementWorker = expectedCandidateWorkers[0];
+    const replaceButton = page.locator(
+      `[data-testid="replace-candidate-${replacementWorker.id}"]`,
+    );
+    await expect(replaceButton).toBeVisible();
+    await replaceButton.click();
+
+    console.log(
+      `✅ Clicked replace button in details dialog for worker: ${replacementWorker.name}`,
+    );
+
+    // Wait for the replacement to complete
+    await page.waitForTimeout(1500); // Wait for API call and UI update
+
+    // Verify both dialogs have closed
+    await expect(detailsDialog).not.toBeVisible();
+    const assignmentDialog = page.locator(
+      '[data-testid="schedule-item-dialog"]',
+    );
+    await expect(assignmentDialog).not.toBeVisible();
+
+    console.log("✅ Both dialogs closed after replacement");
+
+    // Fetch assignments again
+    const updatedAR = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      dayjs.utc().startOf("day"),
+      dayjs.utc().add(2, "month").endOf("day"),
+    );
+    const updatedAssignments = updatedAR.assignmentsRead;
+
+    // Find the updated assignment
+    const updatedAssignment = updatedAssignments.find(
+      (a) => a.id === assignment.id,
+    );
+
+    // Verify the assignment is now assigned to the replacement worker
+    expect(updatedAssignment).toBeDefined();
+    expect(updatedAssignment!.workerId).toBe(replacementWorker.id);
+    expect(updatedAssignment!.shiftId).toBe(assignment.shiftId);
+    expect(updatedAssignment!.date.isSame(assignment.date, "day")).toBe(true);
+
+    console.log(
+      `✅ Assignment successfully replaced to worker: ${replacementWorker.name} via details dialog`,
+    );
   });
 });
